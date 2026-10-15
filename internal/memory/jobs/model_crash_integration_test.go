@@ -1,7 +1,12 @@
 package jobs
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,8 +15,40 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// A controlled transport with an actual HTTP boundary in the child process.
+// The parent observes complete request bytes before killing the child, while
+// the response remains unknown. This does not contact a generative provider.
+type modelCrashHTTPProvider struct {
+	modelFixtureProvider
+	endpoint string
+}
+
+func (p *modelCrashHTTPProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if e := transport.CheckInferenceAuthority(ctx); e != nil {
+		return nil, e
+	}
+	if e := transport.CheckInferenceDispatch(ctx); e != nil {
+		return nil, e
+	}
+	data, e := json.Marshal(r)
+	if e != nil {
+		return nil, e
+	}
+	req, e := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint, bytes.NewReader(data))
+	if e != nil {
+		return nil, e
+	}
+	resp, e := http.DefaultClient.Do(req)
+	if e != nil {
+		return nil, e
+	}
+	resp.Body.Close()
+	return nil, ErrClaim // Parent must kill the process before any response.
+}
 
 // Executed only by the owning test as a separate process on its isolated schema.
 func TestModelCrashProcessHelper(t *testing.T) {
@@ -39,6 +76,11 @@ func TestModelCrashProcessHelper(t *testing.T) {
 	if e != nil || !ok {
 		os.Exit(23)
 	}
+	if phase == "after_http_send" {
+		w.Provider = &modelCrashHTTPProvider{endpoint: os.Getenv("BUTLER_ISSUE82_CRASH_HTTP")}
+		_ = w.execute(ctx, j, QuoteProbe{})
+		os.Exit(29)
+	}
 	a, _, e := w.Admit(ctx, j)
 	if e != nil {
 		os.Exit(24)
@@ -65,7 +107,7 @@ func TestModelCrashProcessHelper(t *testing.T) {
 }
 
 func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
-	for _, phase := range []string{"before_dispatch", "after_dispatch", "before_commit"} {
+	for _, phase := range []string{"before_dispatch", "after_dispatch", "after_http_send", "before_commit"} {
 		t.Run(phase, func(t *testing.T) {
 			w, ctx, src := modelFixture(t)
 			anchor := filepath.Join(t.TempDir(), "shared-anchor")
@@ -95,10 +137,36 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 			}
 			child := exec.Command(os.Args[0], "-test.run=^TestModelCrashProcessHelper$")
 			child.Env = append(os.Environ(), "BUTLER_ISSUE82_CRASH_PHASE="+phase, "BUTLER_ISSUE82_CRASH_DSN="+os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL")+"&search_path="+schema+",public&application_name=issue82-crash-"+schema, "BUTLER_ISSUE82_CRASH_ANCHOR="+anchor)
+			seen, release := make(chan struct{}), make(chan struct{})
+			if phase == "after_http_send" {
+				server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+					body, e := io.ReadAll(r.Body)
+					if e != nil || !json.Valid(body) || len(body) == 0 {
+						t.Error("incomplete HTTP request")
+					}
+					close(seen)
+					<-release
+				}))
+				defer server.Close()
+				defer close(release)
+				child.Env = append(child.Env, "BUTLER_ISSUE82_CRASH_HTTP="+server.URL)
+			}
 			if e := child.Start(); e != nil {
 				t.Fatal(e)
 			}
-			if phase == "before_commit" {
+			if phase == "after_http_send" {
+				sent := false
+				select {
+				case <-seen:
+					sent = true
+				case <-time.After(10 * time.Second):
+				}
+				_ = child.Process.Kill()
+				_ = child.Wait()
+				if !sent {
+					t.Fatal("child never sent complete HTTP request")
+				}
+			} else if phase == "before_commit" {
 				found := false
 				until := time.Now().Add(10 * time.Second)
 				for time.Now().Before(until) {
