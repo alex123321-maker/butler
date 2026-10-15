@@ -87,3 +87,23 @@ func TestSourceGuardMissingUsageDrainIsBoundedAndJoins(t *testing.T) {
 		t.Fatal("provider context still live after joined guard")
 	}
 }
+
+func TestSourceGuardDoesNotAttributeAnotherRunUsage(t *testing.T) {
+	provider := &idleMemoryProvider{stream: make(chan transport.TransportEvent, 1)}
+	event := transport.NewToolCallRequestedEvent("other-run", "fixture", transport.ToolCallRequest{ToolName: "PRIVATE_TOOL"})
+	event.Usage = &transport.Usage{InputTokens: 3, OutputTokens: 2, TotalTokens: 5}
+	provider.stream <- event
+	close(provider.stream)
+	guard := &sourceGuardedProvider{ModelProvider: provider, sources: &diagnosticSources{afterFirst: true, err: context.DeadlineExceeded}}
+	out, err := guard.StartRun(context.Background(), transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	denied := <-out
+	if denied.EventType != transport.EventTypeTransportError || denied.Usage != nil || denied.ToolCall != nil {
+		t.Fatal("other-run metadata became this admission's usage")
+	}
+	if _, ok := <-out; ok {
+		t.Fatal("other-run rejected event did not close")
+	}
+}
