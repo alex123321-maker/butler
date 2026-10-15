@@ -186,6 +186,36 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	if out := factRead(store, []catalog.SourceRef{}); out.Status != "denied" || len(out.Items) != 0 {
 		t.Fatal("accepted facts bypassed empty exposure cohort", out)
 	}
+	// Exercise the actual separate facts dispatch as well: the owning boundary
+	// must forward its freshly prepared environment into the temporal reader.
+	f.reader.memoryTemporalReady = true
+	f.call.ToolName = factcontrol.Tool
+	f.call.ToolCallId = "experience-temporal-read"
+	factArgs, _ := json.Marshal(factcontrol.Args{Sources: []readcontrol.SourceRef{{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}}, Limit: 4})
+	f.call.ArgsJson = string(factArgs)
+	f.prepared, err = f.auth.Prepare(f.f.ctx, f.call, factcontrol.Contract())
+	if err != nil || f.prepared.RequiresApproval {
+		t.Fatal("typed derivative facts admission rejected", err)
+	}
+	f.grant, err = f.auth.Authorize(f.f.ctx, f.call, factcontrol.Contract(), f.prepared.Binding.ActionID, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepareMemoryReadCheckpoint(t, f)
+	reads.temporal = true
+	factHandler, err := factcontrol.NewHandler("guarded-request-private-process-fixture-token", reads)
+	if err != nil {
+		t.Fatal(err)
+	}
+	factBroker := controlBrokerProcess(t, f, factHandler, factcontrol.Path, "BUTLER_MEMORY_FACT_HARNESS=1")
+	factResult, err := factBroker.ExecuteAuthorizedToolCall(f.f.ctx, f.call, f.grant.ID)
+	if err != nil || factResult.GetStatus() != "completed" {
+		t.Fatal("actual derived temporal facts dispatch failed", err)
+	}
+	facts, err := readcontrol.DecodeResult([]byte(factResult.GetResultJson()))
+	if err != nil || facts.Status != "ok" || len(facts.Items) != 1 {
+		t.Fatal("actual facts boundary lost current environment", err, facts.Status)
+	}
 	if err = store.Feedback(f.f.owner, result.ID, f.call.RunId, "misapplied"); err != nil {
 		t.Fatal(err)
 	}
