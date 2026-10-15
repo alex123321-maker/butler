@@ -30,6 +30,7 @@ type MemoryCatalogServer struct {
 	ModelJobs             *jobs.Store
 	ModelWorkerConfigured bool
 	SummaryPolicies       *compaction.Policies
+	TemporalEnabled       bool
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {
@@ -47,6 +48,9 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		defer cancel()
 		w.Header().Set("Cache-Control", "no-store")
 		if s.handleModelJobs(ctx, w, r) {
+			return
+		}
+		if s.handleTemporal(ctx, w, r) {
 			return
 		}
 		if r.Method == http.MethodGet {

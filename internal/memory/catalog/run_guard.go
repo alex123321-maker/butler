@@ -61,6 +61,9 @@ func (s *Store) CheckRunSourcesTx(ctx context.Context, tx pgx.Tx, runID string) 
 		if e == nil {
 			e = checkTemporalSourcesTx(ctx, tx, ids)
 		}
+		if e == nil {
+			e = checkTemporalRunTx(ctx, tx, runID)
+		}
 	}
 	return e
 }

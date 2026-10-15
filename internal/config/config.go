@@ -72,6 +72,7 @@ type OrchestratorConfig struct {
 	MemoryCandidateEnabled            bool
 	MemoryReadEnabled                 bool
 	MemoryAdaptiveRetrievalEnabled    bool
+	MemoryTemporalEnabled             bool
 	WorkspaceEnabled                  bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
@@ -364,6 +365,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryReadOrchestratorSpecs(&cfg)...)
+	specs = append(specs, memoryTemporalSpecs(&cfg)...)
 	specs = append(specs, workspaceOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {

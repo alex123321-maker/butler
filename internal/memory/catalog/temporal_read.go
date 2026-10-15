@@ -146,6 +146,9 @@ func (s *Store) ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []s
 		pin := AcceptedFactPin{ClaimID: c.ID, HeadRevision: head, ActiveID: active, TemporalRevision: temporalHead, Source: SourceRef{src.ID, src.Revision, src.AccessRevision, src.Hash}, MetadataHash: metadataHash, FreshnessStatus: fresh.Status, CurrentUsable: fresh.CurrentUsable}
 		out.Items = append(out.Items, AcceptedFact{Claim: c, Temporal: m, Freshness: fresh, Pin: pin, Historical: q.ValidAt != nil || q.KnownAt != nil})
 	}
+	if err = bindTemporalRunTx(ctx, tx, out.Items, q); err != nil {
+		return AcceptedFactPage{}, err
+	}
 	if err = s.finalizeAccessTx(ctx, tx, refs, "memory_read"); err != nil {
 		return AcceptedFactPage{}, err
 	}
@@ -266,6 +269,14 @@ func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derive
 }
 
 func bindTemporalPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, pins []AcceptedFactPin, q TemporalQuery) error {
+	// A rejected later pin must not leave a partially protected derivative when
+	// the caller handles the error and commits its outer transaction.
+	batch, err := tx.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer batch.Rollback(ctx)
+	tx = batch
 	for _, p := range pins {
 		if _, err := tx.Exec(ctx, `INSERT INTO memory_temporal_source_pins(derived_source_id,claim_id,head_revision,active_id,temporal_revision,original_source_id,source_revision,access_revision,content_hash,metadata_hash,freshness_status,current_usable,valid_at,known_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`, derivedSourceID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt); err != nil {
 			return err
@@ -285,5 +296,5 @@ func bindTemporalPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, 
 	if !current {
 		return ErrStale
 	}
-	return nil
+	return batch.Commit(ctx)
 }

@@ -26,13 +26,15 @@ Later ingestion cannot make a document more true or replace an owner preference.
 
 ## Typed read and pin contract
 
-The catalog owns these transaction-scoped methods. The first implementation will
-provide them with the exported types in `catalog/temporal_types.go`:
+The catalog owns these transaction-scoped methods and the exported types in
+`catalog/temporal_types.go`:
 
 ```go
 ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []string, q TemporalQuery) (AcceptedFactPage, error)
 CheckAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, pins []AcceptedFactPin, q TemporalQuery) error
 BindAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, pins []AcceptedFactPin, q TemporalQuery) error
+BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derived Source, exactParents []SourceRef, pins []AcceptedFactPin, q TemporalQuery) error
+ReadAcceptedFactsForSourcesTx(ctx context.Context, tx pgx.Tx, sources []SourceRef, q TemporalQuery) (AcceptedFactPage, error)
 ```
 
 IDs are a finite caller-selected set, never an owner/scope grant. Every read
@@ -58,6 +60,15 @@ must cover publication, full pre-HTTP proof, periodic observation and later
 reads; retaining only a source-content pin is insufficient. Revisions/time
 changes cannot silently refresh an old generated view.
 
+Fresh derivative binding requires a constructor-only, nonserialized receipt for
+the exact current top transaction (including nested savepoints), head1/access1,
+an active or quarantined immutable candidate, and its complete declared parents.
+This does not add the new child to a job's read grant. Pin batches use a savepoint
+so caller recovery cannot commit partial protection. Ordinary owned runs bind
+accepted fact observations immutably in `memory_temporal_run_pins`; subsequent
+reads cannot refresh a prepared run. SQL publication fences and owning full
+release checks retain current decision/metadata/freshness proof after waits.
+
 ## Freshness and authority
 
 Owner controls classify `stable_preference`, `work_status`, `technical_fact`,
@@ -75,3 +86,20 @@ receipt. External revalidation uses an already authorized, budgeted read through
 the Tool Broker with a durable observation/result provenance pin. A failed or
 unavailable read leaves the fact visibly unverified. It cannot write a new truth,
 change a mandate, replay an uncertain effect or remove old spending.
+
+## Current API and operational gate
+
+Authenticated owner controls use `POST /api/v4/memory/temporal` with the typed
+`TemporalUpdate` and a delivery identity. `GET /api/v4/memory/facts` accepts a
+bounded repeated `claim_id`, optional `valid_at`, and optional `known_at`, each
+complete RFC3339 instant with a zone. Ambiguous or relative dates are rejected,
+not assigned the server's timezone. Metadata and owner decision history are
+included in the private NDJSON export. No model-facing temporal write API exists.
+
+`BUTLER_MEMORY_TEMPORAL_ENABLED=false` is the operator default. A separate
+code-owned qualification remains false until composed temporal read,
+revalidation, lifecycle and independent restore acceptance is measured. Ordinary
+profile/episode adapters can attach explicit temporal/freshness DATA and exclude
+only explicitly expired/not-yet-valid current entries; stale/unknown verification
+remains labeled evidence. Already bound privacy/decision guards remain mandatory
+even when the feature flag is off. No main deployment is activated by these tests.
