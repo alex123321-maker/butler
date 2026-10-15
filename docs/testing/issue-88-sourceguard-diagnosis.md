@@ -54,8 +54,23 @@ delegation tests remain required, as does the complete12-case controlled flow.
 
 Cumulative85+88 v1/v2/v3 conservative use is92model turns,98,254,848quoted tokens,
 17,820,000ms,771,751,936input bytes,6external reads and25,165,824egress bytes,
-with three retained NULL usages. This latest vector already includes the old
+with four retained product-ledger NULL usages. The native collector independently
+captured all six v3 observations, including the6057token proposal discarded by the
+source guard before the outer budget wrapper could record it. Product v3 has
+five observed attempts and one NULL; native v3 has six known observations. The
+cumulative native evidence has89known/3unknown admissions, while the product
+ledger has88observed/4NULL. No old NULL is overwritten or refunded. Future source
+denials forward only complete validated accounting metadata on the fixed error
+event, preserving zero denied tool/final output. This latest vector includes old
 82/83/86-turn carries once. Known full native tokens are a228,628lower bound,
 not total invoice cost. Other issue77 windows have separate ledgers and must be
 combined once by the root report. Qualification remains false; no historical
 window is reopened, refunded or selectively rerun.
+
+A prospective complete v4 keeps the same12questions, model instructions,
+production declarations, semantic gates and144/96window capacity. Its new finite
+day ceiling is the latest92-turn vector plus the144model/96tool quote allowance:
+236model turns,253,968,384tokens,72,540,000ms,1,979,711,488input bytes,102external
+calls and427,819,008egress bytes. Original deadlines remain unchanged. The frozen
+history records the actual v3 source error and every unexecuted slot, not a
+success or selective retry.

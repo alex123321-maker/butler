@@ -52,7 +52,14 @@ const temporalNativeHistorySQL = `SELECT jsonb_build_object(
  'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM memory_temporal_native_v2.execution_budget_reservations r),
  'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM memory_temporal_native_v2.execution_budget_scopes s),
  'cases',(SELECT jsonb_agg(to_jsonb(c) ORDER BY position)FROM memory_temporal_native_v2.temporal_native_cases c),
- 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v2.temporal_native_window w)))`
+ 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v2.temporal_native_window w)),
+ 'temporal_v3',jsonb_build_object(
+ 'foreground',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM memory_temporal_native_v3.execution_model_attempts a),
+ 'entries',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id)FROM memory_temporal_native_v3.temporal_native_entries e),
+ 'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM memory_temporal_native_v3.execution_budget_reservations r),
+ 'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM memory_temporal_native_v3.execution_budget_scopes s),
+ 'cases',(SELECT jsonb_agg(to_jsonb(c) ORDER BY position)FROM memory_temporal_native_v3.temporal_native_cases c),
+ 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v3.temporal_native_window w)))`
 
 type temporalRetainedWindow struct {
 	Foreground []struct {
@@ -84,6 +91,7 @@ func temporalHistoryUnits(raw []byte) (budget.Units, error) {
 		} `json:"scopes"`
 		TemporalV1 temporalRetainedWindow `json:"temporal_v1"`
 		TemporalV2 temporalRetainedWindow `json:"temporal_v2"`
+		TemporalV3 temporalRetainedWindow `json:"temporal_v3"`
 	}
 	var units budget.Units
 	if json.Unmarshal(raw, &history) != nil || len(history.Attempts) != 82 {
@@ -134,11 +142,16 @@ func temporalHistoryUnits(raw []byte) (budget.Units, error) {
 	if len(v2.Foreground) != 3 || len(v2.Entries) != 3 || !v2.Window.Closed || v2.Window.Paid != 3 {
 		return units, errors.New("retained failed temporal-v2 population changed")
 	}
+	var v2Known int64
 	for i, entry := range v2.Entries {
 		var usage struct{ TotalTokens int64 }
 		if v2.Foreground[i].ObservedAt == nil || json.Unmarshal(entry.Observation.Usage, &usage) != nil || usage.TotalTokens <= 0 {
 			return units, errors.New("retained known temporal-v2 usage changed")
 		}
+		v2Known += usage.TotalTokens
+	}
+	if v2Known != 16021 {
+		return units, errors.New("retained known temporal-v2 full usage changed")
 	}
 	// The latest86-turn vector includes83 prior turns and the3 new model
 	// reservations plus2 successful tool reservations. Never sum these scopes.
@@ -154,6 +167,39 @@ func temporalHistoryUnits(raw []byte) (budget.Units, error) {
 	}
 	if count != 1 || units.ModelTurns != 86 || units.Tokens != 91766784 || units.ActiveMillis != 15540000 || units.ProviderInputBytes != 721420288 || units.ExternalCalls != 2 || units.EgressBytes != 8388608 {
 		return units, errors.New("retained86-turn conservative carry differs")
+	}
+	v3 := history.TemporalV3
+	if len(v3.Foreground) != 6 || len(v3.Entries) != 6 || !v3.Window.Closed || v3.Window.Paid != 6 {
+		return units, errors.New("retained failed temporal-v3 population changed")
+	}
+	var v3Known int64
+	v3ProductUnknown := 0
+	for i, entry := range v3.Entries {
+		var usage struct{ TotalTokens int64 }
+		if v3.Foreground[i].ObservedAt == nil {
+			v3ProductUnknown++
+		}
+		if json.Unmarshal(entry.Observation.Usage, &usage) != nil || usage.TotalTokens <= 0 {
+			return units, errors.New("retained known temporal-v3 usage changed")
+		}
+		v3Known += usage.TotalTokens
+	}
+	if v3Known != 36054 || v3ProductUnknown != 1 {
+		return units, errors.New("retained known temporal-v3 full usage changed")
+	}
+	count = 0
+	//92 already includes86 plus6 actual native and4 successful tool quotes.
+	for _, scope := range v3.Scopes {
+		if scope.Kind == "owner_day" {
+			if scope.Owner != temporalNativeOwner {
+				return units, errors.New("retained v3 owner differs")
+			}
+			units = scope.Used
+			count++
+		}
+	}
+	if count != 1 || units.ModelTurns != 92 || units.Tokens != 98254848 || units.ActiveMillis != 17820000 || units.ProviderInputBytes != 771751936 || units.ExternalCalls != 6 || units.EgressBytes != 25165824 {
+		return units, errors.New("retained92-turn conservative carry differs")
 	}
 	return units, nil
 }
@@ -292,10 +338,10 @@ func temporalCarryNativeHistory(ctx context.Context, pool *pgxpool.Pool, proof s
 	}
 	// A labelled conservative carry receipt is not another provider attempt.
 	// Old scopes/reservations/deadlines/NULL usages remain unchanged in public.
-	if _, _, err = ledger.Reserve(ctx, budget.Request{OwnerID: temporalNativeOwner, OperationID: "retained85-and88v1-v2-conservative-carry-to88-v3", ScopeIDs: []string{scope.ID}, Charge: carry, CostKnown: true}); err != nil {
+	if _, _, err = ledger.Reserve(ctx, budget.Request{OwnerID: temporalNativeOwner, OperationID: "retained85-and88v1-v2-v3-conservative-carry-to88-v4", ScopeIDs: []string{scope.ID}, Charge: carry, CostKnown: true}); err != nil {
 		return carry, err
 	}
-	beforeAfter, _ := json.Marshal(map[string]any{"retained_prior_history_sha256": acceptance.MemoryBytesSHA256(live), "retained85_and88v1_v2_used": carry, "prospective88_v3_owner_day_limits": policy.Day, "prospective88_maximum_new_model_entries": temporalMaxNative, "prospective88_maximum_new_tools": temporalMaxToolCalls, "old85_unknown_usage": 2, "temporal_v1_unknown_usage": 1, "temporal_v2_unknown_usage": 0, "temporal_v2_known_native_tokens": 16021, "cumulative_prior_unknown_usage": 3, "invoice_cost": "unknown", "old85_and88v1_v2_policy_deadlines_unchanged": true, "carry_is_new_provider_spend": false, "conservative_carry_is_observed_usage": false})
+	beforeAfter, _ := json.Marshal(map[string]any{"retained_prior_history_sha256": acceptance.MemoryBytesSHA256(live), "retained85_and88v1_v2_v3_used": carry, "prospective88_v4_owner_day_limits": policy.Day, "prospective88_maximum_new_model_entries": temporalMaxNative, "prospective88_maximum_new_tools": temporalMaxToolCalls, "old85_unknown_usage": 2, "temporal_v1_unknown_usage": 1, "temporal_v2_unknown_usage": 0, "temporal_v2_known_native_tokens": 16021, "temporal_v3_product_unknown_usage": 1, "temporal_v3_native_unknown_usage": 0, "temporal_v3_known_native_tokens": 36054, "cumulative_prior_product_unknown_usage": 4, "cumulative_prior_native_unknown_usage": 3, "invoice_cost": "unknown", "old85_and88v1_v2_v3_policy_deadlines_unchanged": true, "carry_is_new_provider_spend": false, "conservative_carry_is_observed_usage": false})
 	if temporalWriteExclusive(filepath.Join(proof, "operator-allowance-amendment.json"), beforeAfter) != nil {
 		return carry, errors.New("allowance amendment receipt unavailable")
 	}

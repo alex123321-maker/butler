@@ -395,7 +395,7 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 }
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V3") != "1" {
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V4") != "1" {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -421,11 +421,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v3');CREATE SCHEMA memory_temporal_native_v3`); err != nil {
+	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v4');CREATE SCHEMA memory_temporal_native_v4`); err != nil {
 		t.Fatal("one-use native window already consumed or unavailable")
 	}
 	cfg.MaxConns = 4
-	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v3,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v4,public"
 	trace := &temporalSourceTrace{}
 	cfg.ConnConfig.Tracer = trace
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -458,7 +458,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v3')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v4')`, strings.TrimSpace(string(auth))); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
 	defer func() {

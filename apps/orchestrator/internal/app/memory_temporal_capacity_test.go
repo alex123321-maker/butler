@@ -33,6 +33,15 @@ func TestTemporalProspectiveV3CapacityArithmetic(t *testing.T) {
 	}
 }
 
+func TestTemporalProspectiveV4RetainedCapacityArithmetic(t *testing.T) {
+	carry := budget.Units{ModelTurns: 92, Tokens: 98254848, ActiveMillis: 17820000, ProviderInputBytes: 771751936, ExternalCalls: 6, EgressBytes: 25165824}
+	p := temporalNativePolicy(carry)
+	want := budget.Units{ModelTurns: 236, Tokens: 253968384, ActiveMillis: 72540000, ProviderInputBytes: 1979711488, ExternalCalls: 102, EgressBytes: 427819008}
+	if p.Validate() != nil || p.Day != want || p.Task.ModelTurns != 12 || p.Task.ExternalCalls != 8 {
+		t.Fatal("retained92-turn history or prospective144/96 capacity differs", p.Day)
+	}
+}
+
 // Capacity permits independently verifying both selected original sources after
 // a typed facts read, followed by the final answer. It never changes the model
 // prompt, semantic rubric, production tool declarations or authority rules.
