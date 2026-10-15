@@ -68,3 +68,10 @@ cost evidence qualify the consumer; environment flags cannot bypass this gate.
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
 ./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.
 The controlled provider is a transport fixture, not native Gemini quality proof.
+
+The copied-snapshot privacy branch additionally requires the actual phased
+[`summary backup/restore gate`](../../../docs/testing/issue-84-summary-backup.md).
+Run `scripts/dev/memory-summary-backup-lab.sh` on an isolated issue83 root. Both
+original-message and non-message-ancestor deletion must survive a real old dump,
+fresh restore and newest independent anchor replay. An ordinary package skip
+does not satisfy this consumer-specific gate.

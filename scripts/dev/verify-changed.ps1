@@ -40,6 +40,13 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: scripts/dev/memory-read-lab.sh isolated issue77 root; real PostgreSQL, production Broker binary, mode0 read-only dispatch and exact current source/privacy checks. Mandatory checks cannot skip; native acceptance is a separate retained one-use window.")
       continue
     }
+    "^(internal/memory/compaction/backup_integration_test[.]go$|scripts/dev/memory-summary-backup-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-summary-backup-lab.sh isolated issue83 root fresh-label; real six-phase PG/race custom dump BEFORE deletion, fresh restore and newest external anchor replay for primary-message and candidate-ancestor cases. Copied input/result/coverage erasure, preserved observed attempt/hash and unrelated source; no native calls or skips.")
+      continue
+    }
     "^(internal/memory/compaction/|apps/orchestrator/internal/app/memory_summary|migrations/072_)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
