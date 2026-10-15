@@ -179,7 +179,13 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 	if e != nil {
 		return a, nil, e
 	}
-	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline})
+	additionalTasks := make([]budget.AuxiliaryTaskIdentity, 0, len(j.Contexts))
+	for _, pin := range j.Contexts {
+		if pin.TaskID != "" {
+			additionalTasks = append(additionalTasks, budget.AuxiliaryTaskIdentity{TaskID: pin.TaskID, MandateID: pin.Authority.MandateID})
+		}
+	}
+	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline, AdditionalTasks: additionalTasks})
 	if e != nil {
 		return a, nil, e
 	}
@@ -215,6 +221,26 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 		d, e := actionauth.AuthorityDeadline(m, g, now)
 		if e != nil {
 			return a, nil, e
+		}
+		if d.Before(deadline) {
+			deadline = d
+		}
+	}
+	for _, pin := range j.Contexts {
+		if pin.Authority.TaskID == "" {
+			continue
+		}
+		var now time.Time
+		if e = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
+			return a, nil, e
+		}
+		m, g, err := actionauth.CheckAssignmentTx(ctx, tx, pin.Authority, now)
+		if err != nil {
+			return a, nil, err
+		}
+		d, err := actionauth.AuthorityDeadline(m, g, now)
+		if err != nil {
+			return a, nil, err
 		}
 		if d.Before(deadline) {
 			deadline = d

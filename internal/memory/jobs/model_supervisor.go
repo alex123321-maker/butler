@@ -63,14 +63,16 @@ SELECT butler_memory_summary_sources_current($5) AND butler_memory_temporal_sour
  OR NOT CASE s.scope_type
   WHEN 'user' THEN s.scope_id=$2
   WHEN 'task' THEN $3<>'' AND s.scope_id=$3
+   OR EXISTS(SELECT 1 FROM jsonb_to_recordset($6::jsonb) AS c(task_id text) WHERE c.task_id<>'' AND c.task_id=s.scope_id)
   WHEN 'session' THEN EXISTS(SELECT 1 FROM runs WHERE run_id=$4 AND session_key=s.scope_id AND COALESCE(task_id,'')=$3)
    AND NOT EXISTS(SELECT 1 FROM tasks WHERE session_key=s.scope_id AND task_id<>$3)
+   OR EXISTS(SELECT 1 FROM jsonb_to_recordset($6::jsonb) AS c(session_key text) WHERE c.session_key=s.scope_id)
   ELSE FALSE END
 ) AND NOT EXISTS (
  SELECT 1 FROM memory_source_dependencies d JOIN pins child ON child.source_id=d.child_source_id
  LEFT JOIN pins parent ON parent.source_id=d.parent_source_id
  WHERE parent.source_id IS NULL OR parent.revision<>d.parent_revision
-), EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`, jsonBytes(j.Sources), j.OwnerID, j.TaskID, j.OriginalRunID, ids).Scan(&current, &busy)
+), EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`, jsonBytes(j.Sources), j.OwnerID, j.TaskID, j.OriginalRunID, ids, contextManifestJSON(j.Contexts)).Scan(&current, &busy)
 	if err != nil {
 		return err
 	}

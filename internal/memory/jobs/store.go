@@ -22,6 +22,7 @@ var ErrClaim = errors.New("auxiliary job claim or source authority unavailable")
 
 type Job struct {
 	PolicyID            string                `json:"policy_id,omitempty"`
+	Contexts            []ModelContextPin     `json:"contexts,omitempty"`
 	ID                  string                `json:"job_id"`
 	OwnerID             string                `json:"owner_id"`
 	Kind                string                `json:"kind"`
@@ -187,7 +188,7 @@ func load(ctx context.Context, q interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }, id string, lock bool) (Job, error) {
 	var j Job
-	var refs, authority, allowance []byte
+	var refs, authority, allowance, contexts []byte
 	clause := ""
 	if lock {
 		clause = " FOR SHARE"
@@ -197,7 +198,13 @@ func load(ctx context.Context, q interface {
 		if json.Unmarshal(refs, &j.Sources) != nil || json.Unmarshal(authority, &j.Authority) != nil || json.Unmarshal(allowance, &j.Allowance) != nil {
 			return j, ErrClaim
 		}
-		e = q.QueryRow(ctx, `SELECT COALESCE(policy_id,'') FROM memory_aux_jobs WHERE job_id=$1`, id).Scan(&j.PolicyID)
+		e = q.QueryRow(ctx, `SELECT COALESCE(policy_id,''),context_manifest FROM memory_aux_jobs WHERE job_id=$1`, id).Scan(&j.PolicyID, &contexts)
+		if e == nil && json.Unmarshal(contexts, &j.Contexts) != nil {
+			return j, ErrClaim
+		}
+		if len(j.Contexts) == 0 {
+			j.Contexts = nil
+		}
 	}
 	return j, e
 }
@@ -283,6 +290,7 @@ func (s *Store) Context(ctx context.Context, j Job) context.Context {
 
 func copyJob(j Job) Job {
 	j.Sources = append([]catalog.SourceRef(nil), j.Sources...)
+	j.Contexts = append([]ModelContextPin(nil), j.Contexts...)
 	if j.ClaimUntil != nil {
 		until := *j.ClaimUntil
 		j.ClaimUntil = &until
@@ -295,9 +303,18 @@ func copyJob(j Job) Job {
 // locking it ahead of source rows. Finalize locks and repeats this comparison.
 func (c *claimChecker) checkSnapshot(ctx context.Context, tx pgx.Tx, lock bool) (Job, error) {
 	j := c.j
-	_, sum, e := canonical(j.Sources)
+	sum, e := modelFingerprint(j.Sources, j.Contexts)
 	if e != nil || sum != j.Fingerprint {
 		return Job{}, ErrClaim
+	}
+	if len(j.Contexts) > 0 {
+		if j.PolicyID == "" || j.Kind != "model" || j.Purpose != ConsolidationHandler || j.TaskID != "" || j.OriginalRunID != "" {
+			return Job{}, ErrClaim
+		}
+		// Domain/authority locks precede even a direct snapshot's job lock.
+		if _, err := c.s.checkModelPolicyTx(ctx, tx, j); err != nil {
+			return Job{}, err
+		}
 	}
 	live, e := load(ctx, tx, j.ID, lock)
 	if e != nil {
@@ -309,12 +326,12 @@ func (c *claimChecker) checkSnapshot(ctx context.Context, tx pgx.Tx, lock bool) 
 	if live.PolicyID != j.PolicyID {
 		return Job{}, ErrClaim
 	}
-	_, liveSum, e := canonical(live.Sources)
+	liveSum, e := modelFingerprint(live.Sources, live.Contexts)
 	var now time.Time
 	if sqlErr := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); sqlErr != nil {
 		return Job{}, sqlErr
 	}
-	if e != nil || liveSum != live.Fingerprint || live.Status != "running" || live.ClaimID != j.ClaimID || live.ClaimEpoch != j.ClaimEpoch || live.ClaimUntil == nil || j.ClaimUntil == nil || !live.ClaimUntil.Equal(*j.ClaimUntil) || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || !live.Deadline.Equal(j.Deadline) || live.Fingerprint != j.Fingerprint || live.OwnerID != j.OwnerID || live.TaskID != j.TaskID || live.Authority != j.Authority || live.TaskRevision != j.TaskRevision || live.ConstraintsRevision != j.ConstraintsRevision || live.Purpose != j.Purpose || live.Kind != j.Kind || live.Allowance != j.Allowance || live.OriginalRunID != j.OriginalRunID {
+	if e != nil || liveSum != live.Fingerprint || live.Status != "running" || live.ClaimID != j.ClaimID || live.ClaimEpoch != j.ClaimEpoch || live.ClaimUntil == nil || j.ClaimUntil == nil || !live.ClaimUntil.Equal(*j.ClaimUntil) || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || !live.Deadline.Equal(j.Deadline) || live.Fingerprint != j.Fingerprint || live.OwnerID != j.OwnerID || live.TaskID != j.TaskID || live.Authority != j.Authority || live.TaskRevision != j.TaskRevision || live.ConstraintsRevision != j.ConstraintsRevision || live.Purpose != j.Purpose || live.Kind != j.Kind || live.Allowance != j.Allowance || live.OriginalRunID != j.OriginalRunID || string(jsonBytes(live.Contexts)) != string(jsonBytes(j.Contexts)) {
 		return Job{}, ErrClaim
 	}
 	return live, nil

@@ -20,6 +20,16 @@ without cloud fallback. See [the full contract](../../../docs/architecture/backg
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
 
+Migration076 adds exact owner-approved context manifests only for
+`memory-consolidation-v1`. At most eight quiet sessions retain their terminal run,
+root task/constraints/assignment/privacy pins. Top-level task/run bindings remain
+empty for this mode. Every claim read/finalization and current policy/HTTP/provider
+publication boundary rechecks the complete manifest; no old lease is borrowed.
+The fingerprint includes every pin, while nil contexts preserve legacy policy
+bytes and source fingerprints. Shared reservation charges all distinct actual
+root/mandate scopes atomically. This contract does not qualify the consumer;
+see [bounded consolidation](../../../docs/architecture/memory-consolidation.md).
+
 New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
 The shared corpus currently runs through diagnostic quote publication, repeated
 job/ACK handling and forgetting, with existing in-flight withdrawal/crash tests.
