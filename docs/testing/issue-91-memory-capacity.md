@@ -8,6 +8,16 @@ retained. No host cache flush or production restart occurred. Machine-cold cache
 state is unknown; the first Search call is reported separately from warm queries.
 
 The prospective protocol is [memory-capacity-protocol.md](../ai/memory-capacity-protocol.md).
+
+`scripts/dev/memory-capacity-local-lab.sh ROOT FRESH_LABEL` now retains a reusable
+runner for the actual local index/reuse slice below. It requires an existing
+isolated synthetic PostgreSQL fixture, operator-pinned local-models service,
+private token file, cached Go image/modules and immutable `ROOT/current` snapshot.
+Set `BUTLER_CAPACITY_LOCAL_PG_IP` and `BUTLER_CAPACITY_LOCAL_MODEL_IP` to those
+private service IPv4 addresses. It mounts no cloud auth and downloads nothing.
+The original measured window used the retained equivalent one-off runner;
+promoting the wrapper is not another measurement or a broader throughput proof.
+
 Seed91 generated real synthetic Catalog originals/fragments and deterministic
 768-dimensional vectors. Bulk vector fixture loading is explicitly not embedding
 inference throughput or semantic quality. Coverage Verify/Activate used a labeled
