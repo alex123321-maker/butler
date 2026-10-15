@@ -74,8 +74,59 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 		defer cancel()
 		ticker := time.NewTicker(250 * time.Millisecond)
 		defer ticker.Stop()
-		failed := func(err error) {
+		failed := func(err error, held *transport.TransportEvent) {
+			// Preserve complete accounting metadata from the rejected event, never
+			// its text/tool/final payload. Drain already-ready metadata before
+			// cancellation so a ticker/proposal selection race cannot drop it.
+			var usage *transport.Usage
+			observe := func(event transport.TransportEvent) {
+				if usage == nil {
+					if u, e := modelTurnUsage(event); e == nil && u != nil {
+						copy := *u
+						usage = &copy
+					}
+				}
+			}
+			if held != nil {
+				observe(*held)
+			}
+			closed := false
+			remaining := 256
+		ready:
+			for remaining > 0 && usage == nil && !closed {
+				select {
+				case event, ok := <-stream:
+					remaining--
+					closed = !ok
+					if ok {
+						observe(event)
+					}
+				default:
+					break ready
+				}
+			}
+			cancel()
+			// A cooperative provider may flush its complete turn usage while
+			// cancelling. Cleanup is synchronous, bounded and has no detached
+			// drain goroutine or permission to issue another provider request.
+			if usage == nil && !closed && remaining > 0 {
+				timer := time.NewTimer(100 * time.Millisecond)
+				defer timer.Stop()
+				for remaining > 0 && usage == nil && !closed {
+					select {
+					case event, ok := <-stream:
+						remaining--
+						closed = !ok
+						if ok {
+							observe(event)
+						}
+					case <-timer.C:
+						remaining = 0
+					}
+				}
+			}
 			event := transport.NewTransportErrorEvent(runID, p.Name(), err)
+			event.Usage = usage
 			select {
 			case out <- event:
 			case <-ctx.Done():
@@ -87,7 +138,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				return
 			case <-ticker.C:
 				if e := check(bounded); e != nil {
-					failed(e)
+					failed(e, nil)
 					return
 				}
 			case event, ok := <-stream:
@@ -97,7 +148,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				// Final/tool proposals must not pass using a cached source snapshot.
 				if event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
 					if e := check(bounded); e != nil {
-						failed(e)
+						failed(e, &event)
 						return
 					}
 				}

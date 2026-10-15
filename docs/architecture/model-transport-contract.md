@@ -106,6 +106,15 @@ and it does not prove generation capability or allow retry.
 
 ## 1. Статус документа
 
+Complete admitted-turn usage remains accounting metadata after a current memory
+source guard denies the associated tool/final output. The guard may forward that
+validated usage on its fixed transport-error event; it must strip the denied
+payload, cancel the provider and never authorize another request. Ticker/proposal
+races drain only already-ready events plus a synchronous100ms/256-event cleanup
+bound; missing/partial usage stays unknown. The owning budget wrapper persists
+known usage before delivering the error and retains the conservative reservation.
+Neither a denial nor an observed cost grants source access or action authority.
+
 **Тип документа:** Architecture Subspec / Model Transport Contract
 **Версия:** 0.1
 **Статус:** Draft

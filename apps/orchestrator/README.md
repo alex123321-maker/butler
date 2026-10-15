@@ -45,6 +45,12 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Current-source denial retains valid complete turn usage on the safe error event
+before the budget wrapper terminates the attempt. Denied tool/final text never
+passes through this accounting path. Provider cancellation and metadata drain are
+synchronous and bounded100ms/256events; an absent usage observation remains NULL
+and no conservative reservation is refunded.
+
 Optional `BUTLER_MEMORY_READ_ENABLED=true` mounts the authenticated private
 `/internal/memory-read` control for fixed Broker search/open/neighbors contracts.
 It reconstructs current actual dispatch/input/Session ownership, uses catalog
