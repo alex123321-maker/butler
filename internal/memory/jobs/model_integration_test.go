@@ -18,6 +18,7 @@ type modelFixtureProvider struct {
 	transport.ModelProvider
 	calls          atomic.Int32
 	deadlineMillis atomic.Int64
+	deadlineNanos  atomic.Int64
 	source         catalog.Source
 	callback       func()
 	beforeDispatch func()
@@ -35,6 +36,7 @@ func (*modelFixtureProvider) CancelRun(context.Context, transport.CancelRunReque
 func (p *modelFixtureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
 	if deadline, ok := ctx.Deadline(); ok {
 		p.deadlineMillis.Store(time.Until(deadline).Milliseconds())
+		p.deadlineNanos.Store(deadline.UnixNano())
 	}
 	if p.beforeDispatch != nil {
 		p.beforeDispatch()
@@ -162,12 +164,26 @@ func TestModelProcessOnePreservesConfiguredCallWindowIntegration(t *testing.T) {
 				ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
 				defer cancel()
 			}
+			before := time.Now()
 			worked, err := w.ProcessOne(ctx)
 			if err != nil || !worked {
 				t.Fatal(worked, err)
 			}
-			remaining := w.Provider.(*modelFixtureProvider).deadlineMillis.Load()
-			if !shortCaller && (remaining < 290000 || remaining > 300000) {
+			provider := w.Provider.(*modelFixtureProvider)
+			remaining := provider.deadlineMillis.Load()
+			var scopeDeadline time.Time
+			if err := w.Jobs.pool.QueryRow(ctx, `SELECT min(deadline) FROM execution_budget_scopes`).Scan(&scopeDeadline); err != nil {
+				t.Fatal(err)
+			}
+			earliest := before.Add(300 * time.Second)
+			if scopeDeadline.Before(earliest) {
+				earliest = scopeDeadline // The UTC-day boundary can legitimately shorten the call.
+			}
+			if caller, ok := ctx.Deadline(); ok && caller.Before(earliest) {
+				earliest = caller
+			}
+			observed := time.Unix(0, provider.deadlineNanos.Load())
+			if observed.Before(earliest.Add(-time.Second)) || observed.After(scopeDeadline) || remaining > 300000 {
 				t.Fatal("whole-attempt timeout shortened configured model call", remaining)
 			}
 			if shortCaller && (remaining <= 0 || remaining > 30000) {
