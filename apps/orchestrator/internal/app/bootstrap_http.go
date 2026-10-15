@@ -66,6 +66,7 @@ type httpServerDeps struct {
 	memoryModelStore           *jobs.Store
 	memoryModelConfigured      bool
 	memorySummaryConfigured    bool
+	memoryFeatureStates        []memorydoctor.FeatureConfiguration
 	sourceCatalog              *catalog.Store
 	ownerGoals                 *goal.Manager
 	finalResults               *completion.Coordinator
@@ -121,7 +122,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
 	doctorChecker := &operatorDoctorChecker{deps: deps}
 	memoryDoctor := memorydoctor.NewReporter(deps.pipelineQueue, deps.postgres)
-	memoryDoctor.Configure(memorydoctor.Options{PipelineConfigured: deps.cfg.MemoryPipelineEnabled, PipelineEffective: deps.pipelineWorker != nil, SemanticConfigured: strings.TrimSpace(os.Getenv("BUTLER_MEMORY_SEMANTIC_ENABLED")) == "true", SemanticEffective: deps.memoryIndexing != nil, EmbeddingConfigured: deps.embeddingProvider != nil, Catalog: deps.sourceCatalog, Metrics: deps.metrics, Configuration: map[string]any{"provider": deps.providerResult.ProviderName, "model": deps.providerResult.ModelName, "profile_limit": deps.cfg.MemoryProfileLimit, "episode_limit": deps.cfg.MemoryEpisodicLimit, "context_budget": deps.cfg.ContextBudgetTokens}})
+	memoryDoctor.Configure(memorydoctor.Options{PipelineConfigured: deps.cfg.MemoryPipelineEnabled, PipelineEffective: deps.pipelineWorker != nil, SemanticConfigured: strings.TrimSpace(os.Getenv("BUTLER_MEMORY_SEMANTIC_ENABLED")) == "true", SemanticEffective: deps.memoryIndexing != nil, EmbeddingConfigured: deps.embeddingProvider != nil, Catalog: deps.sourceCatalog, Metrics: deps.metrics, Features: deps.memoryFeatureStates, Configuration: map[string]any{"provider": deps.providerResult.ProviderName, "model": deps.providerResult.ModelName, "profile_limit": deps.cfg.MemoryProfileLimit, "episode_limit": deps.cfg.MemoryEpisodicLimit, "context_budget": deps.cfg.ContextBudgetTokens}})
 	doctorServer := apiservice.NewDoctorServer(deps.postgres.Pool(), doctorChecker, memoryDoctor, deps.artifactsService, logger.WithComponent(deps.log, "doctor-api"))
 	doctorServer.SetOwnerControlAuth(deps.ownerAuth)
 	settingsService := config.NewSettingsService(deps.settingsStore, deps.hotConfig)

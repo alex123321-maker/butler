@@ -898,3 +898,10 @@ BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED defaults false; flags cannot bypass the
 qualification constant. Explicit isolated composition uses the existing ordinary
 Flow and Broker, preserves scoped accepted preferences and verifies actual opened
 current evidence before release. See docs/architecture/adaptive-memory-retrieval.md.
+
+Memory Doctor now includes `effective_features`: requested startup flags, actual
+constructed services/handlers, code-owned release gates and supported model
+profile remain separate. Its fresh owner policy counts and durable worker control
+are operational observations, not job admission or answer quality. Missing or
+failed observations never manufacture zero allowance, zero usage or an eligible
+policy. See [Memory Doctor](../../internal/memory/doctor/README.md).

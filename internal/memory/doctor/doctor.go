@@ -31,6 +31,7 @@ type Options struct {
 	Catalog                               *catalog.Store
 	Metrics                               *metrics.Registry
 	Configuration                         any // Content-free configuration identity, never credentials.
+	Features                              []FeatureConfiguration
 }
 type Reporter struct {
 	queue   queueReader
@@ -155,7 +156,8 @@ func (r *Reporter) Report(ctx context.Context) (map[string]any, error) {
 			indexes["reason"] = "backend"
 		}
 	}
-	raw, _ := json.Marshal(map[string]any{"runtime": r.options.Configuration, "pipeline_requested": r.options.PipelineConfigured, "pipeline_connected": r.options.PipelineEffective, "semantic_requested": r.options.SemanticConfigured, "semantic_connected": r.options.SemanticEffective, "legacy_embedding": r.options.EmbeddingConfigured})
+	featureState := r.featureReport(ctx, now)
+	raw, _ := json.Marshal(map[string]any{"runtime": r.options.Configuration, "pipeline_requested": r.options.PipelineConfigured, "pipeline_connected": r.options.PipelineEffective, "semantic_requested": r.options.SemanticConfigured, "semantic_connected": r.options.SemanticEffective, "legacy_embedding": r.options.EmbeddingConfigured, "features": featureConfigurations(r.options.Features)})
 	digest := sha256.Sum256(raw)
 	quality := map[string]any{"status": "unverified", "reason": "no_applicable_answer_quality_report", "configuration": hex.EncodeToString(digest[:]), "checked_at": now}
 	checks := make([]diagnostics.Component, 0, len(components)+2)
@@ -169,5 +171,5 @@ func (r *Reporter) Report(ctx context.Context) (map[string]any, error) {
 	if r.options.Metrics != nil {
 		_ = r.options.Metrics.IncrCounter(metrics.MetricDoctorChecksTotal, map[string]string{"component": "memory", "service": "orchestrator", "status": status})
 	}
-	return map[string]any{"version": diagnostics.Version, "status": status, "checked_at": now, "components": components, "legacy_queue": queue, "jobs": jobs, "indexes": indexes, "answer_quality": quality}, nil
+	return map[string]any{"version": diagnostics.Version, "status": status, "checked_at": now, "components": components, "legacy_queue": queue, "jobs": jobs, "indexes": indexes, "answer_quality": quality, "effective_features": featureState}, nil
 }

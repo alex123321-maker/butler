@@ -684,6 +684,7 @@ func New(ctx context.Context) (*App, error) {
 		memoryModelStore:           memoryModelStore,
 		memoryModelConfigured:      memoryModelWorker != nil,
 		memorySummaryConfigured:    summaryConsumerConfigured(memoryModelWorker),
+		memoryFeatureStates:        memoryFeatureConfigurations(cfg, providerResult, budgetController, memoryModelWorker, memoryCandidates != nil, memoryReads != nil, adaptiveRetrieval != nil),
 		sourceCatalog:              sourceCatalog,
 		cfg:                        cfg,
 		finalResults:               finalResults,

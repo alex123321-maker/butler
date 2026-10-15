@@ -1,5 +1,12 @@
 # Butler — Memory Model Specification
 
+[Memory Doctor](../../internal/memory/doctor/README.md) reports actual constructed
+feature composition separately from operator requests, code-owned qualification,
+supported provider profile and current durable worker/owner-policy controls. None
+of these observations proves answer quality or grants source/job/action authority.
+Configuration identities include the effective composition; current source and
+deletion-anchor guards survive disabling new admission or retiring a derivative.
+
 The gated [verified task compaction consumer](../../internal/memory/compaction/README.md)
 uses durable independent model jobs and exact prefix coverage. Every user event
 remains verbatim; assistant/tool excerpts must match primary bytes and tool states
