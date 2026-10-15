@@ -6,6 +6,13 @@ compaction. PostgreSQL catalog sources, claims and temporal decisions remain the
 only durable evidence/accepted truth; consolidation is a versioned DATA view.
 No new model, transport, scheduler, service or dependency is introduced.
 
+The first supported policy is one-use (`max_jobs=1`) over an immutable prepared
+source/accepted-decision snapshot. Existing source-change coalescing and quiet
+eligibility schedule that exact preparation. A parent or owner-decision change
+makes it stale: the owner prepares a fresh snapshot/policy, compares its diff and
+chooses it with current-head CAS. This version does not continuously rebase an
+old policy onto new accepted decisions or automatically refresh parented copies.
+
 ## Independent authority across sessions
 
 Only the code-owned `memory-consolidation-v1` handler may accept nonempty
@@ -65,6 +72,11 @@ a second text/accepted-fact store. A deterministic diff records added, merged,
 compressed, conflicting and stale unit/group IDs. It never copies old deleted or
 corrected text into the new generation. Invalid/partial/stale output commits no
 generation or active pointer and never displaces the prior current evidence.
+The trusted staged-result handler creates its result initially quarantined;
+ordinary catalog search/open cannot expose an unactivated representation. Other
+handlers retain their existing active DATA behavior. Owner snapshot preparation
+and finite policy admission share `CreateModelPolicyTx`, avoiding orphan input
+sources or a partially registered permission after failure.
 
 ## Review, activation and retirement
 

@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
 )
 
@@ -205,5 +208,130 @@ func TestModelCrossContextCannotExtendOtherConsumersOrForgePinnedJobIntegration(
 	}
 	if w.Provider.(*modelFixtureProvider).calls.Load() != 0 {
 		t.Fatal("invalid context invoked HTTP")
+	}
+}
+
+type stagedContextQuote struct{ QuoteProbe }
+
+func (stagedContextQuote) StagedModelResult() bool { return true }
+
+func TestModelStagedResultAndAtomicOwnerPolicySnapshotIntegration(t *testing.T) {
+	w, ctx, q, sources := crossContextFixture(t, 4)
+	tx, err := w.Jobs.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if _, err = w.Jobs.PrepareConsolidationContextsTx(ctx, tx, q); err != nil {
+		t.Fatal(err)
+	}
+	snapshot, err := w.Jobs.catalog.CreateDerivedTx(ctx, tx, q.Job.Sources, "memory_job_create", "Prepared evidence", "Complete exact source set.", []byte(`{}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepared := q
+	prepared.Job.Sources = request(snapshot).Sources
+	if _, err = w.Jobs.CreateModelPolicyTx(ctx, tx, prepared); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Rollback(ctx); err != nil {
+		t.Fatal(err)
+	}
+	var leaked int
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_model_policies)+(SELECT count(*) FROM memory_sources WHERE source_id=$1)`, snapshot.ID).Scan(&leaked); err != nil || leaked != 0 {
+		t.Fatal("rolled back prepare leaked input or policy", leaked, err)
+	}
+	j := schedule(t, w, ctx, q)
+	if err = w.execute(ctx, j, stagedContextQuote{}); err != nil {
+		t.Fatal(err)
+	}
+	var resultID string
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT result_source_id FROM memory_model_attempts WHERE job_id=$1`, j.ID).Scan(&resultID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = w.Jobs.catalog.Get(ctx, resultID); !errors.Is(err, catalog.ErrDenied) {
+		t.Fatal("unreviewed staged result readable", err)
+	}
+	inspected, err := w.Jobs.catalog.Inspect(ctx, resultID)
+	if err != nil || inspected.Source.Status != "quarantined" || inspected.Source.Body == "" {
+		t.Fatal("owner cannot review exact staged data", err)
+	}
+	for _, s := range sources {
+		if _, err = w.Jobs.catalog.Get(ctx, s.ID); err != nil {
+			t.Fatal("staging damaged original", err)
+		}
+	}
+}
+
+func TestModelCrossContextDepletedRootRollsBackEveryChargeIntegration(t *testing.T) {
+	w, ctx, q, _ := crossContextFixture(t, 4)
+	j := schedule(t, w, ctx, q)
+	var created time.Time
+	if err := w.Jobs.pool.QueryRow(ctx, `SELECT created_at FROM tasks WHERE task_id='t2'`).Scan(&created); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := w.Jobs.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	scope, err := w.Jobs.budgets.Ledger.EnsureTx(ctx, tx, budget.ScopeSpec{Kind: "task", OwnerID: "owner", SubjectID: "t2", Limits: w.Jobs.budgets.Policy.Task, Deadline: created.Add(time.Duration(w.Jobs.budgets.Policy.TaskLifetimeMillis) * time.Millisecond)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(ctx, `UPDATE execution_budget_scopes SET used_json=jsonb_set(used_json,'{model_turns}',to_jsonb($2::bigint)) WHERE scope_id=$1`, scope.ID, w.Jobs.budgets.Policy.Task.ModelTurns); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	var before, after []byte
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id) FROM execution_budget_scopes s`).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err = w.Admit(ctx, j); err == nil {
+		t.Fatal("one depleted root did not block all contexts")
+	}
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id) FROM execution_budget_scopes s`).Scan(&after); err != nil || string(before) != string(after) {
+		t.Fatal("one depleted root left a partial charge", err)
+	}
+	var attempts, reservations int
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_model_attempts),(SELECT count(*) FROM execution_budget_reservations)`).Scan(&attempts, &reservations); err != nil || attempts != 0 || reservations != 0 {
+		t.Fatal(attempts, reservations, err)
+	}
+}
+
+func TestModelCrossContextEarliestIndependentAssignmentDeadlineIntegration(t *testing.T) {
+	w, ctx, q, _ := crossContextFixture(t, 4)
+	w.Jobs.budgets.Policy.ModelMillis = 60000
+	q.Job.Allowance.ActiveMillis = 240000
+	var raw []byte
+	if err := w.Jobs.pool.QueryRow(ctx, `SELECT mandate_data FROM action_mandates WHERE mandate_id='mandate'`).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	var m actionauth.Mandate
+	if err := json.Unmarshal(raw, &m); err != nil {
+		t.Fatal(err)
+	}
+	m.Budget.ActiveMillis = 240000
+	if _, err := w.Jobs.pool.Exec(ctx, `UPDATE action_mandates SET mandate_data=$1 WHERE mandate_id='mandate'`, jsonBytes(m)); err != nil {
+		t.Fatal(err)
+	}
+	expiry := time.Now().Add(30 * time.Second).UTC().Truncate(time.Microsecond)
+	m.ID, m.GoalID, m.ExpiresAt, m.BudgetDeadline = "mandate2", "goal2", expiry, expiry
+	g := actionauth.GoalPolicy{ID: "goal2", OwnerID: "owner", Kind: "objective", Status: "active", Revision: 1, Purpose: "memory", ExpiresAt: expiry}
+	if _, err := w.Jobs.pool.Exec(ctx, `INSERT INTO owner_goals(goal_id,owner_id,kind,status,revision,expires_at,goal_data,source_data) VALUES('goal2','owner','objective','active',1,$1,$2,'{}')`, expiry, jsonBytes(g)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Jobs.pool.Exec(ctx, `INSERT INTO action_mandates(mandate_id,owner_id,task_id,revision,mandate_data,expires_at,scope_kind,goal_id,goal_revision,status) VALUES('mandate2','owner','',1,$1,$2,'owner_goal','goal2',1,'active')`, jsonBytes(m), expiry); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Jobs.pool.Exec(ctx, `UPDATE task_authority_bindings SET mandate_id='mandate2',goal_id='goal2' WHERE task_id='t2'`); err != nil {
+		t.Fatal(err)
+	}
+	j := schedule(t, w, ctx, q)
+	admitted, _, err := w.Admit(ctx, j)
+	if err != nil || admitted.Deadline.After(expiry) || !admitted.Deadline.Equal(expiry) {
+		t.Fatal("second context deadline lost", admitted.Deadline, expiry, err)
 	}
 }

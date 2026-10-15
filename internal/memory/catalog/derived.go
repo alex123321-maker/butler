@@ -13,6 +13,16 @@ import (
 // A fresh invisible row avoids acquiring an existing child after parent locks.
 // The caller must commit this in the same transaction as its result CAS.
 func (s *Store) CreateDerivedTx(ctx context.Context, tx pgx.Tx, parents []SourceRef, purpose, title, body string, locator json.RawMessage) (Source, error) {
+	return s.createDerivedTx(ctx, tx, parents, purpose, title, body, locator, "active")
+}
+
+// CreateStagedDerivedTx has the same complete parent proof as CreateDerivedTx,
+// but ordinary catalog reads cannot use the immutable result until owner review.
+func (s *Store) CreateStagedDerivedTx(ctx context.Context, tx pgx.Tx, parents []SourceRef, purpose, title, body string, locator json.RawMessage) (Source, error) {
+	return s.createDerivedTx(ctx, tx, parents, purpose, title, body, locator, "quarantined")
+}
+
+func (s *Store) createDerivedTx(ctx context.Context, tx pgx.Tx, parents []SourceRef, purpose, title, body string, locator json.RawMessage, status string) (Source, error) {
 	if tx == nil || len(parents) < 1 || len(parents) > 64 || len(title) > 2048 || len(body) > 1024*1024 || !json.Valid(locator) || sanitize.Text(body) != body || sanitize.Text(title) != title {
 		return Source{}, ErrInvalid
 	}
@@ -57,7 +67,7 @@ func (s *Store) CreateDerivedTx(ctx context.Context, tx pgx.Tx, parents []Source
 	origin.SourceRefs = []string{id}
 	origin = content.StoredDataOrigin(content.MemoryDerived, id, mustJSON(origin))
 	sum := hash([]any{title, body, locator, "derived", nil, origin})
-	if _, e = tx.Exec(ctx, `INSERT INTO memory_sources(source_id,owner_id,source_kind,scope_type,scope_id,external_key,head_revision) VALUES($1,$2,'model_candidate',$3,$4,$5,1)`, id, first.OwnerID, first.ScopeType, first.ScopeID, "derived:"+id); e != nil {
+	if _, e = tx.Exec(ctx, `INSERT INTO memory_sources(source_id,owner_id,source_kind,scope_type,scope_id,external_key,head_revision,status) VALUES($1,$2,'model_candidate',$3,$4,$5,1,$6)`, id, first.OwnerID, first.ScopeType, first.ScopeID, "derived:"+id, status); e != nil {
 		return Source{}, e
 	}
 	if _, e = tx.Exec(ctx, `INSERT INTO memory_source_revisions(source_id,revision,content_hash,title,body,locator,origin,author) VALUES($1,1,$2,$3,$4,$5,$6,'derived')`, id, sum, title, body, locator, mustJSON(origin)); e != nil {

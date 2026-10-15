@@ -9,6 +9,7 @@ import (
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -37,6 +38,40 @@ type ModelContextPin struct {
 	Authority           actionauth.Assignment `json:"authority"`
 	Privacy             string                `json:"privacy"`
 	QuietSeconds        int                   `json:"quiet_seconds"`
+}
+
+// PrepareConsolidationContextsTx lets the owner snapshot adapter acquire the
+// exact domain/authority union before catalog source creation. Admission repeats
+// this proof in CreateModelPolicyTx before the shared transaction can commit.
+func (s *Store) PrepareConsolidationContextsTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest) ([]ModelContextPin, error) {
+	actor, ok := owneridentity.FromContext(ctx)
+	if !ok || tx == nil || q.Handler != ConsolidationHandler || q.Job.TaskID != "" || q.Job.OriginalRunID != "" || q.Privacy != "cloud_allowed" || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 {
+		return nil, ErrClaim
+	}
+	refs, err := orderedContextRefs(q.Contexts)
+	if err != nil {
+		return nil, err
+	}
+	q.Contexts = refs
+	p := ModelPolicy{ModelPolicyRequest: q, OwnerID: actor.OwnerID}
+	p.Job.Sources, err = s.catalog.CanonicalSourcesTx(ctx, tx, q.Job.Sources)
+	if err != nil {
+		return nil, err
+	}
+	if err = lockPolicySessionsTx(ctx, tx, p); err != nil {
+		return nil, err
+	}
+	if err = lockContextTasksTx(ctx, tx, refs); err != nil {
+		return nil, err
+	}
+	for _, ref := range refs {
+		pin, err := resolveContextPinTx(ctx, tx, actor.OwnerID, ref, q.IntervalSeconds)
+		if err != nil {
+			return nil, err
+		}
+		p.ContextPins = append(p.ContextPins, pin)
+	}
+	return p.ContextPins, validContextShape(p)
 }
 
 func orderedContextRefs(refs []ModelContextRef) ([]ModelContextRef, error) {

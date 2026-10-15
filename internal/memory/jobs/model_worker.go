@@ -38,6 +38,10 @@ type ModelPublicationHandler interface {
 	PublishTx(context.Context, pgx.Tx, *catalog.Store, Job, ModelAttempt, []catalog.Source, catalog.Source, string) error
 }
 
+// ModelStagedResultHandler is trusted code-owned registration, never a model
+// field. Initial quarantine prevents ordinary open/search before owner activation.
+type ModelStagedResultHandler interface{ StagedModelResult() bool }
+
 // ModelInputSelector narrows model-visible bodies without weakening the complete
 // durable source manifest used by admission, supervision and publication. It runs
 // in the existing admission transaction after every source is locked/checked.
@@ -383,7 +387,13 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	if state != "observed" {
 		return "", ErrClaim
 	}
-	src, e := s.catalog.CreateDerivedTx(ctx, tx, j.Sources, j.Purpose, "Background memory candidate", body, jsonBytes(map[string]string{"job_id": j.ID, "operation_id": a.OperationID, "handler": j.Purpose}))
+	createDerived := s.catalog.CreateDerivedTx
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelStagedResultHandler); ok && h.StagedModelResult() {
+			createDerived = s.catalog.CreateStagedDerivedTx
+		}
+	}
+	src, e := createDerived(ctx, tx, j.Sources, j.Purpose, "Background memory candidate", body, jsonBytes(map[string]string{"job_id": j.ID, "operation_id": a.OperationID, "handler": j.Purpose}))
 	if e != nil {
 		return "", e
 	}

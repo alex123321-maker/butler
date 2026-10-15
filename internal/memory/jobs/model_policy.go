@@ -50,8 +50,27 @@ func validAllowance(u budget.Units) bool {
 }
 
 func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (ModelPolicy, error) {
+	if _, ok := owneridentity.FromContext(ctx); !ok {
+		return ModelPolicy{}, ErrClaim
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return ModelPolicy{}, err
+	}
+	defer tx.Rollback(ctx)
+	p, err := s.CreateModelPolicyTx(ctx, tx, q)
+	if err != nil {
+		return p, err
+	}
+	return p, tx.Commit(ctx)
+}
+
+// CreateModelPolicyTx is the same owner-only finite policy admission in a caller
+// transaction. A trusted snapshot adapter can commit its source/pins and policy
+// atomically; it acquires domain/authority locks before creating source rows.
+func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest) (ModelPolicy, error) {
 	actor, ok := owneridentity.FromContext(ctx)
-	if !ok || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
+	if !ok || tx == nil || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
 		return ModelPolicy{}, ErrClaim
 	}
 	switch q.Trigger {
@@ -71,14 +90,10 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	q.Job.Kind = "model"
 	q.Job.Purpose = "memory_model"
 	q.Job.Deadline = q.Job.Deadline.UTC().Truncate(time.Microsecond)
-	if err := s.catalog.CheckRestore(ctx); err != nil {
+	if err := s.catalog.CheckRestoreTx(ctx, tx); err != nil {
 		return ModelPolicy{}, err
 	}
-	tx, e := s.pool.Begin(ctx)
-	if e != nil {
-		return ModelPolicy{}, e
-	}
-	defer tx.Rollback(ctx)
+	var e error
 	var now time.Time
 	if e = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
 		return ModelPolicy{}, e
@@ -163,7 +178,7 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 		if json.Unmarshal(old, &previous) != nil || string(jsonBytes(previous)) != string(jsonBytes(p)) {
 			return p, ErrClaim
 		}
-		return previous, tx.Commit(ctx)
+		return previous, nil
 	}
 	if e != pgx.ErrNoRows {
 		return p, e
@@ -175,7 +190,7 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	if e != nil {
 		return p, e
 	}
-	return p, tx.Commit(ctx)
+	return p, nil
 }
 
 func readPolicy(ctx context.Context, tx pgx.Tx, id string, lock bool) (ModelPolicy, string, error) {

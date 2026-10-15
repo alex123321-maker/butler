@@ -29,6 +29,11 @@ The fingerprint includes every pin, while nil contexts preserve legacy policy
 bytes and source fingerprints. Shared reservation charges all distinct actual
 root/mandate scopes atomically. This contract does not qualify the consumer;
 see [bounded consolidation](../../../docs/architecture/memory-consolidation.md).
+Trusted owner preparation can use `CreateModelPolicyTx` after acquiring its exact
+domain locks with `PrepareConsolidationContextsTx`; source/pins/policy then commit
+together. Optional trusted `ModelStagedResultHandler` requests initial quarantine
+for its immutable result. The normal current parent proof and job/cost atomic
+publication remain identical; existing handlers do not change staging behavior.
 
 New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
 The shared corpus currently runs through diagnostic quote publication, repeated

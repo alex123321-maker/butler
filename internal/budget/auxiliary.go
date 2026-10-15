@@ -30,7 +30,7 @@ type AuxiliaryIdentity struct {
 type AuxiliaryTaskIdentity struct{ TaskID, MandateID string }
 
 func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i AuxiliaryIdentity) (ModelAdmission, error) {
-	if i.OwnerID == "" || i.JobID == "" || i.OperationID == "" || i.InputBytes < 1 || i.Tokens < 1 || i.ActiveMillis < 1 || len(i.AdditionalTasks) > 8 || len(i.AdditionalTasks) > 0 && i.TaskID != "" {
+	if i.OwnerID == "" || i.JobID == "" || i.OperationID == "" || i.InputBytes < 1 || i.Tokens < 1 || i.ActiveMillis < 1 || len(i.AdditionalTasks) > 8 || len(i.AdditionalTasks) > 0 && (i.TaskID != "" || i.MandateID != "") {
 		return ModelAdmission{}, ErrInvalid
 	}
 	var now time.Time
