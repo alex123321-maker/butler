@@ -80,6 +80,7 @@ func runSemantic(args []string, stdout io.Writer) error {
 		return err
 	}
 	var cases []acceptance.MemoryCase
+	var schedule []acceptance.MemorySemanticSlot
 	if header.Version == acceptance.MemorySemanticVersion {
 		var suite acceptance.MemorySemanticSuite
 		if err = json.Unmarshal(corpus, &suite); err != nil {
@@ -90,6 +91,13 @@ func runSemantic(args []string, stdout io.Writer) error {
 		}
 		for _, c := range suite.Cases {
 			cases = append(cases, c.MemoryCase())
+			id := acceptance.MemoryOpaqueCaseID(c.MemoryCase())
+			for _, arm := range []string{"no_ltm", "oracle", "retrieval"} {
+				schedule = append(schedule, acceptance.MemorySemanticSlot{CaseID: id, Arm: arm})
+			}
+			if c.RepeatRetrieval {
+				schedule = append(schedule, acceptance.MemorySemanticSlot{CaseID: id, Arm: "retrieval_repeat"})
+			}
 		}
 	} else {
 		suite, e := acceptance.LoadMemorySuite(bytes.NewReader(corpus))
@@ -97,6 +105,11 @@ func runSemantic(args []string, stdout io.Writer) error {
 			return e
 		}
 		cases = suite.Cases
+		for _, c := range cases {
+			for _, arm := range acceptance.MemoryEvalArms() {
+				schedule = append(schedule, acceptance.MemorySemanticSlot{CaseID: acceptance.MemoryOpaqueCaseID(c), Arm: arm})
+			}
+		}
 	}
 	inputRaw, err := read(*inputsPath)
 	if err != nil {
@@ -106,6 +119,9 @@ func runSemantic(args []string, stdout io.Writer) error {
 		Inputs []acceptance.MemoryInput `json:"inputs"`
 	}
 	if err = json.Unmarshal(inputRaw, &frozen); err != nil {
+		return err
+	}
+	if err = acceptance.ValidateMemorySemanticSchedule(frozen.Inputs, schedule); err != nil {
 		return err
 	}
 	measurementsRaw, err := read(*measurementsPath)

@@ -100,3 +100,79 @@ func TestMemorySemanticSafeRefusalAndAvailabilityDenominators(t *testing.T) {
 		t.Fatal(s, err)
 	}
 }
+
+func TestMemorySemanticRejectsEmptyOrMissingCorpusCases(t *testing.T) {
+	c, i, m, r := semanticTestOriginal()
+	if _, err := semanticTestScore(c, nil, MemoryMeasurements{}, r); err == nil {
+		t.Fatal("empty schedule accepted")
+	}
+	missing := c[0]
+	missing.ID = "missing-case"
+	if _, err := semanticTestScore(append(c, missing), i, m, r); err == nil {
+		t.Fatal("omitted corpus case accepted")
+	}
+}
+
+func TestMemorySemanticScheduleRejectsMissingDuplicateAndForeignSlots(t *testing.T) {
+	expected := []MemorySemanticSlot{{"case", "no_ltm"}, {"case", "oracle"}, {"case", "retrieval"}, {"case", "retrieval_repeat"}}
+	inputs := []MemoryInput{}
+	for _, slot := range expected {
+		inputs = append(inputs, MemoryInput{CaseID: slot.CaseID, Arm: slot.Arm})
+	}
+	if err := ValidateMemorySemanticSchedule(inputs, expected); err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"empty", "missing_repeat", "duplicate", "foreign"} {
+		t.Run(kind, func(t *testing.T) {
+			changed := append([]MemoryInput{}, inputs...)
+			switch kind {
+			case "empty":
+				changed = nil
+			case "missing_repeat":
+				changed = changed[:3]
+			case "duplicate":
+				changed[3] = changed[0]
+			case "foreign":
+				changed[3].CaseID = "other"
+			}
+			if ValidateMemorySemanticSchedule(changed, expected) == nil {
+				t.Fatal("schedule mismatch accepted")
+			}
+		})
+	}
+}
+
+func TestMemorySemanticCitationsBindOriginalButRemainSeparateFromAnswer(t *testing.T) {
+	for _, kind := range []string{"missing", "correctly_reviewed_error", "duplicate_check", "foreign_check", "malformed"} {
+		t.Run(kind, func(t *testing.T) {
+			c, i, m, r := semanticTestOriginal()
+			raw := json.RawMessage(`{"answer":"Дата не утверждена.","citations":[{"source_id":"invented","revision":99,"quote":"fiction"}]}`)
+			r.Items[0].CitationChecks = []MemorySemanticCitation{{SourceID: "invented", Revision: 99, Quote: "fiction"}}
+			switch kind {
+			case "missing":
+				r.Items[0].CitationChecks = nil
+			case "duplicate_check":
+				r.Items[0].CitationChecks = append(r.Items[0].CitationChecks, r.Items[0].CitationChecks[0])
+			case "foreign_check":
+				r.Items[0].CitationChecks[0].Quote = "other"
+			case "malformed":
+				raw = json.RawMessage(`"not a JSON answer"`)
+				r.Items[0].CitationChecks = nil
+			}
+			m.Observations[0].Output = raw
+			r.Items[0].OutputSHA256 = MemoryBytesSHA256(MemoryObservationOriginal(m.Observations[0]))
+			score, err := semanticTestScore(c, i, m, r)
+			if kind == "correctly_reviewed_error" {
+				if err != nil || score.Arms["oracle"].Correct != 1 || score.Arms["oracle"].CitationErrors != 1 || score.Arms["oracle"].CitationsChecked != 1 {
+					t.Fatal("citation error lost or converted into answer failure", score, err)
+				}
+			} else if kind == "malformed" {
+				if err != nil || score.Arms["oracle"].UnknownCitationOutputs != 1 {
+					t.Fatal("malformed original discarded or citations reported as checked", score, err)
+				}
+			} else if err == nil {
+				t.Fatal("incomplete/foreign citation annotation accepted")
+			}
+		})
+	}
+}
