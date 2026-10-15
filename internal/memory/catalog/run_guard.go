@@ -52,5 +52,12 @@ func (s *Store) CheckRunSourcesTx(ctx context.Context, tx pgx.Tx, runID string) 
 		}
 	}
 	_, e := tx.Exec(ctx, `SELECT butler_memory_check_run_sources($1)`, runID)
+	if e == nil {
+		var ids []string
+		e = tx.QueryRow(ctx, `SELECT COALESCE(array_agg(source_id),'{}'::text[]) FROM memory_run_sources WHERE run_id=$1`, runID).Scan(&ids)
+		if e == nil {
+			e = checkSummarySourcesTx(ctx, tx, ids)
+		}
+	}
 	return e
 }

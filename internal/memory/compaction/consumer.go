@@ -296,6 +296,9 @@ func (c Consumer) PrepareSourcesTx(ctx context.Context, tx pgx.Tx, cat *catalog.
 	}
 	locator, _ := json.Marshal(map[string]any{"summary_version": 1, "session_key": session})
 	src := sources[0]
+	if err = pinOriginalsTx(ctx, tx, src.ID, session, p.OwnerID, p.Job.TaskID, d.SourceRevision); err != nil {
+		return nil, "summary_original_source_denied", nil
+	}
 	updated, err := cat.RefreshOriginalTx(ctx, tx, catalog.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}, "memory_job_create", string(body), locator)
 	if err != nil {
 		return nil, "", fmt.Errorf("refresh summary source: %w", err)

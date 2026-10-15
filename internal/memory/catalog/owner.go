@@ -48,6 +48,13 @@ func (s *Store) Correct(ctx context.Context, p Correction) (Source, error) {
 	if e = checkOwnerScopeTx(ctx, tx, own, scopeType, scopeID); e != nil {
 		return Source{}, e
 	}
+	var snapshot bool
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_summary_sources WHERE source_id=$1)`, p.SourceID).Scan(&snapshot); e != nil {
+		return Source{}, e
+	}
+	if snapshot {
+		return Source{}, ErrDenied
+	}
 	if strings.HasPrefix(p.SourceID, "message:") {
 		if _, e = tx.Exec(ctx, `SELECT session_key FROM sessions WHERE session_key=$1 FOR UPDATE`, scopeID); e != nil {
 			return Source{}, e

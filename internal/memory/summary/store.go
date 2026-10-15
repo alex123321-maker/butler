@@ -35,7 +35,7 @@ func (s *Store) GetSummarySnapshot(ctx context.Context, sessionKey string) (Snap
 	var snapshot Snapshot
 	err := s.pool.QueryRow(ctx, `SELECT s.session_key, s.summary, s.through_message_id, s.through_sequence,
         s.source_revision, s.format_version, s.updated_at FROM session_summaries s WHERE s.session_key=$1
-        AND (s.result_source_id IS NULL OR EXISTS(SELECT 1 FROM memory_sources r WHERE r.source_id=s.result_source_id AND r.status='active'
+        AND (s.result_source_id IS NULL OR EXISTS(SELECT 1 FROM memory_sources r WHERE r.source_id=s.result_source_id AND r.status='active' AND r.head_revision=1 AND butler_memory_summary_sources_current(ARRAY[r.source_id])
         AND NOT EXISTS(SELECT 1 FROM memory_source_dependencies d JOIN memory_sources p ON p.source_id=d.parent_source_id WHERE d.child_source_id=r.source_id AND p.status<>'active')))`, sessionKey).
 		Scan(&snapshot.SessionKey, &snapshot.Summary, &snapshot.ThroughMessageID, &snapshot.ThroughSequence,
 			&snapshot.SourceRevision, &snapshot.FormatVersion, &snapshot.UpdatedAt)
