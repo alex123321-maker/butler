@@ -277,6 +277,56 @@ func TestCandidateHigh32768ProfileReservesCompleteFiniteQuoteIntegration(t *test
 	// This is admission only. No StartRun, auth resolution or HTTP is executed.
 }
 
+func candidateRevokePastPolicies(f *candidateFixture) {
+	f.t.Helper()
+	rows, err := f.pool.Query(context.Background(), `SELECT policy_id FROM memory_model_policies WHERE state<>'revoked' ORDER BY policy_id LIMIT 256`)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			f.t.Fatal(err)
+		}
+		ids = append(ids, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	for _, id := range ids {
+		f.request("/api/v4/memory/model-policy-control", "POST", map[string]string{"policy_id": id, "state": "revoked"}, 200, nil)
+	}
+}
+
+func TestCandidatePriorPolicyRevocationRetainsAttemptAndPreventsReplayIntegration(t *testing.T) {
+	f := newCandidateFixture(t)
+	src := f.source("prior-window", "Предпочитаю ответы на русском языке.")
+	p := f.worker.Provider.(*candidateProvider)
+	p.source = src
+	f.policy("prior-window", src, "cloud_allowed")
+	f.enable()
+	if err := f.process(); err != nil {
+		t.Fatal(err)
+	}
+	candidateRevokePastPolicies(f)
+	if err := f.jobs.PollModelPolicies(context.Background(), func(string) bool { return true }); err != nil {
+		t.Fatal(err)
+	}
+	worked, err := f.worker.ProcessOne(context.Background())
+	var attempts int
+	var state string
+	if qerr := f.pool.QueryRow(context.Background(), `SELECT state,(SELECT count(*) FROM memory_model_attempts) FROM memory_model_policies WHERE policy_id='prior-window'`).Scan(&state, &attempts); qerr != nil {
+		t.Fatal(qerr)
+	}
+	if err != nil || worked || p.calls.Load() != 1 || attempts != 1 || state != "revoked" {
+		t.Fatal("prior window replayed or paid history changed", worked, err, p.calls.Load(), attempts, state)
+	}
+}
+
 type candidateNativeCase struct {
 	ID, Body, Type, Scope, Time string
 	SpeechAct                   string `json:"speech_act"`
@@ -381,27 +431,7 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	f := &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, worker: w, server: srv}
 	// Past identities are never automatically retried by a later window. Use the
 	// existing owner controls; their original spend/attempts stay untouched.
-	rows, err := pool.Query(context.Background(), `SELECT policy_id FROM memory_model_policies WHERE state<>'revoked' ORDER BY policy_id LIMIT 256`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var oldPolicies []string
-	for rows.Next() {
-		var id string
-		if err = rows.Scan(&id); err != nil {
-			rows.Close()
-			t.Fatal(err)
-		}
-		oldPolicies = append(oldPolicies, id)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, id := range oldPolicies {
-		f.request("/api/v4/memory/model-policy-control", "POST", map[string]string{"id": id, "state": "revoked"}, 200, nil)
-	}
+	candidateRevokePastPolicies(f)
 	f.enable()
 	defer j.SetModelControl(context.Background(), "disabled")
 	type observation struct {
