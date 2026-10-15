@@ -18,6 +18,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
@@ -515,7 +516,14 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 		}
 		provider.mu.Lock()
 		write("native-calls.json", provider.calls)
+		callBytes, _ := json.Marshal(provider.calls)
 		provider.mu.Unlock()
+		var frozenCalls []*adaptiveNativeCall
+		if json.Unmarshal(callBytes, &frozenCalls) != nil {
+			t.Error("native call snapshot failed")
+		} else {
+			write("citation-observations.json", auditAdaptiveNativeCitations(retained, pool, cat, frozenCalls))
+		}
 		write("inputs.json", map[string]any{"inputs": inputs})
 		write("measurements.json", measurements)
 		write("source-bindings.json", bindings)
@@ -666,6 +674,7 @@ func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
 
 func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, index *indexing.Runtime, plan *adaptive.Store, provider *adaptiveNativeProvider, b *budget.Controller, broker *tools.BrokerClient, pm *promptmgmt.Manager, c acceptance.MemorySemanticCase, controls adaptiveImportControls, ci int, arm string, log *slog.Logger) (acceptance.MemoryInput, acceptance.MemoryObservation, map[string]catalog.SourceRef) {
 	t.Helper()
+	caseStarted := time.Now()
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: adaptiveNativeOwner, Channel: "web", DeliveryID: "adaptive-native-import"})
 	prefix := c.ID + "-" + arm
 	key := "adaptive:" + prefix
@@ -865,7 +874,8 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	}
 	rows.Close()
 	elapsed := time.Since(start).Milliseconds()
-	ob := acceptance.MemoryObservation{CaseID: in.CaseID, Arm: arm, Model: "gemini-3.8-flash-high", Runtime: "actual-ordinary-flow/production-broker", InputSHA256: acceptance.MemoryInputDigest(in), Status: "failed", Reason: "ordinary_execution_failed", Milliseconds: &elapsed, Output: json.RawMessage(`null`)}
+	pipelineMillis := time.Since(caseStarted).Milliseconds()
+	ob := acceptance.MemoryObservation{CaseID: in.CaseID, Arm: arm, Model: "gemini-3.8-flash-high", Runtime: "actual-ordinary-flow/production-broker", InputSHA256: acceptance.MemoryInputDigest(in), Status: "failed", Reason: "ordinary_execution_failed", Milliseconds: &elapsed, PipelineMilliseconds: &pipelineMillis, Output: json.RawMessage(`null`)}
 	if execution.Err == nil && execution.Result != nil && execution.Result.CurrentState == commonv1.RunState_RUN_STATE_COMPLETED {
 		ob.Status = "completed"
 		ob.Reason = ""
@@ -876,6 +886,91 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 		ob.ModelVersion = calls[len(calls)-1].ModelVersion
 	}
 	return in, ob, refs
+}
+
+type adaptiveCitationObservation struct {
+	RunID            string                `json:"run_id"`
+	ReadRef          string                `json:"read_ref"`
+	Source           readcontrol.SourceRef `json:"source"`
+	Claim            string                `json:"claim"`
+	Quote            string                `json:"quote"`
+	CommittedFinal   bool                  `json:"committed_final"`
+	ActuallyProvided bool                  `json:"actually_provided"`
+	ExactQuote       bool                  `json:"exact_quote"`
+	CurrentSource    bool                  `json:"current_source"`
+	ConfirmedReceipt bool                  `json:"confirmed_receipt"`
+	EntailsClaim     *bool                 `json:"entails_claim"`
+}
+
+func auditAdaptiveNativeCitations(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, calls []*adaptiveNativeCall) any {
+	provided := map[string]map[string]readcontrol.Item{}
+	finals := map[string]string{}
+	for _, call := range calls {
+		if call.Final != "" {
+			finals[call.RunID] = call.Final
+		}
+		if call.Continuation == nil {
+			continue
+		}
+		var payload struct {
+			Status string             `json:"status"`
+			Result readcontrol.Result `json:"result"`
+		}
+		if json.Unmarshal([]byte(call.Continuation.ToolResultJSON), &payload) != nil || payload.Status != "completed" {
+			continue
+		}
+		if provided[call.RunID] == nil {
+			provided[call.RunID] = map[string]readcontrol.Item{}
+		}
+		for _, item := range payload.Result.Items {
+			if item.ReadRef != "" {
+				provided[call.RunID][item.ReadRef] = item
+			}
+		}
+	}
+	runs := make([]string, 0, len(finals))
+	for id := range finals {
+		runs = append(runs, id)
+	}
+	sort.Strings(runs)
+	var observations []adaptiveCitationObservation
+	eligible, malformed, structuralFailures, releasedFailures := 0, 0, 0, 0
+	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: adaptiveNativeOwner, Channel: "web", DeliveryID: "independent-postcollection-citation-audit"})
+	for _, run := range runs {
+		var strategy string
+		if pool.QueryRow(ctx, `SELECT plan_json->>'strategy' FROM memory_retrieval_plans WHERE run_id=$1`, run).Scan(&strategy) != nil || strategy == "none" {
+			continue
+		}
+		eligible++
+		a, err := adaptive.DecodeAnswer(finals[run])
+		if err != nil {
+			malformed++
+			continue
+		}
+		var committed bool
+		_ = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM run_final_results WHERE run_id=$1)`, run).Scan(&committed)
+		for _, citation := range a.Citations {
+			item, ok := provided[run][citation.ReadRef]
+			o := adaptiveCitationObservation{RunID: run, ReadRef: citation.ReadRef, Source: item.Source, Claim: citation.Claim, Quote: citation.Quote, CommittedFinal: committed, ActuallyProvided: ok}
+			if ok && utf8.ValidString(item.Text) {
+				text, quote := []rune(item.Text), []rune(citation.Quote)
+				o.ExactQuote = citation.QuoteOffset >= 0 && citation.QuoteOffset+len(quote) <= len(text) && string(text[citation.QuoteOffset:citation.QuoteOffset+len(quote)]) == citation.Quote
+			}
+			if ok {
+				current, e := cat.Get(owner, item.Source.ID)
+				o.CurrentSource = e == nil && current.Revision == item.Source.Revision && current.AccessRevision == item.Source.AccessRevision && current.Hash == item.Source.Hash
+			}
+			_ = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_retrieval_opened x JOIN memory_retrieval_operations o USING(effect_id) JOIN action_intents i ON i.effect_id=o.effect_id AND i.run_id=o.run_id AND i.tool_call_id=o.tool_call_id JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_evidence v ON v.action_id=e.action_id WHERE x.read_ref=$1 AND o.run_id=$2 AND o.state='observed' AND o.tool_name IN('memory.open','memory.neighbors') AND e.state='effect_confirmed' AND v.evidence->>'source'='runtime_response' AND v.evidence->>'verdict'='effect_confirmed' AND v.evidence->>'source_action_id'=i.action_id AND v.evidence->>'source_run_id'=o.run_id AND v.evidence->>'source_tool_call_id'=o.tool_call_id AND v.evidence->>'result_digest'=o.result_hash AND x.source_id=$3 AND x.source_revision=$4 AND x.access_revision=$5 AND x.content_hash=$6)`, citation.ReadRef, run, item.Source.ID, item.Source.Revision, item.Source.AccessRevision, item.Source.Hash).Scan(&o.ConfirmedReceipt)
+			if !o.ActuallyProvided || !o.ExactQuote || !o.CurrentSource || !o.ConfirmedReceipt {
+				structuralFailures++
+				if committed {
+					releasedFailures++
+				}
+			}
+			observations = append(observations, o)
+		}
+	}
+	return map[string]any{"eligible_original_native_envelopes": eligible, "malformed_original_envelopes": malformed, "citations_checked": len(observations), "structural_citation_failures": structuralFailures, "released_structural_citation_failures": releasedFailures, "observations": observations, "semantic_entailment": "unknown_pending_independent_review", "scope": "Actual native envelopes, model-provided opened text and Broker-confirmed receipt identities; separate from delivered-answer JSON parsing and semantic truth."}
 }
 
 func appendAdaptiveVisible(out *strings.Builder, raw string) {
