@@ -121,3 +121,18 @@ func TestSnapshotEndpointDoesNotRebaseExistingIdentityIntegration(t *testing.T) 
 		t.Fatal("existing snapshot identity was repinned", err)
 	}
 }
+
+func TestRemovedSessionDoesNotUnfenceSnapshotCopiesIntegration(t *testing.T) {
+	f := newConsumerFixture(t)
+	f.poll(t)
+	if _, err := f.worker.ProcessOne(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	root := f.policy.Job.Sources[0].ID
+	if _, err := f.pool.Exec(f.ctx, `DELETE FROM sessions WHERE session_key='session'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.cat.Get(f.ctx, root); err == nil {
+		t.Fatal("orphan snapshot became current evidence")
+	}
+}

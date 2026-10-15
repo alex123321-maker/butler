@@ -34,7 +34,8 @@ also traverses session snapshot anchors and erases all copied input revisions an
 their derivatives, including work not yet published. A failed or stale result
 never suppresses primary history. The immutable original event IDs survive.
 
-Source input is finite: at most 256 KiB and 4096 primary events. Output is at most
+Source input is finite: at most 256 KiB, 4096 primary events and 2000 complete
+original privacy dependencies. Output is at most
 32 KiB and must reduce source size. Oversized/secret input, failed generation,
 invalid excerpts, changed authority or stale coverage retain complete history.
 The policy/job view explains bounded wait/failure reasons. If protected history
@@ -42,6 +43,17 @@ still exceeds the foreground allowance, existing preparation returns a visible
 context-budget error rather than silently truncating user constraints or
 manufacturing successful tool effects. No unlimited-lifetime guarantee follows
 from these finite bounds.
+
+Copied transcript anchors include all current original message/catalog ancestors,
+with revision/access/hash and graph identity. Ordinary catalog reads, derivative
+reads, live source checks and DB publication fences reject corrected-away or
+revoked originals. Secret, project and other-task ancestors cannot be laundered
+through a session snapshot. The scanner can regenerate corrected messages or
+changed tool states under the same still-current finite policy before ordinary
+source access, without releasing old text. Non-message original corrections,
+access/privacy/graph changes and typed task/constraint revisions require fresh
+owner policy. A removed session retains an unreadable snapshot guard rather than
+turning an orphan copy into current evidence.
 
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
 ./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.

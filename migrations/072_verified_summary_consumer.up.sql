@@ -5,7 +5,7 @@ ALTER TABLE session_summaries ADD COLUMN result_source_id TEXT REFERENCES memory
 -- copied revisions, including a job's input that has not yet published.
 CREATE TABLE memory_summary_sources (
  source_id TEXT PRIMARY KEY REFERENCES memory_sources(source_id),
- session_key TEXT NOT NULL REFERENCES sessions(session_key) ON DELETE CASCADE,
+ session_key TEXT NOT NULL,
  source_revision BIGINT NOT NULL CHECK(source_revision>0),
  through_sequence BIGINT NOT NULL CHECK(through_sequence>0)
 );
