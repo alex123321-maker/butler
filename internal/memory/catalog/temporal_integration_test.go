@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func temporalRead(t *testing.T, s *Store, ctx context.Context, ids []string, q TemporalQuery) AcceptedFactPage {
@@ -20,6 +22,93 @@ func temporalRead(t *testing.T, s *Store, ctx context.Context, ids []string, q T
 		t.Fatal(err)
 	}
 	return page
+}
+
+type temporalPinnedChecker struct{ parents []SourceRef }
+
+func (p temporalPinnedChecker) PinnedMemorySources() []SourceRef {
+	return append([]SourceRef(nil), p.parents...)
+}
+func (p temporalPinnedChecker) CheckMemoryAccessTx(_ context.Context, _ pgx.Tx, refs []SourceRef, _ string) (string, error) {
+	for _, r := range refs {
+		found := false
+		for _, allowed := range p.parents {
+			if r.ID == allowed.ID && (r.Revision == 0 || r.Revision == allowed.Revision) && (r.Hash == "" || r.Hash == allowed.Hash) && (r.AccessRevision == 0 || r.AccessRevision == allowed.AccessRevision) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return "", ErrDenied
+		}
+	}
+	return "owner", nil
+}
+func (p temporalPinnedChecker) FinalizeMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpose string) error {
+	_, err := p.CheckMemoryAccessTx(ctx, tx, refs, purpose)
+	return err
+}
+
+func TestTemporalFreshDerivativeBindingDoesNotMintChildReadAuthorityIntegration(t *testing.T) {
+	s, owner := fixture(t)
+	src := put(t, s, owner, "accepted", "Пиши по-русски.")
+	c := propose(t, s, owner, src, `"ru"`)
+	c, err := s.Decide(owner, Decision{ClaimID: c.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.SetTemporal(owner, TemporalUpdate{ClaimID: c.ID, ExpectedHeadRevision: 1, Validity: ValidityUnknown, Class: FreshnessStablePreference})
+	if err != nil {
+		t.Fatal(err)
+	}
+	facts := temporalRead(t, s, owner, []string{c.ID}, TemporalQuery{})
+	pins := []AcceptedFactPin{facts.Items[0].Pin}
+	parents := []SourceRef{ref(src)}
+	ctx := WithAccessChecker(context.Background(), temporalPinnedChecker{parents})
+	for _, status := range []string{"active", "quarantined"} {
+		t.Run(status, func(t *testing.T) {
+			tx, err := s.pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tx.Rollback(ctx)
+			derived, err := s.CreateDerivedTx(ctx, tx, parents, "memory_read", "view", "Exact candidate DATA", json.RawMessage(`{}`))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if status == "quarantined" {
+				if _, err = tx.Exec(ctx, `UPDATE memory_sources SET status='quarantined' WHERE source_id=$1`, derived.ID); err != nil {
+					t.Fatal(err)
+				}
+				derived.Status = status
+			}
+			if err = s.BindAcceptedFactPinsTx(ctx, tx, derived.ID, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
+				t.Fatal("strict path expanded job manifest", err)
+			}
+			forged := derived
+			forged.Hash = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+			if err = s.BindNewAcceptedFactPinsTx(ctx, tx, forged, parents, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
+				t.Fatal("forged fresh source hash bound", err)
+			}
+			if err = s.BindNewAcceptedFactPinsTx(ctx, tx, derived, parents, pins, TemporalQuery{}); err != nil {
+				t.Fatal(err)
+			}
+			if _, err = s.AccessTx(ctx, tx, []SourceRef{ref(derived)}, "memory_read"); !errors.Is(err, ErrDenied) {
+				t.Fatal("binding minted general child read authority", err)
+			}
+			if err = tx.Commit(ctx); err != nil {
+				t.Fatal(err)
+			}
+			next, err := s.pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer next.Rollback(ctx)
+			if err = s.BindNewAcceptedFactPinsTx(ctx, next, derived, parents, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
+				t.Fatal("existing source reused fresh-row proof", err)
+			}
+		})
+	}
 }
 func temporalUpdate(t *testing.T, s *Store, ctx context.Context, c Claim, head int64, from, to *time.Time, class FreshnessClass) TemporalMetadata {
 	t.Helper()
