@@ -1,0 +1,348 @@
+{
+  "version": "butler-memory-semantic-v1",
+  "evidence_kind": "independent_semantic_review",
+  "reviewer": "independent model agent /root/memory_independent_review",
+  "corpus_sha256": "9c78b9469bb6e61c143020324fe7af8b75e9344e6dd0a2154775f370ddeb964f",
+  "measurements_sha256": "a7fd40251f3b9b459c1283fcfa262ebe46edc0069d2b42c4dc844d52595fafc8",
+  "rubric_sha256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+  "arms": {
+    "retrieval": {
+      "scheduled": 8,
+      "completed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "correct": 3,
+      "partial": 5,
+      "incorrect": 0,
+      "unresolved": 0,
+      "grounded": 8,
+      "unsupported": 0,
+      "unknown_grounding": 0,
+      "complete": 3,
+      "retrieval_misses": 5,
+      "canonical_rejections": 0,
+      "correct_canonical_rejections": 0,
+      "action_correct": 1,
+      "action_incorrect": 0,
+      "model_p50_ms": 12560,
+      "model_p95_ms": 18743
+    }
+  },
+  "items": [
+    {
+      "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+      "arm": "retrieval",
+      "input_sha256": "079a4c1b30ff5f73b33750e797994d54b4c6d7fad1d19fbd8250bbbdd11bf9a7",
+      "output_sha256": "6c0c78c4fde382cdc1f6ef442100fa0e3f3238a052a86fcb97f438d2553ad540",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "В фактическом prompt видны адрес g01s1 и часы g01s3; модель верно сообщает оба и ограничивает отсутствие кода доступными источниками. Полный g01s2 содержит OL-3746, но не передан, поэтому ответ обоснован и неполон из-за retrieval.",
+      "evidence": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g01s2",
+          "revision": 1,
+          "quote": "Код получения заказа «Ольха-592»: OL-3746.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+      "arm": "retrieval",
+      "input_sha256": "e35802c4641de029a020ac661f35cd07762f17dfdbf326f79b6d0c81958bdeed",
+      "output_sha256": "5123ae7bd47d851626c605192543d5d3a546584215d66e53f4d4ddb59efac0fd",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "Модель видит только 12 нерелевантных правил оформления настольных игр, без g02s1, и корректно отказывается угадывать кабинет/этаж. В полном корпусе они явно заданы (418, четвёртый), поэтому это неполный ответ вследствие отбора контекста.",
+      "evidence": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+      "arm": "retrieval",
+      "input_sha256": "d063cfc56f1d20b3887fb2a0ffa1bfa75ef2a59c8eeca065d3f464388c092dab",
+      "output_sha256": "d6f0c274e79d8005994aa1a061c659d97d1b0dbf7f78b9329beeb9795112f480",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "Доступный контекст содержит только посторонние профильные записи, а предпочтение g03p26 не видно. Модель корректно ограничивает отказ этой доступной памятью. Полный корпус прямо устанавливает поезд для Иней-64: retrieval не доставил достаточный профиль.",
+      "evidence": [
+        {
+          "source_id": "g03p26",
+          "revision": 1,
+          "quote": "Хозяин: для поездок проекта «Иней-64» я предпочитаю поезд; это постоянное предпочтение именно этого проекта.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+      "arm": "retrieval",
+      "input_sha256": "dadea445cc2c5fea1a569d2d2ec1cd012c0a767446e997039d4ca10bc9dae8c0",
+      "output_sha256": "b089f6f214b7930f3a5a1d8913092a692ec620cf243b7193c5a6783b6e68b79a",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ верно следует текущему task revision 7: только список замечаний, без нового полного отчёта и отправки. Видимый g04p1 объясняет упомянутую обычную практику, но не отменяет запрет. Цитата g04s1 подлинна и видима, однако дата готовности отчёта не обосновывает текущую инструкцию; этот отдельный недостаток цитирования не делает обоснованный ответ неверным.",
+      "evidence": [
+        {
+          "source_id": "g04p1",
+          "revision": 1,
+          "quote": "Хозяин: обычно по проекту «Клён-28» готовим полный отчёт и отправляем его участникам.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "g04s1",
+          "revision": 1,
+          "quote": "Последний полный отчёт проекта «Клён-28» подготовлен 14 октября.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": false
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Сейчас подготовь только короткий список замечаний. Полный отчёт заново не создавай. Отправку участникам я приостановил."
+      }
+    },
+    {
+      "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+      "arm": "retrieval",
+      "input_sha256": "2a6c53f09b06bab65f3a5703b5c544b04d1fe88103138621c6c2934a2bb6a415",
+      "output_sha256": "26233803d12ce5a054dc877e774c5d927d5a917a92ab18af0e11a7c39de67e0a",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "В prompt только 12 длинных профилей о настольных играх; g05s1 с датой, временем и переговорной не передан. Модель корректно не выдумывает сведения и ограничивает отказ доступными источниками; полный ответ существует в корпусе, поэтому результат partial/retrieval.",
+      "evidence": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+      "arm": "retrieval",
+      "input_sha256": "d12564c05a721efb9aeb41e85e625e9d2e5d6be661361d82c3655226e0033c74",
+      "output_sha256": "681df8ad3a9c48ccc8e5e513ba745df20625a9faeb547e590accf4613f574eee",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "Модель верно сообщает секцию Д-12 и границу после 16:30 из g06s3/s4. Текущее Южный хранится в g06s2, но отсутствует в prompt; модель честно указывает именно этот пробел и не возвращает отменённый Северный. Ответ обоснован, но неполон.",
+      "evidence": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "Исправление хозяина: груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+      "arm": "retrieval",
+      "input_sha256": "03e6a79ebca127e3272477036e5fab8703d65c969872607241585451ec807996",
+      "output_sha256": "7eee4bcf31d887e95633e3c3655836442fa976bac92540312ad4cf402aadc236",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g07s2 прямо утверждает только зелёный и отсутствие согласования синего для Берег-120. Ответ сохраняет сущность, исключение и отрицание, не переносит разрешение Берег-12 или общий профиль.",
+      "evidence": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+      "arm": "retrieval",
+      "input_sha256": "f975d1573666f01e85537713df7a16352043bc439ddc8f464fef8f32f2d42ba5",
+      "output_sha256": "3e2617e827da240da83005e96a6b8c4cab0fe54186009c3fa8bcc8c12371b8a5",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g08s1 явно говорит, что день и время Туман-57 не подтверждены. Ответ корректно сообщает неопределённость и лишь обсуждавшиеся варианты, не переносит среду 15:00 из Туман-58.",
+      "evidence": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Semantic labels are fallible independent annotations, not mechanically proved entailment.",
+    "Counts retain unavailable entries; no universal promotion gate or broader-task success is inferred.",
+    "Incremental model billing is zero under the owner's stated subscription/local conditions; host costs are separate."
+  ]
+}

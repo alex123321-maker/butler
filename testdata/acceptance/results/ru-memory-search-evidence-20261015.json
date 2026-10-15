@@ -1,0 +1,616 @@
+{
+  "version": "butler-memory-search-comparison-v1",
+  "variants": {
+    "baseline": {
+      "pins": {
+        "Release": "94faa39d072f4e51a0494a3359adcd1e1a433f8e",
+        "CorpusSHA256": "9c78b9469bb6e61c143020324fe7af8b75e9344e6dd0a2154775f370ddeb964f",
+        "RubricSHA256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+        "SourceSHA256": "0665ac9d00bf247252fae377d67940f79d61799ff0232e59c4c1387249010c90",
+        "BinarySHA256": "d75f1d418bbd590c3d7ae615311e737d60c933a018c16f7665a2b68f22de61f7",
+        "Image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+        "TrialID": "memory-semantic-trial-search-baseline-20261015",
+        "SourceDir": "/srv/storage/butler/agents/memory-search-baseline-20261015/snapshots/20261015-180514-973",
+        "TrialRoot": "/srv/storage/butler/agents/memory-semantic-trial-search-baseline-20261015",
+        "Variant": "baseline"
+      },
+      "safe_originals": [
+        {
+          "path": "writer-state.json",
+          "bytes": 49685,
+          "sha256": "740846664ea24e767073e22ccc4332538472df1f0982151205b435fbf25fe0cc"
+        },
+        {
+          "path": "writer-captures.json",
+          "bytes": 20599,
+          "sha256": "4deb2c748c288446e792c2cf7128adcfd9da5e6da37d9f9d960723c971055393"
+        },
+        {
+          "path": "ledger.json",
+          "bytes": 631897,
+          "sha256": "df8761dfa8643fb87920cf93d2b446688bf1419316569a8a5cbd8036d2f59b98"
+        },
+        {
+          "path": "read-after-restart/inputs-before-native.json",
+          "bytes": 42692,
+          "sha256": "86b56268c08da49ae2b2c3f1e5e3910443f7b63f027083a5c7b8466de449dfc5"
+        },
+        {
+          "path": "read-after-restart/captures-before-native.json",
+          "bytes": 20599,
+          "sha256": "4deb2c748c288446e792c2cf7128adcfd9da5e6da37d9f9d960723c971055393"
+        },
+        {
+          "path": "read-after-restart/measurements.json",
+          "bytes": 80200,
+          "sha256": "a7fd40251f3b9b459c1283fcfa262ebe46edc0069d2b42c4dc844d52595fafc8"
+        },
+        {
+          "path": "read-after-restart/ledger.json",
+          "bytes": 813145,
+          "sha256": "ffdae6b76ddd17be47a4e5b326d4706fea072b786e3807314793c91701fb2231"
+        },
+        {
+          "path": "metadata/semantic-pins.json",
+          "bytes": 777,
+          "sha256": "23f489d019ad16c4bb192e90c6239e7c2a62b1ffd561936b0e6c3b777d452bbb"
+        },
+        {
+          "path": "metadata/write-execution.json",
+          "bytes": 1726,
+          "sha256": "5e4cc3be5be5d0f1b8f7bc6a683c3219d811eb08dd9fd7e9133c1b731fabeeb6"
+        },
+        {
+          "path": "metadata/read-execution.json",
+          "bytes": 1977,
+          "sha256": "ba7a2909e925158e064f7f2c688992e7d448f8effa7d96a7029402e61661b458"
+        },
+        {
+          "path": "entered/write-exit-status",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "entered/read-exit-status",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "entered/external-seal.log",
+          "bytes": 9,
+          "sha256": "d27d293ee5240023d1442f6539206995ca7fddfb6034e86d4eeac44e2237d086"
+        },
+        {
+          "path": "source-path",
+          "bytes": 89,
+          "sha256": "e6aa58637a4c1cb62b3248e5d133c8630a4816dcc69febad79532654652cd120"
+        },
+        {
+          "path": "release",
+          "bytes": 41,
+          "sha256": "b291b28ebd8dabcecf1f0e3816e5f8def1233aade2b0a2785ffcc08a58397e6a"
+        },
+        {
+          "path": "image-id",
+          "bytes": 72,
+          "sha256": "de7f5f1c2bb01bdd75c0de046457aceab3a846db3f6d4c41229c7dde2b8a293a"
+        }
+      ],
+      "observations": 8,
+      "completed": 8,
+      "failed": [],
+      "retrieval_contexts": [
+        {
+          "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+          "utf8_memory_prompt_bytes": 320,
+          "source_ids": [
+            "g01s3",
+            "g01s1"
+          ],
+          "capture_sha256": "b524a56d077148fb23bdf6aba0f7f2c6e3928cd2112a7f0f0b4176022798eda1"
+        },
+        {
+          "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+          "utf8_memory_prompt_bytes": 1866,
+          "source_ids": [
+            "search-g02p1",
+            "search-g02p2",
+            "search-g02p3",
+            "search-g02p4",
+            "search-g02p5",
+            "search-g02p6",
+            "search-g02p7",
+            "search-g02p8",
+            "search-g02p9",
+            "search-g02p10",
+            "search-g02p11",
+            "search-g02p12"
+          ],
+          "capture_sha256": "bab1d8743e61853dff7c997247e39b064ac9200035fececaace5863bbb0c459c"
+        },
+        {
+          "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+          "utf8_memory_prompt_bytes": 1866,
+          "source_ids": [
+            "search-g03p1",
+            "search-g03p2",
+            "search-g03p3",
+            "search-g03p4",
+            "search-g03p5",
+            "search-g03p6",
+            "search-g03p7",
+            "search-g03p8",
+            "search-g03p9",
+            "search-g03p10",
+            "search-g03p11",
+            "search-g03p12"
+          ],
+          "capture_sha256": "911b1adf8aab978f6edbb2b1f2a3458e30452cf05d06a0cc8cefde5e8d3bfd1e"
+        },
+        {
+          "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+          "utf8_memory_prompt_bytes": 379,
+          "source_ids": [
+            "g04s1",
+            "g04p1"
+          ],
+          "capture_sha256": "db581dd8c36551331d70df4a5282eabfc8178c3aa2fbecedec17b51a928fbd2c"
+        },
+        {
+          "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+          "utf8_memory_prompt_bytes": 11514,
+          "source_ids": [
+            "search-g05p1",
+            "search-g05p2",
+            "search-g05p3",
+            "search-g05p4",
+            "search-g05p5",
+            "search-g05p6",
+            "search-g05p7",
+            "search-g05p8",
+            "search-g05p9",
+            "search-g05p10",
+            "search-g05p11",
+            "search-g05p12"
+          ],
+          "capture_sha256": "d8710b1e6c983a7c0bb8dcc9f61ff9cf939ecdcea6977e9e8526baff83903891"
+        },
+        {
+          "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+          "utf8_memory_prompt_bytes": 270,
+          "source_ids": [
+            "g06s4",
+            "g06s3"
+          ],
+          "capture_sha256": "1ce2c72320b664dca689aeb9333e62d3c0bd23d9fc8a29d0aac5f6a8d212712c"
+        },
+        {
+          "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+          "utf8_memory_prompt_bytes": 605,
+          "source_ids": [
+            "g07s2",
+            "g07s1",
+            "g07p1"
+          ],
+          "capture_sha256": "569f0ec898e520644f352933b90a6b5a8502bd54645a92cfabcf966912bd5b6c"
+        },
+        {
+          "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+          "utf8_memory_prompt_bytes": 439,
+          "source_ids": [
+            "g08s1",
+            "g08s2"
+          ],
+          "capture_sha256": "c171c75ced7e61a397752759789c3b5940fa939143eb72fc01dd6408ace82b0d"
+        }
+      ],
+      "total_utf8_memory_prompt_bytes": 17259,
+      "retrieval_expenses": {
+        "write": {
+          "records": 29,
+          "calls": 158,
+          "milliseconds": 772,
+          "storage_bytes": 195323,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "embedding": {
+          "records": 24,
+          "calls": 24,
+          "milliseconds": 14739,
+          "storage_bytes": 0,
+          "input_tokens_unknown_records": 24,
+          "output_tokens": 0,
+          "total_tokens_unknown_records": 24,
+          "microunits": 0
+        },
+        "background": {
+          "records": 16,
+          "calls": 0,
+          "milliseconds": 14105,
+          "storage_bytes": 52992,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "milliseconds_unknown_records": 8,
+          "storage_bytes_unknown_records": 8,
+          "microunits": 0
+        },
+        "read": {
+          "records": 24,
+          "calls": 24,
+          "milliseconds": 2928,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "generation": {
+          "records": 8,
+          "calls": 8,
+          "milliseconds": 109211,
+          "storage_bytes": 0,
+          "input_tokens": 8202,
+          "output_tokens": 801,
+          "total_tokens": 16434,
+          "microunits_unknown_records": 8
+        },
+        "extraction": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "summary": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "consolidation": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "retry": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        }
+      },
+      "all_scheduled_arms_calls_by_stage": {
+        "background": 0,
+        "consolidation": 0,
+        "embedding": 24,
+        "extraction": 0,
+        "generation": 8,
+        "read": 24,
+        "retry": 0,
+        "summary": 0,
+        "write": 158
+      },
+      "auxiliary_operation_note": "24 embedding requests: 8 document batches and 16 query embeddings; no rerank in this native comparison",
+      "price_note": "Owner incremental-price premise/local price basis zero; NULL generation expense microunits remain unknown and are not coerced to zero"
+    },
+    "candidate": {
+      "pins": {
+        "Release": "0da5128f0c6743a764de30bc3688923961e4ee70",
+        "CorpusSHA256": "9c78b9469bb6e61c143020324fe7af8b75e9344e6dd0a2154775f370ddeb964f",
+        "RubricSHA256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+        "SourceSHA256": "f88262364499fb6c8d2539b73e6924c4956e08adaf48f03152434d00e73ada1e",
+        "BinarySHA256": "fec1ed985ec71998ba1b9f6d57a97873db372db9f21db5ba4f8e86cfbab2e328",
+        "Image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+        "TrialID": "memory-semantic-trial-search-candidate-20261015",
+        "SourceDir": "/srv/storage/butler/agents/memory-search-79-80-20261015/snapshots/20261015-181037-310",
+        "TrialRoot": "/srv/storage/butler/agents/memory-semantic-trial-search-candidate-20261015",
+        "Variant": "candidate"
+      },
+      "safe_originals": [
+        {
+          "path": "writer-state.json",
+          "bytes": 49682,
+          "sha256": "f697b0a0d02410ddbdfde2636d26b454608ca0d172d2761517423af9e0c00a4d"
+        },
+        {
+          "path": "writer-captures.json",
+          "bytes": 6425,
+          "sha256": "f374a7a78616887f74bfd4e10a82f1000e2c405e90780d01fb54111f833be133"
+        },
+        {
+          "path": "ledger.json",
+          "bytes": 631894,
+          "sha256": "21b02e72387cd82a7b38589c75af36ec56bd40bce168f194daeab76e8cde0ad1"
+        },
+        {
+          "path": "read-after-restart/inputs-before-native.json",
+          "bytes": 51740,
+          "sha256": "2775d1e175a9b33ff2eeb77e689cb210544b1f65c7447331e79bd8dc4dcd66ee"
+        },
+        {
+          "path": "read-after-restart/captures-before-native.json",
+          "bytes": 6425,
+          "sha256": "f374a7a78616887f74bfd4e10a82f1000e2c405e90780d01fb54111f833be133"
+        },
+        {
+          "path": "read-after-restart/measurements.json",
+          "bytes": 182620,
+          "sha256": "d01e421fd4180917af721627e84748c35f99718bc78c62ed3263ee60349a40f9"
+        },
+        {
+          "path": "read-after-restart/ledger.json",
+          "bytes": 1020742,
+          "sha256": "1c4c6f461c039a9cd5cfcab082c4fe02b4357627a1536c78a2f0e8e995806519"
+        },
+        {
+          "path": "metadata/semantic-pins.json",
+          "bytes": 777,
+          "sha256": "a987a4cb8ed8bd620db5db20e4e82d077ce80db8b514182bfdf8518245538eec"
+        },
+        {
+          "path": "metadata/write-execution.json",
+          "bytes": 1727,
+          "sha256": "7e2d7d95a79e1ca89bf662948adb85824a50dd04a3ec92d6ca8375fbc237f7cb"
+        },
+        {
+          "path": "metadata/read-execution.json",
+          "bytes": 1978,
+          "sha256": "155614471a3dc0c017ddefe33c6ef071aacd2e82dc20f9148c11cc5d6396bd43"
+        },
+        {
+          "path": "entered/write-exit-status",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "entered/read-exit-status",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "entered/external-seal.log",
+          "bytes": 9,
+          "sha256": "d27d293ee5240023d1442f6539206995ca7fddfb6034e86d4eeac44e2237d086"
+        },
+        {
+          "path": "source-path",
+          "bytes": 86,
+          "sha256": "5a369045a66434fc9caaaee57a354bc280349f35ffeff233d6dc998c3cf966e9"
+        },
+        {
+          "path": "release",
+          "bytes": 41,
+          "sha256": "812ff460dc0bf2bd9fdf5154789e675a572028dc7bff2010ccf9a7b80ba8ed19"
+        },
+        {
+          "path": "image-id",
+          "bytes": 72,
+          "sha256": "de7f5f1c2bb01bdd75c0de046457aceab3a846db3f6d4c41229c7dde2b8a293a"
+        }
+      ],
+      "observations": 24,
+      "completed": 22,
+      "failed": [
+        {
+          "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+          "arm": "no_ltm",
+          "status": "failed",
+          "reason": "transport_lifecycle_or_metadata_incomplete",
+          "evidence_sha256": "7865b5406744bf6aa522947bd6c62a30283aef0e8b2766a7c7e31f41a8aac1fe"
+        },
+        {
+          "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+          "arm": "no_ltm",
+          "status": "failed",
+          "reason": "transport_lifecycle_or_metadata_incomplete",
+          "evidence_sha256": "427c500fa7e51b4fb2ab7bc6ddae9d4d4be8967df872b84bdebd3faa4ccdb258"
+        }
+      ],
+      "retrieval_contexts": [
+        {
+          "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+          "utf8_memory_prompt_bytes": 588,
+          "source_ids": [
+            "g01s3",
+            "g01s1",
+            "g01s2",
+            "g01s4"
+          ],
+          "capture_sha256": "621944821f54a154e9ae0b9eb48ebe69053a555e56ba0def1fa2b203bb6e8fc4"
+        },
+        {
+          "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+          "utf8_memory_prompt_bytes": 224,
+          "source_ids": [
+            "g02s1"
+          ],
+          "capture_sha256": "aa1a7e726b736feed34aec1ae52848cee612e779d4504f68dddf3133cde30c46"
+        },
+        {
+          "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+          "utf8_memory_prompt_bytes": 539,
+          "source_ids": [
+            "g03s1",
+            "g03p26"
+          ],
+          "capture_sha256": "5800e60d6250eb0ff9245adc573c9d0a996b651b898b5e5d862c7fa5b09030a9"
+        },
+        {
+          "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+          "utf8_memory_prompt_bytes": 424,
+          "source_ids": [
+            "g04s1",
+            "g04p1"
+          ],
+          "capture_sha256": "5b4bc307d814c53b0709ae31bde14cf16953b5af5c95ea4cd6393d6a2b6648e4"
+        },
+        {
+          "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+          "utf8_memory_prompt_bytes": 209,
+          "source_ids": [
+            "g05s1"
+          ],
+          "capture_sha256": "6f79856fb4b4c06ff78857dea1d95463a8e214948d534c5918ad93c5784e4843"
+        },
+        {
+          "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+          "utf8_memory_prompt_bytes": 718,
+          "source_ids": [
+            "g06s4",
+            "g06s3",
+            "g06s1",
+            "g06s2"
+          ],
+          "capture_sha256": "11ce2bf1735548d21c9f0aa922ca0549fad3933291b55f1d6f8ea65c076e5bc4"
+        },
+        {
+          "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+          "utf8_memory_prompt_bytes": 650,
+          "source_ids": [
+            "g07s2",
+            "g07s1",
+            "g07p1"
+          ],
+          "capture_sha256": "6dd823a9a43afdbfd2b1807f4bfde864462e03ced121b43fe9249ed4b4aba1fa"
+        },
+        {
+          "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+          "utf8_memory_prompt_bytes": 439,
+          "source_ids": [
+            "g08s1",
+            "g08s2"
+          ],
+          "capture_sha256": "d0d2cd17a04b48beacd1efdecc3fb7430cf538ac52b9534cc9ff738d1f5bbf2d"
+        }
+      ],
+      "total_utf8_memory_prompt_bytes": 3791,
+      "retrieval_expenses": {
+        "write": {
+          "records": 29,
+          "calls": 158,
+          "milliseconds": 1040,
+          "storage_bytes": 176255,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "embedding": {
+          "records": 24,
+          "calls": 24,
+          "milliseconds": 11698,
+          "storage_bytes": 0,
+          "input_tokens_unknown_records": 24,
+          "output_tokens": 0,
+          "total_tokens_unknown_records": 24,
+          "microunits": 0
+        },
+        "background": {
+          "records": 16,
+          "calls": 0,
+          "milliseconds": 11046,
+          "storage_bytes": 52992,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "milliseconds_unknown_records": 8,
+          "storage_bytes_unknown_records": 8,
+          "microunits": 0
+        },
+        "read": {
+          "records": 24,
+          "calls": 24,
+          "milliseconds": 2884,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "generation": {
+          "records": 8,
+          "calls": 8,
+          "milliseconds": 107115,
+          "storage_bytes": 0,
+          "input_tokens": 3898,
+          "output_tokens": 862,
+          "total_tokens": 11731,
+          "microunits_unknown_records": 8
+        },
+        "extraction": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "summary": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "consolidation": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        },
+        "retry": {
+          "records": 8,
+          "calls": 0,
+          "milliseconds": 0,
+          "storage_bytes": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "microunits": 0
+        }
+      },
+      "all_scheduled_arms_calls_by_stage": {
+        "background": 0,
+        "consolidation": 0,
+        "embedding": 24,
+        "extraction": 0,
+        "generation": 24,
+        "read": 40,
+        "retry": 0,
+        "summary": 0,
+        "write": 158
+      },
+      "auxiliary_operation_note": "24 embedding requests: 8 document batches and 16 query embeddings; no rerank in this native comparison",
+      "price_note": "Owner incremental-price premise/local price basis zero; NULL generation expense microunits remain unknown and are not coerced to zero"
+    }
+  }
+}
