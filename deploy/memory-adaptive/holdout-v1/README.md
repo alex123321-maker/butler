@@ -77,3 +77,40 @@ Use `docs/ai/memory-eval-semantic-methodology.md` for independent semantic revie
 For self-contained cases `question_evidence.quote` binds the current question;
 no fabricated history oracle is allowed. For historical cases, actual opened
 source revision/range and permitted original witnesses must be retained.
+
+## Actual collector correlation
+
+The collector uses one authenticated synthetic owner, independent case/arm
+sessions, tasks, project sources and explicit source grants. Separate prior upload
+sessions have persisted source/import bindings; document scope remains the granted
+project. This is a document-memory comparison across conversations, not a claim
+that all transcript ingestion paths are measured. Deleted fixtures create and
+delete content-free placeholders through the real Catalog before collection.
+
+Current question, task, arm order, corpus, policy and allowance are frozen before
+collection. Adaptive future tool results cannot be frozen in advance. Each
+`MemoryInput` therefore records the actual evolving model-visible evidence after
+that original completes, bound to the immutable full native call trace by
+`capture_sha256`. Original source identities are mapped through retained Catalog
+bindings and actual run source pins. No oracle source text is added to fill a
+retrieval miss. Hashing this realized observation does not pretend it was an
+advance-frozen answer prompt. The independent reviewer inspects its actual trace.
+
+The core renders a validated adaptive envelope into the actual public answer and
+trusted source footer. That delivered text is retained losslessly as the semantic
+observation original, with no evaluator repair. Raw native envelopes are retained
+separately. For this ordinary text the generic JSON citation dimension is unknown;
+the dedicated adaptive citation report uses the original native envelope and
+actual Broker-confirmed opened-range receipts/current Catalog verification. Both
+metrics must be published, with exact citation counts; unknown generic parsing
+cannot be represented as a successful citation check. Semantic correctness and
+entailment remain independent fallible annotations.
+
+The common prompt asks all arms for the current answer from permitted DATA and
+does not reveal rubric or strategy labels. The adaptive arm additionally follows
+the real kernel's bounded read/evidence protocol. Input receipts are sealed before
+the next case starts, max attempts is one, and unexecuted slots remain explicit
+failed/not-executed observations after an interrupted window. A stopped original
+is never reclaimed as a later case. Full native usage includes every continuation;
+absent usage stays unknown alongside its charged reservation. The 200-minute
+collection deadline is an additional finite wall-time cap, not a latency SLO.
