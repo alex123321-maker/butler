@@ -44,9 +44,7 @@ func (s *Store) ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []s
 	// A foreground run can originate from an authenticated owner request. Once
 	// owned, its reads must use the run's current scope/fence and persist source
 	// pins; an ambient owner actor cannot replace that narrower execution proof.
-	if _, owned := ownership.TokenFromContext(ctx); owned {
-		ctx = owneridentity.WithActor(ctx, owneridentity.Actor{})
-	}
+	ctx = temporalReadContext(ctx)
 	out := AcceptedFactPage{Items: []AcceptedFact{}}
 	if tx == nil || len(claimIDs) > MaxTemporalFacts || q.ValidAt != nil && q.ValidAt.IsZero() || q.KnownAt != nil && q.KnownAt.IsZero() {
 		return out, ErrInvalid
@@ -161,6 +159,13 @@ func (s *Store) ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []s
 		return AcceptedFactPage{}, err
 	}
 	return out, nil
+}
+
+func temporalReadContext(ctx context.Context) context.Context {
+	if _, owned := ownership.TokenFromContext(ctx); owned {
+		return owneridentity.WithActor(ctx, owneridentity.Actor{})
+	}
+	return ctx
 }
 
 func (s *Store) CheckAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, pins []AcceptedFactPin, q TemporalQuery) error {

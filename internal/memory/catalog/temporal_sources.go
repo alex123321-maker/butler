@@ -24,6 +24,7 @@ func (s *Store) ReadAcceptedFacts(ctx context.Context, ids []string, q TemporalQ
 // ReadAcceptedFactsForSourcesTx enriches only explicitly requested source
 // revisions. Privacy ancestors are checked but never added as answer evidence.
 func (s *Store) ReadAcceptedFactsForSourcesTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, q TemporalQuery) (AcceptedFactPage, error) {
+	ctx = temporalReadContext(ctx)
 	if len(refs) > MaxTemporalFacts {
 		return AcceptedFactPage{}, ErrInvalid
 	}

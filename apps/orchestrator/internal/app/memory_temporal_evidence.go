@@ -45,9 +45,16 @@ func (s *MemoryReads) enrichTemporalReadTx(ctx context.Context, tx pgx.Tx, resul
 	for _, f := range page.Items {
 		bySource[f.Claim.SourceID] = append(bySource[f.Claim.SourceID], temporalEvidence(f))
 	}
+	bound, err := s.sources.ReadBoundTemporalObservationsTx(ctx, tx, refs)
+	if err != nil {
+		return err
+	}
+	for _, observation := range bound.Items {
+		bySource[observation.OnSourceID] = append(bySource[observation.OnSourceID], temporalEvidence(catalog.AcceptedFact{Claim: catalog.Claim{ID: observation.ClaimID}, Temporal: observation.Temporal, Freshness: observation.Freshness, Historical: observation.Historical}))
+	}
 	result.UnknownValidity = page.UnknownValidity
 	result.NotKnownAtObservation = page.NotKnownAtObservation
-	result.Truncated = result.Truncated || page.Truncated
+	result.Truncated = result.Truncated || page.Truncated || bound.Truncated
 	count := 0
 	for i := range result.Items {
 		evidence := bySource[result.Items[i].Source.ID]

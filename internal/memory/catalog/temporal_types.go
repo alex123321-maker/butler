@@ -90,6 +90,22 @@ type AcceptedFactPage struct {
 	Truncated             bool           `json:"truncated"`
 }
 
+// TemporalObservation exposes only metadata explicitly bound to a derivative,
+// never additional parent values/texts. OnSourceID is the selected derivative;
+// Source remains the exact original owner-accepted claim provenance.
+type TemporalObservation struct {
+	OnSourceID string           `json:"on_source_id"`
+	ClaimID    string           `json:"claim_id"`
+	Source     SourceRef        `json:"source"`
+	Temporal   TemporalMetadata `json:"temporal"`
+	Freshness  Freshness        `json:"freshness"`
+	Historical bool             `json:"historical"`
+}
+type TemporalObservationPage struct {
+	Items     []TemporalObservation `json:"items"`
+	Truncated bool                  `json:"truncated"`
+}
+
 // TemporalUpdate is an authenticated owner control, not model extraction output.
 // Verification timestamps from Broker reads use a separate trusted receipt path.
 type TemporalUpdate struct {
