@@ -9,6 +9,7 @@ import json
 import os
 import pathlib
 import re
+import stat
 import subprocess
 import sys
 
@@ -46,9 +47,9 @@ def opaque(value):
     return value
 
 def read_private(path):
-    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW)) as src:
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)) as src:
         info = os.fstat(src.fileno())
-        if info.st_mode & 0o077 or info.st_size > 1024*1024:
+        if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077 or info.st_size > 1024*1024:
             raise SystemExit("private opaque settings reference required")
         return opaque(src.read().strip())
 

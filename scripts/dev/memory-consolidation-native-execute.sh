@@ -41,7 +41,7 @@ handoff(){
  docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof || true
  python3 "$src/scripts/dev/memory-consolidation-auth.py" return "$base" "$label" > "$proof/return-safe.json" || exit 1
  docker run --rm --pull never --network container:butler-lab-orchestrator-1 --env-file "$private/main-diagnose.env" -v "$auth_binary:/provider-auth:ro" golang:1.27.2-bookworm /provider-auth -action diagnose-cloudcode > "$private/main-diagnosis.json" || exit 1
- jq -e '.resolved and (.unsafe_refresh|not) and (.after.expired|not)' "$private/main-diagnosis.json" >/dev/null || exit 1
+ jq -e -f "$src/scripts/dev/memory-consolidation-main-auth.jq" "$private/main-diagnosis.json" >/dev/null || exit 1
  jq '{resolved,unsafe_refresh,expired:.after.expired,trace}' "$private/main-diagnosis.json" > "$proof/main-auth-safe.json"
  python3 "$src/scripts/dev/memory-consolidation-auth.py" snapshot "$base" "$label" > "$proof/main-snapshot-safe.json" || exit 1
  printf '%s\n' "$status" > "$proof/native-status"
