@@ -14,10 +14,10 @@ import (
 )
 
 func experienceProposal(recipient *experienceRecipient, resource, value string) projectfixture.Proposal {
-	before := recipient.state.Config.Files[resource]
+	before := recipient.snapshot().Config.Files[resource]
 	after := strings.ReplaceAll(before, "ready=false\n", "ready="+value+"\n")
 	after = strings.ReplaceAll(after, "ready=pending\n", "ready="+value+"\n")
-	return projectfixture.Proposal{ProjectRevision: recipient.revision(resource), Changes: []projectfixture.Change{{Path: "README.md", Before: before, After: after}}}
+	return projectfixture.Proposal{ProjectRevision: experienceDigest(resource + "\x00" + before), Changes: []projectfixture.Change{{Path: "README.md", Before: before, After: after}}}
 }
 
 func experiencePost(t *testing.T, site *httptest.Server, resource, key string, proposal projectfixture.Proposal) (*http.Response, error) {

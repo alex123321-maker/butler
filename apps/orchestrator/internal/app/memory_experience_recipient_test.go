@@ -111,6 +111,18 @@ func experienceIdentity(key, fingerprint string) bool {
 }
 
 func (r *experienceRecipient) close() error { return r.root.Close() }
+
+// Hidden evaluator audit, never a model/tool/lesson observation. Copy under the
+// same mutex as persistence so tests do not race HTTP handler completion.
+func (r *experienceRecipient) snapshot() experienceRecipientState {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	raw, _ := json.Marshal(r.state)
+	var snapshot experienceRecipientState
+	_ = json.Unmarshal(raw, &snapshot)
+	return snapshot
+}
+
 func (r *experienceRecipient) revision(resource string) string {
 	return experienceDigest(resource + "\x00" + r.state.Config.Files[resource])
 }
