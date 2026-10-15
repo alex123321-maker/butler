@@ -13,12 +13,28 @@ expires=$(date -u -d '+20 minutes' +%Y-%m-%dT%H:%M:%SZ)
 jq -n --arg revision "$revision" --arg expires "$expires" '{revision:$revision,expires_at:$expires,provider:"antigravity",model:"gemini-3.8-flash-tiered",max_model_turns:3,maximum_attempt_millis:90000,maximum_reserved_tokens:3170304,maximum_provider_input_bytes:25165824,cost_basis:"subscription_no_overage",monetary_overage_allowed:false,retry_or_fallback_outside_window:false,stop_on:["authority_failure","privacy_failure","accounting_failure","hard_deadline","finite_allowance"]}' > "$proof/caps.json"
 sha256sum "$base/reports/orchestrator" "$base/reports/tool-broker" > "$proof/binaries.sha256"
 compose=(docker compose -p butler-issue82 -f "$base/current/deploy/memory-jobs/compose.yml" -f "$base/current/deploy/memory-jobs/native.compose.yml")
+# Enforce the prospective wall-clock stop on the entire isolated process, even
+# if an API request or a foreground run is still waiting when the window ends.
+(
+ sleeper=''
+ trap 'test -z "$sleeper" || kill "$sleeper" 2>/dev/null || true; exit 0' TERM
+ sleep "$(( $(date -u -d "$expires" +%s) - $(date -u +%s) ))" &
+ sleeper=$!
+ wait "$sleeper"
+ "${compose[@]}" stop --timeout 2 orchestrator > "$proof/deadline-stop.log" 2>&1
+) &
+watchdog=$!
 # This file is a private credential reference; the token never enters tool args.
 read -r owner_token < "$base/private/owner.token"
 printf 'header = "Authorization: Bearer %s"\nheader = "Content-Type: application/json"\nheader = "X-Butler-Delivery-ID: issue82-native-v1"\n' "$owner_token" > "$base/private/curl.cfg"
 unset owner_token
 request(){ curl --config "$base/private/curl.cfg" --fail-with-body --silent --show-error --max-time 120 "$@"; }
-stop(){ request -d '{"state":"disabled"}' http://127.0.0.1:18282/api/v4/memory/model-worker-control > "$proof/stop.json" || true; }
+stop(){
+ kill "$watchdog" 2>/dev/null || true
+ wait "$watchdog" 2>/dev/null || true
+ request -d '{"state":"disabled"}' http://127.0.0.1:18282/api/v4/memory/model-worker-control > "$proof/stop.json" || true
+ "${compose[@]}" stop --timeout 2 orchestrator > "$proof/service-stop.log" 2>&1 || true
+}
 trap stop EXIT
 count=$(docker exec butler-issue82-postgres-1 psql -U butler -d memory_jobs_test -Atc 'SELECT (SELECT count(*) FROM execution_model_attempts)+(SELECT count(*) FROM memory_model_attempts)')
 test "$count" = 0
@@ -56,6 +72,7 @@ for _ in $(seq 1 30);do
  sleep 1
 done
 jq -e '.policies[]|select(.policy_id=="issue82-local-wait")|.jobs[0]|.status=="pending" and .reason=="local_backend_unavailable"' "$proof/local-wait-before-input.json" >/dev/null
+[[ "$(( $(date -u +%s) + 300 ))" -lt "$(date -u -d "$expires" +%s)" ]] || exit 4
 request -d '{"event_id":"issue82-foreground-v1","idempotency_key":"issue82-foreground-v1","event_type":"USER_MESSAGE","session_key":"web:issue82-owner","source":"web","payload":{"text":"Ответь ровно ISSUE82_FOREGROUND_READY. Инструменты не нужны.","user":"issue82-owner"}}' http://127.0.0.1:18282/api/v1/events > "$proof/input.json"
 input=$(jq -r '.input_id' "$proof/input.json")
 [[ "$input" =~ ^input-[a-f0-9]+$ ]]
