@@ -10,7 +10,7 @@ test ! -e "$proof"
 umask 077
 mkdir "$proof"
 expires=$(date -u -d '+20 minutes' +%Y-%m-%dT%H:%M:%SZ)
-jq -n --arg revision "$revision" --arg expires "$expires" '{revision:$revision,expires_at:$expires,provider:"antigravity",model:"gemini-3.8-flash-tiered",new_model_turns:3,retained_prior_attempts:2,cumulative_max_attempts:5,maximum_attempt_millis:90000,new_reserved_tokens:3170304,new_reserved_millis:270000,new_reserved_input_bytes:25165824,background_policies:2,allowance_per_background_policy:1,foreground_conversation_turns:1,subscription_no_overage:true,fallback:false,stop_on:["authority_failure","privacy_failure","accounting_failure","model_failure","deadline","finite_allowance"]}' > "$proof/caps.json"
+jq -n --arg revision "$revision" --arg expires "$expires" '{revision:$revision,expires_at:$expires,provider:"antigravity",model:"gemini-3.8-flash-tiered",new_model_turns:3,retained_prior_attempts:2,cumulative_max_attempts:5,maximum_attempt_millis:90000,new_reserved_tokens:3170304,new_reserved_millis:270000,new_reserved_input_bytes:25165824,background_policies:2,allowance_per_background_policy:1,root_task_model_turns:2,root_shared_by_foreground_and_completed_background:true,subscription_no_overage:true,fallback:false,stop_on:["authority_failure","privacy_failure","accounting_failure","model_failure","deadline","finite_allowance"]}' > "$proof/caps.json"
 sha256sum "$base/reports/orchestrator" "$base/reports/tool-broker" > "$proof/binaries.sha256"
 compose=(docker compose -p butler-issue82 -f "$base/current/deploy/memory-jobs/compose.yml" -f "$base/current/deploy/memory-jobs/native.compose.yml")
 (
