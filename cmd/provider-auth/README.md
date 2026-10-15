@@ -10,6 +10,9 @@ provider JSON or key material as arguments or publish its environment.
   with fixed OAuth refresh/persistence diagnostics. It can renew an expired token
   and writes rotation to encrypted PG before returning. It makes no inference;
   `unsafe_refresh=true` means stop and reconcile before any further auth/model call.
+- `-action diagnose-cloudcode`: the same safe projection plus current paid
+  subscription discovery. Use the service's exact network environment; it makes
+  no generation request and is not proof of inference access.
 - `-action quota`: fixed Cloud Code subscription discovery/model metadata read,
   using the same account and current Antigravity model. Prints only model,
   advertised flag, numeric HTTP status, optional remaining fraction/reset time.

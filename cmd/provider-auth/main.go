@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	action := flag.String("action", "state", "Antigravity operator action: import, resolve, inspect, diagnose-auth, quota, state, audit-origin, disconnect, smoke")
+	action := flag.String("action", "state", "Antigravity operator action: import, resolve, inspect, diagnose-auth, diagnose-cloudcode, quota, state, audit-origin, disconnect, smoke")
 	flag.Parse()
 	if err := execute(*action); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -76,7 +76,7 @@ func execute(action string) error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(quota)
-	case "diagnose-auth":
+	case "diagnose-auth", "diagnose-cloudcode":
 		before, err := m.State(ctx, modelprovider.ProviderAntigravity)
 		if err != nil {
 			return err
@@ -84,7 +84,11 @@ func execute(action string) error {
 		var trace []providerauth.AntigravityDiagnostic
 		beforeState := inspectAuth(before, time.Now())
 		call := providerauth.WithAntigravityDiagnostics(ctx, func(d providerauth.AntigravityDiagnostic) { trace = append(trace, d) })
-		_, resolveErr := m.ResolveAntigravity(call)
+		resolve := m.ResolveAntigravity
+		if action == "diagnose-cloudcode" {
+			resolve = m.ResolveAntigravityCloudCode
+		}
+		_, resolveErr := resolve(call)
 		after, stateErr := m.State(ctx, modelprovider.ProviderAntigravity)
 		if err := json.NewEncoder(os.Stdout).Encode(struct {
 			Before        any                                  `json:"before"`

@@ -29,7 +29,10 @@ services:
       BUTLER_ANTIGRAVITY_PROTOCOL: cloudcode
       BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
       BUTLER_TELEGRAM_BOT_TOKEN: ''
-      HTTPS_PROXY: http://issue82-proxy:18080
+      # Explicit direct lane for this window; no fallback after a network error.
+      HTTPS_PROXY: ''
+      HTTP_PROXY: ''
+      ALL_PROXY: ''
       NO_PROXY: localhost,127.0.0.1,postgres,redis
       BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"task":{"model_turns":2,"tokens":2113536,"active_millis":180000,"provider_input_bytes":16777216},"conversation":{"model_turns":1,"tokens":1056768,"active_millis":90000,"provider_input_bytes":8388608},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}'
     volumes:
