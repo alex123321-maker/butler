@@ -62,6 +62,12 @@ func (p *candidateCaptureProvider) StartRun(ctx context.Context, r transport.Sta
 }
 func candidateHash(b []byte) string { s := sha256.Sum256(b); return hex.EncodeToString(s[:]) }
 
+type candidateNativeCase struct {
+	ID, Body, Type, Scope, Time string
+	SpeechAct                   string `json:"speech_act"`
+	Skip                        bool
+}
+
 // The native window is opt-in, fresh and persistent: unlike isolated storage
 // fixtures its paid attempts/reservations MUST survive test failure and restart.
 func TestCandidateNativeRussianQuality(t *testing.T) {
@@ -76,15 +82,23 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	var suite struct {
 		Version  string          `json:"version"`
 		Criteria json.RawMessage `json:"criteria"`
-		Cases    []struct {
-			ID, Body, Type, Scope, Time string
-			SpeechAct                   string `json:"speech_act"`
-			Skip                        bool
-		}
+		Cases    []candidateNativeCase
 	}
 	if json.Unmarshal(raw, &suite) != nil || len(suite.Cases) != 24 {
 		t.Fatal("fixed native corpus unavailable")
 	}
+	holdoutRaw, e := os.ReadFile("../../../../testdata/acceptance/ru-memory-candidates-holdout-v1.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var holdout struct {
+		Version string `json:"version"`
+		Cases   []candidateNativeCase
+	}
+	if json.Unmarshal(holdoutRaw, &holdout) != nil || len(holdout.Cases) != 8 {
+		t.Fatal("fixed metadata holdout unavailable")
+	}
+	cases := append(append([]candidateNativeCase{}, suite.Cases...), holdout.Cases...)
 	var caps struct {
 		CasesSHA256   string    `json:"cases_sha256"`
 		MaxCalls      int       `json:"max_calls"`
@@ -92,9 +106,11 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		Revision      string    `json:"revision"`
 		StartCase     int       `json:"start_case"`
 		PriorAttempts int       `json:"prior_attempts"`
+		HoldoutSHA256 string    `json:"holdout_sha256"`
+		Handler       string    `json:"handler"`
 	}
 	b, e := os.ReadFile(filepath.Join(proof, "caps.json"))
-	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.StartCase != 0 && caps.StartCase != 3 || caps.PriorAttempts != caps.StartCase || caps.MaxCalls != len(suite.Cases)-caps.StartCase || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
+	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.HoldoutSHA256 != candidateHash(holdoutRaw) || caps.Handler != candidates.Version || caps.StartCase != 0 || caps.PriorAttempts < 24 || caps.PriorAttempts > 128 || caps.MaxCalls != len(cases) || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
 		t.Fatal("fresh reviewed fixed native caps required")
 	}
 	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" || os.Getenv("HTTP_PROXY") != "" || os.Getenv("ALL_PROXY") != "" {
@@ -117,16 +133,8 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	if e = pool.QueryRow(context.Background(), `SELECT count(*) FROM memory_model_attempts`).Scan(&count); e != nil || count != caps.PriorAttempts {
 		t.Fatal("native window already consumed", count, e)
 	}
-	manifestPath := filepath.Join(proof, "deletions.log")
-	if caps.StartCase > 0 {
-		manifestPath = filepath.Join(filepath.Dir(proof), "native-v2", "deletions.log")
-	}
+	manifestPath := filepath.Join(filepath.Dir(proof), "native-v2", "deletions.log")
 	m := catalog.NewFileManifest(manifestPath)
-	if caps.StartCase == 0 {
-		if e = m.Initialize(); e != nil {
-			t.Fatal(e)
-		}
-	}
 	c := catalog.New(pool, m)
 	policy := budget.DefaultPolicy()
 	policy.ModelMillis = 90000
@@ -143,9 +151,6 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	srv := httptest.NewServer((&MemoryCatalogServer{Store: c, Auth: NewOwnerControlAuth(strings.Repeat("c", 40), "owner"), ModelJobs: j, ModelWorkerConfigured: true}).Handle())
 	defer srv.Close()
 	f := &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, worker: w, server: srv}
-	for _, prior := range suite.Cases[:caps.StartCase] {
-		f.request("/api/v4/memory/model-policy-control", "POST", map[string]string{"policy_id": "native-candidate:" + prior.ID, "state": "revoked"}, 200, nil)
-	}
 	f.enable()
 	defer j.SetModelControl(context.Background(), "disabled")
 	type observation struct {
@@ -159,6 +164,7 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	}
 	results := []observation{}
 	semantic, unsafe, quotes, unknown := 0, 0, 0, 0
+	coreSemantic, holdoutSemantic := 0, 0
 	write := func(name string, value any) {
 		t.Helper()
 		data, err := json.MarshalIndent(value, "", "  ")
@@ -192,20 +198,21 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 			}
 		}
 		authorityWrites := check.Confirmed + check.Tasks + check.Mandates
-		passed := caps.StartCase == 0 && err == nil && authorityWrites == 0 && len(results) == len(suite.Cases) && float64(semantic)/float64(len(suite.Cases)) >= 0.95 && quotes == len(suite.Cases) && unsafe == 0 && unknown == 0
+		passed := err == nil && authorityWrites == 0 && len(results) == len(cases) && float64(coreSemantic)/float64(len(suite.Cases)) >= 0.95 && holdoutSemantic == len(holdout.Cases) && quotes == len(cases) && unsafe == 0 && unknown == 0
 		write("observations.json", results)
-		write("quality.json", map[string]any{"revision": caps.Revision, "corpus": suite.Version, "corpus_sha256": candidateHash(raw), "instruction_sha256": candidateHash([]byte((candidates.Handler{}).Instruction())), "criteria": suite.Criteria, "cases": len(results), "semantic_matches": semantic, "exact_citation_cases": quotes, "unsafe_promotions": unsafe, "authority_writes": authorityWrites, "unknown_usage": unknown, "quality_gate_passed": passed, "automatic_acceptance": false, "pricing_basis": "subscription_no_overage", "production_release_qualified": false, "background_and_foreground_reservation_ledger": "ledger.json", "unmeasured_costs": []string{"OAuth refresh network bytes", "actual HTTP egress bytes", "CPU and storage amortization", "subscription allocation"}})
+		write("quality.json", map[string]any{"revision": caps.Revision, "handler": candidates.Version, "retained_prior_attempts": caps.PriorAttempts, "corpus": suite.Version, "corpus_sha256": candidateHash(raw), "holdout": holdout.Version, "holdout_sha256": candidateHash(holdoutRaw), "holdout_semantic_matches": holdoutSemantic, "holdout_semantic_criterion": 1, "core_semantic_matches": coreSemantic, "instruction_sha256": candidateHash([]byte((candidates.Handler{}).Instruction())), "criteria": suite.Criteria, "cases": len(results), "semantic_matches": semantic, "exact_citation_cases": quotes, "unsafe_promotions": unsafe, "authority_writes": authorityWrites, "unknown_usage": unknown, "quality_gate_passed": passed, "automatic_acceptance": false, "pricing_basis": "subscription_no_overage", "production_release_qualified": false, "background_and_foreground_reservation_ledger": "ledger.json", "unmeasured_costs": []string{"OAuth refresh network bytes", "actual HTTP egress bytes", "CPU and storage amortization", "subscription allocation"}})
 		if !passed {
 			t.Error("predefined native quality gate failed; production stays disabled")
 		}
 	}()
-	for _, tc := range suite.Cases[caps.StartCase:] {
+	for index, tc := range cases {
 		if !time.Now().Before(caps.ExpiresAt) {
 			t.Error("native window expired")
 			break
 		}
-		src := f.source("native:"+tc.ID, tc.Body)
-		q := jobs.ModelPolicyRequest{ID: "native-candidate:" + tc.ID, Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1056768, ActiveMillis: 90000, ProviderInputBytes: 8388608}, Deadline: caps.ExpiresAt}}
+		window := filepath.Base(proof)
+		src := f.source(window+":"+tc.ID, tc.Body)
+		q := jobs.ModelPolicyRequest{ID: window + ":" + tc.ID, Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1056768, ActiveMillis: 90000, ProviderInputBytes: 8388608}, Deadline: caps.ExpiresAt}}
 		f.request("/api/v4/memory/model-policies", "POST", q, 201, nil)
 		start := time.Now()
 		err := f.process()
@@ -231,6 +238,11 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		}
 		if o.SemanticMatch {
 			semantic++
+			if index < len(suite.Cases) {
+				coreSemantic++
+			} else {
+				holdoutSemantic++
+			}
 		}
 		if err != nil {
 			o.Reason = "worker_rejected"
