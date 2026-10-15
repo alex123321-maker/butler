@@ -38,3 +38,17 @@ cold-cache experiment. If the10000 target fails, compare native pgvector indexes
 on an isolated copy with scope-filtered recall/currentness before proposing any
 production change. A failing stretch size alone does not justify an ANN migration.
 No separate vector database or durable Redis state is introduced.
+
+The additional prospective actual-local contention slice fixes100 initial and
+100 new fragments in one owner scope, one index job and one ordinary foreground
+question. The existing reviewed retrieval profile is reused, without a new
+semantic quality claim. Start the question when the second generation enters
+actual local indexing IPC; no observational wrapper delays/replaces responses.
+Require a completed real query/index request interval overlap and the ordinary
+foreground input to contain actual retrieved bytes plus its current typed UNKNOWN.
+The predeclared single-query wall bound is5000ms; one query cannot establish p95.
+The foreground answer provider is a labeled deterministic control, so cloud
+inference is zero and this does not measure a complete native-model response.
+Retain every local request interval, queue/execution/peak observation, both job
+outcomes and full durable reservation/scope/model ledgers, including failures.
+Shared summary/consolidation/experience worker policy composition remains separate.

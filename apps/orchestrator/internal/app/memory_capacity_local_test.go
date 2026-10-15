@@ -24,6 +24,9 @@ import (
 )
 
 type capacityLocalObservation struct {
+	Caller          string `json:"caller"`
+	StartedNanos    int64  `json:"started_nanos"`
+	FinishedNanos   int64  `json:"finished_nanos"`
 	Items           int    `json:"items"`
 	Millis          int64  `json:"millis"`
 	QueueMillis     uint64 `json:"queue_millis"`
@@ -36,12 +39,19 @@ type capacityLocalBackend struct {
 	*semantic.AuthenticatedBackend
 	mu           sync.Mutex
 	Observations []capacityLocalObservation
+	Started      chan string
 }
 
 func (b *capacityLocalBackend) Infer(ctx context.Context, r *pb.InferRequest) (*pb.InferResponse, error) {
 	start := time.Now()
+	if b.Started != nil {
+		select {
+		case b.Started <- r.CallerId:
+		default:
+		}
+	}
 	out, err := b.AuthenticatedBackend.Infer(ctx, r)
-	o := capacityLocalObservation{Items: len(r.GetEmbed().GetTexts()), Millis: time.Since(start).Milliseconds(), Completed: err == nil && out != nil}
+	o := capacityLocalObservation{Caller: r.CallerId, StartedNanos: start.UnixNano(), FinishedNanos: time.Now().UnixNano(), Items: len(r.GetEmbed().GetTexts()), Millis: time.Since(start).Milliseconds(), Completed: err == nil && out != nil}
 	if out != nil {
 		o.QueueMillis = out.QueueMs
 		o.ExecutionMillis = out.ExecutionMs
