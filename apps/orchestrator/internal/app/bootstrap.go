@@ -462,7 +462,7 @@ func New(ctx context.Context) (*App, error) {
 		adaptiveOptions = append(adaptiveOptions, option)
 		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog, adaptiveOptions...)
 		if err == nil {
-			memoryReads.temporal = temporalConfigured(cfg.MemoryTemporalEnabled)
+			memoryReads.temporal = temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController)
 		}
 		if err == nil {
 			err = memoryReads.CheckReady(ctx)
@@ -548,8 +548,8 @@ func New(ctx context.Context) (*App, error) {
 			WorkingStore:             workingStoreAdapter{store: working.NewStore(postgres.Pool())},
 			TransientStore:           transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
 			TransientTTL:             time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:             profileStoreAdapter{store: profileStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled)},
-			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled), experience: experienceMemory},
+			ProfileStore:             profileStoreAdapter{store: profileStore, sources: sourceCatalog, temporal: temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController)},
+			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController), experience: experienceMemory},
 			ChunkStore:               chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
 			Embeddings:               memoryEmbeddings,
 			PipelineEnqueuer:         pipelineEnqueuer,

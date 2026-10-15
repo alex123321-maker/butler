@@ -951,3 +951,9 @@ Retrieved document text remains eligible when the source has no title. The
 final prompt formatter uses a neutral Document label; an absent title must not
 silently discard an already authorized, selected fragment. Empty evidence text
 is still omitted. Source provenance and currentness checks remain mandatory.
+
+Temporal model consumers require their code qualification and process flag plus
+the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
+at least300s and a matching durable budget quote. Doctor reports that profile
+prerequisite separately. Typed owner metadata operations do not perform inference
+and retain their independent owner/feature authorization.

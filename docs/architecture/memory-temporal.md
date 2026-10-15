@@ -139,3 +139,9 @@ immutable query's stale check survive restart. A changed head/metadata/freshness
 invalidates the whole prepared run. Operator endpoint selection is private and
 credential-free; both services require temporal readiness independently of read
 readiness and the code-owned qualification remains false.
+
+Temporal model consumers require their code qualification and process flag plus
+the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
+at least300s and a matching durable budget quote. Doctor reports that profile
+prerequisite separately. Typed owner metadata operations do not perform inference
+and retain their independent owner/feature authorization.

@@ -38,7 +38,7 @@ func TestMemoryDoctorUsesActualHandlerAndMeasuredProfile(t *testing.T) {
 	}
 	b.Policy.ModelMillis = 299999
 	for _, s := range memoryFeatureConfigurations(config.OrchestratorConfig{}, p, b, w, false, false, false) {
-		if (s.Name == "candidate_jobs" || s.Name == "task_compaction") && s.ProfileReady {
+		if (s.Name == "candidate_jobs" || s.Name == "task_compaction" || s.Name == "temporal_facts") && s.ProfileReady {
 			t.Fatal("unmeasured timeout appeared supported", s)
 		}
 	}

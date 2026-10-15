@@ -3,10 +3,12 @@ package app
 import (
 	"encoding/json"
 
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/profile"
+	"github.com/butler/butler/internal/providerfactory"
 )
 
 // Code-owned release qualification is independent of the operator flag. The
@@ -14,6 +16,12 @@ import (
 const temporalReleaseQualified = factcontrol.ReleaseQualified
 
 func temporalConfigured(enabled bool) bool { return enabled && temporalReleaseQualified }
+
+// Owner metadata operations do not perform inference. The model-facing
+// consumer additionally requires the exact measured provider and matching quote.
+func temporalReadConfigured(enabled bool, p providerfactory.Result, b *budget.Controller) bool {
+	return temporalConfigured(enabled) && summaryProfileReady(p, b)
+}
 func temporalExcluded(f catalog.AcceptedFact) bool {
 	return f.Freshness.Status == "expired" || f.Freshness.Status == "not_yet_valid"
 }
