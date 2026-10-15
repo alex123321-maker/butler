@@ -382,7 +382,9 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	return src.ID, tx.Commit(ctx)
 }
 func (w *ModelWorker) ProcessOne(ctx context.Context) (bool, error) {
-	ctx, stop := context.WithTimeout(ctx, 110*time.Second)
+	// Bound the whole claim attempt while allowing its configured five-minute
+	// model call. Earlier caller, admission, source and authority deadlines win.
+	ctx, stop := context.WithTimeout(ctx, 6*time.Minute)
 	defer stop()
 	ready, e := w.Jobs.modelReady(ctx)
 	if e != nil || !ready {

@@ -60,6 +60,8 @@ Secret-class data and recognizable raw credentials deny processing.
    The configured model duration is additionally capped at five minutes. With a
    full model claim this leaves a nominal minute for publication; earlier hard
    deadlines still win and can shorten that margin. The supervisor stays 250ms/200ms.
+   `ProcessOne` also bounds the complete attempt at six minutes, preserving an
+   earlier caller deadline rather than imposing a shorter hidden model timeout.
    A fresh transport correlation ID is neither a user run nor a lease.
 5. Use the configured native provider with no tools, fresh provider session,
    typed DATA provenance, complete serialized input-byte ceiling and

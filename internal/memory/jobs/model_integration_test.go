@@ -17,6 +17,7 @@ import (
 type modelFixtureProvider struct {
 	transport.ModelProvider
 	calls          atomic.Int32
+	deadlineMillis atomic.Int64
 	source         catalog.Source
 	callback       func()
 	beforeDispatch func()
@@ -32,6 +33,9 @@ func (*modelFixtureProvider) CancelRun(context.Context, transport.CancelRunReque
 	return nil, nil
 }
 func (p *modelFixtureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if deadline, ok := ctx.Deadline(); ok {
+		p.deadlineMillis.Store(time.Until(deadline).Milliseconds())
+	}
 	if p.beforeDispatch != nil {
 		p.beforeDispatch()
 	}
@@ -138,6 +142,39 @@ func TestModelClaimAndEarlierDeadlineIntegration(t *testing.T) {
 			t.Fatal(seconds, err)
 		}
 	})
+}
+
+func TestModelProcessOnePreservesConfiguredCallWindowIntegration(t *testing.T) {
+	for _, shortCaller := range []bool{false, true} {
+		t.Run(map[bool]string{false: "full_call", true: "earlier_caller"}[shortCaller], func(t *testing.T) {
+			w, ctx, src := modelFixture(t)
+			w.Jobs.budgets.Policy.ModelMillis = 300000
+			q := policyRequest(src)
+			q.Job.Allowance.ActiveMillis = 600000
+			if _, err := w.Jobs.CreateModelPolicy(ctx, q); err != nil {
+				t.Fatal(err)
+			}
+			if err := w.Jobs.PollModelPolicies(ctx, func(string) bool { return true }); err != nil {
+				t.Fatal(err)
+			}
+			if shortCaller {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+				defer cancel()
+			}
+			worked, err := w.ProcessOne(ctx)
+			if err != nil || !worked {
+				t.Fatal(worked, err)
+			}
+			remaining := w.Provider.(*modelFixtureProvider).deadlineMillis.Load()
+			if !shortCaller && (remaining < 290000 || remaining > 300000) {
+				t.Fatal("whole-attempt timeout shortened configured model call", remaining)
+			}
+			if shortCaller && (remaining <= 0 || remaining > 30000) {
+				t.Fatal("caller deadline lost", remaining)
+			}
+		})
+	}
 }
 func TestModelFailureDiagnosticExcludesProviderMaterialIntegration(t *testing.T) {
 	w, ctx, src := modelFixture(t)
