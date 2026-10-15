@@ -104,3 +104,14 @@ same15 names fail on unchanged main `cc751b2c` in the same isolated environment
 changed or waived. This comparison separates them from the new memory regression;
 it does not claim the whole repository suite is green or establish those older
 release acceptances. The raw failed broad run and baseline remain retained.
+
+Content hashes of the exact retained receipts:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| Consumer `combined-final-v5/evidence.sha256` | `af677241f5862f939fe1d0e524af90950f01914cc52399cee0e85e9e05d43902` |
+| Kernel `combined-final-v5/evidence.sha256` | `b61b09b492c95d23cd4c0e8824bde776cb971d5743882a6bdd997b03c87eccf9` |
+| `model-duration-v2/tests.jsonl` | `b6b747a9fcae3d3853c9f8eed43e5983a776384761a1a0f54d18732a54873a9b` |
+| `scoped-context-v2/tests.jsonl` | `357d961b3860e30b36d7d26bd897c9d8a5fb01b3f4fbd54d0040c0a2ec1fdd21` |
+| Failed broad `composition-v1/tests.jsonl` | `19c962e71a244517735b7427fac598a09893d995e367338217b91af1fe02ae27` |
+| Unchanged-main `baseline-history/tests.jsonl` | `133223ae3bb725300c0576bfb873f6696be827b3d92eb6878a7c5a290e7912a8` |

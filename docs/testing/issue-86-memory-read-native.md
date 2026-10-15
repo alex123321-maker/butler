@@ -110,3 +110,12 @@ actual backup/restore test skipped because its phased fixture was not configured
 in this runner. That restore scenario has its own earlier lifecycle acceptance.
 `metadata-vet.log` is clean. This follow-up used no provider calls; the earlier
 native window remains tied to its exact original source/binary manifest.
+
+The later `9812ba52` change widens the bounded offset to8388608 Unicode characters
+so every valid catalog original (at most8MiB) is reachable. Each returned fragment
+is still at most8192 characters. A real PG regression decodes the declared tool
+arguments and reads the exact tail of a3.3MiB original beyond the old1Mi offset
+limit. Broker/consumer checks passed on the subsequent `701d225a` combined source.
+The native declaration omits these numeric annotations as already documented;
+the original Butler contract/hash and Broker validation retain them. This is
+offline current-contract evidence, separate from the earlier frozen native window.
