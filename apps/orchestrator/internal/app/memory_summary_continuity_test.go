@@ -168,7 +168,7 @@ type continuityReport struct {
 	BackgroundIDs   []string          `json:"background_operation_ids"`
 }
 
-func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuityProvider, manifestPath string, rounds int, model string, b *budget.Controller) continuityReport {
+func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuityProvider, manifestPath string, rounds int, model string, b *budget.Controller, progress ...*continuityReport) continuityReport {
 	t.Helper()
 	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "summary-continuity-owner"})
 	manifest := catalog.NewFileManifest(manifestPath)
@@ -202,7 +202,10 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		}
 	}
 	appendBlock([]string{"Подготовь отчёт и черновик письма. Отправлять нельзя.", "Останови только отправку письма; сбор данных и проверку продолжай.", "Я не просил останавливать сбор данных. Экспорт я уже выполнил сам: artifact:owner-export-v2. Не повторяй.", "Новое условие: исключи сентябрь. Сначала покажи черновик. Эффект прежней отправки неизвестен."})
-	var report continuityReport
+	report := &continuityReport{}
+	if len(progress) > 0 && progress[0] != nil {
+		report = progress[0]
+	}
 	lastRun := "seed"
 	for round := 0; round < rounds; round++ {
 		if round > 0 {
@@ -305,7 +308,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	if err := rows.Err(); err != nil {
 		t.Fatal(err)
 	}
-	return report
+	return *report
 }
 
 func continuityDiagnostic(p *continuityProvider, err error) error {

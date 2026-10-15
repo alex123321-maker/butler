@@ -190,7 +190,7 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 	b.Policy.ModelMillis = 90000
 	b.Policy.Day = budget.Units{ModelTurns: 16, Tokens: 16 * 1056768, ActiveMillis: 16 * 90000, ProviderInputBytes: 16 * 8388608}
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
-	report = runSummaryContinuity(t, pool, p, "/private/native-v4-deletions.log", 3, result.ModelName, b)
+	report = runSummaryContinuity(t, pool, p, "/private/native-v4-deletions.log", 3, result.ModelName, b, &report)
 	p.mu.Lock()
 	known := len(p.usages)
 	p.mu.Unlock()
