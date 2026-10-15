@@ -8,6 +8,22 @@ Baseline: `origin/main b20206d`; deployed snapshot в этой работе не
 Закрытые #4–#7, #9, #11–#13 и #32 используются как основа, не переоткрываются.
 #76 остаётся общим behavioral harness; здесь добавляются communication-сценарии.
 
+## GitHub tracking
+
+Общий issue: [#98](https://github.com/alex123321-maker/butler/issues/98).
+
+| Этап | Issue | Зависимости |
+| --- | --- | --- |
+| C01 | [#99](https://github.com/alex123321-maker/butler/issues/99) | нет |
+| C02 | [#100](https://github.com/alex123321-maker/butler/issues/100) | [#99](https://github.com/alex123321-maker/butler/issues/99) |
+| C03 | [#101](https://github.com/alex123321-maker/butler/issues/101) | [#100](https://github.com/alex123321-maker/butler/issues/100) |
+| C04 | [#102](https://github.com/alex123321-maker/butler/issues/102) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#101](https://github.com/alex123321-maker/butler/issues/101) |
+| C05 | [#103](https://github.com/alex123321-maker/butler/issues/103) | [#99](https://github.com/alex123321-maker/butler/issues/99), [#100](https://github.com/alex123321-maker/butler/issues/100) |
+| C06 | [#104](https://github.com/alex123321-maker/butler/issues/104) | [#101](https://github.com/alex123321-maker/butler/issues/101), [#103](https://github.com/alex123321-maker/butler/issues/103) |
+| C07 | [#105](https://github.com/alex123321-maker/butler/issues/105) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#102](https://github.com/alex123321-maker/butler/issues/102), [#103](https://github.com/alex123321-maker/butler/issues/103), [#104](https://github.com/alex123321-maker/butler/issues/104) |
+| C08 | [#106](https://github.com/alex123321-maker/butler/issues/106) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#105](https://github.com/alex123321-maker/butler/issues/105) |
+| C09 | [#107](https://github.com/alex123321-maker/butler/issues/107) | [#101](https://github.com/alex123321-maker/butler/issues/101), [#102](https://github.com/alex123321-maker/butler/issues/102), [#103](https://github.com/alex123321-maker/butler/issues/103), [#104](https://github.com/alex123321-maker/butler/issues/104), [#105](https://github.com/alex123321-maker/butler/issues/105), [#106](https://github.com/alex123321-maker/butler/issues/106) |
+
 ## Подтверждённые решения
 
 - Четыре функции: message, photo, report, widget; явная публикация агентом.
@@ -318,4 +334,3 @@ model final, queued publication или Bot API ACK не заменяет task ve
 Составные формы, дополнительные каналы, arbitrary UI code, voice и публичный
 хостинг отчётов не блокируют C09. Добавление новых функций требует отдельного
 scope и совместимых versioned контрактов.
-

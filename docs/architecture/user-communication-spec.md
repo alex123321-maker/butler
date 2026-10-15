@@ -15,6 +15,9 @@
 [owner controls](task-owner-controls-spec.md), [бюджеты](execution-budget-contract.md),
 [план реализации](../planning/user-communication-roadmap.md).
 
+GitHub tracking: [общий issue #98](https://github.com/alex123321-maker/butler/issues/98),
+этапы #99–#107 и зависимости перечислены в плане реализации.
+
 ## 1. Продуктовые решения
 
 Владелец подтвердил следующие требования в обсуждении 2026-10-15:
@@ -579,4 +582,3 @@ acceptance не нужны: разрешённый fixture проверяет о
 голосовые ответы, пользовательский HTML runtime, автоматическая публичная
 публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
 напоминания. Новые каналы подключаются через тот же versioned adapter contract.
-
