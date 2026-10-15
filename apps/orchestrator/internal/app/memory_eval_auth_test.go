@@ -130,7 +130,7 @@ func TestMemoryEvalNativeAuthPreflight(t *testing.T) {
 		if probe.Passed {
 			outcome = "success"
 		}
-		probe.Expense = acceptance.MemoryExpense{ID: id, CaseID: schedule.Inputs[0].CaseID, Arm: schedule.Inputs[0].Arm, Stage: "background", Status: "unknown", Outcome: outcome, Calls: 1, EvidenceSHA256: acceptance.MemoryDigest(probe.Events), InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &probe.Milliseconds, StorageBytes: &zero}
+		probe.Expense = acceptance.MemoryExpense{ID: id, CaseID: schedule.Inputs[0].CaseID, Arm: schedule.Inputs[0].Arm, Stage: "background", Status: "unknown", Outcome: outcome, Calls: 1, EvidenceSHA256: acceptance.MemoryDigest(probe.Events), InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &probe.Milliseconds, StorageBytes: nil}
 		retain, stop := context.WithTimeout(context.Background(), 10*time.Second)
 		_, saveErr := pool.Exec(retain, `INSERT INTO fixture_memory_auth_observations VALUES($1,$2)`, id, probe)
 		stop()
