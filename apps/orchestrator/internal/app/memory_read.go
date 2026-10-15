@@ -32,6 +32,7 @@ type MemoryReads struct {
 	hashes   map[string]string
 	adaptive *adaptive.Store
 	semantic memoryservice.PolicySemanticReader
+	temporal bool
 }
 
 // AdaptiveReadOptions is trusted composition, never a request/model flag.
@@ -193,6 +194,11 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	// Repeat after all source/fragment lock waits; a result cannot outlive its
 	// exact task, input, lease, source ancestor or deletion watermark.
 	result.Diagnostics = append(result.Diagnostics, diagnostics...)
+	if s.temporal {
+		if err = s.enrichTemporalReadTx(owned, tx, &result); err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+	}
 	if s.adaptive != nil {
 		if err = s.adaptive.ObserveTx(owned, tx, e, a, &result); err != nil {
 			return readcontrol.Empty("denied"), err

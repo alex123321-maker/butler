@@ -69,7 +69,7 @@ func checkTemporalBrokerReadTx(ctx context.Context, tx pgx.Tx, c Claim, p Broker
  AND p.original_source_id=$7 AND p.source_revision=$8 AND p.valid_at IS NULL AND p.known_at IS NULL
  AND butler_memory_temporal_run_current(i.run_id)
  AND i.created_at>=p.observed_at AND e.observed_at>=d.dispatched_at AND e.observed_at<=e.recorded_at AND e.recorded_at<=clock_timestamp()
- AND b.created_at<=d.dispatched_at AND b.request_json->>'cost_known'='true'
+ AND b.created_at<=e.observed_at AND b.request_json->>'cost_known'='true'
  AND (b.request_json->'charge'->>'external_calls')::bigint=1 AND (b.request_json->'charge'->>'active_millis')::bigint>0
  AND jsonb_array_length(b.request_json->'scope_ids')>0`, p.EvidenceID, c.ID, c.OwnerID, p.ExpectedResourceHash, p.ExpectedHeadRevision, p.ExpectedRevision, c.SourceID, c.SourceRevision).Scan(&o.at, &o.action, &result, &normalized)
 	if err != nil {

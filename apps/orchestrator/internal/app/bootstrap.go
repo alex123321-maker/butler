@@ -445,6 +445,9 @@ func New(ctx context.Context) (*App, error) {
 		}
 		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog, adaptiveOptions...)
 		if err == nil {
+			memoryReads.temporal = temporalConfigured(cfg.MemoryTemporalEnabled)
+		}
+		if err == nil {
 			err = memoryReads.CheckReady(ctx)
 		}
 		if err != nil {
