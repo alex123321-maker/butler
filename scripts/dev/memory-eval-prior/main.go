@@ -161,7 +161,7 @@ func renewPins(path string) {
 	if err != nil {
 		panic("schedule denied")
 	}
-	now := time.Now().UTC()
+	now := renewalTimestamp(time.Now())
 	r := acceptance.MemoryRenewal{AuthorizedUTC: now.Format(time.RFC3339Nano), ExpiresUTC: now.Add(30 * time.Minute).Format(time.RFC3339Nano), PriorSHA: acceptance.MemoryDigest(*pins.Prior), InputsSHA: acceptance.MemoryDigest(schedule.Inputs), WindowID: pins.WindowID, SourceSHA: pins.Source, BinarySHA: pins.Binary, MaxNativeCalls: 5}
 	for _, i := range schedule.Inputs {
 		r.MaxUnits += acceptance.MemoryNativeReservedUnits(i)
@@ -174,3 +174,7 @@ func renewPins(path string) {
 		panic("new pins output failed")
 	}
 }
+
+// PostgreSQL timestamptz and pgx binary encoding retain microseconds. Normalize
+// before sealing operator pins so the durable deadline equals the signed one.
+func renewalTimestamp(now time.Time) time.Time { return now.UTC().Truncate(time.Microsecond) }
