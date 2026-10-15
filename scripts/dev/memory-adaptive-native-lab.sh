@@ -38,13 +38,13 @@ test -s /srv/storage/butler/agents/local-models/private/token
 cp -- "$auth_value" "$base/private/auth-input.value"
 sed -n '/^BUTLER_SETTINGS_ENCRYPTION_KEY=/p' "$auth_env" > "$base/private/native.env"
 test "$(wc -l < "$base/private/native.env")" = 1
-printf '%s\n' 'HTTPS_PROXY=http://127.0.0.1:18080' 'HTTP_PROXY=http://127.0.0.1:18080' 'ALL_PROXY=http://127.0.0.1:18080' 'NO_PROXY=localhost,127.0.0.1,local-models,172.28.0.2,10.237.187.2' >> "$base/private/native.env"
+printf '%s\n' 'HTTPS_PROXY=http://127.0.0.1:18080' 'HTTP_PROXY=http://127.0.0.1:18080' 'ALL_PROXY=http://127.0.0.1:18080' 'NO_PROXY=localhost,127.0.0.1,local-models,172.28.0.2,10.237.188.2' >> "$base/private/native.env"
 chmod 600 "$base/private/auth-input.value" "$base/private/native.env"
 network=butler-issue87-native-v1-net
 pg=butler-issue87-native-v1-pg
-docker network create --internal --subnet 10.237.187.0/24 "$network" > "$proof/network-id"
+docker network create --internal --subnet 10.237.188.0/24 "$network" > "$proof/network-id"
 mkdir -p "$base/postgres"
-docker run --pull never -d --name "$pg" --network "$network" --ip 10.237.187.2 --cpus 1 --memory 512m --pids-limit 128 \
+docker run --pull never -d --name "$pg" --network "$network" --ip 10.237.188.2 --cpus 1 --memory 512m --pids-limit 128 \
  -v "$base/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_adaptive_test \
  pgvector/pgvector:pg17 -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB > "$proof/postgres-id"
 for i in $(seq 1 60);do docker exec "$pg" pg_isready -U butler -d memory_adaptive_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
@@ -60,7 +60,7 @@ docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --add-hos
  -v "$src:/src:ro" -v "$base/runtime:/runtime:ro" -v "$proof:/proof" -v "$base/private:/private" \
  -v /srv/storage/butler/agents/local-models/private/token:/local-token:ro -w /src/apps/orchestrator/internal/app \
  --env-file "$base/private/native.env" -e BUTLER_ADAPTIVE_NATIVE_V1=1 -e BUTLER_ADAPTIVE_NATIVE_PROOF=/proof \
- -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@10.237.187.2:5432/memory_adaptive_test?sslmode=disable' \
+ -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@10.237.188.2:5432/memory_adaptive_test?sslmode=disable' \
  -e BUTLER_MEMORY_READ_APP_BINARY=/runtime/tool-broker -e BUTLER_MEMORY_SEMANTIC_ENABLED=true \
  -e BUTLER_MEMORY_LOCAL_SERVICE_ID=operator-pinned-service -e BUTLER_MEMORY_LOCAL_TOKEN_FILE=/local-token \
  golang:1.27.2-bookworm /runtime/collector.test -test.run '^TestMemoryAdaptiveNativeComparison$' -test.timeout 210m -test.v > "$proof/collector.log" 2>&1
