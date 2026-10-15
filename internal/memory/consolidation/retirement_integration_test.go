@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/jobs"
 )
 
 type failingConsolidationAnchor struct{ catalog.Manifest }
@@ -37,10 +38,20 @@ func TestConsolidationRetirementFailureRemainsFencedAndCountsRetentionIntegratio
 	if err = f.pool.QueryRow(f.ctx, `SELECT retired FROM memory_consolidation_inputs WHERE source_id=$1`, v.Generation.InputID).Scan(&retired); err != nil || !retired {
 		t.Fatal("retirement fence lost", err)
 	}
-	// The independent anchor failure is not concealed by resetting its watermark.
-	// Operator reconciliation remains the existing catalog recovery workflow.
-	if err = f.store.Catalog.CheckRestore(f.ctx); !errors.Is(err, catalog.ErrRestore) {
-		t.Fatal("anchor failure silently reconciled", err)
+	// Append failed before deletion committed: the existing anchor is unchanged,
+	// quarantined content is retained honestly, and no new preparation fits.
+	if err = f.store.Catalog.CheckRestore(f.ctx); err != nil {
+		t.Fatal("unchanged anchor diverged", err)
+	}
+	if _, err = f.store.Prepare(f.ctx, f.request()); !errors.Is(err, jobs.ErrWaiting) {
+		t.Fatal("pending cleanup bypassed retention", err)
+	}
+	r, err = f.store.Retire(f.ctx, Retirement{InputID: v.Generation.InputID, ExpectedRevision: r.Head.Revision})
+	if err != nil || !r.CleanupComplete {
+		t.Fatal("healthy retry did not finish normal catalog deletion", r, err)
+	}
+	if _, err = f.store.Catalog.Get(f.ctx, f.sources[0].ID); err != nil {
+		t.Fatal("retry deleted original", err)
 	}
 }
 

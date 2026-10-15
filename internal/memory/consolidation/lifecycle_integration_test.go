@@ -13,7 +13,7 @@ import (
 func authoritySnapshot(t *testing.T, f *workflow) string {
 	t.Helper()
 	var snapshot []byte
-	if err := f.pool.QueryRow(f.ctx, `SELECT jsonb_build_object('tasks',(SELECT jsonb_agg(to_jsonb(t) ORDER BY task_id) FROM tasks t),'effects',(SELECT jsonb_agg(to_jsonb(e) ORDER BY action_id) FROM action_effects e),'authorizations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY authorization_id) FROM action_authorizations a),'mandates',(SELECT jsonb_agg(to_jsonb(m) ORDER BY mandate_id) FROM action_mandates m),'claims',(SELECT jsonb_agg(to_jsonb(c) ORDER BY claim_id) FROM memory_claims c),'profile',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM memory_profile p))`).Scan(&snapshot); err != nil {
+	if err := f.pool.QueryRow(f.ctx, `SELECT jsonb_build_object('tasks',(SELECT jsonb_agg(to_jsonb(t)-'working_json'-'working_revision'-'updated_at' ORDER BY task_id) FROM tasks t),'effects',(SELECT jsonb_agg(to_jsonb(e) ORDER BY action_id) FROM action_effects e),'authorizations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY authorization_id) FROM action_authorizations a),'mandates',(SELECT jsonb_agg(to_jsonb(m) ORDER BY mandate_id) FROM action_mandates m),'claims',(SELECT jsonb_agg(to_jsonb(c) ORDER BY claim_id) FROM memory_claims c),'profile',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM memory_profile p))`).Scan(&snapshot); err != nil {
 		t.Fatal(err)
 	}
 	return string(snapshot)
@@ -79,6 +79,10 @@ func TestConsolidationLifecycleAllEightThroughAtomicPublicationAndForgetIntegrat
 			}
 			if authoritySnapshot(t, f) != before {
 				t.Fatal("correction/deletion changed task/action authority")
+			}
+			var redacted bool
+			if err = f.pool.QueryRow(f.ctx, `SELECT working_json->'scratch'->>'privacy_redacted'='true' AND working_revision>1 FROM tasks WHERE task_id='other-task'`).Scan(&redacted); err != nil || !redacted {
+				t.Fatal("normal working-memory privacy invalidation lost", err)
 			}
 			var n int
 			if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM action_effect_dispatches`).Scan(&n); err != nil || n != 0 {

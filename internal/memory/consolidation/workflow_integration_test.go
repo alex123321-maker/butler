@@ -101,6 +101,11 @@ func newWorkflow(t *testing.T, texts ...string) *workflow {
 	if err := m.Initialize(); err != nil {
 		t.Fatal(err)
 	}
+	return newWorkflowOnPool(t, pool, m, texts...)
+}
+
+func newWorkflowOnPool(t *testing.T, pool *pgxpool.Pool, m *catalog.FileManifest, texts ...string) *workflow {
+	t.Helper()
 	c := catalog.New(pool, m)
 	b := budget.NewController(pool, budget.DefaultPolicy())
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
