@@ -39,6 +39,7 @@ import (
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
+	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/semantic"
 	memoryservice "github.com/butler/butler/internal/memory/service"
@@ -378,7 +379,7 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 			t.Fatal("migration failed", filepath.Base(path))
 		}
 	}
-	if _, err = pool.Exec(ctx, `CREATE TABLE adaptive_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(singleton),paid_entries INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);INSERT INTO adaptive_native_window(singleton)VALUES(TRUE)`); err != nil {
+	if _, err = pool.Exec(ctx, `CREATE TABLE adaptive_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(singleton),paid_entries INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);INSERT INTO adaptive_native_window(singleton)VALUES(TRUE);CREATE TABLE adaptive_native_imports(source_id TEXT PRIMARY KEY REFERENCES memory_sources(source_id),session_key TEXT NOT NULL REFERENCES sessions(session_key),case_id TEXT NOT NULL,arm TEXT NOT NULL,logical_source_id TEXT NOT NULL)`); err != nil {
 		t.Fatal("window ledger unavailable")
 	}
 	var suite acceptance.MemorySemanticSuite
@@ -539,6 +540,72 @@ func TestAdaptiveCollectorRetainsOriginalDenominator(t *testing.T) {
 	}
 }
 
+// Controlled transport/backend only. This exercises the collector's actual
+// owning PG/input/Flow/index boundaries without importing auth or making calls.
+// Its synthetic answer is never included in the prospective native corpus.
+func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
+	pool := memorytest.Database(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `CREATE TABLE adaptive_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE,paid_entries INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);INSERT INTO adaptive_native_window(singleton)VALUES(TRUE);CREATE TABLE adaptive_native_imports(source_id TEXT PRIMARY KEY REFERENCES memory_sources(source_id),session_key TEXT NOT NULL REFERENCES sessions(session_key),case_id TEXT NOT NULL,arm TEXT NOT NULL,logical_source_id TEXT NOT NULL)`); err != nil {
+		t.Fatal(err)
+	}
+	manifest := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
+	if manifest.Initialize() != nil {
+		t.Fatal("anchor unavailable")
+	}
+	cat := catalog.New(pool, manifest)
+	b := budget.NewController(pool, budget.DefaultPolicy())
+	b.Policy.OutputTokens = 32768
+	b.Policy.ModelMillis = 300000
+	b.Policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	b.Policy.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
+	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+	target, err := budget.NewLocalTarget("local-models:9090", "operator-pinned-service")
+	if err != nil {
+		t.Fatal(err)
+	}
+	guard, err := semantic.NewCatalogGuard(cat, "memory_read")
+	if err != nil {
+		t.Fatal(err)
+	}
+	live, err := semantic.NewLiveAdmission(b, guard, target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := semantic.NewStore(pool)
+	store.Guard = guard
+	backend := &memoryFixtureBackend{}
+	reader := &semantic.HybridReader{Store: store, Adapter: &semantic.Adapter{Backend: backend, Space: memoryEvalSpace(), Admission: live}, Rerank: false}
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	index := &indexing.Runtime{Catalog: cat, Jobs: jobs.New(pool, cat, b, &jobs.LocalTarget{Endpoint: target.Endpoint(), Identity: target.Identity()}), Backend: backend, Target: target, Space: memoryEvalSpace(), Price: budget.ModelPrice{Basis: "local_no_billing"}, Reader: reader, Log: log}
+	plan, err := adaptive.NewStore(pool, cat)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pm := promptmgmt.NewManager(config.NewPostgresSettingsStore(pool))
+	on := true
+	if _, err = pm.Update(ctx, promptmgmt.UpdateRequest{BasePrompt: adaptiveNativeInstruction, Enabled: &on}); err != nil {
+		t.Fatal(err)
+	}
+	provider := &adaptiveNativeProvider{pool: pool, ModelProvider: &memoryFixtureProvider{raw: `{"answer":"8","citations":[]}`}}
+	c := acceptance.MemorySemanticCase{ID: "collector-mechanics-fixture", Question: "Вычисли 4 + 4.", Task: acceptance.MemoryTask{Revision: 1, Goal: "Ответить на вопрос.", Instruction: "Внешних действий не выполнять."}, AsOfUTC: "2026-10-16T00:00:00Z", History: []acceptance.MemorySource{{ID: "unrelated-original", Revision: 1, Session: "old-conversation", EventUTC: "2026-09-01T00:00:00Z", Status: "active", Sensitivity: "public", Body: "В оранжерее выращивают пихту."}}}
+	var controls adaptiveImportControls
+	raw := `{"version":"butler-memory-adaptive-controls-v1","cases":[{"case_id":"collector-mechanics-fixture","sources":[{"source_id":"unrelated-original","project_id":"fixture-allowed","accessible":true}]}]}`
+	if json.Unmarshal([]byte(raw), &controls) != nil {
+		t.Fatal("controls unavailable")
+	}
+	for _, arm := range []string{"no_ltm", "retrieval_static", "retrieval_adaptive"} {
+		in, ob, refs := runAdaptiveNativeCase(t, ctx, pool, cat, index, plan, provider, b, nil, pm, c, controls, 0, arm, log)
+		if ob.Status != "completed" || len(refs) != 1 || ob.InputSHA256 != acceptance.MemoryInputDigest(in) {
+			t.Fatal("collector owning path failed", arm, ob.Status, ob.Reason)
+		}
+	}
+	var attempts, inputs, unsealed int
+	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*)FROM execution_model_attempts),(SELECT count(*)FROM accepted_inputs),(SELECT count(*)FROM accepted_inputs WHERE status IN('running','queued'))`).Scan(&attempts, &inputs, &unsealed); err != nil || attempts != 3 || inputs != 3 || unsealed != 0 {
+		t.Fatal("original was replayed or left claimable", attempts, inputs, unsealed, err)
+	}
+}
+
 func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, index *indexing.Runtime, plan *adaptive.Store, provider *adaptiveNativeProvider, b *budget.Controller, broker *tools.BrokerClient, pm *promptmgmt.Manager, c acceptance.MemorySemanticCase, controls adaptiveImportControls, ci int, arm string, log *slog.Logger) (acceptance.MemoryInput, acceptance.MemoryObservation, map[string]catalog.SourceRef) {
 	t.Helper()
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: adaptiveNativeOwner, Channel: "web", DeliveryID: "adaptive-native-import"})
@@ -561,18 +628,26 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 			t.Fatal("scope/original mismatch")
 		}
 		project := prefix + ":" + ctl.Project
+		uploadSession := "adaptive-import:" + prefix + ":" + h.Session
+		if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES($1,$2,'web') ON CONFLICT DO NOTHING`, uploadSession, adaptiveNativeOwner); err != nil {
+			t.Fatal("original upload session failed")
+		}
+		locator, _ := json.Marshal(map[string]string{"upload_session": uploadSession})
 		at, _ := time.Parse(time.RFC3339, h.EventUTC)
 		body := h.Body
 		if h.Status == "deleted" {
 			body = "Synthetic content-free lifecycle placeholder; deleted value is not reconstructed."
 		}
-		s, err := cat.Put(owner, catalog.PutSource{ExternalKey: prefix + ":" + h.ID, Kind: "document", ScopeType: "project", ScopeID: project, Title: h.ID, Body: body, EventTime: &at, Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
+		s, err := cat.Put(owner, catalog.PutSource{ExternalKey: prefix + ":" + h.ID, Kind: "document", ScopeType: "project", ScopeID: project, Title: h.ID, Body: body, Locator: locator, EventTime: &at, Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
 		if err != nil {
 			t.Fatal("actual source import failed")
 		}
 		ref := catalog.SourceRef{ID: s.ID, Revision: s.Revision, AccessRevision: s.AccessRevision, Hash: s.Hash}
 		refs[h.ID] = ref
 		byPhysical[s.ID] = h
+		if _, err = pool.Exec(ctx, `INSERT INTO adaptive_native_imports(source_id,session_key,case_id,arm,logical_source_id)VALUES($1,$2,$3,$4,$5)`, s.ID, uploadSession, c.ID, arm, h.ID); err != nil {
+			t.Fatal("actual upload/source correlation failed")
+		}
 		if h.Status == "deleted" {
 			if _, err = cat.Delete(owner, s.ID, "delete", s.Revision); err != nil {
 				t.Fatal("actual tombstone failed")
@@ -640,7 +715,8 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	}
 	payload, _ := json.Marshal(map[string]string{"text": c.Question, "user_id": adaptiveNativeOwner, "task_id": taskID, "intent": "conversation"})
 	event := ingress.InputEvent{EventID: prefix, IdempotencyKey: prefix, SessionKey: key, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}
-	receipt, err := worker.Execute(ctx, event)
+	requestCtx := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: adaptiveNativeOwner, Channel: "web", SessionKey: key, DeliveryID: prefix})
+	receipt, err := worker.Execute(requestCtx, event)
 	if err != nil {
 		t.Fatal("ordinary input acceptance failed")
 	}
