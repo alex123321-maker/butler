@@ -87,6 +87,17 @@ the Tool Broker with a durable observation/result provenance pin. A failed or
 unavailable read leaves the fact visibly unverified. It cannot write a new truth,
 change a mandate, replay an uncertain effect or remove old spending.
 
+`POST /api/v4/memory/revalidate-read` records an owner's explicit same-fact review
+of one existing Broker HTTP read. It requires the real immutable read_result
+receipt, exact owner/run/authorization/dispatch binding, the accepted fact pinned
+before dispatch, a finite already charged shared tool budget, matching normalized
+core-saved result, HTTP2xx and the expected resource hash. An unavailable or
+changed response cannot refresh verification. The stored verified instant is the
+original Broker observed time, never the later review time. The endpoint performs
+no network access, changes no accepted value/head and grants no task authority.
+The model cannot invoke this owner control. New external values remain candidates
+requiring the existing owner decision lifecycle.
+
 ## Current API and operational gate
 
 Authenticated owner controls use `POST /api/v4/memory/temporal` with the typed

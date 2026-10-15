@@ -28,6 +28,10 @@ func validTemporalUpdate(p TemporalUpdate) bool {
 // SetTemporal appends an authenticated interpretation. It never changes the
 // owner head, claim value, source revision or operational projection lifecycle.
 func (s *Store) SetTemporal(ctx context.Context, p TemporalUpdate) (TemporalMetadata, error) {
+	return s.setTemporal(ctx, p, nil)
+}
+
+func (s *Store) setTemporal(ctx context.Context, p TemporalUpdate, read *BrokerTemporalUpdate) (TemporalMetadata, error) {
 	own, err := owner(ctx)
 	if err != nil || !validTemporalUpdate(p) {
 		if err != nil {
@@ -82,11 +86,23 @@ func (s *Store) SetTemporal(ctx context.Context, p TemporalUpdate) (TemporalMeta
 	}
 	var verified *time.Time
 	basis := "unknown"
+	action, evidence, resource := "", "", ""
 	if p.OwnerVerifiedNow {
 		verified = &now
 		basis = "owner_statement"
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,valid_from,valid_to,freshness_class,verified_at,verification_basis,recorded_at,recorded_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, c.ID, revision+1, p.Validity, p.ValidFrom, p.ValidTo, p.Class, verified, basis, now, own); err != nil {
+	if read != nil {
+		observation, err := checkTemporalBrokerReadTx(ctx, tx, c, *read)
+		if err != nil {
+			return TemporalMetadata{}, err
+		}
+		verified = &observation.at
+		basis = "broker_read"
+		action = observation.action
+		evidence = read.EvidenceID
+		resource = read.ExpectedResourceHash
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,valid_from,valid_to,freshness_class,verified_at,verification_basis,recorded_at,recorded_by,verification_action_id,verification_evidence_id,verification_resource_hash) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, c.ID, revision+1, p.Validity, p.ValidFrom, p.ValidTo, p.Class, verified, basis, now, own, action, evidence, resource); err != nil {
 		return TemporalMetadata{}, err
 	}
 	if _, err = tx.Exec(ctx, `UPDATE memory_claim_temporal_heads SET revision=$2 WHERE claim_id=$1`, c.ID, revision+1); err != nil {

@@ -32,17 +32,20 @@ const (
 // SourceRecordedAt reuses the source revision's extracted_at ingestion timestamp;
 // RecordedAt is this metadata revision's core-assigned recording time.
 type TemporalMetadata struct {
-	ClaimID           string         `json:"claim_id"`
-	Revision          int64          `json:"revision"`
-	Validity          Validity       `json:"validity"`
-	ValidFrom         *time.Time     `json:"valid_from"`
-	ValidTo           *time.Time     `json:"valid_to"`
-	RecordedAt        *time.Time     `json:"recorded_at"`
-	SourceRecordedAt  time.Time      `json:"source_recorded_at"`
-	AcceptedAt        *time.Time     `json:"accepted_at"`
-	Class             FreshnessClass `json:"freshness_class"`
-	VerifiedAt        *time.Time     `json:"verified_at"`
-	VerificationBasis string         `json:"verification_basis"`
+	ClaimID                  string         `json:"claim_id"`
+	Revision                 int64          `json:"revision"`
+	Validity                 Validity       `json:"validity"`
+	ValidFrom                *time.Time     `json:"valid_from"`
+	ValidTo                  *time.Time     `json:"valid_to"`
+	RecordedAt               *time.Time     `json:"recorded_at"`
+	SourceRecordedAt         time.Time      `json:"source_recorded_at"`
+	AcceptedAt               *time.Time     `json:"accepted_at"`
+	Class                    FreshnessClass `json:"freshness_class"`
+	VerifiedAt               *time.Time     `json:"verified_at"`
+	VerificationBasis        string         `json:"verification_basis"`
+	VerificationActionID     string         `json:"verification_action_id,omitempty"`
+	VerificationEvidenceID   string         `json:"verification_evidence_id,omitempty"`
+	VerificationResourceHash string         `json:"verification_resource_hash,omitempty"`
 }
 
 // Freshness describes retrieval suitability; it never changes an owner decision
@@ -98,4 +101,16 @@ type TemporalUpdate struct {
 	ValidTo              *time.Time     `json:"valid_to"`
 	Class                FreshnessClass `json:"freshness_class"`
 	OwnerVerifiedNow     bool           `json:"owner_verified_now"`
+}
+
+// BrokerTemporalUpdate records an explicit owner's same-fact review of an
+// already completed, budgeted Broker read. It cannot initiate network traffic.
+// A read receipt proves observation, not semantic truth without that review.
+type BrokerTemporalUpdate struct {
+	ClaimID              string `json:"claim_id"`
+	ExpectedRevision     int64  `json:"expected_revision"`
+	ExpectedHeadRevision int64  `json:"expected_head_revision"`
+	EvidenceID           string `json:"evidence_id"`
+	ExpectedResourceHash string `json:"expected_resource_hash"`
+	ConfirmedSameFact    bool   `json:"confirmed_same_fact"`
 }

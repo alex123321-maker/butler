@@ -1,5 +1,14 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Temporal memory owner controls (`/api/v4/memory/temporal`, `/facts`, and
+`/revalidate-read` under `/api/v4/memory`) require private owner authentication and
+`BUTLER_MEMORY_TEMPORAL_ENABLED`; the default is false and a separate code-owned
+qualification is currently false. Complete RFC3339 validity/knowledge instants
+remain separate from reported EventTime. Ordinary context can exclude expired
+one-off exceptions while retaining broader accepted preferences, with explicit
+unknown/stale annotations. Prepared runs bind the observed accepted head and
+temporal revision, including SQL publication fences independent of the flag.
+
 Orchestrator also owns the default-off durable generative memory worker:
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes it; owner controls separately
 enable its persisted execution state. The handler registry defaults empty.

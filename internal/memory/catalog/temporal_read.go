@@ -31,7 +31,7 @@ func loadTemporalMetadataTx(ctx context.Context, tx pgx.Tx, c Claim, q TemporalQ
 	if maximum != head {
 		return m, 0, ErrStale
 	}
-	err := tx.QueryRow(ctx, `SELECT revision,validity,valid_from,valid_to,recorded_at,freshness_class,verified_at,verification_basis FROM memory_claim_temporal_revisions WHERE claim_id=$1 AND ($2::timestamptz IS NULL OR recorded_at<=$2) ORDER BY revision DESC LIMIT 1`, c.ID, q.KnownAt).Scan(&m.Revision, &m.Validity, &m.ValidFrom, &m.ValidTo, &m.RecordedAt, &m.Class, &m.VerifiedAt, &m.VerificationBasis)
+	err := tx.QueryRow(ctx, `SELECT revision,validity,valid_from,valid_to,recorded_at,freshness_class,verified_at,verification_basis,verification_action_id,verification_evidence_id,verification_resource_hash FROM memory_claim_temporal_revisions WHERE claim_id=$1 AND ($2::timestamptz IS NULL OR recorded_at<=$2) ORDER BY revision DESC LIMIT 1`, c.ID, q.KnownAt).Scan(&m.Revision, &m.Validity, &m.ValidFrom, &m.ValidTo, &m.RecordedAt, &m.Class, &m.VerifiedAt, &m.VerificationBasis, &m.VerificationActionID, &m.VerificationEvidenceID, &m.VerificationResourceHash)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = nil
 	}

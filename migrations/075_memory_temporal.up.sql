@@ -12,12 +12,13 @@ CREATE TABLE memory_claim_temporal_revisions (
  freshness_class TEXT NOT NULL CHECK(freshness_class IN ('unknown','stable_preference','work_status','technical_fact','completed_episode')),
  verified_at TIMESTAMPTZ, verification_basis TEXT NOT NULL CHECK(verification_basis IN ('unknown','owner_statement','broker_read')),
  verification_action_id TEXT NOT NULL DEFAULT '',
+ verification_evidence_id TEXT NOT NULL DEFAULT '', verification_resource_hash TEXT NOT NULL DEFAULT '',
  recorded_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(), recorded_by TEXT NOT NULL,
  PRIMARY KEY(claim_id,revision),
  CHECK(validity='interval' OR valid_from IS NULL AND valid_to IS NULL),
  CHECK(valid_from IS NULL OR valid_to IS NULL OR valid_from<valid_to),
  CHECK((verified_at IS NULL)=(verification_basis='unknown')),
- CHECK(verification_basis<>'broker_read' OR verification_action_id<>'')
+ CHECK(verification_basis<>'broker_read' OR verification_action_id<>'' AND verification_evidence_id<>'' AND length(verification_resource_hash)=64)
 );
 CREATE INDEX memory_claim_temporal_known ON memory_claim_temporal_revisions(claim_id,recorded_at,revision);
 
@@ -100,6 +101,7 @@ CREATE TABLE memory_temporal_run_pins (
  access_revision BIGINT NOT NULL, content_hash TEXT NOT NULL CHECK(length(content_hash)=64),
  metadata_hash TEXT NOT NULL CHECK(length(metadata_hash)=64), freshness_status TEXT NOT NULL, current_usable BOOLEAN NOT NULL,
  valid_at TIMESTAMPTZ, known_at TIMESTAMPTZ,
+ observed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
  PRIMARY KEY(run_id,claim_id)
 );
 

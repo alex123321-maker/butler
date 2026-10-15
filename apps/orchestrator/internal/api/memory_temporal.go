@@ -11,7 +11,7 @@ import (
 )
 
 func (s *MemoryCatalogServer) handleTemporal(ctx context.Context, w http.ResponseWriter, r *http.Request) bool {
-	if r.URL.Path != "/api/v4/memory/temporal" && r.URL.Path != "/api/v4/memory/facts" {
+	if r.URL.Path != "/api/v4/memory/temporal" && r.URL.Path != "/api/v4/memory/facts" && r.URL.Path != "/api/v4/memory/revalidate-read" {
 		return false
 	}
 	if !s.TemporalEnabled {
@@ -41,7 +41,7 @@ func (s *MemoryCatalogServer) handleTemporal(ctx context.Context, w http.Respons
 		}
 		return true
 	}
-	if r.URL.Path != "/api/v4/memory/temporal" || r.Method != http.MethodPost {
+	if (r.URL.Path != "/api/v4/memory/temporal" && r.URL.Path != "/api/v4/memory/revalidate-read") || r.Method != http.MethodPost {
 		w.WriteHeader(405)
 		return true
 	}
@@ -49,9 +49,23 @@ func (s *MemoryCatalogServer) handleTemporal(ctx context.Context, w http.Respons
 		writeJSON(w, 400, map[string]string{"error": "unique owner delivery identity required"})
 		return true
 	}
-	var q catalog.TemporalUpdate
 	d := json.NewDecoder(http.MaxBytesReader(w, r.Body, 32768))
 	d.DisallowUnknownFields()
+	if r.URL.Path == "/api/v4/memory/revalidate-read" {
+		var q catalog.BrokerTemporalUpdate
+		if decodeOwnerRequest(d, &q) != nil {
+			writeMemoryError(w, catalog.ErrInvalid)
+			return true
+		}
+		v, err := s.Store.SetTemporalFromBrokerRead(ctx, q)
+		if err != nil {
+			writeMemoryError(w, err)
+		} else {
+			writeJSON(w, 200, v)
+		}
+		return true
+	}
+	var q catalog.TemporalUpdate
 	if decodeOwnerRequest(d, &q) != nil {
 		writeMemoryError(w, catalog.ErrInvalid)
 		return true

@@ -1,5 +1,21 @@
 # Memory source catalog
 
+[Temporal memory](../../../docs/architecture/memory-temporal.md) versions owner
+validity interpretation separately from source EventTime/ingestion and existing
+head decisions. Typed accepted-fact reads cap a whole page at64, count unknown
+validity, and pin current head/source/metadata/freshness. Derived and ordinary
+run pins survive restart and deny late publication after metadata-only changes.
+Logical expiry labels or excludes current retrieval; it does not erase history,
+supersede an owner preference or create a privacy tombstone.
+
+An owner can review an actual already budgeted Broker `http.request` read using
+`SetTemporalFromBrokerRead`. The exact successful read receipt, original prepared
+fact pin, dispatch, normalized saved result and resource hash must match. The
+verification instant is the original observed time, so replay cannot refill TTL.
+This method never performs HTTP and no receipt automatically asserts semantic
+truth. Failed/unavailable reads retain unknown/stale verification. Private owner
+API controls and normal context enrichment remain default-off and unqualified.
+
 The optional [candidate control](../candidatecontrol/README.md) publishes agent
 proposals using current run/input/dispatch and source proof. Its trusted effect
 deduplication appends neutral confidence0 candidates. Concurrent workers cannot
