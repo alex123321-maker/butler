@@ -112,8 +112,22 @@ CREATE TABLE memory_experience_pins (
  source_id TEXT NOT NULL REFERENCES memory_experience_lessons(source_id),
  environment_hash TEXT NOT NULL CHECK(length(environment_hash)=64),
  lesson_hash TEXT NOT NULL CHECK(length(lesson_hash)=64),
- PRIMARY KEY(run_id,source_id)
+ slot SMALLINT NOT NULL CHECK(slot BETWEEN 1 AND 8),
+ PRIMARY KEY(run_id,source_id),
+ UNIQUE(run_id,slot)
 );
+-- Applicability follows every exact lesson ancestor, including a consolidated
+-- presentation or reviewed skill. This adds no source access or tool authority.
+CREATE FUNCTION butler_memory_experience_lessons_eligible(ids TEXT[],environment TEXT) RETURNS BOOLEAN STABLE LANGUAGE SQL AS $$
+ WITH RECURSIVE roots AS(SELECT unnest(ids) AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id),
+ lessons AS(SELECT l.* FROM memory_experience_lessons l JOIN roots r ON r.id=l.source_id LIMIT 9)
+ SELECT (SELECT count(*) FROM lessons)<=8 AND NOT EXISTS(
+  SELECT 1 FROM lessons l LEFT JOIN memory_sources s USING(source_id) LEFT JOIN memory_claims c ON c.claim_id=l.claim_id
+  WHERE environment IS NULL OR environment='' OR l.environment_hash<>environment OR s.head_revision IS DISTINCT FROM l.source_revision
+  OR s.status IS DISTINCT FROM 'active' OR s.owner_id IS DISTINCT FROM l.owner_id OR c.status IS DISTINCT FROM 'confirmed'
+  OR c.source_id IS DISTINCT FROM l.source_id OR c.source_revision IS DISTINCT FROM l.source_revision
+  OR EXISTS(SELECT 1 FROM memory_experience_feedback f WHERE f.source_id=l.source_id AND f.verdict IN('negative','misapplied','correction_required')))
+$$;
 CREATE FUNCTION butler_experience_metadata_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'immutable episodic experience provenance'; END $$;
 CREATE TRIGGER experience_observations_immutable BEFORE UPDATE OR DELETE ON memory_experience_observations FOR EACH ROW EXECUTE FUNCTION butler_experience_metadata_immutable();
 CREATE TRIGGER experience_tool_pins_immutable BEFORE UPDATE OR DELETE ON memory_experience_tool_pins FOR EACH ROW EXECUTE FUNCTION butler_experience_metadata_immutable();

@@ -12,5 +12,6 @@ DROP TRIGGER experience_tool_head_update ON tool_calls;
 DROP FUNCTION butler_memory_experience_tool_head_update();
 DROP TABLE memory_experience_tool_heads;
 DROP FUNCTION butler_memory_experience_tool_hash(tool_calls);
+DROP FUNCTION butler_memory_experience_lessons_eligible(TEXT[],TEXT);
 DROP TABLE memory_experience_pins,memory_experience_feedback,memory_experience_lessons,memory_experience_tool_pins,memory_experience_observations;
 DROP FUNCTION butler_experience_metadata_immutable();

@@ -64,3 +64,13 @@ experience lineage retains its existing validation; stage/test/owner review/CAS,
 rollback, approval and tool authority remain unchanged. The experience consumer
 and quality gate remain off; see
 [the contract](../memory/experience/README.md).
+
+Runtime descriptions and procedure loads retain the applicability of every
+lesson ancestor of the reviewed body. The private owning action context supplies
+the configured environment hash; missing/changed environment, withdrawn claim
+or negative lesson feedback denies that body. Full Catalog proof precedes
+binding all ancestor experience pins. Existing current contracts and installed
+revision validators still apply, and a late source/environment/feedback change
+blocks subsequent provider/tool/final release. Owner historical inspection is
+separate from runtime compatibility; no new permission or review shortcut is
+introduced.

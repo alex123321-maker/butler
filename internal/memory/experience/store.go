@@ -154,12 +154,65 @@ func (s *Store) EligibleTx(ctx context.Context, tx pgx.Tx, src catalog.Source, p
 	if observation {
 		return false, nil
 	}
+	rows, err := tx.Query(ctx, `WITH RECURSIVE roots AS(SELECT $1::text AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id) SELECT l.source_id,l.source_revision FROM memory_experience_lessons l JOIN roots r ON r.id=l.source_id ORDER BY l.source_id LIMIT 9`, src.ID)
+	if err != nil {
+		return false, err
+	}
+	roots := []catalog.SourceRef{}
+	for rows.Next() {
+		var r catalog.SourceRef
+		if err = rows.Scan(&r.ID, &r.Revision); err != nil {
+			rows.Close()
+			return false, err
+		}
+		roots = append(roots, r)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return false, err
+	}
+	if len(roots) > 8 {
+		return false, ErrEvidence
+	}
+	if len(roots) == 0 {
+		return true, nil
+	}
+	if s == nil || p.fingerprint == "" || p.fingerprint != s.EnvironmentHash {
+		return false, nil
+	}
+	for _, root := range roots {
+		sources, err := s.Sources.AccessTx(ctx, tx, []catalog.SourceRef{root}, "memory_read")
+		if err != nil {
+			return false, err
+		}
+		if len(sources) != 1 {
+			return false, ErrEvidence
+		}
+		eligible, err := s.eligibleLessonTx(ctx, tx, sources[0], p)
+		if err != nil || !eligible {
+			return false, err
+		}
+	}
+	if pin {
+		token, ok := ownership.TokenFromContext(ctx)
+		if !ok {
+			return false, ErrEvidence
+		}
+		if err = s.Sources.BindExperienceLineageTx(ctx, tx, []catalog.SourceRef{ref(src)}, p.fingerprint, token.RunID); err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func (s *Store) eligibleLessonTx(ctx context.Context, tx pgx.Tx, src catalog.Source, p Prepared) (bool, error) {
 	var env, digest, owner, claim, status string
 	var revision int64
 	var raw []byte
 	err := tx.QueryRow(ctx, `SELECT l.environment_hash,l.lesson_hash,l.owner_id,l.claim_id,l.source_revision,l.dependencies_json,c.status FROM memory_experience_lessons l JOIN memory_claims c ON c.claim_id=l.claim_id WHERE l.source_id=$1 FOR SHARE OF l,c`, src.ID).Scan(&env, &digest, &owner, &claim, &revision, &raw, &status)
 	if err == pgx.ErrNoRows {
-		return true, nil
+		return false, ErrEvidence
 	}
 	if err != nil {
 		return false, err
@@ -189,26 +242,6 @@ func (s *Store) EligibleTx(ctx context.Context, tx pgx.Tx, src catalog.Source, p
 	var lesson Lesson
 	if skills.Decode([]byte(src.Body), &lesson) != nil || lesson.Format != Format || hash(lesson) != digest || lesson.Observation.Validate() != nil || lesson.Verification != verification(lesson.Observation) || lesson.InstructionAuthority {
 		return false, ErrEvidence
-	}
-	if pin {
-		t, ok := ownership.TokenFromContext(ctx)
-		if !ok {
-			return false, ErrEvidence
-		}
-		var count int
-		if err = tx.QueryRow(ctx, `SELECT count(*) FROM memory_experience_pins WHERE run_id=$1`, t.RunID).Scan(&count); err != nil {
-			return false, err
-		}
-		if count >= 8 {
-			var exists bool
-			if tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_experience_pins WHERE run_id=$1 AND source_id=$2)`, t.RunID, src.ID).Scan(&exists) != nil || !exists {
-				return false, ErrEvidence
-			}
-		}
-		_, err = tx.Exec(ctx, `INSERT INTO memory_experience_pins(run_id,source_id,environment_hash,lesson_hash)VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, t.RunID, src.ID, env, digest)
-		if err != nil {
-			return false, err
-		}
 	}
 	return true, nil
 }
@@ -258,6 +291,38 @@ func (s *Store) Feedback(ctx context.Context, source, run, verdict string) error
 // CheckPinnedTx adds current environment/feedback/dependency proof before every
 // subsequent provider/tool/final release. It performs no Broker RPC under locks.
 func (s *Store) CheckPinnedTx(ctx context.Context, tx pgx.Tx, run string) error {
+	// Every normal Catalog read pins the complete graph. Complete applicability
+	// pins from those exact lesson ancestors even when a summary/skill consumer
+	// did not directly open the lesson itself.
+	lineage, err := tx.Query(ctx, `SELECT p.source_id,p.source_revision,p.access_revision,p.content_hash FROM memory_run_sources p JOIN memory_experience_lessons l USING(source_id) WHERE p.run_id=$1 ORDER BY p.source_id LIMIT 9`, run)
+	if err != nil {
+		return err
+	}
+	roots := []catalog.SourceRef{}
+	for lineage.Next() {
+		var r catalog.SourceRef
+		if err = lineage.Scan(&r.ID, &r.Revision, &r.AccessRevision, &r.Hash); err != nil {
+			lineage.Close()
+			return err
+		}
+		roots = append(roots, r)
+	}
+	err = lineage.Err()
+	lineage.Close()
+	if err != nil {
+		return err
+	}
+	if len(roots) > 8 {
+		return ErrEvidence
+	}
+	if len(roots) > 0 {
+		if s == nil || s.Sources == nil {
+			return ErrEvidence
+		}
+		if err = s.Sources.BindExperienceLineageTx(ctx, tx, roots, s.EnvironmentHash, run); err != nil {
+			return err
+		}
+	}
 	rows, err := tx.Query(ctx, `SELECT l.source_id,l.source_revision,l.environment_hash,l.lesson_hash,l.dependencies_json,l.owner_id,c.status,p.environment_hash,p.lesson_hash FROM memory_experience_pins p JOIN memory_experience_lessons l USING(source_id) JOIN memory_claims c ON c.claim_id=l.claim_id WHERE p.run_id=$1 ORDER BY l.source_id FOR SHARE OF l,c`, run)
 	if err != nil {
 		return err
@@ -308,7 +373,7 @@ func (s *Store) CheckPinned(ctx context.Context, run string) error {
 		return ErrEvidence
 	}
 	var count int
-	if s.Sources.Pool().QueryRow(ctx, `SELECT count(*) FROM memory_experience_pins WHERE run_id=$1`, run).Scan(&count) != nil || count > 8 {
+	if s.Sources.Pool().QueryRow(ctx, `SELECT count(*) FROM(SELECT source_id FROM memory_experience_pins WHERE run_id=$1 UNION SELECT p.source_id FROM memory_run_sources p JOIN memory_experience_lessons l USING(source_id) WHERE p.run_id=$1)roots`, run).Scan(&count) != nil || count > 8 {
 		return ErrEvidence
 	}
 	if count == 0 {

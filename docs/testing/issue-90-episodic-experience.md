@@ -88,3 +88,37 @@ lifecycle, no excluded-history leakage into A/B, and complete B-A/C-B creation,
 write/search/use/skill preparation/test/load cost. Foreground durable counts do
 not establish unobserved provider total/thinking tokens or a monetary invoice.
 Native inference remains unrun, and no quality gain is claimed.
+
+The subsequent ancestry refinement is frozen in `snapshots/v12`. Full
+`reports/mechanics-v12` passed **74 / 0 / 0** with vet and race detection;
+SHA256 of `evidence.sha256` is
+`8d445bc9bc94119696f22837a8bbd24a8bceb95261fdf45010d7b6bd2a543984`.
+`reports/backup-v12` repeated the actual dump/delete/fresh-restore procedure,
+**3 / 0 / 0**, with receipt SHA256
+`94a20fb4df59093d8eca99fa9d81ff765905e7389d8a12eb950ccd296d89fba4`.
+This source predates only the receipt paragraph. The full run includes the
+independently authored recipient's actual Broker/extension/HTTP protocol proof;
+those six component passes do not claim original-task or native note quality.
+
+Runtime applicability now follows every lesson ancestor through arbitrary
+derived DATA, accepted episodic projections and real reviewed-skill bodies.
+Current environment, owner acceptance, exact contracts, feedback and Catalog
+parents remain mandatory, with at most eight lesson pins per run. Unknown
+environment denies reuse. Skills use their existing installed-contract
+validator; no Broker RPC occurs under owning SQL locks. The actual owning
+verifier regression denies omitted `lesson_sources` for experience lineage.
+The trusted collector-only source subset is checked before ranking/body reads,
+has no model or wire argument and composes with the same current proof.
+
+The new arbitrary summary/consolidation/skill DATA chains test the shared
+ancestry boundary, not actual #84/#89 generation quality. A real accepted
+derived episode additionally proves the ordinary episode adapter retains
+ancestor environment and negative-feedback checks. `mechanics-v9` retained a
+test contract fixture missing the required transaction-aware validator;
+`mechanics-v11` retained a derived-claim fixture missing its mandatory dedup key.
+Both were fixed only in fixtures; full v10 and v12 passed. Their historical
+logs and the unexplained v5 source-check timeout remain preserved.
+
+Owning privacy repair is being composed separately in 92. These receipts still
+do not claim primary tool-payload erasure or post-079 combined acceptance.
+Prospective A/B/C collection remains unrun and cannot enable the production gate.

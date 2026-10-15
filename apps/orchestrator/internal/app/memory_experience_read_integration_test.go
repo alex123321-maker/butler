@@ -24,6 +24,7 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	f.reader.lessons = store
 	d := skills.Dependency{Tool: f.call.ToolName, ContractHash: f.prepared.Binding.ContractHash, ContractRevision: f.prepared.Binding.ContractRevision}
 	o := experience.Observation{Format: experience.SnapshotFormat, OwnerID: f.f.parent.OwnerID, TaskID: f.f.parent.TaskID, TaskRevision: f.f.parent.Revision, ConstraintsRevision: f.f.parent.ConstraintsRevision, RunID: f.call.RunId, ResultID: "unverified-projection-fixture", Goal: f.f.parent.Goal, Constraints: []string{}, Environment: experience.Environment{Fingerprint: store.EnvironmentHash, Tools: []skills.Dependency{d}}, AgentReport: "No independently verified outcome in this fixture", OwnerVerdict: "unknown", VerifiedCriteria: []string{}, Actions: []experience.Action{{ID: f.prepared.EffectID, Tool: d.Tool, ContractHash: d.ContractHash, ContractRevision: d.ContractRevision, ArgumentsHash: f.prepared.Binding.ArgsHash, Effect: actionauth.StateAllowed, Evidence: []string{}}}, Failures: []experience.FailedCall{}, Unknowns: []string{"action_not_executed"}}
 	o.Actions[0].ToolCallID = f.call.ToolCallId
@@ -74,6 +75,42 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	if _, err = f.f.sources.Decide(f.f.owner, catalog.Decision{ClaimID: claim}); err != nil {
 		t.Fatal(err)
 	}
+	// An ordinary Episodic projection can be a descendant of a typed lesson.
+	// Its adapter must retain ancestor applicability rather than classify only
+	// the root as an ordinary episode and bypass the experience gate.
+	tx, err = f.f.pool.Begin(f.f.owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	derived, err := f.f.sources.CreateDerivedTx(f.f.owner, tx, []catalog.SourceRef{{ID: result.ID, Revision: result.Revision, AccessRevision: result.AccessRevision, Hash: result.Hash}}, "memory_extract", "Derived lesson presentation", "Observed dependent episodic DATA", json.RawMessage(`{}`))
+	if err != nil {
+		tx.Rollback(f.f.owner)
+		t.Fatal(err)
+	}
+	derivedClaim, err := f.f.sources.ProposeTx(f.f.owner, tx, catalog.ClaimRequest{MemoryType: "episodic", SourceID: derived.ID, SourceRevision: derived.Revision, Key: "episode.experience.derived_fixture", Value: json.RawMessage(`{"observed":"dependent DATA"}`), Summary: "Derived experience presentation", Confidence: 0, DedupKey: "derived-episode-fixture"})
+	if err != nil {
+		tx.Rollback(f.f.owner)
+		t.Fatal(err)
+	}
+	if err = tx.Commit(f.f.owner); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.f.sources.Decide(f.f.owner, catalog.Decision{ClaimID: derivedClaim.ID}); err != nil {
+		t.Fatal(err)
+	}
+	var episode int64
+	if f.f.pool.QueryRow(f.f.ctx, `SELECT episode_id FROM memory_claims WHERE claim_id=$1`, derivedClaim.ID).Scan(&episode) != nil {
+		t.Fatal("derived episode missing")
+	}
+	if allowed, err := experienceObjectAllowed(f.owned, f.f.sources, store, episode); err != nil || !allowed {
+		t.Fatal("healthy derived episode suppressed", err)
+	}
+	changed, _ := experience.New(f.f.sources, strings.Repeat("e", 64), experienceToolsFixture{readcontrol.Contract(readcontrol.Open)})
+	for _, current := range []*experience.Store{nil, changed} {
+		if allowed, err := experienceObjectAllowed(f.owned, f.f.sources, current, episode); err != nil || allowed {
+			t.Fatal("derived episode lost environment applicability", err)
+		}
+	}
 	if _, err = f.f.pool.Exec(f.f.ctx, `UPDATE runs SET autonomy_mode='mode_0' WHERE run_id=$1`, f.call.RunId); err != nil {
 		t.Fatal(err)
 	}
@@ -114,6 +151,9 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	}
 	if err = store.Feedback(f.f.owner, result.ID, f.call.RunId, "misapplied"); err != nil {
 		t.Fatal(err)
+	}
+	if allowed, err := experienceObjectAllowed(f.owned, f.f.sources, store, episode); err != nil || allowed {
+		t.Fatal("derived episode ignored negative ancestor feedback", err)
 	}
 	if store.CheckPinned(f.owned, f.call.RunId) == nil {
 		t.Fatal("current negative feedback failed release guard")

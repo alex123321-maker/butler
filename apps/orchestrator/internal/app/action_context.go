@@ -13,6 +13,8 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	"github.com/butler/butler/internal/memory/experience"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -68,6 +70,9 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	c.MemoryReadReady = r.memoryReadReady
 	c.MemoryTemporalReady = r.memoryTemporalReady
 	c.WorkspaceReady = r.workspaceReady
+	if r.lessons != nil {
+		c.ExperienceEnvironmentHash = r.lessons.EnvironmentHash
+	}
 	if r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
 		var inputID, claimID string
 		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
@@ -113,7 +118,8 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		if err != nil {
 			return c, err
 		}
-		if err = r.lessons.CheckPinnedTx(ctx, tx, runID); err != nil {
+		live := ownership.WithToken(owneridentity.WithActor(ctx, owneridentity.Actor{}), nil, ownership.Token{SessionKey: c.SessionKey, RunID: c.RunID, LeaseID: c.LeaseID, FenceEpoch: c.LeaseEpoch})
+		if err = r.lessons.CheckPinnedTx(live, tx, runID); err != nil {
 			return c, err
 		}
 		if a.TaskID != "" {

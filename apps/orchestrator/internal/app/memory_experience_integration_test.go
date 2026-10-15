@@ -23,6 +23,7 @@ import (
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/skills"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -171,6 +172,17 @@ func TestExperienceActualBrokerTaskOwnerPolicyAndEpisodeIntegration(t *testing.T
 	}
 	if provider.calls != 1 {
 		t.Fatal("unexpected repeated model attempt")
+	}
+	proofs, err := evidence.VerifySkillSources(f.f.owner, o.OwnerID, []skills.EvidenceRef{{TaskID: o.TaskID, TaskRevision: o.TaskRevision, ResultID: o.OwnerResultID}})
+	if err != nil || len(proofs) != 1 {
+		t.Fatal("actual source proof for lesson lineage", err)
+	}
+	lessonSource, err := f.f.sources.Get(f.f.owner, source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = evidence.VerifyLessonLineage(f.f.owner, o.OwnerID, skills.LessonRequest{Roots: []catalog.SourceRef{{ID: lessonSource.ID, Revision: lessonSource.Revision, AccessRevision: lessonSource.AccessRevision, Hash: lessonSource.Hash}}, Proofs: proofs, Dependencies: o.Environment.Tools}); err == nil {
+		t.Fatal("omitted lesson_sources downgraded actual experience lineage")
 	}
 	post("/api/v4/memory/model-experience-feedback", map[string]string{"source_id": source, "run_id": f.call.RunId, "verdict": "unknown"}, nil)
 	var metadata string

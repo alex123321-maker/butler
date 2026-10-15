@@ -37,6 +37,17 @@ watermark cannot revoke unchanged unrelated experience. Original message data
 continues to use the complete Catalog parent graph. This is separate from the
 whole-session copied-summary coverage predicate in migration 072.
 
+The same applicability requirement follows all lesson ancestors of any derived
+presentation, summary, consolidation or reviewed skill. Current accepted claim,
+environment and nonnegative feedback use one bounded metadata predicate; source
+proof and existing exact tool/installed-dependency checks remain independent.
+The private owning action context supplies the configured environment hash to
+reviewed-skill reads. Runtime reads pin every relevant lesson ancestor, and
+final guards complete pins from the full current Catalog run graph. Unknown
+environment fails closed; an ordinary source without lesson lineage retains
+its behavior. Up to eight lessons can be pinned, with a concurrent-safe slot
+bound. No model header/configuration value can supply that environment.
+
 Experience-derived skills use the existing #19 lifecycle. The private verifier
 derives experience lineage from complete Catalog parents even when a caller
 omits `lesson_sources`; repeated independent confirmed original tasks and exact

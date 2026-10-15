@@ -263,7 +263,7 @@ func experienceObjectAllowed(ctx context.Context, sources *catalog.Store, s *exp
 		return true, nil
 	}
 	var lesson bool
-	if err := sources.Pool().QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_object_sources o JOIN memory_experience_lessons l USING(source_id) WHERE o.memory_type='episodic' AND o.object_id=$1)`, id).Scan(&lesson); err != nil {
+	if err := sources.Pool().QueryRow(ctx, `WITH RECURSIVE roots AS(SELECT source_id AS id FROM memory_object_sources WHERE memory_type='episodic' AND object_id=$1 UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id)SELECT EXISTS(SELECT 1 FROM roots r JOIN memory_experience_lessons l ON l.source_id=r.id)`, id).Scan(&lesson); err != nil {
 		return false, err
 	}
 	if !lesson {

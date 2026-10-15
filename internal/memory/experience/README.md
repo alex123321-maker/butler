@@ -70,6 +70,25 @@ pin (at most eight). Subsequent provider/tool/final release checks current
 environment, feedback, installed dependency versions and the complete Catalog
 graph. Turning the feature off cannot resume a previously pinned lesson.
 
+Applicability follows every lesson ancestor of a presentation, consolidation or
+reviewed skill, rather than the returned root's type. A shared migration-077
+metadata predicate checks the complete bounded ancestor set for current accepted
+claim, environment and negative feedback. The owning private action context
+supplies the operator environment fingerprint to existing reviewed-skill reads;
+missing/disabled remains incompatible. Full Catalog proof precedes binding the
+lesson pins, and normal run source graphs complete missing ancestry pins before
+release. Eight unique ordinal slots enforce the union bound under concurrent
+reads. Exact Broker contracts and mutable installed revisions keep their
+existing owning validators; no Broker RPC is made under SQL locks. Historical
+owner inspection remains DATA and does not confer runtime applicability.
+
+Trusted evaluation composition may additionally restrict Reader exposure to an
+exact frozen source subset before SQL ranking/body loading. This unexported app
+option is not a Broker/model argument, grants no access and is ANDed with full
+Catalog and experience checks. nil preserves ordinary production reads; an
+explicit empty subset denies all. Parent grants needed for provenance proof do
+not therefore expose source-task transcripts as the B/C notes treatment.
+
 `POST /api/v4/memory/model-experience-feedback` accepts an owner-only exact
 `source_id`, actual owner `run_id` and one explicit enum: `useful`, `misapplied`,
 `correction_required`, `negative`, `unknown`. A delivery/run identity deduplicates

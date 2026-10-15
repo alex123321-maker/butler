@@ -27,15 +27,16 @@ import (
 // MemoryReads is the owning service boundary. The permanent Broker dispatch
 // supplies identity; model arguments can select only bounded exact DATA reads.
 type MemoryReads struct {
-	pool       *pgxpool.Pool
-	sources    *catalog.Store
-	leases     *session.PostgresLeaseManager
-	inputs     *durableinput.Store
-	hashes     map[string]string
-	adaptive   *adaptive.Store
-	semantic   memoryservice.PolicySemanticReader
-	temporal   bool
-	experience *experience.Store
+	pool         *pgxpool.Pool
+	sources      *catalog.Store
+	leases       *session.PostgresLeaseManager
+	inputs       *durableinput.Store
+	hashes       map[string]string
+	adaptive     *adaptive.Store
+	semantic     memoryservice.PolicySemanticReader
+	temporal     bool
+	sourceSubset []catalog.SourceRef
+	experience   *experience.Store
 }
 
 // AdaptiveReadOptions is trusted composition, never a request/model flag.
@@ -45,6 +46,9 @@ type AdaptiveReadOptions struct {
 	Store      *adaptive.Store
 	Semantic   memoryservice.PolicySemanticReader
 	Experience *experience.Store
+	// Unexported trusted evaluation cohort. It adds denial only and cannot be
+	// supplied through a Broker envelope, stored flag or model request.
+	sourceSubset []catalog.SourceRef
 }
 
 func NewMemoryReads(pool *pgxpool.Pool, sources *catalog.Store, options ...AdaptiveReadOptions) (*MemoryReads, error) {
@@ -59,6 +63,17 @@ func NewMemoryReads(pool *pgxpool.Pool, sources *catalog.Store, options ...Adapt
 		s.adaptive = options[0].Store
 		s.semantic = options[0].Semantic
 		s.experience = options[0].Experience
+		if options[0].sourceSubset != nil {
+			if len(options[0].sourceSubset) > 8 {
+				return nil, readcontrol.ErrDenied
+			}
+			s.sourceSubset = append([]catalog.SourceRef{}, options[0].sourceSubset...)
+			for _, ref := range s.sourceSubset {
+				if ref.ID == "" || ref.Revision < 1 || ref.AccessRevision < 1 || len(ref.Hash) != 64 {
+					return nil, readcontrol.ErrDenied
+				}
+			}
+		}
 	}
 	for _, c := range append(readcontrol.Contracts(), factcontrol.Contract()) {
 		h, e := actionauth.ContractHash(c)
@@ -213,7 +228,7 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	if facts != nil {
 		result, err = s.readTemporalFactsTx(owned, tx, *facts)
 	} else {
-		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
 			return s.experience.EligibleTx(ctx, tx, src, lessonEnvironment, true)
 		}}).ReadTx(owned, tx, e.Tool, a)
 	}
