@@ -158,6 +158,9 @@ func TestModelCrashRecoveryAndLostPublicationACKIntegration(t *testing.T) {
 	for _, phase := range []string{"before_dispatch", "after_dispatch", "before_commit"} {
 		t.Run(phase, func(t *testing.T) {
 			w, ctx, src := modelFixture(t)
+			// This tests crash fencing and ACK recovery, not latency. Two 5s
+			// quotes fit the existing shared 10s allowance under race/CPU load.
+			w.Jobs.budgets.Policy.ModelMillis = 5000
 			j := schedule(t, w, ctx, policyRequest(src))
 			a, _, e := w.Admit(ctx, j)
 			if e != nil {
