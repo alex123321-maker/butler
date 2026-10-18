@@ -121,7 +121,7 @@ only explicitly expired/not-yet-valid current entries; stale/unknown verificatio
 remains labeled evidence. Already bound privacy/decision guards remain mandatory
 even when the feature flag is off. No main deployment is activated by these tests.
 
-Agent dated lookup uses the separate canonical `memory.facts` read contract1;
+Agent dated lookup uses the separate canonical `memory.facts` read contract;
 the three existing87 contracts remain byte-identical. It accepts at most8 exact
 source references, optional explicit `valid_at`/`known_at`, and returns at most10
 bounded accepted fact snapshots with temporal DATA/provenance. It does not return
