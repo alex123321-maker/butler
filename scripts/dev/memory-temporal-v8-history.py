@@ -63,18 +63,27 @@ def main():
     check_previous(HISTORY/'history.json', HISTORY_SHA)
     proof = base/'reports'/label/'history'
     proof.mkdir(mode=0o700, parents=True)
-    copied, pending = {}, [util.reference('history.json', previous)]
-    while pending:
-        ref = pending.pop()
-        name, data = util.referenced(HISTORY, ref)
+    # The validated closed receipt also retains documentary absolute paths in
+    # operator accounting. Those are not artifact capabilities to follow. Copy
+    # the bounded flat JSON evidence directory; the Go loader independently
+    # traverses and hashes every required typed manifest reference afterward.
+    copied = {}
+    for item in sorted(HISTORY.iterdir()):
+        if item.is_symlink() or not item.is_file() or not re.fullmatch('[A-Za-z0-9_.-]+\\.json', item.name):
+            raise SystemExit('only bounded regular closed-history JSON files required')
+        name = item.name
+        try:
+            data = item.read_bytes()
+        except PermissionError:
+            data = util.artifact(item)
+        if len(data) > 32*1024*1024:
+            raise SystemExit('bounded closed V7 evidence required')
+        json.loads(data)
+        if name == 'history.json' and data != previous:
+            raise SystemExit('original closed V7 manifest changed')
         target = 'closed-v7-history.json' if name == 'history.json' else name
-        if target in copied:
-            if copied[target] != data:
-                raise SystemExit('recursive V8 history filename collision')
-            continue
         util.write(proof/target, data)
         copied[target] = data
-        pending.extend(util.references(json.loads(data)))
     result = {'format': 'butler.temporal.native-history.v4', 'owner': 'owner', 'day': m['day'], 'deadline': m['deadline'], 'schema': 'memory_temporal_native_v8', 'closed_v7_history': util.reference('closed-v7-history.json', previous), 'future_window': future(), 'rule': 'Latest validated inclusive145 once; retain every earlier failed/unexecuted/NULL original and separate adaptive226. Prospective whole12 on generic facts contract4; no quality inference from predecessor accounting.'}
     data = util.canonical(result)
     util.write(proof/'history.json', data)
