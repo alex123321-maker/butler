@@ -48,6 +48,13 @@ environment fails closed; an ordinary source without lesson lineage retains
 its behavior. Up to eight lessons can be pinned, with a concurrent-safe slot
 bound. No model header/configuration value can supply that environment.
 
+Current dependency preparation uses the Broker's canonical contract validation:
+`active` and `enabled` are both usable statuses, including installed extensions
+which expose `enabled`. The exact status stays in the contract hash; neither
+status conversion nor unknown/disabled tools can satisfy an earlier dependency.
+Current permitted catalog, installed version, environment and full ancestry
+checks remain independent of that validation.
+
 Experience-derived skills use the existing #19 lifecycle. The private verifier
 derives experience lineage from complete Catalog parents even when a caller
 omits `lesson_sources`; repeated independent confirmed original tasks and exact

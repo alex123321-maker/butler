@@ -62,6 +62,11 @@ flags or stored settings. A later measured qualification is limited to the
 measured provider/output/time/budget profile and never bypasses the separate
 enabled worker/control/owner policy. No native quality result is claimed yet.
 
+Current Broker dependency identity preserves status: both `active` core contracts and `enabled`
+installed-extension contracts are supported by `actionauth.ContractHash`.
+Disabled/unknown contracts remain unavailable, and changing status changes the
+hash. No consumer normalizes status or replaces current task/tool permissions.
+
 Runtime reuse also needs an explicit 64-character lowercase SHA256 operator
 environment attestation in `BUTLER_MEMORY_EXPERIENCE_ENVIRONMENT_HASH`. Operators
 must change it for runtime/API/configuration changes affecting applicability;

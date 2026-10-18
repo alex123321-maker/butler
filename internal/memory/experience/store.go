@@ -46,7 +46,10 @@ func (s *Store) Prepare(ctx context.Context, run string) (Prepared, error) {
 	p := Prepared{s.EnvironmentHash, map[string]skills.Dependency{}}
 	for _, c := range contracts {
 		h, err := actionauth.ContractHash(c)
-		if err != nil || c.GetStatus() != "active" || c.GetContractRevision() == "" {
+		// ContractHash accepts the Broker's active and enabled contracts and
+		// retains that exact status in the fingerprint. Installed extensions
+		// use enabled; an additional active-only filter would hide every one.
+		if err != nil || c.GetContractRevision() == "" {
 			continue
 		}
 		if _, ok := p.tools[c.ToolName]; ok {

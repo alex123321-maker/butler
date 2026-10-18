@@ -147,6 +147,14 @@ windows remain rejected. Source privacy grants cannot stand in for current
 tool applicability; no runtime guard is weakened for the positive fixture.
 The full experience composition uses its standard non-adaptive memory reader,
 so it preserves actual source/bytes without inventing an adaptive read_ref.
+V5 then exposed a separate production defect after those fixture corrections:
+the current dependency adapter discarded every real extension's `enabled`
+contract even after canonical Broker hashing accepted it. The focused fix uses
+that existing canonical validation, preserving the exact status/hash/revision,
+current permissions, installed versions and ancestry. A cached unit overlay
+reproduced the old enabled-only failure; the corrected status matrix passed,
+including continued denial of disabled/empty/unknown states. Actual same-timeline
+extension reuse still requires a fresh Linux/PG/race run of the corrected source.
 
 The lifecycle driver coordinates a real custom dump while that same test and
 database remain live. It fsyncs the dump before allowing owner deletion, restores
