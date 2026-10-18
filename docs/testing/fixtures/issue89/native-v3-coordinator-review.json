@@ -1,0 +1,33 @@
+{
+  "format": "butler.consolidation.native-v3.coordinator-review.v1",
+  "prepared_sha256": "c8950ad8cedd938bf619376f1cabee66b28da4e045193fd2e92e6dc1ae05a188",
+  "preseal_review_sha256": "f810a417deb53a7642cce6a6b282ae6dceec69236bdd36ac621602a99c7d9ea5",
+  "source_revision": "3baf016cb9feb8d31986a4c3f73b857dbdcc02af",
+  "history_sha256": "cba9612964da448146ae65c08546a8f007c24583e307a2dde1f752463aedea5f",
+  "non_test_go_files_matching_coordinator": 834,
+  "fresh_seven_store_inventory_unchanged": true,
+  "schema_absent": true,
+  "one_use_receipt_count": 0,
+  "full_lifecycle": {
+    "source": "4d7e6a68",
+    "checkpoints": 24,
+    "passed_events": 47,
+    "failures": 0,
+    "skips": 0,
+    "race": true,
+    "vet": true,
+    "evidence_sha256": "6a9b91b8fa80c0c7d7b248f5bd3684e753f23f7fecc11fdf82b81e71ec2ea6f9"
+  },
+  "composition": {
+    "source": "e09638dd",
+    "passed_events": 464,
+    "failures": 0,
+    "skips": 0,
+    "race": true,
+    "vet": true,
+    "evidence_sha256": "1ad80f9afc181a6f5e2c23653a8d7e22b093ab69ba78c8ce010bb660691a928a"
+  },
+  "execution_scope": "one complete frozen nine-slot window; fresh checks and clone under common flock; no replay or selected retry",
+  "primary_application_activation": false,
+  "qualification": false
+}

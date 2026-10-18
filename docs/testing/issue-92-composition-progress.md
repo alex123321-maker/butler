@@ -16,8 +16,9 @@ All coherent foreground receipts before v10 have an inherited-owner fixture
 limitation: they establish the recorded physical mechanics, not ordinary-worker
 authorization or final publication. Neutral-worker v10 failed after19 checkpoints.
 The current neutral-worker lifecycle-v11 passes all24 checkpoints and47 test/subtest
-events with race/vet. Combined composition-v6 is still pending; the earlier table
-rows do not qualify this candidate.
+events with race/vet. Fresh composition-v7 passes464 events,0 failures/skips,
+race and vet, including the mandatory immutable-history fixture. Earlier table
+rows retain their original limits.
 
 | Source / window | Observation | Limits |
 | --- | --- | --- |
@@ -210,7 +211,8 @@ This controlled receipt does not repair or qualify any closed native cohort.
 Source `4d7e6a68` now starts fresh combined `composition-v6` and full controlled
 `coherent-lifecycle-v11` windows. The full lifecycle-v11 passed24 checkpoints and47/0/0/race/vet; its evidence-list
 SHA256 is `6a9b91b8fa80c0c7d7b248f5bd3684e753f23f7fecc11fdf82b81e71ec2ea6f9`.
-The combined outcome remains pending. The combined
+The original combined-v6 window was subsequently rejected for a missing history
+fixture; its fresh passing v7 successor is recorded below. The combined
 gate additionally requires the new default/compound held-event controls and
 consolidation-v3 worker, failed-closure, exact latest-leaf and current-day carry
 controls. Namespace consumption remains tested only in its dedicated disposable
@@ -230,10 +232,27 @@ checks them again after the suite. Fresh `composition-v7` uses original
 `50bcbf547df876cd92c36571336dd8a558bbf688bec5c81729144146c39b50d4`.
 The same original manifest is independently loaded positively through the
 consolidation-v3 recursive-history preparation; the four altered-usage cases are
-therefore tested against a validated original. The new full result is pending.
+therefore tested against a validated original. The fresh full v7 result passes as recorded below.
 
 To reproduce the current combined driver, set
 `BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY` to that operator-reviewed history directory
 and `BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY_SHA256` to its exact manifest hash before
 calling `memory-composition-lab.sh ROOT FRESH_LABEL`. This fixture contains original
 bounded ledger/history JSON, with no cloud-auth mount or inference permission.
+Current `composition-v7`, frozen source `e09638dd`, passes464 test/subtest events,
+0 failures/skips, race detection and targeted vet. All mandatory parents passed,
+including the four original immutable-history usage forgeries. Both source and
+fixture checksums remained unchanged. No auth or native inference was used.
+The earlier rejected v6 stream SHA256 remains
+`b4d4f7dd92254d57fc8bb850c4420a61069f67148288b13cacb6c86c22c0010b`.
+
+| Current v7 artifact | SHA256 |
+| --- | --- |
+|tests.jsonl|af5a9ba51a3a7fce46392c89482f972563ae382375ff1bc92a003cf06be666a5|
+|history-fixture.sha256|a167236f1a7c2bd759b9abe925e697c5792a5c7dd274dc86f513f8395a27c66b|
+|evidence.sha256|1ad80f9afc181a6f5e2c23653a8d7e22b093ab69ba78c8ce010bb660691a928a|
+
+Reports are under `issue92-20261018/reports/composition-v7` on laba. This current
+combined receipt and full neutral-worker lifecycle-v11 satisfy their mechanical
+boundaries. The native quality/cost screens, supported mixed-workload profile,
+qualified effective composition and staged real owner review remain independent.
