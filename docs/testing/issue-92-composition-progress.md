@@ -96,6 +96,13 @@ nonacceptance of an old source. Actual model-visible context corroborates the
 other disputed timestamp. V5 remains NO_GO; the separate general revision3
 clarification changes no old answers, charges, input schema or source limits.
 
+The subsequent [v6 whole-window review](issue-88-native-v6-independent-review.md)
+retains7 completed/1 failed/4 unexecuted originals. Its source-currentness timeout
+is localized to the original run-source SQL, with23 known native totals and1
+unknown. Seven target conclusions are supported, with separate timestamp/expiry
+terminology limits; no complete quality or availability gate passed. Exact main
+auth handback and paid-discovery200 passed without changing the application.
+
 The [first89 native cohort](issue-89-native-v1.md) is also NO_GO: one background
 grouping completed, the first baseline foreground returned capability_mismatch,
 and seven slots remained unexecuted. Both native entries have known full usage
