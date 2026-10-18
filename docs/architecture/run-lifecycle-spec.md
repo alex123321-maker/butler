@@ -696,6 +696,10 @@ approval/recovery remain unchanged. POST `/api/v1/doctor/check` returns a pendin
 receipt (202); polling its `input_id` reads that exact operation. Runtime and
 memory reporting failures remain independent results and cannot become a
 healthy report because HTTP delivery succeeded. Historical JSON remains readable.
+The command's tool reference is deterministic within its actual run and distinct
+between runs. Transcript tool IDs are globally unique; a later Doctor operation
+must append its own record without overwriting a prior check or colliding with
+its ID. Existing suspended continuations retain their recorded exact reference.
 
 Текущий baseline дополнительно предусматривает read-only operator visibility для memory state вне критического run path:
 

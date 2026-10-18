@@ -39,7 +39,8 @@ docker run --rm --pull never --name "$client" --network "$network" --cpus 1 --me
  golang:1.27.2-bookworm bash -eu -c '
  go build -p 1 -o /proof/tool-broker ./apps/tool-broker
  go test -json -race -p 1 -count=1 -timeout 5m -run "^TestMemoryRealBootstrapDoctorIntegration$" ./apps/orchestrator/internal/app > /proof/tests.jsonl
- go vet ./apps/orchestrator/internal/app > /proof/vet.log 2>&1
+ go test -json -race -p 1 -count=1 -timeout 1m -run "^TestOperatorDoctorCommandIdentitySurvivesReplayWithoutCrossRunCollision$" ./apps/orchestrator/internal/orchestrator > /proof/identity-tests.jsonl
+ go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator > /proof/vet.log 2>&1
  ' > "$proof/runner.log" 2>&1 || status=$?
 cleanup
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm \
@@ -47,12 +48,14 @@ docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 
 find "$proof" -maxdepth 1 -type f ! -name evidence.sha256 ! -name complete -print0 | sort -z | xargs -0 sha256sum > "$proof/evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
 ! grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/tests.jsonl"
+! grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/identity-tests.jsonl"
+jq -s -e 'any(.[];.Action=="pass" and .Test=="TestOperatorDoctorCommandIdentitySurvivesReplayWithoutCrossRunCollision")' "$proof/identity-tests.jsonl" >/dev/null
 for name in TestMemoryRealBootstrapDoctorIntegration TestMemoryRealBootstrapDoctorIntegration/default_off TestMemoryRealBootstrapDoctorIntegration/experience_context_without_jobs TestMemoryRealBootstrapDoctorIntegration/selected_requested TestMemoryRealBootstrapDoctorIntegration/unsupported_profile TestMemoryRealBootstrapDoctorIntegration/rollback_default_off; do
  jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name)' "$proof/tests.jsonl" >/dev/null
 done
-jq -e '.pass and .native_calls==0 and .auth_imported==false and .foreground_model_attempts==0 and .background_model_attempts==0 and .system_settings_rows==0 and .worker_control=="disabled" and .controlled_diagnostic_runtime and (.cases|length)==5 and (.retained_completed_reports==(if .experience_qualified then 4 else 2 end))' "$proof/bootstrap.json" >/dev/null
+jq -e '.pass and .native_calls==0 and .auth_imported==false and .foreground_model_attempts==0 and .background_model_attempts==0 and .system_settings_rows==0 and .worker_control=="disabled" and .controlled_diagnostic_runtime and (.cases|length)==5 and (.retained_completed_reports==(if .experience_qualified then 4 else 2 end)) and .doctor_tool_rows==.retained_completed_reports and .doctor_distinct_runs==.retained_completed_reports' "$proof/bootstrap.json" >/dev/null
 sha256sum -c "$proof/source.sha256" >/dev/null
-jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/tests.jsonl" > "$proof/summary.json"
+jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/tests.jsonl" "$proof/identity-tests.jsonl" > "$proof/summary.json"
 printf '{"client_cpu":1,"client_memory_bytes":2147483648,"postgres_cpu":1,"postgres_memory_bytes":1073741824,"redis_cpu":0.25,"redis_memory_bytes":134217728,"published_ports":0,"auth_imported":false,"native_calls":0,"main_changed":false}\n' > "$proof/environment.json"
 sha256sum "$proof/summary.json" "$proof/environment.json" >> "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"

@@ -378,6 +378,10 @@ func TestMemoryRealBootstrapDoctorIntegration(t *testing.T) {
 	}
 	checkSealed(t)
 	var foreground, background, settings int
+	var toolRows, distinctRuns int
+	if err = pool.QueryRow(ctx, `SELECT count(*),count(DISTINCT run_id) FROM tool_calls WHERE tool_name='doctor.check_system'`).Scan(&toolRows, &distinctRuns); err != nil || toolRows != len(sealed) || distinctRuns != len(sealed) {
+		t.Fatal("completed Doctor runs did not retain separate transcript tool rows")
+	}
 	var control string
 	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM execution_model_attempts),(SELECT count(*) FROM memory_model_attempts),(SELECT count(*) FROM system_settings),(SELECT state FROM memory_model_control WHERE singleton)`).Scan(&foreground, &background, &settings, &control); err != nil || foreground != 0 || background != 0 || settings != 0 || control != "disabled" {
 		t.Fatal("bootstrap smoke created model entries, auth settings or enabled worker control")
@@ -386,7 +390,7 @@ func TestMemoryRealBootstrapDoctorIntegration(t *testing.T) {
 	if !filepath.IsAbs(proof) {
 		t.Fatal("fresh absolute metadata proof required")
 	}
-	raw, err := json.MarshalIndent(map[string]any{"version": "memory-real-bootstrap-smoke-v1", "pass": !t.Failed(), "native_calls": 0, "auth_imported": false, "foreground_model_attempts": foreground, "background_model_attempts": background, "system_settings_rows": settings, "worker_control": control, "controlled_diagnostic_runtime": true, "retained_completed_reports": len(sealed), "experience_qualified": experience.ReleaseQualified, "temporal_qualified": temporalReleaseQualified, "consolidation_qualified": consolidation.ReleaseQualified, "cases": evidence}, "", "  ")
+	raw, err := json.MarshalIndent(map[string]any{"version": "memory-real-bootstrap-smoke-v1", "pass": !t.Failed(), "native_calls": 0, "auth_imported": false, "foreground_model_attempts": foreground, "background_model_attempts": background, "system_settings_rows": settings, "worker_control": control, "controlled_diagnostic_runtime": true, "retained_completed_reports": len(sealed), "doctor_tool_rows": toolRows, "doctor_distinct_runs": distinctRuns, "experience_qualified": experience.ReleaseQualified, "temporal_qualified": temporalReleaseQualified, "consolidation_qualified": consolidation.ReleaseQualified, "cases": evidence}, "", "  ")
 	if err != nil {
 		t.Fatal(err)
 	}

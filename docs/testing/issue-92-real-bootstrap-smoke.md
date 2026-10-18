@@ -59,3 +59,21 @@ The next diagnostic revision records only terminal status, bounded error code,
 checkpoint, runtime-call count and attempted tool-reference collision metadata;
 it changes no production path or acceptance threshold. Qualifications and main
 deployment remain unchanged. A completed smoke receipt is still pending.
+
+Diagnostic `bootstrap-v2`, source `81d3f225`, confirms the same failure: its
+second actual Doctor runtime read executes once, then the owning input becomes
+`blocked`, `effect_unknown`, checkpoint `tool_dispatching`. Its attempted fixed
+tool reference `doctor-check-system` already belongs to the prior run. Transcript
+`tool_calls.tool_call_id` is a global primary key and append uses INSERT; this is
+a production Doctor identity collision, not a provider or profile failure. The
+original diagnostic JSON SHA256 is
+`272a3551a9517e83c4c91708cae848491963a5f06cdf1986393a158546fe9f93`;
+its stream SHA256 is
+`07baff907ea2ee2e6d3aa629bd628788246aef8aee38f434a0bf224d3d6ed2cd`.
+Both failed windows remain retained. No model attempts/auth/settings were created.
+
+The narrow correction scopes the fixed command's tool reference by actual run ID.
+It stays deterministic for that run's replay/approval continuation and differs
+for each new diagnostic. It changes no source guard, provider profile, release
+qualification or approval rule. The new unit identity invariant and a fresh
+complete five-row real-bootstrap regression are mandatory after this correction.

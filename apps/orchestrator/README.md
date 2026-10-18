@@ -969,6 +969,9 @@ tests those constructors and Doctor together without changing qualifications.
 The separate [real bootstrap smoke](../../docs/testing/issue-92-real-bootstrap-smoke.md)
 invokes `app.New`/`App.Run` and that application's HTTP Doctor on owned PG/Redis,
 with a labeled controlled diagnostic runtime and no cloud auth/inference.
+The fixed Doctor command uses a tool reference stable within its run and distinct
+between runs, so repeated checks retain separate global transcript tool records.
+An earlier completed diagnostic is never overwritten to admit another check.
 
 Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
 evidence, the existing finite background worker and owner-only memory decisions.
