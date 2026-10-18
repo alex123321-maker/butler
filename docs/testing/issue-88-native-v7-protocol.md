@@ -190,6 +190,21 @@ population: `diagnose-cloudcode` performs subscription project discovery
 The original safe trace/hash and request counts are retained; invoice cost is
 unobserved and these requests are not silently added to experiment model quotes.
 
-The whole cohort still requires independent semantic/currentness/citation review
-before qualification. Complete mechanics and known usage establish no main
-activation or overall benchmark/performance claim.
+The [independent whole-cohort review](issue-88-native-v7-independent-review.md)
+is **NO_GO**: all12 primary target answers pass, but only10/12 full answers are
+semantically correct. The additional t01/t06 assertions that verification expired
+are unsupported by their actual future/null verification deadlines. Current
+applicability expiry does not establish verification expiry. Provenance/access,
+actual opened citations and full-cost dimensions pass separately; they do not
+waive those false statements. Qualification and main activation remain off.
+
+Prospective general facts contract4 now explains this distinction using existing
+fields, without a schema, SQL policy, pin, corpus or rubric change. At source
+9010ad3f, `/srv/storage/butler/agents/issue88-facts-v4-20261018/reports/controls-v1`
+passes10/0/0 actual-PG/race/vet events. Four new applicability cases cover expired
+and future stable preferences with no TTL, and technical facts with separate
+owner verification and future deadlines. The ordinary actual Broker path also
+passes its four historical/current queries. Evidence digest is
+`0ad9be7b385aac30e66ea2cee72abc12fcb8eeace2ae3cea358e081019212a91`.
+These controls perform no auth/native calls and do not regrade V7 or establish
+the new declaration's native quality; a new complete screen remains required.

@@ -118,8 +118,14 @@ The complete [native89v3 independent review](issue-89-native-v3-independent-revi
 now passes the bounded owner-selected screen: all9 slots,23 original units and27
 actual source pages. Including preparation, full tokens are108855 versus176055,
 while wall time and request bytes increase. No broad performance claim or
-production qualification follows. A fresh88 whole screen and the native90
-experience screen with independent effect/full-cost review remain required.
+production qualification follows. The subsequent complete88 V7 screen passes
+all12 primary targets, but its independent full review is NO_GO at10/12 because
+two extra verification-expiry assertions confuse applicability with verification.
+Its provenance/citation and36 known full-usage observations pass separately.
+The general facts4 declaration and10 focused actual-PG/Broker/race/vet events
+preserve these dimensions; they do not replace a fresh full native screen.
+The native90 experience screen with independent effect/full-cost review also
+remains required.
 Issue87's earlier incomplete window and
 the later complete v5 diagnostic rejection remain retained,
 with adaptive retrieval code-unqualified and disabled. Closed native windows are
