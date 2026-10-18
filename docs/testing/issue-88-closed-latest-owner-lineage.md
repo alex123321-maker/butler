@@ -9,7 +9,8 @@ rechecks live inventory and atomically claims/imports once before admission.
 
 The adapter explicitly supports the closed V7 manifest
 `butler.memory.closed-owner-leaf.v1` and closed V8 manifest
-`butler.memory.closed-owner-leaf.v2` (version8). This is a fixed lab recipe,
+`butler.memory.closed-owner-leaf.v2` (version8 and the prospective version9
+successor). This is a fixed lab recipe,
 not a new production cross-database admission mechanism. It does not assume
 that145 or181 is always the latest population.
 
@@ -37,3 +38,11 @@ prior145 lineage and requires every other owner/schema to remain unchanged.
 Historical161 and the separate adaptive226 are retained without rebilling. It
 creates no model attempt, provider call, credential clone or budget row.
 Semantic grading and qualification belong to separate independent reviews.
+
+The version9 seam additionally requires the original frozen pins. Those pins
+bind the source revision, exact facts5 hash, retained prospective history,
+finite144/96 policy and all execution ceilings to the closed operator witness.
+Accounting accepts an expired historical admission seal without granting it
+new execution authority. It recursively removes only the exact V9 population
+before re-proving V8 and all preceding stores. The V8 fixed original source and
+contract4 history remain unchanged.

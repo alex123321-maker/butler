@@ -14,6 +14,9 @@ const temporalV7ForegroundDuration = 40 * time.Minute
 const temporalV7BrokerDuration = temporalV7OuterDuration
 
 func temporalNativeVersion(h *temporalV5History) int {
+	if h != nil && h.SuccessorV9 != nil {
+		return 9
+	}
 	if h != nil && h.SuccessorV8 != nil {
 		return 8
 	}
@@ -35,6 +38,8 @@ func temporalClaimNativeWindow(ctx context.Context, pool *pgxpool.Pool, version 
 		statement = `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v7');CREATE SCHEMA memory_temporal_native_v7`
 	case 8:
 		statement = `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v8');CREATE SCHEMA memory_temporal_native_v8`
+	case 9:
+		statement = `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v9');CREATE SCHEMA memory_temporal_native_v9`
 	default:
 		return errors.New("unsupported fixed temporal native window")
 	}

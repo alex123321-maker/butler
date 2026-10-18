@@ -50,6 +50,8 @@ func temporalNativeFactsRevision(version int) string {
 		return "3"
 	case 8:
 		return "4"
+	case 9:
+		return "5"
 	}
 	return ""
 }

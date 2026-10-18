@@ -25,11 +25,12 @@ test "$(stat -c %a "$base/private")" = 700
 test ! -e "$base/private/$label"
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
 history_script=memory-temporal-successor-history.py
-v6=0;v7=0;v8=0
+v6=0;v7=0;v8=0;v9=0
 case "$(jq -er .format "$proof/history/history.json")" in
  butler.temporal.native-history.v2) v6=1 ;;
  butler.temporal.native-history.v3) history_script=memory-temporal-v7-history.py;v7=1 ;;
  butler.temporal.native-history.v4) history_script=memory-temporal-v8-history.py;v8=1 ;;
+ butler.temporal.native-history.v5) history_script=memory-temporal-v9-history.py;v9=1 ;;
  *) exit 2 ;;
 esac
 umask 077
@@ -59,7 +60,7 @@ handoff(){
 trap handoff EXIT
 docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --cpus 2 --memory 3g --pids-limit 256 --security-opt no-new-privileges \
  --env-file "$private/native.env" -v "$src:/src:ro" -v "$proof:/proof" -v "$private:/native-private" -w /src/apps/orchestrator/internal/app \
- -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V6="$v6" -e BUTLER_TEMPORAL_NATIVE_V7="$v7" -e BUTLER_TEMPORAL_NATIVE_V8="$v8" -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
+ -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V6="$v6" -e BUTLER_TEMPORAL_NATIVE_V7="$v7" -e BUTLER_TEMPORAL_NATIVE_V8="$v8" -e BUTLER_TEMPORAL_NATIVE_V9="$v9" -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test \
  -e HTTP_PROXY=http://127.0.0.1:18080 -e HTTPS_PROXY=http://127.0.0.1:18080 -e ALL_PROXY=http://127.0.0.1:18080 -e NO_PROXY=localhost,127.0.0.1,::1 \
  golang:1.27.2-bookworm /proof/test2json -p github.com/butler/butler/apps/orchestrator/internal/app /proof/collector.test -test.v -test.timeout=975m -test.run '^TestTemporalNativeExplicitLookup$' > "$proof/runner.jsonl" 2>&1

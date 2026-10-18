@@ -18,7 +18,7 @@ func TestTemporalV8FactsContractBoundary(t *testing.T) {
 	for _, item := range []struct {
 		version  int
 		revision string
-	}{{6, "3"}, {7, "3"}, {8, "4"}, {0, ""}, {9, ""}} {
+	}{{6, "3"}, {7, "3"}, {8, "4"}, {9, "5"}, {0, ""}, {10, ""}} {
 		if got := temporalNativeFactsRevision(item.version); got != item.revision {
 			t.Fatal("historical versus prospective contract boundary changed", item.version, got)
 		}

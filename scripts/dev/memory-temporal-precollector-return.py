@@ -55,7 +55,7 @@ if any((proof / name).exists() for name in ("scheduled-before-setup.json", "sche
     raise SystemExit("collector may have begun; opaque fallback denied")
 history = proof / "history" / "history.json"
 envelope = json.loads(history.read_bytes())
-profiles = {'butler.temporal.native-history.v2':('memory_temporal_native_v6','temporal-explicit-v6','memory-temporal-successor-history.py'), 'butler.temporal.native-history.v3':('memory_temporal_native_v7','temporal-explicit-v7','memory-temporal-v7-history.py'), 'butler.temporal.native-history.v4':('memory_temporal_native_v8','temporal-explicit-v8','memory-temporal-v8-history.py')}
+profiles = {'butler.temporal.native-history.v2':('memory_temporal_native_v6','temporal-explicit-v6','memory-temporal-successor-history.py'), 'butler.temporal.native-history.v3':('memory_temporal_native_v7','temporal-explicit-v7','memory-temporal-v7-history.py'), 'butler.temporal.native-history.v4':('memory_temporal_native_v8','temporal-explicit-v8','memory-temporal-v8-history.py'), 'butler.temporal.native-history.v5':('memory_temporal_native_v9','temporal-explicit-v9','memory-temporal-v9-history.py')}
 if envelope.get('format') not in profiles:
     raise SystemExit('unsupported fixed temporal fallback recipe')
 schema, window, script_name = profiles[envelope['format']]
