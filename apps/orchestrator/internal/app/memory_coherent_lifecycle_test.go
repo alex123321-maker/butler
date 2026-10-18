@@ -48,11 +48,15 @@ func (*coherentExperienceNote) InferenceLimits() (int64, int64) { return 1048576
 func (*coherentExperienceNote) InferenceTimeout() time.Duration { return 300 * time.Second }
 
 func TestMemoryCoherentVerifiedExperienceAfterRestartIntegration(t *testing.T) {
+	runMemoryCoherentVerifiedExperience(t)
+}
+
+func runMemoryCoherentVerifiedExperience(t *testing.T, after ...func(*coherentPilot, *experienceNativeRuntime, string)) {
 	if os.Getenv("BUTLER_MEMORY_COHERENT_PILOT") != "1" {
 		t.Skip("explicit coherent timeline and actual Broker/extension/HTTP runtimes required")
 	}
 	p := runMemoryCoherentPilotOrdinaryTimeline(t, nil)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	owner := experienceNativeActor(ctx, "coherent-independent-original")
 	p.ctx = owner
@@ -128,5 +132,8 @@ func TestMemoryCoherentVerifiedExperienceAfterRestartIntegration(t *testing.T) {
 	raw, _ := json.MarshalIndent(map[string]any{"controlled_only": true, "pass": !t.Failed(), "native_calls": 0, "steps": p.steps, "lesson_source": source, "original_task": record, "limits": "partial shared timeline through a verified episode; consolidation, late withdrawal and actual restore/ENOSPC remain required"}, "", "  ")
 	if err := os.WriteFile(filepath.Join(proof, "timeline-experience.json"), raw, 0600); err != nil {
 		t.Fatal(err)
+	}
+	for _, next := range after {
+		next(p, r, source)
 	}
 }

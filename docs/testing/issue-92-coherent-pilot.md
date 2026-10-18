@@ -128,3 +128,31 @@ The events SHA256 is
 `99aef0beb0f9779327becada57909d1256ea4bb3aff60dfa487658b671e264de`.
 This extension and the earlier privacy extension have separate fresh databases;
 they are not yet one episode→consolidation→withdrawal→restore scenario.
+
+## Prospective integrated lifecycle control
+
+`TestMemoryCoherentEpisodeConsolidationRestoreIntegration` extends that actual
+episode timeline without replacing its database, owner/day policy or earlier
+accepted source. The owner selects the real restarted read and real verified
+original contexts; their60-second quiet interval elapses normally. The controlled
+consolidation worker creates one reviewable DATA version, Preview exposes its
+diff, and owner CAS activates it. A new ordinary Broker read checks the actual
+full representation and current lesson applicability, with exact source grants.
+
+The lifecycle driver coordinates a real custom dump while that same test and
+database remain live. It fsyncs the dump before allowing owner deletion, restores
+that exact backup into a fresh empty database, and signals the owning test to
+reopen the same schema under the latest independent anchor. The test must deny
+reads before reconciliation, erase the original/episode/view after replay and
+retain complete effect/evidence and foreground/background budget hashes.
+The final8KiB tmpfs fault capsule starts from a private copy of that restored
+anchor history and the same restored database. Actual ENOSPC must leave the
+failed sentinel deletion uncommitted; partial anchor corruption must deny use
+and reconciliation. It never fills or resets the operator's real filesystem.
+
+The full control requires all23 checkpoints, exact prefix15/episode17 traces,
+real compiled Broker/extension/HTTP processes and no skipped mandatory test.
+It uses cached Go1.27.2, isolated PG1CPU/1GiB and client1CPU/2GiB, with no provider
+authentication or native inference. Implementation and this prospective protocol
+are not a run receipt. Native quality/cost, supported-mode qualification and
+staged human review remain separate even after controlled mechanical success.
