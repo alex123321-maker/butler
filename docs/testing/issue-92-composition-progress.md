@@ -126,6 +126,19 @@ consolidated Broker read. It did not reach dump/restore and is a failed complete
 window. The current worker publication fix and fresh full scenario remain gates;
 the earlier physical deletion/restore/ENOSPC measurements are not that gate.
 
+Reconciliation foundation081 is now composed with082. The empty-history
+upgrade fixtures roll back082 before081/080/079/077, then apply them forward;
+populated provenance is never downgraded. `reconciled-working-upgrades-v1`,
+source `29bbcaf7`, passed11 test/subtest events,0 failures/skips, race and vet on
+actual lab PostgreSQL. Both primary-input/tool upgrade controls and the strict
+working-erasure/replay control passed. Its events SHA256 is
+`3aff50f23751d2e880b711e4e5ec2407e7bb5c4d8f2ffea183cd5e82afafddc5`
+and evidence-list SHA256 is
+`e3a6744f228ee9abb686a254412825166747321d96ec9db2b0111a3887a720f3`.
+The witness-only privacy cascade and ordinary captured-lesson publication
+prerequisites remain under repair; this focused upgrade receipt is not their
+acceptance or the fresh complete composition.
+
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
 
