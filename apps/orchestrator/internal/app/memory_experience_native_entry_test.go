@@ -300,25 +300,10 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
-	var authPool *pgxpool.Pool
-	authImported := false
-	defer func() {
-		// Before import/provider construction, the opaque original is unused.
-		// After import, return the latest durable encrypted row, including any
-		// transport refresh. Never put these bytes in ordinary proof exports.
-		opaque := string(ciphertext)
-		if authImported {
-			retained, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			if authPool.QueryRow(retained, `SELECT value FROM system_settings WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY'`).Scan(&opaque) != nil {
-				t.Error("private encrypted auth handback unavailable; retain and reconcile before another window")
-				return
-			}
-		}
-		if temporalWriteExclusive(returnPath, []byte(opaque)) != nil {
-			t.Error("private encrypted auth handback identity unavailable")
-		}
-	}()
+	// The outer wrapper returns auth only after this whole process has exited.
+	// Capture cancellation/EOF alone does not prove that an upstream transport
+	// auth/refresh goroutine has stopped writing its durable encrypted setting.
+	// No in-process auth snapshot may race that final write.
 	ctx, stop := context.WithDeadline(context.Background(), seal.Deadline)
 	defer stop()
 	phase = "one_use_storage_claim"
@@ -326,7 +311,7 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Keep the pool open until deferred auth return and journal export finish.
+	// Keep the pool open until deferred cost and journal exports finish.
 	t.Cleanup(global.Close)
 	var domain json.RawMessage
 	if global.QueryRow(ctx, `SELECT to_jsonb(w) FROM public.issue90_native_windows w WHERE window_id=$1 AND window_hash=$2`, experienceNativeWindow, planSHA).Scan(&domain) != nil || p.writeNew("domain-claim.json", domain) != nil {
@@ -355,7 +340,6 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if _, err = global.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'orchestrator',true,'isolated-native-owner')`, string(ciphertext)); err != nil {
 		t.Fatal("private encrypted provider import rejected")
 	}
-	authPool, authImported = global, true
 	if err = p.writeNew("provider-auth-imported.json", map[string]any{"private_encrypted_setting_imported": true, "raw_material_recorded": false}); err != nil {
 		t.Fatal("private auth import receipt unavailable before provider construction")
 	}

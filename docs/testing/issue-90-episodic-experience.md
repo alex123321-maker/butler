@@ -601,6 +601,25 @@ owning exports and forged native admission joins. Its evidence SHA256 is
 `c57df9d36be0465675f599cbd2777f41d7d5384be47d3a572fd56224d9b229bf`.
 These scripts only manage isolated evidence and opaque process pipes; core
 execution, authorization, memory and model transport remain Go.
+
+The read-only `closure-real-exports-v74` control exercises the new companion
+consumer against all49 retained actual source/case exports from controlled v67.
+It corroborates368 unique reservation rows,211 new model reservation rows and
+all211 captured operation/reservation/run joins; product observations are counted
+independently. This remains controlled output with zero actual native calls.
+Its evidence SHA256 is
+`b014170ea51f0910914fcc629158429ab9b5fefdc798e1634fdd4a559cf51f9f`.
+
+Normal auth handback now also waits for the entire collector container to exit.
+An in-process deferred snapshot could otherwise race a still-canceling upstream
+transport refresh; capture EOF is not an auth-worker exit proof. The wrapper
+always reads the final durable encrypted global setting after the process fence,
+then performs the existing exact CAS and main discovery/snapshot sequence.
+`native-exit-v75` proves the actual no-network Docker transitions running→deny,
+stopped→allow further metadata checks, removed→allow further metadata checks,
+plus the existing10 pure recovery/closure controls and shell syntax. It does not
+read PG/auth or invoke any provider. Evidence SHA256 is
+`f3dfacebf9f252888fab3d2e30b7984373a83fac02e71d8f1095550aacea0100`.
 The same manifest-checked cleanup was applied to successful v64 after its receipt
 was verified (`collector-v64/controlled-prune-v1/receipt.json`), preserving its49
 database exports and all charged entries. Together these two controlled cleanups

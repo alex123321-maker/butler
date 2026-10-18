@@ -277,10 +277,11 @@ charge once, before importing encrypted auth or creating the actual provider.
 The separately reserved private endpoint tuple is recorded before storage or
 provider setup and stays fixed across all runtime restarts.
 
-Normal failure paths return the latest durable encrypted auth row after import,
-or the unchanged unused opaque original before import. Abrupt-process recovery
-requires the exact domain receipt and an exited collector; it gives no task,
-model, retry or replacement authority. Any uncertain handback remains a failed
+After the whole collector process exits, the wrapper returns the latest durable
+encrypted auth row after import, or the unchanged unused opaque original before
+import. An in-process snapshot cannot race a still-canceling upstream transport
+refresh. This step requires the exact domain receipt and a proven exited
+collector; it gives no task, model, retry or replacement authority. Any uncertain handback remains a failed
 window requiring reconciliation. Private evidence is retained on every exit.
 The content-free closure companion references the original complete outcome
 population, source/case exports, global journal, private artifact manifest and

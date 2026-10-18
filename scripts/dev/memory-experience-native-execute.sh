@@ -48,9 +48,9 @@ handoff(){
  trap - EXIT
  set +e
  handback=0
- if [[ ! -e "$private/auth-return.value" ]];then
-  python3 "$src/scripts/dev/memory-experience-auth-recovery.py" "$base" "$label" "$plan_hash" > "$proof/recovery-safe.json" || handback=1
- fi
+ # Always read the final durable opaque value after process exit. A collector
+ # snapshot made during cancellation must never race an upstream auth refresh.
+ python3 "$src/scripts/dev/memory-experience-auth-recovery.py" "$base" "$label" "$plan_hash" > "$proof/recovery-safe.json" || handback=1
  if [[ "$handback" == 0 ]];then
   python3 "$src/scripts/dev/memory-consolidation-auth.py" return "$base" "$label" > "$proof/return-safe.json" || handback=1
  fi
