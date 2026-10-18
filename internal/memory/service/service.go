@@ -139,6 +139,9 @@ type BundleRequest struct {
 	IncludeQuery bool
 	// QueryPolicy supersedes IncludeQuery. Nil preserves explicit legacy callers.
 	QueryPolicy *QueryPolicy
+	// Adaptive Broker reads replace optional episode/document lookup, never
+	// current scoped accepted preferences or mandatory working/history state.
+	SkipOptionalSearch bool
 }
 
 type Bundle struct {
@@ -240,13 +243,19 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (bundle Bu
 	}
 	// Legacy query embeddings have no locality proof. Local-only requests use
 	// the policy-aware reader and never fall through to this backend.
-	episodes, err := s.loadEpisodes(ctx, scopes, req.UserMessage, policy.External)
-	if err != nil {
-		return Bundle{}, err
-	}
-	chunks, diagnostics, err := s.loadPolicyChunks(ctx, scopes, req.UserMessage, policy)
-	if err != nil {
-		return Bundle{}, err
+	var episodes, chunks []map[string]any
+	var diagnostics []string
+	if !req.SkipOptionalSearch {
+		episodes, err = s.loadEpisodes(ctx, scopes, req.UserMessage, policy.External)
+		if err != nil {
+			return Bundle{}, err
+		}
+		chunks, diagnostics, err = s.loadPolicyChunks(ctx, scopes, req.UserMessage, policy)
+		if err != nil {
+			return Bundle{}, err
+		}
+	} else {
+		diagnostics = []string{"adaptive_broker_reads"}
 	}
 	// Read profile eligibility after potentially slow retrieval, not before it.
 	profileEntries, filteredProfiles, err := s.loadProfile(ctx, scopes, req.UserMessage)

@@ -91,6 +91,34 @@ func TestMemorySemanticCLIOriginalReplayAndExclusiveOutput(t *testing.T) {
 	if err := run(args, &bytes.Buffer{}); err != nil {
 		t.Fatal("independently declared retrieval-only baseline rejected", err)
 	}
+	adaptive := r
+	adaptive.Variant = "adaptive-v1"
+	adaptive.Items = append([]acceptance.MemorySemanticItem{}, r.Items...)
+	adaptiveMeasurements := m
+	adaptiveMeasurements.Observations = append([]acceptance.MemoryObservation{}, m.Observations...)
+	adaptiveInputs := append([]acceptance.MemoryInput{}, inputs...)
+	for j, arm := range []string{"no_ltm", "retrieval_static", "retrieval_adaptive"} {
+		adaptiveInputs[j].Arm = arm
+		o := &adaptiveMeasurements.Observations[j]
+		o.Arm, o.InputSHA256 = arm, acceptance.MemoryInputDigest(adaptiveInputs[j])
+		adaptive.Items[j].Arm, adaptive.Items[j].InputSHA256 = arm, o.InputSHA256
+	}
+	adaptive.MeasurementsSHA256 = acceptance.MemoryBytesSHA256(write("measurements.json", adaptiveMeasurements))
+	write("review.json", adaptive)
+	write("inputs.json", struct {
+		Inputs []acceptance.MemoryInput `json:"inputs"`
+	}{adaptiveInputs})
+	args[len(args)-1] = filepath.Join(dir, "adaptive-result")
+	if err := run(args, &bytes.Buffer{}); err != nil {
+		t.Fatal("explicit complete adaptive matrix rejected", err)
+	}
+	write("inputs.json", struct {
+		Inputs []acceptance.MemoryInput `json:"inputs"`
+	}{adaptiveInputs[:2]})
+	args[len(args)-1] = filepath.Join(dir, "adaptive-incomplete-result")
+	if err := run(args, &bytes.Buffer{}); err == nil {
+		t.Fatal("adaptive comparison silently dropped an arm")
+	}
 	write("measurements.json", m)
 	write("review.json", r)
 	write("inputs.json", struct {

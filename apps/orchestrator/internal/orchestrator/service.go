@@ -23,6 +23,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/adaptive"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
@@ -191,6 +192,7 @@ type Config struct {
 	TransientStore        TransientWorkingStore
 	TransientTTL          time.Duration
 	MemoryBundles         MemoryBundleService
+	AdaptiveRetrieval     *adaptive.Store
 	SemanticMemory        memoryservice.SemanticReader
 	MemoryScopeResolver   func(context.Context) ([]memoryservice.Scope, error)
 	PromptManager         PromptManager
@@ -249,6 +251,7 @@ type DeliveryEvent struct {
 var errLeaseRenewalFailed = errors.New("lease renewal failed")
 
 type preparedRun struct {
+	AdaptivePlan         *adaptive.Plan      `json:"adaptive_plan,omitempty"`
 	SourceInputEvent     *ingress.InputEvent `json:"source_input_event,omitempty"`
 	SourceDataRefs       []string            `json:"source_data_refs,omitempty"`
 	AttemptSourceRefs    []string            `json:"attempt_source_refs,omitempty"`

@@ -11,6 +11,8 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/adaptive"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/sanitize"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/summary"
@@ -72,6 +74,10 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		}
 		return prepared, nil
 	}
+	if s.config.AdaptiveRetrieval != nil {
+		plan := adaptive.Classify(message)
+		prepared.AdaptivePlan = &plan
+	}
 	// Pin a validated explicit task before Catalog chooses a delegated context.
 	// Later task attachment also prepares working state and authenticated policy.
 	if id := firstString(payload, "task_id"); id != "" && prepared.CurrentRunID != "" {
@@ -107,6 +113,16 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err := s.attachTaskContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
 	}
+	if prepared.AdaptivePlan != nil {
+		if err := s.config.AdaptiveRetrieval.Init(ctx, *prepared.AdaptivePlan); err != nil {
+			return preparedRun{}, err
+		}
+		if prepared.AdaptivePlan.SearchEnabled() {
+			prepared.InputItems = append(prepared.InputItems, content.Instruction(adaptive.Instruction, content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{adaptive.Version}, Sensitivity: content.Public}))
+		}
+		metadata, _ := json.Marshal(prepared.AdaptivePlan)
+		prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"retrieval_plan": json.RawMessage(metadata)}, content.Origin{Kind: content.MemoryDerived, SourceRefs: []string{adaptive.Version}, Sensitivity: content.Private}))
+	}
 	if err := s.attachFailedDelegationAttempts(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}
@@ -131,11 +147,12 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 		return err
 	}
 	bundle, err := s.config.MemoryBundles.BuildBundle(ctx, memoryservice.BundleRequest{
-		SessionKey:   sessionKey,
-		UserID:       userID,
-		UserMessage:  userMessage,
-		IncludeQuery: policy.External, // compatibility only; QueryPolicy is authoritative
-		QueryPolicy:  &policy,
+		SessionKey:         sessionKey,
+		UserID:             userID,
+		UserMessage:        userMessage,
+		IncludeQuery:       policy.External, // compatibility only; QueryPolicy is authoritative
+		QueryPolicy:        &policy,
+		SkipOptionalSearch: prepared.AdaptivePlan != nil,
 	})
 	if err != nil {
 		return err
@@ -216,6 +233,15 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 	}
 	if err != nil {
 		return fmt.Errorf("load tool contracts: %w", err)
+	}
+	if prepared.AdaptivePlan != nil && !prepared.AdaptivePlan.SearchEnabled() {
+		filtered := contracts[:0]
+		for _, contract := range contracts {
+			if !readcontrol.IsTool(contract.GetToolName()) {
+				filtered = append(filtered, contract)
+			}
+		}
+		contracts = filtered
 	}
 	prepared.ToolDefs = toolDefinitionsFromContracts(contracts)
 	for _, contract := range contracts {

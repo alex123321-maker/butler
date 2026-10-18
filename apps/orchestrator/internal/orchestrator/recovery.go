@@ -98,6 +98,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	}
 	ctx = ownership.WithToken(ctx, durable.Authority(), ownership.Token{SessionKey: lease.SessionKey, RunID: runID, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
 	ctx = withAnswerState(ctx, checkpoint.Data.AnswerState)
+	ctx = adaptiveContext(ctx, checkpoint.Prepared)
 	runLog := logger.WithRunID(s.log, runID)
 	ctx, stop, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
 	defer stop()

@@ -78,6 +78,7 @@ type MemoryCase struct {
 	Expected        MemoryAnswer         `json:"expected"`
 	AcceptedAnswers []string             `json:"accepted_answers,omitempty"`
 	CitationRules   []MemoryCitationRule `json:"citation_rules,omitempty"`
+	EvidenceBasis   string               `json:"evidence_basis,omitempty"`
 }
 type MemoryAnswer struct {
 	Answer       string           `json:"answer"`
@@ -125,6 +126,9 @@ func ValidateMemorySuite(s MemorySuite) error {
 	coverage := map[string]map[string]bool{"development": {}, "holdout": {}}
 	sourceSplits := map[string]string{}
 	for _, c := range s.Cases {
+		if c.EvidenceBasis != "" && c.EvidenceBasis != "history" && c.EvidenceBasis != "question" {
+			return errors.New("unknown memory evidence basis")
+		}
 		if c.ID == "" || ids[c.ID] || c.Group == "" || c.Family == "" || coverage[c.Split] == nil || c.Question == "" || len(c.Question) > 8192 || len(c.History) > 128 || c.Task.Revision < 0 || c.Task.Instruction == "" || len(c.BehaviorRefs) == 0 {
 			return errors.New("invalid memory case or split")
 		}

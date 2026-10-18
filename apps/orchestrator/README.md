@@ -892,3 +892,9 @@ and predeclared repeats share the five-minute provider/model admission timeout.
 There are no external tools or implicit retries. See the
 [semantic evaluation protocol](../../docs/ai/memory-eval-semantic-methodology.md)
 and [runner instructions](../../cmd/memory-eval/README.md).
+
+Adaptive retrieval (#87) is prospective and code-unqualified. Its operator flag
+BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED defaults false; flags cannot bypass the
+qualification constant. Explicit isolated composition uses the existing ordinary
+Flow and Broker, preserves scoped accepted preferences and verifies actual opened
+current evidence before release. See docs/architecture/adaptive-memory-retrieval.md.
