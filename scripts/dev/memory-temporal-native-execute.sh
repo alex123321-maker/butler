@@ -33,6 +33,9 @@ private=$base/private/$label
 handoff(){
  status=$?
  trap - EXIT
+ if [[ ! -e "$private/auth-return.value" ]];then
+  python3 "$src/scripts/dev/memory-temporal-precollector-return.py" "$base" "$label" || exit 1
+ fi
  python3 "$src/scripts/dev/memory-consolidation-auth.py" return "$base" "$label" > "$proof/return-safe.json" || exit 1
  docker run --rm --pull never --network container:butler-lab-orchestrator-1 --env-file "$private/main-diagnose.env" -v "$auth_binary:/provider-auth:ro" golang:1.27.2-bookworm /provider-auth -action diagnose-cloudcode > "$private/main-diagnosis.json" || exit 1
  jq -e -f "$src/scripts/dev/memory-consolidation-main-auth.jq" "$private/main-diagnosis.json" >/dev/null || exit 1
@@ -47,4 +50,4 @@ docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --cpus 2 
  -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V5=1 -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test \
  -e HTTP_PROXY=http://127.0.0.1:18080 -e HTTPS_PROXY=http://127.0.0.1:18080 -e ALL_PROXY=http://127.0.0.1:18080 -e NO_PROXY=localhost,127.0.0.1,::1 \
- golang:1.27.2-bookworm go tool test2json -p github.com/butler/butler/apps/orchestrator/internal/app /proof/collector.test -test.v -test.timeout=975m -test.run '^TestTemporalNativeExplicitLookup$' > "$proof/runner.jsonl" 2>&1
+ golang:1.27.2-bookworm /proof/test2json -p github.com/butler/butler/apps/orchestrator/internal/app /proof/collector.test -test.v -test.timeout=975m -test.run '^TestTemporalNativeExplicitLookup$' > "$proof/runner.jsonl" 2>&1

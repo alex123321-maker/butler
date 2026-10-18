@@ -37,7 +37,7 @@ docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-li
  -v "$src:/src:ro" -v "$native:/native:ro" -w /src/apps/orchestrator/internal/app \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/memory_temporal_carry_test?sslmode=disable' \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/native/broker.test \
- golang:1.27.2-bookworm go tool test2json -p github.com/butler/butler/apps/orchestrator/internal/app /native/collector.test -test.v -test.timeout 3m -test.run '^TestTemporal(V5PositiveCarryOneUseIntegration|CollectorFactsThenBothOriginalsIntegration)$' > "$proof/carry.jsonl" 2> "$proof/runner.log"
+ golang:1.27.2-bookworm /native/test2json -p github.com/butler/butler/apps/orchestrator/internal/app /native/collector.test -test.v -test.timeout 3m -test.run '^TestTemporal(V5PositiveCarryOneUseIntegration|CollectorFactsThenBothOriginalsIntegration)$' > "$proof/carry.jsonl" 2> "$proof/runner.log"
 ! grep -q '"Action":"skip"\|"Action":"fail"' "$proof/carry.jsonl"
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestTemporalV5PositiveCarryOneUseIntegration")' "$proof/carry.jsonl" >/dev/null
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestTemporalCollectorFactsThenBothOriginalsIntegration")' "$proof/carry.jsonl" >/dev/null

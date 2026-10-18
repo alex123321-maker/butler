@@ -18,6 +18,7 @@ type temporalNativePins struct {
 	SourceSHA      string    `json:"source_sha256"`
 	CollectorSHA   string    `json:"collector_sha256"`
 	BrokerSHA      string    `json:"broker_sha256"`
+	Test2JSONSHA   string    `json:"test2json_sha256"`
 	CorpusSHA      string    `json:"corpus_sha256"`
 	ControlsSHA    string    `json:"controls_sha256"`
 	MethodSHA      string    `json:"method_sha256"`
@@ -87,6 +88,10 @@ func TestTemporalNativeWritePins(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	p.Test2JSONSHA, err = acceptance.FileHash(filepath.Join(proof, "test2json"))
+	if err != nil {
+		t.Fatal("offline standalone test2json required")
+	}
 	for path, target := range map[string]*string{"corpus.json": &p.CorpusSHA, "controls.json": &p.ControlsSHA, "README.md": &p.MethodSHA} {
 		*target, err = acceptance.FileHash("/src/deploy/memory-temporal/explicit-v1/" + path)
 		if err != nil {
@@ -124,6 +129,10 @@ func temporalCheckNativePins(proof string) error {
 	hash, err = acceptance.FileHash(os.Getenv("BUTLER_GUARDED_REQUEST_BROKER_BINARY"))
 	if err != nil || hash != p.BrokerSHA {
 		return errors.New("Broker binary differs")
+	}
+	hash, err = acceptance.FileHash(filepath.Join(proof, "test2json"))
+	if err != nil || hash != p.Test2JSONSHA {
+		return errors.New("standalone test2json binary differs")
 	}
 	for file, want := range map[string]string{"/src/deploy/memory-temporal/explicit-v1/corpus.json": p.CorpusSHA, "/src/deploy/memory-temporal/explicit-v1/controls.json": p.ControlsSHA, "/src/deploy/memory-temporal/explicit-v1/README.md": p.MethodSHA, filepath.Join(proof, "history", "history.json"): p.HistorySHA, filepath.Join(proof, "shared-policy.json"): p.PolicySHA, filepath.Join(proof, "scheduled-before-auth.json"): p.ScheduleSHA} {
 		raw, e := os.ReadFile(file)

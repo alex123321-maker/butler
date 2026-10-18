@@ -73,6 +73,18 @@ auth flock through fresh main clone, all entries, exact ciphertext CAS handback,
 actual main paid-discovery HTTP200 and a new private snapshot. It uses the server
 proxy for all provider requests. It never enables a production feature flag.
 
+The standard Go `cmd/test2json` runner is built offline as a separately hashed
+binary. Preparation exercises that exact runner and collector as the execution
+user before authentication, with no writable HOME, module startup or build cache.
+If its process fails before the collector begins, a narrow opaque-return fallback
+requires an absent native schema/window receipt, absent collector start/artifacts
+and unchanged complete six-database owner/day inventory. Descriptor-based bounded
+private reads must show the unused import equals the exact original clone. Only
+then may that same encrypted clone be returned through the normal CAS; no model
+authority, new attempt, retry, uncharged call or replacement window is granted.
+Any started or uncertain collector forbids this fallback. Proxy or upstream
+unavailability remains separate from auth status and leaves main HTTP200 pending.
+
 Every original result, unexecuted slot, native entry, full available usage,
 nullable product observation and confirmed Broker witness is retained. Every
 new native entry also retains its actual operation and reservation references,
