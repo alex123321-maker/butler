@@ -60,7 +60,7 @@ The base200ms source bound was not changed by this execution or review.
 
 There are24 native/foreground admissions:23 known full usage observations,
 219763 known full tokens as a lower bound,1 native unknown and1 product NULL.
-Eight actual facts reads and eight original/additional reads consumed16 Broker
+Nine actual facts reads and seven original opens consumed16 Broker
 calls. Historical scopes are not summed again: the latest owner/day vector is
 73 model quotes,78938112 tokens,27660000 active milliseconds,612368384 input
 bytes,48 external calls and201326592 egress bytes, including the earlier49 once.
