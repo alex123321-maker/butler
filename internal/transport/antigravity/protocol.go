@@ -618,7 +618,7 @@ func validateFunctionCalls(parts []json.RawMessage, definitions map[string]trans
 			continue
 		}
 		if call != nil {
-			return nil, providerError(transport.ErrorTypeCapabilityMismatch, "parallel function proposals are unsupported")
+			return nil, &transport.Error{Type: transport.ErrorTypeCapabilityMismatch, ProviderName: Name, Message: "parallel function proposals are unsupported", SafeReason: "batch_tool_calls_unsupported"}
 		}
 		decoder := json.NewDecoder(bytes.NewReader(encoded))
 		decoder.DisallowUnknownFields()

@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+The current kernel accepts one tool proposal per model response. Trusted
+orchestration instructions declare that limit independently of the operator's
+base prompt and ask the model to wait for its correlated tool result. The Broker
+and transport still reject unsupported batches before any member dispatch; the
+instruction does not grant permission, guarantee model compliance or retry a
+failed/unknown effect. See the [transport contract](model-transport-contract.md).
+
 Verified summary generation is optional independent background work, specified in
 [task compaction](../../internal/memory/compaction/README.md). It does not keep or
 revive a Session Service lease, complete a task, accept profile facts or infer tool

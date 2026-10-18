@@ -822,6 +822,18 @@ Transport должен уметь нормализовать multiple tool calls
 
 Это решение принимает Orchestrator.
 
+Current Core admits one proposal per response: its budgeted provider advertises
+`SupportsBatchToolCalls=false`, and the trusted orchestration instructions tell
+the model to propose one call and wait for the correlated result before choosing
+the next step. This declaration also applies to custom/disabled operator base
+prompts. Antigravity retains `functionCallingConfig.mode=AUTO`; no undocumented
+wire setting or transport-side instruction rewriting is added. Its parser still
+rejects multiple native proposals before releasing any executable call, retaining
+only validated complete usage and the future fixed reason
+`batch_tool_calls_unsupported`. No first-member execution, implicit serialization
+or automatic retry is permitted. This describes the current restriction, not a
+completed implementation of the target batch contract above.
+
 ---
 
 ## 14. Provider-side session semantics

@@ -293,6 +293,9 @@ func TestUnsafeOrIncompleteResponsesNeverProposeTools(t *testing.T) {
 			if findError(events) == nil {
 				t.Fatal("unsafe response accepted")
 			}
+			if name == "parallel calls" && (transport.DiagnosticCode(findError(events)) != "capability_mismatch" || transport.DiagnosticReason(findError(events)) != "batch_tool_calls_unsupported") {
+				t.Fatal("parallel denial lost its fixed content-free reason")
+			}
 			for _, event := range events {
 				if event.ToolCall != nil || event.ToolCallBatch != nil {
 					t.Fatal("unsafe proposal exposed")

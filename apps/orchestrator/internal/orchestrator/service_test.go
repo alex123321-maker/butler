@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/actionauth"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
@@ -385,6 +386,9 @@ func TestExecuteIncludesToolSummaryAndStructuredToolDefinitions(t *testing.T) {
 	}
 	if !strings.Contains(prompt, "approval") || !strings.Contains(prompt, "credential refs") {
 		t.Fatalf("expected safe tool metadata in prompt, got %q", prompt)
+	}
+	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, promptmgmt.ToolExecutionProtocol) || provider.startRequests[0].InputItems[0].Role != "system" {
+		t.Fatal("actual ordinary Start omitted the trusted current single-proposal execution protocol")
 	}
 }
 

@@ -1,5 +1,14 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Trusted model instructions declare the existing one-proposal-per-response
+execution contract, including when the operator customizes or disables the base
+prompt. Multiple required reads/actions are proposed one at a time, after the
+correlated result. This addresses an actual native memory screen's unsupported
+parallel proposal; it does not enable batching or change Broker authorization,
+unknown-effect stops or automatic retry policy. The controlled
+`memory-single-proposal-lab.sh` checks actual ordinary Start input, unchanged
+fail-closed batch handling and nullable owning usage on isolated PostgreSQL.
+
 Temporal memory owner controls (`/api/v4/memory/temporal`, `/facts`, and
 `/revalidate-read` under `/api/v4/memory`) require private owner authentication and
 `BUTLER_MEMORY_TEMPORAL_ENABLED`; the default is false and a separate code-owned
