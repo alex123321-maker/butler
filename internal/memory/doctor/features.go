@@ -39,7 +39,7 @@ type featurePolicyReader interface {
 
 func knownFeature(name string) bool {
 	switch name {
-	case "source_reads", "candidate_proposals", "candidate_jobs", "task_compaction", "adaptive_retrieval", "temporal_facts", "consolidation", "experience":
+	case "source_reads", "candidate_proposals", "candidate_jobs", "task_compaction", "adaptive_retrieval", "temporal_facts", "consolidation", "experience", "experience_context":
 		return true
 	}
 	return false

@@ -16,7 +16,7 @@ import (
 
 // Capture actual startup composition, independently of flags. Durable controls
 // and owner policies are queried afresh by Doctor; no cached permission is used.
-func memoryFeatureConfigurations(cfg config.OrchestratorConfig, p providerfactory.Result, b *budget.Controller, w *jobs.ModelWorker, proposals, reads, adaptive bool) []memorydoctor.FeatureConfiguration {
+func memoryFeatureConfigurations(cfg config.OrchestratorConfig, p providerfactory.Result, b *budget.Controller, w *jobs.ModelWorker, proposals, reads, adaptive, experienceContext bool) []memorydoctor.FeatureConfiguration {
 	jobsRequested := os.Getenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED") == "true"
 	return []memorydoctor.FeatureConfiguration{
 		{Name: "source_reads", Requested: cfg.MemoryReadEnabled, Wired: reads, Qualified: true, ProfileReady: true},
@@ -27,6 +27,7 @@ func memoryFeatureConfigurations(cfg config.OrchestratorConfig, p providerfactor
 		{Name: "temporal_facts", Requested: cfg.MemoryTemporalEnabled, Wired: reads && temporalReadConfigured(cfg.MemoryTemporalEnabled, p, b), Qualified: temporalReleaseQualified, ProfileReady: summaryProfileReady(p, b)},
 		{Name: "consolidation", Requested: jobsRequested && os.Getenv("BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED") == "true", Wired: modelHandlerConfigured(w, consolidation.Version), Qualified: consolidation.ReleaseQualified, ProfileReady: summaryProfileReady(p, b), Handler: consolidation.Version},
 		{Name: "experience", Requested: jobsRequested && os.Getenv("BUTLER_MEMORY_EXPERIENCE_ENABLED") == "true", Wired: modelHandlerConfigured(w, experience.Version), Qualified: experience.ReleaseQualified, ProfileReady: candidateProfileReady(p, b), Handler: experience.Version},
+		{Name: "experience_context", Requested: os.Getenv("BUTLER_MEMORY_EXPERIENCE_ENABLED") == "true", Wired: experienceContext, Qualified: experience.ReleaseQualified, ProfileReady: candidateProfileReady(p, b)},
 	}
 }
 

@@ -62,7 +62,14 @@ same task/run count as another independent promotion case.
 code-owned `ReleaseQualified` gate is currently false. It cannot be enabled by
 flags or stored settings. A later measured qualification is limited to the
 measured provider/output/time/budget profile and never bypasses the separate
-enabled worker/control/owner policy. No native quality result is claimed yet.
+enabled worker/control/owner policy. Explicit enabled startup fails closed unless
+the actual provider is Gemini Flash High with exact32768 output, at least300s
+timeout and the matching durable candidate budget. Default off constructs no
+store. Read/context composition is independent of the global model-jobs flag;
+generation additionally needs that flag and its actual handler. Doctor reports
+the actual store as `experience_context` and generation as `experience`. The
+nil-store adapter keeps ordinary current-source and captured-pin guards.
+No native quality result is claimed by constructor readiness.
 
 Current Broker dependency identity preserves status: both `active` core contracts and `enabled`
 installed-extension contracts are supported by `actionauth.ContractHash`.

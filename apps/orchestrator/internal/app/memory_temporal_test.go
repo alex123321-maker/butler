@@ -8,8 +8,8 @@ import (
 )
 
 func TestTemporalQualificationRemainsSeparateFromProcessFlag(t *testing.T) {
-	if temporalConfigured(false) || temporalConfigured(true) {
-		t.Fatal("unqualified temporal feature became active")
+	if temporalConfigured(false) || temporalConfigured(true) != temporalReleaseQualified {
+		t.Fatal("temporal qualification and process flag diverged")
 	}
 	for _, status := range []string{"unknown", "unverified", "needs_revalidation", "stable", "fresh", "historical"} {
 		if temporalExcluded(catalog.AcceptedFact{Freshness: catalog.Freshness{Status: status}}) {

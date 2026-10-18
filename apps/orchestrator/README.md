@@ -959,6 +959,14 @@ are operational observations, not job admission or answer quality. Missing or
 failed observations never manufacture zero allowance, zero usage or an eligible
 policy. See [Memory Doctor](../../internal/memory/doctor/README.md).
 
+Doctor's `experience` row is the background generation handler;
+`experience_context` is actual constructed read/context availability, independent
+of the global model-jobs flag. Explicit experience enablement fails startup when
+qualification or the measured candidate provider/budget profile is absent;
+default off preserves the ordinary source and captured-pin guards. The focused
+[effective-composition protocol](../../docs/testing/issue-92-effective-composition.md)
+tests those constructors and Doctor together without changing qualifications.
+
 Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
 evidence, the existing finite background worker and owner-only memory decisions.
 `BUTLER_MEMORY_EXPERIENCE_ENABLED` defaults off and cannot bypass the closed
@@ -993,7 +1001,8 @@ final prompt formatter uses a neutral Document label; an absent title must not
 silently discard an already authorized, selected fragment. Empty evidence text
 is still omitted. Source provenance and currentness checks remain mandatory.
 
-The model-directed temporal facts reader requires qualification and flag plus
+The model-directed temporal facts reader and Profile/Episode context annotations
+share one bootstrap predicate: qualification and flag plus
 the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
 at least300s and a matching durable budget quote. Doctor reports that profile
 prerequisite separately. Typed owner metadata operations do not perform inference

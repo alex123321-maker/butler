@@ -316,7 +316,7 @@ func New(ctx context.Context) (*App, error) {
 
 	memoryRuntimeConfig := cfg
 	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult, cfg.ContextBudgetTokens)
-	experienceMemory, err := configureExperience(sourceCatalog, toolBrokerClient)
+	experienceMemory, err := configureExperience(sourceCatalog, toolBrokerClient, providerResult, budgetController)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -439,6 +439,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	var memoryCandidates *MemoryCandidates
 	var memoryReads *MemoryReads
+	temporalConsumerReady := temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController)
 	adaptiveRetrieval, err := configureAdaptiveRetrieval(cfg, sourceCatalog)
 	if err != nil {
 		redis.Close()
@@ -462,7 +463,7 @@ func New(ctx context.Context) (*App, error) {
 		adaptiveOptions = append(adaptiveOptions, option)
 		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog, adaptiveOptions...)
 		if err == nil {
-			memoryReads.temporal = temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController)
+			memoryReads.temporal = temporalConsumerReady
 		}
 		if err == nil {
 			err = memoryReads.CheckReady(ctx)
@@ -548,8 +549,8 @@ func New(ctx context.Context) (*App, error) {
 			WorkingStore:             workingStoreAdapter{store: working.NewStore(postgres.Pool())},
 			TransientStore:           transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
 			TransientTTL:             time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:             profileStoreAdapter{store: profileStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled)},
-			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled), experience: experienceMemory},
+			ProfileStore:             profileStoreAdapter{store: profileStore, sources: sourceCatalog, temporal: temporalConsumerReady},
+			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalConsumerReady, experience: experienceMemory},
 			ChunkStore:               chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
 			Embeddings:               memoryEmbeddings,
 			PipelineEnqueuer:         pipelineEnqueuer,
@@ -716,7 +717,7 @@ func New(ctx context.Context) (*App, error) {
 		memoryModelStore:           memoryModelStore,
 		memoryModelConfigured:      memoryModelWorker != nil,
 		memorySummaryConfigured:    summaryConsumerConfigured(memoryModelWorker),
-		memoryFeatureStates:        memoryFeatureConfigurations(cfg, providerResult, budgetController, memoryModelWorker, memoryCandidates != nil, memoryReads != nil, adaptiveRetrieval != nil),
+		memoryFeatureStates:        memoryFeatureConfigurations(cfg, providerResult, budgetController, memoryModelWorker, memoryCandidates != nil, memoryReads != nil, adaptiveRetrieval != nil, experienceMemory != nil),
 		consolidationConfigured:    consolidationConsumerConfigured(memoryModelWorker),
 		sourceCatalog:              sourceCatalog,
 		cfg:                        cfg,

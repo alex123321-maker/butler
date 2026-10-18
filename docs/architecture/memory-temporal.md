@@ -161,7 +161,8 @@ invalidates the whole prepared run. Operator endpoint selection is private and
 credential-free; both services require temporal readiness independently of read
 readiness and the code-owned qualification remains false.
 
-The model-directed temporal facts reader requires qualification and flag plus
+The model-directed temporal facts reader and Profile/Episode model-context
+annotations share one bootstrap readiness predicate: qualification and flag plus
 the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
 at least300s and a matching durable budget quote. Doctor reports that profile
 prerequisite separately. Typed owner metadata operations do not perform inference

@@ -73,6 +73,16 @@ mistake repetition, wrong application, owner interventions and complete creation
 write/search/use/skill preparation/test/load cost. Unknowns, no gain and
 regressions remain valid outcomes; #76 behavioral error catalog stays separate.
 
+Explicit startup enablement also requires the measured native profile: Gemini
+Flash High, exact32768 output tokens, actual provider timeout at least300s and a
+matching durable candidate budget. An enabled but unqualified or unsupported
+configuration fails startup with typed evidence failure. A disabled feature
+constructs no experience store. Read/context composition is independent of the
+global model-jobs flag; background generation additionally needs that flag and
+its actual handler. Doctor reports these separately as `experience_context`
+and `experience`. Neither composition state authorizes a job or proves quality.
+The ordinary source guard remains installed when the experience store is absent.
+
 The owning memory.facts path applies the same current lesson-ancestor and exact
 trusted exposure checks before reading accepted snapshots. Owner acceptance of
 a derived episodic/profile value does not remove the lesson's environment, tool

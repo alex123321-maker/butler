@@ -26,10 +26,10 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/config"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
-	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/candidates"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/compaction"
@@ -178,15 +178,13 @@ func (p *coherentPilotProvider) SubmitToolResult(ctx context.Context, r transpor
 		return nil, errors.New("controlled pilot actual Broker open failed")
 	}
 	item := actual.Result.Items[0]
-	if item.Source.ID != p.source.ID || item.Text != p.source.Body || item.Truncated || item.ReadRef == "" {
+	if item.Source.ID != p.source.ID || item.Text != p.source.Body || item.Truncated || item.ReadRef != "" {
 		return nil, errors.New("controlled pilot exact opened evidence absent")
 	}
-	// Copy the actual Broker receipt into the required final-answer contract.
-	// The fixture cannot mint a read_ref, replace opened bytes or bypass the
-	// ordinary adaptive citation/current-source checks.
-	answer := adaptive.Answer{Answer: "Принятое языковое предпочтение прочитано [1]. Текущее условие задачи сохраняется.", Citations: []adaptive.Citation{{Claim: "Прочитано принятое языковое предпочтение", ReadRef: item.ReadRef, Quote: item.Text, QuoteOffset: 0}}, Unknowns: []string{"Внешний эффект остаётся неизвестным; повтор требует независимой проверки."}}
-	raw, _ := json.Marshal(answer)
-	return nativeScriptedStream(transport.NewAssistantFinalEvent(r.RunID, p.Name(), transport.AssistantFinal{Content: string(raw), FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 200, OutputTokens: 50, TotalTokens: 250}}), transport.NewTerminalEvent(r.RunID, transport.EventTypeRunCompleted, p.Name())), nil
+	// A labeled static control consumes actual opened bytes and source pins.
+	// Adaptive routing/citation envelopes remain disabled; no read_ref is minted.
+	answer := "Принятое языковое предпочтение прочитано из " + item.Source.ID + ". Текущее условие задачи сохраняется. Внешний эффект остаётся неизвестным; повтор требует независимой проверки."
+	return nativeScriptedStream(transport.NewAssistantFinalEvent(r.RunID, p.Name(), transport.AssistantFinal{Content: answer, FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 200, OutputTokens: 50, TotalTokens: 250}}), transport.NewTerminalEvent(r.RunID, transport.EventTypeRunCompleted, p.Name())), nil
 }
 
 type coherentPilotStep struct {
@@ -240,11 +238,13 @@ func (p *coherentPilot) execute(record task.Record, text, existing string, b *bu
 	inputs := durableinput.NewStore(p.pool)
 	finals := completion.New(p.pool)
 	finals.DataGuard = sources.CheckRunSourcesTx
-	adaptiveStore, err := adaptive.NewStore(sources.Pool(), sources)
+	cfg := config.OrchestratorConfig{MemoryReadEnabled: true, MemoryAdaptiveRetrievalEnabled: false, MemoryTemporalEnabled: true}
+	adaptiveStore, err := configureAdaptiveRetrieval(cfg, sources)
 	if err != nil {
 		p.t.Fatal(err)
 	}
-	fc := flow.Config{ProviderName: p.provider.Name(), ModelName: "gemini-3.8-flash-high", OwnerID: "coherent-worker", LeaseTTL: 120, Tasks: task.NewStore(p.pool), Budgets: b, MemorySources: sources, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: contextLimit, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, Tools: p.broker, ToolCatalog: p.broker, ActionAuthorizer: p.broker, ProfileStore: profileStoreAdapter{store: profile.NewStore(p.pool), sources: sources, temporal: true}, SummaryReader: summary.NewStore(p.pool), AdaptiveRetrieval: adaptiveStore}
+	temporal := temporalReadConfigured(cfg.MemoryTemporalEnabled, providerfactory.Result{Provider: p.provider, ModelName: "gemini-3.8-flash-high"}, b)
+	fc := flow.Config{ProviderName: p.provider.Name(), ModelName: "gemini-3.8-flash-high", OwnerID: "coherent-worker", LeaseTTL: 120, Tasks: task.NewStore(p.pool), Budgets: b, MemorySources: sources, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: contextLimit, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, Tools: p.broker, ToolCatalog: p.broker, ActionAuthorizer: p.broker, ProfileStore: profileStoreAdapter{store: profile.NewStore(p.pool), sources: sources, temporal: temporal}, SummaryReader: summary.NewStore(p.pool), AdaptiveRetrieval: adaptiveStore}
 	x := &consolidationOrdinaryExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(p.pool), runs, transcript.NewStore(p.pool), p.provider, fc, logger), done: make(chan consolidationOrdinaryExecution, 1)}
 	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, 2*time.Minute)
 	if err != nil {
@@ -389,7 +389,7 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	}
 	acceptedHead := profileFingerprint()
 	p.record("explicit_owner_acceptance", nil, map[string]any{"claim_id": claims[0].ID, "heads_hash": acceptedHead})
-	adaptiveStore, err := adaptive.NewStore(pool, cat)
+	adaptiveStore, err := configureAdaptiveRetrieval(config.OrchestratorConfig{MemoryReadEnabled: true, MemoryAdaptiveRetrievalEnabled: false}, cat)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -421,12 +421,11 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	if err = pool.QueryRow(owner, `SELECT count(*) FROM tool_calls WHERE run_id=$1`, simpleReceipt.RunID).Scan(&opens); err != nil || opens != 0 {
 		t.Fatal("simple question performed optional retrieval")
 	}
-	var simpleIntent string
-	var calls, searches int
-	if err = pool.QueryRow(owner, `SELECT plan_json->>'intent',calls,searches FROM memory_retrieval_plans WHERE run_id=$1`, simpleReceipt.RunID).Scan(&simpleIntent, &calls, &searches); err != nil || simpleIntent != "independent" || calls != 0 || searches != 0 {
-		t.Fatal("simple optional plan did not remain self-contained")
+	var plans int
+	if err = pool.QueryRow(owner, `SELECT count(*) FROM memory_retrieval_plans WHERE run_id=$1`, simpleReceipt.RunID).Scan(&plans); err != nil || plans != 0 {
+		t.Fatal("disabled adaptive composition created a plan")
 	}
-	p.record("independent_simple_question_zero_tools", &simpleReceipt, map[string]any{"tool_calls": opens, "actual_plan_intent": simpleIntent, "optional_calls": calls, "optional_searches": searches})
+	p.record("independent_simple_question_zero_tools", &simpleReceipt, map[string]any{"tool_calls": opens, "adaptive_configured": false, "adaptive_plan_rows": plans})
 	leases := session.NewPostgresLeaseManager(pool)
 	controller := task.NewController(task.NewStore(pool), leases.Authority(), leases, runservice.NewPostgresRepository(pool), approval.NewPostgresRepository(pool), durableinput.NewStore(pool), transcript.NewStore(pool))
 	constraints := []string{"только чтение", "UNKNOWN не разрешает повтор", "Только для этой задачи отвечай на английском"}

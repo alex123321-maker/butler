@@ -220,6 +220,12 @@ This controlled receipt does not repair or qualify any closed native cohort.
 Source `4d7e6a68` now starts fresh combined `composition-v6` and full controlled
 `coherent-lifecycle-v11` windows. The full lifecycle-v11 passed24 checkpoints and47/0/0/race/vet; its evidence-list
 SHA256 is `6a9b91b8fa80c0c7d7b248f5bd3684e753f23f7fecc11fdf82b81e71ec2ea6f9`.
+This is a mechanical PASS for all24 checkpoints. Its early shared prefix used
+manual adaptive-store construction and `temporal:true`; it did not establish
+the final selected static bootstrap configuration. The separate
+[effective-composition delta](issue-92-effective-composition.md) replaces those
+fixture overrides with actual startup predicates. A fresh full24-checkpoint
+receipt under that delta remains pending; the retained v11 receipt is unchanged.
 The original combined-v6 window was subsequently rejected for a missing history
 fixture; its fresh passing v7 successor is recorded below. The combined
 gate additionally requires the new default/compound held-event controls and

@@ -193,7 +193,10 @@ func TestExperienceActualBrokerTaskOwnerPolicyAndEpisodeIntegration(t *testing.T
 
 func TestExperienceProductionGateCannotBeBypassed(t *testing.T) {
 	t.Setenv("BUTLER_MEMORY_EXPERIENCE_ENABLED", "true")
-	if _, err := configureExperience(catalog.New(nil, nil), experienceToolsFixture{}); err == nil {
-		t.Fatal("flag bypassed unqualified gate")
+	p, b := candidateQualifiedProfile()
+	t.Setenv("BUTLER_MEMORY_EXPERIENCE_ENVIRONMENT_HASH", strings.Repeat("b", 64))
+	s, err := configureExperience(catalog.New(nil, nil), experienceToolsFixture{readcontrol.Contract(readcontrol.Open)}, p, b)
+	if (err == nil && s != nil) != experience.ReleaseQualified {
+		t.Fatal("production qualification and constructor disagree", err)
 	}
 }

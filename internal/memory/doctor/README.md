@@ -12,6 +12,14 @@ these startup conditions hold, not a live worker, an authorized job, a healthy
 provider or accepted answer quality. The configuration digest includes these
 conditions, independently of slice order. It cannot be an activation credential.
 
+`experience` describes the actual background generation handler and requires the
+global model-jobs flag. `experience_context` describes the actual constructed
+experience read/context store; it depends on its own enabled flag, qualification
+and supported profile, independently of global jobs. An absent store is never
+reported as wired. Temporal facts and Profile/Episode context annotations use
+the same measured-profile readiness predicate. Expiry and captured-source guards
+remain active independently of optional annotation/read composition.
+
 `owner_policies` freshly observes the global durable model-worker control and
 aggregate states of the authenticated owner's policies for the composed consumers.
 Expired and exhausted counts can overlap active/paused/revoked states. Counts

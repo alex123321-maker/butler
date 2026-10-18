@@ -15,7 +15,7 @@ func TestMemoryDoctorUsesActualHandlerAndMeasuredProfile(t *testing.T) {
 	t.Setenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED", "true")
 	p, b := candidateQualifiedProfile()
 	w := &jobs.ModelWorker{Handlers: map[string]jobs.ModelHandler{candidates.Version: candidates.Handler{}}}
-	states := memoryFeatureConfigurations(config.OrchestratorConfig{MemoryReadEnabled: true, MemoryAdaptiveRetrievalEnabled: true}, p, b, w, false, true, false)
+	states := memoryFeatureConfigurations(config.OrchestratorConfig{MemoryReadEnabled: true, MemoryAdaptiveRetrievalEnabled: true}, p, b, w, false, true, false, false)
 	for _, s := range states {
 		switch s.Name {
 		case "candidate_jobs":
@@ -37,7 +37,7 @@ func TestMemoryDoctorUsesActualHandlerAndMeasuredProfile(t *testing.T) {
 		}
 	}
 	b.Policy.ModelMillis = 299999
-	for _, s := range memoryFeatureConfigurations(config.OrchestratorConfig{}, p, b, w, false, false, false) {
+	for _, s := range memoryFeatureConfigurations(config.OrchestratorConfig{}, p, b, w, false, false, false, false) {
 		if (s.Name == "candidate_jobs" || s.Name == "task_compaction" || s.Name == "temporal_facts") && s.ProfileReady {
 			t.Fatal("unmeasured timeout appeared supported", s)
 		}

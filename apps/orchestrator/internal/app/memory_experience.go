@@ -22,14 +22,15 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/skills"
 )
 
-func configureExperience(sources *catalog.Store, tools experience.ToolCatalog) (*experience.Store, error) {
+func configureExperience(sources *catalog.Store, tools experience.ToolCatalog, p providerfactory.Result, b *budget.Controller) (*experience.Store, error) {
 	if os.Getenv("BUTLER_MEMORY_EXPERIENCE_ENABLED") != "true" {
 		return nil, nil
 	}
-	if !experience.ReleaseQualified {
+	if !experience.ReleaseQualified || !candidateProfileReady(p, b) {
 		return nil, experience.ErrEvidence
 	}
 	return experience.New(sources, os.Getenv("BUTLER_MEMORY_EXPERIENCE_ENVIRONMENT_HASH"), tools)
