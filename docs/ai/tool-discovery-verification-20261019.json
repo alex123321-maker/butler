@@ -1,0 +1,118 @@
+{
+  "client_date": "2026-10-19",
+  "source_commit": "2c8987e3450194b77a76b7015fd402a3a1d42957",
+  "command": "pwsh -NoProfile -File scripts/dev/tool-discovery-local.ps1",
+  "environment": "Disposable PostgreSQL 17 and Go 1.27.2 Linux containers; race-enabled actual Broker process; go vet",
+  "native_model_inference": false,
+  "passed_tests": 21,
+  "failed_tests": 0,
+  "skipped_tests": 0,
+  "full_log_sha256": "0ec942ac9cac06e4a9e95abf2a87a3eb3d27b30c615f539ae579e8bbf7d5345a",
+  "tests": [
+    {
+      "name": "TestToolSetRejectsChangedRevisionAndDuplicateMethods",
+      "package": "github.com/butler/butler/internal/transport",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolSearchBeyond64PaginationAndStaleCursor",
+      "package": "github.com/butler/butler/internal/toolcatalog",
+      "elapsed_seconds": 0.04
+    },
+    {
+      "name": "TestToolSearchRussianAndExactRefs",
+      "package": "github.com/butler/butler/internal/toolcatalog",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolSearchRussianOperationRanksBeforeCategoryOnlyMatch",
+      "package": "github.com/butler/butler/internal/toolcatalog",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryOwnedSchemasFitNativeDialect",
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolSetLoadsOnNextWireRequestWithStableSignedAliases",
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "elapsed_seconds": 0.01
+    },
+    {
+      "name": "TestToolSetReplacementOnCopilotWire",
+      "package": "github.com/butler/butler/internal/transport/githubcopilot",
+      "elapsed_seconds": 0.01
+    },
+    {
+      "name": "TestToolSetReplacementInResponsesAndRealtime",
+      "package": "github.com/butler/butler/internal/transport/openai",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolSetReplacementPreservesCollisionAliasesAndEmptySet",
+      "package": "github.com/butler/butler/internal/transport/openaicodex",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolCatalogStandardReadRequiresExactLocalContractAndClaim",
+      "package": "github.com/butler/butler/internal/actionauth",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolCatalogConversationSlotsCannotLinkEffectsAcrossRuns",
+      "package": "github.com/butler/butler/internal/actionauth",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryRequiresOperatorFlagAndAuthentication",
+      "package": "github.com/butler/butler/internal/config",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryThroughAuthorizedBroker",
+      "package": "github.com/butler/butler/apps/tool-broker/internal/broker",
+      "elapsed_seconds": 0.02
+    },
+    {
+      "name": "TestToolCatalogDoesNotTruncateCoreBeforeSearch",
+      "package": "github.com/butler/butler/apps/tool-broker/internal/broker",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryModelLoopSearchLoadCallFinal",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryDurableSelectionRecoveryAndRevocation",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestToolDiscoveryBudgetRejectsLoadWithoutChangingPreviousSelection",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "elapsed_seconds": 0
+    },
+    {
+      "name": "TestActionSlotPersistsBeforePrepareAndSurvivesApprovalRecoveryIntegration",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/input",
+      "elapsed_seconds": 0.97
+    },
+    {
+      "name": "TestActionSlotDistinctIntentAndRevisionChecksIntegration",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/input",
+      "elapsed_seconds": 0.22
+    },
+    {
+      "name": "TestToolDiscoveryOrdinaryCoreActualBrokerIntegration",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "elapsed_seconds": 2.51
+    },
+    {
+      "name": "TestToolDiscoveryActualBrokerProcessIntegration",
+      "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "elapsed_seconds": 2.48
+    }
+  ]
+}
