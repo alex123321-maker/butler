@@ -47,6 +47,7 @@ type capacityMixedProvider struct {
 	mu       sync.Mutex
 	Requests map[string]transport.StartRunRequest
 	Errors   map[string]string
+	States   map[string]string
 }
 
 func (*capacityMixedProvider) Name() string                    { return "antigravity" }
@@ -70,8 +71,16 @@ func (p *capacityMixedProvider) StartRun(ctx context.Context, q transport.StartR
 	}
 	visible, _ := json.Marshal(q.InputItems)
 	problem := ""
-	if !strings.Contains(string(visible), "tool_effect") || !strings.Contains(string(visible), "unknown") {
-		problem = "typed_unknown_missing"
+	state := ""
+	if strings.Contains(string(visible), "tool_effect") && strings.Contains(string(visible), "unknown") {
+		state = "original_synthetic_working_marker"
+	} else if strings.Contains(string(visible), "privacy_redacted") && strings.Contains(string(visible), "deletion_id") && !strings.Contains(string(visible), "tool_effect") {
+		state = "current_content_free_privacy_erasure"
+	} else {
+		problem = "current_working_state_missing"
+	}
+	if !strings.Contains(string(visible), "Read current synthetic memory without external actions") || !strings.Contains(string(visible), "Read only; retain unknown external effects") {
+		problem = "current_goal_or_constraint_missing"
 	}
 	if q.Context.SessionKey != "mixed-history" && !strings.Contains(string(visible), "Synthetic seed91 mixed record") {
 		problem = "actual_retrieved_source_missing"
@@ -79,21 +88,44 @@ func (p *capacityMixedProvider) StartRun(ctx context.Context, q transport.StartR
 	p.mu.Lock()
 	p.Requests[q.Context.RunID] = q
 	p.Errors[q.Context.RunID] = problem
+	p.States[q.Context.RunID] = state
 	p.mu.Unlock()
 	if problem != "" {
 		return nil, errors.New(problem)
 	}
-	output := "Synthetic source read; external effect remains unknown."
+	output := "Current typed goal and constraints retained; no external action executed. Working observation: " + state
 	if q.Context.SessionKey == "mixed-history" {
 		output = strings.Repeat("Historical read observation; this cannot confirm an external effect. ", 100)
 	}
 	return nativeScriptedStream(transport.NewAssistantFinalEvent(q.Context.RunID, p.Name(), transport.AssistantFinal{Content: output, FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 80, OutputTokens: 30, TotalTokens: 110}})), nil
 }
 
-type capacityMixedExecutor struct{ base *flow.Service }
+type capacityMixedExecutor struct {
+	base     *flow.Service
+	mu       sync.Mutex
+	Failures map[string]string
+}
 
-func (e capacityMixedExecutor) Execute(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
-	return e.base.Execute(ctx, event)
+func (e *capacityMixedExecutor) Execute(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
+	result, err := e.base.Execute(ctx, event)
+	code := ""
+	switch {
+	case err == nil:
+	case errors.Is(err, catalog.ErrRestore):
+		code = "catalog_restore_denied"
+	case errors.Is(err, catalog.ErrStale):
+		code = "catalog_stale"
+	case errors.Is(err, catalog.ErrDenied):
+		code = "catalog_denied"
+	case errors.Is(err, task.ErrConflict):
+		code = "task_conflict"
+	default:
+		code = "unexpected_or_unproven"
+	}
+	e.mu.Lock()
+	e.Failures[event.EventID] = code
+	e.mu.Unlock()
+	return result, err
 }
 
 type capacityMixedReader struct {
@@ -178,6 +210,7 @@ type capacityMixedSample struct {
 	Millis                            float64 `json:"millis"`
 	StartNS, EndNS                    int64
 	InputID, RunID, Status, ErrorCode string
+	ExecutionClass                    string
 }
 
 // The prospective protocol is committed before this executable is collected.
@@ -201,7 +234,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 			t.Error("cannot retain combined proof", name)
 		}
 	}
-	observation := map[string]any{"protocol": "mixed-v1", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
+	observation := map[string]any{"protocol": "mixed-v3", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
 	manifest := catalog.NewFileManifest(filepath.Join(report, "anchor"))
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
@@ -232,7 +265,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	index.Backend = observed
 	index.Reader.Adapter.Backend = observed
 	reader := &capacityMixedReader{HybridReader: index.Reader}
-	p := &capacityMixedProvider{Requests: map[string]transport.StartRunRequest{}, Errors: map[string]string{}}
+	p := &capacityMixedProvider{Requests: map[string]transport.StartRunRequest{}, Errors: map[string]string{}, States: map[string]string{}}
 	inputs := durableinput.NewStore(pool)
 	repo := session.NewPostgresRepository(pool)
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
@@ -241,7 +274,8 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	fc := flow.Config{ProviderName: p.Name(), ModelName: "mixed-control", OwnerID: "mixed-worker", LeaseTTL: 10, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, SemanticMemory: reader, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, MemoryScopeResolver: func(context.Context) ([]memoryservice.Scope, error) {
 		return []memoryservice.Scope{{Type: "user", ID: "mixed-owner"}}, nil
 	}}
-	service, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, capacityMixedExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, log)}, runs, log, 5*time.Second)
+	executor := &capacityMixedExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, log), Failures: map[string]string{}}
+	service, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, executor, runs, log, 5*time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,6 +301,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		p.mu.Lock()
 		observation["actual_start_requests"] = p.Requests
 		observation["provider_input_errors"] = p.Errors
+		observation["provider_current_working_states"] = p.States
 		p.mu.Unlock()
 		write("combined-mixed.json", observation)
 	}()
@@ -309,6 +344,9 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		}
 		sample.Millis = float64(time.Since(start).Microseconds()) / 1000
 		sample.EndNS = time.Now().UnixNano()
+		executor.mu.Lock()
+		sample.ExecutionClass = executor.Failures[id]
+		executor.mu.Unlock()
 		return sample
 	}
 	createTask("mixed-history")
@@ -463,7 +501,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 			src := controlSources[i]
 			op := map[string]any{"source_id": src.ID, "start_ns": time.Now().UnixNano()}
 			if i >= 4 {
-				updated, err := cat.Put(owner, catalog.PutSource{ExternalKey: src.ExternalKey, Kind: src.Kind, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Body: "Corrected current maintenance observation."})
+				updated, err := cat.Correct(owner, catalog.Correction{SourceID: src.ID, ExpectedRevision: src.Revision, Body: "Corrected current maintenance observation."})
 				op["action"] = "correct"
 				op["write_ok"] = err == nil && updated.Revision == src.Revision+1
 				accessErr := capacityMixedAccess(owner, pool, cat, screenSourceRef(src))
@@ -498,6 +536,46 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		t.Fatal("maintenance setup failed before observations")
 	}
 	observation["mixed_wall_ms"] = time.Since(mixedBegin).Milliseconds()
+	// Keep complete latency/outcome denominators even if a later recovery fails.
+	for phase, samples := range map[string][]capacityMixedSample{"first": first, "warmup": warmup, "warm": warm, "mixed": mixed} {
+		values := make([]float64, len(samples))
+		completed, denied, unexpected := 0, 0, 0
+		for i, s := range samples {
+			values[i] = s.Millis
+			if s.Status == "completed" {
+				completed++
+			} else {
+				allowed := false
+				if phase == "mixed" && s.Status == "blocked" && (s.ExecutionClass == "catalog_restore_denied" || s.ExecutionClass == "catalog_stale" || s.ExecutionClass == "catalog_denied" || s.ExecutionClass == "task_conflict") {
+					for _, op := range maintenance["operations"].([]map[string]any) {
+						if op["action"] == "delete" && s.StartNS < op["end_ns"].(int64)+int64(100*time.Millisecond) && op["start_ns"].(int64) < s.EndNS {
+							allowed = true
+						}
+					}
+				}
+				if allowed {
+					denied++
+				} else {
+					unexpected++
+					t.Error("unexpected foreground outcome", phase, i, s.Status, s.ErrorCode, s.ExecutionClass)
+				}
+			}
+			if s.Millis > 5000 {
+				t.Error("foreground exceeded wall bound", phase, i, s.Millis)
+			}
+		}
+		sort.Float64s(values)
+		p95 := values[(95*len(values)+99)/100-1]
+		observation[phase+"_p50_ms"] = values[(50*len(values)+99)/100-1]
+		observation[phase+"_p95_ms"] = p95
+		observation[phase+"_outcomes"] = map[string]int{"scheduled": len(samples), "completed": completed, "intentional_privacy_denial": denied, "unexpected": unexpected}
+		if (phase == "warm" || phase == "mixed") && p95 > 1500 {
+			t.Error("prospective full foreground p95 missed", phase, p95)
+		}
+		if phase == "mixed" && (completed < 96 || denied > 4) {
+			t.Error("mixed availability floor missed", completed, denied)
+		}
+	}
 	for range 2 {
 		select {
 		case err := <-backgroundDone:
@@ -511,7 +589,8 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	originals := map[string]json.RawMessage{}
 	for _, q := range backgroundRequests {
 		var raw json.RawMessage
-		if err := pool.QueryRow(ctx, `SELECT to_jsonb(a) FROM memory_model_attempts a WHERE operation_id=$1 AND usage IS NULL`, q.Context.RunID).Scan(&raw); err != nil {
+		var quote, charge json.RawMessage
+		if err := pool.QueryRow(ctx, `SELECT to_jsonb(a),a.quote,r.request_json->'charge' FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE operation_id=$1 AND usage IS NULL AND a.reason='admission_wait'`, q.Context.RunID).Scan(&raw, &quote, &charge); err != nil || string(quote) != string(charge) {
 			t.Fatal("cancelled attempt lost NULL accounting", err)
 		}
 		originals[q.Context.RunID] = raw
@@ -519,10 +598,17 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	observation["cancelled_original_attempts"] = originals
 	// No scheduler-time rewrite: the original10-second delay is allowed to pass.
 	recoveryBegin := time.Now()
-	for _, provider := range backgrounds {
-		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: "mixed-control", Handlers: handlers}
+	for i, provider := range backgrounds {
+		selected := consolidation.Version
+		if i == 1 {
+			selected = compaction.HandlerName
+		}
+		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: "mixed-control", Handlers: map[string]jobs.ModelHandler{selected: handlers[selected]}}
 		for time.Since(recoveryBegin) < 60*time.Second {
 			did, err := worker.ProcessOne(ctx)
+			if i == 1 && did && errors.Is(err, jobs.ErrClaim) {
+				break
+			}
 			if err != nil && !errors.Is(err, jobs.ErrWaiting) {
 				t.Fatal("separately charged recovery failed", transport.DiagnosticCode(err))
 			}
@@ -531,6 +617,23 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 			}
 			time.Sleep(200 * time.Millisecond)
 		}
+	}
+	var staleStatus, staleReason string
+	var staleQuotes int
+	if err := pool.QueryRow(ctx, `SELECT status,error_code,(SELECT count(*) FROM memory_model_attempts a WHERE a.job_id=j.job_id) FROM memory_aux_jobs j WHERE policy_id='mixed-summary-policy'`).Scan(&staleStatus, &staleReason, &staleQuotes); err != nil || staleStatus != "failed" || staleReason != "authority_or_source_denied" || staleQuotes != 1 {
+		t.Fatal("old summary was not denied before a second reservation", staleStatus, staleReason, staleQuotes, err)
+	}
+	observation["old_summary_stale_before_new_reservation"] = true
+	freshSummary := compaction.PolicyRequest{SessionKey: "mixed-history", Policy: jobs.ModelPolicyRequest{ID: "mixed-summary-current-after-privacy", Privacy: "cloud_allowed", IntervalSeconds: 60, MaxJobs: 1, Job: jobs.Request{TaskID: "task-mixed-history", OriginalRunID: history.RunID, Allowance: budget.Units{ModelTurns: 1, Tokens: 1200000, ActiveMillis: 300000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Minute)}}}
+	if _, err = policies.Create(owner, freshSummary); err != nil {
+		t.Fatal("fresh explicit owner summary snapshot", err)
+	}
+	if err = js.PollModelPolicies(owner, func(h string) bool { return h == compaction.HandlerName }, map[string]jobs.ModelScheduleHandler{compaction.HandlerName: schedule[compaction.HandlerName]}); err != nil {
+		t.Fatal(err)
+	}
+	freshWorker := &jobs.ModelWorker{Jobs: js, Provider: backgrounds[1], Model: "mixed-control", Handlers: map[string]jobs.ModelHandler{compaction.HandlerName: handlers[compaction.HandlerName]}}
+	if did, err := freshWorker.ProcessOne(ctx); !did || err != nil {
+		t.Fatal("fresh one-call current summary failed", did, err)
 	}
 	observation["recovery_wall_ms"] = time.Since(recoveryBegin).Milliseconds()
 	for op, before := range originals {
@@ -572,22 +675,6 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	}
 	observation["foreign_denied"] = foreignErr != nil
 	observation["stable_source_current"] = stableErr == nil
-	for phase, samples := range map[string][]capacityMixedSample{"first": first, "warmup": warmup, "warm": warm, "mixed": mixed} {
-		values := make([]float64, len(samples))
-		for i, s := range samples {
-			values[i] = s.Millis
-			if s.Status != "completed" || s.Millis > 5000 {
-				t.Error("scheduled foreground unavailable or exceeded bound", phase, i, s.Status, s.ErrorCode, s.Millis)
-			}
-		}
-		sort.Float64s(values)
-		p95 := values[(95*len(values)+99)/100-1]
-		observation[phase+"_p50_ms"] = values[len(values)/2]
-		observation[phase+"_p95_ms"] = p95
-		if (phase == "warm" || phase == "mixed") && p95 > 1500 {
-			t.Error("prospective full foreground p95 missed", phase, p95)
-		}
-	}
 	overlaps := 0
 	for _, s := range mixed {
 		if s.StartNS < maintenance["end_ns"].(int64) && maintenance["start_ns"].(int64) < s.EndNS {
