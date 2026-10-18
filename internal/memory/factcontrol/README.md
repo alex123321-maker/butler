@@ -8,6 +8,13 @@ unknown. Output caps at10 accepted snapshots and the ordinary finite response
 ceiling; omitted data is explicitly truncated. Snapshots contain sanitized
 bounded values and temporal provenance, without hidden source bodies or authority.
 
+Contract revision3 distinguishes a bounded filtered result from acceptance
+history. An omitted source or missing temporal annotation on an original open
+does not prove rejection, deletion or that the source was never accepted.
+Only returned states and explicit counters support such conclusions; other
+exclusion reasons remain unknown. This interpretation change preserves the
+input schema, source privacy rules and finite read limits.
+
 The permanent Broker validates the canonical contract, no-secret arguments,
 current task/input/worker proof, shared budget and private exact dispatch. The
 owning Orchestrator repeats complete current Catalog proof in the same result

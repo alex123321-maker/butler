@@ -32,7 +32,7 @@ func consolidationV2Contracts() (map[string]string, error) {
 		}
 		contracts[contract.ToolName+":"+contract.ContractRevision] = hash
 	}
-	if factcontrol.Contract().ContractRevision != "2" {
+	if factcontrol.Contract().ContractRevision != "3" {
 		return nil, errors.New("reviewed facts semantic contract revision required")
 	}
 	return contracts, nil

@@ -141,6 +141,16 @@ values with `conflict=true` remain unresolved. The native v4 answers and their
 original revision1 declaration stay immutable; this clarification needs a new
 prospective semantic screen before qualification.
 
+Contract revision3 additionally distinguishes omission from acceptance history.
+A filtered/current-head/limited response proves only what matched that read;
+it does not establish that an omitted source was never accepted, rejected,
+deleted or unregistered. An ordinary original open without temporal annotations
+does not prove its acceptance state either. Only explicit returned states and
+counters establish those observations. Other exclusion reasons remain unknown.
+The complete v5/revision2 cohort remains NO_GO for one unsupported inference;
+the new declaration includes no corpus values, answer hints or changed limits
+and requires a fresh full-cohort semantic screen.
+
 This tool uses the actual Broker/action/input-claim path and common durable tool
 budget. When adaptive retrieval is composed it also consumes the same finite
 plan call/time/byte counters; it cannot bypass that loop bound and cannot mint

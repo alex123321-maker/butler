@@ -24,7 +24,7 @@ func TestTemporalFactsStrictSourceDateAndBoundContract(t *testing.T) {
 	if json.Unmarshal([]byte(Contract().InputSchemaJson), &schema) != nil {
 		t.Fatal("invalid canonical schema")
 	}
-	if Contract().ToolName != "memory.facts" || Contract().ContractRevision != "2" {
+	if Contract().ToolName != "memory.facts" || Contract().ContractRevision != "3" {
 		t.Fatal("temporal lookup changed another read contract")
 	}
 }

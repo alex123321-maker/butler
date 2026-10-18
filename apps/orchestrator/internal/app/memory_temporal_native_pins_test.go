@@ -55,7 +55,7 @@ func TestTemporalNativeWritePins(t *testing.T) {
 		t.Fatal(err)
 	}
 	policyObject := temporalNativePolicy(h.Carry)
-	if policyObject.Validate() != nil || time.Now().UTC().Format("2006-01-02") != h.Manifest.Day || !time.Now().Before(h.Manifest.Deadline) || factcontrol.Contract().ContractRevision != "2" {
+	if policyObject.Validate() != nil || time.Now().UTC().Format("2006-01-02") != h.Manifest.Day || !time.Now().Before(h.Manifest.Deadline) || factcontrol.Contract().ContractRevision != "3" {
 		t.Fatal("prospective day/policy/semantic contract differs")
 	}
 	policy, _ := json.Marshal(policyObject)
@@ -107,7 +107,7 @@ func TestTemporalNativeWritePins(t *testing.T) {
 func temporalCheckNativePins(proof string) error {
 	raw, err := os.ReadFile(filepath.Join(proof, "frozen-pins.json"))
 	var p temporalNativePins
-	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != "2" || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
+	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != "3" || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
 		return errors.New("frozen temporal window/profile differs")
 	}
 	contractSHA, e := actionauth.ContractHash(factcontrol.Contract())
