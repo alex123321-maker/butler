@@ -9,6 +9,7 @@ import (
 
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/owneridentity"
 )
 
 func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *testing.T) {
@@ -57,6 +58,18 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 	if err = pool.QueryRow(f.ctx, `SELECT deletion_id FROM memory_deletions ORDER BY watermark DESC LIMIT 1`).Scan(&did); err != nil {
 		t.Fatal(err)
 	}
+	other := owneridentity.WithActor(t.Context(), owneridentity.Actor{OwnerID: "other-owner", Channel: "web", DeliveryID: "foreign-deletion-control"})
+	if _, err = pool.Exec(other, `INSERT INTO sessions(session_key,user_id,channel)VALUES('foreign-session','other-owner','web')`); err != nil {
+		t.Fatal(err)
+	}
+	foreignSource, err := f.s.Sources.Put(other, catalog.PutSource{ExternalKey: "foreign-sentinel", Kind: "document", ScopeType: "user", ScopeID: "other-owner", Body: "Independent owner sentinel"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreignDeletion, err := f.s.Sources.Delete(other, foreignSource.ID, "delete", foreignSource.Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if _, err = pool.Exec(f.ctx, `UPDATE tool_calls SET result='{"corrected":true}' WHERE tool_call_id=$1`, f.observation.ToolPins[0].ID); err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +84,7 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 		t.Fatal(err)
 	}
 	canonical := `jsonb_build_object('plan','[]'::jsonb,'pending_actions','[]'::jsonb,'scratch',jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$1::text))`
-	for _, mode := range []string{"ordinary", "unknown_deletion", "private_payload", "identity", "revision", "authorized_erasure"} {
+	for _, mode := range []string{"ordinary", "unknown_deletion", "foreign_deletion", "private_payload", "identity", "revision", "authorized_erasure"} {
 		t.Run(mode, func(t *testing.T) {
 			tx, err := pool.Begin(f.ctx)
 			if err != nil {
@@ -81,6 +94,9 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 			setting := did
 			if mode == "unknown_deletion" {
 				setting = "not-an-owning-deletion"
+			}
+			if mode == "foreign_deletion" {
+				setting = foreignDeletion.ID
 			}
 			if mode != "ordinary" {
 				if _, err = tx.Exec(f.ctx, `SELECT set_config('butler.memory_redaction',$1,TRUE)`, setting); err != nil {
@@ -108,11 +124,18 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 			}
 		})
 	}
-	// Both use the real Catalog, durable deletion records and external manifest.
-	for _, src := range []catalog.Source{f.parent, later} {
-		if _, err = f.s.Sources.Delete(f.ctx, src.ID, "delete", src.Revision); err != nil {
-			t.Fatal("later actual owner deletion was vetoed", err)
+	// The failed old deletion already appended its fail-closed external anchor.
+	// Replay it explicitly; never reset the anchor or invent a successful retry.
+	for i := 0; i < 2; i++ {
+		if err = f.s.Sources.Reconcile(f.ctx); err != nil {
+			t.Fatal("pending deletion could not replay after upgrade", err)
 		}
+	}
+	if _, err = f.s.Sources.Get(f.ctx, f.parent.ID); err == nil {
+		t.Fatal("replayed original deletion revived content")
+	}
+	if _, err = f.s.Sources.Delete(f.ctx, later.ID, "delete", later.Revision); err != nil {
+		t.Fatal("later actual owner deletion was vetoed", err)
 	}
 	if _, err = pool.Exec(f.ctx, `UPDATE tasks SET working_json='{"scratch":{"private":"late"}}' WHERE task_id='task-1'`); err == nil {
 		t.Fatal("ordinary stale publication became permitted after deletion")
