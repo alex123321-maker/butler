@@ -145,4 +145,51 @@ references the full original freeze and exact reuse provenance. New prepared
 SHA256 is `5ed34d17a5ada71f5e6bb39d4b6546303bb9d62f0e49531e3e3da751ab0fde7a`.
 The operator wrapper checks the owned parent mode and absent fresh label before
 calling the unchanged frozen native helper. No reentry into the failed v2
-invocation is allowed; v3 still requires its own exact coordinator approval.
+invocation is allowed. The coordinator independently reviewed and approved the
+exact v3 reseal and operator bytes for one complete execution.
+
+## Closed complete native cohort
+
+`native-v7-preseal-v3` completed all twelve originals, with36 native entries,
+36 known full usages totaling256148 tokens and zero new native unknowns.
+All36 separate product observations are known. The24 Broker reads remain
+charged. The collector exited0; the common auth flock was released only after
+exact opaque CAS, active-work check, actual main paid-discovery200 and a fresh
+snapshot passed. Main deployment and flags were unchanged.
+
+The current owner/day vector is145 model turns,156794880 conservative tokens,
+55380000 active milliseconds,1216348160 provider input bytes,99 external calls
+and415236096 egress bytes. The109-turn predecessor is included once. Across the
+current lineage there are144 known native entries plus the one retained old
+unknown, with known full lower bound1105554 tokens. The historical161 and
+distinct adaptive226 quotes remain separate, retaining all original NULLs,
+deadlines and failures. The old89v2 cause remains UNKNOWN. The previous V7 setup
+failure's twelve unexecuted originals and zero auth/native calls remain retained.
+
+The [whole12 safe review](fixtures/issue88/native-v7-review.json), SHA256
+`195a606707ebc8b6110887ea787ab863b9c33137e4b0625697b37a7f555abca3`,
+contains every actual visible Start input, tool result, proposal/final, all
+original outcomes, exact product observations, reservations, read/open pins and
+full known/NULL usage. It excludes reasoning, provider sessions/transport
+internals, credentials and arbitrary raw errors. [Original source/citation
+material](fixtures/issue88/native-v7-source-citation-material.json), SHA256
+`8f77cede89b6e107b144646c4a5d0ac2716c7a00bd3b4415e0be105bf0a4d9ef`,
+preserves actual source revisions, accepted/temporal decision data, sealed
+originals, tool receipt IDs and the original corpus.
+
+The [content-free closed leaf](fixtures/issue88/native-v7-closed-leaf.json),
+SHA256 `7f50800185b05979d65d36734e0fe9e46c53491eefc5d817619e0abe590be019`,
+retains the used vector, all new operation/reservation/run identities and exact
+original artifact references. Its full ledger is
+`df418c4dc7631c9219a4b593ff87d0c14d12ee997cc94b55a3cbfbebd4e98a11`;
+all-original outcomes are
+`be122ba559417ffff11ec78ced94a56a320821aca842ed146017257df4795539`.
+Handback diagnostics are a separately retained main credential control-plane
+population: `diagnose-cloudcode` performs subscription project discovery
+(`loadCodeAssist`) and optional OAuth refresh, without a model generation call.
+The original safe trace/hash and request counts are retained; invoice cost is
+unobserved and these requests are not silently added to experiment model quotes.
+
+The whole cohort still requires independent semantic/currentness/citation review
+before qualification. Complete mechanics and known usage establish no main
+activation or overall benchmark/performance claim.
