@@ -6,7 +6,7 @@ window using the general facts contract4 at root9010ad3f. That contract clarifie
 current applicability versus verification TTL using the existing fields. It
 changes no schema, SQL freshness policy, source pins, corpus, order or rubric.
 
-The source includes root667ef9bb and the strictly validated closed V7 lineage.
+The source includes root83434b91 and the strictly validated closed V7 lineage.
 New schema `memory_temporal_native_v8`, window `temporal-explicit-v8`, and atomic
 `public.issue88_native_windows` receipt prevent reopening V7 or V8. New carry
 operation is `issue88-v8-current-day-carry:<history SHA256>`; one transaction
@@ -34,3 +34,26 @@ Preparation and actual isolated PostgreSQL controls make no auth/native calls.
 Execution requires an independent exact seal review. No retry, selective replay,
 NULL substitution, main activation or semantic qualification follows from this
 prospective recipe. Early failures retain all12 original outcome slots.
+
+The final offline source is `9a0fd8c805e36ef36d64fee52d38da542a50f233`, staged at
+`/srv/storage/butler/agents/issue88-native-v8-20261018/snapshots/recipe-source-v3`.
+`reports/native-v8-preseal-v1` pins prepared SHA256
+`313283a37164f322d967c5acb023a04274447b372913354d3c45b94fc722e3e3` and history
+`829b8ce783d7d6d31c33afc89678f086e7ea91e734e7f7d829bcd749294b41a7`.
+The [safe preseal packet](fixtures/issue88/native-v8-preseal-v1.json) has SHA256
+`1b601ddbe519164824bbc1efcaf339aa87491ae21596b9eec89388dcde4e7e41`.
+
+Actual isolated PG controls pass43 named tests (9 parents,34 children),0FAIL/0SKIP,
+race/vet. The final compiled offline seal passes10 parents/32 children with
+exact binary/source/contract/policy/history checks and a real nonroot standalone
+test2json runner. Seven copier controls pass ordinary `history.json`, explicit
+file count/size/total boundaries, symlink/non-JSON rejection and all159 original
+files (19,740,122 bytes). All these controls make zero auth/native calls.
+
+The first readonly export (`history-v1`, sourceafb9a4bb) stopped on a documentary
+absolute setup-failure path being mistaken for a flat artifact capability. It
+remains retained, unsealed and with zero auth/native/namespace claims. Follow-up
+fde1f7e8 copies the already-validated flat evidence directory without following
+documentary paths;253419b1 adds512 files/32MiB each/128MiB total limits. Source-v3
+also includes the current root Doctor improvement. No original evidence bytes,
+typed references, model corpus or runtime memory policies were rewritten.
