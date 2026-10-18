@@ -168,6 +168,7 @@ def run(arm, index):
     for name in ('broker', 'orchestrator'):
         config['services'][name]['environment']['BUTLER_TOOL_DISCOVERY_ENABLED'] = str(arm == 'deferred').lower()
     save(ROOT / 'compose.json', config)
+    capture()
     command(COMPOSE + ['up', '-d', 'broker', 'orchestrator'])
     healthy = False
     for _ in range(60):
@@ -197,9 +198,26 @@ def run(arm, index):
             break
         time.sleep(1)
     elapsed = time.monotonic() - start
+    capture()
     save(ROOT / ('reports/' + label + '-result.json'), {'arm': arm, 'case': case, 'elapsed_seconds': elapsed, 'input': final,
                                                         'source_sha256': hashlib.sha256((ROOT / 'source.tar.gz').read_bytes()).hexdigest()})
     print(json.dumps({'arm': arm, 'case': index, 'elapsed_seconds': round(elapsed, 3), 'input': final}))
+
+
+def capture():
+    log = subprocess.run(['docker', 'logs', PROJECT + '-orchestrator-1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    records = []
+    for line in log.stdout.splitlines():
+        try:
+            record = json.loads(line)
+            if record.get('msg') == 'model turn usage observed':
+                records.append({k: record[k] for k in ('time', 'run_id', 'operation_id', 'input_tokens', 'output_tokens', 'total_tokens')})
+        except (ValueError, KeyError):
+            pass
+    path = ROOT / 'reports/complete-usage.json'
+    prior = json.loads(path.read_text()) if path.exists() else []
+    by_id = {r['operation_id']: r for r in prior + records}
+    save(path, list(by_id.values()))
 
 
 if __name__ == '__main__':
@@ -218,6 +236,8 @@ if __name__ == '__main__':
                                                        'change': 'static_go_build_and_explicit_empty_namespace_anchor_initialization'})
         elif sys.argv[1] == 'run':
             run(sys.argv[2], int(sys.argv[3]))
+        elif sys.argv[1] == 'capture':
+            capture()
         else:
             raise RuntimeError('unknown operator action')
     except Exception as exc:

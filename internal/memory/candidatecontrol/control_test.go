@@ -75,7 +75,10 @@ func TestMemoryCandidatePrivateHTTP(t *testing.T) {
 	if w.Code == http.StatusOK || f.calls != 1 {
 		t.Fatal("ambiguous authentication reached publication")
 	}
-	for _, endpoint := range []string{"http://192.168.1.2" + Path, s.URL + Path + "?", s.URL + "/other", s.URL + Path + "#secret"} {
+	if _, err := NewClient("http://orchestrator:8080"+Path, token); err != nil {
+		t.Fatal("fixed owning Compose endpoint rejected", err)
+	}
+	for _, endpoint := range []string{"http://192.168.1.2" + Path, "http://orchestrator:8081" + Path, "http://orchestrator.evil:8080" + Path, "http://orchestrator:8080" + Path + "?", s.URL + Path + "?", s.URL + "/other", s.URL + Path + "#secret"} {
 		if _, err := NewClient(endpoint, token); err == nil {
 			t.Fatal("unsafe endpoint accepted", endpoint)
 		}
