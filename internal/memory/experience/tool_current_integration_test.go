@@ -130,6 +130,7 @@ func TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration(t *testing.T)
 	}
 	// Empty-history rollback creates the real pre-077 schema. Existing primary
 	// rows are inserted before applying the exact checked-in upgrade script.
+	apply("082_experience_working_erasure.down.sql")
 	var payloadMigration bool
 	var terminalMigration bool
 	var reconciledMigration bool
@@ -173,6 +174,7 @@ func TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration(t *testing.T)
 	if reconciledMigration {
 		apply("081_episodic_reconciled_attempts.up.sql")
 	}
+	apply("082_experience_working_erasure.up.sql")
 	if err := pool.QueryRow(ctx, `SELECT to_jsonb(t)::text FROM tool_calls t WHERE tool_call_id='legacy-tool'`).Scan(&after); err != nil || after != before {
 		t.Fatal("upgrade changed original tool data", err)
 	}
