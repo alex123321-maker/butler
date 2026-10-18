@@ -178,6 +178,27 @@ The full lifecycle driver now also requires that port control, the enabled
 dependency matrix and both temporal contract controls. Addresses and readiness
 deadlines remain the same; a full fresh-window run is still required.
 
+V7, source `3744773f`, passed22 sequential checkpoints, including the actual
+positive consolidated episode read, custom dump, deletion and fresh restore with
+zero retained private copies and unchanged complete effect/budget hashes. It
+failed before final ENOSPC: a later deletion clears this owner's working copies,
+and the experience publication trigger rejected that content removal because
+earlier redacted tool rows had made a retained observation stale. V7 remains a
+failed complete window; its22-step private progress is retained separately.
+
+Migration082 preserves the ordinary publication veto while admitting only exact
+authorized content-free working erasure, unchanged task fields and one working
+revision increment. `working-erasure-v2`, source `acd0a196`, passed8 test/subtest
+events with0 failures/skips, race and vet on actual PG. It reproduces the old
+veto, upgrades populated data, rejects ordinary/unknown/foreign/private-payload/
+identity/revision mutations, explicitly replays the retained failed-deletion
+anchor twice and completes a later real deletion. Populated downgrade refuses.
+Events SHA256: `0335d454282b6d39d9656cf713ef3096dfc78b9e775c9bf15d09ba144a62f00c`;
+evidence-list SHA256: `fbc5e21f0196cdf3e49408565046d5558b3cd22d1b777587965d76a707c0626c`.
+The earlier v1 fixture correctly encountered restore-required after the old
+failed deletion appended its anchor; v2 explicitly reconciles that history
+instead of resetting it. The full same-state scenario still needs a fresh run.
+
 The lifecycle driver coordinates a real custom dump while that same test and
 database remain live. It fsyncs the dump before allowing owner deletion, restores
 that exact backup into a fresh empty database, and signals the owning test to

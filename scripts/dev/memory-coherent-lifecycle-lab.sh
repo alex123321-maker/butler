@@ -75,7 +75,7 @@ docker create --pull never --name "$client" --network "$network" --cpus 1 --memo
  'go build -o /proof/tool-broker ./apps/tool-broker
   go test -c -o /proof/extension.test ./apps/tool-extension/internal/runtime
   go test -c -o /proof/http.test ./apps/tool-http/internal/runtime
-  go test -json -race -p 1 -count=1 -timeout 12m -run "^(TestMemoryCoherentEpisodeConsolidationRestoreIntegration|TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity|TestExperienceNativeAddressesRemainReservedAcrossChildHandoff|TestTemporalFactsStrictSourceDateAndBoundContract|TestTemporalFactsPrivateEndpointRejectsCredentialAndRedirectShapes)$" ./apps/orchestrator/internal/app ./internal/memory/experience ./internal/memory/factcontrol' > "$proof/client-id"
+  go test -json -race -p 1 -count=1 -timeout 12m -run "^(TestMemoryCoherentEpisodeConsolidationRestoreIntegration|TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity|TestExperienceNativeAddressesRemainReservedAcrossChildHandoff|TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration|TestTemporalFactsStrictSourceDateAndBoundContract|TestTemporalFactsPrivateEndpointRejectsCredentialAndRedirectShapes)$" ./apps/orchestrator/internal/app ./internal/memory/experience ./internal/memory/factcontrol' > "$proof/client-id"
 created_client=true
 docker inspect --format '{"nano_cpus":{{.HostConfig.NanoCpus}},"memory_bytes":{{.HostConfig.Memory}},"tmpfs":{{json .HostConfig.Tmpfs}}}' "$client" > "$proof/client-resources.json"
 jq -e '.nano_cpus==1000000000 and .memory_bytes==2147483648 and .tmpfs["/bounded-anchor-fault"]=="rw,size=8192,mode=0700"' "$proof/client-resources.json" >/dev/null
@@ -153,6 +153,7 @@ docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 
 [[ "$status" == 0 ]] || exit "$status"
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestMemoryCoherentEpisodeConsolidationRestoreIntegration") and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/events.jsonl" >/dev/null
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity")' "$proof/events.jsonl" >/dev/null
+jq -s -e 'any(.[];.Action=="pass" and .Test=="TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration")' "$proof/events.jsonl" >/dev/null
 jq -s -e 'map(select(.Action=="pass")|.Test) as $passed | ["TestExperienceNativeAddressesRemainReservedAcrossChildHandoff","TestTemporalFactsStrictSourceDateAndBoundContract","TestTemporalFactsPrivateEndpointRejectsCredentialAndRedirectShapes"] | all(. as $name | $passed | index($name)!=null)' "$proof/events.jsonl" >/dev/null
 jq -e '.controlled_only and .pass and (.steps|length)==15 and .steps[-1].Name=="owning_source_pool_unavailable_denies_before_release"' "$proof/timeline/timeline.json" >/dev/null
 jq -e '.controlled_only and .pass and .native_calls==0 and (.steps|length)==17 and .lesson_source!=""' "$proof/timeline/timeline-experience.json" >/dev/null
