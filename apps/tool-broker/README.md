@@ -4,6 +4,10 @@ Optional candidate proposals support the exact private Compose destination
 `http://orchestrator:8080/internal/memory-candidate`; arbitrary remote plain HTTP
 is denied. This matches the read/fact clients and preserves authenticated dispatch.
 
+The reviewed-skills execution wrapper preserves earlier local handlers, including
+discovery, instead of replacing them with the runtime router. The actual
+Core/Broker discovery integration also runs with skills enabled.
+
 Optional operator-only `BUTLER_TOOL_DISCOVERY_ENABLED=true` registers immutable local `tools.search` and `tools.load` reads in the ordinary action/claim/budget path. Search cards cover the full permitted catalog; exact loading does not execute tools or grant rights. Enable the matching Orchestrator flag. See [tool discovery](../../docs/architecture/tool-discovery.md).
 
 

@@ -112,10 +112,22 @@ func (p *discoveryScriptedProvider) SubmitToolResult(_ context.Context, req tran
 }
 
 func TestToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T) {
+	for _, skillsEnabled := range []bool{false, true} {
+		t.Run(fmt.Sprintf("skills=%t", skillsEnabled), func(t *testing.T) {
+			testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t, skillsEnabled)
+		})
+	}
+}
+
+func testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T, skillsEnabled bool) {
 	if os.Getenv("BUTLER_TOOL_DISCOVERY_APP_BINARY") == "" {
 		t.Skip("compiled discovery Broker required")
 	}
 	f := newNamedToolControlDispatchFixture(t, nil, false, false, toolcatalog.Search, true)
+	if skillsEnabled {
+		t.Setenv("BUTLER_SKILLS_ENABLED", "true")
+		t.Setenv("BUTLER_OWNER_CONTROL_OWNER_ID", f.f.parent.OwnerID)
+	}
 	f.reader.memoryReadReady = false
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

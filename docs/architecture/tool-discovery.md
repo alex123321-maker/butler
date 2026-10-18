@@ -80,6 +80,14 @@ the two discovery schemas. Search/load turns consume ordinary call/model budgets
 
 ## Verification and release boundary
 
+The [native comparison of 2026-10-19](../ai/tool-discovery-native-20261019.md)
+proves actual search/load/Doctor execution. One full-usage pair used15.54% fewer
+native tokens with2.14x latency; preliminary quality was eager4/4, deferred3/4.
+Quality noninferiority and complete monetary cost remain unestablished. Defaults
+remain false; the owner-requested laba opt-in is not a general release verdict.
+Broker wrappers, including reviewed skills, must preserve the prior executor;
+the actual Core/Broker process check exercises discovery with skills enabled too.
+
 `pwsh -NoProfile -File scripts/dev/tool-discovery-local.ps1` creates a disposable
 PostgreSQL container and runs Linux/race checks plus an actual compiled Broker
 process. It rejects skipped mandatory discovery tests and records JSONL under
