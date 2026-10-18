@@ -21,7 +21,7 @@ func TestExperienceCompoundSourceBound(t *testing.T) {
 		inherit     bool
 		bound, want time.Duration
 	}{
-		{name: "catalog_default", want: 200 * time.Millisecond},
+		{name: "catalog_default", want: 2 * time.Second},
 		{name: "experience_default", store: true, want: 2 * time.Second},
 		{name: "catalog_explicit", inherit: true, bound: 500 * time.Millisecond, want: 500 * time.Millisecond},
 		{name: "experience_compound", store: true, inherit: true, bound: 500 * time.Millisecond, want: 2 * time.Second},

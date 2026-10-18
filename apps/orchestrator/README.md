@@ -863,7 +863,7 @@ technical phases on the original task after confirmed developer return and
 actual parent activation. Ordinary workers/leases/Broker execute them; inputs
 carry opaque references and current readiness stays DATA. Full original document
 pins and current private claim/fence/authority repeat at provider/recovery/final.
-Its compound source verifier has a static2s bound (ordinary checks200ms), with
+Its compound source verifier has a static2s bound (the foreground default), with
 uncached proposal/final/periodic checks. See
 [composition and evidence](../../docs/architecture/converter-continuations.md).
 
@@ -968,8 +968,8 @@ With an experience store installed, the active source adapter declares a2s
 maximum for its base Catalog proof, current Broker contracts and fresh owning
 applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch
 events stay held until the fresh proof succeeds. Invalid inherited bounds are
-rejected. Without that store, base Catalog200ms remains unchanged. Standalone
-Catalog and background budgets are unchanged, and this ceiling is not a measured
+rejected. Without that store, the adapter inherits the foreground default2s or
+an explicit trusted bound in200ms..2s. Background budgets are unchanged, and this ceiling is not a measured
 latency SLO. Broker lookup stays outside SQL locks; no failed check authorizes
 another provider request or discards already observed usage.
 

@@ -218,8 +218,8 @@ operation: base Catalog proof, current Broker contract lookup outside SQL locks,
 then a fresh owning Catalog/experience proof. This adapter explicitly declares
 the existing trusted two-second maximum for the whole operation. It preserves
 invalid inherited bounds for rejection; absent the experience store, the base
-bound remains unchanged (ordinary Catalog200ms). It does not change standalone
-Catalog, background checks or the250ms observation interval. Parent deadlines,
+bound follows the foreground source guard's default2s (or its explicit inherited
+bound). Background checks and the250ms observation interval are unchanged. Parent deadlines,
 cancellation and Stop still clamp the check. Final/tool/batch DATA stays held
 until the fresh proof succeeds; expiry, privacy withdrawal, timeout or current
 authority loss denies release and cancels the provider. Existing usage evidence

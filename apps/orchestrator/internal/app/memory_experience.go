@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"os"
 	"sort"
@@ -382,7 +383,7 @@ func (s experienceRunSources) PinTranscript(ctx context.Context, session string,
 // operation; the caller still clamps it by its own deadline/cancellation. Keep
 // invalid inherited bounds invalid so the source guard rejects them.
 func (s experienceRunSources) MemorySourceCheckTimeout() time.Duration {
-	bound := 200 * time.Millisecond
+	bound := flow.DefaultMemorySourceCheckTimeout
 	if bounded, ok := s.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
 		bound = bounded.MemorySourceCheckTimeout()
 	}

@@ -8,6 +8,11 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
+// DefaultMemorySourceCheckTimeout bounds the complete foreground source proof.
+// Waiting never authorizes DATA: every proposal remains held until a fresh
+// source/authority proof succeeds, and the parent deadline always wins.
+const DefaultMemorySourceCheckTimeout = 2 * time.Second
+
 type sourceGuardedProvider struct {
 	transport.ModelProvider
 	sources interface {
@@ -33,13 +38,12 @@ func (p *sourceGuardedProvider) SubmitToolResult(ctx context.Context, r transpor
 }
 
 func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
-	// Compound owning lifecycle checks retain all current source/authority
-	// barriers. Their explicit trusted bound cannot exceed the private skill
-	// verifier's existing two-second bound, and never changes event admission.
-	checkTimeout := 200 * time.Millisecond
+	// Explicit trusted bounds can retain a shorter check. Neither a source nor
+	// the model can extend the foreground ceiling or alter event admission.
+	checkTimeout := DefaultMemorySourceCheckTimeout
 	if bounded, ok := p.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
 		requested := bounded.MemorySourceCheckTimeout()
-		if requested < checkTimeout || requested > 2*time.Second {
+		if requested < 200*time.Millisecond || requested > DefaultMemorySourceCheckTimeout {
 			return nil, errors.New("invalid owning memory source verification bound")
 		}
 		checkTimeout = requested

@@ -26,7 +26,9 @@ type heldCompoundMemorySources struct {
 	release chan struct{}
 }
 
-func (*heldCompoundMemorySources) MemorySourceCheckTimeout() time.Duration { return 2 * time.Second }
+type explicitCompoundMemorySources struct{ *heldCompoundMemorySources }
+
+func (explicitCompoundMemorySources) MemorySourceCheckTimeout() time.Duration { return 2 * time.Second }
 func (s *heldCompoundMemorySources) CheckRunSources(ctx context.Context, run string) error {
 	if s.checks.Add(1) > 1 {
 		s.once.Do(func() { close(s.entered) })
@@ -40,21 +42,30 @@ func (s *heldCompoundMemorySources) CheckRunSources(ctx context.Context, run str
 }
 
 func TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration(t *testing.T) {
+	testOwningHeldEvents(t, true)
+}
+
+func TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration(t *testing.T) {
+	testOwningHeldEvents(t, false)
+}
+
+func testOwningHeldEvents(t *testing.T, explicit bool) {
+	t.Helper()
 	for _, kind := range []transport.EventType{transport.EventTypeAssistantFinal, transport.EventTypeToolCallRequested, transport.EventTypeToolCallBatchRequested} {
 		for _, control := range []string{"current", "privacy", "cancel"} {
 			t.Run(string(kind)+"/"+control, func(t *testing.T) {
-				testOwningCompoundHeldEvent(t, kind, control)
+				testOwningCompoundHeldEvent(t, kind, control, explicit)
 			})
 		}
 	}
 	for _, control := range []string{"expired_lease", "deadline"} {
 		t.Run("assistant_final/"+control, func(t *testing.T) {
-			testOwningCompoundHeldEvent(t, transport.EventTypeAssistantFinal, control)
+			testOwningCompoundHeldEvent(t, transport.EventTypeAssistantFinal, control, explicit)
 		})
 	}
 }
 
-func testOwningCompoundHeldEvent(t *testing.T, kind transport.EventType, control string) {
+func testOwningCompoundHeldEvent(t *testing.T, kind transport.EventType, control string, explicit bool) {
 	t.Helper()
 	pool := memorytest.Database(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
@@ -84,6 +95,9 @@ func testOwningCompoundHeldEvent(t *testing.T, kind transport.EventType, control
 	probe := &heldCompoundMemorySources{Store: sources, entered: make(chan struct{}), release: make(chan struct{})}
 	provider := &idleMemoryProvider{stream: make(chan transport.TransportEvent, 1)}
 	guard := &sourceGuardedProvider{ModelProvider: provider, sources: probe}
+	if explicit {
+		guard.sources = explicitCompoundMemorySources{probe}
+	}
 	out, err := guard.StartRun(live, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run"}})
 	if err != nil {
 		t.Fatal(err)
