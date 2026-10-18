@@ -156,6 +156,17 @@ reproduced the old enabled-only failure; the corrected status matrix passed,
 including continued denial of disabled/empty/unknown states. Actual same-timeline
 extension reuse still requires a fresh Linux/PG/race run of the corrected source.
 
+V6, frozen source `b48e1104`, stopped before that positive read: the actual
+Broker process reported an occupied listener and the component readiness check
+failed. The focused contract-status matrix passed in the same Linux run, but
+the lifecycle did not. Its private logs and failed events remain under
+`issue92-20261018/reports/coherent-lifecycle-v6`; this is not evidence against
+the enabled-contract correction or a completed lifecycle. Earlier v1/v2 also
+remain rejected setup windows: respectively the driver's marker poll preceded
+the client start, and its PostgreSQL readiness check accepted the temporary
+initialization server. The driver now waits for the actual client and final
+TCP PostgreSQL listener before running its unchanged mandatory phases.
+
 The lifecycle driver coordinates a real custom dump while that same test and
 database remain live. It fsyncs the dump before allowing owner deletion, restores
 that exact backup into a fresh empty database, and signals the owning test to
