@@ -4,7 +4,21 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
+
+// MaskCredentials is a read projection of complete text, before pagination.
+// Each matched character becomes one asterisk so offsets still address the
+// original Unicode positions. Slicing before detection could expose a token's
+// suffix or an incomplete credential pattern on a later page.
+func MaskCredentials(input string) string {
+	for _, pattern := range []*regexp.Regexp{credentialURLPattern, bearerPattern, commonTokenPattern, jwtLikePattern, passwordInlinePattern, cookieInlinePattern, keyValueSecretPattern} {
+		input = pattern.ReplaceAllStringFunc(input, func(match string) string {
+			return strings.Repeat("*", utf8.RuneCountInString(match))
+		})
+	}
+	return input
+}
 
 var (
 	bearerPattern         = regexp.MustCompile(`(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+`)

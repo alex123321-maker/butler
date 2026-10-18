@@ -1,0 +1,336 @@
+[
+  {
+    "id": "explicit-detail",
+    "output": "{\"units\":[{\"source_id\":\"source_f35fb9b92c2bdc532bf351e76e371783d780f9966d117a4a280894287a22e382\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.technical_explanations\",\"quote\":\"Предпочитаю подробные объяснения технических решений.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 860,
+      "OutputTokens": 128,
+      "TotalTokens": 1572
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9913
+  },
+  {
+    "id": "prohibition-exception",
+    "output": "{\"units\":[{\"source_id\":\"source_ef154e82ad9d5d60eb1f0e0f4c9bc43996e63700186d746ff2e1df672bdc64f6\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.technical_explanations\",\"quote\":\"Не сокращай технические объяснения, кроме кратких статусов.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 852,
+      "OutputTokens": 129,
+      "TotalTokens": 1651
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 8829
+  },
+  {
+    "id": "condition",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_4a5503d5375877fb2ae180a5549efc2b3af5c13404e8eb244a303a52e67162e9\",\"reason\":\"conditional\"}]}",
+    "usage": {
+      "InputTokens": 864,
+      "OutputTokens": 78,
+      "TotalTokens": 1392
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7058
+  },
+  {
+    "id": "third-party-quote",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_79cdb765f775700efca6cec81b6314564fedb39c5ef15601eee05aad3c0d83f3\",\"reason\":\"quotation\"}]}",
+    "usage": {
+      "InputTokens": 841,
+      "OutputTokens": 72,
+      "TotalTokens": 1488
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7008
+  },
+  {
+    "id": "hypothesis",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_b90124912f4a0b1058d64f535246724a9b7b66fcd5d4ed938a6999ddcb2b8b72\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 864,
+      "OutputTokens": 79,
+      "TotalTokens": 1602
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6909
+  },
+  {
+    "id": "one-off",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_6322ecba3d6c7ebaddead41d1fde8febd9096ac44a73ecf2c0aeb3125cfe068a\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 833,
+      "OutputTokens": 68,
+      "TotalTokens": 1684
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9896
+  },
+  {
+    "id": "before-now",
+    "output": "{\"units\":[{\"source_id\":\"source_de2386f8675c3b87bcb01688de5bafb8738f36a7eb4b2164f699da8d57e69480\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.explanation_detail\",\"quote\":\"Раньше мне нравились короткие объяснения, а теперь предпочитаю подробные, кроме ежедневных статусов.\",\"scope_quote\":null,\"valid_time_quote\":\"теперь\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 861,
+      "OutputTokens": 136,
+      "TotalTokens": 2090
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11292
+  },
+  {
+    "id": "scoped-fact",
+    "output": "{\"units\":[{\"source_id\":\"source_49567f3ad7d0bd76c6a82a2c620ae30ee600c4315db80f35888d17c32dfa25aa\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.service_language\",\"quote\":\"В проекте Атлас с сентября 2026 года основной язык сервиса — Go.\",\"scope_quote\":\"В проекте Атлас\",\"valid_time_quote\":\"с сентября 2026 года\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 857,
+      "OutputTokens": 142,
+      "TotalTokens": 2194
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12387
+  },
+  {
+    "id": "episode-success",
+    "output": "{\"units\":[{\"source_id\":\"source_b834f51c36715e869ae2acd710bcaf2bf5e166fbf65a4b7d58292d26ae2d6df8\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.atlas_build\",\"quote\":\"После переноса кэша на отдельный диск сборка проекта Атлас 12 октября завершилась успешно.\",\"scope_quote\":\"проекта Атлас\",\"valid_time_quote\":\"12 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 855,
+      "OutputTokens": 138,
+      "TotalTokens": 2030
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11165
+  },
+  {
+    "id": "behavior-only",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_e7dfadd8595a94b1c71e2a1a02d06c134ec2808162c89920473b98d2839eb648\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 861,
+      "OutputTokens": 83,
+      "TotalTokens": 1605
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9524
+  },
+  {
+    "id": "silence",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_123e38ea76c380b79b45bb127ff8f7f968d98c4a7b73a899db32d3e5b0428de6\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 865,
+      "OutputTokens": 83,
+      "TotalTokens": 1620
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 14138
+  },
+  {
+    "id": "temporary-task",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_9cd5cfbf42eeb348077345e9a595fdbb8ed64eb4db641fd83628fd6db9d9c0f9\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 841,
+      "OutputTokens": 72,
+      "TotalTokens": 1302
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5891
+  },
+  {
+    "id": "scoped-preference",
+    "output": "{\"units\":[{\"source_id\":\"source_033e713e372be56bd33d4ee97bee9212c529ad33f02902aa4e73d2367fb7a939\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.comment_language\",\"quote\":\"Для проекта Сфера предпочитаю русский язык в комментариях, кроме имён публичных API.\",\"scope_quote\":\"Для проекта Сфера\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 853,
+      "OutputTokens": 132,
+      "TotalTokens": 2148
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12367
+  },
+  {
+    "id": "unknown-time",
+    "output": "{\"units\":[{\"source_id\":\"source_816afeca42eef10271a5042ecce156db7bd9794a66d0980555d54cb25ba51c9d\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.editor\",\"quote\":\"Мой основной редактор — Neovim.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 838,
+      "OutputTokens": 116,
+      "TotalTokens": 1694
+    },
+    "accepted_citation": true,
+    "semantic_match": false,
+    "reason": "",
+    "millis": 9222
+  },
+  {
+    "id": "negative-preference",
+    "output": "{\"units\":[{\"source_id\":\"source_4a2d009685778a66cb1fb54ec7838bf17cfd1d22772a9b1be8c2f740688e1008\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.emoji\",\"quote\":\"Не используй эмодзи в моих рабочих отчётах.\",\"scope_quote\":\"в моих рабочих отчётах\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 853,
+      "OutputTokens": 129,
+      "TotalTokens": 2801
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 18005
+  },
+  {
+    "id": "quoted-injection",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_108128c33890d28313a892dabb32bb6c649cbf6164b070320d00c689d1310e3e\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 880,
+      "OutputTokens": 84,
+      "TotalTokens": 1800
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 10794
+  },
+  {
+    "id": "current-request",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_cc1874f66df837f35e23b4242c929d04d58ae5503aa3da33a5e108d0277fbcd8\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 848,
+      "OutputTokens": 76,
+      "TotalTokens": 1310
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5644
+  },
+  {
+    "id": "contradiction",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_fbfe528c82b2640ddb3c3c7c6e3c31d3fb207fa48ab0a2480c1081e67ce55f18\",\"reason\":\"ambiguous\"}]}",
+    "usage": {
+      "InputTokens": 861,
+      "OutputTokens": 77,
+      "TotalTokens": 1418
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7284
+  },
+  {
+    "id": "noise",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_7ec8a4d3906e6e58d6f9f607cb8fbf476953594e364476c46cc3d8fb40a941be\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 847,
+      "OutputTokens": 82,
+      "TotalTokens": 1342
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6476
+  },
+  {
+    "id": "relative-fact",
+    "output": "{\"units\":[{\"source_id\":\"source_8958cf805ba9deb6552979437eb6549883920d156aeea6cee0507f523a1a391c\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.test_server_location\",\"quote\":\"В этой лаборатории с прошлой недели тестовый сервер находится в комнате 204.\",\"scope_quote\":\"В этой лаборатории\",\"valid_time_quote\":\"с прошлой недели\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 851,
+      "OutputTokens": 137,
+      "TotalTokens": 1825
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 10590
+  },
+  {
+    "id": "unicode",
+    "output": "{\"units\":[{\"key\":\"preference.notation\",\"quote\":\"В отчётах по проекту Ёж предпочитаю обозначение «м³» и символ 🧪.\",\"scope_quote\":\"В отчётах по проекту Ёж\",\"source_id\":\"source_134dc4190112319ea5e41852a636ca1290d511168b9b50f79a426e9f9c5c7e08\",\"speech_act\":\"assertion\",\"unit_type\":\"explicit_preference\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 870,
+      "OutputTokens": 141,
+      "TotalTokens": 8875
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 63647
+  },
+  {
+    "id": "hypothetical-mandate",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_931f7a380e96d104f824c3a22b17afdba805be184b518f52e892c4bc41b8d2a6\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 864,
+      "OutputTokens": 78,
+      "TotalTokens": 4725
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 34973
+  },
+  {
+    "id": "episode-failure",
+    "output": "{\"units\":[{\"source_id\":\"source_d9d226e06b0982a77e908ce68875eec3a520c73b728a584574161ae2a729b37b\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.test_server_update\",\"quote\":\"Обновление тестового сервера 15 октября закончилось ошибкой миграции, после отката сервис снова заработал.\",\"scope_quote\":null,\"valid_time_quote\":\"15 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 875,
+      "OutputTokens": 145,
+      "TotalTokens": 2114
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11657
+  },
+  {
+    "id": "explicit-language",
+    "output": "{\"units\":[{\"source_id\":\"source_c7abc980454cfea6998d32bd86b05472415d7d4b95f52e7d4617127976005856\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.language\",\"quote\":\"Предпочитаю ответы на русском языке.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 852,
+      "OutputTokens": 120,
+      "TotalTokens": 1460
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 33363
+  },
+  {
+    "id": "holdout-future-validity",
+    "output": "{\"units\":[{\"source_id\":\"source_20a1fc5196b9f5a6f84d8d964ec647b3b315ead65b844a90bdb06e13c52fbea8\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.report_format\",\"quote\":\"Со следующего квартала для проекта «Мост» предпочитаю таблицы вместо списков в недельных отчётах.\",\"scope_quote\":\"для проекта «Мост»\",\"valid_time_quote\":\"Со следующего квартала\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 858,
+      "OutputTokens": 143,
+      "TotalTokens": 5814
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 41152
+  },
+  {
+    "id": "holdout-reordered-project",
+    "output": "",
+    "usage": null,
+    "accepted_citation": false,
+    "semantic_match": false,
+    "reason": "worker_rejected",
+    "millis": 10061
+  }
+]

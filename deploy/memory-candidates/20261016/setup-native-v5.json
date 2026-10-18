@@ -1,0 +1,12 @@
+{
+  "revision": "d4baa269fb1d20ba8165c663f1b831756e07f366",
+  "stage": "prior_owner_policy_control",
+  "result": "fixture_setup_failed",
+  "reason": "id field used instead of typed policy_id",
+  "additional_model_calls": 0,
+  "additional_reservations": 0,
+  "retained_attempts": 50,
+  "retained_reservations": 50,
+  "original_caps_logs_and_binary_retained": true,
+  "retry_uses_fresh_window_label": true
+}

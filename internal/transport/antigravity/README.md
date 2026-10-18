@@ -1,5 +1,15 @@
 # Antigravity native transport
 
+Canonical tool schemas may contain `minLength`, `maxLength`, `minimum` and
+`maximum`. The adapter checks these annotation types, removes only these known
+bounds from Gemini wire declarations, and retains the complete original logical
+schema in its tool-definition map. Broker contracts/hashes and owning typed
+decoders still enforce actual execution bounds; native structural argument
+validation and unknown-schema-keyword denial remain intact. Nested property
+names equal to a keyword are preserved. Structured generation response schemas
+are unchanged. `TestMemoryReadCanonicalNativeSchemaCompatibility` covers all
+three canonical memory-read contracts without auth/HTTP.
+
 Optional trusted current-source callbacks run before authentication and actual
 HTTP dispatch. They cannot select credentials/models/schema, authorize tools or
 retry. Unhooked cancellation behavior and safe source-timeout/stale diagnostics

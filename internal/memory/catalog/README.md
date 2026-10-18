@@ -35,6 +35,12 @@ times, reported author, origin, scope/access revision and current source status.
 Profile/episodic/chunk stores remain the four-class memory model's class stores.
 The catalog links their object IDs to source revisions; vectors are derived.
 
+Fragment publication limits titles to2048 bytes and rejects recognized
+credentials in exact fragment keys. A failed publication leaves the original
+ingestion asset available for owner review without publishing unsafe handles.
+Agent reads independently suppress old unsafe keys and mark incomplete results;
+they never turn a masked key into an apparently usable fragment reference.
+
 Owner decisions use `owneridentity.Actor`. Extracted claims are candidates even
 with high confidence. `Decide` locks an exact scope/key head and requires the
 current accepted claim ID; only that owner decision supersedes a prior value.
@@ -75,6 +81,11 @@ Structured ingestion, private owner UI and opt-in semantic job/live adapters use
 this same catalog. Inspect retains original revisions/fragments/adjacent context;
 export includes original assets without list caps. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
 for the required private persistent anchor setup before deployment.
+
+The [mandatory lifecycle gate](../../../docs/ai/memory-lifecycle-acceptance.md)
+adds the shared eight-case attack corpus, selective derivative removal, corrected
+ancestor fencing and independent valid-memory preservation after restart/actual
+backup replay. New consumers must extend the same applicable boundaries.
 
 `ProposeTx` supports trusted structured extraction checkpoints and exact retry
 keys in the caller transaction. It rechecks current owner/job/source access,

@@ -1,0 +1,275 @@
+[
+  {
+    "id": "third-party-quote",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_4d8664c93499848977324471219f810f448c43c1619c750230ea4d8d57e5ae36\",\"reason\":\"quotation\"}]}",
+    "usage": {
+      "InputTokens": 653,
+      "OutputTokens": 82,
+      "TotalTokens": 1137
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9232
+  },
+  {
+    "id": "hypothesis",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_ebacdf15020101ea78bb4e6834a2470cc2df3c213ac719ea5bd66b7e6a359844\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 628,
+      "OutputTokens": 73,
+      "TotalTokens": 1358
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 8495
+  },
+  {
+    "id": "one-off",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_8c172bc7be902666c03e742d0225787e4c5437a7b9d4bb8b1b58b2e9e8640c42\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 651,
+      "OutputTokens": 80,
+      "TotalTokens": 1660
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11247
+  },
+  {
+    "id": "before-now",
+    "output": "{\"units\":[{\"source_id\":\"source_754e5b235f1818079ab199dab3922127682abe1c10fa472f81f25b2c80a74e9f\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.explanation_detail\",\"quote\":\"Раньше мне нравились короткие объяснения, а теперь предпочитаю подробные, кроме ежедневных статусов.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 646,
+      "OutputTokens": 136,
+      "TotalTokens": 6132
+    },
+    "accepted_citation": true,
+    "semantic_match": false,
+    "reason": "",
+    "millis": 38383
+  },
+  {
+    "id": "scoped-fact",
+    "output": "{\"units\":[{\"source_id\":\"source_4bdc2d1d72ff949b81d535a4b1f82951098a06e011d2e283a803d0571a51481d\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.atlas_service_language\",\"quote\":\"В проекте Атлас с сентября 2026 года основной язык сервиса — Go.\",\"scope_quote\":\"В проекте Атлас\",\"valid_time_quote\":\"с сентября 2026 года\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 654,
+      "OutputTokens": 149,
+      "TotalTokens": 2095
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 15572
+  },
+  {
+    "id": "episode-success",
+    "output": "{\"units\":[{\"source_id\":\"source_8f2c3729af197bf3e9b862a98cf74bdba63a0efdba96cf0eb8390466ee28a6b5\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.atlas_build\",\"quote\":\"После переноса кэша на отдельный диск сборка проекта Атлас 12 октября завершилась успешно.\",\"scope_quote\":null,\"valid_time_quote\":\"12 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 631,
+      "OutputTokens": 133,
+      "TotalTokens": 2376
+    },
+    "accepted_citation": true,
+    "semantic_match": false,
+    "reason": "",
+    "millis": 17376
+  },
+  {
+    "id": "behavior-only",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_351243c9f3a1057a65cd2d7c07ea8e4a5b86b79a2d4c94fe38140c3a3baffdfa\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 640,
+      "OutputTokens": 82,
+      "TotalTokens": 1235
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7443
+  },
+  {
+    "id": "silence",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_867ca9250b9f027c9c22cce9aef2a1a30f5b55340ac4616ee722c88ef960b6ac\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 641,
+      "OutputTokens": 81,
+      "TotalTokens": 1274
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7811
+  },
+  {
+    "id": "temporary-task",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_67bf4b0ed86c927ca72cfd1dc4a89f9922f67943a99a93221f5a94382986c983\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 641,
+      "OutputTokens": 78,
+      "TotalTokens": 1159
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5738
+  },
+  {
+    "id": "scoped-preference",
+    "output": "{\"units\":[{\"source_id\":\"source_e31346e97f61cd2aeca11b9f0aa164e9ea1efed8c6d2cd8285bb46e56adc8f13\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.comments_language\",\"quote\":\"Для проекта Сфера предпочитаю русский язык в комментариях, кроме имён публичных API.\",\"scope_quote\":\"Для проекта Сфера\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 626,
+      "OutputTokens": 129,
+      "TotalTokens": 1902
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 10331
+  },
+  {
+    "id": "unknown-time",
+    "output": "{\"units\":[{\"source_id\":\"source_8131494536ee5347623ce6f8cf4504b766e06619b780fd11a9ee2fd671ccd431\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.editor\",\"quote\":\"Мой основной редактор — Neovim.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 626,
+      "OutputTokens": 118,
+      "TotalTokens": 2406
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 17516
+  },
+  {
+    "id": "negative-preference",
+    "output": "{\"units\":[{\"source_id\":\"source_ec04e26c229f21583cea7c4ccb7a432a86ef0e113ce1f3bd92e1799d83659c62\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.emoji\",\"quote\":\"Не используй эмодзи в моих рабочих отчётах.\",\"scope_quote\":\"в моих рабочих отчётах\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 632,
+      "OutputTokens": 128,
+      "TotalTokens": 1839
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12014
+  },
+  {
+    "id": "quoted-injection",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_310d109e85e7aa2c71bca0f46b0726cd6ba5717cbd55544863a6fe89414c3d04\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 653,
+      "OutputTokens": 81,
+      "TotalTokens": 1324
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7368
+  },
+  {
+    "id": "current-request",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_7180ff8548f1b8fa55a44af29ca11609d3518df26f84568ce57898f37560fed3\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 627,
+      "OutputTokens": 75,
+      "TotalTokens": 1159
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7376
+  },
+  {
+    "id": "contradiction",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_76f581274aadae24df08fc77ebea6e9de348fd30001a51c3e927d994b941a176\",\"reason\":\"ambiguous\"}]}",
+    "usage": {
+      "InputTokens": 640,
+      "OutputTokens": 76,
+      "TotalTokens": 1175
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9172
+  },
+  {
+    "id": "noise",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_d8b551f11f5b6e15932893b061c80517ded29a03f40fae8ae2bfcb87ddb2a5ac\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 623,
+      "OutputTokens": 80,
+      "TotalTokens": 1041
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6073
+  },
+  {
+    "id": "relative-fact",
+    "output": "{\"units\":[{\"source_id\":\"source_59ebd3ae4435a1936ce3c803be3380509e7ad92a49041dc30b8f955b29743bdc\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.test_server_location\",\"quote\":\"В этой лаборатории с прошлой недели тестовый сервер находится в комнате 204.\",\"scope_quote\":\"В этой лаборатории\",\"valid_time_quote\":\"с прошлой недели\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 636,
+      "OutputTokens": 138,
+      "TotalTokens": 2321
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12998
+  },
+  {
+    "id": "unicode",
+    "output": "{\"units\":[{\"source_id\":\"source_9d385eb139e5b39b747256f6fcb0ea34c310d9d83a8e5cf3d9ca0c7150f3d5a5\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.project_ezh_reports\",\"quote\":\"В отчётах по проекту Ёж предпочитаю обозначение «м³» и символ 🧪.\",\"scope_quote\":\"В отчётах по проекту Ёж\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 646,
+      "OutputTokens": 144,
+      "TotalTokens": 1673
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 10028
+  },
+  {
+    "id": "hypothetical-mandate",
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_5a05c6406adf0532acb409b4293e7acbc769a8456a4e3c28883707c71953094b\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 646,
+      "OutputTokens": 78,
+      "TotalTokens": 8584
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 69256
+  },
+  {
+    "id": "episode-failure",
+    "output": "{\"units\":[{\"source_id\":\"source_185e6f4f43c58aed787ec07f3c3510731dddc96d5128b6657249779cf7df0e51\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.test_server_update\",\"quote\":\"Обновление тестового сервера 15 октября закончилось ошибкой миграции, после отката сервис снова заработал.\",\"scope_quote\":null,\"valid_time_quote\":\"15 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 648,
+      "OutputTokens": 142,
+      "TotalTokens": 1801
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12529
+  },
+  {
+    "id": "explicit-language",
+    "output": "{\"units\":[{\"source_id\":\"source_bc1fa3a3a7c82ed566ef0150c373aa6aa25d77708482804adaa1954ba94293eb\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.language\",\"quote\":\"Предпочитаю ответы на русском языке.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 619,
+      "OutputTokens": 115,
+      "TotalTokens": 1393
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 8171
+  }
+]

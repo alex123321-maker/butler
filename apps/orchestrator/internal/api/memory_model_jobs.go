@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/compaction"
 	"github.com/butler/butler/internal/memory/jobs"
 )
 
@@ -33,6 +34,22 @@ func (s *MemoryCatalogServer) handleModelJobs(ctx context.Context, w http.Respon
 	}
 	var err error
 	switch r.URL.Path {
+	case "/api/v4/memory/model-summary-policies":
+		if s.SummaryPolicies == nil {
+			writeJSON(w, 503, map[string]string{"error": "summary consumer disabled"})
+			return true
+		}
+		var q compaction.PolicyRequest
+		if !decodeMemory(w, r, &q) {
+			return true
+		}
+		p, e := s.SummaryPolicies.Create(ctx, q)
+		if e != nil {
+			writeMemoryError(w, e)
+		} else {
+			writeJSON(w, 201, p)
+		}
+		return true
 	case "/api/v4/memory/model-policies":
 		var q jobs.ModelPolicyRequest
 		if !decodeMemory(w, r, &q) {

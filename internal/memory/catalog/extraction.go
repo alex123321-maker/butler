@@ -12,6 +12,12 @@ import (
 // durable-job proof in the SAME transaction as its extraction checkpoint.
 // Exact retries retain the original decision; changed retry bodies are rejected.
 func (s *Store) ProposeTx(ctx context.Context, tx pgx.Tx, p ClaimRequest) (Claim, error) {
+	if p.MemoryType == "" {
+		p.MemoryType = "profile"
+	}
+	if p.MemoryType != "profile" && p.MemoryType != "episodic" {
+		return Claim{}, ErrInvalid
+	}
 	if s == nil || tx == nil || !bounded(p.Key, 512) || !bounded(p.DedupKey, 128) || !json.Valid(p.Value) || len(p.Value) > 32*1024 || len(p.Summary) > 8192 || math.IsNaN(p.Confidence) || math.IsInf(p.Confidence, 0) || p.Confidence < 0 || p.Confidence > 1 {
 		return Claim{}, ErrInvalid
 	}
@@ -24,6 +30,9 @@ func (s *Store) ProposeTx(ctx context.Context, tx pgx.Tx, p ClaimRequest) (Claim
 	}
 	src := sources[0]
 	sum := hash([]any{p.Key, json.RawMessage(p.Value), p.Summary, p.Confidence})
+	if p.MemoryType != "profile" {
+		sum = hash([]any{p.MemoryType, p.Key, json.RawMessage(p.Value), p.Summary, p.Confidence})
+	}
 	id, e := randomID("claim_")
 	if e != nil {
 		return Claim{}, e
@@ -47,7 +56,7 @@ func (s *Store) ProposeTx(ctx context.Context, tx pgx.Tx, p ClaimRequest) (Claim
 	if tag.RowsAffected() == 0 {
 		return getClaim(ctx, tx, priorID, false)
 	}
-	c := Claim{ID: id, OwnerID: src.OwnerID, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Key: p.Key, SourceID: src.ID, SourceRevision: src.Revision, Value: p.Value, Summary: p.Summary, Status: "candidate", Confidence: p.Confidence, EventTime: src.EventTime}
-	_, e = tx.Exec(ctx, `INSERT INTO memory_claims(claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,extraction_confidence,event_time) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, c.ID, c.OwnerID, c.ScopeType, c.ScopeID, c.Key, c.SourceID, c.SourceRevision, c.Value, c.Summary, c.Confidence, c.EventTime)
+	c := Claim{MemoryType: p.MemoryType, ID: id, OwnerID: src.OwnerID, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Key: p.Key, SourceID: src.ID, SourceRevision: src.Revision, Value: p.Value, Summary: p.Summary, Status: "candidate", Confidence: p.Confidence, EventTime: src.EventTime}
+	e = tx.QueryRow(ctx, `INSERT INTO memory_claims(claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,extraction_confidence,event_time,memory_type) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING created_at`, c.ID, c.OwnerID, c.ScopeType, c.ScopeID, c.Key, c.SourceID, c.SourceRevision, c.Value, c.Summary, c.Confidence, c.EventTime, c.MemoryType).Scan(&c.ExtractedAt)
 	return c, e
 }

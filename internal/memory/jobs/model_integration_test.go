@@ -7,6 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -16,6 +17,8 @@ import (
 type modelFixtureProvider struct {
 	transport.ModelProvider
 	calls          atomic.Int32
+	deadlineMillis atomic.Int64
+	deadlineNanos  atomic.Int64
 	source         catalog.Source
 	callback       func()
 	beforeDispatch func()
@@ -31,6 +34,10 @@ func (*modelFixtureProvider) CancelRun(context.Context, transport.CancelRunReque
 	return nil, nil
 }
 func (p *modelFixtureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if deadline, ok := ctx.Deadline(); ok {
+		p.deadlineMillis.Store(time.Until(deadline).Milliseconds())
+		p.deadlineNanos.Store(deadline.UnixNano())
+	}
 	if p.beforeDispatch != nil {
 		p.beforeDispatch()
 	}
@@ -98,6 +105,93 @@ func schedule(t *testing.T, w *ModelWorker, ctx context.Context, q ModelPolicyRe
 	}
 	return j
 }
+
+func TestModelClaimAndEarlierDeadlineIntegration(t *testing.T) {
+	for _, short := range []bool{false, true} {
+		t.Run(map[bool]string{false: "full_call", true: "earlier_policy"}[short], func(t *testing.T) {
+			w, ctx, src := modelFixture(t)
+			w.Jobs.budgets.Policy.ModelMillis = 300000
+			q := policyRequest(src)
+			q.Job.Allowance.ActiveMillis = 600000
+			if short {
+				q.Job.Deadline = time.Now().Add(30 * time.Second)
+			}
+			j := schedule(t, w, ctx, q)
+			var seconds float64
+			if err := w.Jobs.pool.QueryRow(ctx, `SELECT EXTRACT(epoch FROM claim_until-updated_at) FROM memory_aux_jobs WHERE job_id=$1`, j.ID).Scan(&seconds); err != nil {
+				t.Fatal(err)
+			}
+			if !short && (seconds < 359 || seconds > 361) {
+				t.Fatalf("model claim duration %f", seconds)
+			}
+			if short && (seconds <= 0 || seconds > 30 || !j.ClaimUntil.Equal(j.Deadline)) {
+				t.Fatalf("policy deadline lost: claim=%v policy=%v seconds=%f", j.ClaimUntil, q.Job.Deadline, seconds)
+			}
+			a, _, err := w.Admit(ctx, j)
+			if err != nil || a.Quote.ActiveMillis != 300000 || a.Deadline.After(*j.ClaimUntil) || a.Deadline.After(j.Deadline) || a.Deadline.After(time.Now().Add(300*time.Second)) {
+				t.Fatalf("admission escaped finite bounds: %+v err=%v", a, err)
+			}
+		})
+	}
+	t.Run("local_claim_unchanged", func(t *testing.T) {
+		s, _, ctx, src := fixture(t)
+		if _, err := s.Enqueue(ctx, request(src)); err != nil {
+			t.Fatal(err)
+		}
+		j := claim(t, s)
+		var seconds float64
+		if err := s.pool.QueryRow(ctx, `SELECT EXTRACT(epoch FROM claim_until-updated_at) FROM memory_aux_jobs WHERE job_id=$1`, j.ID).Scan(&seconds); err != nil || seconds < 119 || seconds > 121 {
+			t.Fatal(seconds, err)
+		}
+	})
+}
+
+func TestModelProcessOnePreservesConfiguredCallWindowIntegration(t *testing.T) {
+	for _, shortCaller := range []bool{false, true} {
+		t.Run(map[bool]string{false: "full_call", true: "earlier_caller"}[shortCaller], func(t *testing.T) {
+			w, ctx, src := modelFixture(t)
+			w.Jobs.budgets.Policy.ModelMillis = 300000
+			q := policyRequest(src)
+			q.Job.Allowance.ActiveMillis = 600000
+			if _, err := w.Jobs.CreateModelPolicy(ctx, q); err != nil {
+				t.Fatal(err)
+			}
+			if err := w.Jobs.PollModelPolicies(ctx, func(string) bool { return true }); err != nil {
+				t.Fatal(err)
+			}
+			if shortCaller {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+				defer cancel()
+			}
+			before := time.Now()
+			worked, err := w.ProcessOne(ctx)
+			if err != nil || !worked {
+				t.Fatal(worked, err)
+			}
+			provider := w.Provider.(*modelFixtureProvider)
+			remaining := provider.deadlineMillis.Load()
+			var scopeDeadline time.Time
+			if err := w.Jobs.pool.QueryRow(ctx, `SELECT min(deadline) FROM execution_budget_scopes`).Scan(&scopeDeadline); err != nil {
+				t.Fatal(err)
+			}
+			earliest := before.Add(300 * time.Second)
+			if scopeDeadline.Before(earliest) {
+				earliest = scopeDeadline // The UTC-day boundary can legitimately shorten the call.
+			}
+			if caller, ok := ctx.Deadline(); ok && caller.Before(earliest) {
+				earliest = caller
+			}
+			observed := time.Unix(0, provider.deadlineNanos.Load())
+			if observed.Before(earliest.Add(-time.Second)) || observed.After(scopeDeadline) || remaining > 300000 {
+				t.Fatal("whole-attempt timeout shortened configured model call", remaining)
+			}
+			if shortCaller && (remaining <= 0 || remaining > 30000) {
+				t.Fatal("caller deadline lost", remaining)
+			}
+		})
+	}
+}
 func TestModelFailureDiagnosticExcludesProviderMaterialIntegration(t *testing.T) {
 	w, ctx, src := modelFixture(t)
 	j := schedule(t, w, ctx, policyRequest(src))
@@ -158,6 +252,9 @@ func TestModelCrashRecoveryAndLostPublicationACKIntegration(t *testing.T) {
 	for _, phase := range []string{"before_dispatch", "after_dispatch", "before_commit"} {
 		t.Run(phase, func(t *testing.T) {
 			w, ctx, src := modelFixture(t)
+			// This tests crash fencing and ACK recovery, not latency. Two 5s
+			// quotes fit the existing shared 10s allowance under race/CPU load.
+			w.Jobs.budgets.Policy.ModelMillis = 5000
 			j := schedule(t, w, ctx, policyRequest(src))
 			a, _, e := w.Admit(ctx, j)
 			if e != nil {

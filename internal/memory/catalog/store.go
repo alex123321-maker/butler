@@ -371,6 +371,13 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	if graphErr != nil {
 		return nil, graphErr
 	}
+	summaryIDs := make([]string, 0, len(ordered))
+	for _, ref := range ordered {
+		summaryIDs = append(summaryIDs, ref.ID)
+	}
+	if e := checkSummarySourcesTx(ctx, tx, summaryIDs); e != nil {
+		return nil, e
+	}
 	result := make([]Source, 0, len(ordered))
 	for _, ref := range ordered {
 		write, _ := ctx.Value(writeSourcesKey{}).(bool)
@@ -451,6 +458,9 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 	}
 	if e := s.finalizeAccessTx(ctx, tx, refs, purpose); e != nil {
+		return nil, e
+	}
+	if e := checkSummarySourcesTx(ctx, tx, summaryIDs); e != nil {
 		return nil, e
 	}
 	return result, nil

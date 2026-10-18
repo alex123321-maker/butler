@@ -1,0 +1,12 @@
+{
+  "accepted_memory_eligible": true,
+  "additional_model_calls": 0,
+  "automatic_acceptance": false,
+  "correction_blocks_old_memory": true,
+  "explicit_owner_acceptance": true,
+  "explicit_owner_source_revocation": true,
+  "native_claim_id": "claim_36d5860abf7efe394f5bd4780d2c16f4f2a92732",
+  "paid_attempts_after": 82,
+  "paid_attempts_before": 82,
+  "source_id": "source_80a45b5466a646e2c4c812c2900180733a5a7af6040e546a70ec0d89e7b451e1"
+}

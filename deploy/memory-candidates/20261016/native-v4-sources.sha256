@@ -1,0 +1,8 @@
+b769c74498b1ac4469cb1502db2d2371ad54040ab57c614372be238807c8cbda  /srv/storage/butler/agents/issue85-20261016/current/internal/memory/candidates/handler.go
+9a9591e4c8d9038b1c1cdae6cc341339c1ecc7e8500ed02e3a14ddb3ada8e61d  /srv/storage/butler/agents/issue85-20261016/current/internal/memory/jobs/model_worker.go
+a42314fd48894646e54e6dd5565e4ca859d470d926cab20eb0b9d2d51c8ffc12  /srv/storage/butler/agents/issue85-20261016/current/internal/memory/jobs/model_supervisor.go
+0faccdf50e0bfb4273440738b2913358512ef33552f1e840cac5ea455f9f4782  /srv/storage/butler/agents/issue85-20261016/current/internal/memory/jobs/model_policy.go
+2a468a2d8eace5a852e68352ff873c022d3aa89f658bf4943370b10dd2c3e2c9  /srv/storage/butler/agents/issue85-20261016/current/migrations/072_verified_summary_consumer.up.sql
+649efe382405de7676e6256490868ba701571cbc6872aa8c1814ec290ef91ef5  /srv/storage/butler/agents/issue85-20261016/current/apps/orchestrator/internal/api/memory_candidates_native_test.go
+902efbad59a6a11f39521d5c3cd5e4be91a10f13ef23e4c7df2570063d6be0cd  /srv/storage/butler/agents/issue85-20261016/current/testdata/acceptance/ru-memory-candidates-v1.json
+ac46c92c1f1c628203dd420069d8647021ca02da97d62bf2334547d01b6d2201  /srv/storage/butler/agents/issue85-20261016/current/testdata/acceptance/ru-memory-candidates-holdout-v1.json

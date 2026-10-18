@@ -1,5 +1,13 @@
 # Tool Broker
 
+Optional operator-only `BUTLER_MEMORY_READ_ENABLED=true` registers the fixed
+`memory.search`, `memory.open`, `memory.neighbors` contracts through RegisterOwned.
+Set `BUTLER_MEMORY_READ_CONTROL_URL` to the authenticated owning Orchestrator route
+ending `/internal/memory-read`; enable the same flag in Orchestrator. Reads use
+normal grants/journal/shared budgets and current source pins. No arbitrary SQL,
+paths, URL fetches or credential inputs are accepted. See
+[read contract](../../internal/memory/readcontrol/README.md).
+
 `BUTLER_NETWORK_ALLOWLISTS_JSON` is an optional, startup-only destination cap
 for `http`, `browser` and `web` tool classes. For example,
 `{"http":["api.example.com"],"browser":["*.example.com"]}` restricts supplied

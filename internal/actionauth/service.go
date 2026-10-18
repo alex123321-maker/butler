@@ -102,6 +102,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if call.GetToolName() == "memory.propose_candidate" && (c.TaskID == "" || !c.MemoryCandidateReady) {
 		return b, false, fmt.Errorf("memory candidate composition is unavailable")
 	}
+	if isMemoryRead(call.GetToolName()) && (c.TaskID == "" || !c.MemoryReadReady) {
+		return b, false, fmt.Errorf("memory read composition is unavailable")
+	}
 	if strings.HasPrefix(call.GetToolName(), "workspace.") && (c.TaskID == "" || !c.WorkspaceReady) {
 		return b, false, fmt.Errorf("workspace execution composition is unavailable")
 	}
@@ -238,7 +241,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
 	}
 	g := Grant{ID: randomID(), Binding: b, LeaseID: c.LeaseID, LeaseEpoch: c.LeaseEpoch, AutonomyMode: c.AutonomyMode, ExpiresAt: s.now().Add(time.Minute), State: "authorized"}
-	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || strings.HasPrefix(call.GetToolName(), "workspace.") {
+	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || isMemoryRead(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "workspace.") {
 		g.InputClaimHash = c.InputClaimHash
 	}
 	if c.LeaseExpiresAt.Before(g.ExpiresAt) {
@@ -311,7 +314,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil || g.State != "authorized" || !g.ExpiresAt.After(s.now()) || g.Binding.ActionHash != b.ActionHash || g.LeaseID != c.LeaseID || g.LeaseEpoch != c.LeaseEpoch || g.AutonomyMode != c.AutonomyMode {
 		return Grant{}, fmt.Errorf("dispatch grant is stale, changed, revoked or already dispatched")
 	}
-	if strings.HasPrefix(call.GetToolName(), "workspace.") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (strings.HasPrefix(call.GetToolName(), "workspace.") || isMemoryRead(call.GetToolName())) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original workspace input claim is no longer current")
 	}
 	if g.ApprovalID != "" {

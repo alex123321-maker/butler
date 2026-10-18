@@ -70,6 +70,7 @@ type OrchestratorConfig struct {
 	GuardedTabRequestEnabled          bool
 	GuardedTabRuntimeEnabled          bool
 	MemoryCandidateEnabled            bool
+	MemoryReadEnabled                 bool
 	WorkspaceEnabled                  bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
@@ -85,6 +86,7 @@ type OrchestratorConfig struct {
 	OpenAICodexBaseURL                string
 	GitHubCopilotModel                string
 	AntigravityModel                  string
+	AntigravityMaximumOutputTokens    int
 	OpenAITimeoutSeconds              int
 	ToolBrokerAddr                    string
 	AutonomyMode                      string
@@ -137,6 +139,8 @@ type ToolBrokerConfig struct {
 	GuardedTabRequestEnabled      bool
 	GuardedTabRequestControlURL   string
 	MemoryCandidateEnabled        bool
+	MemoryReadEnabled             bool
+	MemoryReadControlURL          string
 	MemoryCandidateControlURL     string
 	WorkspaceEnabled              bool
 	WorkspaceProfileID            string
@@ -326,6 +330,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
 		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.8-flash-tiered", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS", component: "orchestrator", typeName: "int", defaultValue: "0", requiresRestart: true, validate: validateAntigravityOutputLimit, assign: func(v string) { cfg.AntigravityMaximumOutputTokens = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
 		fieldSpec{key: "BUTLER_AUTONOMY_MODE", component: "orchestrator", typeName: "string", defaultValue: "mode_1", allowedValues: []string{"mode_0", "mode_1", "mode_2", "mode_3"}, requiresRestart: true, assign: func(v string) { cfg.AutonomyMode = v }},
@@ -357,6 +362,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
+	specs = append(specs, memoryReadOrchestratorSpecs(&cfg)...)
 	specs = append(specs, workspaceOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
@@ -401,6 +407,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
+	specs = append(specs, memoryReadBrokerSpecs(&cfg)...)
 	specs = append(specs, workspaceBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err

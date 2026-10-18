@@ -1,5 +1,18 @@
 # Butler Dev Scripts
 
+`memory-consumers-lab.sh ROOT FRESH_LABEL` verifies the issue77 summary,
+candidate and Broker-read composition on an isolated `laba` snapshot. It uses
+cached images/modules with no external inference, records mandatory named
+passes, preserves optional native skips, and runs race/vet checks. Run the
+separate `memory-lifecycle-lab.sh` for the actual custom dump/restore and Redis
+withdrawal gate. Native consumer quality windows and staged activation remain
+independent of these controlled checks.
+
+The read/consumer lab binds PostgreSQL data beneath its task root on
+`/srv/storage`; it must not use an anonymous volume on Docker's root filesystem.
+PG and Go containers have explicit memory/CPU bounds. A failed infrastructure
+run remains retained evidence and cannot satisfy a required test gate.
+
 Issue33 V4 is now sealed NO_GO after11 new entries, for279 cumulative attempts.
 Never Sync or execute its root again. `cloud-v4-final-audit-reproduce.sh` runs
 the frozen independent auditor read-only/network-none against named retained
@@ -49,6 +62,7 @@ Available scripts:
 - `run-orchestrator.ps1` - run the orchestrator locally against the Docker-side dependencies
 - `test-go.ps1` - run Go tests with repo-local cache isolation
 - `verify-changed.ps1` - map changed paths to the relevant specs and targeted verification commands
+- `memory-lifecycle-lab.sh <isolated-issue83-root> <fresh-label>` - shared synthetic poisoning corpus, actual PG/race/Broker and old-backup deletion-anchor restore; exact mandatory tests cannot skip. See [the consumer lifecycle gate](../../docs/ai/memory-lifecycle-acceptance.md).
 - `task-observations-lab.sh <isolated-agent-root>` - disposable PostgreSQL and Go race/vet proof for authenticated owner observations, shared root usage and truthful effect/result distinctions; no inference or shared deployment changes.
 - `task-view-lab.sh <isolated-agent-root>` - Vue type/lint/build and actual Chromium task/control/observation fixtures with repo-local lab caches.
 - `optional-models-integration-lab.sh <isolated-agent-root>` - actual disposable PG/race/vet checks for the combined voice/function proposal, input-source and task/API code; actual model quality probes remain explicit opt-ins and skips are audited separately.

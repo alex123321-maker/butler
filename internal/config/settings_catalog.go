@@ -70,6 +70,10 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Group: "Model", DisplayOrder: 58, Visible: true,
 		},
 		{
+			Spec:  fieldSpec{key: "BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS", description: "Общий предел reasoning и ответа Antigravity.", valueHint: "0 сохраняет 8192; для High допускается 32768 при соответствующем конечном execution budget. Требуется перезапуск.", component: "orchestrator", typeName: "int", defaultValue: "0", requiresRestart: true, validate: validateAntigravityOutputLimit},
+			Group: "Model", DisplayOrder: 59, Visible: true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", description: "Токен Telegram-бота для канала Telegram.", valueHint: "Получается у BotFather; без него Telegram-адаптер не сможет принимать и отправлять сообщения.", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: nil},
 			Group:        "Telegram",
 			DisplayOrder: 60,

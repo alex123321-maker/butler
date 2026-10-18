@@ -3,6 +3,8 @@ package catalog
 import (
 	"context"
 	"encoding/json"
+
+	"github.com/butler/butler/internal/memory/sanitize"
 )
 
 type FragmentResult struct {
@@ -21,7 +23,7 @@ func (s *Store) PublishFragments(ctx context.Context, ref SourceRef, fragments [
 	}
 	seen := map[string]bool{}
 	for _, f := range fragments {
-		if !bounded(f.Key, 512) || seen[f.Key] || len(f.Text) > 32*1024 || !json.Valid(f.Locator) {
+		if !bounded(f.Key, 512) || sanitize.Text(f.Key) != f.Key || seen[f.Key] || len(f.Title) > 2048 || len(f.Text) > 32*1024 || !json.Valid(f.Locator) {
 			return result, ErrInvalid
 		}
 		seen[f.Key] = true

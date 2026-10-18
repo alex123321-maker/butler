@@ -207,7 +207,7 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 					t.Fatal("wrong crash boundary", e)
 				}
 			}
-			// Accelerate the persisted two-minute lease timeout; no authority is renewed.
+			// Accelerate the persisted model claim timeout; no authority is renewed.
 			if _, e := w.Jobs.pool.Exec(ctx, `UPDATE memory_aux_jobs SET claim_until=clock_timestamp()-INTERVAL '1 second' WHERE policy_id=$1`, q.ID); e != nil {
 				t.Fatal(e)
 			}

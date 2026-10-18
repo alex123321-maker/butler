@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+Verified summary generation is optional independent background work, specified in
+[task compaction](../../internal/memory/compaction/README.md). It does not keep or
+revive a Session Service lease, complete a task, accept profile facts or infer tool
+success. Current typed task/constraints/assignment versions gate publication.
+Compaction starts before the foreground hard allowance, keeps the newest raw tail
+and preserves every owner statement. Failed/stale generation leaves history and
+task state intact; if mandatory context still cannot fit, preparation explains
+the budget failure instead of silently removing constraints or unknown effects.
+
 Optional [background model jobs](background-memory-jobs.md) have their own durable
 owner policy and claim after user-run completion. Their scanner/transport failures
 cannot delay or undo user finalization. Completed task identity/revision remain

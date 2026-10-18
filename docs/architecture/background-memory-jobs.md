@@ -44,7 +44,9 @@ Secret-class data and recognizable raw credentials deny processing.
 ## Attempts, transport and publication
 
 1. Claim the existing `memory_aux_jobs` row with its monotonically increasing
-   epoch and at most two-minute claim. Four actual failure/crash claims are allowed.
+   epoch and at most six-minute claim for model jobs (two minutes for other kinds).
+   Four actual failure/crash claims are allowed. An abandoned model claim can thus
+   take six minutes to recover; no heartbeat extends it.
 2. Check current task/assignment, global control, policy and full catalog manifest.
    Lock order is sessions → tasks/authority → control/policy → sorted sources →
    job → sorted budget scopes. No transaction remains open during provider HTTP.
@@ -55,6 +57,13 @@ Secret-class data and recognizable raw credentials deny processing.
    model and independently known locality before calling transport.
 4. Recheck DB time and all authority after budget waits. Clamp the call to every
    scope deadline, policy, claim and current goal/mandate active-hours window.
+   The configured model duration is additionally capped at five minutes. With a
+   full model claim this leaves a nominal minute of claim headroom. Publication
+   must still finish within the admitted call deadline; there is no guaranteed
+   post-call grace period. Earlier hard deadlines can shorten either bound.
+   The supervisor stays 250ms/200ms.
+   `ProcessOne` also bounds the complete attempt at six minutes, preserving an
+   earlier caller deadline rather than imposing a shorter hidden model timeout.
    A fresh transport correlation ID is neither a user run nor a lease.
 5. Use the configured native provider with no tools, fresh provider session,
    typed DATA provenance, complete serialized input-byte ceiling and
@@ -122,7 +131,61 @@ It proves transport/plumbing with bounded neutral DATA and establishes no summar
 extraction, consolidation or answer quality. Consumers from #84/#85/#89/#90 need
 their own quality/security gates; none is silently enabled by #82.
 
+#85 adds the separately gated `source-candidates-v2` consumer and an optional
+trusted transactional publication hook. It materializes neutral catalog claims
+against one original source alongside the existing DATA derivative/job checkpoint.
+Exact Unicode evidence, typed owner-only projection, coalescing and the deliberately
+closed production release gate are specified in the
+[candidate consumer README](../../internal/memory/candidates/README.md).
+
+The generative supervisor's 250ms ticker and 200ms proof deadline check current
+authority and immutable metadata in one transaction. This proof covers complete
+claim/policy state, source revisions/hash/access/scope and parent graph, copied
+summary original-source metadata, restore identity and interactive priority. It
+does not reread source bodies or acquire the job's publication lock. Repeating
+the complete publication proof here can wait behind the same worker's publisher
+and cancel an otherwise valid provider result. Full admission, per-HTTP release,
+dispatch and publication checks remain mandatory; an unavailable metadata proof
+still cancels, and does not erase or refund an admitted attempt.
+This observation transaction finishes with bounded rollback because its verified
+helper chain has no durable mutation. Tuple locks can generate WAL; an unnecessary
+commit can wait for durability within the short observation deadline. Network
+release/dispatch and publication retain their normal durable commit boundaries.
+
 ## Migration and rollback
+
+### Verified summary consumer (#84)
+
+The separately default-off `BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED` composes
+`task-summary-v1`; [its exact contract](../../internal/memory/compaction/README.md)
+preserves complete user statements and selects only primary-source excerpts for
+assistant/tool history. A new owner-proved `model-summary-policies` endpoint binds
+one actual session snapshot and the matching original run/task, using the same
+finite model policy and allowance. The scanner's trusted preparation callback
+refreshes only that stable source under the current independent policy; it cannot
+expand owner/scope/access or the source graph. Multiple task privacy in one session
+continues to fail closed. The current configured context allowance triggers work
+at 60%, leaving a protected four-message tail. No foreground lease is borrowed.
+
+The optional atomic ModelPublicationHandler runs inside generic derivative/job
+publication. Summary coverage CAS compares current primary bytes and tool states;
+source correction, privacy deletion, a later coverage winner or changed current
+task/constraints/mandate rejects the complete transaction. Migration072 tracks
+session snapshot anchors for privacy erasure of copied input revisions and adds
+tool-state invalidation. Every compaction reads primary events, never a chain of
+model retellings. Failure leaves existing history and typed state intact; waiting
+reasons include `summary_below_threshold`, `summary_tail_protected`,
+`summary_source_too_large` and `summary_source_denied`. Consumer quality promotion
+is separate from the generic #82 and lifecycle #83 gates.
+
+The code-owned summary quality gate passed the complete three-compaction/six-run
+native comparison plus lifecycle and actual restore checks. Registration remains
+limited to native Flash High with exactly 32768 generated tokens, actual transport
+timeout at least 300s and matching finite output/model-time budget. Process flags
+remain default-off, and current owner policy and enabled PostgreSQL control remain
+necessary. Full foreground plus background cost exceeded the full-history
+baseline in this measured window; qualification is a continuity result, not a
+cost-reduction claim. See the [complete evidence](../testing/issue-84-verified-summaries.md).
 
 Apply migration 071 before starting the new binary, using the normal migrator.
 It extends the existing auxiliary queue and references the existing reservation

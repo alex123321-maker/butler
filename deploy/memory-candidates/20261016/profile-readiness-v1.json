@@ -1,0 +1,29 @@
+{
+  "source_revision": "89031df4217bb91635d5b2482bd374818e1c9336",
+  "transport_dependency": "d6d5d89b871de4332fcd1eb82f3ec6b63304aea0",
+  "server": "ssh laba",
+  "original_evidence": "/srv/storage/butler/agents/issue85-20261016/reports/profile-v1",
+  "source_snapshot": "/srv/storage/butler/agents/issue85-20261016/snapshots/profile-v1",
+  "test_mode": "actual_postgresql_race_cached_no_network",
+  "suites": [
+    {"name": "candidate_profile", "pass_test_events": 20, "failed": 0, "skipped": 0, "package_seconds": 1.04},
+    {"name": "native_admission_and_prior_policy_control", "pass_test_events": 3, "failed": 0, "skipped": 0, "package_seconds": 2.1},
+    {"name": "native_adapter_timeout_and_serialized_budget", "pass_test_events": 2, "failed": 0, "skipped": 0, "package_seconds": 1.021}
+  ],
+  "vet_passed": true,
+  "additional_model_calls": 0,
+  "retained_native_attempts": 82,
+  "release_qualified_during_test": false,
+  "profile": {
+    "actual_provider": "antigravity",
+    "model": "gemini-3.8-flash-high",
+    "maximum_output_tokens": 32768,
+    "minimum_actual_native_timeout_millis": 300000,
+    "minimum_reserved_output_tokens": 32768,
+    "minimum_reserved_model_millis": 300000,
+    "actual_timeouts_tested_seconds": [60, 120, 299, 300, 301],
+    "short_timeouts_fail_closed": true,
+    "missing_attestations_fail_closed": true,
+    "unmeasured_65536_ceiling_fail_closed": true
+  }
+}

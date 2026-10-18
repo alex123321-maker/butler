@@ -1,5 +1,15 @@
 # Butler — Model Transport Contract
 
+Native Gemini tool declarations lower the known `minLength`, `maxLength`,
+`minimum` and `maximum` validation annotations out of the provider-facing schema.
+The original logical ToolDefinition, canonical Broker schema and action contract
+hash remain unchanged; Tool Broker and owning typed argument decoders enforce
+the bounds before execution. Native argument shape/type/required/unknown-field
+checks remain in place, and unknown schema keywords fail closed. This narrow
+dialect conversion does not change configured structured response schemas,
+authorization, budgets or model selection. Canonical memory search/open/neighbors
+contracts must pass the offline native declaration regression before inference.
+
 Memory query locality is independent of provider release. A local-only task can
 use authorized PostgreSQL evidence and the pinned internal inference service;
 the resulting query/snippets remain subject to current task privacy, source
@@ -1046,6 +1056,20 @@ the still-active run's instructions. Final/error/cancel/shutdown clears the
 transient cache; fresh durable recovery reconstructs context from Butler. Codex's
 existing instruction continuity is retained. No identity prompt, hidden retry,
 option stripping or output-limit removal is introduced by this normalization.
+
+Trusted Antigravity construction may freeze an explicit Cloud Code High generated
+ceiling through `BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS` in the resolved operator
+configuration and provider factory. Zero retains the existing 8192 default; the
+native constructor validates High-only ceilings up to 32768. The full generated
+ceiling includes thinking and visible output and must fit the independently
+declared finite execution policy `output_tokens`. The summary consumer requires
+exactly 32768 on the adapter and at least that much budget before its separately qualified/default-off
+registration or policy endpoint is available. This setting cannot be widened by
+source text, model transport options or a summary policy.
+The adapter's `InferenceTimeout()` attests its actual normalized construction
+timeout. Qualified summary registration additionally requires at least 300s and a
+finite execution policy `model_millis>=300000`; a smaller current owner/task hard
+deadline still wins. This read-only trait cannot change transport behavior.
 
 Trusted Antigravity construction may freeze an explicit Cloud Code High generated
 token ceiling up to32768 and an object JSON response schema for tool-free
