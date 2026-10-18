@@ -1,0 +1,249 @@
+{
+  "actual_pg": {
+    "auth": 0,
+    "client_cpu": 1,
+    "client_memory_bytes": 2147483648,
+    "evidence_sha256": "ca6cad2d2e18ff706e319320443b18909a10b3bee98609753cef2080f8885c78",
+    "fail": 0,
+    "native": 0,
+    "parent_pass": 12,
+    "postgres_cpu": 1,
+    "postgres_memory_bytes": 1073741824,
+    "proof": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/recipe-controls-v2",
+    "race": true,
+    "separate_pg": true,
+    "skip": 0,
+    "source": "5826480732190794cff4f21b813cae246d00ac19",
+    "total_named_pass": 84,
+    "vet": true
+  },
+  "artifacts": {
+    "broker.test": "ba590a4da7b2018b93af127001b67734f891bec7b0d6095ef9349ffb6a4a89a5",
+    "collector.test": "0980e2dae1f75737eb6803bed3e2969a1155c37204bdfaa568e949800fa81d6f",
+    "frozen-pins.json": "f170eee39c4a08aaa71e0db12fdb01cf84bc5901f00d3506fddfd9fece67bdd3",
+    "nonroot-runner-preflight.jsonl": "e6c47911f64b200d09872ebc448f04d9a6d1b6cd8e7961167a89e69c65bc1064",
+    "offline-preparation.txt": "22618cc21351f28c522696ad6837d6e38baaff289c15a45f9232939495fcd2a6",
+    "prepared-pins.sha256": "ec71dd3b6e3c84d60efe9f5603f2ad394b917063020459ab20fdd045753958aa",
+    "scheduled-before-auth.json": "4d6ec5a50d334cadfb6cd727a59ec3e5529550f314c541e4415910fab28d7278",
+    "shared-policy.json": "393d7b8b170f630a0a9754039213eddacac4c91756f6a82a099cde282764087e",
+    "source.sha256": "47e8f98649b4712678eb3ffbf1500652f3dbb177d71bca2d062e77b21767c76a",
+    "test2json": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+  },
+  "at": "2026-10-18T08:51:37.132914+00:00",
+  "auth_clone": false,
+  "auth_recovery": {
+    "actual_late_container_pg": {
+      "auth_imported": false,
+      "checks": [
+        "actual_running_denied_before_sql",
+        "actual_exited_reads_late_durable_refresh",
+        "one_use_return_denies_repeat",
+        "absent_collector_reads_durable_refresh",
+        "missing_row_after_import_denies_unused_fallback",
+        "preimport_unused_original_retained",
+        "native_entry_without_recoverable_row_denies"
+      ],
+      "fail": 0,
+      "native_calls": 0,
+      "pass": 7,
+      "retained_stores_modified": false,
+      "skip": 0,
+      "synthetic_opaque_only": true
+    },
+    "always_post_exit": true,
+    "no_go_snapshot": true,
+    "proof_sha256": "b3a0b50bda7d85bc744c47c05e77467f33e362970a9bf7939e4aab9b7064ab07",
+    "unit_log_sha256": "edb4e2159c923ea45a32656078835cdf531c3d7b414c670dd786978875cb0678",
+    "unit_tests": 3
+  },
+  "closed175_controls": {
+    "evidence_sha256": "b7c7afa9a532d3c898e8793d2b34df83a3c8a2bbf059a95ffacbdc66f452ec2a",
+    "fail": 0,
+    "pass": 32,
+    "proof": "/srv/storage/butler/agents/issue88-native-v8-20261018/reports/closed-history-controls-v1",
+    "race": true,
+    "skip": 0,
+    "vet": true
+  },
+  "closed_v8_history_sha256": "dadc530e45c271d8b70ce1a69dd8d94c9ff252cd0d9ed9f1bcee875c9e8511a6",
+  "copier_controls": {
+    "fail": 0,
+    "pass": 7,
+    "proof": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/copy-controls-v2/results.json",
+    "sha256": "c24d5071c852c75564656427df8cbeaa1dbf704ef7ef19f617c4e9b0e6c7276b",
+    "skip": 0
+  },
+  "current_inclusive_carry": {
+    "active_millis": 66540000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 490733568,
+    "external_calls": 117,
+    "model_turns": 175,
+    "provider_input_bytes": 1468006400,
+    "tokens": 189235200
+  },
+  "execute_helper": "/srv/storage/butler/agents/issue88-native-v9-20261018/snapshots/recipe-source-v3/scripts/dev/memory-temporal-native-execute.sh",
+  "format": "butler.temporal.native-preseal-review.v9",
+  "fresh_current_review_sha256": "3887b89febeaea54258d3b14c65373d0e554d2878750f9d751982d4b7585e40f",
+  "future_window": {
+    "receipt_count": 0,
+    "receipt_table_present": true,
+    "schema": "memory_temporal_native_v9",
+    "schema_present": false,
+    "window_id": "temporal-explicit-v9"
+  },
+  "history": {
+    "current_known_full_lower_bound": 1321800,
+    "current_native_entries": 175,
+    "current_native_known": 174,
+    "current_native_unknown": 1,
+    "current_product_null": 1,
+    "current_product_observed": 174,
+    "historical_known": 153,
+    "historical_known_full_lower_bound": 758525,
+    "historical_native_entries": 161,
+    "historical_product_null": 9,
+    "historical_product_observed": 152,
+    "historical_unknown": 8,
+    "inclusive_prefix145_contained_once": true,
+    "separate_adaptive_cloud_native": 98,
+    "separate_adaptive_known": 97,
+    "separate_adaptive_known_full_lower_bound": 294550,
+    "separate_adaptive_local": 128,
+    "separate_adaptive_quotes": 226,
+    "separate_adaptive_unknown": 1
+  },
+  "history_sha256": "9c2ea31f1df55c790c5e643c2cc91b8898f22e17b6c7f29fe2c8ee6bf91f8af9",
+  "limitations": [
+    "No auth/native yet; exact coordinator review required.",
+    "All12 outcomes/NULLs and earlier failures retained; no selective replay.",
+    "Old89v2 cause UNKNOWN unchanged.",
+    "V8 remains independently NO_GO; accounting confers no semantic qualification.",
+    "One whole12 on unchanged corpus/order/rubric/profile; earlier owner UTC expiry applies."
+  ],
+  "main": {
+    "active_work": 0,
+    "image": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+    "source": "/srv/storage/butler/snapshots/20261014-main-3e26cd8"
+  },
+  "native_calls": 0,
+  "offline": {
+    "child_pass": 50,
+    "compiled_exact_pins": true,
+    "exact_nonroot_test2json": true,
+    "fail": 0,
+    "parent_pass": 11,
+    "parents": [
+      "TestTemporalV5CurrentDayPositiveCarryRetainsUnknownUsage",
+      "TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations",
+      "TestClosedTemporalV7RetainsProductNativeIndependence",
+      "TestClosedTemporalV7RejectsConsistentInvalidSequence",
+      "TestTemporalV9FactsContractBoundary",
+      "TestTemporalV9FrozenHistoryRejectsForgeries",
+      "TestClosedV9PinsRejectDifferentProfile",
+      "TestTemporalV6WorkerRejectsOwnerControlIdentity",
+      "TestTemporalNativeEntryFilenameCapacity",
+      "TestTemporalNativeWritePins",
+      "TestTemporalNativeCheckPreparedPins"
+    ],
+    "race": true,
+    "skip": 0
+  },
+  "pins": {
+    "broker_sha256": "ba590a4da7b2018b93af127001b67734f891bec7b0d6095ef9349ffb6a4a89a5",
+    "broker_timeout_millis": 58500000,
+    "collector_sha256": "0980e2dae1f75737eb6803bed3e2969a1155c37204bdfaa568e949800fa81d6f",
+    "complete_schedule_sha256": "3701076fecd4cdc13074c09800b5f92ab2dbf47d8859cf9a26ac46c10ec22b30",
+    "controls_sha256": "c291363ba7a79c22cc9c2aaa86ce7dacbf18147f90855c3d4c52b06d401e05a9",
+    "corpus_sha256": "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512",
+    "expires_at": "2026-10-19T00:00:00Z",
+    "facts_contract_revision": "5",
+    "facts_contract_sha256": "43ee9a114c83813205dd973bfe22e2f0f54982ce2b36de3bf23fa0bd8d05f49e",
+    "foreground_execution_millis": 2400000,
+    "foreground_source_timeout_millis": 2000,
+    "maximum_generated_tokens": 32768,
+    "maximum_native_entries": 144,
+    "maximum_native_entries_per_original": 12,
+    "maximum_tools_per_original": 8,
+    "method_sha256": "cbff069be8557f28d3d9cc56d35ad44b2cad4923b3c315bae5f1568ef5e5a9a5",
+    "model": "gemini-3.8-flash-high",
+    "model_timeout_millis": 300000,
+    "outer_timeout_millis": 58500000,
+    "prospective_day_deadline": "2026-10-19T00:00:00Z",
+    "prospective_utc_day": "2026-10-18",
+    "retained_history_sha256": "9c2ea31f1df55c790c5e643c2cc91b8898f22e17b6c7f29fe2c8ee6bf91f8af9",
+    "revision": "5826480732190794cff4f21b813cae246d00ac19",
+    "scheduled_originals": 12,
+    "shared_policy_sha256": "f0913a8c89506411499bb73427758bb2e0d66b051e54320cc59741ffcbd9f76c",
+    "source_sha256": "4f16204b4808a7aa15b71fa1a13ecae6f7cac91e91a1bb87692b9283974f0eb6",
+    "test2json_sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68",
+    "whole_window_millis": 57600000,
+    "window_revision": 9
+  },
+  "prepared_sha256": "ec71dd3b6e3c84d60efe9f5603f2ad394b917063020459ab20fdd045753958aa",
+  "proof": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/native-v9-preseal-v2",
+  "prospective_limits": {
+    "conversation": {
+      "active_millis": 3600000,
+      "children": 8,
+      "cost_micros": 0,
+      "egress_bytes": 134217728,
+      "external_calls": 128,
+      "model_turns": 64,
+      "provider_input_bytes": 268435456,
+      "tokens": 67108864
+    },
+    "day": {
+      "active_millis": 121260000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 893386752,
+      "external_calls": 213,
+      "model_turns": 319,
+      "provider_input_bytes": 2675965952,
+      "tokens": 344948736
+    },
+    "mandate": {
+      "active_millis": 3600000,
+      "children": 8,
+      "cost_micros": 0,
+      "egress_bytes": 134217728,
+      "external_calls": 128,
+      "model_turns": 64,
+      "provider_input_bytes": 268435456,
+      "tokens": 67108864
+    },
+    "model_input_bytes": 8388608,
+    "model_millis": 300000,
+    "models": {
+      "antigravity:gemini-3.8-flash-high": {
+        "basis": "subscription_no_overage",
+        "input_micros_per_token": 0,
+        "output_micros_per_token": 0
+      }
+    },
+    "output_tokens": 32768,
+    "repeat_limit": 3,
+    "task": {
+      "active_millis": 4560000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 33554432,
+      "external_calls": 8,
+      "model_turns": 12,
+      "provider_input_bytes": 100663296,
+      "tokens": 12976128
+    },
+    "task_lifetime_millis": 604800000,
+    "tool_egress_bytes": 4194304,
+    "tool_millis": 120000
+  },
+  "runtime_go": {
+    "files": 834,
+    "independent_root_compare_required": true,
+    "manifest_sha256": "e8e109b28b8be8e0aa4c90640a7b0e1acee180f74777ccd550949a5fdc504bbd"
+  },
+  "source": "5826480732190794cff4f21b813cae246d00ac19",
+  "source_path": "/srv/storage/butler/agents/issue88-native-v9-20261018/snapshots/recipe-source-v3"
+}
