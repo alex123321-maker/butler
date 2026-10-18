@@ -94,6 +94,13 @@ func TestTemporalFactsActualBrokerHistoricalKnownAndCurrentBoundIntegration(t *t
 			t.Fatal("historical lookup presented as current")
 		}
 		observation := out.Items[0].Temporal[0]
+		source := a
+		if tc.want == cb.ID {
+			source = b
+		}
+		if out.Items[0].EventTime != "" || source.EventTime != nil || observation.SourceRecordedAt != source.ExtractedAt.UTC().Format(time.RFC3339Nano) {
+			t.Fatal("source ingestion timestamp substituted for unknown event date", observation)
+		}
 		basis := "unknown"
 		if tc.want == cb.ID {
 			basis = "owner_statement"

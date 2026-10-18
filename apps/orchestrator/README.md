@@ -1034,6 +1034,11 @@ Revision4 also distinguishes expired current applicability from a verification
 deadline: expiry of `valid_to` does not imply overdue verification, and stable
 preferences have no age-based verification TTL. Existing DATA/pins are unchanged;
 the new declaration still requires independent full native quality acceptance.
+Revision5 identifies `source_recorded_at` as source ingestion, distinct from an
+explicit `event_time`. Missing event dates and unrecorded independent checks stay
+unknown: an owner statement or missing attached evidence cannot establish that a
+check never happened. The complete revision4 V8 cohort remains NO_GO for extra
+unsupported claims; the unchanged corpus requires a new complete semantic screen.
 
 Episodic experience can observe an explicitly selected relinquished failed or
 UNKNOWN original without creating an assistant final. Its typed terminal input

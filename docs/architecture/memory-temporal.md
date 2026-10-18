@@ -162,6 +162,16 @@ Revision3 v7 retains its complete12-case execution and two inaccurate verificati
 expiry statements. Its target conclusions do not constitute12/12 full semantic
 accuracy; qualification stays false pending a new whole-screen review.
 
+Contract revision5 makes the recording timestamps explicit: `source_recorded_at`
+is the source revision's `extracted_at` ingestion time, `accepted_at` records owner
+acceptance, and `recorded_at` records this temporal metadata revision. Only a
+reported `event_time` supplies an event date; missing event dates stay unknown.
+An `owner_statement` basis or absent attached evidence proves only the recorded
+verification population, never that an independent check did not happen. The
+complete revision4 V8 cohort remains NO_GO for unsupported extra statements,
+despite all12 primary answers being correct. No corpus or rubric changed; the
+general declaration requires a new whole native semantic screen.
+
 This tool uses the actual Broker/action/input-claim path and common durable tool
 budget. When adaptive retrieval is composed it also consumes the same finite
 plan call/time/byte counters; it cannot bypass that loop bound and cannot mint
