@@ -218,6 +218,49 @@ type capacityMixedSample struct {
 	ErrorTypes                        []string
 }
 
+// Observe the actual authority calls without extra SQL, retries, or changed
+// deadlines. Pool counters are cumulative; they do not assign a wait to a query.
+type capacityMixedAuthorityObserver struct {
+	pool    *pgxpool.Pool
+	mu      sync.Mutex
+	Samples []map[string]any
+}
+
+func (o *capacityMixedAuthorityObserver) record(stage, id string, start time.Time, ctx context.Context, err error) {
+	s := o.pool.Stat()
+	row := map[string]any{"stage": stage, "id": id, "start_ns": start.UnixNano(), "end_ns": time.Now().UnixNano(), "millis": float64(time.Since(start).Microseconds()) / 1000, "failed": err != nil, "error_types": capacityMixedErrorTypes(err), "pool_acquired": s.AcquiredConns(), "pool_idle": s.IdleConns(), "pool_total": s.TotalConns(), "pool_empty_acquires": s.EmptyAcquireCount(), "pool_cancelled_acquires": s.CanceledAcquireCount(), "pool_acquire_ns": s.AcquireDuration().Nanoseconds()}
+	if deadline, ok := ctx.Deadline(); ok {
+		row["deadline_remaining_ms"] = float64(time.Until(deadline).Microseconds()) / 1000
+	}
+	o.mu.Lock()
+	o.Samples = append(o.Samples, row)
+	o.mu.Unlock()
+}
+
+type capacityMixedTasks struct {
+	*task.Store
+	observed *capacityMixedAuthorityObserver
+}
+
+func (s *capacityMixedTasks) ValidateRunAuthority(ctx context.Context, id string) error {
+	start := time.Now()
+	err := s.Store.ValidateRunAuthority(ctx, id)
+	s.observed.record("task_validate_run_authority", id, start, ctx, err)
+	return err
+}
+
+type capacityMixedLeases struct {
+	*session.PostgresLeaseManager
+	observed *capacityMixedAuthorityObserver
+}
+
+func (s *capacityMixedLeases) GetLease(ctx context.Context, id string) (session.LeaseRecord, error) {
+	start := time.Now()
+	out, err := s.PostgresLeaseManager.GetLease(ctx, id)
+	s.observed.record("lease_get", id, start, ctx, err)
+	return out, err
+}
+
 // The prospective protocol is committed before this executable is collected.
 // Actual ordinary ownership, local IPC, Catalog, jobs and all ledgers are used;
 // provider responses and bulk vectors remain explicitly synthetic controls.
@@ -250,9 +293,9 @@ func runMemoryCapacityCombined(t *testing.T, cold bool) {
 			t.Error("cannot retain combined proof", name)
 		}
 	}
-	observation := map[string]any{"protocol": "mixed-v5", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
+	observation := map[string]any{"protocol": "mixed-v6-deployment", "build_profile": "deployment_no_race", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
 	if cold {
-		observation["protocol"] = "shared-buffer-cold-v2"
+		observation["protocol"] = "shared-buffer-cold-v3-deployment"
 	}
 	manifest := catalog.NewFileManifest(filepath.Join(report, "anchor"))
 	if err := manifest.Initialize(); err != nil {
@@ -290,10 +333,13 @@ func runMemoryCapacityCombined(t *testing.T, cold bool) {
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
 	finals := completion.New(pool)
 	finals.DataGuard = cat.CheckRunSourcesTx
-	fc := flow.Config{ProviderName: p.Name(), ModelName: "mixed-control", OwnerID: "mixed-worker", LeaseTTL: 10, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, SemanticMemory: reader, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, MemoryScopeResolver: func(context.Context) ([]memoryservice.Scope, error) {
+	authority := &capacityMixedAuthorityObserver{pool: pool}
+	tasks := &capacityMixedTasks{Store: task.NewStore(pool), observed: authority}
+	leases := &capacityMixedLeases{PostgresLeaseManager: session.NewPostgresLeaseManager(pool), observed: authority}
+	fc := flow.Config{ProviderName: p.Name(), ModelName: "mixed-control", OwnerID: "mixed-worker", LeaseTTL: 10, Tasks: tasks, Budgets: b, MemorySources: cat, SemanticMemory: reader, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, MemoryScopeResolver: func(context.Context) ([]memoryservice.Scope, error) {
 		return []memoryservice.Scope{{Type: "user", ID: "mixed-owner"}}, nil
 	}}
-	executor := &capacityMixedExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, log), Failures: map[string]string{}, FailureTypes: map[string][]string{}}
+	executor := &capacityMixedExecutor{base: flow.NewService(repo, leases, runs, transcript.NewStore(pool), p, fc, log), Failures: map[string]string{}, FailureTypes: map[string][]string{}}
 	service, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, executor, runs, log, 5*time.Second)
 	if err != nil {
 		t.Fatal(err)
@@ -329,6 +375,9 @@ func runMemoryCapacityCombined(t *testing.T, cold bool) {
 		observation["provider_current_working_states"] = p.States
 		observation["controlled_provider_entered_ns"] = p.EnteredNS
 		p.mu.Unlock()
+		authority.mu.Lock()
+		observation["authority_samples"] = authority.Samples
+		authority.mu.Unlock()
 		write("combined-mixed.json", observation)
 	}()
 	createTask := func(key string) {

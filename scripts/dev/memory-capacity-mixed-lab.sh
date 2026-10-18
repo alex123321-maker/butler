@@ -21,6 +21,7 @@ mkdir -p "$proof/postgres" "$base/.cache/go-build" "$base/.cache/go-tmp"
 find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha256"
 sha256sum "$src/docs/ai/memory-capacity-protocol.md" > "$proof/prospective-protocol.sha256"
 { date -u --iso-8601=ns; uname -a; lscpu; free -b; df -B1 /srv/storage; cat /proc/uptime; } > "$proof/hardware.txt"
+printf 'deployment_no_race; client=2CPU/2GiB; pg=2CPU/1GiB; pool_max=2; p95=1500ms; wall=5000ms\n' > "$proof/build-profile.txt"
 network=butler-issue91-$label-mixed-net; pg=butler-issue91-$label-mixed-pg; client=butler-issue91-$label-mixed-client
 created_pg=false; created_net=false; created_client=false; stats_pid=''; restart_pid=''
 cleanup(){
@@ -47,6 +48,7 @@ docker inspect butler-lab-local-models-1 --format '{{json .HostConfig}}' | jq '{
  for target in "$client" "$pg"; do
   { date -u +%Y-%m-%dT%H:%M:%S.%NZ; printf '%s\n' "$target"; docker exec "$target" sh -c 'for item in cpu.stat memory.events memory.peak; do printf "%s\n" "$item"; cat "/sys/fs/cgroup/$item"; done' 2>/dev/null || true; } >> "$proof/cgroup-samples.log"
  done
+ docker exec "$pg" psql -U butler -d memory_mixed_test -Atqc 'SELECT json_build_object($$observed_at$$,clock_timestamp(),$$state$$,state,$$wait_type$$,wait_event_type,$$wait_event$$,wait_event,$$count$$,count(*),$$blocked$$,count(*) FILTER(WHERE cardinality(pg_blocking_pids(pid))>0)) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() GROUP BY state,wait_event_type,wait_event' >> "$proof/pg-waits.jsonl" 2>/dev/null || true
  sleep 1
 done) > "$proof/resources.log" & stats_pid=$!
 docker create --pull never --name "$client" --network host --add-host "local-models:$model" --cpus 2 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
@@ -55,7 +57,7 @@ docker create --pull never --name "$client" --network host --add-host "local-mod
  -e BUTLER_MEMORY_CAPACITY_MIXED=1 -e "BUTLER_MEMORY_CAPACITY_COLD=$cold" -e "BUTLER_CAPACITY_TEST_NAME=$test_name" -e BUTLER_MEMORY_CAPACITY_REPORT=/proof -e BUTLER_MEMORY_SEMANTIC_ENABLED=true \
  -e BUTLER_MEMORY_LOCAL_SERVICE_ID=operator-pinned-service -e BUTLER_MEMORY_LOCAL_TOKEN_FILE=/local-token \
  -e "BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler@$pg_ip:5432/memory_mixed_test?sslmode=disable" \
- golang:1.27.2-bookworm bash -c 'go test -json -race -p 1 -count=1 -timeout 14m -run "^${BUTLER_CAPACITY_TEST_NAME}$" ./apps/orchestrator/internal/app > /proof/tests.jsonl 2>/proof/build.log; test_status=$?; go vet ./apps/orchestrator/internal/app > /proof/vet.log 2>&1; vet_status=$?; for item in cpu.stat memory.events memory.peak; do cat "/sys/fs/cgroup/$item" > "/proof/client-$item-final.txt"; done; printf "%s %s\n" "$test_status" "$vet_status" > /proof/exit-status; exit "$((test_status || vet_status))"' > "$proof/client-id"; created_client=true
+ golang:1.27.2-bookworm bash -c 'go test -json -p 1 -count=1 -timeout 14m -run "^${BUTLER_CAPACITY_TEST_NAME}$" ./apps/orchestrator/internal/app > /proof/tests.jsonl 2>/proof/build.log; test_status=$?; go vet ./apps/orchestrator/internal/app > /proof/vet.log 2>&1; vet_status=$?; for item in cpu.stat memory.events memory.peak; do cat "/sys/fs/cgroup/$item" > "/proof/client-$item-final.txt"; done; printf "%s %s\n" "$test_status" "$vet_status" > /proof/exit-status; exit "$((test_status || vet_status))"' > "$proof/client-id"; created_client=true
 docker inspect "$client" --format '{{json .HostConfig}}' | jq '{CpuPeriod,CpuQuota,NanoCpus,Memory,MemorySwap,PidsLimit}' > "$proof/client-limits.json"
 if [[ "$mode" == cold ]]; then
  (

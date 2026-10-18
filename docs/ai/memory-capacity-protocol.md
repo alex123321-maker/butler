@@ -215,3 +215,33 @@ declared122-query/cold/warm bounds. It runs only after the complete mixed-v5
 window has ended and cleaned up, without overlapping another owned capacity
 profile. All1-CPU and2+1-CPU misses stay in the report. A failing new collection
 is not repeated unchanged until it happens to pass.
+
+### Fresh mixed-v6 deployment build and shared-buffer-cold-v3
+
+Mixed-v5 completed the whole collection but remains NO_GO: warm100 completed
+with p951522.640 ms; mixed95 completed, two typed deletion denials and three
+unexpected cancellations with p952187.786 ms. One actual Core failure retained
+execution_authority_check_failed; two cancellations remain unproven. PostgreSQL
+2-CPU throttling was zero and client throttling1272 µs. These observations do
+not establish any cancellation's cause and remain valid availability/latency
+misses. They are not removed from the denominator or excused by instrumentation.
+
+Before collection, mixed-v6 fixes the actual deployment build without Go race
+instrumentation at the same client2 CPUs/2 GiB, PostgreSQL2 CPUs/1 GiB and
+unchanged pool maximum2. All221 foreground queries,1500/5000 ms, two readers,
+privacy-denial/completion gates, maintenance/IPC overlaps and four background
+calls/unchanged original NULL quotes remain exactly as declared above. This
+directly measures that build; no estimated race overhead is subtracted. Earlier
+race windows remain correctness checks and failed latency/availability windows.
+Go vet remains required. Actual GetLease and ValidateRunAuthority calls now
+retain content-free stage/timing/fixed error types plus cumulative pool counters
+without extra SQL or altered deadlines. Periodic private PG observations retain
+only state/wait-event/blocker counts and timestamps, never query bodies; sparse
+sampling cannot prove absence of a short wait. No production behavior changes.
+
+After the full mixed-v6 cleanup, shared-buffer-cold-v3 uses this same2+2 no-race
+build and the already declared122-query/cold/warm bounds and exact owned-PG
+restart barrier. The unexecuted race cold-v2 recipe is withdrawn. OS cache is
+uncontrolled and the model has already received actual initial indexing IPC;
+only private PostgreSQL shared-buffer restart is claimed. No owned full/cold
+profile runs concurrently, and neither result replaces earlier failed windows.
