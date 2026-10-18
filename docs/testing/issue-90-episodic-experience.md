@@ -416,3 +416,26 @@ ReleaseQualified is false, and the 57-input/640-entry native preparation/compari
 and independent semantic/cost review remain required. The active production
 experienceRunSources wrapper is a further fixture-alignment check before native;
 v52 proves Catalog/Broker/read/final composition, not that additional active loop.
+
+Frozen v54 aligns the runtime helper with the deployed profile's actual active
+Catalog -> experienceRunSources chain. ConverterControlURL is absent in the
+current main profile; the fixture does not substitute converterSources merely
+to inherit its larger bound. Worker identity remains neutral. Final-only missing,
+changed and environment pin faults now run inside the exact owning finalizing
+transaction, assert the fault actually ran, and invoke the unchanged real guard.
+The final grant-wait blocker starts only after that final guard is entered, so
+active source checks cannot consume the intended final-publication fault.
+
+The first aligned source v53 failed with memory_source_check_timeout before
+several required publication phases. It remains a failed receipt and its omitted
+window/terminal runs are not counted. The strict200ms diagnostic v54 passed all
+28 publication controls with race/vet and no skips. Its evidence.sha256 digest is
+`a69f58d0414106018cfa14ab533d5451620a568c95b0a69b9548d5176a0626a1`.
+Across210 compound checks, p95 was160.432ms and maximum178.855ms; the base
+Catalog checks measured26.402ms p95 and31.325ms maximum. The25 source Broker
+RPCs measured74.385ms p95 and80.777ms maximum. These metadata-only diagnostics
+preserve deadlines, contexts and errors, keep Broker RPCs outside SQL locks,
+and write private evidence only after checks finish. There were no diagnostic
+deadlines; expected currentness denials remain represented. This single passing
+run does not erase v53 or establish a production latency SLO. Native entries
+remain zero and the source/whole acceptance and semantic gates remain open.

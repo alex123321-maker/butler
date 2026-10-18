@@ -163,37 +163,43 @@ func experienceReconciledPrivacyCopies(t *testing.T, ctx context.Context, r *exp
 	}
 	var mutationErr, proofErr, leaseGuardErr error
 	var leaseWait <-chan error
+	var pinFaultApplied bool
 	if mode != "accepted" {
 		provider.before = func() error {
 			switch mode {
 			case "missing_pin", "changed_pin", "environment":
-				// These immutable rows have no production mutation API. Inject a
-				// missing/corrupt persisted pin in this private test database only;
-				// restore the trigger in the same transaction before publication.
-				var fault pgx.Tx
-				fault, mutationErr = r.pool.Begin(ctx)
-				if mutationErr != nil {
-					break
-				}
-				defer fault.Rollback(ctx)
-				_, mutationErr = fault.Exec(ctx, `ALTER TABLE memory_experience_pins DISABLE TRIGGER experience_pins_immutable`)
-				if mutationErr == nil {
-					statements := map[string]string{
-						"missing_pin": `DELETE FROM memory_experience_pins WHERE run_id=$1`,
-						"changed_pin": `UPDATE memory_experience_pins SET lesson_hash=repeat('e',64) WHERE run_id=$1`,
-						"environment": `UPDATE memory_experience_pins SET environment_hash=repeat('e',64) WHERE run_id=$1`,
+				// Active checks can complete ancestry pins before release. Fault
+				// this already captured pin only inside real final publication;
+				// the final checker must never repair it or acquire body access.
+				guard := r.results.DataGuard
+				r.results.DataGuard = func(c context.Context, fault pgx.Tx, run string) error {
+					var finalizing bool
+					proofErr = fault.QueryRow(c, `SELECT current_state='finalizing' FROM runs WHERE run_id=$1`, run).Scan(&finalizing)
+					if proofErr != nil || !finalizing || run != provider.run {
+						proofErr = fmt.Errorf("pin fault did not reach exact final publication")
+						return proofErr
 					}
-					var tag pgconn.CommandTag
-					tag, mutationErr = fault.Exec(ctx, statements[mode], provider.run)
-					if mutationErr == nil && tag.RowsAffected() != 1 {
-						mutationErr = fmt.Errorf("one actual captured pin required before fault injection")
+					_, mutationErr = fault.Exec(c, `ALTER TABLE memory_experience_pins DISABLE TRIGGER experience_pins_immutable`)
+					if mutationErr == nil {
+						statements := map[string]string{
+							"missing_pin": `DELETE FROM memory_experience_pins WHERE run_id=$1`,
+							"changed_pin": `UPDATE memory_experience_pins SET lesson_hash=repeat('e',64) WHERE run_id=$1`,
+							"environment": `UPDATE memory_experience_pins SET environment_hash=repeat('e',64) WHERE run_id=$1`,
+						}
+						var tag pgconn.CommandTag
+						tag, mutationErr = fault.Exec(c, statements[mode], run)
+						if mutationErr == nil && tag.RowsAffected() != 1 {
+							mutationErr = fmt.Errorf("one actual captured pin required before fault injection")
+						}
 					}
-				}
-				if mutationErr == nil {
-					_, mutationErr = fault.Exec(ctx, `ALTER TABLE memory_experience_pins ENABLE TRIGGER experience_pins_immutable`)
-				}
-				if mutationErr == nil {
-					mutationErr = fault.Commit(ctx)
+					if mutationErr == nil {
+						_, mutationErr = fault.Exec(c, `ALTER TABLE memory_experience_pins ENABLE TRIGGER experience_pins_immutable`)
+					}
+					if mutationErr != nil {
+						return mutationErr
+					}
+					pinFaultApplied = true
+					return guard(c, fault, run)
 				}
 			case "grant":
 				_, mutationErr = r.pool.Exec(ctx, `DELETE FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2`, record.TaskID, p.Lesson.ID)
@@ -249,6 +255,9 @@ func experienceReconciledPrivacyCopies(t *testing.T, ctx context.Context, r *exp
 		if leaseGuardErr == nil {
 			t.Fatal("captured publication guard returned after actual grant wait beyond lease expiry")
 		}
+	}
+	if (mode == "missing_pin" || mode == "changed_pin" || mode == "environment") && !pinFaultApplied {
+		t.Fatal("pin fault did not run inside actual final publication")
 	}
 	if mutationErr != nil || proofErr != nil || provider.phase != 2 || provider.read == "" {
 		t.Fatal("actual cached-copy control setup failed", mutationErr, proofErr)
@@ -307,24 +316,17 @@ func experienceFinalLeaseExpiryWait(t *testing.T, ctx context.Context, r *experi
 		cancel()
 		return nil, nil, err
 	}
-	blocker, err := conn.Begin(waitCtx)
-	if err != nil {
-		conn.Close(context.Background())
-		cancel()
-		return nil, nil, err
-	}
-	var locked bool
-	if err = blocker.QueryRow(waitCtx, `SELECT TRUE FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2 FOR UPDATE`, taskID, sourceID).Scan(&locked); err != nil || !locked {
-		blocker.Rollback(context.Background())
-		conn.Close(context.Background())
-		cancel()
-		return nil, nil, fmt.Errorf("current grant blocker unavailable: %w", err)
-	}
 	pid := make(chan uint32, 1)
+	ready := make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
 		defer conn.Close(context.Background())
-		defer blocker.Rollback(context.Background())
+		signalled := false
+		defer func() {
+			if !signalled {
+				close(ready)
+			}
+		}()
 		var worker uint32
 		select {
 		case worker = <-pid:
@@ -332,6 +334,21 @@ func experienceFinalLeaseExpiryWait(t *testing.T, ctx context.Context, r *experi
 			done <- waitCtx.Err()
 			return
 		}
+		// Active inference guards must finish against the current grant. Start
+		// its controlled blocker only after the real final DataGuard is entered.
+		blocker, err := conn.Begin(waitCtx)
+		if err != nil {
+			done <- err
+			return
+		}
+		defer blocker.Rollback(context.Background())
+		var locked bool
+		if err = blocker.QueryRow(waitCtx, `SELECT TRUE FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2 FOR UPDATE`, taskID, sourceID).Scan(&locked); err != nil || !locked {
+			done <- fmt.Errorf("current grant blocker unavailable: %w", err)
+			return
+		}
+		close(ready)
+		signalled = true
 		waited := false
 		for {
 			var waiting, expired bool
@@ -353,5 +370,5 @@ func experienceFinalLeaseExpiryWait(t *testing.T, ctx context.Context, r *experi
 			}
 		}
 	}()
-	return func(tx pgx.Tx) { pid <- tx.Conn().PgConn().PID() }, done, nil
+	return func(tx pgx.Tx) { pid <- tx.Conn().PgConn().PID(); <-ready }, done, nil
 }
