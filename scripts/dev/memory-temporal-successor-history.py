@@ -13,6 +13,9 @@ import re
 import subprocess
 import sys
 
+# Read-only imports must not add bytecode to the source tree being sealed.
+sys.dont_write_bytecode = True
+
 ROOT = pathlib.Path(__file__).resolve().parent
 PRIOR89 = pathlib.Path('/srv/storage/butler/agents/issue89-20261016/reports/native-v2-preseal-v2')
 PRIOR89_HISTORY = pathlib.Path('/srv/storage/butler/agents/issue89-20261016/reports/native-v2-history-v1/history')
