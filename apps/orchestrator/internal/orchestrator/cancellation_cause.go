@@ -3,6 +3,8 @@ package orchestrator
 import (
 	"context"
 	"errors"
+
+	"github.com/butler/butler/internal/transport"
 )
 
 // ownedCancellation contains only a fixed Core reason, never storage/provider
@@ -20,6 +22,13 @@ func (e *ownedCancellation) Unwrap() []error {
 
 func preserveOwnedCancellation(ctx context.Context, err error) error {
 	if !errors.Is(err, context.Canceled) {
+		return err
+	}
+	// Joined or wrapped independent failures retain their own diagnosis even
+	// when cancellation is also present. Only a plain cancelled stream acquires
+	// the owning supervisor's cause.
+	var providerFailure *transport.Error
+	if errors.Is(err, context.DeadlineExceeded) || errors.As(err, &providerFailure) {
 		return err
 	}
 	var cause *ownedCancellation

@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -57,8 +58,22 @@ func TestOwnedCancellationKeepsIndependentCauses(t *testing.T) {
 	owned, cancelOwned := context.WithCancelCause(t.Context())
 	cancelOwned(&ownedCancellation{reason: "execution_ownership_changed", failure: ownership.ErrStale})
 	transportFailure := &transport.Error{Type: transport.ErrorTypeProviderUnavailable, Message: "provider_unavailable"}
-	if preserveOwnedCancellation(owned, transportFailure) != transportFailure || preserveOwnedCancellation(owned, context.DeadlineExceeded) != context.DeadlineExceeded {
-		t.Fatal("an independent provider failure or deadline was relabelled")
+	for _, control := range []struct {
+		name string
+		err  error
+	}{
+		{"typed_provider", transportFailure},
+		{"wrapped_provider", fmt.Errorf("wrapped provider: %w", transportFailure)},
+		{"joined_provider_cancel", errors.Join(transportFailure, context.Canceled)},
+		{"wrapped_joined_provider_cancel", fmt.Errorf("wrapped joined provider: %w", errors.Join(transportFailure, context.Canceled))},
+		{"joined_deadline_cancel", errors.Join(context.DeadlineExceeded, context.Canceled)},
+		{"wrapped_joined_deadline_cancel", fmt.Errorf("wrapped joined deadline: %w", errors.Join(context.DeadlineExceeded, context.Canceled))},
+	} {
+		t.Run(control.name, func(t *testing.T) {
+			if preserveOwnedCancellation(owned, control.err) != control.err {
+				t.Fatal("an independent provider failure or deadline was relabelled")
+			}
+		})
 	}
 	for _, cause := range []error{context.Canceled, errors.New("independent parent cancellation")} {
 		parent, cancelParent := context.WithCancelCause(t.Context())
