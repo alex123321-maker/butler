@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/transport"
 )
 
 // This lab-only consumer independently recomputes a closed cohort's immutable
@@ -106,6 +107,9 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 	corpus, err := experienceNativeCorpusFiles()
 	if err != nil || !reflect.DeepEqual(plan.Schedule, experienceNativeSchedule(corpus)) || plan.Originals != corpus.OriginalsSHA256 || plan.Controls != corpus.ControlsSHA256 {
 		return out, errors.New("closed full57 original schedule changed")
+	}
+	if err = closedExperienceFinitePlan(plan, previous); err != nil {
+		return out, err
 	}
 	var inventory struct {
 		Format string
@@ -332,7 +336,7 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 			usage.ProductNULL++
 		}
 	}
-	seen, started, perSlot := map[string]bool{}, map[string]string{}, map[string]int{}
+	seen, started, perSlot, starts := map[string]bool{}, map[string]string{}, map[string]int{}, map[string]int{}
 	for i, e := range entries {
 		p, ok := products[e.Operation]
 		slot, slotOK := slots[e.Slot]
@@ -349,11 +353,32 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 		if !ok || !slotOK || slot.Started == nil || e.Sequence != i+1 || seen[e.Operation] || e.Reservation != reservation || e.RunID != run || !p.Database[name] || e.Finished && (e.Millis == nil || *e.Millis < 0) || !e.Finished && (e.Millis != nil || e.Usage != nil) || !json.Valid(e.Request) {
 			return usage, errors.New("native entry lacks exact owning slot/product admission")
 		}
+		if e.Usage != nil && !bytes.Equal(p.Row["observed_at"], []byte("null")) {
+			if p.Table == "memory_model_attempts" && !bytes.Equal(p.Row["usage"], []byte("null")) {
+				var stored transport.Usage
+				if json.Unmarshal(p.Row["usage"], &stored) != nil || !reflect.DeepEqual(stored, *e.Usage) {
+					return usage, errors.New("background product/native usage differs")
+				}
+			} else if p.Table == "execution_model_attempts" && !bytes.Equal(p.Row["actual_input_tokens"], []byte("null")) && !bytes.Equal(p.Row["actual_output_tokens"], []byte("null")) {
+				var input, output int64
+				if json.Unmarshal(p.Row["actual_input_tokens"], &input) != nil || json.Unmarshal(p.Row["actual_output_tokens"], &output) != nil || input != int64(e.Usage.InputTokens) || output != int64(e.Usage.OutputTokens) {
+					return usage, errors.New("foreground product/native usage differs")
+				}
+			}
+		}
 		if e.Kind == "start" {
 			if started[e.RunID] != "" {
 				return usage, errors.New("native Start repeated")
 			}
 			started[e.RunID] = e.Slot
+			starts[e.Slot]++
+			maximum := 1
+			if slot.Kind == "original" && slot.CaseID == "original-03" {
+				maximum = 2
+			}
+			if starts[e.Slot] > maximum {
+				return usage, errors.New("slot acquired an undeclared replacement run")
+			}
 		} else if (e.Kind != "continuation" && e.Kind != "tool_result") || started[e.RunID] != e.Slot {
 			return usage, errors.New("native continuation precedes owning Start")
 		}
@@ -372,6 +397,35 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 		return usage, errors.New("native entry population exceeds products")
 	}
 	return usage, nil
+}
+
+func closedExperienceFinitePlan(plan experienceNativeSeal, previous experienceNativeLineage) error {
+	policy, e1 := experienceNativeCarryPolicy(false, previous.Carry)
+	source, e2 := experienceNativeCarryPolicy(true, previous.Carry)
+	deadline, e3 := experienceNativeWholeDeadline(plan.Created, previous.Day, previous.Deadline)
+	if e1 != nil || e2 != nil || e3 != nil || !reflect.DeepEqual(plan.Policy, policy) || !reflect.DeepEqual(plan.SourcePolicy, source) || !plan.Deadline.Equal(deadline) || plan.FGMillis != experienceNativeForegroundLimit.Milliseconds() || plan.MaximumMillis != experienceNativeWholeMaximum.Milliseconds() || len(plan.Binaries) != 5 || len(plan.Environments) != 3 || len(plan.Source) == 0 {
+		return errors.New("closed preseal finite source/control profile changed")
+	}
+	for _, name := range []string{"recipient", "broker", "broker_control", "extension", "http"} {
+		if !experienceNativeSHA(plan.Binaries[name]) {
+			return errors.New("all5 immutable binary identities required")
+		}
+	}
+	for name, hash := range plan.Source {
+		if name == "" || !experienceNativeSHA(hash) {
+			return errors.New("exact frozen source identities required")
+		}
+	}
+	for _, p := range []struct {
+		name, version, ready string
+		outage               bool
+	}{{"project-v1-normal", "v1", "true", false}, {"project-v1-receipt-outage", "v1", "true", true}, {"project-v2-normal", "v2", "verified", false}} {
+		configuration := experienceEnvironment(experienceRecipientConfig{Version: p.version, Ready: p.ready, Outage: p.outage})
+		if plan.Environments[p.name] != experienceDigest(strings.Join([]string{configuration, plan.Binaries["recipient"], plan.Binaries["broker"], plan.Binaries["extension"], plan.Binaries["http"]}, "\x00")) {
+			return errors.New("frozen treatment environment identity changed")
+		}
+	}
+	return nil
 }
 
 type closedExperienceHandback struct {

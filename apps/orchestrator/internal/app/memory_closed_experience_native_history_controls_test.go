@@ -61,6 +61,25 @@ func TestClosedExperienceProductsPreserveUnknownAndRejectForgeries(t *testing.T)
 			t.Fatal(u, err)
 		}
 	})
+	t.Run("independent_observed_usage_matches_native", func(t *testing.T) {
+		db, entries, slots := fixture()
+		entries[0].Usage = &transport.Usage{InputTokens: 3, OutputTokens: 2, TotalTokens: 11}
+		var rows []map[string]any
+		_ = json.Unmarshal(db["source-database.json"]["execution_model_attempts"], &rows)
+		rows[0]["observed_at"] = "2026-10-18T08:00:00Z"
+		rows[0]["actual_input_tokens"] = 3
+		rows[0]["actual_output_tokens"] = 2
+		db["source-database.json"]["execution_model_attempts"] = closedExperienceJSON(rows)
+		u, err := closedExperienceProducts(db, entries, slots)
+		if err != nil || u.ProductObserved != 1 || u.KnownFullTokenLowerBound != 11 {
+			t.Fatal(u, err)
+		}
+		rows[0]["actual_output_tokens"] = 7
+		db["source-database.json"]["execution_model_attempts"] = closedExperienceJSON(rows)
+		if _, err = closedExperienceProducts(db, entries, slots); err == nil {
+			t.Fatal("foreground product/native usage mismatch accepted")
+		}
+	})
 	for name, mutate := range map[string]func(map[string]map[string]json.RawMessage, []experienceNativeEntry, map[string]experienceNativeSlot){
 		"wrong_reservation": func(_ map[string]map[string]json.RawMessage, e []experienceNativeEntry, _ map[string]experienceNativeSlot) {
 			e[0].Reservation = "other"
@@ -158,6 +177,39 @@ func TestClosedExperienceReferencesAndHandbackFailClosed(t *testing.T) {
 			mutate(&copy)
 			if copy.validate() == nil {
 				t.Fatal("incomplete handback accepted")
+			}
+		})
+	}
+}
+
+func TestClosedExperienceFinitePresealRejectsExpandedAuthority(t *testing.T) {
+	now := time.Date(2026, 10, 18, 8, 0, 0, 0, time.UTC)
+	history := experienceNativeLineage{Hash: strings.Repeat("a", 64), Day: "2026-10-18", Deadline: now.Add(16 * time.Hour), Carry: budget.Units{ModelTurns: 3, Tokens: 3 * 1081344}, Usage: temporalV5CurrentUsage{ProductAttempts: 3, ProductNULL: 3, ProductWithoutNativeEntry: 3}}
+	policy, _ := experienceNativeCarryPolicy(false, history.Carry)
+	source, _ := experienceNativeCarryPolicy(true, history.Carry)
+	deadline, _ := experienceNativeWholeDeadline(now, history.Day, history.Deadline)
+	plan := experienceNativeSeal{Created: now, Deadline: deadline, Policy: policy, SourcePolicy: source, FGMillis: experienceNativeForegroundLimit.Milliseconds(), MaximumMillis: experienceNativeWholeMaximum.Milliseconds(), Binaries: map[string]string{}, Environments: map[string]string{}, Source: map[string]string{"sample.go": strings.Repeat("b", 64)}}
+	for _, name := range []string{"recipient", "broker", "broker_control", "extension", "http"} {
+		plan.Binaries[name] = strings.Repeat("c", 64)
+	}
+	for _, p := range []struct {
+		name, version, ready string
+		outage               bool
+	}{{"project-v1-normal", "v1", "true", false}, {"project-v1-receipt-outage", "v1", "true", true}, {"project-v2-normal", "v2", "verified", false}} {
+		configuration := experienceEnvironment(experienceRecipientConfig{Version: p.version, Ready: p.ready, Outage: p.outage})
+		plan.Environments[p.name] = experienceDigest(strings.Join([]string{configuration, plan.Binaries["recipient"], plan.Binaries["broker"], plan.Binaries["extension"], plan.Binaries["http"]}, "\x00"))
+	}
+	if err := closedExperienceFinitePlan(plan, history); err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*experienceNativeSeal){"day_refund": func(p *experienceNativeSeal) { p.Policy.Day.ModelTurns-- }, "task_increase": func(p *experienceNativeSeal) { p.Policy.Task.ModelTurns++ }, "source_note_partition": func(p *experienceNativeSeal) { p.SourcePolicy.Task.ModelTurns = 12 }, "extended_window": func(p *experienceNativeSeal) { p.Deadline = p.Deadline.Add(time.Second) }, "longer_foreground": func(p *experienceNativeSeal) { p.FGMillis++ }, "swapped_environment": func(p *experienceNativeSeal) { p.Environments = map[string]string{} }, "missing_binary": func(p *experienceNativeSeal) { p.Binaries = map[string]string{} }} {
+		t.Run(name, func(t *testing.T) {
+			raw, _ := json.Marshal(plan)
+			var copy experienceNativeSeal
+			_ = json.Unmarshal(raw, &copy)
+			mutate(&copy)
+			if closedExperienceFinitePlan(copy, history) == nil {
+				t.Fatal("changed finite authority accepted")
 			}
 		})
 	}
