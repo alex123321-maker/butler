@@ -58,12 +58,18 @@ class MobileLiveAcceptanceTest {
         awaitState { app.database.butlerDao().observeRecentQueueEvents().first().any { it.packageName == app.packageName && it.changeType == "UPDATED" } }
         manager.cancel(notificationId)
         awaitState { app.database.butlerDao().observeRecentQueueEvents().first().any { it.packageName == app.packageName && it.changeType == "REMOVED" } }
-        repeat(4) { repo.syncPendingQueueBatch(ignoreBackoffTimers = true) }
+        // Exercise the actual listener/WorkManager/network recovery scheduling,
+        // without a test-triggered direct sync call.
+        awaitState {
+            val saved = app.database.butlerDao().observeRecentQueueEvents().first().filter { it.packageName == app.packageName }
+            saved.size == 3 && saved.all { it.deliveryState == "DELIVERED" }
+        }
         val events = app.database.butlerDao().observeRecentQueueEvents().first().filter { it.packageName == app.packageName }
         assertEquals(setOf("POSTED", "UPDATED", "REMOVED"), events.map { it.changeType }.toSet())
         assertTrue("Per-ID durable ACK required", events.all { it.deliveryState == "DELIVERED" })
         assertEquals(1, events.map { it.notificationKey }.distinct().size)
         assertEquals(3, events.map { it.deviceEventId }.distinct().size)
+        println("mobile_background_delivery_ms=" + events.map { it.deliveredAtEpochMs!! - it.observedAtEpochMs }.sorted().joinToString(","))
         assertTrue("Content encrypted on the real Keystore", events.filter { it.encryptedPayloadBlob != null }.all { !it.encryptedPayloadBlob!!.contains("synthetic") })
         shell("cmd notification disallow_listener ${app.packageName}/com.example.service.ButlerNotificationListenerService")
         awaitState { !ButlerNotificationListenerService.isNotificationAccessGranted(app) }
