@@ -61,6 +61,8 @@ def copy_lineage(source, target, raw):
 
 
 def closed_handback(report):
+    if not re.fullmatch('/srv/storage/butler/agents/issue88-[A-Za-z0-9_-]+/reports/[A-Za-z0-9_-]+', str(report)):
+        raise SystemExit('bounded original predecessor report required')
     result = subprocess.run(['docker', 'run', '--rm', '--pull', 'never', '--network', 'none', '--cpus', '.1', '--memory', '64m', '--pids-limit', '32', '--mount', 'type=bind,src='+str(report)+',dst=/from,readonly', 'golang:1.27.2-bookworm', 'cat', '/from/native-status'], capture_output=True, timeout=40)
     if result.returncode or result.stdout.strip() not in (b'0', b'1'):
         raise SystemExit('retained closed native runner status required before export')

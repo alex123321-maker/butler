@@ -26,7 +26,7 @@ cleanup(){
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-docker network create --internal --subnet 10.237.203.0/28 "$network" > "$proof/network-id"
+docker network create --internal --subnet "${BUTLER_CONSOLIDATION_V3_SUBNET:-10.237.204.0/28}" "$network" > "$proof/network-id"
 created_network=true
 docker run -d --pull never --name "$pg" --network "$network" --network-alias postgres \
  --cpus 1 --memory 1g --pids-limit 128 --security-opt no-new-privileges \

@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
 const consolidationV3Schema = "consolidation_native_v3"
@@ -42,6 +43,9 @@ func loadConsolidationV3History(path, expected string) (*consolidationScreenHist
 	}
 	if m.Future.Schema != m.Schema || m.Future.Window != consolidationV3Window || m.Future.Present == nil || *m.Future.Present || m.Future.Table == nil || m.Future.Count == nil || *m.Future.Count != 0 {
 		return nil, errors.New("fresh v3 namespace and unconsumed receipt proof required")
+	}
+	if ok, _ := regexp.MatchString(`^/srv/storage/butler/agents/issue88-[A-Za-z0-9_-]+/reports/[A-Za-z0-9_-]+$`, m.Report); !ok {
+		return nil, errors.New("bounded exact predecessor report required")
 	}
 	root := filepath.Dir(path)
 	read := func(ref consolidationHistoryRef) ([]byte, error) { return consolidationV2Read(root, ref) }
