@@ -229,6 +229,7 @@ type experienceNativeRuntime struct {
 	generation  int64
 	environment string
 	expires     time.Time
+	addresses   experienceNativeAddresses
 	stops       []func()
 	reconcile   func(context.Context, string, string, string) (actionauth.RunEffect, error)
 }
@@ -254,7 +255,7 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 		t.Fatal("frozen runtime endpoints unavailable before fixture setup", err)
 	}
 	ctx := context.Background()
-	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires}
+	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires, addresses: addresses}
 	r.goals = goal.New(pool, r.tasks, nil)
 	r.budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	leasing := session.NewPostgresLeaseManager(pool)
@@ -281,7 +282,7 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 		if err := cat.CheckRunSourcesTx(c, tx, run); err != nil {
 			return err
 		}
-		if err := r.lessons.CheckPinnedTx(c, tx, run); err != nil {
+		if err := r.lessons.CheckCapturedPinsTx(c, tx, run); err != nil {
 			return err
 		}
 		return skills.CheckPinnedLifecycleTx(c, tx, run)
@@ -551,7 +552,12 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	if _, err = r.pool.Exec(ctx, `UPDATE accepted_inputs SET max_attempts=1 WHERE input_id=$1`, inputID); err != nil {
 		t.Fatal("one actual original attempt required")
 	}
-	work, stop := context.WithCancel(ctx)
+	// Owner proof authorizes ingress and explicit controls. The worker must
+	// exercise its own run token rather than inherit a caller's owner bypass.
+	work, stop := context.WithCancel(owneridentity.WithActor(ctx, owneridentity.Actor{}))
+	if _, ok := owneridentity.FromContext(work); ok {
+		t.Fatal("foreground worker retained owner actor")
+	}
 	done := make(chan struct{})
 	go func() { _ = worker.Run(work); close(done) }()
 	var output adaptiveNativeExecution

@@ -24,6 +24,10 @@ type experienceReconciledBackupReceipt struct {
 	EpisodeID, UnrelatedEpisodeID                   int64
 	UnrelatedBodyHash, AccountingHash, MetadataHash string
 	OriginalRun, ReadRun, TargetAction              string
+	Descendant, ConsumerFinal                       catalog.SourceRef
+	DescendantClaimID, ConsumerRun                  string
+	DescendantEpisodeID                             int64
+	OriginalBodyHash, OriginalPayloadHash           string
 }
 
 func experienceReconciledBackupPool(t *testing.T, seed bool) *pgxpool.Pool {

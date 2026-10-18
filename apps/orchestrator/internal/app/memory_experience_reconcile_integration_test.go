@@ -377,6 +377,11 @@ func experienceOriginalOwnerResumeRead(t *testing.T, scenario string) {
 		experienceReconciledBackupSeed(t, ctx, r, cat, recipient, anchor, noteServer.URL, sealToken, currentSource, sealed, first.Result.RunID, second.Result.RunID, target.ActionID)
 		return
 	}
+	if strings.HasPrefix(scenario, "publication_") {
+		p := experienceReconciledBackupReceipt{Witness: sealed, Snapshot: screenSourceRef(currentSource), OriginalRun: first.Result.RunID, ReadRun: second.Result.RunID, TargetAction: target.ActionID}
+		experienceReconciledPrivacyCopies(t, ctx, r, recipient, anchor, noteServer.URL, sealToken, &p, strings.TrimPrefix(scenario, "publication_"))
+		return
+	}
 	if scenario == "accepted" {
 		down, e := os.ReadFile("../../../../migrations/081_episodic_reconciled_attempts.down.sql")
 		if e != nil {

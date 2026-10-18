@@ -175,6 +175,25 @@ primary privacy graph. Source release locks original and lookup tools, input
 heads and exact control/run/final/effect metadata, including ancestors. The
 owning seal takes that complete union before checking parent access. These are
 data/currentness fences and confer no execution or generic blocked-job authority.
+For experience-bearing final publication the applicability supplement also calls the body-free Catalog
+`CheckCapturedRunGrantsTx` primitive. The exact captured graph must include every
+ordinary ancestor, including lessons used through derived presentations or
+skills. Current run/session owner, task session/revision, exact source grants,
+source ACL/revision/hash and fresh task/delegation/mandate authority remain
+required. A missing ancestor pin or grant denies publication. This check returns
+no bodies or new pins; it is not completion or inference authority by itself.
+The owning completion checks its expected constraints revision before this call.
+
+Completed independent owner verification and outbox operations retain their own
+completed-result/owner-transition proof and applicability checks; they do not
+borrow current inference access or compare the old run revision with a later
+owner-completed task revision. Generic AccessTx and active provider/tool paths
+retain their existing lifecycle restrictions. The older general Catalog
+CheckRunSourcesTx checks source ACL/revision/privacy and delegation, not ordinary
+nondelegated task grants. The reusable captured-grant regression documents that
+separate boundary; this change wires the extra check only for experience-bearing
+final publication, pending a separate review of general publication wiring.
+
 
 Migration082 permits only the exact content-free task working-state erasure
 under an existing deletion of that session's owner. It preserves identity and

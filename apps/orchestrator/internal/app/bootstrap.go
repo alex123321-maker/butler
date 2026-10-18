@@ -389,7 +389,7 @@ func New(ctx context.Context) (*App, error) {
 		if err := previousExperienceGuard(ctx, tx, run); err != nil {
 			return err
 		}
-		return experienceMemory.CheckPinnedTx(ctx, tx, run)
+		return experienceMemory.CheckCapturedPinsTx(ctx, tx, run)
 	}
 	taskStore.SetVerifiedResultSourceGuard(finalResults.DataGuard)
 	memorySources = experienceRunSources{sources: memorySources, catalog: sourceCatalog, store: experienceMemory}

@@ -1007,3 +1007,10 @@ read or reactivate the stale original snapshot. Original UNKNOWN/no final and
 owner intervention/current read/final/evidence stay distinct. Migration081 and a
 fresh handler-only owner policy are required; generic job and execution authority
 rules, source/day bounds and the closed release gate are unchanged.
+
+Final result publication first checks the current Catalog run sources, then
+validates the exact existing episodic-experience pins through
+`CheckCapturedPinsTx`. This read-only completion check requires current accepted
+claim, feedback, environment and dependency identity. It does not obtain new
+body access or fill missing pins for a finalizing run. Generic Catalog access
+and the active run's ordinary source/pin binding retain their lifecycle guards.

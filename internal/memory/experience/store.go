@@ -355,8 +355,21 @@ func (s *Store) Feedback(ctx context.Context, source, run, verdict string) error
 }
 
 // CheckPinnedTx adds current environment/feedback/dependency proof before every
-// subsequent provider/tool/final release. It performs no Broker RPC under locks.
+// active provider/tool release. It performs no Broker RPC under locks.
 func (s *Store) CheckPinnedTx(ctx context.Context, tx pgx.Tx, run string) error {
+	return s.checkPinnedTx(ctx, tx, run, true)
+}
+
+// CheckCapturedPinsTx is a read-only supplement to the owning completion's
+// mandatory Catalog.CheckRunSourcesTx. It accepts no new source/body or pin:
+// every lesson already captured by that run must retain its exact existing pin.
+// In particular, final publication never borrows generic AccessTx permission
+// for a finalizing run or silently repairs a missing applicability pin.
+func (s *Store) CheckCapturedPinsTx(ctx context.Context, tx pgx.Tx, run string) error {
+	return s.checkPinnedTx(ctx, tx, run, false)
+}
+
+func (s *Store) checkPinnedTx(ctx context.Context, tx pgx.Tx, run string, bind bool) error {
 	// Every normal Catalog read pins the complete graph. Complete applicability
 	// pins from those exact lesson ancestors even when a summary/skill consumer
 	// did not directly open the lesson itself.
@@ -385,8 +398,39 @@ func (s *Store) CheckPinnedTx(ctx context.Context, tx pgx.Tx, run string) error 
 		if s == nil || s.Sources == nil {
 			return ErrEvidence
 		}
-		if err = s.Sources.BindExperienceLineageTx(ctx, tx, roots, s.EnvironmentHash, run); err != nil {
-			return err
+		if bind {
+			if err = s.Sources.BindExperienceLineageTx(ctx, tx, roots, s.EnvironmentHash, run); err != nil {
+				return err
+			}
+		} else {
+			var finalizing bool
+			if err = tx.QueryRow(ctx, `SELECT current_state='finalizing' FROM runs WHERE run_id=$1`, run).Scan(&finalizing); err != nil {
+				return ErrEvidence
+			}
+			// Completed owner verification/outbox operations keep their owning
+			// transition proof. Current inference scope applies to finalizing
+			// completion, whose caller has already locked exact constraints.
+			if finalizing {
+				if err = s.Sources.CheckCapturedRunGrantsTx(ctx, tx, run); err != nil {
+					return err
+				}
+			}
+			ids := make([]string, len(roots))
+			for i, root := range roots {
+				ids[i] = root.ID
+			}
+			eligible, err := catalog.ExperienceMetadataEligibleTx(ctx, tx, ids, s.EnvironmentHash)
+			if err != nil || !eligible {
+				return ErrEvidence
+			}
+		}
+	}
+	if !bind {
+		var covered bool
+		err = tx.QueryRow(ctx, `WITH captured AS(SELECT p.source_id FROM memory_run_sources p JOIN memory_experience_lessons l USING(source_id) WHERE p.run_id=$1),pinned AS(SELECT source_id FROM memory_experience_pins WHERE run_id=$1)
+SELECT NOT EXISTS(SELECT source_id FROM captured EXCEPT SELECT source_id FROM pinned) AND NOT EXISTS(SELECT source_id FROM pinned EXCEPT SELECT source_id FROM captured)`, run).Scan(&covered)
+		if err != nil || !covered {
+			return ErrEvidence
 		}
 	}
 	rows, err := tx.Query(ctx, `SELECT l.source_id,l.source_revision,l.environment_hash,l.lesson_hash,l.dependencies_json,l.owner_id,c.status,p.environment_hash,p.lesson_hash FROM memory_experience_pins p JOIN memory_experience_lessons l USING(source_id) JOIN memory_claims c ON c.claim_id=l.claim_id WHERE p.run_id=$1 ORDER BY l.source_id FOR SHARE OF l,c`, run)

@@ -300,3 +300,42 @@ frozen independent A/B/C case clones and all 48 controls, latest inclusive
 current-owner/day history carried once outside the clones, complete known/NULL
 creation/query/use/skill cost, request-isolation audits and independent semantic,
 effect and benefit review. These controlled receipts do not satisfy those gates.
+
+### Captured pins at actual foreground completion, 2026-10-18
+
+The controlled ordinary worker now masks any inherited owner actor at worker.Run;
+owner proof remains only at ingress and explicit owner APIs. The v43 real
+Broker read reached the provider's second phase with actual reconciled-note text,
+then failed final publication because the old CheckPinnedTx reentered generic
+AccessTx while finalizing. Parent's independently neutralized coherent v10 also
+reproduced that boundary through an actual consolidated lesson ancestor. These
+are publication regressions, not native quality results.
+
+The isolated staged-tree source v47 contains only the publication prerequisite,
+without the witness privacy cascade. `reports/publication-v47` completed 21 pass,
+0 fail, 0 skip with real PostgreSQL/Broker/runtimes, race and vet. SHA256 of
+`evidence.sha256` is
+`54bde66f7f575d2e1d7659d9f5422e9bf317cae1528d2dd2afdaf0cdba48e349`.
+Thirteen foreground controls cover actual direct and derived-presentation reads,
+missing/corrupt pins, current grants, privacy, environment, feedback, installed
+dependency, owner and task changes; all denied publications retain their two
+foreground attempt records. The accepted case proves generic finalizing body
+access stays denied while the separately captured final can commit. Six ordinary
+nonlesson controls separately prove captured ancestor grants/pins and current
+owner/task/session binding; the two wrappers are included in the pass count.
+
+The old Catalog source guard lacks ordinary nondelegated grant revalidation;
+source ACL/access-revision revocation and task source grants are distinct. The
+new body-free primitive is wired only for experience-bearing final publication.
+The owning completion's exact task/constraints/ownership proof and its preceding
+Catalog source guard remain mandatory. Completed independent owner/outbox paths
+retain their own transition proof rather than borrowing current inference scope.
+No source body is returned, pin repaired, new read capability or native allowance
+created by the supplement.
+
+The v44 grant control exposed that separate ordinary-grant gap. V45's direct
+and ordinary controls passed, while three new derived controls stopped before
+read because the fixture omitted their own explicit descendant root grant.
+V47 grants the complete pre-existing canonical graph and passes those controls.
+Failed evidence is retained. Issue90 native/auth entries remain zero; this does
+not satisfy the separately frozen 57-logical-input/640-entry native gate.

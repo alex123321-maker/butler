@@ -185,6 +185,33 @@ remain. No new blocked action permission, retry, grant or execution-kernel seam
 is introduced. Populated history blocks rollback; empty rollback precedes080/079
 and077. Native outcome/quality/cost qualification remains separate and closed.
 
+Final publication checks only applicability pins already captured by that run.
+The owning completion proves its exact owner/task/constraints operation and calls
+Catalog `CheckRunSourcesTx` first for current source privacy and revisions. The separate
+`CheckCapturedPinsTx` then requires an exact set of existing lesson pins and
+checks accepted claims, feedback, environment and installed dependencies without
+reading bodies, creating pins or repairing a missing pin. Generic `AccessTx`
+continues to deny a finalizing run. Active provider/tool paths retain their full
+Catalog access and normal bounded lineage binding; no lifecycle access is widened.
+For a finalizing run this supplement also calls the body-free Catalog
+`CheckCapturedRunGrantsTx` primitive. The exact captured graph must include every
+ordinary ancestor, including lessons used through derived presentations or
+skills. Current run/session owner, task session/revision, exact source grants,
+source ACL/revision/hash and fresh task/delegation/mandate authority remain
+required. A missing ancestor pin or grant denies publication. This check returns
+no bodies or new pins; it is not completion or inference authority by itself.
+The owning completion checks its expected constraints revision before this call.
+
+Completed independent owner verification and outbox operations retain their own
+completed-result/owner-transition proof and applicability checks; they do not
+borrow current inference access or compare the old run revision with a later
+owner-completed task revision. Generic AccessTx and active provider/tool paths
+retain their existing lifecycle restrictions. The older general Catalog
+CheckRunSourcesTx checks source ACL/revision/privacy and delegation, not ordinary
+nondelegated task grants. The reusable captured-grant regression documents that
+separate boundary; this change wires the extra check only for experience-bearing
+final publication, pending a separate review of general publication wiring.
+
 Migration082 keeps subsequent owner deletion possible after copied tool rows
 become stale. Its publication fence permits only the existing authorized exact
 content-free working erasure, unchanged task identity and one revision advance.
