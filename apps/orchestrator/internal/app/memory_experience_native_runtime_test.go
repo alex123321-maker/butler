@@ -56,16 +56,94 @@ import (
 const experienceNativeOwner = "owner" // same actual owner/day lineage as 84/85/88/89
 const experienceNativePreference = "Предпочтение владельца для текущего поручения: отвечать по-русски."
 
-type experienceNativeAddresses struct{ Extension, HTTP, Broker, BrokerHTTP string }
+type experienceNativeAddresses struct {
+	Extension, HTTP, Broker, BrokerHTTP string
+	reserved                            *experienceNativePortReservations
+}
+
+// Keep the frozen endpoints owned while the rest of the fixture allocates ports.
+// The child handoff releases only that child's sockets immediately before Start;
+// stopping it reacquires those exact endpoints before any later fixture setup.
+type experienceNativePortReservations struct {
+	mu        sync.Mutex
+	listeners map[string]net.Listener
+	closed    bool
+}
+
+func (p *experienceNativePortReservations) reclaim(addresses ...string) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed {
+		return nil
+	}
+	for _, address := range addresses {
+		if _, ok := p.listeners[address]; !ok {
+			return fmt.Errorf("endpoint was not frozen: %s", address)
+		}
+		if p.listeners[address] != nil {
+			continue
+		}
+		listener, err := net.Listen("tcp4", address)
+		if err != nil {
+			return fmt.Errorf("reclaim frozen endpoint %s: %w", address, err)
+		}
+		p.listeners[address] = listener
+	}
+	return nil
+}
+
+func (p *experienceNativePortReservations) handoff(start func() error, addresses ...string) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed {
+		return fmt.Errorf("frozen endpoint reservations already closed")
+	}
+	for _, address := range addresses {
+		if listener, ok := p.listeners[address]; !ok || listener == nil {
+			return fmt.Errorf("frozen endpoint %s is not reserved", address)
+		}
+	}
+	for _, address := range addresses {
+		if err := p.listeners[address].Close(); err != nil {
+			return err
+		}
+		p.listeners[address] = nil
+	}
+	return start()
+}
+
+func (p *experienceNativePortReservations) close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.closed = true
+	for address, listener := range p.listeners {
+		if listener != nil {
+			_ = listener.Close()
+			p.listeners[address] = nil
+		}
+	}
+}
 
 // Freeze these before original work and reuse the exact endpoints in every
 // bounded subtest. Random per-case runtime ports would change contract hashes
 // and turn an environment/currentness comparison into a different experiment.
 func newExperienceNativeAddresses(t *testing.T) experienceNativeAddresses {
-	return experienceNativeAddresses{freeAddress(t), freeAddress(t), freeAddress(t), freeAddress(t)}
+	t.Helper()
+	p := &experienceNativePortReservations{listeners: make(map[string]net.Listener)}
+	t.Cleanup(p.close)
+	allocate := func() string {
+		listener, err := net.Listen("tcp4", "127.0.0.1:0")
+		if err != nil {
+			t.Fatal("reserve frozen runtime endpoint", err)
+		}
+		address := listener.Addr().String()
+		p.listeners[address] = listener
+		return address
+	}
+	return experienceNativeAddresses{Extension: allocate(), HTTP: allocate(), Broker: allocate(), BrokerHTTP: allocate(), reserved: p}
 }
 
-func experienceNativeChild(t *testing.T, name, directory, binary, grpcAddress, httpAddress string, args []string, environment ...string) func() {
+func experienceNativeChild(t *testing.T, reservations *experienceNativePortReservations, name, directory, binary, grpcAddress, httpAddress string, args []string, environment ...string) func() {
 	t.Helper()
 	logPath := filepath.Join(directory, name+".log")
 	if proof := os.Getenv("BUTLER_EXPERIENCE_PROCESS_PROOF"); filepath.IsAbs(proof) {
@@ -81,7 +159,11 @@ func experienceNativeChild(t *testing.T, name, directory, binary, grpcAddress, h
 	cmd := exec.Command(binary, args...)
 	cmd.Env = append([]string{"PATH=" + os.Getenv("PATH"), "BUTLER_ENVIRONMENT=test", "BUTLER_GRPC_ADDR=" + grpcAddress, "BUTLER_HTTP_ADDR=" + httpAddress}, environment...)
 	cmd.Stdout, cmd.Stderr = file, file
-	if err = cmd.Start(); err != nil {
+	addresses := []string{grpcAddress}
+	if httpAddress != "127.0.0.1:0" {
+		addresses = append(addresses, httpAddress)
+	}
+	if err = reservations.handoff(cmd.Start, addresses...); err != nil {
 		file.Close()
 		t.Fatal("isolated actual component start failed")
 	}
@@ -98,6 +180,9 @@ func experienceNativeChild(t *testing.T, name, directory, binary, grpcAddress, h
 				<-done
 			}
 			file.Close()
+			if err := reservations.reclaim(addresses...); err != nil {
+				t.Error("frozen child endpoint reservation lost", err)
+			}
 		})
 	}
 	t.Cleanup(stop)
@@ -162,6 +247,12 @@ func (r *experienceNativeRuntime) close() {
 // runtime routing, effect journal, owned completion and skills are production.
 func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, anchor, directory string, recipient *experienceRecipient, addresses experienceNativeAddresses, policy budget.Policy, prompt, arm string, subset []catalog.SourceRef, expires time.Time) *experienceNativeRuntime {
 	t.Helper()
+	if addresses.reserved == nil {
+		t.Fatal("runtime endpoints must be frozen and reserved before fixture setup")
+	}
+	if err := addresses.reserved.reclaim(addresses.Extension, addresses.HTTP, addresses.Broker, addresses.BrokerHTTP); err != nil {
+		t.Fatal("frozen runtime endpoints unavailable before fixture setup", err)
+	}
 	ctx := context.Background()
 	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires}
 	r.goals = goal.New(pool, r.tasks, nil)
@@ -237,8 +328,8 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	if remaining < 1 {
 		t.Fatal("earlier independent window deadline expired")
 	}
-	r.stops = append(r.stops, experienceNativeChild(t, "extension", directory, extBinary, addresses.Extension, "127.0.0.1:0", []string{"-test.run=^TestExtensionRuntimeEgressHarness$"}, "BUTLER_EXTENSION_EGRESS_HARNESS=1", "BUTLER_EXTENSION_EGRESS_HARNESS_LIFETIME_MS="+fmt.Sprint(remaining), "BUTLER_EXTENSION_FIXTURE_ENDPOINT="+site.URL, "BUTLER_EXTENSION_PROFILES_JSON="+string(profiles), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile))
-	r.stops = append(r.stops, experienceNativeChild(t, "http", directory, os.Getenv("BUTLER_EXPERIENCE_HTTP_BINARY"), addresses.HTTP, "127.0.0.1:0", []string{"-test.run=^TestExperienceHTTPRuntimeHarness$"}, "BUTLER_EXPERIENCE_HTTP_HARNESS=1", "BUTLER_EXPERIENCE_HTTP_HARNESS_LIFETIME_MS="+fmt.Sprint(remaining), "BUTLER_EXPERIENCE_RECIPIENT_ENDPOINT="+site.URL))
+	r.stops = append(r.stops, experienceNativeChild(t, addresses.reserved, "extension", directory, extBinary, addresses.Extension, "127.0.0.1:0", []string{"-test.run=^TestExtensionRuntimeEgressHarness$"}, "BUTLER_EXTENSION_EGRESS_HARNESS=1", "BUTLER_EXTENSION_EGRESS_HARNESS_LIFETIME_MS="+fmt.Sprint(remaining), "BUTLER_EXTENSION_FIXTURE_ENDPOINT="+site.URL, "BUTLER_EXTENSION_PROFILES_JSON="+string(profiles), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile))
+	r.stops = append(r.stops, experienceNativeChild(t, addresses.reserved, "http", directory, os.Getenv("BUTLER_EXPERIENCE_HTTP_BINARY"), addresses.HTTP, "127.0.0.1:0", []string{"-test.run=^TestExperienceHTTPRuntimeHarness$"}, "BUTLER_EXPERIENCE_HTTP_HARNESS=1", "BUTLER_EXPERIENCE_HTTP_HARNESS_LIFETIME_MS="+fmt.Sprint(remaining), "BUTLER_EXPERIENCE_RECIPIENT_ENDPOINT="+site.URL))
 	registry, err := os.ReadFile("../../../../configs/tools.json")
 	if err != nil {
 		t.Fatal("actual HTTP contract unavailable")
@@ -276,7 +367,7 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	if arm == experienceNativeArms[2] {
 		env = append(env, "BUTLER_SKILLS_ENABLED=true")
 	}
-	r.stops = append(r.stops, experienceNativeChild(t, "broker", directory, os.Getenv("BUTLER_BROKER_E2E_BINARY"), addresses.Broker, addresses.BrokerHTTP, nil, env...))
+	r.stops = append(r.stops, experienceNativeChild(t, addresses.reserved, "broker", directory, os.Getenv("BUTLER_BROKER_E2E_BINARY"), addresses.Broker, addresses.BrokerHTTP, nil, env...))
 	r.broker, err = tools.DialWithTokenFile(addresses.Broker, coreFile)
 	if err != nil {
 		t.Fatal(err)
