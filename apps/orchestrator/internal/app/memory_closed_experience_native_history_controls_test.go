@@ -216,11 +216,12 @@ func TestClosedExperienceFinitePresealRejectsExpandedAuthority(t *testing.T) {
 }
 
 // Optional immutable real-export check, with no storage/auth/network access.
-// An absent fixture is outside this test's assertions, never a reported skip.
+// The dedicated acceptance driver supplies the complete immutable fixture and
+// rejects skips; ordinary local unit runs must not count its absence as a pass.
 func TestClosedExperienceRetainedControlledExports(t *testing.T) {
 	root := os.Getenv("BUTLER_CLOSED_EXPERIENCE_CONTROLLED_EXPORTS")
 	if root == "" {
-		return
+		t.Skip("explicit complete retained controlled exports required")
 	}
 	var window struct {
 		Entries []experienceNativeEntry
