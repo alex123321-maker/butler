@@ -25,8 +25,8 @@ func temporalPositiveDayFixture(t *testing.T) (map[string]any, map[string]any, s
 	}
 	one := budget.Units{ModelTurns: 1, Tokens: 1081344, ActiveMillis: 300000, ProviderInputBytes: 8388608}
 	reservations := []any{reservation("seal", "prospective-owner-day-history-freeze:"+strings.Repeat("a", 64), budget.Units{}), reservation("bg-rsv", "bg", one), reservation("fg-rsv", "fg", one)}
-	background := []any{map[string]any{"operation_id": "bg", "usage": nil}}
-	foreground := []any{map[string]any{"operation_id": "fg", "observed_at": nil}}
+	background := []any{map[string]any{"operation_id": "bg", "job_id": "bg-job", "reservation_id": "bg-rsv", "provider": "antigravity", "model": "gemini-3.8-flash-high", "quote": one, "state": "completed", "usage": nil, "created_at": "2026-10-18T01:00:00Z", "observed_at": nil}}
+	foreground := []any{map[string]any{"operation_id": "fg", "reservation_id": "fg-rsv", "provider": "antigravity", "model": "gemini-3.8-flash-high", "input_allowance": 1048576, "output_allowance": 32768, "actual_input_tokens": nil, "actual_output_tokens": nil, "created_at": "2026-10-18T01:00:00Z", "observed_at": nil}}
 	calls := []any{}
 	for i, op := range []string{"bg", "fg"} {
 		var usage any
@@ -114,7 +114,7 @@ func mustTemporalJSON(t *testing.T, v any) []byte {
 }
 
 func TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations(t *testing.T) {
-	for _, name := range []string{"open_window", "duplicate_reservation", "missing_product", "known_product_replaces_null", "missing_native_entry", "duplicate_native_entry", "wrong_entry_reservation", "positive_prior_carry", "wrong_day", "negative_units", "missing_main", "main_attempt", "second_schema_spend", "main_table_presence", "changed_original_charge", "missing_current_foreground", "uncorrelated_background_usage", "invalid_native_usage"} {
+	for _, name := range []string{"open_window", "duplicate_reservation", "missing_product", "known_product_replaces_null", "missing_native_entry", "duplicate_native_entry", "wrong_entry_reservation", "positive_prior_carry", "wrong_day", "negative_units", "missing_main", "main_attempt", "second_schema_spend", "main_table_presence", "changed_original_charge", "missing_current_foreground", "uncorrelated_background_usage", "invalid_native_usage", "omitted_background_usage", "omitted_foreground_observation"} {
 		t.Run(name, func(t *testing.T) {
 			current, prior, day, deadline, _ := temporalPositiveDayFixture(t)
 			dbs := current["databases"].([]any)
@@ -166,6 +166,12 @@ func TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations(t *test
 				prior["model_jobs"] = []any{map[string]any{"operation_id": "bg", "usage": map[string]any{"InputTokens": 5, "OutputTokens": 2, "TotalTokens": 12}}}
 			case "invalid_native_usage":
 				prior["calls"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["Usage"] = map[string]any{"InputTokens": 5, "OutputTokens": 2, "TotalTokens": -1}
+			case "omitted_background_usage":
+				// Shared fixture aliases deliberately mutate prior and current:
+				// equality alone must not turn an absent nullable field into NULL.
+				delete(prior["background"].([]any)[0].(map[string]any), "usage")
+			case "omitted_foreground_observation":
+				delete(prior["foreground"].([]any)[0].(map[string]any), "observed_at")
 			}
 			if _, _, err := temporalValidatePositiveDay(mustTemporalJSON(t, current), mustTemporalJSON(t, prior), day, deadline); err == nil {
 				t.Fatal("incomplete/refunded current-day population accepted")
@@ -179,7 +185,7 @@ func TestTemporalV5FrozenHistoryWitnessesRejectUsageForgery(t *testing.T) {
 	if root == "" {
 		t.Skip("explicit immutable full-history fixture required")
 	}
-	for _, change := range []string{"product_null", "native_total"} {
+	for _, change := range []string{"product_null", "native_total", "product_usage_omitted", "foreground_observation_omitted"} {
 		t.Run(change, func(t *testing.T) {
 			dir := t.TempDir()
 			entries, err := os.ReadDir(root)
@@ -217,9 +223,48 @@ func TestTemporalV5FrozenHistoryWitnessesRejectUsageForgery(t *testing.T) {
 			}
 			if change == "product_null" {
 				prior["model_jobs"].([]any)[0].(map[string]any)["usage"] = nil
-			} else {
+			} else if change == "native_total" {
 				usage := prior["calls"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["Usage"].(map[string]any)
 				usage["TotalTokens"] = usage["TotalTokens"].(float64) + 100
+			} else {
+				field, key := "background", "usage"
+				if change == "foreground_observation_omitted" {
+					field, key = "foreground", "observed_at"
+				} else {
+					delete(prior["model_jobs"].([]any)[0].(map[string]any), key)
+				}
+				delete(prior[field].([]any)[0].(map[string]any), key)
+				currentPath := filepath.Join(dir, manifest.Current.Path)
+				currentRaw, err := os.ReadFile(currentPath)
+				if err != nil {
+					t.Fatal("controlled current inventory unavailable")
+				}
+				var current map[string]any
+				if json.Unmarshal(currentRaw, &current) != nil {
+					t.Fatal("controlled current inventory invalid")
+				}
+				changed := 0
+				for _, database := range current["databases"].([]any) {
+					db := database.(map[string]any)
+					if db["container"] != "issue86-20261016-pg" || db["database"] != "memory_read_test" {
+						continue
+					}
+					for _, value := range db["windows"].([]any) {
+						window := value.(map[string]any)
+						if window["schema"] == "consolidation_native_v1" {
+							delete(window[field].([]any)[0].(map[string]any), key)
+							changed++
+						}
+					}
+				}
+				if changed != 1 {
+					t.Fatal("one controlled current population required")
+				}
+				currentRaw = mustTemporalJSON(t, current)
+				if os.WriteFile(currentPath, currentRaw, 0600) != nil {
+					t.Fatal("controlled current inventory write unavailable")
+				}
+				manifest.Current.SHA256 = experienceDigest(string(currentRaw))
 			}
 			data = mustTemporalJSON(t, prior)
 			if os.WriteFile(path, data, 0600) != nil {
