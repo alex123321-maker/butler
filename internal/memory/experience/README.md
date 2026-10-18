@@ -162,5 +162,7 @@ Migration082 keeps subsequent owner deletion possible after copied tool rows
 become stale. Its publication fence permits only the existing authorized exact
 content-free working erasure, unchanged task identity and one revision advance.
 It rejects private payloads, unknown/foreign deletion proof and material task
-changes, while ordinary stale publication stays denied. Populated history
-refuses downgrade. This exception grants no read, action or learning authority.
+changes, while ordinary stale publication stays denied. Populated experience
+provenance refuses downgrade even before a SQL deletion exists, because its
+external anchor may already need replay. This exception grants no read, action
+or learning authority.

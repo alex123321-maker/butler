@@ -1,6 +1,8 @@
 DO $$ BEGIN
- IF EXISTS(SELECT 1 FROM memory_experience_observations) AND EXISTS(SELECT 1 FROM memory_deletions) THEN
-  RAISE EXCEPTION 'retain experience erasure after durable deletion';
+ -- A failed first deletion can advance the external anchor while its database
+ -- transaction rolls back. SQL deletion counts cannot prove no pending replay.
+ IF EXISTS(SELECT 1 FROM memory_experience_observations) THEN
+  RAISE EXCEPTION 'retain experience erasure for populated provenance';
  END IF;
 END $$;
 CREATE OR REPLACE FUNCTION butler_memory_experience_publication_fence() RETURNS TRIGGER LANGUAGE plpgsql AS $$

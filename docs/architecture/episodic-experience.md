@@ -118,5 +118,6 @@ Only empty plan/actions and the exact privacy marker may be written. Extra
 payload, foreign/missing deletion proof or any identity change is denied.
 Currentness vetoes remain mandatory for all ordinary publication, including
 after erasure. A stale copied observation must not prevent subsequent owner
-deletion or replay of a later independent anchor. Populated deletion/experience
-history refuses downgrade of this protection.
+deletion or replay of a later independent anchor. Any populated experience
+provenance refuses downgrade: a failed first deletion can leave an external
+anchor requiring replay without a committed SQL deletion row.

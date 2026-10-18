@@ -172,5 +172,5 @@ Migration082 permits only the exact content-free task working-state erasure
 under an existing deletion of that session's owner. It preserves identity and
 advances the working revision once. Stale experience observations still veto
 ordinary publication; they cannot prevent a later deletion after an earlier
-tool correction or privacy erasure. Populated deletion/experience history
-refuses downgrade of this protection.
+tool correction or privacy erasure. Any populated experience provenance refuses
+downgrade: a pending external anchor need not have a committed SQL deletion yet.

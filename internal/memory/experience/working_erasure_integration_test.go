@@ -28,6 +28,9 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 		t.Fatal(err)
 	}
 	f := newLessonFixtureWithPool(t, pool, filepath.Join(t.TempDir(), "anchor"))
+	if _, err := pool.Exec(f.ctx, migration("down")); err == nil {
+		t.Fatal("populated provenance was downgraded before a database deletion existed")
+	}
 	live, _ := f.consumer(t)
 	tx, err := pool.Begin(live)
 	if err != nil {
@@ -84,7 +87,7 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 		t.Fatal(err)
 	}
 	canonical := `jsonb_build_object('plan','[]'::jsonb,'pending_actions','[]'::jsonb,'scratch',jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$1::text))`
-	for _, mode := range []string{"ordinary", "unknown_deletion", "foreign_deletion", "private_payload", "identity", "revision", "authorized_erasure"} {
+	for _, mode := range []string{"ordinary", "unknown_deletion", "foreign_deletion", "private_payload", "identity", "run_identity", "revision", "authorized_erasure"} {
 		t.Run(mode, func(t *testing.T) {
 			tx, err := pool.Begin(f.ctx)
 			if err != nil {
@@ -108,8 +111,11 @@ func TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration(t *
 				value += ` || '{"private":"cannot publish under erasure"}'::jsonb`
 			}
 			if mode == "identity" {
-				extra = `,goal='rewritten owner goal',last_run_id=''`
+				extra = `,goal='rewritten owner goal'`
 			}
+			if mode == "run_identity" {
+				extra = `,last_run_id='run-1'`
+			} // existing valid original run
 			delta := "1"
 			if mode == "revision" {
 				delta = "2"
