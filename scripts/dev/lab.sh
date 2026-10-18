@@ -3,6 +3,15 @@ set -euo pipefail
 action=${1:-Status}
 root=${2:-/srv/storage/butler}
 shift 2
+if [[ -f "$root/main/deployed-main.json" ]]; then
+  case "$action" in
+    Status) exec docker compose -f "$root/main/compose.json" ps ;;
+    Up)
+      echo "Main now uses reviewed release artifacts in $root/main; use its Compose file after installing the intended binaries. Legacy lab Up is refused to prevent a second primary." >&2
+      exit 1
+      ;;
+  esac
+fi
 cd "$root/current"
 export BUTLER_LAB_ROOT="$root"
 export DOCKER_CONFIG="$root/.cache/docker"

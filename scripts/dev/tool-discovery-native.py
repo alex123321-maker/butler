@@ -153,6 +153,8 @@ def request(path, body=None):
 
 
 def run(arm, index):
+    if (ROOT / 'reports/SEALED.json').exists():
+        raise RuntimeError('completed native window is sealed')
     if arm not in ('eager', 'deferred') or index not in range(len(CASES)):
         raise RuntimeError('invalid frozen label')
     label = 'v5-' + arm + '-' + str(index)
