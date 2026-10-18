@@ -32,21 +32,35 @@ type experienceNativeLineage struct {
 }
 
 type experienceNativeSeal struct {
-	Format        string                  `json:"format"`
-	Owner         string                  `json:"owner"`
-	Created       time.Time               `json:"created_at"`
-	Deadline      time.Time               `json:"deadline"`
-	Lineage       experienceNativeLineage `json:"history"`
-	Originals     string                  `json:"originals_sha256"`
-	Controls      string                  `json:"controls_sha256"`
-	Source        map[string]string       `json:"source_files"`
-	Binaries      map[string]string       `json:"binaries"`
-	Schedule      []experienceNativeSlot  `json:"schedule"`
-	Policy        budget.Policy           `json:"control_policy"`
-	SourcePolicy  budget.Policy           `json:"source_policy"`
-	Environments  map[string]string       `json:"environments"`
-	FGMillis      int64                   `json:"foreground_millis"`
-	MaximumMillis int64                   `json:"whole_maximum_millis"`
+	Format         string                  `json:"format"`
+	Owner          string                  `json:"owner"`
+	Created        time.Time               `json:"created_at"`
+	Deadline       time.Time               `json:"deadline"`
+	Lineage        experienceNativeLineage `json:"history"`
+	Originals      string                  `json:"originals_sha256"`
+	Controls       string                  `json:"controls_sha256"`
+	Source         map[string]string       `json:"source_files"`
+	Binaries       map[string]string       `json:"binaries"`
+	Schedule       []experienceNativeSlot  `json:"schedule"`
+	Policy         budget.Policy           `json:"control_policy"`
+	SourcePolicy   budget.Policy           `json:"source_policy"`
+	Environments   map[string]string       `json:"environments"`
+	FGMillis       int64                   `json:"foreground_millis"`
+	MaximumMillis  int64                   `json:"whole_maximum_millis"`
+	ExecutionSlots int                     `json:"execution_slots,omitempty"`
+}
+
+// A shortened smoke retains the complete frozen schedule and accounting
+// ceiling. It prospectively omits only the second control repetition.
+func experienceNativeExecutionLimit(selected int) (int, error) {
+	switch selected {
+	case 0:
+		return 57, nil
+	case 33:
+		return 33, nil
+	default:
+		return 0, errors.New("only legacy full57 or predeclared prefix33 is supported")
+	}
 }
 
 func experienceNativeSHA(value string) bool {
@@ -204,6 +218,10 @@ func checkExperienceNativeSeal(raw []byte, expectedSHA string, now time.Time, ro
 		return actual, errors.New("current finite native preseal required")
 	}
 	expected, err := prepareExperienceNativeSeal(actual.Created, root, corpus, history, binaries)
+	if _, scopeErr := experienceNativeExecutionLimit(actual.ExecutionSlots); scopeErr != nil {
+		return actual, scopeErr
+	}
+	expected.ExecutionSlots = actual.ExecutionSlots
 	if err != nil || !reflect.DeepEqual(expected, actual) {
 		return actual, errors.New("source, compiled artifacts, policies, history or schedule changed after seal")
 	}
@@ -236,6 +254,9 @@ func writeExperienceNativeSeal(parent, label string, seal experienceNativeSeal) 
 	}
 	p, err := newExperienceNativeProvider(path, seal.Schedule, seal.Owner)
 	if err != nil {
+		return "", err
+	}
+	if err = p.configureExecutionSlots(seal.ExecutionSlots); err != nil {
 		return "", err
 	}
 	if err = p.writeNew("preseal.json", seal); err != nil {
@@ -297,6 +318,27 @@ func TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator(t *test
 	if _, err = checkExperienceNativeSeal(raw, experienceDigest(string(raw)), now.Add(time.Second), root, c, history, binaries); err != nil || len(seal.Schedule) != 57 || seal.Policy.Day.ModelTurns != 643 || seal.SourcePolicy.Task.ModelTurns != 13 || seal.Lineage.Usage.NativeEntries != 0 || seal.Lineage.Usage.ProductNULL != 3 {
 		t.Fatal("preseal lost current charges or changed the full denominator", err)
 	}
+	t.Run("short_smoke_scope", func(t *testing.T) {
+		short := seal
+		short.ExecutionSlots = 33
+		encoded, _ := json.Marshal(short)
+		if checked, err := checkExperienceNativeSeal(encoded, experienceDigest(string(encoded)), now.Add(time.Second), root, c, history, binaries); err != nil || checked.ExecutionSlots != 33 || !reflect.DeepEqual(checked.Schedule, seal.Schedule) || !reflect.DeepEqual(checked.Policy, seal.Policy) || checked.SourcePolicy.Task.ModelTurns != 13 {
+			t.Fatal("short smoke changed corpus, denominator, capacity or source authority", err)
+		}
+		for _, invalid := range []int{32, 34, 57, 58, -1} {
+			changed := short
+			changed.ExecutionSlots = invalid
+			bad, _ := json.Marshal(changed)
+			if _, err := checkExperienceNativeSeal(bad, experienceDigest(string(bad)), now.Add(time.Second), root, c, history, binaries); err == nil {
+				t.Fatal("arbitrary smoke cutoff accepted", invalid)
+			}
+		}
+		short.ExecutionSlots = 0
+		changed, _ := json.Marshal(short)
+		if _, err := checkExperienceNativeSeal(changed, experienceDigest(string(encoded)), now.Add(time.Second), root, c, history, binaries); err == nil {
+			t.Fatal("reviewed short scope expanded after freeze")
+		}
+	})
 	for name, mutate := range map[string]func(*experienceNativeSeal){
 		"history_refund":    func(s *experienceNativeSeal) { s.Lineage.Carry.ModelTurns-- },
 		"hidden_native":     func(s *experienceNativeSeal) { s.Lineage.Usage.NativeEntries = 3 },

@@ -175,20 +175,39 @@ type experienceNativeEntry struct {
 // reserved method entry reached HTTP. Missing provider usage remains null.
 type experienceNativeProvider struct {
 	transport.ModelProvider
-	mu         sync.Mutex
-	proof      string
-	slots      []experienceNativeSlot
-	active     int
-	entries    []*experienceNativeEntry
-	failed     error
-	ongoing    bool
-	ended      chan struct{}
-	global     *pgxpool.Pool
-	window     string
-	casePool   *pgxpool.Pool
-	controlled bool
-	owner      string
-	started    time.Time
+	mu                  sync.Mutex
+	proof               string
+	slots               []experienceNativeSlot
+	active              int
+	entries             []*experienceNativeEntry
+	failed              error
+	ongoing             bool
+	ended               chan struct{}
+	global              *pgxpool.Pool
+	window              string
+	casePool            *pgxpool.Pool
+	controlled          bool
+	owner               string
+	started             time.Time
+	executionSlots      int
+	executionConfigured bool
+}
+
+func (p *experienceNativeProvider) configureExecutionSlots(selected int) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if _, err := experienceNativeExecutionLimit(selected); err != nil {
+		return err
+	}
+	if p.executionConfigured || p.active != -1 || p.ongoing || len(p.entries) != 0 || p.global != nil || p.ModelProvider != nil {
+		return errors.New("execution scope must precede storage, provider and source work")
+	}
+	p.executionSlots = selected
+	p.executionConfigured = true
+	if selected != 0 {
+		return p.writeNew("execution-scope.json", map[string]any{"execution_slots": selected, "full_denominator": len(p.slots), "intentional_omissions": len(p.slots) - selected})
+	}
+	return nil
 }
 
 func newExperienceNativeProvider(proof string, slots []experienceNativeSlot, owners ...string) (*experienceNativeProvider, error) {
@@ -303,7 +322,7 @@ func (p *experienceNativeProvider) reserveGlobal(ctx context.Context, e *experie
 func (p *experienceNativeProvider) begin(index int) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.failed != nil || p.active != -1 || p.ongoing || index < 0 || index >= len(p.slots) || p.slots[index].Status != "not_executed" {
+	if p.failed != nil || p.active != -1 || p.ongoing || index < 0 || index >= len(p.slots) || p.executionSlots != 0 && index >= p.executionSlots || p.slots[index].Status != "not_executed" {
 		return errors.New("one-use single foreground slot required")
 	}
 	p.active = index
@@ -343,7 +362,7 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.failed != nil || p.active < 0 || p.ongoing || p.ModelProvider == nil || len(p.entries) >= experienceNativeMaximum {
+	if p.failed != nil || p.active < 0 || p.executionSlots != 0 && p.active >= p.executionSlots || p.ongoing || p.ModelProvider == nil || len(p.entries) >= experienceNativeMaximum {
 		return nil, errors.New("prospective provider window closed")
 	}
 	slot, used := p.slots[p.active], 0
@@ -581,9 +600,16 @@ func (p *experienceNativeProvider) export() error {
 		}
 		if p.slots[i].Status == "not_executed" {
 			p.slots[i].Blocker = "window_closed_before_execution"
+			if p.executionSlots != 0 && i >= p.executionSlots {
+				p.slots[i].Blocker = "predeclared_short_smoke_omission"
+			}
 		}
 	}
-	err := p.writeNew("window-final.json", map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active, "started_at": p.started, "finished_at": time.Now().UTC(), "elapsed_millis": time.Since(p.started).Milliseconds()})
+	window := map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active, "started_at": p.started, "finished_at": time.Now().UTC(), "elapsed_millis": time.Since(p.started).Milliseconds()}
+	if p.executionSlots != 0 {
+		window["execution_slots"] = p.executionSlots
+	}
+	err := p.writeNew("window-final.json", window)
 	if p.global != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -664,6 +690,48 @@ func TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes(t *testing.T) {
 	source := experienceNativeSourcePolicy()
 	if source.Validate() != nil || source.Task.ModelTurns != 13 || source.Mandate.ModelTurns != 13 || source.Conversation.ModelTurns != 13 || source.Day.ModelTurns != 640 {
 		t.Fatal("source/note parent quotes do not fit their prospective policy")
+	}
+}
+
+func TestExperienceNativeShortSmokeGuardsAndRetainsOmissions(t *testing.T) {
+	slots := experienceNativeSchedule(experienceWindowFixture())
+	legacy, err := newExperienceNativeProvider(t.TempDir(), slots)
+	if err != nil || legacy.begin(33) != nil || legacy.end("failed", "controlled metadata transition; no provider") != nil {
+		t.Fatal("legacy full57 no longer permits repetition2", err)
+	}
+	p, err := newExperienceNativeProvider(t.TempDir(), slots)
+	if err != nil || p.configureExecutionSlots(33) != nil {
+		t.Fatal("prospective short scope rejected", err)
+	}
+	if p.configureExecutionSlots(0) == nil {
+		t.Fatal("sealed short scope expanded")
+	}
+	seen := map[string]bool{}
+	for _, slot := range slots[9:33] {
+		key := slot.CaseID + "/" + slot.Arm
+		if slot.Kind != "control" || slot.Repetition != 1 || seen[key] {
+			t.Fatal("short prefix lost an independent case/arm")
+		}
+		seen[key] = true
+	}
+	if len(seen) != 24 || p.begin(32) != nil || p.end("failed", "controlled boundary transition; no provider") != nil || p.begin(33) == nil || p.slots[33].Started != nil {
+		t.Fatal("short boundary admitted repetition2 or omitted a first-repetition arm")
+	}
+	if p.export() != nil {
+		t.Fatal("short whole-denominator export failed")
+	}
+	raw, _ := os.ReadFile(filepath.Join(p.proof, "window-final.json"))
+	var window struct {
+		Slots          []experienceNativeSlot
+		ExecutionSlots int `json:"execution_slots"`
+	}
+	if json.Unmarshal(raw, &window) != nil || len(window.Slots) != 57 || window.ExecutionSlots != 33 || bytes.Count(raw, []byte(`"predeclared_short_smoke_omission"`)) != 24 {
+		t.Fatal("intentional omissions disappeared from full57 history")
+	}
+	for _, slot := range window.Slots[33:] {
+		if slot.Repetition != 2 || slot.Status != "not_executed" || slot.Started != nil || slot.Finished != nil {
+			t.Fatal("omitted repetition was relabeled as executed")
+		}
 	}
 }
 

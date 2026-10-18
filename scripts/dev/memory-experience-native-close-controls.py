@@ -51,6 +51,21 @@ class ClosureControls(unittest.TestCase):
         self.assertEqual(result['usage']['inclusive']['native_entries'], 0)
         self.assertEqual(result['usage']['new']['product_without_native_entry'], 1)
 
+    def test_short_scope_preserves_exact_omission_reason_and_full_denominator(self):
+        plan = close.read(self.proof/'plan/preseal.json')
+        plan['execution_slots'] = 33
+        self.put('plan/preseal.json', plan)
+        self.expected = hashlib.sha256((self.proof/'plan/preseal.json').read_bytes()).hexdigest()
+        slots = [{**x, 'status': 'completed' if x['sequence'] <= 33 else 'not_executed', 'blocker': '' if x['sequence'] <= 33 else 'predeclared_short_smoke_omission'} for x in self.slots]
+        self.put('actual/window-final.json', {'slots': slots, 'entries': []})
+        result = close.summarize(self.proof, self.expected)
+        projected = close.read(self.proof/'all-original-outcomes.json')
+        self.assertEqual(result['denominator'], 57)
+        self.assertEqual(result['execution_slots'], 33)
+        self.assertEqual(projected['intentional_omissions'], 24)
+        self.assertEqual(len(projected['slots']), 57)
+        self.assertTrue(all(x['status'] == 'not_executed' and x['blocker'] == 'predeclared_short_smoke_omission' for x in projected['slots'][33:]))
+
     def test_native_unknown_does_not_become_zero_usage(self):
         entry = {'operation_id': 'op-1', 'reservation_id': 'res-1', 'run_id': 'run-1', 'usage': None}
         self.put('actual/window-final.json', {'slots': [{**x, 'status': 'failed'} for x in self.slots], 'entries': [entry]})

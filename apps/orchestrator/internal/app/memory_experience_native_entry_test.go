@@ -81,6 +81,13 @@ func TestNativeExperiencePrepareWholeComparison(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	switch os.Getenv("BUTLER_EXPERIENCE_NATIVE_EXECUTION_SLOTS") {
+	case "", "57":
+	case "33":
+		seal.ExecutionSlots = 33
+	default:
+		t.Fatal("only full57 or prospectively shortened prefix33 may be prepared")
+	}
 	proof := os.Getenv("BUTLER_EXPERIENCE_NATIVE_PREPARED")
 	if !filepath.IsAbs(proof) {
 		t.Fatal("absolute prepared parent required")
@@ -258,6 +265,9 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err = p.configureExecutionSlots(seal.ExecutionSlots); err != nil {
+		t.Fatal(err)
+	}
 	// The complete denominator and abort handler precede persistent schema setup,
 	// credentials, provider construction, source work and all model requests.
 	defer func() {
@@ -281,7 +291,11 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 				complete = true
 			}
 		}
-		if err := p.writeNew("native-outcome.json", map[string]any{"native": true, "last_stage": phase, "all_mechanical_gates_passed": !t.Failed(), "cost_population_complete": complete, "release_qualified": false, "independent_quality_review_required": true, "history": history, "preseal_sha256": planSHA, "elapsed_millis": time.Since(started).Milliseconds()}); err != nil {
+		outcome := map[string]any{"native": true, "last_stage": phase, "all_mechanical_gates_passed": !t.Failed(), "cost_population_complete": complete, "release_qualified": false, "independent_quality_review_required": true, "history": history, "preseal_sha256": planSHA, "elapsed_millis": time.Since(started).Milliseconds()}
+		if seal.ExecutionSlots != 0 {
+			outcome["execution_slots"], outcome["intentional_omissions"] = seal.ExecutionSlots, len(seal.Schedule)-seal.ExecutionSlots
+		}
+		if err := p.writeNew("native-outcome.json", outcome); err != nil {
 			t.Error(err)
 		}
 	}()

@@ -92,6 +92,10 @@ func (c *experienceNativeCollector) collect() {
 	if c.provider.global == nil || c.databases.source == nil || c.provider.ModelProvider == nil || len(c.provider.slots) != 57 || c.policy.Task.ModelTurns != 12 || c.sourcePolicy.Task.ModelTurns != 13 || !c.deadline.After(time.Now()) || json.Unmarshal(c.corpus.Originals.RecipientSeeds, &c.seeds) != nil || len(c.seeds.Canaries) != 4 {
 		c.t.Fatal("complete predeclared source/notes/skill/control cohort required")
 	}
+	executionSlots, err := experienceNativeExecutionLimit(c.provider.executionSlots)
+	if err != nil {
+		c.t.Fatal(err)
+	}
 	for i := 0; i < 4; i++ {
 		index := i
 		if !c.t.Run(fmt.Sprintf("original_%d", i+1), func(t *testing.T) { c.original(t, index) }) {
@@ -117,7 +121,7 @@ func (c *experienceNativeCollector) collect() {
 	if err := c.databases.freeze(c.ctx); err != nil {
 		c.t.Fatal(err)
 	}
-	for i := 9; i < 57; i++ {
+	for i := 9; i < executionSlots; i++ {
 		index := i
 		// A failed current case is retained; its database and slot are never
 		// reused. Independent remaining cases keep their frozen denominator.

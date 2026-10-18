@@ -96,8 +96,14 @@ def summarize(proof, expected):
             status = read(end)['status']
         else:
             status = 'unknown_collector_terminated' if start.exists() else 'not_executed'
-        outcomes.append({'sequence': sequence, 'id': slot['id'], 'kind': slot['kind'], 'case_id': slot['case_id'], 'arm': slot['arm'], 'repetition': slot['repetition'], 'status': status})
-    write(proof/'all-original-outcomes.json', {'slots': outcomes, 'denominator': 57, 'original_final_window_present': window is not None, 'status_semantics': 'Collector stage status; task/run/effect outcomes and UNKNOWN/no-final originals remain in owning rows. Completed stages are not task-success counts.'})
+        row = {'sequence': sequence, 'id': slot['id'], 'kind': slot['kind'], 'case_id': slot['case_id'], 'arm': slot['arm'], 'repetition': slot['repetition'], 'status': status}
+        if plan.get('execution_slots', 0) == 33:
+            row['blocker'] = outcome['blocker'] if window is not None else read(end).get('blocker', '') if end.exists() else 'predeclared_short_smoke_omission' if sequence > 33 else 'window_closed_before_execution'
+        outcomes.append(row)
+    outcome_packet = {'slots': outcomes, 'denominator': 57, 'original_final_window_present': window is not None, 'status_semantics': 'Collector stage status; task/run/effect outcomes and UNKNOWN/no-final originals remain in owning rows. Completed stages are not task-success counts.'}
+    if plan.get('execution_slots', 0) == 33:
+        outcome_packet.update(execution_slots=33, intentional_omissions=24)
+    write(proof/'all-original-outcomes.json', outcome_packet)
     usage, carry, complete = None, None, False
     costs_path = actual/'unique-quoted-costs.json'
     if window is not None and costs_path.exists():
@@ -135,6 +141,8 @@ def summarize(proof, expected):
     if (actual/'domain-claim.json').exists():
         paths.append(actual/'domain-claim.json')
     packet = {'format': 'butler.experience.closed-owner-leaf.v1', 'owner': plan['owner'], 'day': plan['history']['day'], 'deadline': plan['deadline'], 'preseal_sha256': expected, 'previous_history_sha256': plan['history']['sha256'], 'denominator': 57, 'maximum_new_entries': 640, 'cost_population_complete': complete, 'inclusive_carry': carry, 'usage': usage, 'references': [reference(proof, path) for path in paths], 'release_qualified': False, 'independent_quality_review_required': True, 'invoice_cost': 'unknown', 'control_plane_handback_is_inference': False}
+    if plan.get('execution_slots', 0) == 33:
+        packet.update(execution_slots=33, intentional_omissions=24, review_scope='bounded one-pass smoke; second repetition not executed')
     write(proof/'closed-leaf-metadata.json', packet)
     return packet
 

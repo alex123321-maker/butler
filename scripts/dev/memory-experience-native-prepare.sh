@@ -52,6 +52,7 @@ runner=(docker run --rm --pull never --network none --user "$(id -u):$(id -g)" -
  -e BUTLER_EXTENSION_E2E_BINARY=/artifacts/extension-experience.test -e BUTLER_EXPERIENCE_HTTP_BINARY=/artifacts/http-experience.test
  -e BUTLER_EXPERIENCE_NATIVE_HISTORY=/proof/history/history.json -e BUTLER_EXPERIENCE_NATIVE_HISTORY_SHA256="$history_hash"
  -e BUTLER_EXPERIENCE_NATIVE_PREPARED=/proof -e BUTLER_EXPERIENCE_NATIVE_PREPARE=1
+ -e BUTLER_EXPERIENCE_NATIVE_EXECUTION_SLOTS="${BUTLER_EXPERIENCE_NATIVE_EXECUTION_SLOTS:-57}"
  golang:1.27.2-bookworm)
 "${runner[@]}" /artifacts/test2json -p github.com/butler/butler/apps/orchestrator/internal/app /artifacts/app.test -test.v=test2json -test.timeout=3m -test.run '^TestNativeExperiencePrepareWholeComparison$' > "$proof/offline-preparation.jsonl" 2> "$proof/offline-preparation.log"
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestNativeExperiencePrepareWholeComparison") and all(.[];.Action!="fail" and .Action!="skip")' "$proof/offline-preparation.jsonl" >/dev/null
