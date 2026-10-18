@@ -44,10 +44,11 @@ import (
 
 type capacityMixedProvider struct {
 	transport.ModelProvider
-	mu       sync.Mutex
-	Requests map[string]transport.StartRunRequest
-	Errors   map[string]string
-	States   map[string]string
+	mu        sync.Mutex
+	Requests  map[string]transport.StartRunRequest
+	Errors    map[string]string
+	States    map[string]string
+	EnteredNS map[string]int64
 }
 
 func (*capacityMixedProvider) Name() string                    { return "antigravity" }
@@ -89,6 +90,7 @@ func (p *capacityMixedProvider) StartRun(ctx context.Context, q transport.StartR
 	p.Requests[q.Context.RunID] = q
 	p.Errors[q.Context.RunID] = problem
 	p.States[q.Context.RunID] = state
+	p.EnteredNS[q.Context.RunID] = time.Now().UnixNano()
 	p.mu.Unlock()
 	if problem != "" {
 		return nil, errors.New(problem)
@@ -220,6 +222,17 @@ type capacityMixedSample struct {
 // Actual ordinary ownership, local IPC, Catalog, jobs and all ledgers are used;
 // provider responses and bulk vectors remain explicitly synthetic controls.
 func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
+	runMemoryCapacityCombined(t, false)
+}
+
+func TestMemoryCapacityPGSharedBufferColdIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_MEMORY_CAPACITY_COLD") != "1" {
+		t.Skip("explicit owned PostgreSQL cold-buffer slice required")
+	}
+	runMemoryCapacityCombined(t, true)
+}
+
+func runMemoryCapacityCombined(t *testing.T, cold bool) {
 	if os.Getenv("BUTLER_MEMORY_CAPACITY_MIXED") != "1" {
 		t.Skip("explicit combined capacity window required")
 	}
@@ -237,7 +250,10 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 			t.Error("cannot retain combined proof", name)
 		}
 	}
-	observation := map[string]any{"protocol": "mixed-v4", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
+	observation := map[string]any{"protocol": "mixed-v5", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
+	if cold {
+		observation["protocol"] = "shared-buffer-cold-v2"
+	}
 	manifest := catalog.NewFileManifest(filepath.Join(report, "anchor"))
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
@@ -268,7 +284,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	index.Backend = observed
 	index.Reader.Adapter.Backend = observed
 	reader := &capacityMixedReader{HybridReader: index.Reader}
-	p := &capacityMixedProvider{Requests: map[string]transport.StartRunRequest{}, Errors: map[string]string{}, States: map[string]string{}}
+	p := &capacityMixedProvider{Requests: map[string]transport.StartRunRequest{}, Errors: map[string]string{}, States: map[string]string{}, EnteredNS: map[string]int64{}}
 	inputs := durableinput.NewStore(pool)
 	repo := session.NewPostgresRepository(pool)
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
@@ -282,9 +298,15 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	workerCtx, cancelWorkers := context.WithCancel(ctx)
-	workersDone := make(chan struct{})
-	go func() { defer close(workersDone); _ = service.Run(workerCtx) }()
+	var cancelWorkers context.CancelFunc
+	var workersDone chan struct{}
+	startWorkers := func() {
+		workerCtx, cancel := context.WithCancel(ctx)
+		done := make(chan struct{})
+		cancelWorkers, workersDone = cancel, done
+		go func() { defer close(done); _ = service.Run(workerCtx) }()
+	}
+	startWorkers()
 	defer func() { cancelWorkers(); <-workersDone }()
 	defer func() {
 		retained, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -305,6 +327,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		observation["actual_start_requests"] = p.Requests
 		observation["provider_input_errors"] = p.Errors
 		observation["provider_current_working_states"] = p.States
+		observation["controlled_provider_entered_ns"] = p.EnteredNS
 		p.mu.Unlock()
 		write("combined-mixed.json", observation)
 	}()
@@ -440,6 +463,12 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		t.Fatal("initial actual index", did, err)
 	}
 	observation["initial_index"] = firstIndex
+	if cold {
+		cancelWorkers()
+		<-workersDone
+		observation["private_pg_restart"] = capacityMixedColdBarrier(t, ctx, pool, cat, report)
+		startWorkers()
+	}
 	measure := func(phase string, count, parallel int, started chan<- struct{}) []capacityMixedSample {
 		samples := make([]capacityMixedSample, count)
 		for i := range count {
@@ -465,7 +494,32 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	observation["phase"] = "process_first"
 	first := measure("first", 1, 1, nil)
 	warmup := measure("warmup", 20, 2, nil)
+	var matchedWarm []capacityMixedSample
+	if cold {
+		matchedWarm = measure("matched-warm", 1, 1, nil)
+	}
 	warm := measure("warm", 100, 2, nil)
+	if cold {
+		for phase, samples := range map[string][]capacityMixedSample{"first": first, "warmup": warmup, "matched-warm": matchedWarm, "warm": warm} {
+			values := make([]float64, len(samples))
+			for i, s := range samples {
+				values[i] = s.Millis
+				if s.Status != "completed" || s.Millis > 5000 {
+					t.Error("cold/warm query failed bounded completion", phase, i, s.Status, s.ErrorCode, s.ExecutionClass)
+				}
+			}
+			sort.Float64s(values)
+			observation[phase+"_p50_ms"] = values[(50*len(values)+99)/100-1]
+			p95 := values[(95*len(values)+99)/100-1]
+			observation[phase+"_p95_ms"] = p95
+			if phase == "warm" && p95 > 1500 {
+				t.Error("cold-slice warm100 p95 missed", p95)
+			}
+		}
+		observation["pg_counters_after_queries"] = capacityMixedPGCounters(t, ctx, pool)
+		observation["phase"] = "closed_cold"
+		return
+	}
 	backgrounds := []*capacityMixedBackground{}
 	backgroundDone := make(chan error, 2)
 	backgroundRequests := []transport.StartRunRequest{}
@@ -610,7 +664,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: "mixed-control", Handlers: map[string]jobs.ModelHandler{selected: handlers[selected]}}
 		for time.Since(recoveryBegin) < 60*time.Second {
 			did, err := worker.ProcessOne(ctx)
-			if i == 1 && did && errors.Is(err, jobs.ErrClaim) {
+			if i == 1 && did && (errors.Is(err, jobs.ErrClaim) || errors.Is(err, catalog.ErrDenied) || errors.Is(err, catalog.ErrStale)) {
 				break
 			}
 			if err != nil && !errors.Is(err, jobs.ErrWaiting) {
@@ -743,6 +797,14 @@ func capacityMixedErrorTypes(err error) []string {
 			return
 		}
 		out = append(out, fmt.Sprintf("%T", e))
+		if fmt.Sprintf("%T", e) == "*orchestrator.ownedCancellation" {
+			// This private concrete Core type exposes only one fixed reason.
+			// Never read arbitrary provider/storage Error strings here.
+			switch reason := e.Error(); reason {
+			case "execution_authority_check_failed", "execution_ownership_changed", "execution_lease_renewal_failed":
+				out = append(out, "core:"+reason)
+			}
+		}
 		switch u := e.(type) {
 		case interface{ Unwrap() []error }:
 			for _, child := range u.Unwrap() {
@@ -760,6 +822,54 @@ func capacityMixedErrorTypes(err error) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+func capacityMixedPGCounters(t *testing.T, ctx context.Context, pool *pgxpool.Pool) json.RawMessage {
+	t.Helper()
+	var raw json.RawMessage
+	if err := pool.QueryRow(ctx, `SELECT jsonb_build_object('observed_at',clock_timestamp(),'blks_read',blks_read,'blks_hit',blks_hit,'temp_bytes',temp_bytes,'deadlocks',deadlocks) FROM pg_stat_database WHERE datname=current_database()`).Scan(&raw); err != nil {
+		t.Fatal("PG cache counters unavailable", err)
+	}
+	return raw
+}
+
+func capacityMixedColdBarrier(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, report string) map[string]any {
+	t.Helper()
+	var database, schema, budgetBefore string
+	var before time.Time
+	if err := pool.QueryRow(ctx, `SELECT current_database(),current_schema(),pg_postmaster_start_time(),(SELECT md5(COALESCE(jsonb_agg(to_jsonb(r) ORDER BY reservation_id)::text,'')) FROM execution_budget_reservations r)`).Scan(&database, &schema, &before, &budgetBefore); err != nil || database != "memory_mixed_test" || !strings.HasPrefix(schema, "memory_") {
+		t.Fatal("owned cold barrier identity unavailable", err)
+	}
+	ready := map[string]any{"database": database, "schema": schema, "postmaster_started_at": before, "stage": "after_actual_initial_local_index", "budget_sha_md5": budgetBefore}
+	raw, _ := json.Marshal(ready)
+	if err := os.WriteFile(filepath.Join(report, "cold-ready.tmp"), raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(report, "cold-ready.tmp"), filepath.Join(report, "cold-ready.json")); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("waiting for exact owned PostgreSQL shared-buffer restart")
+	until := time.Now().Add(90 * time.Second)
+	for {
+		if _, err := os.Stat(filepath.Join(report, "cold-resumed.json")); err == nil {
+			break
+		}
+		if time.Now().After(until) || ctx.Err() != nil {
+			t.Fatal("owned PostgreSQL restart acknowledgement unavailable")
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	pool.Reset()
+	var after time.Time
+	var actualDB, actualSchema, budgetAfter string
+	var chunks int
+	if err := pool.QueryRow(ctx, `SELECT current_database(),current_schema(),pg_postmaster_start_time(),(SELECT count(*) FROM memory_chunks WHERE scope_type='user' AND scope_id='mixed-owner' AND content LIKE 'Synthetic seed91 mixed record%'),(SELECT md5(COALESCE(jsonb_agg(to_jsonb(r) ORDER BY reservation_id)::text,'')) FROM execution_budget_reservations r)`).Scan(&actualDB, &actualSchema, &after, &chunks, &budgetAfter); err != nil || actualDB != database || actualSchema != schema || !after.After(before) || chunks != 10000 || budgetBefore != budgetAfter {
+		t.Fatal("private restart changed fixture or failed to restart postmaster", err)
+	}
+	if err := cat.CheckRestore(ctx); err != nil {
+		t.Fatal("current Catalog restore proof denied after private restart", err)
+	}
+	return map[string]any{"database": database, "schema": schema, "before": before, "after": after, "same_10000_chunks": true, "same_reservations": true, "catalog_current": true, "os_cache": "uncontrolled", "model_cache": "already_used_by_initial_IPC", "pg_counters_before_first": capacityMixedPGCounters(t, ctx, pool)}
 }
 
 func capacityMixedAccess(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, ref catalog.SourceRef) error {
