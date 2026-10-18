@@ -75,3 +75,29 @@ fde1f7e8 copies the already-validated flat evidence directory without following
 documentary paths;253419b1 adds512 files/32MiB each/128MiB total limits. Source-v3
 also includes the current root Doctor improvement. No original evidence bytes,
 typed references, model corpus or runtime memory policies were rewritten.
+
+The approved single execution is CLOSED: all12 originals completed,30 actual
+native entries all have known usage (full-token lower bound216246),30 product
+observations are present with0NULL and18 tool calls were admitted. Exact opaque
+CAS return, active-work check, actual main paid discovery200 and fresh encrypted
+snapshot all passed; collector returned0 and the common auth flock was released.
+
+The [complete safe request/final packet](fixtures/issue88/native-v8-review.json)
+has SHA256 `031580a368b12ddd081a54a42ffa2f105613a68c6fee6404c05497584f393cfe`;
+[exact source/citation material](fixtures/issue88/native-v8-source-citation-material.json)
+has SHA256 `3e4cac2562ec1bf708dbf676d59b7cd06027091e8633fa46eb618d5fad5531bc`.
+Both preserve the whole12 denominator and omit reasoning, credential material,
+transport internals and arbitrary raw errors. Full original ledger is retained
+at the remote report with SHA256
+`e0a78806ccbe5220ee5123ddec74ec24880e97278f814b52967cc077f07a5000`;
+original outcomes SHA256 is
+`acc4dfb7d736d1b1c2f5942df84b6d2b4b6908b84112417efa2cd0b96651a445`.
+
+The [closed accounting leaf](fixtures/issue88/native-v8-closed-leaf.json) records
+inclusive175 owner/day quotes,174 known native usages/1 earlier UNKNOWN,
+known full-token lower bound1321800. The earlier145 is contained once. Its
+vector is tokens189235200, active66540000ms, provider input1468006400bytes,
+external117 and egress490733568bytes, with0children/0cost-micros quotes. Monetary
+invoice cost remains unobserved. Historical161, all old failures/NULLs and the
+separate adaptive226 remain unchanged. The producer records no semantic verdict;
+independent whole12 scoring is required before qualification or activation.
