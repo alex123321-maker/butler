@@ -71,6 +71,14 @@ def inventory(day):
                 window["native_temporal"] = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT coalesce(jsonb_agg(jsonb_build_object('entry_id',id,'run_id',run_id,'operation_id',operation_id,'reservation_id',reservation_id,'usage',observation_json->'usage','created_at',created_at,'finished_at',finished_at) ORDER BY id),'[]') FROM temporal_native_entries")
             if present["consolidation"]:
                 window["native_consolidation"] = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT coalesce(jsonb_agg(jsonb_build_object('entry_id',entry_id,'run_id',run_id,'operation_id',operation_id,'reservation_id',observation->'ReservationID','usage',observation->'Usage','created_at',created_at,'finished_at',finished_at) ORDER BY entry_id),'[]') FROM consolidation_screen_calls")
+            window["native_window_states"] = {}
+            for kind, table in (("temporal", "temporal_native_window"), ("consolidation", "consolidation_screen_window")):
+                if present[kind]:
+                    state = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT jsonb_build_object('closed',closed) FROM " + table + " WHERE singleton")
+                    window["native_window_states"][kind] = state
+                    entries = window["native_"+kind]
+                    if any(utc_day(entry["created_at"]) == day for entry in entries) and state["closed"] is not True:
+                        raise SystemExit("current native predecessor must be closed before freeze")
             windows.append(window)
         result["databases"].append({"container": container, "database": database, "port": port, "windows": windows})
     return result
@@ -92,6 +100,19 @@ def retained_original(name, expected):
     return result.stdout
 
 
+def prospective_store():
+    name = "butler-issue87-native-v5-pg"
+    result = subprocess.run(["docker", "container", "inspect", "--format", "{{.Id}}", name], capture_output=True, text=True, timeout=40)
+    state = {"container": name, "database": "memory_adaptive_test", "schema": "adaptive_native_v5", "port": 5432, "present": result.returncode == 0}
+    if state["present"]:
+        empty = sql(name, "memory_adaptive_test", 5432, "SELECT jsonb_build_object('application_tables',(SELECT count(*) FROM pg_tables WHERE schemaname NOT IN('pg_catalog','information_schema')),'day',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD'))")
+        if empty["application_tables"] != 0:
+            raise SystemExit("fresh seventh store is not empty; new reviewed history required")
+        state["empty_application_catalog"] = True
+        state["day"] = empty["day"]
+    return state
+
+
 def main():
     mode, base_arg = sys.argv[1:3]
     base = pathlib.Path(base_arg).resolve()
@@ -111,11 +132,17 @@ def main():
                 raise SystemExit("historical original changed after freeze")
         if manifest["day"] != day or hashlib.sha256(saved).hexdigest() != manifest["inventory_sha256"] or canonical(inventory(day)) != saved:
             raise SystemExit("ledger population or UTC day changed; new independent freeze required")
-        print(json.dumps({"read_only": True, "current_day_unchanged": True, "six_databases": 6, "day": day, "auth_or_inference": False}))
+        future = prospective_store()
+        if future["present"] and future["day"] != day:
+            raise SystemExit("fresh seventh-store UTC day differs")
+        print(json.dumps({"read_only": True, "current_day_unchanged": True, "six_databases": 6, "prospective_seventh_store": future, "day": day, "auth_or_inference": False}))
         raise SystemExit(0)
 
     proof.mkdir(parents=True, mode=0o700)
     data = inventory(day)
+    future = prospective_store()
+    if future["present"]:
+        raise SystemExit("prospective seventh store already exists; include it in new reviewed history")
     raw = canonical(data)
     reservations = [r for database in data["databases"] for window in database["windows"] for r in window["reservations"] if r["owner_id"] == OWNER and utc_day(r["created_at"]) == day]
     scopes = [s for database in data["databases"] for window in database["windows"] for s in window["scopes"] if s["owner_id"] == OWNER and s["kind"] == "owner_day" and s["subject_id"] == day]
@@ -127,7 +154,7 @@ def main():
     exclusive(proof / "historical-v4-full-ledger.json", old_raw)
     exclusive(proof / "historical-v4-native-calls.json", native_raw)
     deadline = datetime.datetime.combine(now.date()+datetime.timedelta(days=1), datetime.time(), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "historical_native_sha256": OLD_NATIVE_SHA, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. Native observer usage is separate from product input/output; original v4 trace remains unchanged. Inclusive prior scope vectors are never added again as fresh calls. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission."}
+    manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "historical_native_sha256": OLD_NATIVE_SHA, "prospective_seventh_store": future, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. Native observer usage is separate from product input/output; original v4 trace remains unchanged. Inclusive prior scope vectors are never added again as fresh calls. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission. After this run all future histories must include the seventh retained store explicitly."}
     raw = canonical(manifest)
     exclusive(proof / "history.json", raw)
     print(json.dumps({"read_only": True, "history_sha256": hashlib.sha256(raw).hexdigest(), "six_databases": 6, "day": day, "auth_or_inference": False}))

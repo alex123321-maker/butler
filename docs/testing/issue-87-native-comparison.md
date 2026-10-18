@@ -135,3 +135,40 @@ original-start receipts distinguish an interrupted started original from an
 unexecuted slot. All original replies and actual Broker evidence remain available
 for independent semantic/entailment review. Preparation and controlled passes are
 not native quality/cost acceptance; the closed v4 NO_GO remains unchanged.
+
+### V5 controlled evidence
+
+Source `12bcda40d6d1c1998471cd2e68d5c2a0ef602562` passed70 Go tests/subtests,
+zero failures and zero skips, under race with actual isolated PostgreSQL and
+production Broker, plus vet. Nine separate synthetic helper controls passed:
+UTC `+07/-07` boundaries, bounded process timeout, unused precollector return,
+started-without-auth denial, newest isolated rotation, exact original-row CAS,
+matching private clone, actual Go JSON/digest full96 export and
+partial/duplicate/forged-capture rejection. Every helper Docker call was mocked;
+no actual main auth, lock or provider request was used by these controls.
+
+Evidence root:
+`/srv/storage/butler/agents/issue87-native-v5-20261018/reports/mechanics-v3`.
+PostgreSQL had1 CPU/1 GiB; client1 CPU/2 GiB; private subnet10.237.202.0/24.
+The controlled network/containers were removed; retained data stays on storage.
+
+| Artifact | SHA256 |
+| --- | --- |
+| source.sha256 |3056d91f1dd87346cfbdd289876c466769a1c1407852c0cc5b7d780a1bf18342|
+| mechanics.jsonl |e267aff97db22f92781c38045245717f8c752d680f39e40d635acd5b8ed51a70|
+| helper-controls.log |b8c3650c99e71d5db289d1082a07d4b6c6f5f827bb44f8811ba55088faf0b3f6|
+| vet.log |e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855|
+
+The first retained v5 mechanics window passed68 Go tests. The second passed its
+Go/race cohort but the new helper controls exposed fixture-directory ownership
+and missing synthetic parent setup errors. Those failed setup reports remain
+retained. V3 corrected only the synthetic fixture setup; no actual service token
+permissions changed. The local token was rechecked at UID10001/mode600.
+
+The final history helper also records closed temporal/consolidation predecessor
+windows and their separate complete native usage, and proves that the future
+seventh store is absent before preparation. Execute requires a fresh empty
+application catalog before auth. After any actual v5 run, future inventories
+must include `butler-issue87-native-v5-pg`, database `memory_adaptive_test`,
+schema `adaptive_native_v5`, port5432, data under this isolated root's
+`postgres/`. The original six-store inventory alone is insufficient thereafter.

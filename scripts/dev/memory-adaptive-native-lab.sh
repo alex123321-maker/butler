@@ -76,6 +76,7 @@ cleanup(){
 }
 trap 'cleanup $?' EXIT
 docker network create --internal --subnet 10.237.203.0/24 "$network" > "$proof/network-id"
+test ! -e "$base/postgres"
 mkdir -p "$base/postgres"
 docker run --pull never -d --name "$pg" --network "$network" --ip 10.237.203.2 --cpus 1 --memory 1g --pids-limit 128 \
  -v "$base/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_adaptive_test \
