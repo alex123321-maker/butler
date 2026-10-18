@@ -4,9 +4,19 @@ This is controlled component/composition evidence, not completed issue77/92
 acceptance or a production activation. The primary laba deployment remains
 unchanged. Synthetic data is not human-reviewed real user workload.
 
-All below ran on `ssh laba` with cached Go1.27.2/modules, actual isolated
+The [staged rollout contract](issue-92-staged-memory-rollout.md) defines separate
+entry/exit criteria, owner review, effective flags and compatible rollback. It
+does not claim that any pending stage has run or activate the primary deployment.
+
+The controlled rows below ran on `ssh laba` with cached Go1.27.2/modules, actual isolated
 PostgreSQL and race detection. No cloud credentials or inference were mounted.
 The original versioned windows and their failures remain retained separately.
+
+All coherent foreground receipts before v10 have an inherited-owner fixture
+limitation: they establish the recorded physical mechanics, not ordinary-worker
+authorization or final publication. Neutral-worker v10 failed after19 checkpoints.
+The current publication/privacy fixes still require a fresh full lifecycle and
+combined composition pass; the earlier table rows do not qualify this candidate.
 
 | Source / window | Observation | Limits |
 | --- | --- | --- |
@@ -86,6 +96,13 @@ nonacceptance of an old source. Actual model-visible context corroborates the
 other disputed timestamp. V5 remains NO_GO; the separate general revision3
 clarification changes no old answers, charges, input schema or source limits.
 
+The subsequent [v6 whole-window review](issue-88-native-v6-independent-review.md)
+retains7 completed/1 failed/4 unexecuted originals. Its source-currentness timeout
+is localized to the original run-source SQL, with23 known native totals and1
+unknown. Seven target conclusions are supported, with separate timestamp/expiry
+terminology limits; no complete quality or availability gate passed. Exact main
+auth handback and paid-discovery200 passed without changing the application.
+
 The [first89 native cohort](issue-89-native-v1.md) is also NO_GO: one background
 grouping completed, the first baseline foreground returned capability_mismatch,
 and seven slots remained unexecuted. Both native entries have known full usage
@@ -94,7 +111,8 @@ instruction and content-free denial reason passed98 controlled checks with no
 failures/skips, race and vet. Model compliance still requires a new full cohort.
 
 New89 and90 screens, a fresh88 semantic screen, independent effect review, complete usage and
-declared capacity remain separate. Issue87's incomplete native NO_GO is retained,
+declared capacity remain separate. Issue87's earlier incomplete window and
+the later complete v5 diagnostic rejection remain retained,
 with adaptive retrieval code-unqualified and disabled. Closed native windows are
 not selectively rerun or reported as passes. A larger finite capacity is a new
 prospective complete cohort, never a refund or rewrite of previous spending.
@@ -141,6 +159,26 @@ acceptance or the fresh complete composition.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
+
+The subsequent current candidate integrates the captured-publication and
+witness-privacy fixes. Their separate actual-PG/race/vet receipts are recorded in
+[the experience report](issue-90-episodic-experience.md); they do not replace the
+failed neutral-worker v10 window. The next complete controlled lifecycle must
+pass all24 checkpoints, retain its actual UNKNOWN action identity, and include
+the four final-publication/lease controls. The combined driver now also requires
+these controls, witness-only erasure, the native-capture immutability regression
+and the v6 carry/neutral-worker controls. Fresh combined and lifecycle receipts
+remain required after aligning the experience helper with the production active
+source wrapper.
+
+The [complete adaptive v5 review](issue-87-native-v5-independent-review.md) is now
+closed:95 completed originals,1 failed transport original and0 unexecuted slots.
+All96 answers/outcomes were independently reviewed. Adaptive retrieval remains
+rejected and disabled:12/32 complete answers versus27/32 for static retrieval,
+with31/32 adaptive plans selecting no retrieval. All98 native entries,97 known
+full totals and1 unknown remain charged. The separately proven collector alias
+defect invalidates all96 original capture hashes without changing the retained
+visible inputs or answers. Its fix cannot retroactively repair that cohort.
 
 The first ancestry-facts runner omitted the compiled guarded Broker process;
 17events passed and2mandatory integration cases skipped. That window was

@@ -131,6 +131,10 @@ messages/used sources, plus the actual owner-control message, remain the complet
 copy-bearing privacy parents. Witness metadata/access, current task authority,
 original input links and exact control/final/effect/tool rows remain separate
 release requirements. Deleting or withdrawing the selected witness denies reuse.
+Its metadata reference is also an explicit privacy edge: deletion/revocation
+recursively erases the reconciled observation, accepted note/episode and further
+derived or cached copies. This edge never grants body access to the stale
+witness. Independent primary parents remain separately owned and readable.
 
 Original RunID/revisions, UNKNOWN runtime action, failures, missing final/report
 and unknown owner verification stay unchanged. The supplement names the distinct
@@ -208,3 +212,16 @@ after erasure. A stale copied observation must not prevent subsequent owner
 deletion or replay of a later independent anchor. Any populated experience
 provenance refuses downgrade: a failed first deletion can leave an external
 anchor requiring replay without a committed SQL deletion row.
+
+An installed experience store makes the active source verifier a compound owning
+operation: base Catalog proof, current Broker contract lookup outside SQL locks,
+then a fresh owning Catalog/experience proof. This adapter explicitly declares
+the existing trusted two-second maximum for the whole operation. It preserves
+invalid inherited bounds for rejection; absent the experience store, the base
+bound follows the foreground source guard's default2s (or its explicit inherited
+bound). Background checks and the250ms observation interval are unchanged. Parent deadlines,
+cancellation and Stop still clamp the check. Final/tool/batch DATA stays held
+until the fresh proof succeeds; expiry, privacy withdrawal, timeout or current
+authority loss denies release and cancels the provider. Existing usage evidence
+survives a denied proposal; there is no extra provider request, replay or refund.
+The two-second limit is a verification ceiling, not a measured latency SLO.

@@ -1010,7 +1010,19 @@ is still omitted. Source provenance and currentness checks remain mandatory.
 Standalone ordinary run source observations select no additional roots and bind
 no new data. The token-only current authority/source/temporal proof retains its
 row locks until explicit bounded rollback; there is no observer mutation to
-commit. The existing200ms proof deadline and full pre-HTTP/publication owning
-transactions remain unchanged. Trusted compound owner/auxiliary-checker contexts
+commit. The foreground provider source guard allows at most two seconds for a
+complete proof; trusted explicit bounds may retain200ms..2s. Parent deadlines
+and cancellation clamp it. Full pre-HTTP/publication owning transactions remain
+mandatory. Trusted compound owner/auxiliary-checker contexts
 retain their existing commit semantics. Optional fixed phase/pool diagnostics
 must omit source text, SQL parameters, raw errors and credential material.
+
+The active experience adapter additionally verifies current Broker contracts and
+fresh owning applicability after that standalone Catalog proof. When its store
+is installed it declares the existing trusted compound2s ceiling; without that
+store it preserves the default2s or explicit inherited bound. Invalid inherited bounds
+remain invalid. All final/tool DATA is held through the fresh proof, with the
+parent deadline, Stop and cancellation retained. No Broker RPC runs under SQL
+locks. Background supervisors retain their separate200ms proof deadline; the
+foreground250ms observation interval is unchanged. This
+does not establish a latency SLO. See the episodic experience contract.

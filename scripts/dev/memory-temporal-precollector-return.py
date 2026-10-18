@@ -53,24 +53,24 @@ if not re.fullmatch(r"/srv/storage/butler/agents/issue88-[A-Za-z0-9_-]+", str(ba
 proof, private = base / "reports" / label, base / "private" / label
 if any((proof / name).exists() for name in ("scheduled-before-setup.json", "scheduled-originals.json", "setup-outcome.json", "full-ledger.json")) or list(proof.glob("entry-*.json")) or (private / "auth-return.value").exists():
     raise SystemExit("collector may have begun; opaque fallback denied")
-catalog = sql("SELECT jsonb_build_object('schema_present',to_regnamespace('memory_temporal_native_v5') IS NOT NULL,'window_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
+catalog = sql("SELECT jsonb_build_object('schema_present',to_regnamespace('memory_temporal_native_v6') IS NOT NULL,'window_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
 if catalog["schema_present"]:
     raise SystemExit("native schema exists; opaque fallback denied")
-window_count = sql("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v5'") if catalog["window_table_present"] else 0
+window_count = sql("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v6'") if catalog["window_table_present"] else 0
 if window_count != 0:
     raise SystemExit("native one-use window consumed; opaque fallback denied")
 history = proof / "history" / "history.json"
-script = pathlib.Path(__file__).resolve().parent / "memory-temporal-history.py"
+script = pathlib.Path(__file__).resolve().parent / "memory-temporal-successor-history.py"
 current = subprocess.run([sys.executable, str(script), "check-current", str(history), hashlib.sha256(history.read_bytes()).hexdigest()], capture_output=True, timeout=180)
 if current.returncode or json.loads(current.stdout).get("current_day_unchanged") is not True:
-    raise SystemExit("six-database attempt population changed; opaque fallback denied")
+    raise SystemExit("seven-database attempt population changed; opaque fallback denied")
 # The collector creates its durable schema before reading the opaque clone.
 # Absence plus unchanged complete current-day inventory proves no decrypt,
 # provider setup, quote, native entry or new attempt could have happened.
 material = read_private(private / "auth-import.value")
 if material != read_private(private / "expected-main.value"):
     raise SystemExit("unused import differs from exact original clone")
-exclusive(proof / "pre-collector-return-proof.json", json.dumps({"collector_started": False, "native_entries": 0, "native_schema_present": False, "one_use_window_receipts": 0, "six_database_current_day_unchanged": True, "opaque_import_never_used_by_collector": True, "new_native_authority": False}).encode())
+exclusive(proof / "pre-collector-return-proof.json", json.dumps({"collector_started": False, "native_entries": 0, "native_schema_present": False, "one_use_window_receipts": 0, "seven_database_current_day_unchanged": True, "opaque_import_never_used_by_collector": True, "new_native_authority": False}).encode())
 exclusive(private / "auth-return.value", material)
 exclusive(proof / "all-original-outcomes.json", (proof / "scheduled-before-auth.json").read_bytes())
 print(json.dumps({"proven_pre_collector_zero_entries": True, "opaque_return_ready": True, "raw_material_printed": False}))

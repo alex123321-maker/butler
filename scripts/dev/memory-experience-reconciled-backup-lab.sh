@@ -4,6 +4,8 @@
 set -euo pipefail
 base=${1:?isolated issue90 root}
 label=${2:?fresh evidence label}
+delete_kind=${3:-original}
+[[ "$delete_kind" == original || "$delete_kind" == witness ]] || exit 2
 [[ "$base" =~ ^/srv/storage/butler/agents/issue90-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current")
 [[ "$src" == "$base/snapshots/"* ]] || exit 2
@@ -43,6 +45,7 @@ run_phase(){
  local phase=$1 database=$2
  "${runner[@]}" \
   -e BUTLER_TEST_EXPERIENCE_RECONCILED_PHASE="$phase" \
+  -e BUTLER_TEST_EXPERIENCE_RECONCILED_DELETE_KIND="$delete_kind" \
   -e BUTLER_TEST_EXPERIENCE_RECONCILED_POSTGRES_URL="postgres://butler@postgres:5432/$database?sslmode=disable" \
   -e BUTLER_TEST_EXPERIENCE_RECONCILED_ANCHOR=/proof/deletion-anchor \
   -e BUTLER_TEST_EXPERIENCE_RECONCILED_RECEIPT=/proof/receipt.json \

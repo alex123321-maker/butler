@@ -169,3 +169,20 @@ and retain their independent owner/feature authorization. Deterministic expiry
 filtering of accepted profile/episode context survives disabling the temporal
 feature or changing the provider. The feature gate controls new temporal
 consumers and context annotations; it cannot revive an expired exception.
+
+## Foreground verification time budget
+
+The default provider source guard permits a complete current proof to take up to
+2s, including standalone Catalog verification and a disabled/nil experience
+adapter. Explicit trusted bounds in200ms..2s remain valid. This is an availability
+ceiling, not a temporal read permission or a latency SLO. The earlier native-v6
+cohort remains closed with its original200ms timeout and incomplete outcome.
+A successor must freeze this new source and execute every original afresh.
+
+The250ms observer interval, parent cancellation/deadlines, background200ms proof
+budget, ownership authority budget and provider inference limits are independent.
+Final, tool and tool-batch DATA remains held until the proof succeeds; current
+privacy, temporal, task and lease predicates are evaluated after waits. A timeout
+or revoked proof denies release and cancels inference while retaining known usage
+and NULL unknown usage. No cached permission, additional provider turn, retry or
+refund follows from the larger check ceiling.

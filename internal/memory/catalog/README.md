@@ -175,6 +175,12 @@ primary privacy graph. Source release locks original and lookup tools, input
 heads and exact control/run/final/effect metadata, including ancestors. The
 owning seal takes that complete union before checking parent access. These are
 data/currentness fences and confer no execution or generic blocked-job authority.
+The witness reference is also a metadata-only privacy edge. Delete/revoke and
+latest-anchor restore follow ordinary dependencies and the reconciliation edge
+recursively, physically erasing all dependent source/object/claim/cached copies
+without turning a stale witness into a readable parent or deleting independent
+primary ancestors.
+
 For experience-bearing final publication the applicability supplement also calls the body-free Catalog
 `CheckCapturedRunGrantsTx` primitive. The exact captured graph must include every
 ordinary ancestor, including lessons used through derived presentations or

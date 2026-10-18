@@ -377,6 +377,21 @@ func experienceOriginalOwnerResumeRead(t *testing.T, scenario string) {
 		experienceReconciledBackupSeed(t, ctx, r, cat, recipient, anchor, noteServer.URL, sealToken, currentSource, sealed, first.Result.RunID, second.Result.RunID, target.ActionID)
 		return
 	}
+	if strings.HasPrefix(scenario, "privacy_witness_") {
+		p := experienceReconciledBackupReceipt{Witness: sealed, Snapshot: screenSourceRef(currentSource), OriginalRun: first.Result.RunID, ReadRun: second.Result.RunID, TargetAction: target.ActionID}
+		experienceReconciledPrivacyCopies(t, ctx, r, recipient, anchor, noteServer.URL, sealToken, &p)
+		p.AccountingHash, p.MetadataHash = experienceReconciledBackupHashes(t, ctx, pool)
+		action := strings.TrimPrefix(scenario, "privacy_witness_")
+		if _, err := cat.Delete(owner, sealed.ID, action, sealed.Revision); err != nil {
+			t.Fatal("witness-only privacy operation", err)
+		}
+		experienceAssertReconciledCopiesErased(t, ctx, cat, p, false)
+		accounting, metadata := experienceReconciledBackupHashes(t, ctx, pool)
+		if accounting != p.AccountingHash || metadata != p.MetadataHash {
+			t.Fatal("witness-only privacy action changed original/reconciliation evidence or spending")
+		}
+		return
+	}
 	if strings.HasPrefix(scenario, "publication_") {
 		p := experienceReconciledBackupReceipt{Witness: sealed, Snapshot: screenSourceRef(currentSource), OriginalRun: first.Result.RunID, ReadRun: second.Result.RunID, TargetAction: target.ActionID}
 		experienceReconciledPrivacyCopies(t, ctx, r, recipient, anchor, noteServer.URL, sealToken, &p, strings.TrimPrefix(scenario, "publication_"))

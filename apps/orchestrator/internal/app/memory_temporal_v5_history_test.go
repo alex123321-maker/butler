@@ -60,11 +60,12 @@ type temporalV5CurrentUsage struct {
 }
 
 type temporalV5History struct {
-	Hash       string
-	Manifest   temporalV5HistoryManifest
-	Historical *consolidationScreenHistory
-	Carry      budget.Units
-	Usage      temporalV5CurrentUsage
+	Hash        string
+	Manifest    temporalV5HistoryManifest
+	Historical  *consolidationScreenHistory
+	Carry       budget.Units
+	Usage       temporalV5CurrentUsage
+	SuccessorV6 *temporalV6History `json:"successor_v6,omitempty"`
 }
 
 func temporalCanonical(raw []byte) ([]byte, error) {
@@ -279,6 +280,14 @@ func loadTemporalV5History(path, expectedHash string) (*temporalV5History, error
 	if err != nil || len(expectedHash) != 64 || experienceDigest(string(raw)) != expectedHash {
 		return nil, errors.New("temporal v5 history hash differs")
 	}
+	var envelope struct{ Format string }
+	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.temporal.native-history.v2" {
+		v6, err := loadTemporalV6History(path, expectedHash)
+		if err != nil {
+			return nil, err
+		}
+		return &temporalV5History{Hash: v6.Hash, Manifest: temporalV5HistoryManifest{Day: v6.Manifest.Day, Deadline: v6.Manifest.Deadline}, Historical: v6.Previous, Carry: v6.Carry, Usage: consolidationV2AddUsage(v6.Previous.Successor.Current89And88, v6.Usage89), SuccessorV6: v6}, nil
+	}
 	h := &temporalV5History{Hash: expectedHash}
 	if json.Unmarshal(raw, &h.Manifest) != nil || h.Manifest.Format != "butler.temporal.native-history.v1" || h.Manifest.Owner != temporalNativeOwner {
 		return nil, errors.New("temporal v5 history envelope differs")
@@ -340,6 +349,14 @@ func temporalCarryV5History(ctx context.Context, pool *pgxpool.Pool, proof strin
 }
 
 func temporalApplyV5History(ctx context.Context, pool *pgxpool.Pool, proof string, h *temporalV5History) (budget.Units, error) {
+	prefix := "issue88-v5-current-day-carry:"
+	if h != nil && h.SuccessorV6 != nil {
+		prefix = "issue88-v6-current-day-carry:"
+	}
+	return temporalApplyHistory(ctx, pool, proof, h, prefix)
+}
+
+func temporalApplyHistory(ctx context.Context, pool *pgxpool.Pool, proof string, h *temporalV5History, prefix string) (budget.Units, error) {
 	if h == nil || len(h.Hash) != 64 {
 		return budget.Units{}, errors.New("validated current-day history required")
 	}
@@ -373,7 +390,7 @@ func temporalApplyV5History(ctx context.Context, pool *pgxpool.Pool, proof strin
 	if scope.Used != (budget.Units{}) {
 		return budget.Units{}, errors.New("successor owner/day scope already charged")
 	}
-	_, fresh, err := ledger.ReserveTx(ctx, tx, budget.Request{OwnerID: temporalNativeOwner, OperationID: "issue88-v5-current-day-carry:" + h.Hash, ScopeIDs: []string{scope.ID}, Charge: h.Carry, CostKnown: true})
+	_, fresh, err := ledger.ReserveTx(ctx, tx, budget.Request{OwnerID: temporalNativeOwner, OperationID: prefix + h.Hash, ScopeIDs: []string{scope.ID}, Charge: h.Carry, CostKnown: true})
 	if err != nil || !fresh {
 		return budget.Units{}, errors.New("current-day carry already consumed or unavailable")
 	}

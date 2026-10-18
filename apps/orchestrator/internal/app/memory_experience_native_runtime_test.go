@@ -198,13 +198,23 @@ func experienceNativeChild(t *testing.T, reservations *experienceNativePortReser
 	return stop
 }
 
-type experienceNativeToolCatalog struct{ client *tools.BrokerClient }
+type experienceNativeToolCatalog struct {
+	client *tools.BrokerClient
+	timing *experienceSourceTimings
+}
 
 func (c *experienceNativeToolCatalog) ListToolsForRun(ctx context.Context, run string) ([]*toolbrokerv1.ToolContract, error) {
 	if c.client == nil {
 		return nil, fmt.Errorf("current actual Broker not ready")
 	}
-	return c.client.ListToolsForRun(ctx, run)
+	start := time.Now()
+	contracts, err := c.client.ListToolsForRun(ctx, run)
+	phase := "other_tools_rpc"
+	if checked, _ := ctx.Value(experienceSourceTimingKey{}).(bool); checked {
+		phase = "source_tools_rpc"
+	}
+	c.timing.record(ctx, phase, start, err)
+	return contracts, err
 }
 
 type experienceNativeRuntime struct {
@@ -230,6 +240,7 @@ type experienceNativeRuntime struct {
 	environment string
 	expires     time.Time
 	addresses   experienceNativeAddresses
+	timing      *experienceSourceTimings
 	stops       []func()
 	reconcile   func(context.Context, string, string, string) (actionauth.RunEffect, error)
 }
@@ -257,12 +268,13 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	ctx := context.Background()
 	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires, addresses: addresses}
 	r.goals = goal.New(pool, r.tasks, nil)
+	r.timing = newExperienceSourceTimings(t, r, directory)
 	r.budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	leasing := session.NewPostgresLeaseManager(pool)
 	approvalRepo := approvals.NewPostgresRepository(pool)
 	approvalRepo.SetCheckpointHooks(r.inputs)
 	r.decisions = approvals.NewService(approvalRepo, nil)
-	currentTools := &experienceNativeToolCatalog{}
+	currentTools := &experienceNativeToolCatalog{timing: r.timing}
 	artifactPins := []string{experienceEnvironment(recipient.snapshot().Config)}
 	for _, key := range []string{"BUTLER_BROKER_E2E_BINARY", "BUTLER_EXTENSION_E2E_BINARY", "BUTLER_EXPERIENCE_HTTP_BINARY"} {
 		raw, err := os.ReadFile(os.Getenv(key))
@@ -515,7 +527,8 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	if err != nil {
 		t.Fatal("current typed assignment unavailable", err)
 	}
-	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "experience-native-worker", LeaseTTL: 120, Tasks: r.tasks, Budgets: r.budgets, MemorySources: r.cat, Completion: r.results, Checkpoints: r.inputs, PromptManager: r.pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tools: r.broker, ToolCatalog: r.broker, ActionAuthorizer: r.broker, OwnerGoals: r.goals, ActionMandateID: a.MandateID, ApprovalService: r.decisions}
+	currentSources := experienceTimedRunSources{experienceRunSources: experienceRunSources{sources: experienceTimedCatalog{Store: r.cat, timing: r.timing}, catalog: r.cat, store: r.lessons}, timing: r.timing}
+	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "experience-native-worker", LeaseTTL: 120, Tasks: r.tasks, Budgets: r.budgets, MemorySources: currentSources, Completion: r.results, Checkpoints: r.inputs, PromptManager: r.pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tools: r.broker, ToolCatalog: r.broker, ActionAuthorizer: r.broker, OwnerGoals: r.goals, ActionMandateID: a.MandateID, ApprovalService: r.decisions}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
 	fc.MemoryScopeResolver = func(c context.Context) ([]memoryservice.Scope, error) {
 		extra, err := r.cat.ExtraScopes(c, "memory_read")

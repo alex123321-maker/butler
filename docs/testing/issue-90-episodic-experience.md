@@ -366,3 +366,103 @@ and the foreground scenario wrapper. Missing/mismatched tokens, run, lease,
 fence, owner, task/session and expired lease deny. The old-method PG waiter
 fails and the current checker returns ErrDenied. Generic finalizing body access
 remains denied. Native/auth entries for issue90 remain zero.
+
+### Metadata witness privacy cascade and latest-anchor restore
+
+The selected pre-Resume witness is a metadata-only privacy ancestor. Catalog
+Delete/revoke follows witness-to-reconciled edges recursively alongside ordinary
+copy dependencies, without making the stale witness a readable body parent or
+following edges upward into independent primaries. The existing summary/legacy
+root handling is unchanged. The undeployed081 schema adds a reverse-parent index.
+
+With the publication fix and an actual successful Broker read/final, restoring
+only the old deletion query in source v46 leaves 8616 bytes in each reconciled
+observation after witness-only delete and revoke. Both controls fail on retained
+physical bytes. The retained red receipt's SHA256 is
+`762b630f3149fba2affcb54cddc0950534b0464b5bfc848260d1606ab7998b73`.
+This red is distinct from v43's earlier publication failure before deletion.
+
+All following frozen source v52 reports are under
+`/srv/storage/butler/agents/issue90-experience-20261016/reports/`:
+
+| Receipt | Pass / fail / skip | SHA256 of evidence.sha256 |
+|---|---|---|
+| witness-v52 | 3 / 0 / 0 | `68299fae43d64af2df6daea57f0fdf2bdd01cffa2e0e0ffd9ed0b16bd048a4b8` |
+| reconciled-original-backup-v52 | 3 / 0 / 0 phases | `b926c7bd44f1cafc31141eaae33377822b5d2d9e2b79d1445c691815d8034d80` |
+| reconciled-witness-backup-v52 | 3 / 0 / 0 phases | `c5076f2d6716df00286c66e951ac0d92454f6d3f4bd513c0b709e7e057453c24` |
+| mechanics-v52 | 183 / 0 / 0 | `3fbae92e0b04b88e60c3552500e22efc86f58187ec3cb9e26b5c97f68f239705` |
+
+The mechanical drivers require actual PG, race, vet and every required test with
+no skip. Actual witness-only Delete/revoke removes observation/note/source bodies,
+both accepted episodes/claim values, the accepted verbatim descendant, actual
+Broker cached tool text and the foreground copied final. The descendant is an
+explicit verbatim projection of actual note DATA, not model consolidation proof.
+Witness-only operations preserve the independent original primary body/tool hash.
+Original UNKNOWN/no-final, separate current ABSENT, immutable action/reconciliation
+metadata and complete attempt/reservation accounting remain unchanged.
+
+Each backup builds that same real original400/owner seal/Resume/authorized lookup/
+reconciliation/note/owner acceptance/read/final chain plus an independent actual
+verified original and accepted note. A real pg_dump precedes deletion; a separate
+fresh database is pg_restored and replays the latest external anchor twice. Both
+original-root and witness-only roots pass physical-copy erasure. The unrelated
+accepted source/episode and all historical spend/effect evidence survive. The
+full regression also retains negative job-authority, currentness, ordered081/080/
+079/077 and irreversible079 controls. Parent's additional082 composition remains
+a separately checked integration.
+
+These are controlled inference receipts. Issue90 native/auth entries remain zero,
+ReleaseQualified is false, and the 57-input/640-entry native preparation/comparison
+and independent semantic/cost review remain required. The active production
+experienceRunSources wrapper is a further fixture-alignment check before native;
+v52 proves Catalog/Broker/read/final composition, not that additional active loop.
+
+Frozen v54 aligns the runtime helper with the deployed profile's actual active
+Catalog -> experienceRunSources chain. ConverterControlURL is absent in the
+current main profile; the fixture does not substitute converterSources merely
+to inherit its larger bound. Worker identity remains neutral. Final-only missing,
+changed and environment pin faults now run inside the exact owning finalizing
+transaction, assert the fault actually ran, and invoke the unchanged real guard.
+The final grant-wait blocker starts only after that final guard is entered, so
+active source checks cannot consume the intended final-publication fault.
+
+The first aligned source v53 failed with memory_source_check_timeout before
+several required publication phases. It remains a failed receipt and its omitted
+window/terminal runs are not counted. The strict200ms diagnostic v54 passed all
+28 publication controls with race/vet and no skips. Its evidence.sha256 digest is
+`a69f58d0414106018cfa14ab533d5451620a568c95b0a69b9548d5176a0626a1`.
+Across210 compound checks, p95 was160.432ms and maximum178.855ms; the base
+Catalog checks measured26.402ms p95 and31.325ms maximum. The25 source Broker
+RPCs measured74.385ms p95 and80.777ms maximum. These metadata-only diagnostics
+preserve deadlines, contexts and errors, keep Broker RPCs outside SQL locks,
+and write private evidence only after checks finish. There were no diagnostic
+deadlines; expected currentness denials remain represented. This single passing
+run does not erase v53 or establish a production latency SLO. Native entries
+remain zero and the source/whole acceptance and semantic gates remain open.
+
+The separately declared experience compound bound is covered by frozen source
+v56 `reports/bound-v56`:25pass,0fail,0skip, real PostgreSQL with race/vet,
+evidence.sha256 digest
+`b0af38ffd4f683a02ddc3281b3efdcee729880422b1e18e03e092151635a8bbd`.
+Eight classification controls retain Catalog-only200ms, promote only a valid
+inherited experience bound to2s, retain an existing2s bound and preserve invalid
+zero/short/long inherited requests for rejection. Actual final/tool/batch events
+remain held during a300ms current proof and retain their original payload only
+after success. Deletion during that wait denies each event type, cancels the
+provider and preserves complete observed usage without private payload. Parent
+cancellation releases none of those event types. Real lease expiry after the
+wait begins denies a final; a never-released proof expires at the2s ceiling.
+Existing50ms parent clamp, slow-current/revocation and bounded usage-drain/race
+controls also pass. This changes no standalone Catalog or background deadline.
+Current task/constraints, source, lease and authority checks still run after
+waits; earlier finalizing captured-grant/lease controls remain mandatory in the
+separate complete composition.
+
+The first new test fixture in v55 wrongly cancelled a successful final's parent
+before its controlled provider stream had ended, then rejected a possible
+cancellation error as a second event. v55 remains failed (mechanics.jsonl digest
+`66e46902dabf861f2b51bcc68581f226923415dda96e1888744bd3a811262299`).
+v56 closes that completed test stream and lets the unchanged guard join normally.
+The production change is only the explicit experience adapter bound; it removes
+no proof, lock or RPC and adds no retry. Native entries remain zero. The2s ceiling
+does not qualify latency, semantic quality, cost, rollout or the full57/640 cohort.

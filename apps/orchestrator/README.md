@@ -868,7 +868,7 @@ technical phases on the original task after confirmed developer return and
 actual parent activation. Ordinary workers/leases/Broker execute them; inputs
 carry opaque references and current readiness stays DATA. Full original document
 pins and current private claim/fence/authority repeat at provider/recovery/final.
-Its compound source verifier has a static2s bound (ordinary checks200ms), with
+Its compound source verifier has a static2s bound (the foreground default), with
 uncached proposal/final/periodic checks. See
 [composition and evidence](../../docs/architecture/converter-continuations.md).
 
@@ -969,6 +969,15 @@ task evidence. Migration077 is required; body text remains only in the ordinary
 deletion-aware Catalog/Episodic graph. See
 [the contract](../../docs/architecture/episodic-experience.md).
 
+With an experience store installed, the active source adapter declares a2s
+maximum for its base Catalog proof, current Broker contracts and fresh owning
+applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch
+events stay held until the fresh proof succeeds. Invalid inherited bounds are
+rejected. Without that store, the adapter inherits the foreground default2s or
+an explicit trusted bound in200ms..2s. Background budgets are unchanged, and this ceiling is not a measured
+latency SLO. Broker lookup stays outside SQL locks; no failed check authorizes
+another provider request or discards already observed usage.
+
 Retrieved document text remains eligible when the source has no title. The
 final prompt formatter uses a neutral Document label; an absent title must not
 silently discard an already authorized, selected fragment. Empty evidence text
@@ -1004,6 +1013,7 @@ job or model attempt. It never accepts caller-authored evidence or changes task,
 input, run or external-effect state. Background model configuration is not needed
 for this separate observation operation; the experience release gate still is.
 
+
 An explicit original `run_id` plus existing
 `reconciliation.original_snapshot_id`/`reconciliation.control_id` can request a
 new note after a normal owner Resume and independently reconciled ABSENT lookup.
@@ -1029,3 +1039,12 @@ body and does not wait behind a queued takeover. A grant wait crossing lease
 expiry denies the final while retaining the attempts. Completed independent
 owner/outbox operations keep their own completed-result transition proof and do
 not acquire a new live inference lease through this applicability supplement.
+
+The prospective [temporal v6 lab protocol](../../docs/testing/issue-88-native-v6-protocol.md)
+keeps the complete twelve-original rubric, adds revision3 facts interpretation
+and seals all seven retained PostgreSQL stores before inference. Its newest
+49-turn inclusive owner charge is carried once; the distinct adaptive owner's
+actual226 quotes remain separately visible. Worker/native assertions reject
+owner control identity. No production qualification or flag changes follow from
+preparation or mechanical completion.
+

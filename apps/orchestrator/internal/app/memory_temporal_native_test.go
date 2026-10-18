@@ -174,6 +174,11 @@ type temporalExecutor struct {
 }
 
 func (x *temporalExecutor) Execute(ctx context.Context, e ingress.InputEvent) (*flow.ExecutionResult, error) {
+	if _, ok := owneridentity.FromContext(ctx); ok {
+		err := errors.New("native worker inherited owner control identity")
+		x.done <- temporalExecution{Err: err}
+		return nil, err
+	}
 	r, err := x.base.Execute(ctx, e)
 	x.done <- temporalExecution{r, err}
 	return r, err
@@ -395,7 +400,7 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 }
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V5") != "1" {
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V6") != "1" {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -421,11 +426,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v5');CREATE SCHEMA memory_temporal_native_v5`); err != nil {
+	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v6');CREATE SCHEMA memory_temporal_native_v6`); err != nil {
 		t.Fatal("one-use native window already consumed or unavailable")
 	}
 	cfg.MaxConns = 4
-	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v5,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v6,public"
 	trace := &temporalSourceTrace{}
 	cfg.ConnConfig.Tracer = trace
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -458,7 +463,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v5')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v6')`, strings.TrimSpace(string(auth))); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
 	defer func() {

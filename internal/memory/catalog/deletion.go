@@ -128,7 +128,16 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	}
 	// Old extraction rows can lack original-message edges. Conservatively purge
 	// this owner's quarantined legacy data rather than leave an untraceable copy.
-	rows, e := tx.Query(ctx, `WITH RECURSIVE affected AS(SELECT source_id FROM memory_sources WHERE source_id=$1 OR source_id IN(SELECT snapshot_source_id FROM memory_summary_dependencies WHERE original_source_id=$1) OR source_id IN (SELECT x.source_id FROM memory_summary_sources x WHERE x.session_key IN(SELECT scope_id FROM memory_sources WHERE source_id=$1 AND scope_type='session')) OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined') UNION SELECT d.child_source_id FROM memory_source_dependencies d JOIN affected a ON a.source_id=d.parent_source_id) SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own)
+	// Metadata-only witnesses are privacy ancestors without becoming readable
+	// body parents. Follow those edges at every depth along with ordinary copied
+	// source dependencies; witness deletion must physically erase its R copies.
+	rows, e := tx.Query(ctx, `WITH RECURSIVE privacy_edges(parent_source_id,child_source_id) AS NOT MATERIALIZED(
+ SELECT parent_source_id,child_source_id FROM memory_source_dependencies
+ UNION ALL SELECT original_source_id,source_id FROM memory_experience_reconciled_attempts
+),affected AS(
+ SELECT source_id FROM memory_sources WHERE source_id=$1 OR source_id IN(SELECT snapshot_source_id FROM memory_summary_dependencies WHERE original_source_id=$1) OR source_id IN(SELECT x.source_id FROM memory_summary_sources x WHERE x.session_key IN(SELECT scope_id FROM memory_sources WHERE source_id=$1 AND scope_type='session')) OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined')
+ UNION SELECT d.child_source_id FROM privacy_edges d JOIN affected a ON a.source_id=d.parent_source_id
+)SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own)
 	if e != nil {
 		return e
 	}

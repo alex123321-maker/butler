@@ -219,6 +219,30 @@ func (p *adaptiveNativeProvider) snapshot() []*adaptiveNativeCall {
 	return calls
 }
 
+func (p *adaptiveNativeProvider) captureRun(runID string) ([]*adaptiveNativeCall, []byte, error) {
+	p.inflight.Wait()
+	p.mu.Lock()
+	var calls []*adaptiveNativeCall
+	for _, call := range p.calls {
+		if call.RunID == runID {
+			calls = append(calls, call)
+		}
+	}
+	raw, err := json.Marshal(calls)
+	p.mu.Unlock()
+	if err != nil {
+		return nil, nil, err
+	}
+	// A nonempty []*adaptiveNativeCall destination reuses the provider-owned
+	// pointers. Decoding metadata into any would then mutate the retained trace
+	// after its exact capture bytes were hashed (including struct field order).
+	var snapshot []*adaptiveNativeCall
+	if err = json.Unmarshal(raw, &snapshot); err != nil {
+		return nil, nil, err
+	}
+	return snapshot, raw, nil
+}
+
 type adaptiveImportControls struct {
 	Version string `json:"version"`
 	Cases   []struct {
@@ -1181,18 +1205,8 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	if runID == "" {
 		_ = pool.QueryRow(ctx, `SELECT run_id FROM accepted_inputs WHERE input_id=$1`, receipt.InputID).Scan(&runID)
 	}
-	provider.mu.Lock()
-	var calls []*adaptiveNativeCall
-	for _, call := range provider.calls {
-		if call.RunID == runID {
-			calls = append(calls, call)
-		}
-	}
-	callRaw, _ := json.Marshal(calls)
-	provider.mu.Unlock()
-	// Independent observation copy; transport EOF bookkeeping can still finish
-	// after the final event has reached the ordinary Flow.
-	if json.Unmarshal(callRaw, &calls) != nil {
+	calls, callRaw, captureErr := provider.captureRun(runID)
+	if captureErr != nil {
 		t.Fatal("actual native call capture failed")
 	}
 	in.CaptureSHA256 = acceptance.MemoryBytesSHA256(callRaw)

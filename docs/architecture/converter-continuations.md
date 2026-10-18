@@ -70,7 +70,7 @@ Collection is still a separate Broker action granting only candidate/Need/contra
 sources; the parent gains no child report/final narrative. Tasks remain unverified.
 
 The compound owning converter verifier advertises a static two-second check bound.
-Core accepts only200ms..2s; invalid bounds deny. Ordinary Catalog checks keep200ms,
+Core accepts only200ms..2s; invalid bounds deny. The foreground default is2s,
 parent cancellation/deadlines clamp the bound, and checks before every provider
 call, final/tool proposal and periodic250ms observation remain uncached. Longer
 bounded verification latency grants no authorization grace: timeout denies release.
