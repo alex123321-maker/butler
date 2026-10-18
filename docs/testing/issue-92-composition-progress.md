@@ -117,6 +117,15 @@ deletion and restore. Its full24-checkpoint receipt is separate from v8's
 owner-recorded compaction state. Native quality and current combined composition
 remain separate acceptance requirements.
 
+The subsequent owner-context audit restricts all pre-v10 coherent foreground
+receipts to their measured mechanics: the setup actor reached the worker and
+could bypass ordinary source-grant/finalizing checks. Original artifacts remain
+immutable. Corrected neutral-worker v10 passed the first19 sequential checkpoints,
+then reproduced the learned-source final persistence denial after an actual
+consolidated Broker read. It did not reach dump/restore and is a failed complete
+window. The current worker publication fix and fresh full scenario remain gates;
+the earlier physical deletion/restore/ENOSPC measurements are not that gate.
+
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
 

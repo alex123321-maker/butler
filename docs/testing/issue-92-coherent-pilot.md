@@ -286,8 +286,8 @@ This receipt is still a controlled mechanical composition. Current later
 reconciliation/privacy changes require fresh combined checks; native quality,
 full cost, repeated mixed-workload latency and staged owner review remain gates.
 
-Further fixture audit found that the original pilot and the v8/v9 continuation
-passed their setup `owneridentity.Actor` into some workers. Catalog's explicit
+Further fixture audit found that the coherent foreground helper before v10 and
+the v8/v9 continuation passed their setup `owneridentity.Actor` into some workers. Catalog's explicit
 owner inspection branch could therefore bypass ordinary task/read grants and
 the finalizing access restriction. Those receipts retain the measured physical
 deletion/restore/ENOSPC, effect and budget facts, but are not ordinary-worker
@@ -296,3 +296,23 @@ for foreground and independent worker execution and policy polling, while
 retaining verified owner identity solely for ingress, decisions and controls.
 Controlled provider entry rejects inherited owner identity. The corrected full
 scenario requires a fresh complete window; earlier PASS artifacts are immutable.
+Independent model jobs already replace an incoming setup actor with their
+claim/policy checker internally; the new empty entry context makes that
+separation explicit as well. This finding concerns the coherent foreground
+fixture, not a reinterpretation of neutral-worker native87 or native89 windows.
+
+`coherent-lifecycle-v10`, source `398052de`, then reproduced the ordinary
+publication defect without inherited owner identity. Its first19 sequential
+checkpoints passed, including neutral foreground/independent jobs, actual
+verified episode, UNKNOWN and consolidation activation. The actual consolidated
+Broker read returned the learned text, but final persistence was denied in
+`finalizing` by `CheckPinnedTx` calling fresh `AccessTx`. No backup/restore phase
+was reached; this is a failed complete window and not a24-point pass. The saved
+answer may not be regenerated or selectively rerun. A separate metadata-only
+captured-pin publication fix and a fresh complete window are required.
+
+V10 reports remain under the corresponding `coherent-lifecycle-v10` directory.
+The events SHA256 is
+`01bba878b3a5ffc166a3398dfd8de68b682b1e9b5e32dc9c90afdcea3b63bb80`;
+the failed timeline-progress SHA256 is
+`e4f9da7636c1bbc404218950c2b3bb905aa0a363fb121ada6c43430c589b19c6`.
