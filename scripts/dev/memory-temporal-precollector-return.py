@@ -53,14 +53,21 @@ if not re.fullmatch(r"/srv/storage/butler/agents/issue88-[A-Za-z0-9_-]+", str(ba
 proof, private = base / "reports" / label, base / "private" / label
 if any((proof / name).exists() for name in ("scheduled-before-setup.json", "scheduled-originals.json", "setup-outcome.json", "full-ledger.json")) or list(proof.glob("entry-*.json")) or (private / "auth-return.value").exists():
     raise SystemExit("collector may have begun; opaque fallback denied")
-catalog = sql("SELECT jsonb_build_object('schema_present',to_regnamespace('memory_temporal_native_v6') IS NOT NULL,'window_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
+history = proof / "history" / "history.json"
+envelope = json.loads(history.read_bytes())
+profiles = {'butler.temporal.native-history.v2':('memory_temporal_native_v6','temporal-explicit-v6','memory-temporal-successor-history.py'), 'butler.temporal.native-history.v3':('memory_temporal_native_v7','temporal-explicit-v7','memory-temporal-v7-history.py')}
+if envelope.get('format') not in profiles:
+    raise SystemExit('unsupported fixed temporal fallback recipe')
+schema, window, script_name = profiles[envelope['format']]
+if envelope.get('schema') != schema:
+    raise SystemExit('fixed schema/history differs')
+catalog = sql("SELECT jsonb_build_object('schema_present',to_regnamespace('"+schema+"') IS NOT NULL,'window_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
 if catalog["schema_present"]:
     raise SystemExit("native schema exists; opaque fallback denied")
-window_count = sql("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v6'") if catalog["window_table_present"] else 0
+window_count = sql("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='"+window+"'") if catalog["window_table_present"] else 0
 if window_count != 0:
     raise SystemExit("native one-use window consumed; opaque fallback denied")
-history = proof / "history" / "history.json"
-script = pathlib.Path(__file__).resolve().parent / "memory-temporal-successor-history.py"
+script = pathlib.Path(__file__).resolve().parent / script_name
 current = subprocess.run([sys.executable, str(script), "check-current", str(history), hashlib.sha256(history.read_bytes()).hexdigest()], capture_output=True, timeout=180)
 if current.returncode or json.loads(current.stdout).get("current_day_unchanged") is not True:
     raise SystemExit("seven-database attempt population changed; opaque fallback denied")

@@ -117,7 +117,11 @@ func temporalCollectorBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Stor
 	u.RawQuery = q.Encode()
 	address := freeAddress(t)
 	policyJSON, _ := json.Marshal(policy)
-	cmd := exec.Command(binary, "-test.run=^TestTemporalNativeBrokerHarness$", "-test.timeout=185m")
+	brokerTimeout := "185m"
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V7") == "1" {
+		brokerTimeout = temporalV7BrokerDuration.String()
+	}
+	cmd := exec.Command(binary, "-test.run=^TestTemporalNativeBrokerHarness$", "-test.timeout="+brokerTimeout)
 	cmd.Env = append(os.Environ(), "BUTLER_TEMPORAL_BROKER_HARNESS=1", "BUTLER_TEMPORAL_POSTGRES_URL="+u.String(), "BUTLER_TEMPORAL_TOKEN_FILE="+tokenFile, "BUTLER_TEMPORAL_CONTEXT_URL="+control.URL+"/context", "BUTLER_TEMPORAL_FACTS_URL="+control.URL+factcontrol.Path, "BUTLER_TEMPORAL_READ_URL="+control.URL+readcontrol.Path, "BUTLER_TEMPORAL_GRPC_ADDRESS="+address, "BUTLER_TEMPORAL_MANIFEST_FILE="+manifest, "BUTLER_EXECUTION_BUDGET_POLICY_JSON="+string(policyJSON))
 	log, e := os.OpenFile(filepath.Join(private, "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if e != nil {
@@ -400,7 +404,8 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 }
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V6") != "1" {
+	v6, v7 := os.Getenv("BUTLER_TEMPORAL_NATIVE_V6") == "1", os.Getenv("BUTLER_TEMPORAL_NATIVE_V7") == "1"
+	if !v6 && !v7 {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -414,7 +419,22 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err := temporalCheckNativePins(proof); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 16*time.Hour)
+	historyRaw, err := os.ReadFile(filepath.Join(proof, "history", "history.json"))
+	history, e := loadTemporalV5History(filepath.Join(proof, "history", "history.json"), experienceDigest(string(historyRaw)))
+	if err != nil || e != nil || v6 == v7 || (temporalNativeVersion(history) == 7) != v7 {
+		t.Fatal("native flags differ from frozen history")
+	}
+	whole := 16 * time.Hour
+	schema, window := "memory_temporal_native_v6", "temporal-explicit-v6"
+	if v7 {
+		whole = temporalV7WholeDuration
+		schema, window = temporalV7Schema, temporalV7Window
+	}
+	deadline := time.Now().Add(whole)
+	if history.Manifest.Deadline.Before(deadline) {
+		deadline = history.Manifest.Deadline
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	stage = "isolated_pg_setup"
 	cfg, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -426,11 +446,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v6');CREATE SCHEMA memory_temporal_native_v6`); err != nil {
+	if err = temporalClaimNativeWindow(ctx, admin, temporalNativeVersion(history)); err != nil {
 		t.Fatal("one-use native window already consumed or unavailable")
 	}
 	cfg.MaxConns = 4
-	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v6,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",public"
 	trace := &temporalSourceTrace{}
 	cfg.ConnConfig.Tracer = trace
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -463,7 +483,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v6')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,$2)`, strings.TrimSpace(string(auth)), window); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
 	defer func() {

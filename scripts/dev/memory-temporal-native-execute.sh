@@ -20,10 +20,17 @@ sha256sum --check --status "$proof/source.sha256"
 test ! -e "$proof/auth-stage-begun.json"
 test ! -e "$proof/scheduled-before-setup.json"
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
+history_script=memory-temporal-successor-history.py
+v6=0;v7=0
+case "$(jq -er .format "$proof/history/history.json")" in
+ butler.temporal.native-history.v2) v6=1 ;;
+ butler.temporal.native-history.v3) history_script=memory-temporal-v7-history.py;v7=1 ;;
+ *) exit 2 ;;
+esac
 umask 077
 exec 9>/srv/storage/butler/agents/native-provider-auth.lock
 flock -n 9
-python3 "$src/scripts/dev/memory-temporal-successor-history.py" check-current "$proof/history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
+python3 "$src/scripts/dev/$history_script" check-current "$proof/history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
 docker run --rm --pull never --network none --user "$(id -u):$(id -g)" --cpus 1 --memory 2g --pids-limit 128 \
  -v "$src:/src:ro" -v "$proof:/proof:ro" -w /src/apps/orchestrator/internal/app \
  -e BUTLER_TEMPORAL_CHECK_PINS=1 -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test \
@@ -47,7 +54,7 @@ handoff(){
 trap handoff EXIT
 docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --cpus 2 --memory 3g --pids-limit 256 --security-opt no-new-privileges \
  --env-file "$private/native.env" -v "$src:/src:ro" -v "$proof:/proof" -v "$private:/native-private" -w /src/apps/orchestrator/internal/app \
- -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V6=1 -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
+ -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V6="$v6" -e BUTLER_TEMPORAL_NATIVE_V7="$v7" -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test \
  -e HTTP_PROXY=http://127.0.0.1:18080 -e HTTPS_PROXY=http://127.0.0.1:18080 -e ALL_PROXY=http://127.0.0.1:18080 -e NO_PROXY=localhost,127.0.0.1,::1 \
  golang:1.27.2-bookworm /proof/test2json -p github.com/butler/butler/apps/orchestrator/internal/app /proof/collector.test -test.v -test.timeout=975m -test.run '^TestTemporalNativeExplicitLookup$' > "$proof/runner.jsonl" 2>&1

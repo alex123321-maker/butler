@@ -8,36 +8,42 @@ import (
 	"testing"
 	"time"
 
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/internal/acceptance"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/memory/factcontrol"
 )
 
 type temporalNativePins struct {
-	WindowRevision int       `json:"window_revision"`
-	Revision       string    `json:"revision"`
-	SourceSHA      string    `json:"source_sha256"`
-	CollectorSHA   string    `json:"collector_sha256"`
-	BrokerSHA      string    `json:"broker_sha256"`
-	Test2JSONSHA   string    `json:"test2json_sha256"`
-	CorpusSHA      string    `json:"corpus_sha256"`
-	ControlsSHA    string    `json:"controls_sha256"`
-	MethodSHA      string    `json:"method_sha256"`
-	HistorySHA     string    `json:"retained_history_sha256"`
-	PolicySHA      string    `json:"shared_policy_sha256"`
-	FactsRevision  string    `json:"facts_contract_revision"`
-	FactsSHA       string    `json:"facts_contract_sha256"`
-	ScheduleSHA    string    `json:"complete_schedule_sha256"`
-	Day            string    `json:"prospective_utc_day"`
-	DayDeadline    time.Time `json:"prospective_day_deadline"`
-	Expires        time.Time `json:"expires_at"`
-	Cases          int       `json:"scheduled_originals"`
-	MaxNative      int       `json:"maximum_native_entries"`
-	MaxPerOriginal int       `json:"maximum_native_entries_per_original"`
-	MaxTools       int       `json:"maximum_tools_per_original"`
-	Model          string    `json:"model"`
-	Output         int       `json:"maximum_generated_tokens"`
-	Millis         int       `json:"model_timeout_millis"`
+	WindowRevision         int       `json:"window_revision"`
+	Revision               string    `json:"revision"`
+	SourceSHA              string    `json:"source_sha256"`
+	CollectorSHA           string    `json:"collector_sha256"`
+	BrokerSHA              string    `json:"broker_sha256"`
+	Test2JSONSHA           string    `json:"test2json_sha256"`
+	CorpusSHA              string    `json:"corpus_sha256"`
+	ControlsSHA            string    `json:"controls_sha256"`
+	MethodSHA              string    `json:"method_sha256"`
+	HistorySHA             string    `json:"retained_history_sha256"`
+	PolicySHA              string    `json:"shared_policy_sha256"`
+	FactsRevision          string    `json:"facts_contract_revision"`
+	FactsSHA               string    `json:"facts_contract_sha256"`
+	ScheduleSHA            string    `json:"complete_schedule_sha256"`
+	Day                    string    `json:"prospective_utc_day"`
+	DayDeadline            time.Time `json:"prospective_day_deadline"`
+	Expires                time.Time `json:"expires_at"`
+	Cases                  int       `json:"scheduled_originals"`
+	MaxNative              int       `json:"maximum_native_entries"`
+	MaxPerOriginal         int       `json:"maximum_native_entries_per_original"`
+	MaxTools               int       `json:"maximum_tools_per_original"`
+	Model                  string    `json:"model"`
+	Output                 int       `json:"maximum_generated_tokens"`
+	Millis                 int       `json:"model_timeout_millis"`
+	ForegroundSourceMillis int64     `json:"foreground_source_timeout_millis,omitempty"`
+	ForegroundMillis       int64     `json:"foreground_execution_millis,omitempty"`
+	WholeMillis            int64     `json:"whole_window_millis,omitempty"`
+	OuterMillis            int64     `json:"outer_timeout_millis,omitempty"`
+	BrokerMillis           int64     `json:"broker_timeout_millis,omitempty"`
 }
 
 // The v5 seal verifies a complete historical lineage and a separately read
@@ -52,7 +58,7 @@ func TestTemporalNativeWritePins(t *testing.T) {
 		t.Fatal("frozen complete historical/current-day proof required")
 	}
 	h, err := loadTemporalV5History(filepath.Join(proof, "history", "history.json"), acceptance.MemoryBytesSHA256(history))
-	if err != nil || h.SuccessorV6 == nil {
+	if err != nil || temporalNativeVersion(h) == 0 {
 		t.Fatal(err)
 	}
 	policyObject := temporalNativePolicy(h.Carry)
@@ -69,7 +75,14 @@ func TestTemporalNativeWritePins(t *testing.T) {
 		expires = h.Manifest.Deadline
 	}
 	p := temporalNativePins{Revision: os.Getenv("BUTLER_TEMPORAL_SOURCE_REVISION"), Cases: 12, MaxNative: temporalMaxNative, MaxPerOriginal: temporalMaxPerOriginal, MaxTools: temporalMaxTools, Model: "gemini-3.8-flash-high", Output: 32768, Millis: 300000, HistorySHA: acceptance.MemoryBytesSHA256(history), PolicySHA: acceptance.MemoryBytesSHA256(policy), Expires: expires, Day: h.Manifest.Day, DayDeadline: h.Manifest.Deadline, FactsRevision: factcontrol.Contract().ContractRevision, ScheduleSHA: acceptance.MemoryBytesSHA256(schedule)}
-	p.WindowRevision = 6
+	p.WindowRevision = temporalNativeVersion(h)
+	if p.WindowRevision == 7 {
+		p.ForegroundSourceMillis = flow.DefaultMemorySourceCheckTimeout.Milliseconds()
+		p.ForegroundMillis = temporalV7ForegroundDuration.Milliseconds()
+		p.WholeMillis = temporalV7WholeDuration.Milliseconds()
+		p.OuterMillis = temporalV7OuterDuration.Milliseconds()
+		p.BrokerMillis = temporalV7BrokerDuration.Milliseconds()
+	}
 	p.FactsSHA, err = actionauth.ContractHash(factcontrol.Contract())
 	if err != nil {
 		t.Fatal("semantic facts contract hash unavailable")
@@ -109,8 +122,11 @@ func TestTemporalNativeWritePins(t *testing.T) {
 func temporalCheckNativePins(proof string) error {
 	raw, err := os.ReadFile(filepath.Join(proof, "frozen-pins.json"))
 	var p temporalNativePins
-	if err != nil || json.Unmarshal(raw, &p) != nil || p.WindowRevision != 6 || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != "3" || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
+	if err != nil || json.Unmarshal(raw, &p) != nil || (p.WindowRevision != 6 && p.WindowRevision != 7) || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != "3" || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
 		return errors.New("frozen temporal window/profile differs")
+	}
+	if p.WindowRevision == 7 && (p.ForegroundSourceMillis != 2000 || p.ForegroundSourceMillis != flow.DefaultMemorySourceCheckTimeout.Milliseconds() || p.ForegroundMillis != temporalV7ForegroundDuration.Milliseconds() || p.WholeMillis != temporalV7WholeDuration.Milliseconds() || p.OuterMillis != temporalV7OuterDuration.Milliseconds() || p.BrokerMillis != temporalV7BrokerDuration.Milliseconds()) {
+		return errors.New("frozen v7 source and finite execution bounds differ")
 	}
 	contractSHA, e := actionauth.ContractHash(factcontrol.Contract())
 	if e != nil || contractSHA != p.FactsSHA || factcontrol.Contract().ContractRevision != p.FactsRevision {
@@ -150,7 +166,7 @@ func temporalCheckNativePins(proof string) error {
 	if err != nil {
 		return err
 	}
-	if h.SuccessorV6 == nil || h.Manifest.Day != p.Day || !h.Manifest.Deadline.Equal(p.DayDeadline) {
+	if temporalNativeVersion(h) != p.WindowRevision || h.Manifest.Day != p.Day || !h.Manifest.Deadline.Equal(p.DayDeadline) {
 		return errors.New("frozen prospective day differs")
 	}
 	policy, _ := json.Marshal(temporalNativePolicy(h.Carry))

@@ -12,6 +12,7 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func temporalV7Fixture(t *testing.T, noEntries bool) (map[string]any, map[string]any, map[string]any, map[string]any, *consolidationScreenHistory, string, time.Time) {
@@ -209,6 +210,44 @@ func TestTemporalV7CurrentDayCarryOneUseIntegration(t *testing.T) {
 	var operation string
 	if err := pool.QueryRow(ctx, `SELECT used_json,(SELECT count(*) FROM execution_budget_reservations),(SELECT count(*) FROM execution_model_attempts)+(SELECT count(*) FROM memory_model_attempts),(SELECT operation_id FROM execution_budget_reservations) FROM execution_budget_scopes WHERE kind='owner_day'`).Scan(&used, &operations, &attempts, &operation); err != nil || used != h.Carry || operations != 1 || attempts != 0 || operation != "issue88-v7-current-day-carry:"+h.Hash {
 		t.Fatal("carry duplicated, refunded or dispatched provider", err, used, operations, attempts)
+	}
+}
+
+func TestTemporalV7NamespaceClaimOneUseIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_TEMPORAL_V7_NAMESPACE_CONTROL") != "1" {
+		t.Skip("dedicated disposable v7 namespace database only")
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+	if err != nil {
+		t.Fatal("dedicated PG unavailable")
+	}
+	defer pool.Close()
+	if pool.Config().ConnConfig.Database != "temporal_v7_history_test" {
+		t.Fatal("namespace control requires exact dedicated database")
+	}
+	if _, err = pool.Exec(ctx, `CREATE SCHEMA memory_temporal_native_v7`); err != nil {
+		t.Fatal(err)
+	}
+	if temporalClaimNativeWindow(ctx, pool, 7) == nil {
+		t.Fatal("existing empty namespace reopened")
+	}
+	var table bool
+	if pool.QueryRow(ctx, `SELECT to_regclass('public.issue88_native_windows') IS NOT NULL`).Scan(&table) != nil || table {
+		t.Fatal("failed claim left a consumed receipt")
+	}
+	if _, err = pool.Exec(ctx, `DROP SCHEMA memory_temporal_native_v7`); err != nil {
+		t.Fatal(err)
+	}
+	if err = temporalClaimNativeWindow(ctx, pool, 7); err != nil {
+		t.Fatal("fresh namespace/receipt not atomic", err)
+	}
+	if temporalClaimNativeWindow(ctx, pool, 7) == nil {
+		t.Fatal("consumed native window reopened")
+	}
+	var count int
+	if pool.QueryRow(ctx, `SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v7'`).Scan(&count) != nil || count != 1 {
+		t.Fatal("native receipt duplicated")
 	}
 }
 

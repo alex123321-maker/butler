@@ -161,6 +161,9 @@ func temporalV7CorroborateSlotRuns(priorRaw, ledgerRaw, screenRaw, scheduleRaw [
 		if actual.State != "not_executed" && (actual.StartedAt.IsZero() || actual.FinishedAt.IsZero()) {
 			return errors.New("executed original lacks final timing")
 		}
+		if actual.FinishedAt.Before(actual.StartedAt) {
+			return errors.New("original slot timing inverted")
+		}
 		p := prior.Slots[i]
 		// Safe definition contains exactly these fields. Answer and current task
 		// bodies stay in the immutable screen and never enter inventory metadata.
@@ -345,6 +348,22 @@ func temporalV7ClearLeaf(raw, priorRaw []byte) ([]byte, error) {
 		return nil, errors.New("complete current seven-store inventory required")
 	}
 	found := 0
+	latestOperations := map[string]bool{}
+	for _, field := range []string{"foreground", "background"} {
+		rows, err := consolidationV2Records(prior[field])
+		if err != nil {
+			return nil, err
+		}
+		for _, raw := range rows {
+			var row struct {
+				Operation string `json:"operation_id"`
+			}
+			if json.Unmarshal(raw, &row) != nil || row.Operation == "" || latestOperations[row.Operation] {
+				return nil, errors.New("latest product identity duplicated")
+			}
+			latestOperations[row.Operation] = true
+		}
+	}
 	for _, db := range dbs {
 		var container, name string
 		var windows []map[string]json.RawMessage
@@ -355,6 +374,20 @@ func temporalV7ClearLeaf(raw, priorRaw []byte) ([]byte, error) {
 			var schema string
 			_ = json.Unmarshal(window["schema"], &schema)
 			if container != "issue86-20261016-pg" || name != "memory_read_test" || schema != consolidationV3Schema {
+				for _, field := range []string{"foreground", "background"} {
+					rows, err := consolidationV2Records(window[field])
+					if err != nil {
+						return nil, err
+					}
+					for _, raw := range rows {
+						var row struct {
+							Operation string `json:"operation_id"`
+						}
+						if json.Unmarshal(raw, &row) != nil || latestOperations[row.Operation] {
+							return nil, errors.New("new cohort reused an earlier admitted operation")
+						}
+					}
+				}
 				continue
 			}
 			found++
