@@ -116,8 +116,16 @@ func TestTemporalEpisodeExpirySurvivesDisabledAnnotationsIntegration(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	claim, err := c.Propose(ctx, catalog.ClaimRequest{MemoryType: "episodic", SourceID: src.ID, SourceRevision: 1, Key: "episode.temporary", Summary: src.Body, Value: json.RawMessage(`"reported observation"`)})
+	tx, err := pool.Begin(ctx)
 	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	claim, err := c.ProposeTx(ctx, tx, catalog.ClaimRequest{MemoryType: "episodic", SourceID: src.ID, SourceRevision: 1, Key: "episode.temporary", Summary: src.Body, Value: json.RawMessage(`"reported observation"`), DedupKey: "episode-expiry-fixture"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = c.Decide(ctx, catalog.Decision{ClaimID: claim.ID}); err != nil {
