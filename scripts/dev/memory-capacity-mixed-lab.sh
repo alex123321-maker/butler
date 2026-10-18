@@ -5,6 +5,8 @@ base=${1:?isolated issue91 mixed root}; label=${2:?fresh report label}
 [[ "$base" =~ ^/srv/storage/butler/agents/issue91-mixed-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current"); [[ "$src" == "$base/snapshots/"* ]] || exit 2
 proof=$base/reports/$label; test ! -e "$proof"; umask 077
+available=$(df -B1 --output=avail "$base" | tail -n1 | tr -d ' ')
+[[ "$available" =~ ^[0-9]+$ && "$available" -ge 21474836480 ]] || exit 1
 model=${BUTLER_CAPACITY_LOCAL_MODEL_IP:?operator-pinned local IPv4}
 [[ "$model" =~ ^172\.(1[6-9]|2[0-9]|3[01])\.[0-9]+\.[0-9]+$ ]] || exit 2
 token=${BUTLER_CAPACITY_LOCAL_TOKEN_FILE:-/srv/storage/butler/agents/local-models/private/token}
@@ -30,18 +32,27 @@ pg_ip=$(docker inspect "$pg" --format '{{range .NetworkSettings.Networks}}{{.IPA
 for i in $(seq 1 60); do docker exec "$pg" pg_isready -h127.0.0.1 -U butler -d memory_mixed_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1; done
 docker exec "$pg" psql -U butler -d memory_mixed_test -Atqc 'SELECT version(); CREATE EXTENSION IF NOT EXISTS vector; SELECT extversion FROM pg_extension WHERE extname=$$vector$$' > "$proof/versions.txt"
 docker inspect "$pg" --format '{{json .HostConfig}}' | jq '{CpuPeriod,CpuQuota,NanoCpus,Memory,MemorySwap,PidsLimit}' > "$proof/pg-limits.json"
+docker exec "$pg" cat /sys/fs/cgroup/cpu.stat > "$proof/pg-cpu-initial.txt"
 docker inspect butler-lab-local-models-1 --format '{{json .HostConfig}}' | jq '{CpuPeriod,CpuQuota,NanoCpus,Memory,MemorySwap,PidsLimit,DeviceRequests}' > "$proof/shared-local-limits.json"
-(while true; do date -u +%Y-%m-%dT%H:%M:%S.%NZ; docker stats --no-stream --format '{{json .}}' "$client" "$pg" butler-lab-local-models-1 2>/dev/null || true; sleep 1; done) > "$proof/resources.log" & stats_pid=$!
-docker create --pull never --name "$client" --network host --add-host "local-models:$model" --cpus 1 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
+(while true; do
+ date -u +%Y-%m-%dT%H:%M:%S.%NZ
+ docker stats --no-stream --format '{{json .}}' "$client" "$pg" butler-lab-local-models-1 2>/dev/null || true
+ for target in "$client" "$pg"; do
+  { date -u +%Y-%m-%dT%H:%M:%S.%NZ; printf '%s\n' "$target"; docker exec "$target" sh -c 'for item in cpu.stat memory.events memory.peak; do printf "%s\n" "$item"; cat "/sys/fs/cgroup/$item"; done' 2>/dev/null || true; } >> "$proof/cgroup-samples.log"
+ done
+ sleep 1
+done) > "$proof/resources.log" & stats_pid=$!
+docker create --pull never --name "$client" --network host --add-host "local-models:$model" --cpus 2 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
  -v "$src:/src:ro" -v "$base/.cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -v "$token:/local-token:ro" -w /src \
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local \
  -e BUTLER_MEMORY_CAPACITY_MIXED=1 -e BUTLER_MEMORY_CAPACITY_REPORT=/proof -e BUTLER_MEMORY_SEMANTIC_ENABLED=true \
  -e BUTLER_MEMORY_LOCAL_SERVICE_ID=operator-pinned-service -e BUTLER_MEMORY_LOCAL_TOKEN_FILE=/local-token \
  -e "BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler@$pg_ip:5432/memory_mixed_test?sslmode=disable" \
- golang:1.27.2-bookworm bash -c 'go test -json -race -p 1 -count=1 -timeout 14m -run "^TestMemoryCapacityCombinedMixedIntegration$" ./apps/orchestrator/internal/app > /proof/tests.jsonl 2>/proof/build.log; test_status=$?; go vet ./apps/orchestrator/internal/app > /proof/vet.log 2>&1; vet_status=$?; printf "%s %s\n" "$test_status" "$vet_status" > /proof/exit-status; exit "$((test_status || vet_status))"' > "$proof/client-id"; created_client=true
+ golang:1.27.2-bookworm bash -c 'go test -json -race -p 1 -count=1 -timeout 14m -run "^TestMemoryCapacityCombinedMixedIntegration$" ./apps/orchestrator/internal/app > /proof/tests.jsonl 2>/proof/build.log; test_status=$?; go vet ./apps/orchestrator/internal/app > /proof/vet.log 2>&1; vet_status=$?; for item in cpu.stat memory.events memory.peak; do cat "/sys/fs/cgroup/$item" > "/proof/client-$item-final.txt"; done; printf "%s %s\n" "$test_status" "$vet_status" > /proof/exit-status; exit "$((test_status || vet_status))"' > "$proof/client-id"; created_client=true
 docker inspect "$client" --format '{{json .HostConfig}}' | jq '{CpuPeriod,CpuQuota,NanoCpus,Memory,MemorySwap,PidsLimit}' > "$proof/client-limits.json"
 docker start -a "$client" > "$proof/runner.log" 2>&1 || true
 status=$(docker wait "$client")
+for item in cpu.stat memory.events memory.peak; do docker exec "$pg" cat "/sys/fs/cgroup/$item" > "$proof/pg-$item-final.txt"; done
 cleanup
 # Only named report files are made operator-readable; the retained PG data stays
 # unchanged. The report root itself remains private mode0700.

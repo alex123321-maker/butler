@@ -101,9 +101,10 @@ func (p *capacityMixedProvider) StartRun(ctx context.Context, q transport.StartR
 }
 
 type capacityMixedExecutor struct {
-	base     *flow.Service
-	mu       sync.Mutex
-	Failures map[string]string
+	base         *flow.Service
+	mu           sync.Mutex
+	Failures     map[string]string
+	FailureTypes map[string][]string
 }
 
 func (e *capacityMixedExecutor) Execute(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
@@ -124,6 +125,7 @@ func (e *capacityMixedExecutor) Execute(ctx context.Context, event ingress.Input
 	}
 	e.mu.Lock()
 	e.Failures[event.EventID] = code
+	e.FailureTypes[event.EventID] = capacityMixedErrorTypes(err)
 	e.mu.Unlock()
 	return result, err
 }
@@ -211,6 +213,7 @@ type capacityMixedSample struct {
 	StartNS, EndNS                    int64
 	InputID, RunID, Status, ErrorCode string
 	ExecutionClass                    string
+	ErrorTypes                        []string
 }
 
 // The prospective protocol is committed before this executable is collected.
@@ -234,7 +237,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 			t.Error("cannot retain combined proof", name)
 		}
 	}
-	observation := map[string]any{"protocol": "mixed-v3", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
+	observation := map[string]any{"protocol": "mixed-v4", "native_cloud_calls": 0, "synthetic_vectors": true, "controlled_provider": true, "machine_cold": "unknown", "phase": "setup"}
 	manifest := catalog.NewFileManifest(filepath.Join(report, "anchor"))
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
@@ -274,7 +277,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	fc := flow.Config{ProviderName: p.Name(), ModelName: "mixed-control", OwnerID: "mixed-worker", LeaseTTL: 10, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, SemanticMemory: reader, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, MemoryScopeResolver: func(context.Context) ([]memoryservice.Scope, error) {
 		return []memoryservice.Scope{{Type: "user", ID: "mixed-owner"}}, nil
 	}}
-	executor := &capacityMixedExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, log), Failures: map[string]string{}}
+	executor := &capacityMixedExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, log), Failures: map[string]string{}, FailureTypes: map[string][]string{}}
 	service, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, executor, runs, log, 5*time.Second)
 	if err != nil {
 		t.Fatal(err)
@@ -346,6 +349,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		sample.EndNS = time.Now().UnixNano()
 		executor.mu.Lock()
 		sample.ExecutionClass = executor.Failures[id]
+		sample.ErrorTypes = executor.FailureTypes[id]
 		executor.mu.Unlock()
 		return sample
 	}
@@ -590,7 +594,7 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	for _, q := range backgroundRequests {
 		var raw json.RawMessage
 		var quote, charge json.RawMessage
-		if err := pool.QueryRow(ctx, `SELECT to_jsonb(a),a.quote,r.request_json->'charge' FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE operation_id=$1 AND usage IS NULL AND a.reason='admission_wait'`, q.Context.RunID).Scan(&raw, &quote, &charge); err != nil || string(quote) != string(charge) {
+		if err := pool.QueryRow(ctx, `SELECT to_jsonb(a),a.quote,r.request_json->'charge' FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.usage IS NULL AND a.reason='admission_wait'`, q.Context.RunID).Scan(&raw, &quote, &charge); err != nil || string(quote) != string(charge) {
 			t.Fatal("cancelled attempt lost NULL accounting", err)
 		}
 		originals[q.Context.RunID] = raw
@@ -724,6 +728,38 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 	observation["database_bytes"] = databaseBytes
 	observation["vector_relation_bytes"] = vectorBytes
 	observation["phase"] = "closed"
+}
+
+// Dynamic error messages can contain provider/storage data. Retain only Go
+// type names and independently checked fixed sentinel identities for diagnosis.
+func capacityMixedErrorTypes(err error) []string {
+	if err == nil {
+		return nil
+	}
+	out := []string{}
+	var visit func(error)
+	visit = func(e error) {
+		if e == nil {
+			return
+		}
+		out = append(out, fmt.Sprintf("%T", e))
+		switch u := e.(type) {
+		case interface{ Unwrap() []error }:
+			for _, child := range u.Unwrap() {
+				visit(child)
+			}
+		case interface{ Unwrap() error }:
+			visit(u.Unwrap())
+		}
+	}
+	visit(err)
+	for name, sentinel := range map[string]error{"cancelled": context.Canceled, "deadline": context.DeadlineExceeded, "budget_conflict": budget.ErrConflict, "task_conflict": task.ErrConflict, "catalog_restore": catalog.ErrRestore, "catalog_stale": catalog.ErrStale, "catalog_denied": catalog.ErrDenied, "catalog_deleted": catalog.ErrDeleted} {
+		if errors.Is(err, sentinel) {
+			out = append(out, "is:"+name)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 func capacityMixedAccess(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, ref catalog.SourceRef) error {
