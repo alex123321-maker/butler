@@ -1,8 +1,9 @@
 # Issue88: complete temporal native v5 evidence
 
 The new frozen twelve-original cohort completed mechanically. Independent
-semantic and citation-entailment review remains **pending**; release qualification
-is false. The earlier [v4 NO_GO](issue-88-native-v4-independent-review.md), its
+[semantic and citation-entailment review](issue-88-native-v5-independent-review.md)
+found11 passing originals and one unsupported acceptance-state assertion:
+**NO_GO**, release qualification remains false. The earlier [v4 NO_GO](issue-88-native-v4-independent-review.md), its
 answers, corpus, rubrics, costs and nullable observations remain unchanged.
 
 ## Exact frozen window
@@ -118,5 +119,5 @@ It omits credential material, raw transport events/errors and hidden reasoning.
 
 These observations cover explicit exact-reference temporal lookup. They do not
 qualify adaptive retrieval, natural-language personal-history recall or overall
-issue77. Every one of the twelve answers still requires independent semantic
-review and citation entailment against the unchanged rubric.
+issue77. The immutable safe JSON retains its original pending-review fields;
+the separate independent review records the final NO_GO without rewriting it.
