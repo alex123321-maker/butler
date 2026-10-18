@@ -18,7 +18,7 @@ v9 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(v9)
 closed, util = v9.closed.closed, v9.util
 BASE = pathlib.Path('/srv/storage/butler/agents/issue88-native-v9-20261018')
-PRIOR = BASE/'reports/native-v9-preseal-v1'
+PRIOR = BASE/'reports/native-v9-preseal-v2'
 HISTORY = PRIOR/'history'
 
 
