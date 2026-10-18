@@ -82,6 +82,19 @@ jq -e '.nano_cpus==1000000000 and .memory_bytes==1073741824' "$proof/postgres-re
 docker start -a "$client" > "$proof/events.jsonl" 2>&1 &
 client_pid=$!
 driver_deadline=$((SECONDS+1200))
+# docker start runs in the background; exec is invalid while the container is
+# still merely created. Wait for that transition before reading any marker.
+startup_deadline=$((SECONDS+60))
+while :; do
+ state=$(docker inspect --format '{{.State.Status}}' "$client")
+ printf '%s\n' "$state" > "$proof/client-startup-state"
+ case "$state" in
+  running) break ;;
+  created) ((SECONDS<startup_deadline)) || exit 1 ;;
+  *) exit 1 ;;
+ esac
+ sleep 1
+done
 
 # A client root-owned 0600 marker is read through its own container. Only fixed
 # paths are passed as positional arguments; neither JSON nor a schema is shell code.
@@ -141,6 +154,6 @@ jq -e '.controlled_only and .pass and (.steps|length)==15 and .steps[-1].Name=="
 jq -e '.controlled_only and .pass and .native_calls==0 and (.steps|length)==17 and .lesson_source!=""' "$proof/timeline/timeline-experience.json" >/dev/null
 jq -e '.pass and .native_calls==0 and .restored and .erased_private_copies==0 and .effect_journal_unchanged and .budget_ledger_unchanged and .enospc_observed and (.steps|length)>=23 and ([.steps[].Name] as $names | ["actual_current_original_uses_earlier_preference_and_independent_verification","earlier_verified_original_to_owner_accepted_episode","earlier_preference_and_verified_episode_review_diff_activate","ordinary_broker_reads_earlier_consolidated_episode_with_current_applicability","actual_custom_dump_of_same_prewithdrawal_timeline","late_original_deletion_fences_episode_and_consolidation","fresh_custom_restore_latest_anchor_erases_original_episode_view_retains_all_charges","same_restored_timeline_actual_enospc_keeps_failed_deletion_uncommitted"] | all(. as $name | $names | index($name)!=null))' "$proof/timeline/timeline-lifecycle.json" >/dev/null
 sha256sum --check --status "$proof/source.sha256"
-sha256sum "$proof/source.sha256" "$proof/source-reference" "$proof/tool-broker" "$proof/extension.test" "$proof/http.test" "$proof/events.jsonl" "$proof/environment.json" "$proof/client-resources.json" "$proof/postgres-resources.json" "$proof/backup-ready-driver.json" "$proof/restore-ready-driver.json" "$proof/before-deletion.dump" "$proof/restore.log" "$proof/timeline/timeline.json" "$proof/timeline/timeline-experience.json" "$proof/timeline/timeline-lifecycle.json" > "$proof/evidence.sha256"
+sha256sum "$proof/source.sha256" "$proof/source-reference" "$proof/tool-broker" "$proof/extension.test" "$proof/http.test" "$proof/events.jsonl" "$proof/environment.json" "$proof/client-resources.json" "$proof/client-startup-state" "$proof/postgres-resources.json" "$proof/backup-ready-driver.json" "$proof/restore-ready-driver.json" "$proof/before-deletion.dump" "$proof/restore.log" "$proof/timeline/timeline.json" "$proof/timeline/timeline-experience.json" "$proof/timeline/timeline-lifecycle.json" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 printf 'Controlled shared lifecycle dump/restore and bounded ENOSPC passed; native calls 0, auth 0.\n'
