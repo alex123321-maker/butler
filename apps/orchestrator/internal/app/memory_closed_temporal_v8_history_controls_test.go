@@ -7,6 +7,22 @@ import (
 	"testing"
 )
 
+func TestLatestClosedOwnerV7AdapterRetainsOriginalLeaf(t *testing.T) {
+	root := os.Getenv("BUTLER_CLOSED_TEMPORAL_V7_HISTORY_TEST_ROOT")
+	if root == "" {
+		t.Skip("explicit original closed V7 leaf required")
+	}
+	path := filepath.Join(root, "history.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err := loadLatestClosedOwnerHistory(path, experienceDigest(string(raw)))
+	if err != nil || h.Carry.ModelTurns != 145 || h.Usage.NativeEntries != 145 || h.Usage.NativeKnownUsage != 144 || h.Usage.NativeUnknownUsage != 1 || h.Usage.KnownFullTokenLowerBound != 1105554 || h.NewUsage.NativeEntries != 36 || h.SeparateAdaptive.NativeEntries != 98 {
+		t.Fatal("generic adapter changed original closed V7 population", err)
+	}
+}
+
 func TestLatestClosedOwnerV8RetainsIndependentProductPopulation(t *testing.T) {
 	for _, count := range []int{0, 1} {
 		p, l, outcomes, entries, previous, day, deadline := closedTemporalV7Fixture(t, count)
