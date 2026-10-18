@@ -322,3 +322,45 @@ The events SHA256 is
 `01bba878b3a5ffc166a3398dfd8de68b682b1e9b5e32dc9c90afdcea3b63bb80`;
 the failed timeline-progress SHA256 is
 `e4f9da7636c1bbc404218950c2b3bb905aa0a363fb121ada6c43430c589b19c6`.
+
+## Current neutral-worker complete receipt
+
+`coherent-lifecycle-v11`, frozen source `4d7e6a68`, passed the complete new window
+on ssh laba with all24 sequential checkpoints and47 passed test/subtest events,
+0 failures/skips, race detection and vet. The owning foreground and independent
+worker contexts are neutral; provider entry rejects inherited owner-control
+identity. The actual production experience source wrapper and captured final
+publication guard are composed. The four mandatory ordinary captured-publication
+and late-lease controls passed in the same process suite.
+
+The ordered state covers accepted preference and new conversation, task-specific
+amendment, five ordinary turns and compaction/restart, independent verification
+of a real Broker/extension/HTTP artifact, owner-accepted execution episode and
+reviewed consolidation. A separately dispatched uncertain effect retains its
+actual action identity, UNKNOWN outcome, one prepare dispatch and no final or
+replay through consolidation, deletion and restore. The earlier compaction
+prefix still contains owner-recorded working UNKNOWN; the later actual dispatch
+does not retroactively change that prefix.
+
+The driver dumped the same live predeletion database, restored it into a verified
+empty database and applied the latest independent deletion anchor. Before replay,
+reads denied; after idempotent replay, withdrawn private copies were0. Full effect
+and budget ledgers remained identical. The final capsule hit actual ENOSPC in its
+own8KiB tmpfs; failed deletion stayed uncommitted. It did not fill the host volume.
+
+Reports: `/srv/storage/butler/agents/issue92-20261018/reports/coherent-lifecycle-v11`.
+
+| Artifact | SHA256 |
+| --- | --- |
+|events.jsonl|409bf84239956fc10978487d4cdf3c9fe1c73ac3c72106bd80503a2c4426ef5f|
+|timeline/timeline.json|ba720fc5c99a749c22b5edaf5b5293c31a11f1bd3b32ff015349319725a36ec6|
+|timeline/timeline-experience.json|55a1f2b341809f48ab45a817a14bde28b5c4b3a45f439679fef10b6cc12a72f9|
+|timeline/timeline-lifecycle.json|faa1acfe777bb70360930a4bbc052962a565733221119e6cf3dac9fd30c85de0|
+|evidence.sha256|6a9b91b8fa80c0c7d7b248f5bd3684e753f23f7fecc11fdf82b81e71ec2ea6f9|
+
+Native provider calls and auth imports are0. This is current ordinary-worker
+mechanical acceptance on the frozen source, not native answer quality, mixed
+workload SLO or real owner review. Earlier v8/v9 fixture limitations and the
+failed v10 receipt remain unchanged. The new foreground2s source-proof ceiling
+was declared before this window; parent deadlines and fresh post-wait authority
+checks remain active. Primary laba deployment and activation flags are unchanged.

@@ -207,7 +207,9 @@ usage-drain/currentness controls passed. Evidence-list SHA256:
 This controlled receipt does not repair or qualify any closed native cohort.
 
 Source `4d7e6a68` now starts fresh combined `composition-v6` and full controlled
-`coherent-lifecycle-v11` windows. Their final outcomes remain pending. The combined
+`coherent-lifecycle-v11` windows. The full lifecycle-v11 passed24 checkpoints and47/0/0/race/vet; its evidence-list
+SHA256 is `6a9b91b8fa80c0c7d7b248f5bd3684e753f23f7fecc11fdf82b81e71ec2ea6f9`.
+The combined outcome remains pending. The combined
 gate additionally requires the new default/compound held-event controls and
 consolidation-v3 worker, failed-closure, exact latest-leaf and current-day carry
 controls. Namespace consumption remains tested only in its dedicated disposable
