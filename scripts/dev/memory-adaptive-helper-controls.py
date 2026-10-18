@@ -58,6 +58,33 @@ class Controls(unittest.TestCase):
         self.assertEqual(utc_day("2026-10-18T07:30:00+07:00"), "2026-10-18")
         self.assertEqual(utc_day("2026-10-17T23:30:00-07:00"), "2026-10-18")
 
+    def test_legacy_temporal_absent_operation_columns_stay_null(self):
+        metadata = runpy.run_path(str(ROOT / "memory-adaptive-history.py"))["native_metadata"]
+        def query(container, database, port, sql):
+            if "pg_attribute" in sql:
+                return {"table": "temporal_native_entries", "columns": ["id", "run_id", "observation_json", "created_at", "finished_at"]}
+            self.assertIn("'operation_id',NULL", sql)
+            self.assertIn("'reservation_id',NULL", sql)
+            return [{"entry_id": 1, "operation_id": None, "reservation_id": None, "usage": None}]
+        with mock.patch.dict(metadata.__globals__, {"sql": query}):
+            receipt, rows = metadata("fixture", "fixture_test", 5432, "legacy", "temporal")
+        self.assertNotIn("operation_id", receipt["columns"])
+        self.assertIsNone(rows[0]["operation_id"])
+        self.assertIsNone(rows[0]["usage"])
+
+    def test_legacy_consolidation_reservation_uses_original_observation(self):
+        metadata = runpy.run_path(str(ROOT / "memory-adaptive-history.py"))["native_metadata"]
+        def query(container, database, port, sql):
+            if "pg_attribute" in sql:
+                return {"table": "consolidation_screen_calls", "columns": ["entry_id", "run_id", "operation_id", "observation", "created_at", "finished_at"]}
+            self.assertIn("'reservation_id',observation->'ReservationID'", sql)
+            self.assertIn("'usage',observation->'Usage'", sql)
+            return [{"entry_id": "original", "reservation_id": "original-reference", "usage": None}]
+        with mock.patch.dict(metadata.__globals__, {"sql": query}):
+            receipt, rows = metadata("fixture", "fixture_test", 5432, "legacy", "consolidation")
+        self.assertNotIn("reservation_id", receipt["columns"])
+        self.assertEqual(rows[0]["reservation_id"], "original-reference")
+
     def test_unused_precollector_clone_requires_zero(self):
         self.write_private("expected-main.value", OLD)
         self.write_private("auth-import.value", OLD)

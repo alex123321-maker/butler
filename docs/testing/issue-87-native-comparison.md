@@ -172,3 +172,20 @@ application catalog before auth. After any actual v5 run, future inventories
 must include `butler-issue87-native-v5-pg`, database `memory_adaptive_test`,
 schema `adaptive_native_v5`, port5432, data under this isolated root's
 `postgres/`. The original six-store inventory alone is insufficient thereafter.
+
+The final history metadata extension passed11 synthetic helper controls,
+including legacy temporal missing-column NULL retention and consolidation's
+original embedded reservation witness. An actual six-store read-only metadata
+probe retained SHA256
+`a21e825c79b9bd49a116caccf07f2c67209bb07a1c9305bc06f9822c155439ea`.
+Catalog column-presence receipts precede every legacy observer projection.
+No missing operation/reservation or total is reconstructed from another row.
+The latest closed issue89 v2 ledger/screen/safe review are separately retained by
+their exact original hashes. Its NO_GO is not relabeled as a quality pass.
+
+The first offline v5 preparation reached the successful exact nonroot runner
+preflight, then stopped because the history helper attempted to recreate the
+already-created proof directory. Its partial reports remain retained; there was
+no auth, PG schema or native entry. The correction permits the launcher-created
+directory while keeping every artifact write exclusive. A fresh isolated root
+is used for the final seal; no incomplete preparation is resumed as inference.

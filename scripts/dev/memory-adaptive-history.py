@@ -50,6 +50,31 @@ def sql(container, database, port, query):
                           "BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;" + query + ";COMMIT;"))
 
 
+def columns(container, database, port, schema, table):
+    return sql(container, database, port, "SELECT jsonb_build_object('table','" + table + "','columns',(SELECT coalesce(jsonb_agg(attname ORDER BY attnum),'[]') FROM pg_attribute WHERE attrelid=to_regclass('" + schema + "." + table + "') AND attnum>0 AND NOT attisdropped))")
+
+
+def native_metadata(container, database, port, schema, kind):
+    table, identity, observation, usage = ("temporal_native_entries", "id", "observation_json", "usage") if kind == "temporal" else ("consolidation_screen_calls", "entry_id", "observation", "Usage")
+    receipt = columns(container, database, port, schema, table)
+    known = receipt["columns"]
+    if identity not in known:
+        raise SystemExit("original native observer identity unavailable")
+    fields = [("entry_id", identity)]
+    for field in ("run_id", "operation_id", "reservation_id", "created_at", "finished_at"):
+        expression = field if field in known else "NULL"
+        # The older consolidation observer stores its reservation reference only
+        # inside its original observation. This is an explicit original witness,
+        # never a reconstructed match to another product attempt.
+        if field == "reservation_id" and kind == "consolidation" and field not in known and observation in known:
+            expression = observation+"->'ReservationID'"
+        fields.append((field, expression))
+    fields.append(("usage", observation+"->'"+usage+"'" if observation in known else "NULL"))
+    projection = ",".join("'"+name+"',"+expression for name, expression in fields)
+    data = sql(container, database, port, "SET LOCAL search_path="+schema+",public;SELECT coalesce(jsonb_agg(jsonb_build_object("+projection+") ORDER BY "+identity+"),'[]') FROM "+table)
+    return receipt, data
+
+
 def inventory(day):
     result = {"format": "butler.adaptive.six-store-ledgers.v5", "day": day, "prospective_owner": OWNER, "databases": []}
     for container, database, port in DATABASES:
@@ -70,18 +95,20 @@ def inventory(day):
                 window["background"] = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT coalesce(jsonb_agg(jsonb_build_object('operation_id',a.operation_id,'job_id',a.job_id,'reservation_id',a.reservation_id,'provider',a.provider,'model',a.model,'quote',a.quote,'state',a.state,'usage',a.usage,'created_at',a.created_at,'observed_at',a.observed_at) ORDER BY operation_id),'[]') FROM memory_model_attempts a")
             present = sql(container, database, port, "SELECT jsonb_build_object('temporal',to_regclass('" + schema + ".temporal_native_entries') IS NOT NULL,'consolidation',to_regclass('" + schema + ".consolidation_screen_calls') IS NOT NULL)")
             window["native_observers_present"] = present
+            window["native_column_receipts"] = {}
             window["native_temporal"], window["native_consolidation"] = [], []
-            if present["temporal"]:
-                window["native_temporal"] = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT coalesce(jsonb_agg(jsonb_build_object('entry_id',id,'run_id',run_id,'operation_id',operation_id,'reservation_id',reservation_id,'usage',observation_json->'usage','created_at',created_at,'finished_at',finished_at) ORDER BY id),'[]') FROM temporal_native_entries")
-            if present["consolidation"]:
-                window["native_consolidation"] = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT coalesce(jsonb_agg(jsonb_build_object('entry_id',entry_id,'run_id',run_id,'operation_id',operation_id,'reservation_id',observation->'ReservationID','usage',observation->'Usage','created_at',created_at,'finished_at',finished_at) ORDER BY entry_id),'[]') FROM consolidation_screen_calls")
+            for kind in ("temporal", "consolidation"):
+                if present[kind]:
+                    receipt, data = native_metadata(container, database, port, schema, kind)
+                    window["native_column_receipts"][kind] = receipt
+                    window["native_"+kind] = data
             window["native_window_states"] = {}
             for kind, table in (("temporal", "temporal_native_window"), ("consolidation", "consolidation_screen_window")):
                 if present[kind]:
                     state = sql(container, database, port, "SET LOCAL search_path=" + schema + ",public;SELECT jsonb_build_object('closed',closed) FROM " + table + " WHERE singleton")
                     window["native_window_states"][kind] = state
                     entries = window["native_"+kind]
-                    if any(utc_day(entry["created_at"]) == day for entry in entries) and state["closed"] is not True:
+                    if any(entry["created_at"] is not None and utc_day(entry["created_at"]) == day for entry in entries) and state["closed"] is not True:
                         raise SystemExit("current native predecessor must be closed before freeze")
             windows.append(window)
         result["databases"].append({"container": container, "database": database, "port": port, "windows": windows})
@@ -119,11 +146,19 @@ def prospective_store():
 def main():
     mode, base_arg = sys.argv[1:3]
     base = pathlib.Path(base_arg).resolve()
-    if mode not in ("prepare", "check-current") or not re.fullmatch(r"/srv/storage/butler/agents/issue87-native-[A-Za-z0-9_-]+", str(base)):
+    if mode not in ("prepare", "check-current", "probe") or not re.fullmatch(r"/srv/storage/butler/agents/issue87-native-[A-Za-z0-9_-]+", str(base)):
         raise SystemExit("bounded adaptive proof reference required")
     proof = base / "reports" / "native-v5"
     now = datetime.datetime.now(datetime.timezone.utc)
     day = now.strftime("%Y-%m-%d")
+    if mode == "probe":
+        label = sys.argv[3]
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", label):
+            raise SystemExit("bounded metadata probe label required")
+        raw = canonical(inventory(day))
+        exclusive(base / "reports" / (label+".json"), raw)
+        print(json.dumps({"read_only": True, "six_databases": 6, "day": day, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "auth_or_inference": False}))
+        return
     if mode == "check-current":
         raw = (proof / "history.json").read_bytes()
         if hashlib.sha256(raw).hexdigest() != sys.argv[3]:
@@ -144,7 +179,7 @@ def main():
         print(json.dumps({"read_only": True, "current_day_unchanged": True, "six_databases": 6, "prospective_seventh_store": future, "day": day, "auth_or_inference": False}))
         raise SystemExit(0)
 
-    proof.mkdir(parents=True, mode=0o700)
+    proof.mkdir(parents=True, mode=0o700, exist_ok=True)
     data = inventory(day)
     future = prospective_store()
     if future["present"]:
