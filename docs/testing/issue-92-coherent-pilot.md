@@ -253,13 +253,35 @@ actual uncertain external effect in this complete scenario. The separate real
 effect controls remain distinct. Native87–90 quality/full-cost gates, current
 combined composition checks and staged owner review remain required.
 
-The next complete controlled window adds a24th checkpoint before consolidation:
+The complete v9 controlled window adds a24th checkpoint before consolidation:
 an actual current Flow dispatch through Broker/extension/HTTP receives an
 unsupported-value rejection and stops with a durable `effect_unknown` input,
 one prepare dispatch and no final result. The current consumer retains that
 actual action/run identity in working state; consolidation and subsequent reads
 must not replay it. The same UNKNOWN and absent final are checked after owner
 deletion and fresh custom restore, alongside byte-identical full effect and
-budget ledgers. This is a prospective control, with no run receipt yet. The
+budget ledgers. The
 earlier long-task/compaction prefix still uses owner-recorded working UNKNOWN;
 this later actual effect does not retroactively change that prefix or v8.
+
+`coherent-lifecycle-v9`, frozen source `288b7ea4`, passed all24 checkpoints on
+ssh laba,19 test/subtest events,0 failures/skips, race detection and explicit
+vet. The actual recipient dispatch count increased exactly once for the stopped
+original; its current journal remained UNKNOWN with one prepare tool call and
+zero final results through consolidation, deletion and fresh restore. Complete
+effect/evidence and foreground/background reservation/scope digests stayed
+identical; the latest-anchor replay left zero withdrawn private copies and the
+final same-restored-state8KiB tmpfs reached actual ENOSPC. Native calls/auth0.
+
+Reports: `/srv/storage/butler/agents/issue92-20261018/reports/coherent-lifecycle-v9`.
+
+| Artifact | SHA256 |
+| --- | --- |
+|source.sha256|463aea449351b879f6b3202539caa8935c42f9d81bbcf9242317326c6d5a1fd4|
+|events.jsonl|72b9d5566c87e6e4bc912586698ec27e4af18df6ba2d0823a4753e968b1d4b6e|
+|timeline/timeline-lifecycle.json|797703a2c3166e75f2ca5035d69d8e2334920f52c3414425a2092f14f7a78506|
+|evidence.sha256|67916b93f9c7e39c09198b741959109e8c90114ae14a70c1a9106ba10cef49b8|
+
+This receipt is still a controlled mechanical composition. Current later
+reconciliation/privacy changes require fresh combined checks; native quality,
+full cost, repeated mixed-workload latency and staged owner review remain gates.

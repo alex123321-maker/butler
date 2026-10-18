@@ -25,6 +25,7 @@ The original versioned windows and their failures remain retained separately.
 |b3be3a12 / composition-v5|259 test/subtest events passed,0 failed/skipped; race/vet passed|Includes080 terminal-attempt provenance/currentness/owner-only policy and the trusted single-proposal instruction. This controlled combined subset is separate from native quality and the complete92 pilot|
 |8df1331b / coherent-experience-v1|1 mandatory test passed,0 failed/skipped, race;7.93s|The same15-checkpoint timeline continues through an actual Broker/extension/HTTP original, independent artifact verification and owner-accepted episode,17 sequential checkpoints; controlled outputs, no native inference|
 |fdc96d54 / coherent-lifecycle-v8|18 test/subtest events passed,0 failed/skipped, race|All23 sequential same-state preference/verified-episode/consolidation/deletion/custom-restore/latest-anchor/real-ENOSPC checkpoints, plus mandatory port/dependency/erasure/contract controls; native/auth0, controlled outputs|
+|288b7ea4 / coherent-lifecycle-v9|19 test/subtest events passed,0 failed/skipped, race/vet|All24 same-state checkpoints including actual Broker/runtime UNKNOWN/no-final/no-replay through consolidation/delete/fresh restore; complete effect/evidence/budget digests unchanged, actual ENOSPC; controlled outputs, native/auth0|
 |7bac6cda / interactive-v5|Ordinary Flow completed370ms with one actual local query/index IPC overlap;1PASS,0FAIL,0SKIP with race|100 original vectors plus100 new fragments; controlled foreground provider, zero cloud calls; not p95 or full mixed-model workload|
 |8ed0770f / disk-v1|Actual ENOSPC, test0.68s, passed without skips|Dedicated8KiB tmpfs, one synthetic schema; unchanged PG deletion state on failed append. Observed partial anchor becomes unavailable and explicitly denies reads/reconciliation; no automatic reset or claimed deletion|
 
@@ -110,8 +111,11 @@ verified episode on that earlier timeline. Consolidation followed by withdrawal,
 actual custom restore and ENOSPC now consume the episode's same state in the
 complete controlled23-checkpoint v8 scenario. Its actual receipt and exact
 limits are in [the coherent lifecycle report](issue-92-coherent-pilot.md).
-Native quality, real uncertain-effect behavior in that complete scenario and
-current combined composition remain separate acceptance requirements.
+The subsequent complete v9 adds an actual dispatched uncertain effect before
+consolidation and checks its unchanged UNKNOWN/no-final/no-replay state through
+deletion and restore. Its full24-checkpoint receipt is separate from v8's
+owner-recorded compaction state. Native quality and current combined composition
+remain separate acceptance requirements.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
