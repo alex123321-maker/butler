@@ -50,5 +50,12 @@ host ports or main-service attachment. PostgreSQL data/reports are retained;
 the driver removes only its own containers/network. Race, targeted vet, all five
 rows and metadata/source checksum gates must pass without skips.
 
-Execution receipt: pending the fresh smoke. Qualifications and main deployment
-remain unchanged.
+The first `bootstrap-v1`, source `3c96e7eb`, passed default-off startup/Doctor and
+all three closed/unsupported constructor denials, but failed the final same-DB
+off reconstruction when its second Doctor command stopped before completion.
+The original stream remains failed, SHA256
+`9c4026d5d311b3fc9f8cab29642cf22da5dd855a08caad8044e03158804eb466`.
+The next diagnostic revision records only terminal status, bounded error code,
+checkpoint, runtime-call count and attempted tool-reference collision metadata;
+it changes no production path or acceptance threshold. Qualifications and main
+deployment remain unchanged. A completed smoke receipt is still pending.

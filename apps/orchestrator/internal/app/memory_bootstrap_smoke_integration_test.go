@@ -176,12 +176,12 @@ func TestMemoryRealBootstrapDoctorIntegration(t *testing.T) {
 			t.Setenv("BUTLER_TOOL_BROKER_ADDR", brokerAddr)
 			application, e := New(ctx)
 			row := map[string]any{"name": phase.name, "feature_enabled": phase.enabled, "model_jobs_requested": phase.jobs, "profile_supported": !phase.unsupported, "prior_receipts_unchanged": true}
+			defer func() { row["pass"] = !t.Failed(); evidence = append(evidence, row) }()
 			if phase.enabled && (!experience.ReleaseQualified || phase.unsupported) {
 				if application != nil || !errors.Is(e, experience.ErrEvidence) {
 					t.Fatal("explicit closed/unsupported startup did not return typed evidence denial")
 				}
 				row["outcome"] = "typed_evidence_denial"
-				evidence = append(evidence, row)
 				checkSealed(t)
 				return
 			}
@@ -291,6 +291,17 @@ func TestMemoryRealBootstrapDoctorIntegration(t *testing.T) {
 					break
 				}
 				if dto.Report.Execution.Status != "queued" && dto.Report.Execution.Status != "running" {
+					var code, checkpoint, run string
+					var attempted []string
+					if e = pool.QueryRow(ctx, `SELECT error_code,checkpoint,run_id,ARRAY(SELECT key FROM jsonb_each(COALESCE(checkpoint_json->'action_slots','{}'::jsonb))) FROM accepted_inputs WHERE input_id=$1`, inputID).Scan(&code, &checkpoint, &run, &attempted); e != nil {
+						t.Fatal("diagnostic checkpoint metadata unavailable")
+					}
+					row["outcome"], row["doctor_terminal_status"], row["doctor_error_code"], row["doctor_checkpoint"], row["attempted_tool_refs"], row["controlled_doctor_calls"] = "unexpected_terminal", dto.Report.Execution.Status, code, checkpoint, attempted, runtime.calls.Load()-before
+					var collision bool
+					if e = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM tool_calls WHERE tool_name='doctor.check_system' AND run_id<>$1 AND tool_call_id=ANY($2::text[]))`, run, attempted).Scan(&collision); e != nil {
+						t.Fatal("diagnostic reference metadata unavailable")
+					}
+					row["cross_run_tool_ref_collision"] = collision
 					t.Fatal("Doctor command did not complete through existing read-only mode_0 path")
 				}
 				if time.Now().After(until) {
@@ -363,7 +374,6 @@ func TestMemoryRealBootstrapDoctorIntegration(t *testing.T) {
 			}
 			sealed = append(sealed, sealedReport{reportID, sha256.Sum256([]byte(stored))})
 			row["outcome"], row["memory"], row["controlled_doctor_calls"], row["clean_shutdown"] = "constructed_and_served", memory, 1, true
-			evidence = append(evidence, row)
 		})
 	}
 	checkSealed(t)
