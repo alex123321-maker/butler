@@ -26,6 +26,18 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^mobile/android/|^scripts/dev/mobile-" {
+      [void]$specs.Add("docs/architecture/android-companion.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/mobile-build.ps1 -Test")
+      continue
+    }
+    "^internal/mobile/|^internal/memory/catalog/mobile_observation[.]go$|^apps/orchestrator/internal/api/mobile|^migrations/083_" {
+      [void]$specs.Add("docs/architecture/android-companion.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$tests.Add("Linux + isolated PostgreSQL: go test -race ./internal/mobile -count=1")
+      [void]$tests.Add("go test ./apps/orchestrator/internal/api -run '^TestMobile' -count=1")
+      continue
+    }
     "^(internal/memory/adaptive/|internal/memory/reader/adaptive_|apps/orchestrator/internal/(app/memory_adaptive|orchestrator/adaptive_retrieval)|migrations/074_|scripts/dev/memory-adaptive-|docs/architecture/adaptive-memory-retrieval[.]md$)" {
       [void]$specs.Add("docs/architecture/adaptive-memory-retrieval.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")

@@ -1,5 +1,11 @@
 # Versioned memory sources and privacy
 
+Android [notification ingress](android-companion.md) atomically publishes private
+quarantined original sources with content-free device/event receipts. Owner
+deletion and retention use the same external manifest; redelivery retains the
+receipt and cannot rehydrate source text. No model consumer is automatically
+admitted for incoming notifications.
+
 Migration079 extends source/run privacy to primary Transcript tool caches and
 copied approval payloads. An irreversible content-free run marker is committed
 with erasure; late tool publication and payload rewrites cannot resurrect it.

@@ -54,6 +54,7 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/mobile"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/singletabcontrol"
@@ -588,6 +589,7 @@ func New(ctx context.Context) (*App, error) {
 			return err
 		}
 		maintenanceErr := initiativeWorker.Sweep(ctx)
+		maintenanceErr = errors.Join(maintenanceErr, (&mobile.Store{Pool: postgres.Pool(), Catalog: sourceCatalog}).Cleanup(ctx))
 		if childMaintenance != nil {
 			// A denied branch must not prevent unrelated admitted maintenance.
 			maintenanceErr = errors.Join(maintenanceErr, childMaintenance.Sweep(ctx))

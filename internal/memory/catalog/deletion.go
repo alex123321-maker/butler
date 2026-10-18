@@ -16,10 +16,20 @@ func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRev
 	if e != nil {
 		return Deletion{}, e
 	}
+	return s.deleteSource(ctx, sourceID, action, expectedRevision, own)
+}
+
+// DeleteExpiredMobileObservation applies only durable owner-configured device
+// retention. It never manufactures an owner actor, grant or model authorization.
+func (s *Store) DeleteExpiredMobileObservation(ctx context.Context, sourceID string, expectedRevision int64) (Deletion, error) {
+	return s.deleteSource(ctx, sourceID, "delete", expectedRevision, "")
+}
+
+func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expectedRevision int64, own string) (Deletion, error) {
 	if action != "delete" && action != "revoke" {
 		return Deletion{}, ErrInvalid
 	}
-	if e = s.CheckRestore(ctx); e != nil {
+	if e := s.CheckRestore(ctx); e != nil {
 		return Deletion{}, e
 	}
 	tx, e := s.pool.Begin(ctx)
@@ -29,6 +39,13 @@ func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRev
 	defer tx.Rollback(ctx)
 	if _, e = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(226046)`); e != nil {
 		return Deletion{}, e
+	}
+	if own == "" {
+		// Lock current device policy until commit; an ordinary source, foreign
+		// source or notification whose retention was extended cannot be erased.
+		if e = tx.QueryRow(ctx, `SELECT d.owner_id FROM mobile_events e JOIN mobile_devices d USING(device_id) WHERE e.source_id=$1 AND e.received_at<clock_timestamp()-make_interval(days=>d.retention_days) FOR SHARE OF d,e`, sourceID).Scan(&own); e != nil {
+			return Deletion{}, ErrDenied
+		}
 	}
 	var actual string
 	var rev int64

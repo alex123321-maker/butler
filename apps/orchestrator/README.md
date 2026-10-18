@@ -62,6 +62,12 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Android notification ingress is mounted at `/api/v1/mobile/`; authenticated owner
+device controls use `/api/v1/mobile-owner/` and the Web `/mobile` page. It reuses
+the existing source catalog/deletion anchor and deterministic retention maintenance.
+There are no per-notification model runs. See the
+[protocol and deployment boundary](../../docs/architecture/android-companion.md).
+
 Current-source denial retains valid complete turn usage on the safe error event
 before the budget wrapper terminates the attempt. Denied tool/final text never
 passes through this accounting path. Provider cancellation and metadata drain are

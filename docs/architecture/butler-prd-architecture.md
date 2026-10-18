@@ -1,5 +1,10 @@
 # Butler (дворецкий) — Product Requirements + Architecture Specification
 
+The [Android companion](android-companion.md) adds device-scoped notification
+ingress and owner device controls. Events become private quarantined memory
+sources with durable per-event receipts. They never enter chat/task ingress,
+grant authority or automatically invoke a model.
+
 Action/credential permission is implemented as a single
 [versioned exact-action contract](action-authorization-contract.md).
 PostgreSQL owns intents, grants and bounded mandates. Explicit autonomy input,
