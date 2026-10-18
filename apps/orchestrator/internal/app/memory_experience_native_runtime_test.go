@@ -46,6 +46,7 @@ import (
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/butler/butler/internal/skills"
 	"github.com/butler/butler/internal/transport"
@@ -243,6 +244,25 @@ type experienceNativeRuntime struct {
 	timing      *experienceSourceTimings
 	stops       []func()
 	reconcile   func(context.Context, string, string, string) (actionauth.RunEffect, error)
+	foreground  *experienceNativeForeground
+}
+
+// Explicit test-only composition. Nil retains the frozen90 foreground defaults;
+// a later coherent pilot declares its own context and requests the real temporal
+// predicate. This never changes provider choice, source guards or qualification.
+type experienceNativeForeground struct {
+	ContextTokens   int
+	TemporalEnabled bool
+}
+
+func experienceNativeForegroundConfig(cfg flow.Config, result providerfactory.Result, controller *budget.Controller, selected *experienceNativeForeground) flow.Config {
+	if selected != nil {
+		cfg.ContextBudgetTokens = selected.ContextTokens
+		adapter := cfg.ProfileStore.(profileStoreAdapter)
+		adapter.temporal = temporalReadConfigured(selected.TemporalEnabled, result, controller)
+		cfg.ProfileStore = adapter
+	}
+	return cfg
 }
 
 // Stop every actual client/runtime before freezing a PostgreSQL template or
@@ -258,7 +278,14 @@ func (r *experienceNativeRuntime) close() {
 // reader are constructor-injected. Tools, current private context, grant checks,
 // runtime routing, effect journal, owned completion and skills are production.
 func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, anchor, directory string, recipient *experienceRecipient, addresses experienceNativeAddresses, policy budget.Policy, prompt, arm string, subset []catalog.SourceRef, expires time.Time) *experienceNativeRuntime {
+	return newExperienceNativeRuntimeConfigured(t, pool, cat, anchor, directory, recipient, addresses, policy, prompt, arm, subset, expires, nil)
+}
+
+func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, anchor, directory string, recipient *experienceRecipient, addresses experienceNativeAddresses, policy budget.Policy, prompt, arm string, subset []catalog.SourceRef, expires time.Time, foreground *experienceNativeForeground) *experienceNativeRuntime {
 	t.Helper()
+	if foreground != nil && (foreground.ContextTokens <= 4096 || foreground.ContextTokens > 1048576) {
+		t.Fatal("finite explicit foreground context required")
+	}
 	if addresses.reserved == nil {
 		t.Fatal("runtime endpoints must be frozen and reserved before fixture setup")
 	}
@@ -267,6 +294,10 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	}
 	ctx := context.Background()
 	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires, addresses: addresses}
+	if foreground != nil {
+		copy := *foreground
+		r.foreground = &copy
+	}
 	r.goals = goal.New(pool, r.tasks, nil)
 	r.timing = newExperienceSourceTimings(t, r, directory)
 	r.budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
@@ -611,6 +642,7 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	currentSources := experienceTimedRunSources{experienceRunSources: experienceRunSources{sources: experienceTimedCatalog{Store: r.cat, timing: r.timing}, catalog: r.cat, store: r.lessons}, timing: r.timing}
 	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "experience-native-worker", LeaseTTL: 120, Tasks: r.tasks, Budgets: r.budgets, MemorySources: currentSources, Completion: r.results, Checkpoints: r.inputs, PromptManager: r.pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tools: r.broker, ToolCatalog: r.broker, ActionAuthorizer: r.broker, OwnerGoals: r.goals, ActionMandateID: a.MandateID, ApprovalService: r.decisions}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
+	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: "gemini-3.8-flash-high"}, r.budgets, r.foreground)
 	fc.MemoryScopeResolver = func(c context.Context) ([]memoryservice.Scope, error) {
 		extra, err := r.cat.ExtraScopes(c, "memory_read")
 		out := []memoryservice.Scope{}
