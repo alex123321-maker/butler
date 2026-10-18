@@ -110,3 +110,13 @@ orders source release against material input/run changes with a per-input SQL
 fence. No full checkpoint body is reread by supervision. Schema rollback refuses
 populated stopped-attempt provenance, and normal source deletion/restore fences
 continue to erase copied bodies while preserving unknown outcomes and spend.
+
+Migration082 distinguishes content removal from publication. Exact task working
+erasure is allowed under an existing deletion of that session's owner, with
+unchanged task identity/authority and a single working-revision increment.
+Only empty plan/actions and the exact privacy marker may be written. Extra
+payload, foreign/missing deletion proof or any identity change is denied.
+Currentness vetoes remain mandatory for all ordinary publication, including
+after erasure. A stale copied observation must not prevent subsequent owner
+deletion or replay of a later independent anchor. Populated deletion/experience
+history refuses downgrade of this protection.

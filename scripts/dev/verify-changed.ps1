@@ -84,7 +84,7 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/candidates and TestCandidate in ./apps/orchestrator/internal/api; actual owner HTTP decision, exact quote validation, complete ancestor privacy and all-eight lifecycle corpus. Native Russian semantic release qualification is independent; never reset historical spend.")
       continue
     }
-    "^(internal/memory/experience/|apps/orchestrator/internal/app/memory_experience|apps/orchestrator/internal/input/stopped_observation[.]go|internal/memory/catalog/stopped_attempt[.]go|migrations/(077|080)_|scripts/dev/memory-experience-)" {
+    "^(internal/memory/experience/|apps/orchestrator/internal/app/memory_experience|apps/orchestrator/internal/input/stopped_observation[.]go|internal/memory/catalog/stopped_attempt[.]go|migrations/(077|080|082)_|scripts/dev/memory-experience-)" {
       [void]$specs.Add("docs/architecture/episodic-experience.md")
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
