@@ -107,3 +107,32 @@ query plans, relation/generation sizes, CPU/RAM/I/O and local queue/device peaks
 are retained. Process-first is not machine-cold; no host cache/clock flush or
 production restart is performed. Native answer quality and native cloud p95
 remain separate acceptance gates.
+
+### Fresh mixed-v3 correction of the fixture contract
+
+The complete mixed-v2 window failed and remains NO_GO, including its1587.255 ms
+warm p95 miss against1500 ms. Its scratch-only UNKNOWN expectation conflicted
+with Catalog's deliberate same-owner working-memory erasure on deletion; the
+stale summary policy correctly lost its old working-state binding. Mixed-v3 is
+a new whole window with the same sizes,1500/5000 ms bounds, two readers, warmup,
+hardware and complete denominator. It does not retry selected old measurements.
+
+The foreground provider checks the current typed goal/constraints and either
+the original synthetic working marker or the actual content-free privacy-erased
+working state. It never claims that a scratch marker is durable external-effect
+evidence. At least96 of100 mixed requests must complete. At most four requests
+may instead explicitly deny with a typed Catalog restore/currentness/access or
+Task conflict error, and each must overlap an actual deletion interval (including
+100 ms observation tolerance). Generic cancellation, a backend/deadline error,
+an uncorrelated denial or a lost current goal/constraint fails the window.
+Every request stays in full scheduled p50/p95; completion/denial/error counts
+are separate. A window of blocked requests cannot qualify throughput.
+
+Corrections use the ordinary exact-revision Catalog correction API. Both original
+admitted model jobs must still yield with NULL usage and unchanged charges.
+The old summary policy must then terminate as stale after working erasure,
+without a second model reservation. A separately predeclared fresh owner summary
+policy allows exactly one call against the current snapshot. Consolidation uses
+its original separately charged retry. Thus the whole window still admits four
+background model calls, including both original NULL calls, and never repairs,
+refunds, increases or reopens either consumed original policy.
