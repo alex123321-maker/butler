@@ -2,10 +2,14 @@
 param([Parameter(Mandatory)][string]$OwnerTokenFile)
 . (Join-Path $PSScriptRoot 'common.ps1')
 $state = Initialize-ButlerAgentEnvironment
+$privateFile = (Resolve-Path -LiteralPath $OwnerTokenFile).Path
+$privateCache = [IO.Path]::GetFullPath((Join-Path $state.RepoRoot '.cache')) + [IO.Path]::DirectorySeparatorChar
+if (-not $privateFile.StartsWith($privateCache, [StringComparison]::OrdinalIgnoreCase)) { throw 'Use an ignored owner proof file under this repo .cache.' }
+$containerOwnerFile = '/workspace/' + [IO.Path]::GetRelativePath($state.RepoRoot, $privateFile).Replace('\','/')
 # Fixed disposable receiver/database only. Never accept a production DB argument.
 $ownerBase = 'http://127.0.0.1:18058/api/v1/mobile-owner'
 $deviceBase = 'http://127.0.0.1:18057/api/v1/mobile'
-$ownerProof = (Get-Content $OwnerTokenFile -Raw).Trim()
+$ownerProof = (Get-Content -LiteralPath $privateFile -Raw).Trim()
 $ownerHeaders = @{Authorization="Bearer $ownerProof"}
 function Post-JSON($url, $headers, $value) { Invoke-RestMethod -Uri $url -Method Post -Headers $headers -ContentType application/json -Body (ConvertTo-Json $value -Depth 20 -Compress) }
 $code = Post-JSON "$ownerBase/pairing-code" $ownerHeaders @{}
@@ -34,7 +38,7 @@ Assert-LastExitCode -Action 'Create new disposable restore DB'
 docker exec butler-issue57-postgres pg_restore -U postgres -d $restoreDB $dumpPath
 Assert-LastExitCode -Action 'Actual PostgreSQL restore'
 $containerName='butler-issue57-restore-' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-docker run -d --name $containerName -p 127.0.0.1:18059:8080 -p 127.0.0.1:18060:8081 -v "$($state.RepoRoot):/workspace:ro" -v butler-issue57-state:/state -w /workspace -e "MOBILE_LAB_POSTGRES_URL=postgres://postgres@host.docker.internal:15457/$($restoreDB)?sslmode=disable" -e MOBILE_LAB_MANIFEST=/state/deletions -e MOBILE_LAB_OWNER_TOKEN_FILE=/workspace/.cache/issue57/owner.token pgvector/pgvector:pg17 /workspace/.cache/issue57/mobile-lab-new -require-pending-restore | Out-Null
+docker run -d --name $containerName -p 127.0.0.1:18059:8080 -p 127.0.0.1:18060:8081 -v "$($state.RepoRoot):/workspace:ro" -v butler-issue57-state:/state -w /workspace -e "MOBILE_LAB_POSTGRES_URL=postgres://postgres@host.docker.internal:15457/$($restoreDB)?sslmode=disable" -e MOBILE_LAB_MANIFEST=/state/deletions -e "MOBILE_LAB_OWNER_TOKEN_FILE=$containerOwnerFile" pgvector/pgvector:pg17 /workspace/.cache/issue57/mobile-lab-new -require-pending-restore | Out-Null
 Assert-LastExitCode -Action 'Start fenced restored receiver'
 $ready=$false
 for ($attempt=0;$attempt -lt 20;$attempt++) {

@@ -16,6 +16,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '21'}
       - uses: android-actions/setup-android@v3
+        with: {packages: 'platform-tools', log-accepted-android-sdk-licenses: false}
       - run: sdkmanager 'platforms;android-36.1' 'build-tools;36.0.0'
       - run: chmod +x mobile/android/gradlew
       - run: cd mobile/android && GRADLE_USER_HOME="$GITHUB_WORKSPACE/.cache/gradle" ./gradlew --no-configuration-cache testDebugUnitTest lintDebug assembleDebug assembleRelease
@@ -45,6 +46,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '21'}
       - uses: android-actions/setup-android@v3
+        with: {packages: 'platform-tools', log-accepted-android-sdk-licenses: false}
       - run: sdkmanager 'platforms;android-36.1' 'build-tools;36.0.0'
       - run: chmod +x mobile/android/gradlew
       - run: echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules && sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
