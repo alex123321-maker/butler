@@ -82,6 +82,14 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
+if sys.argv[1] == "snapshot-current":
+    day = sys.argv[2]
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", day) or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d") != day:
+        raise SystemExit("actual current UTC day required")
+    sys.stdout.buffer.write(canonical(current_inventory(day)))
+    raise SystemExit(0)
+
+
 if sys.argv[1] == "check-current":
     path = pathlib.Path(sys.argv[2]).resolve()
     expected = sys.argv[3]

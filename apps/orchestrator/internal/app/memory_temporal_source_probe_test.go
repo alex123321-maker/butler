@@ -178,6 +178,35 @@ func (trace *temporalSourceTrace) monitor(t *testing.T, cfg *pgxpool.Config) fun
 	return func() { stop(); <-done; pool.Close() }
 }
 
+// This frozen v3 SQL is used only by the retained read-only diagnostic.
+// New native admission uses a separate complete v4/current-day history seal.
+const temporalRetainedV3HistorySQL = `SELECT jsonb_build_object(
+ 'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM public.memory_model_attempts a),
+ 'foreground',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM public.execution_model_attempts a),
+ 'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM public.execution_budget_reservations r),
+ 'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM public.execution_budget_scopes s),
+ 'temporal_v1',jsonb_build_object(
+ 'foreground',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM memory_temporal_native_v1.execution_model_attempts a),
+ 'entries',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id)FROM memory_temporal_native_v1.temporal_native_entries e),
+ 'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM memory_temporal_native_v1.execution_budget_reservations r),
+ 'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM memory_temporal_native_v1.execution_budget_scopes s),
+ 'cases',(SELECT jsonb_agg(to_jsonb(c) ORDER BY position)FROM memory_temporal_native_v1.temporal_native_cases c),
+ 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v1.temporal_native_window w)),
+ 'temporal_v2',jsonb_build_object(
+ 'foreground',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM memory_temporal_native_v2.execution_model_attempts a),
+ 'entries',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id)FROM memory_temporal_native_v2.temporal_native_entries e),
+ 'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM memory_temporal_native_v2.execution_budget_reservations r),
+ 'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM memory_temporal_native_v2.execution_budget_scopes s),
+ 'cases',(SELECT jsonb_agg(to_jsonb(c) ORDER BY position)FROM memory_temporal_native_v2.temporal_native_cases c),
+ 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v2.temporal_native_window w)),
+ 'temporal_v3',jsonb_build_object(
+ 'foreground',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id)FROM memory_temporal_native_v3.execution_model_attempts a),
+ 'entries',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id)FROM memory_temporal_native_v3.temporal_native_entries e),
+ 'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id)FROM memory_temporal_native_v3.execution_budget_reservations r),
+ 'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id)FROM memory_temporal_native_v3.execution_budget_scopes s),
+ 'cases',(SELECT jsonb_agg(to_jsonb(c) ORDER BY position)FROM memory_temporal_native_v3.temporal_native_cases c),
+ 'window',(SELECT to_jsonb(w)FROM memory_temporal_native_v3.temporal_native_window w)))`
+
 // Exact read-only replay of the retained current t02 state: the run is now
 // terminal, so denial is expected. It does not pretend to recreate its live
 // historical state or explain a transient timeout which was not instrumented.
@@ -214,7 +243,7 @@ func TestTemporalRetainedSourceGuardReadOnly(t *testing.T) {
 	var before, after string
 	hash := func(target *string) {
 		t.Helper()
-		if err := pool.QueryRow(ctx, `SELECT md5(jsonb_build_object('history',(`+temporalNativeHistorySQL+`),'runs',(SELECT jsonb_agg(to_jsonb(r)ORDER BY run_id)FROM runs r),'pins',(SELECT jsonb_agg(to_jsonb(p)ORDER BY run_id,claim_id,query_key)FROM memory_temporal_run_pins p))::text)`).Scan(target); err != nil {
+		if err := pool.QueryRow(ctx, `SELECT md5(jsonb_build_object('history',(`+temporalRetainedV3HistorySQL+`),'runs',(SELECT jsonb_agg(to_jsonb(r)ORDER BY run_id)FROM runs r),'pins',(SELECT jsonb_agg(to_jsonb(p)ORDER BY run_id,claim_id,query_key)FROM memory_temporal_run_pins p))::text)`).Scan(target); err != nil {
 			t.Fatal("retained state hash failed")
 		}
 	}

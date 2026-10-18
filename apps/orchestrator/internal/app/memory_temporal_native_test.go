@@ -395,7 +395,7 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 }
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V4") != "1" {
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V5") != "1" {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -421,11 +421,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v4');CREATE SCHEMA memory_temporal_native_v4`); err != nil {
+	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v5');CREATE SCHEMA memory_temporal_native_v5`); err != nil {
 		t.Fatal("one-use native window already consumed or unavailable")
 	}
 	cfg.MaxConns = 4
-	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v4,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v5,public"
 	trace := &temporalSourceTrace{}
 	cfg.ConnConfig.Tracer = trace
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -454,11 +454,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		}
 	}
 	stage = "opaque_auth_import"
-	auth, err := os.ReadFile("/native-private/auth-input.value")
+	auth, err := os.ReadFile("/native-private/auth-import.value")
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v4')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v5')`, strings.TrimSpace(string(auth))); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
 	defer func() {
@@ -480,7 +480,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if built.ProviderName != "antigravity" || built.ModelName != "gemini-3.8-flash-high" || maximumOutput != 32768 || actualTimeout < 300*time.Second {
 		t.Fatal("actual native profile differs from prospective pins")
 	}
-	carry, err := temporalCarryNativeHistory(ctx, pool, proof)
+	carry, err := temporalCarryV5History(ctx, pool, proof)
 	if err != nil {
 		t.Fatal(err)
 	}
