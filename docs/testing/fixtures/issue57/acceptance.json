@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-18T12:18:09.5420306Z",
+  "code_commit": "85e424e1344be8a7d17edc66ef52caf53d2df274",
+  "baseline_commit": "1f64fd7847dffaca3d374ac5ed29f8efb57bfff4",
+  "companion_import_commit": "01fc8bf",
+  "pull_request": "https://github.com/alex123321-maker/butler/pull/116",
+  "phone": {
+    "vendor_model": "SM-G973F",
+    "rom_model": "SM-S731B",
+    "android_sdk": 36,
+    "android_release": "16",
+    "filter": "ONLY_INCLUDED: dev.butler.companion.debug",
+    "accepted_route": "direct Wi-Fi",
+    "usb_powered": true,
+    "temporary_stay_awake_restored": 0,
+    "debug_listener_revoked_after_test": true
+  },
+  "android_jvm": [
+    {
+      "suite": "com.example.ExampleRobolectricTest",
+      "tests": 3,
+      "failures": 0,
+      "skips": 0
+    },
+    {
+      "suite": "com.example.ExampleUnitTest",
+      "tests": 5,
+      "failures": 0,
+      "skips": 0
+    },
+    {
+      "suite": "com.example.MobileClientContractTest",
+      "tests": 7,
+      "failures": 0,
+      "skips": 0
+    }
+  ],
+  "go": {
+    "race_mobile_and_catalog_top_level_passes": 56,
+    "catalog_external_driver_skips": [
+      "TestActualFullAnchorDiskFailsBoundedlyWithoutClaimingDeletionIntegration",
+      "TestActualPostgresDumpRestoreDeletionIntegration",
+      "TestActualPostgresTemporalDumpRestoreDeletionIntegration"
+    ],
+    "full_orchestrator_api": "PASS, actual PostgreSQL, 35.542 seconds, parallel=1",
+    "api_external_driver_skips": [
+      "TestHTTPAcceptedInputSurvivesClientDisconnectIntegration",
+      "TestActualPostgresCandidateEpisodeDumpRestoreDeletionIntegration",
+      "TestCandidateNoModelSupervisorTimelineIntegration",
+      "TestCandidateNativeOwnerLifecycle",
+      "TestCandidateNativeRussianQuality",
+      "TestBrowserOwnerStateFixtureServer",
+      "TestSettingsFlowIntegration"
+    ],
+    "candidate_comparison": {
+      "baseline_seconds": 8.877,
+      "branch_seconds": 11.911,
+      "result": "both pass; prior local two-second timeouts remain timing-sensitive; no candidate code/deadline changed"
+    },
+    "mobile_integration": "9/9 pass; no skips",
+    "model_runs": 0
+  },
+  "phone_lifecycle": {
+    "changes": [
+      "POSTED",
+      "UPDATED",
+      "REMOVED"
+    ],
+    "distinct_card_keys": 1,
+    "distinct_event_ids": 3,
+    "accepted": 3,
+    "duplicates": 0,
+    "rejected": 0,
+    "quarantined": 3,
+    "natural_background_delivery_ms": [
+      420,
+      667,
+      1084
+    ],
+    "delivery_sample_count": 3,
+    "procedure_seconds": 3.703
+  },
+  "phone_offline": {
+    "receiver_stopped": true,
+    "new_event_pending_encrypted": true,
+    "app_force_stopped": true,
+    "receiver_restarted": true,
+    "drain_without_direct_test_sync": true,
+    "seed_procedure_seconds": 9.056,
+    "drain_procedure_seconds_after_app_launch": 0.347
+  },
+  "phone_disconnect": {
+    "compose_button_test": "PASS",
+    "procedure_seconds": 3.188,
+    "local_key_and_queue_cleared": true,
+    "server_device_status": "REVOKED"
+  },
+  "backup": {
+    "actual_pg_dump_restore": true,
+    "stale_restore_denied": true,
+    "deleted_body_empty": true,
+    "physical_source_text_erased": true,
+    "independent_retained": true,
+    "duplicate_ids": 2,
+    "new_accepts": 0
+  },
+  "ci": {
+    "url": "https://github.com/alex123321-maker/butler/actions/runs/39125342137",
+    "code_commit": "85e424e1344be8a7d17edc66ef52caf53d2df274",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "android",
+        "conclusion": "success"
+      },
+      {
+        "name": "emulator (35)",
+        "conclusion": "success"
+      },
+      {
+        "name": "emulator (36)",
+        "conclusion": "success"
+      },
+      {
+        "name": "emulator (31)",
+        "conclusion": "success"
+      },
+      {
+        "name": "emulator (33)",
+        "conclusion": "success"
+      },
+      {
+        "name": "go",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "emulator_scope": {
+    "apis": [
+      31,
+      33,
+      35,
+      36
+    ],
+    "per_api_passed": 2,
+    "per_api_skipped": 3,
+    "skipped_cases": [
+      "live receiver callback",
+      "external offline procedure",
+      "paired device disconnect"
+    ],
+    "live_cases_passed_separately_on_phone": true
+  },
+  "bounded_load": {
+    "events": 1000,
+    "replays": 1000,
+    "new_logical_receipts": 1000,
+    "model_runs": 0,
+    "ingestion_and_replay_seconds": 9.128220372,
+    "resource_samples": 14,
+    "go_runner_peak_cpu_percent": 341.56,
+    "go_runner_peak_mib": 96.12,
+    "whole_lab_postgres_peak_cpu_percent": 26.57,
+    "whole_lab_postgres_peak_mib": 403.3,
+    "scope": "Runner includes setup; PG includes prior test footprint; sampled peaks, not per-event or production capacity guarantees"
+  },
+  "release_signer_certificate_sha256": "484c6616a713cf1447bb0588566e2acefc5d190e34f377439054a5d429b3513c",
+  "apks": [
+    {
+      "file": "app-debug.apk",
+      "bytes": 19050635,
+      "sha256": "d3c2c566586a2c07b2805d758e225f877443e6ddd591718db13df6123289ec4a"
+    },
+    {
+      "file": "app-release.apk",
+      "bytes": 12672862,
+      "sha256": "b6d235ea0b336f355e8cf17bdafb287d6848fa4866b266c1bcf3a43e55db8a24"
+    }
+  ],
+  "raw_local_log_sha256": [
+    {
+      "local_log": "go-retention-recheck.log",
+      "sha256": "8af9e1b7ae6176d61a4f2088e64ca907109236b2055d10ab00622f022505d90e"
+    },
+    {
+      "local_log": "api-final-isolated.log",
+      "sha256": "2d2680c6ebf81ad98ce38ad482d1f780240bf158d34c414ea05b1279cb5c3e1d"
+    },
+    {
+      "local_log": "api-baseline.log",
+      "sha256": "a26c9a0cfa10f5b0e9ff6db32b70118d0e6ed899c8130cb6581fad50434c21a3"
+    },
+    {
+      "local_log": "api-current-compare.log",
+      "sha256": "fedddc0dfb620c6d72d69f3c0db6365005cff1b82d1e79983f92574844d93235"
+    },
+    {
+      "local_log": "api-final.log",
+      "sha256": "4aa1901845afed680ce72f5e4189fc7b5d35964d50129f87ee5585c37eb6ec42"
+    },
+    {
+      "local_log": "api-quiescent-final.log",
+      "sha256": "5245767efb389425c170ee5ef6d6ea3f2a659b84b7a5f372eb2036281eaf128e"
+    },
+    {
+      "local_log": "android-lint-build-final.log",
+      "sha256": "8699a8b885e42e3c7ad301a53254733f2f80516553fe116f5a1c7c555ba6c392"
+    },
+    {
+      "local_log": "release-final.log",
+      "sha256": "9a21afa8e49cbaaa4bbd0b01aed8af49155074e072d60f9f51e24054cdca8c90"
+    },
+    {
+      "local_log": "phone-background-final.log",
+      "sha256": "621ec1d25b12bf405ddbc32dff7b85c91eb8a58ae41bd75b3c2d9f253473a356"
+    },
+    {
+      "local_log": "phone-latency.log",
+      "sha256": "e430c42160a4534068697bbc028f20ef74b7fe5c47b21f5457ed8575ef7e404d"
+    },
+    {
+      "local_log": "phone-offline-final-seed.log",
+      "sha256": "db8489e09c8d156614e62f1352728ced2afd7ba1ad6c42a7a4174a21be5c02af"
+    },
+    {
+      "local_log": "phone-offline-final-drain.log",
+      "sha256": "137f8b863c39507aa9d7df5905b0301bd129b5ac539c59858c96f22b09490790"
+    },
+    {
+      "local_log": "phone-ui-final.log",
+      "sha256": "fa41ef1c6b36bcab798875c57cc0a3a317a00b212dd1204ca3ab076c405cfff6"
+    },
+    {
+      "local_log": "phone-disconnect-final.log",
+      "sha256": "0801525cc1fb67ada6dca4da7f39e4df852896e59c13f7425ff25b435e08df61"
+    },
+    {
+      "local_log": "backup-physical-final.log",
+      "sha256": "a404c3cffee123e2519fe4af8f724d133f12c3fca2bacd83c66295f3e71249e9"
+    },
+    {
+      "local_log": "web-mobile.log",
+      "sha256": "c107a5931157a9804924e766635ca24de4f5c23038bc7db31f93501ec1872c11"
+    },
+    {
+      "local_log": "load-final.log",
+      "sha256": "06ba640e896164740493eb38097154820cb2bef18959c7d98862fe53f9cb81ee"
+    },
+    {
+      "local_log": "load-resources.json",
+      "sha256": "68180b504ba71817f3ec494a5a46138713d297ef2a2f9b404b310405848c5b36"
+    }
+  ],
+  "not_accepted": [
+    "24-hour battery/traffic/queue run",
+    "several-hour offline",
+    "phone reboot/unlock",
+    "Doze/OEM power modes",
+    "mobile network HTTPS/Tailscale",
+    "automatic significance/initiative rules"
+  ]
+}

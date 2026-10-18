@@ -41,6 +41,8 @@ listener and POST_NOTIFICATIONS permission. No personal notifications were read
 for acceptance and no root was used. A temporary VPN route prevented LAN access;
 after the owner disabled VPN, the same direct Wi-Fi test passed. No VPN settings
 were edited by the test. Original app/data and unrelated listeners were preserved.
+The service now checks current consent/pause/package filters before extracting
+notification extras, including its initial active snapshot.
 
 ## Executed checks
 
@@ -50,25 +52,41 @@ were edited by the test. Original app/data and unrelated listeners were preserve
 | Durable PostgreSQL ingestion | `TestConcurrentBatchSingleLogicalCommitIntegration`, `TestDurableReceiptsPrivacyDeletionAndRevocationIntegration`, `TestPairingOneUseScopedCredentialAndRotationIntegration`: concurrent retry, source/receipt atomicity, fresh Store/lost ACK, whole-body conflict, private reveal, foreign read denial, deletion, rotation and revocation |
 | Shared lifecycle gate | `TestMobileLifecycleAttackCorpusIntegration`: all eight shared attacks become quarantined DATA; zero tasks/runs/claims/grants, selective physical text deletion and independent source preservation |
 | Synthetic load | `TestMobileThousandEventBurstIntegration`: 1,000 accepted plus 1,000 replayed as duplicates, 1,000 unique receipts, zero model runs. First measured run: 21.603s through Docker Desktop's host-published PG port. This is bounded ingestion/load evidence, not a sustained mobile/battery benchmark. |
-| Existing Orchestrator API | Full `go test ./apps/orchestrator/internal/api -count=1 -v` passed in 37.129s against actual PG over a direct container network; app bootstrap compile passed |
+| Existing Orchestrator API | Final full `go test ./apps/orchestrator/internal/api -count=1 -parallel=1 -v` passed in 35.542s against actual PG over a direct container network; app bootstrap compile passed. Optional external-driver skips are recorded in the receipt, not counted as feature acceptance. |
 | Android original JVM suite | Eight tests passed for normalization, MessagingStyle/Unicode/progress, changes/removal/hash, privacy/transport, Room encryption, per-ID ACK/conflict/revocation and exact overflow accounting |
-| Extended Android client contract | Six additional tests passed: 200/202 and partial/invalid ACKs, timeout with identical-event retry, 400/423/429/5xx backoff, 401/403 revocation, 409 terminal conflict, permission/pause/unknown-app allowlist gates, server binding, concurrent callback deduplication and post-after-remove. HTTP failures are deterministic client fixtures, not claims of real mobile network failure coverage. |
+| Extended Android client contract | Seven additional tests cover 200/202 and partial/invalid ACKs, timeout with identical-event retry, 400/423/429/5xx backoff, 401/403 revocation, 409 terminal conflict, permission/pause/unknown-app allowlist gates, server binding, concurrent callback deduplication, post-after-remove and in-flight send/disconnect serialization. HTTP failures are deterministic client fixtures, not claims of real mobile network failure coverage. |
 | Current retention and security policy | Real PG tests `TestPausedRateExpiredPairAndDeviceTakeoverDeniedIntegration` and `TestRetentionErasesOriginalAndPreservesReceiptIntegration` pass: pause/rate/expired code/device spoofing denied, unexpired source protected, expired text erased, tombstone replay remains duplicate. An initial retention failure exposed a rejected background actor; the fix uses an explicit catalog retention seam with current locked policy instead. |
-| Real phone, Go and PG | `MobileLiveAcceptanceTest`: posted → updated → removed share a card and have distinct stable event UUIDs, every per-ID ACK DELIVERED, Room payload encrypted, permission withdrawal prevents capture. Passed through ADB reverse and direct Wi-Fi (latest lifecycle test 3.251s). These durations cover the test procedure; they are not per-notification delivery percentiles. |
-| Receiver unavailable + process termination | `MobileOfflineAcceptanceTest` seed passed in 9.123s with the receiver container stopped: a newly emitted low-importance notification persisted encrypted and PENDING. App was force-stopped, receiver restarted, app relaunched; drain passed without a direct sync call (0.107s after launch), all saved card events DELIVERED. This is short offline/background recovery, not several-hour offline or a phone reboot. |
-| Android Compose | `MobileSettingsUiTest` passed on the phone (4.717s): pairing URL, filters, queue and dashboard reachable |
+| Real phone, Go and PG | `MobileLiveAcceptanceTest`: posted → updated → removed share a card and have distinct stable event UUIDs, every per-ID ACK DELIVERED, Room payload encrypted, permission withdrawal prevents capture. Passed through ADB reverse and direct Wi-Fi (final natural background lifecycle test 3.703s). These durations cover the test procedure; they are not per-notification delivery percentiles. |
+| Receiver unavailable + process termination | `MobileOfflineAcceptanceTest` seed passed in 9.056s with the receiver container stopped: a newly emitted low-importance notification persisted encrypted and PENDING. App was force-stopped, receiver restarted, app relaunched; drain passed without a direct sync call (0.347s after launch), all saved card events DELIVERED. This is short offline/background recovery, not several-hour offline or a phone reboot. |
+| Android Compose | `MobileSettingsUiTest` passed on the phone (4.857s): pairing URL, filters, queue and dashboard reachable. The final explicit disconnect button test passed in 3.188s: local token/key/queue cleared and separate owner GET devices confirmed REVOKED. |
 | Owner Web UI | Playwright `web/tests/e2e/mobile.spec.ts` passed: sensitive text hidden until reveal; proof change erases devices/text. This uses controlled HTTP fixtures. Vue typecheck, targeted ESLint and stylelint passed. Actual owner HTTP pairing/search/deletion are separately exercised by phone/backup tests. |
-| Actual backup/restore | `scripts/dev/mobile-backup-acceptance.ps1`: two committed sources → real `pg_dump -Fc` → selective deletion → fresh DB/`pg_restore` → stale restore denied → latest external manifest reconciliation → deleted body empty, independent source retained; replay gives 2 duplicates/0 new accepts |
+| Actual backup/restore | `scripts/dev/mobile-backup-acceptance.ps1`: two committed sources → real `pg_dump -Fc` → selective deletion → fresh DB/`pg_restore` → stale restore denied → latest external manifest reconciliation → direct SQL confirms source text physically erased, independent source retained; replay gives 2 duplicates/0 new accepts |
 
 An early full API run through `host.docker.internal:15457` exceeded existing
-candidate-worker two-second deadlines. Repeating over the PG container's own
-network passed the full suite without changing unrelated candidate code. Native
+candidate-worker two-second deadlines. Other local full runs also timed out in
+existing candidate cases while builds were active. Focused comparison passed on
+the untouched main snapshot (8.877s) and this branch (11.911s); the final isolated
+full API run passed in 35.542s without changing candidate code or its deadlines.
+The timing failure is retained as a host-load-sensitive test limitation; it is
+not claimed to be a proven universal root cause or a candidate-service fix. Native
 Windows catalog tests cannot fsync the manifest directory; the accepted PG and
 backup runs used the real Linux file manifest, not an in-memory replacement.
 
 The first offline test had a repeat-run fixture defect: it selected an older
 already delivered notification. The test now records prior IDs and waits for a
 new ID before checking offline durability; both seed and drain then passed.
+
+Final real Wi-Fi delivery was also measured without calling direct sync from the
+live test: three background deliveries took 420, 667 and 1084ms in the phone's
+own clock domain. This is a three-event sample with an active USB-powered phone,
+not a p95/SLA or evidence of Doze delivery.
+
+The instrumented load follow-up accepted 1,000 events and replayed 1,000 in
+9.128s with 1,000 logical receipts and zero model runs. Fourteen resource samples
+observed peaks of 96.12MiB/341.56% CPU for the Go race-test runner (includes setup)
+and 403.3MiB/26.57% CPU for the whole disposable PG instance (includes its earlier
+test footprint). CPU percentages can exceed 100% across cores. These are sampled
+stand observations, not incremental per-event cost or production capacity limits.
 
 ## Reproduction
 
@@ -134,15 +152,28 @@ pwsh -NoProfile -File scripts/dev/mobile-backup-acceptance.ps1 `
 ## Artifacts and remaining gates
 
 Installable debug and operator-signed release APKs are built locally. SHA256 and
-signer fingerprints are recorded beside the final build evidence. Private
+signer fingerprints are recorded in the content-free
+[evidence receipt](fixtures/issue57/acceptance.json) and
+[APK SHA256SUMS](fixtures/issue57/APK-SHA256SUMS). Private
 release keystore/password are ignored and must be backed up privately for future
 updates. CI builds an unsigned release unless operator signing is configured.
 See [installation and data deletion instructions](../../mobile/android/README.md).
 
+The [final CI run](https://github.com/alex123321-maker/butler/actions/runs/39125342137)
+passed all six jobs on code commit `85e424e1344be8a7d17edc66ef52caf53d2df274`:
+Go, Android build/lint/15 JVM tests, and emulator API31/33/35/36. Every emulator
+executed two context/Compose smoke tests; three external-fixture tests explicitly
+skipped (live ingestion, offline procedure, paired disconnect). Those three ran
+separately on the real phone. Emulator UI compatibility is not full notification
+capture/OEM/power-mode acceptance for all four OS versions. The first CI attempt
+failed because setup-android's default obsolete `tools` package was unavailable;
+explicit `platform-tools` fixed the setup without bypassing SDK or lint checks.
+
 Before closing the original issue:
 
-- Observe green CI including emulator API31/33/35/36; live tests skip on emulators
-  without a receiver and cannot count as phone e2e evidence.
+- Extend full notification lifecycle/failure compatibility across the OS matrix;
+  the current emulator smoke tests and separately executed phone e2e have the
+  explicit scope above.
 - Agree and perform 24-hour battery/queue/data-volume/loss measurement unplugged.
 - Perform several-hour offline, phone reboot/unlock and Doze/OEM power-mode tests.
 - When requested, validate mobile data through HTTPS/Tailscale. A temporary HTTPS

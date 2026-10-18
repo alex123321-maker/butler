@@ -1,0 +1,23 @@
+INSTRUMENTATION_STATUS: class=com.example.MobileSettingsUiTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.example.MobileSettingsUiTest:
+INSTRUMENTATION_STATUS: test=explicitDisconnectWipesKeyQueueAndRevokesServerDevice
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.example.MobileSettingsUiTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=explicitDisconnectWipesKeyQueueAndRevokesServerDevice
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 3,188
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

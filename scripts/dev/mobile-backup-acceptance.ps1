@@ -51,7 +51,10 @@ $independent=@($restored | Where-Object device_event_id -eq $secondID)[0]
 $deletedBody = $deleted.PSObject.Properties['body']
 $replay=Post-JSON 'http://127.0.0.1:18059/api/v1/mobile/notifications/batch' $deviceHeaders $batch
 $logs=docker logs $containerName 2>&1 | Out-String
-$evidence=[ordered]@{actual_pg_dump_restore=$true;stale_restore_denied=$logs.Contains('stale restored database denied before reconciliation');deleted_status=$deleted.status;deleted_body_empty=($null -eq $deletedBody -or [string]::IsNullOrEmpty($deletedBody.Value));independent_retained=($independent.body -like '*synthetic independent source*');duplicate_ids=$replay.duplicate_ids.Count;new_accepts=$replay.accepted_ids.Count;restore_database=$restoreDB}
-if (-not $evidence.stale_restore_denied -or -not $evidence.deleted_body_empty -or -not $evidence.independent_retained -or $evidence.duplicate_ids -ne 2 -or $evidence.new_accepts -ne 0) { throw 'Backup acceptance failed' }
+if ($selected.source_id -notmatch '^[a-zA-Z0-9:_-]+$') { throw 'Unexpected generated source identifier' }
+$retainedBodies=docker exec butler-issue57-postgres psql -U postgres -d $restoreDB -Atc "SELECT count(*) FROM memory_source_revisions WHERE source_id='$($selected.source_id)' AND body<>''"
+Assert-LastExitCode -Action 'Inspect physical source erasure after restore'
+$evidence=[ordered]@{actual_pg_dump_restore=$true;stale_restore_denied=$logs.Contains('stale restored database denied before reconciliation');deleted_status=$deleted.status;deleted_body_empty=($null -eq $deletedBody -or [string]::IsNullOrEmpty($deletedBody.Value));physical_source_text_erased=([int]$retainedBodies -eq 0);independent_retained=($independent.body -like '*synthetic independent source*');duplicate_ids=$replay.duplicate_ids.Count;new_accepts=$replay.accepted_ids.Count;restore_database=$restoreDB}
+if (-not $evidence.stale_restore_denied -or -not $evidence.deleted_body_empty -or -not $evidence.physical_source_text_erased -or -not $evidence.independent_retained -or $evidence.duplicate_ids -ne 2 -or $evidence.new_accepts -ne 0) { throw 'Backup acceptance failed' }
 $evidence | ConvertTo-Json | Set-Content (Join-Path $state.RepoRoot '.cache/issue57/backup-evidence.json')
 $evidence | ConvertTo-Json
