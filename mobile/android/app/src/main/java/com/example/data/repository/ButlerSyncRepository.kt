@@ -986,10 +986,18 @@ class ButlerSyncRepository(
         }
     }
 
-    suspend fun disconnectDeviceAndWipe(clearLocalQueue: Boolean) {
+    suspend fun disconnectDeviceAndWipe() = syncMutex.withLock {
         val config = credentialStore.state.value
         val token = credentialStore.getDecryptedDeviceToken()
         val validation = TransportPolicyValidator.validate(config.serverUrl, config.allowCleartextLocalHttp)
+
+        // Fence an in-flight send, then serialize key destruction with capture.
+        // Wipe before awaiting remote I/O: new callbacks cannot enter a fresh
+        // pairing's queue while the old server is unavailable.
+        captureMutex.withLock {
+            credentialStore.revokeAndClearCredentials()
+            dao.clearEntireQueue()
+        }
 
         if (!token.isNullOrBlank() && validation.isValid && validation.classification != RouteClassification.LOOPBACK_SANDBOX) {
             try {
@@ -1004,9 +1012,6 @@ class ButlerSyncRepository(
             }
         }
 
-        credentialStore.revokeAndClearCredentials()
-        // The old key is destroyed; no old queue can cross a fresh pairing.
-        dao.clearEntireQueue()
         logDiagnostic(
             level = "INFO",
             stage = "SECURITY",

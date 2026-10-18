@@ -61,7 +61,7 @@ fun PairingScreen(
     onPairWithCodeOrQr: (String, Boolean, String) -> Unit,
     onRequestPhonePairingCode: (String, Boolean) -> Unit,
     onPollWebUiApproval: () -> Unit,
-    onDisconnectDevice: (Boolean) -> Unit,
+    onDisconnectDevice: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var serverUrlInput by rememberSaveable(deviceConfig.serverUrl) {
@@ -72,7 +72,6 @@ fun PairingScreen(
     }
     var selectedPairingMethod by rememberSaveable { mutableIntStateOf(0) }
     var codeOrQrInput by rememberSaveable { mutableStateOf("") }
-    var wipeQueueOnDisconnect by rememberSaveable { mutableStateOf(false) }
 
     val validation = TransportPolicyValidator.validate(serverUrlInput, allowCleartextInput)
 
@@ -286,27 +285,16 @@ fun PairingScreen(
                 IosDivider()
 
                 IosSettingsRow(
-                    title = "Очистить очередь при выходе",
-                    trailing = {
-                        IosSwitch(
-                            checked = wipeQueueOnDisconnect,
-                            onCheckedChange = { wipeQueueOnDisconnect = it },
-                            modifier = Modifier.testTag("wipe_queue_on_disconnect_switch")
-                        )
-                    }
-                )
-                IosDivider(indented = false)
-
-                IosSettingsRow(
                     title = "Отключить устройство",
                     icon = Icons.Default.LinkOff,
                     iconBackgroundColor = IosRed,
                     titleColor = IosRed,
-                    onClick = { onDisconnectDevice(wipeQueueOnDisconnect) },
+                    onClick = onDisconnectDevice,
                     modifier = Modifier.testTag("disconnect_device_button")
                 )
             }
 
+            IosSectionFooter("При отключении локальная очередь и ключ удаляются. Историю на сервере можно удалить отдельно в Web UI.")
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

@@ -418,16 +418,12 @@ class ButlerViewModel(
         }
     }
 
-    fun disconnectDevice(clearQueue: Boolean) {
+    fun disconnectDevice() {
         viewModelScope.launch {
             _isSyncingNow.value = true
-            repository.disconnectDeviceAndWipe(clearQueue)
+            repository.disconnectDeviceAndWipe()
             _isSyncingNow.value = false
-            _statusBannerMessage.value = if (clearQueue) {
-                "Устройство отключено, токен и ключ Keystore уничтожены, локальная очередь очищена."
-            } else {
-                "Устройство отключено, токен отозван, синхронизация остановлена."
-            }
+            _statusBannerMessage.value = "Устройство отключено, локальный токен и ключ Keystore уничтожены, локальная очередь очищена. Отзыв на сервере отправлен по возможности; при отсутствии связи отзовите устройство в Web UI."
         }
     }
 

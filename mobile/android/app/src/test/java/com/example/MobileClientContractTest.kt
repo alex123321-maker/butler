@@ -11,8 +11,10 @@ import com.example.security.DeviceCredentialStore
 import com.example.security.KeystoreCryptoManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.*
@@ -141,9 +143,32 @@ class MobileClientContractTest {
         assertEquals(3, db.butlerDao().getTotalEventCount())
     }
 
+    @Test fun disconnectSerializesWithInFlightSendAndClearsBeforeRePairing() = runBlocking {
+        insert()
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        api.handler = {
+            entered.complete(Unit)
+            release.await()
+            Response.success(NotificationBatchResponseDto(acceptedIds = it.events.map { e -> e.deviceEventId }))
+        }
+        val send = async { repo.syncPendingQueueBatch(true) }
+        entered.await()
+        val disconnect = async { repo.disconnectDeviceAndWipe() }
+        yield()
+        assertFalse("Disconnect must wait for in-flight send", disconnect.isCompleted)
+        release.complete(Unit)
+        send.await(); disconnect.await()
+        assertFalse(credentials.state.value.isPaired)
+        assertEquals(0, db.butlerDao().getTotalEventCount())
+        credentials.savePairingSuccess("https://butler.example", "new fixture", "b".repeat(64))
+        repo.syncPendingQueueBatch(true)
+        assertEquals(1, api.calls)
+    }
+
     private class FakeApi : ButlerMobileApiService {
         var calls = 0
-        var handler: (NotificationBatchRequestDto) -> Response<NotificationBatchResponseDto> = {
+        var handler: suspend (NotificationBatchRequestDto) -> Response<NotificationBatchResponseDto> = {
             Response.success(NotificationBatchResponseDto(acceptedIds = it.events.map { e -> e.deviceEventId }))
         }
         override suspend fun postNotificationBatch(bearerToken: String, deviceId: String, schemaVersion: Int, batch: NotificationBatchRequestDto): Response<NotificationBatchResponseDto> { calls++; return handler(batch) }
@@ -151,6 +176,6 @@ class MobileClientContractTest {
         override suspend fun initiatePhonePairing(request: PairRequestInitDto): Response<PairRequestInitResponseDto> = error("unused")
         override suspend fun pollPhonePairingApproval(request: PairPollRequestDto): Response<PairPollResponseDto> = error("unused")
         override suspend fun getDeviceStatus(bearerToken: String, deviceId: String, schemaVersion: Int): Response<DeviceStatusResponseDto> = error("unused")
-        override suspend fun disconnectDevice(bearerToken: String, deviceId: String, request: DisconnectRequestDto): Response<Unit> = error("unused")
+        override suspend fun disconnectDevice(bearerToken: String, deviceId: String, request: DisconnectRequestDto): Response<Unit> = Response.success(Unit)
     }
 }
