@@ -21,6 +21,23 @@ HISTORY = closed.BASE/'reports/closed-history-v1/history'
 HISTORY_SHA = 'c1d3db9826b1602b7cb65475e3e6e65c5804cab4ec15ded1c128f31453ba2529'
 
 
+def bounded_files(root):
+    files = sorted(root.iterdir())
+    if len(files) > 512:
+        raise SystemExit('at most512 closed-history JSON files required')
+    total = 0
+    for item in files:
+        if item.is_symlink() or not item.is_file() or not re.fullmatch(r'[A-Za-z0-9_.-]+\.json', item.name):
+            raise SystemExit('only bounded regular closed-history JSON files required')
+        size = item.stat().st_size
+        if size > 32*1024*1024:
+            raise SystemExit('closed-history JSON file exceeds32MiB')
+        total += size
+        if total > 128*1024*1024:
+            raise SystemExit('closed-history JSON exceeds128MiB in total')
+    return files
+
+
 def future():
     value = closed.sql("SELECT jsonb_build_object('schema','memory_temporal_native_v8','window_id','temporal-explicit-v8','schema_present',to_regnamespace('memory_temporal_native_v8') IS NOT NULL,'receipt_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
     value['receipt_count'] = closed.sql("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v8'") if value['receipt_table_present'] else 0
@@ -68,16 +85,19 @@ def main():
     # the bounded flat JSON evidence directory; the Go loader independently
     # traverses and hashes every required typed manifest reference afterward.
     copied = {}
-    for item in sorted(HISTORY.iterdir()):
-        if item.is_symlink() or not item.is_file() or not re.fullmatch('[A-Za-z0-9_.-]+\\.json', item.name):
-            raise SystemExit('only bounded regular closed-history JSON files required')
+    total = 0
+    for item in bounded_files(HISTORY):
         name = item.name
         try:
-            data = item.read_bytes()
+            with item.open('rb') as source:
+                data = source.read(32*1024*1024+1)
         except PermissionError:
             data = util.artifact(item)
         if len(data) > 32*1024*1024:
             raise SystemExit('bounded closed V7 evidence required')
+        total += len(data)
+        if total > 128*1024*1024:
+            raise SystemExit('closed-history JSON exceeds128MiB while copying')
         json.loads(data)
         if name == 'history.json' and data != previous:
             raise SystemExit('original closed V7 manifest changed')
