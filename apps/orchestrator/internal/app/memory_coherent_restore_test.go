@@ -39,12 +39,12 @@ func (p *coherentViewRead) SubmitToolResult(ctx context.Context, q transport.Sub
 		Result readcontrol.Result `json:"result"`
 	}
 	if json.Unmarshal([]byte(q.ToolResultJSON), &response) != nil || response.Status != "completed" || response.Result.Status != "ok" || len(response.Result.Items) != 1 {
-		return nil, catalog.ErrDenied
+		return nil, fmt.Errorf("controlled consolidated read response: execution=%q data=%q items=%d", response.Status, response.Result.Status, len(response.Result.Items))
 	}
 	item := response.Result.Items[0]
 	run := p.runs[q.RunID]
 	if run == nil || !run.typedUnknown || item.Source.ID != run.refs[0].ID || item.ReadRef == "" {
-		return nil, catalog.ErrDenied
+		return nil, fmt.Errorf("controlled consolidated read evidence: run=%t unknown=%t source=%t read_ref=%t", run != nil, run != nil && run.typedUnknown, run != nil && item.Source.ID == run.refs[0].ID, item.ReadRef != "")
 	}
 	if run.text.Len() == 0 {
 		quote := []rune(item.Text)
@@ -119,6 +119,12 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 	runMemoryCoherentVerifiedExperience(t, func(p *coherentPilot, r *experienceNativeRuntime, lessonID string) {
 		ctx := p.ctx
 		proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
+		defer func() {
+			// Retain actual private boundaries even if a later mandatory phase
+			// fails; owning test cleanup subsequently drops its isolated schema.
+			raw, _ := json.MarshalIndent(map[string]any{"pass": !t.Failed(), "steps": p.steps, "actual_start_requests": p.provider.requests, "actual_tool_continuations": p.provider.continuations}, "", "  ")
+			_ = os.WriteFile(filepath.Join(proof, "timeline-lifecycle-progress.json"), raw, 0600)
+		}()
 		var priorRead jobs.ModelContextRef
 		for _, step := range p.steps {
 			if step.Name == "restarted_ordinary_task_keeps_summary_current_goal_exception_unknown" && step.Receipt != nil {
@@ -234,7 +240,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			}
 		}
 		var copies int
-		if err = restored.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_source_revisions WHERE body LIKE '%'||$1||'%')+(SELECT count(*) FROM tool_calls WHERE result::text LIKE '%'||$1||'%')+(SELECT count(*) FROM memory_episodes WHERE content LIKE '%'||$1||'%')+(SELECT count(*) FROM run_final_results WHERE content LIKE '%'||$1||'%')`, p.provider.source.Body).Scan(&copies); err != nil || copies != 0 {
+		if err = restored.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_source_revisions WHERE body LIKE '%'||$1||'%' OR (source_id=ANY($2::text[]) AND body<>''))+(SELECT count(*) FROM tool_calls WHERE result::text LIKE '%'||$1||'%')+(SELECT count(*) FROM memory_episodes WHERE content LIKE '%'||$1||'%' OR (source_id=$3 AND content<>''))+(SELECT count(*) FROM run_final_results WHERE content LIKE '%'||$1||'%')+(SELECT count(*) FROM accepted_inputs WHERE event_json::text LIKE '%'||$1||'%' OR checkpoint_json::text LIKE '%'||$1||'%')+(SELECT count(*) FROM runs WHERE metadata_json::text LIKE '%'||$1||'%')`, p.provider.source.Body, []string{p.provider.source.ID, lessonID, generation}, lessonID).Scan(&copies); err != nil || copies != 0 {
 			t.Fatal("restored timeline retained withdrawn copies", copies, err)
 		}
 		if a, b := coherentStateDigest(t, ctx, restored); a != effects || b != budgets {
