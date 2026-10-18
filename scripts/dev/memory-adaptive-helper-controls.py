@@ -31,6 +31,7 @@ class Controls(unittest.TestCase):
         (self.proof / "prepared").write_text("PASS\n")
         (self.proof / "scheduled-before-auth.json").write_text("{}")
         self.private = self.base / "private" / "native-v5"
+        self.private.parent.mkdir()
 
     def write_private(self, name, value):
         self.private.mkdir(parents=True, exist_ok=True)

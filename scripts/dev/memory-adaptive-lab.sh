@@ -42,6 +42,7 @@ while IFS= read -r name;do
  [[ -z "$name" || "$name" == \#* ]] && continue
  jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Test!=$name or (.Action!="fail" and .Action!="skip"))' "$proof/mechanics.jsonl" >/dev/null
 done < "$src/scripts/dev/memory-adaptive-required-tests.txt"
+docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof/outcome-control
 BUTLER_ADAPTIVE_OUTCOME_CONTROL="$proof/outcome-control" python3 "$src/scripts/dev/memory-adaptive-helper-controls.py" > "$proof/helper-controls.log" 2>&1
 "${runner[@]}" go vet ./internal/memory/adaptive ./internal/memory/readcontrol ./internal/memory/reader ./internal/memory/service ./internal/config ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app > "$proof/vet.log" 2>&1
 jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/mechanics.jsonl" > "$proof/summary.json"

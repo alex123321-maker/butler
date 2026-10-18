@@ -14,11 +14,12 @@ import (
 	"github.com/butler/butler/internal/acceptance"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/transport"
 )
 
 const adaptiveNativeLedgerDDL = `CREATE TABLE adaptive_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(singleton),paid_entries INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);INSERT INTO adaptive_native_window(singleton)VALUES(TRUE);
 CREATE TABLE adaptive_native_imports(source_id TEXT PRIMARY KEY REFERENCES memory_sources(source_id),session_key TEXT NOT NULL REFERENCES sessions(session_key),case_id TEXT NOT NULL,arm TEXT NOT NULL,logical_source_id TEXT NOT NULL);
-CREATE TABLE adaptive_native_entries(entry_id BIGINT PRIMARY KEY,run_id TEXT NOT NULL REFERENCES runs(run_id),operation_id TEXT UNIQUE NOT NULL REFERENCES execution_model_attempts(operation_id),reservation_id TEXT UNIQUE NOT NULL REFERENCES execution_budget_reservations(reservation_id),kind TEXT NOT NULL,native_usage JSONB,millis BIGINT,model_version TEXT,failure TEXT,observed_at TIMESTAMPTZ);
+CREATE TABLE adaptive_native_entries(entry_id BIGINT PRIMARY KEY,run_id TEXT NOT NULL REFERENCES runs(run_id),operation_id TEXT UNIQUE NOT NULL REFERENCES execution_model_attempts(operation_id),reservation_id TEXT UNIQUE NOT NULL REFERENCES execution_budget_reservations(reservation_id),kind TEXT NOT NULL,native_usage JSONB,usage_invalid BOOLEAN NOT NULL DEFAULT FALSE,full_total_known BOOLEAN NOT NULL DEFAULT FALSE,millis BIGINT,model_version TEXT,failure TEXT,observed_at TIMESTAMPTZ);
 CREATE TABLE adaptive_native_originals(case_id TEXT NOT NULL,arm TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN('pending','started','observed')),started_at TIMESTAMPTZ,PRIMARY KEY(case_id,arm));`
 
 type adaptiveV5History struct {
@@ -29,6 +30,51 @@ type adaptiveV5History struct {
 	CurrentOwnerReservations int    `json:"current_owner_reservations"`
 	CurrentOwnerScopes       int    `json:"current_owner_scopes"`
 	HistoricalLedgerSHA      string `json:"historical_ledger_sha256"`
+}
+
+// Called under the observer mutex. A malformed observation stays unknown and
+// denies this collector's qualification; later metadata cannot repair it.
+func (p *adaptiveNativeProvider) recordUsage(c *adaptiveNativeCall, usage *transport.Usage) {
+	if usage == nil {
+		return
+	}
+	if usage.Validate() != nil {
+		c.Usage = nil
+		c.InvalidUsage = true
+		c.FullTotalKnown = false
+		p.captureFailed = true
+		return
+	}
+	if !c.InvalidUsage {
+		u := *usage
+		c.Usage = &u
+		c.FullTotalKnown = u.TotalTokens > 0
+	}
+}
+
+func TestAdaptiveV5UsagePreservesTotalsUnknownAndInvalid(t *testing.T) {
+	max := int(^uint(0) >> 1)
+	for _, usage := range []*transport.Usage{{InputTokens: -1}, {TotalTokens: -1}, {InputTokens: max, OutputTokens: 1}, {InputTokens: 10, OutputTokens: 2, TotalTokens: 11}} {
+		p, c := &adaptiveNativeProvider{}, &adaptiveNativeCall{}
+		p.recordUsage(c, usage)
+		p.recordUsage(c, &transport.Usage{InputTokens: 10, OutputTokens: 2, TotalTokens: 20})
+		if c.Usage != nil || c.FullTotalKnown || !c.InvalidUsage || !p.captureFailed {
+			t.Fatal("invalid native usage repaired or priced")
+		}
+	}
+	p, c := &adaptiveNativeProvider{}, &adaptiveNativeCall{}
+	p.recordUsage(c, nil)
+	if c.Usage != nil || c.FullTotalKnown {
+		t.Fatal("missing usage zeroed")
+	}
+	p.recordUsage(c, &transport.Usage{InputTokens: 10, OutputTokens: 2})
+	if c.Usage == nil || c.FullTotalKnown {
+		t.Fatal("unreported native total acquired a full-cost verdict")
+	}
+	p.recordUsage(c, &transport.Usage{InputTokens: 10, OutputTokens: 2, TotalTokens: 20})
+	if c.Usage == nil || c.Usage.TotalTokens != 20 || !c.FullTotalKnown || p.captureFailed {
+		t.Fatal("full native total lost thinking dimension")
+	}
 }
 
 func adaptiveV5Exclusive(path string, raw []byte) error {

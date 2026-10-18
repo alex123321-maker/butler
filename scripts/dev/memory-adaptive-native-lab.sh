@@ -38,7 +38,7 @@ if [[ "$mode" == prepare ]];then
  python3 "$src/scripts/dev/memory-adaptive-history.py" check-current "$base" "$history_hash" > "$proof/current-after-build.json"
  sha256sum "$proof/source.sha256" "$proof/source-reference" "$base/runtime/collector.test" "$base/runtime/tool-broker" "$base/runtime/test2json" \
   "$proof/nonroot-runner-preflight.jsonl" "$proof/local-ip.json" "$proof/local-container-id" "$proof/history.json" "$proof/six-store-ledgers.json" \
-  "$proof/historical-v4-full-ledger.json" "$proof/scheduled-before-auth.json" "$proof/shared-policy.json" "$proof/frozen-pins.json" > "$proof/prepared-pins.sha256"
+  "$proof/historical-v4-full-ledger.json" "$proof/historical-v4-native-calls.json" "$proof/scheduled-before-auth.json" "$proof/shared-policy.json" "$proof/frozen-pins.json" > "$proof/prepared-pins.sha256"
  printf 'PASS\n' > "$proof/prepared"
  sha256sum "$proof/prepared-pins.sha256"
  exit 0
