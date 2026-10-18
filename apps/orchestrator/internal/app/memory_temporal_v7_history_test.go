@@ -175,6 +175,7 @@ func temporalV7CorroborateSlotRuns(priorRaw, ledgerRaw, screenRaw, scheduleRaw [
 	}
 	products := map[string]string{}
 	observed := map[string]bool{}
+	backgroundJobs := map[string]string{}
 	for _, a := range ledger.Foreground {
 		if a.Operation == "" || a.Run == "" || a.Reservation == "" || products[a.Operation] != "" {
 			return errors.New("foreground original identity absent")
@@ -187,10 +188,15 @@ func temporalV7CorroborateSlotRuns(priorRaw, ledgerRaw, screenRaw, scheduleRaw [
 			return errors.New("background original identity absent")
 		}
 		products[a.Operation] = a.Operation
+		backgroundJobs[a.Operation] = a.Job
 		observed[a.Operation] = a.Usage != nil
 	}
 	native := map[string]bool{}
-	for _, p := range prior.Calls {
+	slotCounts, runStarts := map[string]int{}, map[string]string{}
+	for index, p := range prior.Calls {
+		if ledger.Calls[index].ID != p.ID || screen.Calls[index].EntryID != p.ID {
+			return errors.New("native order differs from original witnesses")
+		}
 		var l *struct {
 			ID          string                  `json:"entry_id"`
 			Operation   string                  `json:"operation_id"`
@@ -217,17 +223,36 @@ func temporalV7CorroborateSlotRuns(priorRaw, ledgerRaw, screenRaw, scheduleRaw [
 		if slot.ID == "" || slot.State == "not_executed" || (slot.RunID != "" && slot.RunID != p.Run) {
 			return errors.New("native entry belongs to absent or unexecuted original")
 		}
+		slotCounts[p.Slot]++
+		if slotCounts[p.Slot] > slot.Limit {
+			return errors.New("native original exceeded its declared entry ceiling")
+		}
 		if slot.Kind == "background" {
-			if products[p.Operation] != p.Operation {
+			if p.Kind != "start" || products[p.Operation] != p.Operation || backgroundJobs[p.Operation] == "" {
 				return errors.New("background native run identity differs")
 			}
-		} else if p.Kind == "start" {
+		}
+		if p.Kind == "start" {
+			if runStarts[p.Run] != "" {
+				return errors.New("native run started more than once")
+			}
 			var req transport.StartRunRequest
-			if json.Unmarshal(s.Request, &req) != nil || req.Context.RunID != p.Run || req.Context.SessionKey != slot.Session || slot.Session == "" {
-				return errors.New("foreground native start lacks original session/run binding")
+			if json.Unmarshal(s.Request, &req) != nil || req.Context.RunID != p.Run || (slot.Kind == "foreground" && (req.Context.SessionKey != slot.Session || slot.Session == "")) || (slot.Kind == "background" && req.Context.SessionKey != "memory:"+backgroundJobs[p.Operation]) {
+				return errors.New("native start lacks original session/run binding")
+			}
+			runStarts[p.Run] = p.Slot
+		} else {
+			var req transport.SubmitToolResultRequest
+			if runStarts[p.Run] != p.Slot || json.Unmarshal(s.Request, &req) != nil || req.RunID != p.Run || req.ToolCallRef == "" {
+				return errors.New("native continuation lacks its preceding owning Start")
 			}
 		}
 		native[p.Operation] = true
+	}
+	for id, slot := range bySlot {
+		if slot.State == "completed" && slotCounts[id] == 0 {
+			return errors.New("completed original lacks native execution")
+		}
 	}
 	for op, known := range observed {
 		if !native[op] && known {

@@ -47,12 +47,12 @@ docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-li
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local \
  -e BUTLER_TEMPORAL_V7_NAMESPACE_CONTROL=1 -e BUTLER_TEMPORAL_V7_HISTORY_TEST_ROOT=/history \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/temporal_v7_history_test?sslmode=disable' \
- golang:1.27.2-bookworm bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 5m -run "^Test(TemporalV7(LatestLeafRetainsAdmissionWithoutNative|LatestLeafRejectsForgedWitnesses|CurrentDayCarryOneUseIntegration|NamespaceClaimOneUseIntegration|FrozenHistoryRejectsForgeries)|TemporalV6WorkerRejectsOwnerControlIdentity|ConsolidationV3ClosureRetainsFailedCollector)$" ./apps/orchestrator/internal/app > /proof/events.jsonl
+ golang:1.27.2-bookworm bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 5m -run "^Test(TemporalV7(LatestLeafRetainsAdmissionWithoutNative|LatestLeafRejectsForgedWitnesses|OriginalSlotEntryCeiling|NativeCallSequence|CurrentDayCarryOneUseIntegration|NamespaceClaimOneUseIntegration|FrozenHistoryRejectsForgeries)|TemporalV6WorkerRejectsOwnerControlIdentity|ConsolidationV3ClosureRetainsFailedCollector)$" ./apps/orchestrator/internal/app > /proof/events.jsonl
  go vet ./apps/orchestrator/internal/app > /proof/vet.log' > "$proof/runner.log" 2>&1 || status=$?
 cleanup
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"
-for name in TemporalV7LatestLeafRetainsAdmissionWithoutNative TemporalV7LatestLeafRejectsForgedWitnesses TemporalV7CurrentDayCarryOneUseIntegration TemporalV7NamespaceClaimOneUseIntegration TemporalV7FrozenHistoryRejectsForgeries TemporalV6WorkerRejectsOwnerControlIdentity ConsolidationV3ClosureRetainsFailedCollector;do
+for name in TemporalV7LatestLeafRetainsAdmissionWithoutNative TemporalV7LatestLeafRejectsForgedWitnesses TemporalV7OriginalSlotEntryCeiling TemporalV7NativeCallSequence TemporalV7CurrentDayCarryOneUseIntegration TemporalV7NamespaceClaimOneUseIntegration TemporalV7FrozenHistoryRejectsForgeries TemporalV6WorkerRejectsOwnerControlIdentity ConsolidationV3ClosureRetainsFailedCollector;do
  jq -s -e --arg name "Test$name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/events.jsonl" >/dev/null
 done
 printf '{"controlled_only":true,"native_calls":0,"auth_imported":false,"client_cpu":1,"client_memory_bytes":2147483648,"postgres_cpu":1,"postgres_memory_bytes":1073741824,"separate_pg":true,"seven_native_stores_modified":false,"compiler_and_modules":"cached_offline"}\n' > "$proof/environment.json"

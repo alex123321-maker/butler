@@ -106,7 +106,11 @@ func temporalV7Fixture(t *testing.T, noEntries bool) (map[string]any, map[string
 			obs[k] = value
 		}
 		obs["RunID"], obs["SlotID"], obs["Kind"] = run, slot, "start"
-		obs["Request"] = map[string]any{"Context": map[string]any{"RunID": run, "SessionKey": "fg-session"}}
+		session := "fg-session"
+		if i == 0 {
+			session = "memory:bg-job"
+		}
+		obs["Request"] = map[string]any{"Context": map[string]any{"RunID": run, "SessionKey": session}}
 		ledger["calls"] = append(ledger["calls"].([]any), map[string]any{"entry_id": call["entry_id"], "operation_id": op, "run_id": run, "slot_id": slot, "kind": "start", "observation": obs})
 		screen["calls"] = append(screen["calls"].([]any), obs)
 	}
@@ -199,6 +203,7 @@ func TestTemporalV7OriginalSlotEntryCeiling(t *testing.T) {
 			full[k] = v
 		}
 		full["RunID"], full["SlotID"], full["Kind"] = "fg-run", fgSlot, "tool_result"
+		full["Request"] = map[string]any{"RunID": "fg-run", "ToolCallRef": op + ":read", "ToolResultJSON": "{}"}
 		l["calls"] = append(l["calls"].([]any), map[string]any{"entry_id": id, "operation_id": op, "run_id": "fg-run", "slot_id": fgSlot, "kind": "tool_result", "observation": full})
 		s["calls"] = append(s["calls"].([]any), full)
 	}
@@ -270,6 +275,9 @@ func TestTemporalV7NativeCallSequence(t *testing.T) {
 					callKind = "tool_result"
 				}
 				full["Kind"] = callKind
+				if callKind == "tool_result" {
+					full["Request"] = map[string]any{"RunID": "fg-run", "ToolCallRef": "orphan:read", "ToolResultJSON": "{}"}
+				}
 				obs := map[string]any{}
 				for _, key := range []string{"EntryID", "OperationID", "ReservationID", "Usage", "FinishedAt"} {
 					obs[key] = full[key]

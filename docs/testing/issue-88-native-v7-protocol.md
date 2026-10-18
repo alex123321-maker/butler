@@ -41,6 +41,10 @@ Missing keys and per-row NULL observations never normalize to zero.
 
 Every actual native entry must match the live safe projection and both original
 ledger/screen witnesses in entry, operation, reservation, run and original slot.
+The actual sequence matches both original arrays. Each original keeps its exact
+one/sixteen-entry ceiling; a background handler can only Start. Each foreground
+Run has one initial Start with the original session before any continuation;
+another Start, continuation-first, wrong Run or another original slot denies.
 All nine predecessor outcomes match the original pre-auth schedule, including
 failed and unexecuted slots. Foreground Start binds the actual session/run;
 failed slots may retain their originally empty run ID. Unattributed paid product
@@ -80,3 +84,13 @@ neutral-worker assertions, atomic namespace and one-use carry/no-attempt checks
 must pass with no skips, race and vet before final preparation. Preparation also
 runs the compiled exact pins check and the exact nonroot standalone test2json.
 No authentication or native execution is authorized by preparing this recipe.
+
+The initial `c79e33d5` recipe passed47 actual isolated-PG/race/vet checks and the
+offline preseal, but independent self/reviewer audit found missing per-original
+count and typed sequence checks. Test-only `239597c2` reproduced seventeen
+foreground native entries within a declared sixteen-entry slot; `2827bfd7`
+reproduced background continuation, missing foreground Start, repeated Start
+and continuation-before-Start with self-consistent original witnesses. Linux
+offline/race evidence retains all five failures under `native-sequence-red-v1`.
+The initial `native-v7-preseal-v1` remains immutable and withdrawn unconsumed
+with auth0. A fresh source, all controls and complete preseal are required.

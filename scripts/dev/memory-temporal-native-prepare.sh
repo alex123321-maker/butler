@@ -40,7 +40,7 @@ docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 12
   cd /src/apps/orchestrator/internal/app
   /proof/collector.test -test.v -test.run "^TestTemporalV5(CurrentDayPositiveCarryRetainsUnknownUsage|PositiveCarryRejectsOmissionRefundAndOtherPopulations)$"
   if [[ "$BUTLER_TEMPORAL_PREPARE_V7" == 1 ]];then
-   /proof/collector.test -test.v -test.run "^TestTemporalV7(LatestLeafRetainsAdmissionWithoutNative|LatestLeafRejectsForgedWitnesses|FrozenHistoryRejectsForgeries)$"
+   /proof/collector.test -test.v -test.run "^TestTemporalV7(LatestLeafRetainsAdmissionWithoutNative|LatestLeafRejectsForgedWitnesses|OriginalSlotEntryCeiling|NativeCallSequence|FrozenHistoryRejectsForgeries)$"
    /proof/collector.test -test.v -test.run "^TestTemporalV6WorkerRejectsOwnerControlIdentity$"
   else
    /proof/collector.test -test.v -test.run "^TestTemporalV6(FrozenHistoryRejectsForgeries|WorkerRejectsOwnerControlIdentity)$"
@@ -53,7 +53,7 @@ docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 
 ! grep -Eq '^--- (FAIL|SKIP)' "$proof/offline-preparation.txt"
 test "$(grep -c '^--- PASS: TestTemporalV5' "$proof/offline-preparation.txt")" = 2
 if [[ "$v7" == 1 ]];then
- test "$(grep -c '^--- PASS: TestTemporalV7' "$proof/offline-preparation.txt")" = 3
+ test "$(grep -c '^--- PASS: TestTemporalV7' "$proof/offline-preparation.txt")" = 5
  test "$(grep -c '^--- PASS: TestTemporalV6' "$proof/offline-preparation.txt")" = 1
 else
  test "$(grep -c '^--- PASS: TestTemporalV6' "$proof/offline-preparation.txt")" = 2
