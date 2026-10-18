@@ -1,11 +1,13 @@
 package app
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -36,9 +38,39 @@ type experienceRecipientState struct {
 }
 
 type experienceRecipient struct {
-	mu    sync.Mutex
-	root  *os.Root
-	state experienceRecipientState
+	mu           sync.Mutex
+	root         *os.Root
+	state        experienceRecipientState
+	httpStatuses []experienceRecipientHTTPStatus
+}
+
+// Independent private HTTP evidence only. It supplies no effect state, runtime
+// result, model input or lesson source and is not a replacement for Reconcile.
+type experienceRecipientHTTPStatus struct {
+	Method   string `json:"method"`
+	Resource string `json:"resource"`
+	Status   int    `json:"status"`
+}
+type experienceRecipientStatusWriter struct {
+	http.ResponseWriter
+	observe func(int)
+}
+
+func (w *experienceRecipientStatusWriter) WriteHeader(code int) {
+	w.observe(code)
+	w.ResponseWriter.WriteHeader(code)
+}
+func (w *experienceRecipientStatusWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	h, ok := w.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, errors.New("recipient connection cannot be hijacked")
+	}
+	return h.Hijack()
+}
+func (r *experienceRecipient) httpStatusReceipts() []experienceRecipientHTTPStatus {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return append([]experienceRecipientHTTPStatus(nil), r.httpStatuses...)
 }
 
 func experienceDigest(value string) string {
@@ -182,6 +214,11 @@ func experienceReceipt(e experienceRecipientEntry) map[string]any {
 func (r *experienceRecipient) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	w = &experienceRecipientStatusWriter{ResponseWriter: w, observe: func(code int) {
+		if len(r.httpStatuses) < 4096 && len(req.URL.Path) <= 2048 && len(req.Method) <= 16 {
+			r.httpStatuses = append(r.httpStatuses, experienceRecipientHTTPStatus{Method: req.Method, Resource: req.URL.Path, Status: code})
+		}
+	}}
 	if req.URL.RawPath != "" || req.URL.RawQuery != "" || !strings.HasPrefix(req.URL.Path, "/project") {
 		experienceReply(w, 400, map[string]string{"error": "fixed recipient resource required"})
 		return

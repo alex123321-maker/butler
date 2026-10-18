@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -74,11 +75,22 @@ CREATE TABLE IF NOT EXISTS experience_native_case_databases(window_id TEXT NOT N
 }
 
 func (c *experienceNativeClones) connect(ctx context.Context, database string) (*pgxpool.Pool, error) {
-	cfg := c.provider.global.Config()
-	cfg.ConnConfig.Database = database
-	// An owning global schema and its auth/journal are never copied into the
-	// source or selected through an inherited global search_path.
-	cfg.ConnConfig.RuntimeParams = map[string]string{"search_path": "public"}
+	// ConnString retains pgx's original parsed DSN even if Database is later
+	// mutated. The actual Broker uses that DSN, so construct the canonical new
+	// database URL before parsing rather than changing only connection fields.
+	dsn, err := url.Parse(c.provider.global.Config().ConnConfig.ConnString())
+	if err != nil || dsn.Scheme != "postgres" && dsn.Scheme != "postgresql" {
+		return nil, errors.New("canonical isolated PostgreSQL URL required")
+	}
+	dsn.Path, dsn.RawPath = "/"+database, ""
+	query := dsn.Query()
+	query.Set("search_path", "public")
+	dsn.RawQuery = query.Encode()
+	cfg, err := pgxpool.ParseConfig(dsn.String())
+	if err != nil {
+		return nil, errors.New("isolated native task URL rejected")
+	}
+	// An owning global schema and its auth/journal are never selected here.
 	cfg.MaxConns, cfg.MinConns = 2, 0
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err == nil {
@@ -223,6 +235,10 @@ func TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration(t *t
 		t.Fatal(err)
 	}
 	defer second.Close()
+	dsn, err := url.Parse(second.Config().ConnConfig.ConnString())
+	if err != nil || dsn.Path != "/"+second.Config().ConnConfig.Database || dsn.Query().Get("search_path") != "public" {
+		t.Fatal("reconstructed Broker DSN differs from actual clone connections")
+	}
 	var value string
 	if second.QueryRow(ctx, `SELECT value FROM controlled_clone_fixture`).Scan(&value) != nil || value != "actual frozen database bytes" {
 		t.Fatal("control clones shared task mutations")

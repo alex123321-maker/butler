@@ -130,6 +130,39 @@ func TestExperienceRecipientExactCurrentArtifactAndKnownRejection(t *testing.T) 
 	}
 }
 
+func TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("durable recipient proof runs on isolated Linux")
+	}
+	r, err := newExperienceRecipient(t.TempDir(), experienceRecipientConfig{Version: "v1", Ready: "true", Files: map[string]string{"alpha": "Current README\nready=false\n"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.close()
+	site := httptest.NewServer(r)
+	defer site.Close()
+	response, err := experiencePost(t, site, "alpha", "private-status-rejection", experienceProposal(r, "alpha", "maybe"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := experienceResponse(t, response, http.StatusBadRequest)
+	if strings.Contains(body, "effect_absent") || strings.Contains(body, "butler_effect_receipt") {
+		t.Fatal("HTTP400 manufactured an effect receipt")
+	}
+	receipts := r.httpStatusReceipts()
+	if len(receipts) != 1 || receipts[0].Method != http.MethodPost || receipts[0].Resource != "/project/alpha/patches" || receipts[0].Status != 400 {
+		t.Fatal("exact private HTTP status receipt missing")
+	}
+	response, err = site.Client().Get(site.URL + "/project/alpha")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = experienceResponse(t, response, 200)
+	if strings.Contains(body, "private-status-rejection") || strings.Contains(body, "httpStatuses") || strings.Contains(body, "independent_http_statuses") {
+		t.Fatal("private status audit entered live tool DATA")
+	}
+}
+
 func TestExperienceRecipientPersistedOutageAndChangedEnvironment(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("durable recipient directory fsync proof runs on the Linux isolated stand")

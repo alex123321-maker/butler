@@ -969,6 +969,16 @@ task evidence. Migration077 is required; body text remains only in the ordinary
 deletion-aware Catalog/Episodic graph. See
 [the contract](../../docs/architecture/episodic-experience.md).
 
+The isolated experience comparison collector executes original Flow/Broker tasks,
+owner verification/sealing, bounded note jobs, owner acceptance and skill
+Stage/Test/Activate before freezing task data. Each A/B/C input receives a fresh
+database copied from that one frozen preparation; auth and the640-entry journal
+remain in the separate owning store. The predeclared57-slot denominator survives
+setup and preparation failure. Controlled provider fixtures exercise this chain
+without claiming native quality; an opt-in native entrypoint must use a distinct
+TestNativeExperience prefix. Release qualification remains closed pending native
+quality, complete unique costs and independent review.
+
 With an experience store installed, the active source adapter declares a2s
 maximum for its base Catalog proof, current Broker contracts and fresh owning
 applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch

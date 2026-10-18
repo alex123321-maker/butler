@@ -490,3 +490,68 @@ source freeze, an actual CREATE collision remains failed and cannot be retried,
 and the shared used counter/NULL entry survive cloning. This verifies database
 mechanics only: no original, model note, generated skill or A/B/C quality is
 claimed. Issue90 provider/auth entries remain zero.
+
+Frozen source v63 `reports/collector-v63` completes the whole synthetic controlled
+collector through actual PG, neutral workers, Broker and compiled runtimes:
+60pass/0fail/0skip with race/vet. All57 logical stages complete, including four
+originals, four bounded note jobs/owner acceptance, actual skill Stage/Test/Activate
+and48 independently created case databases. The global counter matches211 actual
+captured owning admissions; none are native provider calls. The test-only canned
+note/manifest outputs are isolated in the controlled provider fixture, absent
+from the actual collector. These receipts prove execution mechanics, not generated
+lesson quality, native task success or a comparative benefit.
+
+The evidence.sha256 digest is
+`dcc7245e7036fbe5253dea0fd949ae63bf2d46e4e743de6737d88e81bf6362e3`.
+Its private `processes/controlled-whole-3310329116/window-final.json` hash is
+`2a197c96d620155249ea967c62254faa7c635db3b0d7d98c1a9f876b247548f8`;
+`frozen-preparation.json` is
+`6efe74af6410def5334905cd3c0e03ff9c5a8f214fbb3ed69db8f3f2f5235a6d`.
+The full denominator contains57 completed stages and211 non-NULL synthetic usage
+records. The whole controlled fixture's transient global schema is cleaned up by
+memorytest; a native execution must instead retain its separate owning schema.
+
+Earlier whole attempts remain failed: v59's child Broker used the original parsed
+pgx DSN despite a changed connection Database field; v60 incorrectly looked only
+at direct verified-result parents for the primary message; v61 required exact400
+from a product result deliberately exposing only UNKNOWN; v62 used the terminal
+fixture marker for a successfully completed source. Corrections respectively
+parse the canonical new database URL, use CanonicalSourcesTx, capture a separate
+private HTTP status receipt, and select the common observation format in the
+controlled provider. No transport/effect/currentness rule or criterion changed.
+
+The actual collector never treats private HTTP status/audit as Broker truth or
+model/note DATA. Original03 remains failed/UNKNOWN/no-final; its predeclared owner
+seal, same-task Resume/new revision, read-only grant, exact raw GET and Reconcile
+form a separate current ABSENT supplement inside the original12-entry capacity.
+Original04 stays terminal UNKNOWN without Resume. Successful originals require
+independent actual-recipient verification; manifest sources name OwnerResultID.
+No authored note or recipe is accepted by the actual collector.
+
+Frozen v64 adds the compiled app executable to the environment fingerprint, joins
+content-free provider stages with existing observers, retains cancellation with
+NULL usage, exports source rows on preparation failure and exports the closed
+shared journal. Actual PG/race/vet passes72/0/0 at `reports/collector-v64`;
+evidence.sha256 digest
+`9268aecbb1a9abee83659e52d4fdffc4581d1fd13c3724fa70d63960017578c7`.
+The whole collector again completes57 stages,48 fresh databases and211 actual
+synthetic admissions, now with the compiled recipient pin across every restart.
+Its `processes/controlled-whole-3672343883/window-final.json` hash is
+`7cbfad9f04bd3dd5d1d8228cb87dfb7ffb7f74c336e007886693037fecaeafb0`.
+The added actual abort control preserves57 durable allocations/640 total capacity,
+one charged NULL-usage failure and a closed window. Three transport-method controls
+retain the original canceled entry and forwarded safe stages without converting
+them into provider availability or measured usage. Mechanical input/deadline
+controls reject unsupported resets/permissions/environments and stale-day lineage.
+
+After verifying v63's complete receipt and all49 exact source/clone identities,
+its rebuildable synthetic databases were dropped through an isolated network-none
+PG process; all private exports, ledgers and proof files remain. The content-free
+cleanup receipt is `collector-v63/controlled-prune-v2/receipt.json`, manifest hash
+`a3a65ae8542da8643365a1522d7ad7959644f40ee7f3e2a3d6f904b71497a4ab`.
+No failed/native database was removed and no admission was refunded. Native90
+entry/history/preseal integration and the actual57-slot native run remain pending.
+The same manifest-checked cleanup was applied to successful v64 after its receipt
+was verified (`collector-v64/controlled-prune-v1/receipt.json`), preserving its49
+database exports and all charged entries. Together these two controlled cleanups
+reclaimed approximately1.75GiB; failed attempts remain available separately.

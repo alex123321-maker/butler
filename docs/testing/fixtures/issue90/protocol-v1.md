@@ -238,3 +238,21 @@ Unknown components make a total/ratio unknown or explicitly a lower bound. Quali
 and cost are separate outcomes; no gain or regression is valid. A C-only advantage
 does not establish own-note benefit in B. A failed/unexecuted slot stays in the
 original denominator and cannot be replaced by a generated fallback answer.
+
+The native whole deadline uses the supported40-minute foreground lifetime, a
+finite38h20 maximum including the separately visible original03 read and bounded
+preparation/cleanup margin, then clamps to the frozen owner/day history deadline
+and UTC day end. This is an upper bound, not permission to extend an admitted
+window, request another model turn or exceed the640-entry journal. The original03
+read uses its original12-entry partition; its note uses the predeclared thirteenth
+parent quote. Fixed protocol/corpus files, actual executable hashes and exact
+policies must be sealed before PG setup, provider auth or source execution.
+
+Retain the full57-slot denominator before setup and on every failure. Export
+actual source rows even if preparation stops before freezing, every allocated
+case's owning rows, and the independent shared allocation/entry journal. Provider
+stage observations are a fixed content-free vocabulary; they establish neither
+successful HTTP delivery nor usage. Missing usage remains NULL. Failed/native
+databases and original evidence are not recycled. Successful synthetic controlled
+clone data may be removed after immutable full exports and a verified receipt,
+using its exact manifest; that cleanup is not a native case reset or refund.

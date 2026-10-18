@@ -54,3 +54,18 @@ Windows compile/skip is not counted as acceptance. No production durability
 check, Broker, SSRF, credential or effect rule was relaxed. The main reviewed
 projectfixture behavior and all production runtimes remain unchanged; the HTTP
 test process maps only its fixed public fixture origin to one loopback recipient.
+
+The whole-collector fixture additionally records a private, bounded HTTP audit
+of method, fixed resource path and actual response status. Its exact400 receipt
+is an independent intervention/scoring trigger only. It is absent from recipient
+state returned by GET, tool results, model inputs and typed experience snapshots.
+It cannot prove absence or change the Broker's UNKNOWN result. Only the later
+separately authorized GET and owning Reconcile receipt prove current ABSENT.
+Earlier component receipts inferred400 from the fixed rejected proposal and
+single dispatch; they are not evidence of a captured exact response status.
+
+The environment fingerprint includes the compiled app test executable containing
+this recipient, as well as the actual Broker, extension and HTTP executables and
+declared readiness/outage semantics. Current instance/canary bytes still do not
+change compatibility. Exact v1 restarts preserve generation and environment;
+changing an executable or v2 semantics changes the pinned environment.

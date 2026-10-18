@@ -152,18 +152,19 @@ func experienceNativeSourcePolicy() budget.Policy {
 }
 
 type experienceNativeEntry struct {
-	Sequence  int               `json:"sequence"`
-	Slot      string            `json:"slot"`
-	RunID     string            `json:"run_id"`
-	Operation string            `json:"operation_id"`
-	Kind      string            `json:"kind"`
-	Request   json.RawMessage   `json:"request"`
-	Events    []json.RawMessage `json:"events"`
-	Usage     *transport.Usage  `json:"usage"`
-	Millis    *int64            `json:"milliseconds"`
-	Failure   string            `json:"failure"`
-	Canceled  string            `json:"context_end"`
-	Finished  bool              `json:"finished"`
+	Sequence  int                       `json:"sequence"`
+	Slot      string                    `json:"slot"`
+	RunID     string                    `json:"run_id"`
+	Operation string                    `json:"operation_id"`
+	Kind      string                    `json:"kind"`
+	Request   json.RawMessage           `json:"request"`
+	Events    []json.RawMessage         `json:"events"`
+	Usage     *transport.Usage          `json:"usage"`
+	Millis    *int64                    `json:"milliseconds"`
+	Failure   string                    `json:"failure"`
+	Canceled  string                    `json:"context_end"`
+	Finished  bool                      `json:"finished"`
+	Stages    []transport.ProviderStage `json:"provider_stages"`
 }
 
 // This is a capture/admission wrapper, never answering logic. A durable private
@@ -430,6 +431,9 @@ func (p *experienceNativeProvider) observe(ctx context.Context, e *experienceNat
 		defer p.mu.Unlock()
 		elapsed := time.Since(started).Milliseconds()
 		e.Millis, e.Finished, e.Failure = &elapsed, true, failure
+		if ctx.Err() != nil {
+			e.Canceled = "context_canceled_or_expired"
+		}
 		if err := p.writeNew(fmt.Sprintf("entry-%03d-end.json", e.Sequence), e); err != nil {
 			p.failed = err
 		}
@@ -513,6 +517,7 @@ func (p *experienceNativeProvider) StartRun(ctx context.Context, request transpo
 		return nil, err
 	}
 	start := time.Now()
+	ctx = p.stageContext(ctx, e)
 	stream, err := p.ModelProvider.StartRun(ctx, request)
 	return p.observe(ctx, e, start, stream, err)
 }
@@ -522,6 +527,7 @@ func (p *experienceNativeProvider) SubmitToolResult(ctx context.Context, request
 		return nil, err
 	}
 	start := time.Now()
+	ctx = p.stageContext(ctx, e)
 	stream, err := p.ModelProvider.SubmitToolResult(ctx, request)
 	return p.observe(ctx, e, start, stream, err)
 }
@@ -531,8 +537,21 @@ func (p *experienceNativeProvider) ContinueRun(ctx context.Context, request tran
 		return nil, err
 	}
 	start := time.Now()
+	ctx = p.stageContext(ctx, e)
 	stream, err := p.ModelProvider.ContinueRun(ctx, request)
 	return p.observe(ctx, e, start, stream, err)
+}
+
+func (p *experienceNativeProvider) stageContext(ctx context.Context, e *experienceNativeEntry) context.Context {
+	original := ctx
+	return transport.WithProviderStageObserver(ctx, func(stage transport.ProviderStage) {
+		transport.ObserveProviderStage(original, stage)
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		if len(e.Stages) < 32 {
+			e.Stages = append(e.Stages, stage)
+		}
+	})
 }
 func (p *experienceNativeProvider) InferenceLimits() (int64, int64) {
 	return p.ModelProvider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
@@ -562,8 +581,29 @@ func (p *experienceNativeProvider) export() error {
 		if err == nil {
 			err = closeErr
 		}
+		if exportErr := p.exportGlobal(ctx); err == nil {
+			err = exportErr
+		}
 	}
 	return err
+}
+
+func (p *experienceNativeProvider) exportGlobal(ctx context.Context) error {
+	out := map[string]json.RawMessage{}
+	for _, table := range []string{"experience_native_windows", "experience_native_allocations", "experience_native_entries", "experience_native_templates", "experience_native_case_databases"} {
+		var exists bool
+		if err := p.global.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, table).Scan(&exists); err != nil {
+			return errors.New("global journal export availability failed")
+		}
+		raw := json.RawMessage(`[]`)
+		if exists {
+			if err := p.global.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM `+table+` t WHERE window_id=$1`, p.window).Scan(&raw); err != nil {
+				return errors.New("complete private global journal export failed")
+			}
+		}
+		out[table] = raw
+	}
+	return p.writeNew("global-journal-final.json", out)
 }
 
 // A local synthetic cohort proves mechanics without importing a holdout rubric
@@ -653,6 +693,92 @@ func TestExperienceNativeCaptureRetainsUnknownAndExhaustion(t *testing.T) {
 	raw, _ := io.ReadAll(f)
 	if !bytes.Contains(raw, []byte(`"usage": null`)) {
 		t.Fatal("unobserved spend was normalized")
+	}
+}
+
+type experienceWindowStageProvider struct{ transport.ModelProvider }
+
+func (*experienceWindowStageProvider) Name() string { return "controlled-no-network" }
+func (*experienceWindowStageProvider) StartRun(ctx context.Context, _ transport.StartRunRequest) (transport.EventStream, error) {
+	transport.ObserveProviderStage(ctx, transport.ProviderStageAuthentication)
+	transport.ObserveProviderStage(ctx, transport.ProviderStage("private-unsupported-stage"))
+	transport.ObserveProviderStage(ctx, transport.ProviderStageHTTP)
+	return nil, ctx.Err()
+}
+func (p *experienceWindowStageProvider) SubmitToolResult(ctx context.Context, _ transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	return p.StartRun(ctx, transport.StartRunRequest{})
+}
+func (p *experienceWindowStageProvider) ContinueRun(ctx context.Context, _ transport.ContinueRunRequest) (transport.EventStream, error) {
+	return p.StartRun(ctx, transport.StartRunRequest{})
+}
+
+func TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage(t *testing.T) {
+	for _, method := range []string{"start", "tool_result", "continuation"} {
+		t.Run(method, func(t *testing.T) {
+			p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			p.ModelProvider, p.controlled = &experienceWindowStageProvider{}, true
+			if p.begin(0) != nil {
+				t.Fatal("controlled stage slot unavailable")
+			}
+			var forwarded []transport.ProviderStage
+			ctx, cancel := context.WithCancel(transport.WithProviderStageObserver(context.Background(), func(s transport.ProviderStage) { forwarded = append(forwarded, s) }))
+			cancel()
+			switch method {
+			case "start":
+				_, err = p.StartRun(ctx, transport.StartRunRequest{})
+			case "tool_result":
+				_, err = p.SubmitToolResult(ctx, transport.SubmitToolResultRequest{})
+			case "continuation":
+				_, err = p.ContinueRun(ctx, transport.ContinueRunRequest{})
+			}
+			if !errors.Is(err, context.Canceled) || len(p.entries) != 1 {
+				t.Fatal("original canceled entry disappeared")
+			}
+			e := p.entries[0]
+			if !e.Finished || e.Usage != nil || e.Canceled != "context_canceled_or_expired" || e.Failure != "provider_method_error_unknown" || len(e.Stages) != 2 || len(forwarded) != 2 || e.Stages[0] != transport.ProviderStageAuthentication || e.Stages[1] != transport.ProviderStageHTTP {
+				t.Fatal("stages invented usage/provider failure or hid cancellation", e)
+			}
+			if p.end("failed", "controlled_cancel") != nil || p.export() != nil {
+				t.Fatal("canceled original was not retained")
+			}
+			raw, err := os.ReadFile(filepath.Join(p.proof, "window-final.json"))
+			if err != nil || bytes.Contains(raw, []byte("private-unsupported-stage")) || !bytes.Contains(raw, []byte(`"usage": null`)) || bytes.Count(raw, []byte(`"status": "not_executed"`)) != 56 {
+				t.Fatal("canceled original changed the full denominator or leaked diagnostics")
+			}
+		})
+	}
+}
+
+func TestExperienceNativeAbortRetainsGlobalPartitionIntegration(t *testing.T) {
+	p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, stop := context.WithTimeout(context.Background(), 15*time.Second)
+	defer stop()
+	global := memorytest.Database(t)
+	if err = p.installGlobal(ctx, global, experienceDigest(t.Name()+time.Now().String())); err != nil {
+		t.Fatal(err)
+	}
+	p.ModelProvider, p.controlled = &experienceWindowFailureProvider{}, true
+	if p.begin(4) != nil {
+		t.Fatal("controlled original note unavailable")
+	}
+	if _, err = p.StartRun(ctx, transport.StartRunRequest{}); err == nil || p.end("failed", "controlled_abort") != nil || p.export() != nil {
+		t.Fatal("failed original or journal closure was lost")
+	}
+	var used, allocations, maximum int
+	var closed bool
+	if global.QueryRow(ctx, `SELECT used,closed,(SELECT count(*) FROM experience_native_allocations WHERE window_id=$1),(SELECT sum(maximum) FROM experience_native_allocations WHERE window_id=$1) FROM experience_native_windows WHERE window_id=$1`, p.window).Scan(&used, &closed, &allocations, &maximum) != nil || used != 1 || !closed || allocations != 57 || maximum != 640 {
+		t.Fatal("abort refunded spend or changed the prospective partition")
+	}
+	raw, err := os.ReadFile(filepath.Join(p.proof, "global-journal-final.json"))
+	var exported map[string][]json.RawMessage
+	if err != nil || json.Unmarshal(raw, &exported) != nil || len(exported["experience_native_allocations"]) != 57 || len(exported["experience_native_entries"]) != 1 || !bytes.Contains(exported["experience_native_entries"][0], []byte(`"usage_json": null`)) {
+		t.Fatal("abort export omitted actual unknown spend")
 	}
 }
 

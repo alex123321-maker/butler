@@ -276,6 +276,15 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	r.decisions = approvals.NewService(approvalRepo, nil)
 	currentTools := &experienceNativeToolCatalog{timing: r.timing}
 	artifactPins := []string{experienceEnvironment(recipient.snapshot().Config)}
+	executable, err := os.Executable()
+	if err != nil {
+		t.Fatal("compiled recipient identity unavailable")
+	}
+	compiledRecipient, err := os.ReadFile(executable)
+	if err != nil {
+		t.Fatal("compiled recipient artifact unavailable")
+	}
+	artifactPins = append(artifactPins, experienceDigest(string(compiledRecipient)))
 	for _, key := range []string{"BUTLER_BROKER_E2E_BINARY", "BUTLER_EXTENSION_E2E_BINARY", "BUTLER_EXPERIENCE_HTTP_BINARY"} {
 		raw, err := os.ReadFile(os.Getenv(key))
 		if err != nil {
@@ -284,7 +293,6 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 		artifactPins = append(artifactPins, experienceDigest(string(raw)))
 	}
 	r.environment = experienceDigest(strings.Join(artifactPins, "\x00"))
-	var err error
 	r.lessons, err = experience.New(cat, r.environment, currentTools)
 	if err != nil {
 		t.Fatal("operator-pinned experience environment unavailable", err)

@@ -225,3 +225,21 @@ until the fresh proof succeeds; expiry, privacy withdrawal, timeout or current
 authority loss denies release and cancels the provider. Existing usage evidence
 survives a denied proposal; there is no extra provider request, replay or refund.
 The two-second limit is a verification ceiling, not a measured latency SLO.
+
+The controlled comparison prepares its original tasks, bounded accepted notes
+and reviewed skill in one task-data database, then freezes that database before
+the48 A/B/C inputs. Each input receives an independent fresh clone; provider auth
+and the persistent640-entry allocation journal remain in a separate owning store.
+This is a controlled lab partition, not cross-database production budget authority.
+The complete57-slot schedule precedes setup; failed/unexecuted stages and nullable
+usage survive aborts. Exact owner/day history must be imported once before source
+work, and copied prefix costs must not be counted again for every clone.
+
+An independent private method/resource/status receipt may trigger the predeclared
+original03 owner intervention. It is never model or lesson DATA, product effect
+truth or proof of ABSENT. The original UNKNOWN/no-final remains immutable; only
+the separate current authorized lookup and Reconcile prove absence. Original04
+has no intervention. Compiled recipient and runtime executables form part of the
+frozen environment identity. Synthetic controlled execution establishes these
+mechanics only; native quality, full unique cost and independent review remain
+separate release requirements.
