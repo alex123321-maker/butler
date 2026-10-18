@@ -27,12 +27,13 @@ docker run --pull never -d --name "$pg" --network "$network" --network-alias pos
  -v "$proof/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_adaptive_test \
  pgvector/pgvector:pg17 -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB > "$proof/postgres-id"
 created_pg=true
-for i in $(seq 1 60);do docker exec "$pg" pg_isready -U butler -d memory_adaptive_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
+for i in $(seq 1 60);do docker exec "$pg" pg_isready -h 127.0.0.1 -U butler -d memory_adaptive_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
 runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-limit 128 --security-opt no-new-privileges
  -v "$src:/src:ro" -v "$base/.cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -w /src
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/memory_adaptive_test?sslmode=disable'
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/cache/broker-adaptive.test -e BUTLER_MEMORY_READ_APP_BINARY=/cache/tool-broker-adaptive
+ -e BUTLER_ADAPTIVE_OUTCOME_CONTROL=/proof/outcome-control
  golang:1.27.2-bookworm)
 "${runner[@]}" bash -eu -c 'go test -c -o /cache/broker-adaptive.test ./apps/tool-broker/internal/broker; go build -o /cache/tool-broker-adaptive ./apps/tool-broker; sha256sum /cache/broker-adaptive.test /cache/tool-broker-adaptive > /proof/binaries.sha256' > "$proof/build.log" 2>&1
 "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 8m -run "TestAdaptive|TestReported|TestTransparent|TestDecodeAnswer|TestPlanRejects|TestBuildBundleAdaptive|TestMemoryRead|TestSearchOpen|TestCandidateAcceptedPreferenceScopedOrdinaryContext|TestTrustedToolProtocol|TestExecuteIncludesToolSummaryAndStructuredToolDefinitions" ./internal/memory/adaptive ./internal/memory/readcontrol ./internal/memory/reader ./internal/memory/service ./internal/config ./apps/orchestrator/internal/prompt ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
@@ -41,6 +42,7 @@ while IFS= read -r name;do
  [[ -z "$name" || "$name" == \#* ]] && continue
  jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Test!=$name or (.Action!="fail" and .Action!="skip"))' "$proof/mechanics.jsonl" >/dev/null
 done < "$src/scripts/dev/memory-adaptive-required-tests.txt"
+BUTLER_ADAPTIVE_OUTCOME_CONTROL="$proof/outcome-control" python3 "$src/scripts/dev/memory-adaptive-helper-controls.py" > "$proof/helper-controls.log" 2>&1
 "${runner[@]}" go vet ./internal/memory/adaptive ./internal/memory/readcontrol ./internal/memory/reader ./internal/memory/service ./internal/config ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app > "$proof/vet.log" 2>&1
 jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/mechanics.jsonl" > "$proof/summary.json"
 sha256sum "$proof/source.sha256" "$proof/binaries.sha256" "$proof/mechanics.jsonl" "$proof/vet.log" > "$proof/evidence.sha256"

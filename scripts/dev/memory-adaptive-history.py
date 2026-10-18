@@ -26,6 +26,13 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
+def utc_day(timestamp):
+    parsed = datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        raise SystemExit("explicit timestamp offset required")
+    return parsed.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d")
+
+
 def run(args, script=None):
     result = subprocess.run(args, input=script, capture_output=True, text=True, timeout=40)
     if result.returncode:
@@ -68,40 +75,45 @@ def exclusive(path, raw):
         os.fsync(target.fileno())
 
 
-mode, base_arg = sys.argv[1:3]
-base = pathlib.Path(base_arg).resolve()
-if mode not in ("prepare", "check-current") or not re.fullmatch(r"/srv/storage/butler/agents/issue87-native-[A-Za-z0-9_-]+", str(base)):
-    raise SystemExit("bounded adaptive proof reference required")
-proof = base / "reports" / "native-v5"
-now = datetime.datetime.now(datetime.timezone.utc)
-day = now.strftime("%Y-%m-%d")
-if mode == "check-current":
-    raw = (proof / "history.json").read_bytes()
-    if hashlib.sha256(raw).hexdigest() != sys.argv[3]:
-        raise SystemExit("immutable history hash differs")
-    manifest = json.loads(raw)
-    saved = (proof / "six-store-ledgers.json").read_bytes()
-    if manifest["day"] != day or hashlib.sha256(saved).hexdigest() != manifest["inventory_sha256"] or canonical(inventory(day)) != saved:
-        raise SystemExit("ledger population or UTC day changed; new independent freeze required")
-    print(json.dumps({"read_only": True, "current_day_unchanged": True, "six_databases": 6, "day": day, "auth_or_inference": False}))
-    raise SystemExit(0)
+def main():
+    mode, base_arg = sys.argv[1:3]
+    base = pathlib.Path(base_arg).resolve()
+    if mode not in ("prepare", "check-current") or not re.fullmatch(r"/srv/storage/butler/agents/issue87-native-[A-Za-z0-9_-]+", str(base)):
+        raise SystemExit("bounded adaptive proof reference required")
+    proof = base / "reports" / "native-v5"
+    now = datetime.datetime.now(datetime.timezone.utc)
+    day = now.strftime("%Y-%m-%d")
+    if mode == "check-current":
+        raw = (proof / "history.json").read_bytes()
+        if hashlib.sha256(raw).hexdigest() != sys.argv[3]:
+            raise SystemExit("immutable history hash differs")
+        manifest = json.loads(raw)
+        saved = (proof / "six-store-ledgers.json").read_bytes()
+        if manifest["day"] != day or hashlib.sha256(saved).hexdigest() != manifest["inventory_sha256"] or canonical(inventory(day)) != saved:
+            raise SystemExit("ledger population or UTC day changed; new independent freeze required")
+        print(json.dumps({"read_only": True, "current_day_unchanged": True, "six_databases": 6, "day": day, "auth_or_inference": False}))
+        raise SystemExit(0)
+    
+    proof.mkdir(parents=True, mode=0o700)
+    data = inventory(day)
+    raw = canonical(data)
+    reservations = [r for database in data["databases"] for window in database["windows"] for r in window["reservations"] if r["owner_id"] == OWNER and utc_day(r["created_at"]) == day]
+    scopes = [s for database in data["databases"] for window in database["windows"] for s in window["scopes"] if s["owner_id"] == OWNER and s["kind"] == "owner_day" and s["subject_id"] == day]
+    if reservations or scopes:
+        raise SystemExit("current adaptive owner population requires a separately reviewed carry plan")
+    old = pathlib.Path("/srv/storage/butler/agents/issue87-native-v4-20261016/reports/native-v1/full-ledger.json")
+    old_raw = subprocess.run(["docker", "run", "--rm", "--pull", "never", "--network", "none", "--cpus", ".1", "--memory", "128m", "-v", str(old.parent)+":/from:ro", "golang:1.27.2-bookworm", "cat", "/from/full-ledger.json"], capture_output=True, timeout=40)
+    if old_raw.returncode or hashlib.sha256(old_raw.stdout).hexdigest() != OLD_SHA:
+        raise SystemExit("immutable historical adaptive ledger differs")
+    json.loads(old_raw.stdout)
+    exclusive(proof / "six-store-ledgers.json", raw)
+    exclusive(proof / "historical-v4-full-ledger.json", old_raw.stdout)
+    deadline = datetime.datetime.combine(now.date()+datetime.timedelta(days=1), datetime.time(), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission."}
+    raw = canonical(manifest)
+    exclusive(proof / "history.json", raw)
+    print(json.dumps({"read_only": True, "history_sha256": hashlib.sha256(raw).hexdigest(), "six_databases": 6, "day": day, "auth_or_inference": False}))
 
-proof.mkdir(parents=True, mode=0o700)
-data = inventory(day)
-raw = canonical(data)
-reservations = [r for database in data["databases"] for window in database["windows"] for r in window["reservations"] if r["owner_id"] == OWNER and r["created_at"][:10] == day]
-scopes = [s for database in data["databases"] for window in database["windows"] for s in window["scopes"] if s["owner_id"] == OWNER and s["kind"] == "owner_day" and s["subject_id"] == day]
-if reservations or scopes:
-    raise SystemExit("current adaptive owner population requires a separately reviewed carry plan")
-old = pathlib.Path("/srv/storage/butler/agents/issue87-native-v4-20261016/reports/native-v1/full-ledger.json")
-old_raw = subprocess.run(["docker", "run", "--rm", "--pull", "never", "--network", "none", "--cpus", ".1", "--memory", "128m", "-v", str(old.parent)+":/from:ro", "golang:1.27.2-bookworm", "cat", "/from/full-ledger.json"], capture_output=True, timeout=40)
-if old_raw.returncode or hashlib.sha256(old_raw.stdout).hexdigest() != OLD_SHA:
-    raise SystemExit("immutable historical adaptive ledger differs")
-json.loads(old_raw.stdout)
-exclusive(proof / "six-store-ledgers.json", raw)
-exclusive(proof / "historical-v4-full-ledger.json", old_raw.stdout)
-deadline = datetime.datetime.combine(now.date()+datetime.timedelta(days=1), datetime.time(), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission."}
-raw = canonical(manifest)
-exclusive(proof / "history.json", raw)
-print(json.dumps({"read_only": True, "history_sha256": hashlib.sha256(raw).hexdigest(), "six_databases": 6, "day": day, "auth_or_inference": False}))
+
+if __name__ == "__main__":
+    main()

@@ -29,7 +29,10 @@ def exclusive(path, value):
         os.fsync(out.fileno())
 
 def run(args, script=None):
-    result = subprocess.run(args, input=script, capture_output=True, text=True)
+    try:
+        result = subprocess.run(args, input=script, capture_output=True, text=True, timeout=40)
+    except (OSError, subprocess.TimeoutExpired):
+        raise SystemExit("bounded opaque handoff process unavailable")
     if result.returncode:
         # Fixed SQL/process arguments contain no raw secret. Do not display
         # arbitrary provider/SQL stderr even when diagnostic capture is useful.

@@ -81,7 +81,7 @@ docker run --pull never -d --name "$pg" --network "$network" --ip 10.237.203.2 -
  -v "$base/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_adaptive_test \
  pgvector/pgvector:pg17 -c shared_buffers=64MB -c max_connections=32 -c max_wal_size=64MB > "$proof/postgres-id"
 created_pg=true
-for i in $(seq 1 60);do docker exec "$pg" pg_isready -U butler -d memory_adaptive_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
+for i in $(seq 1 60);do docker exec "$pg" pg_isready -h 127.0.0.1 -U butler -d memory_adaptive_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
 "${offline[@]}" --user "$(id -u):$(id -g)" -v "$proof:/proof:ro" -w /src/apps/orchestrator/internal/app \
  -e BUTLER_ADAPTIVE_CHECK_PINS=1 -e BUTLER_ADAPTIVE_NATIVE_PROOF=/proof -e BUTLER_MEMORY_READ_APP_BINARY=/runtime/tool-broker \
  -e BUTLER_ADAPTIVE_TEST2JSON_BINARY=/runtime/test2json golang:1.27.2-bookworm /runtime/collector.test -test.v -test.run '^TestMemoryAdaptiveCheckPreparedPins$' > "$proof/pre-auth-pins-check.txt" 2>&1
@@ -99,10 +99,10 @@ handback(){
  python3 "$src/scripts/dev/memory-adaptive-auth.py" return "$base" native-v5 > "$proof/return-safe.json" || cleanup 1
  docker run --rm --pull never --network container:butler-lab-orchestrator-1 --env-file "$private/main-diagnose.env" -v "$auth_binary:/provider-auth:ro" golang:1.27.2-bookworm /provider-auth -action diagnose-cloudcode > "$private/main-diagnosis.json" || cleanup 1
  jq -e -f "$src/scripts/dev/memory-consolidation-main-auth.jq" "$private/main-diagnosis.json" >/dev/null || cleanup 1
- jq '{resolved,unsafe_refresh,expired:.after.expired,trace}' "$private/main-diagnosis.json" > "$proof/main-auth-safe.json"
+ jq '{resolved,unsafe_refresh,expired:.after.expired,trace:[.trace[]|{stage,outcome,http_status}]}' "$private/main-diagnosis.json" > "$proof/main-auth-safe.json"
  python3 "$src/scripts/dev/memory-adaptive-auth.py" snapshot "$base" native-v5 > "$proof/main-snapshot-safe.json" || cleanup 1
  if [[ -s "$proof/measurements.json" ]];then
-  jq -n --slurpfile inputs "$proof/inputs.json" --slurpfile measured "$proof/measurements.json" '{format:"butler.adaptive.full96.actual.v5",inputs:$inputs[0].inputs,observations:$measured[0].observations}' > "$proof/all-original-outcomes.json"
+  python3 "$src/scripts/dev/memory-adaptive-outcomes.py" "$proof" > "$proof/outcome-export-safe.json" || cleanup 1
  fi
  cleanup "$status"
 }

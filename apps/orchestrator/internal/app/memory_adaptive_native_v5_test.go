@@ -12,6 +12,7 @@ import (
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/internal/acceptance"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/memorytest"
 )
 
@@ -155,6 +156,35 @@ func TestAdaptiveV5ScheduleAndFiniteBudget(t *testing.T) {
 	}
 }
 
+func TestAdaptiveV5FinalOutcomeExportFixture(t *testing.T) {
+	raw, err := adaptiveV5Schedule()
+	var s struct {
+		Inputs       []acceptance.MemoryInput       `json:"inputs"`
+		Observations []acceptance.MemoryObservation `json:"observations"`
+	}
+	if err != nil || json.Unmarshal(raw, &s) != nil {
+		t.Fatal("controlled full96 schedule unavailable")
+	}
+	// Non-answer fixture bytes exercise the actual Go digest/JSON encoding.
+	s.Inputs[0].MemoryPrompt = "controlled <>& quoted DATA ёж \u2028 \u2029"
+	s.Observations[0].InputSHA256 = acceptance.MemoryInputDigest(s.Inputs[0])
+	proof := os.Getenv("BUTLER_ADAPTIVE_OUTCOME_CONTROL")
+	if proof == "" {
+		proof = t.TempDir()
+	}
+	if !filepath.IsAbs(proof) || os.MkdirAll(proof, 0700) != nil {
+		t.Fatal("controlled export path unavailable")
+	}
+	if adaptiveV5Exclusive(filepath.Join(proof, "scheduled-before-auth.json"), raw) != nil {
+		t.Fatal("controlled initial export failed")
+	}
+	inputRaw, _ := json.MarshalIndent(map[string]any{"inputs": s.Inputs}, "", "  ")
+	measuredRaw, _ := json.MarshalIndent(acceptance.MemoryMeasurements{Observations: s.Observations}, "", "  ")
+	if adaptiveV5Exclusive(filepath.Join(proof, "inputs.json"), inputRaw) != nil || adaptiveV5Exclusive(filepath.Join(proof, "measurements.json"), measuredRaw) != nil {
+		t.Fatal("controlled observed export failed")
+	}
+}
+
 func TestMemoryAdaptiveCheckPreparedPins(t *testing.T) {
 	if os.Getenv("BUTLER_ADAPTIVE_CHECK_PINS") != "1" {
 		t.Skip("explicit frozen prospective preparation required")
@@ -224,11 +254,47 @@ func TestAdaptiveV5EntryRequiresOwningOperationIntegration(t *testing.T) {
 		t.Fatal("controlled ledger unavailable")
 	}
 	p := &adaptiveNativeProvider{pool: pool}
-	if _, err := p.reserve(ctx, "missing-run", "start"); err == nil {
-		t.Fatal("unowned entry admitted")
+	_, err := pool.Exec(ctx, `WITH s AS(INSERT INTO sessions(session_key,user_id,channel)VALUES('adaptive-observer-fixture',$1,'web')RETURNING session_key)INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at)SELECT 'adaptive-observer-run',session_key,'fixture','running','0','model_running','antigravity',clock_timestamp(),clock_timestamp() FROM s`, adaptiveNativeOwner)
+	if err != nil {
+		t.Fatal("controlled run unavailable")
+	}
+	for _, op := range []string{"first", "second", "foreign-owner"} {
+		owner := adaptiveNativeOwner
+		if op == "foreign-owner" {
+			owner = "different-owner"
+		}
+		if _, err = pool.Exec(ctx, `WITH r AS(INSERT INTO execution_budget_reservations(reservation_id,owner_id,operation_id,fingerprint,request_json)VALUES($1,$2,$1,'fixture','{}')RETURNING reservation_id)INSERT INTO execution_model_attempts(operation_id,run_id,reservation_id,provider,model,input_allowance,output_allowance)SELECT $1,'adaptive-observer-run',reservation_id,'antigravity','gemini-3.8-flash-high',100,32768 FROM r`, op, owner); err != nil {
+			t.Fatal("controlled attempt unavailable")
+		}
+	}
+	for _, wrong := range []struct {
+		ctx context.Context
+		run string
+	}{{ctx, "adaptive-observer-run"}, {budget.WithModelOperation(ctx, "foreign-operation"), "adaptive-observer-run"}, {budget.WithModelOperation(ctx, "first"), "foreign-run"}, {budget.WithModelOperation(ctx, "foreign-owner"), "adaptive-observer-run"}} {
+		if _, err := p.reserve(wrong.ctx, wrong.run, "start"); err == nil {
+			t.Fatal("unowned entry admitted")
+		}
 	}
 	var entries int
 	if pool.QueryRow(ctx, `SELECT paid_entries FROM adaptive_native_window`).Scan(&entries) != nil || entries != 0 {
 		t.Fatal("failed ownership consumed native slot")
+	}
+	first := budget.WithModelOperation(ctx, "first")
+	call, err := p.reserve(first, "adaptive-observer-run", "start")
+	if err != nil || call.OperationID != "first" || call.ReservationID != "first" {
+		t.Fatal("exact durable owning operation rejected")
+	}
+	if _, err = p.reserve(first, "adaptive-observer-run", "duplicate"); err == nil {
+		t.Fatal("paid operation replay admitted")
+	}
+	if _, err = pool.Exec(ctx, `UPDATE adaptive_native_window SET paid_entries=352`); err != nil {
+		t.Fatal("controlled window unavailable")
+	}
+	if _, err = p.reserve(budget.WithModelOperation(ctx, "second"), "adaptive-observer-run", "start"); err == nil {
+		t.Fatal("whole-window native ceiling enlarged")
+	}
+	var rows int
+	if pool.QueryRow(ctx, `SELECT paid_entries,(SELECT count(*)FROM adaptive_native_entries)FROM adaptive_native_window`).Scan(&entries, &rows) != nil || entries != 352 || rows != 1 {
+		t.Fatal("denied entry partially changed window")
 	}
 }

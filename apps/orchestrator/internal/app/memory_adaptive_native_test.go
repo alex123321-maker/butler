@@ -67,6 +67,7 @@ type adaptiveNativeCall struct {
 	Start         *transport.StartRunRequest         `json:"start,omitempty"`
 	Continuation  *transport.SubmitToolResultRequest `json:"continuation,omitempty"`
 	Usage         *transport.Usage                   `json:"usage"`
+	InvalidUsage  bool                               `json:"invalid_usage"`
 	Final         string                             `json:"final"`
 	ModelVersion  string                             `json:"model_version"`
 	Failure       string                             `json:"failure"`
@@ -91,15 +92,18 @@ func (p *adaptiveNativeProvider) InferenceTimeout() time.Duration {
 	return p.ModelProvider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout()
 }
 func (p *adaptiveNativeProvider) reserve(ctx context.Context, run, kind string) (*adaptiveNativeCall, error) {
+	operation, ok := budget.ModelOperationFromContext(ctx)
+	if !ok {
+		return nil, errors.New("native entry lacks current model operation reference")
+	}
 	tx, err := p.pool.Begin(ctx)
 	if err != nil {
 		return nil, errors.New("native entry transaction unavailable")
 	}
 	defer tx.Rollback(ctx)
 	c := &adaptiveNativeCall{RunID: run, Kind: kind}
-	var candidates int
-	err = tx.QueryRow(ctx, `SELECT a.operation_id,a.reservation_id,count(*) OVER() FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) JOIN runs x USING(run_id) JOIN sessions s USING(session_key) WHERE a.run_id=$1 AND a.observed_at IS NULL AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.operation_id=a.operation_id AND r.owner_id=$2 AND s.user_id=$2 AND NOT EXISTS(SELECT 1 FROM adaptive_native_entries n WHERE n.operation_id=a.operation_id)`, run, adaptiveNativeOwner).Scan(&c.OperationID, &c.ReservationID, &candidates)
-	if err != nil || candidates != 1 {
+	err = tx.QueryRow(ctx, `SELECT a.operation_id,a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) JOIN runs x USING(run_id) JOIN sessions s USING(session_key) WHERE a.operation_id=$3 AND a.run_id=$1 AND a.observed_at IS NULL AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.operation_id=a.operation_id AND r.owner_id=$2 AND s.user_id=$2 AND NOT EXISTS(SELECT 1 FROM adaptive_native_entries n WHERE n.operation_id=a.operation_id)`, run, adaptiveNativeOwner, operation).Scan(&c.OperationID, &c.ReservationID)
+	if err != nil {
 		return nil, errors.New("exact owning native operation unavailable")
 	}
 	err = tx.QueryRow(ctx, `UPDATE adaptive_native_window SET paid_entries=paid_entries+1 WHERE singleton AND NOT closed AND paid_entries<352 RETURNING paid_entries`).Scan(&c.ID)
@@ -156,9 +160,15 @@ func (p *adaptiveNativeProvider) observe(ctx context.Context, c *adaptiveNativeC
 					return
 				}
 				p.mu.Lock()
-				if e.Usage != nil && e.Usage.Validate() == nil {
-					u := *e.Usage
-					c.Usage = &u
+				if e.Usage != nil {
+					if e.Usage.Validate() != nil {
+						c.Usage = nil
+						c.InvalidUsage = true
+						p.captureFailed = true
+					} else if !c.InvalidUsage {
+						u := *e.Usage
+						c.Usage = &u
+					}
 				}
 				if e.AssistantFinal != nil {
 					c.Final = e.AssistantFinal.Content
