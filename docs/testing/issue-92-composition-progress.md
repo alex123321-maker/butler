@@ -142,6 +142,26 @@ acceptance or the fresh complete composition.
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
 
+The subsequent current candidate integrates the captured-publication and
+witness-privacy fixes. Their separate actual-PG/race/vet receipts are recorded in
+[the experience report](issue-90-episodic-experience.md); they do not replace the
+failed neutral-worker v10 window. The next complete controlled lifecycle must
+pass all24 checkpoints, retain its actual UNKNOWN action identity, and include
+the four final-publication/lease controls. The combined driver now also requires
+these controls, witness-only erasure, the native-capture immutability regression
+and the v6 carry/neutral-worker controls. Fresh combined and lifecycle receipts
+remain required after aligning the experience helper with the production active
+source wrapper.
+
+The [complete adaptive v5 review](issue-87-native-v5-independent-review.md) is now
+closed:95 completed originals,1 failed transport original and0 unexecuted slots.
+All96 answers/outcomes were independently reviewed. Adaptive retrieval remains
+rejected and disabled:12/32 complete answers versus27/32 for static retrieval,
+with31/32 adaptive plans selecting no retrieval. All98 native entries,97 known
+full totals and1 unknown remain charged. The separately proven collector alias
+defect invalidates all96 original capture hashes without changing the retained
+visible inputs or answers. Its fix cannot retroactively repair that cohort.
+
 The first ancestry-facts runner omitted the compiled guarded Broker process;
 17events passed and2mandatory integration cases skipped. That window was
 rejected. The v2 driver supplied the actual current Broker test binary and
