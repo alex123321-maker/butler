@@ -361,6 +361,10 @@ func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *p
 }
 
 func TestConsolidationOrdinaryTaskReadsActivatedDATAIntegration(t *testing.T) {
+	runConsolidationOrdinaryTaskReadsActivatedDATA(t)
+}
+
+func runConsolidationOrdinaryTaskReadsActivatedDATA(t *testing.T, beforeGeneration ...func(context.Context, *pgxpool.Pool, *catalog.Store, *budget.Controller, *jobs.ModelWorker, *tools.BrokerClient)) {
 	if os.Getenv("BUTLER_MEMORY_READ_APP_BINARY") == "" {
 		t.Skip("actual Broker binary required by isolated consolidation ordinary driver")
 	}
@@ -415,7 +419,12 @@ func TestConsolidationOrdinaryTaskReadsActivatedDATAIntegration(t *testing.T) {
 	if err := js.PollModelPolicies(owner, func(s string) bool { return s == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
 		t.Fatal(err)
 	}
-	if did, err := (&jobs.ModelWorker{Jobs: js, Provider: p, Model: "fixture", Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}).ProcessOne(owner); err != nil || !did {
+	worker := &jobs.ModelWorker{Jobs: js, Provider: p, Model: "fixture", Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}
+	for _, hook := range beforeGeneration {
+		broker := consolidationOrdinaryBroker(t, pool, cat, manifest, filepath.Join(t.TempDir(), "priority-broker"), b.Policy)
+		hook(owner, pool, cat, b, worker, broker)
+	}
+	if did, err := worker.ProcessOne(owner); err != nil || !did {
 		t.Fatal("actual background", did, err)
 	}
 	var id string

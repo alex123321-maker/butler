@@ -298,7 +298,7 @@ func TestMemoryCoherentPilotOrdinaryTimelineIntegration(t *testing.T) {
 // unchanged. A delegate bypasses every scripted answer/phase branch. Its source
 // inputs, continuation capacity, whole cost/carry and currentness/quality gates
 // must be frozen before auth; this helper does not authorize such a window.
-func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.ModelProvider) {
+func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.ModelProvider, beforeSummary ...func(*coherentPilot, *jobs.ModelWorker)) {
 	proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 	if !filepath.IsAbs(proof) {
 		t.Fatal("fresh absolute private pilot proof required")
@@ -450,6 +450,9 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	handlers := map[string]jobs.ModelScheduleHandler{compaction.HandlerName: mw.Handlers[compaction.HandlerName].(jobs.ModelScheduleHandler)}
 	if err = js.PollModelPolicies(owner, func(handler string) bool { return mw.Handlers[handler] != nil }, handlers); err != nil {
 		t.Fatal(err)
+	}
+	for _, hook := range beforeSummary {
+		hook(p, mw)
 	}
 	if did, e := mw.ProcessOne(owner); e != nil || !did {
 		t.Fatal("real compaction job failed", did, transport.DiagnosticCode(e))
