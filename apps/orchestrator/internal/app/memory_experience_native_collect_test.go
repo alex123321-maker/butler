@@ -489,5 +489,16 @@ func (c *experienceNativeCollector) exportDatabase(name string, pool *pgxpool.Po
 		}
 		out[table] = raw
 	}
+	var historyExists bool
+	if err := pool.QueryRow(ctx, `SELECT to_regclass('experience_native_source_history') IS NOT NULL`).Scan(&historyExists); err != nil {
+		return err
+	}
+	raw := json.RawMessage(`[]`)
+	if historyExists {
+		if err := pool.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM experience_native_source_history t`).Scan(&raw); err != nil {
+			return err
+		}
+	}
+	out["experience_native_source_history"] = raw
 	return c.provider.writeNew(name, out)
 }

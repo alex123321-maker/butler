@@ -987,6 +987,15 @@ without claiming native quality; an opt-in native entrypoint must use a distinct
 TestNativeExperience prefix. Release qualification remains closed pending native
 quality, complete unique costs and independent review.
 
+Native preparation retains five immutable compiled artifacts, including the actual
+executed recipient app test binary, under the proof's bin directory. Source and
+artifact hashes, finite policies, full schedule and latest closed owner/day lineage
+are checked before auth. The source's one-use historical carry is explicitly bound
+to the independent journal. Cost union deduplicates exact immutable reservations;
+copied owner-day Used rows are not new spend. Private outputs are sealed separately
+on success/failure; old controlled receipts lacking that exhaustive output seal
+retain their narrower documented scope.
+
 With an experience store installed, the active source adapter declares a2s
 maximum for its base Catalog proof, current Broker contracts and fresh owning
 applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch

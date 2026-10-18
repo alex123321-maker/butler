@@ -253,3 +253,21 @@ has no intervention. Compiled recipient and runtime executables form part of the
 frozen environment identity. Synthetic controlled execution establishes these
 mechanics only; native quality, full unique cost and independent review remain
 separate release requirements.
+
+Prospective native preparation pins the complete frozen source-file inventory,
+all five compiled artifacts (recipient app, Broker, Broker control test, extension
+and HTTP runtime), both corpus hashes, exact schedule/policies, environment hashes
+and one recursively verified latest closed owner/day history. Runtime artifacts
+are retained under the proof directory and mounted read-only; mutable compiler
+cache names are not native artifact identity. A missing private parent is prepared
+and its restricted permissions checked offline before auth. Changing any sealed
+file, compiled artifact, history, policy, slot or finite deadline denies admission.
+
+The source imports only the latest inclusive current-day charge using one ordinary
+owner-day reservation; its immutable receipt is also bound to the independent
+global journal before source execution. A cloned old reservation is counted once
+by exact reservation ID and canonical row. Altered duplicates or reused operation
+IDs deny the cost union. Mutable cloned scope Used projections are not summed.
+Aggregate carry rows, one-turn model reservation rows, provider-method entries,
+reported usage and unknown invoice cost remain distinct measurements. Neither an
+admitted attempt without a provider entry nor NULL usage is treated as a refund.

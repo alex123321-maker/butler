@@ -555,3 +555,47 @@ The same manifest-checked cleanup was applied to successful v64 after its receip
 was verified (`collector-v64/controlled-prune-v1/receipt.json`), preserving its49
 database exports and all charged entries. Together these two controlled cleanups
 reclaimed approximately1.75GiB; failed attempts remain available separately.
+
+Frozen v67 `reports/collector-v67` passes90/0/0 with actual PG/race/vet and all57
+completed stages,48 fresh case databases and211 captured owning admissions. The
+actual app executable and four other compiled artifacts are retained in that
+report's bin directory, mounted at `/artifacts:ro`; test2json runs that exact app
+binary. Evidence.sha256 is
+`5bcec1e661a8816c94788b30f23dc771c8316ad05e0b9a262a20bae442b6028a`;
+`processes/controlled-whole-881511696/window-final.json` is
+`225b4db89b0941ffe5482b25f98299a02a243c8efe1a268547d90b02ce77f8eb`.
+All actual source/case exports include model attempts, budgets, policies/jobs,
+effects, dispatches, tool calls, final results, lessons and skill lifecycle rows.
+
+This synthetic controlled run also imports a three-turn quoted predecessor with
+three NULL product observations and zero native entries before original1. Its
+global history receipt retains that distinction. The exact union of49 database
+exports contains368 unique reservations:211 one-turn model rows,156 tool/nonmodel
+rows and one aggregate carry row. The48 clones contain1536 repeated source-prefix
+rows (32 each), which are counted once. Thus212 model-or-carry reservation rows
+represent214 quoted model_turns:211 new plus three old. They are not214 actual
+model calls or214 model reservation rows. All211 captured calls are synthetic;
+native90 remains zero. Model quote tokens/resources and observed provider usage
+are different measurements; quoted cost_micros0 is not an observed invoice.
+
+Native preparation controls prove exact source/compiled-file/policy/history/slot
+identity, finite UTC clamp, private-parent setup, one-use source/global import,
+actual owning operation/reservation IDs and stable environment across two real
+source runs. Frozen v66 passes17/0/0 (`preparation-v66`, evidence digest
+`7c7fcf4c25405ef9eb67aaaa7138d6b5791238c4a0a29f90ec9061c7c5a7fa68`).
+Frozen v68 passes24/0/0 (`preparation-v68`, digest
+`fc2c801708db14c4f8ab761152e0a27d6eec7fa6f12db64cce4d443a322ae28e`)
+and adds an exhaustive manifest for its private-process outputs to its evidence
+list. That manifest has eight files and digest
+`a4b2eca29bf5b095f62e1ec19d3232c92a2683b835449c5f0d209bcad77ab331`.
+The driver attempts that private-output seal in its failure cleanup as well.
+This is not a relabeling of older receipts as complete private-output snapshots.
+The final row-count classification and a new aggregate-new-model forgery control
+pass7/0/0 with race/vet in network-none frozen v69 `cost-unit-v69`, digest
+`2b94fd284fd5ae7ba8f02b0884336f34a2b68c3a2c7a2ec29b1b355fab980eb9`.
+
+Actual native entry/storage/auth/closed-latest-history integration remains the
+next separate step. The real145-turn predecessor after88v7 must be recursively
+validated and frozen once; the synthetic three-turn control is never native
+history. No retained seven-store inventory or main deployment was changed by
+these controls. Native quality and release qualification remain unclaimed.

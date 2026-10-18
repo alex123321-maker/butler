@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/memorytest"
@@ -156,11 +158,25 @@ func TestExperienceNativeWholeCollectorControlledIntegration(t *testing.T) {
 			databases.source.Close()
 		}
 	}()
+	// Synthetic predecessor only: three charged NULL product observations with
+	// zero provider entries. This is not a substitute for the real latest leaf
+	// required by native execution. It exercises cloned-prefix accounting.
+	now := time.Now().UTC()
+	dayEnd := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
+	history := experienceNativeLineage{Hash: strings.Repeat("f", 64), Day: now.Format("2006-01-02"), Deadline: dayEnd, Carry: budget.Units{ModelTurns: 3, Tokens: 3 * 1081344, ActiveMillis: 900000, ProviderInputBytes: 3 * 8388608}, Usage: temporalV5CurrentUsage{ProductAttempts: 3, ProductNULL: 3, ProductWithoutNativeEntry: 3}}
+	policy, err := experienceNativeCarryPolicy(false, history.Carry)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sourcePolicy, err := experienceNativeCarryPolicy(true, history.Carry)
+	if err != nil || applyExperienceNativeHistory(ctx, p, databases.source, history, sourcePolicy) != nil {
+		t.Fatal("controlled current-day carry unavailable before original1")
+	}
 	anchor := filepath.Join(proof, "source-deletion-anchor")
 	if err = catalog.NewFileManifest(anchor).Initialize(); err != nil {
 		t.Fatal(err)
 	}
-	c := &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: time.Now().Add(19 * time.Minute), policy: experienceNativeBudgetPolicy(), sourcePolicy: experienceNativeSourcePolicy(), addresses: newExperienceNativeAddresses(t)}
+	c := &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: time.Now().Add(19 * time.Minute), policy: policy, sourcePolicy: sourcePolicy, addresses: newExperienceNativeAddresses(t)}
 	p.ModelProvider = &experienceWholeControlledProvider{collector: c}
 	c.collect()
 	if t.Failed() {
@@ -181,7 +197,27 @@ func TestExperienceNativeWholeCollectorControlledIntegration(t *testing.T) {
 	if global.QueryRow(ctx, `SELECT used FROM experience_native_windows WHERE window_id=$1`, p.window).Scan(&used) != nil || used != len(p.entries) {
 		t.Fatal("whole controlled global spend differs from actual captured admissions")
 	}
-	if err = p.writeNew("controlled-lifecycle-only.json", map[string]any{"native_provider_calls": 0, "controlled_entries": len(p.entries), "logical_slots": 57, "control_databases": count, "release_qualified": false}); err != nil {
+	allCosts := []map[string]json.RawMessage{}
+	names := []string{"source-database.json"}
+	for i := 10; i <= 57; i++ {
+		names = append(names, fmt.Sprintf("case-%03d-database.json", i))
+	}
+	for _, name := range names {
+		raw, e := os.ReadFile(filepath.Join(proof, name))
+		var database map[string]json.RawMessage
+		if e != nil || json.Unmarshal(raw, &database) != nil {
+			t.Fatal("complete source and48 case exports required for cost union")
+		}
+		allCosts = append(allCosts, database)
+	}
+	costs, err := experienceNativeUniqueQuotes(allCosts, history)
+	if err != nil || costs.Historical != history.Carry || costs.NewExperiment.ModelTurns != int64(len(p.entries)) || costs.Inclusive.ModelTurns != history.Carry.ModelTurns+int64(len(p.entries)) {
+		t.Fatal("cloned prefix was refunded or counted as new spend", costs, err)
+	}
+	if err = p.writeNew("unique-quoted-costs.json", costs); err != nil {
+		t.Fatal(err)
+	}
+	if err = p.writeNew("controlled-lifecycle-only.json", map[string]any{"native_provider_calls": 0, "controlled_entries": len(p.entries), "logical_slots": 57, "control_databases": count, "release_qualified": false, "history_is_synthetic_control_only": true, "unique_costs": costs}); err != nil {
 		t.Fatal(err)
 	}
 }

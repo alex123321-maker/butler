@@ -82,15 +82,17 @@ func readExperienceNativeCorpus(originals, controls []byte) (experienceNativeCor
 }
 
 type experienceNativeSlot struct {
-	Sequence   int    `json:"sequence"`
-	ID         string `json:"id"`
-	Kind       string `json:"kind"`
-	CaseID     string `json:"case_id"`
-	Repetition int    `json:"repetition"`
-	Arm        string `json:"arm"`
-	Maximum    int    `json:"maximum_provider_entries"`
-	Status     string `json:"status"`
-	Blocker    string `json:"blocker"`
+	Sequence   int        `json:"sequence"`
+	ID         string     `json:"id"`
+	Kind       string     `json:"kind"`
+	CaseID     string     `json:"case_id"`
+	Repetition int        `json:"repetition"`
+	Arm        string     `json:"arm"`
+	Maximum    int        `json:"maximum_provider_entries"`
+	Status     string     `json:"status"`
+	Blocker    string     `json:"blocker"`
+	Started    *time.Time `json:"started_at"`
+	Finished   *time.Time `json:"finished_at"`
 }
 
 func experienceNativeSchedule(c experienceNativeCorpus) []experienceNativeSlot {
@@ -152,19 +154,20 @@ func experienceNativeSourcePolicy() budget.Policy {
 }
 
 type experienceNativeEntry struct {
-	Sequence  int                       `json:"sequence"`
-	Slot      string                    `json:"slot"`
-	RunID     string                    `json:"run_id"`
-	Operation string                    `json:"operation_id"`
-	Kind      string                    `json:"kind"`
-	Request   json.RawMessage           `json:"request"`
-	Events    []json.RawMessage         `json:"events"`
-	Usage     *transport.Usage          `json:"usage"`
-	Millis    *int64                    `json:"milliseconds"`
-	Failure   string                    `json:"failure"`
-	Canceled  string                    `json:"context_end"`
-	Finished  bool                      `json:"finished"`
-	Stages    []transport.ProviderStage `json:"provider_stages"`
+	Sequence    int                       `json:"sequence"`
+	Slot        string                    `json:"slot"`
+	RunID       string                    `json:"run_id"`
+	Operation   string                    `json:"operation_id"`
+	Reservation string                    `json:"reservation_id"`
+	Kind        string                    `json:"kind"`
+	Request     json.RawMessage           `json:"request"`
+	Events      []json.RawMessage         `json:"events"`
+	Usage       *transport.Usage          `json:"usage"`
+	Millis      *int64                    `json:"milliseconds"`
+	Failure     string                    `json:"failure"`
+	Canceled    string                    `json:"context_end"`
+	Finished    bool                      `json:"finished"`
+	Stages      []transport.ProviderStage `json:"provider_stages"`
 }
 
 // This is a capture/admission wrapper, never answering logic. A durable private
@@ -185,6 +188,7 @@ type experienceNativeProvider struct {
 	casePool   *pgxpool.Pool
 	controlled bool
 	owner      string
+	started    time.Time
 }
 
 func newExperienceNativeProvider(proof string, slots []experienceNativeSlot, owners ...string) (*experienceNativeProvider, error) {
@@ -202,7 +206,7 @@ func newExperienceNativeProvider(proof string, slots []experienceNativeSlot, own
 	if !filepath.IsAbs(proof) || len(slots) != 57 || maximum != experienceNativeMaximum || owner == "" || len(owner) > 160 {
 		return nil, errors.New("full finite experience schedule required")
 	}
-	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1, owner: owner}
+	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1, owner: owner, started: time.Now().UTC()}
 	// This must precede PG migrations, credentials, provider construction and
 	// original-source work. The exact denominator survives a setup abort.
 	if err := p.writeNew("schedule.json", map[string]any{"format": "experience90-window-v1", "owner_id": owner, "maximum_entries": experienceNativeMaximum, "slots": slots}); err != nil {
@@ -244,11 +248,11 @@ func (p *experienceNativeProvider) installGlobal(ctx context.Context, pool *pgxp
 	}
 	if _, err = tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS experience_native_windows(window_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum=640),used INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);
 CREATE TABLE IF NOT EXISTS experience_native_allocations(window_id TEXT NOT NULL REFERENCES experience_native_windows,slot_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum IN(1,12)),used INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(window_id,slot_id));
-CREATE TABLE IF NOT EXISTS experience_native_entries(window_id TEXT NOT NULL REFERENCES experience_native_windows,sequence INTEGER NOT NULL,slot_id TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,request_json JSONB NOT NULL,usage_json JSONB,PRIMARY KEY(window_id,sequence))`); err != nil {
+CREATE TABLE IF NOT EXISTS experience_native_entries(window_id TEXT NOT NULL REFERENCES experience_native_windows,sequence INTEGER NOT NULL,slot_id TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,operation_id TEXT NOT NULL,reservation_id TEXT NOT NULL,request_json JSONB NOT NULL,usage_json JSONB,PRIMARY KEY(window_id,sequence))`); err != nil {
 		return err
 	}
 	var previous json.RawMessage
-	if err = tx.QueryRow(ctx, `SELECT jsonb_build_object('windows',COALESCE((SELECT jsonb_agg(to_jsonb(w) ORDER BY window_id) FROM experience_native_windows w),'[]'::jsonb),'entries',COALESCE((SELECT jsonb_agg(jsonb_build_object('window_id',e.window_id,'sequence',e.sequence,'slot',e.slot_id,'run_id',e.run_id,'kind',e.kind,'request_sha256',encode(sha256(convert_to(e.request_json::text,'UTF8')),'hex'),'usage',e.usage_json) ORDER BY e.window_id,e.sequence) FROM experience_native_entries e),'[]'::jsonb))`).Scan(&previous); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT jsonb_build_object('windows',COALESCE((SELECT jsonb_agg(to_jsonb(w) ORDER BY window_id) FROM experience_native_windows w),'[]'::jsonb),'entries',COALESCE((SELECT jsonb_agg(jsonb_build_object('window_id',e.window_id,'sequence',e.sequence,'slot',e.slot_id,'run_id',e.run_id,'kind',e.kind,'operation_id',e.operation_id,'reservation_id',e.reservation_id,'request_sha256',encode(sha256(convert_to(e.request_json::text,'UTF8')),'hex'),'usage',e.usage_json) ORDER BY e.window_id,e.sequence) FROM experience_native_entries e),'[]'::jsonb))`).Scan(&previous); err != nil {
 		return err
 	}
 	var open int
@@ -290,7 +294,7 @@ func (p *experienceNativeProvider) reserveGlobal(ctx context.Context, e *experie
 	if err != nil || tag.RowsAffected() != 1 {
 		return errors.New("persistent original allocation exhausted")
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_entries(window_id,sequence,slot_id,run_id,kind,request_json)VALUES($1,$2,$3,$4,$5,$6)`, p.window, e.Sequence, e.Slot, e.RunID, e.Kind, e.Request); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_entries(window_id,sequence,slot_id,run_id,kind,operation_id,reservation_id,request_json)VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, p.window, e.Sequence, e.Slot, e.RunID, e.Kind, e.Operation, e.Reservation, e.Request); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
@@ -304,6 +308,8 @@ func (p *experienceNativeProvider) begin(index int) error {
 	}
 	p.active = index
 	p.slots[index].Status, p.slots[index].Blocker = "running", ""
+	now := time.Now().UTC()
+	p.slots[index].Started = &now
 	return p.writeNew(fmt.Sprintf("slot-%03d-start.json", index+1), p.slots[index])
 }
 
@@ -315,6 +321,8 @@ func (p *experienceNativeProvider) end(status, blocker string) error {
 	}
 	i := p.active
 	p.slots[i].Status, p.slots[i].Blocker = status, blocker
+	now := time.Now().UTC()
+	p.slots[i].Finished = &now
 	p.active = -1
 	return p.writeNew(fmt.Sprintf("slot-%03d-end.json", i+1), p.slots[i])
 }
@@ -340,18 +348,18 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	}
 	slot, used := p.slots[p.active], 0
 	op, admitted := budget.ModelOperationFromContext(ctx)
+	reservation := ""
 	if !p.controlled {
 		if p.global == nil || p.casePool == nil || !admitted || op == "" {
 			return nil, errors.New("native entry lacks independent journal or owning admitted operation")
 		}
-		var actual bool
 		var err error
 		if slot.Kind == "note" {
-			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.operation_id=$2 AND a.state='reserved' AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3)`, op, run, p.owner).Scan(&actual)
+			err = p.casePool.QueryRow(ctx, `SELECT a.reservation_id FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.operation_id=$2 AND a.state='reserved' AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3`, op, run, p.owner).Scan(&reservation)
 		} else {
-			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.run_id=$2 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3)`, op, run, p.owner).Scan(&actual)
+			err = p.casePool.QueryRow(ctx, `SELECT a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.run_id=$2 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3`, op, run, p.owner).Scan(&reservation)
 		}
-		if err != nil || !actual {
+		if err != nil || reservation == "" {
 			return nil, errors.New("current owning model reservation not corroborated")
 		}
 	}
@@ -367,7 +375,7 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	if err != nil || len(raw) > 8388608 {
 		return nil, errors.New("bounded original request capture rejected")
 	}
-	e := &experienceNativeEntry{Sequence: len(p.entries) + 1, Slot: slot.ID, RunID: run, Operation: op, Kind: kind, Request: raw, Events: []json.RawMessage{}}
+	e := &experienceNativeEntry{Sequence: len(p.entries) + 1, Slot: slot.ID, RunID: run, Operation: op, Reservation: reservation, Kind: kind, Request: raw, Events: []json.RawMessage{}}
 	if err = p.reserveGlobal(ctx, e); err != nil {
 		p.failed = err
 		return nil, err
@@ -568,12 +576,14 @@ func (p *experienceNativeProvider) export() error {
 	for i := range p.slots {
 		if p.slots[i].Status == "running" {
 			p.slots[i].Status, p.slots[i].Blocker = "failed", "collector_aborted_before_slot_sealed"
+			now := time.Now().UTC()
+			p.slots[i].Finished = &now
 		}
 		if p.slots[i].Status == "not_executed" {
 			p.slots[i].Blocker = "window_closed_before_execution"
 		}
 	}
-	err := p.writeNew("window-final.json", map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active})
+	err := p.writeNew("window-final.json", map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active, "started_at": p.started, "finished_at": time.Now().UTC(), "elapsed_millis": time.Since(p.started).Milliseconds()})
 	if p.global != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -590,7 +600,7 @@ func (p *experienceNativeProvider) export() error {
 
 func (p *experienceNativeProvider) exportGlobal(ctx context.Context) error {
 	out := map[string]json.RawMessage{}
-	for _, table := range []string{"experience_native_windows", "experience_native_allocations", "experience_native_entries", "experience_native_templates", "experience_native_case_databases"} {
+	for _, table := range []string{"experience_native_windows", "experience_native_allocations", "experience_native_entries", "experience_native_templates", "experience_native_case_databases", "experience_native_history"} {
 		var exists bool
 		if err := p.global.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, table).Scan(&exists); err != nil {
 			return errors.New("global journal export availability failed")
@@ -890,8 +900,12 @@ func TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration(t
 	if _, err = p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "different-run"}}); err == nil || len(p.entries) != 0 {
 		t.Fatal("foreign reservation entered global window")
 	}
-	if _, err = p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: f.call.RunId}}); err == nil || len(p.entries) != 1 || p.entries[0].Operation != admitted.OperationID {
+	if _, err = p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: f.call.RunId}}); err == nil || len(p.entries) != 1 || p.entries[0].Operation != admitted.OperationID || p.entries[0].Reservation != admitted.ReservationID {
 		t.Fatal("actual admitted operation not captured")
+	}
+	var operation, reservation string
+	if global.QueryRow(ctx, `SELECT operation_id,reservation_id FROM experience_native_entries WHERE window_id=$1 AND sequence=1`, p.window).Scan(&operation, &reservation) != nil || operation != admitted.OperationID || reservation != admitted.ReservationID {
+		t.Fatal("exact owning identities missing from durable global journal")
 	}
 	if p.export() != nil || p.slots[0].Status != "failed" || p.slots[1].Status != "not_executed" {
 		t.Fatal("fatal omitted unfinished original")
