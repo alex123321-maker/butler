@@ -131,6 +131,10 @@ messages/used sources, plus the actual owner-control message, remain the complet
 copy-bearing privacy parents. Witness metadata/access, current task authority,
 original input links and exact control/final/effect/tool rows remain separate
 release requirements. Deleting or withdrawing the selected witness denies reuse.
+Its metadata reference is also an explicit privacy edge: deletion/revocation
+recursively erases the reconciled observation, accepted note/episode and further
+derived or cached copies. This edge never grants body access to the stale
+witness. Independent primary parents remain separately owned and readable.
 
 Original RunID/revisions, UNKNOWN runtime action, failures, missing final/report
 and unknown owner verification stay unchanged. The supplement names the distinct

@@ -141,6 +141,7 @@ func experienceReconciledBackupSeed(t *testing.T, ctx context.Context, r *experi
 		t.Fatal(err)
 	}
 	p.UnrelatedBodyHash = experienceDigest(unrelatedBody)
+	experienceReconciledPrivacyCopies(t, ctx, r, recipient, anchor, endpoint, token, &p)
 	p.AccountingHash, p.MetadataHash = experienceReconciledBackupHashes(t, ctx, r.pool)
 	path := os.Getenv("BUTLER_TEST_EXPERIENCE_RECONCILED_RECEIPT")
 	if !filepath.IsAbs(path) || !filepath.IsAbs(anchor) {
@@ -180,9 +181,17 @@ func TestActualReconciledExperienceDumpRestoreDeletionIntegration(t *testing.T) 
 	if err != nil || json.Unmarshal(raw, &p) != nil || p.ClaimID == "" || p.EpisodeID < 1 {
 		t.Fatal("content-free actual backup receipt invalid")
 	}
+	mode := os.Getenv("BUTLER_TEST_EXPERIENCE_RECONCILED_DELETE_KIND")
+	if mode != "original" && mode != "witness" {
+		t.Fatal("explicit original or witness deletion root required")
+	}
 	cat := catalog.New(pool, catalog.NewFileManifest(anchor))
 	if phase == "delete" {
-		if _, err = cat.Delete(owner, p.Original.ID, "delete", p.Original.Revision); err != nil {
+		root := p.Original
+		if mode == "witness" {
+			root = p.Witness
+		}
+		if _, err = cat.Delete(owner, root.ID, "delete", root.Revision); err != nil {
 			t.Fatal(err)
 		}
 	} else {
@@ -199,30 +208,7 @@ func TestActualReconciledExperienceDumpRestoreDeletionIntegration(t *testing.T) 
 			t.Fatal("second actual anchor replay", err)
 		}
 	}
-	for _, ref := range []catalog.SourceRef{p.Original, p.Witness, p.Snapshot, p.Lesson} {
-		if _, err = cat.Get(owner, ref.ID); err == nil {
-			t.Fatal("deleted original/reconciled source remained readable")
-		}
-		var retained int
-		if err = pool.QueryRow(ctx, `SELECT COALESCE(sum(octet_length(body)+octet_length(title)+octet_length(author)),0) FROM memory_source_revisions WHERE source_id=$1`, ref.ID).Scan(&retained); err != nil || retained != 0 {
-			t.Fatal("copied source bytes retained", ref.ID, retained, err)
-		}
-	}
-	var originalPayloadErased bool
-	if err = pool.QueryRow(ctx, `SELECT count(*)>0 AND bool_and(args='{}'::jsonb AND error='{}'::jsonb AND result->>'privacy_redacted'='true') FROM tool_calls WHERE run_id=$1`, p.OriginalRun).Scan(&originalPayloadErased); err != nil || !originalPayloadErased {
-		t.Fatal("actual original cached tool payload survived deletion/anchor replay", err)
-	}
-	var retained int
-	if err = pool.QueryRow(ctx, `SELECT count(*) FROM memory_episodes WHERE id=$1`, p.EpisodeID).Scan(&retained); err != nil || retained != 0 {
-		t.Fatal("accepted reconciled episode survived", err)
-	}
-	var status, value, summary string
-	if err = pool.QueryRow(ctx, `SELECT status,value_json::text,summary FROM memory_claims WHERE claim_id=$1`, p.ClaimID).Scan(&status, &value, &summary); err != nil || status != "deleted" || value != "{}" || summary != "" {
-		t.Fatal("reconciled claim retained copied text", err)
-	}
-	if _, err = cat.Decide(owner, catalog.Decision{ClaimID: p.ClaimID}); err == nil {
-		t.Fatal("deleted reconciled note could be reaccepted")
-	}
+	experienceAssertReconciledCopiesErased(t, ctx, cat, p, mode == "original")
 	unrelated, err := cat.Get(owner, p.Unrelated.ID)
 	if err != nil || unrelated.Hash != p.Unrelated.Hash {
 		t.Fatal("unrelated actual accepted lesson changed", err)

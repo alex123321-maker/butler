@@ -4,7 +4,7 @@ set -euo pipefail
 base=${1:?isolated issue90 root}
 label=${2:?fresh proof label}
 mode=${3:-full}
-[[ "$mode" == full || "$mode" == heads || "$mode" == ancestry || "$mode" == window || "$mode" == terminal || "$mode" == publication || "$mode" == lease ]] || exit 2
+[[ "$mode" == full || "$mode" == heads || "$mode" == ancestry || "$mode" == window || "$mode" == terminal || "$mode" == witness || "$mode" == publication || "$mode" == lease ]] || exit 2
 [[ "$base" =~ ^/srv/storage/butler/agents/issue90-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current")
 [[ "$src" == "$base/snapshots/"* ]] || exit 2
@@ -47,8 +47,11 @@ if [[ "$mode" == lease ]];then
 elif [[ "$mode" == publication ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 5m -run "^(TestExperienceCapturedPinsFinalPublicationIntegration|TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration|TestCapturedOrdinaryRunGrantsAtFinalPublicationIntegration|TestCapturedRunLeaseExpiryAfterGrantWaitIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/catalog > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-publication-required-tests.txt
+elif [[ "$mode" == witness ]];then
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "^TestExperienceWitnessOnlyDeletionCascadesReconciledCopiesIntegration$" ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ required=$src/scripts/dev/memory-experience-witness-required-tests.txt
 elif [[ "$mode" == terminal ]];then
- "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration|TestExperienceCapturedPinsFinalPublicationIntegration|TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration|TestExperienceReconciledSealingLocksNewAndAncestorToolsBeforeInputsIntegration|TestTerminalObservationCannotInventFinalOrVerification|TestReconciledObservationKeepsOriginalBoundary|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration|TestExperienceWitnessOnlyDeletionCascadesReconciledCopiesIntegration|TestExperienceCapturedPinsFinalPublicationIntegration|TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration|TestExperienceReconciledSealingLocksNewAndAncestorToolsBeforeInputsIntegration|TestTerminalObservationCannotInventFinalOrVerification|TestReconciledObservationKeepsOriginalBoundary|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-terminal-required-tests.txt
 elif [[ "$mode" == window ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "^TestExperienceNative" ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1

@@ -145,6 +145,7 @@ CREATE TABLE memory_experience_reconciled_pins (
  kind TEXT NOT NULL,row_id TEXT NOT NULL,row_hash TEXT NOT NULL CHECK(length(row_hash)=64),revision BIGINT NOT NULL CHECK(revision>0),
  PRIMARY KEY(source_id,kind,row_id)
 );
+CREATE INDEX memory_experience_reconciled_privacy_parent ON memory_experience_reconciled_attempts(original_source_id);
 CREATE TRIGGER experience_reconciled_attempts_immutable BEFORE UPDATE OR DELETE ON memory_experience_reconciled_attempts FOR EACH ROW EXECUTE FUNCTION butler_experience_metadata_immutable();
 CREATE TRIGGER experience_reconciled_pins_immutable BEFORE UPDATE OR DELETE ON memory_experience_reconciled_pins FOR EACH ROW EXECUTE FUNCTION butler_experience_metadata_immutable();
 
