@@ -21,3 +21,31 @@ test('owner mobile view hides text until reveal and clears private state on proo
   await expect(page.getByText(marker)).toHaveCount(0)
   await expect(page.getByText('Fixture phone · ACTIVE')).toHaveCount(0)
 })
+
+test('noise rules require reveal, can be disabled and clear when owner proof changes', async ({ page }) => {
+  const marker = 'SYNTHETIC_PRIVATE_NOISE_PATTERN_57'
+  let enabled = true
+  await page.route('**/api/v1/mobile-owner/**', async route => {
+    const url = new URL(route.request().url())
+    if (url.pathname.endsWith('/devices')) await route.fulfill({ json: [] })
+    else if (url.pathname.endsWith('/noise-rule')) {
+      enabled = route.request().postDataJSON().enabled
+      await route.fulfill({ status: 204 })
+    } else if (url.pathname.endsWith('/attention')) {
+      await route.fulfill({ json: { enabled: true, pending: 1, remembered: 2, noise: 18, rules: [{ rule_id: 'synthetic-rule', enabled, ...(url.searchParams.get('reveal') === 'true' ? { body: marker } : {}) }] } })
+    } else await route.fulfill({ status: 204 })
+  })
+  await page.goto('/mobile')
+  await page.getByLabel('Owner control token').fill('synthetic-owner-proof-that-is-not-a-real-token')
+  await page.getByRole('button', { name: 'Load devices' }).click()
+  await page.getByRole('button', { name: 'Refresh attention and noise rules' }).click()
+  await expect(page.getByText(marker)).toHaveCount(0)
+  await page.getByLabel('Reveal sensitive notification content').check()
+  await page.getByRole('button', { name: 'Refresh attention and noise rules' }).click()
+  await expect(page.getByText(marker)).toBeVisible()
+  await page.getByRole('button', { name: 'Disable rule' }).click()
+  await expect(page.getByRole('button', { name: 'Enable rule' })).toBeVisible()
+  expect(enabled).toBe(false)
+  await page.getByLabel('Owner control token').fill('different-synthetic-proof')
+  await expect(page.getByText(marker)).toHaveCount(0)
+})

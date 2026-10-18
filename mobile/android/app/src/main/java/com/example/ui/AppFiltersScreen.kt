@@ -219,6 +219,12 @@ fun AppFiltersScreen(
             // 1. Privacy & Filter Mode Section
             item {
                 IosSectionHeader("Приватность")
+                Text(
+                    text = "Butler может самостоятельно использовать переданные сообщения для помощи: запоминать полезное, искать по архиву и скрывать шум. Приложения, к которым нужен запрет доступа, исключите здесь.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 IosSegmentedControl(
                     options = listOf("Все кроме скрытых", "Белый список"),
                     selectedIndex = if (deviceConfig.appFilterMode == AppFilterMode.ALL_EXCEPT_EXCLUDED) 0 else 1,

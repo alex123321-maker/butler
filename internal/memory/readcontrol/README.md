@@ -1,5 +1,14 @@
 # Broker memory reads
 
+The same private control additionally registers revision1 `messages.inbox`,
+`messages.search` and `messages.process` when memory reads are composed. The first
+two are bounded DATA reads; process is an explicit prepare effect, guarded by the
+actual Broker dispatch and current owning input/task/mandate. It saves searchable
+source-backed notes or reversible app/channel/literal noise rules and terminal
+message decisions in one transaction. A standing owner-configured mobile policy
+replaces per-message review. Inbox is bound to the admitted mobile batch; search
+also includes archived noise. See [mobile protocol](../../../docs/architecture/android-companion.md).
+
 `memory.search`, `memory.open` and `memory.neighbors` are fixed owned revision2
 contracts. They are registered programmatically by Broker only when the operator
 enables `BUTLER_MEMORY_READ_ENABLED` in both services. The private Broker URL must

@@ -569,6 +569,7 @@ func New(ctx context.Context) (*App, error) {
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
 	initiativeStore := initiative.NewStore(postgres.Pool())
+	initiativeStore.MobileCatalog = sourceCatalog
 	initiativeStore.RunDataGuardTx = sourceCatalog.CheckRunSourcesTx
 	initiativeDeliveryWorker := &deliveryoutbox.Worker{Store: initiative.DigestStore{Store: initiativeStore}}
 	if telegram != nil {
@@ -589,6 +590,7 @@ func New(ctx context.Context) (*App, error) {
 			return err
 		}
 		maintenanceErr := initiativeWorker.Sweep(ctx)
+		maintenanceErr = errors.Join(maintenanceErr,taskStore.ReconcileMobileResults(ctx))
 		maintenanceErr = errors.Join(maintenanceErr, (&mobile.Store{Pool: postgres.Pool(), Catalog: sourceCatalog}).Cleanup(ctx))
 		if childMaintenance != nil {
 			// A denied branch must not prevent unrelated admitted maintenance.

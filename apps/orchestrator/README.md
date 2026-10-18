@@ -1,5 +1,13 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Android assistance uses ordinary initiative/input/task execution with a standing
+owner-configured `mobile_inbox` source:20 new messages or an hour of pending
+messages. Broker controls `messages.inbox`, `messages.search` and
+`messages.process` save source-backed notes and reversible noise rules through
+the Catalog. Maintenance verifies durable processing and can resume incomplete
+completed attempts at most three times under the same task budget. See the
+[Android contract](../../docs/architecture/android-companion.md).
+
 Lease-supervisor cancellation retains a fixed Core reason when current authority
 cannot be checked, the exact ownership token changes, or renewal fails. A stream
 cancellation no longer discards that owning cause. Private storage details stay

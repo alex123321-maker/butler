@@ -15,7 +15,7 @@ An interrupted exchange requires a fresh pairing, never recovery with a public
 device ID. Disconnect generates a fresh local device identity.
 
 The device row serializes batches, revocation and rotation. A single transaction
-creates immutable event receipts and private quarantined catalog sources; ACK
+creates immutable event receipts and private catalog sources; ACK
 is emitted after Commit. The server hashes the entire normalized event, rather
 than trusting the phone's content_hash. Same ID/different body conflicts. Batch
 identity also binds its body. Receipts survive content deletion and retries.
@@ -32,12 +32,16 @@ Retention calls the catalog's narrow expired-mobile-source operation, which
 rechecks expiry under the current device-policy lock. It does not fabricate an
 authenticated owner request or allow deletion of arbitrary sources.
 
-Significance is typed `private_observation_only`: no rule is currently admitted
-to invoke models, create tasks, send notices or extract claims. An owner can
-explicitly review sources and use the existing versioned purpose-grant controls;
-the phone cannot mint those decisions. Search/reveal are owner-only. No content
-is logged; existing path/status/latency instrumentation and per-device counters
-provide diagnostics without event text or credential labels in metrics.
+Ingress remains `private_observation_only` and invokes no models. The owner may
+enable the installed `mobile_inbox` initiative once; this activates mobile DATA
+reads and starts the existing scheduler's20-message/hour processing path.
+Without that standing permission originals remain quarantined. Notes/rules use
+Catalog derivatives and current Broker/task/mandate authority, not device auth.
+`messages.go` projects distinct message identities without copying text; bounded
+backfill supports already saved events. The owning Orchestrator composes the
+observer and Tool Broker controls. Noise suppresses attention, retains search,
+and can be undone via the owner attention view. Source deletion/retention also
+erases dependent notes/rules. No content is logged; diagnostics contain counters.
 
 Run `go test ./internal/mobile` on Linux with
 `BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://.../mobile_test`. Every integration

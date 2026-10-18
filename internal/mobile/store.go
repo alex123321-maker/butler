@@ -323,6 +323,9 @@ func (s *Store) Accept(ctx context.Context, id, token string, b Batch) (ACK, err
 		if err != nil {
 			return ack, err
 		}
+		if err = IndexMessagesTx(ctx, tx, own, id, sid, event); err != nil {
+			return ack, err
+		}
 		ack.Accepted = append(ack.Accepted, event.ID)
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO mobile_batches(device_id,batch_id,body_hash) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, id, b.ID, batchHash)

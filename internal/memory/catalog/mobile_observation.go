@@ -12,8 +12,8 @@ import (
 
 // PutMobileObservationTx is a trusted ingress seam, called only after device
 // authentication under the device row lock. Each immutable event is a separate
-// private DATA revision. Quarantine denies model retrieval/extraction by default;
-// normal owner review and purpose grants remain separate current decisions.
+// private DATA revision. Owner-configured mobile automation activates DATA reads
+// without per-message review; absent that standing policy it is quarantined.
 // Receipts and sources commit in the caller's single transaction.
 func (s *Store) PutMobileObservationTx(ctx context.Context, tx pgx.Tx, own, key, body, author string, at time.Time) (string, error) {
 	if own == "" || len(key) > 512 || len(body) > 128*1024 || !json.Valid([]byte(body)) {
@@ -34,7 +34,15 @@ func (s *Store) PutMobileObservationTx(ctx context.Context, tx pgx.Tx, own, key,
 	if sanitize.Text(body) != body {
 		origin.Sensitivity = content.Secret
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO memory_sources(source_id,owner_id,source_kind,scope_type,scope_id,external_key,status) VALUES($1,$2,'document','user',$2,$3,'quarantined')`, id, own, "mobile:"+key); err != nil {
+	status := "quarantined"
+	var enabled bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM mobile_agent_access WHERE owner_id=$1 AND enabled)`, own).Scan(&enabled); err != nil {
+		return "", err
+	}
+	if enabled {
+		status = "active"
+	}
+	if _, err := tx.Exec(ctx, `INSERT INTO memory_sources(source_id,owner_id,source_kind,scope_type,scope_id,external_key,status) VALUES($1,$2,'document','user',$2,$3,$4)`, id, own, "mobile:"+key, status); err != nil {
 		return "", err
 	}
 	_, err := tx.Exec(ctx, `INSERT INTO memory_source_revisions(source_id,revision,content_hash,title,body,locator,origin,author,event_time) VALUES($1,1,$2,'Android external observation',$3,$4::jsonb,$5::jsonb,$6,$7)`, id, hash(body), body, `{"adapter":"android_notification_v1"}`, mustJSON(origin), author, at)

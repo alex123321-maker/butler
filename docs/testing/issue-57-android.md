@@ -17,11 +17,12 @@ Its original app remains installed separately on the phone.
 Affected subsystems: Android capture/queue/transport, authenticated HTTP ingress,
 PostgreSQL source catalog and owner Web controls. See the
 [versioned protocol and threat boundaries](../architecture/android-companion.md).
-No provider, Broker or model invocation was added. All events enter as immutable
-private quarantined DATA with typed `private_observation_only` significance.
-Automatic significance rules/initiative proposals remain disabled; future rules
-need separate authority/privacy/budget admission. This conservative implementation
-does not claim the issue's broader significance rule engine is implemented.
+The original ingress acceptance below covers automation-disabled quarantine and
+zero model invocations. The subsequently owner-requested standing permission,
+20-message/hour wakeups, automatic notes, archive search and reversible noise
+rules are covered by the [attention acceptance](issue-57-attention.md). Ingress
+still records immutable private DATA with `private_observation_only` significance;
+the separately admitted ordinary task supplies current authority and budgets.
 
 ## Environment
 
@@ -179,8 +180,9 @@ Before closing the original issue:
 - When requested, validate mobile data through HTTPS/Tailscale. A temporary HTTPS
   tunnel attempt timed out and is not accepted. Wi-Fi is the only accepted route
   for this stage, at the owner's request.
-- Add and separately accept any automatic significance/initiative rule engine;
-  the current typed quarantine deliberately produces no automatic action.
+- Autonomous message attention is evaluated separately in the
+  [attention report](issue-57-attention.md); this earlier zero-model ingress run
+  alone is not evidence for generative assistance.
 
 No always-real-time delivery guarantee is made under Android power/network
 restrictions. No production rollout or original-issue closure is inferred from a

@@ -53,6 +53,9 @@ func (w *Worker) Sweep(ctx context.Context) error {
 	if err := w.Store.RefreshCompleted(ctx); err != nil {
 		return err
 	}
+	if err := w.Promoter.RecoverMobileInputs(ctx); err != nil {
+		return err
+	}
 	return w.Store.QueueDigests(ctx)
 }
 

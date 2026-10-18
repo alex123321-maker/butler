@@ -205,6 +205,13 @@ func (s *MobileServer) OwnerHandler() http.Handler {
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/mobile-owner/")
 		if r.Method == "GET" {
 			switch path {
+			case "attention":
+				v, e := s.Store.Attention(ctx, r.URL.Query().Get("reveal") == "true")
+				if e != nil {
+					mobileError(w, e)
+					return
+				}
+				mobileJSON(w, 200, v)
 			case "devices":
 				v, e := s.Store.Devices(ctx)
 				if e != nil {
@@ -229,6 +236,20 @@ func (s *MobileServer) OwnerHandler() http.Handler {
 			return
 		}
 		switch path {
+		case "noise-rule":
+			var p struct {
+				ID      string `json:"rule_id"`
+				Enabled bool   `json:"enabled"`
+			}
+			if e := mobileDecode(w, r, &p); e != nil {
+				mobileError(w, e)
+				return
+			}
+			if e := s.Store.ChangeNoiseRule(ctx, p.ID, p.Enabled); e != nil {
+				mobileError(w, e)
+				return
+			}
+			w.WriteHeader(204)
 		case "pairing-code":
 			v, e := s.Store.CreateCode(ctx)
 			if e != nil {

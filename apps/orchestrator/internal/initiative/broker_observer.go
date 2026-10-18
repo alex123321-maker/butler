@@ -22,6 +22,9 @@ type ProjectObserver struct {
 }
 
 func (o ProjectObserver) Check(ctx context.Context, source Source, tick ClaimedTick) (*Event, error) {
+	if source.ObserverKind == "mobile_inbox" {
+		return o.Store.checkMobile(ctx, source)
+	}
 	if source.ObserverKind != "broker_project" {
 		return (TaskObserver{Store: o.Store}).Check(ctx, source, tick)
 	}
@@ -238,6 +241,9 @@ func currentBrokerCondition(ctx context.Context, tx pgx.Tx, source Source, event
 }
 
 func (s *Store) currentConditionTx(ctx context.Context, tx pgx.Tx, source Source, event Event) (bool, error) {
+	if source.ObserverKind == "mobile_inbox" {
+		return currentMobileCondition(ctx, tx, source, event)
+	}
 	if source.ObserverKind == "broker_project" {
 		if s.RunDataGuardTx == nil || s.RunDataGuardTx(ctx, tx, event.ObservedAttemptID) != nil {
 			return false, nil

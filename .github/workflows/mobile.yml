@@ -1,7 +1,7 @@
 name: Android companion
 on:
   pull_request:
-    paths: ['mobile/**', 'internal/mobile/**', 'internal/memory/catalog/**', 'apps/orchestrator/internal/api/mobile*', 'apps/orchestrator/internal/app/bootstrap*', 'apps/orchestrator/cmd/mobile-lab/**', 'migrations/083_*', 'web/pages/mobile.vue', 'web/tests/e2e/mobile.spec.ts', '.github/workflows/mobile.yml']
+    paths: ['mobile/**', 'internal/mobile/**', 'internal/memory/catalog/**', 'internal/memory/readcontrol/**', 'internal/actionauth/**', 'apps/orchestrator/internal/api/mobile*', 'apps/orchestrator/internal/app/mobile*', 'apps/orchestrator/internal/app/memory_read.go', 'apps/orchestrator/internal/app/bootstrap*', 'apps/orchestrator/internal/initiative/**', 'apps/orchestrator/internal/task/**', 'apps/orchestrator/cmd/mobile-*/**', 'migrations/083_*', 'migrations/084_*', 'web/pages/mobile.vue', 'web/pages/initiatives.vue', 'web/tests/e2e/mobile.spec.ts', '.github/workflows/mobile.yml']
   push:
     branches: [main]
     paths: ['mobile/**', 'internal/mobile/**', 'migrations/083_*']
@@ -34,8 +34,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: {go-version: '1.27.2', cache: false}
-      - run: go mod verify && go test -race ./internal/mobile ./internal/memory/catalog -count=1 && go test ./apps/orchestrator/internal/api -run '^TestMobile' -count=1 && go test ./apps/orchestrator/internal/app -run '^$'
-        env: {GOCACHE: '${{ github.workspace }}/.cache/go-build', GOMODCACHE: '${{ github.workspace }}/.cache/go-mod', BUTLER_TEST_MEMORY_POSTGRES_URL: 'postgres://postgres@localhost:5432/mobile_test?sslmode=disable'}
+      - run: |
+          go mod verify
+          go test -race ./internal/mobile ./internal/memory/catalog ./internal/memory/readcontrol ./internal/actionauth ./apps/orchestrator/internal/initiative -count=1
+          go test ./apps/orchestrator/internal/api -run '^TestMobile' -count=1
+          go build -o .cache/mobile-broker ./apps/tool-broker
+          go test -race ./apps/orchestrator/internal/app -run '^TestMobileAgentBroker' -count=1 -v
+        env:
+          GOCACHE: '${{ github.workspace }}/.cache/go-build'
+          GOMODCACHE: '${{ github.workspace }}/.cache/go-mod'
+          BUTLER_TEST_MEMORY_POSTGRES_URL: 'postgres://postgres@localhost:5432/mobile_test?sslmode=disable'
+          BUTLER_TEST_INITIATIVE_POSTGRES_URL: 'postgres://postgres@localhost:5432/mobile_test?sslmode=disable'
+          BUTLER_GUARDED_REQUEST_BROKER_BINARY: '${{ github.workspace }}/.cache/mobile-broker'
+          BUTLER_MEMORY_READ_APP_BINARY: '${{ github.workspace }}/.cache/mobile-broker'
   emulator:
     runs-on: ubuntu-latest
     strategy:

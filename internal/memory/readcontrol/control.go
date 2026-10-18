@@ -25,6 +25,12 @@ const MaxOffset = 8 * 1024 * 1024 // Catalog originals contain at most 8MiB.
 var ErrDenied = errors.New("memory read denied")
 
 type Args struct {
+	Package        string `json:"package,omitempty"`
+	Sender         string `json:"sender,omitempty"`
+	MessageID      string `json:"message_id,omitempty"`
+	Disposition    string `json:"disposition,omitempty"`
+	Note           string `json:"note,omitempty"`
+	NoiseContains  string `json:"noise_contains,omitempty"`
 	Query          string `json:"query,omitempty"`
 	Strategy       string `json:"strategy,omitempty"`
 	EventFrom      string `json:"event_from,omitempty"`
@@ -91,11 +97,14 @@ type Service interface {
 	ReadDispatched(context.Context, Envelope) (Result, error)
 }
 
-func IsTool(s string) bool { return s == Search || s == Open || s == Neighbors }
+func IsTool(s string) bool { return s == Search || s == Open || s == Neighbors || IsMessageTool(s) }
 func Contracts() []*toolbrokerv1.ToolContract {
-	return []*toolbrokerv1.ToolContract{Contract(Search), Contract(Open), Contract(Neighbors)}
+	return []*toolbrokerv1.ToolContract{Contract(Search), Contract(Open), Contract(Neighbors), Contract(MessageInbox), Contract(MessageSearch), Contract(MessageProcess)}
 }
 func Contract(name string) *toolbrokerv1.ToolContract {
+	if IsMessageTool(name) {
+		return messageContract(name)
+	}
 	if !IsTool(name) {
 		return nil
 	}
@@ -148,6 +157,9 @@ func decodeObject(raw []byte, dst any, limit int) error {
 	return nil
 }
 func DecodeArgs(tool, raw string) (Args, error) {
+	if IsMessageTool(tool) {
+		return decodeMessageArgs(tool, raw)
+	}
 	var a Args
 	if !IsTool(tool) || decodeObject([]byte(raw), &a, 4096) != nil {
 		return a, ErrDenied

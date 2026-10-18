@@ -26,6 +26,12 @@ unsigned APK for later operator signing. Keep the private signing key and
 passwords outside Git and back them up privately: Android updates require the
 same signer. Debug and release have different package IDs and signatures.
 APK paths: `app/build/outputs/apk/{debug,release}/`. Verify SHA256 before install;
+Version1.2.0 additionally explains autonomous use on the app-filter screen.
+Permitted messages can feed owner-enabled20-message/hour assistance on Butler.
+App exclusions stop future collection; server history/notes have independent
+retention/deletion controls. `MobileAttentionAcceptanceTest` seeds synthetic
+notifications only, verifies real callbacks and durable Wi-Fi ACKs; the host
+must separately verify native processing, search and noise decisions.
 use `adb install -r <apk>`. Never uninstall/clear an existing instance merely to
 resolve a signature mismatch; retain/export needed data and use its actual key.
 

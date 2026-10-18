@@ -80,6 +80,18 @@ func (s *Store) queueVerifiedNotificationTx(ctx context.Context, tx pgx.Tx, befo
 	if !ok || worker || a.OwnerID != before.OwnerID || (a.SessionKey != "" && a.SessionKey != before.SessionKey) {
 		return ErrUnauthorized
 	}
+	return s.queueVerifiedNotificationEvidenceTx(ctx, tx, before, after, "owner")
+}
+
+// Called only by the owner wrapper or the fixed code-owned mobile verifier
+// after its independent durable evidence checks. No synthetic owner actor.
+func (s *Store) queueVerifiedNotificationEvidenceTx(ctx context.Context, tx pgx.Tx, before, after Record, expectedVerifier string) error {
+	if before.ResultDelivery != "verified_task" || before.ParentTaskID != "" || after.Status != "completed" {
+		return nil
+	}
+	if expectedVerifier != "owner" && expectedVerifier != "mobile_batch_v1" {
+		return ErrUnauthorized
+	}
 	var now time.Time
 	if err := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
 		return err
@@ -90,17 +102,17 @@ func (s *Store) queueVerifiedNotificationTx(ctx context.Context, tx pgx.Tx, befo
 	// A semantic owner result is distinct from a model final. This mode requires
 	// the exact current unredacted complete attempt as its privacy/lifecycle pin;
 	// a partial, deleted, unrelated or old attempt cannot generate this notice.
-	var runID, channel string
-	err := tx.QueryRow(ctx, `SELECT r.run_id,s.channel FROM task_results r
+	var runID, channel, verifier string
+	err := tx.QueryRow(ctx, `SELECT r.run_id,s.channel,r.verifier FROM task_results r
  JOIN tasks t ON t.task_id=r.task_id JOIN sessions s ON s.session_key=t.session_key AND s.user_id=t.owner_id
  JOIN runs x ON x.run_id=r.run_id AND x.task_id=t.task_id
  JOIN run_final_results f ON f.run_id=x.run_id AND f.task_id=t.task_id
- WHERE r.task_id=$1 AND r.result_id=$2 AND r.task_revision=$3 AND r.verdict='verified' AND r.verifier='owner'
+ WHERE r.task_id=$1 AND r.result_id=$2 AND r.task_revision=$3 AND r.verdict='verified' AND r.verifier=$5
  AND NOT COALESCE((to_jsonb(r)->>'privacy_redacted')::boolean,false)
  AND f.task_revision=$3 AND f.constraints_revision=$4 AND f.answer_state='final' AND NOT f.privacy_redacted
  AND x.current_state='completed' AND x.status='completed'
  AND NOT COALESCE((t.working_json #>> '{scratch,privacy_redacted}')::boolean,false)
- FOR SHARE OF r,s,x,f`, before.TaskID, after.CompletionResultID, before.Revision, before.ConstraintsRevision).Scan(&runID, &channel)
+ FOR SHARE OF r,s,x,f`, before.TaskID, after.CompletionResultID, before.Revision, before.ConstraintsRevision, expectedVerifier).Scan(&runID, &channel, &verifier)
 	if err != nil || (channel != "web" && channel != "telegram") {
 		return ErrInvalid
 	}
@@ -122,6 +134,9 @@ func (s *Store) queueVerifiedNotificationTx(ctx context.Context, tx pgx.Tx, befo
 	}
 	id := "verified-task:" + before.TaskID
 	content := fmt.Sprintf("Butler: владелец подтвердил завершение поручения. Результат доступен в интерфейсе: /tasks/%s.", before.TaskID)
+	if verifier == "mobile_batch_v1" {
+		content = fmt.Sprintf("Butler: разбор уведомлений завершён, полезные заметки сохранены. Результат: /tasks/%s.", before.TaskID)
+	}
 	_, err = tx.Exec(ctx, `INSERT INTO task_verified_notifications(notification_id,task_id,result_id,task_revision,constraints_revision,owner_id,run_id,session_key,channel,content,status,deadline_at)
  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, id, before.TaskID, after.CompletionResultID, after.Revision, after.ConstraintsRevision, before.OwnerID, runID, before.SessionKey, channel, content, state, now.Add(24*time.Hour))
 	return err
@@ -217,7 +232,7 @@ func (s VerifiedNotificationStore) AuthorizeSend(ctx context.Context, m delivery
  WHERE d.notification_id=$1 AND d.claim_id=$2 AND d.status='sending' AND d.claim_until>clock_timestamp() AND d.deadline_at>clock_timestamp()
  AND d.content=$3 AND d.result_id=$4 AND d.run_id=$5 AND d.session_key=$6 AND d.channel=$7
  AND t.owner_id=d.owner_id AND t.status='completed' AND t.revision=d.task_revision AND t.constraints_revision=d.constraints_revision AND t.completion_result_id=d.result_id
- AND r.verdict='verified' AND r.verifier='owner' AND NOT COALESCE((to_jsonb(r)->>'privacy_redacted')::boolean,false)
+ AND r.verdict='verified' AND r.verifier IN ('owner','mobile_batch_v1') AND NOT COALESCE((to_jsonb(r)->>'privacy_redacted')::boolean,false)
  AND NOT f.privacy_redacted AND f.answer_state='final'
  AND NOT COALESCE((t.working_json #>> '{scratch,privacy_redacted}')::boolean,false)
  FOR SHARE OF d,t,r,s,f`, m.NotificationID, m.ClaimID, m.Content, m.ResultID, m.RunID, m.SessionKey, m.Channel).Scan(&taskID, &owner)

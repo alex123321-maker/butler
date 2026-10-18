@@ -124,15 +124,78 @@ error strings. Invalid ACKs and unconfirmed events remain undelivered.
 
 ## Memory, deletion and significance
 
-Each accepted event atomically becomes an immutable private quarantined catalog
-source; source provenance records the trusted Android adapter and event package.
-Receipts outside the catalog hold IDs, hashes and times, with no notification
-body. Unreviewed sources are excluded from all model retrieval, extraction and
-indexing. Significance is the fixed typed `private_observation_only`; no automatic
-model calls, tasks or notices are admitted. Future significance adapters need
-separate current goal, privacy, mandate and budget admission and new acceptance.
-Explicit owner source review and purpose grants use existing memory controls;
-model conclusions remain candidates. Notification text cannot select them.
+Each accepted event atomically becomes an immutable private catalog source;
+provenance records the trusted Android adapter and package. Without standing
+owner permission the source is quarantined. Enabling the owner-configured
+`mobile_inbox` initiative activates that owner's mobile originals, including
+previously captured originals. Per-message review is unnecessary. Disabling
+the source quarantines originals again and increments access revisions, fencing
+old reads and derived context. Deleted/revoked sources cannot be reactivated.
+This is permission to use external DATA, never to obey source instructions.
+
+`mobile_messages` is a content-free projection into distinct message parts.
+Its stable hash covers owner/device/app/card/sender/text/message timestamp;
+replayed MessagingStyle history, dismissals, group summaries, metadata-only
+cards and progress-only updates do not increment the new-message count. Bodies
+remain exclusively in source revisions. A bounded restartable upgrade indexes
+100 old receipts per check. Android notification limitations still apply:
+missing/truncated text or missing stable message timestamps cannot reconstruct
+a complete chat history.
+
+The existing initiative scheduler checks the inbox every minute. Twenty eligible
+new messages, or one hour since the oldest eligible unprocessed receipt, creates
+one immutable batch of at most20 messages and admits one ordinary task through
+current Goal/Mandate, Task/Input Services and execution budgets. Empty checks
+call no model. One unfinished batch per owner prevents concurrent duplication.
+Noise already covered by a current rule is excluded from wakeups. These quiet
+background tasks consume ordinary model budgets; they do not consume the
+separate user-interruption counter. Pauses, expiry and shared quotas still apply.
+The source receives an automatic minute schedule and the fixed processing goal;
+owner configuration cannot turn notification fields into a task template.
+
+The standing mandate names `messages.inbox`, `messages.search`,
+`messages.process` and desired `memory.search/open/neighbors` capabilities with
+exact tool resource scopes, read/prepare effects and current provider privacy.
+Use normal task execution policy: Butler's existing `prepare_only` policy admits
+only verified read effects and therefore excludes memory writes. Both services
+need `BUTLER_MEMORY_READ_ENABLED` and the private authenticated control route.
+The current autonomy mode must permit standing mandates (`mode_2` or `mode_3`);
+mode0/1 restrictions are not bypassed by enabling a notification source.
+Cloud use requires an explicitly cloud-allowed mandate; secret-class data stays
+unavailable. App exclusion remains in Companion; no per-app owner review is
+required on the server. A device token grants no agent or owner capability.
+
+`messages.inbox` reads up to10 pending messages assigned to the actual task.
+`messages.search` searches the captured archive by text/app/sender/time, including
+processed and suppressed messages; `memory.open` opens exact originals.
+`messages.process` requires a current permanent Broker dispatch, owning input,
+task/mandate/lease and an already pinned exact source. It can remember a bounded
+note, ignore one message, or establish a narrow reversible noise rule. Notes
+and rule bodies are ordinary catalog DATA derivatives with original dependencies;
+they are automatically searchable, not owner-confirmed profile facts or authority.
+Proposals, confirmed appointments and cancellations must remain distinct.
+Relative dates use source time and the configured owner time zone; dismissal
+does not cancel an appointment. Every decision and receipt commits atomically;
+reprocessing a terminal message does not duplicate a note.
+
+Rules match one app, optional exact channel and a literal case-insensitive
+substring of at least4 Unicode characters observed in the cited message. At
+most32 active rules are consumed; there is no model regex or arbitrary SQL.
+A rule can suppress remaining matching parts in its bounded batch and future
+arrivals without deleting originals or changing Android filters. The owner can
+disable/re-enable rules in Web `/mobile`. Source deletion/withdrawal invalidates
+dependent rules. A source revision change releases unfinished batch items for
+fresh admission and prevents old task controls from processing them.
+
+The Task Service's code-owned `mobile_batch_v1` verifier checks the actual
+completed attempt, current source configuration/authority, finished batch and
+durable terminal decisions. It verifies processing completion, not semantic
+truth of model notes. Attempt delivery is suppressed. A useful saved note can
+produce an existing verified-task notice; noise-only processing stays quiet.
+Model final text alone cannot complete this task.
+If a completed attempt leaves pending decisions, at most three continuation
+inputs resume the same task/root budget after30 seconds. One queued/running
+input blocks duplicate continuations; paused/blocked tasks remain stopped.
 
 Owner deletion/retention uses the existing fsynced external deletion manifest,
 purges source revisions and derivatives, and retains content-free receipts.

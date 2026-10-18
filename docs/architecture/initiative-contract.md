@@ -1,5 +1,20 @@
 # Initiative admission contract
 
+Android assistance adds the installed `mobile_inbox` observer. Authenticated
+owner source configuration grants standing mobile DATA access, a fixed task and
+an automatic minute schedule. Twenty distinct pending messages or one hour since
+the oldest eligible receipt admit one ordinary task. Empty/known-noise checks
+admit none. One unfinished batch per owner and permanent decisions prevent
+duplicate notes. Source revisions fence old task tools and release unfinished
+items for fresh admission. Background batches use shared execution budgets
+without spending the separate user-interruption counter. An incomplete completed
+attempt may receive at most three continuation inputs under the same task/root
+budget; paused/blocked tasks are not reopened. Task Service independently checks
+completed input/run and durable decisions before completion. Notes can create
+an existing verified-task notice; noise-only processing stays quiet. Tool scopes
+and provider privacy come from a current owner mandate. See the
+[Android contract](android-companion.md); observations grant no authority.
+
 [Lab acceptance evidence](initiative-acceptance.md) distinguishes actual
 Broker/executor checks from recorded-journal adversarial fixtures and remaining
 live generative planning and channel-delivery verification.
