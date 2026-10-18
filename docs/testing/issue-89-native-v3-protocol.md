@@ -36,11 +36,14 @@ This explicit experimental partition is not production global admission across
 separate databases.
 
 `memory-consolidation-v3-history.py prepare BASE LABEL CLOSED88REPORT` requires
-closed metadata, native-status0, exact CAS handback, actual main paid-discovery
+closed metadata, retained collector exit status, exact CAS handback, actual main paid-discovery
 HTTP200 and a fresh private snapshot before exporting. It uses standard-library
 Python only for bounded subprocess pipes and exclusive fsynced JSON copies; Go
 implements validation, budget import and runtime execution. Exported inventory
 contains no settings, auth, source bodies or raw error messages.
+Collector status1 is a retained failed cohort, not a handback failure when all
+exact handback proofs passed. Its original completed/failed/unexecuted outcomes
+and paid UNKNOWN entries remain required evidence and never become a quality pass.
 
 The new namespace is `consolidation_native_v3`; its public one-use receipt is
 `consolidation-explicit-v3`. The receipt and namespace are claimed atomically.

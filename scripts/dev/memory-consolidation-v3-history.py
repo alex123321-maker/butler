@@ -62,8 +62,8 @@ def copy_lineage(source, target, raw):
 
 def closed_handback(report):
     result = subprocess.run(['docker', 'run', '--rm', '--pull', 'never', '--network', 'none', '--cpus', '.1', '--memory', '64m', '--pids-limit', '32', '--mount', 'type=bind,src='+str(report)+',dst=/from,readonly', 'golang:1.27.2-bookworm', 'cat', '/from/native-status'], capture_output=True, timeout=40)
-    if result.returncode or result.stdout.strip() != b'0':
-        raise SystemExit('successful closed native runner and handback required before export')
+    if result.returncode or result.stdout.strip() not in (b'0', b'1'):
+        raise SystemExit('retained closed native runner status required before export')
     returned = json.loads(old.artifact(report/'return-safe.json'))
     main = json.loads(old.artifact(report/'main-auth-safe.json'))
     snapshot = json.loads(old.artifact(report/'main-snapshot-safe.json'))
@@ -71,6 +71,10 @@ def closed_handback(report):
         raise SystemExit('exact CAS/main/snapshot successor handback proof required')
     if not any(x.get('stage') == 'paid_discovery' and x.get('outcome') == 'completed' and x.get('http_status') == 200 for x in main.get('trace', [])):
         raise SystemExit('actual main paid-discovery HTTP200 required')
+    outcomes = json.loads(old.artifact(report/'all-original-outcomes.json'))
+    if not isinstance(outcomes, list) or len(outcomes) != 12 or len({x.get('case_id') for x in outcomes}) != 12 or any(x.get('status') not in ('completed','failed','not_executed') for x in outcomes):
+        raise SystemExit('all twelve original closed outcomes required')
+    return {'native_status':int(result.stdout.strip()),'return_safe':returned,'main_auth_safe':main,'main_snapshot_safe':snapshot}
 
 
 def main():
@@ -94,6 +98,9 @@ def main():
         prior, live = json.loads(prior), metadata()
         if any(prior[key] != live[key] for key in ('window', 'entries')):
             raise SystemExit('closed latest temporal original metadata changed')
+        _, closure = old.referenced(path.parent, manifest['predecessor88_closure'])
+        if old.canonical(closed_handback(pathlib.Path(manifest['predecessor_report']))) != closure:
+            raise SystemExit('closed original collector/handback proof changed')
         print(json.dumps({'read_only':True,'current_day_unchanged':True,'seven_databases':7,'schema_absent':True,'receipt_count':0,'auth_or_inference':False}))
         return
     if mode != 'prepare':
@@ -101,7 +108,7 @@ def main():
     base, label, report = pathlib.Path(sys.argv[2]).resolve(), sys.argv[3], pathlib.Path(sys.argv[4]).resolve()
     if not re.fullmatch('/srv/storage/butler/agents/issue89-[A-Za-z0-9_-]+', str(base)) or not re.fullmatch('[A-Za-z0-9_-]+', label) or not re.fullmatch('/srv/storage/butler/agents/issue88-[A-Za-z0-9_-]+/reports/[A-Za-z0-9_-]+', str(report)):
         raise SystemExit('bounded isolated successor references required')
-    closed_handback(report)
+    closure = closed_handback(report)
     previous = old.artifact(report/'history/history.json')
     previous_manifest = json.loads(previous)
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -117,7 +124,7 @@ def main():
     proof = base/'reports'/label/'history'
     proof.mkdir(mode=0o700, parents=True)
     copy_lineage(report/'history', proof, previous)
-    files = {'v3-current-owner-day.json':old.canonical(inventory), 'v3-all-seven-owner-ledgers.json':old.canonical(all_inventory), 'v3-predecessor88-current.json':old.canonical(native), 'v6-native88-full-ledger.json':old.artifact(report/'full-ledger.json'), 'v6-native88-outcomes.json':old.artifact(report/'all-original-outcomes.json')}
+    files = {'v3-current-owner-day.json':old.canonical(inventory), 'v3-all-seven-owner-ledgers.json':old.canonical(all_inventory), 'v3-predecessor88-current.json':old.canonical(native), 'v6-native88-full-ledger.json':old.artifact(report/'full-ledger.json'), 'v6-native88-outcomes.json':old.artifact(report/'all-original-outcomes.json'), 'v6-closure.json':old.canonical(closure)}
     for name,data in files.items():
         old.write(proof/name,data)
     entries=[]
@@ -130,6 +137,8 @@ def main():
         old.write(proof/name,data)
         entries.append(old.reference(name,data))
     manifest={'format':'butler.consolidation.native-history.v4','owner':'owner','day':day,'deadline':deadline,'schema':SCHEMA,'predecessor88_history':old.reference('temporal-v6-history.json',previous),'current':old.reference('v3-current-owner-day.json',files['v3-current-owner-day.json']),'all_owners':old.reference('v3-all-seven-owner-ledgers.json',files['v3-all-seven-owner-ledgers.json']),'predecessor88':old.reference('v3-predecessor88-current.json',files['v3-predecessor88-current.json']),'original88_ledger':old.reference('v6-native88-full-ledger.json',files['v6-native88-full-ledger.json']),'original88_outcomes':old.reference('v6-native88-outcomes.json',files['v6-native88-outcomes.json']),'original88_entries':entries,'future_window':future,'rule':'Latest inclusive owner/day leaf once; original161/89v1/88v5/89v2/88v6 failures, NULLs and deadlines retained recursively. Distinct adaptive226 quotes are separate evidence, never rebilled. Lab partition only, not production cross-database admission.'}
+    manifest['predecessor88_closure']=old.reference('v6-closure.json',files['v6-closure.json'])
+    manifest['predecessor_report']=str(report)
     raw=old.canonical(manifest)
     old.write(proof/'history.json',raw)
     print(json.dumps({'read_only':True,'history_sha256':old.reference('',raw)['SHA256'],'seven_databases':7,'day':day,'auth_or_inference':False}))

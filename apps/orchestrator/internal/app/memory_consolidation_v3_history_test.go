@@ -17,6 +17,8 @@ const consolidationV3Window = "consolidation-explicit-v3"
 type consolidationV3Manifest struct {
 	consolidationV2Manifest
 	AllOwners consolidationHistoryRef `json:"all_owners"`
+	Closure   consolidationHistoryRef `json:"predecessor88_closure"`
+	Report    string                  `json:"predecessor_report"`
 	Future    struct {
 		Schema  string `json:"schema"`
 		Window  string `json:"window_id"`
@@ -82,6 +84,13 @@ func loadConsolidationV3History(path, expected string) (*consolidationScreenHist
 	if err = consolidationV2Corroborate(prior, ledger, outcomes, entries, m.Day); err != nil {
 		return nil, err
 	}
+	closure, err := read(m.Closure)
+	if err != nil {
+		return nil, err
+	}
+	if err = consolidationV3ValidateClosure(closure, outcomes); err != nil {
+		return nil, err
+	}
 	carry, usage, err := consolidationValidateTemporalLeaf(prior, ledger, previous, m.Day, m.Deadline, "butler.consolidation.predecessor88.v2", "issue88-v6-current-day-carry:")
 	if err != nil {
 		return nil, err
@@ -139,10 +148,54 @@ func loadConsolidationV3History(path, expected string) (*consolidationScreenHist
 	h := *previous.Historical
 	h.Hash, h.ProspectiveDay, h.ProspectiveDeadline, h.CurrentCarry = expected, m.Day, m.Deadline, carry
 	h.Successor = &consolidationV2Summary{Schema: m.Schema, Day: m.Day, PreviousHistorySHA: previous.Hash, Previous89: previous.Usage, New88: usage, Current89And88: consolidationV2AddUsage(previous.Usage, usage), SeparateAdaptive: adaptive, Lineage: "161 historical; original89v1/88v5/89v2 inclusive49 once; new88v6 originals; distinct adaptive owner separate", SourceHashes: map[string]string{}}
-	for _, ref := range append([]consolidationHistoryRef{m.Previous, m.Current, m.AllOwners, m.Predecessor, m.Ledger, m.Outcomes}, m.Entries...) {
+	for _, ref := range append([]consolidationHistoryRef{m.Previous, m.Current, m.AllOwners, m.Predecessor, m.Ledger, m.Outcomes, m.Closure}, m.Entries...) {
 		h.Successor.SourceHashes[ref.Path] = ref.SHA256
 	}
 	return &h, nil
+}
+
+// Collector failure is retained separately from successful opaque handback.
+// A status1 window can carry paid quotes/NULLs without becoming a quality pass.
+func consolidationV3ValidateClosure(raw, outcomesRaw []byte) error {
+	var c struct {
+		Status   *int `json:"native_status"`
+		Returned struct {
+			CAS     bool `json:"opaque_main_cas"`
+			Checked bool `json:"active_work_checked"`
+		} `json:"return_safe"`
+		Main struct {
+			Resolved bool  `json:"resolved"`
+			Unsafe   *bool `json:"unsafe_refresh"`
+			Expired  *bool `json:"expired"`
+			Trace    []struct {
+				Stage, Outcome string
+				HTTP           int `json:"http_status"`
+			}
+		} `json:"main_auth_safe"`
+		Snapshot struct {
+			Fresh bool `json:"fresh_main_snapshot_saved"`
+		} `json:"main_snapshot_safe"`
+	}
+	var outcomes []temporalCaseObservation
+	if json.Unmarshal(raw, &c) != nil || c.Status == nil || (*c.Status != 0 && *c.Status != 1) || !c.Returned.CAS || !c.Returned.Checked || !c.Main.Resolved || c.Main.Unsafe == nil || *c.Main.Unsafe || c.Main.Expired == nil || *c.Main.Expired || !c.Snapshot.Fresh || json.Unmarshal(outcomesRaw, &outcomes) != nil || len(outcomes) != 12 {
+		return errors.New("exact closed original handback proof required")
+	}
+	paid200 := false
+	for _, s := range c.Main.Trace {
+		if s.Stage == "paid_discovery" && s.Outcome == "completed" && s.HTTP == 200 {
+			paid200 = true
+		}
+	}
+	completed := 0
+	for _, o := range outcomes {
+		if o.Status == "completed" {
+			completed++
+		}
+	}
+	if !paid200 || (*c.Status == 0 && completed != 12) || (*c.Status == 1 && completed == 12) {
+		return errors.New("original collector result and exact main200 proof differ")
+	}
+	return nil
 }
 
 // Remove only the corroborated v6 leaf from a deep copy, then re-prove every
