@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -15,10 +16,14 @@ import (
 // Final publication can therefore repeat current scope/grant proof without
 // allowing generic AccessTx on a finalizing run.
 func (s *Store) CheckCapturedRunGrantsTx(ctx context.Context, tx pgx.Tx, run string) error {
+	token, ok := ownership.TokenFromContext(ctx)
+	if !ok || token.RunID != run {
+		return ErrDenied
+	}
 	var owner, session, taskID string
 	var revision int64
 	var delegated bool
-	if err := tx.QueryRow(ctx, `SELECT s.user_id,r.session_key,COALESCE(r.task_id,''),COALESCE(r.task_revision,0) FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1 FOR SHARE OF r,s`, run).Scan(&owner, &session, &taskID, &revision); err != nil || owner == "" || session == "" {
+	if err := tx.QueryRow(ctx, `SELECT s.user_id,r.session_key,COALESCE(r.task_id,''),COALESCE(r.task_revision,0) FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1 FOR SHARE OF r,s`, run).Scan(&owner, &session, &taskID, &revision); err != nil || owner == "" || session == "" || session != token.SessionKey {
 		return ErrDenied
 	}
 	if taskID != "" {
@@ -84,6 +89,14 @@ func (s *Store) CheckCapturedRunGrantsTx(ctx context.Context, tx pgx.Tx, run str
 		if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, owner, nil, now); err != nil {
 			return err
 		}
+	}
+	// The owning completion's outer ownership.Begin already holds lease SHARE.
+	// Time can nevertheless cross expiry while graph/grants wait. Repeat only a
+	// plain metadata SELECT; a new SHARE could queue behind a waiting takeover
+	// whose UPDATE is itself waiting for that same outer ownership guard.
+	var live bool
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp())`, token.SessionKey, run, token.LeaseID, token.FenceEpoch).Scan(&live); err != nil || !live {
+		return ErrDenied
 	}
 	return nil
 }

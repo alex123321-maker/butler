@@ -339,3 +339,30 @@ read because the fixture omitted their own explicit descendant root grant.
 V47 grants the complete pre-existing canonical graph and passes those controls.
 Failed evidence is retained. Issue90 native/auth entries remain zero; this does
 not satisfy the separately frozen 57-logical-input/640-entry native gate.
+
+### Current lease after captured grant waits
+
+The additional plain metadata SELECT checks exact session/run/lease/fence and
+current database expiry after captured graph, grant and owner-authority waits.
+It adds no new lease SHARE behind a possible queued takeover. The owning
+Coordinator already holds its outer ownership.Begin SHARE. Completed owner and
+outbox operations retain their own completed-result transition proof.
+
+`reports/lease-red-v51` proves the old checker returned nil after a real SQL
+current-grant wait crossed lease expiry while an actual outer ownership guard
+was held. SHA256 of `red-evidence.sha256` is
+`f523ef2b9b99f33469c73215aea308c30eb51b1391e2a3db220411bcfdd8135d`.
+The separate actual foreground wait-negative already denied its final with the
+old checker through other owning guards; v48/v49 are retained observations, not
+a claim that overall final publication previously succeeded after expiry.
+
+Frozen source v52 completed `reports/publication-v52`: 28 pass, 0 fail, 0 skip,
+real PostgreSQL/Broker/runtimes, race and vet; evidence SHA256
+`d72c581caf875881083c72c8888f3fae42d7d43ace769d83fa2c67fa4a7c9550`.
+This includes the unchanged 13 direct/derived foreground scenarios, the actual
+foreground grant-wait expiry negative with two retained attempts, 11 ordinary
+captured graph/token controls plus its wrapper, the exact independent PG waiter,
+and the foreground scenario wrapper. Missing/mismatched tokens, run, lease,
+fence, owner, task/session and expired lease deny. The old-method PG waiter
+fails and the current checker returns ErrDenied. Generic finalizing body access
+remains denied. Native/auth entries for issue90 remain zero.

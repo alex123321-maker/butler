@@ -1014,3 +1014,13 @@ validates the exact existing episodic-experience pins through
 claim, feedback, environment and dependency identity. It does not obtain new
 body access or fill missing pins for a finalizing run. Generic Catalog access
 and the active run's ordinary source/pin binding retain their lifecycle guards.
+
+At finalizing completion, captured-grant validation also requires the exact
+current run token. After graph, grant and owner-authority waits it repeats a
+plain metadata check of session/run/lease/fence identity and
+`expires_at > clock_timestamp()`. The outer completion already holds its
+ownership SHARE guard; this final check acquires no new lease lock, returns no
+body and does not wait behind a queued takeover. A grant wait crossing lease
+expiry denies the final while retaining the attempts. Completed independent
+owner/outbox operations keep their own completed-result transition proof and do
+not acquire a new live inference lease through this applicability supplement.

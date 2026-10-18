@@ -168,6 +168,7 @@ checks accepted claims, feedback, environment and installed dependencies without
 reading bodies, creating pins or repairing a missing pin. Generic `AccessTx`
 continues to deny a finalizing run. Active provider/tool paths retain their full
 Catalog access and normal bounded lineage binding; no lifecycle access is widened.
+
 For a finalizing run this supplement also calls the body-free Catalog
 `CheckCapturedRunGrantsTx` primitive. The exact captured graph must include every
 ordinary ancestor, including lessons used through derived presentations or
@@ -186,6 +187,16 @@ CheckRunSourcesTx checks source ACL/revision/privacy and delegation, not ordinar
 nondelegated task grants. The reusable captured-grant regression documents that
 separate boundary; this change wires the extra check only for experience-bearing
 final publication, pending a separate review of general publication wiring.
+
+At finalizing completion, captured-grant validation also requires the exact
+current run token. After graph, grant and owner-authority waits it repeats a
+plain metadata check of session/run/lease/fence identity and
+`expires_at > clock_timestamp()`. The outer completion already holds its
+ownership SHARE guard; this final check acquires no new lease lock, returns no
+body and does not wait behind a queued takeover. A grant wait crossing lease
+expiry denies the final while retaining the attempts. Completed independent
+owner/outbox operations keep their own completed-result transition proof and do
+not acquire a new live inference lease through this applicability supplement.
 
 Migration082 distinguishes content removal from publication. Exact task working
 erasure is allowed under an existing deletion of that session's owner, with

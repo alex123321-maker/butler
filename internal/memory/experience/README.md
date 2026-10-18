@@ -212,6 +212,16 @@ nondelegated task grants. The reusable captured-grant regression documents that
 separate boundary; this change wires the extra check only for experience-bearing
 final publication, pending a separate review of general publication wiring.
 
+At finalizing completion, captured-grant validation also requires the exact
+current run token. After graph, grant and owner-authority waits it repeats a
+plain metadata check of session/run/lease/fence identity and
+`expires_at > clock_timestamp()`. The outer completion already holds its
+ownership SHARE guard; this final check acquires no new lease lock, returns no
+body and does not wait behind a queued takeover. A grant wait crossing lease
+expiry denies the final while retaining the attempts. Completed independent
+owner/outbox operations keep their own completed-result transition proof and do
+not acquire a new live inference lease through this applicability supplement.
+
 Migration082 keeps subsequent owner deletion possible after copied tool rows
 become stale. Its publication fence permits only the existing authorized exact
 content-free working erasure, unchanged task identity and one revision advance.

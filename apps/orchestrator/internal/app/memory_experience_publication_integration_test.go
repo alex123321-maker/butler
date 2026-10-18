@@ -161,7 +161,8 @@ func experienceReconciledPrivacyCopies(t *testing.T, ctx context.Context, r *exp
 		provider.source = p.Descendant
 		mode = strings.TrimPrefix(mode, "derived_")
 	}
-	var mutationErr, proofErr error
+	var mutationErr, proofErr, leaseGuardErr error
+	var leaseWait <-chan error
 	if mode != "accepted" {
 		provider.before = func() error {
 			switch mode {
@@ -210,6 +211,17 @@ func experienceReconciledPrivacyCopies(t *testing.T, ctx context.Context, r *exp
 				_, mutationErr = r.pool.Exec(ctx, `UPDATE tasks SET owner_id='different-owner' WHERE task_id=$1`, record.TaskID)
 			case "task":
 				_, mutationErr = r.pool.Exec(ctx, `UPDATE tasks SET status='paused',revision=revision+1,constraints_revision=constraints_revision+1 WHERE task_id=$1`, record.TaskID)
+			case "lease_wait":
+				var notify func(pgx.Tx)
+				notify, leaseWait, mutationErr = experienceFinalLeaseExpiryWait(t, ctx, r, record.TaskID, p.Lesson.ID, provider.run)
+				if mutationErr == nil {
+					guard := r.results.DataGuard
+					r.results.DataGuard = func(c context.Context, tx pgx.Tx, run string) error {
+						notify(tx)
+						leaseGuardErr = guard(c, tx, run)
+						return leaseGuardErr
+					}
+				}
 			default:
 				mutationErr = fmt.Errorf("unsupported current publication scenario")
 			}
@@ -230,6 +242,14 @@ func experienceReconciledPrivacyCopies(t *testing.T, ctx context.Context, r *exp
 		}
 	}
 	result := r.execute(t, ctx, record, id, "Read only the permitted observed note; preserve its uncertainty.", provider)
+	if leaseWait != nil {
+		if err := <-leaseWait; err != nil {
+			t.Fatal("actual completion did not wait beyond lease expiry", err)
+		}
+		if leaseGuardErr == nil {
+			t.Fatal("captured publication guard returned after actual grant wait beyond lease expiry")
+		}
+	}
 	if mutationErr != nil || proofErr != nil || provider.phase != 2 || provider.read == "" {
 		t.Fatal("actual cached-copy control setup failed", mutationErr, proofErr)
 	}
@@ -261,4 +281,77 @@ func TestExperienceCapturedPinsFinalPublicationIntegration(t *testing.T) {
 	for _, scenario := range []string{"accepted", "missing_pin", "changed_pin", "grant", "privacy", "environment", "feedback", "dependency", "owner", "task", "derived_accepted", "derived_missing_pin", "derived_grant"} {
 		t.Run(scenario, func(t *testing.T) { experienceOriginalOwnerResumeRead(t, "publication_"+scenario) })
 	}
+}
+
+func TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration(t *testing.T) {
+	experienceOriginalOwnerResumeRead(t, "publication_lease_wait")
+}
+
+// Hold an actual current grant on an independent connection while the ordinary
+// Coordinator holds its ownership.Begin SHARE. Observe its real SQL waiter and
+// database expiry before releasing the grant; no fake result or lease proof is
+// passed to the completion. The worker's two model attempts remain charged.
+func experienceFinalLeaseExpiryWait(t *testing.T, ctx context.Context, r *experienceNativeRuntime, taskID, sourceID, run string) (func(pgx.Tx), <-chan error, error) {
+	t.Helper()
+	waitCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	t.Cleanup(cancel)
+	conn, err := pgx.ConnectConfig(waitCtx, r.pool.Config().ConnConfig.Copy())
+	if err != nil {
+		cancel()
+		return nil, nil, err
+	}
+	// The ordinary image's two pooled connections are needed by the actual
+	// ownership guard and completion. This private blocker cannot borrow them.
+	if _, err = conn.Exec(waitCtx, `UPDATE session_ownership SET expires_at=clock_timestamp()+INTERVAL '2 seconds' WHERE run_id=$1`, run); err != nil {
+		conn.Close(context.Background())
+		cancel()
+		return nil, nil, err
+	}
+	blocker, err := conn.Begin(waitCtx)
+	if err != nil {
+		conn.Close(context.Background())
+		cancel()
+		return nil, nil, err
+	}
+	var locked bool
+	if err = blocker.QueryRow(waitCtx, `SELECT TRUE FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2 FOR UPDATE`, taskID, sourceID).Scan(&locked); err != nil || !locked {
+		blocker.Rollback(context.Background())
+		conn.Close(context.Background())
+		cancel()
+		return nil, nil, fmt.Errorf("current grant blocker unavailable: %w", err)
+	}
+	pid := make(chan uint32, 1)
+	done := make(chan error, 1)
+	go func() {
+		defer conn.Close(context.Background())
+		defer blocker.Rollback(context.Background())
+		var worker uint32
+		select {
+		case worker = <-pid:
+		case <-waitCtx.Done():
+			done <- waitCtx.Err()
+			return
+		}
+		waited := false
+		for {
+			var waiting, expired bool
+			err := blocker.QueryRow(waitCtx, `SELECT COALESCE((SELECT wait_event_type='Lock' FROM pg_stat_activity WHERE pid=$1),FALSE),EXISTS(SELECT 1 FROM session_ownership WHERE run_id=$2 AND expires_at<=clock_timestamp())`, worker, run).Scan(&waiting, &expired)
+			if err != nil {
+				done <- err
+				return
+			}
+			waited = waited || waiting
+			if waited && expired {
+				done <- blocker.Rollback(waitCtx)
+				return
+			}
+			select {
+			case <-waitCtx.Done():
+				done <- waitCtx.Err()
+				return
+			case <-time.After(10 * time.Millisecond):
+			}
+		}
+	}()
+	return func(tx pgx.Tx) { pid <- tx.Conn().PgConn().PID() }, done, nil
 }
