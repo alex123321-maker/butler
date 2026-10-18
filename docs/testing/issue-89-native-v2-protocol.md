@@ -113,7 +113,7 @@ manifest, require `BUTLER_CONSOLIDATION_SOURCE_REVISION` for that successor, and
 pin `successor-pins.json` in the prepared digest. The compiled collector repeats
 the exact profile, source/tree, collector, Broker, corpus, complete schedule,
 policy, history and canonical read-contract checks before creating the one-use
-native schema. Its semantic facts contract must be revision2. A v1 flag cannot
+native schema. Its semantic facts contract must be revision3. A v1 flag cannot
 execute a v2 manifest or vice versa. The new99-entry allowance is added only to
 the validated latest inclusive quote; earlier predecessor scopes are witnesses.
 
