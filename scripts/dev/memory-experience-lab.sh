@@ -42,7 +42,7 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
  golang:1.27.2-bookworm)
 "${runner[@]}" bash -eu -c 'go test -c -o /cache/broker-experience.test ./apps/tool-broker/internal/broker; go build -o /cache/tool-broker-experience ./apps/tool-broker; go test -c -o /cache/extension-experience.test ./apps/tool-extension/internal/runtime; go test -c -o /cache/http-experience.test ./apps/tool-http/internal/runtime; sha256sum /cache/broker-experience.test /cache/tool-broker-experience /cache/extension-experience.test /cache/http-experience.test > /proof/binaries.sha256' > "$proof/build.log" 2>&1
 if [[ "$mode" == terminal ]];then
- "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestTerminalObservationCannotInventFinalOrVerification|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration|TestTerminalObservationCannotInventFinalOrVerification|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-terminal-required-tests.txt
 elif [[ "$mode" == window ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "^TestExperienceNative" ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1

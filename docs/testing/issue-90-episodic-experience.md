@@ -1,5 +1,28 @@
 # Issue 90: controlled episodic experience evidence
 
+The ordinary owner reconciliation seam is separately proved in fresh
+`snapshots/v31`, `reports/terminal-v31`: **23 / 0 / 0**, race and vet;
+SHA256 of `evidence.sha256` is
+`d45352d1601d8d8beefad0c2ac9aec7a5948166b0b18849b5de4e3146e98017c`.
+The actual compiled Broker/runtime chain rejects one mutation with HTTP400,
+keeps its owning input blocked and effect UNKNOWN, then accepts a distinct
+explicit owner Resume. The standard controller records the original cancellation,
+control ID, task/constraints revision change and exact queued continuation. A
+fresh CAS extension grant contains only inspect/check; the continuation performs
+one separately authorized `http.request` GET against the exact original receipt
+identity. The private existing Reconcile endpoint rejects altered response bytes
+and accepts the independently journaled read as ABSENT. Its evidence is not a
+hidden recipient audit. The original tool row remains UNKNOWN, checkpoint bytes
+and attempt count remain unchanged, and no original assistant final is invented.
+Exactly two runs share the same task, four actual foreground model reservations,
+the prospective 12-foreground-plus-one-note source capacity and day640 ceiling;
+there is one recipient mutation dispatch. The old terminal snapshot becomes
+stale after Resume and is not rebased. This control does not yet publish a
+reconciled lesson, run native inference, prove quality or alter the main stand.
+
+Final private-client cleanup/redirect handling is frozen in `snapshots/v32`;
+`reports/terminal-v32` again passed **23 / 0 / 0**, race and vet.
+
 Implementation: `94b966e4`, following the fresh-publication bridge
 `037c30aab151c313b88af8c5790cff2cab614568`. The implementation remains
 **unqualified and off**: `experience.ReleaseQualified=false`, operator flag off

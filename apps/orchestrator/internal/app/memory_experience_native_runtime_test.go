@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -144,6 +145,7 @@ type experienceNativeRuntime struct {
 	environment string
 	expires     time.Time
 	stops       []func()
+	reconcile   func(context.Context, string, string, string) (actionauth.RunEffect, error)
 }
 
 // Stop every actual client/runtime before freezing a PostgreSQL template or
@@ -282,6 +284,33 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 	r.stops = append(r.stops, func() { _ = r.broker.Close() })
 	currentTools.client = r.broker
 	r.extensions = extensions.NewControlClient("http://"+addresses.BrokerHTTP+"/internal/extensions", coreToken)
+	// The owning operator endpoint is deliberately absent from the model registry.
+	// Only an exact independently captured Broker read result can reconcile it.
+	controlTransport := &http.Transport{Proxy: nil}
+	r.stops = append(r.stops, controlTransport.CloseIdleConnections)
+	controlClient := &http.Client{Transport: controlTransport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	r.reconcile = func(ctx context.Context, action, authorization, result string) (actionauth.RunEffect, error) {
+		var out actionauth.RunEffect
+		body, err := json.Marshal(map[string]string{"action_id": action, "observation_authorization_id": authorization, "result_json": result})
+		if err != nil {
+			return out, err
+		}
+		request, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+addresses.BrokerHTTP+"/internal/action-effects", bytes.NewReader(body))
+		if err != nil {
+			return out, err
+		}
+		request.Header.Set("Authorization", "Bearer "+coreToken)
+		response, err := controlClient.Do(request)
+		if err != nil {
+			return out, err
+		}
+		defer response.Body.Close()
+		if response.StatusCode != http.StatusOK {
+			return out, fmt.Errorf("independent reconciliation denied: HTTP %d", response.StatusCode)
+		}
+		err = json.NewDecoder(io.LimitReader(response.Body, 65536)).Decode(&out)
+		return out, err
+	}
 	delivery := experienceDigest(directory)
 	control := func(q extensions.ControlRequest) extensions.ControlResponse {
 		t.Helper()
@@ -378,6 +407,16 @@ func (r *experienceNativeRuntime) createTask(t *testing.T, ctx context.Context, 
 }
 
 func (r *experienceNativeRuntime) execute(t *testing.T, ctx context.Context, record task.Record, id, text string, provider transport.ModelProvider) adaptiveNativeExecution {
+	return r.executeInput(t, ctx, record, id, text, "", provider)
+}
+
+// Execute exactly the visible continuation admitted by the ordinary owner
+// controller. Do not accept another input or reclaim the failed original.
+func (r *experienceNativeRuntime) executeQueued(t *testing.T, ctx context.Context, record task.Record, inputID string, provider transport.ModelProvider) adaptiveNativeExecution {
+	return r.executeInput(t, ctx, record, "", "", inputID, provider)
+}
+
+func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context, record task.Record, id, text, inputID string, provider transport.ModelProvider) adaptiveNativeExecution {
 	t.Helper()
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	a, _, _, err := r.goals.ReadTaskAuthority(ctx, record.TaskID)
@@ -403,14 +442,22 @@ func (r *experienceNativeRuntime) execute(t *testing.T, ctx context.Context, rec
 	if err != nil {
 		t.Fatal(err)
 	}
-	payload, _ := json.Marshal(map[string]string{"text": text, "user_id": experienceNativeOwner, "task_id": record.TaskID, "intent": "conversation"})
-	event := ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: record.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}
-	acceptedBy := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: experienceNativeOwner, Channel: "web", SessionKey: record.SessionKey, DeliveryID: id + ":accept"})
-	receipt, err := worker.Execute(acceptedBy, event)
-	if err != nil {
-		t.Fatal("ordinary owning input acceptance", err)
+	if inputID == "" {
+		payload, _ := json.Marshal(map[string]string{"text": text, "user_id": experienceNativeOwner, "task_id": record.TaskID, "intent": "conversation"})
+		event := ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: record.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}
+		acceptedBy := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: experienceNativeOwner, Channel: "web", SessionKey: record.SessionKey, DeliveryID: id + ":accept"})
+		receipt, err := worker.Execute(acceptedBy, event)
+		if err != nil {
+			t.Fatal("ordinary owning input acceptance", err)
+		}
+		inputID = receipt.InputID
+	} else {
+		queued, err := r.inputs.Get(ctx, inputID)
+		if err != nil || queued.Status != "queued" || queued.Attempts != 0 || queued.OwnerID != experienceNativeOwner || queued.TaskID != record.TaskID || queued.SessionKey != record.SessionKey || queued.RunID != "" {
+			t.Fatal("exact fresh owner continuation required", err)
+		}
 	}
-	if _, err = r.pool.Exec(ctx, `UPDATE accepted_inputs SET max_attempts=1 WHERE input_id=$1`, receipt.InputID); err != nil {
+	if _, err = r.pool.Exec(ctx, `UPDATE accepted_inputs SET max_attempts=1 WHERE input_id=$1`, inputID); err != nil {
 		t.Fatal("one actual original attempt required")
 	}
 	work, stop := context.WithCancel(ctx)
@@ -427,7 +474,7 @@ func (r *experienceNativeRuntime) execute(t *testing.T, ctx context.Context, rec
 	sealed := false
 	for until := time.Now().Add(8 * time.Second); time.Now().Before(until); {
 		var state string
-		if r.pool.QueryRow(ctx, `SELECT status FROM accepted_inputs WHERE input_id=$1`, receipt.InputID).Scan(&state) == nil && state != "running" && state != "queued" {
+		if r.pool.QueryRow(ctx, `SELECT status FROM accepted_inputs WHERE input_id=$1`, inputID).Scan(&state) == nil && state != "running" && state != "queued" {
 			sealed = true
 			break
 		}
