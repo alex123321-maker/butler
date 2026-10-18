@@ -308,7 +308,8 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 }
 
 func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
-	if m.ScopeKind != "owner_goal" || m.Status != "active" || m.RevokedAt != nil || !m.ExpiresAt.After(at) || !WithinActiveHours(m.Hours, at) || m.OwnerID != b.OwnerID || m.GoalID != b.GoalID || m.GoalRevision != b.GoalRevision || m.ID != b.MandateID || m.Revision != b.MandateRevision || m.Purpose != b.Purpose || contains(m.DenyTools, b.ToolName) || !contains(m.Tools, b.ToolName) {
+	standard := standardScheduleAction(b)
+	if m.ScopeKind != "owner_goal" || m.Status != "active" || m.RevokedAt != nil || !m.ExpiresAt.After(at) || !WithinActiveHours(m.Hours, at) || m.OwnerID != b.OwnerID || m.GoalID != b.GoalID || m.GoalRevision != b.GoalRevision || m.ID != b.MandateID || m.Revision != b.MandateRevision || m.Purpose != b.Purpose || contains(m.DenyTools, b.ToolName) || (!contains(m.Tools, b.ToolName) && !standard) {
 		return false
 	}
 	for _, s := range m.DenyResources {
@@ -316,7 +317,7 @@ func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
 			return false
 		}
 	}
-	resourceOK := false
+	resourceOK := standard
 	for _, s := range m.ResourceScopes {
 		if resourceWithin(s, b.Resource) {
 			resourceOK = true

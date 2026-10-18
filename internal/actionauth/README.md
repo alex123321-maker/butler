@@ -1,5 +1,11 @@
 # Exact action authority
 
+Enabled fixed schedule controls are standard owner-goal capabilities. Effective
+catalog tools include them without rewriting stored mandate lists; authorization
+accepts only their exact owning hash, local resource, no credentials and read/
+prepare effects. Explicit denials and all current mandate/approval/claim checks
+remain authoritative. Other runtime and delegated permissions are unchanged.
+
 The default-false owning `memory.propose_candidate` composition is a prepare
 control gated by a current task and private readiness. Like a guarded tab request,
 its grant pins the current input claim privately while its approved action hash

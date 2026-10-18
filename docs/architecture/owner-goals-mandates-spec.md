@@ -1,8 +1,11 @@
 # Confirmed owner goals and broad durable autonomy
 
 Optional [agent schedules](agent-schedules.md) retain the current exact assignment
-and finite quota period. Automatic future work requires current initiative and
-scheduling permission; an exact owner-approved schedule authorizes its declared
+and finite quota period. Fixed schedule controls are standard kernel capabilities
+for ordinary owner-goal tasks, including existing mandates without explicit
+schedule tool/resource entries. Explicit denies and read/prepare effect limits
+remain authoritative. Automatic future work requires current initiative and
+preparation permission; an exact owner-approved schedule authorizes its declared
 future occurrences without enabling unrelated initiative. No model can select a
 different mandate/purpose or turn saved scheduling permission into effect rights.
 

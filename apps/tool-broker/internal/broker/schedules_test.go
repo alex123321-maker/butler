@@ -8,11 +8,53 @@ import (
 	"github.com/butler/butler/internal/schedulecontrol"
 	"strings"
 	"testing"
+	"time"
 )
 
 type scheduleDispatchFixture struct {
 	calls int
 	e     schedulecontrol.Envelope
+}
+
+type scheduleCatalogMandate struct{ m actionauth.Mandate }
+
+func (f scheduleCatalogMandate) GetMandate(context.Context, string) (actionauth.Mandate, error) {
+	return f.m, nil
+}
+
+func TestSchedulesCatalogIsStandardAcrossOrdinarySessions(t *testing.T) {
+	reg := loadTestRegistry(t)
+	if err := reg.RegisterOwned(schedulecontrol.Contracts()); err != nil {
+		t.Fatal(err)
+	}
+	for _, session := range []string{"phone-assistant", "web:another", "telegram:owner"} {
+		t.Run(session, func(t *testing.T) {
+			a, err := newAuthFixture().GetActionContext(context.Background(), "run")
+			if err != nil {
+				t.Fatal(err)
+			}
+			a.SessionKey, a.SchedulesReady = session, true
+			a.Authority = &actionauth.Assignment{MandateID: "ordinary", MandateRevision: 1}
+			m := actionauth.Mandate{ID: "ordinary", ScopeKind: "owner_goal", Revision: 1, Status: "active", ExpiresAt: time.Now().Add(time.Hour), Tools: []string{"memory.search"}}
+			catalog := &TaskCatalog{Registry: reg, Contexts: converterCatalogContext{a}, Mandates: scheduleCatalogMandate{m}}
+			list, err := catalog.ListForRun(context.Background(), "run", "schedule", 64)
+			if err != nil || len(list) != 5 {
+				t.Fatal("standard schedules missing from ordinary session", len(list), err)
+			}
+			a.DenyTools = []string{"schedule.create"}
+			catalog.Contexts = converterCatalogContext{a}
+			list, err = catalog.ListForRun(context.Background(), "run", "schedule", 64)
+			if err != nil || len(list) != 4 {
+				t.Fatal("explicit denial not preserved", len(list), err)
+			}
+			a.SchedulesReady = false
+			catalog.Contexts = converterCatalogContext{a}
+			list, err = catalog.ListForRun(context.Background(), "run", "schedule", 64)
+			if err != nil || len(list) != 0 {
+				t.Fatal("disabled composition advertised schedules", len(list), err)
+			}
+		})
+	}
 }
 
 func (f *scheduleDispatchFixture) ExecuteDispatched(_ context.Context, e schedulecontrol.Envelope) (schedulecontrol.Receipt, error) {

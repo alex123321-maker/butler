@@ -7,6 +7,9 @@ remains required. Agent jobs enter ordinary Task/Input/Core; reminders spend no
 inference. Both services need the opt-in and migration085. See the
 [schedule contract](../../docs/architecture/agent-schedules.md) and run
 `pwsh -NoProfile -File scripts/dev/schedules-local.ps1` for isolated validation.
+Enabled schedule controls are standard in ordinary sessions and owner-goal tasks;
+existing mandates need no schedule-specific tool/resource grant. Explicit denies,
+effects, initiative, current authority, approval and finite budgets still apply.
 
 Android assistance uses ordinary initiative/input/task execution with a standing
 owner-configured `mobile_inbox` source:20 new messages or an hour of pending
