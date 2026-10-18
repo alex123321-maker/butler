@@ -78,6 +78,25 @@ domain receipt, unchanged positive usage, and zero fabricated model attempts.
 The older immutable population remains161 original attempts; the current-day
 summary reports original89 plus new88 observations independently of this carry.
 
+Controlled proof `history-controls-v1`, source `8a1f4184`, passed on `ssh laba`
+using cached offline Go1.27.2, race detection and vet: four mandatory parents and
+nine negative children passed, with zero failures/skips. The separate PG and
+internal subnet201 left all six native stores untouched; native calls/auth0.
+The controls also retain unknown native usage and an admitted product attempt
+without a native entry as independently charged evidence. This does not prove
+the yet-unexported actual latest88 leaf or qualify a native successor.
+
+Retained report:
+`/srv/storage/butler/agents/issue89-20261016/reports/history-controls-v1`.
+Events SHA256:
+`0d966906c3d057c4c38f20f1e08f9ca329a33a9544f544faaffd2bcc526bacc4`;
+source manifest:
+`875ff68938d006eb6efdbf03adc32e09b95fbe9a07768c5a9b0e382c2503fdfc`;
+evidence manifest:
+`d67cff3cbb76f4e24dcf98e6f9fa923730e400178ac68b605caa870bde7c9f73`.
+The vet output was empty. No authentication or native window was frozen or
+consumed by these tests.
+
 ## Freeze, execution and review
 
 Before authentication, seal the committed source, compiled collector/Broker,
