@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -112,7 +114,7 @@ func mustTemporalJSON(t *testing.T, v any) []byte {
 }
 
 func TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations(t *testing.T) {
-	for _, name := range []string{"open_window", "duplicate_reservation", "missing_product", "known_product_replaces_null", "missing_native_entry", "duplicate_native_entry", "wrong_entry_reservation", "positive_prior_carry", "wrong_day", "negative_units", "missing_main", "main_attempt", "second_schema_spend", "main_table_presence", "changed_original_charge", "missing_current_foreground"} {
+	for _, name := range []string{"open_window", "duplicate_reservation", "missing_product", "known_product_replaces_null", "missing_native_entry", "duplicate_native_entry", "wrong_entry_reservation", "positive_prior_carry", "wrong_day", "negative_units", "missing_main", "main_attempt", "second_schema_spend", "main_table_presence", "changed_original_charge", "missing_current_foreground", "uncorrelated_background_usage", "invalid_native_usage"} {
 		t.Run(name, func(t *testing.T) {
 			current, prior, day, deadline, _ := temporalPositiveDayFixture(t)
 			dbs := current["databases"].([]any)
@@ -160,9 +162,76 @@ func TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations(t *test
 				r["request_json"] = q
 			case "missing_current_foreground":
 				delete(current89, "foreground")
+			case "uncorrelated_background_usage":
+				prior["model_jobs"] = []any{map[string]any{"operation_id": "bg", "usage": map[string]any{"InputTokens": 5, "OutputTokens": 2, "TotalTokens": 12}}}
+			case "invalid_native_usage":
+				prior["calls"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["Usage"] = map[string]any{"InputTokens": 5, "OutputTokens": 2, "TotalTokens": -1}
 			}
 			if _, _, err := temporalValidatePositiveDay(mustTemporalJSON(t, current), mustTemporalJSON(t, prior), day, deadline); err == nil {
 				t.Fatal("incomplete/refunded current-day population accepted")
+			}
+		})
+	}
+}
+
+func TestTemporalV5FrozenHistoryWitnessesRejectUsageForgery(t *testing.T) {
+	root := os.Getenv("BUTLER_TEMPORAL_V5_HISTORY_TEST_ROOT")
+	if root == "" {
+		t.Skip("explicit immutable full-history fixture required")
+	}
+	for _, change := range []string{"product_null", "native_total"} {
+		t.Run(change, func(t *testing.T) {
+			dir := t.TempDir()
+			entries, err := os.ReadDir(root)
+			if err != nil {
+				t.Fatal("frozen history fixture unavailable")
+			}
+			for _, entry := range entries {
+				if !entry.Type().IsRegular() || filepath.Ext(entry.Name()) != ".json" {
+					t.Fatal("only bounded regular historical JSON fixtures are permitted")
+				}
+				raw, err := os.ReadFile(filepath.Join(root, entry.Name()))
+				if err != nil || len(raw) > 32*1024*1024 {
+					t.Fatal("bounded historical fixture unavailable")
+				}
+				if os.WriteFile(filepath.Join(dir, entry.Name()), raw, 0600) != nil {
+					t.Fatal("controlled immutable fixture copy unavailable")
+				}
+			}
+			raw, err := os.ReadFile(filepath.Join(dir, "history.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var manifest temporalV5HistoryManifest
+			if json.Unmarshal(raw, &manifest) != nil {
+				t.Fatal("controlled history envelope unavailable")
+			}
+			path := filepath.Join(dir, manifest.Predecessor.Path)
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var prior map[string]any
+			if json.Unmarshal(data, &prior) != nil {
+				t.Fatal("controlled predecessor unavailable")
+			}
+			if change == "product_null" {
+				prior["model_jobs"].([]any)[0].(map[string]any)["usage"] = nil
+			} else {
+				usage := prior["calls"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["Usage"].(map[string]any)
+				usage["TotalTokens"] = usage["TotalTokens"].(float64) + 100
+			}
+			data = mustTemporalJSON(t, prior)
+			if os.WriteFile(path, data, 0600) != nil {
+				t.Fatal("controlled predecessor write unavailable")
+			}
+			manifest.Predecessor.SHA256 = experienceDigest(string(data))
+			raw = mustTemporalJSON(t, manifest)
+			if os.WriteFile(filepath.Join(dir, "history.json"), raw, 0600) != nil {
+				t.Fatal("controlled manifest write unavailable")
+			}
+			if _, err = loadTemporalV5History(filepath.Join(dir, "history.json"), experienceDigest(string(raw))); err == nil {
+				t.Fatal("forged usage diverged from current/original witnesses but was accepted")
 			}
 		})
 	}
