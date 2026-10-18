@@ -103,7 +103,7 @@ func TestTemporalV9FrozenHistoryRejectsForgeries(t *testing.T) {
 		t.Fatal(err)
 	}
 	h, err := loadTemporalV5History(filepath.Join(root, "history.json"), experienceDigest(string(raw)))
-	if err != nil || h.SuccessorV9 == nil || h.Carry.ModelTurns != 175 || h.Usage.NativeEntries != 175 || h.Usage.NativeUnknownUsage != 1 || h.Usage.KnownFullTokenLowerBound != 1321800 || temporalNativeVersion(h) != 8 {
+	if err != nil || h.SuccessorV9 == nil || h.Carry.ModelTurns != 175 || h.Usage.NativeEntries != 175 || h.Usage.NativeUnknownUsage != 1 || h.Usage.KnownFullTokenLowerBound != 1321800 || temporalNativeVersion(h) != 9 {
 		t.Fatal("actual wholeV9 closed175 predecessor invalid", err)
 	}
 	for _, name := range []string{"future_schema", "future_receipt", "missing_future", "wrong_schema", "wrong_day", "wrong_deadline", "wrong_previous_hash"} {

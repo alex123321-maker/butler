@@ -138,7 +138,7 @@ def main():
     for name, data in files.items():
         write_bounded(name, data)
     result = {'format': 'butler.memory.closed-owner-leaf.v2', 'version': 9, 'owner': 'owner', 'day': day, 'deadline': m['deadline'], 'schema': 'memory_temporal_native_v9', 'window': 'temporal-explicit-v9', 'previous_history': util.reference('temporal-v9-history.json', previous), 'original_entries': entries, 'future90': closed.future(), 'rule': 'One validated latest inclusive closed V9 leaf; old175 contained once; independent native/product unknown counts, all12 outcomes and every old failure retained. Historical161/adaptive226 separate. No qualification or production admission.'}
-    for key, name in [('current', 'closed-v9-current-seven.json'), ('all_owners', 'closed-v9-all-owners-seven.json'), ('closed_stage', 'closed-v9-current.json'), ('original_ledger', 'closed-v9-full-ledger.json'), ('original_outcomes', 'closed-v9-all-original-outcomes.json'), ('closed_handback', 'closed-v9-closed-handback.json'), ('operator_accounting', 'closed-v9-operator.json')]:
+    for key, name in [('current', 'closed-v9-current-seven.json'), ('all_owners', 'closed-v9-all-owners-seven.json'), ('closed_stage', 'closed-v9-current.json'), ('original_ledger', 'closed-v9-full-ledger.json'), ('original_outcomes', 'closed-v9-all-original-outcomes.json'), ('closed_handback', 'closed-v9-closed-handback.json'), ('operator_accounting', 'closed-v9-operator.json'), ('original_pins', 'closed-v9-frozen-pins.json')]:
         result[key] = util.reference(name, files[name])
     data = util.canonical(result)
     write_bounded('history.json', data)

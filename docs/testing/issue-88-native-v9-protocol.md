@@ -38,6 +38,18 @@ without skips. Exact coordinator review is required before the one execution.
 The lock spans fresh main clone, every original, exact opaque CAS return,
 actual main paid discovery200 and a fresh main snapshot. Main flags stay off.
 
+V9 returns authentication only after the named collector is proven exited or
+absent through successful Docker metadata queries. The Go collector writes no
+early return snapshot for V9. It records successful opaque import before
+provider construction; the outer recovery reads the final durable encrypted
+setting after process exit. Missing durable state after an import marker or
+native entry denies fallback. A proven pre-import failure may return only the
+exact unused encrypted original. Recovery always precedes CAS, main discovery
+and snapshot. Actual isolated-PG controls use synthetic opaque bytes and a
+container that updates the durable row just before exiting; running and
+uninspectable collectors deny return before storage reads. Legacy closed
+cohorts and their original helper snapshots remain unchanged.
+
 After closure, `memory-closed-temporal-v9-history.py` and
 `loadLatestClosedOwnerHistory` expose the same generic closed-leaf.v2 format
 with version9. It binds original finite pins and facts5, preserves all12

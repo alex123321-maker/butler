@@ -46,7 +46,9 @@ private=$base/private/$label
 handoff(){
  status=$?
  trap - EXIT
- if [[ ! -e "$private/auth-return.value" ]];then
+ if [[ "$v9" == 1 ]];then
+  python3 "$src/scripts/dev/memory-temporal-auth-recovery.py" "$base" "$label" "$pins_hash" > "$proof/recovery-safe.json" || exit 1
+ elif [[ ! -e "$private/auth-return.value" ]];then
   python3 "$src/scripts/dev/memory-temporal-precollector-return.py" "$base" "$label" || exit 1
  fi
  python3 "$src/scripts/dev/memory-consolidation-auth.py" return "$base" "$label" > "$proof/return-safe.json" || exit 1
@@ -58,7 +60,9 @@ handoff(){
  exit "$status"
 }
 trap handoff EXIT
-docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --cpus 2 --memory 3g --pids-limit 256 --security-opt no-new-privileges \
+collector_name=()
+if [[ "$v9" == 1 ]];then collector_name=(--name "butler-issue88-$label-native-v9");fi
+docker run --rm --pull never "${collector_name[@]}" --network host --user "$(id -u):$(id -g)" --cpus 2 --memory 3g --pids-limit 256 --security-opt no-new-privileges \
  --env-file "$private/native.env" -v "$src:/src:ro" -v "$proof:/proof" -v "$private:/native-private" -w /src/apps/orchestrator/internal/app \
  -e GOTOOLCHAIN=local -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_TEMPORAL_NATIVE_V6="$v6" -e BUTLER_TEMPORAL_NATIVE_V7="$v7" -e BUTLER_TEMPORAL_NATIVE_V8="$v8" -e BUTLER_TEMPORAL_NATIVE_V9="$v9" -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test \

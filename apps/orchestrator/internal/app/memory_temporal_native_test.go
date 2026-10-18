@@ -502,14 +502,20 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,$2)`, strings.TrimSpace(string(auth)), window); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
-	defer func() {
-		var cipher string
-		bound, stop := context.WithTimeout(context.Background(), 10*time.Second)
-		defer stop()
-		if pool.QueryRow(bound, `SELECT value FROM system_settings WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY'`).Scan(&cipher) != nil || temporalWriteExclusive("/native-private/auth-return.value", []byte(cipher)) != nil {
-			t.Error("opaque auth return unavailable")
+	if v9 {
+		if temporalWriteExclusive(filepath.Join(proof, "provider-auth-imported.json"), []byte(`{"opaque_imported":true,"raw_material_printed":false}`)) != nil {
+			t.Fatal("opaque import receipt unavailable")
 		}
-	}()
+	} else {
+		defer func() {
+			var cipher string
+			bound, stop := context.WithTimeout(context.Background(), 10*time.Second)
+			defer stop()
+			if pool.QueryRow(bound, `SELECT value FROM system_settings WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY'`).Scan(&cipher) != nil || temporalWriteExclusive("/native-private/auth-return.value", []byte(cipher)) != nil {
+				t.Error("opaque auth return unavailable")
+			}
+		}()
+	}
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	stage = "provider_constructor"
 	built, err := providerfactory.New(providerauth.NewManager(config.NewPostgresSettingsStore(pool)), log).Build(ctx, providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", AntigravityMaximumOutputTokens: 32768, Timeout: 300 * time.Second})

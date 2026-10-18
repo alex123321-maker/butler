@@ -52,6 +52,10 @@ docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-li
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/temporal_v9_history_test?sslmode=disable' \
  golang:1.27.2-bookworm bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 10m -run "^Test(ClosedTemporalV7(RetainsProductNativeIndependence|RejectsConsistentInvalidSequence|FrozenHistoryRejectsForgeries)|LatestClosedOwnerV8(FrozenHistoryRejectsForgeries|RetainsIndependentProductPopulation)|ClosedV9PinsRejectDifferentProfile|TemporalV9(FactsContractBoundary|CurrentDayCarryOneUseIntegration|NamespaceClaimOneUseIntegration|FrozenHistoryRejectsForgeries)|TemporalV6WorkerRejectsOwnerControlIdentity|ConsolidationV3ClosureRetainsFailedCollector)$" ./apps/orchestrator/internal/app > /proof/events.jsonl
  go vet ./apps/orchestrator/internal/app > /proof/vet.log' > "$proof/runner.log" 2>&1 || status=$?
+if [[ "$status" == 0 ]];then
+ python3 "$src/scripts/dev/memory-temporal-auth-recovery-controls.py" > "$proof/auth-recovery-controls.log" 2>&1 || status=$?
+ python3 "$src/scripts/dev/memory-temporal-auth-recovery-lab.py" "$base" "$label" "$pg" "$network" > "$proof/auth-recovery-lab.log" 2>&1 || status=$?
+fi
 cleanup
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"
@@ -59,6 +63,6 @@ for name in ClosedTemporalV7RetainsProductNativeIndependence ClosedTemporalV7Rej
  jq -s -e --arg name "Test$name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/events.jsonl" >/dev/null
 done
 printf '{"controlled_only":true,"native_calls":0,"auth_imported":false,"client_cpu":1,"client_memory_bytes":2147483648,"postgres_cpu":1,"postgres_memory_bytes":1073741824,"separate_pg":true,"seven_native_stores_modified":false,"compiler_and_modules":"cached_offline"}\n' > "$proof/environment.json"
-sha256sum "$proof/source.sha256" "$proof/history.sha256" "$proof/events.jsonl" "$proof/vet.log" "$proof/environment.json" > "$proof/evidence.sha256"
+sha256sum "$proof/source.sha256" "$proof/history.sha256" "$proof/events.jsonl" "$proof/vet.log" "$proof/environment.json" "$proof/auth-recovery-controls.log" "$proof/auth-recovery-lab-results.json" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 printf 'V9 original witnesses and actual PG one-use carry passed; native0/auth0.\n'
