@@ -33,7 +33,6 @@ import (
 	"github.com/butler/butler/internal/memory/candidates"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/compaction"
-	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/memory/profile"
@@ -43,7 +42,6 @@ import (
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/transport"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -201,7 +199,6 @@ type coherentPilot struct {
 	b               *budget.Controller
 	provider        *coherentPilotProvider
 	broker          *tools.BrokerClient
-	experience      *experience.Store
 	steps           []coherentPilotStep
 	attemptReceipts []durableinput.Record
 }
@@ -240,14 +237,6 @@ func (p *coherentPilot) execute(record task.Record, text, existing string, b *bu
 	inputs := durableinput.NewStore(p.pool)
 	finals := completion.New(p.pool)
 	finals.DataGuard = sources.CheckRunSourcesTx
-	if p.experience != nil {
-		finals.DataGuard = func(c context.Context, tx pgx.Tx, run string) error {
-			if err := sources.CheckRunSourcesTx(c, tx, run); err != nil {
-				return err
-			}
-			return p.experience.CheckPinnedTx(c, tx, run)
-		}
-	}
 	adaptiveStore, err := adaptive.NewStore(sources.Pool(), sources)
 	if err != nil {
 		p.t.Fatal(err)

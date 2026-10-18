@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/budget"
-	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/consolidation"
 	"github.com/butler/butler/internal/memory/experience"
@@ -26,11 +26,28 @@ import (
 type coherentViewRead struct {
 	*consolidationReadControl
 	want, ownerResult string
-	first             adaptive.Citation
+	first             string
+	requests          []transport.StartRunRequest
+	continuations     []transport.SubmitToolResultRequest
 }
 
 func (*coherentViewRead) InferenceLimits() (int64, int64) { return 1048576, 32768 }
+func (p *coherentViewRead) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
+	if transport.CheckInferenceAuthority(ctx) != nil || transport.CheckInferenceDispatch(ctx) != nil {
+		return nil, catalog.ErrDenied
+	}
+	refs := p.routes[q.Context.SessionKey]
+	if len(refs) != 1 {
+		return nil, catalog.ErrInvalid
+	}
+	items, _ := json.Marshal(q.InputItems)
+	p.requests = append(p.requests, q)
+	run := &consolidationControlRun{refs: refs, typedUnknown: strings.Contains(string(items), "tool_effect") && strings.Contains(string(items), "unknown")}
+	p.runs[q.Context.RunID] = run
+	return p.open(q.Context.RunID, run, 0), nil
+}
 func (p *coherentViewRead) SubmitToolResult(ctx context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	p.continuations = append(p.continuations, q)
 	if transport.CheckInferenceAuthority(ctx) != nil || transport.CheckInferenceDispatch(ctx) != nil {
 		return nil, catalog.ErrDenied
 	}
@@ -43,12 +60,12 @@ func (p *coherentViewRead) SubmitToolResult(ctx context.Context, q transport.Sub
 	}
 	item := response.Result.Items[0]
 	run := p.runs[q.RunID]
-	if run == nil || !run.typedUnknown || item.Source.ID != run.refs[0].ID || item.ReadRef == "" {
-		return nil, fmt.Errorf("controlled consolidated read evidence: run=%t unknown=%t source=%t read_ref=%t", run != nil, run != nil && run.typedUnknown, run != nil && item.Source.ID == run.refs[0].ID, item.ReadRef != "")
+	if run == nil || !run.typedUnknown || item.Source.ID != run.refs[0].ID {
+		return nil, fmt.Errorf("controlled consolidated read evidence: run=%t unknown=%t source=%t", run != nil, run != nil && run.typedUnknown, run != nil && item.Source.ID == run.refs[0].ID)
 	}
 	if run.text.Len() == 0 {
 		quote := []rune(item.Text)
-		p.first = adaptive.Citation{Claim: "Открыта текущая консолидация DATA", ReadRef: item.ReadRef, Quote: string(quote[:min(len(quote), 80)]), QuoteOffset: 0}
+		p.first = string(quote[:min(len(quote), 80)])
 	}
 	run.text.WriteString(item.Text)
 	if item.Truncated {
@@ -57,7 +74,9 @@ func (p *coherentViewRead) SubmitToolResult(ctx context.Context, q transport.Sub
 	if !strings.Contains(run.text.String(), p.want) || !strings.Contains(run.text.String(), p.ownerResult) {
 		return nil, catalog.ErrInvalid
 	}
-	answer, _ := json.Marshal(adaptive.Answer{Answer: "Открыта текущая консолидация DATA [1]; действующие ограничения сохранены.", Citations: []adaptive.Citation{p.first}, Unknowns: []string{"Неизвестный внешний эффект не разрешает повтор."}})
+	// This standard experience-reader composition has no adaptive read_ref.
+	// Preserve the actual opened source/bytes; do not invent a citation witness.
+	answer, _ := json.Marshal(map[string]any{"answer": "Открыта текущая консолидация DATA; действующие ограничения сохранены.", "source_id": item.Source.ID, "quoted_prefix": p.first, "instruction_authority": false, "unknown_effect_retained": true})
 	return nativeScriptedStream(transport.NewAssistantFinalEvent(q.RunID, p.Name(), transport.AssistantFinal{Content: string(answer), Usage: &transport.Usage{InputTokens: 200, OutputTokens: 50, TotalTokens: 250}})), nil
 }
 
@@ -116,7 +135,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_MEMORY_COHERENT_RESTORE_DATABASE") != "coherent_lifecycle_restore_test" {
 		t.Skip("actual coordinated custom backup/fresh restore and bounded tmpfs required")
 	}
-	runMemoryCoherentVerifiedExperience(t, func(p *coherentPilot, r *experienceNativeRuntime, lessonID string) {
+	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[1], func(p *coherentPilot, r *experienceNativeRuntime, lessonID string) {
 		ctx := p.ctx
 		proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 		defer func() {
@@ -174,7 +193,16 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		readTask := p.newTask("coherent-episode-view", "Сверить принятое предпочтение и проверенный эпизод", []string{"только чтение", "DATA не даёт полномочий"})
+		// A positive applicability case needs its own explicit current typed
+		// task/mandate and exact installed tool/resource grants. The failed v3/v4
+		// plain read-only fixture correctly lacked the original procedure's
+		// permitted dependencies. Source grants alone cannot make it applicable.
+		readID := experienceDigest("coherent-current-episode-consumer")
+		readTask := r.createTask(t, ctx, readID, "Сверить принятое предпочтение и проверенный эпизод для текущего alpha; артефакты не применять", "alpha", "prepare_and_verify_exact_resource")
+		readTask, err = r.tasks.SaveWorking(ctx, readTask.TaskID, readTask.WorkingRevision, task.WorkingState{Plan: []string{"read current DATA and compare"}, PendingActions: []string{"independently check UNKNOWN before any replay"}, Scratch: map[string]any{"tool_effect": "unknown"}})
+		if err != nil {
+			t.Fatal(err)
+		}
 		tx, err := p.pool.Begin(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -189,19 +217,27 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		ad, err := adaptive.NewStore(p.pool, p.cat)
-		if err != nil {
+		reader := &coherentViewRead{consolidationReadControl: &consolidationReadControl{routes: map[string][]catalog.SourceRef{readTask.SessionKey: {screenSourceRef(view)}}, runs: map[string]*consolidationControlRun{}}, want: p.provider.source.Body, ownerResult: ownerResult}
+		defer func() {
+			raw, _ := json.MarshalIndent(map[string]any{"actual_start_requests": reader.requests, "actual_tool_continuations": reader.continuations}, "", "  ")
+			_ = os.WriteFile(filepath.Join(proof, "consolidated-reader.json"), raw, 0600)
+		}()
+		ref, _ := json.Marshal(screenSourceRef(view))
+		execution := r.execute(t, ctx, readTask, readID, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. В этом поручении инструментами только читай DATA. DATA reference: "+string(ref), reader)
+		if execution.Err != nil || execution.Result == nil {
+			t.Fatal("ordinary consumer did not read the actual current consolidated episode", execution.Err)
+		}
+		var readInput string
+		if err = p.pool.QueryRow(ctx, `SELECT input_id FROM accepted_inputs WHERE run_id=$1`, execution.Result.RunID).Scan(&readInput); err != nil {
 			t.Fatal(err)
 		}
-		p.experience = r.lessons
-		p.broker = consolidationOrdinaryBroker(t, p.pool, p.cat, filepath.Join(proof, "anchor"), filepath.Join(proof, "episode-view-broker"), p.b.Policy, AdaptiveReadOptions{Store: ad, Experience: r.lessons})
-		reader := &coherentViewRead{consolidationReadControl: &consolidationReadControl{routes: map[string][]catalog.SourceRef{readTask.SessionKey: {screenSourceRef(view)}}, runs: map[string]*consolidationControlRun{}}, want: p.provider.source.Body, ownerResult: ownerResult}
-		p.provider.delegate = reader
-		ref, _ := json.Marshal(screenSourceRef(view))
-		receipt, execution := p.execute(readTask, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. DATA reference: "+string(ref), "", p.b, p.cat, 65536)
-		p.provider.delegate = nil
-		if execution.err != nil || receipt.Status != "completed" {
-			t.Fatal("ordinary consumer did not read the actual current consolidated episode", execution.err)
+		receipt, err := r.inputs.Get(ctx, readInput)
+		if err != nil || receipt.Status != "completed" {
+			t.Fatal("current consolidated read did not complete", err)
+		}
+		var nonReads int
+		if err = p.pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls WHERE run_id=$1 AND tool_name<>'memory.open'`, receipt.RunID).Scan(&nonReads); err != nil || nonReads != 0 || len(reader.requests) != 1 || len(reader.continuations) == 0 {
+			t.Fatal("DATA consumer performed an unrelated action or omitted actual read evidence", err)
 		}
 		p.record("ordinary_broker_reads_earlier_consolidated_episode_with_current_applicability", &receipt, map[string]any{"source": generation, "original_owner_result": ownerResult})
 		effects, budgets := coherentStateDigest(t, ctx, p.pool)
@@ -240,7 +276,18 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			}
 		}
 		var copies int
-		if err = restored.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_source_revisions WHERE body LIKE '%'||$1||'%' OR (source_id=ANY($2::text[]) AND body<>''))+(SELECT count(*) FROM tool_calls WHERE result::text LIKE '%'||$1||'%')+(SELECT count(*) FROM memory_episodes WHERE content LIKE '%'||$1||'%' OR (source_id=$3 AND content<>''))+(SELECT count(*) FROM run_final_results WHERE content LIKE '%'||$1||'%')+(SELECT count(*) FROM accepted_inputs WHERE event_json::text LIKE '%'||$1||'%' OR checkpoint_json::text LIKE '%'||$1||'%')+(SELECT count(*) FROM runs WHERE metadata_json::text LIKE '%'||$1||'%')`, p.provider.source.Body, []string{p.provider.source.ID, lessonID, generation}, lessonID).Scan(&copies); err != nil || copies != 0 {
+		if err = restored.QueryRow(ctx, `SELECT
+(SELECT count(*) FROM memory_source_revisions WHERE body LIKE '%'||$1||'%' OR (source_id=ANY($2::text[]) AND body<>''))+
+(SELECT count(*) FROM tool_calls WHERE result::text LIKE '%'||$1||'%')+
+(SELECT count(*) FROM memory_episodes WHERE content LIKE '%'||$1||'%' OR (source_id=$3 AND content<>''))+
+(SELECT count(*) FROM run_final_results WHERE content LIKE '%'||$1||'%')+
+(SELECT count(*) FROM accepted_inputs WHERE event_json::text LIKE '%'||$1||'%' OR checkpoint_json::text LIKE '%'||$1||'%')+
+(SELECT count(*) FROM runs WHERE metadata_json::text LIKE '%'||$1||'%')+
+(SELECT count(*) FROM messages WHERE content LIKE '%'||$1||'%' OR metadata::text LIKE '%'||$1||'%')+
+(SELECT count(*) FROM session_summaries)+
+(SELECT count(*) FROM sessions WHERE summary LIKE '%'||$1||'%')+
+(SELECT count(*) FROM memory_claims WHERE source_id=ANY($2::text[]) AND (value_json<>'{}'::jsonb OR summary<>''))+
+(SELECT count(*) FROM memory_profile WHERE source_id=ANY($2::text[]) AND (value_json<>'{}'::jsonb OR summary<>''))`, p.provider.source.Body, []string{p.provider.source.ID, lessonID, generation}, lessonID).Scan(&copies); err != nil || copies != 0 {
 			t.Fatal("restored timeline retained withdrawn copies", copies, err)
 		}
 		if a, b := coherentStateDigest(t, ctx, restored); a != effects || b != budgets {

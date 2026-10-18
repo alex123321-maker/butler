@@ -138,6 +138,15 @@ original contexts; their60-second quiet interval elapses normally. The controlle
 consolidation worker creates one reviewable DATA version, Preview exposes its
 diff, and owner CAS activates it. A new ordinary Broker read checks the actual
 full representation and current lesson applicability, with exact source grants.
+That consumer has its own explicit finite owner goal/mandate, exact alpha
+resource/installed-dependency grants and the same full Broker for Flow,
+lesson applicability and actual memory.open. Its actual calls must all be reads.
+The original v3/v4 plain read-only fixture lacked the procedure's currently
+permitted tool dependencies and correctly received empty denied DATA. Those
+windows remain rejected. Source privacy grants cannot stand in for current
+tool applicability; no runtime guard is weakened for the positive fixture.
+The full experience composition uses its standard non-adaptive memory reader,
+so it preserves actual source/bytes without inventing an adaptive read_ref.
 
 The lifecycle driver coordinates a real custom dump while that same test and
 database remain live. It fsyncs the dump before allowing owner deletion, restores
