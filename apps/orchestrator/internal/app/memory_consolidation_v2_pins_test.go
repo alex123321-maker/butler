@@ -48,7 +48,7 @@ func TestConsolidationV2WritePins(t *testing.T) {
 	}
 	proof := filepath.Dir(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_POLICY_PROOF"))
 	h, err := loadConsolidationScreenHistory(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_HISTORY"), os.Getenv("BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256"))
-	if err != nil || h.Successor == nil || h.Successor.Schema != "consolidation_native_v2" || h.ProspectiveDay != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(h.ProspectiveDeadline) {
+	if err != nil || h.Successor == nil || !consolidationSuccessorSchema(h.Successor.Schema) || h.ProspectiveDay != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(h.ProspectiveDeadline) {
 		t.Fatal("validated current successor required", err)
 	}
 	p := consolidationV2Pins{Revision: os.Getenv("BUTLER_CONSOLIDATION_SOURCE_REVISION"), Schema: h.Successor.Schema, Model: "gemini-3.8-flash-high", History: h.Hash, Day: h.ProspectiveDay, Deadline: h.ProspectiveDeadline, Expires: time.Now().UTC().Add(6 * time.Hour), LogicalSlots: 9, MaxNativeEntries: 99, MaxReads: 96, OutputTokens: 32768, ModelMillis: 300000}
@@ -94,7 +94,7 @@ func TestConsolidationV2WritePins(t *testing.T) {
 func consolidationV2CheckPins(proof string) error {
 	raw, err := os.ReadFile(filepath.Join(proof, "successor-pins.json"))
 	var p consolidationV2Pins
-	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Revision) != 40 || p.Schema != "consolidation_native_v2" || p.Model != "gemini-3.8-flash-high" || p.LogicalSlots != 9 || p.MaxNativeEntries != 99 || p.MaxReads != 96 || p.OutputTokens != 32768 || p.ModelMillis != 300000 || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.Expires) || p.Expires.After(p.Deadline) || !time.Now().Before(p.Deadline) {
+	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Revision) != 40 || !consolidationSuccessorSchema(p.Schema) || p.Model != "gemini-3.8-flash-high" || p.LogicalSlots != 9 || p.MaxNativeEntries != 99 || p.MaxReads != 96 || p.OutputTokens != 32768 || p.ModelMillis != 300000 || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.Expires) || p.Expires.After(p.Deadline) || !time.Now().Before(p.Deadline) {
 		return errors.New("frozen successor window/profile differs")
 	}
 	contracts, err := consolidationV2Contracts()

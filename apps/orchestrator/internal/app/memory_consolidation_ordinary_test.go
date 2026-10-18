@@ -190,6 +190,11 @@ type consolidationOrdinaryExecutor struct {
 }
 
 func (x *consolidationOrdinaryExecutor) Execute(ctx context.Context, e ingress.InputEvent) (*flow.ExecutionResult, error) {
+	if _, actor := owneridentity.FromContext(ctx); actor {
+		err := errors.New("owner control identity reached consolidation foreground worker")
+		x.done <- consolidationOrdinaryExecution{err: err}
+		return nil, err
+	}
 	r, err := x.base.Execute(ctx, e)
 	x.done <- consolidationOrdinaryExecution{r, err}
 	return r, err
@@ -332,7 +337,7 @@ func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *p
 	if _, err = pool.Exec(ctx, `UPDATE accepted_inputs SET max_attempts=1 WHERE input_id=$1`, receipt.InputID); err != nil {
 		t.Fatal(err)
 	}
-	workerCtx, stop := context.WithCancel(ctx)
+	workerCtx, stop := context.WithCancel(owneridentity.WithActor(ctx, owneridentity.Actor{}))
 	done := make(chan struct{})
 	go func() { _ = worker.Run(workerCtx); close(done) }()
 	var execution consolidationOrdinaryExecution

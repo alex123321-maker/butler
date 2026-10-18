@@ -33,6 +33,8 @@ type consolidationV2Summary struct {
 	New88                           temporalV5CurrentUsage
 	Current89And88                  temporalV5CurrentUsage
 	SourceHashes                    map[string]string
+	Lineage                         string                 `json:",omitempty"`
+	SeparateAdaptive                temporalV5CurrentUsage `json:",omitempty"`
 }
 
 type consolidationV2Entry struct {
@@ -219,9 +221,13 @@ func consolidationV2Within(u, max budget.Units) bool {
 }
 
 func consolidationV2ValidateLeaf(priorRaw, ledgerRaw []byte, previous *temporalV5History, day string, deadline time.Time) (budget.Units, temporalV5CurrentUsage, error) {
+	return consolidationValidateTemporalLeaf(priorRaw, ledgerRaw, previous, day, deadline, "butler.consolidation.predecessor88.v1", "issue88-v5-current-day-carry:")
+}
+
+func consolidationValidateTemporalLeaf(priorRaw, ledgerRaw []byte, previous *temporalV5History, day string, deadline time.Time, format, carryPrefix string) (budget.Units, temporalV5CurrentUsage, error) {
 	var prior consolidationV2Predecessor
 	var usage temporalV5CurrentUsage
-	if previous == nil || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != "butler.consolidation.predecessor88.v1" || !prior.Window.Sealed || !prior.Window.Closed || prior.Window.Paid < 1 || prior.Window.Paid > temporalMaxNative || len(prior.Entries) != prior.Window.Paid || len(prior.Reservations) > 1+temporalMaxNative+12*temporalMaxTools || len(prior.Background) != 0 {
+	if previous == nil || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != format || !prior.Window.Sealed || !prior.Window.Closed || prior.Window.Paid < 1 || prior.Window.Paid > temporalMaxNative || len(prior.Entries) != prior.Window.Paid || len(prior.Reservations) > 1+temporalMaxNative+12*temporalMaxTools || len(prior.Background) != 0 {
 		return budget.Units{}, usage, errors.New("complete closed latest inclusive successor required")
 	}
 	max := temporalNativePolicy(previous.Carry).Day
@@ -241,7 +247,7 @@ func consolidationV2ValidateLeaf(priorRaw, ledgerRaw []byte, previous *temporalV
 			return used, usage, errors.New("duplicate successor quote identity")
 		}
 		reservations[r.ID], operations[r.Operation] = true, r.ID
-		if r.Operation == "issue88-v5-current-day-carry:"+previous.Hash {
+		if r.Operation == carryPrefix+previous.Hash {
 			carryCount++
 			if r.Request.Charge != previous.Carry {
 				return used, usage, errors.New("inclusive predecessor imported an altered charge")
@@ -463,7 +469,7 @@ func loadConsolidationV2History(path, expected string) (*consolidationScreenHist
 }
 
 func consolidationV2ApplyHistory(ctx context.Context, pool *pgxpool.Pool, history *consolidationScreenHistory, policy budget.Policy) error {
-	if history == nil || history.Successor == nil || history.Successor.Schema != "consolidation_native_v2" || policy.Validate() != nil {
+	if history == nil || history.Successor == nil || !consolidationSuccessorSchema(history.Successor.Schema) || policy.Validate() != nil {
 		return errors.New("validated finite successor history required")
 	}
 	var now time.Time
@@ -489,7 +495,11 @@ func consolidationV2ApplyHistory(ctx context.Context, pool *pgxpool.Pool, histor
 	if scope.Used != (budget.Units{}) {
 		return errors.New("successor owner-day scope already charged")
 	}
-	_, fresh, err := ledger.ReserveTx(ctx, tx, budget.Request{OwnerID: "owner", OperationID: "issue89-v2-current-day-carry:" + history.Hash, ScopeIDs: []string{scope.ID}, Charge: history.CurrentCarry, CostKnown: true})
+	prefix := "issue89-v2-current-day-carry:"
+	if history.Successor.Schema == consolidationV3Schema {
+		prefix = "issue89-v3-current-day-carry:"
+	}
+	_, fresh, err := ledger.ReserveTx(ctx, tx, budget.Request{OwnerID: "owner", OperationID: prefix + history.Hash, ScopeIDs: []string{scope.ID}, Charge: history.CurrentCarry, CostKnown: true})
 	if err != nil || !fresh {
 		return errors.New("successor carry already imported or denied")
 	}

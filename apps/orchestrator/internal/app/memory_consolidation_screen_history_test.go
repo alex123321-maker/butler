@@ -198,6 +198,9 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 		return nil, errors.New("frozen history hash differs")
 	}
 	var envelope struct{ Format string }
+	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.consolidation.native-history.v4" {
+		return loadConsolidationV3History(path, expectedHash)
+	}
 	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.consolidation.native-history.v3" {
 		return loadConsolidationV2History(path, expectedHash)
 	}

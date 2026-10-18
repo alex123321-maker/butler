@@ -16,11 +16,18 @@ mkdir -p "$proof" "$base/.cache/go-build" "$base/.cache/go-tmp"
 test "$(sha256sum "$history/history.json" | cut -d' ' -f1)" = "$history_hash"
 history_format=$(jq -er .format "$history/history.json")
 v2=0
+v3=0
 case "$history_format" in
  butler.consolidation.native-history.v2) history_script=memory-consolidation-history.py ;;
  butler.consolidation.native-history.v3)
   v2=1
   history_script=memory-consolidation-successor-history.py
+  [[ "${BUTLER_CONSOLIDATION_SOURCE_REVISION:-}" =~ ^[a-f0-9]{40}$ ]] || exit 2
+  ;;
+ butler.consolidation.native-history.v4)
+  v2=1
+  v3=1
+  history_script=memory-consolidation-v3-history.py
   [[ "${BUTLER_CONSOLIDATION_SOURCE_REVISION:-}" =~ ^[a-f0-9]{40}$ ]] || exit 2
   ;;
  *) exit 2 ;;
@@ -35,6 +42,7 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_CONSOLIDATION_SCREEN_PROOF=/proof/screen \
  -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker \
  -e BUTLER_CONSOLIDATION_NATIVE_V2_SEAL="$v2" -e BUTLER_CONSOLIDATION_SOURCE_REVISION \
+ -e BUTLER_CONSOLIDATION_V3_PREPARE="$v3" -e BUTLER_CONSOLIDATION_V3_HISTORY_TEST_ROOT=/history \
  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json -e BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256="$history_hash" \
  -e BUTLER_CONSOLIDATION_NATIVE_POLICY_PROOF=/proof/native-budget-policy.json -e BUTLER_CONSOLIDATION_NATIVE_SEAL=1 \
  golang:1.27.2-bookworm bash -eu -c 'go build -o /proof/tool-broker ./apps/tool-broker
@@ -44,6 +52,9 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
   /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationScreen(HistoryRejects|ProspectiveDay)"
   if [[ "$BUTLER_CONSOLIDATION_NATIVE_V2_SEAL" == 1 ]]; then
    /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationV2(LatestLeafCountsOriginalAttemptsOnce|RetainsNativeUnknownAndAdmittedWithoutEntry|RejectsChangedWitnessesOrExtraOwnerRows|CurrentDayCarryOneUseIntegration|WritePins)$"
+  fi
+  if [[ "$BUTLER_CONSOLIDATION_V3_PREPARE" == 1 ]]; then
+   /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationV3(WorkerRejectsOwnerControlIdentity|LatestTemporalLeafCountsOnce|CurrentDayCarryOneUseIntegration|FrozenHistoryRejectsForgeries)$"
   fi' \
  > "$proof/offline-preparation.txt" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
@@ -52,6 +63,9 @@ test "$(grep -c '^--- PASS: TestConsolidationNative' "$proof/offline-preparation
 ! grep -Eq '^--- (FAIL|SKIP)' "$proof/offline-preparation.txt"
 if [[ "$v2" == 1 ]]; then
  test "$(grep -c '^--- PASS: TestConsolidationV2' "$proof/offline-preparation.txt")" = 5
+fi
+if [[ "$v3" == 1 ]]; then
+ test "$(grep -c '^--- PASS: TestConsolidationV3' "$proof/offline-preparation.txt")" = 4
 fi
 python3 "$src/scripts/dev/$history_script" check-current "$history/history.json" "$history_hash" > "$proof/current-after-build.json"
 printf '%s\n' "$history" > "$proof/history-reference"

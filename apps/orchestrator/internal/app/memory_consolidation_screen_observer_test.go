@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -227,6 +228,9 @@ func screenContainsJSON(raw []byte, needle string) bool {
 }
 
 func (p *consolidationScreenProvider) reserve(ctx context.Context, runID, kind string, request any) (*consolidationScreenCall, error) {
+	if _, actor := owneridentity.FromContext(ctx); actor {
+		return nil, errors.New("owner control identity reached consolidation model admission")
+	}
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return nil, err

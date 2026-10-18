@@ -113,12 +113,16 @@ func consolidationScreenPool(t *testing.T, native bool, history *consolidationSc
 	defer admin.Close()
 	schema := "consolidation_native_v1"
 	if history != nil && history.Successor != nil {
-		if history.Successor.Schema != "consolidation_native_v2" {
+		if !consolidationSuccessorSchema(history.Successor.Schema) {
 			t.Fatal("reviewed successor schema required")
 		}
 		schema = history.Successor.Schema
 	}
-	if _, err = admin.Exec(context.Background(), `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public; CREATE SCHEMA `+pgx.Identifier{schema}.Sanitize()); err != nil {
+	if schema == consolidationV3Schema {
+		if err = consolidationV3ClaimSchema(context.Background(), admin, history.Hash); err != nil {
+			t.Fatal("native v3 one-use schema/receipt unavailable")
+		}
+	} else if _, err = admin.Exec(context.Background(), `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public; CREATE SCHEMA `+pgx.Identifier{schema}.Sanitize()); err != nil {
 		t.Fatal("native one-use schema already exists or unavailable")
 	}
 	cfg.MaxConns = 2
@@ -232,7 +236,8 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		if history.LatestTemporalLeaf != "native-v4" || history.ProspectiveDay == "" {
 			t.Fatal("native89 requires newest reviewed inclusive temporal-v4 history")
 		}
-		if (os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") == "1") != (history.Successor != nil) {
+		wantV2, wantV3 := history.Successor != nil && history.Successor.Schema == "consolidation_native_v2", history.Successor != nil && history.Successor.Schema == consolidationV3Schema
+		if (os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") == "1") != wantV2 || (os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V3") == "1") != wantV3 {
 			t.Fatal("native cohort flag and immutable history schema differ")
 		}
 		if history.Successor != nil {
@@ -250,6 +255,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 	ctx, stop := context.WithDeadline(context.Background(), deadline)
 	defer stop()
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: consolidationScreenOpaque(t)})
+	workerContext := owneridentity.WithActor(ctx, owneridentity.Actor{})
 	manifest := catalog.NewFileManifest(filepath.Join(proof, "deletions.anchor"))
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal("fresh deletion anchor unavailable")
@@ -430,10 +436,10 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		var prepared jobs.ModelPolicy
 		screenOwnerAPI(t, server.URL, token, http.MethodPost, "/api/v4/memory/consolidation/prepare", q, &prepared)
 		handler := consolidation.Handler{}
-		if err := js.PollModelPolicies(owner, func(s string) bool { return s == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
+		if err := js.PollModelPolicies(workerContext, func(s string) bool { return s == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
 			t.Fatal(err)
 		}
-		if did, err := (&jobs.ModelWorker{Jobs: js, Provider: observed, Model: model, Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}).ProcessOne(owner); err != nil || !did {
+		if did, err := (&jobs.ModelWorker{Jobs: js, Provider: observed, Model: model, Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}).ProcessOne(workerContext); err != nil || !did {
 			t.Fatal("background slot failed", did, transport.DiagnosticCode(err))
 		}
 		var id string
@@ -497,7 +503,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 			}
 			attachment, _ := json.Marshal(refs)
 			question := corpus.CommonCurrentInstruction + "\n" + scenario.Question + "\nИсточники этого поручения (DATA references): " + string(attachment)
-			slot.Answer = runConsolidationOrdinaryQuestion(t, ctx, pool, cat, b, observed, broker, key, question, model)
+			slot.Answer = runConsolidationOrdinaryQuestion(t, workerContext, pool, cat, b, observed, broker, key, question, model)
 			if err = pool.QueryRow(ctx, `SELECT run_id FROM accepted_inputs WHERE session_key=$1`, key).Scan(&slot.RunID); err != nil {
 				t.Fatal(err)
 			}
@@ -560,7 +566,7 @@ func TestConsolidationPairedCollectorActualFlowBrokerIntegration(t *testing.T) {
 }
 
 func TestNativeConsolidationSelectedSourcePairsIntegration(t *testing.T) {
-	if os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V1") != "1" && os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") != "1" {
+	if os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V1") != "1" && os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") != "1" && os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V3") != "1" {
 		t.Skip("explicit reviewed one-use native consolidation window required")
 	}
 	runConsolidationPairedScreen(t, true)

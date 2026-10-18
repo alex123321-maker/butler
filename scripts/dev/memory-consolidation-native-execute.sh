@@ -25,9 +25,11 @@ test "$(sha256sum "$history/history.json" | cut -d' ' -f1)" = "$history_hash"
 history_format=$(jq -er .format "$history/history.json")
 v1=0
 v2=0
+v3=0
 case "$history_format" in
  butler.consolidation.native-history.v2) v1=1; history_script=memory-consolidation-history.py ;;
  butler.consolidation.native-history.v3) v2=1; history_script=memory-consolidation-successor-history.py ;;
+ butler.consolidation.native-history.v4) v3=1; history_script=memory-consolidation-v3-history.py ;;
  *) exit 2 ;;
 esac
 umask 077
@@ -36,7 +38,7 @@ flock -n 9
 # Re-read every fixed experimental ledger under the same auth lock. A changed
 # current-day population invalidates this preseal before credentials are read.
 python3 "$src/scripts/dev/$history_script" check-current "$history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
-if [[ "$v2" == 1 ]]; then
+if [[ "$v2" == 1 || "$v3" == 1 ]]; then
  docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 128 \
   -v "$src:/src:ro" -v "$proof:/proof:ro" -v "$history:/history:ro" -w /src \
   -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker -e BUTLER_CONSOLIDATION_NATIVE_V2_CHECK=1 \
@@ -73,6 +75,7 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -v "$src:/src:ro" -v "$proof:/proof" -v "$history:/history:ro" -v "$private:/private:ro" -w /src \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker \
  -e BUTLER_CONSOLIDATION_NATIVE_V1="$v1" -e BUTLER_CONSOLIDATION_NATIVE_V2="$v2" -e BUTLER_CONSOLIDATION_SCREEN_PROOF=/proof/screen \
+ -e BUTLER_CONSOLIDATION_NATIVE_V3="$v3" \
  -e BUTLER_CONSOLIDATION_SCREEN_USE_SEALED_SCHEDULE=1 \
  -e BUTLER_CONSOLIDATION_NATIVE_AUTH_VALUE_FILE=/private/auth-import.value \
  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json -e BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256="$history_hash" \
