@@ -126,3 +126,23 @@ charged. The exact future schema is absent, its one-use receipt count is zero,
 and main had no active work at the freeze. Authentication/native calls remain
 zero pending the coordinator's independent exact preseal review and explicit
 one-execution approval.
+
+The independently approved v2 invocation stopped before clone: staging had not
+created its owned `private` parent directory, so `private.mkdir` failed before
+the auth-stage marker or main credential read. This is a setup failure, with
+zero product/native admissions, twelve retained unexecuted originals and no
+provider-quality classification. The [exclusive failure receipt](fixtures/issue88/native-v7-preclone-setup-failure.json)
+is `32af3be43422d80da034f2b5eaa534e67f37cbb7546f3499410cb179e3b9df39`.
+All original v2 artifacts and the failed invocation remain unchanged.
+
+The owned parent is now mode0700. A separate fresh `native-v7-preseal-v3`
+reuses exactly the same immutable69fde source, binaries, schedule, policy,
+history and existing53/11+58 checks; these broad checks were reused, not rerun.
+Fresh compiled pins, the exact nonroot runner and seven-store/schema/receipt/
+main checks passed. The new [safe reseal review](fixtures/issue88/native-v7-reseal-review.json),
+SHA256 `330c7c97f35aa25eead33ce43d700bf63ef335e23185d7d1d1a062193973c424`,
+references the full original freeze and exact reuse provenance. New prepared
+SHA256 is `5ed34d17a5ada71f5e6bb39d4b6546303bb9d62f0e49531e3e3da751ab0fde7a`.
+The operator wrapper checks the owned parent mode and absent fresh label before
+calling the unchanged frozen native helper. No reentry into the failed v2
+invocation is allowed; v3 still requires its own exact coordinator approval.

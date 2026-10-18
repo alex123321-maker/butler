@@ -1,0 +1,238 @@
+{
+  "actual_pg": {
+    "auth": 0,
+    "client_cpu": 1,
+    "client_memory_bytes": 2147483648,
+    "evidence_sha256": "33f143c7476126f5f039c06e3ea4929b057848201b6c0ad9504717814b1242a3",
+    "fail": 0,
+    "native": 0,
+    "parent_pass": 9,
+    "postgres_cpu": 1,
+    "postgres_memory_bytes": 1073741824,
+    "proof": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/recipe-controls-v2",
+    "race": true,
+    "separate_pg": true,
+    "skip": 0,
+    "source": "69fde66c3661857372b4f1a8414d2be09c12a0b9",
+    "total_named_pass": 53,
+    "vet": true
+  },
+  "artifact_provenance": {
+    "actual_pg_and_11_58_offline_controls_reused_not_rerun": true,
+    "fresh_compiled_pins_sha256": "a4814350e5d220fd2ecb3b381a2091d061ba73c8476b004ad7d13c76d323953b",
+    "fresh_current_checks": true,
+    "fresh_label_private_absent": true,
+    "fresh_nonroot_runner_sha256": "e6c47911f64b200d09872ebc448f04d9a6d1b6cd8e7961167a89e69c65bc1064",
+    "native_invoked": false,
+    "previous_setup_failure_sha256": "32af3be43422d80da034f2b5eaa534e67f37cbb7546f3499410cb179e3b9df39",
+    "private_parent_created_mode": "0700",
+    "reuse_receipt_sha256": "e214db414ea8af50a77ba0a1d3df8526a7c0c5dcfc7e72d401600b15037f7465",
+    "reused_old_freeze_sha256": "7fdfa3dd05526d49cc3d3f5a2c2ebbf832190c3a38df8f7ce0e7c5bf9f5a40eb",
+    "unchanged_source_and_binaries": true
+  },
+  "artifacts": {
+    "broker.test": "f6c452d857d16315d8d0aa26f0651b5fc4f2904f64ca4056e3a14b9af5735f3b",
+    "collector.test": "03208fc5f6f435d67f1707ef902269dbde4c435d0b366525ac94706f843ccee3",
+    "frozen-pins.json": "83f8000c171bdaa53085d389155c000fe0dbd8a9b31031b7ab95851d189bbd45",
+    "nonroot-runner-preflight.jsonl": "e6c47911f64b200d09872ebc448f04d9a6d1b6cd8e7961167a89e69c65bc1064",
+    "offline-preparation.txt": "672deb76fcecfb47860740a826d21f077f4c68b3f58713c897a4c89a342aab62",
+    "prepared-pins.sha256": "5ed34d17a5ada71f5e6bb39d4b6546303bb9d62f0e49531e3e3da751ab0fde7a",
+    "scheduled-before-auth.json": "4d6ec5a50d334cadfb6cd727a59ec3e5529550f314c541e4415910fab28d7278",
+    "shared-policy.json": "9026deaa266a060eac2b9d2814ace3b33e97a8fb187c3aaac9bbba6e8555adf4",
+    "source.sha256": "1522f70bf95133fcc3a4857bd6a749a4de8cee2c2a2a70f2e48b03938f47760d",
+    "test2json": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+  },
+  "at": "2026-10-18T07:06:35.694322+00:00",
+  "auth_clone": false,
+  "current_inclusive_carry": {
+    "active_millis": 41700000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 314572800,
+    "external_calls": 75,
+    "model_turns": 109,
+    "provider_input_bytes": 914358272,
+    "tokens": 117866496
+  },
+  "execute_helper": "/srv/storage/butler/agents/issue88-native-v7-20261018/snapshots/recipe-source-v3/scripts/dev/memory-temporal-native-execute.sh",
+  "format": "butler.temporal.native-preseal-review.v7.reseal",
+  "future_window": {
+    "receipt_count": 0,
+    "receipt_table_present": true,
+    "schema": "memory_temporal_native_v7",
+    "schema_present": false,
+    "window_id": "temporal-explicit-v7"
+  },
+  "git_tree": "0dd1fdb4efadf05e5335a38f4c3e4c0c1e7a39b5",
+  "history": {
+    "current_known_full_lower_bound": 849406,
+    "current_native_entries": 109,
+    "current_native_known": 108,
+    "current_native_unknown": 1,
+    "current_product_null": 1,
+    "current_product_observed": 108,
+    "historical_known": 153,
+    "historical_known_full_lower_bound": 758525,
+    "historical_native_entries": 161,
+    "historical_product_null": 9,
+    "historical_product_observed": 152,
+    "historical_unknown": 8,
+    "prior_inclusive_prefix73_is_contained_once": true,
+    "separate_adaptive_cloud_native": 98,
+    "separate_adaptive_known": 97,
+    "separate_adaptive_known_full_lower_bound": 294550,
+    "separate_adaptive_local": 128,
+    "separate_adaptive_quotes": 226,
+    "separate_adaptive_unknown": 1
+  },
+  "history_sha256": "2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e",
+  "limitations": [
+    "No authentication or native execution yet; exact coordinator approval required.",
+    "Qualification false until independent whole12 review.",
+    "All previous failures, unexecuted originals, NULLs and deadlines remain immutable.",
+    "Original89v2 cause remains UNKNOWN; new89v3 completion does not reclassify it.",
+    "This is a fixed lab recipe, not production cross-database admission."
+  ],
+  "main": {
+    "active_work": 0,
+    "image": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+    "source": "/srv/storage/butler/snapshots/20261014-main-3e26cd8"
+  },
+  "native_calls": 0,
+  "offline": {
+    "child_pass": 58,
+    "compiled_exact_pins": true,
+    "exact_nonroot_test2json": true,
+    "fail": 0,
+    "parent_pass": 11,
+    "parents": [
+      "TestTemporalV5CurrentDayPositiveCarryRetainsUnknownUsage",
+      "TestTemporalV5PositiveCarryRejectsOmissionRefundAndOtherPopulations",
+      "TestTemporalV7LatestLeafRetainsAdmissionWithoutNative",
+      "TestTemporalV7LatestLeafRejectsForgedWitnesses",
+      "TestTemporalV7OriginalSlotEntryCeiling",
+      "TestTemporalV7NativeCallSequence",
+      "TestTemporalV7FrozenHistoryRejectsForgeries",
+      "TestTemporalV6WorkerRejectsOwnerControlIdentity",
+      "TestTemporalNativeEntryFilenameCapacity",
+      "TestTemporalNativeWritePins",
+      "TestTemporalNativeCheckPreparedPins"
+    ],
+    "proof_reused_from": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/native-v7-preseal-v2",
+    "race": true,
+    "skip": 0
+  },
+  "old_preseal_withdrawn_auth0": {
+    "prepared_sha256": "6b987db080e1bb0af37589a00f9b204ab58e26bd147af961dcce2e75967ffb8c",
+    "receipt_sha256": "117793b3f6bc553e9b9f8ba59dc3d6324f5fcf85c05129aad11ce856351670ca"
+  },
+  "operator": {
+    "auth_diagnostic_binary_sha256": "805993c325cf4b8a6a1309b1148fb397c292c749f4210d29a29c6cd80620a878",
+    "command": "python3 /srv/storage/butler/agents/issue88-native-v7-20261018/incoming/execute-native-v7-v3.py 5ed34d17a5ada71f5e6bb39d4b6546303bb9d62f0e49531e3e3da751ab0fde7a",
+    "helper": "/srv/storage/butler/agents/issue88-native-v7-20261018/incoming/execute-native-v7-v3.py",
+    "private_postgres_environment_only": true,
+    "sha256": "3e3d4e133ff51def445afbe86e65555b69cca8fcca1ec2459bbd76f1582b687f"
+  },
+  "pins": {
+    "broker_sha256": "f6c452d857d16315d8d0aa26f0651b5fc4f2904f64ca4056e3a14b9af5735f3b",
+    "broker_timeout_millis": 58500000,
+    "collector_sha256": "03208fc5f6f435d67f1707ef902269dbde4c435d0b366525ac94706f843ccee3",
+    "complete_schedule_sha256": "3701076fecd4cdc13074c09800b5f92ab2dbf47d8859cf9a26ac46c10ec22b30",
+    "controls_sha256": "c291363ba7a79c22cc9c2aaa86ce7dacbf18147f90855c3d4c52b06d401e05a9",
+    "corpus_sha256": "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512",
+    "expires_at": "2026-10-19T00:00:00Z",
+    "facts_contract_revision": "3",
+    "facts_contract_sha256": "1aeccde7d741d4ce2faf4068554b980dd4afb0fb7482abb63dea77842dcb81e4",
+    "foreground_execution_millis": 2400000,
+    "foreground_source_timeout_millis": 2000,
+    "maximum_generated_tokens": 32768,
+    "maximum_native_entries": 144,
+    "maximum_native_entries_per_original": 12,
+    "maximum_tools_per_original": 8,
+    "method_sha256": "cbff069be8557f28d3d9cc56d35ad44b2cad4923b3c315bae5f1568ef5e5a9a5",
+    "model": "gemini-3.8-flash-high",
+    "model_timeout_millis": 300000,
+    "outer_timeout_millis": 58500000,
+    "prospective_day_deadline": "2026-10-19T00:00:00Z",
+    "prospective_utc_day": "2026-10-18",
+    "retained_history_sha256": "2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e",
+    "revision": "69fde66c3661857372b4f1a8414d2be09c12a0b9",
+    "scheduled_originals": 12,
+    "shared_policy_sha256": "56ce8eb202265f6551c920fb96097fcb7d60f4014fe9083544138e9203501c7e",
+    "source_sha256": "f809a0c7295b82711e7a90a35cfcb43be1fa4e44dc16135cf72531030d884b6e",
+    "test2json_sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68",
+    "whole_window_millis": 57600000,
+    "window_revision": 7
+  },
+  "prepared_sha256": "5ed34d17a5ada71f5e6bb39d4b6546303bb9d62f0e49531e3e3da751ab0fde7a",
+  "proof": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/native-v7-preseal-v3",
+  "prospective_limits": {
+    "conversation": {
+      "active_millis": 3600000,
+      "children": 8,
+      "cost_micros": 0,
+      "egress_bytes": 134217728,
+      "external_calls": 128,
+      "model_turns": 64,
+      "provider_input_bytes": 268435456,
+      "tokens": 67108864
+    },
+    "day": {
+      "active_millis": 96420000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 717225984,
+      "external_calls": 171,
+      "model_turns": 253,
+      "provider_input_bytes": 2122317824,
+      "tokens": 273580032
+    },
+    "mandate": {
+      "active_millis": 3600000,
+      "children": 8,
+      "cost_micros": 0,
+      "egress_bytes": 134217728,
+      "external_calls": 128,
+      "model_turns": 64,
+      "provider_input_bytes": 268435456,
+      "tokens": 67108864
+    },
+    "model_input_bytes": 8388608,
+    "model_millis": 300000,
+    "models": {
+      "antigravity:gemini-3.8-flash-high": {
+        "basis": "subscription_no_overage",
+        "input_micros_per_token": 0,
+        "output_micros_per_token": 0
+      }
+    },
+    "output_tokens": 32768,
+    "repeat_limit": 3,
+    "task": {
+      "active_millis": 4560000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 33554432,
+      "external_calls": 8,
+      "model_turns": 12,
+      "provider_input_bytes": 100663296,
+      "tokens": 12976128
+    },
+    "task_lifetime_millis": 604800000,
+    "tool_egress_bytes": 4194304,
+    "tool_millis": 120000
+  },
+  "red": {
+    "control_failures": 5,
+    "proof": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/native-sequence-red-v2",
+    "review_sha256": "aecdaf02bb77130cfacc5e4865c48c156196e0a38fd8c39254928a28aacca7e9",
+    "same_final_fixture": true
+  },
+  "runtime_go": {
+    "all_match_successful_native89_frozen_source": true,
+    "files": 834,
+    "manifest_sha256": "35be9df9c634b5eae09ff64e3248ff243089f36774c9428749370d76951897ab"
+  },
+  "source": "69fde66c3661857372b4f1a8414d2be09c12a0b9",
+  "source_path": "/srv/storage/butler/agents/issue88-native-v7-20261018/snapshots/recipe-source-v3"
+}
