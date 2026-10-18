@@ -283,3 +283,37 @@ combined receipt and full neutral-worker lifecycle-v11 satisfy their mechanical
 boundaries. The bounded mixed-workload profile now has its separate passing
 receipt. Temporal/experience native quality and full cost, qualified effective
 composition and staged real owner review remain independent gates.
+
+## Native acceptance continuation on October18
+
+The real application bootstrap/HTTP Doctor smoke now passes7/0/0/race/vet in
+`issue92-bootstrap-20261018/reports/bootstrap-v3`. A confirmed repeated-Doctor
+global tool-call identity collision was fixed with the actual run ID; two
+successive reports on the same database complete independently. Current closed
+qualification still proves default-off and explicit denied selections, not the
+future qualified positive composition. Evidence-list SHA256:
+`d043df2a30166837e273ea86ba146cd87078f200910f479baebfd03a3ea7b724`.
+
+The complete [native temporal V8](issue-88-native-v8-independent-review.md) is
+closed NO_GO:12/12 primary targets,6/12 fully accurate answers. All30 native
+entries report complete usage216246, with18 actual Broker reads. Root independently
+read all12 finals and reran the954 source/citation consistency checks. Unsupported
+extra event-date and verification-history claims are not waived. Inclusive175
+owner-day quotes retain174 known native entries and one older UNKNOWN, with
+known full-token lower bound1321800. Typed immutable closed175 history controls
+pass32/0/0/race/vet; accounting validity does not qualify answer quality.
+
+The prospective general facts5 declaration identifies source ingestion versus
+event time and preserves unknown independent checks. Source `53e432b8` passes36
+actual-PG/Broker and retained-export test/subtest events,0 failures/skips, race/vet,
+with native/auth0, in `issue88-facts-v5-20261018/reports/controls-v1`.
+Evidence-list SHA256:
+`abc4e83994065773d597805b29656e9ec2177c3edb716259f4d357d63088dc1f`.
+The unchanged corpus and rubric require a new complete temporal native cohort.
+
+The [closed90 consumer](issue-90-closed-native-lineage.md) has a separate35/0/0
+controlled component proof on all49 preserved synthetic case/source exports.
+It does not stand in for the upcoming real90 comparison or its actual closed
+packet. The native temporal successor, full48-task experience comparison,
+qualified real bootstrap and final supported-mode native pilot remain pending.
+The main deployment and all qualification/activation flags remain unchanged.
