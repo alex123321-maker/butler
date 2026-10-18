@@ -55,6 +55,7 @@ type coherentPilotProvider struct {
 	source        catalog.Source
 	requests      []transport.StartRunRequest
 	continuations []transport.SubmitToolResultRequest
+	beforeFinal   func(context.Context, transport.StartRunRequest) error
 }
 
 func (p *coherentPilotProvider) InferenceLimits() (int64, int64) {
@@ -130,6 +131,8 @@ func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartR
 		output = string(raw)
 	case "simple":
 		output = "4"
+	case "late_private":
+		output = p.source.Body
 	case "long":
 		output = strings.Repeat("Наблюдение чтения: это промежуточный текст, а не подтверждение внешнего эффекта. ", 40)
 	case "unavailable":
@@ -145,6 +148,11 @@ func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartR
 		return nativeScriptedStream(e), nil
 	default:
 		return nil, errors.New("unknown controlled pilot phase")
+	}
+	if p.beforeFinal != nil {
+		if err := p.beforeFinal(ctx, r); err != nil {
+			return nil, err
+		}
 	}
 	return nativeScriptedStream(transport.NewAssistantFinalEvent(r.Context.RunID, p.Name(), transport.AssistantFinal{Content: output, FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 80, OutputTokens: 30, TotalTokens: 110}})), nil
 }
@@ -298,7 +306,7 @@ func TestMemoryCoherentPilotOrdinaryTimelineIntegration(t *testing.T) {
 // unchanged. A delegate bypasses every scripted answer/phase branch. Its source
 // inputs, continuation capacity, whole cost/carry and currentness/quality gates
 // must be frozen before auth; this helper does not authorize such a window.
-func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.ModelProvider, beforeSummary ...func(*coherentPilot, *jobs.ModelWorker)) {
+func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.ModelProvider, beforeSummary ...func(*coherentPilot, *jobs.ModelWorker)) *coherentPilot {
 	proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 	if !filepath.IsAbs(proof) {
 		t.Fatal("fresh absolute private pilot proof required")
@@ -479,7 +487,7 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	encodedRequest, _ := json.Marshal(provider.requests[len(provider.requests)-1])
 	p.record("restarted_ordinary_task_keeps_summary_current_goal_exception_unknown", &receipt, map[string]any{"current_task": current, "foreground_context_budget_tokens": 65536, "consumer_trigger_budget": 4096, "actual_encoded_request_bytes": len(encodedRequest), "actual_encoded_input_bytes": len(actual), "savings_claim": false})
 	if delegate != nil {
-		return
+		return p
 	}
 	// Failure controls continue in this same owner/source/timeline. They retain
 	// conservative reservations and do not forge successful model outcomes.
@@ -525,4 +533,5 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 		t.Fatal("unavailable owning source pool released provider input")
 	}
 	p.record("owning_source_pool_unavailable_denies_before_release", &storageReceipt, map[string]any{"new_provider_calls": len(provider.requests) - before, "error_code": storageReceipt.ErrorCode, "scope": "closed owning source PG pool; server remains healthy"})
+	return p
 }

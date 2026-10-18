@@ -3,6 +3,12 @@
 set -euo pipefail
 base=${1:?isolated agent root}
 label=${2:?fresh proof label}
+mode=${3:-basic}
+case "$mode" in
+ basic) test_name=TestMemoryCoherentPilotOrdinaryTimelineIntegration ;;
+ withdrawal) test_name=TestMemoryCoherentLateWithdrawalAfterRestartIntegration ;;
+ *) exit 2 ;;
+esac
 [[ "$base" =~ ^/srv/storage/butler/agents/issue(89|92)-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current")
 [[ "$src" == "$base/snapshots/"* ]] || exit 2
@@ -20,12 +26,17 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker \
  -e BUTLER_MEMORY_COHERENT_PILOT=1 -e BUTLER_MEMORY_COHERENT_PROOF=/proof/timeline \
- golang:1.27.2-bookworm bash -c 'go build -o /proof/tool-broker ./apps/tool-broker && go test -json -race -p 1 -count=1 -timeout 8m -run "^TestMemoryCoherentPilotOrdinaryTimelineIntegration$" ./apps/orchestrator/internal/app' \
+ -e BUTLER_COHERENT_TEST_NAME="$test_name" \
+ golang:1.27.2-bookworm bash -c 'go build -o /proof/tool-broker ./apps/tool-broker && go test -json -race -p 1 -count=1 -timeout 8m -run "^${BUTLER_COHERENT_TEST_NAME}$" ./apps/orchestrator/internal/app' \
  > "$proof/events.jsonl" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"
-jq -s -e 'any(.[];.Action=="pass" and .Test=="TestMemoryCoherentPilotOrdinaryTimelineIntegration") and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/events.jsonl" >/dev/null
+jq -s -e --arg name "$test_name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/events.jsonl" >/dev/null
 jq -e '.controlled_only and .pass and (.steps|length)==15 and .steps[-1].Name=="owning_source_pool_unavailable_denies_before_release"' "$proof/timeline/timeline.json" >/dev/null
+if [[ "$mode" == withdrawal ]]; then
+ jq -e '.controlled_only and .pass and .native_calls==0 and (.steps|length)==16 and .known_usage==1 and .remaining_private_copies==0 and .effect_journal_unchanged' "$proof/timeline/timeline-withdrawn.json" >/dev/null
+ sha256sum "$proof/timeline/timeline-withdrawn.json" > "$proof/withdrawal.sha256"
+fi
 sha256sum "$proof/source.sha256" "$proof/tool-broker" "$proof/events.jsonl" "$proof/environment.json" "$proof/timeline/timeline.json" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 printf 'Controlled coherent timeline passed; native inference0, auth0.\n'
