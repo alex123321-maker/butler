@@ -80,7 +80,7 @@ def main():
     mode = sys.argv[1]
     if mode == 'check-current':
         path = pathlib.Path(sys.argv[2]).resolve()
-        if not re.fullmatch('/srv/storage/butler/agents/issue(?:88|90)-[A-Za-z0-9_-]+/reports/[A-Za-z0-9_-]+/history/history.json', str(path)):
+        if not re.fullmatch('/srv/storage/butler/agents/issue(?:88|90)-[A-Za-z0-9_-]+/reports/[A-Za-z0-9_-]+/history/(?:history|closed-v7-history).json', str(path)):
             raise SystemExit('bounded closed V7 history path required')
         raw = path.read_bytes()
         m = json.loads(raw)

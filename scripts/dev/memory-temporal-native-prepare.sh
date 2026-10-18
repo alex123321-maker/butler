@@ -18,10 +18,11 @@ printf '%s\n' "$src" > "$proof/source-reference"
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
 version=$(jq -er .format "$proof/history/history.json")
 history_script=memory-temporal-successor-history.py
-v7=0
+v7=0;v8=0
 case "$version" in
  butler.temporal.native-history.v2) ;;
  butler.temporal.native-history.v3) history_script=memory-temporal-v7-history.py;v7=1 ;;
+ butler.temporal.native-history.v4) history_script=memory-temporal-v8-history.py;v8=1 ;;
  *) exit 2 ;;
 esac
 python3 "$src/scripts/dev/$history_script" check-current "$proof/history/history.json" "$history_hash" > "$proof/current-before-build.json"
@@ -32,6 +33,7 @@ docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 12
  -e BUTLER_TEMPORAL_WRITE_PINS=1 -e BUTLER_TEMPORAL_NATIVE_PROOF=/proof -e BUTLER_TEMPORAL_SOURCE_REVISION="$release" \
  -e BUTLER_TEMPORAL_V6_HISTORY_TEST_ROOT=/proof/history \
  -e BUTLER_TEMPORAL_V7_HISTORY_TEST_ROOT=/proof/history -e BUTLER_TEMPORAL_PREPARE_V7="$v7" \
+ -e BUTLER_TEMPORAL_V8_HISTORY_TEST_ROOT=/proof/history -e BUTLER_TEMPORAL_PREPARE_V8="$v8" \
  -e BUTLER_TEMPORAL_CHECK_PINS=1 \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/proof/broker.test -w /src golang:1.27.2-bookworm bash -eu -c \
  'go build -o /proof/test2json cmd/test2json
@@ -39,7 +41,11 @@ docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 12
   go test -c -race -o /proof/collector.test ./apps/orchestrator/internal/app
   cd /src/apps/orchestrator/internal/app
   /proof/collector.test -test.v -test.run "^TestTemporalV5(CurrentDayPositiveCarryRetainsUnknownUsage|PositiveCarryRejectsOmissionRefundAndOtherPopulations)$"
-  if [[ "$BUTLER_TEMPORAL_PREPARE_V7" == 1 ]];then
+  if [[ "$BUTLER_TEMPORAL_PREPARE_V8" == 1 ]];then
+   /proof/collector.test -test.v -test.run "^TestClosedTemporalV7(RetainsProductNativeIndependence|RejectsConsistentInvalidSequence)$"
+   /proof/collector.test -test.v -test.run "^TestTemporalV8(FactsContractBoundary|FrozenHistoryRejectsForgeries)$"
+   /proof/collector.test -test.v -test.run "^TestTemporalV6WorkerRejectsOwnerControlIdentity$"
+  elif [[ "$BUTLER_TEMPORAL_PREPARE_V7" == 1 ]];then
    /proof/collector.test -test.v -test.run "^TestTemporalV7(LatestLeafRetainsAdmissionWithoutNative|LatestLeafRejectsForgedWitnesses|OriginalSlotEntryCeiling|NativeCallSequence|FrozenHistoryRejectsForgeries)$"
    /proof/collector.test -test.v -test.run "^TestTemporalV6WorkerRejectsOwnerControlIdentity$"
   else
@@ -52,7 +58,11 @@ docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 
 [[ "$status" == 0 ]] || exit "$status"
 ! grep -Eq '^--- (FAIL|SKIP)' "$proof/offline-preparation.txt"
 test "$(grep -c '^--- PASS: TestTemporalV5' "$proof/offline-preparation.txt")" = 2
-if [[ "$v7" == 1 ]];then
+if [[ "$v8" == 1 ]];then
+ test "$(grep -c '^--- PASS: TestClosedTemporalV7' "$proof/offline-preparation.txt")" = 2
+ test "$(grep -c '^--- PASS: TestTemporalV8' "$proof/offline-preparation.txt")" = 2
+ test "$(grep -c '^--- PASS: TestTemporalV6' "$proof/offline-preparation.txt")" = 1
+elif [[ "$v7" == 1 ]];then
  test "$(grep -c '^--- PASS: TestTemporalV7' "$proof/offline-preparation.txt")" = 5
  test "$(grep -c '^--- PASS: TestTemporalV6' "$proof/offline-preparation.txt")" = 1
 else

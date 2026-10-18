@@ -62,7 +62,7 @@ func TestTemporalNativeWritePins(t *testing.T) {
 		t.Fatal(err)
 	}
 	policyObject := temporalNativePolicy(h.Carry)
-	if policyObject.Validate() != nil || time.Now().UTC().Format("2006-01-02") != h.Manifest.Day || !time.Now().Before(h.Manifest.Deadline) || factcontrol.Contract().ContractRevision != "3" {
+	if policyObject.Validate() != nil || time.Now().UTC().Format("2006-01-02") != h.Manifest.Day || !time.Now().Before(h.Manifest.Deadline) || factcontrol.Contract().ContractRevision != temporalNativeFactsRevision(temporalNativeVersion(h)) {
 		t.Fatal("prospective day/policy/semantic contract differs")
 	}
 	policy, _ := json.Marshal(policyObject)
@@ -76,7 +76,7 @@ func TestTemporalNativeWritePins(t *testing.T) {
 	}
 	p := temporalNativePins{Revision: os.Getenv("BUTLER_TEMPORAL_SOURCE_REVISION"), Cases: 12, MaxNative: temporalMaxNative, MaxPerOriginal: temporalMaxPerOriginal, MaxTools: temporalMaxTools, Model: "gemini-3.8-flash-high", Output: 32768, Millis: 300000, HistorySHA: acceptance.MemoryBytesSHA256(history), PolicySHA: acceptance.MemoryBytesSHA256(policy), Expires: expires, Day: h.Manifest.Day, DayDeadline: h.Manifest.Deadline, FactsRevision: factcontrol.Contract().ContractRevision, ScheduleSHA: acceptance.MemoryBytesSHA256(schedule)}
 	p.WindowRevision = temporalNativeVersion(h)
-	if p.WindowRevision == 7 {
+	if p.WindowRevision == 7 || p.WindowRevision == 8 {
 		p.ForegroundSourceMillis = flow.DefaultMemorySourceCheckTimeout.Milliseconds()
 		p.ForegroundMillis = temporalV7ForegroundDuration.Milliseconds()
 		p.WholeMillis = temporalV7WholeDuration.Milliseconds()
@@ -122,10 +122,10 @@ func TestTemporalNativeWritePins(t *testing.T) {
 func temporalCheckNativePins(proof string) error {
 	raw, err := os.ReadFile(filepath.Join(proof, "frozen-pins.json"))
 	var p temporalNativePins
-	if err != nil || json.Unmarshal(raw, &p) != nil || (p.WindowRevision != 6 && p.WindowRevision != 7) || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != "3" || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
+	if err != nil || json.Unmarshal(raw, &p) != nil || temporalNativeFactsRevision(p.WindowRevision) == "" || len(p.Revision) != 40 || p.Cases != 12 || p.MaxNative != temporalMaxNative || p.MaxPerOriginal != temporalMaxPerOriginal || p.MaxTools != temporalMaxTools || p.Model != "gemini-3.8-flash-high" || p.Output != 32768 || p.Millis != 300000 || p.FactsRevision != temporalNativeFactsRevision(p.WindowRevision) || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.DayDeadline) || p.Expires.After(p.DayDeadline) || !time.Now().Before(p.Expires) {
 		return errors.New("frozen temporal window/profile differs")
 	}
-	if p.WindowRevision == 7 && (p.ForegroundSourceMillis != 2000 || p.ForegroundSourceMillis != flow.DefaultMemorySourceCheckTimeout.Milliseconds() || p.ForegroundMillis != temporalV7ForegroundDuration.Milliseconds() || p.WholeMillis != temporalV7WholeDuration.Milliseconds() || p.OuterMillis != temporalV7OuterDuration.Milliseconds() || p.BrokerMillis != temporalV7BrokerDuration.Milliseconds()) {
+	if (p.WindowRevision == 7 || p.WindowRevision == 8) && (p.ForegroundSourceMillis != 2000 || p.ForegroundSourceMillis != flow.DefaultMemorySourceCheckTimeout.Milliseconds() || p.ForegroundMillis != temporalV7ForegroundDuration.Milliseconds() || p.WholeMillis != temporalV7WholeDuration.Milliseconds() || p.OuterMillis != temporalV7OuterDuration.Milliseconds() || p.BrokerMillis != temporalV7BrokerDuration.Milliseconds()) {
 		return errors.New("frozen v7 source and finite execution bounds differ")
 	}
 	contractSHA, e := actionauth.ContractHash(factcontrol.Contract())

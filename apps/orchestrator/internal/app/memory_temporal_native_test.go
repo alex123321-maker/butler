@@ -118,7 +118,7 @@ func temporalCollectorBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Stor
 	address := freeAddress(t)
 	policyJSON, _ := json.Marshal(policy)
 	brokerTimeout := "185m"
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V7") == "1" {
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V7") == "1" || os.Getenv("BUTLER_TEMPORAL_NATIVE_V8") == "1" {
 		brokerTimeout = temporalV7BrokerDuration.String()
 	}
 	cmd := exec.Command(binary, "-test.run=^TestTemporalNativeBrokerHarness$", "-test.timeout="+brokerTimeout)
@@ -405,7 +405,8 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
 	v6, v7 := os.Getenv("BUTLER_TEMPORAL_NATIVE_V6") == "1", os.Getenv("BUTLER_TEMPORAL_NATIVE_V7") == "1"
-	if !v6 && !v7 {
+	v8 := os.Getenv("BUTLER_TEMPORAL_NATIVE_V8") == "1"
+	if !v6 && !v7 && !v8 {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -421,7 +422,13 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	}
 	historyRaw, err := os.ReadFile(filepath.Join(proof, "history", "history.json"))
 	history, e := loadTemporalV5History(filepath.Join(proof, "history", "history.json"), experienceDigest(string(historyRaw)))
-	if err != nil || e != nil || v6 == v7 || (temporalNativeVersion(history) == 7) != v7 {
+	flags := 0
+	for _, enabled := range []bool{v6, v7, v8} {
+		if enabled {
+			flags++
+		}
+	}
+	if err != nil || e != nil || flags != 1 || (temporalNativeVersion(history) == 6) != v6 || (temporalNativeVersion(history) == 7) != v7 || (temporalNativeVersion(history) == 8) != v8 {
 		t.Fatal("native flags differ from frozen history")
 	}
 	whole := 16 * time.Hour
@@ -429,6 +436,10 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if v7 {
 		whole = temporalV7WholeDuration
 		schema, window = temporalV7Schema, temporalV7Window
+	}
+	if v8 {
+		whole = temporalV7WholeDuration
+		schema, window = temporalV8Schema, temporalV8Window
 	}
 	deadline := time.Now().Add(whole)
 	if history.Manifest.Deadline.Before(deadline) {
