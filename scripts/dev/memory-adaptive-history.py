@@ -15,6 +15,10 @@ import sys
 OWNER = "adaptive-prospective-owner-v1"
 OLD_SHA = "ef3b23faaa5668a74a0aefc217c127a957aec71c3c491cd805b0793b260a8771"
 OLD_NATIVE_SHA = "613652b6fa6c0cb549aeb62808d110143e26411494174c0f2d5174d603a0cf98"
+PREDECESSOR = pathlib.Path("/srv/storage/butler/agents/issue89-20261016/reports/native-v2-preseal-v2")
+PREDECESSOR_FILES = (("native-review-safe-v2.json", "issue89-native-review-safe-v2.json", "0396a50a3934552d6f32821a1e547203fd1435537e5e2952edfda17d05ad55ab"),
+                     ("screen/full-ledger.json", "issue89-native-v2-full-ledger.json", "a407e19989b187d88ffa5cd97eeb84247d50bf33bbdb2c144d0200fedac81a62"),
+                     ("screen/screen.json", "issue89-native-v2-screen.json", "3a3f011dc8580db6eff68f4e79d236eb49eee35dd5cc34c1d49eeda55103d6c6"))
 DATABASES = (("butler-lab-postgres-1", "butler", 5432),
              ("issue84-20261016-pg", "issue84_test", 5432),
              ("butler-issue85-postgres", "issue85_native_test", 18585),
@@ -91,8 +95,7 @@ def exclusive(path, raw):
         os.fsync(target.fileno())
 
 
-def retained_original(name, expected):
-    root = pathlib.Path("/srv/storage/butler/agents/issue87-native-v4-20261016/reports/native-v1")
+def retained_original(name, expected, root=pathlib.Path("/srv/storage/butler/agents/issue87-native-v4-20261016/reports/native-v1")):
     result = subprocess.run(["docker", "run", "--rm", "--pull", "never", "--network", "none", "--cpus", ".1", "--memory", "128m", "-v", str(root)+":/from:ro", "golang:1.27.2-bookworm", "cat", "/from/"+name], capture_output=True, timeout=40)
     if result.returncode or hashlib.sha256(result.stdout).hexdigest() != expected:
         raise SystemExit("immutable historical adaptive original differs")
@@ -130,6 +133,9 @@ def main():
         for name, expected in (("historical-v4-full-ledger.json", OLD_SHA), ("historical-v4-native-calls.json", OLD_NATIVE_SHA)):
             if hashlib.sha256((proof / name).read_bytes()).hexdigest() != expected:
                 raise SystemExit("historical original changed after freeze")
+        for _, name, expected in PREDECESSOR_FILES:
+            if hashlib.sha256((proof / name).read_bytes()).hexdigest() != expected:
+                raise SystemExit("closed latest predecessor original changed after freeze")
         if manifest["day"] != day or hashlib.sha256(saved).hexdigest() != manifest["inventory_sha256"] or canonical(inventory(day)) != saved:
             raise SystemExit("ledger population or UTC day changed; new independent freeze required")
         future = prospective_store()
@@ -153,8 +159,13 @@ def main():
     exclusive(proof / "six-store-ledgers.json", raw)
     exclusive(proof / "historical-v4-full-ledger.json", old_raw)
     exclusive(proof / "historical-v4-native-calls.json", native_raw)
+    predecessor_refs = []
+    for source, name, expected in PREDECESSOR_FILES:
+        data = retained_original(source, expected, PREDECESSOR)
+        exclusive(proof / name, data)
+        predecessor_refs.append({"path": name, "sha256": expected})
     deadline = datetime.datetime.combine(now.date()+datetime.timedelta(days=1), datetime.time(), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "historical_native_sha256": OLD_NATIVE_SHA, "prospective_seventh_store": future, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. Native observer usage is separate from product input/output; original v4 trace remains unchanged. Inclusive prior scope vectors are never added again as fresh calls. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission. After this run all future histories must include the seventh retained store explicitly."}
+    manifest = {"format": "butler.adaptive.native-history.v5", "owner": OWNER, "day": day, "deadline": deadline, "current_owner_reservations": 0, "current_owner_scopes": 0, "inventory_sha256": hashlib.sha256(raw).hexdigest(), "historical_ledger_sha256": OLD_SHA, "historical_native_sha256": OLD_NATIVE_SHA, "closed_latest_issue89": predecessor_refs, "prospective_seventh_store": future, "rule": "All six original stores, distinct owners, original deadlines and nullable usage remain visible. Native observer usage is separate from product input/output; original v4 trace remains unchanged. Inclusive prior scope vectors are never added again as fresh calls. No reset, refund, replay or historical authority renewal. Zero current adaptive owner is a lab partition control, not cross-database production admission. After this run all future histories must include the seventh retained store explicitly."}
     raw = canonical(manifest)
     exclusive(proof / "history.json", raw)
     print(json.dumps({"read_only": True, "history_sha256": hashlib.sha256(raw).hexdigest(), "six_databases": 6, "day": day, "auth_or_inference": False}))
