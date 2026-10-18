@@ -4,7 +4,9 @@ Status: implementation and controlled boundary acceptance pass; native semantic
 and paired full-cost qualification is pending. `consolidation.ReleaseQualified`
 remains false. Both process opt-ins default false, and PostgreSQL model control
 starts disabled. No primary deployment/auth/provider state was changed by this
-consumer's controlled checks. No #89 native attempt has been made.
+consumer's controlled checks. The first native cohort is now closed NO_GO after
+two known-usage entries; see [native v1](issue-89-native-v1.md). It completed no
+paired comparison and does not qualify the consumer or demonstrate savings.
 
 ## Frozen controlled evidence
 
