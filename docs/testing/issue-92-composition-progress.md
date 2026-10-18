@@ -112,16 +112,25 @@ and seven slots remained unexecuted. Both native entries have known full usage
 instruction and content-free denial reason passed98 controlled checks with no
 failures/skips, race and vet. Model compliance still requires a new full cohort.
 
-New89 and90 screens, a fresh88 semantic screen, independent effect review, complete usage and
-declared capacity remain separate. Issue87's earlier incomplete window and
+The complete [native89v3 independent review](issue-89-native-v3-independent-review.md)
+now passes the bounded owner-selected screen: all9 slots,23 original units and27
+actual source pages. Including preparation, full tokens are108855 versus176055,
+while wall time and request bytes increase. No broad performance claim or
+production qualification follows. A fresh88 whole screen and the native90
+experience screen with independent effect/full-cost review remain required.
+Issue87's earlier incomplete window and
 the later complete v5 diagnostic rejection remain retained,
 with adaptive retrieval code-unqualified and disabled. Closed native windows are
 not selectively rerun or reported as passes. A larger finite capacity is a new
 prospective complete cohort, never a refund or rewrite of previous spending.
 
-Issue91 now has two actual controlled foreground/background consumer overlaps
-in addition to local query/index overlap. These are individual bounds, not native
-p95 or the complete mixed workload. The final92 pilot must exercise the ordered
+Issue91's [complete mixed workload](issue-91-combined-capacity.md) and separate
+private-PG buffer-restart slice pass on the finite2+2 CPU deployment-build profile.
+Warm/mixed p95 is1305.977/1413.040 ms;97 mixed requests complete and3 retain explicit
+typed privacy denials. Earlier race windows keep their latency/availability misses.
+Actual local query/index IPC and admitted background preemption/recovery are
+measured; cloud providers are controlled, so native cloud p95 remains unmeasured.
+The final92 pilot must exercise the ordered
 preference→owner decision→new conversation→current exception→long task/restart→
 verified episode/consolidation→late withdrawal/restore path on one accepted
 composition, including explicit model/database/budget/disk failure behavior.
@@ -254,5 +263,6 @@ The earlier rejected v6 stream SHA256 remains
 
 Reports are under `issue92-20261018/reports/composition-v7` on laba. This current
 combined receipt and full neutral-worker lifecycle-v11 satisfy their mechanical
-boundaries. The native quality/cost screens, supported mixed-workload profile,
-qualified effective composition and staged real owner review remain independent.
+boundaries. The bounded mixed-workload profile now has its separate passing
+receipt. Temporal/experience native quality and full cost, qualified effective
+composition and staged real owner review remain independent gates.

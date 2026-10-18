@@ -1,12 +1,16 @@
 # Issue89 consolidation evidence
 
-Status: implementation and controlled boundary acceptance pass; native semantic
-and paired full-cost qualification is pending. `consolidation.ReleaseQualified`
-remains false. Both process opt-ins default false, and PostgreSQL model control
-starts disabled. No primary deployment/auth/provider state was changed by this
-consumer's controlled checks. The first native cohort is now closed NO_GO after
-two known-usage entries; see [native v1](issue-89-native-v1.md). It completed no
-paired comparison and does not qualify the consumer or demonstrate savings.
+Status: controlled boundary acceptance and the complete native v3 selected-source
+semantic screen pass. The [independent review](issue-89-native-v3-independent-review.md)
+covers all three preparations, six answers, exact original witnesses and full
+costs. Including preparation, reported native tokens fall38.170%, while elapsed
+time rises83.482% and request bytes46.773%. This is a bounded quality/token result,
+not a general performance or storage gain. `consolidation.ReleaseQualified`
+remains false pending the temporal prerequisite and final qualified composition.
+Both process opt-ins default false, and PostgreSQL model control starts disabled.
+The primary application and flags remain unchanged. The earlier cohorts retain
+their original failures and unknown usage, including the two-entry
+[native v1](issue-89-native-v1.md) NO_GO.
 
 ## Frozen controlled evidence
 
@@ -65,10 +69,10 @@ target's summary/temporal proof. `b81c75d3` separates proof IDs from union lock 
 The metadata-only stale-selected→fresh generation CAS positive and stale rollback
 negative pass on actual PG. No obsolete permission is used to read an old value.
 
-## Remaining release gate
+## Native release gate and current result
 
-Compose the latest independently reviewed #88 ordinary typed read hook first.
-Then freeze and review a prospective one-use native corpus/window through the
+The native gate requires the independently reviewed #88 ordinary typed read hook
+and a prospective one-use corpus/window through the
 existing subscription transport and server proxy. Compare identical authorized
 source/current-task questions before/after owner activation, counting every real
 start/tool-result continuation and all foreground/background conservative quote,
@@ -81,7 +85,25 @@ associate exact repeats, leave historical differences visible and never turn
 frequency into acceptance. A fresh correction/diff/head CAS and current accepted
 fact metadata must remain distinguishable from unconfirmed observations. A smaller
 foreground read alone does not establish a total cost reduction. No savings,
-general quality or release qualification is claimed until that evidence exists.
+general quality or release qualification follows from foreground-only costs.
+
+The closed v3 run meets that selected-source semantic and complete-cost evidence
+requirement:9/9 logical slots,36/36 known native usages,284910 full tokens and27
+actual Broker pages. All23 original units and their accepted-fact metadata survive
+in17 rendered variants; every cited source was actually opened at its then-current
+revision. The full after arm costs108855 versus176055 baseline tokens, with13
+versus23 native entries. It takes285193 versus155434 ms and sends109114 versus74342
+request bytes. Natural search adoption and general workload quality were outside
+the frozen protocol. Exact source/artifact hashes and every slot are in the
+independent review; the original v2 failure cause remains UNKNOWN.
+
+The inclusive current-owner carry is now109 entries, counted once, with108 known
+usages and one historical unknown;849406 known full tokens are a lower bound.
+Historical161 attempts and the separate adaptive226 quotes remain separate audit
+populations. Successful opaque authentication handback, main paid-discovery200
+and a fresh private snapshot closed this execution without changing deployment.
+The earlier first-population recipe below is historical and cannot authorize a
+new window after this spend.
 
 ## Prospective UTC-day freeze and retained history
 

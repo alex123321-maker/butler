@@ -19,8 +19,13 @@ checks; a flag or HTTP200 cannot replace them.
 The candidate hardware profile is bounded exact search with at most10000 chunks
 per active generation. Larger single scopes and the1M target remain unsupported
 until separately measured; see [capacity evidence](issue-91-memory-capacity.md).
-The complete mixed-load receipt must pass its prospective limits before claiming
-that profile ready. Provider latency and real user quality need their own samples.
+The [complete controlled mixed-load profile](issue-91-combined-capacity.md) passes
+at client2 CPUs/2 GiB and PostgreSQL2 CPUs/1 GiB, using a deployment build without
+race detection: warm/mixed p95 is1305.977/1413.040 ms against1500 ms. Three of100
+mixed requests explicitly deny during real privacy deletion;97 complete and no
+unexpected failure is permitted. Earlier resource/race misses remain unsupported.
+This profile includes actual local query/index IPC and controlled answer/model
+providers. Native cloud latency and real user quality need their own samples.
 
 Adaptive retrieval remains off after its
 [measured v5 rejection](issue-87-native-v5-independent-review.md). The explicit
