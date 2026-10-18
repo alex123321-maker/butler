@@ -1,5 +1,13 @@
 # Memory source catalog
 
+The Android ingress uses `PutMobileObservationTx` to create immutable private
+quarantined sources in the authenticated receipt transaction. Background device
+retention uses `DeleteExpiredMobileObservation`: it rechecks expiry under a
+current policy lock and shares the normal external-anchor erasure path without
+manufacturing an owner actor. Unexpired/non-mobile sources are denied. See the
+[adapter contract](../../mobile/README.md) and
+[acceptance report](../../../docs/testing/issue-57-android.md).
+
 Migration079 closes cached tool/approval payloads under exact affected run pins.
 Delete/revoke and external-anchor reconciliation erase their args/results/errors
 and copied approval prose while preserving tool identity/status, confirmed or

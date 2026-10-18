@@ -49,6 +49,7 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/mobile"
 	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
@@ -271,6 +272,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v2/results/", resultServer.HandleByRun("/api/v2/results/"))
 	mux.Handle("/api/v1/providers/", apiservice.OwnerMaintenance(deps.ownerAuth, providerServer.HandleItem()))
 	mux.Handle("/api/v4/memory", memoryCatalogServer.Handle())
+	mobileStore := &mobile.Store{Pool: deps.postgres.Pool(), Catalog: deps.sourceCatalog}
+	mobileServer := &apiservice.MobileServer{Store: mobileStore, Auth: deps.ownerAuth}
+	mux.Handle("/api/v1/mobile/", mobileServer.DeviceHandler())
+	mux.Handle("/api/v1/mobile-owner/", mobileServer.OwnerHandler())
 	mux.Handle("/api/v4/memory/", memoryCatalogServer.Handle())
 	mux.Handle("/api/v1/memory", memoryCatalogServer.LegacyRead(memoryServer.HandleList()))
 	mux.Handle("/api/v2/memory", memoryCatalogServer.LegacyRead(memoryServer.HandleList()))

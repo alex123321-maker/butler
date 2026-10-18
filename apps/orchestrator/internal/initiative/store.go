@@ -8,13 +8,16 @@ import (
 	"errors"
 	"time"
 
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/mobile"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Store struct {
-	pool *pgxpool.Pool
+	pool          *pgxpool.Pool
+	MobileCatalog *catalog.Store
 	// RunDataGuardTx is installed by the source lifecycle owner at bootstrap.
 	// It uses the same transaction as promotion, with no nested pool borrowing.
 	RunDataGuardTx func(context.Context, pgx.Tx, string) error
@@ -86,6 +89,21 @@ func (s *Store) SaveSource(ctx context.Context, source Source, expectedRevision 
 		return ConfigReceipt{}, ErrInvalid
 	}
 	source.OwnerID, source.Revision = a.OwnerID, 0
+	if source.ObserverKind == "mobile_inbox" {
+		source.ProjectRef = "android-notifications"
+		source.ProjectRevision = hash("android_messages_v1")
+		source.TaskGoal = MobileTaskGoal
+		source.CompletionCriteria = []string{"All admitted messages have durable processing decisions"}
+		source.FailureThreshold = 1
+		source.ConfidenceThreshold = 90
+		source.MinimumImportance = 60
+		source.CooldownSeconds = 60
+		source.ActiveStart = 0
+		source.ActiveEnd = 0
+		source.ExecutionPolicy = "normal"
+		source.DigestChannel = ""
+		source.ResultDelivery = "verified_task"
+	}
 	if source.Validate() != nil {
 		return ConfigReceipt{}, ErrInvalid
 	}
@@ -100,6 +118,14 @@ func (s *Store) SaveSource(ctx context.Context, source Source, expectedRevision 
 	defer tx.Rollback(ctx)
 	if previous != nil {
 		return *previous, tx.Commit(ctx)
+	}
+	var oldKind string
+	err = tx.QueryRow(ctx, `SELECT COALESCE(source_json->>'observer_kind','') FROM initiative_sources WHERE source_id=$1 AND owner_id=$2`, source.ID, a.OwnerID).Scan(&oldKind)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return ConfigReceipt{}, err
+	}
+	if oldKind == "mobile_inbox" && source.ObserverKind != "mobile_inbox" {
+		return ConfigReceipt{}, ErrInvalid
 	}
 	var owner, channel string
 	if err = tx.QueryRow(ctx, `SELECT user_id,channel FROM sessions WHERE session_key=$1 FOR SHARE`, source.SessionKey).Scan(&owner, &channel); err != nil || owner != a.OwnerID || (source.DigestChannel != "" && source.DigestChannel != channel) {
@@ -122,6 +148,17 @@ func (s *Store) SaveSource(ctx context.Context, source Source, expectedRevision 
 	r := ConfigReceipt{Kind: "source", SubjectID: source.ID, Revision: revision}
 	if err = saveConfig(ctx, tx, a, r, requestHash); err != nil {
 		return r, err
+	}
+	if source.ObserverKind == "mobile_inbox" {
+		if err = mobile.ConfigureAgentAccessTx(ctx, tx, a.OwnerID, source.Enabled); err != nil {
+			return r, err
+		}
+		q := Schedule{ID: "mobile-" + hash(source.ID), SourceID: source.ID, TimeZone: source.TimeZone, Kind: "interval", IntervalSeconds: 60, MissedPolicy: "coalesce", GraceSeconds: 60, Enabled: source.Enabled}
+		encoded, _ := json.Marshal(q)
+		_, err = tx.Exec(ctx, `INSERT INTO initiative_schedules(schedule_id,source_id,schedule_json,next_at,enabled) VALUES($1,$2,$3,clock_timestamp(),$4) ON CONFLICT(schedule_id) DO UPDATE SET schedule_json=$3,next_at=clock_timestamp(),enabled=$4,revision=initiative_schedules.revision+1`, q.ID, q.SourceID, encoded, q.Enabled)
+		if err != nil {
+			return r, err
+		}
 	}
 	return r, tx.Commit(ctx)
 }

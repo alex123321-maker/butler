@@ -1,5 +1,13 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Android assistance uses ordinary initiative/input/task execution with a standing
+owner-configured `mobile_inbox` source:20 new messages or an hour of pending
+messages. Broker controls `messages.inbox`, `messages.search` and
+`messages.process` save source-backed notes and reversible noise rules through
+the Catalog. Maintenance verifies durable processing and can resume incomplete
+completed attempts at most three times under the same task budget. See the
+[Android contract](../../docs/architecture/android-companion.md).
+
 Lease-supervisor cancellation retains a fixed Core reason when current authority
 cannot be checked, the exact ownership token changes, or renewal fails. A stream
 cancellation no longer discards that owning cause. Private storage details stay
@@ -61,6 +69,12 @@ resume the remaining original task; they do not establish semantic verification
 or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
+
+Android notification ingress is mounted at `/api/v1/mobile/`; authenticated owner
+device controls use `/api/v1/mobile-owner/` and the Web `/mobile` page. It reuses
+the existing source catalog/deletion anchor and deterministic retention maintenance.
+There are no per-notification model runs. See the
+[protocol and deployment boundary](../../docs/architecture/android-companion.md).
 
 Current-source denial retains valid complete turn usage on the safe error event
 before the budget wrapper terminates the attempt. Denied tool/final text never

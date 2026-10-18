@@ -49,6 +49,14 @@ to fit the context budget.
 
 ## Broad mandate and exact actions
 
+The Android `mobile_inbox` source is a standing owner-authorized DATA consumer.
+It can read permitted phone messages and prepare source-backed notes/noise rules
+through exact named Broker tools without per-message review. Current goal,
+mandate, privacy, budgets and pauses still apply. The fixed Task Service
+`mobile_batch_v1` verifier checks actual processing receipts, not the truth of
+model conclusions; it uses no synthetic owner identity. Notification content
+and learned noise rules cannot grant new tools, widen authority or change goals.
+
 A broad mandate pins one confirmed objective revision and purpose, owner and
 source. It contains exact tool names, explicit read/prepare/commit/unknown effect
 classes, HTTP(S) resource origins and path scopes, credential alias/field metadata,

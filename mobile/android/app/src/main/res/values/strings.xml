@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Butler</string>
+    <string name="notification_listener_label">Butler Companion Notification Sensor</string>
+    <string name="tab_dashboard">Состояние</string>
+    <string name="tab_pairing">Сервер</string>
+    <string name="tab_filters">Фильтры</string>
+    <string name="tab_queue">Очередь</string>
+    <string name="status_connected">Подключено к Butler</string>
+    <string name="status_paused">Синхронизация на паузе</string>
+    <string name="status_unpaired">Устройство не сопряжено</string>
+    <string name="status_token_revoked">Токен устройства отозван</string>
+    <string name="status_offline">Нет сети / ожидание маршрута</string>
+</resources>

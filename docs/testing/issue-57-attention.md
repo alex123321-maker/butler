@@ -1,0 +1,135 @@
+# Issue57: autonomous notification attention
+
+This extends [ingress acceptance](issue-57-android.md) with the owner's standing
+permission to use messages without individual requests/reviews. Selected policy:
+20 distinct new messages or one hour since the oldest unprocessed receipt,
+automatic source-backed notes, archive search and reversible noise suppression.
+App collection filters remain in Companion. Previous originals/notes follow
+server retention and explicit deletion, independently of future app collection.
+
+## Executed local stand
+
+All phone/model acceptance described here runs on the Windows laptop in Docker:
+real PostgreSQL17, Redis, Orchestrator, separate production Tool Broker and native
+Antigravity `gemini-3.8-flash-high`. Only synthetic notifications from
+`dev.butler.companion.debug` are collected. The phone uses home Wi-Fi to the
+laptop's ingress-only port18061; owner control is loopback18062. No ADB reverse,
+SSH forwarding or remote Butler participates in this route. USB supplies ADB for
+instrumentation. Model inference uses the laptop's Internet connection.
+
+An initially prepared isolated `laba` stand was stopped at the owner's request;
+it received no phone messages and ran no model tasks. Opaque provider state was
+returned with compare-and-swap before shutdown. The local stand holds operator
+credential references only in ignored `.cache/issue57/local-native`; reports do
+not include bearer tokens, ciphertext, encryption keys or phone serials.
+
+Provision a **fresh** stand after building the actual binaries:
+
+```powershell
+# Build Linux attention-orchestrator, attention-broker, attention-init and
+# mobile-wifi-proxy-linux into .cache/issue57 using repo-local Go caches.
+# Operator supplies private provider-auth.value and provider-encryption.env
+# in .cache/issue57/local-native; never put their values in command arguments.
+pwsh -NoProfile -File scripts/dev/mobile-attention-local.ps1
+pwsh -NoProfile -File scripts/dev/mobile-attention-local.ps1 -Configure
+```
+
+The script pins a separate `_test` database, empty Broker registry plus owned
+memory/message tools, source-deletion anchor, synthetic owner, explicit cloud
+privacy, read/prepare-only mandate, finite48-turn task/96-turn mandate allowance,
+native output8192 and300-second call ceiling. Other tools/credentials/external
+effects are not granted. This is a disposable acceptance profile, not deployment.
+
+## Executed evidence
+
+| Check | Actual result |
+|---|---|
+| Real callbacks / Wi-Fi | `MobileAttentionAcceptanceTest`, phase `threshold`:20 messages durably ACKed, Android procedure3.449s;21 event receipts included an OS group summary,20 logical message parts |
+| Initial native failure retained | First attempt made9 model turns but only read data: existing `prepare_only` excluded the prepare-effect `messages.process`. Pending decisions stayed pending. Fixed by normal task policy plus the exact standing read/prepare mandate; no global policy was weakened |
+| Native autonomous processing | The same20 originals were admitted under corrected configuration. Actual Broker calls: inbox, four process decisions, inbox. Two searchable notes,17 noise decisions and one ignored injection; all20 terminal |
+| Note quality | Confirmed dentist appointment27 Oct2026 11:30 Asia/Tomsk; friend's next-week invitation remained a proposal without agreed day/time. No external reply/booking/action |
+| Durable completion | Task Service independently verified completed input/run plus terminal decisions. Saved task result uses `mobile_batch_v1`, not owner attribution. One useful-result Web receipt; no per-message approvals |
+| Learned rule / new phone event | A new advertising notification matched the saved app/channel/literal rule and became noise without an additional autonomous task/model run;18 archived noise messages remained searchable |
+| Native archive search | A separate ordinary owner task independently selected `messages.search` and `memory.search`, returned the hidden WIFI57 promo with citations, confirmed the dentist record and preserved invitation uncertainty |
+| Owner controls | Actual owner HTTP disabled/re-enabled the noise rule. Attention view omitted rule text without explicit reveal |
+| Timer | Actual PostgreSQL boundary test:19 fresh messages do not wake;20 wake once, including concurrent observers/replay. One message at59 minutes waits; at61 minutes it wakes. On the live laptop/native-model stand, the real phone's single barber message was held below the gate, then its test queue `received_at` alone was set to61 minutes old. The normal observer admitted it and the real model/Broker saved the confirmed22 Oct2026 15:00 Asia/Tomsk appointment; Task Service verified completion. Original source/phone timestamps were unchanged. This controlled aging is not an actual one-hour wait or Doze test |
+| APK1.2.0 update / fixture repeat | Pairing, app filter and posting permission survived `adb install -r`. Two fresh advertising callbacks durably ACKed in2.533s and2.084s; another20-message phase ACKed in3.696s. Initial repeat timeouts were a fixture defect: fixed Android notification identity plus a13-digit timestamp redacted as a card number produced unchanged content, correctly deduplicated by the client. The fixture now uses a fresh notification tag and explicit stage/configuration assertions; privacy/deduplication remain unchanged |
+| Restart / continuation | Batches and decisions remain in PostgreSQL through actual local application restarts. Integration test checks a single continuation receipt for incomplete completed work, under the same task; unfinished decisions/uncompleted inputs cannot verify completion |
+| Privacy / deletion | Actual separate Broker process requires permanent dispatch/current claim/source pins. Remembered text is physically erased with its original. Shared original ingress attack corpus still calls no model when standing permission is absent |
+| Web | Vue typecheck and targeted lint passed; two Playwright tests passed, covering explicit reveal, noise-rule undo and proof-change clearing. These are routed synthetic API fixtures, not a claim of browser/live-Go integration |
+
+Current qualification is Wi-Fi only. The remaining original operational gates
+(24-hour unplugged battery/traffic/loss, long offline/reboot/Doze and external
+mobile route) remain as recorded in the ingress report and were not started.
+The source/PR is reviewable; neither issue closure nor production rollout follows
+from a successful test. Checksums and final CI/native receipts accompany the
+acceptance snapshot.
+
+Current Android artifacts are version1.2.0/code3. All15 JVM tests and lint passed;
+debug and operator-signed release builds passed. Current
+[SHA256 sums](fixtures/issue57/APK-SHA256SUMS) bind these artifacts. The original
+ingress acceptance's1.1.0 artifact hashes remain historical evidence.
+
+## Final snapshot and reproduction
+
+The content-free [attention receipt](fixtures/issue57/attention.json) records
+implementation390ef93b and repeatable Android fixture06028662 separately. The
+actual laptop Orchestrator was built with `-trimpath` from a fresh `git archive`
+of390ef93b, SHA256
+`afd683acd0ef20de6c3cf87af5865e9303754a1acae7ad3291658628fae476c8`.
+Fixture06028662 changes only instrumentation and this report; production
+Orchestrator/Android code is identical. The original checkout stayed clean at
+1f64fd78. The operator-signed release certificate SHA256 is
+`484c6616a713cf1447bb0588566e2acefc5d190e34f377439054a5d429b3513c`.
+
+After the APK1.2.0 repeat, known noise was excluded before admission. The three
+remaining synthetic parts were aged to61 minutes using the same explicit test
+control; a third native autonomous task processed them and independently
+verified completion. At the snapshot there were47 event receipts and45 logical
+messages:5 remembered,38 noise,2 ignored,0 pending. Five model runs completed;
+three autonomous tasks have `mobile_batch_v1` verified results and ready Web
+notifications. The obsolete first policy attempt and ordinary manual-search
+task remain unverified/active, rather than being falsely marked completed.
+Repeated dentist/invitation inputs have fresh notification identities and yield
+separate source-backed notes; no claim of semantic note deduplication is made.
+The debug listener was revoked after tests. The original app and its permissions
+were not changed. The local test containers remain available on the laptop;
+the acceptance stand has finite authority/budgets and collects no personal apps.
+
+Phone procedure (ADB automatically selects the sole attached device; do not
+publish its serial). Pair the debug app to the fresh stand first and include
+only its own package, then:
+
+```powershell
+# Build/install matching app and instrumentation APKs with the same debug signer.
+pwsh -NoProfile -File scripts/dev/mobile-build.ps1 -Test
+# From mobile/android, with the same repo-local Gradle cache:
+./gradlew.bat :app:assembleDebugAndroidTest
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb shell am instrument -w -e class com.example.MobileAttentionAcceptanceTest `
+  -e attention_phase threshold `
+  dev.butler.companion.debug.test/androidx.test.runner.AndroidJUnitRunner
+# Repeat with attention_phase=noise or hour. The fixture requires existing pairing.
+# Verify terminal messages, actual tools and mobile_batch_v1 independently on host.
+adb shell cmd notification disallow_listener `
+  dev.butler.companion.debug/com.example.service.ButlerNotificationListenerService
+```
+
+The six successful, synthetic-only phone logs are saved next to the JSON receipt
+as `attention-phone-*.log`. Native evidence uses actual PostgreSQL/Broker/model,
+not the routed Web fixtures. Server checks are reproducible from the Go job in
+[the workflow](../../.github/workflows/mobile.yml); additionally run
+`go test ./apps/orchestrator/internal/task -count=1`. All new mobile PG/Broker
+cases ran, including threshold/replay,59/61-minute boundaries, continuation and
+verification guards, archive/notes/noise and physical derived-text deletion.
+Some existing optional Go fixtures skip without their own external test setup;
+they are not counted as accepted behavior. Lint reported0 errors/60 warnings.
+
+[Implementation CI](https://github.com/alex123321-maker/butler/actions/runs/39133430089)
+passed all six jobs on390ef93b. The
+[final fixture CI](https://github.com/alex123321-maker/butler/actions/runs/39135051618)
+also passed all six jobs on06028662 and is recorded in the JSON snapshot.
+Each API31/33/35/36 emulator runs
+two smoke tests; four external live fixtures explicitly skip. Their skip is not
+evidence of phone capture, native model processing, offline or disconnect tests.

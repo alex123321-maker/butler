@@ -25,7 +25,8 @@ import (
 )
 
 // MemoryReads is the owning service boundary. The permanent Broker dispatch
-// supplies identity; model arguments can select only bounded exact DATA reads.
+// supplies identity. Reads select bounded DATA; the typed message processor
+// additionally saves source-backed notes and reversible attention rules.
 type MemoryReads struct {
 	pool         *pgxpool.Pool
 	sources      *catalog.Store
@@ -101,7 +102,7 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	if s == nil || err != nil || e.RunID == "" || e.ToolCallID == "" || e.EffectID == "" || e.ContractHash != s.hashes[e.Tool] {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
-	if s.adaptive == nil && (a.Strategy == "semantic_hybrid" || a.EventFrom != "" || a.EventUntil != "") {
+	if !readcontrol.IsMessageTool(e.Tool) && s.adaptive == nil && (a.Strategy == "semantic_hybrid" || a.EventFrom != "" || a.EventUntil != "") {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
 	if _, owner := owneridentity.FromContext(ctx); owner {
@@ -115,7 +116,11 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 		contract = factcontrol.Contract()
 	}
 	read := func(ctx context.Context, q admissionQuery, lock bool) (actionauth.Grant, error) {
-		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], contract.GetContractRevision(), actionauth.EffectRead, lock)
+		effect := actionauth.EffectRead
+		if e.Tool == readcontrol.MessageProcess {
+			effect = actionauth.EffectPrepare
+		}
+		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], contract.GetContractRevision(), effect, lock)
 	}
 	grant, err := read(ctx, s.pool, false)
 	if err != nil {
@@ -160,7 +165,7 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 			return readcontrol.Empty("denied"), err
 		}
 	}
-	if s.adaptive != nil {
+	if s.adaptive != nil && !readcontrol.IsMessageTool(e.Tool) {
 		// Check exact permanent dispatch before spending the conservative read
 		// reservation. No owning read transaction spans semantic IPC.
 		proof, err := s.pool.Begin(owned)
@@ -225,7 +230,9 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
 	var result readcontrol.Result
-	if facts != nil {
+	if readcontrol.IsMessageTool(e.Tool) {
+		result, err = s.messagesTx(owned, tx, e, a, grant.Binding.OwnerID, grant.Binding.TaskID)
+	} else if facts != nil {
 		result, err = s.readTemporalFactsTx(owned, tx, *facts, lessonEnvironment)
 	} else {
 		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
@@ -238,12 +245,12 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	// Repeat after all source/fragment lock waits; a result cannot outlive its
 	// exact task, input, lease, source ancestor or deletion watermark.
 	result.Diagnostics = append(result.Diagnostics, diagnostics...)
-	if s.temporal && facts == nil {
+	if s.temporal && facts == nil && !readcontrol.IsMessageTool(e.Tool) {
 		if err = s.enrichTemporalReadTx(owned, tx, &result); err != nil {
 			return readcontrol.Empty("denied"), err
 		}
 	}
-	if s.adaptive != nil {
+	if s.adaptive != nil && !readcontrol.IsMessageTool(e.Tool) {
 		if err = s.adaptive.ObserveTx(owned, tx, e, a, &result); err != nil {
 			return readcontrol.Empty("denied"), err
 		}

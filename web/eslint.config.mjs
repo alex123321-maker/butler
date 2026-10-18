@@ -16,6 +16,7 @@ const guardedFiles = [
   "pages/initiatives.vue",
   "pages/extensions.vue",
   "pages/memory.vue",
+  "pages/mobile.vue",
   "pages/voice.vue",
   "pages/tasks/**/*.vue",
   "pages/approvals.vue",

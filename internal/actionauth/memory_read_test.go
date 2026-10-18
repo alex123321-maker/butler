@@ -9,7 +9,7 @@ import (
 )
 
 func TestMemoryReadRequiresCurrentCompositionAndClaim(t *testing.T) {
-	for _, tool := range []string{readcontrol.Search, readcontrol.Open, readcontrol.Neighbors} {
+	for _, tool := range []string{readcontrol.Search, readcontrol.Open, readcontrol.Neighbors, readcontrol.MessageInbox, readcontrol.MessageSearch, readcontrol.MessageProcess} {
 		s, _, c, _, call, _ := fixture(t)
 		call.ToolName = tool
 		call.ArgsJson = `{"query":"source"}`
@@ -19,7 +19,11 @@ func TestMemoryReadRequiresCurrentCompositionAndClaim(t *testing.T) {
 		}
 		c.current.MemoryReadReady = true
 		p, err := s.Prepare(context.Background(), call, readcontrol.Contract(tool))
-		if err != nil || p.Binding.Effect != EffectRead {
+		effect := EffectRead
+		if tool == readcontrol.MessageProcess {
+			effect = EffectPrepare
+		}
+		if err != nil || p.Binding.Effect != effect {
 			t.Fatal("memory read changed effect/failed", err)
 		}
 		c.approved = ApprovalSnapshot{ApprovalID: "approval", Status: "approved", Binding: p.Binding, ExpiresAt: s.now().Add(time.Minute), ResolvedAt: s.now()}

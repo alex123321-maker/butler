@@ -1,5 +1,14 @@
 # Versioned memory sources and privacy
 
+Android [notification ingress](android-companion.md) atomically publishes private
+original sources with content-free receipts. Standing owner-configured mobile
+automation activates originals without per-message review; otherwise originals
+remain quarantined. Normal initiative/goal/mandate/budget admission processes
+20 new messages or an hour of pending messages. Notes and reversible noise
+rules are source-dependent DATA derivatives, not owner-confirmed facts.
+Deletion and retention use the same external manifest; redelivery retains the
+receipt and cannot rehydrate source text.
+
 Migration079 extends source/run privacy to primary Transcript tool caches and
 copied approval payloads. An irreversible content-free run marker is committed
 with erasure; late tool publication and payload rewrites cannot resurrect it.

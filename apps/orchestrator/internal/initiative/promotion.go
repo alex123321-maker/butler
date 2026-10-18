@@ -120,7 +120,7 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	if err = tx.QueryRow(ctx, `SELECT admitted_tasks FROM initiative_attention_days WHERE owner_id=$1 AND day=$2 FOR UPDATE`, ownerID, day).Scan(&attentionUsed); err != nil {
 		return c, err
 	}
-	if attentionUsed >= 20 {
+	if attentionUsed >= 20 && source.ObserverKind != "mobile_inbox" {
 		return finish("deferred", "attention_budget_exhausted", day.Add(24*time.Hour))
 	}
 	a, err := p.Goals.CheckAdmissionTx(ctx, tx, goal.AdmissionRequest{OwnerID: ownerID, GoalID: source.GoalID, MandateID: source.MandateID, Purpose: source.Purpose, ObservationRef: c.ObservationRef, InitiativeReason: "Useful condition observed for configured project " + source.ProjectRef}, now)
@@ -184,11 +184,17 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	if !now.UTC().Truncate(24 * time.Hour).Equal(day) {
 		return finish("deferred", "admission_day_changed", now)
 	}
-	record, err := p.Tasks.CreateTx(ctx, tx, task.CreateRequest{Authority: &a, ResultDelivery: source.ResultDelivery, InitialExecutionPolicy: source.ExecutionPolicy, SessionKey: source.SessionKey, OwnerID: ownerID, Goal: source.TaskGoal, Source: map[string]any{"type": "initiative", "initiative_id": c.ID, "observation_ref": c.ObservationRef, "project_ref": source.ProjectRef, "project_revision": source.ProjectRevision}, CompletionCriteria: source.CompletionCriteria})
+	taskSource := map[string]any{"type": "initiative", "initiative_id": c.ID, "observation_ref": c.ObservationRef, "project_ref": source.ProjectRef, "project_revision": source.ProjectRevision}
+	taskGoal := source.TaskGoal
+	if source.ObserverKind == "mobile_inbox" {
+		taskSource["mobile_batch_id"] = latest.ConditionDigest
+		taskGoal = MobileTaskGoal + " Часовой пояс владельца: " + source.TimeZone
+	}
+	record, err := p.Tasks.CreateTx(ctx, tx, task.CreateRequest{Authority: &a, ResultDelivery: source.ResultDelivery, InitialExecutionPolicy: source.ExecutionPolicy, SessionKey: source.SessionKey, OwnerID: ownerID, Goal: taskGoal, Source: taskSource, CompletionCriteria: source.CompletionCriteria})
 	if err != nil {
 		return c, err
 	}
-	payload, _ := json.Marshal(map[string]any{"user_id": ownerID, "task_id": record.TaskID, "text": source.TaskGoal, "initiative_id": c.ID, "observation_ref": c.ObservationRef})
+	payload, _ := json.Marshal(map[string]any{"user_id": ownerID, "task_id": record.TaskID, "text": taskGoal, "initiative_id": c.ID, "observation_ref": c.ObservationRef})
 	event := ingress.InputEvent{EventID: c.ID, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_SCHEDULED_INTERNAL_EVENT, SessionKey: source.SessionKey, Source: "initiative", PayloadJSON: string(payload), CreatedAt: now, IdempotencyKey: c.ID}
 	receipt, created, err := p.Inputs.AcceptTx(ctx, tx, event, ownerID, record.TaskID)
 	if err != nil {
@@ -204,7 +210,11 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	if _, err = tx.Exec(ctx, `UPDATE initiative_sources SET last_promoted_at=$2 WHERE source_id=$1`, source.ID, now); err != nil {
 		return c, err
 	}
-	if _, err = tx.Exec(ctx, `UPDATE initiative_attention_days SET admitted_tasks=admitted_tasks+1 WHERE owner_id=$1 AND day=$2`, ownerID, day); err != nil {
+	attentionCost := 1
+	if source.ObserverKind == "mobile_inbox" {
+		attentionCost = 0
+	}
+	if _, err = tx.Exec(ctx, `UPDATE initiative_attention_days SET admitted_tasks=admitted_tasks+$3 WHERE owner_id=$1 AND day=$2`, ownerID, day, attentionCost); err != nil {
 		return c, err
 	}
 	return c, tx.Commit(ctx)

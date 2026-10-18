@@ -1,5 +1,14 @@
 # Persistent task and bounded delegation ownership
 
+`mobile_verification.go` is the fixed `mobile_batch_v1` processing verifier for
+actual initiative-admitted Android batches. It requires the completed owning
+input/run/final result, current goal/mandate and source revision, a finished batch
+and terminal decisions with current catalog derivatives. It verifies durable
+processing, not semantic truth of model notes. It cannot run as an owner actor
+or a model-supplied verdict. Notes may create a standard verified-task notice
+through a private typed evidence seam; noise-only batches do not notify.
+Ordinary owner verification retains owner-proof requirements and attribution.
+
 `OwnerOverview` is an authenticated read-only repeatable-read projection of task
 authority, initiative, direct children, typed action effects and shared root
 budgets. It excludes source/argument bodies and keeps verified completion,

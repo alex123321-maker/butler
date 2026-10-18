@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cleartext HTTP is permitted at the OS socket layer only so the app's own
+         TransportPolicyValidator can enforce HTTPS for external hosts while allowing
+         opt-in local LAN (192.168.x.x / 10.x.x.x) or Tailscale (100.64.0.0/10) debug mode. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

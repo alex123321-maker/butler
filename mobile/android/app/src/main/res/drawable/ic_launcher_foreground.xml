@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Shield Silhouette -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M54,22L28,33.5V52.5C28,69.8 39.1,85.9 54,90C68.9,85.9 80,69.8 80,52.5V33.5L54,22ZM54,30.2L72,38.2V52.5C72,65.5 64.3,77.7 54,81.5C43.7,77.7 36,65.5 36,52.5V38.2L54,30.2Z" />
+    <!-- Notification Bell & Pulse Core inside Shield -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,37C51.8,37 50,38.8 50,41V42.2C45.4,43.8 42,48.2 42,53.5V61L38,65V67H70V65L66,61V53.5C66,48.2 62.6,43.8 58,42.2V41C58,38.8 56.2,37 54,37ZM50,70C50,72.2 51.8,74 54,74C56.2,74 58,72.2 58,70H50Z" />
+    <!-- Encrypted Lock Dot Accent -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M54,49A5,5 0 1,1 54,59A5,5 0 1,1 54,49Z" />
+</vector>

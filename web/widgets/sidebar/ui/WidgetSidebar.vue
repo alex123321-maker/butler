@@ -60,6 +60,7 @@ const workspaceItems = [
   { path: '/approvals', label: 'Approvals', icon: 'A' },
   { path: '/artifacts', label: 'Results', icon: 'R' },
   { path: '/memory', label: 'Memory', icon: 'M' },
+  { path: '/mobile', label: 'Android devices', icon: 'P' },
   { path: '/extensions', label: 'Extensions', icon: 'E' },
   { path: '/skills', label: 'Skills', icon: 'K' },
   { path: '/converters', label: 'Converters', icon: 'C' },

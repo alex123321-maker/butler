@@ -192,7 +192,7 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
-	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || isMemoryRead(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "workspace.") {
+	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || isMemoryRead(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "workspace.") {
 		if len(context.InputClaimHash) != 64 {
 			return ActionBinding{}, "", fmt.Errorf("current owning input claim required")
 		}
@@ -351,9 +351,9 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
-	case "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts":
+	case "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox":
 		return EffectRead
-	case "workspace.create", "workspace.write":
+	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare
 	case "http.request":
 		method, _ := args["method"].(string)

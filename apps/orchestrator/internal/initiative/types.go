@@ -62,7 +62,7 @@ func (s Source) Validate() error {
 	if s.DigestChannel != "" && s.DigestChannel != "web" && s.DigestChannel != "telegram" {
 		return ErrInvalid
 	}
-	if s.ObserverKind != "" && s.ObserverKind != "task_project" && s.ObserverKind != "broker_project" {
+	if s.ObserverKind != "" && s.ObserverKind != "task_project" && s.ObserverKind != "broker_project" && s.ObserverKind != "mobile_inbox" {
 		return ErrInvalid
 	}
 	if (s.ObserverKind != "" && !digest.MatchString(s.ProjectRevision)) || (s.ProjectRevision != "" && !digest.MatchString(s.ProjectRevision)) {
@@ -97,7 +97,7 @@ func (s Source) Validate() error {
 		}
 		seen[criterion] = true
 	}
-	if s.ActiveStart < 0 || s.ActiveStart > 23 || s.ActiveEnd < 0 || s.ActiveEnd > 23 || s.ActiveStart == s.ActiveEnd ||
+	if s.ActiveStart < 0 || s.ActiveStart > 23 || s.ActiveEnd < 0 || s.ActiveEnd > 23 || (s.ActiveStart == s.ActiveEnd && s.ObserverKind != "mobile_inbox") ||
 		s.FailureThreshold < 1 || s.FailureThreshold > 100 || s.ConfidenceThreshold < 1 || s.ConfidenceThreshold > 100 || s.MinimumImportance < 0 || s.MinimumImportance > 100 ||
 		s.CooldownSeconds < 60 || s.CooldownSeconds > 7*24*3600 {
 		return ErrInvalid
@@ -175,6 +175,9 @@ func (e Event) fingerprint(s Source) string {
 }
 
 func active(s Source, at time.Time) bool {
+	if s.ObserverKind == "mobile_inbox" && s.ActiveStart == s.ActiveEnd {
+		return true
+	}
 	loc, _ := time.LoadLocation(s.TimeZone)
 	hour := at.In(loc).Hour()
 	if s.ActiveStart < s.ActiveEnd {
