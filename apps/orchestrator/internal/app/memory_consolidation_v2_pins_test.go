@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,6 +22,7 @@ type consolidationV2Pins struct {
 	Day                                                                 string
 	Deadline, Expires                                                   time.Time
 	LogicalSlots, MaxNativeEntries, MaxReads, OutputTokens, ModelMillis int
+	ForegroundSourceMillis                                              int
 }
 
 func consolidationV2Contracts() (map[string]string, error) {
@@ -52,6 +54,10 @@ func TestConsolidationV2WritePins(t *testing.T) {
 		t.Fatal("validated current successor required", err)
 	}
 	p := consolidationV2Pins{Revision: os.Getenv("BUTLER_CONSOLIDATION_SOURCE_REVISION"), Schema: h.Successor.Schema, Model: "gemini-3.8-flash-high", History: h.Hash, Day: h.ProspectiveDay, Deadline: h.ProspectiveDeadline, Expires: time.Now().UTC().Add(6 * time.Hour), LogicalSlots: 9, MaxNativeEntries: 99, MaxReads: 96, OutputTokens: 32768, ModelMillis: 300000}
+	p.ForegroundSourceMillis = int(flow.DefaultMemorySourceCheckTimeout.Milliseconds())
+	if p.ForegroundSourceMillis != 2000 {
+		t.Fatal("reviewed prospective foreground source bound differs")
+	}
 	if len(p.Revision) != 40 {
 		t.Fatal("exact committed source revision required")
 	}
@@ -96,6 +102,9 @@ func consolidationV2CheckPins(proof string) error {
 	var p consolidationV2Pins
 	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Revision) != 40 || !consolidationSuccessorSchema(p.Schema) || p.Model != "gemini-3.8-flash-high" || p.LogicalSlots != 9 || p.MaxNativeEntries != 99 || p.MaxReads != 96 || p.OutputTokens != 32768 || p.ModelMillis != 300000 || p.Day != time.Now().UTC().Format("2006-01-02") || !time.Now().Before(p.Expires) || p.Expires.After(p.Deadline) || !time.Now().Before(p.Deadline) {
 		return errors.New("frozen successor window/profile differs")
+	}
+	if p.ForegroundSourceMillis != 2000 || int64(p.ForegroundSourceMillis) != flow.DefaultMemorySourceCheckTimeout.Milliseconds() {
+		return errors.New("frozen foreground source verification bound differs")
 	}
 	contracts, err := consolidationV2Contracts()
 	if err != nil {

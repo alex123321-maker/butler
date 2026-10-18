@@ -13,6 +13,12 @@ entries per foreground input:99 native entries and96 Broker reads maximum.
 The current typed task, UNKNOWN effect, current owner preference, complete
 original graph grants and general production read contracts are identical
 between the paired arms. There is no new routing prompt or answer hint.
+The prospective common Core source includes the separately authorized foreground
+verification ceiling2s from `53d68390`; an explicit trusted200ms..2s bound and an
+earlier parent deadline still win. Every DATA/proposal/final stays held until its
+fresh proof passes. Background200ms and ownership750ms bounds are unchanged.
+The successor pins record the foreground2000ms ceiling explicitly. This does not
+change or reclassify either earlier closed cohort's original source and outcomes.
 
 ## Complete original history
 
