@@ -189,3 +189,29 @@ all100 completed. There is no general p95 claim from the single cold observation
 and no cache-speedup inference from unlike concurrency. Database read/hit
 counters, complete ledgers, resource samples and exact restart receipts survive
 failure. This separate slice does not replace the mixed workload or any miss.
+
+### Fresh mixed-v5 and shared-buffer-cold-v2 resource contracts
+
+Mixed-v4 failed at its frozen target: warm p952138.730 ms with98/100 completions,
+mixed p952619.542 ms with96/100 completions, one typed restore denial and three
+unproven errors. Its actual client2-CPU cgroup retained only22417 throttled µs,
+whereas the1-CPU PostgreSQL cgroup retained22786769 throttled µs/400 throttled
+periods. This justifies testing a new resource profile; it does not prove the
+cause of any individual cancelled request. Older clock/contention conditions
+are not reconstructed from these later counters.
+
+Before either new collection, PostgreSQL is now fixed at2 CPUs/1 GiB and the
+client at2 CPUs/2 GiB, with race detection, the same1500/5000 ms targets,221
+full-window queries, two readers and unchanged availability/typed-denial bounds.
+The stale summary may return the actual typed Catalog denial rather than only
+jobs.ErrClaim: its terminal authority/source-denied row and exactly one original
+NULL reservation remain required before the fresh explicit one-call policy.
+Fixed private Core cancellation enums and type/sentinel chains are retained
+prospectively; arbitrary provider/storage error messages remain excluded.
+
+The earlier unexecuted shared-buffer-cold-v1 recipe at2+1 CPUs is withdrawn.
+The separate shared-buffer-cold-v2 slice uses this2+2 profile and its already
+declared122-query/cold/warm bounds. It runs only after the complete mixed-v5
+window has ended and cleaned up, without overlapping another owned capacity
+profile. All1-CPU and2+1-CPU misses stay in the report. A failing new collection
+is not repeated unchanged until it happens to pass.
