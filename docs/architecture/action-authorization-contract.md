@@ -8,6 +8,15 @@ journal/grant/lease and retains finite occurrence/expiry bounds. Service proof,
 child output and the saved schedule grant no future effect authority. See
 [agent schedules](agent-schedules.md).
 
+Enabled schedule controls are standard for ordinary owner-goal work: omitting
+them from the mandate's runtime tool/resource lists does not hide or deny them.
+The exact owning contract hash, local resource, no credentials and read/prepare
+effect are required. Explicit denies and existing mandate effect, identity,
+revision, purpose, hours and expiry checks remain in catalog/authorization/claim.
+This is a fixed kernel policy, not a model-authored grant or new future budget.
+Unassigned conversation mutations still require exact approval; delegated
+permission subsets and scheduled-occurrence mutation fences are unchanged.
+
 Canonical workspace DATA tools require current owning workspace readiness and
 the original accepted-input claim pinned privately to the grant. Their immutable
 operation/body/path/file snapshot and source context are joined to shared budget

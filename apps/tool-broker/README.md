@@ -7,6 +7,9 @@ Orchestrator `/internal/schedules`, using existing private service authenticatio
 exact grants, input claims and shared budgets. No credential values or owner IDs
 are model arguments. Enable the matching Orchestrator flag and migration085;
 see the [implemented contract](../../docs/architecture/agent-schedules.md).
+Enabled controls are standard in ordinary owner-goal work even when omitted from
+the mandate's runtime tool/resource lists. Exact owning contracts and explicit
+denials/effect/authority/approval limits remain required; no test grant is needed.
 
 The optional `memory.facts` contract revision4 separates explicit validity expiry
 from verification deadlines. It preserves the bounded input/output schema and

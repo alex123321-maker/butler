@@ -30,6 +30,20 @@ Private service authentication alone cannot create a job. Responses and errors
 contain no private token or reusable execution authority. The fixed operator
 endpoint disables ambient proxies and redirects and bounds time and body sizes.
 
+When enabled, the five fixed schedule controls are standard kernel capabilities
+in every ordinary conversation and owner-goal task, independent of session name,
+channel, model or whether they were listed in a mandate's `tools`/resource scopes.
+Existing and future owner-goal mandates use this same policy; no separate schedule
+mandate, test session or database rewrite is required. Only exact owning contract
+hashes, credential-free `tool:schedule.<operation>` resources and declared read/
+prepare effects qualify. Explicit tool/resource denies, mandate effects, purpose,
+revision, active hours, expiry and autonomy/approval checks still apply.
+This standard capability does not add runtime tools, budget or external-action
+permission to future work. A conversation without an assigned mandate still needs
+exact owner approval for mutations. Legacy task-specific mandates and delegated
+executor subsets keep their exact permissions; due occurrences cannot perpetuate
+themselves through new schedules.
+
 | Tool | Model arguments |
 |---|---|
 | `schedule.create` | `{job}` |
@@ -57,7 +71,8 @@ instructions/criteria; get opens one job. Recognized raw credential material is
 refused before persistence.
 
 Creation requires an actual exact owner-approved action or a current assigned
-owner-goal mandate permitting scheduling and initiative. An exactly approved
+owner-goal mandate permitting preparation and initiative. Standard schedule
+controls do not need separate per-mandate tool/resource entries. An exactly approved
 future job may use that existing assignment without enabling general initiative.
 Without a broad assignment, exact approval authorizes only this finite schedule;
 future tools retain ordinary autonomy/approval and credential policy. An approved

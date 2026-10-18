@@ -58,7 +58,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			return nil, actionauth.ErrOwnerAuthority
 		}
 		allowed = map[string]bool{}
-		for _, name := range m.Tools {
+		for _, name := range actionauth.EffectiveMandateTools(m) {
 			allowed[name] = true
 		}
 	}
