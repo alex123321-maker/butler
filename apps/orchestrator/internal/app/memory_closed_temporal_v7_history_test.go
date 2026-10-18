@@ -149,6 +149,7 @@ func closedTemporalV7Inventory(raw, prior []byte, previous *temporalV5History, r
 // validated seven-store inventory. The one added V7 schema is corroborated
 // against its full original ledger, not removed by an unchecked schema name.
 func closedTemporalV7AllOwners(raw, oldRaw, ledgerRaw []byte) error {
+	ledgerRaw = temporalEmptyOriginalAggregates(ledgerRaw, "entries", "foreground")
 	var now, old map[string]json.RawMessage
 	var dbs []map[string]json.RawMessage
 	var ledger map[string]json.RawMessage
@@ -178,18 +179,9 @@ func closedTemporalV7AllOwners(raw, oldRaw, ledgerRaw []byte) error {
 					return errors.New("all-owner V7 full record differs from original ledger")
 				}
 			}
-			if consolidationV2ProductWitness(w["foreground"], ledger["foreground"], false) != nil {
-				return errors.New("all-owner V7 products differ from original ledger")
-			}
-			projected, ok := temporalWitnessRecords(w["foreground"], "operation_id")
-			original, ok2 := temporalWitnessRecords(ledger["foreground"], "operation_id")
-			if !ok || !ok2 {
-				return errors.New("all-owner V7 product run identities unavailable")
-			}
-			for id, row := range projected {
-				if !temporalObjectProjection(row, original[id], "run_id") {
-					return errors.New("all-owner V7 product run differs")
-				}
+			keys := append(append([]string{}, temporalForegroundWitnessKeys...), "run_id")
+			if !temporalWitnessProjection(w["foreground"], ledger["foreground"], "operation_id", keys...) {
+				return errors.New("all-owner V7 product/run nullable fields differ from original ledger")
 			}
 			var native []map[string]json.RawMessage
 			var originals []map[string]json.RawMessage
