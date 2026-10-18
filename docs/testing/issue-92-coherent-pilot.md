@@ -167,6 +167,17 @@ the client start, and its PostgreSQL readiness check accepted the temporary
 initialization server. The driver now waits for the actual client and final
 TCP PostgreSQL listener before running its unchanged mandatory phases.
 
+The separate port-ownership correction keeps all four declared runtime sockets
+reserved while fixture servers allocate their listeners, releasing only the
+specific child's sockets immediately before process start and reclaiming the
+same addresses on stop. The deterministic old-allocator overlay fails; the
+corrected actual runtime restart window-v39 passes9 events with no failures or
+skips, race and vet. Its evidence-list SHA256 is
+`262c40609abbea9036676a907e37145d08f830c6f3306d8ad01491bb8dc90b1d`.
+The full lifecycle driver now also requires that port control, the enabled
+dependency matrix and both temporal contract controls. Addresses and readiness
+deadlines remain the same; a full fresh-window run is still required.
+
 The lifecycle driver coordinates a real custom dump while that same test and
 database remain live. It fsyncs the dump before allowing owner deletion, restores
 that exact backup into a fresh empty database, and signals the owning test to
