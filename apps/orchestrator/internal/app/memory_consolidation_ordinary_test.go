@@ -412,6 +412,11 @@ func runConsolidationOrdinaryTaskReadsActivatedDATA(t *testing.T, beforeGenerati
 		t.Fatal(err)
 	}
 	q := consolidation.PrepareRequest{ViewKey: "ordinary", Sources: refs, ClaimIDs: []string{claim.ID}, Policy: jobs.ModelPolicyRequest{ID: "ordinary-prepared", Handler: consolidation.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Contexts: []jobs.ModelContextRef{{SessionKey: "source1", OriginalRunID: "past1"}, {SessionKey: "source2", OriginalRunID: "past2"}}, Job: jobs.Request{Allowance: budget.Units{ModelTurns: 1, Tokens: 200000, ActiveMillis: 20000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}}
+	if len(beforeGeneration) > 0 {
+		// The contention control admits one cancelled call and one separately
+		// charged generation. Fix the finite policy before owner preparation.
+		q.Policy.Job.Allowance = budget.Units{ModelTurns: 2, Tokens: 400000, ActiveMillis: 40000, ProviderInputBytes: 2 * 8388608}
+	}
 	if _, err := store.Prepare(owner, q); err != nil {
 		t.Fatal(err)
 	}

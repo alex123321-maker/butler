@@ -61,7 +61,33 @@ func (p *capacityPriorityProvider) StartRun(ctx context.Context, request transpo
 	return nativeScriptedStream(transport.NewAssistantFinalEvent(request.Context.RunID, p.Name(), transport.AssistantFinal{Content: "4", FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 80, OutputTokens: 1, TotalTokens: 81}})), nil
 }
 
-func capacityForegroundPreemptsConsumer(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b *budget.Controller, worker *jobs.ModelWorker, broker *tools.BrokerClient, label string) {
+type capacityPriorityObservation struct {
+	pool                  *pgxpool.Pool
+	job, operation, label string
+	before                json.RawMessage
+}
+
+func (o capacityPriorityObservation) checkResumed(t *testing.T) {
+	t.Helper()
+	var state string
+	var attempts, known, unknown int
+	var retained json.RawMessage
+	// The parent fixture cancels its own context when it returns, so use a
+	// separately bounded read-only observation before its test cleanup runs.
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := o.pool.QueryRow(ctx, `SELECT j.status,j.attempts,(SELECT count(*) FROM memory_model_attempts WHERE job_id=j.job_id AND usage IS NOT NULL),(SELECT count(*) FROM memory_model_attempts WHERE job_id=j.job_id AND usage IS NULL),(SELECT to_jsonb(a) FROM memory_model_attempts a WHERE operation_id=$2) FROM memory_aux_jobs j WHERE job_id=$1`, o.job, o.operation).Scan(&state, &attempts, &known, &unknown, &retained); err != nil || state != "done" || attempts != 2 || known != 1 || unknown != 1 || string(retained) != string(o.before) {
+		t.Fatal("consumer retry changed the original unknown attempt or lacked separate charged completion", state, attempts, known, unknown, err)
+	}
+	if report := os.Getenv("BUTLER_MEMORY_CAPACITY_BACKGROUND_REPORT"); report != "" {
+		raw, _ := json.Marshal(map[string]any{"job_id": o.job, "state": state, "attempts": attempts, "known": known, "unknown": unknown, "original_attempt_unchanged": true})
+		if err := os.WriteFile(filepath.Join(report, o.label+"-resumed.json"), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func capacityForegroundPreemptsConsumer(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b *budget.Controller, worker *jobs.ModelWorker, broker *tools.BrokerClient, label string) capacityPriorityObservation {
 	t.Helper()
 	base := worker.Provider
 	input, output := base.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
@@ -153,23 +179,28 @@ func capacityForegroundPreemptsConsumer(t *testing.T, ctx context.Context, pool 
 	if _, err := pool.Exec(ctx, `UPDATE memory_aux_jobs SET next_attempt_at=clock_timestamp() WHERE job_id=$1 AND status='pending'`, job); err != nil {
 		t.Fatal(err)
 	}
+	return capacityPriorityObservation{pool: pool, job: job, operation: request.Context.RunID, label: label, before: before}
 }
 
 func TestMemoryCapacityForegroundDuringCompactionIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_MEMORY_CAPACITY_BACKGROUND") != "1" {
 		t.Skip("explicit shared ordinary foreground/background consumer proof required")
 	}
+	var observation capacityPriorityObservation
 	runMemoryCoherentPilotOrdinaryTimeline(t, nil, func(p *coherentPilot, worker *jobs.ModelWorker) {
-		capacityForegroundPreemptsConsumer(t, p.ctx, p.pool, p.cat, p.b, worker, p.broker, "compaction")
+		observation = capacityForegroundPreemptsConsumer(t, p.ctx, p.pool, p.cat, p.b, worker, p.broker, "compaction")
 		p.record("ordinary_foreground_preempts_real_compaction_with_retained_unknown_charge", nil, map[string]any{"provider_controlled": true})
 	})
+	observation.checkResumed(t)
 }
 
 func TestMemoryCapacityForegroundDuringConsolidationIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_MEMORY_CAPACITY_BACKGROUND") != "1" {
 		t.Skip("explicit shared ordinary foreground/background consumer proof required")
 	}
+	var observation capacityPriorityObservation
 	runConsolidationOrdinaryTaskReadsActivatedDATA(t, func(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b *budget.Controller, worker *jobs.ModelWorker, broker *tools.BrokerClient) {
-		capacityForegroundPreemptsConsumer(t, ctx, pool, cat, b, worker, broker, "consolidation")
+		observation = capacityForegroundPreemptsConsumer(t, ctx, pool, cat, b, worker, broker, "consolidation")
 	})
+	observation.checkResumed(t)
 }

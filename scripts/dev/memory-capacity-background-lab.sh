@@ -11,9 +11,12 @@ find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha2
 network=butler-issue92-$label-priority-net; pg=butler-issue92-$label-priority-pg
 created_pg=false; created_net=false
 cleanup(){
- $created_pg && docker logs "$pg" > "$proof/postgres.log" 2>&1 || true
- $created_pg && docker rm -f "$pg" >/dev/null 2>&1 || true
- $created_net && docker network rm "$network" >/dev/null 2>&1 || true
+ if $created_pg; then
+  docker logs "$pg" > "$proof/postgres.log" 2>&1 || true
+  docker rm -f "$pg" >/dev/null 2>&1 || true
+  created_pg=false
+ fi
+ if $created_net; then docker network rm "$network" >/dev/null 2>&1 || true; created_net=false; fi
 }
 trap cleanup EXIT INT TERM
 docker network create --internal --subnet 10.237.196.0/24 "$network" > "$proof/network-id"; created_net=true
@@ -30,6 +33,7 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
  -e BUTLER_MEMORY_COHERENT_PROOF=/proof/coherent
  golang:1.27.2-bookworm)
 "${runner[@]}" bash -eu -c 'go build -o /cache/tool-broker-background ./apps/tool-broker; go test -json -race -p 1 -count=1 -timeout 8m -run "^TestMemoryCapacityForegroundDuring(Compaction|Consolidation)Integration$" ./apps/orchestrator/internal/app > /proof/tests.jsonl; go vet ./apps/orchestrator/internal/app > /proof/vet.log' > "$proof/runner.log" 2>&1
+cleanup
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 if grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/tests.jsonl"; then exit 1; fi
 for name in Compaction Consolidation; do
@@ -37,7 +41,8 @@ for name in Compaction Consolidation; do
 done
 for name in compaction consolidation; do
  jq -e '.controlled_provider and .native_calls==0 and .foreground_millis<=5000 and .foreground_answer=="4" and .quote==.charged and .retained_attempt.usage==null and .foreground_input.status=="completed"' "$proof/$name.json" >/dev/null
+ jq -e '.state=="done" and .attempts==2 and .known==1 and .unknown==1 and .original_attempt_unchanged' "$proof/$name-resumed.json" >/dev/null
 done
-sha256sum "$proof/source.sha256" "$proof/tests.jsonl" "$proof/compaction.json" "$proof/consolidation.json" "$proof/coherent/timeline.json" "$proof/vet.log" > "$proof/evidence.sha256"
+sha256sum "$proof/source.sha256" "$proof/tests.jsonl" "$proof/compaction.json" "$proof/consolidation.json" "$proof/compaction-resumed.json" "$proof/consolidation-resumed.json" "$proof/coherent/timeline.json" "$proof/vet.log" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 printf 'Two controlled ordinary foreground/consumer contention slices passed. Native calls0.\n'
