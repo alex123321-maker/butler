@@ -442,12 +442,12 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
 	  continue
 	}
-    "^(apps/orchestrator/internal/orchestrator/memory_source_guard.*[.]go$|internal/budget/continuation[.]go$)" {
+    "^(apps/orchestrator/internal/orchestrator/memory_source_(guard|compound).*[.]go$|internal/budget/continuation[.]go$)" {
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
-      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests")
+      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests; memory-experience-lab.sh isolated issue90 root fresh-label bound proves default2s and explicit trusted bounds with held final/tool/batch DATA, current post-wait proof and unchanged parent cancellation")
       continue
     }
     "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[2345]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
