@@ -217,3 +217,23 @@ controls. Namespace consumption remains tested only in its dedicated disposable
 PostgreSQL. The new consolidation history retains all73 current-owner native
 attempts including the unknown entry; the separate adaptive population is not
 rebilled into that carry.
+`composition-v6` retained459 passed test/subtest events,0 failed and1 skipped.
+It is rejected as a complete composition receipt: the mandatory
+`TestTemporalV5FrozenHistoryWitnessesRejectUsageForgery` had no immutable-history
+mount. The driver reached no final vet/completion receipt after that skip. No
+native calls or auth were involved, and the old stream is not rewritten.
+
+Driver revision `e09638dd` requires an explicit immutable history path plus its
+reviewed SHA256, mounts it read-only, records every fixture-file checksum and
+checks them again after the suite. Fresh `composition-v7` uses original
+`issue88-20261016/reports/native-v5-r5/history`, manifest SHA256
+`50bcbf547df876cd92c36571336dd8a558bbf688bec5c81729144146c39b50d4`.
+The same original manifest is independently loaded positively through the
+consolidation-v3 recursive-history preparation; the four altered-usage cases are
+therefore tested against a validated original. The new full result is pending.
+
+To reproduce the current combined driver, set
+`BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY` to that operator-reviewed history directory
+and `BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY_SHA256` to its exact manifest hash before
+calling `memory-composition-lab.sh ROOT FRESH_LABEL`. This fixture contains original
+bounded ledger/history JSON, with no cloud-auth mount or inference permission.
