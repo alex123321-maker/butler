@@ -39,7 +39,7 @@ outage retains a NULL usage row and conservative reservation while typed UNKNOWN
 survives. A closed owning catalog PostgreSQL pool denies a new ordinary input
 before provider release; this is a source-pool unavailability control, not a
 claim that the host PostgreSQL server was stopped. Actual ENOSPC, custom restore,
-verified experience, consolidation and late source withdrawal remain separately
+verified experience and consolidation remain separately
 required and are not implied by this partial pilot.
 
 `scripts/dev/memory-coherent-pilot-lab.sh` uses ssh laba, cached Linux Go1.27.2,
@@ -82,3 +82,25 @@ uses40 repeated observations per primary turn rather than80, retaining all five
 turns and every mandatory tail item. V3 reached compaction/restart but its fixture
 incorrectly demanded a Go error for a valid typed `budget_model_turns_task` block.
 V4 asserts that exact durable block and zero additional provider entries.
+
+## Late withdrawal on the same timeline
+
+`coherent-privacy-v1`, source `c803dd0e`, runs all15 earlier checkpoints and then
+starts another ordinary read on that same database/owner/accepted source. Its
+controlled provider receives the actual accepted preference before the owner
+deletes the original, immediately before final release. The attempted private
+answer is blocked. Earlier actual Broker tool-result copies, final/message
+copies and covered summaries disappear. The complete effect/evidence digest
+stays unchanged and the new admitted foreground attempt retains its known usage.
+
+This actual PostgreSQL/compiled-Broker/race run passed one mandatory test,
+zero failures/skips,5.53s and16 sequential checkpoints. Native calls and auth
+imports are0. Reports are retained at
+`/srv/storage/butler/agents/issue92-20261018/reports/coherent-privacy-v1`.
+The events hash is
+`e1bf4cbd837f34612dfcd82fc4305a898be3209ff7fefc9de7f7f86ca1c63064`;
+`timeline/timeline-withdrawn.json` has SHA256
+`dfd03aa9681eb54ed94fdb7419f42f551560bd1b46671e8ea1b0bd2782fea424`.
+The driver seals the base trace and withdrawal extension separately. This
+controlled path does not imply a verified episode/consolidation or actual
+custom restore/ENOSPC in the same timeline, or a native answer-quality pass.

@@ -19,11 +19,15 @@ The original versioned windows and their failures remain retained separately.
 |c0a1450a / ancestry-facts-v3|19 test/subtest events passed,0 failed/skipped; race/vet passed|Adds the actual Broker temporal-facts path through an accepted derived lesson with its current environment proof|
 |470765fa / privacy-v2|4 mandatory tests passed,0 failed/skipped; race/vet passed|Includes refusal to downgrade079 after a durable run payload erasure marker and retained denial of late raw cache restoration|
 |08ca8456 / temporal-context-v2|6 mandatory tests passed,0 failed/skipped; race/vet passed|Accepted profile and exact/semantic episode expiry survive disabling annotations; actual facts Broker retains fresh versus unknown verification basis. Controlled interpretation contract2, not native answer-quality acceptance|
+|7294d7ef / composition-v4|237 test/subtest events passed,0 failed/skipped; race/vet passed|Adds the local-index observer rollback fix, mandatory temporal expiry/facts-basis controls and actual90 original-task runtime foundation; before080 terminal-attempt integration and the trusted single-proposal instruction|
+|8934b67a / background-v2|2 mandatory tests passed,0 failed/skipped; race/vet passed|Ordinary foreground completed257ms during actual compaction and273ms during actual consolidation; each original NULL-usage quote survives unchanged, and a separately predeclared charged retry finishes the consumer|
+|c803dd0e / coherent-privacy-v1|1 mandatory test passed,0 failed/skipped, race;5.53s|All15 earlier shared-timeline checkpoints followed by late owner deletion after actual prepared model input; final blocked, prior private copies/summaries erased, known usage and effect journal retained. Still a partial controlled pilot|
 |7bac6cda / interactive-v5|Ordinary Flow completed370ms with one actual local query/index IPC overlap;1PASS,0FAIL,0SKIP with race|100 original vectors plus100 new fragments; controlled foreground provider, zero cloud calls; not p95 or full mixed-model workload|
 |8ed0770f / disk-v1|Actual ENOSPC, test0.68s, passed without skips|Dedicated8KiB tmpfs, one synthetic schema; unchanged PG deletion state on failed append. Observed partial anchor becomes unavailable and explicitly denies reads/reconciliation; no automatic reset or claimed deletion|
 
 Private reports: `/srv/storage/butler/agents/issue92-20261016/reports/`.
-The temporal-context-v2 report is under the corresponding `issue92-20261018` root.
+The temporal-context-v2, background-v2 and coherent-privacy-v1 reports are under
+the corresponding `issue92-20261018` root.
 
 | Artifact | SHA256 |
 | --- | --- |
@@ -34,6 +38,10 @@ The temporal-context-v2 report is under the corresponding `issue92-20261018` roo
 |ancestry-facts-v3/tests.jsonl|906298f2746676529c648912e2ff1319667a616de252bcb8940ea9bf9c6245bc|
 |privacy-v2/tests.jsonl|a9d380fb59359f508ba4d5e60be98c7eaa0264aa516c912fe2c4556602241f3c|
 |temporal-context-v2/tests.jsonl|f4731aeef90afd47cf50f2cc4ebee615f4e5222a44da6db0ad6035089144448f|
+|composition-v4/tests.jsonl|59842cfffb58834c2a7b2b7ab55e317477cd9c53b4bfe61fc642ede750001eea|
+|background-v2/tests.jsonl|1c3e6b5903c486e1b09c1af96568072739f2961581b45c6b835ff6fa9cffec07|
+|coherent-privacy-v1/events.jsonl|e1bf4cbd837f34612dfcd82fc4305a898be3209ff7fefc9de7f7f86ca1c63064|
+|coherent-privacy-v1/timeline/timeline-withdrawn.json|dfd03aa9681eb54ed94fdb7419f42f551560bd1b46671e8ea1b0bd2782fea424|
 |interactive-v5/tests.jsonl|9899054feab7b7bf98057ae718489ae7feb3b511b1fc8a28193971df7a9a573c|
 |interactive-v5/actual-interactive-index.json|48c7a2d1ab02743675aecf5f5720f6b5380a77970311031997348e4c815886e7|
 |disk-v1/tests.jsonl|ce26512472b82312376476bf2ec77f5f4dcfd808c4c795fa60f85af26479c057|
@@ -49,8 +57,8 @@ PG rerun passed in composition-v1 and remains separate from consumer quality.
 
 ## Still required before a supported-mode activation
 
-The final source must pass a fresh combined regression after90 ancestry and079
-integration; direct typed lessons must not bypass applicability via consolidated,
+The final source must pass a fresh combined regression after080 terminal-attempt
+and trusted tool-protocol integration; direct typed lessons must not bypass applicability via consolidated,
 summary, skill or temporal-fact representations. Current exact-tool/environment
 and negative feedback guards must apply through the whole original graph.
 
@@ -62,18 +70,28 @@ that old result. Temporal-context-v1 also retains a rejected test fixture that
 used the profile-only owner proposal endpoint for an episode; v2 uses the real
 transactional neutral-candidate contract without changing its validation.
 
-Native89/90 screens, a fresh88 semantic screen, independent effect review, complete usage and
+The [first89 native cohort](issue-89-native-v1.md) is also NO_GO: one background
+grouping completed, the first baseline foreground returned capability_mismatch,
+and seven slots remained unexecuted. Both native entries have known full usage
+(15625 tokens); no Broker tool dispatched. A general trusted single-proposal
+instruction and content-free denial reason passed98 controlled checks with no
+failures/skips, race and vet. Model compliance still requires a new full cohort.
+
+New89 and90 screens, a fresh88 semantic screen, independent effect review, complete usage and
 declared capacity remain separate. Issue87's incomplete native NO_GO is retained,
 with adaptive retrieval code-unqualified and disabled. Closed native windows are
 not selectively rerun or reported as passes. A larger finite capacity is a new
 prospective complete cohort, never a refund or rewrite of previous spending.
 
-Issue91 additionally needs interactive foreground versus background/queue
-composition and current operational guidance; Store timings and serial actual
-embedding/reuse are not that result. The final92 pilot must exercise the ordered
+Issue91 now has two actual controlled foreground/background consumer overlaps
+in addition to local query/index overlap. These are individual bounds, not native
+p95 or the complete mixed workload. The final92 pilot must exercise the ordered
 preference→owner decision→new conversation→current exception→long task/restart→
 verified episode/consolidation→late withdrawal/restore path on one accepted
 composition, including explicit model/database/budget/disk failure behavior.
+The16-checkpoint controlled privacy extension proves late withdrawal on the
+earlier timeline. Verified episode/consolidation, actual custom restore and
+ENOSPC still need to consume that same prospective complete scenario.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.

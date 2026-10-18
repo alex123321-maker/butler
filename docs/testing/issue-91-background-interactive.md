@@ -26,5 +26,26 @@ PostgreSQL1CPU/1GiB container and runs cached Go1.27.2 with race/vet at1CPU/2GiB
 It saves actual model requests, owning foreground input, retained background
 attempt and exact charged quote. It requires both named tests, no skips/failures,
 both observation files and the continuing coherent timeline before writing PASS.
-The current source needs its own immutable run; implementation alone is not
-acceptance evidence.
+
+`background-v2`, source `8934b67a`, passed both mandatory tests with no failures
+or skips, race detection and vet on ssh laba. The compaction foreground completed
+in257ms and the consolidation foreground in273ms, below each predeclared5000ms
+bound. Each background job subsequently completed with two separately charged
+attempts: the original NULL-usage cancellation and one known-usage retry. The
+original attempt row remained byte-identical after recovery. Compaction retained
+its1-turn/1081344-token/300000ms/8388608-byte quote; consolidation retained its
+1-turn/68000-token/10000ms/8388608-byte quote.
+
+Both finite policies included their two-call capacity before any admission.
+The earlier `background-v1` retained a consolidation fixture with only one
+predeclared call. Its foreground preemption passed, but recovery correctly denied
+the second quote. That failed window was not reopened or enlarged. V2 is a new
+complete controlled window with its capacity declared from the start.
+
+Reports: `/srv/storage/butler/agents/issue92-20261018/reports/background-v2`.
+The events SHA256 is
+`1c3e6b5903c486e1b09c1af96568072739f2961581b45c6b835ff6fa9cffec07`;
+the `evidence.sha256` file hash is
+`ed308f17d5517b55aff3b2d9b2aa6b93f7ba065a4dee1c85f9a189023c0665b9`.
+This proves the two described controlled overlaps and charged recovery paths.
+Native latency, p95 and the complete92 workload remain separate gates.
