@@ -4,19 +4,24 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type temporalNativeEntry struct {
 	ID            int64                              `json:"id"`
 	RunID         string                             `json:"run_id"`
+	OperationID   string                             `json:"operation_id"`
+	ReservationID string                             `json:"reservation_id"`
 	Kind          string                             `json:"kind"`
 	Start         *transport.StartRunRequest         `json:"start,omitempty"`
 	Continuation  *transport.SubmitToolResultRequest `json:"continuation,omitempty"`
@@ -61,6 +66,10 @@ func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, 
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
+	operation, reservation, err := temporalNativeAdmission(ctx, tx, run)
+	if err != nil {
+		return nil, err
+	}
 	var count int
 	var id int64
 	if tx.QueryRow(ctx, `SELECT native_entries FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key JOIN accepted_inputs i ON i.run_id=r.run_id AND i.input_id=c.input_id WHERE r.run_id=$1 AND c.status='running' AND i.status='running' AND i.max_attempts=1 AND i.attempts=1 FOR UPDATE OF c`, run).Scan(&count) != nil || count >= temporalMaxPerOriginal {
@@ -72,13 +81,13 @@ func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, 
 	if _, err = tx.Exec(ctx, `UPDATE temporal_native_cases c SET native_entries=native_entries+1,run_id=$1 FROM runs r WHERE r.run_id=$1 AND r.session_key=c.session_key`, run); err != nil {
 		return nil, err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO temporal_native_entries(id,run_id,kind,request_json,input_bytes)VALUES($1,$2,$3,$4,$5)`, id, run, kind, raw, len(raw)); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO temporal_native_entries(id,run_id,operation_id,reservation_id,kind,request_json,input_bytes)VALUES($1,$2,$3,$4,$5,$6,$7)`, id, run, operation, reservation, kind, raw, len(raw)); err != nil {
 		return nil, err
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	c := &temporalNativeEntry{ID: id, RunID: run, Kind: kind, InputBytes: len(raw), Events: []transport.TransportEvent{}, Stages: []transport.ProviderStage{}}
+	c := &temporalNativeEntry{ID: id, RunID: run, OperationID: operation, ReservationID: reservation, Kind: kind, InputBytes: len(raw), Events: []transport.TransportEvent{}, Stages: []transport.ProviderStage{}}
 	if kind == "start" {
 		v := request.(transport.StartRunRequest)
 		c.Start = &v
@@ -90,6 +99,20 @@ func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, 
 	p.entries = append(p.entries, c)
 	p.mu.Unlock()
 	return c, nil
+}
+
+// The context reference is observability, not authority. Corroborate the
+// actual durable owning foreground attempt before recording a native entry.
+func temporalNativeAdmission(ctx context.Context, tx pgx.Tx, run string) (string, string, error) {
+	operation, ok := budget.ModelOperationFromContext(ctx)
+	if !ok {
+		return "", "", errors.New("native entry lacks model operation reference")
+	}
+	var reservation string
+	if tx.QueryRow(ctx, `SELECT a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r ON r.reservation_id=a.reservation_id WHERE a.operation_id=$1 AND a.run_id=$2 AND r.operation_id=a.operation_id AND r.owner_id=$3`, operation, run, temporalNativeOwner).Scan(&reservation) != nil || reservation == "" {
+		return "", "", errors.New("native entry lacks durable owning model admission")
+	}
+	return operation, reservation, nil
 }
 
 func (p *temporalNativeProvider) auditVisible(ctx context.Context, run string, request any) error {
@@ -252,11 +275,7 @@ func (p *temporalNativeProvider) ContinueRun(context.Context, transport.Continue
 	return nil, errors.New("native screen never resumes or replays an original")
 }
 func temporalNumber(id int64) string {
-	const digits = "0123456789"
-	if id < 10 {
-		return "00" + string(digits[id])
-	}
-	return "0" + string(digits[id/10]) + string(digits[id%10])
+	return fmt.Sprintf("%03d", id)
 }
 func temporalWriteExclusive(path string, raw []byte) error {
 	f, e := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)

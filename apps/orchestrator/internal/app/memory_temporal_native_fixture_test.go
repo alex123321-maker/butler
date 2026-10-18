@@ -250,7 +250,7 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 func temporalNativeSchemaSQL() string {
 	return `CREATE TABLE temporal_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(singleton),sealed BOOLEAN NOT NULL DEFAULT FALSE,closed BOOLEAN NOT NULL DEFAULT FALSE,paid_entries INTEGER NOT NULL DEFAULT 0,input_hash TEXT NOT NULL DEFAULT '');INSERT INTO temporal_native_window(singleton)VALUES(TRUE);
 CREATE TABLE temporal_native_cases(case_id TEXT PRIMARY KEY,position INTEGER UNIQUE NOT NULL,session_key TEXT UNIQUE NOT NULL,task_id TEXT UNIQUE NOT NULL,question TEXT NOT NULL,prepared_json JSONB NOT NULL,status TEXT NOT NULL DEFAULT 'planned',native_entries INTEGER NOT NULL DEFAULT 0,input_id TEXT NOT NULL DEFAULT '',run_id TEXT NOT NULL DEFAULT '',observation_json JSONB);
-CREATE TABLE temporal_native_entries(id BIGINT PRIMARY KEY,run_id TEXT NOT NULL,kind TEXT NOT NULL,request_json JSONB NOT NULL,input_bytes INTEGER NOT NULL,observation_json JSONB,created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),finished_at TIMESTAMPTZ);`
+CREATE TABLE temporal_native_entries(id BIGINT PRIMARY KEY,run_id TEXT NOT NULL,operation_id TEXT UNIQUE NOT NULL REFERENCES execution_model_attempts(operation_id),reservation_id TEXT UNIQUE NOT NULL REFERENCES execution_budget_reservations(reservation_id),kind TEXT NOT NULL,request_json JSONB NOT NULL,input_bytes INTEGER NOT NULL,observation_json JSONB,created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),finished_at TIMESTAMPTZ);`
 }
 
 func TestTemporalNativeCorpusIsProspective(t *testing.T) {

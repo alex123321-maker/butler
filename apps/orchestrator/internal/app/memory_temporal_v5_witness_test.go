@@ -55,7 +55,12 @@ func temporalWitnessRecords(raw json.RawMessage, key string) (map[string]json.Ra
 	return result, true
 }
 
-func temporalWitnessProjection(projected, original json.RawMessage, key string) bool {
+// Exact safe field sets exported by the fixed current-day inventory. Nullable
+// observations must be present as explicit null, never inferred from omission.
+var temporalForegroundWitnessKeys = []string{"operation_id", "reservation_id", "provider", "model", "input_allowance", "output_allowance", "actual_input_tokens", "actual_output_tokens", "created_at", "observed_at"}
+var temporalBackgroundWitnessKeys = []string{"operation_id", "job_id", "reservation_id", "provider", "model", "quote", "state", "usage", "created_at", "observed_at"}
+
+func temporalWitnessProjection(projected, original json.RawMessage, key string, required ...string) bool {
 	p, ok := temporalWitnessRecords(projected, key)
 	if !ok {
 		return false
@@ -65,7 +70,24 @@ func temporalWitnessProjection(projected, original json.RawMessage, key string) 
 		return false
 	}
 	for id, row := range p {
-		if !temporalObjectProjection(row, o[id]) {
+		if !temporalObjectProjection(row, o[id], required...) {
+			return false
+		}
+	}
+	return true
+}
+
+func temporalWitnessExact(projected, original json.RawMessage, key string) bool {
+	var p, o []json.RawMessage
+	return json.Unmarshal(projected, &p) == nil && json.Unmarshal(original, &o) == nil && temporalSameRecords(p, o, key)
+}
+
+func temporalRequiredWitnessRecords(rows []json.RawMessage, required []string) bool {
+	if rows == nil {
+		return false
+	}
+	for _, row := range rows {
+		if !temporalObjectProjection(row, row, required...) {
 			return false
 		}
 	}
@@ -105,7 +127,7 @@ func temporalCorroborateOriginal89(priorRaw, ledgerRaw, screenRaw []byte, day st
 		}
 	}
 	scopes, _ := json.Marshal(selected)
-	if !temporalWitnessProjection(p["scopes"], scopes, "scope_id") || !temporalWitnessProjection(p["reservations"], l["reservations"], "reservation_id") || !temporalWitnessProjection(p["foreground"], l["foreground"], "operation_id") || !temporalWitnessProjection(p["background"], l["model_jobs"], "operation_id") || !temporalWitnessProjection(p["model_jobs"], l["model_jobs"], "operation_id") {
+	if !temporalWitnessExact(p["scopes"], scopes, "scope_id") || !temporalWitnessExact(p["reservations"], l["reservations"], "reservation_id") || !temporalWitnessProjection(p["foreground"], l["foreground"], "operation_id", temporalForegroundWitnessKeys...) || !temporalWitnessProjection(p["background"], l["model_jobs"], "operation_id", temporalBackgroundWitnessKeys...) || !temporalWitnessProjection(p["model_jobs"], l["model_jobs"], "operation_id", temporalBackgroundWitnessKeys...) {
 		return errors.New("product predecessor projection diverges from original ledger")
 	}
 	calls, ok := temporalWitnessRecords(p["calls"], "entry_id")

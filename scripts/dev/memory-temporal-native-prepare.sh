@@ -29,11 +29,13 @@ docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 12
   cd /src/apps/orchestrator/internal/app
   /proof/collector.test -test.v -test.run "^TestTemporalV5(CurrentDayPositiveCarryRetainsUnknownUsage|PositiveCarryRejectsOmissionRefundAndOtherPopulations)$"
   /proof/collector.test -test.v -test.run "^TestTemporalV5FrozenHistoryWitnessesRejectUsageForgery$"
+  /proof/collector.test -test.v -test.run "^TestTemporalNativeEntryFilenameCapacity$"
   /proof/collector.test -test.v -test.run "^TestTemporalNativeWritePins$"' > "$proof/offline-preparation.txt" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"
 ! grep -Eq '^--- (FAIL|SKIP)' "$proof/offline-preparation.txt"
 test "$(grep -c '^--- PASS: TestTemporalV5' "$proof/offline-preparation.txt")" = 3
+grep -q '^--- PASS: TestTemporalNativeEntryFilenameCapacity' "$proof/offline-preparation.txt"
 test "$(grep -c '^--- PASS: TestTemporalNativeWritePins' "$proof/offline-preparation.txt")" = 1
 python3 "$src/scripts/dev/memory-temporal-history.py" check-current "$proof/history/history.json" "$history_hash" > "$proof/current-after-build.json"
 sha256sum "$proof/source.sha256" "$proof/source-reference" "$proof/collector.test" "$proof/broker.test" "$proof/shared-policy.json" "$proof/scheduled-before-auth.json" "$proof/frozen-pins.json" > "$proof/prepared-pins.sha256"

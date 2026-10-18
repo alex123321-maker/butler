@@ -43,6 +43,13 @@ missing product attempt, open entry/window, mismatched inventory, extra schema
 spending or any main owner attempt blocks preparation. Native and product NULL
 usage remain distinct; missing usage is never converted to zero.
 
+The metadata projection must match both original immutable native ledger and
+screen witnesses. Foreground and background records require the exact exported
+safe field sets, including explicit nullable observations; scopes and
+reservations require complete record equality. Controlled changes to one alias,
+valid native totals, invalid usage and coordinated omission from prior/current
+copies must all be rejected while the original witnesses remain unchanged.
+
 Only after exact comparison is that one predecessor population removed from a
 deep copy passed to the ordinary complete-inventory guard. Main and every other
 schema remain intact and must be empty of additional current owner/day charges
@@ -67,7 +74,12 @@ actual main paid-discovery HTTP200 and a new private snapshot. It uses the serve
 proxy for all provider requests. It never enables a production feature flag.
 
 Every original result, unexecuted slot, native entry, full available usage,
-nullable product observation and confirmed Broker witness is retained. All twelve
+nullable product observation and confirmed Broker witness is retained. Every
+new native entry also retains its actual operation and reservation references,
+corroborated against the durable foreground attempt under the same call context.
+Entry filenames cover the complete 144-entry capacity. Separate actual PostgreSQL
+controls exercise the carry once, four correlated tool continuations and rejection
+of missing, foreign-operation and foreign-run observation references. All twelve
 answers require independent frozen-rubric and citation-entailment review; mechanical
 completion alone is insufficient. Qualification remains false until that review
 and all existing safety/currentness gates pass. Adaptive retrieval and natural

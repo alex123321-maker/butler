@@ -118,8 +118,9 @@ func temporalValidatePositiveDay(raw []byte, priorRaw []byte, day string, deadli
 	var productCopies struct {
 		ModelJobs  []json.RawMessage `json:"model_jobs"`
 		Background []json.RawMessage `json:"background"`
+		Foreground []json.RawMessage `json:"foreground"`
 	}
-	if json.Unmarshal(priorRaw, &productCopies) != nil || !temporalSameRecords(productCopies.ModelJobs, productCopies.Background, "operation_id") {
+	if json.Unmarshal(priorRaw, &productCopies) != nil || !temporalSameRecords(productCopies.ModelJobs, productCopies.Background, "operation_id") || !temporalRequiredWitnessRecords(productCopies.Background, temporalBackgroundWitnessKeys) || !temporalRequiredWitnessRecords(productCopies.Foreground, temporalForegroundWitnessKeys) {
 		return units, usage, errors.New("nullable background product copies diverge")
 	}
 	// Validate the original reservation population before using its inclusive

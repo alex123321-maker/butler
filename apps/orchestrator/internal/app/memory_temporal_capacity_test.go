@@ -42,6 +42,14 @@ func TestTemporalProspectiveV4RetainedCapacityArithmetic(t *testing.T) {
 	}
 }
 
+func TestTemporalNativeEntryFilenameCapacity(t *testing.T) {
+	for id, want := range map[int64]string{0: "000", 1: "001", 9: "009", 10: "010", 99: "099", 100: "100", 144: "144"} {
+		if temporalNumber(id) != want {
+			t.Fatalf("entry %d filename exceeds sealed capacity", id)
+		}
+	}
+}
+
 // Capacity permits independently verifying both selected original sources after
 // a typed facts read, followed by the final answer. It never changes the model
 // prompt, semantic rubric, production tool declarations or authority rules.
@@ -111,6 +119,27 @@ func temporalControlledOriginalStrategy(t *testing.T, delay time.Duration) {
 	}
 	if ob.Status != "completed" || ob.NativeEntries != 4 || ob.KnownUsage != 4 || ob.FactsReads != 1 || completed != 3 || opened != 2 {
 		t.Fatal("legitimate facts/open/open/final strategy stopped", ob, completed, opened)
+	}
+	var correlated int
+	if pool.QueryRow(ctx, `SELECT count(*) FROM temporal_native_entries e JOIN execution_model_attempts a ON a.operation_id=e.operation_id AND a.run_id=e.run_id AND a.reservation_id=e.reservation_id JOIN execution_budget_reservations r ON r.reservation_id=e.reservation_id AND r.operation_id=e.operation_id WHERE e.observation_json->>'operation_id'=e.operation_id AND e.observation_json->>'reservation_id'=e.reservation_id`).Scan(&correlated) != nil || correlated != 4 {
+		t.Fatal("native entries lack exact durable operation/reservation witnesses")
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal("controlled observer transaction unavailable")
+	}
+	defer tx.Rollback(ctx)
+	var operation string
+	if tx.QueryRow(ctx, `SELECT operation_id FROM temporal_native_entries ORDER BY id LIMIT 1`).Scan(&operation) != nil {
+		t.Fatal("controlled operation unavailable")
+	}
+	for _, wrong := range []struct {
+		ctx context.Context
+		run string
+	}{{ctx, ob.RunID}, {budget.WithModelOperation(ctx, "foreign-operation"), ob.RunID}, {budget.WithModelOperation(ctx, operation), "foreign-run"}} {
+		if _, _, err := temporalNativeAdmission(wrong.ctx, tx, wrong.run); err == nil {
+			t.Fatal("unrelated context or durable run accepted as native admission witness")
+		}
 	}
 }
 
