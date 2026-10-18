@@ -20,7 +20,7 @@ cleanup(){
 }
 trap cleanup EXIT INT TERM
 find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha256"
-docker network create --internal "$network" >/dev/null
+docker network create --internal --subnet 10.237.189.0/24 "$network" >/dev/null
 created_network=true
 docker run -d --pull never --name "$name" --network "$network" --network-alias control-postgres \
  --cpus 1 --memory 512m --pids-limit 64 --security-opt no-new-privileges \
