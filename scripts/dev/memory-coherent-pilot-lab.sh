@@ -7,6 +7,7 @@ mode=${3:-basic}
 case "$mode" in
  basic) test_name=TestMemoryCoherentPilotOrdinaryTimelineIntegration ;;
  withdrawal) test_name=TestMemoryCoherentLateWithdrawalAfterRestartIntegration ;;
+ experience) test_name=TestMemoryCoherentVerifiedExperienceAfterRestartIntegration ;;
  *) exit 2 ;;
 esac
 [[ "$base" =~ ^/srv/storage/butler/agents/issue(89|92)-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
@@ -27,7 +28,9 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker \
  -e BUTLER_MEMORY_COHERENT_PILOT=1 -e BUTLER_MEMORY_COHERENT_PROOF=/proof/timeline \
  -e BUTLER_COHERENT_TEST_NAME="$test_name" \
- golang:1.27.2-bookworm bash -c 'go build -o /proof/tool-broker ./apps/tool-broker && go test -json -race -p 1 -count=1 -timeout 8m -run "^${BUTLER_COHERENT_TEST_NAME}$" ./apps/orchestrator/internal/app' \
+ -e BUTLER_COHERENT_MODE="$mode" -e BUTLER_BROKER_E2E_BINARY=/proof/tool-broker \
+ -e BUTLER_EXTENSION_E2E_BINARY=/proof/extension.test -e BUTLER_EXPERIENCE_HTTP_BINARY=/proof/http.test -e BUTLER_EXPERIENCE_RECIPIENT_BROKER=1 \
+ golang:1.27.2-bookworm bash -eu -c 'go build -o /proof/tool-broker ./apps/tool-broker; if [[ "$BUTLER_COHERENT_MODE" == experience ]]; then go test -c -o /proof/extension.test ./apps/tool-extension/internal/runtime; go test -c -o /proof/http.test ./apps/tool-http/internal/runtime; fi; go test -json -race -p 1 -count=1 -timeout 8m -run "^${BUTLER_COHERENT_TEST_NAME}$" ./apps/orchestrator/internal/app' \
  > "$proof/events.jsonl" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"
@@ -36,6 +39,10 @@ jq -e '.controlled_only and .pass and (.steps|length)==15 and .steps[-1].Name=="
 if [[ "$mode" == withdrawal ]]; then
  jq -e '.controlled_only and .pass and .native_calls==0 and (.steps|length)==16 and .known_usage==1 and .remaining_private_copies==0 and .effect_journal_unchanged' "$proof/timeline/timeline-withdrawn.json" >/dev/null
  sha256sum "$proof/timeline/timeline-withdrawn.json" > "$proof/withdrawal.sha256"
+fi
+if [[ "$mode" == experience ]]; then
+ jq -e '.controlled_only and .pass and .native_calls==0 and (.steps|length)==17 and .lesson_source!=""' "$proof/timeline/timeline-experience.json" >/dev/null
+ sha256sum "$proof/timeline/timeline-experience.json" "$proof/extension.test" "$proof/http.test" > "$proof/experience.sha256"
 fi
 sha256sum "$proof/source.sha256" "$proof/tool-broker" "$proof/events.jsonl" "$proof/environment.json" "$proof/timeline/timeline.json" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
