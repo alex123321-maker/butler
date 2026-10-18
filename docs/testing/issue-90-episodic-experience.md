@@ -23,6 +23,17 @@ reconciled lesson, run native inference, prove quality or alter the main stand.
 Final private-client cleanup/redirect handling is frozen in `snapshots/v32`;
 `reports/terminal-v32` again passed **23 / 0 / 0**, race and vet.
 
+The production seal-only owner API is frozen in `snapshots/v33`;
+`reports/terminal-v33` passed **23 / 0 / 0**, race and vet, with
+SHA256(`evidence.sha256`)
+`d955b71af0a8b0b1dd955e00b0e55cd8cee8fdc7d1a5f22fd04b3bcf7e92315f`.
+The same actual400/Resume/lookup/Reconcile chain now obtains its original seal
+through `POST /api/v4/memory/experience-observations`, with no background job
+store configured on that HTTP server. Unauthenticated access, a foreign owner,
+missing delivery ID, unexpected evidence fields, wrong method and absent run
+are denied. Repeating the unchanged run returns the same content-free receipt.
+No policy, job or memory-model attempt is created before owner Resume.
+
 Implementation: `94b966e4`, following the fresh-publication bridge
 `037c30aab151c313b88af8c5790cff2cab614568`. The implementation remains
 **unqualified and off**: `experience.ReleaseQualified=false`, operator flag off

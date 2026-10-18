@@ -4,6 +4,16 @@
 Orchestrator's actual task/final/action/effect/usage observation. It introduces
 no memory class, model, executable recipe or action authority.
 
+The separate owner `POST /api/v4/memory/experience-observations` accepts only an
+existing `run_id` with the normal owner authentication and delivery ID. The same
+production adapter derives all current evidence and returns a content-free
+Catalog source reference. It creates no model policy, job, attempt or spending,
+changes no input/task/run/effect, and does not require a background model worker.
+It preserves an explicit immutable witness before a separately authorized owner
+control. An unchanged repeat reuses its seal; owner controls retain the ordinary
+source staleness behavior. Caller-supplied bodies, verdicts, revisions, owners or
+parents cannot enter this operation.
+
 The authenticated owner selects an existing run and independent finite model
 policy through `POST /api/v4/memory/model-experience-policies`. The owning
 adapter resolves task identity, current constraints, immutable final result,

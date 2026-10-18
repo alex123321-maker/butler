@@ -2,6 +2,7 @@ package experience
 
 import (
 	"context"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
 )
 
@@ -12,5 +13,6 @@ type PolicyRequest struct {
 	Policy jobs.ModelPolicyRequest `json:"policy"`
 }
 type PolicyCreator interface {
+	SealObservation(context.Context, string) (catalog.SourceRef, error)
 	Create(context.Context, PolicyRequest) (jobs.ModelPolicy, error)
 }

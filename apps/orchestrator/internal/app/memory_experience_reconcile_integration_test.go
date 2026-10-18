@@ -1,14 +1,19 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/api"
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
@@ -89,14 +94,56 @@ func TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration(t *testing
 		t.Fatal("actual 400 did not retain the original UNKNOWN boundary", first.Err, first.Result)
 	}
 	verifier := &skillEvidence{tasks: r.tasks, journal: r.journal, transcript: r.history, budgets: budget.NewLedger(pool), results: r.results, sources: cat, lessons: r.lessons}
-	observation, parents, err := verifier.taskObservation(owner, experienceNativeOwner, first.Result.RunID, r.environment)
+	observation, _, err := verifier.taskObservation(owner, experienceNativeOwner, first.Result.RunID, r.environment)
 	if err != nil || observation.TerminalAttempt == nil {
 		t.Fatal("original terminal observation unavailable", err)
 	}
 	originalObservation, _ := json.Marshal(observation)
-	sealed, err := r.lessons.Seal(owner, observation, parents)
-	if err != nil {
-		t.Fatal("original terminal seal", err)
+	// This is the same owner-authenticated production operation required before
+	// Resume. It creates no note policy, job, reservation or model attempt.
+	sealToken := strings.Repeat("controlled-owner-observation-", 3)
+	policies := &experiencePolicies{store: r.lessons, evidence: verifier}
+	sealServer := httptest.NewServer((&api.MemoryCatalogServer{Store: cat, Auth: api.NewOwnerControlAuth(sealToken, experienceNativeOwner), ExperiencePolicies: policies}).Handle())
+	defer sealServer.Close()
+	sealRequest := func(endpoint, token, method, body, delivery string, want int) []byte {
+		t.Helper()
+		request, e := http.NewRequestWithContext(ctx, method, endpoint+"/api/v4/memory/experience-observations", strings.NewReader(body))
+		if e != nil {
+			t.Fatal(e)
+		}
+		request.Header.Set("Authorization", "Bearer "+token)
+		request.Header.Set("X-Butler-Delivery-ID", delivery)
+		response, e := http.DefaultClient.Do(request)
+		if e != nil {
+			t.Fatal("owner observation endpoint unavailable")
+		}
+		defer response.Body.Close()
+		raw, e := io.ReadAll(io.LimitReader(response.Body, 65536))
+		if e != nil || response.StatusCode != want {
+			t.Fatal("owner observation response", response.StatusCode, want, e)
+		}
+		return raw
+	}
+	sealBody, _ := json.Marshal(map[string]string{"run_id": first.Result.RunID})
+	sealRequest(sealServer.URL, "unauthenticated", http.MethodPost, string(sealBody), "bad-auth", http.StatusUnauthorized)
+	sealRequest(sealServer.URL, sealToken, http.MethodGet, string(sealBody), "bad-method", http.StatusMethodNotAllowed)
+	sealRequest(sealServer.URL, sealToken, http.MethodPost, string(sealBody), "", http.StatusBadRequest)
+	sealRequest(sealServer.URL, sealToken, http.MethodPost, strings.TrimSuffix(string(sealBody), "}")+`,"owner_id":"other","body":"invented"}`, "bad-fields", http.StatusBadRequest)
+	other := httptest.NewServer((&api.MemoryCatalogServer{Store: cat, Auth: api.NewOwnerControlAuth(sealToken, "other-owner"), ExperiencePolicies: policies}).Handle())
+	defer other.Close()
+	sealRequest(other.URL, sealToken, http.MethodPost, string(sealBody), "wrong-owner", http.StatusConflict)
+	sealRequest(sealServer.URL, sealToken, http.MethodPost, `{"run_id":"missing-original-run"}`, "missing-run", http.StatusConflict)
+	var sealed catalog.SourceRef
+	if raw := sealRequest(sealServer.URL, sealToken, http.MethodPost, string(sealBody), "seal-original-before-resume", http.StatusCreated); json.Unmarshal(raw, &sealed) != nil || sealed.ID == "" || sealed.Hash == "" || bytes.Contains(raw, []byte("terminal_attempt")) || bytes.Contains(raw, []byte("Controlled original rejection")) {
+		t.Fatal("seal response must contain only a content-free source receipt")
+	}
+	var repeated catalog.SourceRef
+	if raw := sealRequest(sealServer.URL, sealToken, http.MethodPost, string(sealBody), "same-original-idempotent-seal", http.StatusCreated); json.Unmarshal(raw, &repeated) != nil || repeated != sealed {
+		t.Fatal("unchanged explicit observation did not reuse its seal")
+	}
+	var notes int
+	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_model_policies)+(SELECT count(*) FROM memory_aux_jobs)+(SELECT count(*) FROM memory_model_attempts)`).Scan(&notes); err != nil || notes != 0 {
+		t.Fatal("seal-only owner operation created background authorization or spending", err)
 	}
 	before, err := r.inputs.Get(ctx, observation.TerminalAttempt.InputID)
 	if err != nil || before.Status != "blocked" || before.ErrorCode != "effect_unknown" {

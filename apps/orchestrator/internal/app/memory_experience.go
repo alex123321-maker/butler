@@ -61,16 +61,31 @@ func clipObservation(s string, n int) (string, bool) {
 	return s, true
 }
 
-func (p *experiencePolicies) Create(ctx context.Context, q experience.PolicyRequest) (jobs.ModelPolicy, error) {
+// SealObservation is a separate owner operation. It accepts an existing RunID,
+// never caller-authored evidence, and creates no policy, job or model attempt.
+func (p *experiencePolicies) SealObservation(ctx context.Context, run string) (catalog.SourceRef, error) {
+	_, source, err := p.sealObservation(ctx, run)
+	return source, err
+}
+
+func (p *experiencePolicies) sealObservation(ctx context.Context, run string) (experience.Observation, catalog.SourceRef, error) {
 	a, ok := owneridentity.FromContext(ctx)
-	if !ok || p == nil || p.store == nil || p.evidence == nil || p.jobs == nil || q.RunID == "" || len(q.Policy.Job.Sources) != 0 || q.Policy.Job.TaskID != "" || q.Policy.Job.OriginalRunID != "" {
+	if !ok || a.OwnerID == "" || a.DeliveryID == "" || p == nil || p.store == nil || p.evidence == nil || run == "" {
+		return experience.Observation{}, catalog.SourceRef{}, experience.ErrEvidence
+	}
+	o, parents, err := p.evidence.taskObservation(ctx, a.OwnerID, run, p.store.EnvironmentHash)
+	if err != nil {
+		return o, catalog.SourceRef{}, err
+	}
+	source, err := p.store.Seal(ctx, o, parents)
+	return o, source, err
+}
+
+func (p *experiencePolicies) Create(ctx context.Context, q experience.PolicyRequest) (jobs.ModelPolicy, error) {
+	if p == nil || p.jobs == nil || len(q.Policy.Job.Sources) != 0 || q.Policy.Job.TaskID != "" || q.Policy.Job.OriginalRunID != "" {
 		return jobs.ModelPolicy{}, experience.ErrEvidence
 	}
-	o, parents, err := p.evidence.taskObservation(ctx, a.OwnerID, q.RunID, p.store.EnvironmentHash)
-	if err != nil {
-		return jobs.ModelPolicy{}, err
-	}
-	src, err := p.store.Seal(ctx, o, parents)
+	o, src, err := p.sealObservation(ctx, q.RunID)
 	if err != nil {
 		return jobs.ModelPolicy{}, err
 	}

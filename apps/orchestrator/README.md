@@ -981,3 +981,12 @@ proof and fresh owner one-use note policy remain separate from execution,
 independent task verification and effect reconciliation. Generic blocked-task
 jobs remain denied. Migration080, exact current input/source/authority checks and
 the still-closed experience release gate are required.
+
+The private owner `POST /api/v4/memory/experience-observations` accepts only an
+existing `run_id` and requires the normal owner bearer and delivery ID. The
+production adapter derives and seals current typed evidence, returning a
+content-free source/hash receipt. It can preserve a stopped-attempt observation
+before an independently authorized owner control without creating a note policy,
+job or model attempt. It never accepts caller-authored evidence or changes task,
+input, run or external-effect state. Background model configuration is not needed
+for this separate observation operation; the experience release gate still is.

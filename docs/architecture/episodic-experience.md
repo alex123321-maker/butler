@@ -87,6 +87,17 @@ generic policy request; generic jobs still reject blocked tasks. Scheduling,
 admission, supervision and publication recheck the current snapshot, task and
 constraints, owner policy, root goal/mandate, deadline and finite budget. The
 original input/task is never requeued, unblocked or completed by learning.
+
+Before a distinct owner control, an authenticated owner can seal the exact current
+observation with `POST /api/v4/memory/experience-observations` and only
+`{"run_id":"existing owning run"}`. A delivery ID is required. The owning adapter
+derives all evidence and returns only a content-free Catalog source reference;
+client-supplied body, parents, task revisions, owner identity or verdict are
+rejected. This operation creates no model policy, job, attempt or allowance and
+does not change the original input, task, run or effect. Repeating an unchanged
+observation reuses the seal. Current source/privacy/authority requirements still
+apply, and an owner Resume makes the old terminal snapshot stale normally.
+
 Migration080 maintains content-free input hash/revision/tombstone heads and
 orders source release against material input/run changes with a per-input SQL
 fence. No full checkpoint body is reread by supervision. Schema rollback refuses
