@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-18T14:22:05.8806398+00:00",
+  "implementation_commit": "390ef93b4fad9ded6cda4f63f4398ff91b863bda",
+  "fixture_commit": "06028662764f14a227696bca435a822a6b8b2888",
+  "primary_checkout": {
+    "dirty": false,
+    "commit": "1f64fd7847dffaca3d374ac5ed29f8efb57bfff4"
+  },
+  "stand": {
+    "laba_required": false,
+    "route": "phone Wi-Fi -> laptop18061 ingress-only -> actual Orchestrator -> PostgreSQL",
+    "owner_control": "127.0.0.1:18062",
+    "provider_cost_basis": "operator subscription_no_overage declaration; no monetary usage claim",
+    "location": "Windows laptop Docker",
+    "broker": "separate production Tool Broker process",
+    "ssh_forward": false,
+    "model": "antigravity:gemini-3.8-flash-high",
+    "binary_sha256": "afd683acd0ef20de6c3cf87af5865e9303754a1acae7ad3291658628fae476c8",
+    "adb_reverse": false,
+    "binary_source": "git archive of implementation_commit; Go build -trimpath",
+    "database": "mobile_attention_test"
+  },
+  "phone": {
+    "rom_model": "SM-S731B",
+    "android_sdk": 36,
+    "usb_powered": true,
+    "original_app_unchanged": true,
+    "android_release": "16",
+    "vendor_model": "SM-G973F",
+    "debug_listener_revoked_after_test": true,
+    "filter": "ONLY_INCLUDED: dev.butler.companion.debug"
+  },
+  "apks": {
+    "version": "1.2.0",
+    "debug_sha256": "9325a028714bf421e5dd2d58517f3bf0110939fd4806e5b0830ae68659168777",
+    "release_signer_sha256": "484c6616a713cf1447bb0588566e2acefc5d190e34f377439054a5d429b3513c",
+    "release_sha256": "79c9372287f09c85023f02d6fbccb964d777308050e8653798c29a7328e69643",
+    "version_code": 3
+  },
+  "phone_phases": [
+    {
+      "version": "1.1.0",
+      "result": "PASS",
+      "posts": 20,
+      "seconds": 3.449,
+      "phase": "threshold"
+    },
+    {
+      "version": "1.1.0",
+      "result": "PASS",
+      "posts": 1,
+      "seconds": 2.311,
+      "phase": "noise"
+    },
+    {
+      "version": "1.1.0",
+      "result": "PASS",
+      "posts": 1,
+      "seconds": 2.203,
+      "phase": "hour"
+    },
+    {
+      "version": "1.2.0",
+      "result": "PASS",
+      "posts": 1,
+      "seconds": 2.533,
+      "phase": "noise-repeat1"
+    },
+    {
+      "version": "1.2.0",
+      "result": "PASS",
+      "posts": 1,
+      "seconds": 2.084,
+      "phase": "noise-repeat2"
+    },
+    {
+      "note": "known advertising removed from pending attention before gate",
+      "posts": 20,
+      "seconds": 3.696,
+      "result": "PASS",
+      "version": "1.2.0",
+      "phase": "threshold-with-existing-noise-rule"
+    }
+  ],
+  "clock_control": {
+    "second_phase": {
+      "eligible_synthetic_messages": 3,
+      "reason": "finish fresh APK1.2.0 remainder after known-noise filtering",
+      "original_source_timestamps_unchanged": true
+    },
+    "queue_age_minutes": 61,
+    "first_phase": {
+      "test_only": true,
+      "purpose": "Exercise actual hourly admission without an hour-long wall-clock wait",
+      "original_phone_timestamps_unchanged": true,
+      "before": {
+        "count": 1,
+        "observed_now": "2026-10-18T21:03:42.453975+07:00",
+        "actual_received_at": "2026-10-18T20:23:19.046426+07:00"
+      },
+      "controlled_queue_age_minutes": 61,
+      "eligible_count": 1,
+      "source_commit": "390ef93b4fad9ded6cda4f63f4398ff91b863bda"
+    },
+    "original_phone_source_timestamps_unchanged": true,
+    "actual_hour_wait": false
+  },
+  "native_snapshot": {
+    "synthetic_packages_only": true,
+    "event_receipts": 47,
+    "message_states": {
+      "remembered": 5,
+      "noise": 38,
+      "ignored": 2
+    },
+    "pending_messages": 0,
+    "run_states": {
+      "completed": 5
+    },
+    "task_states": {
+      "active": 2,
+      "completed": 3
+    },
+    "results": [
+      {
+        "verifier": "mobile_batch_v1",
+        "verdict": "verified",
+        "count": 3
+      },
+      {
+        "verifier": "model_run",
+        "verdict": "unverified",
+        "count": 5
+      }
+    ],
+    "tool_calls_all_attempts": [
+      {
+        "tool_name": "memory.open",
+        "status": "completed",
+        "count": 3
+      },
+      {
+        "tool_name": "memory.search",
+        "status": "completed",
+        "count": 4
+      },
+      {
+        "tool_name": "messages.inbox",
+        "status": "completed",
+        "count": 7
+      },
+      {
+        "tool_name": "messages.process",
+        "status": "completed",
+        "count": 8
+      },
+      {
+        "tool_name": "messages.search",
+        "status": "completed",
+        "count": 6
+      }
+    ],
+    "verified_notifications": [
+      {
+        "status": "result_ready",
+        "channel": "web",
+        "count": 3
+      }
+    ],
+    "reserved_budget_counters_not_provider_usage": {
+      "tokens": 34873344,
+      "children": 0,
+      "cost_micros": 0,
+      "model_turns": 33,
+      "egress_bytes": 117440512,
+      "active_millis": 13260000,
+      "external_calls": 28,
+      "provider_input_bytes": 276824064
+    }
+  },
+  "native_quality": [
+    "confirmed dentist appointment",
+    "friend invitation remains proposal, no agreed day/time",
+    "confirmed barber appointment",
+    "hidden promo searchable through actual model-selected messages.search",
+    "source-backed model candidate notes, not accepted owner facts",
+    "injection ignored; no external reply, booking or credential access"
+  ],
+  "retained_failures": [
+    "Initial prepare_only admission excluded messages.process; corrected to normal policy plus exact read/prepare mandate. First obsolete task stays unverified.",
+    "APK upgrade repeat initially timed out because reused notification identity and privacy-redacted timestamp deduplicated unchanged content. Fresh tags repeat successfully.",
+    "Manual archive-search task has a completed model run but no independent business-result verifier; its task is not claimed completed."
+  ],
+  "checks": {
+    "web_playwright_passed": 2,
+    "required_mobile_pg_and_real_broker_tests": "PASS, not skipped",
+    "web_typecheck_lint": "PASS",
+    "android_lint_warnings": 60,
+    "emulator_scope": "Two smoke tests per API; four live external fixtures explicitly skip",
+    "android_jvm_tests": 15,
+    "android_lint_errors": 0,
+    "core_go_packages": "mobile, readcontrol, actionauth, initiative, task",
+    "existing_optional_go_fixtures": "Some unrelated external fixtures skip without their specific environment; not counted as acceptance",
+    "android_debug_and_signed_release": "PASS"
+  },
+  "ci": [
+    {
+      "code_commit": "390ef93b4fad9ded6cda4f63f4398ff91b863bda",
+      "jobs": [
+        {
+          "name": "android",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (31)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (35)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (36)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (33)",
+          "conclusion": "success"
+        },
+        {
+          "name": "go",
+          "conclusion": "success"
+        }
+      ],
+      "conclusion": "success",
+      "status": "completed",
+      "url": "https://github.com/alex123321-maker/butler/actions/runs/39133430089"
+    },
+    {
+      "code_commit": "06028662764f14a227696bca435a822a6b8b2888",
+      "jobs": [
+        {
+          "name": "emulator (36)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (31)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (33)",
+          "conclusion": "success"
+        },
+        {
+          "name": "emulator (35)",
+          "conclusion": "success"
+        },
+        {
+          "name": "go",
+          "conclusion": "success"
+        },
+        {
+          "name": "android",
+          "conclusion": "success"
+        }
+      ],
+      "conclusion": "success",
+      "status": "completed",
+      "url": "https://github.com/alex123321-maker/butler/actions/runs/39135051618"
+    }
+  ],
+  "remaining": [
+    "24-hour unplugged battery/traffic/loss, separately agreed with owner",
+    "several-hour offline and phone reboot/unlock",
+    "Doze/OEM power modes",
+    "protected external mobile route, deferred for Wi-Fi-only stage",
+    "full notification lifecycle/failure compatibility across OS matrix"
+  ],
+  "issue_closed": false,
+  "production_switched": false
+}
