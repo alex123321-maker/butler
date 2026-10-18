@@ -97,7 +97,7 @@ def summarize(proof, expected):
         else:
             status = 'unknown_collector_terminated' if start.exists() else 'not_executed'
         outcomes.append({'sequence': sequence, 'id': slot['id'], 'kind': slot['kind'], 'case_id': slot['case_id'], 'arm': slot['arm'], 'repetition': slot['repetition'], 'status': status})
-    write(proof/'all-original-outcomes.json', {'slots': outcomes, 'denominator': 57, 'original_final_window_present': window is not None})
+    write(proof/'all-original-outcomes.json', {'slots': outcomes, 'denominator': 57, 'original_final_window_present': window is not None, 'status_semantics': 'Collector stage status; task/run/effect outcomes and UNKNOWN/no-final originals remain in owning rows. Completed stages are not task-success counts.'})
     usage, carry, complete = None, None, False
     costs_path = actual/'unique-quoted-costs.json'
     if window is not None and costs_path.exists():
