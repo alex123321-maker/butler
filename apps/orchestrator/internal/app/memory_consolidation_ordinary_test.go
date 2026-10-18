@@ -203,6 +203,10 @@ func (x *consolidationOrdinaryExecutor) Execute(ctx context.Context, e ingress.I
 // Real private read/control endpoint plus the actual Broker subprocess. No owner
 // actor or synthetic read receipt replaces the current input/lease/dispatch.
 func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, manifest, proof string, policy budget.Policy, options ...AdaptiveReadOptions) *tools.BrokerClient {
+	return consolidationOrdinaryBrokerConfigured(t, pool, cat, manifest, proof, policy, nil, options...)
+}
+
+func consolidationOrdinaryBrokerConfigured(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, manifest, proof string, policy budget.Policy, configure func(*MemoryReads), options ...AdaptiveReadOptions) *tools.BrokerClient {
 	t.Helper()
 	binary := os.Getenv("BUTLER_MEMORY_READ_APP_BINARY")
 	if binary == "" {
@@ -220,6 +224,9 @@ func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.
 	// This isolated composed acceptance exercises the real temporal hook while
 	// its independent production release qualification remains disabled.
 	reads.temporal = true
+	if configure != nil {
+		configure(reads)
+	}
 	handler, err := readcontrol.NewHandler(token, reads)
 	if err != nil {
 		t.Fatal(err)

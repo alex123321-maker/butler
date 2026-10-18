@@ -1091,3 +1091,14 @@ actual226 quotes remain separately visible. Worker/native assertions reject
 owner control identity. No production qualification or flag changes follow from
 preparation or mechanical completion.
 
+The separate [native coherent92 pilot](../../docs/testing/issue-92-native-coherent-pilot.md)
+freezes five varied long primary inputs, all15 native quality slots and25
+mechanical checkpoints before inference. It uses the selected static mode,
+context131072 and actual temporal readiness consistently across its explicit
+test-only foreground constructors and Broker reads. Default90/nil-v12 helpers
+retain their historical behavior. Actual `App.New→Run→Doctor`, component native
+quality and this whole native lifecycle remain separate gates. The
+[offline receipt](../../docs/testing/issue-92-native-coherent-offline.md) proves
+controlled mechanics/capture/NULL-charge preservation, with native/auth0; it
+does not change production qualification or enable the deployment.
+

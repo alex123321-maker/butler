@@ -56,6 +56,7 @@ type coherentPilotProvider struct {
 	requests      []transport.StartRunRequest
 	continuations []transport.SubmitToolResultRequest
 	beforeFinal   func(context.Context, transport.StartRunRequest) error
+	unobserved    bool // explicit controlled fault only; never applied to delegate
 }
 
 func (p *coherentPilotProvider) InferenceLimits() (int64, int64) {
@@ -92,6 +93,12 @@ func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartR
 	if _, owner := owneridentity.FromContext(ctx); owner {
 		return nil, errors.New("worker inherited owner control identity")
 	}
+	// Only the leaf provider consumes the one-use dispatch marker immediately
+	// before its actual call. A transparent lab delegate must not consume it first.
+	if p.delegate != nil {
+		p.requests = append(p.requests, r)
+		return p.delegate.StartRun(ctx, r)
+	}
 	if err := transport.CheckInferenceAuthority(ctx); err != nil {
 		return nil, err
 	}
@@ -99,9 +106,6 @@ func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartR
 		return nil, err
 	}
 	p.requests = append(p.requests, r)
-	if p.delegate != nil {
-		return p.delegate.StartRun(ctx, r)
-	}
 	output := ""
 	switch p.mode {
 	case "candidate":
@@ -157,7 +161,11 @@ func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartR
 			return nil, err
 		}
 	}
-	return nativeScriptedStream(transport.NewAssistantFinalEvent(r.Context.RunID, p.Name(), transport.AssistantFinal{Content: output, FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 80, OutputTokens: 30, TotalTokens: 110}})), nil
+	var usage *transport.Usage = &transport.Usage{InputTokens: 80, OutputTokens: 30, TotalTokens: 110}
+	if p.unobserved {
+		usage = nil
+	}
+	return nativeScriptedStream(transport.NewAssistantFinalEvent(r.Context.RunID, p.Name(), transport.AssistantFinal{Content: output, FinishReason: "STOP", Usage: usage})), nil
 }
 func (p *coherentPilotProvider) SubmitToolResult(ctx context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
 	p.continuations = append(p.continuations, r)
@@ -202,6 +210,58 @@ type coherentPilot struct {
 	broker          *tools.BrokerClient
 	steps           []coherentPilotStep
 	attemptReceipts []durableinput.Record
+	options         *coherentPilotOptions
+}
+
+// Explicit lab-only injection. Nil preserves the sealed controlled v12 path.
+// A native window supplies one retained database, outer deadline, finite policy,
+// frozen primary inputs and unchanged transport for every generative phase.
+type coherentPilotOptions struct {
+	Native        bool
+	Context       context.Context
+	Pool          *pgxpool.Pool
+	Policy        budget.Policy
+	Provider      transport.ModelProvider
+	LongInputs    []string
+	ContextTokens int
+	Phase         func(*coherentPilot, string) error
+	NativeEntries func() int
+	ValidateRead  func(string, catalog.Source) error
+}
+
+func (p *coherentPilot) contextTokens() int {
+	if p.options != nil {
+		return p.options.ContextTokens
+	}
+	return 65536
+}
+
+// Apply the production conservative byte-based formula to the actual StartRun
+// request. This is a reproducible estimate, not tokenizer or billed usage.
+func coherentContextMeasurement(r transport.StartRunRequest) map[string]any {
+	encoded, _ := json.Marshal(r)
+	input, _ := json.Marshal(r.InputItems)
+	formula, _ := json.Marshal(struct {
+		Items  []transport.InputItem
+		Tools  []transport.ToolDefinition
+		Prompt string
+	}{r.InputItems, r.ToolDefinitions, ""})
+	return map[string]any{"encoded_request_bytes": len(encoded), "encoded_input_bytes": len(input), "conservative_estimate_from_actual_request": len(formula) + 1024 + 32*(len(r.InputItems)+len(r.ToolDefinitions)), "estimate_is_billed_tokens": false}
+}
+
+func (p *coherentPilot) phase(name string) {
+	p.t.Helper()
+	if p.options != nil && p.options.Phase != nil {
+		if err := p.options.Phase(p, name); err != nil {
+			p.t.Fatal("frozen coherent phase denied", err)
+		}
+	}
+}
+func (p *coherentPilot) nativeEntries() int {
+	if p.options != nil && p.options.NativeEntries != nil {
+		return p.options.NativeEntries()
+	}
+	return 0
 }
 
 func (p *coherentPilot) record(name string, receipt *durableinput.Record, evidence any) {
@@ -246,7 +306,11 @@ func (p *coherentPilot) execute(record task.Record, text, existing string, b *bu
 	temporal := temporalReadConfigured(cfg.MemoryTemporalEnabled, providerfactory.Result{Provider: p.provider, ModelName: "gemini-3.8-flash-high"}, b)
 	fc := flow.Config{ProviderName: p.provider.Name(), ModelName: "gemini-3.8-flash-high", OwnerID: "coherent-worker", LeaseTTL: 120, Tasks: task.NewStore(p.pool), Budgets: b, MemorySources: sources, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: contextLimit, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, Tools: p.broker, ToolCatalog: p.broker, ActionAuthorizer: p.broker, ProfileStore: profileStoreAdapter{store: profile.NewStore(p.pool), sources: sources, temporal: temporal}, SummaryReader: summary.NewStore(p.pool), AdaptiveRetrieval: adaptiveStore}
 	x := &consolidationOrdinaryExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(p.pool), runs, transcript.NewStore(p.pool), p.provider, fc, logger), done: make(chan consolidationOrdinaryExecution, 1)}
-	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, 2*time.Minute)
+	executionLimit := 2 * time.Minute
+	if p.options != nil {
+		executionLimit = 40 * time.Minute
+	}
+	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, executionLimit)
 	if err != nil {
 		p.t.Fatal(err)
 	}
@@ -312,6 +376,10 @@ func TestMemoryCoherentPilotOrdinaryTimelineIntegration(t *testing.T) {
 // inputs, continuation capacity, whole cost/carry and currentness/quality gates
 // must be frozen before auth; this helper does not authorize such a window.
 func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.ModelProvider, beforeSummary ...func(*coherentPilot, *jobs.ModelWorker)) *coherentPilot {
+	return runMemoryCoherentPilotWithOptions(t, delegate, nil, beforeSummary...)
+}
+
+func runMemoryCoherentPilotWithOptions(t *testing.T, delegate transport.ModelProvider, options *coherentPilotOptions, beforeSummary ...func(*coherentPilot, *jobs.ModelWorker)) *coherentPilot {
 	proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 	if !filepath.IsAbs(proof) {
 		t.Fatal("fresh absolute private pilot proof required")
@@ -319,9 +387,23 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	if err := os.Mkdir(proof, 0700); err != nil {
 		t.Fatal(err)
 	}
-	pool := memorytest.Database(t)
+	var pool *pgxpool.Pool
+	if options != nil {
+		pool = options.Pool
+	} else {
+		pool = memorytest.Database(t)
+	}
+	if pool == nil {
+		t.Fatal("owning coherent database required")
+	}
 	ctx, stop := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer stop()
+	if options != nil {
+		if options.Context == nil || options.Provider == nil || len(options.LongInputs) != 5 || options.ContextTokens != 131072 || options.Policy.Validate() != nil {
+			t.Fatal("complete explicit coherent native options required")
+		}
+		ctx, delegate = options.Context, options.Provider
+	}
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "pilot-owner-statement"})
 	manifest := catalog.NewFileManifest(filepath.Join(proof, "anchor"))
 	if err := manifest.Initialize(); err != nil {
@@ -332,14 +414,18 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	policy.ModelMillis, policy.OutputTokens = 300000, 32768
 	policy.Task.ActiveMillis, policy.Conversation.ActiveMillis, policy.Day.ActiveMillis = 10000000, 10000000, 50000000
 	policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	if options != nil {
+		policy = options.Policy
+	}
 	b := budget.NewController(pool, policy)
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	provider := &coherentPilotProvider{consolidationReadControl: &consolidationReadControl{routes: map[string][]catalog.SourceRef{}, runs: map[string]*consolidationControlRun{}}, mode: "candidate", delegate: delegate}
-	p := &coherentPilot{t: t, ctx: owner, pool: pool, cat: cat, b: b, provider: provider}
+	p := &coherentPilot{t: t, ctx: owner, pool: pool, cat: cat, b: b, provider: provider, options: options}
 	defer func() {
 		var ledger json.RawMessage
 		_ = pool.QueryRow(context.Background(), `SELECT jsonb_build_object('jobs',(SELECT jsonb_agg(to_jsonb(j))FROM memory_aux_jobs j),'job_attempts',(SELECT jsonb_agg(to_jsonb(a))FROM memory_model_attempts a),'foreground_attempts',(SELECT jsonb_agg(to_jsonb(a))FROM execution_model_attempts a),'reservations',(SELECT jsonb_agg(to_jsonb(r))FROM execution_budget_reservations r),'scopes',(SELECT jsonb_agg(to_jsonb(s))FROM execution_budget_scopes s),'source_pins',(SELECT jsonb_agg(to_jsonb(s))FROM memory_run_sources s),'tool_calls',(SELECT jsonb_agg(to_jsonb(c))FROM tool_calls c),'summary',(SELECT jsonb_agg(to_jsonb(s))FROM session_summaries s))`).Scan(&ledger)
-		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": delegate == nil, "pass": !t.Failed(), "steps": p.steps, "attempt_receipts": p.attemptReceipts, "actual_start_requests": provider.requests, "actual_tool_continuations": provider.continuations, "ledger": ledger, "limits": "steps1..4 plus bounded failure mechanics; native quality, verified experience, consolidation, actual ENOSPC/custom restore are separate pending gates"}, "", "  ")
+		controlled := delegate == nil || options != nil && !options.Native
+		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": controlled, "native_calls": p.nativeEntries(), "pass": !t.Failed(), "steps": p.steps, "attempt_receipts": p.attemptReceipts, "actual_start_requests": provider.requests, "actual_tool_continuations": provider.continuations, "ledger": ledger, "limits": "prefix receipts only; whole quality/cost and later lifecycle gates remain independent"}, "", "  ")
 		_ = os.WriteFile(filepath.Join(proof, "timeline.json"), raw, 0600)
 	}()
 	t.Setenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED", "true")
@@ -364,6 +450,7 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	if err := js.PollModelPolicies(ctx, func(handler string) bool { return mw.Handlers[handler] != nil }); err != nil {
 		t.Fatal(err)
 	}
+	p.phase("preference_candidate")
 	if did, err := mw.ProcessOne(ctx); err != nil || !did {
 		t.Fatal("candidate job failed", did, transport.DiagnosticCode(err))
 	}
@@ -393,13 +480,20 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.broker = consolidationOrdinaryBroker(t, pool, cat, filepath.Join(proof, "anchor"), filepath.Join(proof, "broker"), policy, AdaptiveReadOptions{Store: adaptiveStore})
+	var configureReads func(*MemoryReads)
+	if options != nil {
+		configureReads = func(reads *MemoryReads) {
+			reads.temporal = temporalReadConfigured(true, providerfactory.Result{Provider: provider, ModelName: "gemini-3.8-flash-high"}, b)
+		}
+	}
+	p.broker = consolidationOrdinaryBrokerConfigured(t, pool, cat, filepath.Join(proof, "anchor"), filepath.Join(proof, "broker"), policy, configureReads, AdaptiveReadOptions{Store: adaptiveStore})
 	work := p.newTask("coherent-work", "Подготовить план проверок без внешних действий", []string{"только чтение", "UNKNOWN не разрешает повтор"})
 	provider.routes[work.SessionKey] = []catalog.SourceRef{screenSourceRef(src)}
 	provider.claimID = claims[0].ID
 	provider.mode = "read"
 	attachment, _ := json.Marshal(screenSourceRef(src))
-	receipt, execution := p.execute(work, "Открой исходное принятое предпочтение и учти его в плане. DATA reference: "+string(attachment), "", b, cat, 65536)
+	p.phase("new_conversation")
+	receipt, execution := p.execute(work, "Открой исходное принятое предпочтение и учти его в плане. DATA reference: "+string(attachment), "", b, cat, p.contextTokens())
 	if execution.err != nil || receipt.Status != "completed" {
 		t.Fatal("new conversation failed")
 	}
@@ -408,13 +502,14 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 		t.Fatal("accepted profile missing from ordinary context")
 	}
 	var opens int
-	if err = pool.QueryRow(owner, `SELECT count(*) FROM tool_calls WHERE run_id=$1 AND tool_name='memory.open' AND status='completed' AND args->>'source_id'=$2`, receipt.RunID, src.ID).Scan(&opens); err != nil || opens != 1 {
+	if err = pool.QueryRow(owner, `SELECT count(*) FROM tool_calls WHERE run_id=$1 AND tool_name='memory.open' AND status='completed' AND args->>'source_id'=$2`, receipt.RunID, src.ID).Scan(&opens); err != nil || opens < 1 || options == nil && opens != 1 {
 		t.Fatal("new conversation did not open actual original")
 	}
 	p.record("new_conversation_real_profile_and_original_open", &receipt, map[string]any{"source_id": src.ID, "opens": opens})
 	simple := p.newTask("coherent-simple", "Ответить на независимый простой вопрос", []string{"только чтение"})
 	provider.mode = "simple"
-	simpleReceipt, result := p.execute(simple, "Сколько будет 2 + 2?", "", b, cat, 65536)
+	p.phase("simple_question")
+	simpleReceipt, result := p.execute(simple, "Сколько будет 2 + 2?", "", b, cat, p.contextTokens())
 	if result.err != nil || simpleReceipt.Status != "completed" {
 		t.Fatal("simple question failed")
 	}
@@ -439,7 +534,8 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 		t.Fatal(err)
 	}
 	provider.mode = "read"
-	receipt, execution = p.execute(work, "", amended.ContinuationInputID, b, cat, 65536)
+	p.phase("current_english_exception")
+	receipt, execution = p.execute(work, "", amended.ContinuationInputID, b, cat, p.contextTokens())
 	if execution.err != nil || receipt.Status != "completed" || profileFingerprint() != acceptedHead {
 		t.Fatal("one-time task exception changed accepted profile")
 	}
@@ -450,12 +546,18 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	p.record("same_task_owner_amendment_preserves_global_profile", &receipt, amended)
 	provider.mode = "long"
 	for i := 0; i < 5; i++ {
-		receipt, execution = p.execute(work, "Продолжи только чтение текущего плана; внешний эффект остаётся неизвестным.", "", b, cat, 65536)
+		text := "Продолжи только чтение текущего плана; внешний эффект остаётся неизвестным."
+		if options != nil {
+			text = options.LongInputs[i]
+		}
+		p.phase(fmt.Sprintf("long_primary_%d", i+1))
+		receipt, execution = p.execute(work, text, "", b, cat, p.contextTokens())
 		if execution.err != nil || receipt.Status != "completed" {
 			t.Fatal("ordinary long task failed")
 		}
 		p.record(fmt.Sprintf("ordinary_long_task_turn_%d", i+1), &receipt, map[string]any{"task_id": work.TaskID, "task_revision": work.Revision})
 	}
+	beforeCompaction := coherentContextMeasurement(provider.requests[len(provider.requests)-1])
 	var summaryPolicy jobs.ModelPolicy
 	request("/api/v4/memory/model-summary-policies", compaction.PolicyRequest{SessionKey: work.SessionKey, Policy: jobs.ModelPolicyRequest{ID: "coherent-summary-policy", Handler: compaction.HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 2, Privacy: "cloud_allowed", Job: jobs.Request{TaskID: work.TaskID, OriginalRunID: receipt.RunID, Allowance: budget.Units{ModelTurns: 2, Tokens: 2400000, ActiveMillis: 600000, ProviderInputBytes: 2 * 8388608}, Deadline: time.Now().Add(time.Hour)}}}, &summaryPolicy)
 	provider.mode = "summary"
@@ -466,6 +568,7 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	for _, hook := range beforeSummary {
 		hook(p, mw)
 	}
+	p.phase("primary_compaction")
 	if did, e := mw.ProcessOne(ctx); e != nil || !did {
 		t.Fatal("real compaction job failed", did, transport.DiagnosticCode(e))
 	}
@@ -479,7 +582,8 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	p.cat = catalog.New(pool, manifest)
 	cat = p.cat
 	provider.mode = "read"
-	receipt, execution = p.execute(work, "Открой исходное предпочтение и продолжи после перезапуска: текущая цель и разовое условие действуют, неизвестный эффект не повторять. DATA reference: "+string(attachment), "", b, cat, 65536)
+	p.phase("restarted_continuation")
+	receipt, execution = p.execute(work, "Открой исходное предпочтение и продолжи после перезапуска: текущая цель и разовое условие действуют, неизвестный эффект не повторять. DATA reference: "+string(attachment), "", b, cat, p.contextTokens())
 	if execution.err != nil || receipt.Status != "completed" {
 		t.Fatal("post-compaction restarted continuation failed")
 	}
@@ -489,9 +593,18 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 		t.Fatal("restart lost covered history or current task authority")
 	}
 	encodedRequest, _ := json.Marshal(provider.requests[len(provider.requests)-1])
-	p.record("restarted_ordinary_task_keeps_summary_current_goal_exception_unknown", &receipt, map[string]any{"current_task": current, "foreground_context_budget_tokens": 65536, "consumer_trigger_budget": 4096, "actual_encoded_request_bytes": len(encodedRequest), "actual_encoded_input_bytes": len(actual), "savings_claim": false})
-	if delegate != nil {
+	p.record("restarted_ordinary_task_keeps_summary_current_goal_exception_unknown", &receipt, map[string]any{"current_task": current, "foreground_context_budget_tokens": p.contextTokens(), "consumer_trigger_budget": 4096, "actual_encoded_request_bytes": len(encodedRequest), "actual_encoded_input_bytes": len(actual), "before_compaction_last_long_request": beforeCompaction, "after_compaction_restarted_request": coherentContextMeasurement(provider.requests[len(provider.requests)-1]), "comparison_has_different_current_input": true, "savings_claim": false})
+	if delegate != nil && options == nil {
 		return p
+	}
+	// Fault controls explicitly install the labeled deterministic provider only
+	// for these three mechanics. They are not native availability/quality calls.
+	if options != nil {
+		previous := provider.delegate
+		previousUnobserved := provider.unobserved
+		provider.delegate = nil
+		provider.unobserved = true
+		defer func() { provider.delegate = previous; provider.unobserved = previousUnobserved }()
 	}
 	// Failure controls continue in this same owner/source/timeline. They retain
 	// conservative reservations and do not forge successful model outcomes.
@@ -501,19 +614,19 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	limitedBudget.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	limited := p.newTask("coherent-exhaustion", "Проверить ограниченный бюджет", []string{"только чтение"})
 	provider.mode = "simple"
-	first, firstResult := p.execute(limited, "Сколько будет 2 + 2?", "", limitedBudget, cat, 65536)
+	first, firstResult := p.execute(limited, "Сколько будет 2 + 2?", "", limitedBudget, cat, p.contextTokens())
 	if firstResult.err != nil || first.Status != "completed" {
 		t.Fatal("first bounded attempt failed")
 	}
 	before := len(provider.requests)
-	denied, _ := p.execute(limited, "Повтори ответ на простой вопрос.", "", limitedBudget, cat, 65536)
+	denied, _ := p.execute(limited, "Повтори ответ на простой вопрос.", "", limitedBudget, cat, p.contextTokens())
 	if denied.Status != "blocked" || denied.ErrorCode != "budget_model_turns_task" || len(provider.requests) != before {
 		t.Fatal("budget exhaustion released another model call")
 	}
 	p.record("same_root_budget_exhaustion_zero_new_provider_entries", &denied, map[string]any{"new_provider_calls": len(provider.requests) - before, "error_code": denied.ErrorCode})
 	unavailable := p.newTask("coherent-provider-outage", "Сохранить неопределённость при недоступной модели", []string{"только чтение"})
 	provider.mode = "unavailable"
-	failure, failed := p.execute(unavailable, "Продолжи без повторения неизвестного внешнего эффекта.", "", b, cat, 65536)
+	failure, failed := p.execute(unavailable, "Продолжи без повторения неизвестного внешнего эффекта.", "", b, cat, p.contextTokens())
 	var nullAttempts int
 	if err = pool.QueryRow(owner, `SELECT count(*) FROM execution_model_attempts WHERE run_id=$1 AND observed_at IS NULL`, failure.RunID).Scan(&nullAttempts); err != nil || failed.err == nil || failure.Status == "completed" || nullAttempts != 1 {
 		t.Fatal("unavailable model became success or lost unknown reservation")
@@ -532,7 +645,7 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	unavailableCatalog := catalog.New(deadPool, manifest)
 	provider.mode = "simple"
 	before = len(provider.requests)
-	storageReceipt, storageFailure := p.execute(storage, "Сколько будет 2 + 2?", "", b, unavailableCatalog, 65536)
+	storageReceipt, storageFailure := p.execute(storage, "Сколько будет 2 + 2?", "", b, unavailableCatalog, p.contextTokens())
 	if storageFailure.err == nil || storageReceipt.Status == "completed" || len(provider.requests) != before {
 		t.Fatal("unavailable owning source pool released provider input")
 	}

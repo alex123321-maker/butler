@@ -1,5 +1,12 @@
 # Coherent memory pilot and lifecycle
 
+The later [native coherent whole-pilot protocol](issue-92-native-coherent-pilot.md)
+defines a separate prospective15-slot/25-checkpoint window with genuinely long
+frozen primary inputs. Its selected static mode supersedes the historical all87
+qualification seam described below; this document's v12 controlled24 receipt and
+nil behavior remain unchanged. Native preparation/auth and quality are not
+implied by the new offline capture-control receipt.
+
 The latest static `coherent-lifecycle-v12`, source `30939510`, passes all24
 sequential checkpoints and47 test/subtest events,0 failures/skips, race and vet.
 It uses the selected adaptive-off prefix and actual temporal readiness predicate.

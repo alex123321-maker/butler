@@ -88,19 +88,25 @@ func (p *coherentViewRead) SubmitToolResult(ctx context.Context, q transport.Sub
 // these exclusive markers. It never reconstructs a fixture or rewrites a row.
 func coherentExternalPhase(t *testing.T, ctx context.Context, proof, phase string, pool *pgxpool.Pool) {
 	t.Helper()
+	if err := coherentExternalPhaseErr(ctx, proof, phase, pool); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func coherentExternalPhaseErr(ctx context.Context, proof, phase string, pool *pgxpool.Pool) error {
 	cfg := pool.Config()
 	schema := strings.TrimSuffix(cfg.ConnConfig.RuntimeParams["search_path"], ",public")
 	raw, _ := json.Marshal(map[string]string{"database": cfg.ConnConfig.Database, "schema": schema})
 	f, err := os.OpenFile(filepath.Join(proof, phase+"-ready.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 	if _, err = f.Write(raw); err == nil {
 		err = f.Sync()
 	}
 	_ = f.Close()
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
@@ -108,16 +114,16 @@ func coherentExternalPhase(t *testing.T, ctx context.Context, proof, phase strin
 		info, err := os.Lstat(filepath.Join(proof, phase+"-complete"))
 		if err == nil {
 			if !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 || info.Size() > 256 {
-				t.Fatal("invalid private external phase receipt")
+				return errors.New("invalid private external phase receipt")
 			}
-			return
+			return nil
 		}
 		if !errors.Is(err, os.ErrNotExist) {
-			t.Fatal(err)
+			return err
 		}
 		select {
 		case <-ctx.Done():
-			t.Fatal("actual external backup/restore did not complete")
+			return errors.New("actual external backup/restore did not complete")
 		case <-ticker.C:
 		}
 	}
@@ -125,21 +131,30 @@ func coherentExternalPhase(t *testing.T, ctx context.Context, proof, phase strin
 
 func coherentStateDigest(t *testing.T, ctx context.Context, pool *pgxpool.Pool) (string, string) {
 	t.Helper()
-	var effects, budgets string
-	err := pool.QueryRow(ctx, `SELECT
-encode(sha256(convert_to(jsonb_build_object('effects',(SELECT jsonb_agg(to_jsonb(e) ORDER BY action_id) FROM action_effects e),'evidence',(SELECT jsonb_agg(to_jsonb(e) ORDER BY evidence_id) FROM action_effect_evidence e))::text,'UTF8')),'hex'),
-encode(sha256(convert_to(jsonb_build_object('foreground',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM execution_model_attempts e),'background',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM memory_model_attempts e),'reservations',(SELECT jsonb_agg(to_jsonb(e) ORDER BY reservation_id) FROM execution_budget_reservations e),'scopes',(SELECT jsonb_agg(to_jsonb(e) ORDER BY scope_id) FROM execution_budget_scopes e))::text,'UTF8')),'hex')`).Scan(&effects, &budgets)
+	effects, budgets, err := coherentStateDigestQuery(ctx, pool)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return effects, budgets
 }
 
+func coherentStateDigestQuery(ctx context.Context, pool *pgxpool.Pool) (string, string, error) {
+	var effects, budgets string
+	err := pool.QueryRow(ctx, `SELECT
+encode(sha256(convert_to(jsonb_build_object('effects',(SELECT jsonb_agg(to_jsonb(e) ORDER BY action_id) FROM action_effects e),'evidence',(SELECT jsonb_agg(to_jsonb(e) ORDER BY evidence_id) FROM action_effect_evidence e))::text,'UTF8')),'hex'),
+encode(sha256(convert_to(jsonb_build_object('foreground',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM execution_model_attempts e),'background',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM memory_model_attempts e),'reservations',(SELECT jsonb_agg(to_jsonb(e) ORDER BY reservation_id) FROM execution_budget_reservations e),'scopes',(SELECT jsonb_agg(to_jsonb(e) ORDER BY scope_id) FROM execution_budget_scopes e))::text,'UTF8')),'hex')`).Scan(&effects, &budgets)
+	return effects, budgets, err
+}
+
 func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_MEMORY_COHERENT_RESTORE_DATABASE") != "coherent_lifecycle_restore_test" {
 		t.Skip("actual coordinated custom backup/fresh restore and bounded tmpfs required")
 	}
-	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[1], func(p *coherentPilot, r *experienceNativeRuntime, lessonID string, recipient *experienceRecipient) {
+	runMemoryCoherentRestoreWithOptions(t, nil)
+}
+
+func runMemoryCoherentRestoreWithOptions(t *testing.T, options *coherentPilotOptions) {
+	runMemoryCoherentExperienceWithOptions(t, experienceNativeArms[1], options, func(p *coherentPilot, r *experienceNativeRuntime, lessonID string, recipient *experienceRecipient) {
 		ctx := p.ctx
 		workerCtx := owneridentity.WithActor(ctx, owneridentity.Actor{})
 		proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
@@ -179,7 +194,12 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		if err = js.PollModelPolicies(workerCtx, func(name string) bool { return name == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
 			t.Fatal(err)
 		}
-		worker := &jobs.ModelWorker{Jobs: js, Provider: p.provider.consolidationReadControl, Model: "gemini-3.8-flash-high", Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}
+		var consolidationProvider transport.ModelProvider = p.provider.consolidationReadControl
+		if options != nil {
+			consolidationProvider = options.Provider
+		}
+		worker := &jobs.ModelWorker{Jobs: js, Provider: consolidationProvider, Model: "gemini-3.8-flash-high", Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}
+		p.phase("native_consolidation")
 		if worked, err := worker.ProcessOne(workerCtx); err != nil || !worked {
 			t.Fatal("coherent consolidation did not publish one unactivated version", worked, err)
 		}
@@ -229,7 +249,12 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			_ = os.WriteFile(filepath.Join(proof, "consolidated-reader.json"), raw, 0600)
 		}()
 		ref, _ := json.Marshal(screenSourceRef(view))
-		execution := r.execute(t, workerCtx, readTask, readID, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. В этом поручении инструментами только читай DATA. DATA reference: "+string(ref), reader)
+		var readProvider transport.ModelProvider = reader
+		if options != nil {
+			readProvider = options.Provider
+		}
+		p.phase("consolidated_read")
+		execution := r.execute(t, workerCtx, readTask, readID, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. В этом поручении инструментами только читай DATA. DATA reference: "+string(ref), readProvider)
 		if execution.Err != nil || execution.Result == nil {
 			t.Fatal("ordinary consumer did not read the actual current consolidated episode", execution.Err)
 		}
@@ -241,20 +266,33 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		if err != nil || receipt.Status != "completed" {
 			t.Fatal("current consolidated read did not complete", err)
 		}
-		var nonReads int
-		if err = p.pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls WHERE run_id=$1 AND tool_name<>'memory.open'`, receipt.RunID).Scan(&nonReads); err != nil || nonReads != 0 || len(reader.requests) != 1 || len(reader.continuations) == 0 {
+		var nonReads, actualOpens int
+		if err = p.pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE tool_name<>'memory.open'),count(*) FILTER(WHERE tool_name='memory.open' AND status='completed') FROM tool_calls WHERE run_id=$1`, receipt.RunID).Scan(&nonReads, &actualOpens); err != nil || nonReads != 0 || actualOpens == 0 || options == nil && (len(reader.requests) != 1 || len(reader.continuations) == 0) {
 			t.Fatal("DATA consumer performed an unrelated action or omitted actual read evidence", err)
 		}
+		if options != nil && options.ValidateRead != nil {
+			if err := options.ValidateRead(receipt.RunID, view); err != nil {
+				t.Fatal(err)
+			}
+		}
 		p.record("ordinary_broker_reads_earlier_consolidated_episode_with_current_applicability", &receipt, map[string]any{"source": generation, "original_owner_result": ownerResult})
+		p.phase("mechanics_tail")
 		unknown.check(t, ctx, p.pool)
 		if recipient.snapshot().Dispatches != unknown.Dispatches {
 			t.Fatal("consolidation consumer repeated the unresolved external action")
 		}
-		effects, budgets := coherentStateDigest(t, ctx, p.pool)
-		coherentExternalPhase(t, ctx, proof, "backup", p.pool)
-		p.record("actual_custom_dump_of_same_prewithdrawal_timeline", nil, map[string]any{"effect_digest": effects, "budget_digest": budgets})
-		if _, err = p.cat.Delete(ctx, p.provider.source.ID, "delete", p.provider.source.Revision); err != nil {
-			t.Fatal(err)
+		var effects, budgets string
+		if options != nil {
+			effects, budgets = coherentNativeLateWithdrawal(t, p, proof)
+		} else {
+			effects, budgets = coherentStateDigest(t, ctx, p.pool)
+			coherentExternalPhase(t, ctx, proof, "backup", p.pool)
+		}
+		if options == nil {
+			p.record("actual_custom_dump_of_same_prewithdrawal_timeline", nil, map[string]any{"effect_digest": effects, "budget_digest": budgets})
+			if _, err = p.cat.Delete(ctx, p.provider.source.ID, "delete", p.provider.source.Revision); err != nil {
+				t.Fatal(err)
+			}
 		}
 		if a, b := coherentStateDigest(t, ctx, p.pool); a != effects || b != budgets {
 			t.Fatal("privacy deletion changed effect truth or complete charges")
@@ -308,7 +346,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		p.record("fresh_custom_restore_latest_anchor_erases_original_episode_view_retains_all_charges", nil, map[string]any{"remaining_private_copies": copies, "effect_digest": effects, "budget_digest": budgets})
 		coherentRestoredDiskFault(t, ctx, proof, current)
 		p.record("same_restored_timeline_actual_enospc_keeps_failed_deletion_uncommitted", nil, map[string]any{"enospc_observed": true})
-		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": true, "pass": !t.Failed(), "native_calls": 0, "steps": p.steps, "restored": true, "actual_unknown_effect": unknown, "erased_private_copies": copies, "effect_journal_unchanged": true, "budget_ledger_unchanged": true, "enospc_observed": true, "limits": "controlled integrated mechanics only; supported-mode qualification, native quality/cost and staged human review remain pending"}, "", "  ")
+		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": options == nil || !options.Native, "pass": !t.Failed(), "native_calls": p.nativeEntries(), "steps": p.steps, "restored": true, "actual_unknown_effect": unknown, "erased_private_copies": copies, "effect_journal_unchanged": true, "budget_ledger_unchanged": true, "enospc_observed": true, "limits": "mechanical assertions do not grant native quality/cost acceptance; all generative slots and controlled faults need independent review"}, "", "  ")
 		if err = os.WriteFile(filepath.Join(proof, "timeline-lifecycle.json"), raw, 0600); err != nil {
 			t.Fatal(err)
 		}
