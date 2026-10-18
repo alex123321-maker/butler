@@ -1,0 +1,771 @@
+{
+  "format": "butler.experience.independent-review.v1",
+  "reviewer": "mixed91",
+  "verdict": "NO_GO",
+  "qualification_changed": false,
+  "source": "813dda3efad1539eed0a48fe96de8a6ecdf2b50e",
+  "safe_projection": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/safe-review-v1.json",
+    "sha256": "d9d70387b1aa64d7837bf2908ef78e9874a645a03b9727712016df439cb62fd4",
+    "producer_sha256": "1d80986b323f4314c5741ab886f343611e8c0293157c454e9c98d96ba5b65c45",
+    "closed_leaf_sha256": "8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f",
+    "private_manifest_sha256": "b37867791e9843763827cb80cf5e59f02c8f48ac0ab680553d18f83d58efd6ab",
+    "preseal_sha256": "e9b0db87ce874ff89ad5f6e90049715daf60160130e199546be8556fcbc0043b"
+  },
+  "scope": {
+    "frozen_protocol_and_oracles_read": true,
+    "visible_requests_reviewed": 2,
+    "visible_tool_proposals_reviewed": 2,
+    "actual_tool_results_reviewed": 1,
+    "owning_source_database_exports_reviewed": 1,
+    "denominator": 57,
+    "execution_limit": 33,
+    "failed": 1,
+    "window_closed_unexecuted": 32,
+    "intentional_unexecuted": 24,
+    "notes": 0,
+    "skills": 0,
+    "control_cases_executed": 0,
+    "native_calls_added_by_review": 0,
+    "main_or_retained_database_queries": 0
+  },
+  "findings": [
+    {
+      "id": "original-01",
+      "severity": "blocking",
+      "observation": "Inspect current alpha succeeded; prepare proposal uses inspected /project/alpha instead of /project/alpha/patches. Exact revision and README before/after match current observation. Advertised generic schemas/descriptions and inspect result omit operation routes.",
+      "classification": "wrong_model_proposal_and_fixture_interface_discoverability_gap",
+      "not_established": [
+        "provider refusal",
+        "recipient HTTP404",
+        "typed absence",
+        "unchanged recipient bytes",
+        "model incapability under a self-describing interface"
+      ]
+    },
+    {
+      "id": "owning-effect",
+      "severity": "blocking",
+      "observation": "Input blocked at tool_result_recorded/effect_unknown, attempts1/max1; preparation effect and dispatch UNKNOWN; no task completion result or final. Run row tool_running/unfinished is retained.",
+      "classification": "failed_source_success_gate_not_task_success",
+      "no_retry_observed": true,
+      "no_false_success_observed": true
+    },
+    {
+      "id": "cohort",
+      "severity": "blocking",
+      "observation": "Four notes, skill, all first-repetition controls and the predeclared second-repetition omissions are unexecuted; no native A/B/C benefit, cost ratio, scope/deletion/drift/UNKNOWN experience acceptance can be graded.",
+      "classification": "unmeasured_not_pass"
+    }
+  ],
+  "entry_review": [
+    {
+      "sequence": 1,
+      "kind": "start",
+      "tool": "extension.project.inspect",
+      "url": "http://external.test/project/alpha",
+      "usage": {
+        "InputTokens": 3850,
+        "OutputTokens": 27,
+        "TotalTokens": 4326
+      },
+      "assessment": "valid current inspect proposal with actual status200 result"
+    },
+    {
+      "sequence": 2,
+      "kind": "tool_result",
+      "tool": "extension.project.prepare-patch",
+      "url": "http://external.test/project/alpha",
+      "usage": {
+        "InputTokens": 4669,
+        "OutputTokens": 216,
+        "TotalTokens": 5587
+      },
+      "assessment": "wrong preparation route; current exact revision/README transform correct; effect UNKNOWN and no final retained"
+    }
+  ],
+  "outcome_review": [
+    {
+      "sequence": 1,
+      "id": "321cc54925aec582f7803e6e145a1a3fbf4c9e121bf1b8a524b43938434112a8",
+      "kind": "original",
+      "case_id": "original-01",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "failed",
+      "blocker": "required_source_success_not_verified",
+      "independent_assessment": "failed_required_source_success"
+    },
+    {
+      "sequence": 2,
+      "id": "e232705388e2af1dd5c1c4f4d3113b766b39ef56708373af6027f5ba04411e97",
+      "kind": "original",
+      "case_id": "original-02",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 3,
+      "id": "a23c3971b1cdc32d6029c6c69702a09f46915a89c7d09c55fa580439800804d3",
+      "kind": "original",
+      "case_id": "original-03",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 4,
+      "id": "ee5027d2f35b6c52b2e57770a4b19315f6033bf3f75207f1ad889778041b4e98",
+      "kind": "original",
+      "case_id": "original-04",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 5,
+      "id": "5960ec402f63d2b6014b3ccb296023c153e57331bc79e5f154580506c16971f5",
+      "kind": "note",
+      "case_id": "original-01",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 6,
+      "id": "ff68465659f7d30cdc8110088e03ae95839815eaabaeb9a9d42d3a7b6f4d28e1",
+      "kind": "note",
+      "case_id": "original-02",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 7,
+      "id": "7d8ed270ec6af180eb95808830c48c7f7074b7fb6eb57541528a05bab9dfbe29",
+      "kind": "note",
+      "case_id": "original-03",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 8,
+      "id": "90488b7c6c37cd3b256694a51243cc6aee57450a489d52f49f8efa00d7e7cbda",
+      "kind": "note",
+      "case_id": "original-04",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 9,
+      "id": "e564884e1eda87995d9fce5f5d3ee71cc2a9280b518bade2d93a5a73b6e29c32",
+      "kind": "skill_preparation",
+      "case_id": "shared",
+      "arm": "shared",
+      "repetition": 0,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 10,
+      "id": "6e23125ac505ae46c10f91cb378bd05b241ffd1a37148db225391e53ef336daf",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 11,
+      "id": "e8433479e4cde3fd15c0dd345fe19028f5920f0e1221811300947b803ffecc06",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 12,
+      "id": "43508d70790433e56dc32064271c37df01d0130b031c21b6d5568eb068add66c",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 13,
+      "id": "f6de2f9add71362dc78ea6120fcabc6344a8284dafe35a594f053b306f0ff0de",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 14,
+      "id": "32fd5f3923d9e8925770b936e967a298a354065bdc1cca7dc247a696f5595b99",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 15,
+      "id": "c3b1eda5bbb4f29dfb882a20068a425ff179cbbf1488f724a8f4ff7a86322f2f",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 16,
+      "id": "1b75d8e463aa467bbaadadf7d4eedcadac1f345c709957e7d9c44c287ae0c405",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 17,
+      "id": "6e28db282bad740d2acd6f3d128104d8829a37d03bb15baf2ec08cfbb304d00b",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 18,
+      "id": "ec184f988b8b94dc41392c37e6b5820a7d33fec1f116a7403d81664aa536ee6a",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 19,
+      "id": "c0df0a897eed0a0743d345e74a341ec28184ea6e3ff89ee03f334ab8e1c8ea7e",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 20,
+      "id": "47247d5c8bea0dcd3e70f9affd58e8668fab7fab57575eec5fd6196938d3ee08",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 21,
+      "id": "a5b22838ecd9d72cddba5562edc1c38d46bba44baee08ee2740d56ff913ae782",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 22,
+      "id": "2592b2870e6b2f4cae011f8eabe3c6e508f39e2d77a8f71f32267b5ae4356b32",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 23,
+      "id": "6429976415b7784a79cf7bc7386e8349dd9fea04164ef73453e3798150c958ef",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 24,
+      "id": "0b2a34233a95e5092c5368fb933b72bbf96279d7e6c76b6d16344015a843098c",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 25,
+      "id": "69c7b0c865684f7050f200cb645119e2eb4d0dfdd1f7fe42a74382e5a80d23f7",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 26,
+      "id": "6023c69d0ebdce3ecf8f6066efc48b1445f219ecb06b0e0a112bc9a6cd83e368",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 27,
+      "id": "90b7cb2d4df4bc7ef14e70fdc742df5874a01b8da740c9fd1b6e2eac16cf1f02",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 28,
+      "id": "b8c57239cd6c1e4b7a30c6bc722cf0b19862cc10553f841e337c687d8182e366",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 29,
+      "id": "f49563e7abb7779af3a8b65bbdbdd66f66f2c78fd7ab14c077277bc54ec32b9c",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 30,
+      "id": "d2b6b10ba35692c2f37a2d464b45128dfd7794452a78414e4fe52b2041294cc5",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 31,
+      "id": "4bbefda236ee3618d583281a4c741157246199de8b0808ebb7d5b4d42a73ca97",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 32,
+      "id": "c1b42bb304b9269d4409dfa7705197925d984531b01893f2778dd4f484e7379c",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 33,
+      "id": "72b581e602894c5e00d71e4ae27b4758592408f91ad591c043889f639067e4ab",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "status": "not_executed",
+      "blocker": "window_closed_before_execution",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 34,
+      "id": "aad3d4aabee901acc2a2e181c5504011ad3cdd39eaf94b77bb8b1421e7f74059",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 35,
+      "id": "42e1e903d1f86090e98c5b149310b852322f31beb8fcf190576d05401a77db46",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 36,
+      "id": "0499a6aa6c3f0a6ab1da7a2e0e74afcc753b93010edc5dca77c34b6ded57d47f",
+      "kind": "control",
+      "case_id": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 37,
+      "id": "c41a57689c0a157848b1df3f57f277cc351769a1c6d34526b002128626837760",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 38,
+      "id": "473643c3b6dab9e136515f0363c7fc9383f3d0f065bcade822c668ecfa773e5c",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 39,
+      "id": "c4953ef47bfa213376da5dfa803c9ec54b54e24dac6b1cad05134d1068a24ba7",
+      "kind": "control",
+      "case_id": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 40,
+      "id": "4e9da510ad660c0d353062fa584336dbfb1356a0756965fdc6c50c6697648510",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 41,
+      "id": "01182581cc53ab500efca692ab4cd19961bdaaa1ab8950b14ef9b3d8450b2228",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 42,
+      "id": "24854d9ef31cf896fef19e0ca283d7528f4f5c57feb017b95654d3309ea77061",
+      "kind": "control",
+      "case_id": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 43,
+      "id": "16b0a5e971ef253c1ad523167e8e702bc9ee19829d40c355a54269b0fb93b2ec",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 44,
+      "id": "47df9936717b6dd4688ff68aae4343a33d7ae764c5933709b81dd2074da12aa5",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 45,
+      "id": "165d27a9ea2dfd74b76caedab95a3fc84f67e271c7873e741c4dfadd8dc85944",
+      "kind": "control",
+      "case_id": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 46,
+      "id": "f10ee172a42e9f12e2734412aa30c70606167191a40dbb9c651a93e2bc439e4d",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 47,
+      "id": "bc30dc5ad1b919e9d2fbac09156ad8c099d865cd8c6674df58b48f487ebc9b69",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 48,
+      "id": "e7b3cafbc75ac5b3ff2e1093c47a18cbe57244827aac508e846425988e5ea2ee",
+      "kind": "control",
+      "case_id": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 49,
+      "id": "c17bbcc4ae556bf7d390e785efdeb6afc8208cc3ea3c691f2fcf72720f9abac6",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 50,
+      "id": "8ea7abf428473899fa836dcb357f75a23a724c8b21cc094c43b4cecb0a4c1c0a",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 51,
+      "id": "ab207452a1e4dc5d91cfb24e3fbe962c25f7484975034aea0a7c9d6be00f0c21",
+      "kind": "control",
+      "case_id": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 52,
+      "id": "7978d13bdb44d3458bd1d4e7542940004bec597f8ec952457351ee11e803ddba",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 53,
+      "id": "6551613cd3ea844c083125fa66eb057c52b1e773ec6d9b6d09c4aceb223b7130",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 54,
+      "id": "d7ae4878c2265bd87ef70bf33751d1a9d8b936ad0a2d2a9c892581b9ea38da3b",
+      "kind": "control",
+      "case_id": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 55,
+      "id": "baad0fcb31d6ce4998f6f5cfdb089c2474bf65667f87cc8858370d146ea41dfb",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 56,
+      "id": "184b30bd24c047587ad4b1e50b369b098ad9c623fa5edc031b2c3c982a14b8ad",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    },
+    {
+      "sequence": 57,
+      "id": "a44dc7b1dc7c721682f4eb41f063cd2eb96dc4b1dd92231a4173cac2975e8adf",
+      "kind": "control",
+      "case_id": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "status": "not_executed",
+      "blocker": "predeclared_short_smoke_omission",
+      "independent_assessment": "not_executed_not_assessed"
+    }
+  ],
+  "costs": {
+    "new_native_entries": 2,
+    "new_product_attempts": 2,
+    "new_known_usage": 2,
+    "new_null_usage": 0,
+    "new_missing_full_total": 0,
+    "full_total_tokens": 9913,
+    "input_tokens": 8519,
+    "output_tokens": 243,
+    "input_output_sum": 8762,
+    "native_milliseconds": 15040,
+    "inclusive": {
+      "native_entries": 213,
+      "native_known_usage": 212,
+      "native_unknown_usage": 1,
+      "native_missing_total": 0,
+      "known_full_token_lower_bound": 1605455,
+      "product_attempts": 213,
+      "product_observed": 212,
+      "product_null": 1,
+      "product_without_native_entry": 0
+    },
+    "conservative_carry": {
+      "model_turns": 213,
+      "tokens": 230326272,
+      "cost_micros": 0,
+      "external_calls": 144,
+      "children": 0,
+      "active_millis": 81065000,
+      "egress_bytes": 600834048,
+      "provider_input_bytes": 1786773504
+    },
+    "cost_population_scope": "Safe closed-leaf projection; earlier immutable receipts not re-audited in this review",
+    "invoice_cost": "unknown",
+    "amortized_benefit": "unmeasured",
+    "new_NULL_does_not_replace_old_NULL": true
+  },
+  "handback": {
+    "native_status": 1,
+    "handback_status": 0,
+    "opaque_cas": true,
+    "active_work_checked": true,
+    "resolved": true,
+    "unsafe_refresh": false,
+    "expired": false,
+    "paid_discovery_completed_200": true,
+    "fresh_main_snapshot": true,
+    "scope": "Checked safe receipt projection; no credential reads or main queries"
+  },
+  "limitations": [
+    "No published original witness/recipient status audit after failed required-source gate; no physical absence/unchanged-file inference",
+    "No native note or skill body and no A/B/C result to grade",
+    "No repeatability sample",
+    "No new native92 authority while experience qualification remains false"
+  ]
+}
