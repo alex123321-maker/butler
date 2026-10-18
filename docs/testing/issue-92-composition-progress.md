@@ -76,6 +76,14 @@ that old result. Temporal-context-v1 also retains a rejected test fixture that
 used the profile-only owner proposal endpoint for an episode; v2 uses the real
 transactional neutral-candidate contract without changing its validation.
 
+The complete [native88v5 cohort](issue-88-native-v5.md) then completed12/12 with
+36 known native entries,248587 full tokens and no product NULL usage. Its
+[independent full review](issue-88-native-v5-independent-review.md) passed11
+originals and rejected one unsupported inference from a filtered result to
+nonacceptance of an old source. Actual model-visible context corroborates the
+other disputed timestamp. V5 remains NO_GO; the separate general revision3
+clarification changes no old answers, charges, input schema or source limits.
+
 The [first89 native cohort](issue-89-native-v1.md) is also NO_GO: one background
 grouping completed, the first baseline foreground returned capability_mismatch,
 and seven slots remained unexecuted. Both native entries have known full usage
