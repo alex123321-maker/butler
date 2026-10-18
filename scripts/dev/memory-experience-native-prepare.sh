@@ -25,6 +25,7 @@ find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha2
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
 case "$(jq -er .format "$proof/history/history.json")" in
  butler.memory.closed-owner-leaf.v1) history_script=memory-closed-temporal-v7-history.py ;;
+ butler.memory.closed-owner-leaf.v2) history_script=memory-closed-temporal-v8-history.py ;;
  *) echo 'unsupported CLOSED latest-history recipe' >&2; exit 2 ;;
 esac
 printf '%s\n' "$history_script" > "$proof/history-checker"

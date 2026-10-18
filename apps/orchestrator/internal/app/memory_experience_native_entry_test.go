@@ -39,8 +39,8 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
-	case "butler.memory.closed-owner-leaf.v1":
-		history, err := loadClosedTemporalV7History(path, expected)
+	case "butler.memory.closed-owner-leaf.v1", "butler.memory.closed-owner-leaf.v2":
+		history, err := loadLatestClosedOwnerHistory(path, expected)
 		if err != nil {
 			return out, err
 		}
