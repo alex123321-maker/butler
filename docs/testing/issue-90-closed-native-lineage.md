@@ -48,3 +48,15 @@ This is an auth0/native0 component proof. It does not fabricate a native closed
 receipt or establish the full recursive wrapper's positive native acceptance.
 That check must consume the actual closed90 packet after its one approved whole
 cohort, followed by independent semantic/effect/cost review.
+
+The owner's shortened route prospectively seals `execution_slots:33` in the
+same original57-slot/640-entry plan. It executes the four originals, four notes,
+skill preparation and all eight controls in three arms for repetition1. The24
+repetition2 slots remain `not_executed`, with no timestamps and the exact
+`predeclared_short_smoke_omission` blocker in both original outcome projections.
+This is a bounded one-pass smoke, not57/57 acceptance or repeatability evidence.
+Missing execution scope keeps the legacy full57 behavior; an undeclared cutoff
+or a changed cutoff is rejected. The closed consumer cross-checks the sealed and
+actual scope, all24 omissions, and absence of native/global entries or allocated
+case databases beyond33. The original conservative ceilings and all historical
+charges remain unchanged; only actual new admissions add to the carry.

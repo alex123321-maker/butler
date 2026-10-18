@@ -16,6 +16,50 @@ import (
 
 func closedExperienceJSON(value any) json.RawMessage { raw, _ := json.Marshal(value); return raw }
 
+func TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork(t *testing.T) {
+	for _, name := range []string{"valid", "unsealed_limit", "unsupported_limit", "completed_omission", "unlabelled_omission", "native_after_limit", "database_after_limit", "global_entry_after_limit", "reserved_clone_after_limit"} {
+		t.Run(name, func(t *testing.T) {
+			slots := make([]experienceNativeSlot, 57)
+			for i := range slots {
+				slots[i] = experienceNativeSlot{Sequence: i + 1, ID: fmt.Sprint(i + 1), Status: "completed"}
+				if i >= 33 {
+					slots[i].Status, slots[i].Blocker = "not_executed", "predeclared_short_smoke_omission"
+				}
+			}
+			outcomes := append([]experienceNativeSlot(nil), slots...)
+			entries := []experienceNativeEntry{{Slot: "10"}}
+			databases := []string{"source-database.json", "case-010-database.json"}
+			journal := map[string]json.RawMessage{"experience_native_entries": closedExperienceJSON([]any{map[string]any{"slot_id": "10"}}), "experience_native_case_databases": closedExperienceJSON([]any{map[string]any{"slot_id": "10"}})}
+			planned, recorded := 33, 33
+			switch name {
+			case "unsealed_limit":
+				planned = 0
+			case "unsupported_limit":
+				planned, recorded = 32, 32
+			case "completed_omission":
+				slots[33].Status = "completed"
+			case "unlabelled_omission":
+				outcomes[33].Blocker = ""
+			case "native_after_limit":
+				entries[0].Slot = "34"
+			case "database_after_limit":
+				databases[1] = "case-034-database.json"
+			case "global_entry_after_limit":
+				journal["experience_native_entries"] = closedExperienceJSON([]any{map[string]any{"slot_id": "34"}})
+			case "reserved_clone_after_limit":
+				journal["experience_native_case_databases"] = closedExperienceJSON([]any{map[string]any{"slot_id": "34"}})
+			}
+			err := closedExperienceExecutionScope(planned, recorded, slots, outcomes, entries, databases, journal)
+			if (err == nil) != (name == "valid") {
+				t.Fatal("shortened scope accepted omitted work or rejected original bound", err)
+			}
+			if name == "valid" && closedExperienceExecutionScope(0, 0, slots, outcomes, entries, databases, journal) != nil {
+				t.Fatal("legacy full-window scope changed")
+			}
+		})
+	}
+}
+
 func TestClosedExperienceProductsPreserveUnknownAndRejectForgeries(t *testing.T) {
 	fixture := func() (map[string]map[string]json.RawMessage, []experienceNativeEntry, map[string]experienceNativeSlot) {
 		now := time.Date(2026, 10, 18, 8, 0, 0, 0, time.UTC)

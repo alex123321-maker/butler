@@ -161,12 +161,13 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 		refs[name] = hash
 	}
 	var window struct {
-		Slots    []experienceNativeSlot
-		Entries  []experienceNativeEntry
-		Maximum  int       `json:"maximum_entries"`
-		Active   int       `json:"active_slot"`
-		Started  time.Time `json:"started_at"`
-		Finished time.Time `json:"finished_at"`
+		Slots          []experienceNativeSlot
+		Entries        []experienceNativeEntry
+		ExecutionSlots int       `json:"execution_slots,omitempty"`
+		Maximum        int       `json:"maximum_entries"`
+		Active         int       `json:"active_slot"`
+		Started        time.Time `json:"started_at"`
+		Finished       time.Time `json:"finished_at"`
 	}
 	var outcomes struct {
 		Slots       []experienceNativeSlot
@@ -193,6 +194,9 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 			return out, errors.New("original slot identity or sealed outcome changed")
 		}
 		slots[slot.ID] = slot
+	}
+	if err = closedExperienceExecutionScope(plan.ExecutionSlots, window.ExecutionSlots, window.Slots, outcomes.Slots, window.Entries, costs.Databases, journal); err != nil {
+		return out, err
 	}
 	databases := []map[string]json.RawMessage{}
 	byDatabase := map[string]map[string]json.RawMessage{}
@@ -242,6 +246,65 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 	}
 	out = experienceNativeLineage{Hash: expected, Day: m.Day, Deadline: m.Deadline, Carry: m.Carry, Usage: m.Usage.Inclusive}
 	return out, validateExperienceNativeLineage(out)
+}
+
+// The owner's shortened route preserves the original57 denominator. Only the
+// independently predeclared first33 slots may execute; omitted repetition2 is
+// never reported as completed or silently removed from historical accounting.
+func closedExperienceExecutionScope(planned, recorded int, slots, outcomes []experienceNativeSlot, entries []experienceNativeEntry, databases []string, journal map[string]json.RawMessage) error {
+	limit := func(n int) int {
+		if n == 0 {
+			return 57
+		}
+		if n == 33 {
+			return 33
+		}
+		return -1
+	}
+	n := limit(planned)
+	if n < 0 || n != limit(recorded) || len(slots) != 57 || len(outcomes) != 57 {
+		return errors.New("exact presealed full or shortened execution scope required")
+	}
+	if n == 57 {
+		return nil
+	}
+	allowed, exports := map[string]bool{}, map[string]bool{"source-database.json": true}
+	for i, slot := range slots {
+		if i < n {
+			allowed[slot.ID] = true
+			exports[fmt.Sprintf("case-%03d-database.json", slot.Sequence)] = true
+			continue
+		}
+		for _, omitted := range []experienceNativeSlot{slot, outcomes[i]} {
+			if omitted.Status != "not_executed" || omitted.Started != nil || omitted.Finished != nil || omitted.Blocker != "predeclared_short_smoke_omission" {
+				return errors.New("short smoke must retain every intentional omitted original")
+			}
+		}
+	}
+	for _, entry := range entries {
+		if !allowed[entry.Slot] {
+			return errors.New("native entry exceeds shortened execution scope")
+		}
+	}
+	for _, name := range databases {
+		if !exports[name] {
+			return errors.New("database exceeds shortened execution scope")
+		}
+	}
+	for _, name := range []string{"experience_native_entries", "experience_native_case_databases"} {
+		var rows []struct {
+			Slot string `json:"slot_id"`
+		}
+		if json.Unmarshal(journal[name], &rows) != nil || rows == nil {
+			return errors.New("shortened global scope witness unavailable")
+		}
+		for _, row := range rows {
+			if !allowed[row.Slot] {
+				return errors.New("global entry or clone exceeds shortened execution scope")
+			}
+		}
+	}
+	return nil
 }
 
 func closedExperienceCaseExport(name string, slots map[string]experienceNativeSlot) bool {
