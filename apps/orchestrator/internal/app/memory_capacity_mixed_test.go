@@ -342,6 +342,14 @@ func TestMemoryCapacityCombinedMixedIntegration(t *testing.T) {
 		controlSources = append(controlSources, s)
 	}
 	cs := &consolidation.Store{Catalog: cat, Jobs: js}
+	// The contexts are actual completed foreground attempts. Let the existing
+	// 60-second quiet policy elapse; never backdate their rows to admit this job.
+	t.Log("waiting61s for actual completed history to satisfy quiet context policy")
+	select {
+	case <-time.After(61 * time.Second):
+	case <-ctx.Done():
+		t.Fatal("quiet history deadline")
+	}
 	if _, err = cs.Prepare(owner, consolidation.PrepareRequest{ViewKey: "mixed-stable-view", Sources: []catalog.SourceRef{screenSourceRef(controlSources[0])}, Policy: jobs.ModelPolicyRequest{ID: "mixed-consolidation-policy", Privacy: "cloud_allowed", IntervalSeconds: 60, MaxJobs: 1, Contexts: []jobs.ModelContextRef{{SessionKey: "mixed-history", OriginalRunID: history.RunID, TaskID: "task-mixed-history"}}, Job: jobs.Request{Allowance: allowance, Deadline: time.Now().Add(10 * time.Minute)}}}); err != nil {
 		t.Fatal("actual consolidation preparation", err)
 	}
