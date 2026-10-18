@@ -115,6 +115,13 @@ func temporalValidatePositiveDay(raw []byte, priorRaw []byte, day string, deadli
 	if json.Unmarshal(raw, &current) != nil || json.Unmarshal(current["databases"], &databases) != nil || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != "butler.temporal.predecessor89.v1" || !prior.Closed {
 		return units, usage, errors.New("closed exact current-day predecessor required")
 	}
+	var productCopies struct {
+		ModelJobs  []json.RawMessage `json:"model_jobs"`
+		Background []json.RawMessage `json:"background"`
+	}
+	if json.Unmarshal(priorRaw, &productCopies) != nil || !temporalSameRecords(productCopies.ModelJobs, productCopies.Background, "operation_id") {
+		return units, usage, errors.New("nullable background product copies diverge")
+	}
 	// Validate the original reservation population before using its inclusive
 	// scope. No predecessor vectors are summed as additional current spending.
 	var err error
@@ -162,6 +169,9 @@ func temporalValidatePositiveDay(raw []byte, priorRaw []byte, day string, deadli
 		if attempt.Usage == nil {
 			usage.ProductNULL++
 		} else {
+			if attempt.Usage.Validate() != nil {
+				return units, usage, errors.New("invalid predecessor background usage")
+			}
 			usage.ProductObserved++
 		}
 	}
@@ -199,8 +209,14 @@ func temporalValidatePositiveDay(raw []byte, priorRaw []byte, day string, deadli
 		if o.Usage == nil {
 			usage.NativeUnknownUsage++
 		} else {
+			if o.Usage.Validate() != nil {
+				return units, usage, errors.New("invalid predecessor native usage")
+			}
 			usage.NativeKnownUsage++
 			if o.Usage.TotalTokens > 0 {
+				if int64(o.Usage.TotalTokens) > int64(^uint64(0)>>1)-usage.KnownFullTokenLowerBound {
+					return units, usage, errors.New("predecessor native usage total overflow")
+				}
 				usage.KnownFullTokenLowerBound += int64(o.Usage.TotalTokens)
 			} else {
 				usage.NativeMissingTotal++
@@ -271,7 +287,7 @@ func loadTemporalV5History(path, expectedHash string) (*temporalV5History, error
 			return nil, errors.New("bounded temporal history reference required")
 		}
 		data, e := os.ReadFile(filepath.Join(filepath.Dir(path), ref.Path))
-		if e != nil || experienceDigest(string(data)) != ref.SHA256 {
+		if e != nil || len(data) > 32*1024*1024 || experienceDigest(string(data)) != ref.SHA256 {
 			return nil, errors.New("temporal predecessor artifact changed")
 		}
 		return data, nil
@@ -279,10 +295,12 @@ func loadTemporalV5History(path, expectedHash string) (*temporalV5History, error
 	if _, err = read(h.Manifest.Historical); err != nil {
 		return nil, err
 	}
-	if _, err = read(h.Manifest.OriginalLedger); err != nil {
+	originalLedger, err := read(h.Manifest.OriginalLedger)
+	if err != nil {
 		return nil, err
 	}
-	if _, err = read(h.Manifest.OriginalScreen); err != nil {
+	originalScreen, err := read(h.Manifest.OriginalScreen)
+	if err != nil {
 		return nil, err
 	}
 	h.Historical, err = loadConsolidationScreenHistory(filepath.Join(filepath.Dir(path), h.Manifest.Historical.Path), h.Manifest.Historical.SHA256)
@@ -295,6 +313,9 @@ func loadTemporalV5History(path, expectedHash string) (*temporalV5History, error
 	}
 	prior, err := read(h.Manifest.Predecessor)
 	if err != nil {
+		return nil, err
+	}
+	if err = temporalCorroborateOriginal89(prior, originalLedger, originalScreen, h.Manifest.Day); err != nil {
 		return nil, err
 	}
 	h.Carry, h.Usage, err = temporalValidatePositiveDay(current, prior, h.Manifest.Day, h.Manifest.Deadline)

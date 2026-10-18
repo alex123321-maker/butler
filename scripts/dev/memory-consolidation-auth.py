@@ -80,7 +80,7 @@ elif mode == "return":
     script = "BEGIN; CREATE TEMP TABLE consolidation_auth(value TEXT,kind TEXT) ON COMMIT DROP; COPY consolidation_auth FROM STDIN;\n"+latest+"\tnew\n"+expected+"\texpected\n\\.\n"+"""
 DO $handoff$ BEGIN
  IF EXISTS(SELECT 1 FROM session_ownership WHERE lease_id<>'' AND expires_at>clock_timestamp()) OR EXISTS(SELECT 1 FROM accepted_inputs WHERE status IN('queued','running')) THEN RAISE EXCEPTION 'main active work';END IF;
- UPDATE system_settings SET value=(SELECT value FROM consolidation_auth WHERE kind='new'),updated_by='issue89-serialized-auth-handback',updated_at=clock_timestamp() WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY' AND value=(SELECT value FROM consolidation_auth WHERE kind='expected');
+ UPDATE system_settings SET value=(SELECT value FROM consolidation_auth WHERE kind='new'),updated_by='memory-serialized-auth-handback',updated_at=clock_timestamp() WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY' AND value=(SELECT value FROM consolidation_auth WHERE kind='expected');
  IF NOT FOUND THEN RAISE EXCEPTION 'opaque main CAS denied';END IF;
 END $handoff$;COMMIT;
 """
