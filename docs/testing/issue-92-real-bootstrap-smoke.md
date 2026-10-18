@@ -7,6 +7,12 @@ The actual Antigravity constructor uses High32768/300s and a matching budget;
 authentication is only resolved on inference. Empty settings and the private
 internal network are additional controls, not provider-health evidence.
 
+The final shortened route runs the existing24-row effective-constructor matrix
+in the same invocation as the five real-bootstrap rows. This avoids a separate
+stand and repeated broad suite while retaining unsupported-profile denials and
+the qualified-to-off reconstruction checks. Earlier receipts keep their original
+test counts and source identities.
+
 The existing `memorytest.Database`, compiled Broker subprocess,
 `doctorObservedRuntime` and free-loopback-address helpers are reused. That runtime
 is explicitly a controlled diagnostic response, not a real host-health check.

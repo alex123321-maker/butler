@@ -38,7 +38,7 @@ docker run --rm --pull never --name "$client" --network "$network" --cpus 1 --me
  -e BUTLER_TEST_MEMORY_REDIS_URL='redis://redis:6379/0' -e BUTLER_TEST_DOCTOR_BROKER_BINARY=/proof/tool-broker -e BUTLER_MEMORY_BOOTSTRAP_PROOF=/proof/bootstrap.json \
  golang:1.27.2-bookworm bash -eu -c '
  go build -p 1 -o /proof/tool-broker ./apps/tool-broker
- go test -json -race -p 1 -count=1 -timeout 5m -run "^TestMemoryRealBootstrapDoctorIntegration$" ./apps/orchestrator/internal/app > /proof/tests.jsonl
+ go test -json -race -p 1 -count=1 -timeout 5m -run "^Test(MemoryRealBootstrapDoctorIntegration|MemoryEffectiveConstructorAndDoctorMatrixIntegration)$" ./apps/orchestrator/internal/app > /proof/tests.jsonl
  go test -json -race -p 1 -count=1 -timeout 1m -run "^TestOperatorDoctorCommandIdentitySurvivesReplayWithoutCrossRunCollision$" ./apps/orchestrator/internal/orchestrator > /proof/identity-tests.jsonl
  go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator > /proof/vet.log 2>&1
  ' > "$proof/runner.log" 2>&1 || status=$?
@@ -50,7 +50,7 @@ find "$proof" -maxdepth 1 -type f ! -name evidence.sha256 ! -name complete -prin
 ! grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/tests.jsonl"
 ! grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/identity-tests.jsonl"
 jq -s -e 'any(.[];.Action=="pass" and .Test=="TestOperatorDoctorCommandIdentitySurvivesReplayWithoutCrossRunCollision")' "$proof/identity-tests.jsonl" >/dev/null
-for name in TestMemoryRealBootstrapDoctorIntegration TestMemoryRealBootstrapDoctorIntegration/default_off TestMemoryRealBootstrapDoctorIntegration/experience_context_without_jobs TestMemoryRealBootstrapDoctorIntegration/selected_requested TestMemoryRealBootstrapDoctorIntegration/unsupported_profile TestMemoryRealBootstrapDoctorIntegration/rollback_default_off; do
+for name in TestMemoryEffectiveConstructorAndDoctorMatrixIntegration TestMemoryRealBootstrapDoctorIntegration TestMemoryRealBootstrapDoctorIntegration/default_off TestMemoryRealBootstrapDoctorIntegration/experience_context_without_jobs TestMemoryRealBootstrapDoctorIntegration/selected_requested TestMemoryRealBootstrapDoctorIntegration/unsupported_profile TestMemoryRealBootstrapDoctorIntegration/rollback_default_off; do
  jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name)' "$proof/tests.jsonl" >/dev/null
 done
 jq -e '.pass and .native_calls==0 and .auth_imported==false and .foreground_model_attempts==0 and .background_model_attempts==0 and .system_settings_rows==0 and .worker_control=="disabled" and .controlled_diagnostic_runtime and (.cases|length)==5 and (.retained_completed_reports==(if .experience_qualified then 4 else 2 end)) and .doctor_tool_rows==.retained_completed_reports and .doctor_distinct_runs==.retained_completed_reports' "$proof/bootstrap.json" >/dev/null
