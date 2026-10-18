@@ -263,6 +263,7 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 		var reservations []struct {
 			ID      string         `json:"reservation_id"`
 			Op      string         `json:"operation_id"`
+			Owner   string         `json:"owner_id"`
 			Request budget.Request `json:"request_json"`
 		}
 		if json.Unmarshal(db["execution_budget_reservations"], &reservations) != nil || reservations == nil {
@@ -270,7 +271,7 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 		}
 		owned := map[string]string{}
 		for _, r := range reservations {
-			if r.Request.Charge.ModelTurns == 1 && r.Request.OperationID == r.Op && r.Request.OwnerID == experienceNativeOwner {
+			if r.Request.Charge.ModelTurns == 1 && r.Request.OperationID == r.Op && r.Owner == experienceNativeOwner && r.Request.OwnerID == experienceNativeOwner {
 				owned[r.ID] = r.Op
 			}
 		}
@@ -287,7 +288,7 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 				}
 				text := func(key string) string { var s string; _ = json.Unmarshal(row[key], &s); return s }
 				op := text("operation_id")
-				if op == "" || text("reservation_id") == "" || text("owner_id") != experienceNativeOwner || owned[text("reservation_id")] != op {
+				if op == "" || text("reservation_id") == "" || owned[text("reservation_id")] != op {
 					return usage, errors.New("owned product identity required")
 				}
 				for _, key := range []string{"observed_at", "reservation_id"} {

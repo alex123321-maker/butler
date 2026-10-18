@@ -20,8 +20,8 @@ func TestClosedExperienceProductsPreserveUnknownAndRejectForgeries(t *testing.T)
 	fixture := func() (map[string]map[string]json.RawMessage, []experienceNativeEntry, map[string]experienceNativeSlot) {
 		now := time.Date(2026, 10, 18, 8, 0, 0, 0, time.UTC)
 		millis := int64(3)
-		row := map[string]any{"owner_id": experienceNativeOwner, "operation_id": "op", "reservation_id": "res", "run_id": "run", "observed_at": nil, "actual_input_tokens": nil, "actual_output_tokens": nil}
-		reservation := map[string]any{"reservation_id": "res", "operation_id": "op", "request_json": budget.Request{OwnerID: experienceNativeOwner, OperationID: "op", Charge: budget.Units{ModelTurns: 1}}}
+		row := map[string]any{"operation_id": "op", "reservation_id": "res", "run_id": "run", "observed_at": nil, "actual_input_tokens": nil, "actual_output_tokens": nil}
+		reservation := map[string]any{"reservation_id": "res", "operation_id": "op", "owner_id": experienceNativeOwner, "request_json": budget.Request{OwnerID: experienceNativeOwner, OperationID: "op", Charge: budget.Units{ModelTurns: 1}}}
 		db := map[string]json.RawMessage{"execution_model_attempts": closedExperienceJSON([]any{row}), "memory_model_attempts": json.RawMessage(`[]`), "execution_budget_reservations": closedExperienceJSON([]any{reservation})}
 		return map[string]map[string]json.RawMessage{"source-database.json": db}, []experienceNativeEntry{{Sequence: 1, Slot: "slot", RunID: "run", Operation: "op", Reservation: "res", Kind: "start", Request: json.RawMessage(`{}`), Finished: true, Millis: &millis}}, map[string]experienceNativeSlot{"slot": {Sequence: 1, ID: "slot", Kind: "original", Maximum: 12, Started: &now}}
 	}
@@ -198,5 +198,69 @@ func TestClosedExperienceRetainedControlledExports(t *testing.T) {
 	u, err := closedExperienceProducts(databases, window.Entries, slots)
 	if err != nil || u.ProductAttempts != 211 || u.NativeEntries != 211 || u.ProductObserved != 211 || u.ProductNULL != 0 {
 		t.Fatal(u, err)
+	}
+	var history struct{ History experienceNativeLineage }
+	raw, err = os.ReadFile(filepath.Join(root, "history-import.json"))
+	if err != nil || json.Unmarshal(raw, &history) != nil {
+		t.Fatal("original controlled carry absent")
+	}
+	list := []map[string]json.RawMessage{}
+	for _, db := range databases {
+		list = append(list, db)
+	}
+	quotes, err := experienceNativeUniqueQuotes(list, history.History)
+	if err != nil || quotes.ModelRows != 211 || quotes.CarryRows != 1 || quotes.UniqueReservations != 368 {
+		t.Fatal(quotes, err)
+	}
+	var journal map[string]json.RawMessage
+	raw, err = os.ReadFile(filepath.Join(root, "global-journal-final.json"))
+	if err != nil || json.Unmarshal(raw, &journal) != nil {
+		t.Fatal("original controlled global journal absent")
+	}
+	var windows []struct {
+		Window string `json:"window_id"`
+	}
+	if json.Unmarshal(journal["experience_native_windows"], &windows) != nil || len(windows) != 1 {
+		t.Fatal("one controlled window required")
+	}
+	m := closedExperienceManifest{Preseal: windows[0].Window, Owner: experienceNativeOwner, Previous: history.History.Hash}
+	if err = closedExperienceJournal(journal, slots, window.Entries, databases, m, history.History, quotes); err != nil {
+		t.Fatal("actual controlled journal", err)
+	}
+	for name, mutate := range map[string]func(map[string]json.RawMessage){
+		"refund_global_used": func(j map[string]json.RawMessage) {
+			var rows []map[string]any
+			_ = json.Unmarshal(j["experience_native_windows"], &rows)
+			rows[0]["used"] = 210
+			j["experience_native_windows"] = closedExperienceJSON(rows)
+		},
+		"omit_admission": func(j map[string]json.RawMessage) {
+			var rows []map[string]any
+			_ = json.Unmarshal(j["experience_native_entries"], &rows)
+			j["experience_native_entries"] = closedExperienceJSON(rows[1:])
+		},
+		"lose_history_binding": func(j map[string]json.RawMessage) { j["experience_native_history"] = json.RawMessage(`[]`) },
+		"omit_allocated_clone": func(j map[string]json.RawMessage) {
+			var rows []map[string]any
+			_ = json.Unmarshal(j["experience_native_case_databases"], &rows)
+			j["experience_native_case_databases"] = closedExperienceJSON(rows[1:])
+		},
+		"change_recorded_usage": func(j map[string]json.RawMessage) {
+			var rows []map[string]any
+			_ = json.Unmarshal(j["experience_native_entries"], &rows)
+			rows[0]["usage_json"] = nil
+			j["experience_native_entries"] = closedExperienceJSON(rows)
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			copy := map[string]json.RawMessage{}
+			for k, v := range journal {
+				copy[k] = v
+			}
+			mutate(copy)
+			if closedExperienceJournal(copy, slots, window.Entries, databases, m, history.History, quotes) == nil {
+				t.Fatal("changed retained journal accepted")
+			}
+		})
 	}
 }
