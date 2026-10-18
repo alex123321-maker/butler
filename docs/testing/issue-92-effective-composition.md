@@ -38,5 +38,11 @@ targeted vet to pass with zero skips. Main deployment is unchanged. Source,
 event and timeline checksums are retained. This is functional composition proof,
 not a latency measurement or a native quality/cost qualification.
 
-Execution receipt: pending the fresh focused run. A later root qualification
-change and a fresh full24-checkpoint static run remain separate work.
+The first `effective-v1` run at source `a21e4eb0` passed every selected test,
+race and vet, but its driver could not read the root-owned private timeline
+directory during final receipt validation. It has no completed aggregate PASS
+and is retained unchanged. The driver now transfers ownership of its own report
+directories as well as files, while pruning the private PostgreSQL data tree.
+This is a report-finalization fix, with no production or assertion change.
+A fresh focused receipt remains pending. A later root qualification change and
+a fresh full24-checkpoint static run remain separate work.

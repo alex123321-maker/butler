@@ -44,7 +44,7 @@ status=0
 ' > "$proof/runner.log" 2>&1 || status=$?
 cleanup
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm \
- bash -c 'find /proof -maxdepth 2 -type f -not -path "/proof/postgres/*" -exec chown "$1:$2" {} +' -- "$(id -u)" "$(id -g)"
+ bash -c 'find /proof -path /proof/postgres -prune -o -exec chown -h "$1:$2" {} +' -- "$(id -u)" "$(id -g)"
 find "$proof" -maxdepth 1 -type f ! -name evidence.sha256 ! -name complete -print0 | sort -z | xargs -0 sha256sum > "$proof/evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
 for stream in config held doctor; do
