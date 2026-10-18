@@ -29,7 +29,7 @@ test "$(stat -c '%a' "$base/private")" = 700
 test "$(stat -c '%u' "$base/private")" = "$(id -u)"
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
 history_script=$(cat "$proof/history-checker")
-case "$history_script" in memory-closed-temporal-v7-history.py|memory-closed-temporal-v8-history.py) ;; *) exit 2 ;; esac
+case "$history_script" in memory-closed-temporal-v7-history.py|memory-closed-temporal-v8-history.py|memory-closed-temporal-v9-history.py) ;; *) exit 2 ;; esac
 umask 077
 exec 9>/srv/storage/butler/agents/native-provider-auth.lock
 flock -n 9

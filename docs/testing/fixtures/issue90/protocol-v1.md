@@ -261,8 +261,11 @@ using its exact manifest; that cleanup is not a native case reset or refund.
 
 The offline prepare command pins all five immutable executable artifacts, the
 entire source inventory, mechanical corpus, exact policies, complete57 schedule
-and recursively validated latest closed owner/day history. Its nonroot prepare
-and check use the same read-only executable mounts as the eventual collector.
+and recursively validated latest closed owner/day history. Preparation selects
+only a declared closed-history format/version and its fixed read-only
+currentness checker; a future version does not inherit an older recipe.
+Nonroot prepare and check use the same read-only executable mounts as the
+eventual collector.
 Only an exact reviewed preseal and prepared-artifact hash permit the execute
 wrapper to take the common auth lock. The lock spans fresh opaque main clone,
 the whole comparison, exact main CAS, control-plane paid-tier project discovery

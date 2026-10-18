@@ -23,9 +23,10 @@ printf '%s\n' "$src" > "$proof/source-reference"
 printf '%s\n' "$release" > "$proof/source-revision"
 find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha256"
 history_hash=$(sha256sum "$proof/history/history.json" | cut -d' ' -f1)
-case "$(jq -er .format "$proof/history/history.json")" in
- butler.memory.closed-owner-leaf.v1) history_script=memory-closed-temporal-v7-history.py ;;
- butler.memory.closed-owner-leaf.v2) history_script=memory-closed-temporal-v8-history.py ;;
+case "$(jq -er '[.format, (.version // 0)] | @tsv' "$proof/history/history.json")" in
+ $'butler.memory.closed-owner-leaf.v1\t0') history_script=memory-closed-temporal-v7-history.py ;;
+ $'butler.memory.closed-owner-leaf.v2\t8') history_script=memory-closed-temporal-v8-history.py ;;
+ $'butler.memory.closed-owner-leaf.v2\t9') history_script=memory-closed-temporal-v9-history.py ;;
  *) echo 'unsupported CLOSED latest-history recipe' >&2; exit 2 ;;
 esac
 printf '%s\n' "$history_script" > "$proof/history-checker"
