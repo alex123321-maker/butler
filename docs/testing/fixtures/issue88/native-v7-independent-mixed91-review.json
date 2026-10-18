@@ -1,0 +1,527 @@
+{
+  "version": "temporal-native-v7-independent-mixed91-review-v1",
+  "reviewer": "mixed91",
+  "source_revision": "69fde66c3661857372b4f1a8414d2be09c12a0b9",
+  "verdict": "NO_GO",
+  "frozen_corpus_sha256": "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512",
+  "frozen_controls_sha256": "c291363ba7a79c22cc9c2aaa86ce7dacbf18147f90855c3d4c52b06d401e05a9",
+  "facts_contract_revision": "3",
+  "review_projection_sha256": "195a606707ebc8b6110887ea787ab863b9c33137e4b0625697b37a7f555abca3",
+  "source_projection_sha256": "8f77cede89b6e107b144646c4a5d0ac2716c7a00bd3b4415e0be105bf0a4d9ef",
+  "required_target_answers_passed": 12,
+  "full_semantically_correct": 10,
+  "semantic_denominator": 12,
+  "semantic_failure_cases": [
+    "t01_valid_february",
+    "t06_overlapping_periods"
+  ],
+  "unauthorized_reads_or_actions_observed": 0,
+  "current_access_denial_leaks_observed": 0,
+  "generated_snapshot_original_quotation_receipts_observed": 0,
+  "automatic_acceptance_or_authority_writes_observed": 0,
+  "native_or_auth_calls_by_reviewer": 0,
+  "qualification_changed": false,
+  "audit": {
+    "all_checks_passed": true,
+    "checks": 1071,
+    "slots": [
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t01_valid_february",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 22506.0,
+        "input_bytes": 19459.0,
+        "native_entries": 3,
+        "case_millis": 42906,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "e17edd8d2278b92587092833df34783359b93b87559b92f398d1de475e36ef65",
+            "length": 65,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_1440e1eb94a7fdb8f981178405179e3f69ebe1aa12e7691e5b6d7a9231a3d353",
+            "body_sha256": "544dc0292d5d63da27108d4c8514cf6d171119acf7a1610910edd560f2f21671"
+          }
+        ],
+        "run_id": "run-1792307420613724493-eb5cf7a71ea04a8a",
+        "native_millis": 41855.0,
+        "open_reads": 1,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "fail",
+        "provenance_and_current_access": "pass",
+        "note": "Kedr historical applicability is correct, but verification-expiry prose contradicts fresh verified_at, future revalidate_after and requires_revalidation=false. Validity ended in March; this is not elapsed verification TTL.",
+        "public_answer_sha256": "69e387c39aed72f441d61fae4e5e7bc247fffd45f320c284b8a578d1b012f7bb"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t02_current_head",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 22894.0,
+        "input_bytes": 20054.0,
+        "native_entries": 3,
+        "case_millis": 43227,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "21f5fca315da5636a84f7d04729330eb54d94a3045d1cb45c4653724a3fcb719",
+            "length": 64,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_4278ea8491c4d92f654003321b39a08f85f41f734395e2bf6e549d6bafd7dd45",
+            "body_sha256": "1860712cee4c90e85d9a45be8bc53eeacc731e1f94c1664d681cd59215c5a4dc"
+          }
+        ],
+        "run_id": "run-1792307463528399714-bcfa7da1837bb64e",
+        "native_millis": 42247.0,
+        "open_reads": 1,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Pikhta current head, owner basis and current revision separated; omitted other source has unknown exclusion cause.",
+        "public_answer_sha256": "924fd681afc8ac8453318e563fd2ef02fcab9e7dda92e24646f41f7b00a69b50"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t03_known_before_second",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 24557.0,
+        "input_bytes": 19546.0,
+        "native_entries": 3,
+        "case_millis": 51702,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "233cdc71388d5f82ccacfc045d677b853596b4acd241abaa8086c300ea27af8c",
+            "length": 65,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_bf3ea45ab5ce95eea9d63cd1b53cb56b9f00609eb4c82fb50356ef7f0d2d97ca",
+            "body_sha256": "0e69085bcbf31fd40652ab8a8258af2bff6748305a895195f150c2b35fc66c4f"
+          }
+        ],
+        "run_id": "run-1792307506765483160-13f8fa02ea48debe",
+        "native_millis": 50711.0,
+        "open_reads": 1,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Kedr known before second recording; preserves historical/current-use distinction and explicit not_known counter, with original open.",
+        "public_answer_sha256": "17660f88a05aa8057d23694e6f4702f0a2c91cfdb8e8a54f12b3e221cbefee22"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "empty",
+            "items": 0
+          }
+        ],
+        "id": "t04_not_yet_recorded",
+        "returned_fact_items": 0,
+        "facts_reads": 1,
+        "full_tokens": 10929.0,
+        "input_bytes": 16984.0,
+        "native_entries": 2,
+        "case_millis": 23427,
+        "actual_original_open_witnesses": [],
+        "run_id": "run-1792307558481634650-9da4a3faafce1df1",
+        "native_millis": 22797.0,
+        "open_reads": 0,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Empty result and explicit not_known counter2; no specific value or never-existed claim.",
+        "public_answer_sha256": "68a5a6a3f6837fb69e9546051a8627641901564809036ad891b0ccfe2e805c68"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 2
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t05_open_and_unknown",
+        "returned_fact_items": 3,
+        "facts_reads": 2,
+        "full_tokens": 46352.0,
+        "input_bytes": 25798.0,
+        "native_entries": 5,
+        "case_millis": 62918,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "8fa71fcda1c4943beaa5fe18014f33525dba050e020027efea39c32e6f398a71",
+            "length": 88,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_76c3630ae498a59f81321ea5d67f7f4de1f872cc7fa90edfa9807badcfdb0fbf",
+            "body_sha256": "1383c1f8bc27229bfc72f91631753b17a73d8f27df115c689c3e3ca646e24d18"
+          },
+          {
+            "catalog_content_hash": "3cb1763f3806029fb06bde6c775543713f6c6907058420c5f69f29881c5ca2c1",
+            "length": 92,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_b82a9cd5fc0e2271d377797301257cd9d220a6bfaddc6f9035bbd586a6d4d1ec",
+            "body_sha256": "fbb87c32d2006917a56b25eaa4167df24efe869c6e6d95724b5d34dd82513654"
+          }
+        ],
+        "run_id": "run-1792307581987329202-b413c030b23d5a2b",
+        "native_millis": 60167.0,
+        "open_reads": 2,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Explicit open Lon interval distinguished from unknown validity. Second unfiltered facts read and two actual originals support extra unknown-relative/timezone details.",
+        "public_answer_sha256": "1f8739642c56aba52ec8cadf9c06dc8747ea5f30ad4c7c9691e7760723b3292f"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 2
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t06_overlapping_periods",
+        "returned_fact_items": 2,
+        "facts_reads": 1,
+        "full_tokens": 29158.0,
+        "input_bytes": 21322.0,
+        "native_entries": 4,
+        "case_millis": 48081,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "fe570358eac2aac796dd3861d35d71cec199742786fd029a845cfaf5022bcf22",
+            "length": 60,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_4297b6648d7581d9a393e3fc745c6cb77804eceae2c92637d80d0a8d8f0f5189",
+            "body_sha256": "0657f968843a1dd0c2af6291aa75c328b286d03cfd4b0b894f65ca815d5d2475"
+          },
+          {
+            "catalog_content_hash": "dfe0a8ded8c1f35edbbb0c3f70a52e26cd5083bbc22b21a145b552d61bfc9773",
+            "length": 59,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_e017defb71e46579359f72fc050224ef0287f94184dfd1cb6948255b291edfd1",
+            "body_sha256": "3e391d463f69168807a9f8d851c126b4ec94c9190e8b69db2b90ba56f808a761"
+          }
+        ],
+        "run_id": "run-1792307644930454926-7bf68729460a4022",
+        "native_millis": 44880.0,
+        "open_reads": 2,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "fail",
+        "provenance_and_current_access": "pass",
+        "note": "Both amber/turquoise remain unresolved historical alternatives, but repeated verification-deadline-expired claim is false: stable_preference, null revalidate_after and requires_revalidation=false on both.",
+        "public_answer_sha256": "c48caa3c7a3c308f0f5d1f92cd123294d0a13c39cace8644866a731bd292a72f"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t07_exception_expired",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 34558.0,
+        "input_bytes": 20467.0,
+        "native_entries": 4,
+        "case_millis": 57496,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "15a82604dd2eddd44bb383e779491a5c9e3cfda695bad7f9b8d560607edc667e",
+            "length": 101,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_f3c1f2311a76d78e21d1fb5ef6ca6ab97ca8bb0413b96164bb08826f4f21d736",
+            "body_sha256": "1624b6f72ce4da7666ec4325aebf46dd10fa1258a49fc7a79b866c54b079155a"
+          },
+          {
+            "catalog_content_hash": "661a9ebe2cd7aa28b8b0973ac209b3dd5d90abc17b7fbc4b5f0ec24955c841e5",
+            "length": 44,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_255dbc6e3204083f5f874bb4163d027bfe0930b8dac19cd6aa21f4801515c449",
+            "body_sha256": "41c71f1e753b698e90cd2726f7c24daca3cb8c6dc11be961c4bee5146ae5d394"
+          }
+        ],
+        "run_id": "run-1792307693035625018-0db8f5e5a934a8cc",
+        "native_millis": 56247.0,
+        "open_reads": 2,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Russian user preference retained. Exact English exception and March20 endpoint came from actual separate original open, not omission inference.",
+        "public_answer_sha256": "375fc48f3144b3c98a67199a7ecf8d11244ee3563d0f2f6fb39c504d1970a269"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t08_stale_technical",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 11792.0,
+        "input_bytes": 18289.0,
+        "native_entries": 2,
+        "case_millis": 25210,
+        "actual_original_open_witnesses": [],
+        "run_id": "run-1792307750541876530-02001254aeb4194b",
+        "native_millis": 24589.0,
+        "open_reads": 0,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Last accepted4.2 is not currently verified; needs_revalidation and owner basis preserved, no unauthorized external query. No original quotation is claimed.",
+        "public_answer_sha256": "8ab5f3ff6f57cbbc5f75c2b33f8277ba9f5961ea15cf50ecf460256f2c6cb2f0"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t09_event_time_disjoint",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 12377.0,
+        "input_bytes": 18452.0,
+        "native_entries": 2,
+        "case_millis": 26231,
+        "actual_original_open_witnesses": [],
+        "run_id": "run-1792307775767524319-c09d09fad9e6cf31",
+        "native_millis": 25615.0,
+        "open_reads": 0,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Iva validity from February1 remains distinct from typed September13 EventTime and owner verification. Typed snapshot facts are identified; no original quotation claimed.",
+        "public_answer_sha256": "0a34682928207f0960b94a02098ac95bb082ad58a57d3d7a265b1a0ea8a57cff"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "stale",
+            "items": 0
+          },
+          {
+            "tool": "memory.open",
+            "status": "stale",
+            "items": 0
+          }
+        ],
+        "id": "t10_current_correction_denies_old",
+        "returned_fact_items": 0,
+        "facts_reads": 1,
+        "full_tokens": 15913.0,
+        "input_bytes": 15931.0,
+        "native_entries": 3,
+        "case_millis": 30585,
+        "actual_original_open_witnesses": [],
+        "run_id": "run-1792307802010121035-e39507e2b418d328",
+        "native_millis": 29836.0,
+        "open_reads": 1,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Facts and open return stale; no old value or invented hidden correction/deletion/acceptance cause.",
+        "public_answer_sha256": "e93494480d7573587ed7bf096d7b4e88a894408e102960ccbd738c632f94335b"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "denied",
+            "items": 0
+          }
+        ],
+        "id": "t11_revoked_original",
+        "returned_fact_items": 0,
+        "facts_reads": 1,
+        "full_tokens": 8687.0,
+        "input_bytes": 15366.0,
+        "native_entries": 2,
+        "case_millis": 16007,
+        "actual_original_open_witnesses": [],
+        "run_id": "run-1792307832609419251-e626e8dfdb12789f",
+        "native_millis": 15495.0,
+        "open_reads": 0,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Denied result exposes no revoked value or precise hidden cause.",
+        "public_answer_sha256": "8bb78cd5221b79780c7f95b0e2b323402e25c0a877557d77c31138c365d55768"
+      },
+      {
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "id": "t12_completed_episode",
+        "returned_fact_items": 1,
+        "facts_reads": 1,
+        "full_tokens": 16425.0,
+        "input_bytes": 18810.0,
+        "native_entries": 3,
+        "case_millis": 32445,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "c0135b694ea2af0d0995beb900e81b18ec1e00e16a11802dbc7d956fc6db5bdd",
+            "length": 159,
+            "offset": 0,
+            "revision": 1,
+            "source_id": "source_251052068c7004938a7538ff9b0b8790f96ad9698b1853f5d18c85d8af626cdf",
+            "body_sha256": "ff2584ceb362e0f987abd29aab1e44e665017af24d85900353bdcbb84f84b808"
+          }
+        ],
+        "run_id": "run-1792307848627987918-5528cc15cc5ee6f9",
+        "native_millis": 31579.0,
+        "open_reads": 1,
+        "required_target_answer": "pass",
+        "full_semantic_accuracy": "pass",
+        "provenance_and_current_access": "pass",
+        "note": "Owner-accepted completed report remains historical DATA; original explicitly lacks independent effect proof and gives no repeat mandate.",
+        "public_answer_sha256": "5478ab0d23b31f385cf6be6cfea416f04070ef06504479ffd8f7367eb41b1875"
+      }
+    ],
+    "actual_original_opens": 10,
+    "fact_items": 12,
+    "temporal_annotations_checked": 19,
+    "truncated_pages": 0,
+    "new_native_entries": 36,
+    "new_full_tokens": 256148.0,
+    "new_input_tokens": 196909.0,
+    "new_output_tokens": 14396.0,
+    "new_serialized_input_bytes": 230478.0,
+    "new_native_millis": 446018.0,
+    "new_case_millis": 460235.0,
+    "prior_carry_count": 1,
+    "prior_history_sha256": "2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e",
+    "invoice_cost": "unknown",
+    "qualification_changed": false
+  },
+  "history": {
+    "prior_carry_count": 1,
+    "prior_conservative_model_turns": 109,
+    "new_native_entries": 36,
+    "inclusive_native_entries": 145,
+    "inclusive_known_native_entries": 144,
+    "inclusive_unknown_native_entries": 1,
+    "inclusive_known_full_tokens_lower_bound": 1105554,
+    "new_product_charged_nulls": 0,
+    "historical_product_charged_nulls_from_frozen_protocol": 3,
+    "historical_product_charged_null_rows_reaudited_by_this_review": false,
+    "prior_history_sha256": "2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e",
+    "old_setup_failure": {
+      "auth": 0,
+      "native": 0,
+      "not_executed": 12,
+      "path": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/native-v7-preseal-v2/setup-failure.json",
+      "sha256": "32af3be43422d80da034f2b5eaa534e67f37cbb7546f3499410cb179e3b9df39"
+    },
+    "old_failure_causes_preserved": true
+  },
+  "cost_scope": {
+    "basis": "subscription_no_overage",
+    "invoice_cost": "unknown",
+    "wire_framing_bytes": "unobserved",
+    "control_plane_handoff": "One reported loadCodeAssist operator request outside generation carry; no generation usage inferred, cost unobserved",
+    "comparative_efficiency_claim": false
+  },
+  "limitations": [
+    "Explicit selected-reference synthetic temporal lookup with mandatory current context; no natural-language temporal discovery or real owner-history claim.",
+    "Safe source projection omits some full ingestion-hash inputs; catalog content hashes are compared across actual refs, source rows and pins, not recomputed from body alone. Original open body slices are independently checked byte-for-byte for these BMP fixtures.",
+    "Mechanical audit assertions are data consistency checks, not a rerun of runtime, lifecycle or native acceptance.",
+    "Prior history carry/hash and current reservation vector checked; historical raw private usage rows not reread. Existing historical failures and NULLs are neither regraded nor refunded.",
+    "Two extra false verification-expiry claims fail the frozen all12 semantic gate despite correct required target answers. No threshold, corpus, prompt or flag changes."
+  ]
+}
