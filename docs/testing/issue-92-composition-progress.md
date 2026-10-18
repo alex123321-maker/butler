@@ -226,6 +226,9 @@ the final selected static bootstrap configuration. The separate
 [effective-composition delta](issue-92-effective-composition.md) replaces those
 fixture overrides with actual startup predicates. A fresh full24-checkpoint
 receipt under that delta remains pending; the retained v11 receipt is unchanged.
+The narrow delta subsequently passed79/0/0/race/vet and its15-checkpoint static
+prefix in `issue92-effective-20261018/reports/effective-v2`; it leaves release
+qualification false and does not replace that required fresh full24 receipt.
 The original combined-v6 window was subsequently rejected for a missing history
 fixture; its fresh passing v7 successor is recorded below. The combined
 gate additionally requires the new default/compound held-event controls and

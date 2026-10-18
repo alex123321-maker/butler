@@ -44,5 +44,37 @@ directory during final receipt validation. It has no completed aggregate PASS
 and is retained unchanged. The driver now transfers ownership of its own report
 directories as well as files, while pruning the private PostgreSQL data tree.
 This is a report-finalization fix, with no production or assertion change.
-A fresh focused receipt remains pending. A later root qualification change and
-a fresh full24-checkpoint static run remain separate work.
+
+Fresh `effective-v2`, source `cb76ff7c`, completed79 passed test/subtest events,
+0 failures/skips, race and targeted vet. Its24 constructor/Doctor rows all ran.
+The default-off source control allowed a current ordinary source and denied it
+after actual deletion. Held-final accepted, missing-pin and environment cases
+passed, followed by actual lease expiry during the final wait. All three Doctor
+feature parents passed, including owner/policy observations against actual PG.
+
+The static coherent prefix passed all15 steps in5.86s, with three actual Broker
+continuations and12 source pins. Its independent simple question recorded
+`tool_calls:0`, `adaptive_configured:false`, `adaptive_plan_rows:0`. Provider
+unavailability retained NULL usage and source-pool unavailability denied release.
+Scripted content is only a labeled mechanical boundary control. It provides no
+native answer-quality claim. Actual source checksums remained unchanged after
+the suite; the driver removed its own PostgreSQL and network. Native calls and
+imported auth were0. Main deployment and release constants were unchanged.
+
+Reports are retained on laba under
+`/srv/storage/butler/agents/issue92-effective-20261018/reports/effective-v2`.
+
+| Artifact | SHA256 |
+| --- | --- |
+|config-tests.jsonl|71b8e30b413dc82a77343d912c5b1c0932d6aed285aba319413d756f2af7ec23|
+|held-tests.jsonl|cb9de099e579a706e0fbd2b09cd0076eb8c81faefdc2d187e5c15e618a047a97|
+|doctor-tests.jsonl|22c9e69b128c26acc89fc8bcd79a51c3d1824c9097da32775f8f76c30ceb6034|
+|timeline/timeline.json|deaeac4f447ff56dcc15949e334210f1783018e634df2f5c022f528d4a0c25b5|
+|source.sha256|a922d26590ca720d0fd780c4142effa2e4beba98b0251da14db7a61f2ab149e2|
+|evidence.sha256|7d341d8e8ff0a1df16e593509d9d947979e05d8f8bfd2512047a04ac972c451b|
+
+A later separately reviewed qualification change and a fresh full24-checkpoint
+static run remain separate work. This proof runs with current qualification
+constants false and leaves them unchanged. It does not claim those future
+positive consumers have already executed; the same non-skipping matrix will
+exercise them after their independent acceptance.
