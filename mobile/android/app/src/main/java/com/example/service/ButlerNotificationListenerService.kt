@@ -82,8 +82,9 @@ class ButlerNotificationListenerService : NotificationListenerService() {
         if (sbn == null) return
         val app = applicationContext as? ButlerApplication ?: ButlerApplication.instance ?: return
 
-        val snapshot = extractRawSnapshot(sbn, applicationContext)
         serviceScope.launch {
+            if (!captureEnabled(app) || !app.syncRepository.shouldCapturePackage(sbn.packageName)) return@launch
+            val snapshot = extractRawSnapshot(sbn, applicationContext)
             val emitted = app.syncRepository.ingestRawNotification(
                 snapshot = snapshot,
                 isInitialSnapshot = false
@@ -107,6 +108,7 @@ class ButlerNotificationListenerService : NotificationListenerService() {
         val postedAt = sbn.postTime
 
         serviceScope.launch {
+            if (!captureEnabled(app) || !app.syncRepository.shouldCapturePackage(pkg)) return@launch
             val emitted = app.syncRepository.ingestNotificationRemoved(
                 notificationKey = key,
                 packageName = pkg,
@@ -126,10 +128,13 @@ class ButlerNotificationListenerService : NotificationListenerService() {
     }
 
     private suspend fun captureInitialActiveNotificationsSnapshot(app: ButlerApplication) {
+        if (!captureEnabled(app)) return
         val activeList = runCatching { activeNotifications }.getOrNull() ?: return
         var capturedCount = 0
         for (sbn in activeList) {
             if (sbn == null) continue
+            if (!captureEnabled(app)) return
+            if (!app.syncRepository.shouldCapturePackage(sbn.packageName)) continue
             val snapshot = extractRawSnapshot(sbn, applicationContext)
             val entity = app.syncRepository.ingestRawNotification(
                 snapshot = snapshot,
@@ -147,6 +152,11 @@ class ButlerNotificationListenerService : NotificationListenerService() {
                 summaryRu = "Снят однократный срез активных уведомлений при подключении: $capturedCount шт."
             )
         }
+    }
+
+    private fun captureEnabled(app: ButlerApplication): Boolean {
+        val config = app.credentialStore.state.value
+        return config.isPaired && !config.isSyncPaused && !config.isTokenRevoked && isNotificationAccessGranted(app)
     }
 
     private fun scheduleDebouncedBatchSync(app: ButlerApplication) {
