@@ -9,8 +9,8 @@ rechecks live inventory and atomically claims/imports once before admission.
 
 The adapter explicitly supports the closed V7 manifest
 `butler.memory.closed-owner-leaf.v1` and closed V8 manifest
-`butler.memory.closed-owner-leaf.v2` (version8 and the prospective version9
-successor). This is a fixed lab recipe,
+`butler.memory.closed-owner-leaf.v2` (closed versions8 and9).
+This is a fixed lab recipe,
 not a new production cross-database admission mechanism. It does not assume
 that145 or181 is always the latest population.
 
@@ -46,3 +46,11 @@ Accounting accepts an expired historical admission seal without granting it
 new execution authority. It recursively removes only the exact V9 population
 before re-proving V8 and all preceding stores. The V8 fixed original source and
 contract4 history remain unchanged.
+
+The actual closedV9 manifest2f933799 retains211 inclusive quotes once,210 known
+native observations plus one older unknown and1595542 known full tokens as a
+lower bound. Its original36 new native entries are all known. The complete
+immutable fixture passed51 named controls (5 parents/46 children), including23
+forgeries, race and vet with no failure or skip. See
+`fixtures/issue88/closed-v9-history-controls.json`. Consumer90 still performs its
+own fresh seven-store check before its independently reviewed one-use claim.

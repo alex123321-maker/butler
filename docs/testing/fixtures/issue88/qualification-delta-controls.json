@@ -1,0 +1,14 @@
+{
+  "source":"e341b6b289e2b5663c1fee40c80e892dce2ac0b3",
+  "proof":"/srv/storage/butler/agents/issue88-native-v9-20261018/reports/qualification-delta-v1",
+  "evidence_sha256":"356f0fd5dcb45d84b0aea8d89e2502cf8d264fe04c1d180f72e1f2bfd4feb963",
+  "facts_events_sha256":"9ff4b9e4a478613507765dae8ad9359ea0c3b11605c8a159aaa0583ea69d342f",
+  "app_events_sha256":"7a233c3c781512f14d042f547e45dcb541bb20423709efc25d050a6bdb6515c1",
+  "tests":["TestTemporalFactsStrictSourceDateAndBoundContract","TestTemporalFactsPrivateEndpointRejectsCredentialAndRedirectShapes","TestTemporalQualificationRemainsSeparateFromProcessFlag","TestConsolidationReleaseGateCannotBeEnabledByOperatorFlag"],
+  "pass":4,"fail":0,"skip":0,"race":true,"offline":true,
+  "client_cpu":1,"client_memory_bytes":2147483648,"network":"none",
+  "optional_broker_pg_not_run":true,
+  "native_calls":0,"auth_imported":false,"retained_stores_modified":false,
+  "main_or_defaults_changed":false,
+  "scope":"Only independently reviewed temporal facts5 and consolidation V3 release qualification delta. No broad repetition."
+}

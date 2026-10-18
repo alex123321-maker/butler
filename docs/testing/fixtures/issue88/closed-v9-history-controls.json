@@ -1,5 +1,5 @@
 {
-  "source": "e2188d4b",
+  "source": "e2188d4b6cb97f737c93b52fc5a965bde53faaed",
   "proof": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/closed-history-controls-v1",
   "manifest": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/closed-history-v1/history/history.json",
   "manifest_format": "butler.memory.closed-owner-leaf.v2",
