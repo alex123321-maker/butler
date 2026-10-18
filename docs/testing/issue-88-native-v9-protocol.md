@@ -57,3 +57,20 @@ outcomes including failed/unexecuted slots and adds actual new usage once to
 the validated175 predecessor. Separate operator control-plane discovery and
 unknown invoice cost remain explicit. This accounting grants no quality or
 activation status; independent scorers review every original visible answer.
+
+The approved immutable source58264807 executed once at
+`issue88-native-v9-20261018/reports/native-v9-preseal-v2`. All12 original runs
+completed, with36 actual native entries/36 known usage/0 new NULL observations,
+24 tool reads and273742 new full tokens. Post-exit durable recovery, exact
+opaque main CAS, actual main paid discovery200 and a fresh main snapshot passed.
+The retained inclusive owner/day quote is211 model turns, including the175
+predecessor once. Its native population is210 known plus one older unknown;
+1595542 tokens is a known lower bound, not a complete total. Historical161 and
+separate adaptive226 remain separate. No qualification follows from completion;
+the complete safe answer/source/citation and nullable-cost packet is retained
+for independent all12 review. Original89v2 cause remains UNKNOWN.
+
+The future read-only closedV9 exporter is staged separately in
+`snapshots/closed-source-v1` from e2188d4b and points to the exact reviewed label.
+It does not modify or reopen the frozen582 native source/window. Its actual
+closed211 immutable-fixture forgery controls run only after verified handback.
