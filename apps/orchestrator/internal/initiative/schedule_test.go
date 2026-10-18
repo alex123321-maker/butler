@@ -19,6 +19,27 @@ func daily(zone string, hour, minute int) Schedule {
 	return Schedule{ID: "schedule", SourceID: "project", TimeZone: zone, Kind: "daily", Hour: hour, Minute: minute, MissedPolicy: "coalesce", Enabled: true}
 }
 
+func TestScheduleInitiativeWireFormatRetainsOriginalKinds(t *testing.T) {
+	s := daily("UTC", 9, 0)
+	s.Kind = "once"
+	if s.Validate() == nil {
+		t.Fatal("agent one-shot kind widened owner initiative API")
+	}
+	raw, err := json.Marshal(daily("UTC", 9, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil {
+		t.Fatal("schedule wire format")
+	}
+	for _, k := range []string{"at", "weekdays"} {
+		if _, exists := fields[k]; exists {
+			t.Fatal("owner schedule fingerprint changed", k)
+		}
+	}
+}
+
 func TestCalendarHandlesMissingAndRepeatedLocalMinutes(t *testing.T) {
 	cases := []struct {
 		name, zone, after, want string

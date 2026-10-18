@@ -102,6 +102,12 @@ transaction. It checks declared model cost/limits and current shared scope
 capacity without creating scopes or charging a model turn. Actual inference
 still reserves atomically; later depletion cannot authorize a network call.
 
+`CheckScheduledRootAdmissionTx` retains that behavior for assigned agent jobs.
+An exactly approved schedule without a broad mandate checks the ordinary finite
+root/day scopes only. It does not create authority/scopes/reservations or reset
+allowances. Actual inference and tools still reserve through the same controller;
+the schedule additionally retains a finite immutable maximum and expiry.
+
 `AdmitLocalModel` is a separate live query/rank boundary. Its private typed
 `LocalTarget` is fixed to the composed internal service at local-models:9090;
 requests cannot choose endpoint/model/locality. Exact local profile pricing must

@@ -1,5 +1,11 @@
 # Initiative admission contract
 
+Optional [agent-created jobs](agent-schedules.md) share the Go clock calculation
+but have their own exact authorized instruction and atomic Task/Input admission.
+`schedule.*` cannot modify initiative Sources or supply an observer. Their
+explicit owner approval/mandate admission is distinct from observation thresholds
+and the initiative attention counter; ordinary shared execution budgets remain.
+
 Android assistance adds the installed `mobile_inbox` observer. Authenticated
 owner source configuration grants standing mobile DATA access, a fixed task and
 an automatic minute schedule. Twenty distinct pending messages or one hour since

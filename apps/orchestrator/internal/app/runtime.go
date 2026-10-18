@@ -43,6 +43,10 @@ func (a *App) Run(ctx context.Context) error {
 			workers++
 			go func() { _ = a.initiativeDeliveryWorker.Run(runCtx); done <- struct{}{} }()
 		}
+		if a.scheduleDeliveryWorker != nil {
+			workers++
+			go func() { _ = a.scheduleDeliveryWorker.Run(runCtx); done <- struct{}{} }()
+		}
 		if a.memoryCleanup != nil {
 			workers++
 			go func() { _ = a.memoryCleanup.Run(runCtx); done <- struct{}{} }()

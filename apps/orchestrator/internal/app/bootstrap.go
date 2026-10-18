@@ -26,6 +26,7 @@ import (
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/apps/orchestrator/internal/scheduled"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -57,6 +58,7 @@ import (
 	"github.com/butler/butler/internal/mobile"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/schedulecontrol"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
@@ -582,6 +584,26 @@ func New(ctx context.Context) (*App, error) {
 	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore, RunDataGuard: func(ctx context.Context, runID string) error {
 		return checkRecordedInitiativeSources(ctx, postgres.Pool(), sourceCatalog, runID)
 	}}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
+	var scheduleControl *ScheduleControl
+	var scheduleDeliveryWorker *deliveryoutbox.Worker
+	if cfg.SchedulesEnabled {
+		store := &scheduled.Store{Pool: postgres.Pool(), Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance, SourceGuard: sourceCatalog.CheckRunSourcesTx}
+		if cfg.ActionAuthorityTokenFile == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, schedulecontrol.ErrDenied
+		}
+		if err = store.CheckReady(ctx); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		scheduleControl = &ScheduleControl{Store: store}
+		scheduleDeliveryWorker = &deliveryoutbox.Worker{Store: scheduled.ReminderStore{Jobs: store}}
+		if telegram != nil {
+			scheduleDeliveryWorker.Sender = telegram
+		}
+	}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err
@@ -590,7 +612,10 @@ func New(ctx context.Context) (*App, error) {
 			return err
 		}
 		maintenanceErr := initiativeWorker.Sweep(ctx)
-		maintenanceErr = errors.Join(maintenanceErr,taskStore.ReconcileMobileResults(ctx))
+		if scheduleControl != nil {
+			maintenanceErr = errors.Join(maintenanceErr, scheduleControl.Store.Sweep(ctx))
+		}
+		maintenanceErr = errors.Join(maintenanceErr, taskStore.ReconcileMobileResults(ctx))
 		maintenanceErr = errors.Join(maintenanceErr, (&mobile.Store{Pool: postgres.Pool(), Catalog: sourceCatalog}).Cleanup(ctx))
 		if childMaintenance != nil {
 			// A denied branch must not prevent unrelated admitted maintenance.
@@ -615,6 +640,7 @@ func New(ctx context.Context) (*App, error) {
 	var delegationHandler http.Handler
 	var guardedRequestHandler http.Handler
 	var memoryCandidateHandler http.Handler
+	var scheduleHandler http.Handler
 	var memoryReadHandler http.Handler
 	var memoryFactHandler http.Handler
 	var converterDelegationHandler http.Handler
@@ -658,6 +684,14 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
+		if scheduleControl != nil {
+			scheduleHandler, err = schedulecontrol.NewHandler(token, scheduleControl)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
 		if memoryReads != nil {
 			memoryReadHandler, err = readcontrol.NewHandler(token, memoryReads)
 			if err != nil {
@@ -690,7 +724,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, schedulesReady: scheduleControl != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog, lessons: experienceMemory})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -712,6 +746,7 @@ func New(ctx context.Context) (*App, error) {
 		guardedTabOwner:            guardedTabOwner,
 		guardedRequestHandler:      guardedRequestHandler,
 		memoryCandidateHandler:     memoryCandidateHandler,
+		scheduleHandler:            scheduleHandler,
 		memoryReadHandler:          memoryReadHandler,
 		memoryFactHandler:          memoryFactHandler,
 		delegationDecisions:        delegationDecisions,
@@ -804,6 +839,7 @@ func New(ctx context.Context) (*App, error) {
 		inputWorker:                inputWorker,
 		outboxWorker:               outboxWorker,
 		initiativeDeliveryWorker:   initiativeDeliveryWorker,
+		scheduleDeliveryWorker:     scheduleDeliveryWorker,
 		verifiedTaskDeliveryWorker: verifiedTaskDeliveryWorker,
 		auxiliaryWorker:            auxiliaryWorker,
 		memoryCleanup:              &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},

@@ -1,0 +1,9 @@
+# Optional agent scheduling. Owner approval/mandates remain required by Broker.
+services:
+  orchestrator:
+    environment:
+      BUTLER_SCHEDULES_ENABLED: ${BUTLER_SCHEDULES_ENABLED:-false}
+  tool-broker:
+    environment:
+      BUTLER_SCHEDULES_ENABLED: ${BUTLER_SCHEDULES_ENABLED:-false}
+      BUTLER_SCHEDULES_CONTROL_URL: http://orchestrator:8080/internal/schedules

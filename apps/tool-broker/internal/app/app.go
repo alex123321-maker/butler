@@ -31,6 +31,7 @@ import (
 	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/resourceexec"
+	"github.com/butler/butler/internal/schedulecontrol"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
@@ -106,6 +107,12 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 		}
 		return nil, fmt.Errorf("memory candidates require PostgreSQL and a fixed authenticated private endpoint")
+	}
+	if cfg.SchedulesEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.ActionContextURL == "" || cfg.SchedulesControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, schedulecontrol.ErrDenied
 	}
 	if (cfg.GuardedTabRequestEnabled || cfg.GuardedTabRuntimeEnabled) && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRequestControlURL == "") {
 		if postgres != nil {
@@ -355,6 +362,19 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			executor = &broker.MemoryCandidateExecutor{Candidates: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
+		if cfg.SchedulesEnabled {
+			client, clientErr := schedulecontrol.NewClient(cfg.SchedulesControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned(schedulecontrol.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.ScheduleExecutor{Schedules: client, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if cfg.MemoryReadEnabled {

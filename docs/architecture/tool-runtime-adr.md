@@ -1,5 +1,11 @@
 # Butler — Tooling and Execution Specification
 
+Optional fixed `schedule.*` contracts are owning kernel controls, registered by
+Broker and routed to Orchestrator `/internal/schedules` after permanent exact
+dispatch. They accept timing/instruction DATA without owner IDs or credentials.
+No new runtime/container is added. Future effects still use ordinary Tool Broker.
+See [agent schedules](agent-schedules.md) for authority, occurrence and delivery.
+
 ## Optional operator destination cap
 
 Broker startup may read `BUTLER_NETWORK_ALLOWLISTS_JSON` for `http`, `browser`

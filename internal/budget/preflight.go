@@ -28,6 +28,22 @@ func (c *Controller) CheckRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerI
 	if m.Privacy != "cloud_allowed" {
 		return &LoopError{Reason: "mandate_model_privacy"}
 	}
+	return c.checkRootAdmissionTx(ctx, tx, ownerID, &m, a)
+}
+
+// CheckScheduledRootAdmissionTx permits an exactly approved owner schedule with
+// no broad mandate to use ordinary root/day bounds. It creates no reservation or
+// permission; actual model/effect admission remains unchanged.
+func (c *Controller) CheckScheduledRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerID string, m *MandateScope, a ModelAllowance) error {
+	if c == nil || ownerID == "" || a.InputTokens <= 0 || a.OutputTokens <= 0 || a.OutputTokens > c.Policy.OutputTokens {
+		return ErrInvalid
+	}
+	if m != nil {
+		return c.CheckRootAdmissionTx(ctx, tx, ownerID, *m, a)
+	}
+	return c.checkRootAdmissionTx(ctx, tx, ownerID, nil, a)
+}
+func (c *Controller) checkRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerID string, m *MandateScope, a ModelAllowance) error {
 	quote, err := c.Policy.ModelQuote(a.Provider, a.Model, a.InputTokens)
 	if err != nil {
 		return err
@@ -42,7 +58,10 @@ func (c *Controller) CheckRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerI
 		return err
 	}
 	day := now.UTC().Truncate(24 * time.Hour)
-	specs := []ScopeSpec{{Kind: "mandate", OwnerID: ownerID, SubjectID: m.ID, Limits: m.Limits, Deadline: m.Deadline}, {Kind: "owner_day", OwnerID: ownerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)}}
+	specs := []ScopeSpec{{Kind: "owner_day", OwnerID: ownerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)}}
+	if m != nil {
+		specs = append(specs, ScopeSpec{Kind: "mandate", OwnerID: ownerID, SubjectID: m.ID, Limits: m.Limits, Deadline: m.Deadline})
+	}
 	sort.Slice(specs, func(i, j int) bool {
 		return ScopeID(specs[i].Kind, ownerID, specs[i].SubjectID) < ScopeID(specs[j].Kind, ownerID, specs[j].SubjectID)
 	})
