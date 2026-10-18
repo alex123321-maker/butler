@@ -4,6 +4,10 @@ This is controlled component/composition evidence, not completed issue77/92
 acceptance or a production activation. The primary laba deployment remains
 unchanged. Synthetic data is not human-reviewed real user workload.
 
+The [staged rollout contract](issue-92-staged-memory-rollout.md) defines separate
+entry/exit criteria, owner review, effective flags and compatible rollback. It
+does not claim that any pending stage has run or activate the primary deployment.
+
 The controlled rows below ran on `ssh laba` with cached Go1.27.2/modules, actual isolated
 PostgreSQL and race detection. No cloud credentials or inference were mounted.
 The original versioned windows and their failures remain retained separately.
