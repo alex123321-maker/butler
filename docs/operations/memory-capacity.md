@@ -9,6 +9,22 @@ screen did not search all64 scopes at once. A100000 single-scope exact scan miss
 the300 ms target. One million chunks, native cloud response p95 and an unlimited
 history lifetime are unqualified.
 
+The [combined collection](../testing/issue-91-combined-capacity.md) qualifies a
+separate controlled foreground profile: deployment build without race detection,
+client2 CPUs/2 GiB, PostgreSQL2 CPUs/1 GiB with64 MiB shared buffers and pool
+maximum2, one10000-chunk user generation, two readers, one100-new-fragment
+index job and admitted summary/consolidation workers. Warm/mixed p95 measured
+1305.977/1413.040 ms against1500 ms; all requests stayed below5000 ms. The mixed
+window completed97/100 requests with three explicit currentness denials during
+two real deletions, within its predeclared floor96 and maximumfour typed denials.
+Maintenance sources were outside the selected stable generation. Correction or
+deletion of that selected generation may make its answers unavailable until a
+new current generation is reviewed/activated. Admitted model jobs yield to
+interactive priority, remain charged with NULL usage, and recover with a separate
+finite reservation; this profile does not promise simultaneous native inference
+throughput.1-CPU race and2+1/2+2-CPU race windows missed their targets and remain
+unsupported at this SLO. Native cloud latency/quality requires its own evidence.
+
 Keep PostgreSQL, the external deletion manifest and original assets together in
 the backup plan. pgvector entries are rebuildable derivatives, whereas accepted
 heads, primary transcript/effects, jobs and spend history are durable evidence.
