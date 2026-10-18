@@ -466,3 +466,27 @@ v56 closes that completed test stream and lets the unchanged guard join normally
 The production change is only the explicit experience adapter bound; it removes
 no proof, lock or RPC and adds no retry. Native entries remain zero. The2s ceiling
 does not qualify latency, semantic quality, cost, rollout or the full57/640 cohort.
+
+Native comparison preparation now has an actual PostgreSQL database-template
+seam. Its shared owning database contains auth and the persistent640 journal;
+the separately created source database contains task data and sorted migrations.
+Freeze rejects secret settings or any provider-auth key, closes the source pool,
+disallows new source connections and verifies no source processes remain. Each
+predeclared control slot reserves a unique database identity in the shared
+journal before CREATE DATABASE copies the frozen template. Source/failed/used
+identities are not reused; closed windows cannot allocate another clone. No
+database or failed native cost is deleted or refunded. These are disjoint lab
+partitions, not production cross-database budget authority. The whole runner
+must still prove actual source/note/skill gates before freezing its template.
+
+The initial window-v57 mechanics run passed11/0/0 with race/vet
+(`0c1110c424bccfdee0387421832433eeb422836514e7c5c8796f5e3f5f7982a0`).
+After merging reviewed root53d68390, frozen source v58 clone-v58 passed the two
+focused real-PG controls with race/vet and no skips; evidence.sha256 digest
+`b3f9e86ce815aca26dfa3c8eb6fb4014fce96cf6ebc9ab29d73468b537b7d6c0`.
+An actual first clone mutation leaves the second clone's bytes unchanged. Shared
+auth/journal tables are absent from clones, an opaque provider-auth marker rejects
+source freeze, an actual CREATE collision remains failed and cannot be retried,
+and the shared used counter/NULL entry survive cloning. This verifies database
+mechanics only: no original, model note, generated skill or A/B/C quality is
+claimed. Issue90 provider/auth entries remain zero.
