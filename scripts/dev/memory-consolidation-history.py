@@ -46,9 +46,9 @@ CURRENT_DATABASES = (
 )
 
 
-def current_inventory(day):
+def current_inventory(day, databases=CURRENT_DATABASES):
     inventory = {"format": "butler.consolidation.current-owner-day.v2", "day": day, "owner": "owner", "databases": []}
-    for container, database, port in CURRENT_DATABASES:
+    for container, database, port in databases:
         discovered = sql(container, database, "SELECT jsonb_build_object('day',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD'),'schemas',(SELECT jsonb_agg(n.nspname ORDER BY n.nspname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relname='execution_budget_scopes' AND c.relkind='r'))", port)
         schemas = discovered.get("schemas") or []
         if discovered.get("day") != day or not isinstance(schemas, list) or (not schemas and (container, database) != ("issue86-20261016-pg", "memory_read_test")):
@@ -82,11 +82,14 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
-if sys.argv[1] == "snapshot-current":
+if sys.argv[1] in ("snapshot-current", "snapshot-current-seven"):
     day = sys.argv[2]
     if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", day) or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d") != day:
         raise SystemExit("actual current UTC day required")
-    sys.stdout.buffer.write(canonical(current_inventory(day)))
+    stores = CURRENT_DATABASES
+    if sys.argv[1] == "snapshot-current-seven":
+        stores += (("butler-issue87-native-v5-pg", "memory_adaptive_test", 5432),)
+    sys.stdout.buffer.write(canonical(current_inventory(day, stores)))
     raise SystemExit(0)
 
 

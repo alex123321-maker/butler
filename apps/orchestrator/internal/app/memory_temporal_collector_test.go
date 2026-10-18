@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -54,6 +55,9 @@ func (p *temporalNativeProvider) InferenceTimeout() time.Duration {
 	return p.ModelProvider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout()
 }
 func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, request any) (*temporalNativeEntry, error) {
+	if _, ok := owneridentity.FromContext(ctx); ok {
+		return nil, errors.New("native provider inherited owner control identity")
+	}
 	if err := p.auditVisible(ctx, run, request); err != nil {
 		return nil, err
 	}
