@@ -130,6 +130,11 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				} else if usage != nil && observed == nil {
 					copy := *usage
 					observed = &copy
+					// Preserve the provider's complete numeric observation for operator
+					// comparisons. Candidates alone omit High's thinking consumption.
+					// No prompt, response, reasoning or provider credential is logged.
+					s.log.Info("model turn usage observed", "run_id", runID, "operation_id", a.OperationID,
+						"input_tokens", usage.InputTokens, "output_tokens", usage.OutputTokens, "total_tokens", usage.TotalTokens)
 					in, output := int64(usage.InputTokens), int64(usage.OutputTokens)
 					observeCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 					err := s.config.Budgets.ObserveModel(observeCtx, a.OperationID, &in, &output)

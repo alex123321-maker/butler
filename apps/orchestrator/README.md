@@ -1,5 +1,10 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+The budget wrapper logs one numeric `model turn usage observed` record per
+complete observed turn, including the provider's total tokens. High's total
+includes thinking; input plus visible output alone is incomplete. Missing
+observations remain unknown. Records contain no prompt, answer or credentials.
+
 Optional operator-only `BUTLER_TOOL_DISCOVERY_ENABLED=true` initially sends only `tools.search` and `tools.load` schemas. Completed load receipts select exact methods for subsequent requests and survive recovery through the existing PostgreSQL transcript. Current scoped access is rechecked; stale versions are removed. Enable the same Broker flag. See [tool discovery](../../docs/architecture/tool-discovery.md), including schema limits and native acceptance still required before production enablement.
 
 
