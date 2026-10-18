@@ -668,3 +668,76 @@ next separate step. The real145-turn predecessor after88v7 must be recursively
 validated and frozen once; the synthetic three-turn control is never native
 history. No retained seven-store inventory or main deployment was changed by
 these controls. Native quality and release qualification remain unclaimed.
+
+## Short native attempt: closed NO_GO
+
+The one approved native attempt used exact root source
+`813dda3efad1539eed0a48fe96de8a6ecdf2b50e` and preseal
+`e9b0db87ce874ff89ad5f6e90049715daf60160130e199546be8556fcbc0043b`.
+Its prospective execution prefix was 33 stages: nine preparation stages and one
+repetition of all eight cases in all three arms. The original 57-slot schedule
+and 640-entry safety ceiling remained sealed; the 24 second repetitions were
+prospectively omitted. No repeated-quality or 57/57 claim was planned.
+
+`reports/native-experience-preseal-v1` under the isolated issue90 root closed
+early at original01. The owning inspect completed with HTTP 200. The next model
+proposal used the inspected project URL for prepare, omitting `/patches`.
+The manifest's URL schema and operation description had not exposed that route.
+The durable prepare outcome is `effect_unknown`, with a non-retryable typed
+`ERROR_CLASS_INTERNAL_ERROR`; the input is blocked at `tool_result_recorded`
+with `effect_unknown`, and no final result exists. The exact recipient HTTP
+status was not retained before the original witness was written; 404 inferred
+from recipient routing is not independent HTTP evidence. No provider error or
+cancellation was observed in either completed native capture.
+
+The full 57 denominator contains one failed stage and 56 not executed, including
+the 24 planned omissions. No original witness, note, skill or comparison case
+was published. Both new native entries have observed usage, with9913 reported
+full tokens and zero new NULL observations. The validated 211-turn predecessor
+is carried once; the closed inclusive total is 213 entries, 212 known and the
+one older UNKNOWN, with full-token lower bound 1605455. Quotes and invoice cost
+remain separate. No retry, successor window, replay, refund or qualification
+was performed.
+
+The exited collector's latest durable encrypted auth setting was returned by
+exact CAS; main control-plane discovery returned 200 and a fresh snapshot was
+saved. This discovery is not an inference turn. Main deployment was not switched.
+The closed leaf SHA256 is
+`8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f`,
+and handback SHA256 is
+`f785c50c834d768b8a804d655c9d8a100b1ee5cfce12bb6aa9abafd66dd245da`.
+The separate post-closure safe review projection is `safe-review-v1.json`, SHA256
+`d9d70387b1aa64d7837bf2908ef78e9874a645a03b9727712016df439cb62fd4`.
+It retains both requests, declared tool events and owning task/effect evidence;
+session/auth/options, raw errors and reasoning are excluded. The projection
+does not replace the original hash-bound private evidence.
+
+The prospective correction only documents generic project URL composition in
+the reviewed manifest. Existing unnamed and named routes, authority, runtime
+behavior, corpus and oracles remain unchanged. Narrow manifest/actual fixture
+HTTP checks validate that correction; they do not establish native quality.
+
+The separate operator model-only route diagnostic used the existing provider
+factory/Antigravity subscription transport, Main's encrypted auth store and
+configured server proxy, under the shared auth-process lock. It used fresh run
+IDs and executed no tools. Version1 retained an unavailable-transport attempt
+with NULL usage after an incorrect proxy override. Version2 received a relative
+`/project/alpha/patches` proposal with 4175 reported full tokens; that diagnostic
+had omitted the prior inspect request URL. Neither attempt is erased.
+
+Version3 supplied both the actual prior inspect request and result, explicitly
+as a historical diagnostic snapshot, with the generic new manifest descriptions
+and unchanged core function definitions. Gemini proposed
+`extension.project.prepare-patch` with the absolute URL
+`http://external.test/project/alpha/patches`, preserving the observed revision,
+exact original bytes and provenance while changing the accepted ready value.
+It completed in 18.038 seconds, with 1151 input, 218 output and 3389 reported
+full tokens; no transport diagnostic or cancellation occurred. This proves the
+bounded next-call proposal only. No artifact creation, current verification,
+task success or experience quality is established. The separate three operator
+attempts retain two known observations (7564 full tokens) and one NULL; they are
+not silently folded into the immutable 213-entry memory receipt or treated as
+free. The version3 evidence SHA256 is
+`c4f2a95806892d34cb8fdcb0989dde615587368ae67962ecf5ba80928970e9cd`
+under `reports/route-gemini-smoke-v3`. No further native window was run.
+The public metadata receipt is [issue-90-short-native-receipt.json](issue-90-short-native-receipt.json).

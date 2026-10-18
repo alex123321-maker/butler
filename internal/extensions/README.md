@@ -16,6 +16,13 @@ See [the lifecycle contract](../../docs/architecture/reviewed-extension-lifecycl
 real repository or runs a build. External artifact creation uses ordinary commit
 and recipient-receipt semantics.
 
+The fixture manifest documents URL composition as package DATA: inspect uses
+the current task's exact project URL (`/project` or `/project/{resource}`);
+prepare appends `/patches`; artifact checks append
+`/patches/{artifact_id}/checks` to the inspected project URL. Resource names and
+artifact identities come from current inputs and observations. These descriptions
+do not grant access or change Broker/runtime dispatch or receipt validation.
+
 Run `go test ./internal/extensions/...` on the isolated lab with
 `BUTLER_TEST_POSTGRES_URL` pointing to a separate `*_test` database. Fixtures
 create private schemas and use MaxConns=2; no production credentials are needed.
