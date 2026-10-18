@@ -241,6 +241,60 @@ func TestTemporalV7OriginalSlotEntryCeiling(t *testing.T) {
 	}
 }
 
+func TestTemporalV7NativeCallSequence(t *testing.T) {
+	for _, name := range []string{"background_continuation", "foreground_without_start", "repeated_start", "continuation_before_start"} {
+		t.Run(name, func(t *testing.T) {
+			p, l, s, d, previous, day, deadline := temporalV7Fixture(t, false)
+			kind := func(index int, value string) {
+				p["calls"].([]any)[index].(map[string]any)["kind"] = value
+				row := l["calls"].([]any)[index].(map[string]any)
+				row["kind"] = value
+				row["observation"].(map[string]any)["Kind"] = value
+				s["calls"].([]any)[index].(map[string]any)["Kind"] = value
+			}
+			switch name {
+			case "background_continuation":
+				kind(0, "tool_result")
+			case "foreground_without_start":
+				kind(1, "tool_result")
+			default:
+				// The already charged orphan is now a real, fully corroborated native
+				// entry: one Run cannot start twice or continue before its Start.
+				var full map[string]any
+				if json.Unmarshal(mustTemporalJSON(t, s["calls"].([]any)[1]), &full) != nil {
+					t.Fatal("fixture unavailable")
+				}
+				full["EntryID"], full["OperationID"], full["ReservationID"] = "orphan-entry", "orphan", "orphan-rsv"
+				callKind := "start"
+				if name == "continuation_before_start" {
+					callKind = "tool_result"
+				}
+				full["Kind"] = callKind
+				obs := map[string]any{}
+				for _, key := range []string{"EntryID", "OperationID", "ReservationID", "Usage", "FinishedAt"} {
+					obs[key] = full[key]
+				}
+				p["calls"] = append(p["calls"].([]any), map[string]any{"entry_id": "orphan-entry", "operation_id": "orphan", "reservation_id": "orphan-rsv", "run_id": "fg-run", "slot_id": full["SlotID"], "kind": callKind, "observation_json": obs})
+				l["calls"] = append(l["calls"].([]any), map[string]any{"entry_id": "orphan-entry", "operation_id": "orphan", "run_id": "fg-run", "slot_id": full["SlotID"], "kind": callKind, "observation": full})
+				s["calls"] = append(s["calls"].([]any), full)
+				p["paid_entries"] = 3
+				if name == "continuation_before_start" {
+					for _, v := range []struct {
+						m   map[string]any
+						key string
+					}{{p, "calls"}, {l, "calls"}, {s, "calls"}} {
+						a := v.m[v.key].([]any)
+						a[1], a[2] = a[2], a[1]
+					}
+				}
+			}
+			if _, _, err := temporalV7Leaf(mustTemporalJSON(t, p), mustTemporalJSON(t, l), mustTemporalJSON(t, s), mustTemporalJSON(t, d), previous, day, deadline); err == nil {
+				t.Fatal("self-consistent invalid native call sequence accepted")
+			}
+		})
+	}
+}
+
 func TestTemporalV7CurrentDayCarryOneUseIntegration(t *testing.T) {
 	pool := memorytest.Database(t)
 	ctx := context.Background()
