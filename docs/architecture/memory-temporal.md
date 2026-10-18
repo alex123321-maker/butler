@@ -130,6 +130,17 @@ scope and correction proof remains mandatory. Snapshots receive no `read_ref` an
 cannot pretend to be verbatim opened source quotations. Source verification uses
 the existing actual `memory.open` protocol independently.
 
+Contract revision2 clarifies interpretation without changing its bounded input
+schema or the three87 read contracts. Item `freshness` describes source revision
+currency; accepted verification is the separately computed
+`temporal[].freshness`, with its explicit `verification_basis`. An owner statement
+is not independent external evidence. Revalidation being due does not prove a
+stored value false or outside its validity interval. Present `claim_status` is
+an owner decision state, not a historical conflict resolver: overlapping accepted
+values with `conflict=true` remain unresolved. The native v4 answers and their
+original revision1 declaration stay immutable; this clarification needs a new
+prospective semantic screen before qualification.
+
 This tool uses the actual Broker/action/input-claim path and common durable tool
 budget. When adaptive retrieval is composed it also consumes the same finite
 plan call/time/byte counters; it cannot bypass that loop bound and cannot mint
@@ -144,6 +155,7 @@ The model-directed temporal facts reader requires qualification and flag plus
 the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
 at least300s and a matching durable budget quote. Doctor reports that profile
 prerequisite separately. Typed owner metadata operations do not perform inference
-and retain their independent owner/feature authorization. Deterministic temporal
-filtering of accepted profile/episode context keeps its feature gate independently
-of provider readiness; changing the model cannot revive an expired exception.
+and retain their independent owner/feature authorization. Deterministic expiry
+filtering of accepted profile/episode context survives disabling the temporal
+feature or changing the provider. The feature gate controls new temporal
+consumers and context annotations; it cannot revive an expired exception.

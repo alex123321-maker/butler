@@ -956,6 +956,12 @@ The model-directed temporal facts reader requires qualification and flag plus
 the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
 at least300s and a matching durable budget quote. Doctor reports that profile
 prerequisite separately. Typed owner metadata operations do not perform inference
-and retain their independent owner/feature authorization. Deterministic temporal
-filtering of accepted profile/episode context keeps its feature gate independently
-of provider readiness; changing the model cannot revive an expired exception.
+and retain their independent owner/feature authorization. Deterministic expiry
+filtering of accepted profile/episode context survives disabling the temporal
+feature or changing the provider. The feature gate controls new temporal
+consumers and context annotations; it cannot revive an expired exception.
+
+Temporal read results expose the recorded verification basis separately from
+source revision currency. The facts contract explains that a current owner
+decision does not resolve overlapping historical values and that overdue
+verification is uncertainty, not proof that a stored value became false.

@@ -22,7 +22,7 @@ func temporalEvidence(f catalog.AcceptedFact) readcontrol.TemporalEvidence {
 	if m.AcceptedAt != nil {
 		accepted = *temporalInstant(m.AcceptedAt)
 	}
-	return readcontrol.TemporalEvidence{ClaimID: f.Claim.ID, Validity: string(m.Validity), ValidFrom: temporalInstant(m.ValidFrom), ValidTo: temporalInstant(m.ValidTo), RecordedAt: temporalInstant(m.RecordedAt), SourceRecordedAt: m.SourceRecordedAt.UTC().Format(time.RFC3339Nano), AcceptedAt: accepted, FreshnessClass: string(m.Class), VerifiedAt: temporalInstant(m.VerifiedAt), Freshness: readcontrol.TemporalFreshness{Status: f.Freshness.Status, RevalidateAfter: temporalInstant(f.Freshness.RevalidateAfter), RequiresRevalidation: f.Freshness.RequiresRevalidation, CurrentUsable: f.Freshness.CurrentUsable}, Historical: f.Historical, TemporalRevision: m.Revision}
+	return readcontrol.TemporalEvidence{ClaimID: f.Claim.ID, Validity: string(m.Validity), ValidFrom: temporalInstant(m.ValidFrom), ValidTo: temporalInstant(m.ValidTo), RecordedAt: temporalInstant(m.RecordedAt), SourceRecordedAt: m.SourceRecordedAt.UTC().Format(time.RFC3339Nano), AcceptedAt: accepted, FreshnessClass: string(m.Class), VerifiedAt: temporalInstant(m.VerifiedAt), VerificationBasis: m.VerificationBasis, Freshness: readcontrol.TemporalFreshness{Status: f.Freshness.Status, RevalidateAfter: temporalInstant(f.Freshness.RevalidateAfter), RequiresRevalidation: f.Freshness.RequiresRevalidation, CurrentUsable: f.Freshness.CurrentUsable}, Historical: f.Historical, TemporalRevision: m.Revision}
 }
 
 // The ordinary reader owns exact source bytes. This optional enrichment runs

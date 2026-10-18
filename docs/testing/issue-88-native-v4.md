@@ -6,6 +6,9 @@ original used the owning durable input worker, production Flow and separately
 compiled Broker with the original production tool declarations. No original was
 reopened or replaced. Qualification remains false pending independent semantic
 review; a completed execution alone does not establish a correct answer.
+The subsequent [independent review](issue-88-native-v4-independent-review.md)
+rejects qualification: nine answers pass and three fail. This original evidence
+snapshot and its review JSON remain unchanged.
 
 The [review JSON](fixtures/issue88/native-v4-review.json) retains every exact
 decoded public answer, its UTF-8 hash, actual sealed question, unchanged frozen

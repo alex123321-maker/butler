@@ -38,7 +38,7 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
 			continue
 		}
-		if a.temporal {
+		if a.sources != nil {
 			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "profile", ID: entry.ID})
 			if err != nil {
 				return nil, err
@@ -47,8 +47,10 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 				if temporalExcluded(*fact) {
 					continue
 				}
-				result = append(result, temporalProfileEntry{Entry: entry, fact: *fact})
-				continue
+				if a.temporal {
+					result = append(result, temporalProfileEntry{Entry: entry, fact: *fact})
+					continue
+				}
 			}
 		}
 		result = append(result, entry)
@@ -89,7 +91,7 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 		if !eligible {
 			continue
 		}
-		if a.temporal {
+		if a.sources != nil {
 			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "episodic", ID: entry.ID})
 			if err != nil {
 				return nil, err
@@ -98,8 +100,10 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 				if temporalExcluded(*fact) {
 					continue
 				}
-				result = append(result, temporalEpisodeEntry{Episode: entry.Episode, fact: *fact, distance: entry.Distance})
-				continue
+				if a.temporal {
+					result = append(result, temporalEpisodeEntry{Episode: entry.Episode, fact: *fact, distance: entry.Distance})
+					continue
+				}
 			}
 		}
 		result = append(result, entry)
@@ -128,7 +132,7 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 		if !eligible {
 			continue
 		}
-		if a.temporal {
+		if a.sources != nil {
 			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "episodic", ID: entry.ID})
 			if err != nil {
 				return nil, err
@@ -137,8 +141,10 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 				if temporalExcluded(*fact) {
 					continue
 				}
-				result = append(result, temporalEpisodeEntry{Episode: entry, fact: *fact, distance: .25})
-				continue
+				if a.temporal {
+					result = append(result, temporalEpisodeEntry{Episode: entry, fact: *fact, distance: .25})
+					continue
+				}
 			}
 		}
 		result = append(result, memoryEpisodeExactMatch{Episode: entry})

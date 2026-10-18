@@ -43,7 +43,7 @@ func TestTemporalFactsActualBrokerHistoricalKnownAndCurrentBoundIntegration(t *t
 		t.Fatal(err)
 	}
 	b, cb := create("server-b", "С марта сервер B.", `"B"`, ca.ID)
-	if _, err := f.f.sources.SetTemporal(f.f.owner, catalog.TemporalUpdate{ClaimID: cb.ID, ExpectedHeadRevision: 2, Validity: catalog.ValidityInterval, ValidFrom: &march, Class: catalog.FreshnessTechnicalFact}); err != nil {
+	if _, err := f.f.sources.SetTemporal(f.f.owner, catalog.TemporalUpdate{ClaimID: cb.ID, ExpectedHeadRevision: 2, Validity: catalog.ValidityInterval, ValidFrom: &march, Class: catalog.FreshnessTechnicalFact, OwnerVerifiedNow: true}); err != nil {
 		t.Fatal(err)
 	}
 	store, err := adaptive.NewStore(f.f.pool, f.f.sources)
@@ -92,6 +92,17 @@ func TestTemporalFactsActualBrokerHistoricalKnownAndCurrentBoundIntegration(t *t
 		}
 		if (tc.valid != "" || tc.known != "") && !out.Items[0].Temporal[0].Historical {
 			t.Fatal("historical lookup presented as current")
+		}
+		observation := out.Items[0].Temporal[0]
+		basis := "unknown"
+		if tc.want == cb.ID {
+			basis = "owner_statement"
+			if observation.Freshness.Status != "fresh" || !observation.Freshness.CurrentUsable || observation.Freshness.RequiresRevalidation {
+				t.Fatal("fresh accepted verification lost behind source currency marker", observation)
+			}
+		}
+		if observation.VerificationBasis != basis || out.Items[0].Freshness != "current_revision_unverified_fact" {
+			t.Fatal("accepted verification basis conflated with source revision currency", observation)
 		}
 	}
 	var calls, opened, reservations int
