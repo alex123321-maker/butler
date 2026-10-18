@@ -1024,6 +1024,10 @@ Temporal read results expose the recorded verification basis separately from
 source revision currency. The facts contract explains that a current owner
 decision does not resolve overlapping historical values and that overdue
 verification is uncertainty, not proof that a stored value became false.
+Revision4 also distinguishes expired current applicability from a verification
+deadline: expiry of `valid_to` does not imply overdue verification, and stable
+preferences have no age-based verification TTL. Existing DATA/pins are unchanged;
+the new declaration still requires independent full native quality acceptance.
 
 Episodic experience can observe an explicitly selected relinquished failed or
 UNKNOWN original without creating an assistant final. Its typed terminal input

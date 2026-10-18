@@ -1,5 +1,10 @@
 # Tool Broker
 
+The optional `memory.facts` contract revision4 separates explicit validity expiry
+from verification deadlines. It preserves the bounded input/output schema and
+ordinary authorization/source pins. The general declaration adds no source
+values or inference authority; temporal release qualification remains false.
+
 Optional operator-only `BUTLER_MEMORY_READ_ENABLED=true` registers the fixed
 `memory.search`, `memory.open`, `memory.neighbors` contracts through RegisterOwned.
 Set `BUTLER_MEMORY_READ_CONTROL_URL` to the authenticated owning Orchestrator route

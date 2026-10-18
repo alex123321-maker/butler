@@ -151,6 +151,17 @@ The complete v5/revision2 cohort remains NO_GO for one unsupported inference;
 the new declaration includes no corpus values, answer hints or changed limits
 and requires a fresh full-cohort semantic screen.
 
+Contract revision4 clarifies the two causes represented by the existing freshness
+DATA. `expired` and `not_yet_valid` describe current applicability from explicit
+validity bounds. They do not establish an expired verification deadline;
+`revalidate_after` and `requires_revalidation` remain separate, and a stable
+preference has no age-based verification TTL. Historical applicability can remain
+answerable while `current_usable` is false. This changes only the general tool
+declaration, with no corpus values, added fields, migration or pin-policy change.
+Revision3 v7 retains its complete12-case execution and two inaccurate verification
+expiry statements. Its target conclusions do not constitute12/12 full semantic
+accuracy; qualification stays false pending a new whole-screen review.
+
 This tool uses the actual Broker/action/input-claim path and common durable tool
 budget. When adaptive retrieval is composed it also consumes the same finite
 plan call/time/byte counters; it cannot bypass that loop bound and cannot mint

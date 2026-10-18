@@ -64,3 +64,56 @@ func TestTemporalOverlappingAcceptedValidityReportsSelectedConflictIntegration(t
 		t.Fatal("historical conflict rewrote current owner head", current)
 	}
 }
+
+func TestTemporalApplicabilityExpiryDoesNotInventVerificationDeadlineIntegration(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		class  FreshnessClass
+		future bool
+	}{
+		{"expired_stable", FreshnessStablePreference, false},
+		{"expired_verified_technical", FreshnessTechnicalFact, false},
+		{"future_stable", FreshnessStablePreference, true},
+		{"future_verified_technical", FreshnessTechnicalFact, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, ctx := fixture(t)
+			c := propose(t, s, ctx, put(t, s, ctx, "rule", "Owner rule."), `"rule"`)
+			var err error
+			c, err = s.Decide(ctx, Decision{ClaimID: c.ID})
+			if err != nil {
+				t.Fatal(err)
+			}
+			var now time.Time
+			if err = s.pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
+				t.Fatal(err)
+			}
+			from, to := now.Add(-48*time.Hour), now.Add(-24*time.Hour)
+			status := "expired"
+			if tc.future {
+				from, to, status = now.Add(24*time.Hour), now.Add(48*time.Hour), "not_yet_valid"
+			}
+			metadata := temporalUpdate(t, s, ctx, c, 1, &from, &to, tc.class)
+			at := from.Add(time.Hour)
+			page := temporalRead(t, s, ctx, []string{c.ID}, TemporalQuery{ValidAt: &at})
+			if len(page.Items) != 1 {
+				t.Fatal("explicit applicability did not preserve selected historical evidence", page)
+			}
+			fact := page.Items[0]
+			fresh := fact.Freshness
+			if fresh.Status != status || fresh.CurrentUsable || fresh.RequiresRevalidation || fact.Claim.Status != "confirmed" || fact.Temporal.VerificationBasis != "owner_statement" || fact.Temporal.VerifiedAt == nil || metadata.VerifiedAt == nil || !fact.Temporal.VerifiedAt.Equal(*metadata.VerifiedAt) {
+				t.Fatal("applicability changed confirmation or the independent verification receipt", fact)
+			}
+			if tc.class == FreshnessStablePreference {
+				if fresh.RevalidateAfter != nil {
+					t.Fatal("stable preference acquired an age-based verification TTL", fresh)
+				}
+			} else if fresh.RevalidateAfter == nil || !fresh.RevalidateAfter.Equal(metadata.VerifiedAt.Add(24*time.Hour)) || !fresh.RevalidateAfter.After(now) {
+				t.Fatal("expired or future applicability invented an overdue verification deadline", fresh)
+			}
+			if fact.Pin.FreshnessStatus != status || fact.Pin.CurrentUsable {
+				t.Fatal("separate applicability DATA bypassed current source pins", fact.Pin)
+			}
+		})
+	}
+}

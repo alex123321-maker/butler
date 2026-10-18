@@ -15,6 +15,14 @@ Only returned states and explicit counters support such conclusions; other
 exclusion reasons remain unknown. This interpretation change preserves the
 input schema, source privacy rules and finite read limits.
 
+Revision4 also separates current applicability from verification. `expired` and
+`not_yet_valid` report explicit validity bounds, not a passed verification
+deadline. The separate `revalidate_after` and `requires_revalidation` fields
+retain their existing meaning; stable preferences have no age-based verification
+TTL. No output fields, stored metadata, source pins or freshness policy change.
+The closed revision3 native screen remains a failed semantic observation; this
+clarification requires a new independent whole screen before qualification.
+
 The permanent Broker validates the canonical contract, no-secret arguments,
 current task/input/worker proof, shared budget and private exact dispatch. The
 owning Orchestrator repeats complete current Catalog proof in the same result
