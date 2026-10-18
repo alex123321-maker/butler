@@ -107,3 +107,11 @@ uses `EnqueueWithPublication` to save job and generation projection atomically;
 context, independently of old leases. Actual PG/race tests prove post-run independent
 ownership, stale takeover/task/source rejection, per-attempt concurrent allowance
 and local/cloud/secret fail-closed boundaries with pool size two.
+
+The Go-only `CreateTerminalExperiencePolicy` constructor is restricted to one
+`task-experience-v1` note turn/job against an existing owner-sealed stopped-attempt
+snapshot/hash. Its internal proof is absent from generic request JSON. Ordinary
+policies keep rejecting blocked tasks; this specific fresh owner policy may
+observe the unchanged blocked original under current goal/mandate and finite
+budget authority. Every current policy/claim/supervisor/publication check repeats
+the proof. It cannot clear blockers, borrow the old lease or create tool actions.

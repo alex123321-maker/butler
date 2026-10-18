@@ -119,3 +119,26 @@ current independent deletion anchor.
 Controlled PG/Broker/lifecycle/actual dump-restore evidence and the separately
 frozen A/B/C quality comparison are required before qualification. A fixture
 pass, model report, successful transport or cheaper call count is insufficient.
+
+Stopped originals use an explicit typed `terminal_attempt` when the owning
+durable input is blocked/failed, has relinquished its claim/lease, and the actual
+run is failed/timed out or stopped at a tool with an UNKNOWN effect. There is no
+fabricated assistant final: result ID and agent report are empty, task verification
+is unknown, and effects/failures are copied unchanged. Existing completed-final
+observations retain their original schema/hash. Cancelled/paused tasks, active
+inputs, waiting approvals and delegated originals cannot gain this permission.
+
+The experience adapter alone calls the Go-only stopped-snapshot policy
+constructor. Generic policy request JSON has no opt-in field and continues to
+deny blocked tasks. That separately authenticated owner permission binds the exact
+sealed observation/hash, one note turn/job, current task/constraints and current
+goal/mandate/budget/deadline. Every schedule/claim/HTTP/stream/publication check
+revalidates this proof. A note never unblocks/requeues the historical original.
+
+Apply migration080 after077/079. Content-free input heads retain exact material
+checkpoint hashes/revisions and deletion tombstones; supervision never loads the
+large checkpoint. A shared per-input SQL fence orders source release with input
+and run writers without taking primary input row locks under source/tool locks.
+Populated terminal provenance prevents down migration. Candidate acceptance,
+source privacy/restore, current applicability and the production qualification
+gate remain independent.

@@ -145,6 +145,57 @@ metadata. These are controlled mechanical tests, with no native calls or auth
 handoff. They do not prove note/skill generation, clone-isolated A/B/C outcomes,
 failed/UNKNOWN source-note publication or an experience quality improvement.
 
+The stopped-attempt consumer extension is frozen in `snapshots/v29`, including
+migration080. It adds typed owner observation of an already relinquished input,
+with an empty original result ID/agent report and unknown task verification.
+A separate Go-only policy constructor permits one note job/turn for the exact
+sealed snapshot/hash under current task/root-mandate authority. Generic policy
+requests cannot borrow this capability, including for an active task. New task
+revisions cannot silently rebase an earlier stopped original. No input is resumed
+and no effect is reconciled by this consumer.
+
+| Receipt under the same `reports/` root | Pass / fail / skip | SHA256 of `evidence.sha256` |
+|---|---|---|
+| `terminal-v29` | 22 / 0 / 0 | `2f4c594c129bfb7ccde4ba08013eadaf201e711ac46a7d558f78f79c367b0de6` |
+| `mechanics-v29` | 95 / 0 / 0 | `b303525d5989bad0aa94b4e5a84ebfdbd9eccf9d7ee862f0f72cb1b52cbe7017` |
+| `terminal-backup-v29` | 3 / 0 / 0 phases | `644e81f0d4916cd05b613ca49000765fefbb6cb4ac05362dd376a93adf026386` |
+
+All use actual isolated PostgreSQL and race detection; the mechanical drivers
+also require vet. The owning source test executes actual Flow/Broker/runtime
+requests for a400 rejection and a persisted artifact with lost receipt. Both
+originals stop with UNKNOWN and no assistant final. Actual owner HTTP policy,
+bounded controlled note generation and owner acceptance retain that separation.
+Late input mutation, task pause and source deletion deny publication while
+retaining the known note usage. A changed task revision denies before a quote.
+Other controls prove input-head backfill without changing primary rows, identical
+delete/reinsert tombstones, and real `pg_locks` waits for input/run writers while
+a source transaction holds its publication fence. Uncopied error text/time does
+not change the material input head. Ordered080/079/077 migration controls and
+populated080 down-migration refusal remain mandatory.
+
+The real dump/restore procedure uses explicit typed controlled fixtures, not
+native original-task construction. It dumps before deletion, restores into a new
+database and replays the newest private anchor twice. Copied snapshot/note/episode
+bytes disappear; stopped outcome metadata, UNKNOWN, unrelated accepted evidence
+and complete attempt/reservation hashes survive. This component proof is separate
+from the actual ordinary source/owner API cases above.
+
+Earlier v25–v28 receipts remain retained. Final v29 additionally uses the same
+source-before-input-fence lock order as privacy deletion. Early policy checks
+only observe metadata; full Catalog access/finalization obtain the fence and
+repeat the proof. No proof deadline was increased. Windows cached unit checks
+and `verify-changed.ps1` are supporting diagnostics only.
+
+Qualification stays false and no90 native/auth window has run. Remaining gates
+include the frozen four-original/four-note/one-skill preparation and all48 A/B/C
+controls, independent semantic/effect review and complete known/unknown creation,
+query/use/skill cost. Original03 still needs the predeclared owner-authorized
+read-only continuation and actual same-task lookup/Reconcile to prove ABSENT.
+Its original failed/UNKNOWN observation and visible owner intervention must be
+bound to that supplemental evidence; the new lookup run cannot replace the
+original failure. The ordinary terminal path does not implement that continuation
+case or weaken Broker's blocked-task boundary.
+
 The later issue92 composition includes migration079 and the owning cache repair.
 privacy-v1 proves actual Broker raw/view reads followed by erasure with
 unchanged complete effect/evidence/spending digests. payload-backup-v1 restores

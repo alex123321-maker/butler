@@ -974,3 +974,10 @@ Temporal read results expose the recorded verification basis separately from
 source revision currency. The facts contract explains that a current owner
 decision does not resolve overlapping historical values and that overdue
 verification is uncertainty, not proof that a stored value became false.
+
+Episodic experience can observe an explicitly selected relinquished failed or
+UNKNOWN original without creating an assistant final. Its typed terminal input
+proof and fresh owner one-use note policy remain separate from execution,
+independent task verification and effect reconciliation. Generic blocked-task
+jobs remain denied. Migration080, exact current input/source/authority checks and
+the still-closed experience release gate are required.

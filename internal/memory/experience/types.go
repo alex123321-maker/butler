@@ -64,6 +64,7 @@ type Observation struct {
 	ConstraintsRevision int64                `json:"constraints_revision"`
 	RunID               string               `json:"run_id"`
 	ResultID            string               `json:"result_id"`
+	TerminalAttempt     *TerminalAttempt     `json:"terminal_attempt,omitempty"`
 	SessionKey          string               `json:"session_key"`
 	TranscriptRevision  int64                `json:"transcript_revision"`
 	ToolPins            []transcript.ToolPin `json:"tool_pins"`
@@ -81,6 +82,39 @@ type Observation struct {
 	Unknowns         []string           `json:"unknowns"`
 	Usage            *budget.ModelUsage `json:"usage"`
 }
+
+// TerminalAttempt is an owning stopped-input observation, not a fabricated
+// assistant final or task result. Its exact immutable projection is checked
+// again by Catalog and the separate owner-authorized background policy.
+type TerminalAttempt struct {
+	InputID       string `json:"input_id"`
+	InputStatus   string `json:"input_status"`
+	Attempts      int    `json:"attempts"`
+	Checkpoint    string `json:"checkpoint"`
+	InputHash     string `json:"input_hash"`
+	InputRevision int64  `json:"input_revision"`
+	Reason        string `json:"reason"`
+	RunState      string `json:"run_state"`
+}
+
+func (a TerminalAttempt) Validate() error {
+	if !text(a.InputID, 160) || a.Attempts < 1 || !text(a.Checkpoint, 160) || !hexHash.MatchString(a.InputHash) || a.InputRevision < 1 {
+		return ErrEvidence
+	}
+	if a.InputStatus != "blocked" && a.InputStatus != "failed" {
+		return ErrEvidence
+	}
+	switch a.Reason {
+	case "effect_unknown", "execution_stopped", "execution_deadline_exceeded", "prior_attempt_terminal":
+	default:
+		return ErrEvidence
+	}
+	if a.RunState != "failed" && a.RunState != "timed_out" && !(a.InputStatus == "blocked" && a.Reason == "effect_unknown" && a.RunState == "tool_running") {
+		return ErrEvidence
+	}
+	return nil
+}
+
 type FailedCall struct {
 	ToolCallID string `json:"tool_call_id"`
 	Tool       string `json:"tool"`
@@ -167,7 +201,14 @@ func (o Observation) Validate() error {
 			return ErrEvidence
 		}
 	}
-	if o.Format != SnapshotFormat || !text(o.OwnerID, 160) || !text(o.TaskID, 160) || o.TaskRevision < 1 || o.ConstraintsRevision < 1 || !text(o.RunID, 160) || !text(o.ResultID, 160) || !text(o.Goal, 2048) || !text(o.AgentReport, 4096) || !hexHash.MatchString(o.Environment.Fingerprint) || !stringsValid(o.Constraints, 32, 1024) || !stringsValid(o.Unknowns, 16, 512) || !stringsValid(o.VerifiedCriteria, 32, 1024) || len(o.Actions) == 0 || len(o.Actions) > MaxActions || len(o.Environment.Tools) == 0 || len(o.Environment.Tools) > MaxActions {
+	if o.Format != SnapshotFormat || !text(o.OwnerID, 160) || !text(o.TaskID, 160) || o.TaskRevision < 1 || o.ConstraintsRevision < 1 || !text(o.RunID, 160) || !text(o.Goal, 2048) || !hexHash.MatchString(o.Environment.Fingerprint) || !stringsValid(o.Constraints, 32, 1024) || !stringsValid(o.Unknowns, 16, 512) || !stringsValid(o.VerifiedCriteria, 32, 1024) || len(o.Actions) == 0 || len(o.Actions) > MaxActions || len(o.Environment.Tools) == 0 || len(o.Environment.Tools) > MaxActions {
+		return ErrEvidence
+	}
+	if o.TerminalAttempt == nil {
+		if !text(o.ResultID, 160) || !text(o.AgentReport, 4096) {
+			return ErrEvidence
+		}
+	} else if o.TerminalAttempt.Validate() != nil || o.ResultID != "" || o.AgentReport != "" || o.OwnerVerdict != "unknown" || o.OwnerResultID != "" || len(o.VerifiedCriteria) != 0 {
 		return ErrEvidence
 	}
 	if o.OwnerVerdict != "verified" && o.OwnerVerdict != "negative" && o.OwnerVerdict != "unknown" {

@@ -3,6 +3,8 @@
 set -euo pipefail
 base=${1:?isolated issue90 root required}
 label=${2:?fresh evidence label required}
+mode=${3:-ordinary}
+[[ "$mode" == ordinary || "$mode" == terminal ]] || exit 2
 [[ "$base" =~ ^/srv/storage/butler/agents/issue90-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current")
 [[ "$src" == "$base/snapshots/"* ]] || exit 2
@@ -44,6 +46,7 @@ run_phase() {
   -v "$src:/src:ro" -v "$cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -w /src \
   -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local \
   -e BUTLER_TEST_EXPERIENCE_BACKUP_PHASE="$phase" \
+  -e BUTLER_TEST_EXPERIENCE_BACKUP_TERMINAL="$([[ "$mode" == terminal ]] && echo 1 || echo 0)" \
   -e BUTLER_TEST_EXPERIENCE_BACKUP_POSTGRES_URL="postgres://butler@postgres:5432/$database?sslmode=disable" \
   -e BUTLER_TEST_EXPERIENCE_BACKUP_MANIFEST=/proof/deletion-anchor \
   -e BUTLER_TEST_EXPERIENCE_BACKUP_RECEIPT=/proof/receipt.json \

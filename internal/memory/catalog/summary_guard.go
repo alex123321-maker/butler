@@ -23,6 +23,13 @@ func lockSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 	if err != nil {
 		return err
 	}
+	// Exact stopped-input evidence has a content-free metadata head. This shared
+	// fence orders publication against an input writer without locking its large
+	// checkpoint row or borrowing execution authority from the stopped attempt.
+	_, err = tx.Exec(ctx, `SELECT butler_lock_memory_terminal_attempts($1)`, ids)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

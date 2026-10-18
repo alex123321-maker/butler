@@ -30,6 +30,8 @@ type backupProof struct {
 	UnrelatedEpisodeID int64             `json:"unrelated_episode_id"`
 	UnrelatedBodyHash  string            `json:"unrelated_body_hash"`
 	AccountingHash     string            `json:"accounting_hash"`
+	Terminal           bool              `json:"terminal"`
+	TerminalHash       string            `json:"terminal_hash,omitempty"`
 }
 
 func accountingHash(t *testing.T, pool *pgxpool.Pool, ctx context.Context) string {
@@ -93,10 +95,23 @@ func TestActualPostgresExperienceDumpRestoreDeletionIntegration(t *testing.T) {
 			}
 		}
 		f := newLessonFixtureWithPool(t, pool, anchorPath)
+		terminal := os.Getenv("BUTLER_TEST_EXPERIENCE_BACKUP_TERMINAL") == "1"
+		var unrelated catalog.SourceRef
+		if terminal {
+			unrelated, _ = f.verifiedCase(t, 2)
+			stopFixture(t, f)
+		}
 		lesson := f.publish(t)
 		f.accept(t, lesson)
-		unrelated, _ := f.verifiedCase(t, 2)
-		p := backupProof{Original: ref(f.parent), Snapshot: f.snapshot, Lesson: lesson, Unrelated: unrelated, AccountingHash: accountingHash(t, pool, ctx)}
+		if !terminal {
+			unrelated, _ = f.verifiedCase(t, 2)
+		}
+		p := backupProof{Original: ref(f.parent), Snapshot: f.snapshot, Lesson: lesson, Unrelated: unrelated, AccountingHash: accountingHash(t, pool, ctx), Terminal: terminal}
+		if terminal {
+			if err = pool.QueryRow(ctx, `SELECT encode(sha256(convert_to(to_jsonb(a)::text,'UTF8')),'hex') FROM memory_experience_terminal_attempts a WHERE source_id=$1`, p.Snapshot.ID).Scan(&p.TerminalHash); err != nil {
+				t.Fatal(err)
+			}
+		}
 		if err = pool.QueryRow(ctx, `SELECT l.claim_id,c.episode_id FROM memory_experience_lessons l JOIN memory_claims c ON c.claim_id=l.claim_id WHERE l.source_id=$1`, lesson.ID).Scan(&p.ClaimID, &p.EpisodeID); err != nil {
 			t.Fatal(err)
 		}
@@ -172,6 +187,16 @@ func TestActualPostgresExperienceDumpRestoreDeletionIntegration(t *testing.T) {
 	}
 	if accountingHash(t, pool, ctx) != p.AccountingHash {
 		t.Fatal("paid attempts/reservations/usage hashes changed across delete/restore")
+	}
+	if p.Terminal {
+		var actual string
+		if err = pool.QueryRow(ctx, `SELECT encode(sha256(convert_to(to_jsonb(a)::text,'UTF8')),'hex') FROM memory_experience_terminal_attempts a WHERE source_id=$1`, p.Snapshot.ID).Scan(&actual); err != nil || actual != p.TerminalHash {
+			t.Fatal("stopped-attempt identity/outcome metadata changed across delete/restore", err)
+		}
+		var unknown bool
+		if err = pool.QueryRow(ctx, `SELECT i.status='blocked' AND i.error_code='effect_unknown' AND r.current_state='tool_running' AND t.status='blocked' FROM accepted_inputs i JOIN runs r ON r.run_id=i.run_id JOIN tasks t ON t.task_id=i.task_id WHERE i.input_id='stopped-input'`).Scan(&unknown); err != nil || !unknown {
+			t.Fatal("delete/restore invented a terminal final or resolved UNKNOWN", err)
+		}
 	}
 	var metadata string
 	if err = pool.QueryRow(ctx, `SELECT jsonb_agg(to_jsonb(l))::text FROM memory_experience_lessons l`).Scan(&metadata); err != nil || strings.Contains(metadata, "Observed attempt") || strings.Contains(metadata, "I report success") {

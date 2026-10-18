@@ -143,7 +143,13 @@ func (f *lessonFixture) publish(t *testing.T) catalog.SourceRef {
 	raw, _ := json.Marshal(notesFixture())
 	f.p.output = string(raw)
 	q := jobs.ModelPolicyRequest{ID: "experience-policy", Handler: Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{TaskID: "task-1", OriginalRunID: "run-1", Sources: []catalog.SourceRef{f.snapshot}, Deadline: time.Now().Add(time.Hour), Allowance: budget.Units{ModelTurns: 1, Tokens: 100000, ProviderInputBytes: 8388608, ActiveMillis: 10000}}}
-	if _, err := f.j.CreateModelPolicy(f.ctx, q); err != nil {
+	var err error
+	if f.observation.TerminalAttempt != nil {
+		_, err = f.j.CreateTerminalExperiencePolicy(f.ctx, q, f.snapshot.ID)
+	} else {
+		_, err = f.j.CreateModelPolicy(f.ctx, q)
+	}
+	if err != nil {
 		t.Fatal(err)
 	}
 	if err := f.j.PollModelPolicies(f.ctx, func(string) bool { return true }); err != nil {

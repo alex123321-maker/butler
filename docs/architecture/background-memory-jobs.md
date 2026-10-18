@@ -18,6 +18,15 @@ revision. Completion itself changes that revision: a policy created before this
 transition cannot silently rebase and requires a new explicit owner policy.
 Delegated tasks are denied by this composition; no child scope is broadened.
 
+The owning episodic-experience adapter has one narrow additional path for an
+explicitly selected stopped original. Its Go-only constructor binds an existing
+typed terminal snapshot/hash and exactly one note job/turn to a new owner policy.
+Only that handler may observe a currently blocked root task under unchanged
+task/constraint and active goal/mandate authority. Generic policy request JSON
+cannot construct this permission. The stopped input remains stopped, no final or
+verification is invented, and every policy/claim/supervision/publication boundary
+rechecks the same proof. See [episodic experience](episodic-experience.md).
+
 Supported events are `source_changed`, `session_completed`, `session_inactive`
 and `schedule`. The scanner considers at most 32 policies per tick. Events bind
 the complete current source manifest; session events additionally require the

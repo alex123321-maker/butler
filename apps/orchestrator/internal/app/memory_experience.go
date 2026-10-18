@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"errors"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"os"
 	"sort"
@@ -78,6 +80,9 @@ func (p *experiencePolicies) Create(ctx context.Context, q experience.PolicyRequ
 	q.Policy.Job.TaskID = o.TaskID
 	q.Policy.Job.OriginalRunID = o.RunID
 	q.Policy.Job.Sources = []catalog.SourceRef{src}
+	if o.TerminalAttempt != nil {
+		return p.jobs.CreateTerminalExperiencePolicy(ctx, q.Policy, src.ID)
+	}
 	return p.jobs.CreateModelPolicy(ctx, q.Policy)
 }
 
@@ -93,13 +98,31 @@ func (v *skillEvidence) taskObservation(ctx context.Context, owner, run, environ
 		return o, nil, experience.ErrEvidence
 	}
 	final, err := v.results.GetByRun(ctx, run)
-	if err != nil || final.PrivacyRedacted || final.TaskID != t.TaskID || final.MessageID == "" || final.TaskRevision < 1 || final.ConstraintsRevision != t.ConstraintsRevision {
-		return o, nil, experience.ErrEvidence
-	}
 	o.TaskID = t.TaskID
-	o.TaskRevision = final.TaskRevision
-	o.ConstraintsRevision = final.ConstraintsRevision
-	o.ResultID = final.ResultID
+	var parents []catalog.SourceRef
+	if errors.Is(err, completion.ErrNotFound) {
+		stopped, observeErr := durableinput.NewStore(v.sources.Pool()).ObserveStopped(ctx, run)
+		if observeErr != nil || stopped.TaskID != t.TaskID || stopped.RunID != run {
+			return o, nil, experience.ErrEvidence
+		}
+		o.TaskRevision, o.ConstraintsRevision = stopped.TaskRevision, stopped.ConstraintsRevision
+		o.TerminalAttempt = &experience.TerminalAttempt{InputID: stopped.InputID, InputStatus: stopped.InputStatus, Attempts: stopped.Attempts, Checkpoint: stopped.Checkpoint, InputHash: stopped.InputHash, InputRevision: stopped.InputRevision, Reason: stopped.Reason, RunState: stopped.RunState}
+		if o.TerminalAttempt.Validate() != nil {
+			return o, nil, experience.ErrEvidence
+		}
+		o.Unknowns = append(o.Unknowns, "assistant_final_unavailable", "original_attempt_stopped")
+		parents, err = v.sources.StoppedAttemptParents(ctx, run, stopped.InputID)
+	} else {
+		if err != nil || final.PrivacyRedacted || final.TaskID != t.TaskID || final.MessageID == "" || final.TaskRevision < 1 || final.ConstraintsRevision != t.ConstraintsRevision {
+			return o, nil, experience.ErrEvidence
+		}
+		o.TaskRevision, o.ConstraintsRevision = final.TaskRevision, final.ConstraintsRevision
+		o.ResultID = final.ResultID
+		parents, err = v.sources.VerifiedResultParents(ctx, owner, final.MessageID, run)
+	}
+	if err != nil {
+		return o, nil, err
+	}
 	var clipped bool
 	o.Goal, clipped = clipObservation(t.Goal, 2048)
 	if clipped {
@@ -112,27 +135,25 @@ func (v *skillEvidence) taskObservation(ctx context.Context, owner, run, environ
 		}
 		o.Constraints = append(o.Constraints, c)
 	}
-	o.AgentReport, clipped = clipObservation(final.Content, 4096)
-	if clipped {
-		o.Unknowns = append(o.Unknowns, "agent_report_excerpt_only")
+	if o.TerminalAttempt == nil {
+		o.AgentReport, clipped = clipObservation(final.Content, 4096)
+		if clipped {
+			o.Unknowns = append(o.Unknowns, "agent_report_excerpt_only")
+		}
 	}
 	results, err := v.tasks.Results(ctx, t.TaskID)
 	if err != nil {
 		return o, nil, err
 	}
 	for _, r := range results {
-		if r.RunID == run && r.TaskRevision == final.TaskRevision && r.Verifier == "owner" && r.Verdict == "verified" && len(r.EvidenceRefs) > 0 && len(r.VerifiedCriteria) > 0 {
+		if o.TerminalAttempt == nil && r.RunID == run && r.TaskRevision == o.TaskRevision && r.Verifier == "owner" && r.Verdict == "verified" && len(r.EvidenceRefs) > 0 && len(r.VerifiedCriteria) > 0 {
 			o.OwnerVerdict = "verified"
 			o.OwnerResultID = r.ResultID
 			o.VerifiedCriteria = append([]string{}, r.VerifiedCriteria...)
 		}
 	}
-	if t.Revision != final.TaskRevision && (t.Status != "completed" || t.Revision != final.TaskRevision+1 || o.OwnerVerdict != "verified" || t.CompletionResultID != o.OwnerResultID) {
+	if t.Revision != o.TaskRevision && (t.Status != "completed" || t.Revision != o.TaskRevision+1 || o.OwnerVerdict != "verified" || t.CompletionResultID != o.OwnerResultID) {
 		return o, nil, experience.ErrEvidence
-	}
-	parents, err := v.sources.VerifiedResultParents(ctx, owner, final.MessageID, run)
-	if err != nil {
-		return o, nil, err
 	}
 	history, err := v.transcript.CaptureRunTools(ctx, run, 2*experience.MaxActions)
 	if err != nil {
@@ -165,7 +186,7 @@ func (v *skillEvidence) taskObservation(ctx context.Context, owner, run, environ
 	deps := map[string]skills.Dependency{}
 	for _, e := range effects {
 		r, err := v.journal.GetEffect(ctx, e.ActionID)
-		if err != nil || r.Binding.OwnerID != owner || r.Binding.TaskID != t.TaskID || r.Binding.TaskRevision != final.TaskRevision {
+		if err != nil || r.Binding.OwnerID != owner || r.Binding.TaskID != t.TaskID || r.Binding.TaskRevision != o.TaskRevision {
 			return o, nil, experience.ErrEvidence
 		}
 		d := skills.Dependency{Tool: r.Binding.ToolName, ContractHash: r.Binding.ContractHash, ContractRevision: r.Binding.ContractRevision}

@@ -71,3 +71,24 @@ trusted exposure checks before reading accepted snapshots. Owner acceptance of
 a derived episodic/profile value does not remove the lesson's environment, tool
 contract or negative-feedback conditions. Legacy facts with no lesson ancestry
 retain their ordinary authority checks.
+
+An explicitly selected stopped original can also produce a lesson without an
+assistant final. Its typed `terminal_attempt` records the relinquished durable
+input identity/status, attempt count, exact input metadata head and actual run
+state. `result_id` and `agent_report` stay empty; owner verification stays unknown.
+The owning input service proves that no claim/lease is executing that original.
+Cancellation, waiting approval, running input, arbitrary error text and delegated
+tasks cannot use this path. An uncertain external effect remains UNKNOWN even
+when a private recipient audit knows that bytes were persisted.
+
+Only the experience adapter can construct the separate one-use model policy for
+that exact sealed snapshot/hash. This Go capability is absent from the public
+generic policy request; generic jobs still reject blocked tasks. Scheduling,
+admission, supervision and publication recheck the current snapshot, task and
+constraints, owner policy, root goal/mandate, deadline and finite budget. The
+original input/task is never requeued, unblocked or completed by learning.
+Migration080 maintains content-free input hash/revision/tombstone heads and
+orders source release against material input/run changes with a per-input SQL
+fence. No full checkpoint body is reread by supervision. Schema rollback refuses
+populated stopped-attempt provenance, and normal source deletion/restore fences
+continue to erase copied bodies while preserving unknown outcomes and spend.

@@ -81,7 +81,7 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 		return catalog.SourceRef{}, err
 	}
 	var status, completion string
-	if err = tx.QueryRow(ctx, `SELECT owner_id,revision,constraints_revision,status,COALESCE(completion_result_id,'') FROM tasks WHERE task_id=$1 FOR SHARE`, o.TaskID).Scan(&owner, &revision, &constraints, &status, &completion); err != nil || owner != o.OwnerID || constraints != o.ConstraintsRevision || (status != "active" && status != "completed") || revision != o.TaskRevision && (status != "completed" || revision != o.TaskRevision+1 || o.OwnerVerdict != "verified" || completion != o.OwnerResultID) {
+	if err = tx.QueryRow(ctx, `SELECT owner_id,revision,constraints_revision,status,COALESCE(completion_result_id,'') FROM tasks WHERE task_id=$1 FOR SHARE`, o.TaskID).Scan(&owner, &revision, &constraints, &status, &completion); err != nil || owner != o.OwnerID || constraints != o.ConstraintsRevision || (status != "active" && status != "completed" && !(o.TerminalAttempt != nil && status == "blocked")) || revision != o.TaskRevision && (status != "completed" || revision != o.TaskRevision+1 || o.OwnerVerdict != "verified" || completion != o.OwnerResultID) {
 		return catalog.SourceRef{}, ErrEvidence
 	}
 	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, o.TaskID, o.OwnerID, nil, time.Now()); err != nil {
@@ -89,6 +89,28 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 	}
 	if session != o.SessionKey {
 		return catalog.SourceRef{}, ErrEvidence
+	}
+	if o.TerminalAttempt != nil {
+		// Privacy deletion obtains sources before tool/input writer fences. The
+		// stopped original uses that same order; it never holds an input fence
+		// while waiting for one of its source parents.
+		if _, err = s.Sources.AccessTx(ctx, tx, parents, "memory_job_create"); err != nil {
+			return catalog.SourceRef{}, err
+		}
+		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock_shared(hashtextextended('butler-terminal-input:'||$1::text,0))`, o.TerminalAttempt.InputID); err != nil {
+			return catalog.SourceRef{}, ErrEvidence
+		}
+		var current bool
+		a := o.TerminalAttempt
+		err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs i JOIN runs r ON r.run_id=i.run_id JOIN memory_experience_input_heads h ON h.input_id=i.input_id
+WHERE i.input_id=$1 AND i.run_id=$2 AND i.task_id=$3 AND r.task_id=$3 AND r.task_revision=$4 AND i.owner_id=$5 AND i.session_key=$6 AND r.session_key=$6
+AND i.status=$7 AND i.attempts=$8 AND i.checkpoint=$9 AND h.row_hash=$10 AND i.error_code=$11 AND r.current_state=$12 AND h.revision=$13 AND h.alive
+AND i.claim_id='' AND i.claim_expires_at IS NULL
+AND NOT EXISTS(SELECT 1 FROM session_ownership l WHERE l.session_key=i.session_key AND l.lease_id<>'' AND l.expires_at>clock_timestamp())
+AND NOT EXISTS(SELECT 1 FROM accepted_inputs x WHERE x.session_key=i.session_key AND x.status='running'))`, a.InputID, o.RunID, o.TaskID, o.TaskRevision, o.OwnerID, o.SessionKey, a.InputStatus, a.Attempts, a.Checkpoint, a.InputHash, a.Reason, a.RunState, a.InputRevision).Scan(&current)
+		if err != nil || !current || status == "completed" {
+			return catalog.SourceRef{}, ErrEvidence
+		}
 	}
 	// Bind copied data to exact owning rows before any new snapshot is created.
 	// The captured head is retained for audit; unrelated changes to it do not
@@ -106,8 +128,10 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 			return catalog.SourceRef{}, catalog.ErrStale
 		}
 	}
-	if _, err = s.Sources.AccessTx(ctx, tx, parents, "memory_job_create"); err != nil {
-		return catalog.SourceRef{}, err
+	if o.TerminalAttempt == nil {
+		if _, err = s.Sources.AccessTx(ctx, tx, parents, "memory_job_create"); err != nil {
+			return catalog.SourceRef{}, err
+		}
 	}
 	var prior string
 	var digest string
@@ -133,6 +157,12 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 	_, err = tx.Exec(ctx, `INSERT INTO memory_experience_observations(source_id,source_revision,owner_id,observation_hash,task_id,run_id,result_id,session_key,transcript_revision) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, src.ID, src.Revision, o.OwnerID, hash(o), o.TaskID, o.RunID, o.ResultID, o.SessionKey, o.TranscriptRevision)
 	if err != nil {
 		return catalog.SourceRef{}, err
+	}
+	if a := o.TerminalAttempt; a != nil {
+		_, err = tx.Exec(ctx, `INSERT INTO memory_experience_terminal_attempts(source_id,input_id,input_status,attempts,checkpoint,input_hash,input_revision,reason,run_state)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, src.ID, a.InputID, a.InputStatus, a.Attempts, a.Checkpoint, a.InputHash, a.InputRevision, a.Reason, a.RunState)
+		if err != nil {
+			return catalog.SourceRef{}, err
+		}
 	}
 	for _, pin := range o.ToolPins {
 		if _, err = tx.Exec(ctx, `INSERT INTO memory_experience_tool_pins(observation_source_id,tool_call_id,run_id,row_hash,row_revision)VALUES($1,$2,$3,$4,$5)`, src.ID, pin.ID, pin.RunID, pin.Hash, pin.Revision); err != nil {

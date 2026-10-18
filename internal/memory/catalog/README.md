@@ -159,3 +159,11 @@ Migration079 down is allowed only before any irreversible run payload marker
 exists. Once deletion has fenced a run, schema downgrade refuses to remove its
 privacy fence. Roll back optional consumers/images while retaining migrations
 and the independently held deletion anchor; never drop live deletion metadata.
+
+Migration080 extends episodic provenance to exact stopped-input metadata heads.
+`StoppedAttemptParents` retains primary original messages and the complete used
+source graph without requiring or inventing a final message. Full access/release
+locks a shared per-input SQL fence; material input/run writers take its exclusive
+side before commit. Supervision reads content-free head metadata, never the large
+checkpoint. Input deletion/reinsertion cannot revive an older observation.
+Populated stopped-attempt provenance refuses schema rollback.

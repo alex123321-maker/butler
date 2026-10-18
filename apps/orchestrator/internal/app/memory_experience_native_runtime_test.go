@@ -511,6 +511,7 @@ func (r *experienceNativeRuntime) verifyPreparedOriginal(ctx context.Context, re
 type experienceOriginalControlProvider struct {
 	run   string
 	phase int
+	ready string // explicit controlled protocol fault; never used by native transport
 }
 
 func (*experienceOriginalControlProvider) Name() string                    { return "antigravity" }
@@ -571,6 +572,9 @@ func (p *experienceOriginalControlProvider) SubmitToolResult(ctx context.Context
 			return nil, fmt.Errorf("actual inspect missing")
 		}
 		before := inspected.Files[0].Content
+		if p.ready != "" {
+			inspected.Ready = p.ready
+		}
 		body := map[string]any{"project_revision": inspected.Revision, "changes": []map[string]string{{"path": "README.md", "before": before, "after": strings.ReplaceAll(before, "ready=false\n", "ready="+inspected.Ready+"\n")}}}
 		return p.emit("extension.project.prepare-patch", map[string]any{"url": egresstest.Origin + "/project/alpha/patches", "body": body}), nil
 	case 3:

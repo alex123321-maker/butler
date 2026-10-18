@@ -31,11 +31,12 @@ type ModelPolicyRequest struct {
 }
 type ModelPolicy struct {
 	ModelPolicyRequest
-	OwnerID             string                `json:"owner_id"`
-	TaskRevision        int64                 `json:"task_revision"`
-	ConstraintsRevision int64                 `json:"constraints_revision"`
-	Authority           actionauth.Assignment `json:"authority"`
-	ContextPins         []ModelContextPin     `json:"context_pins,omitempty"`
+	OwnerID             string                 `json:"owner_id"`
+	TaskRevision        int64                  `json:"task_revision"`
+	ConstraintsRevision int64                  `json:"constraints_revision"`
+	Authority           actionauth.Assignment  `json:"authority"`
+	ContextPins         []ModelContextPin      `json:"context_pins,omitempty"`
+	TerminalExperience  *terminalExperiencePin `json:"terminal_experience,omitempty"`
 }
 
 var ErrWaiting = errors.New("background memory admission is waiting")
@@ -69,6 +70,10 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 // transaction. A trusted snapshot adapter can commit its source/pins and policy
 // atomically; it acquires domain/authority locks before creating source rows.
 func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest) (ModelPolicy, error) {
+	return s.createModelPolicyTx(ctx, tx, q, nil)
+}
+
+func (s *Store) createModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest, terminal *terminalExperiencePin) (ModelPolicy, error) {
 	actor, ok := owneridentity.FromContext(ctx)
 	if !ok || tx == nil || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
 		return ModelPolicy{}, ErrClaim
@@ -101,7 +106,7 @@ func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolic
 	if !q.Job.Deadline.After(now) || q.Job.Deadline.After(now.Add(7*24*time.Hour)) {
 		return ModelPolicy{}, ErrClaim
 	}
-	p := ModelPolicy{ModelPolicyRequest: q, OwnerID: actor.OwnerID}
+	p := ModelPolicy{ModelPolicyRequest: q, OwnerID: actor.OwnerID, TerminalExperience: terminal}
 	initial, e := s.catalog.CanonicalSourcesTx(ctx, tx, q.Job.Sources)
 	if e != nil {
 		return p, e
@@ -126,8 +131,11 @@ func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolic
 	if q.Job.TaskID != "" {
 		var owner, status, parent string
 		e = tx.QueryRow(ctx, `SELECT owner_id,status,COALESCE(parent_task_id,''),revision,constraints_revision FROM tasks WHERE task_id=$1 FOR SHARE`, q.Job.TaskID).Scan(&owner, &status, &parent, &p.TaskRevision, &p.ConstraintsRevision)
-		if e != nil || owner != p.OwnerID || parent != "" || (status != "active" && status != "completed") {
+		if e != nil || owner != p.OwnerID || parent != "" {
 			return p, ErrClaim
+		}
+		if e = s.checkExperienceTerminalTaskTx(ctx, tx, p, status); e != nil {
+			return p, e
 		}
 		p.Authority, e = actionauth.CheckTaskAuthorityTx(ctx, tx, q.Job.TaskID, p.OwnerID, nil, now)
 		if e != nil {
@@ -231,6 +239,9 @@ func (s *Store) checkPolicyTaskTx(ctx context.Context, tx pgx.Tx, p ModelPolicy)
 		return e
 	}
 	if p.Job.TaskID == "" {
+		if p.TerminalExperience != nil {
+			return ErrClaim
+		}
 		return nil
 	}
 	var owner, status, parent string
@@ -241,8 +252,11 @@ func (s *Store) checkPolicyTaskTx(ctx context.Context, tx pgx.Tx, p ModelPolicy)
 		}
 		return e
 	}
-	if owner != p.OwnerID || parent != "" || (status != "active" && status != "completed") || rev != p.TaskRevision || cr != p.ConstraintsRevision {
+	if owner != p.OwnerID || parent != "" || rev != p.TaskRevision || cr != p.ConstraintsRevision {
 		return ErrClaim
+	}
+	if e := s.checkExperienceTerminalTaskTx(ctx, tx, p, status); e != nil {
+		return e
 	}
 	if p.Authority.MandateID != "" {
 		var raw []byte

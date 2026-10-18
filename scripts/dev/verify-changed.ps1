@@ -84,6 +84,15 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/candidates and TestCandidate in ./apps/orchestrator/internal/api; actual owner HTTP decision, exact quote validation, complete ancestor privacy and all-eight lifecycle corpus. Native Russian semantic release qualification is independent; never reset historical spend.")
       continue
     }
+    "^(internal/memory/experience/|apps/orchestrator/internal/app/memory_experience|apps/orchestrator/internal/input/stopped_observation[.]go|internal/memory/catalog/stopped_attempt[.]go|migrations/(077|080)_|scripts/dev/memory-experience-)" {
+      [void]$specs.Add("docs/architecture/episodic-experience.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-experience-lab.sh isolated issue90 root fresh-label terminal; real PG/race, ordinary stopped original through actual Broker/runtimes, owner-only one-use note policy, currentness/tombstones/writer fencing and ordered migrations. No native inference or skipped mandatory tests.")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-experience-backup-lab.sh isolated issue90 root fresh-label terminal; actual dump BEFORE deletion, fresh restore and newest external anchor, unknown outcome/provenance/accounting retained. Native A/B/C remains a separate frozen complete-cost quality gate.")
+      continue
+    }
     "^(internal/memory/jobs/|internal/budget/auxiliary[.]go$|apps/orchestrator/internal/(app/memory_model_jobs|api/memory_model_jobs)|migrations/071_|deploy/memory-jobs/|scripts/dev/memory-jobs-)" {
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")

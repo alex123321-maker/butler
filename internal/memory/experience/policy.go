@@ -5,7 +5,7 @@ import (
 	"github.com/butler/butler/internal/memory/jobs"
 )
 
-// The owner selects an existing completed attempt and finite independent policy,
+// The owner selects an existing completed/stopped attempt and finite independent policy,
 // not evidence contents, environment, verdict or model-written source parents.
 type PolicyRequest struct {
 	RunID  string                  `json:"run_id"`
