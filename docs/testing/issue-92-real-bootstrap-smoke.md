@@ -77,3 +77,43 @@ It stays deterministic for that run's replay/approval continuation and differs
 for each new diagnostic. It changes no source guard, provider profile, release
 qualification or approval rule. The new unit identity invariant and a fresh
 complete five-row real-bootstrap regression are mandatory after this correction.
+
+Fresh `bootstrap-v3`, frozen source `9bea7697`, completes **7 PASS /0 FAIL /0
+SKIP**, race detection and targeted vet. This is five named constructor rows,
+their parent and the separate replay/cross-run identity invariant. The actual
+application/Doctor parent takes2.02s (race package elapsed3.106s); no latency SLO
+or native-quality claim follows from that duration. Source hashes remain
+unchanged after the suite, and all own client/Redis/PostgreSQL/network resources
+are removed. Main and qualifications are unchanged.
+
+| Row | Actual current outcome |
+| --- | --- |
+|default_off|Real New/Run, HTTP owning Doctor/Broker/controlled runtime completes once; same-object Memory Doctor reports requested/wired/qualified/profile separately.|
+|experience_context_without_jobs|Typed evidence denial while qualification is false; no partial store or service readiness claimed.|
+|selected_requested|Typed evidence denial while qualification is false; positive handlers remain unexecuted in this receipt.|
+|unsupported_profile|Typed evidence denial for8192 provider output with unchanged conservative32768 budget.|
+|rollback_default_off|Real reconstructed New/Run and new owning Doctor completes once in the same DB; prior completed report is byte-identical.|
+
+The final metadata records two completed reports, two distinct owning runs and
+two separate transcript Doctor tool rows. Both served applications stop cleanly.
+Foreground/background model-attempt rows and settings rows are0; global worker
+control remains `disabled`. Both temporal/experience and consolidation release
+qualifications remain false. The controlled diagnostic label remains explicit;
+there is no real provider-health or host-health observation.
+
+This currently proves off-to-off reconstruction across honest closed constructor
+denials. It does not claim qualified-to-off rollback has already run. After
+independent qualification, the same non-skipping test must observe four actual
+served applications/reports and the unchanged unsupported-profile denial. A fresh
+positive matrix/smoke, full lifecycle and native92 pilot are separate gates.
+
+Reports are retained on laba under
+`/srv/storage/butler/agents/issue92-bootstrap-20261018/reports/bootstrap-v3`.
+
+| Artifact | SHA256 |
+| --- | --- |
+|tests.jsonl|8ca5437bf0e72d84b6a7b917d16f2cae9949861820ec899af7a5a32cfe7f8238|
+|identity-tests.jsonl|f620c1736bd245efa3c2adcd1779a932b53d01cb1b40aa0b20179c6ae5acac26|
+|bootstrap.json|b3b5d068f8cd54ea3218f53778bfef7d213b224c693481e0f7a20748e3b881ad|
+|source.sha256|5b961ff0d4fcaae52cd2a66b95bdd799d140e219c13b46d287e2a8f54d83a263|
+|evidence.sha256|d043df2a30166837e273ea86ba146cd87078f200910f479baebfd03a3ea7b724|
