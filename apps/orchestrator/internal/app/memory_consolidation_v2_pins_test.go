@@ -23,6 +23,7 @@ type consolidationV2Pins struct {
 	Deadline, Expires                                                   time.Time
 	LogicalSlots, MaxNativeEntries, MaxReads, OutputTokens, ModelMillis int
 	ForegroundSourceMillis                                              int
+	WholeWindowMillis, OuterTimeoutMillis, ForegroundExecutionMillis    int64
 }
 
 func consolidationV2Contracts() (map[string]string, error) {
@@ -55,6 +56,9 @@ func TestConsolidationV2WritePins(t *testing.T) {
 	}
 	p := consolidationV2Pins{Revision: os.Getenv("BUTLER_CONSOLIDATION_SOURCE_REVISION"), Schema: h.Successor.Schema, Model: "gemini-3.8-flash-high", History: h.Hash, Day: h.ProspectiveDay, Deadline: h.ProspectiveDeadline, Expires: time.Now().UTC().Add(6 * time.Hour), LogicalSlots: 9, MaxNativeEntries: 99, MaxReads: 96, OutputTokens: 32768, ModelMillis: 300000}
 	p.ForegroundSourceMillis = int(flow.DefaultMemorySourceCheckTimeout.Milliseconds())
+	p.WholeWindowMillis = consolidationWindowDuration.Milliseconds()
+	p.OuterTimeoutMillis = consolidationOuterDuration.Milliseconds()
+	p.ForegroundExecutionMillis = consolidationForegroundDuration.Milliseconds()
 	if p.ForegroundSourceMillis != 2000 {
 		t.Fatal("reviewed prospective foreground source bound differs")
 	}
@@ -105,6 +109,9 @@ func consolidationV2CheckPins(proof string) error {
 	}
 	if p.ForegroundSourceMillis != 2000 || int64(p.ForegroundSourceMillis) != flow.DefaultMemorySourceCheckTimeout.Milliseconds() {
 		return errors.New("frozen foreground source verification bound differs")
+	}
+	if p.WholeWindowMillis != consolidationWindowDuration.Milliseconds() || p.OuterTimeoutMillis != consolidationOuterDuration.Milliseconds() || p.ForegroundExecutionMillis != consolidationForegroundDuration.Milliseconds() {
+		return errors.New("frozen whole-window or foreground execution bound differs")
 	}
 	contracts, err := consolidationV2Contracts()
 	if err != nil {

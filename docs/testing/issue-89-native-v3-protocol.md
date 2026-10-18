@@ -19,6 +19,14 @@ earlier parent deadline still win. Every DATA/proposal/final stays held until it
 fresh proof passes. Background200ms and ownership750ms bounds are unchanged.
 The successor pins record the foreground2000ms ceiling explicitly. This does not
 change or reclassify either earlier closed cohort's original source and outcomes.
+The prospective whole-window bound is525 minutes (99×300s plus30 minutes), with
+an outer compiled-test timeout530 minutes. Each ordinary foreground input has
+the existing supported40-minute execution bound. It is independent of its
+sixteen-entry ceiling and can stop that input before sixteen worst-case300s
+calls. Earlier owner UTC-day, authority, source and parent deadlines still win.
+Pins retain all three finite durations. Their six-hour `Expires` timestamp is
+pre-auth seal admission expiry, checked before schema/provider setup; it is not
+an in-flight execution deadline. No input-service cap/default was changed.
 
 ## Complete original history
 

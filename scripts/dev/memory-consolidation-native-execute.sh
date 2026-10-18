@@ -81,5 +81,5 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json -e BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256="$history_hash" \
  -e BUTLER_CONSOLIDATION_NATIVE_EXPECTED_POLICY=/proof/native-budget-policy.json \
  -e HTTP_PROXY=http://127.0.0.1:18080 -e HTTPS_PROXY=http://127.0.0.1:18080 -e ALL_PROXY=http://127.0.0.1:18080 -e NO_PROXY=localhost,127.0.0.1,::1 \
- golang:1.27.2-bookworm /proof/orchestrator-app.test -test.v -test.timeout 65m -test.run '^TestNativeConsolidationSelectedSourcePairsIntegration$' \
+ golang:1.27.2-bookworm /proof/orchestrator-app.test -test.v -test.timeout 530m -test.run '^TestNativeConsolidationSelectedSourcePairsIntegration$' \
  > "$proof/native.txt" 2>&1

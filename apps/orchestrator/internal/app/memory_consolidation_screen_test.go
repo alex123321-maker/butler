@@ -248,7 +248,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 	}
 	pool = consolidationScreenPool(t, native, history)
 	createConsolidationScreenTables(t, pool, slots, corpusRaw)
-	deadline := started.Add(60 * time.Minute)
+	deadline := started.Add(consolidationWindowDuration)
 	if history != nil && history.ProspectiveDeadline.Before(deadline) {
 		deadline = history.ProspectiveDeadline
 	}
@@ -330,7 +330,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		t.Fatal("exact finite policy cannot be sealed")
 	}
 	contextLimit, outputLimit := provider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
-	profileRaw, _ := json.MarshalIndent(map[string]any{"provider": provider.Name(), "model": model, "output_tokens": policy.OutputTokens, "model_millis": policy.ModelMillis, "actual_provider_context_tokens": contextLimit, "actual_provider_output_tokens": outputLimit, "actual_provider_timeout_millis": provider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout().Milliseconds(), "foreground_execution_millis": 600000, "window_millis": 3600000, "context_tokens": 65536, "maximum_entries": 99, "native": native}, "", "  ")
+	profileRaw, _ := json.MarshalIndent(map[string]any{"provider": provider.Name(), "model": model, "output_tokens": policy.OutputTokens, "model_millis": policy.ModelMillis, "actual_provider_context_tokens": contextLimit, "actual_provider_output_tokens": outputLimit, "actual_provider_timeout_millis": provider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout().Milliseconds(), "foreground_execution_millis": consolidationForegroundDuration.Milliseconds(), "window_millis": consolidationWindowDuration.Milliseconds(), "outer_timeout_millis": consolidationOuterDuration.Milliseconds(), "context_tokens": 65536, "maximum_entries": 99, "native": native}, "", "  ")
 	if err := os.WriteFile(filepath.Join(proof, "provider-profile.json"), profileRaw, 0600); err != nil {
 		t.Fatal("provider construction profile cannot be sealed")
 	}

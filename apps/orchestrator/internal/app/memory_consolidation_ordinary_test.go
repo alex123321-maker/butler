@@ -323,7 +323,7 @@ func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *p
 		},
 	}
 	x := &consolidationOrdinaryExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, logger), done: make(chan consolidationOrdinaryExecution, 1)}
-	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, 10*time.Minute)
+	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, consolidationForegroundDuration)
 	if err != nil {
 		t.Fatal(err)
 	}

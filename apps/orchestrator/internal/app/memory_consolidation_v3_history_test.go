@@ -10,10 +10,14 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"time"
 )
 
 const consolidationV3Schema = "consolidation_native_v3"
 const consolidationV3Window = "consolidation-explicit-v3"
+const consolidationWindowDuration = 525 * time.Minute
+const consolidationOuterDuration = 530 * time.Minute
+const consolidationForegroundDuration = 40 * time.Minute
 
 type consolidationV3Manifest struct {
 	consolidationV2Manifest
