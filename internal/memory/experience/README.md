@@ -21,9 +21,11 @@ actual journal actions, exact historical tool contracts, observed sanitized tool
 results and nullable durable input/output usage. It distinguishes the agent's
 report, an explicit owner's task verification and effect evidence. The complete
 original Catalog graph is a privacy dependency. Missing, changed or oversized
-evidence denies creation instead of dropping a failure. The only supported task
-revision advance is the existing verified completion transition bound to the
-same exact owner's result; changed tasks require new evidence.
+evidence denies creation instead of dropping a failure. Ordinary observations
+support only the existing verified completion revision transition bound to the
+same exact owner's result; changed tasks require new evidence. A separately typed
+reconciled observation below preserves its original revision and adds a distinct
+current owner-controlled stage rather than rebasing an old observation.
 
 The owning Transcript API captures the exact bounded set of copied tool row
 IDs, original run IDs and SHA256 fingerprints of stored tool name, arguments,
@@ -157,6 +159,31 @@ and run writers without taking primary input row locks under source/tool locks.
 Populated terminal provenance prevents down migration. Candidate acceptance,
 source privacy/restore, current applicability and the production qualification
 gate remain independent.
+
+The owner may select an existing sealed terminal witness and ordinary Resume
+control with `reconciliation.original_snapshot_id` and
+`reconciliation.control_id` in the note-policy request. The owning adapter proves
+the original checkpoint against immutable pre-control metadata, the exact owner
+control/transition/revision/queued continuation and one separately authorized
+recipient lookup accepted as ABSENT by the existing private Reconcile endpoint.
+It reads fresh primary original/continuation rows and never loads the stale
+observation body. Original UNKNOWN, failed action, RunID/revision and absent
+final/report/verification remain separate from the current read run, final,
+effect evidence and usage. The old source stays stale. The new lesson uses the
+actual original, continuation and owner-control message privacy graph; the
+selected witness must also retain its current metadata/access permission.
+
+Migration081 adds exact content-free control/input-link/run/final/effect heads,
+tombstones and writer fences plus a distinct lookup tool pin.
+The pre-control seal retains original action hashes/effect/evidence references;
+the supplement reconstructs those historical actions against exact original
+tool pins instead of reading a stale observation body or rebasing an outcome.
+A pre-081 witness must be sealed again while current, before Resume. Generic policy
+requests cannot construct the Go-only reconciled one-use proof. All current
+source, task/constraints, owner goal/mandate, privacy, deadline and budget gates
+remain. No new blocked action permission, retry, grant or execution-kernel seam
+is introduced. Populated history blocks rollback; empty rollback precedes080/079
+and077. Native outcome/quality/cost qualification remains separate and closed.
 
 Migration082 keeps subsequent owner deletion possible after copied tool rows
 become stale. Its publication fence permits only the existing authorized exact

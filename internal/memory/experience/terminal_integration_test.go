@@ -172,6 +172,7 @@ func TestExperienceStoppedInputUpgradeBackfillsExistingRowsIntegration(t *testin
 			t.Fatal("exact input-head migration", name, err)
 		}
 	}
+	apply("081_episodic_reconciled_attempts.down.sql")
 	apply("080_episodic_terminal_attempts.down.sql")
 	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES('upgrade','owner','web');
 INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,status,checkpoint,checkpoint_json,attempts,error_code)
@@ -183,6 +184,7 @@ VALUES('legacy-input','upgrade','legacy','legacy','web','owner','{}','blocked','
 		t.Fatal("legacy primary input unavailable")
 	}
 	apply("080_episodic_terminal_attempts.up.sql")
+	apply("081_episodic_reconciled_attempts.up.sql")
 	var correct bool
 	if pool.QueryRow(ctx, `SELECT to_jsonb(i)::text,h.revision=1 AND h.alive AND h.row_hash=butler_memory_experience_input_hash(i) FROM accepted_inputs i JOIN memory_experience_input_heads h USING(input_id) WHERE i.input_id='legacy-input'`).Scan(&after, &correct) != nil || before != after || !correct {
 		t.Fatal("input-head upgrade changed primary input or missed its exact backfill")

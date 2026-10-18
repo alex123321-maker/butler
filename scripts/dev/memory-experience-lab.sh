@@ -31,7 +31,7 @@ docker run --pull never -d --name "$pg" --network "$network" --network-alias pos
  -v "$proof/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_experience_test \
  pgvector/pgvector:pg17 -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB > "$proof/postgres-id"
 created_pg=true
-for i in $(seq 1 60);do docker exec "$pg" pg_isready -U butler -d memory_experience_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
+for i in $(seq 1 60);do docker exec "$pg" pg_isready -h 127.0.0.1 -U butler -d memory_experience_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1;done
 runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-limit 128 --security-opt no-new-privileges
  -v "$src:/src:ro" -v "$cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -w /src
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local
@@ -42,7 +42,7 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
  golang:1.27.2-bookworm)
 "${runner[@]}" bash -eu -c 'go test -c -o /cache/broker-experience.test ./apps/tool-broker/internal/broker; go build -o /cache/tool-broker-experience ./apps/tool-broker; go test -c -o /cache/extension-experience.test ./apps/tool-extension/internal/runtime; go test -c -o /cache/http-experience.test ./apps/tool-http/internal/runtime; sha256sum /cache/broker-experience.test /cache/tool-broker-experience /cache/extension-experience.test /cache/http-experience.test > /proof/binaries.sha256' > "$proof/build.log" 2>&1
 if [[ "$mode" == terminal ]];then
- "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration|TestTerminalObservationCannotInventFinalOrVerification|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 6m -run "^(TestExperienceStopped.*|TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration|TestExperienceReconciledSealingLocksNewAndAncestorToolsBeforeInputsIntegration|TestTerminalObservationCannotInventFinalOrVerification|TestReconciledObservationKeepsOriginalBoundary|TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration)$" ./apps/orchestrator/internal/app ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-terminal-required-tests.txt
 elif [[ "$mode" == window ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "^TestExperienceNative" ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
@@ -54,7 +54,7 @@ elif [[ "$mode" == heads ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "TestExperience(CapturedTool|UnrelatedAppends|ToolFingerprint|IdenticalTool|ToolHead)" ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-head-required-tests.txt
 else
- "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 8m -run "TestExperience|TestLesson|TestObservation|TestFreshPublication|TestMemoryRead|TestCandidateAcceptedPreferenceScopedOrdinaryContext|TestSkill|TestReferencedAgentProposal" ./internal/memory/experience ./internal/memory/catalog ./internal/skills ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 8m -run "TestExperience|TestLesson|TestObservation|TestTerminalObservation|TestReconciledObservation|TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity|TestFreshPublication|TestMemoryRead|TestCandidateAcceptedPreferenceScopedOrdinaryContext|TestSkill|TestReferencedAgentProposal|TestModelCompletedRunAndTaskPolicyIntegration|TestModelCrossContextCannotExtendOtherConsumersOrForgePinnedJobIntegration|TestModelMandateAndSourceRevocationDuringCallIntegration" ./internal/memory/experience ./internal/memory/catalog ./internal/skills ./internal/memory/jobs ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-required-tests.txt
 fi
 if grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/mechanics.jsonl";then exit 1;fi

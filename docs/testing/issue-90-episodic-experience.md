@@ -239,3 +239,64 @@ erasure plus unrelated/UNKNOWN preservation. Combined ancestry-facts-v2 passed
 with no failures/skips and vet. These are independent later receipts, not a
 retroactive upgrade of the earlier90 backup or native experience quality.
 See [current composition evidence](issue-92-composition-progress.md).
+
+The later controlled source/runtime freeze `snapshots/v42` implements the
+original03 owner-control seam above with migration081. An actual 400/UNKNOWN
+original is owner-sealed without inference, resumed through the ordinary same-task
+controller, given fresh read-only grants, and independently reconciled as ABSENT
+from the exact captured Broker lookup. A distinct typed supplement and fresh
+one-use owner note policy preserve original revisions/UNKNOWN/no final, the
+visible control, separate read result and both usages. Neither hidden recipient
+audit nor an authored original final supplies Butler evidence. This is a
+controlled transport fixture; it is not a native note or quality result.
+
+The pre-control seal now retains immutable original action hash/effect/evidence
+witnesses. A corrected original tool row is denied before note admission. Late
+control/input-link/lookup/effect/source/pause changes deny publication while
+retaining the known note attempt. Actual PostgreSQL locks prove control, input
+and effect writers wait for release; identical control reinsert cannot revive a
+source. Another controlled regression blocks the new primary tool and verifies
+the reader has not yet taken an ancestor tool or input fence, covering an
+original that already used another lesson. Ordered081/080/079/077 fixtures retain
+the irreversible079 fence. Root's later082 composition is a separate integration.
+
+| Receipt under the same `reports/` root | Pass / fail / skip | SHA256 of `evidence.sha256` |
+|---|---|---|
+| `terminal-v42` | 48 / 0 / 0 | `2281f7c405609728c5e6793dc5537acb4d7322cf16dd6400499c4fc0d7b3a95c` |
+| `mechanics-v42` | 152 / 0 / 0 | `d1f7e6d50f5e5d95fe194899abb7bc6c6413e775def119970947b8087949766f` |
+| `reconciled-backup-v42` | 3 / 0 / 0 phases | `6d24095621319abec529052403b3442fb593b112984bde49a3bcf7c28d8e570d` |
+| `terminal-backup-v42` | 3 / 0 / 0 phases | `6051f674c9d78f30d6c0920a83140878f22746ce3257a7327c3644877bab9158` |
+
+All four complete files report PASS. The mechanical drivers require race and
+vet; the complete run also includes ordinary completed-task, cross-context
+forgery and mandate/source-revocation job controls. The new reconciled backup
+uses actual original/Broker/owner seal/Resume/read/note/accept construction,
+then real pg_dump, deletion, fresh pg_restore and the newest independent anchor
+twice. Original/witness/supplement/note/claim/episode text and cached original
+tool payloads disappear. Complete attempts/reservations, immutable action and
+reconciliation metadata, original cancelled/no-final and current ABSENT survive;
+an independent actual verified original/accepted note is unchanged. The older
+typed terminal backup remains a separate compatibility proof.
+
+Earlier failures remain retained. The v40 backup stopped before data/model work
+because a Unix-socket readiness probe accepted the image's temporary init server;
+TCP readiness fixes that race without extending its deadline. The v41 actual
+three-phase checks passed but its final host hash could not read private 0600
+runner-owned files; v42 hashes them through a read-only networkless container.
+Each new test uses a fresh database/label; no failed native input or clone is
+reused or refunded. The frozen corpus/rubric is unchanged; the prospective
+protocol explicitly records original03's conditional second input sharing its
+unchanged 12 foreground entries and the unchanged 57/640 schedule.
+
+The fixed endpoint helper separately passed `window-v39` (9/0/0, race/vet;
+evidence hash `262c40609abbea9036676a907e37145d08f830c6f3306d8ad01491bb8dc90b1d`).
+Its old bind/close allocator fails the deterministic competing-bind regression;
+held reservations survive fixture allocations and both actual runtime starts
+with unchanged endpoints, contract generation and environment.
+
+Issue90 native/auth entries remain zero and ReleaseQualified remains false. Remaining
+work is the actual four-original/four-model-note/one-model-skill preparation,
+frozen independent A/B/C case clones and all 48 controls, latest inclusive
+current-owner/day history carried once outside the clones, complete known/NULL
+creation/query/use/skill cost, request-isolation audits and independent semantic,
+effect and benefit review. These controlled receipts do not satisfy those gates.

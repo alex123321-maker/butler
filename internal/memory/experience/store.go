@@ -76,15 +76,26 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 	// Session/task locks precede source rows, matching publication/deletion.
 	var session, owner string
 	var revision, constraints int64
+	expectedConstraints := o.ConstraintsRevision
+	if o.ReconciledAttempt != nil {
+		expectedConstraints = o.ReconciledAttempt.CurrentConstraintsRevision
+	}
 	err = tx.QueryRow(ctx, `SELECT r.session_key,t.owner_id,t.revision,t.constraints_revision FROM runs r JOIN tasks t USING(task_id) WHERE r.run_id=$1 AND t.task_id=$2 AND r.task_revision=$3`, o.RunID, o.TaskID, o.TaskRevision).Scan(&session, &owner, &revision, &constraints)
-	if err != nil || owner != o.OwnerID || constraints != o.ConstraintsRevision {
+	if err != nil || owner != o.OwnerID || constraints != expectedConstraints {
 		return catalog.SourceRef{}, ErrEvidence
 	}
 	if _, err = tx.Exec(ctx, `SELECT session_key FROM sessions WHERE session_key=$1 FOR UPDATE`, session); err != nil {
 		return catalog.SourceRef{}, err
 	}
 	var status, completion string
-	if err = tx.QueryRow(ctx, `SELECT owner_id,revision,constraints_revision,status,COALESCE(completion_result_id,'') FROM tasks WHERE task_id=$1 FOR SHARE`, o.TaskID).Scan(&owner, &revision, &constraints, &status, &completion); err != nil || owner != o.OwnerID || constraints != o.ConstraintsRevision || (status != "active" && status != "completed" && !(o.TerminalAttempt != nil && status == "blocked")) || revision != o.TaskRevision && (status != "completed" || revision != o.TaskRevision+1 || o.OwnerVerdict != "verified" || completion != o.OwnerResultID) {
+	if err = tx.QueryRow(ctx, `SELECT owner_id,revision,constraints_revision,status,COALESCE(completion_result_id,'') FROM tasks WHERE task_id=$1 FOR SHARE`, o.TaskID).Scan(&owner, &revision, &constraints, &status, &completion); err != nil || owner != o.OwnerID || constraints != expectedConstraints {
+		return catalog.SourceRef{}, ErrEvidence
+	}
+	if o.ReconciledAttempt != nil {
+		if status != "active" || revision != o.ReconciledAttempt.CurrentTaskRevision {
+			return catalog.SourceRef{}, ErrEvidence
+		}
+	} else if (status != "active" && status != "completed" && !(o.TerminalAttempt != nil && status == "blocked")) || revision != o.TaskRevision && (status != "completed" || revision != o.TaskRevision+1 || o.OwnerVerdict != "verified" || completion != o.OwnerResultID) {
 		return catalog.SourceRef{}, ErrEvidence
 	}
 	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, o.TaskID, o.OwnerID, nil, time.Now()); err != nil {
@@ -97,9 +108,20 @@ func (s *Store) Seal(ctx context.Context, o Observation, parents []catalog.Sourc
 		// Privacy deletion obtains sources before tool/input writer fences. The
 		// stopped original uses that same order; it never holds an input fence
 		// while waiting for one of its source parents.
+		if o.ReconciledAttempt != nil {
+			if err = lockReconciledSealingRowsTx(ctx, tx, o, parents); err != nil {
+				return catalog.SourceRef{}, err
+			}
+		}
 		if _, err = s.Sources.AccessTx(ctx, tx, parents, "memory_job_create"); err != nil {
 			return catalog.SourceRef{}, err
 		}
+	}
+	if o.ReconciledAttempt != nil {
+		if err = checkReconciledSealingTx(ctx, tx, o); err != nil {
+			return catalog.SourceRef{}, err
+		}
+	} else if o.TerminalAttempt != nil {
 		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock_shared(hashtextextended('butler-terminal-input:'||$1::text,0))`, o.TerminalAttempt.InputID); err != nil {
 			return catalog.SourceRef{}, ErrEvidence
 		}
@@ -147,6 +169,9 @@ AND NOT EXISTS(SELECT 1 FROM accepted_inputs x WHERE x.session_key=i.session_key
 		if err != nil || len(ss) != 1 {
 			return catalog.SourceRef{}, ErrEvidence
 		}
+		if err = putTerminalActionsTx(ctx, tx, prior, o); err != nil {
+			return catalog.SourceRef{}, err
+		}
 		return ref(ss[0]), tx.Commit(ctx)
 	}
 	if err != pgx.ErrNoRows {
@@ -161,11 +186,19 @@ AND NOT EXISTS(SELECT 1 FROM accepted_inputs x WHERE x.session_key=i.session_key
 	if err != nil {
 		return catalog.SourceRef{}, err
 	}
-	if a := o.TerminalAttempt; a != nil {
+	if a := o.TerminalAttempt; a != nil && o.ReconciledAttempt == nil {
 		_, err = tx.Exec(ctx, `INSERT INTO memory_experience_terminal_attempts(source_id,input_id,input_status,attempts,checkpoint,input_hash,input_revision,reason,run_state)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, src.ID, a.InputID, a.InputStatus, a.Attempts, a.Checkpoint, a.InputHash, a.InputRevision, a.Reason, a.RunState)
 		if err != nil {
 			return catalog.SourceRef{}, err
 		}
+	}
+	if o.ReconciledAttempt != nil {
+		if err = insertReconciledTx(ctx, tx, src.ID, o); err != nil {
+			return catalog.SourceRef{}, err
+		}
+	}
+	if err = putTerminalActionsTx(ctx, tx, src.ID, o); err != nil {
+		return catalog.SourceRef{}, err
 	}
 	for _, pin := range o.ToolPins {
 		if _, err = tx.Exec(ctx, `INSERT INTO memory_experience_tool_pins(observation_source_id,tool_call_id,run_id,row_hash,row_revision)VALUES($1,$2,$3,$4,$5)`, src.ID, pin.ID, pin.RunID, pin.Hash, pin.Revision); err != nil {

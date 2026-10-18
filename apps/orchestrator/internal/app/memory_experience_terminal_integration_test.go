@@ -25,9 +25,10 @@ import (
 // API, worker, reservations and Catalog publication. It proves no native quality.
 type experienceTerminalControlProvider struct {
 	transport.ModelProvider
-	note   experience.Notes
-	before func()
-	calls  int
+	note     experience.Notes
+	before   func()
+	calls    int
+	required string
 }
 
 func (*experienceTerminalControlProvider) Name() string { return "antigravity" }
@@ -46,7 +47,11 @@ func (p *experienceTerminalControlProvider) StartRun(ctx context.Context, reques
 		return nil, err
 	}
 	raw, _ := json.Marshal(request.InputItems)
-	if !strings.Contains(string(raw), "terminal_attempt") {
+	required := p.required
+	if required == "" {
+		required = "terminal_attempt"
+	}
+	if !strings.Contains(string(raw), required) {
 		return nil, experience.ErrEvidence
 	}
 	p.calls++

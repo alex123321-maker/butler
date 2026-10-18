@@ -998,3 +998,12 @@ before an independently authorized owner control without creating a note policy,
 job or model attempt. It never accepts caller-authored evidence or changes task,
 input, run or external-effect state. Background model configuration is not needed
 for this separate observation operation; the experience release gate still is.
+
+An explicit original `run_id` plus existing
+`reconciliation.original_snapshot_id`/`reconciliation.control_id` can request a
+new note after a normal owner Resume and independently reconciled ABSENT lookup.
+The production input adapter checks the complete two-run provenance; it does not
+read or reactivate the stale original snapshot. Original UNKNOWN/no final and
+owner intervention/current read/final/evidence stay distinct. Migration081 and a
+fresh handler-only owner policy are required; generic job and execution authority
+rules, source/day bounds and the closed release gate are unchanged.

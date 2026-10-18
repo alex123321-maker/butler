@@ -115,3 +115,12 @@ policies keep rejecting blocked tasks; this specific fresh owner policy may
 observe the unchanged blocked original under current goal/mandate and finite
 budget authority. Every current policy/claim/supervisor/publication check repeats
 the proof. It cannot clear blockers, borrow the old lease or create tool actions.
+
+`CreateReconciledExperiencePolicy` is a separate Go-only variant for a new exact
+owning observation of an already completed read continuation after ordinary
+owner Resume. It requires an active current task and immutable source/hash,
+one job/turn and current081 original/control/lookup/final metadata. The original
+run remains the failed/UNKNOWN historical source; the note does not become an
+original final or successful task verification. Generic request JSON cannot
+construct either internal experience capability. All normal current task,
+goal/mandate, privacy, deadline, shared budget and publication gates remain.

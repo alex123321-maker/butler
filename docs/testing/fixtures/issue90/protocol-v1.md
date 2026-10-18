@@ -14,8 +14,9 @@ executor, model adapter, managed service or synthetic success oracle.
 
 ## Fixed population and finite window proposal
 
-- Four original tasks, each exactly one admitted original input, no transparent
-  re-execution after failure. Two independent verified successes are required for
+- Four original tasks, each exactly one admitted initial original input, no transparent
+  re-execution after failure. Original03 alone has the separately visible,
+  conditional owner-control continuation declared below. Two independent verified successes are required for
   a skill; the other originals intentionally exercise a rejected request and an
   unverifiable committed effect. They are independent tasks/runs/recipient keys,
   not duplicated citations to one successful artifact.
@@ -34,8 +35,8 @@ executor, model adapter, managed service or synthetic success oracle.
 - Eight independent controls, two repetitions, three arms: exactly48 current
   task inputs. All48 remain in the denominator if preparation/skill availability
   fails. Record `not_executed` with its blocker; it is not a pass or an answer.
-- That is52 original/control input slots plus4 note generations and1 skill
-  generation,57 logical slots. Each source/control input has at most12 actual
+- That is52 original/control logical slots plus4 note generations and1 skill
+  generation,57 logical slots. Each source/control slot has at most12 actual
   model transport entries including tool-result and approval continuations;
   each note-generation slot has at most1. Skill preparation is an ordinary
   foreground Flow/Broker input with at most12 actual entries: the model receives
@@ -44,6 +45,9 @@ executor, model adapter, managed service or synthetic success oracle.
   is640 entries (52×12 +4×1 +1×12),
   single foreground run at a time, one actual attempt per durable input. Normal
   tool-result continuations are counted, not called retries or excluded.
+  Original03's separate owner Resume may admit one additional durable read input;
+  both runs consume its same original 12-entry partition. It adds no logical slot,
+  quote capacity or replacement original.
 - Proposed model/profile: existing Antigravity Flash High, exact32768 generated
   ceiling and300s actual provider/admission bound; all earlier root/mandate,
   input, policy and independent window deadlines still apply. Before opening the
@@ -59,6 +63,27 @@ work and before the first control. A rejected source/note/skill preparation is a
 real stage failure, not permission to rewrite the corpus or tune from controls.
 Any later repair uses a separately reviewed prospective window and retains every
 prior known/unknown cost and original result.
+
+Original03 has this conditional owner intervention, frozen before the first
+original. If its one actual unsupported preparation is rejected with 400 and the
+owning input stops UNKNOWN, the authenticated owner seals that existing RunID
+through the production observation-only API before any Resume. The owner then
+uses ordinary ControlResume on the same task, with one new revision and one
+visible queued continuation instructed only to GET the exact existing effect
+lookup and reconcile that original identity. Fresh ordinary grants permit only
+read/check; prepare/commit remain forbidden. The original attempt is never
+re-executed, its checkpoint/UNKNOWN/no-final history is retained, and the resumed
+read consumes only the unused portion of the original 12-entry allowance.
+
+The existing private Reconcile API may accept only that actual read's captured
+response and authorization. A current ABSENT supplement is distinct from the
+failed original observation and the separate read final; it supplies no original
+task verification. The note is generated from the production typed reconciled
+observation, preserving both usages and visible owner intervention. A failed
+seal, control, lookup or reconciliation is retained as a preparation failure;
+there is no alternate read input or new quote. Original04 remains terminal
+UNKNOWN for the whole window and receives no Resume. Neither path consumes
+hidden recipient audit as Butler evidence.
 
 ## Executable recipient surface and independent evidence
 

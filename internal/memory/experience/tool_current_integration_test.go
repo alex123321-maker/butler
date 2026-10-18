@@ -132,6 +132,13 @@ func TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration(t *testing.T)
 	// rows are inserted before applying the exact checked-in upgrade script.
 	var payloadMigration bool
 	var terminalMigration bool
+	var reconciledMigration bool
+	if err := pool.QueryRow(ctx, `SELECT to_regclass('memory_experience_reconciled_attempts') IS NOT NULL`).Scan(&reconciledMigration); err != nil {
+		t.Fatal(err)
+	}
+	if reconciledMigration {
+		apply("081_episodic_reconciled_attempts.down.sql")
+	}
 	if err := pool.QueryRow(ctx, `SELECT to_regclass('memory_experience_terminal_attempts') IS NOT NULL`).Scan(&terminalMigration); err != nil {
 		t.Fatal(err)
 	}
@@ -162,6 +169,9 @@ func TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration(t *testing.T)
 	}
 	if terminalMigration {
 		apply("080_episodic_terminal_attempts.up.sql")
+	}
+	if reconciledMigration {
+		apply("081_episodic_reconciled_attempts.up.sql")
 	}
 	if err := pool.QueryRow(ctx, `SELECT to_jsonb(t)::text FROM tool_calls t WHERE tool_call_id='legacy-tool'`).Scan(&after); err != nil || after != before {
 		t.Fatal("upgrade changed original tool data", err)

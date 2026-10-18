@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -23,9 +24,12 @@ import (
 	"github.com/butler/butler/internal/extensions"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/experience"
+	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // This controlled provider exercises only the owning read and durable control
@@ -64,12 +68,30 @@ func (p *experienceReconciliationControlProvider) SubmitToolResult(ctx context.C
 }
 
 func TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration(t *testing.T) {
-	pool := memorytest.Database(t)
+	for _, scenario := range []string{"accepted", "corrected_original_tool", "late_control", "late_original_link", "late_continuation_input", "late_lookup", "late_effect", "late_witness", "late_parent", "late_pause", "fence_control", "fence_input", "fence_effect", "control_tombstone"} {
+		t.Run(scenario, func(t *testing.T) { experienceOriginalOwnerResumeRead(t, scenario) })
+	}
+}
+
+func experienceOriginalOwnerResumeRead(t *testing.T, scenario string) {
+	t.Helper()
+	var pool *pgxpool.Pool
+	if scenario == "backup_seed" {
+		pool = experienceReconciledBackupPool(t, true)
+	} else {
+		pool = memorytest.Database(t)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	owner := experienceNativeActor(ctx, "explicit-original-reconciliation-owner")
 	dir := t.TempDir()
 	anchor := filepath.Join(dir, "anchor")
+	if scenario == "backup_seed" {
+		anchor = os.Getenv("BUTLER_TEST_EXPERIENCE_RECONCILED_ANCHOR")
+		if !filepath.IsAbs(anchor) {
+			t.Fatal("private independent reconciliation anchor required")
+		}
+	}
 	manifest := catalog.NewFileManifest(anchor)
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
@@ -234,5 +256,220 @@ func TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration(t *testing
 	}
 	if err = pool.QueryRow(ctx, `SELECT count(*) FROM execution_model_attempts m JOIN runs r USING(run_id) WHERE r.task_id=$1`, record.TaskID).Scan(&modelTurns); err != nil || modelTurns != 4 || modelTurns > 12 {
 		t.Fatal("original and read continuation did not share the foreground bound", err, modelTurns)
+	}
+	selected := experience.ReconciliationRequest{OriginalSnapshotID: sealed.ID, ControlID: resumed.ControlID}
+	if scenario == "corrected_original_tool" {
+		if _, err := pool.Exec(ctx, `UPDATE tool_calls SET result='{"corrected_original":true}'::jsonb WHERE tool_call_id=$1`, observation.ToolPins[0].ID); err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := verifier.reconciledTaskObservation(owner, experienceNativeOwner, first.Result.RunID, selected, r.environment); err == nil {
+			t.Fatal("post-Resume projection borrowed a corrected original tool row")
+		}
+		var attempts int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM memory_model_attempts`).Scan(&attempts); err != nil || attempts != 0 {
+			t.Fatal("invalid original witness created a background attempt", err)
+		}
+		return
+	}
+	for _, invalid := range []experience.ReconciliationRequest{{OriginalSnapshotID: "missing-witness", ControlID: resumed.ControlID}, {OriginalSnapshotID: sealed.ID, ControlID: "missing-owner-control"}} {
+		if _, _, e := verifier.reconciledTaskObservation(owner, experienceNativeOwner, first.Result.RunID, invalid, r.environment); e == nil {
+			t.Fatal("reconciled projection accepted a missing witness/control")
+		}
+	}
+	if _, _, e := verifier.reconciledTaskObservation(owner, experienceNativeOwner, second.Result.RunID, selected, r.environment); e == nil {
+		t.Fatal("read final was accepted as the stopped original")
+	}
+	if _, _, e := verifier.reconciledTaskObservation(ctx, experienceNativeOwner, first.Result.RunID, selected, r.environment); e == nil {
+		t.Fatal("reconciled projection accepted a caller without owner authority")
+	}
+	supplemented, supplementParents, err := verifier.reconciledTaskObservation(owner, experienceNativeOwner, first.Result.RunID, selected, r.environment)
+	if err != nil || supplemented.ReconciledAttempt == nil || supplemented.TerminalAttempt == nil || supplemented.ResultID != "" || supplemented.AgentReport != "" || supplemented.OwnerVerdict != "unknown" || supplemented.TaskRevision != record.Revision || supplemented.ReconciledAttempt.CurrentTaskRevision != resumed.Task.Revision || supplemented.ReconciledAttempt.CurrentEffect != actionauth.StateAbsent || len(supplementParents) < 3 {
+		t.Fatal("separate reconciled projection lost original or current provenance", err)
+	}
+	jobStore := jobs.New(pool, cat, r.budgets, nil)
+	noteProvider := &experienceTerminalControlProvider{note: experience.Notes{Summary: "The original rejected attempt remained UNKNOWN; a separately authorized owner read later proved ABSENT", When: []string{"This exact observed environment and current owner scope"}, NotApplicable: []string{"No original final or independent successful task verification"}, Steps: []experience.Step{{ActionID: target.ActionID, Comment: "The original failed action is distinct from the later read"}}}}
+	worker := &jobs.ModelWorker{Jobs: jobStore, Provider: noteProvider, Model: "gemini-3.8-flash-high", Handlers: map[string]jobs.ModelHandler{experience.Version: experience.Handler{}}}
+	noteServer := httptest.NewServer((&api.MemoryCatalogServer{Store: cat, Auth: api.NewOwnerControlAuth(sealToken, experienceNativeOwner), ModelJobs: jobStore, ModelWorkerConfigured: true, ExperiencePolicies: configureExperiencePolicies(r.lessons, jobStore, r.tasks, r.history, r.results, cat), Experience: r.lessons}).Handle())
+	defer noteServer.Close()
+	request := experience.PolicyRequest{RunID: first.Result.RunID, Reconciliation: &selected, Policy: jobs.ModelPolicyRequest{ID: "controlled-reconciled-original-note", Privacy: "cloud_allowed", IntervalSeconds: 60, MaxJobs: 1, Job: jobs.Request{Deadline: time.Now().Add(10 * time.Minute), Allowance: budget.Units{ModelTurns: 1, Tokens: 1081344, ActiveMillis: 300000, ProviderInputBytes: 8388608}}}}
+	screenOwnerAPI(t, noteServer.URL, sealToken, http.MethodPost, "/api/v4/memory/model-experience-policies", request, nil)
+	var currentSnapshot string
+	if err = pool.QueryRow(ctx, `SELECT source_id FROM memory_experience_reconciled_attempts`).Scan(&currentSnapshot); err != nil {
+		t.Fatal(err)
+	}
+	currentSource, err := cat.Get(owner, currentSnapshot)
+	if err != nil {
+		t.Fatal("fresh reconciled source unavailable", err)
+	}
+	generic := request.Policy
+	generic.ID, generic.Handler, generic.Trigger = "generic-cannot-borrow-reconciled-proof", experience.Version, "source_changed"
+	generic.Job.TaskID, generic.Job.OriginalRunID = record.TaskID, first.Result.RunID
+	generic.Job.Sources = []catalog.SourceRef{screenSourceRef(currentSource)}
+	if _, err = jobStore.CreateModelPolicy(owner, generic); err == nil {
+		t.Fatal("generic policy borrowed exact reconciled experience authority")
+	}
+	screenOwnerAPI(t, noteServer.URL, sealToken, http.MethodPost, "/api/v4/memory/model-worker-control", map[string]string{"state": "enabled"}, nil)
+	if err = jobStore.PollModelPolicies(ctx, func(string) bool { return true }); err != nil {
+		t.Fatal(err)
+	}
+	if strings.HasPrefix(scenario, "late_") {
+		noteProvider.before = func() {
+			var e error
+			switch scenario {
+			case "late_control":
+				_, e = pool.Exec(ctx, `UPDATE task_control_events SET request_json=jsonb_set(request_json,'{instruction}',to_jsonb('changed owner instruction'::text)) WHERE control_id=$1`, resumed.ControlID)
+			case "late_original_link":
+				_, e = pool.Exec(ctx, `UPDATE accepted_inputs SET error_message='changed-control-reference' WHERE input_id=$1`, before.InputID)
+			case "late_continuation_input":
+				_, e = pool.Exec(ctx, `UPDATE accepted_inputs SET event_json=jsonb_set(event_json,'{PayloadJSON}',to_jsonb('{"control_id":"changed"}'::text)) WHERE input_id=$1`, resumed.ContinuationInputID)
+			case "late_lookup":
+				_, e = pool.Exec(ctx, `UPDATE tool_calls SET result='{"changed_observation":true}'::jsonb WHERE tool_call_id=$1`, supplemented.ReconciledAttempt.LookupPin.ID)
+			case "late_effect":
+				_, e = pool.Exec(ctx, `UPDATE action_effects SET state='effect_unknown' WHERE action_id=$1`, target.ActionID)
+			case "late_witness":
+				_, e = cat.Delete(owner, sealed.ID, "delete", sealed.Revision)
+			case "late_parent":
+				_, e = cat.Delete(owner, supplementParents[0].ID, "delete", supplementParents[0].Revision)
+			case "late_pause":
+				_, e = controls.Apply(experienceNativeActor(ctx, "late-current-owner-pause"), task.ControlRequest{TaskID: record.TaskID, ExpectedRevision: resumed.Task.Revision, Kind: task.ControlPause, Instruction: "Pause this current task"})
+			}
+			if e != nil {
+				t.Fatal("actual late control unavailable", scenario, e)
+			}
+		}
+	}
+	worked, processErr := worker.ProcessOne(ctx)
+	if !worked || noteProvider.calls != 1 {
+		t.Fatal("one bounded separately authorized reconciled note required", worked, processErr, noteProvider.calls)
+	}
+	var published, attempts, observed int
+	if pool.QueryRow(ctx, `SELECT count(*) FROM memory_experience_lessons`).Scan(&published) != nil || pool.QueryRow(ctx, `SELECT count(*),count(usage) FROM memory_model_attempts`).Scan(&attempts, &observed) != nil || attempts != 1 || observed != 1 {
+		t.Fatal("reconciled note lost original/known failed-attempt spending")
+	}
+	if strings.HasPrefix(scenario, "late_") {
+		if published != 0 {
+			t.Fatal("late evidence/privacy/authority change published a note", scenario)
+		}
+		if scenario != "late_pause" {
+			if _, e := cat.Get(owner, currentSnapshot); e == nil {
+				t.Fatal("late material reconciliation proof change left source readable", scenario)
+			}
+		}
+		return
+	}
+	if processErr != nil || published != 1 {
+		t.Fatal("current reconciled note did not publish", processErr, published)
+	}
+	var claim string
+	if err = pool.QueryRow(ctx, `SELECT claim_id FROM memory_experience_lessons`).Scan(&claim); err != nil {
+		t.Fatal(err)
+	}
+	screenOwnerAPI(t, noteServer.URL, sealToken, http.MethodPost, "/api/v4/memory/decisions", catalog.Decision{ClaimID: claim}, nil)
+	var body string
+	if err = pool.QueryRow(ctx, `SELECT content FROM memory_episodes`).Scan(&body); err != nil {
+		t.Fatal(err)
+	}
+	var lesson experience.Lesson
+	if json.Unmarshal([]byte(body), &lesson) != nil || lesson.Verification != "task_unverified" || lesson.Observation.RunID != first.Result.RunID || lesson.Observation.ResultID != "" || lesson.Observation.AgentReport != "" || lesson.Observation.OwnerVerdict != "unknown" || lesson.Observation.ReconciledAttempt == nil || lesson.Observation.ReconciledAttempt.CurrentEffect != actionauth.StateAbsent || lesson.Observation.ReconciledAttempt.ContinuationRunID != second.Result.RunID || lesson.InstructionAuthority {
+		t.Fatal("reconciled lesson invented an original success/final or hid owner intervention")
+	}
+	if scenario == "backup_seed" {
+		experienceReconciledBackupSeed(t, ctx, r, cat, recipient, anchor, noteServer.URL, sealToken, currentSource, sealed, first.Result.RunID, second.Result.RunID, target.ActionID)
+		return
+	}
+	if scenario == "accepted" {
+		down, e := os.ReadFile("../../../../migrations/081_episodic_reconciled_attempts.down.sql")
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(down)); e == nil || !strings.Contains(e.Error(), "retain separately reconciled attempt provenance") {
+			t.Fatal("populated reconciliation rollback did not preserve its fence", e)
+		}
+		if _, e = pool.Exec(ctx, `UPDATE memory_experience_reconciled_attempts SET control_id='invented' WHERE source_id=$1`, currentSnapshot); e == nil {
+			t.Fatal("immutable reconciliation metadata could be overwritten")
+		}
+		if _, e = pool.Exec(ctx, `UPDATE memory_experience_terminal_actions SET observed_effect='effect_absent' WHERE source_id=$1`, sealed.ID); e == nil {
+			t.Fatal("immutable original action witness could be rewritten")
+		}
+	}
+	if strings.HasPrefix(scenario, "fence_") {
+		read, e := pool.Begin(ctx)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer read.Rollback(ctx)
+		if _, e = cat.AccessTx(owner, read, []catalog.SourceRef{screenSourceRef(currentSource)}, "memory_read"); e != nil {
+			t.Fatal("current read fence unavailable", e)
+		}
+		writerPID, writerDone := make(chan uint32, 1), make(chan error, 1)
+		go func() {
+			connection, writerErr := pool.Acquire(ctx)
+			if writerErr != nil {
+				writerDone <- writerErr
+				return
+			}
+			defer connection.Release()
+			writerPID <- connection.Conn().PgConn().PID()
+			switch scenario {
+			case "fence_control":
+				_, writerErr = connection.Exec(ctx, `UPDATE task_control_events SET request_json=jsonb_set(request_json,'{instruction}',to_jsonb('changed after current read'::text)) WHERE control_id=$1`, resumed.ControlID)
+			case "fence_input":
+				_, writerErr = connection.Exec(ctx, `UPDATE accepted_inputs SET error_message='changed-after-current-read' WHERE input_id=$1`, before.InputID)
+			case "fence_effect":
+				_, writerErr = connection.Exec(ctx, `UPDATE action_effects SET state='effect_unknown' WHERE action_id=$1`, target.ActionID)
+			}
+			writerDone <- writerErr
+		}()
+		var pid uint32
+		select {
+		case pid = <-writerPID:
+		case e = <-writerDone:
+			t.Fatal("metadata writer unavailable", e)
+		case <-ctx.Done():
+			t.Fatal("earlier metadata fence deadline")
+		}
+		blocked := false
+		for until := time.Now().Add(8 * time.Second); time.Now().Before(until); {
+			if e = read.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_locks WHERE pid=$1 AND locktype='advisory' AND NOT granted)`, pid).Scan(&blocked); e != nil || blocked {
+				break
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		if !blocked || e != nil {
+			t.Fatal("material writer did not wait for actual current source release", scenario, e)
+		}
+		if e = read.Commit(ctx); e != nil {
+			t.Fatal(e)
+		}
+		if e = <-writerDone; e != nil {
+			t.Fatal("material writer did not commit after release", e)
+		}
+		if _, e = cat.Get(owner, currentSnapshot); e == nil {
+			t.Fatal("committed material writer left old reconciliation readable", scenario)
+		}
+	}
+	if scenario == "control_tombstone" {
+		var controlJSON, targetJSON, beforeHash string
+		var beforeRevision int64
+		if e := pool.QueryRow(ctx, `SELECT to_jsonb(c)::text,to_jsonb(ct)::text,h.row_hash,h.revision FROM task_control_events c JOIN task_control_targets ct USING(control_id) JOIN memory_experience_reconciled_heads h ON h.kind='control' AND h.row_id=c.control_id WHERE c.control_id=$1 AND ct.task_id=$2`, resumed.ControlID, record.TaskID).Scan(&controlJSON, &targetJSON, &beforeHash, &beforeRevision); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := pool.Exec(ctx, `DELETE FROM task_control_events WHERE control_id=$1`, resumed.ControlID); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := pool.Exec(ctx, `INSERT INTO task_control_events SELECT (jsonb_populate_record(NULL::task_control_events,$1::jsonb)).*`, controlJSON); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := pool.Exec(ctx, `INSERT INTO task_control_targets SELECT (jsonb_populate_record(NULL::task_control_targets,$1::jsonb)).*`, targetJSON); e != nil {
+			t.Fatal(e)
+		}
+		var afterHash string
+		var afterRevision int64
+		if e := pool.QueryRow(ctx, `SELECT row_hash,revision FROM memory_experience_reconciled_heads WHERE kind='control' AND row_id=$1 AND alive`, resumed.ControlID).Scan(&afterHash, &afterRevision); e != nil || afterHash != beforeHash || afterRevision <= beforeRevision {
+			t.Fatal("identical restored control lost its tombstone", e)
+		}
+		if _, e := cat.Get(owner, currentSnapshot); e == nil {
+			t.Fatal("identical control reinsert revived an old reconciliation")
+		}
 	}
 }

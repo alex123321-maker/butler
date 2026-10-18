@@ -168,6 +168,14 @@ side before commit. Supervision reads content-free head metadata, never the larg
 checkpoint. Input deletion/reinsertion cannot revive an older observation.
 Populated stopped-attempt provenance refuses schema rollback.
 
+Migration081 adds distinct reconciliation supplements to those observations.
+The old terminal witness remains stale after ordinary owner Resume; current
+reads retain its metadata/access requirement alongside the fresh observation's
+primary privacy graph. Source release locks original and lookup tools, input
+heads and exact control/run/final/effect metadata, including ancestors. The
+owning seal takes that complete union before checking parent access. These are
+data/currentness fences and confer no execution or generic blocked-job authority.
+
 Migration082 permits only the exact content-free task working-state erasure
 under an existing deletion of that session's owner. It preserves identity and
 advances the working revision once. Stale experience observations still veto

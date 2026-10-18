@@ -111,6 +111,55 @@ fence. No full checkpoint body is reread by supervision. Schema rollback refuses
 populated stopped-attempt provenance, and normal source deletion/restore fences
 continue to erase copied bodies while preserving unknown outcomes and spend.
 
+A distinct `reconciled_attempt` may supplement that stopped original after a
+separately authorized ordinary owner Resume. The owner first seals the original
+through the observation endpoint, then explicitly admits a continuation on the
+same task. The existing controller owns cancellation/history, revision changes
+and queued continuation admission. Fresh normal grants and the unresolved-effect
+guard restrict the continuation; this memory adapter supplies no execution
+capability. Only one actual independently journaled `http.request` read of the
+original recipient identity, accepted by the existing private Reconcile contract
+as ABSENT, can supply this supplement. No original mutation is retried.
+
+The owner note request may select `reconciliation.original_snapshot_id` and
+`reconciliation.control_id` alongside the original RunID. The owning input API
+checks the exact original input/checkpoint against the pre-control immutable
+metadata witness, owner Resume transition, revision change, actual queued
+continuation, its completed run/final and independently captured lookup evidence.
+It never reads the stale observation body. Primary original and continuation
+messages/used sources, plus the actual owner-control message, remain the complete
+copy-bearing privacy parents. Witness metadata/access, current task authority,
+original input links and exact control/final/effect/tool rows remain separate
+release requirements. Deleting or withdrawing the selected witness denies reuse.
+
+Original RunID/revisions, UNKNOWN runtime action, failures, missing final/report
+and unknown owner verification stay unchanged. The supplement names the distinct
+current revision, owner control, continuation input/run/final/report, authorized
+lookup and current ABSENT evidence. Original and continuation usage are separate;
+neither a successful read nor its final becomes original task success. The old
+terminal snapshot stays stale; this creates a new immutable observation and one
+fresh owner-authorized note policy under the unchanged finite source/day budget.
+
+Migration081 adds content-free exact row heads/pins, including the selected
+control link and continuation event omitted from the ordinary terminal projection.
+The pre-Resume seal also records each original typed action's hash, observed
+effect and evidence references. Reprojection requires the exact original tool
+pins and reconstructs those historical actions from current owning rows against
+that witness. It cannot substitute a corrected response or current reconciled
+effect for an original outcome. A pre-081 witness must be sealed again while it
+is still current, before Resume, to record these action witnesses.
+The Catalog locks the complete source/witness set, then the union of original,
+lookup and ancestor tool rows, input fences and metadata fences. The owning seal
+prelocks that full union before checking a parent's access, so an original that
+already read another lesson cannot acquire an ancestor input before a new tool.
+Supervision/publication reads only those
+small heads; it never reloads checkpoint/instruction/response bodies. Material
+writers wait for a current release; identical delete/reinsert retains tombstones.
+Generic policy JSON cannot construct this handler-only one-use proof and generic
+blocked-task policy rules are unchanged. Apply081 after080; down migration refuses
+populated reconciliation or action-witness history and restores080 predicates
+only when empty.
+
 Migration082 distinguishes content removal from publication. Exact task working
 erasure is allowed under an existing deletion of that session's owner, with
 unchanged task identity/authority and a single working-revision increment.

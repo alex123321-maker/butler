@@ -34,7 +34,7 @@ docker run -d --pull never --name "$pg" --network "$network" --network-alias pos
  -c shared_buffers=32MB -c max_connections=24 -c max_wal_size=64MB > "$proof/postgres-id"
 created_pg=true
 for attempt in $(seq 1 60); do
- docker exec "$pg" pg_isready -U butler -d experience_backup_bootstrap_test >/dev/null 2>&1 && break
+ docker exec "$pg" pg_isready -h 127.0.0.1 -U butler -d experience_backup_bootstrap_test >/dev/null 2>&1 && break
  [[ "$attempt" != 60 ]] || exit 1
  sleep 1
 done

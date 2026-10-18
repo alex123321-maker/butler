@@ -65,6 +65,7 @@ type Observation struct {
 	RunID               string               `json:"run_id"`
 	ResultID            string               `json:"result_id"`
 	TerminalAttempt     *TerminalAttempt     `json:"terminal_attempt,omitempty"`
+	ReconciledAttempt   *ReconciledAttempt   `json:"reconciled_attempt,omitempty"`
 	SessionKey          string               `json:"session_key"`
 	TranscriptRevision  int64                `json:"transcript_revision"`
 	ToolPins            []transcript.ToolPin `json:"tool_pins"`
@@ -211,6 +212,9 @@ func (o Observation) Validate() error {
 	} else if o.TerminalAttempt.Validate() != nil || o.ResultID != "" || o.AgentReport != "" || o.OwnerVerdict != "unknown" || o.OwnerResultID != "" || len(o.VerifiedCriteria) != 0 {
 		return ErrEvidence
 	}
+	if o.ReconciledAttempt != nil && o.ReconciledAttempt.validate(o) != nil {
+		return ErrEvidence
+	}
 	if o.OwnerVerdict != "verified" && o.OwnerVerdict != "negative" && o.OwnerVerdict != "unknown" {
 		return ErrEvidence
 	}
@@ -264,6 +268,11 @@ func (o Observation) Validate() error {
 	// deliberately masks keys containing "token", including numeric counters;
 	// inspect only the text-bearing projection, in canonical map key order.
 	o.Usage = nil
+	if o.ReconciledAttempt != nil {
+		supplement := *o.ReconciledAttempt
+		supplement.Usage = nil
+		o.ReconciledAttempt = &supplement
+	}
 	b, _ = json.Marshal(o)
 	var fields any
 	_ = json.Unmarshal(b, &fields)
