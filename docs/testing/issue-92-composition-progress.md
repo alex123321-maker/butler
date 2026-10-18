@@ -22,6 +22,8 @@ The original versioned windows and their failures remain retained separately.
 |7294d7ef / composition-v4|237 test/subtest events passed,0 failed/skipped; race/vet passed|Adds the local-index observer rollback fix, mandatory temporal expiry/facts-basis controls and actual90 original-task runtime foundation; before080 terminal-attempt integration and the trusted single-proposal instruction|
 |8934b67a / background-v2|2 mandatory tests passed,0 failed/skipped; race/vet passed|Ordinary foreground completed257ms during actual compaction and273ms during actual consolidation; each original NULL-usage quote survives unchanged, and a separately predeclared charged retry finishes the consumer|
 |c803dd0e / coherent-privacy-v1|1 mandatory test passed,0 failed/skipped, race;5.53s|All15 earlier shared-timeline checkpoints followed by late owner deletion after actual prepared model input; final blocked, prior private copies/summaries erased, known usage and effect journal retained. Still a partial controlled pilot|
+|b3be3a12 / composition-v5|259 test/subtest events passed,0 failed/skipped; race/vet passed|Includes080 terminal-attempt provenance/currentness/owner-only policy and the trusted single-proposal instruction. This controlled combined subset is separate from native quality and the complete92 pilot|
+|8df1331b / coherent-experience-v1|1 mandatory test passed,0 failed/skipped, race;7.93s|The same15-checkpoint timeline continues through an actual Broker/extension/HTTP original, independent artifact verification and owner-accepted episode,17 sequential checkpoints; controlled outputs, no native inference|
 |7bac6cda / interactive-v5|Ordinary Flow completed370ms with one actual local query/index IPC overlap;1PASS,0FAIL,0SKIP with race|100 original vectors plus100 new fragments; controlled foreground provider, zero cloud calls; not p95 or full mixed-model workload|
 |8ed0770f / disk-v1|Actual ENOSPC, test0.68s, passed without skips|Dedicated8KiB tmpfs, one synthetic schema; unchanged PG deletion state on failed append. Observed partial anchor becomes unavailable and explicitly denies reads/reconciliation; no automatic reset or claimed deletion|
 
@@ -42,6 +44,9 @@ the corresponding `issue92-20261018` root.
 |background-v2/tests.jsonl|1c3e6b5903c486e1b09c1af96568072739f2961581b45c6b835ff6fa9cffec07|
 |coherent-privacy-v1/events.jsonl|e1bf4cbd837f34612dfcd82fc4305a898be3209ff7fefc9de7f7f86ca1c63064|
 |coherent-privacy-v1/timeline/timeline-withdrawn.json|dfd03aa9681eb54ed94fdb7419f42f551560bd1b46671e8ea1b0bd2782fea424|
+|composition-v5/tests.jsonl|d7ff365c526abb46ed8d9ba5755b97652b1b23098779150e13bd812a50a1ddea|
+|coherent-experience-v1/events.jsonl|fb775cad55d64271593243e3559593fc6bb73a78eb49fecb06222f39fb4806eb|
+|coherent-experience-v1/timeline/timeline-experience.json|99aef0beb0f9779327becada57909d1256ea4bb3aff60dfa487658b671e264de|
 |interactive-v5/tests.jsonl|9899054feab7b7bf98057ae718489ae7feb3b511b1fc8a28193971df7a9a573c|
 |interactive-v5/actual-interactive-index.json|48c7a2d1ab02743675aecf5f5720f6b5380a77970311031997348e4c815886e7|
 |disk-v1/tests.jsonl|ce26512472b82312376476bf2ec77f5f4dcfd808c4c795fa60f85af26479c057|
@@ -57,8 +62,9 @@ PG rerun passed in composition-v1 and remains separate from consumer quality.
 
 ## Still required before a supported-mode activation
 
-The final source must pass a fresh combined regression after080 terminal-attempt
-and trusted tool-protocol integration; direct typed lessons must not bypass applicability via consolidated,
+The current combined subset includes080 terminal-attempt and trusted tool-protocol
+integration; later material changes still need their relevant fresh checks.
+Direct typed lessons must not bypass applicability via consolidated,
 summary, skill or temporal-fact representations. Current exact-tool/environment
 and negative feedback guards must apply through the whole original graph.
 
@@ -90,8 +96,10 @@ preference→owner decision→new conversation→current exception→long task/r
 verified episode/consolidation→late withdrawal/restore path on one accepted
 composition, including explicit model/database/budget/disk failure behavior.
 The16-checkpoint controlled privacy extension proves late withdrawal on the
-earlier timeline. Verified episode/consolidation, actual custom restore and
-ENOSPC still need to consume that same prospective complete scenario.
+earlier timeline. The separate17-checkpoint extension now proves an independently
+verified episode on that earlier timeline. Consolidation followed by withdrawal,
+actual custom restore and ENOSPC must still consume the episode's same state in
+one prospective complete scenario.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.

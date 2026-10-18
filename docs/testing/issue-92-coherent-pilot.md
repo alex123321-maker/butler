@@ -104,3 +104,27 @@ The events hash is
 The driver seals the base trace and withdrawal extension separately. This
 controlled path does not imply a verified episode/consolidation or actual
 custom restore/ENOSPC in the same timeline, or a native answer-quality pass.
+
+## Independently verified experience on the earlier timeline
+
+`coherent-experience-v1`, source `8df1331b`, runs the15-step prefix and then
+creates a current owner goal, finite mandate and original task on that same
+PostgreSQL/owner/source timeline. The actual Start contains the preference
+accepted in the prefix. Real Flow/Broker/reviewed extension/HTTP calls inspect,
+prepare and check an unapplied current artifact. The independent owner verifier
+correlates its exact journal key/fingerprint and current artifact check. The
+owning experience adapter seals these original rows, an explicit owner policy
+admits one controlled note job, and owner acceptance creates the typed episode.
+It preserves the independently verified result, original final and source graph;
+the note carries no instruction authority. It reuses the policy declared before
+the first step, without replacing the earlier owner/day allowance.
+
+This actual PG/Broker/runtime/race run passed one mandatory test, zero failures
+or skips,7.93s and17 checkpoints. Native inference/auth imports are0. Reports:
+`/srv/storage/butler/agents/issue92-20261018/reports/coherent-experience-v1`.
+The events SHA256 is
+`fb775cad55d64271593243e3559593fc6bb73a78eb49fecb06222f39fb4806eb`;
+`timeline/timeline-experience.json` has SHA256
+`99aef0beb0f9779327becada57909d1256ea4bb3aff60dfa487658b671e264de`.
+This extension and the earlier privacy extension have separate fresh databases;
+they are not yet one episode→consolidation→withdrawal→restore scenario.
