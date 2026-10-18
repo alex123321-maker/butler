@@ -98,3 +98,60 @@ original denominator. No selective replay or same-schema execution is allowed.
 This document records the recipe only. It is not a source freeze, authentication
 approval, native result, quality pass or savings claim. The coordinator must
 independently review the later exact preseal before any auth clone or execution.
+
+## Actual history and prospective preseal
+
+Read-only `history-v1` retains the closed native88v6 cohort unchanged:
+seven completed originals, one failure and four unexecuted originals;24 native
+entries,23 known usages with219763 known full tokens and one UNKNOWN. The
+collector's status1 is retained separately from its verified exact CAS/main200/
+fresh-snapshot handback. Manifest SHA256 is
+`cba9612964da448146ae65c08546a8f007c24583e307a2dde1f752463aedea5f`.
+The inclusive current owner quote is73 turns,78938112 tokens,27660000 active
+milliseconds,612368384 input bytes,48 external calls and201326592 egress bytes.
+It contains the prior49 once. The73 unique current native entries have72 known
+usages, one UNKNOWN and564496 known full tokens as a lower bound; product rows
+have72 observations and one NULL. Older161 attempts retain eight native unknowns
+and nine product NULLs. The separate adaptive owner retains226 quotes,98 cloud
+entries,128 local quotes, one native unknown and294550 known full tokens; it is
+not added to this owner's carry.
+
+Dedicated controls on source `1efeb41e` passed eight mandatory parents and nine
+negative children with race/vet,17 PASS and zero failures/skips. Two earlier
+zero-test setup failures (subnet overlap and an inaccessible cache symlink) remain
+under their original labels. Actual copied-history proof on `a3b2a498` passed
+27 checks with race/vet, including nineteen changed-history cases and six closure
+negatives. The first immutable history test report retains its failed no-op
+mutation; the corrected test finds the exact labelled carry reservation.
+
+The exact common-Core slow/paging control on `19203746` completed the whole nine
+slots,35 scripted entries and26 tool calls, with actual subsequent4096-character
+pages in every consolidated arm. Its evidence SHA256 is
+`d18b7230f55d1dc7e471e9024245ef03fce048892edb9e9f3d3075c6d9b5ae51`.
+It used real Flow/Broker/PostgreSQL with pool2 and the declared one-CPU/2GiB client
+plus one-CPU/1GiB PG. Native/auth calls were zero.
+
+`prospective-v3-preseal-v1` on `19203746` passed offline but was withdrawn
+unconsumed when the prospective duration profile advanced. Its original seal
+and files remain unchanged, and a separate withdrawal receipt records auth0.
+Replacement `prospective-v3-preseal-v2` freezes source
+`3baf016cb9feb8d31986a4c3f73b857dbdcc02af`, Git tree
+`566065b6905f8d50b0d83785c87af56adb8c51fc`, the unchanged history/corpus/contracts,
+and the525/530/40-minute duration profile with foreground source ceiling2000ms.
+Its prepared-pins SHA256 is
+`c8950ad8cedd938bf619376f1cabee66b28da4e045193fd2e92e6dc1ae05a188`.
+All fifteen mandatory parents and49 children passed with zero failures/skips;
+the separately executed compiled prepared-pins check and final targeted vet also
+passed. The current seven-store inventory stayed identical, the new schema and
+one-use receipt were absent, and main had zero active work with its original
+source/image. The frozen day capacity is172 model turns and144 external calls,
+exactly the inclusive73/48 plus the new99/96 maxima.
+
+The [content-free freeze review](fixtures/issue89/native-v3-preseal-review.json)
+contains every source/binary/contract/policy/schedule hash, complete quoted vector,
+original history summaries, resource receipts and explicit limitations. SHA256 is
+`f810a417deb53a7642cce6a6b282ae6dceec69236bdd36ac621602a99c7d9ea5`.
+Server evidence remains under
+`/srv/storage/butler/agents/issue89-native-v3-20261018/reports/prospective-v3-preseal-v2`.
+This is a concrete offline preseal awaiting independent coordinator review;
+no authentication clone or native execution has occurred in this cohort.
