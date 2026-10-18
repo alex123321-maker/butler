@@ -100,9 +100,13 @@ summed into the prospective authenticated owner's day.
 
 A new prospective UTC day has its own midnight deadline and finite nine-slot
 schedule, maximum99 provider entries and96 reads. Before authentication, the
-exporter scans all budget-table schemas in the retained #84, #85/#88, #86, #87 and
-future target databases. This first-population recipe requires an explicitly
-empty current-day owner scope/reservation population in every scanned schema.
+exporter scans all budget-table schemas in the main deployment, retained #84,
+#85/#88, #86, #87 and future target databases. This first-population recipe
+requires an explicitly empty current-day owner scope/reservation/attempt
+population in every scanned schema. The content-free attempt receipts retain
+nullable usage and explicit table-presence observations; absent background
+tables are distinguished from present tables with no rows. A completed main
+turn is still prior spend when no work is currently active.
 Any existing row, NULL array, missing store/schema, changed inventory or changed
 UTC day denies execution and requires another reviewed carry recipe. It cannot
 reset a used window. The full current inventory is hashed; the execute wrapper

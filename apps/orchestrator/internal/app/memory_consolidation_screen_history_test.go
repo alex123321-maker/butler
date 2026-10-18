@@ -79,9 +79,12 @@ type consolidationCurrentDay struct {
 		Port                int
 		Schemas             []string
 		Windows             []struct {
-			Schema       string
-			Scopes       []json.RawMessage
-			Reservations []json.RawMessage
+			Schema                 string
+			Scopes                 []json.RawMessage
+			Reservations           []json.RawMessage
+			Foreground, Background []json.RawMessage
+			ForegroundPresent      *bool `json:"foreground_table_present"`
+			BackgroundPresent      *bool `json:"background_table_present"`
 		}
 	}
 }
@@ -91,10 +94,10 @@ type consolidationCurrentDay struct {
 // finding any existing scope/reservation requires a new reviewed carry recipe.
 func consolidationValidateCurrentDay(current consolidationCurrentDay, day string, deadline time.Time) error {
 	start, err := time.Parse("2006-01-02", day)
-	if err != nil || current.Format != "butler.consolidation.current-owner-day.v1" || current.Day != day || current.Owner != "owner" || !deadline.Equal(start.Add(24*time.Hour)) || len(current.Databases) != 5 {
+	if err != nil || current.Format != "butler.consolidation.current-owner-day.v2" || current.Day != day || current.Owner != "owner" || !deadline.Equal(start.Add(24*time.Hour)) || len(current.Databases) != 6 {
 		return errors.New("complete bounded prospective UTC-day proof required")
 	}
-	want := map[string]int{"issue84-20261016-pg:issue84_test": 5432, "butler-issue85-postgres:issue85_native_test": 18585, "butler-issue86-native-postgres-1:memory_read_native_test": 5432, "butler-issue87-native-v1-pg:memory_adaptive_test": 5432, "issue86-20261016-pg:memory_read_test": 5432}
+	want := map[string]int{"butler-lab-postgres-1:butler": 5432, "issue84-20261016-pg:issue84_test": 5432, "butler-issue85-postgres:issue85_native_test": 18585, "butler-issue86-native-postgres-1:memory_read_native_test": 5432, "butler-issue87-native-v1-pg:memory_adaptive_test": 5432, "issue86-20261016-pg:memory_read_test": 5432}
 	validSchema := regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 	for _, database := range current.Databases {
 		key := database.Container + ":" + database.Database
@@ -104,10 +107,13 @@ func consolidationValidateCurrentDay(current consolidationCurrentDay, day string
 		delete(want, key)
 		seen := map[string]bool{}
 		for i, window := range database.Windows {
-			if !validSchema.MatchString(window.Schema) || seen[window.Schema] || database.Schemas[i] != window.Schema || window.Scopes == nil || window.Reservations == nil || len(window.Scopes) != 0 || len(window.Reservations) != 0 {
+			if !validSchema.MatchString(window.Schema) || seen[window.Schema] || database.Schemas[i] != window.Schema || window.Scopes == nil || window.Reservations == nil || len(window.Scopes) != 0 || len(window.Reservations) != 0 || window.ForegroundPresent == nil || !*window.ForegroundPresent || window.BackgroundPresent == nil || window.Foreground == nil || window.Background == nil || len(window.Foreground) != 0 || len(window.Background) != 0 {
 				return errors.New("existing or incomplete current-day owner population requires a new reviewed carry plan")
 			}
 			seen[window.Schema] = true
+		}
+		if key == "butler-lab-postgres-1:butler" && !seen["public"] {
+			return errors.New("main current-day ledger omitted")
 		}
 		if key == "issue84-20261016-pg:issue84_test" {
 			for i := 1; i <= 7; i++ {
@@ -600,12 +606,13 @@ func TestConsolidationScreenProspectiveDayRequiresCompleteUnchargedPopulation(t 
 	// The exact five retained stores are separate from a new current-day
 	// authority. Full old-day attempts/NULL usage are checked by the independent
 	// historical parser; they are never represented by an empty current array.
-	raw := `{"format":"butler.consolidation.current-owner-day.v1","day":"2026-10-18","owner":"owner","databases":[
-{"container":"issue84-20261016-pg","database":"issue84_test","port":5432,"schemas":["summary_native_v1","summary_native_v2","summary_native_v3","summary_native_v4","summary_native_v5","summary_native_v6","summary_native_v7"],"windows":[{"schema":"summary_native_v1","scopes":[],"reservations":[]},{"schema":"summary_native_v2","scopes":[],"reservations":[]},{"schema":"summary_native_v3","scopes":[],"reservations":[]},{"schema":"summary_native_v4","scopes":[],"reservations":[]},{"schema":"summary_native_v5","scopes":[],"reservations":[]},{"schema":"summary_native_v6","scopes":[],"reservations":[]},{"schema":"summary_native_v7","scopes":[],"reservations":[]}]},
-{"container":"butler-issue85-postgres","database":"issue85_native_test","port":18585,"schemas":["memory_temporal_native_v1","memory_temporal_native_v2","memory_temporal_native_v3","memory_temporal_native_v4","public"],"windows":[{"schema":"memory_temporal_native_v1","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v2","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v3","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v4","scopes":[],"reservations":[]},{"schema":"public","scopes":[],"reservations":[]}]},
-{"container":"butler-issue86-native-postgres-1","database":"memory_read_native_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","scopes":[],"reservations":[]}]},
-{"container":"butler-issue87-native-v1-pg","database":"memory_adaptive_test","port":5432,"schemas":["adaptive_native_v1"],"windows":[{"schema":"adaptive_native_v1","scopes":[],"reservations":[]}]},
-{"container":"issue86-20261016-pg","database":"memory_read_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","scopes":[],"reservations":[]}]}]}`
+	raw := `{"format":"butler.consolidation.current-owner-day.v2","day":"2026-10-18","owner":"owner","databases":[
+{"container":"issue84-20261016-pg","database":"issue84_test","port":5432,"schemas":["summary_native_v1","summary_native_v2","summary_native_v3","summary_native_v4","summary_native_v5","summary_native_v6","summary_native_v7"],"windows":[{"schema":"summary_native_v1","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v2","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v3","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v4","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v5","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v6","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"summary_native_v7","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]},
+{"container":"butler-issue85-postgres","database":"issue85_native_test","port":18585,"schemas":["memory_temporal_native_v1","memory_temporal_native_v2","memory_temporal_native_v3","memory_temporal_native_v4","public"],"windows":[{"schema":"memory_temporal_native_v1","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v2","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v3","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v4","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]},{"schema":"public","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]},
+{"container":"butler-issue86-native-postgres-1","database":"memory_read_native_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]},
+{"container":"butler-issue87-native-v1-pg","database":"memory_adaptive_test","port":5432,"schemas":["adaptive_native_v1"],"windows":[{"schema":"adaptive_native_v1","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]},
+{"container":"issue86-20261016-pg","database":"memory_read_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]},
+{"container":"butler-lab-postgres-1","database":"butler","port":5432,"schemas":["public"],"windows":[{"schema":"public","foreground_table_present":true,"background_table_present":true,"foreground":[],"background":[],"scopes":[],"reservations":[]}]}]}`
 	decode := func(t *testing.T) consolidationCurrentDay {
 		t.Helper()
 		var current consolidationCurrentDay
@@ -617,11 +624,26 @@ func TestConsolidationScreenProspectiveDayRequiresCompleteUnchargedPopulation(t 
 	if err := consolidationValidateCurrentDay(decode(t), day, deadline); err != nil {
 		t.Fatal(err)
 	}
+	withoutBackgroundTable := decode(t)
+	absent := false
+	withoutBackgroundTable.Databases[5].Windows[0].BackgroundPresent = &absent
+	if err := consolidationValidateCurrentDay(withoutBackgroundTable, day, deadline); err != nil {
+		t.Fatal("catalog-proved absent old-deployment background table was conflated with an unknown query", err)
+	}
 	for _, tc := range []struct {
 		name   string
 		change func(*consolidationCurrentDay)
 	}{
 		{"missing_database", func(c *consolidationCurrentDay) { c.Databases = c.Databases[:4] }},
+		{"missing_main", func(c *consolidationCurrentDay) { c.Databases = c.Databases[:5] }},
+		{"completed_main_call_is_not_free", func(c *consolidationCurrentDay) {
+			c.Databases[5].Windows[0].Foreground = []json.RawMessage{json.RawMessage(`{"operation_id":"already_completed","observed_at":"2026-10-18T01:00:00Z","actual_input_tokens":19,"actual_output_tokens":3}`)}
+		}},
+		{"unknown_main_call_is_not_free", func(c *consolidationCurrentDay) {
+			c.Databases[5].Windows[0].Background = []json.RawMessage{json.RawMessage(`{"operation_id":"unobserved","usage":null}`)}
+		}},
+		{"unknown_main_attempt_inventory", func(c *consolidationCurrentDay) { c.Databases[5].Windows[0].Foreground = nil }},
+		{"missing_main_table_presence", func(c *consolidationCurrentDay) { c.Databases[5].Windows[0].BackgroundPresent = nil }},
 		{"duplicate_database", func(c *consolidationCurrentDay) { c.Databases[4] = c.Databases[3] }},
 		{"omitted_temporal_predecessor", func(c *consolidationCurrentDay) {
 			c.Databases[1].Schemas = c.Databases[1].Schemas[1:]

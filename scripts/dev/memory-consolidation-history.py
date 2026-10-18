@@ -37,6 +37,7 @@ def read_artifact(path):
 # existing charged population requires another reviewed carry plan; it is not
 # refunded, reset, silently omitted or treated as another owner.
 CURRENT_DATABASES = (
+    ("butler-lab-postgres-1", "butler", 5432),
     ("issue84-20261016-pg", "issue84_test", 5432),
     ("butler-issue85-postgres", "issue85_native_test", 18585),
     ("butler-issue86-native-postgres-1", "memory_read_native_test", 5432),
@@ -46,7 +47,7 @@ CURRENT_DATABASES = (
 
 
 def current_inventory(day):
-    inventory = {"format": "butler.consolidation.current-owner-day.v1", "day": day, "owner": "owner", "databases": []}
+    inventory = {"format": "butler.consolidation.current-owner-day.v2", "day": day, "owner": "owner", "databases": []}
     for container, database, port in CURRENT_DATABASES:
         discovered = sql(container, database, "SELECT jsonb_build_object('day',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD'),'schemas',(SELECT jsonb_agg(n.nspname ORDER BY n.nspname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relname='execution_budget_scopes' AND c.relkind='r'))", port)
         schemas = discovered.get("schemas") or []
@@ -60,6 +61,18 @@ def current_inventory(day):
             window = sql(container, database, query, port)
             if window.pop("day", None) != day:
                 raise SystemExit("current UTC day changed during read-only snapshot")
+            present = sql(container, database, "SELECT jsonb_build_object('foreground',to_regclass('" + schema + ".execution_model_attempts') IS NOT NULL,'background',to_regclass('" + schema + ".memory_model_attempts') IS NOT NULL)", port)
+            window["foreground_table_present"] = present["foreground"]
+            window["background_table_present"] = present["background"]
+            window["foreground"], window["background"] = [], []
+            # Only durable operation/reservation/usage metadata is exported.
+            # No settings, prompts, source bodies or arbitrary error text.
+            if present["foreground"]:
+                query = "SET LOCAL search_path=" + schema + ",public; SELECT coalesce(jsonb_agg(jsonb_build_object('operation_id',a.operation_id,'reservation_id',a.reservation_id,'provider',a.provider,'model',a.model,'input_allowance',a.input_allowance,'output_allowance',a.output_allowance,'actual_input_tokens',a.actual_input_tokens,'actual_output_tokens',a.actual_output_tokens,'created_at',a.created_at,'observed_at',a.observed_at) ORDER BY a.operation_id),'[]') FROM execution_model_attempts a WHERE a.created_at >= '" + day + "T00:00:00Z'::timestamptz AND a.created_at < '" + day + "T00:00:00Z'::timestamptz+INTERVAL '1 day' AND (EXISTS(SELECT 1 FROM execution_budget_reservations r WHERE r.reservation_id=a.reservation_id AND r.owner_id='owner') OR EXISTS(SELECT 1 FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=a.run_id AND s.user_id='owner'))"
+                window["foreground"] = sql(container, database, query, port)
+            if present["background"]:
+                query = "SET LOCAL search_path=" + schema + ",public; SELECT coalesce(jsonb_agg(jsonb_build_object('operation_id',a.operation_id,'job_id',a.job_id,'reservation_id',a.reservation_id,'provider',a.provider,'model',a.model,'quote',a.quote,'state',a.state,'usage',a.usage,'created_at',a.created_at,'observed_at',a.observed_at) ORDER BY a.operation_id),'[]') FROM memory_model_attempts a WHERE a.created_at >= '" + day + "T00:00:00Z'::timestamptz AND a.created_at < '" + day + "T00:00:00Z'::timestamptz+INTERVAL '1 day' AND (EXISTS(SELECT 1 FROM execution_budget_reservations r WHERE r.reservation_id=a.reservation_id AND r.owner_id='owner') OR EXISTS(SELECT 1 FROM memory_aux_jobs j WHERE j.job_id=a.job_id AND j.owner_id='owner'))"
+                window["background"] = sql(container, database, query, port)
             windows.append(window)
         inventory["databases"].append({"container": container, "database": database, "port": port, "schemas": schemas, "windows": windows})
     return inventory
