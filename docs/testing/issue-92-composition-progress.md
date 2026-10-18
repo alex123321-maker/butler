@@ -24,6 +24,7 @@ The original versioned windows and their failures remain retained separately.
 |c803dd0e / coherent-privacy-v1|1 mandatory test passed,0 failed/skipped, race;5.53s|All15 earlier shared-timeline checkpoints followed by late owner deletion after actual prepared model input; final blocked, prior private copies/summaries erased, known usage and effect journal retained. Still a partial controlled pilot|
 |b3be3a12 / composition-v5|259 test/subtest events passed,0 failed/skipped; race/vet passed|Includes080 terminal-attempt provenance/currentness/owner-only policy and the trusted single-proposal instruction. This controlled combined subset is separate from native quality and the complete92 pilot|
 |8df1331b / coherent-experience-v1|1 mandatory test passed,0 failed/skipped, race;7.93s|The same15-checkpoint timeline continues through an actual Broker/extension/HTTP original, independent artifact verification and owner-accepted episode,17 sequential checkpoints; controlled outputs, no native inference|
+|fdc96d54 / coherent-lifecycle-v8|18 test/subtest events passed,0 failed/skipped, race|All23 sequential same-state preference/verified-episode/consolidation/deletion/custom-restore/latest-anchor/real-ENOSPC checkpoints, plus mandatory port/dependency/erasure/contract controls; native/auth0, controlled outputs|
 |7bac6cda / interactive-v5|Ordinary Flow completed370ms with one actual local query/index IPC overlap;1PASS,0FAIL,0SKIP with race|100 original vectors plus100 new fragments; controlled foreground provider, zero cloud calls; not p95 or full mixed-model workload|
 |8ed0770f / disk-v1|Actual ENOSPC, test0.68s, passed without skips|Dedicated8KiB tmpfs, one synthetic schema; unchanged PG deletion state on failed append. Observed partial anchor becomes unavailable and explicitly denies reads/reconciliation; no automatic reset or claimed deletion|
 
@@ -106,8 +107,11 @@ composition, including explicit model/database/budget/disk failure behavior.
 The16-checkpoint controlled privacy extension proves late withdrawal on the
 earlier timeline. The separate17-checkpoint extension now proves an independently
 verified episode on that earlier timeline. Consolidation followed by withdrawal,
-actual custom restore and ENOSPC must still consume the episode's same state in
-one prospective complete scenario.
+actual custom restore and ENOSPC now consume the episode's same state in the
+complete controlled23-checkpoint v8 scenario. Its actual receipt and exact
+limits are in [the coherent lifecycle report](issue-92-coherent-pilot.md).
+Native quality, real uncertain-effect behavior in that complete scenario and
+current combined composition remain separate acceptance requirements.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.

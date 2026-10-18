@@ -129,7 +129,7 @@ The events SHA256 is
 This extension and the earlier privacy extension have separate fresh databases;
 they are not yet one episode→consolidation→withdrawal→restore scenario.
 
-## Prospective integrated lifecycle control
+## Integrated lifecycle control
 
 `TestMemoryCoherentEpisodeConsolidationRestoreIntegration` extends that actual
 episode timeline without replacing its database, owner/day policy or earlier
@@ -216,3 +216,39 @@ It uses cached Go1.27.2, isolated PG1CPU/1GiB and client1CPU/2GiB, with no provi
 authentication or native inference. Implementation and this prospective protocol
 are not a run receipt. Native quality/cost, supported-mode qualification and
 staged human review remain separate even after controlled mechanical success.
+
+## Complete same-state controlled receipt
+
+`coherent-lifecycle-v8`, frozen source `fdc96d54`, passed on ssh laba: all23
+sequential checkpoints on the same owning state, plus the required port,
+dependency, erasure and temporal contract controls. The JSON test stream records
+18 passed test/subtest events,0 failed and0 skipped, with race detection.
+The compiled Broker/extension/HTTP processes, actual custom dump and fresh
+restore, newest independent anchor, zero retained private copies, unchanged
+complete effect/budget hashes and actual bounded ENOSPC all passed. Provider
+authentication imports and native inference calls are0.
+
+Reports: `/srv/storage/butler/agents/issue92-20261018/reports/coherent-lifecycle-v8`.
+
+| Artifact | SHA256 |
+| --- | --- |
+|events.jsonl|f961bd58b6a42d18009028c3dd69faa53a45c2bc4a0d42e293200c8bdb861af6|
+|timeline/timeline-lifecycle.json|2e3ba7c36948ea8b303cb1905d5180785af76930327a25dee8d0dd92f92cfcae|
+|evidence.sha256|3518cea68833e1da3fb8677809cb980e9e38aff4e760e012401800899257b907|
+
+Independent082 review subsequently strengthened its down guard to retain any
+populated experience provenance, including a failed first deletion with an
+external anchor but no committed SQL deletion. Identity controls now separately
+change the goal and an existing valid run reference, avoiding incidental FK
+rejection. `working-erasure-v3`, source `29b20b70`, passes9 test/subtest events,
+0 failures/skips, race and vet; its events SHA256 is
+`d08d89e89a61fdd002a10f55571c75743140896a0a4b8b97eba7222e48cc88bc`
+and evidence-list SHA256 is
+`b3fa9a213f641cc9452edf492f7336fea99f03abf6e3a70fb0cd0a8e469f778c`.
+The up/publication behavior measured by the complete v8 scenario is unchanged.
+
+This is a controlled mechanical acceptance receipt. Its scripted output and
+owner-recorded working UNKNOWN do not certify native answer quality or an
+actual uncertain external effect in this complete scenario. The separate real
+effect controls remain distinct. Native87–90 quality/full-cost gates, current
+combined composition checks and staged owner review remain required.
