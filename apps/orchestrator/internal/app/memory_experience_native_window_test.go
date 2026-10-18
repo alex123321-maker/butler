@@ -137,6 +137,20 @@ func experienceNativeBudgetPolicy() budget.Policy {
 	return p
 }
 
+func experienceNativeSourcePolicy() budget.Policy {
+	p := experienceNativeBudgetPolicy()
+	// The source task and its root mandate/conversation also own their one-use
+	// note job. Declare 12 foreground + 1 note before the first reservation;
+	// strict existing-scope limits are never enlarged after source execution.
+	u := p.Task
+	u.ModelTurns++
+	u.Tokens += 1081344
+	u.ActiveMillis += 300000
+	u.ProviderInputBytes += p.ModelInputBytes
+	p.Task, p.Mandate, p.Conversation = u, u, u
+	return p
+}
+
 type experienceNativeEntry struct {
 	Sequence  int               `json:"sequence"`
 	Slot      string            `json:"slot"`
@@ -169,20 +183,28 @@ type experienceNativeProvider struct {
 	window     string
 	casePool   *pgxpool.Pool
 	controlled bool
+	owner      string
 }
 
-func newExperienceNativeProvider(proof string, slots []experienceNativeSlot) (*experienceNativeProvider, error) {
+func newExperienceNativeProvider(proof string, slots []experienceNativeSlot, owners ...string) (*experienceNativeProvider, error) {
 	maximum := 0
 	for _, slot := range slots {
 		maximum += slot.Maximum
 	}
-	if !filepath.IsAbs(proof) || len(slots) != 57 || maximum != experienceNativeMaximum {
+	owner := experienceNativeOwner
+	if len(owners) > 1 {
+		return nil, errors.New("one frozen window owner required")
+	}
+	if len(owners) == 1 {
+		owner = owners[0]
+	}
+	if !filepath.IsAbs(proof) || len(slots) != 57 || maximum != experienceNativeMaximum || owner == "" || len(owner) > 160 {
 		return nil, errors.New("full finite experience schedule required")
 	}
-	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1}
+	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1, owner: owner}
 	// This must precede PG migrations, credentials, provider construction and
 	// original-source work. The exact denominator survives a setup abort.
-	if err := p.writeNew("schedule.json", map[string]any{"format": "experience90-window-v1", "maximum_entries": experienceNativeMaximum, "slots": slots}); err != nil {
+	if err := p.writeNew("schedule.json", map[string]any{"format": "experience90-window-v1", "owner_id": owner, "maximum_entries": experienceNativeMaximum, "slots": slots}); err != nil {
 		return nil, err
 	}
 	return p, nil
@@ -216,12 +238,26 @@ func (p *experienceNativeProvider) installGlobal(ctx context.Context, pool *pgxp
 		return err
 	}
 	defer tx.Rollback(ctx)
-	if _, err = tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS experience_native_windows(window_id TEXT PRIMARY KEY,maximum INTEGER NOT NULL CHECK(maximum=640),used INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);
+	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('experience90-independent-global-window',0))`); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS experience_native_windows(window_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum=640),used INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);
 CREATE TABLE IF NOT EXISTS experience_native_allocations(window_id TEXT NOT NULL REFERENCES experience_native_windows,slot_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum IN(1,12)),used INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(window_id,slot_id));
 CREATE TABLE IF NOT EXISTS experience_native_entries(window_id TEXT NOT NULL REFERENCES experience_native_windows,sequence INTEGER NOT NULL,slot_id TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,request_json JSONB NOT NULL,usage_json JSONB,PRIMARY KEY(window_id,sequence))`); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_windows(window_id,maximum)VALUES($1,640)`, window); err != nil {
+	var previous json.RawMessage
+	if err = tx.QueryRow(ctx, `SELECT jsonb_build_object('windows',COALESCE((SELECT jsonb_agg(to_jsonb(w) ORDER BY window_id) FROM experience_native_windows w),'[]'::jsonb),'entries',COALESCE((SELECT jsonb_agg(jsonb_build_object('window_id',e.window_id,'sequence',e.sequence,'slot',e.slot_id,'run_id',e.run_id,'kind',e.kind,'request_sha256',encode(sha256(convert_to(e.request_json::text,'UTF8')),'hex'),'usage',e.usage_json) ORDER BY e.window_id,e.sequence) FROM experience_native_entries e),'[]'::jsonb))`).Scan(&previous); err != nil {
+		return err
+	}
+	var open int
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM experience_native_windows WHERE NOT closed`).Scan(&open); err != nil || open != 0 {
+		return errors.New("an earlier independent window is still open; retain and reconcile it first")
+	}
+	if err = p.writeNew("previous-windows.json", previous); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_windows(window_id,owner_id,maximum)VALUES($1,$2,640)`, window, p.owner); err != nil {
 		return errors.New("one-use persistent window was used or unavailable")
 	}
 	for _, slot := range p.slots {
@@ -246,7 +282,7 @@ func (p *experienceNativeProvider) reserveGlobal(ctx context.Context, e *experie
 	}
 	defer tx.Rollback(ctx)
 	var sequence int
-	if err = tx.QueryRow(ctx, `UPDATE experience_native_windows SET used=used+1 WHERE window_id=$1 AND NOT closed AND used<maximum RETURNING used`, p.window).Scan(&sequence); err != nil || sequence != e.Sequence {
+	if err = tx.QueryRow(ctx, `UPDATE experience_native_windows SET used=used+1 WHERE window_id=$1 AND owner_id=$2 AND NOT closed AND used<maximum RETURNING used`, p.window, p.owner).Scan(&sequence); err != nil || sequence != e.Sequence {
 		return errors.New("persistent window sequence/bound denied")
 	}
 	tag, err := tx.Exec(ctx, `UPDATE experience_native_allocations SET used=used+1 WHERE window_id=$1 AND slot_id=$2 AND used<maximum`, p.window, e.Slot)
@@ -310,9 +346,9 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 		var actual bool
 		var err error
 		if slot.Kind == "note" {
-			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.operation_id=$2 AND a.state='reserved' AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high')`, op, run).Scan(&actual)
+			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.operation_id=$2 AND a.state='reserved' AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3)`, op, run, p.owner).Scan(&actual)
 		} else {
-			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.run_id=$2 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high')`, op, run).Scan(&actual)
+			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.run_id=$2 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$3)`, op, run, p.owner).Scan(&actual)
 		}
 		if err != nil || !actual {
 			return nil, errors.New("current owning model reservation not corroborated")
@@ -575,6 +611,10 @@ func TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes(t *testing.T) {
 	if policy.Validate() != nil || policy.Day.ModelTurns != int64(total) || policy.Task.ModelTurns != 12 || policy.OutputTokens != 32768 || policy.ModelMillis != 300000 || policy.Task.ActiveMillis < 12*300000+11*policy.ToolMillis {
 		t.Fatal("prospective admission cannot cover declared entries")
 	}
+	source := experienceNativeSourcePolicy()
+	if source.Validate() != nil || source.Task.ModelTurns != 13 || source.Mandate.ModelTurns != 13 || source.Conversation.ModelTurns != 13 || source.Day.ModelTurns != 640 {
+		t.Fatal("source/note parent quotes do not fit their prospective policy")
+	}
 }
 
 type experienceWindowFailureProvider struct{ transport.ModelProvider }
@@ -702,7 +742,7 @@ func TestExperienceNativeErrorCaptureOmitsProviderSecretsAndRetainsFinalUsage(t 
 func TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration(t *testing.T) {
 	f := newDispatchAdmissionFixture(t)
 	global := memorytest.Database(t)
-	p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()))
+	p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()), f.f.parent.OwnerID)
 	if err != nil {
 		t.Fatal(err)
 	}

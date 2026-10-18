@@ -123,6 +123,28 @@ Owning privacy repair is being composed separately in 92. These receipts still
 do not claim primary tool-payload erasure or post-079 combined acceptance.
 Prospective A/B/C collection remains unrun and cannot enable the production gate.
 
+The original-task and finite-window foundation is frozen in `snapshots/v24`
+on the same isolated root, composed with acceptance source `470765fa`.
+`reports/window-runtime-v24` passed **8 / 0 / 0**, race detection and vet;
+`evidence.sha256` has SHA256
+`6ecbf4b8d6720fb53f5c9dce78678f4bcf15bc51fc7ddce2325b68bf887c9154`.
+The tests execute a real durable input, typed owner task/mandate, production Flow,
+compiled Broker, reviewed extension and HTTP runtime to create and check an
+unapplied recipient artifact. Independent owner verification correlates the
+exact action key/fingerprint and artifact check. Restarting the same v1 fixture
+preserves its reviewed extension generation and environment fingerprint. Every
+runtime/client has an explicit idempotent stop before template freezing.
+
+The complete 57-slot/640-entry schedule is sealed before storage/provider work.
+Source task, mandate and conversation limits prospectively include 12 foreground
+entries plus their one note quote. A separate persistent experiment journal
+retains finite disjoint allocations and previous windows, including NULL usage;
+it is not production budget authority across cloned databases. Model capture
+requires the actual owning reservation and excludes raw provider errors/auth
+metadata. These are controlled mechanical tests, with no native calls or auth
+handoff. They do not prove note/skill generation, clone-isolated A/B/C outcomes,
+failed/UNKNOWN source-note publication or an experience quality improvement.
+
 The later issue92 composition includes migration079 and the owning cache repair.
 privacy-v1 proves actual Broker raw/view reads followed by erasure with
 unchanged complete effect/evidence/spending digests. payload-backup-v1 restores

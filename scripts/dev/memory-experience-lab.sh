@@ -35,6 +35,7 @@ for i in $(seq 1 60);do docker exec "$pg" pg_isready -U butler -d memory_experie
 runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-limit 128 --security-opt no-new-privileges
  -v "$src:/src:ro" -v "$cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -w /src
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local
+ -e BUTLER_EXPERIENCE_PROCESS_PROOF=/proof/processes
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/memory_experience_test?sslmode=disable'
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/cache/broker-experience.test -e BUTLER_MEMORY_READ_APP_BINARY=/cache/tool-broker-experience
  -e BUTLER_BROKER_E2E_BINARY=/cache/tool-broker-experience -e BUTLER_EXTENSION_E2E_BINARY=/cache/extension-experience.test -e BUTLER_EXPERIENCE_HTTP_BINARY=/cache/http-experience.test -e BUTLER_EXPERIENCE_RECIPIENT_BROKER=1
