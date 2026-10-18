@@ -153,5 +153,43 @@ original history summaries, resource receipts and explicit limitations. SHA256 i
 `f810a417deb53a7642cce6a6b282ae6dceec69236bdd36ac621602a99c7d9ea5`.
 Server evidence remains under
 `/srv/storage/butler/agents/issue89-native-v3-20261018/reports/prospective-v3-preseal-v2`.
-This is a concrete offline preseal awaiting independent coordinator review;
-no authentication clone or native execution has occurred in this cohort.
+This preseal was independently approved after the complete combined acceptance
+suite passed464 checks with zero failures/skips, race and vet, plus the full
+24-step coherent timeline. The exact frozen helper executed once.
+
+## Closed native window
+
+All nine original slots completed. The36 native entries all have known full
+usage, totaling284910 tokens; the separate36 product observations are known.
+The27 actual Broker reads remain charged. The latest inclusive owner/day vector
+is109 model turns,117866496 quoted tokens,41700000 active milliseconds,
+914358272 provider input bytes,75 external calls and314572800 egress bytes.
+The original73-turn prefix is included once. There are108 known native entries
+and one retained unknown across the current lineage, with known full lower bound
+849406 tokens. The historical161 attempts and distinct adaptive owner's226
+quotes remain separate and are not added again.
+
+Exact opaque CAS, the active-work check, main paid-discovery HTTP200 and fresh
+snapshot all passed before the wrapper released its common auth flock. The
+collector exited0. No retry, reopening, refund or changed old outcome occurred;
+the old89v2 cancellation cause remains UNKNOWN.
+
+The [complete safe review](fixtures/issue89/native-v3-review.json), SHA256
+`0c219f20dc1a41d299ad5fecb70385c5a5ba759500d7f6a80743ad09c0199ba7`,
+retains all nine slots, every actual visible Start input, tool result, proposal,
+final answer, original source pins, exact reservations and full known/NULL cost.
+It excludes reasoning, provider session references, transport internals,
+credentials and arbitrary raw errors. [Source/citation material](fixtures/issue89/native-v3-source-citation-material.json),
+SHA256 `1e79e5ed87eac0b378ff518d5c9e81d9f3eea3f918668c9d550a2f1d96d6bd3e`,
+preserves the actual Catalog revisions/dependencies and original corpus.
+
+The [content-free closed leaf](fixtures/issue89/native-v3-closed-leaf.json),
+SHA256 `b9293eb9633384f1e3ea8b62f6d067f4f0a86678a5a93a48bccd9de138877330`,
+quotes the inclusive vector and only this stage's original operation/reservation/
+run identities. It references the immutable ledger
+`c04da70cd2688898bbe0440a52226c2879dad6ca6c4929e881219f3fb3f28aff`,
+screen `7305b4ed2e24684a7702203955d659c2925f4f47edfb8d96051674b511a538fb`
+and exact handback receipt
+`da668e875e995cbf1f14f426e0d667f76ed7aee0b59687823a643d518a1177c1`.
+Qualification remains false pending independent complete quality, provenance,
+grouping and cost review. Mechanical completion does not establish deployment.

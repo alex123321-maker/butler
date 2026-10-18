@@ -1,0 +1,323 @@
+{
+  "artifact_hashes": {
+    "closed-handback.json": "da668e875e995cbf1f14f426e0d667f76ed7aee0b59687823a643d518a1177c1",
+    "main-auth-safe.json": "acbf36a1449610ed012c4510a6b639baa3f3761a8ee851974b0ab57a8570776c",
+    "main-snapshot-safe.json": "361050a15fa9abbf398513e10b83a809f9063cc5c2c0ab392822a6469a1335a1",
+    "native-budget-policy.json": "2b657c29627e3bbdb7c3c5821420793b6042c94d4c447306352c5689bd61ef42",
+    "pre-auth-current-ledgers.json": "a7af222dbc7c461648de91a8e83baae0d5493710a0baa515d3120f0f023eb9c6",
+    "prepared-pins.sha256": "c8950ad8cedd938bf619376f1cabee66b28da4e045193fd2e92e6dc1ae05a188",
+    "return-safe.json": "3f74239c42dd6796423628e3b10c192d152f9916af8740e6555f71b9e6319a3e",
+    "screen/full-ledger.json": "c04da70cd2688898bbe0440a52226c2879dad6ca6c4929e881219f3fb3f28aff",
+    "screen/initial-schedule.json": "168f0e220f4e8273689af99b2fa63a87e76b98e01431dcaf53282d5fd9630afa",
+    "screen/screen.json": "7305b4ed2e24684a7702203955d659c2925f4f47edfb8d96051674b511a538fb",
+    "source-citation-material-safe.json": "1e79e5ed87eac0b378ff518d5c9e81d9f3eea3f918668c9d550a2f1d96d6bd3e",
+    "source.sha256": "ae349c35f723fafcca0d8e145439b2e73d9e44f8eb21317abbfd80a19e1124ec",
+    "successor-pins.json": "47b7703002db046693fe18e4d979cc63771cfb88ada9aef07a0d6fa6b67f1f7f"
+  },
+  "day": "2026-10-18",
+  "deadline": "2026-10-19T00:00:00+00:00",
+  "format": "butler.consolidation.closed-leaf.v3",
+  "inclusive_known_full_tokens_lower_bound": 849406,
+  "inclusive_native_known": 108,
+  "inclusive_native_unknown": 1,
+  "inclusive_unique_native_entries": 109,
+  "independent_review": "required",
+  "labelled_prior_carry": {
+    "active_millis": 27660000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 201326592,
+    "external_calls": 48,
+    "model_turns": 73,
+    "provider_input_bytes": 612368384,
+    "tokens": 78938112
+  },
+  "new_stage_known_full_tokens": 284910,
+  "new_stage_native_entries": 36,
+  "new_stage_native_known": 36,
+  "new_stage_native_unknown": 0,
+  "new_stage_product_attempts": 36,
+  "new_stage_product_null": 0,
+  "new_stage_product_observed": 36,
+  "new_stage_product_without_native_entry": 0,
+  "original_outcomes": {
+    "completed": 9,
+    "failed": 0,
+    "not_executed": 0
+  },
+  "original_product_operations": [
+    {
+      "job_id": "model_3606a0a2aa207d1f9e4b33d90b57ab20665a4697e4e170811c42af2a99e7725d",
+      "observation_known": true,
+      "operation_id": "operation_9a6e904fe50bf4bc56259134374d2d1535d49d027d2b3107",
+      "reservation_id": "085bde237aa8d85f6e450b1fb0ef26dd98aa69e6c1cab53d46a5d62acd27b374",
+      "run_id": null
+    },
+    {
+      "job_id": "model_6e1dda246440ba57813604e15bf45a34ff7388ab6aa3ee2a53bb4bd62de5e1da",
+      "observation_known": true,
+      "operation_id": "operation_d54a05eedc76b17cd0bc5f7f253297449b9b0123a4405721",
+      "reservation_id": "0c725b3023fa10076195042d6955211e5f094a4c4eedba69cec2650982175646",
+      "run_id": null
+    },
+    {
+      "job_id": "model_284180ad5f9408785ff1a682c3a17012f0e32ed225be23e7d20e85fdbcbc5a97",
+      "observation_known": true,
+      "operation_id": "operation_6c338609f106bc2572e0b44f9771e0328f38669d62c9c283",
+      "reservation_id": "2114f122aeac6d286d27a73f223fa331904345d82476c6267d79f8636cf92446",
+      "run_id": null
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_5fde7cacfe5c1546ab8a256540fb6dfd844127fc56b384f9",
+      "reservation_id": "f63216ad7eb5f7f498926a5d08009b6f01148b98157b3aceb183db2d6fc15fda",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_feab7245a0658a86671896087a2d412d111a02a73d44dffa",
+      "reservation_id": "a8902b894c2b3475230510ef1551ff27b02b4ce3a90af96ef3acb93d0cf4c8bb",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_6f8cc8840c5db0bca3e388bb24f323a01006893fd0d0e306",
+      "reservation_id": "35d8fdae9f740e47deef5966ce51f7295954f37b32cadf801e710aa2a33b78c5",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_9f84fd652d9647aba9c244e6a89f38fd50c2409282534fd4",
+      "reservation_id": "865a42868a1555750d56690b648bbe110934c92b595a19490797c0d9583b6f4c",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_d4810f0ee4745e81c5ef40ac4c1d7563a0c4e32cdbdf2791",
+      "reservation_id": "b667d9390a56c2b3f6a293fbef74ed28c5a6b89f6c7257846387032cda069612",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_9fe0b035957fb1a86226e547a04721fc4fd7e82adeed28b0",
+      "reservation_id": "0978e3ae80c8a41ecaa9d84919a25fb42d5928aa28c73e85d350b77958f27672",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_9b0cc5fcf66014b9b4cd82f981fd88fdaaec86990c2709a7",
+      "reservation_id": "4b2e6aadb8a5f2c2f69fb143bed8b7bc639a474fdf1325401767d949c5eaca4c",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_72f13f0aab57bd213db30ed7eb0c8f8a64f26ee9b4d9a0fd",
+      "reservation_id": "af2e0734e07e29bc8cba439af2cba107d6d5b0b0ffd90954476271ea686e521d",
+      "run_id": "run-1792304900711947509-288250e61aac6b5b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_53abff1a39ebf030c3a92a6cec40fbc70d46354ee6c9358f",
+      "reservation_id": "582cf170236225fefa9f707a5ca82e082ab410b6e9a9d722b6312932a2488b97",
+      "run_id": "run-1792304953341821484-e546b5c90babcd2b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_80caeaf17f7ee1a603791b0deb9f9ddf892861eb8a5a7008",
+      "reservation_id": "e33df8ec07d3f0481174b18cdfbec91ed073ff011c5e76f905c38930b0ca387b",
+      "run_id": "run-1792304953341821484-e546b5c90babcd2b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_37187e1f40bf669d62abe30f764430e785519b5668e8f18b",
+      "reservation_id": "e33c72538f1ee4753fada581bb23dad6b56e821f9c32a7cd14866bd13d86609c",
+      "run_id": "run-1792304953341821484-e546b5c90babcd2b"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_a50838aeadc55165500ba5b7cce523e409b8b07d7bf17b52",
+      "reservation_id": "96694914a46aabd4ecfde2666cbb953b995474ff8bcbc833318f4f66da5269ed",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_d04c6558fe70c030d4dcf49e44dd789af124552cb18c1c25",
+      "reservation_id": "48a14370347cab29e12e146b8b92e606bc344eca723be3c98108f791ae543150",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_189806819318e5b50140dd88778a87896c7e0bfde3fd31bb",
+      "reservation_id": "dc0b8ae683074b9241b5e1e61294f5c57a17246ddad82a3371c0101a33a46ade",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_214bb999087897ff7755f6743a49298d5cedf289d4ec377e",
+      "reservation_id": "60c0246e4b6d26b333572422a3c50187980221a91b88b29870fb8e90f0088dd4",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_f424216ff02c96aeee1c5167932c88465556da0bace5624d",
+      "reservation_id": "af9b97e7c8819c3209c44e73e6e38001ac9db78234bec063613e251c90133439",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_b816c69dff78369ab73601af9386a9e9000e60cba316d890",
+      "reservation_id": "710fb34bfc90a0d7a5504c728e9a7f5e981c0939537bd1bd58344321ff2b1a98",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_64e443e47e950edef5b905e79506bfaf93c89c163724b580",
+      "reservation_id": "f93c6587b5c9b607b41a86ff3a9ebb3a48df509557ce6432ad00586db3c2c01c",
+      "run_id": "run-1792305090229756156-146cdc1874b8db61"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_dfe7e296f39f4f93a992bae459e9c76f92b31ffa74f3b8a9",
+      "reservation_id": "51ed5fe8096fda5b9b30f99059e782c0bfd0495544d15d247e5f6003e6aeaf05",
+      "run_id": "run-1792305137948941016-013edc5852f08381"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_4e69c71b496f3f5745ae86cb231a276be989879df39ab103",
+      "reservation_id": "aa7a618502efcaf195eaf3ae83e23ba35ca47f0d4492bf9dd941f9933f224e25",
+      "run_id": "run-1792305137948941016-013edc5852f08381"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_187b0578c205da1bc2be3d069e44fd3ea642bf67d9ae95d0",
+      "reservation_id": "80fb3e36ba4712f3d63db509def1b0ff3e34af7b6f0ca05f366cf1f5d5411810",
+      "run_id": "run-1792305137948941016-013edc5852f08381"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_00e63683fa90a5a7ba8958e82873842f1ffb1063506ddf64",
+      "reservation_id": "6f74d2627a551e50af634e5adc2af4c2cf2ca48e8d8b69e0280a98b78aecd46a",
+      "run_id": "run-1792305137948941016-013edc5852f08381"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_a06f16dcc144a4eabba401e7fabb0626554c09183a6d7f71",
+      "reservation_id": "6c852d4c710152ef0e4869bf07245835e7164711371730e69f7eae6755014b87",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_ce161fd961b1cf404b766103eb3edca96ec6c7466797e78e",
+      "reservation_id": "5df12e256639de8ab032b4f5d5448dca7943df71ede7077597bf1dbf01fdfcd4",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_bef7784b1ba19d19f7782f4cec5b8e3e8273f66d95860e31",
+      "reservation_id": "1c4d0ea260e5493f3c0b40fa71e7159500ec0ce86cce443fd85c6d5976857d7f",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_5de938a533432b2becf1cf4d061db7a98cefe678de86adb6",
+      "reservation_id": "6ac5991e6eabc2c2ba6a789f0edb123927e05570b0998ca0ba457424a8f04cbb",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_7e8b0e3be028bcb1faddd100cf7eda731a0bab5e9e3f0d28",
+      "reservation_id": "73a2b8565ca1bf0e1e64c17d4c33387e905af6cdf16ce167eb4e7fe3a7568a00",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_6449d43d9a678e9e611624161677e97e1b093828990d4181",
+      "reservation_id": "dc920d90b78aa82e755b205de79870a855d1072e2992e7a3312aa72b36cc6cc0",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_a30504ab021b945a65688943fcebc4d286d1669b15622c8b",
+      "reservation_id": "393596b705385f07de6819a0f8566de6875252e76d8b88b2224e60c0f75a86e1",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_ba8555cccf6fb0b0925d13917606be2b03f302f11b071650",
+      "reservation_id": "56df2ea9918ecc2b0e68e0cc8b3e03e978e05a116e873029ebdfed9a6d8b234c",
+      "run_id": "run-1792305207396336017-b528ab2a117cc994"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_ff89c879f63edd46a7a36f10b0b23ad0465e2412ceaf0b91",
+      "reservation_id": "f7028c861c7b02cb20eff4d58c1a5819bc6341c36a7a9fa56fc0abacccfe4c6f",
+      "run_id": "run-1792305262565269739-389e19299b2a2368"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_d7fc2af374c841efea72eaa74e683c4830b6984b9850c42a",
+      "reservation_id": "4c2431882abeeb96e4eb8eaffa6dabfc56d1f5b2c039bbc4b109552075e59b16",
+      "run_id": "run-1792305262565269739-389e19299b2a2368"
+    },
+    {
+      "job_id": null,
+      "observation_known": true,
+      "operation_id": "operation_1df0318381d780a73402a5b8f907230c8f9871e973d4bf3d",
+      "reservation_id": "7876f403220a0b5a6efb590d623d35f69ebd601f234ab68a78d85d0354e3b7da",
+      "run_id": "run-1792305262565269739-389e19299b2a2368"
+    }
+  ],
+  "owner": "owner",
+  "previous89v2_failure_cause": "UNKNOWN; unchanged",
+  "prior_history_sha256": "cba9612964da448146ae65c08546a8f007c24583e307a2dde1f752463aedea5f",
+  "prior_known_full_tokens_lower_bound": 564496,
+  "prior_native_known": 72,
+  "prior_native_unknown": 1,
+  "prior_unique_native_entries": 73,
+  "qualification": false,
+  "schema": "consolidation_native_v3",
+  "source": "3baf016cb9feb8d31986a4c3f73b857dbdcc02af",
+  "used": {
+    "active_millis": 41700000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 314572800,
+    "external_calls": 75,
+    "model_turns": 109,
+    "provider_input_bytes": 914358272,
+    "tokens": 117866496
+  },
+  "window": "consolidation-explicit-v3"
+}
