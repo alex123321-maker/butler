@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,6 +28,28 @@ func TestConsolidationControlledSlowPagingIntegration(t *testing.T) {
 		t.Fatal("slow control cannot consume a native window")
 	}
 	runConsolidationPairedScreen(t, false)
+	var report struct {
+		Calls []*consolidationScreenCall `json:"calls"`
+		Slots []*consolidationScreenSlot `json:"slots"`
+	}
+	raw, err := os.ReadFile(filepath.Join(os.Getenv("BUTLER_CONSOLIDATION_SCREEN_PROOF"), "screen.json"))
+	if err != nil || json.Unmarshal(raw, &report) != nil {
+		t.Fatal("complete slow-control report required")
+	}
+	paged := map[string]bool{}
+	for _, call := range report.Calls {
+		for _, proposal := range call.Proposals {
+			var args readcontrol.Args
+			if proposal.ToolName == readcontrol.Open && json.Unmarshal([]byte(proposal.ArgsJSON), &args) == nil && args.Offset > 0 {
+				paged[call.SlotID] = true
+			}
+		}
+	}
+	for _, slot := range report.Slots {
+		if slot.Arm == "consolidated" && !paged[slot.ID] {
+			t.Fatal("every consolidated arm must prove a real subsequent-page proposal")
+		}
+	}
 }
 
 type consolidationSlowControlProvider struct{ transport.ModelProvider }

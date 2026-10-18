@@ -124,7 +124,11 @@ func (p *consolidationReadControl) StartRun(ctx context.Context, r transport.Sta
 }
 func (p *consolidationReadControl) open(id string, r *consolidationControlRun, offset int) transport.EventStream {
 	s := r.refs[r.index]
-	args, _ := json.Marshal(readcontrol.Args{SourceID: s.ID, Revision: s.Revision, AccessRevision: s.AccessRevision, Hash: s.Hash, Offset: offset, MaxChars: 8192})
+	maxChars := 8192
+	if os.Getenv("BUTLER_CONSOLIDATION_SLOW_CONTROL") == "1" {
+		maxChars = 4096
+	}
+	args, _ := json.Marshal(readcontrol.Args{SourceID: s.ID, Revision: s.Revision, AccessRevision: s.AccessRevision, Hash: s.Hash, Offset: offset, MaxChars: maxChars})
 	e := transport.NewToolCallRequestedEvent(id, p.Name(), transport.ToolCallRequest{ToolCallRef: fmt.Sprintf("%s-open-%d-%d", id, r.index, offset), ToolName: readcontrol.Open, ArgsJSON: string(args)})
 	e.Usage = &transport.Usage{InputTokens: 120, OutputTokens: 30, TotalTokens: 150}
 	return nativeScriptedStream(e)
