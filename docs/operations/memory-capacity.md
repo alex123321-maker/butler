@@ -25,6 +25,17 @@ finite reservation; this profile does not promise simultaneous native inference
 throughput.1-CPU race and2+1/2+2-CPU race windows missed their targets and remain
 unsupported at this SLO. Native cloud latency/quality requires its own evidence.
 
+Record the effective resource settings when reproducing this candidate: the
+foreground client has 2 CPUs/2 GiB, PostgreSQL has 2 CPUs/1 GiB, `shared_buffers=64MB`,
+`max_connections=32` and `max_wal_size=128MB`. The application pool maximum is 2.
+Orchestrator already exposes `BUTLER_POSTGRES_MAX_CONNS`; set it to `2` and keep
+`BUTLER_POSTGRES_MIN_CONNS` at most `2` for a staged reproduction. Its default
+maximum of 10 is a different pool profile. Capture the effective values rather
+than inferring them from flags or a Compose filename. These settings describe
+the controlled memory workload; full service/tool/provider latency still needs
+its corresponding evidence. This task does not change the primary Compose
+resources or restart its database.
+
 Keep PostgreSQL, the external deletion manifest and original assets together in
 the backup plan. pgvector entries are rebuildable derivatives, whereas accepted
 heads, primary transcript/effects, jobs and spend history are durable evidence.
