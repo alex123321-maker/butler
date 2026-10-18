@@ -35,6 +35,24 @@ Execution requires an independent exact seal review. No retry, selective replay,
 NULL substitution, main activation or semantic qualification follows from this
 prospective recipe. Early failures retain all12 original outcome slots.
 
+The root coordinator independently reviewed the exact preseal
+`313283a37164f322d967c5acb023a04274447b372913354d3c45b94fc722e3e3`,
+source `9a0fd8c805e36ef36d64fee52d38da542a50f233`. All834 production Go files
+match the current root candidate byte-for-byte. The ten retained artifact hashes,
+source/prepared manifests, fresh seven-store snapshot, private-parent permissions
+and untouched original namespace were independently checked. Actual PG/race/vet
+passes43 named events with no failures/skips; the exact compiled offline controls
+pass10 parents and32 children. The separate closed145 fixture passes26 events,
+and the bounded copier passes7 controls. These are preparation observations,
+without reviewer authentication or inference.
+
+The exact one-use whole12 execution is admitted under that seal only. Its old
+145-turn inclusive charge is imported once, new maximum144 native entries and96
+read quotes remain bounded, and the same auth lock must cover fresh checks,
+clone, execution and exact handback. The original frozen corpus/rubric, past
+failures and unknowns remain immutable. No result or qualification is implied
+until closure and independent all-original review.
+
 The final offline source is `9a0fd8c805e36ef36d64fee52d38da542a50f233`, staged at
 `/srv/storage/butler/agents/issue88-native-v8-20261018/snapshots/recipe-source-v3`.
 `reports/native-v8-preseal-v1` pins prepared SHA256
