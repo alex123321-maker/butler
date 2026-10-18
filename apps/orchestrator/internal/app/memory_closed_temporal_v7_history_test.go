@@ -28,11 +28,20 @@ type closedTemporalV7Manifest struct {
 	Operator           consolidationHistoryRef   `json:"operator_accounting"`
 	SetupFailure       consolidationHistoryRef   `json:"zero_auth_setup_failure"`
 	SetupOutcomes      consolidationHistoryRef   `json:"zero_auth_setup_outcomes"`
-	Future             struct {
-		Container, Database, Schema, Window, Receipt string
-		Present, Table                               *bool
-		Count                                        *int
-	} `json:"future90"`
+	Future             closedFuture90            `json:"future90"`
+}
+
+type closedFuture90 struct {
+	Container, Database, Schema, Window, Receipt string
+	Present, Table                               *bool
+	Count                                        *int
+}
+
+func validateClosedFuture90(f closedFuture90) error {
+	if f.Container != "issue86-20261016-pg" || f.Database != "memory_read_test" || f.Schema != "experience_native_v1" || f.Window != "experience-explicit-v1" || f.Receipt != "public.issue90_native_windows" || f.Present == nil || *f.Present || f.Table == nil || f.Count == nil || *f.Count != 0 {
+		return errors.New("exact unconsumed future90 namespace receipt required")
+	}
+	return nil
 }
 
 // Usage is inclusive only for the experiment owner/day. Historical Oct15 and
@@ -50,11 +59,15 @@ type closedTemporalV7History struct {
 }
 
 func closedTemporalV7Leaf(priorRaw, ledgerRaw, outcomesRaw []byte, entries map[int64][]byte, previous *temporalV5History, day string, deadline time.Time) (budget.Units, temporalV5CurrentUsage, error) {
+	return closedTemporalLeaf(priorRaw, ledgerRaw, outcomesRaw, entries, previous, day, deadline, "butler.consolidation.predecessor88.v3", "issue88-v7-current-day-carry:")
+}
+
+func closedTemporalLeaf(priorRaw, ledgerRaw, outcomesRaw []byte, entries map[int64][]byte, previous *temporalV5History, day string, deadline time.Time, format, prefix string) (budget.Units, temporalV5CurrentUsage, error) {
 	ledgerRaw = temporalEmptyOriginalAggregates(ledgerRaw, "entries", "foreground")
 	if err := consolidationV2Corroborate(priorRaw, ledgerRaw, outcomesRaw, entries, day); err != nil {
 		return budget.Units{}, temporalV5CurrentUsage{}, err
 	}
-	used, usage, err := consolidationValidateTemporalLeafMinimum(priorRaw, ledgerRaw, previous, day, deadline, "butler.consolidation.predecessor88.v3", "issue88-v7-current-day-carry:", 0)
+	used, usage, err := consolidationValidateTemporalLeafMinimum(priorRaw, ledgerRaw, previous, day, deadline, format, prefix, 0)
 	if err != nil {
 		return used, usage, err
 	}
@@ -149,6 +162,10 @@ func closedTemporalV7Inventory(raw, prior []byte, previous *temporalV5History, r
 // validated seven-store inventory. The one added V7 schema is corroborated
 // against its full original ledger, not removed by an unchecked schema name.
 func closedTemporalV7AllOwners(raw, oldRaw, ledgerRaw []byte) error {
+	return closedTemporalAllOwners(raw, oldRaw, ledgerRaw, temporalV7Schema)
+}
+
+func closedTemporalAllOwners(raw, oldRaw, ledgerRaw []byte, targetSchema string) error {
 	ledgerRaw = temporalEmptyOriginalAggregates(ledgerRaw, "entries", "foreground")
 	var now, old map[string]json.RawMessage
 	var dbs []map[string]json.RawMessage
@@ -167,7 +184,7 @@ func closedTemporalV7AllOwners(raw, oldRaw, ledgerRaw []byte) error {
 		for _, w := range windows {
 			var schema string
 			_ = json.Unmarshal(w["schema"], &schema)
-			if schema != temporalV7Schema || container != "butler-issue85-postgres" || database != "issue85_native_test" {
+			if schema != targetSchema || container != "butler-issue85-postgres" || database != "issue85_native_test" {
 				kept = append(kept, w)
 				continue
 			}
@@ -240,9 +257,8 @@ func loadClosedTemporalV7History(path, expected string) (*closedTemporalV7Histor
 		return nil, errors.New("bounded immutable closed V7 manifest required")
 	}
 	m := h.Manifest
-	f := m.Future
-	if f.Container != "issue86-20261016-pg" || f.Database != "memory_read_test" || f.Schema != "experience_native_v1" || f.Window != "experience-explicit-v1" || f.Receipt != "public.issue90_native_windows" || f.Present == nil || *f.Present || f.Table == nil || f.Count == nil || *f.Count != 0 {
-		return nil, errors.New("exact unconsumed future90 namespace receipt required")
+	if err = validateClosedFuture90(m.Future); err != nil {
+		return nil, err
 	}
 	root := filepath.Dir(path)
 	read := func(ref consolidationHistoryRef) ([]byte, error) {
