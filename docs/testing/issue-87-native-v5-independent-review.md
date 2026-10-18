@@ -99,7 +99,7 @@ Reports: `/srv/storage/butler/agents/issue87-native-v5b-20261018/reports/native-
 |full-ledger.json|c51b06b2a04ce92d6e901ef59e35584715c4d128e0e35f85ab32f46b84f724a4|
 |strategy-accounting.json|34d50a1507de92b458b127cbaff023ae5378084060bd989af8cd0a99d4f2e4ea|
 |native-capture-diagnosis.json|406adbba9b36c7e9098dee692c0bb9d0c7cc2475b13f5c8c9890e82feeaff83c|
-|Repository independent-review JSON|593cedc0e5914fc9f596b64e06531a4c30a3dbf61daf6635789847e611174a83|
+|Repository independent-review JSON|905db7e2fdd413cdbf644aede853eb0df9c255b218fdaf08ed192298c4fe37d4|
 
 The declared adoption rule fails overall, historical-memory and uncertainty
 noninferiority. Keep the adaptive release gate false. Issue87 permits this
