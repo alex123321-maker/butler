@@ -1,7 +1,17 @@
-# Coherent memory pilot: partial controlled timeline
+# Coherent memory pilot and lifecycle
 
-This test implements one shared PostgreSQL/owner/source/accepted-decision/task
-timeline for steps1..4 of issue92. Later receipts consume earlier state, rather
+The latest static `coherent-lifecycle-v12`, source `30939510`, passes all24
+sequential checkpoints and47 test/subtest events,0 failures/skips, race and vet.
+It uses the selected adaptive-off prefix and actual temporal readiness predicate.
+The separate79-event constructor/Doctor proof is in
+[effective composition](issue-92-effective-composition.md). Native calls/auth are0;
+qualification constants remain false. Positive qualified startup and native
+quality/full-cost acceptance remain separate gates.
+
+The initial test implements one shared PostgreSQL/owner/source/accepted-decision/task
+timeline for steps1..4 of issue92; the complete lifecycle extends it through
+verified experience, consolidation, withdrawal, restore and ENOSPC.
+Later receipts consume earlier state, rather
 than adding scores from unrelated component fixtures. It records every completed
 phase, actual ordinary model input/tool continuation, durable input receipt,
 model job/attempt, reservation/scope, source pin and covered summary. Failure
@@ -11,8 +21,9 @@ native answer-quality gate.
 The inherited-owner context in coherent foreground receipts before v10 limits
 them to their recorded mechanics. They do not prove ordinary-worker source
 authorization or final publication. Neutral-worker v10 failed after19 checkpoints
-and never reached backup/restore. The current fix needs a fresh complete run;
-all original receipts and failures remain immutable.
+and never reached backup/restore. V11 subsequently passed the full mechanics with
+an explicitly forced-adaptive prefix; v12 supplies the fresh static receipt.
+All original receipts and failures remain immutable.
 
 The authenticated owner reports a natural explicit language preference through
 the existing source API. A real bounded candidate job, admitted by the ordinary
@@ -323,7 +334,7 @@ The events SHA256 is
 the failed timeline-progress SHA256 is
 `e4f9da7636c1bbc404218950c2b3bb905aa0a363fb121ada6c43430c589b19c6`.
 
-## Current neutral-worker complete receipt
+## Neutral-worker v11 complete receipt
 
 `coherent-lifecycle-v11`, frozen source `4d7e6a68`, passed the complete new window
 on ssh laba with all24 sequential checkpoints and47 passed test/subtest events,
@@ -364,3 +375,35 @@ workload SLO or real owner review. Earlier v8/v9 fixture limitations and the
 failed v10 receipt remain unchanged. The new foreground2s source-proof ceiling
 was declared before this window; parent deadlines and fresh post-wait authority
 checks remain active. Primary laba deployment and activation flags are unchanged.
+
+## Current static neutral-worker complete receipt
+
+`coherent-lifecycle-v12`, source `30939510`, repeats the complete same-state
+24-checkpoint window on the selected static composition. All47 test/subtest
+events passed,0 failed/skipped, race and vet. The source archive was rechecked
+after completion. Its dedicated PostgreSQL, client and network were removed;
+reports and database/backup evidence remain under
+`/srv/storage/butler/agents/issue92-20261018/reports/coherent-lifecycle-v12`.
+
+The prefix now obtains an absent adaptive store through the production
+configuration function. Actual Broker-opened source bytes/pins replace the
+adaptive answer envelope; the simple task has0 tools and0 adaptive plan rows.
+Temporal annotations follow actual profile/qualification readiness rather than
+a forced true fixture field. This is the same bootstrap-only delta covered by
+the focused79-event constructor/Doctor report, not a changed native answer rubric.
+
+All subsequent state is still shared: the actual independently verified artifact,
+owner-accepted lesson, dispatched UNKNOWN/no-final/no-replay, selected
+consolidation, actual custom dump and fresh restore, newest deletion anchor,
+idempotent physical erasure and unchanged complete effect/budget ledgers.
+The actual8KiB ENOSPC capsule leaves its failed deletion uncommitted. Native
+calls/auth are0; current qualification constants remain false. This controlled
+window does not establish future qualified-on startup or human-reviewed quality.
+
+| Artifact | SHA256 |
+| --- | --- |
+|events.jsonl|fbdc04135953b36840bc1f116a947e6128623a38611279645a5e269c6e5c2ef1|
+|timeline/timeline.json|7f21ab7ae973100d71e7158618c1c2ebaaac97f48a5c709d5e8c8750c9587a36|
+|timeline/timeline-experience.json|575502591b40773d6469ee2afc51ad65bedb6dbb146012b7715817a00d4bb939|
+|timeline/timeline-lifecycle.json|6233c791a6f6331b57499044edc58bf49b498903230de4e8f69994972ee3511a|
+|evidence.sha256|454c9884f6d70eb786ac23aa540343c66c2aba493556377e0eea594e2d8fa42c|

@@ -15,10 +15,12 @@ The original versioned windows and their failures remain retained separately.
 All coherent foreground receipts before v10 have an inherited-owner fixture
 limitation: they establish the recorded physical mechanics, not ordinary-worker
 authorization or final publication. Neutral-worker v10 failed after19 checkpoints.
-The current neutral-worker lifecycle-v11 passes all24 checkpoints and47 test/subtest
-events with race/vet. Fresh composition-v7 passes464 events,0 failures/skips,
-race and vet, including the mandatory immutable-history fixture. Earlier table
-rows retain their original limits.
+The latest static neutral-worker lifecycle-v12, source30939510, passes all24
+checkpoints and47 test/subtest events with race/vet. The separate effective-v2
+constructor/Doctor delta passes79 events,0 failures/skips. The broader
+composition-v7 at sourcee09638dd passed464 events,0 failures/skips, race and vet,
+including the mandatory immutable-history fixture; its receipt predates the
+bootstrap-only delta. Earlier table rows retain their original limits.
 
 | Source / window | Observation | Limits |
 | --- | --- | --- |
