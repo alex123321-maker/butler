@@ -1,5 +1,13 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Lease-supervisor cancellation retains a fixed Core reason when current authority
+cannot be checked, the exact ownership token changes, or renewal fails. A stream
+cancellation no longer discards that owning cause. Private storage details stay
+out of the diagnostic; ordinary parent cancellation and transport failures remain
+separate. Polling bounds, source/authority guards, conservative charges and
+cleanup write authority are unchanged. Earlier generic cancellations remain
+unclassified.
+
 Trusted model instructions declare the existing one-proposal-per-response
 execution contract, including when the operator customizes or disables the base
 prompt. Multiple required reads/actions are proposed one at a time, after the

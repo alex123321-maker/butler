@@ -713,6 +713,16 @@ this signal; expiry is not a successful renewal or a generic backend outage.
 
 ## 18.1 Cancel
 
+The owning lease supervisor retains a private, fixed cancellation cause when a
+current authority read fails, an exact lease/run/session/fence comparison changes,
+or lease renewal fails. If stream consumption observes the resulting
+`context.Canceled`, Core preserves that cause for failure reporting without
+storage/provider details. The error still classifies as cancelled and retains
+the existing ownership/renewal sentinel. Ordinary parent cancellation and an
+independent transport error keep their own cause. This adds no new cleanup
+authority, lease retry, guard interval or permission to dispatch/publish. Older
+generic cancellation records cannot be retroactively classified from this change.
+
 Run может быть отменён:
 - пользователем;
 - системой;
