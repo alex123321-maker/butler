@@ -1,0 +1,486 @@
+{
+  "format": "butler.consolidation.cancellation-controls-review.v1",
+  "created_at": "2026-10-18T04:57:09.112175+00:00",
+  "scope": "Prospective fixed Core cancellation diagnosis and real Flow/Broker/PG paging mechanics only; no native semantic qualification.",
+  "native89_v2_closed_snapshot": {
+    "status": "NO_GO_INCOMPLETE",
+    "source": "9bf3c6c925076ebcf9bb3919c2f79b1e39bbb4f1",
+    "original_slots": 9,
+    "completed": 2,
+    "failed": 1,
+    "not_executed": 6,
+    "new_native_entries": 11,
+    "known": 11,
+    "unknown": 0,
+    "full_tokens": 80521,
+    "inclusive_quote_model_turns_at_closure": 49,
+    "cause": "unclassified historical Core context cancellation; no retrospective cause assigned",
+    "safe_evidence_sha256": "0396a50a3934552d6f32821a1e547203fd1435537e5e2952edfda17d05ad55ab",
+    "main_handback": "exact CAS, actual paid-discovery HTTP200 and fresh private snapshot passed"
+  },
+  "diagnostic_runtime_commits": [
+    "3b14e673315f6eda2d1df6bd27cc17752085b48e",
+    "c3d9123cc3af670de4d94952c436d2cb106cdd16"
+  ],
+  "red_owning_cause": {
+    "control_source": "8839a877bc3439f91187b6551abb912e2c3ae48a",
+    "failed_controls": 2,
+    "sha256": "1bad0e485b690327069ca26bcbe6a7240d19ec8664fbe85401a67f4516c4ba84"
+  },
+  "red_joined_independent_cause": {
+    "runtime_source": "3b14e673315f6eda2d1df6bd27cc17752085b48e",
+    "control_source": "c3d9123cc3af670de4d94952c436d2cb106cdd16",
+    "failed_controls": 4,
+    "sha256": "3d48f0f1e3202f508db8ba29ae80c80ecf9493a835df338010092cce49b6433b"
+  },
+  "final_local_race": {
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "vet": "passed",
+    "sha256": "c16293d3a8f707d8c68748e0a47520fbbf223a90c02708aa4cb37a3513449754"
+  },
+  "linux_race": {
+    "source": "c3d9123cc3af670de4d94952c436d2cb106cdd16",
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "race": true,
+    "native_calls": 0,
+    "auth": 0,
+    "network": "none",
+    "client_cpu": 1,
+    "client_memory_bytes": 2147483648,
+    "compiler_and_modules": "cached_offline"
+  },
+  "linux_artifacts": {
+    "source.sha256": "aae4f39d1a946726e3f681a07caa5a6f8f1e8662e6361572af1830234451c95d",
+    "events.jsonl": "f4983f207025193a63ecc01885a2a3afcfacf14d5028296469e0837d99b57cf6",
+    "vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "summary.json": "b024ec48e81282589f24bff5e8241316d23e4d4e9b17b8968f4f5e7e34a1dbd0",
+    "evidence.sha256": "8ca2f36a319b70cd0faa6f3114c9fe6507bd8187d64ce1a27cff6e9a4ea451f3"
+  },
+  "controls": [
+    {
+      "label": "slow-paging-v1",
+      "source": "c4a2ddeba5a094fb1bbe941549f6f2ea4d705445",
+      "full_logical_slots": 9,
+      "completed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "native_calls": 0,
+      "auth_imported": false,
+      "scripted_model_entries": 32,
+      "confirmed_scripted_tools": 23,
+      "subsequent_page_proposals": 0,
+      "consolidated_arms_with_subsequent_pages": 0,
+      "input_renewals": [
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 2,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 4,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 4,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 2,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        }
+      ],
+      "slow_or_failed_metadata_queries": null,
+      "resources": {
+        "controlled_only": true,
+        "native_calls": 0,
+        "auth_imported": false,
+        "client_cpu": 1,
+        "client_memory_bytes": 2147483648,
+        "postgres_cpu": 1,
+        "postgres_memory_bytes": 1073741824,
+        "separate_pg": true,
+        "six_native_stores_modified": false,
+        "compiler_and_modules": "cached_offline",
+        "pool_max_connections": 2,
+        "model_delay_seconds": 10
+      },
+      "artifacts": {
+        "source.sha256": "65730ef415cec791e505dfb14cf0a123817cd09ef49470a46115948ddcd0c5f1",
+        "evidence.sha256": "81fc965be1d8d8fe7a4ad845c73fba9d899a3a4b0bede462defaf14e22d37c14",
+        "events.jsonl": "c35cbb7f8c8c25cccebe4a85d08d87e0d495df6a9c95e09e444f7a149cad3333",
+        "environment.json": "ee8dc54717f6602019c462861710991badee24923a23bb3a691d77f19c991bb6",
+        "tool-broker": "43ee2273c287b04203cb8c4d6e0ea5813379df3a6b8bd14be5c0ab89a505c86c",
+        "screen/screen.json": "8122eb1b81c8605f4a5bf60a9e58ebc0f85a7736d793dc2394bea28fcccb9f59",
+        "screen/full-ledger.json": "088bc72c45689c2281ebd693308a540c9a2a2912d1965642f98b9af6ebe5aba2",
+        "screen/slow-control-pg.json": "afd2e1208b85e798b74d6288e246a58a6088c0c4f96fa1e8c3a34434ebb60c82"
+      }
+    },
+    {
+      "label": "slow-paging-v2",
+      "source": "cca629b097c9a4b61f4921572b6ee82d39803d44",
+      "full_logical_slots": 9,
+      "completed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "native_calls": 0,
+      "auth_imported": false,
+      "scripted_model_entries": 35,
+      "confirmed_scripted_tools": 26,
+      "subsequent_page_proposals": 3,
+      "consolidated_arms_with_subsequent_pages": 3,
+      "input_renewals": [
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 2,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 53,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 66,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 62,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        }
+      ],
+      "slow_or_failed_metadata_queries": [
+        {
+          "shape": "other",
+          "statement_sha256": "0d780a35475d4485bf2a6c45ba5dd9a7b255c887a265a1c53f53fcb320cc0c88",
+          "millis": 0,
+          "diagnostic": "cancelled",
+          "Acquired": 1,
+          "Idle": 1,
+          "Total": 2
+        },
+        {
+          "shape": "other",
+          "statement_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "millis": 0,
+          "diagnostic": "cancelled",
+          "Acquired": 1,
+          "Idle": 1,
+          "Total": 2
+        }
+      ],
+      "resources": {
+        "controlled_only": true,
+        "native_calls": 0,
+        "auth_imported": false,
+        "client_cpu": 1,
+        "client_memory_bytes": 2147483648,
+        "postgres_cpu": 1,
+        "postgres_memory_bytes": 1073741824,
+        "separate_pg": true,
+        "six_native_stores_modified": false,
+        "compiler_and_modules": "cached_offline",
+        "pool_max_connections": 2,
+        "model_delay_seconds": 10
+      },
+      "artifacts": {
+        "source.sha256": "94e9cb66d936265e6808051a1c21c104d04d313321c5c14cc7df94fb9f87d54c",
+        "evidence.sha256": "5296cf8e5f8365725a9ecdd70381177142dd1c235f369b0d2d4deef35439d174",
+        "events.jsonl": "05c17a302c64d282a31927693b6870a9dbd892348468b68f9c1e6740fd66d61b",
+        "environment.json": "ee8dc54717f6602019c462861710991badee24923a23bb3a691d77f19c991bb6",
+        "tool-broker": "43ee2273c287b04203cb8c4d6e0ea5813379df3a6b8bd14be5c0ab89a505c86c",
+        "screen/screen.json": "34b972c4a63d1149e761db37fa84b97a7cef660e404f1afaf3754b85b5e0b4d3",
+        "screen/full-ledger.json": "adffe14baf6555c49379344ee1afc93c0bf803788e5303dd585562157651832c",
+        "screen/slow-control-pg.json": "d1a9949a260d535d72f6d487fb94a48ce2d0ea4de9dec444fe48d9a6b4b30e4d"
+      }
+    },
+    {
+      "label": "slow-paging-v3",
+      "source": "c3d9123cc3af670de4d94952c436d2cb106cdd16",
+      "full_logical_slots": 9,
+      "completed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "native_calls": 0,
+      "auth_imported": false,
+      "scripted_model_entries": 35,
+      "confirmed_scripted_tools": 26,
+      "subsequent_page_proposals": 3,
+      "consolidated_arms_with_subsequent_pages": 3,
+      "input_renewals": [
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 4,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 7,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 4,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 5,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        },
+        {
+          "class": "input_claim_renew",
+          "diagnostic": "ok",
+          "millis": 1,
+          "rows": 1
+        }
+      ],
+      "slow_or_failed_metadata_queries": [
+        {
+          "shape": "other",
+          "statement_sha256": "9505cacb7c710ed17125fcc6cb3669e8ddca6c8cd8af6a31f6b3cd64604c3098",
+          "millis": 112,
+          "diagnostic": "",
+          "Acquired": 1,
+          "Idle": 0,
+          "Total": 1
+        }
+      ],
+      "resources": {
+        "controlled_only": true,
+        "native_calls": 0,
+        "auth_imported": false,
+        "client_cpu": 1,
+        "client_memory_bytes": 2147483648,
+        "postgres_cpu": 1,
+        "postgres_memory_bytes": 1073741824,
+        "separate_pg": true,
+        "six_native_stores_modified": false,
+        "compiler_and_modules": "cached_offline",
+        "pool_max_connections": 2,
+        "model_delay_seconds": 10
+      },
+      "artifacts": {
+        "source.sha256": "aae4f39d1a946726e3f681a07caa5a6f8f1e8662e6361572af1830234451c95d",
+        "evidence.sha256": "aa2a25839c2b458d772d50b78f9a6d973e877bfbd0e86b8d81a981bef52695a7",
+        "events.jsonl": "1fae485ccd22e7e2b7e7c2f51e1e386daf5aa9b3346c0b1950d149e7db43a9a3",
+        "environment.json": "ee8dc54717f6602019c462861710991badee24923a23bb3a691d77f19c991bb6",
+        "tool-broker": "43ee2273c287b04203cb8c4d6e0ea5813379df3a6b8bd14be5c0ab89a505c86c",
+        "screen/screen.json": "b89410a6220fe4508a32c47dfd4518801796533c4cd779e566f7022034761cae",
+        "screen/full-ledger.json": "fbc04ae8435781c371832aad47418d487a8aa3bdfe2af3e10fb1be6b2d9c9711",
+        "screen/slow-control-pg.json": "c3a2b98541a9cf9c0a3fa835eaa32923d58a0faca191f4a46b2f18b95f358e9b"
+      }
+    }
+  ],
+  "limitations": [
+    "Old native89v2 origin is still unknown: neither delayed scripted controls nor the distinct diagnostic defect proves it.",
+    "V1 used8192-character reads and had no subsequent page; V2/V3 require actual4096 subsequent pages in all three consolidated arms.",
+    "Nonterminal zero-millisecond cancelled task-assignment/rollback queries in passing controls are retained, not relabelled as a native failure.",
+    "Private reasons add no current authority, timeout widening, source bypass, cleanup write permission, refund, replay or provider retry.",
+    "No later native89 cohort has been prepared or authorized by these records; later spending/stores require a new current-day inventory."
+  ],
+  "owner_context_static_audit": {
+    "sources": [
+      "9bf3c6c925076ebcf9bb3919c2f79b1e39bbb4f1",
+      "c3d9123cc3af670de4d94952c436d2cb106cdd16"
+    ],
+    "foreground": "screen creates a Background deadline context; ordinary helper admits ingress with a local owner actor but starts durable worker.Run from the original neutral context",
+    "background": "PollModelPolicies and ProcessOne receive owner at entry; scheduling AccessTx/PrepareSourcesTx uses empty actor plus policyChecker; job Admit, release, publication and provider contexts use jobs.Store.Context, which masks owner actor and attaches the exact claimChecker",
+    "finding": "no inherited owner actor bypass found in these catalog body-release paths; this is static audit, not a new dynamic actor-negative proof",
+    "future_fixture": "pass explicit neutral worker/poll contexts and assert absent owner actor at provider entry before any new prospective cohort"
+  }
+}

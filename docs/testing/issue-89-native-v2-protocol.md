@@ -214,5 +214,58 @@ records only durable state and source-reference arguments; SHA256
 Exact opaque CAS handback, actual main paid-discovery HTTP200 and a new private
 snapshot all passed; the common auth lock was released. No selective retry,
 refund, schema reopening, completed treatment comparison or savings claim was
-made. A further native cohort needs a proven fix and a separately reviewed
-latest49-leaf carry and full prospective seal.
+made. The49-turn leaf is a closed historical snapshot. A further native cohort
+needs a separately reviewed latest inclusive current-day inventory, including
+subsequent cohorts and every declared store, plus a full prospective seal.
+
+## Prospective cancellation diagnostics and paging controls
+
+The historical cancellation origin remains unknown. A separate controlled
+reproduction established a diagnostic defect: Core's lease supervisor could
+cancel a stream for a current authority-read error or changed ownership, then
+report only the resulting `context canceled`. Both controls failed on the old
+runtime. The narrow fix retains a private fixed reason through Core's existing
+failure path. It does not change authority, polling intervals, cancellation,
+cleanup write permissions or retry behavior. Generic parent cancellation stays
+generic. A follow-up red/green control showed that joined or wrapped typed
+provider failures and deadlines must retain their independent diagnosis; all
+four newly failing combinations pass with that boundary preserved.
+
+Exact source `c3d9123cc3af670de4d94952c436d2cb106cdd16` passed all13 targeted
+controls with the race detector on both Windows and cached offline Linux
+Go1.27.2; targeted vet also passed. Linux evidence SHA256 is
+`8ca2f36a319b70cd0faa6f3114c9fe6507bd8187d64ce1a27cff6e9a4ea451f3`.
+
+On `ssh laba`, three isolated controls ran the whole nine-slot schedule through
+the actual durable input service, Flow, Broker and PostgreSQL with pool size2.
+Scripted foreground model events wait ten seconds, while the existing claim,
+authority and source checks remain active. V1 completed nine slots but used
+8192-character reads, so it did not exercise subsequent pages. V2 and the fixed
+V3 use4096-character reads and require actual subsequent-page proposals in all
+three consolidated arms. Each completed all nine slots,35 scripted model
+entries and26 tool calls. In V3 all14 input renewals updated exactly one row,
+taking1–7ms; one successful112ms metadata query remains in the trace. There were
+zero failed/skipped tests. Each client used one CPU and2GiB; its dedicated PG
+used one CPU and1GiB. These controls made zero native calls and imported no auth.
+They did not reproduce the historical native cancellation.
+
+Read-only review of both the exact native source and fixed source found that
+foreground admission's local owner actor is not inherited by `worker.Run`.
+Background entry points receive owner context, but policy scheduling masks it
+with an empty actor and the exact policy checker; admission, release, provider
+and publication contexts use the empty actor plus the exact claim checker.
+This is a static boundary review. A future fixture should pass neutral worker
+contexts explicitly and assert actor absence at provider entry.
+
+The [safe controls review](fixtures/issue89/cancellation-controls-review.json)
+retains red/green hashes, all three original control windows and trace hashes,
+resource receipts, the static context audit and the unchanged native failure.
+Its SHA256 is
+`040b03a81d15d2d028d19e48bb1e4765e672c395b6ba85b01e15aa92efbf93d6`.
+V3 evidence SHA256 is
+`aa2a25839c2b458d772d50b78f9a6d973e877bfbd0e86b8d81a981bef52695a7`;
+its report remains at
+`/srv/storage/butler/agents/issue89-20261016/reports/slow-paging-v3`.
+The diagnostic fix establishes prospective observability; it does not establish
+the old native cause, a native semantic pass or a savings result. No new native
+cohort was prepared by this work.
