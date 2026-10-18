@@ -8,6 +8,12 @@ model job/attempt, reservation/scope, source pin and covered summary. Failure
 also saves the partial trace. It does not activate the deployment or claim a
 native answer-quality gate.
 
+The inherited-owner context in coherent foreground receipts before v10 limits
+them to their recorded mechanics. They do not prove ordinary-worker source
+authorization or final publication. Neutral-worker v10 failed after19 checkpoints
+and never reached backup/restore. The current fix needs a fresh complete run;
+all original receipts and failures remain immutable.
+
 The authenticated owner reports a natural explicit language preference through
 the existing source API. A real bounded candidate job, admitted by the ordinary
 production registry, proposes its exact source quote. It cannot accept itself.

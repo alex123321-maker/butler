@@ -4,9 +4,15 @@ This is controlled component/composition evidence, not completed issue77/92
 acceptance or a production activation. The primary laba deployment remains
 unchanged. Synthetic data is not human-reviewed real user workload.
 
-All below ran on `ssh laba` with cached Go1.27.2/modules, actual isolated
+The controlled rows below ran on `ssh laba` with cached Go1.27.2/modules, actual isolated
 PostgreSQL and race detection. No cloud credentials or inference were mounted.
 The original versioned windows and their failures remain retained separately.
+
+All coherent foreground receipts before v10 have an inherited-owner fixture
+limitation: they establish the recorded physical mechanics, not ordinary-worker
+authorization or final publication. Neutral-worker v10 failed after19 checkpoints.
+The current publication/privacy fixes still require a fresh full lifecycle and
+combined composition pass; the earlier table rows do not qualify this candidate.
 
 | Source / window | Observation | Limits |
 | --- | --- | --- |
@@ -94,7 +100,8 @@ instruction and content-free denial reason passed98 controlled checks with no
 failures/skips, race and vet. Model compliance still requires a new full cohort.
 
 New89 and90 screens, a fresh88 semantic screen, independent effect review, complete usage and
-declared capacity remain separate. Issue87's incomplete native NO_GO is retained,
+declared capacity remain separate. Issue87's earlier incomplete window and
+the later complete v5 diagnostic rejection remain retained,
 with adaptive retrieval code-unqualified and disabled. Closed native windows are
 not selectively rerun or reported as passes. A larger finite capacity is a new
 prospective complete cohort, never a refund or rewrite of previous spending.
