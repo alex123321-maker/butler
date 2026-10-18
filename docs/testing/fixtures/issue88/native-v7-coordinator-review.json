@@ -1,0 +1,59 @@
+{
+  "format": "butler.temporal.native-v7.coordinator-review.v1",
+  "source_revision": "69fde66c3661857372b4f1a8414d2be09c12a0b9",
+  "git_tree": "0dd1fdb4efadf05e5335a38f4c3e4c0c1e7a39b5",
+  "preseal_review_sha256": "7fdfa3dd05526d49cc3d3f5a2c2ebbf832190c3a38df8f7ce0e7c5bf9f5a40eb",
+  "prepared_sha256": "47e08ac8b5ffe77ff1a604b7b815bc19e4c223fb34aeedfeaf6787f6dab330a9",
+  "history_sha256": "2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e",
+  "non_test_go_files_matching_coordinator_runtime": 834,
+  "coordinator_runtime_reference": "e09638dd composition-v7",
+  "fresh_seven_store_inventory_unchanged": true,
+  "schema_absent": true,
+  "one_use_receipt_count": 0,
+  "carry": {
+    "inclusive_model_turns": 109,
+    "previous73_contained_once": true,
+    "known_native_entries": 108,
+    "unknown_native_entries": 1,
+    "known_full_tokens_lower_bound": 849406,
+    "historical161_preserved_separately": true,
+    "distinct_adaptive226_preserved_separately": true
+  },
+  "local_controls": {
+    "source": "69fde66c",
+    "passed_events": 53,
+    "failures": 0,
+    "skips": 0,
+    "race": true,
+    "vet": true,
+    "evidence_sha256": "33f143c7476126f5f039c06e3ea4929b057848201b6c0ad9504717814b1242a3",
+    "same_fixture_red_cases": 5,
+    "red_review_sha256": "aecdaf02bb77130cfacc5e4865c48c156196e0a38fd8c39254928a28aacca7e9"
+  },
+  "compiled_preparation": {
+    "mandatory_parents": 11,
+    "passed_children": 58,
+    "failures": 0,
+    "skips": 0,
+    "exact_pin_check": true,
+    "nonroot_standalone_runner": true
+  },
+  "profile": {
+    "model": "gemini-3.8-flash-high",
+    "maximum_output_tokens": 32768,
+    "model_millis": 300000,
+    "foreground_source_check_millis": 2000,
+    "foreground_execution_millis": 2400000,
+    "whole_window_millis": 57600000,
+    "outer_and_broker_millis": 58500000,
+    "earlier_utc_day_deadline_retained": true,
+    "scheduled_originals": 12,
+    "maximum_native_entries": 144,
+    "maximum_read_tools": 96
+  },
+  "execution_scope": "one complete fresh twelve-original cohort; recheck pins and inventory under common auth flock, exact opaque handback and actual main discovery required; no old replay or selective retry",
+  "prior_preseal_v1_withdrawn_auth0": true,
+  "primary_application_activation": false,
+  "qualification": false,
+  "final_static_bootstrap_composition_still_requires_its_own_check": true
+}
