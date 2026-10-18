@@ -6,9 +6,12 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+sys.dont_write_bytecode = True
 
 spec = importlib.util.spec_from_file_location('temporal_recovery', pathlib.Path(__file__).with_name('memory-temporal-auth-recovery.py'))
 recovery = importlib.util.module_from_spec(spec)
