@@ -253,6 +253,7 @@ type experienceNativeRuntime struct {
 type experienceNativeForeground struct {
 	ContextTokens   int
 	TemporalEnabled bool
+	Provider        transport.ModelProvider
 }
 
 func experienceNativeForegroundConfig(cfg flow.Config, result providerfactory.Result, controller *budget.Controller, selected *experienceNativeForeground) flow.Config {
@@ -283,7 +284,7 @@ func newExperienceNativeRuntime(t *testing.T, pool *pgxpool.Pool, cat *catalog.S
 
 func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, anchor, directory string, recipient *experienceRecipient, addresses experienceNativeAddresses, policy budget.Policy, prompt, arm string, subset []catalog.SourceRef, expires time.Time, foreground *experienceNativeForeground) *experienceNativeRuntime {
 	t.Helper()
-	if foreground != nil && (foreground.ContextTokens <= 4096 || foreground.ContextTokens > 1048576) {
+	if foreground != nil && (foreground.ContextTokens <= 4096 || foreground.ContextTokens > 1048576 || foreground.Provider == nil) {
 		t.Fatal("finite explicit foreground context required")
 	}
 	if addresses.reserved == nil {
@@ -353,6 +354,9 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		reads, err := NewMemoryReads(pool, cat, AdaptiveReadOptions{Experience: r.lessons, sourceSubset: subset})
 		if err != nil {
 			t.Fatal(err)
+		}
+		if r.foreground != nil {
+			reads.temporal = temporalReadConfigured(r.foreground.TemporalEnabled, providerfactory.Result{Provider: r.foreground.Provider, ModelName: "gemini-3.8-flash-high"}, r.budgets)
 		}
 		handler, err := readcontrol.NewHandler(coreToken, reads)
 		if err != nil {
