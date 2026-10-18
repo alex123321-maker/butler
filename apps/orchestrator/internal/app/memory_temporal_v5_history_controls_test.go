@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/memory/memorytest"
 )
 
 func temporalPositiveDayFixture(t *testing.T) (map[string]any, map[string]any, string, time.Time, budget.Units) {
@@ -55,6 +57,32 @@ func temporalPositiveDayFixture(t *testing.T) (map[string]any, map[string]any, s
 		db("issue86-20261016-pg", "memory_read_test", 5432, []string{"consolidation_native_v1", "public"}),
 	}}
 	return current, prior, day, deadline, quoted
+}
+
+func TestTemporalV5PositiveCarryOneUseIntegration(t *testing.T) {
+	pool := memorytest.Database(t)
+	var now time.Time
+	if pool.QueryRow(context.Background(), `SELECT clock_timestamp()`).Scan(&now) != nil {
+		t.Fatal("controlled database clock unavailable")
+	}
+	h := &temporalV5History{Hash: strings.Repeat("a", 64), Manifest: temporalV5HistoryManifest{Day: now.UTC().Format("2006-01-02"), Deadline: now.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)}, Carry: budget.Units{ModelTurns: 2, Tokens: 2162688, ActiveMillis: 600000, ProviderInputBytes: 16777216}}
+	proof := t.TempDir()
+	used, err := temporalApplyV5History(context.Background(), pool, proof, h)
+	if err != nil || used != h.Carry {
+		t.Fatal("positive original charge import failed", err)
+	}
+	for _, hash := range []string{h.Hash, strings.Repeat("b", 64)} {
+		copy := *h
+		copy.Hash = hash
+		if _, err = temporalApplyV5History(context.Background(), pool, t.TempDir(), &copy); err == nil {
+			t.Fatal("same or another hash imported the predecessor twice")
+		}
+	}
+	var actual budget.Units
+	var reserved, models int
+	if err = pool.QueryRow(context.Background(), `SELECT used_json,(SELECT count(*) FROM execution_budget_reservations),(SELECT count(*) FROM execution_model_attempts)+(SELECT count(*) FROM memory_model_attempts) FROM execution_budget_scopes WHERE kind='owner_day'`).Scan(&actual, &reserved, &models); err != nil || actual != h.Carry || reserved != 1 || models != 0 {
+		t.Fatal("carry refunded, duplicated or counted as another model attempt", actual, reserved, models)
+	}
 }
 
 func TestTemporalV5CurrentDayPositiveCarryRetainsUnknownUsage(t *testing.T) {

@@ -314,19 +314,49 @@ func temporalCarryV5History(ctx context.Context, pool *pgxpool.Pool, proof strin
 	if err != nil {
 		return budget.Units{}, err
 	}
+	return temporalApplyV5History(ctx, pool, proof, h)
+}
+
+func temporalApplyV5History(ctx context.Context, pool *pgxpool.Pool, proof string, h *temporalV5History) (budget.Units, error) {
+	if h == nil || len(h.Hash) != 64 {
+		return budget.Units{}, errors.New("validated current-day history required")
+	}
 	var now time.Time
 	if pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil || now.UTC().Format("2006-01-02") != h.Manifest.Day || !now.Before(h.Manifest.Deadline) {
 		return budget.Units{}, errors.New("frozen prospective UTC day expired")
 	}
 	policy := temporalNativePolicy(h.Carry)
-	ledger := budget.NewLedger(pool)
-	scope, err := ledger.Ensure(ctx, budget.ScopeSpec{Kind: "owner_day", OwnerID: temporalNativeOwner, SubjectID: h.Manifest.Day, Limits: policy.Day, Deadline: h.Manifest.Deadline})
+	if policy.Validate() != nil {
+		return budget.Units{}, errors.New("finite current-day allowance required")
+	}
+	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return budget.Units{}, err
 	}
-	_, fresh, err := ledger.Reserve(ctx, budget.Request{OwnerID: temporalNativeOwner, OperationID: "issue88-v5-current-day-carry:" + h.Hash, ScopeIDs: []string{scope.ID}, Charge: h.Carry, CostKnown: true})
+	defer tx.Rollback(ctx)
+	// This schema is itself a new immutable cohort. A one-use domain receipt
+	// prevents a second carry, including another hash or a concurrent caller,
+	// before the normal reservation->scope budget lock order is acquired.
+	if _, err = tx.Exec(ctx, `CREATE TABLE temporal_native_current_day_carry(singleton BOOLEAN PRIMARY KEY CHECK(singleton),history_sha256 TEXT NOT NULL CHECK(length(history_sha256)=64))`); err != nil {
+		return budget.Units{}, errors.New("current-day carry already initialized")
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO temporal_native_current_day_carry VALUES(true,$1)`, h.Hash); err != nil {
+		return budget.Units{}, errors.New("current-day carry initialization denied")
+	}
+	ledger := budget.NewLedger(pool)
+	scope, err := ledger.EnsureTx(ctx, tx, budget.ScopeSpec{Kind: "owner_day", OwnerID: temporalNativeOwner, SubjectID: h.Manifest.Day, Limits: policy.Day, Deadline: h.Manifest.Deadline})
+	if err != nil {
+		return budget.Units{}, err
+	}
+	if scope.Used != (budget.Units{}) {
+		return budget.Units{}, errors.New("successor owner/day scope already charged")
+	}
+	_, fresh, err := ledger.ReserveTx(ctx, tx, budget.Request{OwnerID: temporalNativeOwner, OperationID: "issue88-v5-current-day-carry:" + h.Hash, ScopeIDs: []string{scope.ID}, Charge: h.Carry, CostKnown: true})
 	if err != nil || !fresh {
 		return budget.Units{}, errors.New("current-day carry already consumed or unavailable")
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return budget.Units{}, err
 	}
 	receipt, _ := json.Marshal(map[string]any{"history_sha256": h.Hash, "historical_owner_day": h.Historical, "current_day": h.Manifest.Day, "current_day_deadline": h.Manifest.Deadline, "current89_carry": h.Carry, "current89_usage": h.Usage, "new88_limits": policy.Day, "carry_is_provider_attempt": false, "historical_deadlines_unchanged": true, "invoice_cost": "unknown"})
 	if temporalWriteExclusive(filepath.Join(proof, "operator-allowance-amendment.json"), receipt) != nil {
