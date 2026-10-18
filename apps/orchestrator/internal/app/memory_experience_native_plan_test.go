@@ -57,9 +57,7 @@ func validateExperienceNativeMechanicalInputs(c experienceNativeCorpus) error {
 			default:
 				return errors.New("unsupported fixed environment")
 			}
-			switch item.PermissionProfile {
-			case "prepare_and_verify_exact_resource", "one_prepare_attempt_and_verify_exact_resource", "prepare_and_verify_beta_only_no_alpha_memory_grants", "prepare_and_verify_exact_resource_with_current_remaining_source_grants", "inspect_and_check_only", "read_and_verify_existing_effect_only":
-			default:
+			if _, err := experienceNativePermissionTools(item.PermissionProfile); err != nil {
 				return errors.New("unsupported current permission profile")
 			}
 			if group == 0 {
@@ -79,6 +77,17 @@ func validateExperienceNativeMechanicalInputs(c experienceNativeCorpus) error {
 		}
 	}
 	return nil
+}
+
+func experienceNativePermissionTools(profile string) ([]string, error) {
+	switch profile {
+	case "inspect_and_check_only", "read_and_verify_existing_effect_only":
+		return []string{"extension.project.inspect", "extension.project.check"}, nil
+	case "prepare_and_verify_exact_resource", "one_prepare_attempt_and_verify_exact_resource", "one_prepare_attempt_and_bounded_verification_exact_resource", "prepare_and_verify_beta_only_no_alpha_memory_grants", "prepare_and_verify_exact_resource_with_current_remaining_source_grants":
+		return []string{"extension.project.inspect", "extension.project.prepare-patch", "extension.project.check"}, nil
+	default:
+		return nil, errors.New("unsupported frozen permission profile")
+	}
 }
 
 func TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC(t *testing.T) {
@@ -103,6 +112,10 @@ func TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC(t *testing.T) {
 }
 
 func TestExperienceNativeMechanicalInputsFailClosed(t *testing.T) {
+	actual, err := experienceNativeCorpusFiles()
+	if err != nil || validateExperienceNativeMechanicalInputs(actual) != nil {
+		t.Fatal("the full frozen actual corpus is outside the mechanical input contract")
+	}
 	fresh := func() experienceNativeCorpus {
 		c := experienceWindowFixture()
 		c.Originals.CommonProfile = json.RawMessage(`{"answer_language":"ru","no_other_preferences":true}`)

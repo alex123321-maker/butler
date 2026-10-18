@@ -59,20 +59,21 @@ type experienceNativeCurrentEffect struct {
 // deliberately outside it and must finish before this receives a real provider.
 // No case oracle, note body, recipe or alternative original enters this runner.
 type experienceNativeCollector struct {
-	t            *testing.T
-	ctx          context.Context
-	provider     *experienceNativeProvider
-	databases    *experienceNativeClones
-	corpus       experienceNativeCorpus
-	seeds        experienceNativeSeeds
-	proof        string
-	anchor       string
-	deadline     time.Time
-	policy       budget.Policy
-	sourcePolicy budget.Policy
-	addresses    experienceNativeAddresses
-	originals    [4]experienceNativeOriginal
-	skill        skills.Record
+	t                    *testing.T
+	ctx                  context.Context
+	provider             *experienceNativeProvider
+	databases            *experienceNativeClones
+	corpus               experienceNativeCorpus
+	seeds                experienceNativeSeeds
+	proof                string
+	anchor               string
+	deadline             time.Time
+	policy               budget.Policy
+	sourcePolicy         budget.Policy
+	addresses            experienceNativeAddresses
+	originals            [4]experienceNativeOriginal
+	skill                skills.Record
+	expectedEnvironments map[string]string
 }
 
 func (c *experienceNativeCollector) collect() {
@@ -191,7 +192,44 @@ func (c *experienceNativeCollector) runtime(t *testing.T, pool *pgxpool.Pool, di
 	c.provider.mu.Lock()
 	c.provider.casePool = pool
 	c.provider.mu.Unlock()
-	return newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, directory, recipient, c.addresses, policy, c.corpus.Originals.CommonCurrentInstruction, arm, subset, c.deadline)
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, directory, recipient, c.addresses, policy, c.corpus.Originals.CommonCurrentInstruction, arm, subset, c.deadline)
+	if err := checkExperienceNativeEnvironment(c.expectedEnvironments, recipient.snapshot().Config, r.environment); err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+func checkExperienceNativeEnvironment(expected map[string]string, config experienceRecipientConfig, actual string) error {
+	if expected == nil {
+		return nil // controlled component fixtures without an operator preseal
+	}
+	profile := "project-v1-normal"
+	if config.Version == "v2" {
+		profile = "project-v2-normal"
+	} else if config.Outage {
+		profile = "project-v1-receipt-outage"
+	}
+	if len(expected) != 3 || !experienceNativeSHA(expected[profile]) || expected[profile] != actual {
+		return fmt.Errorf("current compiled runtime environment differs from native preseal")
+	}
+	return nil
+}
+
+func TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile(t *testing.T) {
+	pins := map[string]string{"project-v1-normal": strings.Repeat("a", 64), "project-v1-receipt-outage": strings.Repeat("b", 64), "project-v2-normal": strings.Repeat("c", 64)}
+	for _, profile := range []struct {
+		name   string
+		config experienceRecipientConfig
+	}{{"project-v1-normal", experienceRecipientConfig{Version: "v1"}}, {"project-v1-receipt-outage", experienceRecipientConfig{Version: "v1", Outage: true}}, {"project-v2-normal", experienceRecipientConfig{Version: "v2"}}} {
+		t.Run(profile.name, func(t *testing.T) {
+			if checkExperienceNativeEnvironment(pins, profile.config, pins[profile.name]) != nil {
+				t.Fatal("exact compiled current environment denied")
+			}
+			if checkExperienceNativeEnvironment(pins, profile.config, strings.Repeat("d", 64)) == nil || checkExperienceNativeEnvironment(map[string]string{}, profile.config, pins[profile.name]) == nil {
+				t.Fatal("changed or missing compiled environment accepted")
+			}
+		})
+	}
 }
 
 func (c *experienceNativeCollector) finish(t *testing.T, status, blocker string) {
@@ -501,4 +539,61 @@ func (c *experienceNativeCollector) exportDatabase(name string, pool *pgxpool.Po
 	}
 	out["experience_native_source_history"] = raw
 	return c.provider.writeNew(name, out)
+}
+
+// Load every actually created case export, including failed cases, from the
+// durable allocation set. A missing export makes cost completeness unknown;
+// never silently omit it or sum mutable cloned scope projections instead.
+func (c *experienceNativeCollector) exportUniqueQuotes(history experienceNativeLineage) error {
+	costs, names, err := c.collectUniqueQuotes(history)
+	if err != nil {
+		return err
+	}
+	return c.provider.writeNew("unique-quoted-costs.json", map[string]any{"quotes": costs, "allocated_database_exports": names, "native_captured_entries": len(c.provider.entries), "native_entry_usage_rule": "missing or unreported total remains unknown/lower-bound; quotes are not measured usage", "invoice_cost": "unknown"})
+}
+
+func (c *experienceNativeCollector) collectUniqueQuotes(history experienceNativeLineage) (experienceNativeQuotedCosts, []string, error) {
+	ctx, stop := context.WithTimeout(context.Background(), 15*time.Second)
+	defer stop()
+	// A CREATE may have succeeded even if connection/state recording failed.
+	// Include those retained databases too; a missing owning export is unknown.
+	rows, err := c.provider.global.Query(ctx, `SELECT slot_id FROM experience_native_case_databases d WHERE window_id=$1 AND (state='created' OR EXISTS(SELECT 1 FROM pg_database p WHERE p.datname=d.database_name)) ORDER BY slot_id`, c.provider.window)
+	if err != nil {
+		return experienceNativeQuotedCosts{}, nil, fmt.Errorf("durable cost allocation population unavailable")
+	}
+	names := []string{"source-database.json"}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return experienceNativeQuotedCosts{}, nil, err
+		}
+		sequence := 0
+		for _, slot := range c.provider.slots {
+			if slot.ID == id && slot.Kind == "control" {
+				sequence = slot.Sequence
+			}
+		}
+		if sequence < 10 {
+			rows.Close()
+			return experienceNativeQuotedCosts{}, nil, fmt.Errorf("durable cost allocation is outside the frozen schedule")
+		}
+		names = append(names, fmt.Sprintf("case-%03d-database.json", sequence))
+	}
+	if err = rows.Err(); err != nil {
+		rows.Close()
+		return experienceNativeQuotedCosts{}, nil, err
+	}
+	rows.Close()
+	databases := []map[string]json.RawMessage{}
+	for _, name := range names {
+		raw, err := os.ReadFile(filepath.Join(c.proof, name))
+		var record map[string]json.RawMessage
+		if err != nil || len(raw) > 64*1024*1024 || json.Unmarshal(raw, &record) != nil {
+			return experienceNativeQuotedCosts{}, names, fmt.Errorf("full allocated cost export missing: %s", name)
+		}
+		databases = append(databases, record)
+	}
+	costs, err := experienceNativeUniqueQuotes(databases, history)
+	return costs, names, err
 }

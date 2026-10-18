@@ -551,6 +551,56 @@ cleanup receipt is `collector-v63/controlled-prune-v2/receipt.json`, manifest ha
 `a3a65ae8542da8643365a1522d7ad7959644f40ee7f3e2a3d6f904b71497a4ab`.
 No failed/native database was removed and no admission was refunded. Native90
 entry/history/preseal integration and the actual57-slot native run remain pending.
+
+The next offline storage/entry proof is `entry-v70` under the same isolated lab
+root: actual PostgreSQL, race and vet pass6 named events,0 failed/skipped.
+Its evidence-list SHA256 is
+`4a4c127d038d9d0e93eea6ad49b4ec0238b4b27c546152eaabee1c468589a105`,
+and mechanics stream SHA256 is
+`cf0ae0c5c770db7eb09d8f5183efb3487baf977ea9bc0de0fcc1972f942b6d15`.
+The one-use public domain receipt rejects reopening under the same or a changed
+preseal; early source/history setup exports survive before provider construction.
+A missing case export denies cost completeness, including a physical database
+whose successful CREATE was followed by an unacknowledged state update. Three
+compiled environment profiles accept only their exact sealed fingerprint.
+This is an offline mechanics proof, with no native inference or auth import.
+
+The opt-in entry names start with `TestNativeExperience`, so ordinary mandatory
+`TestExperience` composition does not gain an optional fixture skip. The entry
+dispatches a recursively validated closed-history recipe rather than a numeric
+145/181 total. A later closed leaf needs its reviewed validator and current
+seven-store proof; accepting an earlier supported format does not establish it
+as the newest state. The native runner, source/artifact freeze, auth serialization
+and final closed-leaf companion remain prospective until their exact review.
+
+`entry-offline-v71` is retained as a failed offline preseal: the mechanical
+whitelist omitted original04's existing frozen permission token. Neither JSON
+corpus nor hidden rubric changed. The validator and ordinary task constructor
+now share one explicit mapping; unknown permission tokens deny before task
+creation. `entry-v72` proves all twelve frozen original/control permission
+profiles against actual finite mandates and current exact-resource grants.
+Its original04 check dispatches one actual preparation under that exact profile,
+retains the persisted recipient effect with UNKNOWN/no final, and sends no
+replacement. Actual PostgreSQL/race/vet pass26 events,0 failed/skipped; evidence
+SHA256 `9ebeeae0ca248552c9da3f8d8c57d32fec30ddbbb237960e70c4a8a8071e1541`.
+
+`entry-offline-v72` passes the real nonroot prepare/check using five immutable
+executables, the recursively validated closed145 fixture, script syntax and
+seven closure-population/NULL controls. Its evidence SHA256 is
+`4aa40680bcf2ba5cb50f305eb753b714218cd22527415371c5b789516f38d8c0`.
+That immutable history fixture is a reader/preseal proof, not a claim that145
+remains the newest owner/day population after a successor begins. No retained
+native store was written, no auth imported and no model called.
+
+The later narrow `auth-recovery-v73` proof checks the final recovery script's
+exited-collector fence, private regular encrypted file requirements and all seven
+closure controls:10 passing Python standard-library cases, no auth or network.
+It rejects Docker inventory/inspect errors, running or unproven process states,
+public/symlink/oversized/malformed opaque files, copied-product changes, missing
+owning exports and forged native admission joins. Its evidence SHA256 is
+`c57df9d36be0465675f599cbd2777f41d7d5384be47d3a572fd56224d9b229bf`.
+These scripts only manage isolated evidence and opaque process pipes; core
+execution, authorization, memory and model transport remain Go.
 The same manifest-checked cleanup was applied to successful v64 after its receipt
 was verified (`collector-v64/controlled-prune-v1/receipt.json`), preserving its49
 database exports and all charged entries. Together these two controlled cleanups

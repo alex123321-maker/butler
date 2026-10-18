@@ -482,6 +482,10 @@ func (r *experienceNativeRuntime) acceptCurrentProfile(t *testing.T, ctx context
 
 func (r *experienceNativeRuntime) createTask(t *testing.T, ctx context.Context, id, instruction, resource, permissions string) task.Record {
 	t.Helper()
+	names, err := experienceNativePermissionTools(permissions)
+	if err != nil {
+		t.Fatal("current frozen permission profile rejected")
+	}
 	key := "web:" + id
 	if _, _, err := r.sessions.CreateSession(ctx, session.CreateSessionParams{SessionKey: key, UserID: experienceNativeOwner, Channel: "web", MetadataJSON: "{}"}); err != nil {
 		t.Fatal(err)
@@ -489,10 +493,6 @@ func (r *experienceNativeRuntime) createTask(t *testing.T, ctx context.Context, 
 	g, err := r.goals.PutGoal(experienceNativeActor(ctx, id+":goal"), goal.GoalRequest{Goal: actionauth.GoalPolicy{Kind: "objective", Status: "active", Title: instruction, Purpose: "experience_current_task", ExpiresAt: r.expires}})
 	if err != nil {
 		t.Fatal("current owner goal admission", err)
-	}
-	names := []string{"extension.project.inspect", "extension.project.prepare-patch", "extension.project.check"}
-	if permissions == "inspect_and_check_only" || permissions == "read_and_verify_existing_effect_only" {
-		names = []string{"extension.project.inspect", "extension.project.check"}
 	}
 	allowed := append(append([]string{}, names...), "http.request", readcontrol.Search, readcontrol.Open, readcontrol.Neighbors, "skills.search", "skills.load")
 	effects := []actionauth.Effect{actionauth.EffectRead}
@@ -516,6 +516,79 @@ func (r *experienceNativeRuntime) createTask(t *testing.T, ctx context.Context, 
 		t.Fatal("current resource extension grant", err)
 	}
 	return record
+}
+
+func TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration(t *testing.T) {
+	pool := memorytest.Database(t)
+	ctx, stop := context.WithTimeout(context.Background(), 90*time.Second)
+	defer stop()
+	corpus, err := experienceNativeCorpusFiles()
+	if err != nil || validateExperienceNativeMechanicalInputs(corpus) != nil {
+		t.Fatal("actual frozen mechanical corpus unavailable")
+	}
+	directory := t.TempDir()
+	anchor := filepath.Join(directory, "anchor")
+	manifest := catalog.NewFileManifest(anchor)
+	if manifest.Initialize() != nil {
+		t.Fatal("fresh controlled privacy anchor unavailable")
+	}
+	recipient, err := newExperienceRecipient(directory, experienceRecipientConfig{Version: "v1", Ready: "true", Outage: true, Files: map[string]string{"alpha": "Controlled actual original04 permission\nready=false\n", "beta": "Controlled beta\nready=false\n"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer recipient.close()
+	policy := experienceNativeSourcePolicy()
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, manifest), anchor, directory, recipient, newExperienceNativeAddresses(t), policy, corpus.Originals.CommonCurrentInstruction, experienceNativeArms[0], nil, time.Now().Add(time.Hour))
+	defer r.close()
+	for _, item := range append(append([]experienceNativeTask{}, corpus.Originals.Tasks...), corpus.Controls.Cases...) {
+		t.Run(item.ID, func(t *testing.T) {
+			names, err := experienceNativePermissionTools(item.PermissionProfile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			id := experienceDigest("actual-frozen-permission:" + item.ID)
+			record := r.createTask(t, ctx, id, item.Instruction, item.Resource, item.PermissionProfile)
+			_, mandate, _, err := r.goals.ReadTaskAuthority(ctx, record.TaskID)
+			if err != nil || len(mandate.Extensions) != 1 || len(mandate.Extensions[0].Tools) != len(names) || mandate.Budget.ModelTurns != policy.Mandate.ModelTurns || mandate.Budget.ExternalCalls != policy.Mandate.ExternalCalls || mandate.ExpiresAt.After(r.expires.Add(time.Microsecond)) || len(mandate.Effects) != len(names)-1 {
+				t.Fatal("frozen profile changed the ordinary finite mandate")
+			}
+			grant, err := r.extensions.Control(experienceNativeActor(ctx, id+":read-grant"), extensions.ControlRequest{Operation: "task_access", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID}})
+			if err != nil || grant.Access == nil || grant.Access.TaskRevision != record.Revision || grant.Access.ConstraintsRevision != record.ConstraintsRevision || grant.Access.ManifestHash != r.pack.Digest || grant.Access.Generation != r.generation || len(grant.Access.Tools) != len(names) || len(grant.Access.Resources) != 1 || grant.Access.Resources[0].Origin != egresstest.Origin || grant.Access.Resources[0].PathPrefix != "/project/"+item.Resource || grant.Access.ExpiresAt.After(r.expires.Add(time.Microsecond)) {
+				t.Fatal("frozen profile changed current exact-resource extension authority")
+			}
+			for _, name := range names {
+				found, inMandate := false, false
+				for _, allowed := range grant.Access.Tools {
+					found = found || allowed == name
+				}
+				for _, allowed := range mandate.Extensions[0].Tools {
+					inMandate = inMandate || allowed == name
+				}
+				if !found || !inMandate {
+					t.Fatal("ordinary grant omitted an exact frozen tool")
+				}
+			}
+			if item.ID != "original-04" {
+				return
+			}
+			r.acceptCurrentProfile(t, ctx, record)
+			out := r.execute(t, ctx, record, id, item.Instruction, &experienceOriginalControlProvider{})
+			if out.Result == nil || out.Result.RunID == "" || out.Result.CurrentState == commonv1.RunState_RUN_STATE_COMPLETED {
+				t.Fatal("actual original04 permission did not preserve its unresolved failure")
+			}
+			evidence, err := r.journal.GetRunEvidence(ctx, out.Result.RunID)
+			unknown := 0
+			for _, action := range evidence {
+				if action.EffectState == actionauth.StateUnknown {
+					unknown++
+				}
+			}
+			var finals int
+			if err != nil || unknown != 1 || recipient.snapshot().Dispatches != 1 || len(recipient.snapshot().Entries) != 1 || pool.QueryRow(ctx, `SELECT count(*) FROM run_final_results WHERE run_id=$1`, out.Result.RunID).Scan(&finals) != nil || finals != 0 {
+				t.Fatal("original04 authority replayed or invented confirmation/final")
+			}
+		})
+	}
 }
 
 func (r *experienceNativeRuntime) execute(t *testing.T, ctx context.Context, record task.Record, id, text string, provider transport.ModelProvider) adaptiveNativeExecution {

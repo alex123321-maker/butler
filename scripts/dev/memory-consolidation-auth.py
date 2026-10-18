@@ -15,10 +15,13 @@ import sys
 
 mode, base_arg, label = sys.argv[1:4]
 base = pathlib.Path(base_arg).resolve()
-if mode not in ("clone", "return", "snapshot") or not re.fullmatch(r"/srv/storage/butler/agents/issue(?:88|89)-[A-Za-z0-9_-]+", str(base)) or not re.fullmatch(r"[A-Za-z0-9_-]+", label):
+if mode not in ("clone", "return", "snapshot") or not re.fullmatch(r"/srv/storage/butler/agents/issue(?:88|89|90)-[A-Za-z0-9_-]+", str(base)) or not re.fullmatch(r"[A-Za-z0-9_-]+", label):
     raise SystemExit("isolated handoff reference required")
 proof, private = base / "reports" / label, base / "private" / label
-schedule = proof / "scheduled-before-auth.json" if base.name.startswith("issue88-") else proof / "screen" / "initial-schedule.json"
+if base.name.startswith("issue90-"):
+    schedule = proof / "plan" / "schedule.json"
+else:
+    schedule = proof / "scheduled-before-auth.json" if base.name.startswith("issue88-") else proof / "screen" / "initial-schedule.json"
 if not (proof / "prepared").is_file() or not schedule.is_file():
     raise SystemExit("pre-auth complete schedule and immutable build required")
 
@@ -75,7 +78,7 @@ if mode == "clone":
     print(json.dumps({"main_active_work": active, "opaque_clone_saved": True, "ciphertext_sha256": hashlib.sha256(value.encode()).hexdigest(), "raw_material_printed": False}))
 elif mode == "return":
     expected = read_private(private / "expected-main.value")
-    latest_path = private / "auth-return.value" if base.name.startswith("issue88-") else proof / "screen" / "auth-return.value"
+    latest_path = private / "auth-return.value" if base.name.startswith(("issue88-", "issue90-")) else proof / "screen" / "auth-return.value"
     latest = read_private(latest_path)
     script = "BEGIN; CREATE TEMP TABLE consolidation_auth(value TEXT,kind TEXT) ON COMMIT DROP; COPY consolidation_auth FROM STDIN;\n"+latest+"\tnew\n"+expected+"\texpected\n\\.\n"+"""
 DO $handoff$ BEGIN

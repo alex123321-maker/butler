@@ -256,3 +256,34 @@ successful HTTP delivery nor usage. Missing usage remains NULL. Failed/native
 databases and original evidence are not recycled. Successful synthetic controlled
 clone data may be removed after immutable full exports and a verified receipt,
 using its exact manifest; that cleanup is not a native case reset or refund.
+
+## Native entry and opaque handback
+
+The offline prepare command pins all five immutable executable artifacts, the
+entire source inventory, mechanical corpus, exact policies, complete57 schedule
+and recursively validated latest closed owner/day history. Its nonroot prepare
+and check use the same read-only executable mounts as the eventual collector.
+Only an exact reviewed preseal and prepared-artifact hash permit the execute
+wrapper to take the common auth lock. The lock spans fresh opaque main clone,
+the whole comparison, exact main CAS, control-plane paid-tier project discovery
+and a new opaque main snapshot. Project discovery is not an inference/token
+probe; its invoice cost is unobserved separately from experiment model quotes.
+
+The native domain claim atomically writes a public receipt and creates the
+private global schema before migrations. A failed setup consumes that identity;
+another preseal cannot reopen the same cohort. Shared auth and the640 journal
+stay outside source/case clones. The source imports the inclusive historical
+charge once, before importing encrypted auth or creating the actual provider.
+The separately reserved private endpoint tuple is recorded before storage or
+provider setup and stays fixed across all runtime restarts.
+
+Normal failure paths return the latest durable encrypted auth row after import,
+or the unchanged unused opaque original before import. Abrupt-process recovery
+requires the exact domain receipt and an exited collector; it gives no task,
+model, retry or replacement authority. Any uncertain handback remains a failed
+window requiring reconciliation. Private evidence is retained on every exit.
+The content-free closure companion references the original complete outcome
+population, source/case exports, global journal, private artifact manifest and
+auth handback. It counts product admissions separately from captured provider
+entries, preserves product/native NULLs, and marks incomplete cost populations
+explicitly. It never changes an original outcome or supplies quality approval.

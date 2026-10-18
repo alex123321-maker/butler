@@ -153,8 +153,14 @@ func validateExperienceNativeLineage(history experienceNativeLineage) error {
 
 func prepareExperienceNativeSeal(now time.Time, sourceRoot string, corpus experienceNativeCorpus, history experienceNativeLineage, binaries map[string]string) (experienceNativeSeal, error) {
 	var seal experienceNativeSeal
-	if validateExperienceNativeLineage(history) != nil || !experienceNativeSHA(corpus.OriginalsSHA256) || !experienceNativeSHA(corpus.ControlsSHA256) || validateExperienceNativeMechanicalInputs(corpus) != nil {
-		return seal, errors.New("validated complete inclusive lineage and mechanical corpus required")
+	if err := validateExperienceNativeLineage(history); err != nil {
+		return seal, fmt.Errorf("complete inclusive lineage required: %w", err)
+	}
+	if !experienceNativeSHA(corpus.OriginalsSHA256) || !experienceNativeSHA(corpus.ControlsSHA256) {
+		return seal, errors.New("exact mechanical corpus hashes required")
+	}
+	if err := validateExperienceNativeMechanicalInputs(corpus); err != nil {
+		return seal, fmt.Errorf("fixed mechanical corpus rejected: %w", err)
 	}
 	deadline, err := experienceNativeWholeDeadline(now, history.Day, history.Deadline)
 	if err != nil {
