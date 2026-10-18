@@ -5,9 +5,14 @@ base=${1:?isolated issue92 root}
 label=${2:?fresh report label}
 [[ "$base" =~ ^/srv/storage/butler/agents/issue92-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current"); [[ "$src" == "$base/snapshots/"* ]] || exit 2
+history=${BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY:?immutable full v5 history fixture required}
+history_hash=${BUTLER_COMPOSITION_TEMPORAL_V5_HISTORY_SHA256:?reviewed history sha256 required}
+[[ "$history" == /srv/storage/butler/agents/issue88-*/reports/*/history && "$history_hash" =~ ^[a-f0-9]{64}$ ]] || exit 2
+test "$(sha256sum "$history/history.json" | cut -d' ' -f1)" = "$history_hash"
 proof=$base/reports/$label; test ! -e "$proof"; umask 077
 mkdir -p "$proof/postgres" "$base/.cache/go-build" "$base/.cache/go-tmp"
 find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha256"
+find "$history" -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/history-fixture.sha256"
 network=butler-issue92-$label-net; pg=butler-issue92-$label-pg
 created_pg=false; created_net=false
 cleanup(){
@@ -22,9 +27,10 @@ docker run --pull never -d --name "$pg" --network "$network" --network-alias pos
  pgvector/pgvector:pg17 -c shared_buffers=64MB -c max_connections=32 -c max_wal_size=128MB > "$proof/postgres-id"; created_pg=true
 for i in $(seq 1 60); do docker exec "$pg" pg_isready -h 127.0.0.1 -U butler -d memory_composition_test >/dev/null 2>&1 && break; [[ "$i" != 60 ]] || exit 1; sleep 1; done
 runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g --pids-limit 128 --security-opt no-new-privileges
- -v "$src:/src:ro" -v "$base/.cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -w /src
+ -v "$src:/src:ro" -v "$base/.cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$proof:/proof" -v "$history:/history:ro" -w /src
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/memory_composition_test?sslmode=disable'
+ -e BUTLER_TEMPORAL_V5_HISTORY_TEST_ROOT=/history
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/cache/broker-composition.test -e BUTLER_MEMORY_READ_APP_BINARY=/cache/tool-broker-composition
  -e BUTLER_BROKER_E2E_BINARY=/cache/tool-broker-composition -e BUTLER_EXTENSION_E2E_BINARY=/cache/extension-composition.test -e BUTLER_EXPERIENCE_HTTP_BINARY=/cache/http-composition.test -e BUTLER_EXPERIENCE_RECIPIENT_BROKER=1
  golang:1.27.2-bookworm)
@@ -37,6 +43,7 @@ while IFS= read -r name; do
 done < "$src/scripts/dev/memory-composition-required-tests.txt"
 "${runner[@]}" go vet ./internal/memory/experience ./internal/memory/factcontrol ./internal/skills ./internal/memory/doctor ./internal/memory/catalog ./internal/memory/jobs ./internal/memory/consolidation ./internal/memory/indexing ./internal/memory/semantic ./apps/orchestrator/internal/app ./apps/orchestrator/internal/api ./apps/tool-broker/internal/broker > "$proof/vet.log" 2>&1
 jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/tests.jsonl" > "$proof/summary.json"
-sha256sum "$proof/source.sha256" "$proof/binaries.sha256" "$proof/tests.jsonl" "$proof/vet.log" > "$proof/evidence.sha256"
+sha256sum --check --status "$proof/history-fixture.sha256"
+sha256sum "$proof/source.sha256" "$proof/history-fixture.sha256" "$proof/binaries.sha256" "$proof/tests.jsonl" "$proof/vet.log" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 cat "$proof/summary.json"

@@ -15,8 +15,9 @@ The original versioned windows and their failures remain retained separately.
 All coherent foreground receipts before v10 have an inherited-owner fixture
 limitation: they establish the recorded physical mechanics, not ordinary-worker
 authorization or final publication. Neutral-worker v10 failed after19 checkpoints.
-The current publication/privacy fixes still require a fresh full lifecycle and
-combined composition pass; the earlier table rows do not qualify this candidate.
+The current neutral-worker lifecycle-v11 passes all24 checkpoints and47 test/subtest
+events with race/vet. Combined composition-v6 is still pending; the earlier table
+rows do not qualify this candidate.
 
 | Source / window | Observation | Limits |
 | --- | --- | --- |
