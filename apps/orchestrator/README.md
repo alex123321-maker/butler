@@ -749,6 +749,11 @@ removes that generation's vectors and marks it irreversibly retired, preserving
 originals, jobs, quality and spend history. Active/busy/foreign/stale choices are
 rejected; retired rollback is denied. No inference or automatic pruning occurs.
 
+The finite10000-chunk capacity profile, mixed-workload measurement boundaries,
+backup/restore, rebuild/rollback, disk reserve and worker/budget recovery are
+documented in the [memory capacity runbook](../../docs/operations/memory-capacity.md).
+Controlled load measurements do not qualify native cloud response latency.
+
 ## Delegation foundation
 
 The internal delegation contract, tree admission/owner-control barrier, executor

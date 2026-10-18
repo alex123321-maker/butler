@@ -100,11 +100,13 @@ Server root: `/srv/storage/butler/agents/issue91-20261016/reports/`.
 |actual-local-v2/actual-local-index.json|0fbe0c2bd3008b603de8d0b2cfdfed8c412616997989840a705ef96fe485393a|
 |limit-v1/tests.jsonl|7dfcfe7229d5e67bd8c842f5e925be419f1a32f831238d30462276f65d7b6d9d|
 
-Independent summary/consolidation/lesson workers under an interactive workload,
-model queue contention, maintenance composition and end-to-end foreground SLO
-remain additional gates. The Store screen and serial local index slice cannot
-close issue91. Capacity does not establish complete memory retrieval, truthful
-answers, zero cost or readiness to activate new memory consumers.
+The later [combined capacity collection](issue-91-combined-capacity.md) adds
+actual summary/consolidation preemption, indexed ingestion, correction/deletion,
+complete221-request foreground windows, selected deployment-build resources and
+separate PostgreSQL shared-buffer restart evidence. All earlier failed windows
+remain visible there. The Store screen and serial local index slice alone cannot
+close issue91. Native quality/latency, complete lesson/lifecycle composition and
+readiness to activate new memory consumers require their own acceptance evidence.
 
 ## Actual interactive query during an owned index
 
