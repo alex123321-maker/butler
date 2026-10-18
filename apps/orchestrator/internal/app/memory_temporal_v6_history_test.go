@@ -28,6 +28,13 @@ type temporalV6Manifest struct {
 	OldLedger87                consolidationHistoryRef   `json:"original87_old_ledger"`
 	OldNative87                consolidationHistoryRef   `json:"original87_old_native"`
 	Predecessors87             []consolidationHistoryRef `json:"original87_predecessors"`
+	Future                     struct {
+		Schema  string `json:"schema"`
+		Window  string `json:"window_id"`
+		Present *bool  `json:"schema_present"`
+		Table   *bool  `json:"receipt_table_present"`
+		Count   *int   `json:"receipt_count"`
+	} `json:"future_window"`
 }
 
 type temporalV6History struct {
@@ -338,6 +345,9 @@ func loadTemporalV6History(path, expected string) (*temporalV6History, error) {
 	h := &temporalV6History{Hash: expected}
 	if err != nil || len(expected) != 64 || experienceDigest(string(raw)) != expected || json.Unmarshal(raw, &h.Manifest) != nil || h.Manifest.Format != "butler.temporal.native-history.v2" || h.Manifest.Owner != "owner" || h.Manifest.Schema != "memory_temporal_native_v6" {
 		return nil, errors.New("complete frozen temporal v6 history required")
+	}
+	if h.Manifest.Future.Schema != h.Manifest.Schema || h.Manifest.Future.Window != "temporal-explicit-v6" || h.Manifest.Future.Present == nil || *h.Manifest.Future.Present || h.Manifest.Future.Table == nil || h.Manifest.Future.Count == nil || *h.Manifest.Future.Count != 0 {
+		return nil, errors.New("fresh unconsumed v6 schema and one-use receipt required")
 	}
 	root := filepath.Dir(path)
 	read := func(ref consolidationHistoryRef) ([]byte, error) { return consolidationV2Read(root, ref) }

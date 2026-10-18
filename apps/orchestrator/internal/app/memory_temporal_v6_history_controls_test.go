@@ -91,7 +91,7 @@ func TestTemporalV6FrozenHistoryRejectsForgeries(t *testing.T) {
 	if err != nil || h.Carry.ModelTurns != 49 || h.Usage89.NativeEntries != 11 || h.Usage89.NativeKnownUsage != 11 || h.Usage89.KnownFullTokenLowerBound != 80521 || h.Usage87.NativeEntries != 98 || h.Usage87.NativeUnknownUsage != 1 {
 		t.Fatal("original complete population did not validate", err)
 	}
-	for _, name := range []string{"native_total", "omitted_bg_usage", "missing_seventh", "seventh_owner_attempt", "adaptive_native_usage", "adaptive_null_omitted", "adaptive_foreign_operation", "altered_recursive_manifest", "missing_old87_native"} {
+	for _, name := range []string{"native_total", "omitted_bg_usage", "missing_seventh", "seventh_owner_attempt", "adaptive_native_usage", "adaptive_null_omitted", "adaptive_foreign_operation", "altered_recursive_manifest", "missing_old87_native", "future_schema_exists", "future_receipt_consumed", "future_proof_omitted"} {
 		t.Run(name, func(t *testing.T) {
 			dir := temporalV6CopyHistory(t, root)
 			var m temporalV6Manifest
@@ -153,6 +153,14 @@ func TestTemporalV6FrozenHistoryRejectsForgeries(t *testing.T) {
 				change(&m.Previous, func(p map[string]any) { p["schema"] = "forged" })
 			case "missing_old87_native":
 				m.OldNative87 = consolidationHistoryRef{}
+			case "future_schema_exists":
+				present := true
+				m.Future.Present = &present
+			case "future_receipt_consumed":
+				count := 1
+				m.Future.Count = &count
+			case "future_proof_omitted":
+				m.Future.Present = nil
 			}
 			updated := mustTemporalJSON(t, m)
 			if os.WriteFile(filepath.Join(dir, "history.json"), updated, 0600) != nil {

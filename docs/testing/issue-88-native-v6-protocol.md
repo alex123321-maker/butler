@@ -45,6 +45,10 @@ Preparation and immediate pre-auth checks require byte-identical seven-store
 inventories and closed original native observers. Missing stores, changed
 original native totals, removed NULL keys, uncorrelated operations, extra owner
 activity, altered recursive manifests or a second carry deny preparation.
+The exact prospective v6 namespace must be absent and its one-use receipt count
+must be zero before cloning authentication, including when an empty namespace
+would not yet contain a discoverable budget table. This fixed absence proof is
+rechecked immediately before the clone.
 Actual PostgreSQL controls prove49 are imported once with zero new model
 attempts. The complete source, collector, Broker, standalone test2json, contracts,
 model, schedule, policy, history and current UTC-day expiry are sealed before

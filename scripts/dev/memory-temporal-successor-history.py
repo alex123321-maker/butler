@@ -131,6 +131,19 @@ COMMIT;"""
     return value
 
 
+def future_window():
+    def query(sql):
+        result = subprocess.run(['docker', 'exec', '-i', 'butler-issue85-postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-U', 'butler', '-p', '18585', '-d', 'issue85_native_test'], input='BEGIN TRANSACTION READ ONLY;'+sql+';ROLLBACK;', text=True, capture_output=True, timeout=40)
+        if result.returncode:
+            raise SystemExit('fresh v6 namespace/receipt proof unavailable')
+        return json.loads(result.stdout)
+    state = query("SELECT jsonb_build_object('schema','memory_temporal_native_v6','window_id','temporal-explicit-v6','schema_present',to_regnamespace('memory_temporal_native_v6') IS NOT NULL,'receipt_table_present',to_regclass('public.issue88_native_windows') IS NOT NULL)")
+    state['receipt_count'] = query("SELECT count(*) FROM public.issue88_native_windows WHERE window_id='temporal-explicit-v6'") if state['receipt_table_present'] else 0
+    if state['schema_present'] is not False or state['receipt_count'] != 0:
+        raise SystemExit('v6 schema or one-use receipt already exists; no clone allowed')
+    return state
+
+
 def frozen(path, sha):
     raw = artifact(path)
     if hashlib.sha256(raw).hexdigest() != sha:
@@ -158,6 +171,8 @@ def main():
         day = manifest['day']
         if datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d') != day:
             raise SystemExit('prospective UTC day expired')
+        if future_window() != manifest['future_window']:
+            raise SystemExit('fresh v6 namespace/receipt population changed')
         for key, fresh in (('current', canonical(current(day))), ('all_owners', canonical(all_owners(day)))):
             _, before = referenced(path.parent, manifest[key])
             if fresh != before:
@@ -214,6 +229,7 @@ def main():
     manifest['original87_old_ledger'] = reference('native87-v4-full-ledger.json', files['native87-v4-full-ledger.json'])
     manifest['original87_old_native'] = reference('native87-v4-native-calls.json', files['native87-v4-native-calls.json'])
     manifest['original87_predecessors'] = [reference(ref['path'], files[ref['path']]) for ref in adaptive['closed_latest_issue89']]
+    manifest['future_window'] = future_window()
     raw = canonical(manifest)
     write(proof/'history.json', raw)
     print(json.dumps({'read_only': True, 'history_sha256': hashlib.sha256(raw).hexdigest(), 'seven_databases': 7, 'day': day, 'auth_or_inference': False}))
