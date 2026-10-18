@@ -966,6 +966,9 @@ qualification or the measured candidate provider/budget profile is absent;
 default off preserves the ordinary source and captured-pin guards. The focused
 [effective-composition protocol](../../docs/testing/issue-92-effective-composition.md)
 tests those constructors and Doctor together without changing qualifications.
+The separate [real bootstrap smoke](../../docs/testing/issue-92-real-bootstrap-smoke.md)
+invokes `app.New`/`App.Run` and that application's HTTP Doctor on owned PG/Redis,
+with a labeled controlled diagnostic runtime and no cloud auth/inference.
 
 Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
 evidence, the existing finite background worker and owner-only memory decisions.

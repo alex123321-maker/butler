@@ -1,5 +1,12 @@
 # Butler Dev Scripts
 
+`memory-bootstrap-smoke-lab.sh ROOT FRESH_LABEL` runs the production `app.New`
+and `App.Run` with their own HTTP Memory Doctor, separate PostgreSQL/Redis and
+the existing compiled Broker/controlled Doctor runtime. It uses no cloud auth or
+inference, retains closed qualification denials, verifies optional default-off
+reconstruction and automatically exercises positive rows after independent
+qualification. See [the frozen scope and receipt](../../docs/testing/issue-92-real-bootstrap-smoke.md).
+
 `memory-consumers-lab.sh ROOT FRESH_LABEL` verifies the issue77 summary,
 candidate and Broker-read composition on an isolated `laba` snapshot. It uses
 cached images/modules with no external inference, records mandatory named
