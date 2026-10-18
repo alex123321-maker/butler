@@ -52,3 +52,58 @@ inference is zero and this does not measure a complete native-model response.
 Retain every local request interval, queue/execution/peak observation, both job
 outcomes and full durable reservation/scope/model ledgers, including failures.
 Shared summary/consolidation/experience worker policy composition remains separate.
+
+## Prospective combined controlled workload (mixed-v1)
+
+Before its first measured request, the combined runner fixes PostgreSQL at
+1 CPU/1 GiB and the Go race client at1 CPU/2 GiB on the same laba host. It retains
+10000 synthetic768-dimensional chunks in one user scope, with real Catalog
+sources and current-source guards. Vectors are a deterministic seed91 fixture;
+actual query embeddings use the pinned local service. This combination measures
+cost and execution, and establishes no semantic quality claim. The local service
+is shared and its existing limits are observed, not changed by the runner.
+
+The first ordinary InputService/Flow attempt is reported separately with unknown
+OS/model cache state. Twenty warmups precede100 warm attempts and100 mixed
+attempts, with two readers. Every scheduled attempt, including denial/failure,
+stays in its phase denominator. The controlled full foreground p95 target is
+1500 ms, allowing the existing300 ms Store target plus1200 ms for input claim,
+current authority, actual local IPC, transcript and atomic final publication.
+This is a prospective engineering envelope, not a derived native-model latency
+target. Each attempt must finish or explicitly fail within5000 ms; unexpected
+errors, timeouts, missing source bytes or lost typed UNKNOWN fail the window.
+The300 ms Store target is retained separately and is not replaced by1500 ms.
+
+The mixed phase starts with actual admitted compaction and consolidation model
+attempts, then runs ordinary foreground requests while100 new fragments are
+ingested and indexed through actual local IPC. Two independent maintenance
+sources are corrected and two are deleted during this phase. They are outside
+the selected stable retrieval generation: this supported profile does not claim
+uninterrupted successful answers while that same generation is invalidated.
+Old references must fail currentness, deleted copied bodies/fragments must be
+physically erased, foreign-owner reads must deny and the stable generation must
+remain readable. At least10 foreground intervals must overlap the ingestion/
+index job interval, at least one actual query/index IPC interval must overlap,
+and both admitted model consumers must overlap an ordinary foreground attempt.
+
+The controlled background provider waits only for its actual cancellation. Real
+interactive priority must return both jobs to bounded pending/waiting state.
+This is explicit background degradation, not concurrent native model throughput.
+Each owner policy declares two calls before admission: the original cancelled
+attempt retains NULL usage and its complete quote, and recovery after the
+foreground phase requires a separate charged attempt. The worker must complete
+that recovery within60000 ms under its original deadline and finite allowance.
+No refunded reservation, silent retry or enlarged policy is allowed.
+
+The complete experiment has a12 minute test deadline, at most221 measured/warmup
+foreground queries plus six setup attempts,50 four-fragment local index batches,
+and four background model attempts. The private fixture budget is fixed before
+any request at1024 model turns,1 billion tokens,400 million active ms and8 GiB
+provider input per owner day; individual tasks/conversations retain finite
+limits. These are conservative admission units, not measured tokens. No cloud
+authentication is mounted and all provider responses are labeled controls.
+All durable reservations, known/NULL usage, job states, request intervals,
+query plans, relation/generation sizes, CPU/RAM/I/O and local queue/device peaks
+are retained. Process-first is not machine-cold; no host cache/clock flush or
+production restart is performed. Native answer quality and native cloud p95
+remain separate acceptance gates.
