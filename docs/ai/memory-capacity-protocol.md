@@ -136,3 +136,27 @@ policy allows exactly one call against the current snapshot. Consolidation uses
 its original separately charged retry. Thus the whole window still admits four
 background model calls, including both original NULL calls, and never repairs,
 refunds, increases or reopens either consumed original policy.
+
+### Fresh mixed-v4 resource candidate
+
+The1-CPU race client is not supported at the1500 ms p95 target: complete warm
+samples in v2 and v3 measured1587.255/1588.446 ms, and v3 mixed p95 was1755.918 ms.
+These remain valid misses even though the whole windows also failed fixture
+checks. V4 prospectively changes the client quota to2 CPUs/2 GiB while retaining
+PostgreSQL1 CPU/1 GiB, the race build, all221 measured/warmup queries, two readers,
+1500/5000 ms gates, the exact v3 privacy-denial limit and complete background
+accounting/recovery gates. No no-race candidate runs concurrently or replaces
+these results. The current foreground source-proof contract from53d68390 is
+included: its bounded default wait is2 seconds and every release still requires
+a fresh current proof. Therefore the older/newer timing comparison is not a
+controlled estimate of CPU alone.
+
+The runner retains actual cgroup cpu.stat, memory.events and memory.peak before
+its containers are removed, plus periodic samples through each measured phase.
+Older removed cgroups cannot establish a throttling diagnosis. It requires20 GiB
+free on the intended storage filesystem before creating a new fixture. The
+first measured retrieval follows seed/verification and initial real local IPC;
+it is neither a cold process nor a cold machine/model observation. OS cache
+state is not controlled, and no cache benefit is inferred from its difference
+from the warm concurrent phase. Cold shared-buffer isolation, if later measured,
+must be separately declared and may restart only the owned disposable PG.
