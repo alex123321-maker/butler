@@ -373,7 +373,7 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 			started[e.RunID] = e.Slot
 			starts[e.Slot]++
 			maximum := 1
-			if slot.Kind == "original" && slot.CaseID == "original-03" {
+			if slot.Kind == "original" && slot.Sequence == 3 {
 				maximum = 2
 			}
 			if starts[e.Slot] > maximum {
