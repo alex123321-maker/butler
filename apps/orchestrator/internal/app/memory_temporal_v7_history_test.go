@@ -366,6 +366,10 @@ func temporalV7ValidateClosure(raw, screenRaw []byte) error {
 }
 
 func temporalV7ClearLeaf(raw, priorRaw []byte) ([]byte, error) {
+	return temporalClearCurrentLeaf(raw, priorRaw, "issue86-20261016-pg", "memory_read_test", consolidationV3Schema)
+}
+
+func temporalClearCurrentLeaf(raw, priorRaw []byte, targetContainer, targetDatabase, targetSchema string) ([]byte, error) {
 	var current map[string]json.RawMessage
 	var dbs []map[string]json.RawMessage
 	var prior map[string]json.RawMessage
@@ -398,7 +402,7 @@ func temporalV7ClearLeaf(raw, priorRaw []byte) ([]byte, error) {
 		for _, window := range windows {
 			var schema string
 			_ = json.Unmarshal(window["schema"], &schema)
-			if container != "issue86-20261016-pg" || name != "memory_read_test" || schema != consolidationV3Schema {
+			if container != targetContainer || name != targetDatabase || schema != targetSchema {
 				for _, field := range []string{"foreground", "background"} {
 					rows, err := consolidationV2Records(window[field])
 					if err != nil {

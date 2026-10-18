@@ -225,9 +225,16 @@ func consolidationV2ValidateLeaf(priorRaw, ledgerRaw []byte, previous *temporalV
 }
 
 func consolidationValidateTemporalLeaf(priorRaw, ledgerRaw []byte, previous *temporalV5History, day string, deadline time.Time, format, carryPrefix string) (budget.Units, temporalV5CurrentUsage, error) {
+	return consolidationValidateTemporalLeafMinimum(priorRaw, ledgerRaw, previous, day, deadline, format, carryPrefix, 1)
+}
+
+// Existing historical recipes require a positive native population. A closed
+// successor may stop after admission and before transport entry; its independent
+// product quotes and NULL observations still remain charged.
+func consolidationValidateTemporalLeafMinimum(priorRaw, ledgerRaw []byte, previous *temporalV5History, day string, deadline time.Time, format, carryPrefix string, minimum int) (budget.Units, temporalV5CurrentUsage, error) {
 	var prior consolidationV2Predecessor
 	var usage temporalV5CurrentUsage
-	if previous == nil || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != format || !prior.Window.Sealed || !prior.Window.Closed || prior.Window.Paid < 1 || prior.Window.Paid > temporalMaxNative || len(prior.Entries) != prior.Window.Paid || len(prior.Reservations) > 1+temporalMaxNative+12*temporalMaxTools || len(prior.Background) != 0 {
+	if previous == nil || minimum < 0 || minimum > 1 || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != format || !prior.Window.Sealed || !prior.Window.Closed || prior.Window.Paid < minimum || prior.Window.Paid > temporalMaxNative || len(prior.Entries) != prior.Window.Paid || len(prior.Reservations) > 1+temporalMaxNative+12*temporalMaxTools || len(prior.Background) != 0 {
 		return budget.Units{}, usage, errors.New("complete closed latest inclusive successor required")
 	}
 	max := temporalNativePolicy(previous.Carry).Day
