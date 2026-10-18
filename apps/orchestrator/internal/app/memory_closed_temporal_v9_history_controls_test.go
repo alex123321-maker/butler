@@ -47,10 +47,12 @@ func TestLatestClosedOwnerV9FrozenHistoryRejectsForgeries(t *testing.T) {
 			switch name {
 			case "native_usage":
 				change(&m.Predecessor, func(p map[string]any) {
-					p["entries"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["usage"].(map[string]any)["TotalTokens"] = 1
+					p["entries"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["usage"] = map[string]any{"InputTokens": 2, "OutputTokens": 0, "TotalTokens": 1}
 				})
 			case "native_file":
-				change(&m.Entries[0], func(p map[string]any) { p["usage"].(map[string]any)["TotalTokens"] = 1 })
+				change(&m.Entries[0], func(p map[string]any) {
+					p["usage"] = map[string]any{"InputTokens": 2, "OutputTokens": 0, "TotalTokens": 1}
+				})
 			case "product_null_key":
 				change(&m.Predecessor, func(p map[string]any) { delete(p["foreground"].([]any)[0].(map[string]any), "observed_at") })
 			case "original_outcomes":
@@ -76,7 +78,7 @@ func TestLatestClosedOwnerV9FrozenHistoryRejectsForgeries(t *testing.T) {
 						for _, row := range db.(map[string]any)["windows"].([]any) {
 							w := row.(map[string]any)
 							if name == "all_owner_native" && w["schema"] == temporalV9Schema {
-								w["native_temporal"].([]any)[0].(map[string]any)["usage"].(map[string]any)["TotalTokens"] = 1
+								w["native_temporal"].([]any)[0].(map[string]any)["usage"] = map[string]any{"InputTokens": 2, "OutputTokens": 0, "TotalTokens": 1}
 								return
 							}
 							if name == "all_owner_prior" && w["schema"] == temporalV8Schema {
@@ -90,7 +92,9 @@ func TestLatestClosedOwnerV9FrozenHistoryRejectsForgeries(t *testing.T) {
 			case "operator_digest":
 				change(&m.Operator, func(p map[string]any) { p["artifact_hashes"].(map[string]any)["full-ledger.json"] = "foreign" })
 			case "operator_cost":
-				change(&m.Operator, func(p map[string]any) { p["new_stage_known_full_tokens_lower_bound"] = 0 })
+				change(&m.Operator, func(p map[string]any) {
+					p["new_stage_known_full_tokens_lower_bound"] = p["new_stage_known_full_tokens_lower_bound"].(float64) + 1
+				})
 			case "old_unknown_cause":
 				change(&m.Operator, func(p map[string]any) { p["old89v2_failure_cause"] = "retrospectively_classified" })
 			case "recursive_history":
