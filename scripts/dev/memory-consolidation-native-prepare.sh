@@ -54,7 +54,7 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
    /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationV2(LatestLeafCountsOriginalAttemptsOnce|RetainsNativeUnknownAndAdmittedWithoutEntry|RejectsChangedWitnessesOrExtraOwnerRows|CurrentDayCarryOneUseIntegration|WritePins)$"
   fi
   if [[ "$BUTLER_CONSOLIDATION_V3_PREPARE" == 1 ]]; then
-   /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationV3(WorkerRejectsOwnerControlIdentity|LatestTemporalLeafCountsOnce|CurrentDayCarryOneUseIntegration|FrozenHistoryRejectsForgeries)$"
+   /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationV3(WorkerRejectsOwnerControlIdentity|ClosureRetainsFailedCollector|LatestTemporalLeafCountsOnce|CurrentDayCarryOneUseIntegration|FrozenHistoryRejectsForgeries)$"
   fi' \
  > "$proof/offline-preparation.txt" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
@@ -65,7 +65,7 @@ if [[ "$v2" == 1 ]]; then
  test "$(grep -c '^--- PASS: TestConsolidationV2' "$proof/offline-preparation.txt")" = 5
 fi
 if [[ "$v3" == 1 ]]; then
- test "$(grep -c '^--- PASS: TestConsolidationV3' "$proof/offline-preparation.txt")" = 4
+ test "$(grep -c '^--- PASS: TestConsolidationV3' "$proof/offline-preparation.txt")" = 5
 fi
 python3 "$src/scripts/dev/$history_script" check-current "$history/history.json" "$history_hash" > "$proof/current-after-build.json"
 printf '%s\n' "$history" > "$proof/history-reference"

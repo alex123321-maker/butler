@@ -29,6 +29,44 @@ func TestConsolidationV3WorkerRejectsOwnerControlIdentity(t *testing.T) {
 	}
 }
 
+func TestConsolidationV3ClosureRetainsFailedCollector(t *testing.T) {
+	outcomes := make([]temporalCaseObservation, 12)
+	for i := range outcomes {
+		outcomes[i].Status = "completed"
+	}
+	outcomes[7].Status = "failed"
+	for i := 8; i < 12; i++ {
+		outcomes[i].Status = "not_executed"
+	}
+	closure := map[string]any{"native_status": 1, "return_safe": map[string]any{"opaque_main_cas": true, "active_work_checked": true}, "main_auth_safe": map[string]any{"resolved": true, "unsafe_refresh": false, "expired": false, "trace": []any{map[string]any{"stage": "paid_discovery", "outcome": "completed", "http_status": 200}}}, "main_snapshot_safe": map[string]any{"fresh_main_snapshot_saved": true}}
+	if err := consolidationV3ValidateClosure(mustTemporalJSON(t, closure), mustTemporalJSON(t, outcomes)); err != nil {
+		t.Fatal("failed collector lost successful handback", err)
+	}
+	for _, name := range []string{"missing_cas", "missing_active_work", "expired_main", "missing_main200", "missing_snapshot", "promoted_success"} {
+		t.Run(name, func(t *testing.T) {
+			var c map[string]any
+			_ = json.Unmarshal(mustTemporalJSON(t, closure), &c)
+			switch name {
+			case "missing_cas":
+				c["return_safe"].(map[string]any)["opaque_main_cas"] = false
+			case "missing_active_work":
+				delete(c["return_safe"].(map[string]any), "active_work_checked")
+			case "expired_main":
+				c["main_auth_safe"].(map[string]any)["expired"] = true
+			case "missing_main200":
+				c["main_auth_safe"].(map[string]any)["trace"] = []any{}
+			case "missing_snapshot":
+				c["main_snapshot_safe"].(map[string]any)["fresh_main_snapshot_saved"] = false
+			case "promoted_success":
+				c["native_status"] = 0
+			}
+			if consolidationV3ValidateClosure(mustTemporalJSON(t, c), mustTemporalJSON(t, outcomes)) == nil {
+				t.Fatal("failed or incomplete closure silently accepted")
+			}
+		})
+	}
+}
+
 func TestConsolidationV3LatestTemporalLeafCountsOnce(t *testing.T) {
 	_, prior, ledger, outcomes, entries, previous, _, day, deadline := consolidationV2Fixture(t)
 	prior["format"] = "butler.consolidation.predecessor88.v2"
@@ -127,7 +165,8 @@ func TestConsolidationV3FrozenHistoryRejectsForgeries(t *testing.T) {
 	if err != nil || h.Successor == nil || h.Successor.Schema != consolidationV3Schema || h.Attempts != 161 || h.Unknown != 8 || h.ProductUnknown != 9 || h.CurrentCarry.ModelTurns <= 49 || h.Successor.Previous89.NativeEntries != 49 || h.Successor.SeparateAdaptive.NativeEntries != 98 || h.Successor.SeparateAdaptive.NativeUnknownUsage != 1 {
 		t.Fatal("complete original history did not validate", err)
 	}
-	for _, name := range []string{"native_total", "omitted_product_null", "entry_file_usage", "entry_operation", "outcome_denominator", "altered_carry", "scope_field_omission", "missing_seventh", "extra_main_attempt", "extra_seventh_attempt", "changed_recursive_history", "adaptive_native_usage", "adaptive_unknown_omitted", "future_schema_exists", "future_receipt_consumed", "future_proof_omitted"} {
+	t.Logf("validated inclusive current quote=%+v usage=%+v; historical161 preserved; separate adaptive=%+v", h.CurrentCarry, h.Successor.Current89And88, h.Successor.SeparateAdaptive)
+	for _, name := range []string{"native_total", "omitted_product_null", "entry_file_usage", "entry_operation", "outcome_denominator", "altered_carry", "scope_field_omission", "missing_seventh", "extra_main_attempt", "extra_seventh_attempt", "changed_recursive_history", "adaptive_native_usage", "adaptive_unknown_omitted", "future_schema_exists", "future_receipt_consumed", "future_proof_omitted", "missing_handback", "missing_active_work", "promoted_collector_success"} {
 		t.Run(name, func(t *testing.T) {
 			dir := temporalV6CopyHistory(t, root)
 			var m consolidationV3Manifest
@@ -151,6 +190,17 @@ func TestConsolidationV3FrozenHistoryRejectsForgeries(t *testing.T) {
 				ref.SHA256 = experienceDigest(string(data))
 			}
 			switch name {
+			case "missing_handback", "missing_active_work", "promoted_collector_success":
+				change(&m.Closure, func(p map[string]any) {
+					switch name {
+					case "missing_handback":
+						p["return_safe"].(map[string]any)["opaque_main_cas"] = false
+					case "missing_active_work":
+						delete(p["return_safe"].(map[string]any), "active_work_checked")
+					case "promoted_collector_success":
+						p["native_status"] = 0
+					}
+				})
 			case "native_total", "omitted_product_null", "entry_operation", "altered_carry", "scope_field_omission":
 				change(&m.Predecessor, func(p map[string]any) {
 					switch name {
@@ -161,7 +211,19 @@ func TestConsolidationV3FrozenHistoryRejectsForgeries(t *testing.T) {
 					case "entry_operation":
 						p["entries"].([]any)[0].(map[string]any)["observation_json"].(map[string]any)["operation_id"] = "foreign"
 					case "altered_carry":
-						p["reservations"].([]any)[0].(map[string]any)["request_json"].(map[string]any)["charge"].(map[string]any)["model_turns"] = 0
+						found := false
+						for _, row := range p["reservations"].([]any) {
+							r := row.(map[string]any)
+							op, _ := r["operation_id"].(string)
+							if strings.HasPrefix(op, "issue88-v6-current-day-carry:") {
+								r["request_json"].(map[string]any)["charge"].(map[string]any)["model_turns"] = 0
+								found = true
+								break
+							}
+						}
+						if !found {
+							t.Fatal("actual labelled carry mutation target missing")
+						}
 					case "scope_field_omission":
 						delete(p["scopes"].([]any)[0].(map[string]any), "deadline")
 					}

@@ -69,7 +69,7 @@ def closed_handback(report):
     returned = json.loads(old.artifact(report/'return-safe.json'))
     main = json.loads(old.artifact(report/'main-auth-safe.json'))
     snapshot = json.loads(old.artifact(report/'main-snapshot-safe.json'))
-    if returned.get('opaque_main_cas') is not True or main.get('resolved') is not True or main.get('unsafe_refresh') is not False or main.get('expired') is not False or snapshot.get('fresh_main_snapshot_saved') is not True:
+    if returned.get('opaque_main_cas') is not True or returned.get('active_work_checked') is not True or main.get('resolved') is not True or main.get('unsafe_refresh') is not False or main.get('expired') is not False or snapshot.get('fresh_main_snapshot_saved') is not True:
         raise SystemExit('exact CAS/main/snapshot successor handback proof required')
     if not any(x.get('stage') == 'paid_discovery' and x.get('outcome') == 'completed' and x.get('http_status') == 200 for x in main.get('trace', [])):
         raise SystemExit('actual main paid-discovery HTTP200 required')
