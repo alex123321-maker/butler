@@ -187,6 +187,60 @@ func TestTemporalV7LatestLeafRejectsForgedWitnesses(t *testing.T) {
 	}
 }
 
+func TestTemporalV7OriginalSlotEntryCeiling(t *testing.T) {
+	p, l, s, d, previous, day, deadline := temporalV7Fixture(t, false)
+	fgSlot := s["slots"].([]any)[1].(consolidationScreenSlot).ID
+	appendCall := func(op, reservation string) {
+		id := op + "-entry"
+		obs := map[string]any{"EntryID": id, "OperationID": op, "ReservationID": reservation, "Usage": nil, "FinishedAt": "2026-10-18T01:01:00Z"}
+		p["calls"] = append(p["calls"].([]any), map[string]any{"entry_id": id, "operation_id": op, "reservation_id": reservation, "run_id": "fg-run", "slot_id": fgSlot, "kind": "tool_result", "observation_json": obs})
+		full := map[string]any{}
+		for k, v := range obs {
+			full[k] = v
+		}
+		full["RunID"], full["SlotID"], full["Kind"] = "fg-run", fgSlot, "tool_result"
+		l["calls"] = append(l["calls"].([]any), map[string]any{"entry_id": id, "operation_id": op, "run_id": "fg-run", "slot_id": fgSlot, "kind": "tool_result", "observation": full})
+		s["calls"] = append(s["calls"].([]any), full)
+	}
+	appendCall("orphan", "orphan-rsv")
+	for i := 0; i < 15; i++ {
+		op := fmt.Sprintf("fg-extra-%d", i)
+		reservation := op + "-rsv"
+		r := map[string]any{}
+		for k, v := range p["reservations"].([]any)[2].(map[string]any) {
+			r[k] = v
+		}
+		q := r["request_json"].(budget.Request)
+		q.OperationID = op
+		r["request_json"], r["reservation_id"], r["operation_id"] = q, reservation, op
+		p["reservations"] = append(p["reservations"].([]any), r)
+		product := map[string]any{}
+		for k, v := range p["foreground"].([]any)[0].(map[string]any) {
+			product[k] = v
+		}
+		product["operation_id"], product["reservation_id"] = op, reservation
+		p["foreground"] = append(p["foreground"].([]any), product)
+		original := map[string]any{}
+		for k, v := range product {
+			original[k] = v
+		}
+		original["run_id"] = "fg-run"
+		l["foreground"] = append(l["foreground"].([]any), original)
+		appendCall(op, reservation)
+	}
+	p["paid_entries"] = 18
+	l["reservations"] = p["reservations"]
+	u := p["scopes"].([]any)[0].(map[string]any)["used_json"].(budget.Units)
+	u.ModelTurns += 15
+	u.Tokens += 15 * 1081344
+	u.ActiveMillis += 15 * 300000
+	u.ProviderInputBytes += 15 * 8388608
+	p["scopes"].([]any)[0].(map[string]any)["used_json"] = u
+	if _, _, err := temporalV7Leaf(mustTemporalJSON(t, p), mustTemporalJSON(t, l), mustTemporalJSON(t, s), mustTemporalJSON(t, d), previous, day, deadline); err == nil {
+		t.Fatal("self-consistent seventeen-entry foreground bypassed its declared sixteen-entry ceiling")
+	}
+}
+
 func TestTemporalV7CurrentDayCarryOneUseIntegration(t *testing.T) {
 	pool := memorytest.Database(t)
 	ctx := context.Background()
