@@ -40,7 +40,7 @@ privacy, read/prepare-only mandate, finite48-turn task/96-turn mandate allowance
 native output8192 and300-second call ceiling. Other tools/credentials/external
 effects are not granted. This is a disposable acceptance profile, not deployment.
 
-## Evidence so far
+## Executed evidence
 
 | Check | Actual result |
 |---|---|
@@ -52,7 +52,8 @@ effects are not granted. This is a disposable acceptance profile, not deployment
 | Learned rule / new phone event | A new advertising notification matched the saved app/channel/literal rule and became noise without an additional autonomous task/model run;18 archived noise messages remained searchable |
 | Native archive search | A separate ordinary owner task independently selected `messages.search` and `memory.search`, returned the hidden WIFI57 promo with citations, confirmed the dentist record and preserved invitation uncertainty |
 | Owner controls | Actual owner HTTP disabled/re-enabled the noise rule. Attention view omitted rule text without explicit reveal |
-| Timer | Actual PostgreSQL boundary test:19 fresh messages do not wake;20 wake once, including concurrent observers/replay. One message at59 minutes waits; at61 minutes it wakes. The live phone timer case is recorded separately when complete |
+| Timer | Actual PostgreSQL boundary test:19 fresh messages do not wake;20 wake once, including concurrent observers/replay. One message at59 minutes waits; at61 minutes it wakes. On the live laptop/native-model stand, the real phone's single barber message was held below the gate, then its test queue `received_at` alone was set to61 minutes old. The normal observer admitted it and the real model/Broker saved the confirmed22 Oct2026 15:00 Asia/Tomsk appointment; Task Service verified completion. Original source/phone timestamps were unchanged. This controlled aging is not an actual one-hour wait or Doze test |
+| APK1.2.0 update / fixture repeat | Pairing, app filter and posting permission survived `adb install -r`. Two fresh advertising callbacks durably ACKed in2.533s and2.084s; another20-message phase ACKed in3.696s. Initial repeat timeouts were a fixture defect: fixed Android notification identity plus a13-digit timestamp redacted as a card number produced unchanged content, correctly deduplicated by the client. The fixture now uses a fresh notification tag and explicit stage/configuration assertions; privacy/deduplication remain unchanged |
 | Restart / continuation | Batches and decisions remain in PostgreSQL through actual local application restarts. Integration test checks a single continuation receipt for incomplete completed work, under the same task; unfinished decisions/uncompleted inputs cannot verify completion |
 | Privacy / deletion | Actual separate Broker process requires permanent dispatch/current claim/source pins. Remembered text is physically erased with its original. Shared original ingress attack corpus still calls no model when standing permission is absent |
 | Web | Vue typecheck and targeted lint passed; two Playwright tests passed, covering explicit reveal, noise-rule undo and proof-change clearing. These are routed synthetic API fixtures, not a claim of browser/live-Go integration |
@@ -61,8 +62,8 @@ Current qualification is Wi-Fi only. The remaining original operational gates
 (24-hour unplugged battery/traffic/loss, long offline/reboot/Doze and external
 mobile route) remain as recorded in the ingress report and were not started.
 The source/PR is reviewable; neither issue closure nor production rollout follows
-from a successful test. Updated checksums and final CI/timer receipts accompany
-the final acceptance snapshot.
+from a successful test. Checksums and final CI/native receipts accompany the
+acceptance snapshot.
 
 Current Android artifacts are version1.2.0/code3. All15 JVM tests and lint passed;
 debug and operator-signed release builds passed. Current

@@ -41,13 +41,20 @@ class MobileAttentionAcceptanceTest {
         fun shell(cmd: String) { instrumentation.uiAutomation.executeShellCommand(cmd).use { fd -> java.io.FileInputStream(fd.fileDescriptor).use { it.readBytes() } } }
         shell("pm grant ${app.packageName} android.permission.POST_NOTIFICATIONS")
         shell("cmd notification allow_listener ${app.packageName}/com.example.service.ButlerNotificationListenerService")
-        suspend fun awaitState(check: suspend () -> Boolean) { repeat(200) { if (check()) return; delay(200) }; fail("Synthetic callback/durable ACK timeout") }
-        awaitState { ButlerNotificationListenerService.isListenerConnected.value }
+        assertTrue("Existing pairing decrypts after app update", app.credentialStore.state.value.isPaired)
+        assertTrue("Synthetic app remains included", repo.shouldCapturePackage(app.packageName))
+        suspend fun awaitState(stage: String, check: suspend () -> Boolean) { repeat(200) { if (check()) return; delay(200) }; fail("Synthetic attention timeout: $stage") }
+        awaitState("listener connection") { ButlerNotificationListenerService.isListenerConnected.value }
         val manager = app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(NotificationChannel("attention_appointments", "Synthetic appointments", NotificationManager.IMPORTANCE_DEFAULT))
         manager.createNotificationChannel(NotificationChannel("attention_marketing", "Synthetic marketing", NotificationManager.IMPORTANCE_LOW))
+        assertTrue("Synthetic notification posting enabled", manager.areNotificationsEnabled())
+        assertTrue("Synthetic marketing channel enabled", manager.getNotificationChannel("attention_marketing").importance != NotificationManager.IMPORTANCE_NONE)
         val phase = args.getString("attention_phase")!!
         val seed = System.currentTimeMillis()
+        // A timestamp-only body is privacy-redacted as a card number. Reusing an
+        // Android notification identity would then correctly deduplicate repeats.
+        val tag = "attention-" + java.util.UUID.randomUUID().toString()
         val bodies = when (phase) {
             "hour" -> listOf("Синтетическая запись #57: барбер, четверг 22 октября 2026 года, 15:00. Запись подтверждена.")
             "noise" -> listOf("Синтетическая скидка на поездку, рекламный промокод WIFI57. $seed")
@@ -61,15 +68,15 @@ class MobileAttentionAcceptanceTest {
         val ids = bodies.indices.map { 57000 + it + if (phase == "hour") 100 else if (phase == "noise") 200 else 0 }
         bodies.forEachIndexed { index, body ->
             val channel = if (body.contains("скидка")) "attention_marketing" else "attention_appointments"
-            manager.notify(ids[index], NotificationCompat.Builder(app, channel).setSmallIcon(R.drawable.ic_launcher_foreground)
+            manager.notify(tag, ids[index], NotificationCompat.Builder(app, channel).setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Butler synthetic attention #57").setContentText(body).setWhen(seed + index).setOnlyAlertOnce(true).build())
             delay(100)
         }
-        awaitState {
+        awaitState("callback and durable Wi-Fi ACK") {
             val saved = app.database.butlerDao().observeRecentQueueEvents().first().filter { it.deviceEventId !in before && it.packageName == app.packageName && it.changeType != "REMOVED" }
             saved.count { it.deliveryState == "DELIVERED" } >= bodies.size
         }
         println("attention_phase=$phase synthetic_posts=${bodies.size} durable_wifi_ack=true")
-        ids.forEach { manager.cancel(it) }
+        ids.forEach { manager.cancel(tag, it) }
     }
 }
