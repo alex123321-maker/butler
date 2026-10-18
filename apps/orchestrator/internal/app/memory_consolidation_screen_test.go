@@ -99,7 +99,7 @@ CREATE TABLE consolidation_screen_calls(entry_id text PRIMARY KEY,slot_id text N
 func consolidationScreenPool(t *testing.T, native bool, history *consolidationScreenHistory) *pgxpool.Pool {
 	t.Helper()
 	if !native {
-		return memorytest.Database(t)
+		return consolidationSlowControlPool(t, memorytest.Database(t))
 	}
 	dsn := os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL")
 	cfg, err := pgxpool.ParseConfig(dsn)
@@ -285,6 +285,9 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 	}
 	controlled := &consolidationReadControl{routes: map[string][]catalog.SourceRef{}, runs: map[string]*consolidationControlRun{}}
 	var provider transport.ModelProvider = controlled
+	if !native && os.Getenv("BUTLER_CONSOLIDATION_SLOW_CONTROL") == "1" {
+		provider = &consolidationSlowControlProvider{ModelProvider: controlled}
+	}
 	if native {
 		if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" {
 			t.Fatal("native server proxy required")
