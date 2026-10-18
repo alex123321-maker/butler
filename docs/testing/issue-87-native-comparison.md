@@ -1,4 +1,13 @@
-# Adaptive retrieval: retained incomplete native screen
+# Adaptive retrieval: retained native comparisons
+
+The later full96-original v5 comparison is also NO_GO. Its
+[independent diagnostic review](issue-87-native-v5-independent-review.md)
+inspects every original: adaptive12/32 correct versus static27/32, with one
+static transport failure and one unknown native usage observation. Thirty-one
+adaptive plans chose no optional retrieval. Capture-metadata aliasing is retained
+as a separate integrity defect; original input/visible-text correlations match.
+The adaptive release gate remains false. The earlier incomplete screen below
+is preserved separately.
 
 Issue87 remains unqualified and default off. The first native comparison is
 NO_GO: collection stopped before the fixed96-original schedule completed, and
