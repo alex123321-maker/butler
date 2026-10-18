@@ -15,6 +15,8 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
 PRIOR89 = pathlib.Path('/srv/storage/butler/agents/issue89-20261016/reports/native-v2-preseal-v2')
+PRIOR89_HISTORY = pathlib.Path('/srv/storage/butler/agents/issue89-20261016/reports/native-v2-history-v1/history')
+HISTORY89_SHA = '976e353b5b01eea7817666f8aebccddca68f4f3a293873aa256ba9817c8949fb'
 PRIOR87 = pathlib.Path('/srv/storage/butler/agents/issue87-native-v5b-20261018/reports/native-v5')
 LEDGER87_SHA = 'c51b06b2a04ce92d6e901ef59e35584715c4d128e0e35f85ab32f46b84f724a4'
 LEDGER89_SHA = 'a407e19989b187d88ffa5cd97eeb84247d50bf33bbdb2c144d0200fedac81a62'
@@ -33,7 +35,7 @@ def write(path, raw):
 
 
 def artifact(path):
-    result = subprocess.run(['docker', 'run', '--rm', '--pull', 'never', '--network', 'none', '--cpus', '.1', '--memory', '64m', '--pids-limit', '32', '-v', str(path.parent)+':/from:ro', 'golang:1.27.2-bookworm', 'cat', '/from/'+path.name], capture_output=True, timeout=40)
+    result = subprocess.run(['docker', 'run', '--rm', '--pull', 'never', '--network', 'none', '--cpus', '.1', '--memory', '64m', '--pids-limit', '32', '--mount', 'type=bind,src='+str(path.parent)+',dst=/from,readonly', 'golang:1.27.2-bookworm', 'cat', '/from/'+path.name], capture_output=True, timeout=40)
     if result.returncode or len(result.stdout) > 32*1024*1024:
         raise SystemExit('bounded original successor artifact unavailable')
     json.loads(result.stdout)
@@ -177,11 +179,11 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     day = now.strftime('%Y-%m-%d')
     deadline = datetime.datetime.combine(now.date()+datetime.timedelta(days=1), datetime.time(), datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-    previous = artifact(PRIOR89/'history/history.json')
+    previous = frozen(PRIOR89_HISTORY/'history.json', HISTORY89_SHA)
     old = json.loads(previous)
     if old.get('format') != 'butler.consolidation.native-history.v3' or old.get('day') != day or old.get('deadline') != deadline:
         raise SystemExit('same-day complete consolidation-v2 history required')
-    copied = copy_lineage(PRIOR89/'history', proof, reference('history.json', previous))
+    copied = copy_lineage(PRIOR89_HISTORY, proof, reference('history.json', previous))
     inventory, all_inventory = current(day), all_owners(day)
     matches = [window for database in inventory['databases'] if database['container'] == 'issue86-20261016-pg' and database['database'] == 'memory_read_test' for window in database['windows'] if window['schema'] == 'consolidation_native_v2']
     if len(matches) != 1:
