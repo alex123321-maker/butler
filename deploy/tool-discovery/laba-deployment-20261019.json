@@ -1,11 +1,11 @@
 {
-  "checked_at": "2026-10-18T19:26:10.919058+00:00",
+  "checked_at": "2026-10-18T19:29:49.282891+00:00",
   "project": "butler-main",
   "service_source": {
     "orchestrator": "1d345ff11bd892663ab02a4272ab041640d74951",
     "broker": "f1753cd0b0ebf09beb25056fb5c65dfc03893f04"
   },
-  "compose_sha256": "d6633249d6e7a14fcc3f24ecfbbf3caaf9928e67ace14a1ff12f0a6c5941dd53",
+  "compose_sha256": "28fd93ff85a2b151c36bd62919f9b935410720bdc400233151655c6dcfa95c8a",
   "binary_sha256": {
     "broker": "c30160e4ae0a0455dfec7e58382c777ea0f6e654680cf319ec999cc49f5e078f",
     "memory-admin": "2976c54824b1456a46bea7b34c98c473429a3f9258bfded952febd14edd56b27",
@@ -202,11 +202,11 @@
     },
     {
       "state": "ignored",
-      "count": 19
+      "count": 45
     },
     {
       "state": "pending",
-      "count": 88
+      "count": 62
     }
   ],
   "mobile_ingress": [
@@ -228,7 +228,7 @@
     },
     {
       "finished": true,
-      "count": 4
+      "count": 5
     }
   ],
   "recent_input_states": [
@@ -254,7 +254,7 @@
       "source": "initiative",
       "status": "completed",
       "error_code": "",
-      "count": 1
+      "count": 2
     },
     {
       "source": "initiative",
@@ -267,17 +267,22 @@
     {
       "tool_name": "tools.load",
       "status": "completed",
-      "count": 3
+      "count": 4
     },
     {
       "tool_name": "tools.search",
       "status": "completed",
-      "count": 6
+      "count": 8
+    },
+    {
+      "tool_name": "messages.search",
+      "status": "completed",
+      "count": 2
     },
     {
       "tool_name": "messages.process",
       "status": "completed",
-      "count": 20
+      "count": 47
     },
     {
       "tool_name": "tools.search",
@@ -287,12 +292,12 @@
     {
       "tool_name": "messages.inbox",
       "status": "completed",
-      "count": 4
+      "count": 8
     },
     {
       "tool_name": "memory.search",
       "status": "completed",
-      "count": 3
+      "count": 5
     },
     {
       "tool_name": "memory.search",
@@ -328,9 +333,9 @@
       "error_type": null
     },
     {
-      "status": "cancelled",
-      "current_state": "cancelled",
-      "error_type": "owner_control"
+      "status": "completed",
+      "current_state": "completed",
+      "error_type": null
     }
   ],
   "owner_policy_required": true,

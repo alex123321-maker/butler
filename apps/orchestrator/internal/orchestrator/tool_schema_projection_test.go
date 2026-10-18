@@ -29,7 +29,9 @@ func TestToolSchemaProjectionRespectsOwningAdaptiveComposition(t *testing.T) {
 		if json.Unmarshal([]byte(defs[0].SchemaJSON), &schema) != nil {
 			t.Fatal("invalid native schema")
 		}
-		var strategy struct{ Enum []string `json:"enum"` }
+		var strategy struct {
+			Enum []string `json:"enum"`
+		}
 		_ = json.Unmarshal(schema.Properties["strategy"], &strategy)
 		if strings.Contains(strings.Join(strategy.Enum, ","), "semantic_hybrid") != ready || (schema.Properties["event_from"] != nil) != ready || (schema.Properties["event_until"] != nil) != ready {
 			t.Fatal("advertised unavailable adaptive options", ready, strategy.Enum)
