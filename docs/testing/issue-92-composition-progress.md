@@ -345,3 +345,28 @@ cannot establish57/57 completion, repeatability or statistical improvement.
 One final native coherent pilot and the fresh qualified constructor/Doctor
 smoke remain separate pending receipts; prior25-checkpoint mechanics evidence
 is reused instead of repeated broad regression runs.
+
+The shortened90 invocation subsequently closed early NO_GO at original01.
+Its first inspect succeeded, then the model used the inspection URL for
+prepare-patch: the fixture operation DATA had not described `/patches`.
+The actual requested content/revision was correct. The owning effect remains
+UNKNOWN/blocked, with no final and no inferred HTTP404 or physical absence.
+Both captured entries have known full usage9913; the closed inclusive213
+retains212 known and one older UNKNOWN, known full-token lower bound1605455.
+Post-exit durable auth return, exact main CAS, main200 and fresh snapshot pass.
+One failed and56 unexecuted stages remain visible, including24 prospectively
+omitted repetitions. Experience qualification remains false.
+
+The owner then explicitly requested only the description correction followed
+directly by Gemini, without more unit/broad rounds. The generic reference
+manifest now describes URL composition. A bounded model-only Gemini diagnostic
+using the actual prior inspection request and result selected the correct
+absolute `http://external.test/project/alpha/patches`, preserving the revision
+and exact before/after change. Its full usage is3389 and its18.038s duration is
+not an SLO. Evidence-list SHA256:
+`c4f2a95806892d34cb8fdcb0989dde615587368ae67962ecf5ba80928970e9cd`.
+The earlier diagnostic with missing origin retains known full4175 and only
+relative-route success; the initial pre-HTTP setup failure retains NULL usage.
+No effect was executed or old UNKNOWN resolved by these diagnostics.
+The final native92 pilot and qualified positive bootstrap were not executed;
+the complete #77 release gate is still NO_GO. The primary deployment is unchanged.
