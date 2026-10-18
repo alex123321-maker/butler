@@ -33,7 +33,7 @@ func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*to
 	if strings.TrimSpace(runID) == "" {
 		return c.ListTools(ctx)
 	}
-	response, err := c.client.ListTools(ctx, &toolbrokerv1.ListToolsRequest{RunId: runID, Limit: 64})
+	response, err := c.client.ListTools(ctx, &toolbrokerv1.ListToolsRequest{RunId: runID})
 	if err != nil {
 		return nil, err
 	}

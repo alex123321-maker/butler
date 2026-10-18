@@ -56,6 +56,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if candidateErr != nil {
 		return cfg, snapshot, candidateErr
 	}
+	discoverySnapshot, discoveryErr := loadSpecs(get, []fieldSpec{toolDiscoverySpec("orchestrator", &cfg.ToolDiscoveryEnabled)})
+	snapshot.keys = append(snapshot.keys, discoverySnapshot.keys...)
+	if discoveryErr != nil {
+		return cfg, snapshot, discoveryErr
+	}
 	workspaceSnapshot, workspaceErr := loadSpecs(get, workspaceOrchestratorSpecs(&cfg))
 	readSnapshot, readErr := loadSpecs(get, append(memoryReadOrchestratorSpecs(&cfg), memoryTemporalSpecs(&cfg)...))
 	snapshot.keys = append(snapshot.keys, readSnapshot.keys...)

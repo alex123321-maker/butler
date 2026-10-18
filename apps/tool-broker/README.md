@@ -1,5 +1,8 @@
 # Tool Broker
 
+Optional operator-only `BUTLER_TOOL_DISCOVERY_ENABLED=true` registers immutable local `tools.search` and `tools.load` reads in the ordinary action/claim/budget path. Search cards cover the full permitted catalog; exact loading does not execute tools or grant rights. Enable the matching Orchestrator flag. See [tool discovery](../../docs/architecture/tool-discovery.md).
+
+
 Optional `BUTLER_SCHEDULES_ENABLED=true` registers immutable `schedule.*`
 contracts, filtered by current owning readiness and executor scope. The fixed
 operator `BUTLER_SCHEDULES_CONTROL_URL` routes actual dispatched calls to

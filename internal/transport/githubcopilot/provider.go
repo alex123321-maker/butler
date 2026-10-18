@@ -152,6 +152,9 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err != nil {
 		return nil, err
 	}
+	if req.ToolSet != nil {
+		session.Tools = append([]transport.ToolDefinition{}, req.ToolSet.Definitions...)
+	}
 	p.appendInputItems(session, req.InputItems)
 	return p.execute(ctx, req.RunID, session, "agent")
 }
@@ -163,6 +166,9 @@ func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToo
 	session, err := p.existingSession(sessionIDFromRef(req.ProviderSessionRef))
 	if err != nil {
 		return nil, err
+	}
+	if req.ToolSet != nil {
+		session.Tools = append([]transport.ToolDefinition{}, req.ToolSet.Definitions...)
 	}
 	session.Messages = append(session.Messages, chatMessage{Role: "tool", Content: req.ToolResultJSON, ToolCall: req.ToolCallRef})
 	if len(session.PendingToolCalls) > 0 {

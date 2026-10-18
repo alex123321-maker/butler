@@ -22,7 +22,7 @@ func (e *ConverterEnvironment) Discover(ctx context.Context, id string, _ genera
 	if e.Catalog == nil || e.Skills == nil {
 		return d, generatedtools.ErrAccess
 	}
-	contracts, err := e.Catalog.ListForRun(ctx, id, "", 64)
+	contracts, err := e.Catalog.ListForRun(ctx, id, "", 0)
 	if err != nil {
 		return d, err
 	}

@@ -98,8 +98,14 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 	if logicalRef == "" {
 		return b.ActionID, digest(string(encoded)), nil
 	}
-	if b.TaskID == "" || len(logicalRef) > 160 || strings.TrimSpace(logicalRef) != logicalRef || strings.ContainsAny(logicalRef, "\x00\r\n") {
+	if len(logicalRef) > 160 || strings.TrimSpace(logicalRef) != logicalRef || strings.ContainsAny(logicalRef, "\x00\r\n") {
 		return "", "", fmt.Errorf("logical action reference requires a trusted task checkpoint")
+	}
+	if b.TaskID == "" {
+		// Conversation checkpoints can record an exact per-run slot. Without a
+		// task there is no cross-run logical identity: retain the action ID even
+		// if a caller presents the same slot reference in another conversation.
+		return b.ActionID, digest(string(encoded)), nil
 	}
 	return "effect_" + digest(b.OwnerID+"\x00"+b.TaskID+"\x00"+logicalRef), digest(string(encoded)), nil
 }

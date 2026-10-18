@@ -1,5 +1,8 @@
 # Butler — Model Transport Contract
 
+Optional [deferred tool schemas](tool-discovery.md) use an exact `ToolSetSnapshot` on the in-process Go ContinueRun/SubmitToolResult interface. Nil preserves the set; a snapshot replaces it, including explicit empty. Orchestrator selects current authorized contracts; adapters preserve historical aliases and encode the selected set. This does not add a protobuf/RPC implementation or native qualification.
+
+
 Native Gemini tool declarations lower the known `minLength`, `maxLength`,
 `minimum`, `maximum`, `minItems` and `maxItems` validation annotations out of the provider-facing schema.
 The original logical ToolDefinition, canonical Broker schema and action contract

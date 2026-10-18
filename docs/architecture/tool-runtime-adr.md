@@ -1,5 +1,8 @@
 # Butler — Tooling and Execution Specification
 
+Optional [deferred tool schemas](tool-discovery.md) add Broker-owned `tools.search`/`tools.load` under matching default-false operator flags. Search ranks the complete permitted catalog; loading only selects model schemas and grants no execution authority. Existing dispatch/input/approval/budget checks apply.
+
+
 Optional fixed `schedule.*` contracts are owning kernel controls, registered by
 Broker and routed to Orchestrator `/internal/schedules` after permanent exact
 dispatch. They accept timing/instruction DATA without owner IDs or credentials.

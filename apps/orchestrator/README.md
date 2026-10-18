@@ -1,5 +1,8 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Optional operator-only `BUTLER_TOOL_DISCOVERY_ENABLED=true` initially sends only `tools.search` and `tools.load` schemas. Completed load receipts select exact methods for subsequent requests and survive recovery through the existing PostgreSQL transcript. Current scoped access is rechecked; stale versions are removed. Enable the same Broker flag. See [tool discovery](../../docs/architecture/tool-discovery.md), including schema limits and native acceptance still required before production enablement.
+
+
 Optional `BUTLER_SCHEDULES_ENABLED=true` composes fixed Broker-mediated
 `schedule.create/list/get/update/cancel`, durable one-shot/daily/weekday/interval
 jobs and reminder delivery. Exact owner approval or current bounded authority

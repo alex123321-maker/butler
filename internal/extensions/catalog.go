@@ -290,12 +290,6 @@ func (s *Store) Catalog(ctx context.Context, c actionauth.ContextSnapshot, query
 	if c.PinnedTaskRevision != c.TaskRevision || c.TaskStatus != "active" || c.LeaseID == "" || c.LeaseEpoch <= 0 || !c.LeaseExpiresAt.After(time.Now().UTC()) || len(query) > 256 {
 		return nil, ErrAccess
 	}
-	if limit <= 0 {
-		limit = 32
-	}
-	if limit > 64 {
-		limit = 64
-	}
 	// Close the list cursor before acquiring another connection (MaxConns=2).
 	rows, err := s.pool.Query(ctx, `SELECT extension_id FROM extension_installations WHERE owner_id=$1 AND status='enabled' ORDER BY extension_id`, s.ownerID)
 	if err != nil {
@@ -386,7 +380,7 @@ func (s *Store) Catalog(ctx context.Context, c actionauth.ContextSnapshot, query
 		}
 		return candidates[i].contract.GetToolName() < candidates[j].contract.GetToolName()
 	})
-	if len(candidates) > limit {
+	if limit > 0 && len(candidates) > limit {
 		candidates = candidates[:limit]
 	}
 	result := make([]*toolbrokerv1.ToolContract, 0, len(candidates))

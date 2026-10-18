@@ -52,6 +52,7 @@ type runState struct {
 	contents      []content
 	tools         []functionDeclaration
 	definitions   map[string]transport.ToolDefinition
+	aliases       map[string]string
 	pending       *transport.ToolCallRequest
 	pendingNative functionCall
 	turn          int
@@ -152,6 +153,9 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if state == nil || state.cancel != nil || state.pending != nil || !matchesReference(state, req.ProviderSessionRef) {
 		return nil, protocolError("run cannot continue with this context")
 	}
+	if err := replaceTools(state, req.ToolSet); err != nil {
+		return nil, err
+	}
 	state.contents = append(state.contents, items...)
 	return p.executeLocked(ctx, req.RunID, state), nil
 }
@@ -175,6 +179,9 @@ func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToo
 	state := p.runs[req.RunID]
 	if state == nil || state.cancel != nil || state.pending == nil || state.pending.ToolCallRef != req.ToolCallRef || !matchesReference(state, req.ProviderSessionRef) {
 		return nil, protocolError("tool result does not match the pending Butler proposal")
+	}
+	if err := replaceTools(state, req.ToolSet); err != nil {
+		return nil, err
 	}
 	encoded, _ := json.Marshal(result)
 	response := map[string]any{"name": state.pendingNative.Name, "response": json.RawMessage(encoded)}

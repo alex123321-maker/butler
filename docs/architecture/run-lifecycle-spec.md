@@ -1,5 +1,8 @@
 # Butler — Run Lifecycle Specification
 
+Optional [tool discovery](tool-discovery.md) starts with two catalog schemas and reconstructs selected exact method refs from successful current-run tool receipts. Every continuation and recovery revalidates current scope. Loading cannot replay actions or replace approval/authority, and stale refs never silently upgrade.
+
+
 Optional [agent schedules](agent-schedules.md) persist future instructions through
 exact Broker control and admit one ordinary Task/Input per due occurrence.
 They hold no run/lease during the delay. Schedule cancellation/revision and current

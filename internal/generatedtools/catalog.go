@@ -29,7 +29,7 @@ func (s *Store) Catalog(ctx context.Context, c actionauth.ContextSnapshot, query
 	if e != nil {
 		return nil, e
 	}
-	rows, e := tx.Query(ctx, `SELECT active_digest FROM converter_catalog WHERE owner_id=$1 AND active_digest IS NOT NULL ORDER BY converter_id LIMIT 64`, s.owner)
+	rows, e := tx.Query(ctx, `SELECT active_digest FROM converter_catalog WHERE owner_id=$1 AND active_digest IS NOT NULL ORDER BY converter_id`, s.owner)
 	if e != nil {
 		return nil, e
 	}
@@ -80,10 +80,7 @@ func (s *Store) Catalog(ctx context.Context, c actionauth.ContextSnapshot, query
 			result = append(result, tool)
 		}
 	}
-	if limit <= 0 || limit > 64 {
-		limit = 64
-	}
-	if len(result) > limit {
+	if limit > 0 && len(result) > limit {
 		result = result[:limit]
 	}
 	if e = tx.Commit(ctx); e != nil {

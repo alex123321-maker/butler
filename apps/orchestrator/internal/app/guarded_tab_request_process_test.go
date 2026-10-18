@@ -92,6 +92,23 @@ func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Hand
 		cmd = exec.Command(actual)
 		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_SCHEDULES_ENABLED=true", "BUTLER_SCHEDULES_CONTROL_URL="+control.URL+path, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
 	}
+
+	if harness == "BUTLER_TOOL_DISCOVERY_HARNESS=1" {
+		actual := os.Getenv("BUTLER_TOOL_DISCOVERY_APP_BINARY")
+		if actual == "" {
+			t.Fatal("compiled discovery Broker required")
+		}
+		registryPath := filepath.Join(t.TempDir(), "tools.json")
+		registry := `{"tools":[{"tool_name":"doctor.check_system","tool_class":"doctor","description":"Inspect system health","status":"active","input_schema_json":"{\"type\":\"object\"}","output_schema_json":"{\"type\":\"object\"}","runtime_target":"unused:9090","contract_revision":"1","effect_contract":{"retry_safety":"read_only","verification_method":"read_result"}}]}`
+		if target := os.Getenv("BUTLER_TOOL_DISCOVERY_RUNTIME_TARGET"); target != "" {
+			registry = strings.Replace(registry, "unused:9090", target, 1)
+		}
+		if err := os.WriteFile(registryPath, []byte(registry), 0600); err != nil {
+			t.Fatal(err)
+		}
+		cmd = exec.Command(actual)
+		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_TOOL_DISCOVERY_ENABLED=true", "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
+	}
 	log, err := os.OpenFile(filepath.Join(t.TempDir(), "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		t.Fatal(err)

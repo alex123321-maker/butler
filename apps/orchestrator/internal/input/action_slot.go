@@ -56,17 +56,26 @@ func (s *Store) ensureActionSlot(ctx context.Context, runID, callID, tool, argsH
 	var slot actionSlot
 	var pinned int64
 	var status, owner string
-	err = tx.QueryRow(ctx, `SELECT task_id,task_revision FROM runs WHERE run_id=$1 FOR SHARE`, runID).Scan(&slot.TaskID, &pinned)
+	err = tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0) FROM runs WHERE run_id=$1 FOR SHARE`, runID).Scan(&slot.TaskID, &pinned)
 	if err != nil {
 		return "", err
 	}
-	err = tx.QueryRow(ctx, `SELECT revision,constraints_revision,status,owner_id FROM tasks WHERE task_id=$1 FOR SHARE`, slot.TaskID).Scan(&slot.TaskRevision, &slot.ConstraintsRevision, &status, &owner)
-	if err != nil || slot.TaskRevision != pinned || owner != claim.OwnerID || (status != "active" && status != "waiting_for_user") {
-		return "", fmt.Errorf("task action-slot authority changed")
+	if slot.TaskID == "" {
+		// A conversation owns finite per-input slots, but cannot link an intent
+		// across runs without the task/version authority required by that API.
+		if pinned != 0 || claim.TaskID != "" || parentRef != "" {
+			return "", fmt.Errorf("conversation action-slot authority changed")
+		}
+		owner = claim.OwnerID
+	} else {
+		err = tx.QueryRow(ctx, `SELECT revision,constraints_revision,status,owner_id FROM tasks WHERE task_id=$1 FOR SHARE`, slot.TaskID).Scan(&slot.TaskRevision, &slot.ConstraintsRevision, &status, &owner)
+		if err != nil || slot.TaskRevision != pinned || owner != claim.OwnerID || (status != "active" && status != "waiting_for_user") {
+			return "", fmt.Errorf("task action-slot authority changed")
+		}
 	}
 	slot.RunID, slot.ToolCallID, slot.ToolName, slot.ArgsHash = runID, callID, tool, argsHash
 	var payload string
-	err = tx.QueryRow(ctx, `SELECT checkpoint_json::text FROM accepted_inputs WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() FOR UPDATE`, claim.InputID, claim.ClaimID, runID).Scan(&payload)
+	err = tx.QueryRow(ctx, `SELECT checkpoint_json::text FROM accepted_inputs WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND owner_id=$4 AND session_key=$5 AND COALESCE(task_id,'')=$6 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp() FOR UPDATE`, claim.InputID, claim.ClaimID, runID, owner, claim.SessionKey, slot.TaskID).Scan(&payload)
 	if err != nil {
 		return "", ErrClaimLost
 	}
