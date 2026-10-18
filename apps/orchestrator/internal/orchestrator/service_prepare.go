@@ -280,7 +280,10 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 			prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"unloaded_stale_tool_refs": stale}, content.Origin{Kind: content.ToolOutput, Sensitivity: content.Private, SourceRefs: []string{"tool-catalog:" + prepared.CurrentRunID}}))
 		}
 	}
-	prepared.ToolDefs = toolDefinitionsFromContracts(contracts)
+	prepared.ToolDefs, err = s.modelToolDefinitions(contracts)
+	if err != nil {
+		return err
+	}
 	for _, contract := range contracts {
 		if extension := contract.GetExtension(); extension != nil {
 			prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"extension_operation": contract.GetToolName(), "package_description": contract.GetDescription(), "manifest_source": extension.GetSource(), "manifest_version": extension.GetVersion()}, content.Origin{Kind: content.Document, Sensitivity: content.Private, SourceRefs: []string{"extension-manifest:" + extension.GetManifestHash()}}))

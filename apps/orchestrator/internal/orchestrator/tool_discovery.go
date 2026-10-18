@@ -171,7 +171,11 @@ func (s *Service) toolSetForContinuation(ctx context.Context, runID string) (*tr
 	if err != nil {
 		return nil, err
 	}
-	set := transport.NewToolSetSnapshot(toolDefinitionsFromContracts(selected))
+	definitions, err := s.modelToolDefinitions(selected)
+	if err != nil {
+		return nil, err
+	}
+	set := transport.NewToolSetSnapshot(definitions)
 	encoded, _ := json.Marshal(set.Definitions)
 	run, err := s.runs.GetRun(ctx, runID)
 	if err != nil {

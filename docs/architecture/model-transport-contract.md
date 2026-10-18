@@ -1,5 +1,12 @@
 # Butler — Model Transport Contract
 
+When the owning adaptive memory reader is absent, Orchestrator narrows the native
+`memory.search` presentation to `catalog_exact` and omits event-date filters.
+The canonical Broker contract, immutable ref/hash and all execution/privacy
+guards remain unchanged. Initial and deferred/recovered tool sets use the same
+projection. This prevents advertising currently unavailable adaptive choices;
+it does not qualify or enable adaptive retrieval.
+
 Optional [deferred tool schemas](tool-discovery.md) use an exact `ToolSetSnapshot` on the in-process Go ContinueRun/SubmitToolResult interface. Nil preserves the set; a snapshot replaces it, including explicit empty. Orchestrator selects current authorized contracts; adapters preserve historical aliases and encode the selected set. This does not add a protobuf/RPC implementation or native qualification.
 
 

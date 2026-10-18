@@ -1,5 +1,9 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Without a composed adaptive reader, native memory.search schemas offer only
+catalog_exact and omit event-date filters, including after deferred loading and
+recovery. Canonical Broker contract hashes and authorization stay unchanged.
+
 The budget wrapper logs one numeric `model turn usage observed` record per
 complete observed turn, including the provider's total tokens. High's total
 includes thinking; input plus visible output alone is incomplete. Missing
