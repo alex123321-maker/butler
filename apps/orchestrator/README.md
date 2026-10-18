@@ -964,6 +964,15 @@ task evidence. Migration077 is required; body text remains only in the ordinary
 deletion-aware Catalog/Episodic graph. See
 [the contract](../../docs/architecture/episodic-experience.md).
 
+With an experience store installed, the active source adapter declares a2s
+maximum for its base Catalog proof, current Broker contracts and fresh owning
+applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch
+events stay held until the fresh proof succeeds. Invalid inherited bounds are
+rejected. Without that store, base Catalog200ms remains unchanged. Standalone
+Catalog and background budgets are unchanged, and this ceiling is not a measured
+latency SLO. Broker lookup stays outside SQL locks; no failed check authorizes
+another provider request or discards already observed usage.
+
 Retrieved document text remains eligible when the source has no title. The
 final prompt formatter uses a neutral Document label; an absent title must not
 silently discard an already authorized, selected fragment. Empty evidence text

@@ -212,3 +212,16 @@ after erasure. A stale copied observation must not prevent subsequent owner
 deletion or replay of a later independent anchor. Any populated experience
 provenance refuses downgrade: a failed first deletion can leave an external
 anchor requiring replay without a committed SQL deletion row.
+
+An installed experience store makes the active source verifier a compound owning
+operation: base Catalog proof, current Broker contract lookup outside SQL locks,
+then a fresh owning Catalog/experience proof. This adapter explicitly declares
+the existing trusted two-second maximum for the whole operation. It preserves
+invalid inherited bounds for rejection; absent the experience store, the base
+bound remains unchanged (ordinary Catalog200ms). It does not change standalone
+Catalog, background checks or the250ms observation interval. Parent deadlines,
+cancellation and Stop still clamp the check. Final/tool/batch DATA stays held
+until the fresh proof succeeds; expiry, privacy withdrawal, timeout or current
+authority loss denies release and cancels the provider. Existing usage evidence
+survives a denied proposal; there is no extra provider request, replay or refund.
+The two-second limit is a verification ceiling, not a measured latency SLO.

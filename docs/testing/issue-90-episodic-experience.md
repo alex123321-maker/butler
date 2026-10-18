@@ -439,3 +439,30 @@ and write private evidence only after checks finish. There were no diagnostic
 deadlines; expected currentness denials remain represented. This single passing
 run does not erase v53 or establish a production latency SLO. Native entries
 remain zero and the source/whole acceptance and semantic gates remain open.
+
+The separately declared experience compound bound is covered by frozen source
+v56 `reports/bound-v56`:25pass,0fail,0skip, real PostgreSQL with race/vet,
+evidence.sha256 digest
+`b0af38ffd4f683a02ddc3281b3efdcee729880422b1e18e03e092151635a8bbd`.
+Eight classification controls retain Catalog-only200ms, promote only a valid
+inherited experience bound to2s, retain an existing2s bound and preserve invalid
+zero/short/long inherited requests for rejection. Actual final/tool/batch events
+remain held during a300ms current proof and retain their original payload only
+after success. Deletion during that wait denies each event type, cancels the
+provider and preserves complete observed usage without private payload. Parent
+cancellation releases none of those event types. Real lease expiry after the
+wait begins denies a final; a never-released proof expires at the2s ceiling.
+Existing50ms parent clamp, slow-current/revocation and bounded usage-drain/race
+controls also pass. This changes no standalone Catalog or background deadline.
+Current task/constraints, source, lease and authority checks still run after
+waits; earlier finalizing captured-grant/lease controls remain mandatory in the
+separate complete composition.
+
+The first new test fixture in v55 wrongly cancelled a successful final's parent
+before its controlled provider stream had ended, then rejected a possible
+cancellation error as a second event. v55 remains failed (mechanics.jsonl digest
+`66e46902dabf861f2b51bcc68581f226923415dda96e1888744bd3a811262299`).
+v56 closes that completed test stream and lets the unchanged guard join normally.
+The production change is only the explicit experience adapter bound; it removes
+no proof, lock or RPC and adds no retry. Native entries remain zero. The2s ceiling
+does not qualify latency, semantic quality, cost, rollout or the full57/640 cohort.

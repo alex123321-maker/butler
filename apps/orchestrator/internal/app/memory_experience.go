@@ -377,13 +377,19 @@ func (s experienceRunSources) PinTranscript(ctx context.Context, session string,
 	return s.sources.PinTranscript(ctx, session, revision)
 }
 
-// Preserve an existing compound owning guard's explicit bound. Ordinary Catalog
-// checks retain their unchanged 200ms deadline.
+// Experience adds current Broker contracts and a fresh owning SQL proof after
+// the base check. Declare the existing trusted compound ceiling for that whole
+// operation; the caller still clamps it by its own deadline/cancellation. Keep
+// invalid inherited bounds invalid so the source guard rejects them.
 func (s experienceRunSources) MemorySourceCheckTimeout() time.Duration {
+	bound := 200 * time.Millisecond
 	if bounded, ok := s.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
-		return bounded.MemorySourceCheckTimeout()
+		bound = bounded.MemorySourceCheckTimeout()
 	}
-	return 200 * time.Millisecond
+	if s.store != nil && bound >= 200*time.Millisecond && bound < 2*time.Second {
+		return 2 * time.Second
+	}
+	return bound
 }
 func (s experienceRunSources) CheckRunSources(ctx context.Context, run string) error {
 	if err := s.sources.CheckRunSources(ctx, run); err != nil {
