@@ -170,3 +170,49 @@ The retained server report is
 `/srv/storage/butler/agents/issue89-20261016/reports/native-v2-preseal-v2`.
 This is offline admission evidence; native completion and independent semantic
 qualification require their separate later records.
+
+## Closed native v2 window
+
+The exact reviewed `native-v2-preseal-v2` window closed as **NO_GO_INCOMPLETE**:
+two logical slots completed, the first consolidated foreground slot failed, and
+the remaining six slots were not executed. The original nine-slot population,
+empty failed-slot RunID and all outcomes remain unchanged. Its preserved Session
+and native-call RunIDs identify the actual owning attempt independently; no
+successful answer is invented for that slot.
+
+All11 admitted native entries have known complete usage totaling80521 tokens.
+All11 corresponding product observations are present with zero NULLs. The
+inclusive current owner-day vector is49 model turns,52985856 quoted tokens,
+18540000 active milliseconds,411041792 provider input bytes,32 external calls
+and134217728 egress bytes, with zero children and cost micros. All20 reservations
+sum exactly to that scope. This includes the preceding38-turn leaf once; the
+older161 historical originals and their unknowns remain separate.
+
+The baseline opened all seven originals and completed. The consolidated reader
+opened its first4096-character page, received `truncated=true` and
+`next_offset=4096`, then proposed a second `memory.open` at offset4096. That
+second proposal was not tool-admitted. The durable input is blocked with
+`execution_stopped`; its run remains `model_running`. A narrow safe
+classification found Core context cancellation, followed by failure to record
+the failed transition on that cancelled context. This establishes the observed
+stop; its originating cancellation still requires independent diagnosis.
+Every native provider failure field is empty. This is not a provider-availability
+or paired model-quality result.
+
+The [safe native evidence](fixtures/issue89/native-v2-review.json) retains exact
+visible requests, normalized proposals, the completed baseline, original slots,
+grouping/provenance evidence, full costs and artifact hashes. Its SHA256 is
+`0396a50a3934552d6f32821a1e547203fd1435537e5e2952edfda17d05ad55ab`.
+The original ledger SHA256 is
+`a407e19989b187d88ffa5cd97eeb84247d50bf33bbdb2c144d0200fedac81a62`;
+the complete original screen/outcome SHA256 is
+`3a3f011dc8580db6eff68f4e79d236eb49eee35dd5cc34c1d49eeda55103d6c6`.
+The [third-slot receipt](fixtures/issue89/native-v2-third-slot-receipt.json)
+records only durable state and source-reference arguments; SHA256
+`e11d9546dc18e909a80fc863acabc56df091e10dd6f46bd69577602cf388951b`.
+
+Exact opaque CAS handback, actual main paid-discovery HTTP200 and a new private
+snapshot all passed; the common auth lock was released. No selective retry,
+refund, schema reopening, completed treatment comparison or savings claim was
+made. A further native cohort needs a proven fix and a separately reviewed
+latest49-leaf carry and full prospective seal.

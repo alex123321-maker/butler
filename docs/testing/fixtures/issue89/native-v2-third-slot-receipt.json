@@ -1,0 +1,40 @@
+{
+  "input": {
+    "attempts": 1,
+    "checkpoint": "model_budget_reserved",
+    "error_code": "execution_stopped",
+    "run_id": "run-1792297244908690050-f272d5289f2a6f40",
+    "status": "blocked",
+    "task_id": "task-cb77ab8a9269547419576e16a88d5d14"
+  },
+  "schema_tables": [
+    "approval_events",
+    "channel_delivery_events",
+    "converter_events",
+    "extension_events",
+    "initiative_config_events",
+    "initiative_digest_events",
+    "initiative_events",
+    "owner_authority_events",
+    "run_final_results",
+    "run_state_transitions",
+    "runs",
+    "skill_events",
+    "task_control_events"
+  ],
+  "tool_calls": [
+    {
+      "args": {
+        "access_revision": 2,
+        "content_hash": "2f0c6f9d9349999438415ad7ab8818dd311f78396c93fef43b71d0dab0730114",
+        "source_id": "source_535d137a741d9688b2e45c57f01f3034d660a2bb",
+        "source_revision": 1
+      },
+      "error_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "run_id": "run-1792297244908690050-f272d5289f2a6f40",
+      "status": "completed",
+      "tool_name": "memory.open"
+    }
+  ],
+  "wrapper_exact_empty_code_result_nil": true
+}
