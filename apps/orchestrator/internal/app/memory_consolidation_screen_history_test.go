@@ -70,6 +70,7 @@ type consolidationScreenHistory struct {
 	KnownNativeTokenLowerBound   int64
 	SourceHashes                 map[string]string
 	OtherOwners                  []json.RawMessage
+	Successor                    *consolidationV2Summary `json:"successor,omitempty"`
 }
 
 type consolidationCurrentDay struct {
@@ -195,6 +196,10 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 	raw, err := os.ReadFile(path)
 	if err != nil || len(expectedHash) != 64 || experienceDigest(string(raw)) != expectedHash {
 		return nil, errors.New("frozen history hash differs")
+	}
+	var envelope struct{ Format string }
+	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.consolidation.native-history.v3" {
+		return loadConsolidationV2History(path, expectedHash)
 	}
 	var manifest struct {
 		Format              string                             `json:"format"`
@@ -476,6 +481,9 @@ func consolidationScreenPolicy(provider, model string, carry budget.Units) budge
 }
 
 func consolidationCarryHistory(ctx context.Context, pool *pgxpool.Pool, history *consolidationScreenHistory, policy budget.Policy) error {
+	if history != nil && history.Successor != nil {
+		return consolidationV2ApplyHistory(ctx, pool, history, policy)
+	}
 	var now time.Time
 	if err := pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
 		return err

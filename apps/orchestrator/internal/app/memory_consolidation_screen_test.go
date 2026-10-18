@@ -29,6 +29,7 @@ import (
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -95,7 +96,7 @@ CREATE TABLE consolidation_screen_calls(entry_id text PRIMARY KEY,slot_id text N
 	}
 }
 
-func consolidationScreenPool(t *testing.T, native bool) *pgxpool.Pool {
+func consolidationScreenPool(t *testing.T, native bool, history *consolidationScreenHistory) *pgxpool.Pool {
 	t.Helper()
 	if !native {
 		return memorytest.Database(t)
@@ -110,11 +111,18 @@ func consolidationScreenPool(t *testing.T, native bool) *pgxpool.Pool {
 		t.Fatal("isolated storage unavailable")
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(context.Background(), `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public; CREATE SCHEMA consolidation_native_v1`); err != nil {
+	schema := "consolidation_native_v1"
+	if history != nil && history.Successor != nil {
+		if history.Successor.Schema != "consolidation_native_v2" {
+			t.Fatal("reviewed successor schema required")
+		}
+		schema = history.Successor.Schema
+	}
+	if _, err = admin.Exec(context.Background(), `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public; CREATE SCHEMA `+pgx.Identifier{schema}.Sanitize()); err != nil {
 		t.Fatal("native one-use schema already exists or unavailable")
 	}
 	cfg.MaxConns = 2
-	cfg.ConnConfig.RuntimeParams["search_path"] = "consolidation_native_v1,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = pgx.Identifier{schema}.Sanitize() + ",public"
 	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
 	if err != nil {
 		t.Fatal("native one-use storage unavailable")
@@ -224,8 +232,16 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		if history.LatestTemporalLeaf != "native-v4" || history.ProspectiveDay == "" {
 			t.Fatal("native89 requires newest reviewed inclusive temporal-v4 history")
 		}
+		if (os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") == "1") != (history.Successor != nil) {
+			t.Fatal("native cohort flag and immutable history schema differ")
+		}
+		if history.Successor != nil {
+			if err := consolidationV2CheckPins(filepath.Dir(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_EXPECTED_POLICY"))); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
-	pool = consolidationScreenPool(t, native)
+	pool = consolidationScreenPool(t, native, history)
 	createConsolidationScreenTables(t, pool, slots, corpusRaw)
 	deadline := started.Add(60 * time.Minute)
 	if history != nil && history.ProspectiveDeadline.Before(deadline) {
@@ -541,7 +557,7 @@ func TestConsolidationPairedCollectorActualFlowBrokerIntegration(t *testing.T) {
 }
 
 func TestNativeConsolidationSelectedSourcePairsIntegration(t *testing.T) {
-	if os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V1") != "1" {
+	if os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V1") != "1" && os.Getenv("BUTLER_CONSOLIDATION_NATIVE_V2") != "1" {
 		t.Skip("explicit reviewed one-use native consolidation window required")
 	}
 	runConsolidationPairedScreen(t, true)

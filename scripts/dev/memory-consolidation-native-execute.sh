@@ -22,12 +22,29 @@ test ! -e "$proof/screen/window-begun.json"
 read -r history < "$proof/history-reference"
 read -r history_hash < "$proof/history.sha256"
 test "$(sha256sum "$history/history.json" | cut -d' ' -f1)" = "$history_hash"
+history_format=$(jq -er .format "$history/history.json")
+v1=0
+v2=0
+case "$history_format" in
+ butler.consolidation.native-history.v2) v1=1; history_script=memory-consolidation-history.py ;;
+ butler.consolidation.native-history.v3) v2=1; history_script=memory-consolidation-successor-history.py ;;
+ *) exit 2 ;;
+esac
 umask 077
 exec 9>/srv/storage/butler/agents/native-provider-auth.lock
 flock -n 9
 # Re-read every fixed experimental ledger under the same auth lock. A changed
 # current-day population invalidates this preseal before credentials are read.
-python3 "$src/scripts/dev/memory-consolidation-history.py" check-current "$history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
+python3 "$src/scripts/dev/$history_script" check-current "$history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
+if [[ "$v2" == 1 ]]; then
+ docker run --rm --pull never --network none --cpus 1 --memory 2g --pids-limit 128 \
+  -v "$src:/src:ro" -v "$proof:/proof:ro" -v "$history:/history:ro" -w /src \
+  -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker -e BUTLER_CONSOLIDATION_NATIVE_V2_CHECK=1 \
+  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json \
+  -e BUTLER_CONSOLIDATION_NATIVE_EXPECTED_POLICY=/proof/native-budget-policy.json \
+  golang:1.27.2-bookworm /proof/orchestrator-app.test -test.v -test.run '^TestConsolidationV2CheckPreparedPins$' \
+  > "$proof/pre-auth-successor-pins.txt" 2>&1
+fi
 # Reprove the frozen original history/current UTC day before reading any auth.
 # This consumes no provider operation and cannot change the prepared allowance.
 docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 128 \
@@ -55,7 +72,7 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  --security-opt no-new-privileges --env-file "$private/native.env" \
  -v "$src:/src:ro" -v "$proof:/proof" -v "$history:/history:ro" -v "$private:/private:ro" -w /src \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_MEMORY_READ_APP_BINARY=/proof/tool-broker \
- -e BUTLER_CONSOLIDATION_NATIVE_V1=1 -e BUTLER_CONSOLIDATION_SCREEN_PROOF=/proof/screen \
+ -e BUTLER_CONSOLIDATION_NATIVE_V1="$v1" -e BUTLER_CONSOLIDATION_NATIVE_V2="$v2" -e BUTLER_CONSOLIDATION_SCREEN_PROOF=/proof/screen \
  -e BUTLER_CONSOLIDATION_SCREEN_USE_SEALED_SCHEDULE=1 \
  -e BUTLER_CONSOLIDATION_NATIVE_AUTH_VALUE_FILE=/private/auth-import.value \
  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json -e BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256="$history_hash" \
