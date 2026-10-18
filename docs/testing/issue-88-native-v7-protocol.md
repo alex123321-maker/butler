@@ -94,3 +94,35 @@ and continuation-before-Start with self-consistent original witnesses. Linux
 offline/race evidence retains all five failures under `native-sequence-red-v1`.
 The initial `native-v7-preseal-v1` remains immutable and withdrawn unconsumed
 with auth0. A fresh source, all controls and complete preseal are required.
+
+The replacement source `69fde66c3661857372b4f1a8414d2be09c12a0b9`
+passed53 named actual isolated-PG checks (nine parents and44 children), race,
+vet and zero failures/skips under `recipe-controls-v2`. The source's final
+fixtures were also run against the old `2827bfd7` validator; all five expected
+red leaf controls reproduced, with evidence retained at
+`native-sequence-red-v2/same-fixture-red-review.json`, SHA256
+`aecdaf02bb77130cfacc5e4865c48c156196e0a38fd8c39254928a28aacca7e9`.
+Original earlier red/setup receipts remain unchanged.
+
+`native-v7-preseal-v2` has eleven mandatory parent checks plus58 children,
+zero failures/skips, race, compiled exact pins and the actual nonroot standalone
+test2json preflight. Its [safe exact freeze](fixtures/issue88/native-v7-preseal-review.json),
+SHA256 `7fdfa3dd05526d49cc3d3f5a2c2ebbf832190c3a38df8f7ce0e7c5bf9f5a40eb`,
+contains all original historical/current/native/product NULL counters, full
+inclusive quoted vector, source/binary/model/contract/schedule/policy pins,
+main unchanged receipt and dedicated-PG evidence. All834 production Go files
+byte-match the successful frozen native89v3 source; a separate hashed runtime
+manifest is retained for independent coordinator comparison.
+
+Prepared-pins SHA256 is
+`47e08ac8b5ffe77ff1a604b7b815bc19e4c223fb34aeedfeaf6787f6dab330a9`;
+source tree hash is
+`f809a0c7295b82711e7a90a35cfcb43be1fa4e44dc16135cf72531030d884b6e`.
+The unchanged actual seven-store history is
+`2b8230458e2ae4c1d950fa1de4adc9ab3cdc7aad4c04769d9a03007b3208c95e`.
+The finite day limit is253 model turns and171 external calls: the existing109/75
+plus the unchanged144/96 prospective allowance. All predecessor charges stay
+charged. The exact future schema is absent, its one-use receipt count is zero,
+and main had no active work at the freeze. Authentication/native calls remain
+zero pending the coordinator's independent exact preseal review and explicit
+one-execution approval.
