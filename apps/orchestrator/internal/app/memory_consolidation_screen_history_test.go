@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -58,13 +59,78 @@ type consolidationHistoryWindow struct {
 
 type consolidationScreenHistory struct {
 	Hash, Day                    string
+	LatestTemporalLeaf           string
 	Deadline                     time.Time
 	Carry                        budget.Units
+	ProspectiveDay               string
+	ProspectiveDeadline          time.Time
+	CurrentCarry                 budget.Units
 	Attempts, Known, Unknown     int
 	ProductKnown, ProductUnknown int
 	KnownNativeTokenLowerBound   int64
 	SourceHashes                 map[string]string
 	OtherOwners                  []json.RawMessage
+}
+
+type consolidationCurrentDay struct {
+	Format, Day, Owner string
+	Databases          []struct {
+		Container, Database string
+		Port                int
+		Schemas             []string
+		Windows             []struct {
+			Schema       string
+			Scopes       []json.RawMessage
+			Reservations []json.RawMessage
+		}
+	}
+}
+
+// New-day authority is independent of expired historical budget scopes. This
+// collector only supports the first experimental owner population that day;
+// finding any existing scope/reservation requires a new reviewed carry recipe.
+func consolidationValidateCurrentDay(current consolidationCurrentDay, day string, deadline time.Time) error {
+	start, err := time.Parse("2006-01-02", day)
+	if err != nil || current.Format != "butler.consolidation.current-owner-day.v1" || current.Day != day || current.Owner != "owner" || !deadline.Equal(start.Add(24*time.Hour)) || len(current.Databases) != 5 {
+		return errors.New("complete bounded prospective UTC-day proof required")
+	}
+	want := map[string]int{"issue84-20261016-pg:issue84_test": 5432, "butler-issue85-postgres:issue85_native_test": 18585, "butler-issue86-native-postgres-1:memory_read_native_test": 5432, "butler-issue87-native-v1-pg:memory_adaptive_test": 5432, "issue86-20261016-pg:memory_read_test": 5432}
+	validSchema := regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	for _, database := range current.Databases {
+		key := database.Container + ":" + database.Database
+		if want[key] != database.Port || database.Port == 0 || (len(database.Schemas) == 0 && key != "issue86-20261016-pg:memory_read_test") || len(database.Schemas) != len(database.Windows) || database.Schemas == nil || database.Windows == nil {
+			return errors.New("current-day database inventory differs")
+		}
+		delete(want, key)
+		seen := map[string]bool{}
+		for i, window := range database.Windows {
+			if !validSchema.MatchString(window.Schema) || seen[window.Schema] || database.Schemas[i] != window.Schema || window.Scopes == nil || window.Reservations == nil || len(window.Scopes) != 0 || len(window.Reservations) != 0 {
+				return errors.New("existing or incomplete current-day owner population requires a new reviewed carry plan")
+			}
+			seen[window.Schema] = true
+		}
+		if key == "issue84-20261016-pg:issue84_test" {
+			for i := 1; i <= 7; i++ {
+				if !seen["summary_native_v"+string(rune('0'+i))] {
+					return errors.New("retained summary schema omitted from current-day inventory")
+				}
+			}
+		}
+		if key == "butler-issue85-postgres:issue85_native_test" {
+			if !seen["public"] {
+				return errors.New("retained candidate schema omitted from current-day inventory")
+			}
+			for i := 1; i <= 4; i++ {
+				if !seen["memory_temporal_native_v"+string(rune('0'+i))] {
+					return errors.New("retained temporal schema omitted from current-day inventory")
+				}
+			}
+		}
+	}
+	if len(want) != 0 {
+		return errors.New("current-day ledger inventory incomplete")
+	}
+	return nil
 }
 
 func consolidationAddUnits(a, b budget.Units) budget.Units {
@@ -125,17 +191,29 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 		return nil, errors.New("frozen history hash differs")
 	}
 	var manifest struct {
-		Format       string                             `json:"format"`
-		Owner        string                             `json:"prospective_owner"`
-		Source84     []consolidationHistoryRef          `json:"source84"`
-		Comparison84 consolidationHistoryRef            `json:"comparison84"`
-		Source88     map[string]consolidationHistoryRef `json:"source88"`
-		Other        []consolidationHistoryRef          `json:"other_owner_roadmap"`
+		Format              string                             `json:"format"`
+		Owner               string                             `json:"prospective_owner"`
+		Leaf                string                             `json:"inclusive_temporal_leaf"`
+		HistoricalDay       string                             `json:"historical_day"`
+		ProspectiveDay      string                             `json:"prospective_day"`
+		ProspectiveDeadline time.Time                          `json:"prospective_deadline"`
+		Current             consolidationHistoryRef            `json:"current_owner_day"`
+		Source84            []consolidationHistoryRef          `json:"source84"`
+		Comparison84        consolidationHistoryRef            `json:"comparison84"`
+		Source88            map[string]consolidationHistoryRef `json:"source88"`
+		Other               []consolidationHistoryRef          `json:"other_owner_roadmap"`
 	}
-	if json.Unmarshal(raw, &manifest) != nil || manifest.Format != "butler.consolidation.native-history.v1" || manifest.Owner != "owner" || len(manifest.Source84) != 7 || len(manifest.Source88) != 2 || len(manifest.Other) != 2 {
+	if json.Unmarshal(raw, &manifest) != nil || (manifest.Format != "butler.consolidation.native-history.v1" && manifest.Format != "butler.consolidation.native-history.v2") || manifest.Owner != "owner" || len(manifest.Source84) != 7 || len(manifest.Source88) != 2 || len(manifest.Other) != 2 {
 		return nil, errors.New("complete frozen history cohort required")
 	}
 	history := &consolidationScreenHistory{Hash: expectedHash, Day: "2026-10-15", SourceHashes: map[string]string{}}
+	if manifest.Leaf == "" {
+		manifest.Leaf = "native-v3"
+	}
+	if manifest.Leaf != "native-v3" && manifest.Leaf != "native-v4" {
+		return nil, errors.New("reviewed inclusive temporal leaf required")
+	}
+	history.LatestTemporalLeaf = manifest.Leaf
 	read := func(ref consolidationHistoryRef, target any) error {
 		if ref.Path == "" || filepath.Base(ref.Path) != ref.Path {
 			return errors.New("history reference must remain inside frozen directory")
@@ -146,6 +224,13 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 		}
 		history.SourceHashes[ref.Path] = ref.SHA256
 		return json.Unmarshal(data, target)
+	}
+	if manifest.Format == "butler.consolidation.native-history.v2" {
+		var current consolidationCurrentDay
+		if manifest.HistoricalDay != history.Day || manifest.Leaf != "native-v4" || read(manifest.Current, &current) != nil || consolidationValidateCurrentDay(current, manifest.ProspectiveDay, manifest.ProspectiveDeadline) != nil || manifest.ProspectiveDay <= history.Day {
+			return nil, errors.New("new prospective UTC-day proof differs from retained historical day")
+		}
+		history.ProspectiveDay, history.ProspectiveDeadline = manifest.ProspectiveDay, manifest.ProspectiveDeadline
 	}
 	seen := map[string]string{}
 	for _, ref := range manifest.Source84 {
@@ -198,6 +283,7 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 		consolidationHistoryWindow
 		V1 consolidationHistoryWindow `json:"temporal_v1"`
 		V2 consolidationHistoryWindow `json:"temporal_v2"`
+		V3 consolidationHistoryWindow `json:"temporal_v3"`
 	}
 	if err = read(manifest.Source88["retained85-ledger.json"], &prior); err != nil {
 		return nil, err
@@ -214,7 +300,14 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 	if oldDeadline.Before(history.Deadline) {
 		history.Deadline = oldDeadline
 	}
-	for _, window := range []consolidationHistoryWindow{prior.V1, prior.V2} {
+	predecessors := []consolidationHistoryWindow{prior.V1, prior.V2}
+	if manifest.Leaf == "native-v4" {
+		if !prior.V3.Window.Closed || prior.V3.Window.Paid != 6 || len(prior.V3.Entries) != 6 {
+			return nil, errors.New("original temporal-v3 cohort missing")
+		}
+		predecessors = append(predecessors, prior.V3)
+	}
+	for _, window := range predecessors {
 		currentUnits, currentDeadline, e := consolidationValidateHistoryWindow(window, history.Day, seen, "issue88predecessor")
 		if e != nil {
 			return nil, e
@@ -240,7 +333,11 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 	if err = read(manifest.Source88["full-ledger.json"], &latest); err != nil {
 		return nil, err
 	}
-	if !latest.Window.Closed || latest.Window.Paid != 6 || len(latest.Entries) != 6 {
+	wantPaid, wantTurns := 6, int64(92)
+	if manifest.Leaf == "native-v4" {
+		wantPaid, wantTurns = 45, 137
+	}
+	if !latest.Window.Closed || latest.Window.Paid != wantPaid || len(latest.Entries) != wantPaid {
 		return nil, errors.New("latest inclusive88 cohort differs")
 	}
 	units, deadline, err := consolidationValidateHistoryWindow(latest, history.Day, seen, "issue88v3")
@@ -248,7 +345,7 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 		return nil, err
 	}
 	var priorUnits budget.Units
-	for _, s := range prior.V2.Scopes {
+	for _, s := range predecessors[len(predecessors)-1].Scopes {
 		if s.KindValue == "owner_day" {
 			priorUnits = s.Used
 		}
@@ -262,7 +359,7 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 			}
 		}
 	}
-	if carryCount != 1 || priorUnits.ModelTurns != 86 || units.ModelTurns != 92 {
+	if carryCount != 1 || priorUnits != oldUnits || units.ModelTurns != wantTurns {
 		return nil, errors.New("inclusive source would double count or omit attempts")
 	}
 	history.Carry = consolidationAddUnits(history.Carry, units)
@@ -292,7 +389,7 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 			history.ProductKnown++
 		}
 	}
-	for _, w := range []consolidationHistoryWindow{prior.V1, prior.V2, latest} {
+	for _, w := range append(predecessors, latest) {
 		for _, e := range w.Entries {
 			if err = addUsage(e.Observation.Usage); err != nil {
 				return nil, err
@@ -306,19 +403,55 @@ func loadConsolidationScreenHistory(path, expectedHash string) (*consolidationSc
 			}
 		}
 	}
-	if history.Attempts != 116 || history.Known != 108 || history.Unknown != 8 || history.ProductKnown != 107 || history.ProductUnknown != 9 || history.Carry.ModelTurns != 116 || history.KnownNativeTokenLowerBound != 478823 {
+	wantAttempts, wantTokens := 116, int64(478823)
+	if manifest.Leaf == "native-v4" {
+		wantAttempts, wantTokens = 161, 758525
+	}
+	if history.Attempts != wantAttempts || history.Known != wantAttempts-8 || history.Unknown != 8 || history.ProductKnown != wantAttempts-9 || history.ProductUnknown != 9 || history.Carry.ModelTurns != int64(wantAttempts) || history.KnownNativeTokenLowerBound != wantTokens {
 		return nil, errors.New("full original owner/day population differs")
 	}
+	otherIssues := map[int]bool{}
 	for _, ref := range manifest.Other {
 		var other json.RawMessage
 		if err = read(ref, &other); err != nil {
 			return nil, err
 		}
-		var w consolidationHistoryWindow
-		_ = json.Unmarshal(other, &w)
-		for _, s := range w.Scopes {
-			if s.KindValue == "owner_day" && s.OwnerValue == "owner" {
-				return nil, errors.New("other-owner roadmap record overlaps carry")
+		windows := []consolidationHistoryWindow{}
+		if manifest.Format == "butler.consolidation.native-history.v2" {
+			var inventory struct {
+				Format      string
+				Issue       int
+				Database    string `json:"database_identity"`
+				Schemas     []string
+				Populations []struct {
+					Schema string
+					consolidationHistoryWindow
+				}
+			}
+			if json.Unmarshal(other, &inventory) != nil || inventory.Format != "butler.memory-other-owner-ledgers.v1" || (inventory.Issue != 86 && inventory.Issue != 87) || otherIssues[inventory.Issue] || len(inventory.Schemas) == 0 || len(inventory.Populations) != len(inventory.Schemas) || (inventory.Issue == 86 && inventory.Database != "memory_read_native_test") || (inventory.Issue == 87 && inventory.Database != "memory_adaptive_test") {
+				return nil, errors.New("complete other-owner roadmap inventory required")
+			}
+			otherIssues[inventory.Issue] = true
+			seenSchema := map[string]bool{}
+			for i, population := range inventory.Populations {
+				if population.Schema != inventory.Schemas[i] || seenSchema[population.Schema] {
+					return nil, errors.New("other-owner roadmap schema omitted or repeated")
+				}
+				seenSchema[population.Schema] = true
+				windows = append(windows, population.consolidationHistoryWindow)
+			}
+		} else {
+			var w consolidationHistoryWindow
+			if json.Unmarshal(other, &w) != nil {
+				return nil, errors.New("other-owner roadmap record invalid")
+			}
+			windows = append(windows, w)
+		}
+		for _, w := range windows {
+			for _, s := range w.Scopes {
+				if s.KindValue == "owner_day" && s.OwnerValue == "owner" {
+					return nil, errors.New("other-owner roadmap record overlaps carry")
+				}
 			}
 		}
 		history.OtherOwners = append(history.OtherOwners, other)
@@ -341,15 +474,18 @@ func consolidationCarryHistory(ctx context.Context, pool *pgxpool.Pool, history 
 	if err := pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
 		return err
 	}
-	if now.UTC().Format("2006-01-02") != history.Day || !now.Before(history.Deadline) {
+	if now.UTC().Format("2006-01-02") != history.ProspectiveDay || !now.Before(history.ProspectiveDeadline) || history.CurrentCarry != (budget.Units{}) {
 		return errors.New("frozen owner/day window expired; new prospective freeze required")
 	}
 	ledger := budget.NewLedger(pool)
-	scope, err := ledger.Ensure(ctx, budget.ScopeSpec{Kind: "owner_day", OwnerID: "owner", SubjectID: history.Day, Limits: policy.Day, Deadline: now.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)})
+	scope, err := ledger.Ensure(ctx, budget.ScopeSpec{Kind: "owner_day", OwnerID: "owner", SubjectID: history.ProspectiveDay, Limits: policy.Day, Deadline: history.ProspectiveDeadline})
 	if err != nil {
 		return err
 	}
-	_, fresh, err := ledger.Reserve(ctx, budget.Request{OwnerID: "owner", OperationID: "historical-owner-day-carry:" + history.Hash, ScopeIDs: []string{scope.ID}, Charge: history.Carry, CostKnown: true})
+	// This zero-charge one-use receipt binds the independently proved current
+	// day. Old spend remains in the immutable history table with its own day and
+	// deadlines; it is neither rebilled as today's usage nor refunded.
+	_, fresh, err := ledger.Reserve(ctx, budget.Request{OwnerID: "owner", OperationID: "prospective-owner-day-history-freeze:" + history.Hash, ScopeIDs: []string{scope.ID}, Charge: history.CurrentCarry, CostKnown: true})
 	if err != nil {
 		return err
 	}
@@ -368,8 +504,12 @@ func TestConsolidationNativeFrozenHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	policy := consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", history.Carry)
-	if policy.Validate() != nil || policy.Day.ModelTurns != 215 || policy.Day.ExternalCalls != 102 || history.Carry.Tokens != 123887616 || history.Carry.ActiveMillis != 22290000 || history.Carry.ProviderInputBytes != 973078528 || history.Carry.EgressBytes != 25165824 {
+	policy := consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", history.CurrentCarry)
+	wantCarry := budget.Units{ModelTurns: 116, Tokens: 123887616, ActiveMillis: 22290000, ProviderInputBytes: 973078528, ExternalCalls: 6, EgressBytes: 25165824}
+	if history.LatestTemporalLeaf == "native-v4" {
+		wantCarry = budget.Units{ModelTurns: 161, Tokens: 172548096, ActiveMillis: 39750000, ProviderInputBytes: 1350565888, ExternalCalls: 39, EgressBytes: 163577856}
+	}
+	if policy.Validate() != nil || policy.Day.ModelTurns != history.CurrentCarry.ModelTurns+99 || policy.Day.ExternalCalls != history.CurrentCarry.ExternalCalls+96 || history.Carry != wantCarry {
 		t.Fatal("historical/current prospective allowance differs")
 	}
 	if proof := os.Getenv("BUTLER_CONSOLIDATION_NATIVE_POLICY_PROOF"); proof != "" {
@@ -391,7 +531,7 @@ func TestConsolidationNativeHistoryCarryIntegration(t *testing.T) {
 	}
 	pool := memorytest.Database(t)
 	ctx := context.Background()
-	policy := consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", history.Carry)
+	policy := consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", history.CurrentCarry)
 	if err = consolidationCarryHistory(ctx, pool, history, policy); err != nil {
 		t.Fatal(err)
 	}
@@ -401,8 +541,8 @@ func TestConsolidationNativeHistoryCarryIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = json.Unmarshal(raw, &used)
-	if used != history.Carry {
-		t.Fatal("historical quote was reset/partially imported")
+	if used != history.CurrentCarry {
+		t.Fatal("current-day proof differs from the frozen population")
 	}
 	if err = consolidationCarryHistory(ctx, pool, history, policy); err == nil {
 		t.Fatal("one-use carry replay accepted")
@@ -451,5 +591,63 @@ func TestConsolidationScreenHistoryRejectsPartialOrDuplicateCarry(t *testing.T) 
 	window.Scopes[0].OwnerValue = "another-owner"
 	if _, _, err := consolidationValidateHistoryWindow(window, "2026-10-15", map[string]string{}, "foreign"); err == nil {
 		t.Fatal("different-owner scope silently carried as current")
+	}
+}
+
+func TestConsolidationScreenProspectiveDayRequiresCompleteUnchargedPopulation(t *testing.T) {
+	const day = "2026-10-18"
+	deadline := time.Date(2026, 10, 19, 0, 0, 0, 0, time.UTC)
+	// The exact five retained stores are separate from a new current-day
+	// authority. Full old-day attempts/NULL usage are checked by the independent
+	// historical parser; they are never represented by an empty current array.
+	raw := `{"format":"butler.consolidation.current-owner-day.v1","day":"2026-10-18","owner":"owner","databases":[
+{"container":"issue84-20261016-pg","database":"issue84_test","port":5432,"schemas":["summary_native_v1","summary_native_v2","summary_native_v3","summary_native_v4","summary_native_v5","summary_native_v6","summary_native_v7"],"windows":[{"schema":"summary_native_v1","scopes":[],"reservations":[]},{"schema":"summary_native_v2","scopes":[],"reservations":[]},{"schema":"summary_native_v3","scopes":[],"reservations":[]},{"schema":"summary_native_v4","scopes":[],"reservations":[]},{"schema":"summary_native_v5","scopes":[],"reservations":[]},{"schema":"summary_native_v6","scopes":[],"reservations":[]},{"schema":"summary_native_v7","scopes":[],"reservations":[]}]},
+{"container":"butler-issue85-postgres","database":"issue85_native_test","port":18585,"schemas":["memory_temporal_native_v1","memory_temporal_native_v2","memory_temporal_native_v3","memory_temporal_native_v4","public"],"windows":[{"schema":"memory_temporal_native_v1","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v2","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v3","scopes":[],"reservations":[]},{"schema":"memory_temporal_native_v4","scopes":[],"reservations":[]},{"schema":"public","scopes":[],"reservations":[]}]},
+{"container":"butler-issue86-native-postgres-1","database":"memory_read_native_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","scopes":[],"reservations":[]}]},
+{"container":"butler-issue87-native-v1-pg","database":"memory_adaptive_test","port":5432,"schemas":["adaptive_native_v1"],"windows":[{"schema":"adaptive_native_v1","scopes":[],"reservations":[]}]},
+{"container":"issue86-20261016-pg","database":"memory_read_test","port":5432,"schemas":["public"],"windows":[{"schema":"public","scopes":[],"reservations":[]}]}]}`
+	decode := func(t *testing.T) consolidationCurrentDay {
+		t.Helper()
+		var current consolidationCurrentDay
+		if json.Unmarshal([]byte(raw), &current) != nil {
+			t.Fatal("invalid exact inventory fixture")
+		}
+		return current
+	}
+	if err := consolidationValidateCurrentDay(decode(t), day, deadline); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name   string
+		change func(*consolidationCurrentDay)
+	}{
+		{"missing_database", func(c *consolidationCurrentDay) { c.Databases = c.Databases[:4] }},
+		{"duplicate_database", func(c *consolidationCurrentDay) { c.Databases[4] = c.Databases[3] }},
+		{"omitted_temporal_predecessor", func(c *consolidationCurrentDay) {
+			c.Databases[1].Schemas = c.Databases[1].Schemas[1:]
+			c.Databases[1].Windows = c.Databases[1].Windows[1:]
+		}},
+		{"current_day_scope_even_zero_is_not_fresh", func(c *consolidationCurrentDay) {
+			c.Databases[0].Windows[0].Scopes = []json.RawMessage{json.RawMessage(`{"used_json":{"model_turns":0}}`)}
+		}},
+		{"unobserved_reservation_is_not_free", func(c *consolidationCurrentDay) {
+			c.Databases[0].Windows[0].Reservations = []json.RawMessage{json.RawMessage(`{"charge":{"model_turns":1},"usage":null}`)}
+		}},
+		{"unknown_reservations", func(c *consolidationCurrentDay) { c.Databases[0].Windows[0].Reservations = nil }},
+		{"different_day", func(c *consolidationCurrentDay) { c.Day = "2026-10-17" }},
+		{"different_owner", func(c *consolidationCurrentDay) { c.Owner = "another-owner" }},
+		{"unmatched_schema", func(c *consolidationCurrentDay) { c.Databases[0].Windows[0].Schema = "public" }},
+		{"unmatched_port", func(c *consolidationCurrentDay) { c.Databases[1].Port = 5432 }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			current := decode(t)
+			tc.change(&current)
+			if consolidationValidateCurrentDay(current, day, deadline) == nil {
+				t.Fatal("incomplete/charged current population admitted as new-day authority")
+			}
+		})
+	}
+	if consolidationValidateCurrentDay(decode(t), day, deadline.Add(time.Hour)) == nil {
+		t.Fatal("UTC-day deadline extended")
 	}
 }

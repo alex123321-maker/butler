@@ -193,7 +193,7 @@ func (x *consolidationOrdinaryExecutor) Execute(ctx context.Context, e ingress.I
 
 // Real private read/control endpoint plus the actual Broker subprocess. No owner
 // actor or synthetic read receipt replaces the current input/lease/dispatch.
-func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, manifest, proof string, policy budget.Policy) *tools.BrokerClient {
+func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, manifest, proof string, policy budget.Policy, options ...AdaptiveReadOptions) *tools.BrokerClient {
 	t.Helper()
 	binary := os.Getenv("BUTLER_MEMORY_READ_APP_BINARY")
 	if binary == "" {
@@ -204,7 +204,7 @@ func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.
 	leases := session.NewPostgresLeaseManager(pool)
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
 	reader := &actionContextReader{runs: runs, sessions: repo, leases: leases, tasks: task.NewStore(pool), pool: pool, memoryReadReady: true}
-	reads, err := NewMemoryReads(pool, cat)
+	reads, err := NewMemoryReads(pool, cat, options...)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -221,12 +221,15 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		if err != nil {
 			t.Fatal("complete frozen historical carry unavailable")
 		}
+		if history.LatestTemporalLeaf != "native-v4" || history.ProspectiveDay == "" {
+			t.Fatal("native89 requires newest reviewed inclusive temporal-v4 history")
+		}
 	}
 	pool = consolidationScreenPool(t, native)
 	createConsolidationScreenTables(t, pool, slots, corpusRaw)
 	deadline := started.Add(60 * time.Minute)
-	if history != nil && history.Deadline.Before(deadline) {
-		deadline = history.Deadline
+	if history != nil && history.ProspectiveDeadline.Before(deadline) {
+		deadline = history.ProspectiveDeadline
 	}
 	ctx, stop := context.WithDeadline(context.Background(), deadline)
 	defer stop()
@@ -240,7 +243,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 	carry := budget.Units{}
 	if native {
 		model = "gemini-3.8-flash-high"
-		carry = history.Carry
+		carry = history.CurrentCarry
 	}
 	policy := consolidationScreenPolicy("antigravity", model, carry)
 	policyRaw, _ = json.MarshalIndent(policy, "", "  ")

@@ -24,7 +24,7 @@ docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 12
  -e BUTLER_TEST_MEMORY_POSTGRES_URL -e BUTLER_CONSOLIDATION_SCREEN_PROOF=/proof/screen \
  -e BUTLER_CONSOLIDATION_NATIVE_HISTORY=/history/history.json -e BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256="$history_hash" \
  -e BUTLER_CONSOLIDATION_NATIVE_POLICY_PROOF=/proof/native-budget-policy.json -e BUTLER_CONSOLIDATION_NATIVE_SEAL=1 \
- golang:1.27.2-bookworm bash -c 'go build -o /proof/tool-broker ./apps/tool-broker && go test -c -race -o /proof/orchestrator-app.test ./apps/orchestrator/internal/app && /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationNativeSealSchedule$" && /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationNative(FrozenHistory|HistoryCarryIntegration)$"' \
+ golang:1.27.2-bookworm bash -c 'go build -o /proof/tool-broker ./apps/tool-broker && go test -c -race -o /proof/orchestrator-app.test ./apps/orchestrator/internal/app && /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationNativeSealSchedule$" && /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationNative(FrozenHistory|HistoryCarryIntegration)$" && /proof/orchestrator-app.test -test.v -test.run "^TestConsolidationScreen(HistoryRejects|ProspectiveDay)"' \
  > "$proof/offline-preparation.txt" 2>&1 || status=$?
 docker run --rm --pull never --network none --cpus .1 --memory 64m --pids-limit 32 -v "$proof:/proof" golang:1.27.2-bookworm chown -R "$(id -u):$(id -g)" /proof
 [[ "$status" == 0 ]] || exit "$status"

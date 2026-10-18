@@ -25,6 +25,9 @@ test "$(sha256sum "$history/history.json" | cut -d' ' -f1)" = "$history_hash"
 umask 077
 exec 9>/srv/storage/butler/agents/native-provider-auth.lock
 flock -n 9
+# Re-read every fixed experimental ledger under the same auth lock. A changed
+# current-day population invalidates this preseal before credentials are read.
+python3 "$src/scripts/dev/memory-consolidation-history.py" check-current "$history/history.json" "$history_hash" > "$proof/pre-auth-current-ledgers.json"
 # Reprove the frozen original history/current UTC day before reading any auth.
 # This consumes no provider operation and cannot change the prepared allowance.
 docker run --rm --pull never --network host --cpus 1 --memory 2g --pids-limit 128 \

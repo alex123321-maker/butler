@@ -80,3 +80,44 @@ frequency into acceptance. A fresh correction/diff/head CAS and current accepted
 fact metadata must remain distinguishable from unconfirmed observations. A smaller
 foreground read alone does not establish a total cost reduction. No savings,
 general quality or release qualification is claimed until that evidence exists.
+
+## Prospective UTC-day freeze and retained history
+
+The v2 native-history format retains all seven original #84 windows and the
+complete #85→#88v1→v2→v3→v4 chain. Only its latest inclusive scope is added to the
+independent #84 vector. The original historical UTC day remains2026-10-15, with
+its original expired deadlines, failed windows and NULL usage. Combined history
+contains161 original attempts: native153 known/8 unknown and758525 known total
+tokens as a lower bound; product ledgers152 observed/9 NULL. Original identities
+and exact reservation sums are checked; the v3 native/product accounting gap
+remains visible. This historical vector is not charged again as today's usage.
+
+Every #86/#87 ledger schema is separately inventoried with its original owner,
+scope, reservation, foreground and background rows. Later #87 windows cannot be
+omitted merely because an older export named `adaptive_native_v1`. These other
+owners remain audit populations, and their inclusive predecessor scopes are not
+summed into the prospective authenticated owner's day.
+
+A new prospective UTC day has its own midnight deadline and finite nine-slot
+schedule, maximum99 provider entries and96 reads. Before authentication, the
+exporter scans all budget-table schemas in the retained #84, #85/#88, #86, #87 and
+future target databases. This first-population recipe requires an explicitly
+empty current-day owner scope/reservation population in every scanned schema.
+Any existing row, NULL array, missing store/schema, changed inventory or changed
+UTC day denies execution and requires another reviewed carry recipe. It cannot
+reset a used window. The full current inventory is hashed; the execute wrapper
+re-reads it under the common provider-auth flock before reading any credentials.
+An independent zero-charge one-use ledger receipt binds that new-day proof.
+
+The driver retains the old-day history in its own immutable table and report,
+and tests that the new-day receipt invents no model attempt. The native policy
+uses only the current-day vector plus the new99-entry allowance. Source, complete
+schedule, compiler output, Broker, history and policy are frozen before auth.
+The previous116-turn same-day recipe remains historical and cannot authorize a
+later-day native window.
+
+The independent #88v4 semantic review is NO_GO (9/12 accepted, three failures).
+It remains evidence for exercised typed-read mechanics with closed production
+qualification. An explicitly reviewed isolated #89 native candidate screen can
+measure grouping and selected-source paired reads on that composition; it does
+not turn the composition into a supported deployment or qualify #88/#89.
