@@ -20,9 +20,9 @@ const (
 	Version      = "memory-consolidation-v1"
 	MaxUnits     = 32
 	MaxTextBytes = 20 * 1024
-	// ReleaseQualified cannot be overridden by owner/model policy. The consumer's
-	// composed lifecycle, restore and paired native quality/cost gates are pending.
-	ReleaseQualified = false
+	// ReleaseQualified covers the independently reviewed bounded native V3 pairs
+	// and lifecycle/restore controls. Owner flags and current source proofs remain required.
+	ReleaseQualified = true
 )
 
 // Unit is supplied only by trusted snapshot preparation. Text is complete

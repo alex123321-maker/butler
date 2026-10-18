@@ -12,7 +12,8 @@ import (
 )
 
 // Code-owned release qualification is independent of the operator flag. The
-// temporal read/revalidation/restore gate has not yet been measured end to end.
+// Native V9 qualifies explicit dated reads on the measured High profile; this
+// does not activate a process flag or qualify natural-language date parsing.
 const temporalReleaseQualified = factcontrol.ReleaseQualified
 
 func temporalConfigured(enabled bool) bool { return enabled && temporalReleaseQualified }

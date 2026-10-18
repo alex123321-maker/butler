@@ -30,8 +30,18 @@ transaction. Adaptive composition consumes its existing call/time/byte allowance
 and grants no opened citation for generated fact snapshots. Source quotation
 requires the separate current `memory.open` receipt.
 
-`BUTLER_MEMORY_TEMPORAL_ENABLED=false` and code-owned `ReleaseQualified=false`
-keep production composition off. The Broker-only operator endpoint is
+Revision5 distinguishes ingestion, owner acceptance, metadata recording and
+explicit event time. Missing independent verification evidence never proves
+that an independent check did not happen. The complete native V9 review passes
+all12 explicit lookups and whole-answer semantics, with a nonblocking wording
+caveat about unspecified interval endpoints; see
+[the independent review](../../../docs/testing/issue-88-native-v9-independent-review.md).
+This qualifies only the measured Gemini High32768/300s profile and bounded exact
+dated lookup, not natural-language date interpretation or general model quality.
+
+`BUTLER_MEMORY_TEMPORAL_ENABLED=false` remains the process default. Code-owned
+`ReleaseQualified=true` permits separately selected supported composition;
+the primary deployment is unchanged. The Broker-only operator endpoint is
 `BUTLER_MEMORY_FACT_CONTROL_URL` at `/internal/memory-facts`, authenticated by the
 existing private action service token. Plain HTTP is limited to loopback or the
 fixed Compose owner `orchestrator:8080`; redirects and environment proxies are

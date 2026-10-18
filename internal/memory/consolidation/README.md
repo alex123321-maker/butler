@@ -10,8 +10,12 @@ The [architecture contract](../../../docs/architecture/memory-consolidation.md)
 defines finite explicit cross-session context pins, shared budget/transport,
 version/diff review, owner activation CAS/rollback, retirement and deletion fences.
 The implementation uses the existing model queue/transport, migration076 and
-#88's catalog temporal pins. Qualification is in progress. `ReleaseQualified`
-is false; no production activation or native quality result is claimed.
+#88's catalog temporal pins. `ReleaseQualified=true` follows the bounded
+[native V3 paired review](../../../docs/testing/issue-89-native-v3-independent-review.md)
+and lifecycle/restore controls. The selected profile improves measured full
+foreground/background tokens in those three pairs; its larger bytes and time
+remain explicit limitations. Process defaults and the primary deployment stay
+unchanged. This is not automatic selection or broad workload qualification.
 
 Owner workflow, under the existing bearer owner authentication and a unique
 `X-Butler-Delivery-ID` for every POST:

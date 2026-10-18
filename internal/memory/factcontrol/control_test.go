@@ -17,8 +17,8 @@ func TestTemporalFactsStrictSourceDateAndBoundContract(t *testing.T) {
 			t.Fatal("ambiguous/unbounded temporal request admitted")
 		}
 	}
-	if ReleaseQualified {
-		t.Fatal("unmeasured temporal profile qualified")
+	if !ReleaseQualified {
+		t.Fatal("reviewed explicit temporal profile unexpectedly closed")
 	}
 	var schema any
 	if json.Unmarshal([]byte(Contract().InputSchemaJson), &schema) != nil {

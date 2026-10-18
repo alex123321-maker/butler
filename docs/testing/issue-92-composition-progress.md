@@ -317,3 +317,31 @@ It does not stand in for the upcoming real90 comparison or its actual closed
 packet. The native temporal successor, full48-task experience comparison,
 qualified real bootstrap and final supported-mode native pilot remain pending.
 The main deployment and all qualification/activation flags remain unchanged.
+
+## Shortened final acceptance requested by the owner
+
+The later complete native V9 passes all12 target answers and bounded whole-answer
+semantics on unchanged facts5. The independent review retains a nonblocking
+precision caveat: t08 calls the unspecified endpoint dates unknown, without
+asserting `validity=unknown` or excluding the declared interval. A preliminary
+11/12 interpretation was corrected after comparing the exact grammatical scope,
+the actual tool response and the same V8 endpoint criterion. No source, contract,
+corpus, rubric or native receipt was changed to obtain this result. Root read
+all12 complete answers and reran1063 citation/source/usage checks. New usage is
+36 known entries/273742 full tokens; inclusive211 retains210 known and one older
+UNKNOWN, with known lower bound1595542. The primary deployment remains unchanged.
+
+Code qualification now covers only that explicit dated High32768/300s lookup
+and the separately reviewed native V3 consolidation pairs, together with their
+existing currentness, lifecycle and restore controls. Operator flags remain
+default off. Adaptive retrieval remains off after its measured rejection.
+
+The owner subsequently requested a shortened testing path. No new V10 cohort or
+duplicate full temporal/composition round is required. Experience will use the
+first33 stages of the existing57-slot plan: four originals, four notes, one
+skill preparation and all eight controls in three arms, once. The other24
+second-repetition slots remain explicitly unexecuted in the full ledger. This
+cannot establish57/57 completion, repeatability or statistical improvement.
+One final native coherent pilot and the fresh qualified constructor/Doctor
+smoke remain separate pending receipts; prior25-checkpoint mechanics evidence
+is reused instead of repeated broad regression runs.

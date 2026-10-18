@@ -92,7 +92,8 @@ Long-term owner-reviewed consolidation is separately default off under
 `BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED`. It uses the same durable model
 worker, immutable source/accepted-temporal snapshots, staged DATA generations,
 deterministic diff and owner head/revision CAS. Its code-owned qualification is
-closed pending consumer acceptance. Private `/api/v4/memory/consolidation/*`
+qualified for the independently reviewed native V3 bounded pairs, while its
+process flags remain off by default. Private `/api/v4/memory/consolidation/*`
 controls preserve current source/context/temporal proof for selection/rollback;
 retirement deletes derivatives through the existing catalog anchor. See the
 [owner workflow and retention limits](../../internal/memory/consolidation/README.md).

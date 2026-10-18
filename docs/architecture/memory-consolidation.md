@@ -1,7 +1,7 @@
 # Bounded owner-reviewed consolidation (#89)
 
-This contract is being implemented behind a separately default-off consumer and
-a code-owned closed qualification gate. It is distinct from current-conversation
+This contract has a separately default-off consumer and a code-owned bounded
+qualification gate. It is distinct from current-conversation
 compaction. PostgreSQL catalog sources, claims and temporal decisions remain the
 only durable evidence/accepted truth; consolidation is a versioned DATA view.
 No new model, transport, scheduler, service or dependency is introduced.
@@ -122,10 +122,11 @@ Pending work remains counted until normal deletion/reconciliation completes.
 
 ## Qualification
 
-Process composition defaults off and `ReleaseQualified=false` until real
-consumer-specific publication/read/provider/retry/deletion/restore boundaries
-pass all eight #83 attacks and a prospective finite native paired task/answer
-window measures full foreground plus background expense. All failed/unknown
+Process composition defaults off. `ReleaseQualified=true` covers the independently
+reviewed native V3 three-pair profile plus the consumer-specific
+publication/read/provider/retry/deletion/restore controls and all eight #83 attacks.
+The finite native window measures full foreground plus background expense and
+retains its byte/time regressions. All failed/unknown
 attempts remain in cumulative evidence. Smaller foreground context does not
 imply lower full cost. Claimed completed architecture, controlled boundary tests,
 and native quality/cost qualification are recorded separately.

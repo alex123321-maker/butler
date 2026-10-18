@@ -17,7 +17,9 @@ import (
 const Tool = "memory.facts"
 const Path = "/internal/memory-facts"
 const Target = "broker://memory-facts-v1"
-const ReleaseQualified = false
+// Qualified only for the explicit dated lookup/profile reviewed in native V9.
+// Process flags, current source proof and the measured provider budget still gate use.
+const ReleaseQualified = true
 
 const description = "Read owner-accepted temporal DATA from at most8 exact source references supplied in the current authorized context or discovered with memory.search. " +
 	"Optional valid_at asks what applied then; known_at asks what Butler had recorded by then. Use complete RFC3339 instants with a zone; unknown dates stay unknown. " +

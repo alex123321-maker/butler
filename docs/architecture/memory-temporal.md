@@ -114,8 +114,9 @@ not assigned the server's timezone. Metadata and owner decision history are
 included in the private NDJSON export. No model-facing temporal write API exists.
 
 `BUTLER_MEMORY_TEMPORAL_ENABLED=false` is the operator default. A separate
-code-owned qualification remains false until composed temporal read,
-revalidation, lifecycle and independent restore acceptance is measured. Ordinary
+code-owned qualification now covers the reviewed explicit native V9 profile,
+with composed read/revalidation, lifecycle and independent restore controls.
+It does not qualify natural-language date parsing or activate the main stand. Ordinary
 profile/episode adapters can attach explicit temporal/freshness DATA and exclude
 only explicitly expired/not-yet-valid current entries; stale/unknown verification
 remains labeled evidence. Already bound privacy/decision guards remain mandatory
@@ -180,7 +181,7 @@ run, using a UTC-normalized query key, while the64-observation total cap and eac
 immutable query's stale check survive restart. A changed head/metadata/freshness
 invalidates the whole prepared run. Operator endpoint selection is private and
 credential-free; both services require temporal readiness independently of read
-readiness and the code-owned qualification remains false.
+readiness and the code-owned qualification independently of the process flag.
 
 The model-directed temporal facts reader and Profile/Episode model-context
 annotations share one bootstrap readiness predicate: qualification and flag plus
