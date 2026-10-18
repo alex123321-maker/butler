@@ -1,0 +1,191 @@
+{
+  "at": "2026-10-18T04:16:50.444907+00:00",
+  "checks": {
+    "auth": 0,
+    "main_active_work": 0,
+    "native": 0,
+    "new_native_schema_count": 0,
+    "pre_auth_fresh_six_database_check_required": true,
+    "unqualified_experimental_composition": true
+  },
+  "current_inclusive_quote": {
+    "active_millis": 14280000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 100663296,
+    "external_calls": 24,
+    "model_turns": 38,
+    "provider_input_bytes": 318767104,
+    "tokens": 41091072
+  },
+  "current_originals": {
+    "new88": {
+      "entries": 36,
+      "known": 36,
+      "known_full_tokens": 248587,
+      "unknown": 0
+    },
+    "original89": {
+      "entries": 2,
+      "known": 2,
+      "known_full_tokens": 15625,
+      "unknown": 0
+    },
+    "product_null": 0,
+    "product_observed": 38,
+    "total": {
+      "entries": 38,
+      "known": 38,
+      "known_full_tokens": 264212,
+      "unknown": 0
+    }
+  },
+  "format": "butler.consolidation.preseal-review.v2",
+  "git_tree": "23a3c79ed1dce4c507a8aa27181016b7c7407815",
+  "hashes": {
+    "current-after-build.json": "357a62675462b9cc0fb2a6ad59a8de7090f1c0a366b79dfbd638b464831a57ef",
+    "current-v2-owner-day.json": "cee36ff87f586c249e3078a98774bcd56da8a087f9671ab9dcb358a12bc59714",
+    "history.json": "976e353b5b01eea7817666f8aebccddca68f4f3a293873aa256ba9817c8949fb",
+    "native88-full-ledger.json": "954157ed614adbe3246064c9a79983739b295fff7cdda353f2b02bb929414e28",
+    "native88-outcomes.json": "6564c52b6641a62e7023df5ae17c81211a391e99497b3c4dbe611142268c11cf",
+    "offline-preparation.txt": "df937bc3cc7dddfc8bdabe322639ba156bb82b0cc54b68c230c41a96cdfd05bb",
+    "predecessor88-current.json": "421154b753690e2edd2f1386ee1f983b4ad9657cddf06a5b0c277fa5b326d79b",
+    "source.sha256": "b368dab4c7b382bee7089212d0ffb5ada18b5d31e5147f5c620d7123f4232f02",
+    "successor-pins.json": "53fa825716a573d45ea50a517de06150ea7898604c7321673e57cd18de993ec2"
+  },
+  "historical_originals": {
+    "Attempts": 161,
+    "Carry": {
+      "active_millis": 39750000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 163577856,
+      "external_calls": 39,
+      "model_turns": 161,
+      "provider_input_bytes": 1350565888,
+      "tokens": 172548096
+    },
+    "Day": "2026-10-15",
+    "Deadline": "2026-10-16T00:00:00Z",
+    "Known": 153,
+    "KnownNativeTokenLowerBound": 758525,
+    "ProductKnown": 152,
+    "ProductUnknown": 9,
+    "Unknown": 8
+  },
+  "label": "native-v2-preseal-v2",
+  "main": {
+    "current": "/srv/storage/butler/snapshots/20261014-main-3e26cd8",
+    "image": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+    "state": "running"
+  },
+  "offline_child_pass": 24,
+  "offline_fail": 0,
+  "offline_parent_pass": 10,
+  "offline_parents": [
+    "TestConsolidationNativeSealSchedule",
+    "TestConsolidationNativeFrozenHistory",
+    "TestConsolidationNativeHistoryCarryIntegration",
+    "TestConsolidationScreenHistoryRejectsPartialOrDuplicateCarry",
+    "TestConsolidationScreenProspectiveDayRequiresCompleteUnchargedPopulation",
+    "TestConsolidationV2CurrentDayCarryOneUseIntegration",
+    "TestConsolidationV2LatestLeafCountsOriginalAttemptsOnce",
+    "TestConsolidationV2RetainsNativeUnknownAndAdmittedWithoutEntry",
+    "TestConsolidationV2RejectsChangedWitnessesOrExtraOwnerRows",
+    "TestConsolidationV2WritePins"
+  ],
+  "offline_skip": 0,
+  "pins": {
+    "Broker": "43ee2273c287b04203cb8c4d6e0ea5813379df3a6b8bd14be5c0ab89a505c86c",
+    "Collector": "5ce29957d1022395037c46404e15fb25b50944c9f18f63f909ff2636659e2429",
+    "Contracts": {
+      "memory.facts:3": "1aeccde7d741d4ce2faf4068554b980dd4afb0fb7482abb63dea77842dcb81e4",
+      "memory.neighbors:2": "90c660133041839b33ebc4f5dbcafe071594058c38734e255be001067cd8b478",
+      "memory.open:2": "bfc8b1af31cdb469457d59fef165b206908b0dc2b49a844900c137d2c9e3e10c",
+      "memory.search:2": "0b899674c92c6936118044b1efb0dd845f704e959a13db17a9ebdde297e67239"
+    },
+    "Corpus": "e31d4c6a5434723194b7cf37242f9f2e1479b94bbf9cc1464633ba88dca7f947",
+    "Day": "2026-10-18",
+    "Deadline": "2026-10-19T00:00:00Z",
+    "Expires": "2026-10-18T10:15:21.46750819Z",
+    "History": "976e353b5b01eea7817666f8aebccddca68f4f3a293873aa256ba9817c8949fb",
+    "LogicalSlots": 9,
+    "MaxNativeEntries": 99,
+    "MaxReads": 96,
+    "Model": "gemini-3.8-flash-high",
+    "ModelMillis": 300000,
+    "OutputTokens": 32768,
+    "Policy": "9522f2f8f578e9fe7cf6caaac55854e75882a69e2ff83137a07fad7a4707f210",
+    "Revision": "9bf3c6c925076ebcf9bb3919c2f79b1e39bbb4f1",
+    "Schedule": "0cff5112709dfdefdd31d65d4dd93675b33b0d0e50fbf47cba84118502f2aa06",
+    "Schema": "consolidation_native_v2",
+    "Source": "e13f00747e247e88bc91f2089a1b1702fec57fecfbec88c343d85ac3edf0c55f"
+  },
+  "policy_day_limit": {
+    "active_millis": 55500000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 503316480,
+    "external_calls": 120,
+    "model_turns": 137,
+    "provider_input_bytes": 1149239296,
+    "tokens": 148144128
+  },
+  "prepared_sha256": "85b5ebb457da7ccaf0294731b142543cf6f5f141c9041c2bb4da9cd46015aa0e",
+  "six_database_inventory": [
+    {
+      "container": "butler-lab-postgres-1",
+      "current_windows": [],
+      "database": "butler",
+      "schemas": 1
+    },
+    {
+      "container": "issue84-20261016-pg",
+      "current_windows": [],
+      "database": "issue84_test",
+      "schemas": 7
+    },
+    {
+      "container": "butler-issue85-postgres",
+      "current_windows": [
+        {
+          "background": 0,
+          "foreground": 36,
+          "reservations": 61,
+          "schema": "memory_temporal_native_v5",
+          "scopes": 1
+        }
+      ],
+      "database": "issue85_native_test",
+      "schemas": 6
+    },
+    {
+      "container": "butler-issue86-native-postgres-1",
+      "current_windows": [],
+      "database": "memory_read_native_test",
+      "schemas": 1
+    },
+    {
+      "container": "butler-issue87-native-v1-pg",
+      "current_windows": [],
+      "database": "memory_adaptive_test",
+      "schemas": 1
+    },
+    {
+      "container": "issue86-20261016-pg",
+      "current_windows": [
+        {
+          "background": 1,
+          "foreground": 1,
+          "reservations": 3,
+          "schema": "consolidation_native_v1",
+          "scopes": 1
+        }
+      ],
+      "database": "memory_read_test",
+      "schemas": 6
+    }
+  ],
+  "source_reference": "/srv/storage/butler/agents/issue89-20261016/snapshots/native-v2-preseal-v2",
+  "source_revision": "9bf3c6c925076ebcf9bb3919c2f79b1e39bbb4f1"
+}

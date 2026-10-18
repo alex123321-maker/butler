@@ -83,8 +83,8 @@ using cached offline Go1.27.2, race detection and vet: four mandatory parents an
 nine negative children passed, with zero failures/skips. The separate PG and
 internal subnet201 left all six native stores untouched; native calls/auth0.
 The controls also retain unknown native usage and an admitted product attempt
-without a native entry as independently charged evidence. This does not prove
-the yet-unexported actual latest88 leaf or qualify a native successor.
+without a native entry as independently charged evidence. These controls exercise fixtures; the actual latest88 leaf and prospective
+offline freeze are recorded below. They do not qualify a native successor.
 
 Retained report:
 `/srv/storage/butler/agents/issue89-20261016/reports/history-controls-v1`.
@@ -130,3 +130,43 @@ preservation and source/effect evidence need independent fixed-rubric review.
 Mechanical completion alone does not qualify the consumer. No source/policy/
 corpus/window is frozen by this planning document, and it authorizes no auth read
 or provider request without the later reviewed exact prepared seal.
+
+## Actual latest-leaf and offline freeze
+
+Read-only export `native-v2-history-v1` retained the closed native88v5-r5
+original ledger, twelve outcomes and all36 immutable entry files. Its manifest
+SHA256 is `976e353b5b01eea7817666f8aebccddca68f4f3a293873aa256ba9817c8949fb`.
+The six-database inventory for UTC2026-10-18 includes main. The latest inclusive
+owner-day quote contains38 model turns: original89v1 two plus new88v5 thirty-six,
+once. These38 original native entries have complete known usage totaling264212
+tokens; their38 product observations contain zero NULLs. The older161 original
+attempts remain a separate historical population with eight native unknowns and
+nine product NULLs; their deadlines and758525-token known lower bound remain
+unchanged.
+
+Offline `native-v2-preseal-v1` on source `bfa56e93` completed with facts
+contract2 and was retained unconsumed when the prospective general semantics
+contract advanced to revision3. A separate withdrawal receipt preserves auth0
+and native0; the original prepared files were not rewritten.
+
+The replacement `native-v2-preseal-v2` freezes source
+`9bf3c6c925076ebcf9bb3919c2f79b1e39bbb4f1`, Git tree
+`23a3c79ed1dce4c507a8aa27181016b7c7407815`, and facts contract3. Its
+prepared-pins SHA256 is
+`85b5ebb457da7ccaf0294731b142543cf6f5f141c9041c2bb4da9cd46015aa0e`.
+Actual cached offline Go1.27.2/race preparation passed ten mandatory parents and
+twenty-four negative children with zero failures/skips. A separate execution of
+the compiled `TestConsolidationV2CheckPreparedPins` also passed. The allowance is
+exactly the current inclusive38 quote plus99 potential native entries and96
+reads across the full nine logical slots; it does not add the predecessor scopes
+again. Main had zero active work, its source/image remained unchanged, and the
+new native schema was absent at this receipt.
+
+The content-free [freeze review](fixtures/issue89/native-v2-preseal-review.json)
+records the complete source, binaries, canonical contracts, policy, corpus,
+schedule and witness hashes. Its SHA256 is
+`048f19b663f0f975ed7dd765d45e3073de8026f643991a61738284868e40ede4`.
+The retained server report is
+`/srv/storage/butler/agents/issue89-20261016/reports/native-v2-preseal-v2`.
+This is offline admission evidence; native completion and independent semantic
+qualification require their separate later records.
