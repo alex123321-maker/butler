@@ -1,0 +1,336 @@
+{
+  "artifact_hashes": {
+    "all-original-outcomes.json": "8c021b077b2f02e77cd295cf6531fc3539d31a0c8981580bc257ac63339922de",
+    "auth-recovery-safe.json": "4e21df62834a65bebfee3cdc978ab3a37a3c295604edd0c39dbc5203612767a7",
+    "closed-handback.json": "56f279329cc051da312ca963018c34bf767c5eae30dd6ad8e9c085a21970a071",
+    "frozen-pins.json": "f170eee39c4a08aaa71e0db12fdb01cf84bc5901f00d3506fddfd9fece67bdd3",
+    "full-ledger.json": "13d1074640a1b0fa54039df722ee8f783b88f34906d021e843cc9bd0fbf756c1",
+    "prepared-pins.sha256": "ec71dd3b6e3c84d60efe9f5603f2ad394b917063020459ab20fdd045753958aa",
+    "sealed-inputs.json": "c540ce30d9ffcea6463833584c95481b0a9387838e0d8bfdcff87a8c5a13e616",
+    "source-citation-material-safe.json": "24a9e575d64638ffb0630ca3d2789da41053eecf9f2f13dbec1583f8d5ef22d8"
+  },
+  "collector_status": 0,
+  "day": "2026-10-18",
+  "deadline": "2026-10-19T00:00:00+00:00",
+  "format": "butler.temporal.closed-leaf.v9",
+  "inclusive_known_full_tokens_lower_bound": 1595542,
+  "inclusive_native_entries": 211,
+  "inclusive_native_known": 210,
+  "inclusive_native_unknown": 1,
+  "independent_review": "required",
+  "labelled_prior_carry": {
+    "active_millis": 66540000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 490733568,
+    "external_calls": 117,
+    "model_turns": 175,
+    "provider_input_bytes": 1468006400,
+    "tokens": 189235200
+  },
+  "new_stage_known_full_tokens_lower_bound": 273742,
+  "new_stage_native_entries": 36,
+  "new_stage_native_known": 36,
+  "new_stage_native_missing_total": 0,
+  "new_stage_native_unknown": 0,
+  "new_stage_product_attempts": 36,
+  "new_stage_product_null": 0,
+  "new_stage_product_observed": 36,
+  "new_stage_product_without_native_entry": 0,
+  "old89v2_failure_cause": "UNKNOWN; unchanged",
+  "old_setup_failure": {
+    "auth": 0,
+    "native": 0,
+    "not_executed": 12,
+    "path": "/srv/storage/butler/agents/issue88-native-v7-20261018/reports/native-v7-preseal-v2/setup-failure.json",
+    "sha256": "32af3be43422d80da034f2b5eaa534e67f37cbb7546f3499410cb179e3b9df39"
+  },
+  "operator_control_plane_handoff": {
+    "action": "provider-auth diagnose-cloudcode",
+    "added_to_experimental_carry": false,
+    "invoice_cost": "unobserved",
+    "model_usage_observation": "not applicable: no generation response",
+    "native_inference_entry": "not applicable: credential control-plane request",
+    "oauth_refresh_http_started": 0,
+    "original_safe_trace_sha256": "acbf36a1449610ed012c4510a6b639baa3f3761a8ee851974b0ab57a8570776c",
+    "paid_discovery_http_started": 1,
+    "population": "main credential operator diagnosis, outside experimental owner/day inference quotes",
+    "reviewed_code_path": "ResolveAntigravityCloudCode -> POSTloadCodeAssist plus optional OAuthrefresh; no ModelProviderStartRun"
+  },
+  "original_outcomes": {
+    "completed": 12,
+    "failed": 0,
+    "not_executed": 0
+  },
+  "original_product_operations": [
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:03.721753+00:00",
+      "operation_id": "operation_310deb5682553ac41da6ee476340b44276d799f23e315832",
+      "reservation_id": "70bc29d4a116e37d94427cdd171a48e2f98fb6b3732f76d9a3e537c0ed845fd7",
+      "run_id": "run-1792313813624026117-32e8063dd6026242"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:10.351299+00:00",
+      "operation_id": "operation_45e2a678735b64dc01919cf4df1d9b2946aeba5a6f815f4a",
+      "reservation_id": "a3530cb1831d2766da9c52f58b84a390ef5fdf5ef82b1c541e09f51872b16393",
+      "run_id": "run-1792313813624026117-32e8063dd6026242"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:17.896236+00:00",
+      "operation_id": "operation_dab833cb639335e8f060fdf988f5c4e28ce4dc692de4735b",
+      "reservation_id": "3491b6884fe71f819a9dfd12e9e0fbff89fcf598a3872924320f8d128107a929",
+      "run_id": "run-1792313813624026117-32e8063dd6026242"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:40.79797+00:00",
+      "operation_id": "operation_e9aa2a987a5fd74ff0c6d85386f48ee30f6f5db82f24e4d1",
+      "reservation_id": "6dad15728753b6dc26155e0ea2dc6b68e728fb6cd62e07d46b7ed50eb919437d",
+      "run_id": "run-1792313813624026117-32e8063dd6026242"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:50.726728+00:00",
+      "operation_id": "operation_bca223039583dc956d2044612146d4d0be2b2882527a3334",
+      "reservation_id": "a72155feb1206403053aa38044c2dadcd44833e6c87d260df8d008d9759ce7c0",
+      "run_id": "run-1792313860896200183-346d791e68fca915"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:57:59.622187+00:00",
+      "operation_id": "operation_f97ff75378f5b9da8c6010d7a34f4ef75aa154780b3eb889",
+      "reservation_id": "8daa346271e65e7d58f5d9128fae5389a61080137adc89d56207ad70e874f6d7",
+      "run_id": "run-1792313860896200183-346d791e68fca915"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:58:19.82457+00:00",
+      "operation_id": "operation_b02e4a0492d0d56d5e5cb37b764785404d832aedbb86623a",
+      "reservation_id": "477de81b22e406e658269fa0de3124c14f5537b8e0dc0bc32585f6d2049c6e32",
+      "run_id": "run-1792313860896200183-346d791e68fca915"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:58:29.003766+00:00",
+      "operation_id": "operation_97319e708c7c42ef3bdd931f4d5bf9ec27e9248817bdb0b7",
+      "reservation_id": "349cb958db56b2bffb7b74c65fc7b0a512a9438bf665873228257bc13f803c7d",
+      "run_id": "run-1792313899915598336-e97acad3b876e4c4"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:58:39.195714+00:00",
+      "operation_id": "operation_9040c545bc65c2f83635cf9c6b138cf78e43e9f41d98ee59",
+      "reservation_id": "74261332c52853c7012890d3c150b4c629b442e5b456407c66f65b2c57ab363b",
+      "run_id": "run-1792313899915598336-e97acad3b876e4c4"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:59:03.783917+00:00",
+      "operation_id": "operation_cfb982285e7ff98b2c5156dcfaf06f0d37fd0f107396feed",
+      "reservation_id": "c6c04ac1ddbae5ac79416bb42417f2ce070d53af8f328bd5f3a193bb1b9a3958",
+      "run_id": "run-1792313899915598336-e97acad3b876e4c4"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:59:13.745883+00:00",
+      "operation_id": "operation_454ce59e6a3be5ff40ea53ce2c5e9737a9c4dce89cc818c4",
+      "reservation_id": "7eb4ea5f9b4a63c505828d50db2478fc894b458c20ce1242dcb64116c6a4c621",
+      "run_id": "run-1792313943875897555-f5a976f312aa1961"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:59:27.060347+00:00",
+      "operation_id": "operation_02f765c71cadcc8e374acffd7d283d9651de6d06289589bf",
+      "reservation_id": "a6e16fdba2133e3d3010a14376506e54c79bc9c46534b5f661ab010894576a23",
+      "run_id": "run-1792313943875897555-f5a976f312aa1961"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:59:35.044235+00:00",
+      "operation_id": "operation_5d53b6113728c4a5c0f15af82c6a25dc4d2afafb47a5d177",
+      "reservation_id": "83f02450f678aa8f89c9be3c4584d28fc13fcd772da5daca6bbc65b9e249bf46",
+      "run_id": "run-1792313967145388457-8e6276b10f106086"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T08:59:48.789508+00:00",
+      "operation_id": "operation_211c6a120499b36db0b6e5b8b4dc2486e30848b16a84925f",
+      "reservation_id": "f1a269f91b2344490b75bc6c0fb4c8000df6f51d84191a06b6e92e9442e7f099",
+      "run_id": "run-1792313967145388457-8e6276b10f106086"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:00:06.319657+00:00",
+      "operation_id": "operation_1f89769548d9e80eae94b9062845d65dc6e2d602e2967532",
+      "reservation_id": "5d01c0b9b5d1a962997bbee146e99d30391e04559227db483f9638dd0428c2f1",
+      "run_id": "run-1792313967145388457-8e6276b10f106086"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:00:11.038336+00:00",
+      "operation_id": "operation_eece6a0c5f4ecfacf9d9db20e532d6e7b9375230fcd5523b",
+      "reservation_id": "a48ba9164760fc33be7d889192f648ccf3bbfa1d5ba850e8a4af8ab2f766821a",
+      "run_id": "run-1792313967145388457-8e6276b10f106086"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:00:37.281116+00:00",
+      "operation_id": "operation_80024d051264faf6e1ea3028e0782d4aa5784f4a34dbd376",
+      "reservation_id": "de80954c2b4af30c47c1e5938863b0d75cf008dc6629e9c07f897007dfc89773",
+      "run_id": "run-1792313967145388457-8e6276b10f106086"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:00:47.852026+00:00",
+      "operation_id": "operation_96725bab303e3633faaf20867e3dc57e5b7c5515965c0c9c",
+      "reservation_id": "68c7ea286bbbc50078449a672f7d738a739241b7474681ece8e2dae4d3f54717",
+      "run_id": "run-1792314037370517553-07fec757812127f8"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:01:25.142047+00:00",
+      "operation_id": "operation_7d55bafae85224607678e642f28dc45f62ed44f3e13a1ef4",
+      "reservation_id": "933dcfcdf40f268f5a8d1ccfef87945659afaac99e56b1f7181cf6301af49ffc",
+      "run_id": "run-1792314037370517553-07fec757812127f8"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:01:35.131227+00:00",
+      "operation_id": "operation_9bdc4f679f5cf05d21e0c775275cf281392fb6ba31052937",
+      "reservation_id": "ca272698b3530b184268500d13ce69a3b7bd7b0b0a7fa47c5e61e5d93b5b650d",
+      "run_id": "run-1792314085230450097-16487913c6b63fd0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:01:46.143828+00:00",
+      "operation_id": "operation_6986b72d82cfe61aca27aaba7d9cda3ac52aa3f811023237",
+      "reservation_id": "d20199b9ee4b691c2d099d702d0e17b9333984779587dc58fa28bbe8bd013da2",
+      "run_id": "run-1792314085230450097-16487913c6b63fd0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:01:51.800618+00:00",
+      "operation_id": "operation_8e7567e4862b9c7d82552fcdc955cfe29fc32d5e0b2d8663",
+      "reservation_id": "545d4f142cf2f3a0a97b1d8860f5e42df639041df571ebadc614022105616553",
+      "run_id": "run-1792314085230450097-16487913c6b63fd0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:02:16.632817+00:00",
+      "operation_id": "operation_f19f5322088a44ad6e5a25adc393eb79e302f53a541d4b94",
+      "reservation_id": "9b260375633e13a0a5f8cce3bbf936b5b711fea55eb68d4e88b5cee7d8867bc5",
+      "run_id": "run-1792314085230450097-16487913c6b63fd0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:02:22.827073+00:00",
+      "operation_id": "operation_211592b09ebf857d51a2d923a157357ff92ca460c341b03c",
+      "reservation_id": "1bfc038e4f3b1b91db5b5616ba6b0e54e63cdc278c4d0e480d46916b0fc92ec3",
+      "run_id": "run-1792314136729655190-c650f53eb1a27aa2"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:02:54.514568+00:00",
+      "operation_id": "operation_bb4d5174a9da823095cc99fcee9f4baa4610782203557dff",
+      "reservation_id": "043284587d5e4acd383ca60a58982a3623e9d0d3ac0592ab6ceed485dce0183e",
+      "run_id": "run-1792314136729655190-c650f53eb1a27aa2"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:02.872458+00:00",
+      "operation_id": "operation_4aad7c29da6493e5e45a0da589c02b24b2a479e1d944f359",
+      "reservation_id": "9106439e7e01028af5dde9978dbbc6a8ecb78be482b546bebc30ee84a7f40ab0",
+      "run_id": "run-1792314174604380301-574363406f1528e6"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:12.389086+00:00",
+      "operation_id": "operation_fefa9f1ef64efbaa66164c435cd415ffd2723df505665b0a",
+      "reservation_id": "3763a20604f613f569d0b521ea245698eb27de21d71fba023e24b6b7ee41ebef",
+      "run_id": "run-1792314174604380301-574363406f1528e6"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:26.925706+00:00",
+      "operation_id": "operation_dad578c74f553af48cc43f90b15a32158eda6c0da56bed45",
+      "reservation_id": "0614248aa5978817a42c804a89e1b6dfabcb59311160ec065e176ca4cc7af6e9",
+      "run_id": "run-1792314174604380301-574363406f1528e6"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:34.974672+00:00",
+      "operation_id": "operation_df76a6d8225de4ff23a8817347e956c116451351f31f6e77",
+      "reservation_id": "c04f3b9b48cbfccc61bff5b37915c7914aba521e46be5e740aaa7743afc168c9",
+      "run_id": "run-1792314207027587118-a76ebc393ee5e27e"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:44.07427+00:00",
+      "operation_id": "operation_10ccdceb7f93b05ec9d08bc6a2f901d39055c2fa9a2a3df3",
+      "reservation_id": "11e019147c7f692f593555333ed675a973109bee8aba71b33b8a96e92a701896",
+      "run_id": "run-1792314207027587118-a76ebc393ee5e27e"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:03:59.492286+00:00",
+      "operation_id": "operation_f98cfc6faf2e21936e94a720996634e04e6e9f3a20f53fb0",
+      "reservation_id": "4e63962454410985ac080d7f1bed0cab18443abdce25aa221996b655f8ce4814",
+      "run_id": "run-1792314207027587118-a76ebc393ee5e27e"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:04:08.321247+00:00",
+      "operation_id": "operation_03ac8e9b3e72d4848de56fb18898b497e637ac20b792f288",
+      "reservation_id": "20648e17887204f997b5ed7924ecaded4955525be81698936ebf8d25e0308c00",
+      "run_id": "run-1792314239574276937-68d41548f7275246"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:04:21.973624+00:00",
+      "operation_id": "operation_8f3b86a3ca7e95426e84c93b11321e1e698bd834981f3a64",
+      "reservation_id": "875c9748515f937e022142091eafb0d14c317e4e59a512a2fe0f27f405641103",
+      "run_id": "run-1792314239574276937-68d41548f7275246"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:04:28.572974+00:00",
+      "operation_id": "operation_e7913cd6da35c7fc4e3b933e9f813dd42a980d5b63e77029",
+      "reservation_id": "7b50a890d48b19237a5e5d9beee4b6770c90dde24abe98f1a3c55ab8480e5ed3",
+      "run_id": "run-1792314262059819838-f79d0dddc82e6af0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:04:37.427709+00:00",
+      "operation_id": "operation_b386b6ced7bcbb1cc8eb5399a56f110ed3784095de721329",
+      "reservation_id": "1de8d8e2fa6832ff0536ee626964ec85c9211f752495132c530a0843eb88a141",
+      "run_id": "run-1792314262059819838-f79d0dddc82e6af0"
+    },
+    {
+      "has_native_entry": true,
+      "observed_at": "2026-10-18T09:04:56.757311+00:00",
+      "operation_id": "operation_abac92b50be4eeb4ad02ab3b4b05bfadea5969305bf148d1",
+      "reservation_id": "b35898c176e91391cc01b932bff431519210e6199a6839b94513ac2ae198706e",
+      "run_id": "run-1792314262059819838-f79d0dddc82e6af0"
+    }
+  ],
+  "owner": "owner",
+  "prior_history_sha256": "9c2ea31f1df55c790c5e643c2cc91b8898f22e17b6c7f29fe2c8ee6bf91f8af9",
+  "schema": "memory_temporal_native_v9",
+  "separate_adaptive_native_unknown": 1,
+  "separate_adaptive_quotes": 226,
+  "source": "5826480732190794cff4f21b813cae246d00ac19",
+  "used": {
+    "active_millis": 80220000,
+    "children": 0,
+    "cost_micros": 0,
+    "egress_bytes": 591396864,
+    "external_calls": 141,
+    "model_turns": 211,
+    "provider_input_bytes": 1769996288,
+    "tokens": 228163584
+  },
+  "window": "temporal-explicit-v9"
+}

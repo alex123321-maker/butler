@@ -1,0 +1,76 @@
+# Prospective whole temporal V9
+
+V8 is closed with12 primary targets correct and a separate strict semantic
+NO_GO review. Its175 inclusive owner/day quotes,174 known native usages and
+one older unknown remain unchanged. V9 is a fresh complete12-original cohort
+on the same explicit-v1 corpus, order, rubric and tool contracts except for the
+general facts description revision5. It distinguishes source ingestion time
+from nullable event time and distinguishes unavailable independent verification
+evidence from proof that verification never happened. No task values or answers
+are added. The facts5 contract hash is
+`43ee9a114c83813205dd973bfe22e2f0f54982ce2b36de3bf23fa0bd8d05f49e`.
+
+The new namespace is `memory_temporal_native_v9`, receipt/window
+`temporal-explicit-v9`. Atomic public receipt creation and namespace creation
+precede auth decryption and any reservation. Existing/consumed namespaces deny.
+The read-only prospective history format is `butler.temporal.native-history.v5`;
+it recursively validates one closed175 leaf from
+`butler.memory.closed-owner-leaf.v2` version8. Historical161 and the separate
+adaptive226 remain evidence without rebilling. Product admissions and native
+entries remain independent; admitted attempts without an entry retain NULL.
+Original89v2 cause remains UNKNOWN.
+
+The unchanged finite profile is Gemini3.8FlashHigh,32768 generated tokens,
+300s per model attempt,144 native entries and96 tool reads across all12
+originals, at most12 model attempts/8 reads per original. Foreground source
+currentness is2s, each foreground may execute40m independently of its model-turn
+ceiling, the whole cohort is16h and outer/Broker ceilings975m. Every execution
+deadline is clamped to the retained UTC owner/day deadline. No closed window
+may reopen and no selected case may retry under this receipt.
+
+`memory-temporal-v9-history.py` exports/rechecks all seven retained stores and
+fresh namespace absence before freeze, again under the shared auth flock before
+clone. The immutable prepare pins source, binaries, standard standalone
+test2json, facts5, policy, complete schedule and recursive history. Actual PG
+controls must pass namespace/carry one-use with zero fabricated attempts,
+neutral-worker identity, immutable witness forgeries and compiled pin checks
+without skips. Exact coordinator review is required before the one execution.
+The lock spans fresh main clone, every original, exact opaque CAS return,
+actual main paid discovery200 and a fresh main snapshot. Main flags stay off.
+
+V9 returns authentication only after the named collector is proven exited or
+absent through successful Docker metadata queries. The Go collector writes no
+early return snapshot for V9. It records successful opaque import before
+provider construction; the outer recovery reads the final durable encrypted
+setting after process exit. Missing durable state after an import marker or
+native entry denies fallback. A proven pre-import failure may return only the
+exact unused encrypted original. Recovery always precedes CAS, main discovery
+and snapshot. Actual isolated-PG controls use synthetic opaque bytes and a
+container that updates the durable row just before exiting; running and
+uninspectable collectors deny return before storage reads. Legacy closed
+cohorts and their original helper snapshots remain unchanged.
+
+After closure, `memory-closed-temporal-v9-history.py` and
+`loadLatestClosedOwnerHistory` expose the same generic closed-leaf.v2 format
+with version9. It binds original finite pins and facts5, preserves all12
+outcomes including failed/unexecuted slots and adds actual new usage once to
+the validated175 predecessor. Separate operator control-plane discovery and
+unknown invoice cost remain explicit. This accounting grants no quality or
+activation status; independent scorers review every original visible answer.
+
+The approved immutable source58264807 executed once at
+`issue88-native-v9-20261018/reports/native-v9-preseal-v2`. All12 original runs
+completed, with36 actual native entries/36 known usage/0 new NULL observations,
+24 tool reads and273742 new full tokens. Post-exit durable recovery, exact
+opaque main CAS, actual main paid discovery200 and a fresh main snapshot passed.
+The retained inclusive owner/day quote is211 model turns, including the175
+predecessor once. Its native population is210 known plus one older unknown;
+1595542 tokens is a known lower bound, not a complete total. Historical161 and
+separate adaptive226 remain separate. No qualification follows from completion;
+the complete safe answer/source/citation and nullable-cost packet is retained
+for independent all12 review. Original89v2 cause remains UNKNOWN.
+
+The future read-only closedV9 exporter is staged separately in
+`snapshots/closed-source-v1` from e2188d4b and points to the exact reviewed label.
+It does not modify or reopen the frozen582 native source/window. Its actual
+closed211 immutable-fixture forgery controls run only after verified handback.

@@ -419,6 +419,10 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
+	// Preserve a trusted ownership supervisor's cause when its cancellation won
+	// the stream race. Parent cancellation and independent transport failures
+	// retain their original classification. No cleanup write acquires new power.
+	err = preserveOwnedCancellation(ctx, err)
 	// Typed provider errors may contain untrusted details even after wrapping.
 	// Persist only the fixed subtype while retaining the general run error class.
 	if code := transport.DiagnosticCode(err); code != "" {

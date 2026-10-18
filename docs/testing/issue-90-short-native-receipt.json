@@ -1,0 +1,206 @@
+{
+  "format": "butler.experience.short-native-public-receipt.v1",
+  "day": "2026-10-18",
+  "source_revision": "813dda3efad1539eed0a48fe96de8a6ecdf2b50e",
+  "memory_acceptance": "NO_GO",
+  "release_qualified": false,
+  "source_main_deployment_switched": false,
+  "execution_slots": 33,
+  "denominator": 57,
+  "intentional_omissions": 24,
+  "completed_stages": 0,
+  "failed_stages": 1,
+  "not_executed_stages": 56,
+  "native_memory_usage": {
+    "new": {
+      "native_entries": 2,
+      "native_known_usage": 2,
+      "native_unknown_usage": 0,
+      "native_missing_total": 0,
+      "known_full_token_lower_bound": 9913,
+      "product_attempts": 2,
+      "product_observed": 2,
+      "product_null": 0,
+      "product_without_native_entry": 0
+    },
+    "inclusive": {
+      "native_entries": 213,
+      "native_known_usage": 212,
+      "native_unknown_usage": 1,
+      "native_missing_total": 0,
+      "known_full_token_lower_bound": 1605455,
+      "product_attempts": 213,
+      "product_observed": 212,
+      "product_null": 1,
+      "product_without_native_entry": 0
+    }
+  },
+  "native_memory_carry": {
+    "model_turns": 213,
+    "tokens": 230326272,
+    "cost_micros": 0,
+    "external_calls": 144,
+    "children": 0,
+    "active_millis": 81065000,
+    "egress_bytes": 600834048,
+    "provider_input_bytes": 1786773504
+  },
+  "native_receipt": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/closed-leaf-metadata.json",
+    "sha256": "8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f"
+  },
+  "native_preseal": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/plan/preseal.json",
+    "sha256": "e9b0db87ce874ff89ad5f6e90049715daf60160130e199546be8556fcbc0043b"
+  },
+  "native_safe_review": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/safe-review-v1.json",
+    "sha256": "d9d70387b1aa64d7837bf2908ef78e9874a645a03b9727712016df439cb62fd4"
+  },
+  "native_handback": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/closed-handback.json",
+    "sha256": "f785c50c834d768b8a804d655c9d8a100b1ee5cfce12bb6aa9abafd66dd245da"
+  },
+  "private_artifact_manifest": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/native-experience-preseal-v1/private-artifacts.json",
+    "sha256": "b37867791e9843763827cb80cf5e59f02c8f48ac0ab680553d18f83d58efd6ab"
+  },
+  "prospective_manifest": {
+    "path": "/srv/storage/butler/agents/issue90-experience-20261016/snapshots/route-v78/internal/extensions/projectfixture/manifest.go",
+    "sha256": "a5b530c62d9f2fb092360dce0ebc620466e20c88d48a7a5ebd4db8c02b7abdd1"
+  },
+  "operator_diagnostics": [
+    {
+      "version": 1,
+      "run_id": "operator-route-diagnostic-1792316427681364953",
+      "kind": "operator_model_only_route_diagnostic",
+      "tools_executed": 0,
+      "usage": null,
+      "milliseconds": 6,
+      "typed_diagnostics": [
+        {
+          "code": "provider_unavailable",
+          "http_status": 0,
+          "reason": ""
+        }
+      ],
+      "proposal": [],
+      "context_ended": false,
+      "evidence": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v1/evidence-recovered.sha256",
+        "sha256": "754a06f537c6f313411f2f0520fc1e0b4b975cb53758a581a4cd8cfcc9d63085"
+      },
+      "admission": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v1/admission.json",
+        "sha256": "46b39fb2ea75558eb8d634546e04e9d694961e324086eaa52a044a12e99ede82"
+      },
+      "request_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v1/request-safe.json",
+        "sha256": "88f5c1b726ee722b8b30eddf5b7f20add13bb97e76a9d0da7e7ed4819de994be"
+      },
+      "result_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v1/result-safe.json",
+        "sha256": "19adaec75a9b5b6662d310f2bba2b52cf117339d22f4a12f9553c81cee091c06"
+      },
+      "binary_manifest": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v1/binary.sha256",
+        "sha256": "c266f6a3a964cfeda1be31c04e84a2d00fa7db10e74aa08b972a495ef83a7144"
+      }
+    },
+    {
+      "version": 2,
+      "run_id": "operator-route-diagnostic-1792316602741702565",
+      "kind": "operator_model_only_route_diagnostic",
+      "tools_executed": 0,
+      "usage": {
+        "InputTokens": 1134,
+        "OutputTokens": 213,
+        "TotalTokens": 4175
+      },
+      "milliseconds": 22803,
+      "typed_diagnostics": null,
+      "proposal": [
+        {
+          "tool": "extension.project.prepare-patch",
+          "url": "/project/alpha/patches"
+        }
+      ],
+      "context_ended": false,
+      "evidence": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v2/evidence.sha256",
+        "sha256": "6d6fff0d0b56765d9f22bb18ccd42194bda773a28a720681c1ba1eae7cf26920"
+      },
+      "admission": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v2/admission.json",
+        "sha256": "a7f1b07b976b08dc24819b517679103db61761464cc28eb6498fa1729dbedb41"
+      },
+      "request_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v2/request-safe.json",
+        "sha256": "43761c37c4e276cc2e3ab4ecf7efe448eab6575c7ce0ea7bd01113d832733456"
+      },
+      "result_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v2/result-safe.json",
+        "sha256": "ef1d2d3057923a859f745f0cada19314d42ad7020d239cfb9566d77271ece27c"
+      },
+      "binary_manifest": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v2/binary.sha256",
+        "sha256": "f072a9c3df31c6f97687efa67d881838b06f38d97faa72e00a51c62c24a13eb4"
+      }
+    },
+    {
+      "version": 3,
+      "run_id": "operator-route-diagnostic-1792316690639234977",
+      "kind": "operator_model_only_route_diagnostic",
+      "tools_executed": 0,
+      "usage": {
+        "InputTokens": 1151,
+        "OutputTokens": 218,
+        "TotalTokens": 3389
+      },
+      "milliseconds": 18038,
+      "typed_diagnostics": null,
+      "proposal": [
+        {
+          "tool": "extension.project.prepare-patch",
+          "url": "http://external.test/project/alpha/patches"
+        }
+      ],
+      "context_ended": false,
+      "evidence": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v3/evidence.sha256",
+        "sha256": "c4f2a95806892d34cb8fdcb0989dde615587368ae67962ecf5ba80928970e9cd"
+      },
+      "admission": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v3/admission.json",
+        "sha256": "5b48420e07cd78ddf2e2078b7f206e7eeb1049ff8bccebee771c6df15ccebe7c"
+      },
+      "request_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v3/request-safe.json",
+        "sha256": "8caab054d13dace9a25f84b62fac4fdafd537f52d6c8c07dae6617e637fb2aee"
+      },
+      "result_safe": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v3/result-safe.json",
+        "sha256": "19c2ea263e86a69730f8eea109cef93c9a2c1fbfaf4a1d2e999e98fdbc11ecb3"
+      },
+      "binary_manifest": {
+        "path": "/srv/storage/butler/agents/issue90-experience-20261016/reports/route-gemini-smoke-v3/binary.sha256",
+        "sha256": "dd4ef0b471953d55a364caa44bc5412c5decdbc73934ebb6151dc6b881d20e42"
+      }
+    }
+  ],
+  "operator_usage": {
+    "attempts": 3,
+    "known": 2,
+    "unknown": 1,
+    "known_full_token_lower_bound": 7564,
+    "memory_receipt_modified": false,
+    "execution_admission": "separate explicit operator diagnostics outside memory acceptance"
+  },
+  "limitations": [
+    "No new native cohort, failed action replay, effect execution or comparison after the failed original01.",
+    "Version2 lacked original inspect request URL and chose a relative path. Version3 included complete actual prior inspect request plus result and chose the absolute prepare URL.",
+    "The model-only proposals do not prove artifact creation, verification, task completion or lesson/skill quality.",
+    "The original failed prepare remains UNKNOWN. An inferred recipient HTTP404 is not an observed receipt.",
+    "Reported full usage is retained independently from input/output subtotal. Invoice cost is unknown."
+  ]
+}

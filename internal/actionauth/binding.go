@@ -351,7 +351,7 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
-	case "workspace.read", "memory.search", "memory.open", "memory.neighbors":
+	case "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts":
 		return EffectRead
 	case "workspace.create", "workspace.write":
 		return EffectPrepare

@@ -22,7 +22,7 @@ func operatorDoctor(ctx context.Context) bool {
 // These locally generated events never enter a model transport or model budget.
 func doctorCommandStream(runID string) transport.EventStream {
 	ch := make(chan transport.TransportEvent, 1)
-	ch <- transport.TransportEvent{RunID: runID, EventType: transport.EventTypeToolCallRequested, ToolCall: &transport.ToolCallRequest{ToolCallRef: "doctor-check-system", ToolName: "doctor.check_system", ArgsJSON: "{}"}}
+	ch <- transport.TransportEvent{RunID: runID, EventType: transport.EventTypeToolCallRequested, ToolCall: &transport.ToolCallRequest{ToolCallRef: "doctor-check-system:" + runID, ToolName: "doctor.check_system", ArgsJSON: "{}"}}
 	close(ch)
 	return ch
 }

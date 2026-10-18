@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+The current kernel accepts one tool proposal per model response. Trusted
+orchestration instructions declare that limit independently of the operator's
+base prompt and ask the model to wait for its correlated tool result. The Broker
+and transport still reject unsupported batches before any member dispatch; the
+instruction does not grant permission, guarantee model compliance or retry a
+failed/unknown effect. See the [transport contract](model-transport-contract.md).
+
 Verified summary generation is optional independent background work, specified in
 [task compaction](../../internal/memory/compaction/README.md). It does not keep or
 revive a Session Service lease, complete a task, accept profile facts or infer tool
@@ -689,6 +696,10 @@ approval/recovery remain unchanged. POST `/api/v1/doctor/check` returns a pendin
 receipt (202); polling its `input_id` reads that exact operation. Runtime and
 memory reporting failures remain independent results and cannot become a
 healthy report because HTTP delivery succeeded. Historical JSON remains readable.
+The command's tool reference is deterministic within its actual run and distinct
+between runs. Transcript tool IDs are globally unique; a later Doctor operation
+must append its own record without overwriting a prior check or colliding with
+its ID. Existing suspended continuations retain their recorded exact reference.
 
 Текущий baseline дополнительно предусматривает read-only operator visibility для memory state вне критического run path:
 
@@ -705,6 +716,16 @@ Redis Lua's nil response. The executor must stop renewal and execution after
 this signal; expiry is not a successful renewal or a generic backend outage.
 
 ## 18.1 Cancel
+
+The owning lease supervisor retains a private, fixed cancellation cause when a
+current authority read fails, an exact lease/run/session/fence comparison changes,
+or lease renewal fails. If stream consumption observes the resulting
+`context.Canceled`, Core preserves that cause for failure reporting without
+storage/provider details. The error still classifies as cancelled and retains
+the existing ownership/renewal sentinel. Ordinary parent cancellation and an
+independent transport error keep their own cause. This adds no new cleanup
+authority, lease retry, guard interval or permission to dispatch/publish. Older
+generic cancellation records cannot be retroactively classified from this change.
 
 Run может быть отменён:
 - пользователем;

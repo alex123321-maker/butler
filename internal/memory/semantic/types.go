@@ -18,6 +18,7 @@ import (
 
 var (
 	ErrInvalid     = errors.New("invalid semantic index input")
+	ErrSourceLimit = fmt.Errorf("semantic scope exceeds the finite chunk limit: %w", ErrInvalid)
 	ErrUnavailable = errors.New("semantic retrieval unavailable")
 	ErrStale       = fmt.Errorf("semantic source or activation changed: %w", catalog.ErrStale)
 	ErrUnverified  = errors.New("semantic generation not verified")

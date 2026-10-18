@@ -1,0 +1,10 @@
+{
+  "format": "butler.coherent.primary-inputs.v1",
+  "documents": [
+    {"file": "harbour-transfer.md", "question": "Review the attached receiving notebook for the current read-only planning task. Give a concise account of the separate records, unresolved dependencies and supporting material that would be needed for a later decision."},
+    {"file": "workshop-ledger.md", "question": "Review this maintenance ledger as another planning input. Compare the kinds of observations and approvals, and identify the unresolved dependencies without deciding a repair or releasing equipment."},
+    {"file": "archive-move.md", "question": "Consider this archive move memorandum alongside the earlier planning inputs. Explain which distinctions matter for a defensible handover and which missing records limit a decision."},
+    {"file": "waterworks-round.md", "question": "Read this operational round as source material only. Compare its observation and planning dependencies with the earlier documents, keeping unrelated equipment and permissions separate."},
+    {"file": "festival-handover.md", "question": "Review this final handover pack and give a concise cross-document synthesis of how to keep observations, estimates, proposed arrangements and independent checks distinguishable. No external action is requested."}
+  ]
+}

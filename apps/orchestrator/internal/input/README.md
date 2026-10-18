@@ -64,3 +64,19 @@ does not claim real external reconciliation or exactly-once delivery.
 
 
 Authenticated owner controls bypass the normal FIFO and atomically cancel old task inputs. Ambiguous targets are saved as `waiting_for_user`; explicit conversation/new-task selection or an explicit target control resolves them. See [Owner Controls](../../../../docs/architecture/task-owner-controls-spec.md).
+
+`ObserveStopped` returns content-free typed evidence to the owner-authorized
+experience adapter for one already blocked/failed original. It requires an empty
+claim, no current Session Service lease, exact owner/root-task/run identity and a
+stopped run or actual UNKNOWN tool boundary. It neither exposes checkpoint text
+nor requeues/unblocks/completes the input. Migration080 maintains the exact
+material input head and tombstone used by later source/currentness fences.
+
+`ObserveReconciled` is a separate owner-only content-free observer. It selects
+existing original RunID, immutable pre-Resume observation and actual owner
+control IDs; the database checks the preserved original checkpoint, standard
+controller transition/revision/queued continuation and independently authorized
+read/final/ABSENT reconciliation. No execution or input-control permission is
+returned and the stale observation body is never read. Migration081's separate
+input-link/event heads capture the exact control relationship without changing
+the ordinary080 projection or treating arbitrary diagnostic text as its body.

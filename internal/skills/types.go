@@ -28,6 +28,19 @@ type SourceProof struct {
 type EvidenceVerifier interface {
 	VerifySkillSources(context.Context, string, []EvidenceRef) ([]SourceProof, error)
 }
+
+// LessonVerifier is an owning-service lineage proof, not a model-supplied test.
+// Inspect every source graph even when the manifest omits lesson_sources, so an
+// experience-derived recipe cannot downgrade to legacy single-trial admission.
+type LessonVerifier interface {
+	VerifyLessonLineage(context.Context, string, LessonRequest) ([]catalog.SourceRef, error)
+}
+type LessonRequest struct {
+	Roots        []catalog.SourceRef `json:"roots"`
+	Lessons      []catalog.SourceRef `json:"lessons"`
+	Proofs       []SourceProof       `json:"proofs"`
+	Dependencies []Dependency        `json:"dependencies"`
+}
 type ContractReader interface {
 	GetSkillContract(context.Context, string) (*toolbrokerv1.ToolContract, error)
 }
@@ -36,10 +49,11 @@ type RunEnvironment interface {
 	ContractsForRun(context.Context, string) ([]*toolbrokerv1.ToolContract, error)
 }
 type Validation struct {
-	Validator string        `json:"validator"`
-	Passed    bool          `json:"passed"`
-	Checks    []string      `json:"checks"`
-	Sources   []SourceProof `json:"sources"`
+	Validator     string              `json:"validator"`
+	Passed        bool                `json:"passed"`
+	Checks        []string            `json:"checks"`
+	Sources       []SourceProof       `json:"sources"`
+	LessonParents []catalog.SourceRef `json:"lesson_parents,omitempty"`
 }
 type Record struct {
 	ID            string            `json:"skill_id"`

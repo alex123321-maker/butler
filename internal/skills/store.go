@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -75,6 +76,15 @@ func (s *Store) read(ctx context.Context, tx pgx.Tx, hash string) (Record, error
 	if s.sources == nil {
 		return r, ErrUnavailable
 	}
+	if environment, live := ctx.Value(experienceEnvironmentKey{}).(string); live {
+		eligible, e := catalog.ExperienceMetadataEligibleTx(ctx, tx, []string{r.BodySource.ID}, environment)
+		if e != nil {
+			return r, e
+		}
+		if !eligible {
+			return r, ErrUnavailable
+		}
+	}
 	data, err := s.sources.AccessTx(ctx, tx, []catalog.SourceRef{r.BodySource}, "memory_read")
 	if err != nil || len(data) != 1 {
 		return r, ErrUnavailable
@@ -85,6 +95,15 @@ func (s *Store) read(ctx context.Context, tx pgx.Tx, hash string) (Record, error
 	}
 	r.Package = p
 	r.BodyAvailable = true
+	if environment, live := ctx.Value(experienceEnvironmentKey{}).(string); live {
+		token, ok := ownership.TokenFromContext(ctx)
+		if !ok {
+			return r, ErrAccess
+		}
+		if err = s.sources.BindExperienceLineageTx(ctx, tx, []catalog.SourceRef{r.BodySource}, environment, token.RunID); err != nil {
+			return r, ErrUnavailable
+		}
+	}
 	return r, nil
 }
 func (s *Store) Get(ctx context.Context, hash string) (Record, error) {
@@ -136,6 +155,15 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 			}
 			seen[ref.ID] = ref
 			parents = append(parents, ref)
+		}
+	}
+	for _, r := range report.LessonParents {
+		if old, ok := seen[r.ID]; ok && old != r {
+			return Record{}, ErrEvidence
+		}
+		if _, ok := seen[r.ID]; !ok {
+			seen[r.ID] = r
+			parents = append(parents, r)
 		}
 	}
 	if ref, ok := ctx.Value(proposalSourceKey{}).(catalog.SourceRef); ok {

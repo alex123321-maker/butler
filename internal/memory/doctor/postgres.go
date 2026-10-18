@@ -100,7 +100,7 @@ func (p *postgresReader) Jobs(ctx context.Context, owner string) (JobObservation
 	return j, rows.Err()
 }
 func (p *postgresReader) Indexes(ctx context.Context, owner string) ([]IndexObservation, bool, error) {
-	rows, err := p.pool.Query(ctx, `SELECT g.id,g.scope_type,g.scope_id,g.space_id,g.state,coalesce(a.generation_id=g.id,false),g.verified_at,g.quality_proof FROM semantic_index_generations g LEFT JOIN semantic_index_active a USING(scope_type,scope_id) WHERE (g.scope_type='user' AND g.scope_id=$1) OR (g.scope_type='session' AND EXISTS(SELECT 1 FROM sessions s WHERE s.session_key=g.scope_id AND s.user_id=$1)) OR (g.scope_type='task' AND EXISTS(SELECT 1 FROM tasks t WHERE t.task_id=g.scope_id AND t.owner_id=$1)) OR EXISTS(SELECT 1 FROM memory_index_jobs i JOIN memory_aux_jobs j USING(job_id) WHERE i.generation_id=g.id AND j.owner_id=$1) ORDER BY g.created_at DESC,g.id LIMIT 51`, owner)
+	rows, err := p.pool.Query(ctx, `SELECT g.id,g.scope_type,g.scope_id,g.space_id,CASE WHEN g.retired_at IS NOT NULL THEN 'retired' ELSE g.state END,coalesce(a.generation_id=g.id,false),g.verified_at,g.quality_proof FROM semantic_index_generations g LEFT JOIN semantic_index_active a USING(scope_type,scope_id) WHERE (g.scope_type='user' AND g.scope_id=$1) OR (g.scope_type='session' AND EXISTS(SELECT 1 FROM sessions s WHERE s.session_key=g.scope_id AND s.user_id=$1)) OR (g.scope_type='task' AND EXISTS(SELECT 1 FROM tasks t WHERE t.task_id=g.scope_id AND t.owner_id=$1)) OR EXISTS(SELECT 1 FROM memory_index_jobs i JOIN memory_aux_jobs j USING(job_id) WHERE i.generation_id=g.id AND j.owner_id=$1) ORDER BY g.created_at DESC,g.id LIMIT 51`, owner)
 	if err != nil {
 		return nil, false, err
 	}

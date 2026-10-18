@@ -58,6 +58,12 @@ requires memory reads. Isolated tests explicitly compose the production Store,
 ordinary Flow and actual Broker while qualification remains false. The native
 freeze must bind source/binary/corpus/control hashes and finite prospective
 capacity for every original arm; failed originals and unknown spend are retained.
+The [prospective v5 lab protocol](../testing/issue-87-native-comparison.md)
+additionally seals the complete96-original schedule, UTC day, all-six-store
+resource history and standalone nonroot runner before auth. Every actual native
+entry binds one owning durable operation/reservation, with native total usage
+separate from nullable product input/output. This test composition does not
+change production transport, budgets or the default-off qualification gate.
 
 The lexical intent gate is deliberately incomplete: an implicit recall question
 without a recognized history/document/identifier cue can be classified as
@@ -76,3 +82,14 @@ Named months require a whole calendar word with an explicit supported inflection
 technical names such as a smart-contract label cannot manufacture a March filter.
 This first policy's calendar bounds use UTC. It does not implement owner-local
 timezone or relative-period interpretation; those need explicit clarification.
+
+The closed v5 screen is diagnostic NO_GO: all96 originals and the distinct
+seventh-store ledger remain retained, including one unknown native usage. A
+collector bug changed provenance's dynamic Go type after capturing JSON bytes,
+so96 expected CaptureSHA values differ from their retained exports. Exact
+postcollection diagnosis and a race-tested prospective snapshot correction are
+documented in the testing report; they do not rewrite the original evidence or
+grant qualification. Independent retrospective content review also measured the
+current lexical router's missed implicit memory questions. The policy and
+default-off gate remain unchanged; any future router needs fresh independent
+cases after this public corpus has been observed.

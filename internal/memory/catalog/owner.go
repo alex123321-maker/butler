@@ -49,7 +49,7 @@ func (s *Store) Correct(ctx context.Context, p Correction) (Source, error) {
 		return Source{}, e
 	}
 	var snapshot bool
-	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_summary_sources WHERE source_id=$1)`, p.SourceID).Scan(&snapshot); e != nil {
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_summary_sources WHERE source_id=$1) OR EXISTS(SELECT 1 FROM memory_consolidation_inputs WHERE source_id=$1) OR EXISTS(SELECT 1 FROM memory_consolidation_generations WHERE source_id=$1)`, p.SourceID).Scan(&snapshot); e != nil {
 		return Source{}, e
 	}
 	if snapshot {
@@ -150,6 +150,8 @@ func (s *Store) Export(ctx context.Context, emit func(any) error) error {
 	queries := []struct{ kind, sql string }{
 		{"source_revision", `SELECT to_jsonb(s)||to_jsonb(r) FROM memory_sources s JOIN memory_source_revisions r USING(source_id) WHERE s.owner_id=$1 ORDER BY s.source_id,r.revision`},
 		{"claim", `SELECT to_jsonb(c) FROM memory_claims c WHERE owner_id=$1 ORDER BY claim_id`},
+		{"temporal_revision", `SELECT to_jsonb(t) FROM memory_claim_temporal_revisions t JOIN memory_claims c USING(claim_id) WHERE c.owner_id=$1 ORDER BY claim_id,revision`},
+		{"decision_history", `SELECT to_jsonb(h) FROM memory_fact_decision_history h WHERE h.owner_id=$1 ORDER BY scope_type,scope_id,fact_key,head_revision`},
 		{"dependency", `SELECT to_jsonb(d) FROM memory_source_dependencies d JOIN memory_sources s ON s.source_id=d.child_source_id WHERE s.owner_id=$1 ORDER BY d.child_source_id,d.parent_source_id`},
 		{"deletion", `SELECT to_jsonb(d) FROM memory_deletions d WHERE owner_id=$1 ORDER BY watermark`},
 		{"original_asset", `SELECT (to_jsonb(a)-'original_bytes')||jsonb_build_object('original_bytes_base64',encode(a.original_bytes,'base64')) FROM memory_source_assets a JOIN memory_sources s USING(source_id) WHERE s.owner_id=$1 ORDER BY source_id,source_revision`},

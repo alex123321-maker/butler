@@ -53,7 +53,7 @@ func (s *Store) checkModelSupervisor(ctx context.Context, j Job, observePhase ..
 	err = tx.QueryRow(ctx, `WITH pins AS MATERIALIZED (
  SELECT * FROM jsonb_to_recordset($1::jsonb) AS p(source_id text,revision bigint,access_revision bigint,content_hash text)
 )
-SELECT butler_memory_summary_sources_current($5) AND NOT EXISTS (
+SELECT butler_memory_summary_sources_current($5) AND butler_memory_temporal_sources_current($5) AND butler_memory_experience_sources_current($5) AND NOT EXISTS (
  SELECT 1 FROM pins p LEFT JOIN memory_sources s ON s.source_id=p.source_id
  LEFT JOIN memory_source_revisions r ON r.source_id=p.source_id AND r.revision=s.head_revision
  WHERE s.owner_id IS DISTINCT FROM $2 OR s.status IS DISTINCT FROM 'active'
@@ -63,14 +63,16 @@ SELECT butler_memory_summary_sources_current($5) AND NOT EXISTS (
  OR NOT CASE s.scope_type
   WHEN 'user' THEN s.scope_id=$2
   WHEN 'task' THEN $3<>'' AND s.scope_id=$3
+   OR EXISTS(SELECT 1 FROM jsonb_to_recordset($6::jsonb) AS c(task_id text) WHERE c.task_id<>'' AND c.task_id=s.scope_id)
   WHEN 'session' THEN EXISTS(SELECT 1 FROM runs WHERE run_id=$4 AND session_key=s.scope_id AND COALESCE(task_id,'')=$3)
    AND NOT EXISTS(SELECT 1 FROM tasks WHERE session_key=s.scope_id AND task_id<>$3)
+   OR EXISTS(SELECT 1 FROM jsonb_to_recordset($6::jsonb) AS c(session_key text) WHERE c.session_key=s.scope_id)
   ELSE FALSE END
 ) AND NOT EXISTS (
  SELECT 1 FROM memory_source_dependencies d JOIN pins child ON child.source_id=d.child_source_id
  LEFT JOIN pins parent ON parent.source_id=d.parent_source_id
  WHERE parent.source_id IS NULL OR parent.revision<>d.parent_revision
-), EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`, jsonBytes(j.Sources), j.OwnerID, j.TaskID, j.OriginalRunID, ids).Scan(&current, &busy)
+), EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`, jsonBytes(j.Sources), j.OwnerID, j.TaskID, j.OriginalRunID, ids, contextManifestJSON(j.Contexts)).Scan(&current, &busy)
 	if err != nil {
 		return err
 	}

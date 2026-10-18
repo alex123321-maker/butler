@@ -13,6 +13,8 @@ import (
 
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/compaction"
+	"github.com/butler/butler/internal/memory/consolidation"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
@@ -30,6 +32,11 @@ type MemoryCatalogServer struct {
 	ModelJobs             *jobs.Store
 	ModelWorkerConfigured bool
 	SummaryPolicies       *compaction.Policies
+	TemporalEnabled       bool
+	Consolidation         *consolidation.Store
+	ConsolidationReady    bool
+	ExperiencePolicies    experience.PolicyCreator
+	Experience            *experience.Store
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {
@@ -46,7 +53,39 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		ctx, cancel := context.WithTimeout(owneridentity.WithActor(r.Context(), a), 30*time.Second)
 		defer cancel()
 		w.Header().Set("Cache-Control", "no-store")
+		if r.URL.Path == "/api/v4/memory/experience-observations" {
+			if r.Method != http.MethodPost {
+				writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			if s.ExperiencePolicies == nil {
+				writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "experience consumer disabled"})
+				return
+			}
+			var q struct {
+				RunID string `json:"run_id"`
+			}
+			if !decodeMemory(w, r, &q) {
+				return
+			}
+			receipt, err := s.ExperiencePolicies.SealObservation(ctx, q.RunID)
+			if err != nil {
+				writeMemoryError(w, err)
+			} else {
+				writeJSON(w, http.StatusCreated, receipt)
+			}
+			return
+		}
+		if s.handleIndexRetirement(ctx, w, r) {
+			return
+		}
 		if s.handleModelJobs(ctx, w, r) {
+			return
+		}
+		if s.handleTemporal(ctx, w, r) {
+			return
+		}
+		if s.handleConsolidation(ctx, w, r) {
 			return
 		}
 		if r.Method == http.MethodGet {

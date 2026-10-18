@@ -1,5 +1,14 @@
 # Reviewed procedural skills
 
+Experience promotion (#90) adds optional exact `lesson_sources` to the immutable
+manifest. The private owning verifier derives any experience lineage from the
+complete source graph even when omitted by the caller; that path requires at
+least two distinct independent owner-confirmed task/run originals and current
+accepted compatible lessons without failed/unknown steps. The validated lesson
+parents join the existing Catalog-derived manifest source. Existing legacy
+evidence remains supported, and owner test/review/CAS activation and rollback
+remain mandatory. See [typed episodic experience](episodic-experience.md).
+
 A skill is an immutable, versioned procedure with bounded descriptions,
 applicability/inapplicability, inputs, exact dependent tool hashes, explicit
 steps, stop/reconciliation rules and independently verified task sources. It is

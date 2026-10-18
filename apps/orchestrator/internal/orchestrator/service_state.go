@@ -36,7 +36,8 @@ func (s *Service) persistProviderSessionRef(ctx context.Context, current *sessio
 }
 
 func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseRecord, runLog *slog.Logger) (context.Context, context.CancelFunc, <-chan error) {
-	runCtx, cancel := context.WithCancel(parent)
+	runCtx, cancelCause := context.WithCancelCause(parent)
+	cancel := func() { cancelCause(context.Canceled) }
 	errCh := make(chan error, 1)
 	done := make(chan struct{})
 	ttl := time.Duration(s.config.LeaseTTL) * time.Second
@@ -80,11 +81,16 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 						return
 					}
 					if checkErr != nil || current.RunID != lease.RunID || current.SessionKey != lease.SessionKey || current.FenceEpoch != lease.FenceEpoch {
+						reason := "execution_ownership_changed"
+						if checkErr != nil {
+							reason = "execution_authority_check_failed"
+						}
+						cause := &ownedCancellation{reason: reason, failure: ownership.ErrStale}
 						select {
-						case errCh <- ownership.ErrStale:
+						case errCh <- cause:
 						default:
 						}
-						cancel()
+						cancelCause(cause)
 						cleanup, cleanupCancel := context.WithTimeout(context.Background(), 2*time.Second)
 						_, cancelErr := s.provider.CancelRun(cleanup, transport.CancelRunRequest{RunID: lease.RunID, Reason: "owner authority revoked or unavailable"})
 						cleanupCancel()
@@ -105,12 +111,13 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 				}
 				nextRenew = time.Now().Add(interval)
 				if err != nil {
-					runLog.Error("lease renew failed", slog.String("lease_id", lease.LeaseID), slog.String("error", err.Error()))
+					cause := &ownedCancellation{reason: "execution_lease_renewal_failed", failure: errLeaseRenewalFailed}
+					runLog.Error("lease renew failed", slog.String("lease_id", lease.LeaseID), slog.String("reason", cause.reason))
 					select {
-					case errCh <- fmt.Errorf("%w: %v", errLeaseRenewalFailed, err):
+					case errCh <- cause:
 					default:
 					}
-					cancel()
+					cancelCause(cause)
 					return
 				}
 			}

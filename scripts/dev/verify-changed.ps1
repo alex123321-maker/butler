@@ -33,6 +33,14 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: scripts/dev/memory-adaptive-lab.sh isolated issue87 root fresh-label; actual PG/race and production Broker, immutable opened citations, all-eight lifecycle attacks, late privacy/task/Stop, bounded reconstruction, semantic IPC outside owning transaction and scoped accepted preferences. No required skips; no native calls. Independent frozen three-arm native comparison remains separate and cannot bypass code-owned qualification.")
       continue
     }
+    "^(internal/memory/consolidation/|internal/memory/catalog/derived_review[.]go$|apps/orchestrator/internal/(api|app)/memory_consolidation|migrations/076_|scripts/dev/memory-consolidation-)" {
+      [void]$specs.Add("docs/architecture/memory-consolidation.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/memory-temporal.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: actual isolated PostgreSQL/race consolidation owner workflow, temporal correction/CAS/retirement/all-eight lifecycle corpus and owner API; scripts/dev/memory-consolidation-backup-lab.sh isolated issue89 root fresh-label performs real six-phase custom dump/restore with newest external anchor. Native full foreground+background quality/cost remains an independent one-use window.")
+      continue
+    }
     "^(internal/memory/(memorytest/lifecycle[.]go|memorytest/testdata/lifecycle-|[^/]+/lifecycle_integration_test[.]go)|apps/tool-broker/internal/broker/memory_lifecycle_integration_test[.]go|apps/orchestrator/internal/app/memory_lifecycle_cache_integration_test[.]go|scripts/dev/memory-lifecycle-|docs/ai/memory-lifecycle-acceptance[.]md)" {
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
@@ -74,6 +82,15 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
       [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
       [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/candidates and TestCandidate in ./apps/orchestrator/internal/api; actual owner HTTP decision, exact quote validation, complete ancestor privacy and all-eight lifecycle corpus. Native Russian semantic release qualification is independent; never reset historical spend.")
+      continue
+    }
+    "^(internal/memory/experience/|apps/orchestrator/internal/app/memory_experience|apps/orchestrator/internal/input/(stopped|reconciled)_observation[.]go|internal/memory/catalog/stopped_attempt[.]go|migrations/(077|080|081|082)_|scripts/dev/memory-experience-)" {
+      [void]$specs.Add("docs/architecture/episodic-experience.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-experience-lab.sh isolated issue90 root fresh-label terminal; real PG/race, ordinary stopped original through actual Broker/runtimes, owner-only one-use note policy, currentness/tombstones/writer fencing and ordered migrations. No native inference or skipped mandatory tests.")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-experience-backup-lab.sh isolated issue90 root fresh-label terminal; actual dump BEFORE deletion, fresh restore and newest external anchor, unknown outcome/provenance/accounting retained. Native A/B/C remains a separate frozen complete-cost quality gate.")
       continue
     }
     "^(internal/memory/jobs/|internal/budget/auxiliary[.]go$|apps/orchestrator/internal/(app/memory_model_jobs|api/memory_model_jobs)|migrations/071_|deploy/memory-jobs/|scripts/dev/memory-jobs-)" {
@@ -425,12 +442,12 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
 	  continue
 	}
-    "^(apps/orchestrator/internal/orchestrator/memory_source_guard.*[.]go$|internal/budget/continuation[.]go$)" {
+    "^(apps/orchestrator/internal/orchestrator/memory_source_(guard|compound).*[.]go$|internal/budget/continuation[.]go$)" {
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
-      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests")
+      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests; memory-experience-lab.sh isolated issue90 root fresh-label bound proves default2s and explicit trusted bounds with held final/tool/batch DATA, current post-wait proof and unchanged parent cancellation")
       continue
     }
     "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[2345]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {

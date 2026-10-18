@@ -182,6 +182,35 @@ func TestAtomicIndexJobPublicationAndBoundedRestartIntegration(t *testing.T) {
 		t.Fatal("deleted vectors survived", n, e)
 	}
 }
+
+func TestOversizedScopeDeniesBeforeInferenceAndActivationIntegration(t *testing.T) {
+	r, ctx, src, model := fixture(t)
+	q := request(src)
+	q.MaxChunks = 4 // The real Catalog fixture contains five current fragments.
+	receipt, err := r.Enqueue(ctx, q)
+	if err != nil {
+		t.Fatal(err)
+	}
+	worked, err := r.ProcessOne(context.Background())
+	if !worked || !errors.Is(err, semantic.ErrSourceLimit) || !errors.Is(err, semantic.ErrInvalid) {
+		t.Fatal("missing explicit source limit", worked, err)
+	}
+	if model.calls.Load() != 0 {
+		t.Fatal("oversized scope reached inference")
+	}
+	var status, code, state string
+	var vectors, reservations int
+	if err = r.Catalog.Pool().QueryRow(ctx, `SELECT j.status,j.error_code,g.state,(SELECT count(*)FROM semantic_index_entries WHERE generation_id=g.id),(SELECT count(*)FROM execution_budget_reservations) FROM memory_aux_jobs j JOIN semantic_index_generations g ON g.id=$2 WHERE j.job_id=$1`, q.Job.ID, receipt.GenerationID).Scan(&status, &code, &state, &vectors, &reservations); err != nil {
+		t.Fatal(err)
+	}
+	if status != "failed" || code != "scope_chunk_limit" || state != "building" || vectors != 0 || reservations != 0 {
+		t.Fatal("oversized index became partial/active or spent inference", status, code, state, vectors, reservations)
+	}
+	var active int
+	if err = r.Catalog.Pool().QueryRow(ctx, `SELECT count(*)FROM semantic_index_active WHERE scope_type=$1 AND scope_id=$2`, q.ScopeType, q.ScopeID).Scan(&active); err != nil || active != 0 {
+		t.Fatal("failed building generation became active", active, err)
+	}
+}
 func TestLateIndexResultAfterSourceDeletionCannotPublishIntegration(t *testing.T) {
 	r, ctx, src, m := fixture(t)
 	q := request(src)

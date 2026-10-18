@@ -28,6 +28,7 @@ import (
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/singletabcontrol"
@@ -53,6 +54,9 @@ func New(ctx context.Context) (*App, error) {
 	cfg, snapshot, err := config.LoadToolBrokerFromEnv()
 	if err != nil {
 		return nil, err
+	}
+	if cfg.MemoryTemporalEnabled && (!factcontrol.ReleaseQualified || !cfg.MemoryReadEnabled) {
+		return nil, factcontrol.ErrDenied
 	}
 	log := logger.New(logger.Options{Service: cfg.Shared.ServiceName, Component: "bootstrap", Level: parseLogLevel(cfg.Shared.LogLevel), Writer: os.Stdout})
 	log.Info("loaded tool broker config", slog.String("config_summary", configSummary(snapshot)))
@@ -364,6 +368,19 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			executor = &broker.MemoryReadExecutor{Reads: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
+		if cfg.MemoryTemporalEnabled {
+			client, clientErr := factcontrol.NewClient(cfg.MemoryFactControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{factcontrol.Contract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.MemoryFactExecutor{Facts: client, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if cfg.GuardedTabRequestEnabled {

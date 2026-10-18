@@ -65,6 +65,13 @@ Secret values and encoded variants are masked before observations leave it.
 Provider declarations use core-owned descriptions and schemas without package
 prose; package documentation is separate provenance-tagged DATA.
 
+The reviewed project fixture's operation descriptions document its URL contract
+as DATA: inspect uses the exact current task project URL (`/project` or
+`/project/{resource}`), prepare appends `/patches`, and artifact checks append
+`/patches/{artifact_id}/checks` using the returned identity. The HTTP runtime
+executes the supplied authorized URL unchanged. Documentation does not create
+resource authority or rewrite a failed dispatch.
+
 Optional reviewed commit `receipt` declares only existing `external_receipt_v1`,
 a fixed idempotency header and same-origin bounded verification path with one
 `{idempotency_key}` placeholder. Broker owns the durable key/fingerprint. Generic

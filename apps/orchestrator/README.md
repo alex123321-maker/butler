@@ -1,5 +1,31 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Lease-supervisor cancellation retains a fixed Core reason when current authority
+cannot be checked, the exact ownership token changes, or renewal fails. A stream
+cancellation no longer discards that owning cause. Private storage details stay
+out of the diagnostic; ordinary parent cancellation and transport failures remain
+separate. Polling bounds, source/authority guards, conservative charges and
+cleanup write authority are unchanged. Earlier generic cancellations remain
+unclassified.
+
+Trusted model instructions declare the existing one-proposal-per-response
+execution contract, including when the operator customizes or disables the base
+prompt. Multiple required reads/actions are proposed one at a time, after the
+correlated result. This addresses an actual native memory screen's unsupported
+parallel proposal; it does not enable batching or change Broker authorization,
+unknown-effect stops or automatic retry policy. The controlled
+`memory-single-proposal-lab.sh` checks actual ordinary Start input, unchanged
+fail-closed batch handling and nullable owning usage on isolated PostgreSQL.
+
+Temporal memory owner controls (`/api/v4/memory/temporal`, `/facts`, and
+`/revalidate-read` under `/api/v4/memory`) require private owner authentication and
+`BUTLER_MEMORY_TEMPORAL_ENABLED`; the default is false and a separate code-owned
+qualification is currently false. Complete RFC3339 validity/knowledge instants
+remain separate from reported EventTime. Ordinary context can exclude expired
+one-off exceptions while retaining broader accepted preferences, with explicit
+unknown/stale annotations. Prepared runs bind the observed accepted head and
+temporal revision, including SQL publication fences independent of the flag.
+
 Orchestrator also owns the default-off durable generative memory worker:
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes it; owner controls separately
 enable its persisted execution state. The handler registry defaults empty.
@@ -36,6 +62,12 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Current-source denial retains valid complete turn usage on the safe error event
+before the budget wrapper terminates the attempt. Denied tool/final text never
+passes through this accounting path. Provider cancellation and metadata drain are
+synchronous and bounded100ms/256events; an absent usage observation remains NULL
+and no conservative reservation is refunded.
+
 Optional `BUTLER_MEMORY_READ_ENABLED=true` mounts the authenticated private
 `/internal/memory-read` control for fixed Broker search/open/neighbors contracts.
 It reconstructs current actual dispatch/input/Session ownership, uses catalog
@@ -55,6 +87,16 @@ actual owner session; policy/job controls and observations remain the existing
 memory model-job APIs. [Consumer contract](../../internal/memory/compaction/README.md)
 documents protected user statements, exact excerpts, typed tool state, 60% budget
 trigger, coverage CAS, privacy deletion, finite fallback and migration072.
+
+Long-term owner-reviewed consolidation is separately default off under
+`BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED`. It uses the same durable model
+worker, immutable source/accepted-temporal snapshots, staged DATA generations,
+deterministic diff and owner head/revision CAS. Its code-owned qualification is
+qualified for the independently reviewed native V3 bounded pairs, while its
+process flags remain off by default. Private `/api/v4/memory/consolidation/*`
+controls preserve current source/context/temporal proof for selection/rollback;
+retirement deletes derivatives through the existing catalog anchor. See the
+[owner workflow and retention limits](../../internal/memory/consolidation/README.md).
 
 The default prompt includes an internal execution/completion protocol and keeps
 negation, source authority and durable retry/effect policy explicit. Core never
@@ -701,6 +743,18 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
 
+POST `/api/v4/memory/index-retire` is available to the authenticated owner even
+with local indexing disabled. Send `generation_id` and `expected_active_id`;
+only one inactive terminal owner-job generation is eligible. It atomically
+removes that generation's vectors and marks it irreversibly retired, preserving
+originals, jobs, quality and spend history. Active/busy/foreign/stale choices are
+rejected; retired rollback is denied. No inference or automatic pruning occurs.
+
+The finite10000-chunk capacity profile, mixed-workload measurement boundaries,
+backup/restore, rebuild/rollback, disk reserve and worker/budget recovery are
+documented in the [memory capacity runbook](../../docs/operations/memory-capacity.md).
+Controlled load measurements do not qualify native cloud response latency.
+
 ## Delegation foundation
 
 The internal delegation contract, tree admission/owner-control barrier, executor
@@ -815,7 +869,7 @@ technical phases on the original task after confirmed developer return and
 actual parent activation. Ordinary workers/leases/Broker execute them; inputs
 carry opaque references and current readiness stays DATA. Full original document
 pins and current private claim/fence/authority repeat at provider/recovery/final.
-Its compound source verifier has a static2s bound (ordinary checks200ms), with
+Its compound source verifier has a static2s bound (the foreground default), with
 uncached proposal/final/periodic checks. See
 [composition and evidence](../../docs/architecture/converter-continuations.md).
 
@@ -898,3 +952,154 @@ BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED defaults false; flags cannot bypass the
 qualification constant. Explicit isolated composition uses the existing ordinary
 Flow and Broker, preserves scoped accepted preferences and verifies actual opened
 current evidence before release. See docs/architecture/adaptive-memory-retrieval.md.
+
+Memory Doctor now includes `effective_features`: requested startup flags, actual
+constructed services/handlers, code-owned release gates and supported model
+profile remain separate. Its fresh owner policy counts and durable worker control
+are operational observations, not job admission or answer quality. Missing or
+failed observations never manufacture zero allowance, zero usage or an eligible
+policy. See [Memory Doctor](../../internal/memory/doctor/README.md).
+
+Doctor's `experience` row is the background generation handler;
+`experience_context` is actual constructed read/context availability, independent
+of the global model-jobs flag. Explicit experience enablement fails startup when
+qualification or the measured candidate provider/budget profile is absent;
+default off preserves the ordinary source and captured-pin guards. The focused
+[effective-composition protocol](../../docs/testing/issue-92-effective-composition.md)
+tests those constructors and Doctor together without changing qualifications.
+The separate [real bootstrap smoke](../../docs/testing/issue-92-real-bootstrap-smoke.md)
+invokes `app.New`/`App.Run` and that application's HTTP Doctor on owned PG/Redis,
+with a labeled controlled diagnostic runtime and no cloud auth/inference.
+The fixed Doctor command uses a tool reference stable within its run and distinct
+between runs, so repeated checks retain separate global transcript tool records.
+An earlier completed diagnostic is never overwritten to admit another check.
+
+Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
+evidence, the existing finite background worker and owner-only memory decisions.
+`BUTLER_MEMORY_EXPERIENCE_ENABLED` defaults off and cannot bypass the closed
+quality gate. A runtime environment fingerprint and exact current Broker tool
+contracts bound reuse; negative/unknown feedback is retained. Experience-derived
+skill promotion uses the existing reviewed lifecycle with repeated independent
+task evidence. Migration077 is required; body text remains only in the ordinary
+deletion-aware Catalog/Episodic graph. See
+[the contract](../../docs/architecture/episodic-experience.md).
+
+The isolated experience comparison collector executes original Flow/Broker tasks,
+owner verification/sealing, bounded note jobs, owner acceptance and skill
+Stage/Test/Activate before freezing task data. Each A/B/C input receives a fresh
+database copied from that one frozen preparation; auth and the640-entry journal
+remain in the separate owning store. The predeclared57-slot denominator survives
+setup and preparation failure. Controlled provider fixtures exercise this chain
+without claiming native quality; an opt-in native entrypoint must use a distinct
+TestNativeExperience prefix. Release qualification remains closed pending native
+quality, complete unique costs and independent review.
+
+Native preparation retains five immutable compiled artifacts, including the actual
+executed recipient app test binary, under the proof's bin directory. Source and
+artifact hashes, finite policies, full schedule and latest closed owner/day lineage
+are checked before auth. The source's one-use historical carry is explicitly bound
+to the independent journal. Cost union deduplicates exact immutable reservations;
+copied owner-day Used rows are not new spend. Private outputs are sealed separately
+on success/failure; old controlled receipts lacking that exhaustive output seal
+retain their narrower documented scope.
+
+With an experience store installed, the active source adapter declares a2s
+maximum for its base Catalog proof, current Broker contracts and fresh owning
+applicability proof. Parent deadlines and Stop still cancel it; final/tool/batch
+events stay held until the fresh proof succeeds. Invalid inherited bounds are
+rejected. Without that store, the adapter inherits the foreground default2s or
+an explicit trusted bound in200ms..2s. Background budgets are unchanged, and this ceiling is not a measured
+latency SLO. Broker lookup stays outside SQL locks; no failed check authorizes
+another provider request or discards already observed usage.
+
+Retrieved document text remains eligible when the source has no title. The
+final prompt formatter uses a neutral Document label; an absent title must not
+silently discard an already authorized, selected fragment. Empty evidence text
+is still omitted. Source provenance and currentness checks remain mandatory.
+
+The model-directed temporal facts reader and Profile/Episode context annotations
+share one bootstrap predicate: qualification and flag plus
+the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
+at least300s and a matching durable budget quote. Doctor reports that profile
+prerequisite separately. Typed owner metadata operations do not perform inference
+and retain their independent owner/feature authorization. Deterministic expiry
+filtering of accepted profile/episode context survives disabling the temporal
+feature or changing the provider. The feature gate controls new temporal
+consumers and context annotations; it cannot revive an expired exception.
+
+Temporal read results expose the recorded verification basis separately from
+source revision currency. The facts contract explains that a current owner
+decision does not resolve overlapping historical values and that overdue
+verification is uncertainty, not proof that a stored value became false.
+Revision4 also distinguishes expired current applicability from a verification
+deadline: expiry of `valid_to` does not imply overdue verification, and stable
+preferences have no age-based verification TTL. Existing DATA/pins are unchanged;
+the new declaration still requires independent full native quality acceptance.
+Revision5 identifies `source_recorded_at` as source ingestion, distinct from an
+explicit `event_time`. Missing event dates and unrecorded independent checks stay
+unknown: an owner statement or missing attached evidence cannot establish that a
+check never happened. The complete revision4 V8 cohort remains NO_GO for extra
+unsupported claims; the unchanged corpus requires a new complete semantic screen.
+
+Episodic experience can observe an explicitly selected relinquished failed or
+UNKNOWN original without creating an assistant final. Its typed terminal input
+proof and fresh owner one-use note policy remain separate from execution,
+independent task verification and effect reconciliation. Generic blocked-task
+jobs remain denied. Migration080, exact current input/source/authority checks and
+the still-closed experience release gate are required.
+
+The private owner `POST /api/v4/memory/experience-observations` accepts only an
+existing `run_id` and requires the normal owner bearer and delivery ID. The
+production adapter derives and seals current typed evidence, returning a
+content-free source/hash receipt. It can preserve a stopped-attempt observation
+before an independently authorized owner control without creating a note policy,
+job or model attempt. It never accepts caller-authored evidence or changes task,
+input, run or external-effect state. Background model configuration is not needed
+for this separate observation operation; the experience release gate still is.
+
+
+An explicit original `run_id` plus existing
+`reconciliation.original_snapshot_id`/`reconciliation.control_id` can request a
+new note after a normal owner Resume and independently reconciled ABSENT lookup.
+The production input adapter checks the complete two-run provenance; it does not
+read or reactivate the stale original snapshot. Original UNKNOWN/no final and
+owner intervention/current read/final/evidence stay distinct. Migration081 and a
+fresh handler-only owner policy are required; generic job and execution authority
+rules, source/day bounds and the closed release gate are unchanged.
+
+Final result publication first checks the current Catalog run sources, then
+validates the exact existing episodic-experience pins through
+`CheckCapturedPinsTx`. This read-only completion check requires current accepted
+claim, feedback, environment and dependency identity. It does not obtain new
+body access or fill missing pins for a finalizing run. Generic Catalog access
+and the active run's ordinary source/pin binding retain their lifecycle guards.
+
+At finalizing completion, captured-grant validation also requires the exact
+current run token. After graph, grant and owner-authority waits it repeats a
+plain metadata check of session/run/lease/fence identity and
+`expires_at > clock_timestamp()`. The outer completion already holds its
+ownership SHARE guard; this final check acquires no new lease lock, returns no
+body and does not wait behind a queued takeover. A grant wait crossing lease
+expiry denies the final while retaining the attempts. Completed independent
+owner/outbox operations keep their own completed-result transition proof and do
+not acquire a new live inference lease through this applicability supplement.
+
+The prospective [temporal v6 lab protocol](../../docs/testing/issue-88-native-v6-protocol.md)
+keeps the complete twelve-original rubric, adds revision3 facts interpretation
+and seals all seven retained PostgreSQL stores before inference. Its newest
+49-turn inclusive owner charge is carried once; the distinct adaptive owner's
+actual226 quotes remain separately visible. Worker/native assertions reject
+owner control identity. No production qualification or flag changes follow from
+preparation or mechanical completion.
+
+The separate [native coherent92 pilot](../../docs/testing/issue-92-native-coherent-pilot.md)
+freezes five varied long primary inputs, all15 native quality slots and25
+mechanical checkpoints before inference. It uses the selected static mode,
+context131072 and actual temporal readiness consistently across its explicit
+test-only foreground constructors and Broker reads. Default90/nil-v12 helpers
+retain their historical behavior. Actual `App.New→Run→Doctor`, component native
+quality and this whole native lifecycle remain separate gates. The
+[offline receipt](../../docs/testing/issue-92-native-coherent-offline.md) proves
+controlled mechanics/capture/NULL-charge preservation, with native/auth0; it
+does not change production qualification or enable the deployment.
+

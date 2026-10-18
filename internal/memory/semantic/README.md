@@ -49,6 +49,12 @@ An unchanged title/content hash can reuse a vector from the exact same space int
 a new generation after a citation/path change. This refreshes revision-bound
 citations without another model call; changed content never matches that hash.
 
+Exceeding the caller's finite source count returns `ErrSourceLimit` (also
+`errors.Is(ErrInvalid)` for compatibility). Owned indexing reports the explicit
+`scope_chunk_limit` outcome before inference instead of silently indexing a
+partial prefix. The Store ceiling100000 is separate from the owned runtime's
+maximum10000 chunks per generation; neither is a measured production SLO.
+
 Staged `Preview` evaluates without activation. `Verify` requires complete current
 coverage and a trusted reviewed quality artifact showing an improvement. `Activate`
 uses the expected previous ID; the same primitive rolls back to a still-current
@@ -57,6 +63,16 @@ Ready generations cannot be mutated, and downgrade refuses retained history.
 The artifact reference/hash is a review record, not an automatic external proof
 reader or a declaration that similarity establishes factual truth.
 
+Migration078 adds irreversible retirement metadata without changing the retained
+building/ready audit state. `Generation` reports `State="retired"` when present;
+Put, Rebuild, Search, Preview, Verify and Activate reject that state. Owner
+indexing maintenance removes one inactive terminal-job generation's vectors in
+the same transaction, keeping original chunks, generation/job/quality/spend
+history. No model, backend, current source grant or automatic pruning is needed.
+The exact current active pointer is a CAS precondition. The authenticated owner
+path performs the Catalog restore proof and terminal-job owner check before
+generation/pointer locks; direct retrieval never grants retirement authority.
+
 `Reader` optionally plugs into the memory bundle with source refs/revisions and
 typed private origin. `LiveAdmission` now reserves current run-owned local query
 and ranking attempts; `JobAdmission` reserves independent durable job-owned
@@ -64,6 +80,13 @@ index attempts. Both use current PostgreSQL authority and check source snapshots
 before IPC, after allowance waits, during in-flight calls and before accepting
 returned vectors/scores. A completed run lease is never resurrected for a job;
 completed-task jobs still require a separate finite owner policy and are denied.
+The independent local-job source and chunk supervisors still repeat their full
+catalog/claim/chunk proof every250ms with a200ms check deadline. Their private job
+contexts cannot create live-run pins; these read-only observations release locks
+with bounded rollback rather than an unnecessary durable COMMIT. Source reads,
+allowance admission, result acceptance and publication retain their existing
+transactions and commits. A rollback error still cancels the local call, and a
+late backend response cannot regain permission or refund its reservation.
 No bootstrap enables this module automatically. The production job worker/bundle
 composition and full acceptance/contradiction/tombstone/restore semantics and
 structured ingestion remain #22/#23 responsibilities. This module currently

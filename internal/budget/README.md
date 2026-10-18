@@ -9,6 +9,13 @@ contract remains: actual usage and conservative reserved capacity are distinct;
 missing usage is unknown. No second budget ledger is introduced. See
 [background memory jobs](../../docs/architecture/background-memory-jobs.md).
 
+The trusted consolidation job owner may additionally supply at most eight current
+root task/mandate identities after proving its explicit owner context pins. The
+controller resolves every existing scope and reserves one full quote against their
+deduplicated union plus job/policy/owner-day scopes in the same transaction. A
+single exhausted/changed scope rolls back all charges and initializations. No
+legacy caller gains another scope, and no model argument can select these roots.
+
 This Go package owns migration037's PostgreSQL policies, conservative reservations,
 model attempts and normalized loop observations. Production Orchestrator, Broker
 and Task Store bootstraps install its controller.

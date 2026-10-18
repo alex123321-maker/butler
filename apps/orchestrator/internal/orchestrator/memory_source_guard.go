@@ -8,6 +8,11 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
+// DefaultMemorySourceCheckTimeout bounds the complete foreground source proof.
+// Waiting never authorizes DATA: every proposal remains held until a fresh
+// source/authority proof succeeds, and the parent deadline always wins.
+const DefaultMemorySourceCheckTimeout = 2 * time.Second
+
 type sourceGuardedProvider struct {
 	transport.ModelProvider
 	sources interface {
@@ -33,13 +38,12 @@ func (p *sourceGuardedProvider) SubmitToolResult(ctx context.Context, r transpor
 }
 
 func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
-	// Compound owning lifecycle checks retain all current source/authority
-	// barriers. Their explicit trusted bound cannot exceed the private skill
-	// verifier's existing two-second bound, and never changes event admission.
-	checkTimeout := 200 * time.Millisecond
+	// Explicit trusted bounds can retain a shorter check. Neither a source nor
+	// the model can extend the foreground ceiling or alter event admission.
+	checkTimeout := DefaultMemorySourceCheckTimeout
 	if bounded, ok := p.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
 		requested := bounded.MemorySourceCheckTimeout()
-		if requested < checkTimeout || requested > 2*time.Second {
+		if requested < 200*time.Millisecond || requested > DefaultMemorySourceCheckTimeout {
 			return nil, errors.New("invalid owning memory source verification bound")
 		}
 		checkTimeout = requested
@@ -74,8 +78,62 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 		defer cancel()
 		ticker := time.NewTicker(250 * time.Millisecond)
 		defer ticker.Stop()
-		failed := func(err error) {
+		failed := func(err error, held *transport.TransportEvent) {
+			// Preserve complete accounting metadata from the rejected event, never
+			// its text/tool/final payload. Drain already-ready metadata before
+			// cancellation so a ticker/proposal selection race cannot drop it.
+			var usage *transport.Usage
+			observe := func(event transport.TransportEvent) {
+				if event.RunID != runID {
+					return
+				}
+				if usage == nil {
+					if u, e := modelTurnUsage(event); e == nil && u != nil {
+						copy := *u
+						usage = &copy
+					}
+				}
+			}
+			if held != nil {
+				observe(*held)
+			}
+			closed := false
+			remaining := 256
+		ready:
+			for remaining > 0 && usage == nil && !closed {
+				select {
+				case event, ok := <-stream:
+					remaining--
+					closed = !ok
+					if ok {
+						observe(event)
+					}
+				default:
+					break ready
+				}
+			}
+			cancel()
+			// A cooperative provider may flush its complete turn usage while
+			// cancelling. Cleanup is synchronous, bounded and has no detached
+			// drain goroutine or permission to issue another provider request.
+			if usage == nil && !closed && remaining > 0 {
+				timer := time.NewTimer(100 * time.Millisecond)
+				defer timer.Stop()
+				for remaining > 0 && usage == nil && !closed {
+					select {
+					case event, ok := <-stream:
+						remaining--
+						closed = !ok
+						if ok {
+							observe(event)
+						}
+					case <-timer.C:
+						remaining = 0
+					}
+				}
+			}
 			event := transport.NewTransportErrorEvent(runID, p.Name(), err)
+			event.Usage = usage
 			select {
 			case out <- event:
 			case <-ctx.Done():
@@ -87,7 +145,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				return
 			case <-ticker.C:
 				if e := check(bounded); e != nil {
-					failed(e)
+					failed(e, nil)
 					return
 				}
 			case event, ok := <-stream:
@@ -97,7 +155,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				// Final/tool proposals must not pass using a cached source snapshot.
 				if event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
 					if e := check(bounded); e != nil {
-						failed(e)
+						failed(e, &event)
 						return
 					}
 				}

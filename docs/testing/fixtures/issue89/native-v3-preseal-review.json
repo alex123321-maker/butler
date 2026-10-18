@@ -1,0 +1,311 @@
+{
+  "format": "butler.consolidation.native-v3.preseal-review.v1",
+  "created_at": "2026-10-18T06:14:41.199656+00:00",
+  "source_revision": "3baf016cb9feb8d31986a4c3f73b857dbdcc02af",
+  "source_git_tree": "566065b6905f8d50b0d83785c87af56adb8c51fc",
+  "source_directory": "/srv/storage/butler/agents/issue89-native-v3-20261018/snapshots/prospective-v3-source-v2",
+  "prepared_sha256": "c8950ad8cedd938bf619376f1cabee66b28da4e045193fd2e92e6dc1ae05a188",
+  "pins": {
+    "Revision": "3baf016cb9feb8d31986a4c3f73b857dbdcc02af",
+    "Schema": "consolidation_native_v3",
+    "Model": "gemini-3.8-flash-high",
+    "Source": "d4d52eeb16999c1e227b272276eee11fb1b01a50cf73e3b68453a5dd99bb7ecb",
+    "Collector": "0c0cf0cb0b28888035ad3752894cf6b5ba177d5e407ae86f718d327f6ff8a5e3",
+    "Broker": "2f7d5d66b3e19f0bc884a005fbfcc4f0cdaf400e833dd1765a34b8fa6ef7fdf2",
+    "History": "cba9612964da448146ae65c08546a8f007c24583e307a2dde1f752463aedea5f",
+    "Policy": "2b657c29627e3bbdb7c3c5821420793b6042c94d4c447306352c5689bd61ef42",
+    "Schedule": "168f0e220f4e8273689af99b2fa63a87e76b98e01431dcaf53282d5fd9630afa",
+    "Corpus": "e31d4c6a5434723194b7cf37242f9f2e1479b94bbf9cc1464633ba88dca7f947",
+    "Contracts": {
+      "memory.facts:3": "1aeccde7d741d4ce2faf4068554b980dd4afb0fb7482abb63dea77842dcb81e4",
+      "memory.neighbors:2": "90c660133041839b33ebc4f5dbcafe071594058c38734e255be001067cd8b478",
+      "memory.open:2": "bfc8b1af31cdb469457d59fef165b206908b0dc2b49a844900c137d2c9e3e10c",
+      "memory.search:2": "0b899674c92c6936118044b1efb0dd845f704e959a13db17a9ebdde297e67239"
+    },
+    "Day": "2026-10-18",
+    "Deadline": "2026-10-19T00:00:00Z",
+    "Expires": "2026-10-18T12:10:47.511284023Z",
+    "LogicalSlots": 9,
+    "MaxNativeEntries": 99,
+    "MaxReads": 96,
+    "OutputTokens": 32768,
+    "ModelMillis": 300000,
+    "ForegroundSourceMillis": 2000,
+    "WholeWindowMillis": 31500000,
+    "OuterTimeoutMillis": 31800000,
+    "ForegroundExecutionMillis": 2400000
+  },
+  "mandatory_parents": [
+    "TestConsolidationNativeSealSchedule",
+    "TestConsolidationNativeFrozenHistory",
+    "TestConsolidationNativeHistoryCarryIntegration",
+    "TestConsolidationScreenHistoryRejectsPartialOrDuplicateCarry",
+    "TestConsolidationScreenProspectiveDayRequiresCompleteUnchargedPopulation",
+    "TestConsolidationV2CurrentDayCarryOneUseIntegration",
+    "TestConsolidationV2LatestLeafCountsOriginalAttemptsOnce",
+    "TestConsolidationV2RetainsNativeUnknownAndAdmittedWithoutEntry",
+    "TestConsolidationV2RejectsChangedWitnessesOrExtraOwnerRows",
+    "TestConsolidationV2WritePins",
+    "TestConsolidationV3WorkerRejectsOwnerControlIdentity",
+    "TestConsolidationV3ClosureRetainsFailedCollector",
+    "TestConsolidationV3LatestTemporalLeafCountsOnce",
+    "TestConsolidationV3CurrentDayCarryOneUseIntegration",
+    "TestConsolidationV3FrozenHistoryRejectsForgeries"
+  ],
+  "mandatory_parent_pass": 15,
+  "mandatory_child_pass": 49,
+  "failed": 0,
+  "skipped": 0,
+  "compiled_pins_check": "PASS",
+  "final_vet": "PASS",
+  "current_day_inventory": {
+    "read_only": true,
+    "current_day_unchanged": true,
+    "seven_databases": 7,
+    "schema_absent": true,
+    "receipt_count": 0,
+    "auth_or_inference": false
+  },
+  "current_inclusive_quote": {
+    "model_turns": 73,
+    "tokens": 78938112,
+    "active_millis": 27660000,
+    "provider_input_bytes": 612368384,
+    "external_calls": 48,
+    "egress_bytes": 201326592,
+    "children": 0,
+    "cost_micros": 0
+  },
+  "new_capacity_only": {
+    "model_turns": 99,
+    "external_calls": 96
+  },
+  "frozen_day_limit": {
+    "model_turns": 172,
+    "tokens": 185991168,
+    "cost_micros": 0,
+    "external_calls": 144,
+    "children": 0,
+    "active_millis": 68880000,
+    "egress_bytes": 603979776,
+    "provider_input_bytes": 1442840576
+  },
+  "current_unique_observations": {
+    "native_entries": 73,
+    "native_known": 72,
+    "native_unknown": 1,
+    "known_full_token_lower_bound": 564496,
+    "product_attempts": 73,
+    "product_observed": 72,
+    "product_null": 1
+  },
+  "historical_originals": {
+    "attempts": 161,
+    "native_known": 153,
+    "native_unknown": 8,
+    "product_observed": 152,
+    "product_null": 9,
+    "known_full_token_lower_bound": 758525,
+    "rebilled": false
+  },
+  "separate_adaptive": {
+    "quote_model_turns": 226,
+    "cloud_native_entries": 98,
+    "local_quotes": 128,
+    "native_known": 97,
+    "native_unknown": 1,
+    "known_full_token_lower_bound": 294550,
+    "product_observed": 97,
+    "product_null": 1,
+    "rebilled_as_owner": false
+  },
+  "predecessor88": {
+    "native_status": 1,
+    "outcomes": {
+      "completed": 7,
+      "failed": 1,
+      "not_executed": 4
+    },
+    "native_entries": 24,
+    "known": 23,
+    "unknown": 1,
+    "known_full_token_lower_bound": 219763,
+    "original_safe_review_sha256": "2ee4a9a4354706b760219155f39430defba1d95cce53ec6645445749587433db",
+    "semantic_qualified": false,
+    "closed_exact_cas_main_paid200_fresh_snapshot": true
+  },
+  "slow_control": {
+    "source": "19203746738ae067a37f3f1b18065ca373bfde41",
+    "slots": 9,
+    "completed": 9,
+    "scripted_entries": 35,
+    "tools": 26,
+    "paged_consolidated_arms": 3,
+    "native_calls": 0,
+    "auth_imported": false,
+    "claim_renewals": [
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 3,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 1,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 3,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 1,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      },
+      {
+        "class": "input_claim_renew",
+        "diagnostic": "ok",
+        "millis": 2,
+        "rows": 1
+      }
+    ],
+    "pg_slow_or_failed": [
+      {
+        "shape": "other",
+        "statement_sha256": "ba6ade6a84eecc61ae6d70c82a36c4588bdd25fcc4a0615fec26d661de99ed0c",
+        "millis": 582,
+        "diagnostic": "",
+        "Acquired": 2,
+        "Idle": 0,
+        "Total": 2
+      },
+      {
+        "shape": "pool_acquire",
+        "statement_sha256": "",
+        "millis": 359,
+        "diagnostic": "",
+        "Acquired": 2,
+        "Idle": 0,
+        "Total": 2
+      },
+      {
+        "shape": "other",
+        "statement_sha256": "2c3077ab57859cb9e3fa173eb9a579ad99ba2aadcaf02678c7f7a6dd333fd0f2",
+        "millis": 554,
+        "diagnostic": "",
+        "Acquired": 2,
+        "Idle": 0,
+        "Total": 2
+      },
+      {
+        "shape": "pool_acquire",
+        "statement_sha256": "",
+        "millis": 346,
+        "diagnostic": "",
+        "Acquired": 2,
+        "Idle": 0,
+        "Total": 2
+      }
+    ],
+    "evidence_sha256": "d18b7230f55d1dc7e471e9024245ef03fce048892edb9e9f3d3075c6d9b5ae51"
+  },
+  "main": {
+    "active_work": 0,
+    "source": "/srv/storage/butler/snapshots/20261014-main-3e26cd8",
+    "image": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+    "changed_by_this_work": false
+  },
+  "resources": {
+    "client_cpu": 1,
+    "client_memory_bytes": 2147483648,
+    "control_pg_cpu": 1,
+    "control_pg_memory_bytes": 1073741824,
+    "offline_compilation": true
+  },
+  "auth_clones": 0,
+  "native_calls": 0,
+  "schema_created": false,
+  "receipt_consumed": false,
+  "execution_authorized": false,
+  "files": {
+    "source.sha256": "ae349c35f723fafcca0d8e145439b2e73d9e44f8eb21317abbfd80a19e1124ec",
+    "prepared-pins.sha256": "c8950ad8cedd938bf619376f1cabee66b28da4e045193fd2e92e6dc1ae05a188",
+    "successor-pins.json": "47b7703002db046693fe18e4d979cc63771cfb88ada9aef07a0d6fa6b67f1f7f",
+    "tool-broker": "2f7d5d66b3e19f0bc884a005fbfcc4f0cdaf400e833dd1765a34b8fa6ef7fdf2",
+    "orchestrator-app.test": "0c0cf0cb0b28888035ad3752894cf6b5ba177d5e407ae86f718d327f6ff8a5e3",
+    "native-budget-policy.json": "2b657c29627e3bbdb7c3c5821420793b6042c94d4c447306352c5689bd61ef42",
+    "screen/initial-schedule.json": "168f0e220f4e8273689af99b2fa63a87e76b98e01431dcaf53282d5fd9630afa",
+    "compiled-pins-check.txt": "3db79f4c330506f025f60f76fda6d2bbb04aafcfb67ecb1b9f3e38dc1fd71c90",
+    "final-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "offline-preparation.txt": "b778d935af7da3281579b2a7e36aed910ae80c08e2769ee71a1a749597596e26",
+    "current-after-build.json": "a7af222dbc7c461648de91a8e83baae0d5493710a0baa515d3120f0f023eb9c6"
+  },
+  "history_manifest_sha256": "cba9612964da448146ae65c08546a8f007c24583e307a2dde1f752463aedea5f",
+  "limitations": [
+    "Original native89v2 cause remains UNKNOWN; later diagnostics and later88 SourceCatalog timeout do not reclassify it.",
+    "Inclusive73 is carried once; predecessor scopes are witnesses, not additional charges.",
+    "UNKNOWN native and product NULL observations remain unknown; full token total is a lower bound.",
+    "40-minute foreground execution is an independent earlier bound than sixteen worst-case300s entries.",
+    "No production qualification, deployment, native completion or savings claim follows from this offline seal."
+  ]
+}

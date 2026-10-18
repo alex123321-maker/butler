@@ -18,6 +18,15 @@ revision. Completion itself changes that revision: a policy created before this
 transition cannot silently rebase and requires a new explicit owner policy.
 Delegated tasks are denied by this composition; no child scope is broadened.
 
+The owning episodic-experience adapter has one narrow additional path for an
+explicitly selected stopped original. Its Go-only constructor binds an existing
+typed terminal snapshot/hash and exactly one note job/turn to a new owner policy.
+Only that handler may observe a currently blocked root task under unchanged
+task/constraint and active goal/mandate authority. Generic policy request JSON
+cannot construct this permission. The stopped input remains stopped, no final or
+verification is invented, and every policy/claim/supervision/publication boundary
+rechecks the same proof. See [episodic experience](episodic-experience.md).
+
 Supported events are `source_changed`, `session_completed`, `session_inactive`
 and `schedule`. The scanner considers at most 32 policies per tick. Events bind
 the complete current source manifest; session events additionally require the
@@ -97,6 +106,15 @@ remain distinct across restart; no crash or policy revision replenishes counters
 Subscription pricing declares monetary overage policy, never locality or usage.
 
 ## Controls, composition and observability
+
+A trusted atomic publication hook may create a neutral claim against the exact
+new result source. Its temporary Catalog checker requires the constructor-only
+creation receipt, same current top transaction, exact original parent graph and
+unchanged owner/scope/hash. A serialized or reloaded Source is insufficient.
+Every original job Check/Finalize/Pinned proof remains current; the seam grants
+no owner identity, unrelated read, acceptance or action authority. The context
+is restricted to the trusted publication callback and does not survive the
+ordinary result/job CAS or create a durable capability.
 
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes the worker. It defaults false.
 The PostgreSQL global control separately starts `disabled`; an owner-proved
@@ -218,3 +236,30 @@ the passing controlled tests, retained failed windows and costs, and the newly
 passed native High/proxy window with the same-deadline remainder. It does not
 claim repair of old AICode access or quality of future consumers. Historical
 windows cannot establish this version.
+
+The separately gated [owner-reviewed consolidation consumer](memory-consolidation.md)
+uses this worker with immutable one-use prepared evidence and exact typed context
+pins. It reserves all actual root/mandate/day scopes atomically, publishes staged
+DATA, and exposes owner diff/head-revision CAS/retirement controls. It does not
+broaden existing quote/candidate/summary handler authority or accept model rules.
+
+## Explicit semantic-generation retirement
+
+Owner maintenance may retire one inactive semantic generation with the exact
+current active pointer as CAS precondition. It resolves the owning index job
+through its constructor-owned projection and requires the authenticated owner and a
+terminal job (`done`, `failed` or `cancelled`). Ambiguous, pending, running,
+foreign, active or stale selections fail closed. The same transaction checks
+the exact projection scope against the locked generation; the projection has no
+separate SQL immutability guarantee or public mutation API. Lock order is
+job→generation→active pointer, removes only that generation's vector entries and
+records immutable retirement metadata; no source read or model/backend is used.
+Current source correction/privacy withdrawal must not block this erasure.
+
+Originals, index/job/quality records, attempts, reservations and charged budgets
+remain unchanged. Go generation reads expose `retired` and all use/publication,
+preview, verification and activation paths reject it, including rollback. This
+is an explicit bounded owner action, never automatic retention or a budget reset.
+It remains available at the private owner API while optional local models are
+disabled. Ordinary privacy deletion still uses the Catalog external anchor;
+retiring a retrieval derivative is not a substitute for deleting source data.

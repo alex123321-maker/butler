@@ -1,5 +1,14 @@
 # Owned memory auxiliary jobs
 
+An atomic trusted publication hook can propose neutral DATA anchored to its
+exact freshly constructed derivative. A private constructor receipt binds the
+source/hash/owner/scope and current top transaction (including savepoints).
+Serialized/reloaded sources and another transaction cannot acquire this proof.
+The temporary publication checker forwards every original Check/Finalize/Pinned
+proof; no owner identity or additional external source permission is created.
+The ordinary current job/source/budget/result CAS remains mandatory. This
+context exists only while invoking the trusted versioned publication hook.
+
 Migration071 adds `ModelWorker` to this same queue, using the configured native
 generative transport, independent finite owner policies, per-attempt shared
 reservations/usage and atomic catalog DATA publication. It supports completed
@@ -10,6 +19,21 @@ does not enable summary/extraction/consolidation consumers. Local-only waits
 without cloud fallback. See [the full contract](../../../docs/architecture/background-memory-jobs.md).
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
+
+Migration076 adds exact owner-approved context manifests only for
+`memory-consolidation-v1`. At most eight quiet sessions retain their terminal run,
+root task/constraints/assignment/privacy pins. Top-level task/run bindings remain
+empty for this mode. Every claim read/finalization and current policy/HTTP/provider
+publication boundary rechecks the complete manifest; no old lease is borrowed.
+The fingerprint includes every pin, while nil contexts preserve legacy policy
+bytes and source fingerprints. Shared reservation charges all distinct actual
+root/mandate scopes atomically. This contract does not qualify the consumer;
+see [bounded consolidation](../../../docs/architecture/memory-consolidation.md).
+Trusted owner preparation can use `CreateModelPolicyTx` after acquiring its exact
+domain locks with `PrepareConsolidationContextsTx`; source/pins/policy then commit
+together. Optional trusted `ModelStagedResultHandler` requests initial quarantine
+for its immutable result. The normal current parent proof and job/cost atomic
+publication remain identical; existing handlers do not change staging behavior.
 
 New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
 The shared corpus currently runs through diagnostic quote publication, repeated
@@ -63,6 +87,14 @@ sorted complete source manifest, current job claim, budget. A 250ms supervisor
 cancels in-flight local requests after revocation; every publication also checks
 fresh PG proof, so late callbacks cannot regain authority. Claim deadlines bound
 crash recovery. Attempt and allowance limits remain immutable across retries.
+The private local-call supervisor keeps its full source/claim proof and finishes
+that SELECT/row-lock observation with bounded rollback. It cannot bind run pins or
+call an independently supplied access checker. No durable business state is
+created by the observation, so a synchronous COMMIT is unnecessary within its
+unchanged200ms deadline. Allowance admission, ordinary source reads, result checks
+and publication retain their existing commit boundaries. Semantic indexing has a
+second exact chunk observer with the same read-only transaction boundary; neither
+observer is disabled or allowed to miss a current source/claim change.
 Private caller snapshots are compared against the complete canonical manifest,
 allowance, original references, deadline and exact live claim deadline before
 access or budget initialization. Context copies its source slice and claim time.
@@ -75,3 +107,20 @@ uses `EnqueueWithPublication` to save job and generation projection atomically;
 context, independently of old leases. Actual PG/race tests prove post-run independent
 ownership, stale takeover/task/source rejection, per-attempt concurrent allowance
 and local/cloud/secret fail-closed boundaries with pool size two.
+
+The Go-only `CreateTerminalExperiencePolicy` constructor is restricted to one
+`task-experience-v1` note turn/job against an existing owner-sealed stopped-attempt
+snapshot/hash. Its internal proof is absent from generic request JSON. Ordinary
+policies keep rejecting blocked tasks; this specific fresh owner policy may
+observe the unchanged blocked original under current goal/mandate and finite
+budget authority. Every current policy/claim/supervisor/publication check repeats
+the proof. It cannot clear blockers, borrow the old lease or create tool actions.
+
+`CreateReconciledExperiencePolicy` is a separate Go-only variant for a new exact
+owning observation of an already completed read continuation after ordinary
+owner Resume. It requires an active current task and immutable source/hash,
+one job/turn and current081 original/control/lookup/final metadata. The original
+run remains the failed/UNKNOWN historical source; the note does not become an
+original final or successful task verification. Generic request JSON cannot
+construct either internal experience capability. All normal current task,
+goal/mandate, privacy, deadline, shared budget and publication gates remain.

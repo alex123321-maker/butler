@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sort"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -25,11 +27,50 @@ type SemanticCandidate struct {
 type Reader struct {
 	Sources            *catalog.Store
 	SemanticCandidates []SemanticCandidate
+	// Trusted cohort exposure subset, not authority. nil preserves the ordinary
+	// catalog; non-nil filters exact sources before ranking or loading a body.
+	SourceSubset []catalog.SourceRef
+	// Concrete typed-lesson applicability proof, provided by the owning app.
+	// It runs after Catalog access in this same transaction, without IPC.
+	SourceEligibility func(context.Context, pgx.Tx, catalog.Source) (bool, error)
+}
+
+func (r Reader) eligible(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+	if r.SourceSubset != nil {
+		match := false
+		for _, ref := range r.SourceSubset {
+			if ref.ID == src.ID && ref.Revision == src.Revision && ref.AccessRevision == src.AccessRevision && ref.Hash == src.Hash {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false, nil
+		}
+	}
+	if r.SourceEligibility == nil {
+		return true, nil
+	}
+	return r.SourceEligibility(ctx, tx, src)
 }
 
 const permittedSources = `WITH actor AS (SELECT s.user_id AS owner,r.session_key,r.task_id FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1), permitted AS (
  SELECT s.source_id,s.head_revision,s.access_revision,r.content_hash,r.title,r.body,r.event_time FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision CROSS JOIN actor a
- WHERE s.owner_id=a.owner AND s.status='active' AND (s.scope_type='user' AND s.scope_id=a.owner OR s.scope_type='session' AND s.scope_id=a.session_key OR s.scope_type='task' AND s.scope_id=a.task_id OR EXISTS(SELECT 1 FROM memory_scope_grants g JOIN tasks t USING(task_id) WHERE g.source_id=s.source_id AND g.task_id=a.task_id AND g.owner_id=a.owner AND g.task_revision=t.revision AND g.access_revision=s.access_revision AND g.purpose='memory_read')))`
+ WHERE s.owner_id=a.owner AND s.status='active' /* trusted_subset */ AND (s.scope_type='user' AND s.scope_id=a.owner OR s.scope_type='session' AND s.scope_id=a.session_key OR s.scope_type='task' AND s.scope_id=a.task_id OR EXISTS(SELECT 1 FROM memory_scope_grants g JOIN tasks t USING(task_id) WHERE g.source_id=s.source_id AND g.task_id=a.task_id AND g.owner_id=a.owner AND g.task_revision=t.revision AND g.access_revision=s.access_revision AND g.purpose='memory_read')))`
+
+func (r Reader) subsetIDs() []string {
+	if r.SourceSubset == nil {
+		return nil
+	}
+	ids := []string{}
+	for _, s := range r.SourceSubset {
+		ids = append(ids, s.ID)
+	}
+	return ids
+}
+func (r Reader) permittedSources(parameter int) string {
+	return strings.Replace(permittedSources, "/* trusted_subset */", fmt.Sprintf("AND ($%d::text[] IS NULL OR s.source_id=ANY($%d))", parameter, parameter), 1)
+}
 
 func status(e error) string {
 	switch {
@@ -75,6 +116,9 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	if r.Sources == nil || tx == nil {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
+	if len(r.SourceSubset) > 8 {
+		return readcontrol.Empty("denied"), readcontrol.ErrDenied
+	}
 	if tool == readcontrol.Search {
 		if a.Strategy == "semantic_hybrid" {
 			return r.semanticSearch(ctx, tx, a)
@@ -86,6 +130,18 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	if sanitize.Text(a.FragmentKey) != a.FragmentKey {
 		return readcontrol.Empty("denied"), nil
 	}
+	if r.SourceSubset != nil {
+		allowed := false
+		for _, ref := range r.SourceSubset {
+			if ref.ID == a.SourceID {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return readcontrol.Empty("denied"), nil
+		}
+	}
 	// This read is safe even when the ID was acquired from a previous run: a
 	// source reference is evidence, never a capability. AccessTx pins ancestors.
 	sources, e := r.Sources.AccessTx(ctx, tx, []catalog.SourceRef{{ID: a.SourceID, Revision: a.Revision, AccessRevision: a.AccessRevision, Hash: a.Hash}}, "memory_read")
@@ -96,6 +152,13 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 		return readcontrol.Empty("denied"), nil
 	}
 	src := sources[0]
+	allowed, eligibilityErr := r.eligible(ctx, tx, src)
+	if eligibilityErr != nil {
+		return readcontrol.Empty("backend_error"), eligibilityErr
+	}
+	if !allowed {
+		return readcontrol.Empty("denied"), nil
+	}
 	if tool == readcontrol.Neighbors {
 		return r.neighbors(ctx, tx, src, a)
 	}
@@ -138,16 +201,16 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	// Search only same-owner current scopes or individually granted sources.
 	// The catalog repeats complete current ancestor/privacy proof afterwards.
 	var sourceTruncated bool
-	if e := tx.QueryRow(ctx, permittedSources+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID).Scan(&sourceTruncated); e != nil {
+	if e := tx.QueryRow(ctx, r.permittedSources(2)+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID, r.subsetIDs()).Scan(&sourceTruncated); e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
-	rows, e := tx.Query(ctx, permittedSources+`, matches AS (
+	rows, e := tx.Query(ctx, r.permittedSources(7)+`, matches AS (
 	 SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,''::text AS fragment_key,p.title,p.body AS snippet,'{}'::jsonb AS locator,0 AS preference
  FROM permitted p WHERE ($5='' OR p.event_time>=NULLIF($5,'')::timestamptz) AND ($6='' OR p.event_time<NULLIF($6,'')::timestamptz) AND (p.source_id=$2 OR to_tsvector('simple',p.title||' '||substring(p.body FROM 1 FOR 65536)) @@ plainto_tsquery('simple',$2))
 	 UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator,1
  FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id
  WHERE ($5='' OR p.event_time>=NULLIF($5,'')::timestamptz) AND ($6='' OR p.event_time<NULLIF($6,'')::timestamptz) AND to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
- SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit, a.EventFrom, a.EventUntil)
+ SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit, a.EventFrom, a.EventUntil, r.subsetIDs())
 	if e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
@@ -206,7 +269,18 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	}
 	out.Status = "ok"
 	for _, h := range hits {
+		allowed, err := r.eligible(ctx, tx, byID[h.ref.ID])
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if !allowed {
+			out.Truncated = true
+			continue
+		}
 		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+	}
+	if len(out.Items) == 0 {
+		out.Status = "empty"
 	}
 	if e = r.conflicts(ctx, tx, &out); e != nil {
 		return readcontrol.Empty("backend_error"), e
@@ -240,7 +314,7 @@ func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Arg
 			return readcontrol.Empty("denied"), readcontrol.ErrDenied
 		}
 		var h hit
-		err := tx.QueryRow(ctx, permittedSources+` SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id WHERE c.id=$2 AND c.updated_at=$3 AND ($4='' OR p.event_time>=NULLIF($4,'')::timestamptz) AND ($5='' OR p.event_time<NULLIF($5,'')::timestamptz)`, token.RunID, candidate.ID, candidate.Revision, a.EventFrom, a.EventUntil).Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc)
+		err := tx.QueryRow(ctx, r.permittedSources(6)+` SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id WHERE c.id=$2 AND c.updated_at=$3 AND ($4='' OR p.event_time>=NULLIF($4,'')::timestamptz) AND ($5='' OR p.event_time<NULLIF($5,'')::timestamptz)`, token.RunID, candidate.ID, candidate.Revision, a.EventFrom, a.EventUntil, r.subsetIDs()).Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc)
 		if errors.Is(err, pgx.ErrNoRows) {
 			out.Truncated = true
 			continue
@@ -268,6 +342,14 @@ func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Arg
 		byID[src.ID] = src
 	}
 	for _, h := range hits {
+		allowed, err := r.eligible(ctx, tx, byID[h.ref.ID])
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if !allowed {
+			out.Truncated = true
+			continue
+		}
 		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
 	}
 	if len(out.Items) > 0 {

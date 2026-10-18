@@ -25,6 +25,7 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
@@ -161,12 +162,18 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 		if memoryRead == readcontrol.Search {
 			value = map[string]any{"query": "проверить"}
 		}
+		if memoryRead == factcontrol.Tool {
+			value = map[string]any{"sources": []catalog.SourceRef{{ID: data.ID, Revision: data.Revision, AccessRevision: data.AccessRevision, Hash: data.Hash}}}
+		}
 		raw, err = json.Marshal(value)
 		if err != nil {
 			t.Fatal(err)
 		}
 		call.ToolName, call.ToolCallId, call.ArgsJson = memoryRead, "memory-read-call", string(raw)
 		contract = readcontrol.Contract(memoryRead)
+		if memoryRead == factcontrol.Tool {
+			contract = factcontrol.Contract()
+		}
 	}
 	repo := approvals.NewPostgresRepository(f.pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
@@ -175,6 +182,7 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 	reader.guardedTabRequestReady = guarded
 	reader.memoryCandidateReady = candidate
 	reader.memoryReadReady = memoryRead != ""
+	reader.memoryTemporalReady = memoryRead == factcontrol.Tool
 	journal := actionauth.NewPostgresStore(f.pool)
 	journal.SetBudgets(f.budgets)
 	journal.SetRunDataGuard(f.sources.CheckRunSourcesTx)

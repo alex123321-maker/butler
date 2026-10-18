@@ -82,7 +82,7 @@ func readGeneration(ctx context.Context, db rowReader, id string, lock bool) (Ge
 	var raw string
 	var spaceID string
 	var dims int
-	sql := `SELECT id,space_id,space_data::text,dimensions,scope_type,scope_id,state,created_at FROM semantic_index_generations WHERE id=$1`
+	sql := `SELECT id,space_id,space_data::text,dimensions,scope_type,scope_id,CASE WHEN retired_at IS NOT NULL THEN 'retired' ELSE state END,created_at FROM semantic_index_generations WHERE id=$1`
 	if lock {
 		sql += ` FOR UPDATE`
 	}
@@ -140,7 +140,7 @@ func readSources(ctx context.Context, db rowReader, scope Scope, limit int, lock
 		return nil, err
 	}
 	if count > limit {
-		return nil, ErrInvalid
+		return nil, ErrSourceLimit
 	}
 	return sources, nil
 }
@@ -388,7 +388,7 @@ func (s *Store) search(ctx context.Context, g Generation, query []float32, limit
 	if err != nil {
 		return nil, err
 	}
-	if current.Space.ID() != g.Space.ID() || current.Scope != g.Scope || current.State != "ready" && !preview {
+	if current.Space.ID() != g.Space.ID() || current.Scope != g.Scope || current.State == "retired" || current.State != "ready" && !preview {
 		return nil, ErrStale
 	}
 	rows, err := s.pool.Query(ctx, `SELECT c.id,c.scope_type,c.scope_id,c.title,c.content,c.summary,c.source_type,c.source_id,c.provenance::text,c.updated_at,e.source_hash,e.embedding <=> $2::vector FROM semantic_index_entries e JOIN memory_chunks c ON c.id=e.chunk_id WHERE e.generation_id=$1 AND e.dimensions=$3 AND c.scope_type=$4 AND c.scope_id=$5 AND c.updated_at=e.source_revision AND c.`+liveSource+` ORDER BY e.embedding <=> $2::vector,c.id LIMIT $6`, g.ID, vectorLiteral(query), g.Space.Dimensions, g.Scope.Type, g.Scope.ID, limit*4)

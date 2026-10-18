@@ -1,5 +1,12 @@
 # Butler Dev Scripts
 
+`memory-bootstrap-smoke-lab.sh ROOT FRESH_LABEL` runs the production `app.New`
+and `App.Run` with their own HTTP Memory Doctor, separate PostgreSQL/Redis and
+the existing compiled Broker/controlled Doctor runtime. It uses no cloud auth or
+inference, retains closed qualification denials, verifies optional default-off
+reconstruction and automatically exercises positive rows after independent
+qualification. See [the frozen scope and receipt](../../docs/testing/issue-92-real-bootstrap-smoke.md).
+
 `memory-consumers-lab.sh ROOT FRESH_LABEL` verifies the issue77 summary,
 candidate and Broker-read composition on an isolated `laba` snapshot. It uses
 cached images/modules with no external inference, records mandatory named
@@ -88,3 +95,18 @@ pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/memory/...
 pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/transport/...
 ```
 - `delegation-remainder-high-lab.sh`: explicit two-call High child remainder at37→39, with scripted parent/width1 component baselines clearly separated; carries all11 pinned artifacts and never reopens earlier windows. See `docs/ai/delegation-high-remainder-acceptance-20261012.md`.
+
+- `memory-coherent-native-controls-lab.sh BASE LABEL` — owned PG/Broker/runtime,
+  explicit deterministic25-checkpoint/race/vet/capture/full-cost control;
+  auth0/native0 and all synthetic Usage staysNULL. Resources/data belong only to
+  the isolated issue92-native base; failure evidence/PG bytes are retained.
+- `memory-coherent-native-prepare.sh BASE LABEL SOURCE40 CLOSED90_PATH SHA256` —
+  offline cached immutable build, recursive actual CLOSED90/currentness/source/
+  corpus/all15-slot/25-checkpoint/policy freeze. Unsupported/unqualified profiles
+  cannot produce a runnable prepared marker.
+- `memory-coherent-native-execute.sh BASE LABEL PRESEAL_SHA256 PINS_SHA256 AUTH_BINARY AUTH_SHA256`
+  — one independently reviewed whole native92 window, server proxy18080 only,
+  shared auth lock through proven collector exit, original-owning durable opaque
+  return/CAS/main control-plane200/snapshot. No selective retry or qualification.
+  See [protocol](../../docs/testing/issue-92-native-coherent-pilot.md) and
+  [retained offline evidence](../../docs/testing/issue-92-native-coherent-offline.md).

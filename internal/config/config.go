@@ -72,6 +72,7 @@ type OrchestratorConfig struct {
 	MemoryCandidateEnabled            bool
 	MemoryReadEnabled                 bool
 	MemoryAdaptiveRetrievalEnabled    bool
+	MemoryTemporalEnabled             bool
 	WorkspaceEnabled                  bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
@@ -142,6 +143,8 @@ type ToolBrokerConfig struct {
 	MemoryCandidateEnabled        bool
 	MemoryReadEnabled             bool
 	MemoryReadControlURL          string
+	MemoryTemporalEnabled         bool
+	MemoryFactControlURL          string
 	MemoryCandidateControlURL     string
 	WorkspaceEnabled              bool
 	WorkspaceProfileID            string
@@ -364,6 +367,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryReadOrchestratorSpecs(&cfg)...)
+	specs = append(specs, memoryTemporalSpecs(&cfg)...)
 	specs = append(specs, workspaceOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
@@ -409,6 +413,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryReadBrokerSpecs(&cfg)...)
+	specs = append(specs, memoryTemporalBrokerSpecs(&cfg)...)
 	specs = append(specs, workspaceBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err

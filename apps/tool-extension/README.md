@@ -17,6 +17,14 @@ mask the values. Reviewed recipient receipts use Broker-owned key/fingerprint.
 HTTP 2xx does not claim semantic completion. Fixed credential-free readiness
 produces only health/digest; the runtime makes no orchestration decisions.
 
+Reviewed fixture documentation must expose the concrete URL composition used by
+each operation. The project fixture describes inspect at the current task's
+project URL, prepare at that URL plus `/patches`, and checks at that URL plus
+`/patches/{artifact_id}/checks`. This covers both `/project` and
+`/project/{resource}`. The runtime sends the exact authorized URL; it does not
+infer, append or repair routes. Package descriptions remain provenance-tagged
+DATA, while provider function descriptions remain core-owned.
+
 Tests exercise malicious proposals, private/off-scope destinations, duplicates,
 raw/unsolicited secrets, changed receipt contracts, byte/output bounds, redirects
 and read-only readiness. Resolver/dial fixture injection exists only in test

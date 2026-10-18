@@ -25,6 +25,39 @@ func sortedDependencies(deps map[string]Dependency) []string {
 	return names
 }
 
+// CheckInstalledDependenciesTx is shared by procedural DATA and typed episodic
+// lessons. Built-in hashes are checked against current Broker contracts before
+// entering SQL; mutable converter/extension revisions also require this current
+// transaction proof. Unknown/malformed dependencies never match a wildcard.
+func CheckInstalledDependenciesTx(ctx context.Context, tx pgx.Tx, owner string, dependencies []Dependency) error {
+	if tx == nil || owner == "" || len(dependencies) == 0 || len(dependencies) > 24 {
+		return ErrUnavailable
+	}
+	deps := map[string]Dependency{}
+	for _, d := range dependencies {
+		if d.Tool == "" || !digest.MatchString(d.ContractHash) || d.ContractRevision == "" {
+			return ErrConflict
+		}
+		if old, ok := deps[d.Tool]; ok && old != d {
+			return ErrConflict
+		}
+		deps[d.Tool] = d
+	}
+	for _, name := range sortedDependencies(deps) {
+		if strings.HasPrefix(name, "converter.") {
+			if err := generatedtools.CheckInstalledRevisionTx(ctx, tx, owner, name, deps[name].ContractRevision); err != nil {
+				return err
+			}
+		}
+		if strings.HasPrefix(name, "extension.") {
+			if err := extensions.CheckInstalledRevisionTx(ctx, tx, owner, name, deps[name].ContractRevision); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (s *Store) checkDependenciesTx(ctx context.Context, tx pgx.Tx, deps map[string]Dependency) error {
 	reader, ok := s.contracts.(TransactionContractReader)
 	if !ok {

@@ -20,20 +20,23 @@ import (
 // identities. Source changes may change content, never access or ancestry.
 // Handler is a code-owned, versioned consumer that must pass its own gates.
 type ModelPolicyRequest struct {
-	ID              string  `json:"policy_id"`
-	Handler         string  `json:"handler"`
-	Trigger         string  `json:"trigger"`
-	IntervalSeconds int     `json:"interval_seconds"`
-	MaxJobs         int     `json:"max_jobs"`
-	Privacy         string  `json:"privacy"`
-	Job             Request `json:"job"`
+	ID              string            `json:"policy_id"`
+	Handler         string            `json:"handler"`
+	Trigger         string            `json:"trigger"`
+	IntervalSeconds int               `json:"interval_seconds"`
+	MaxJobs         int               `json:"max_jobs"`
+	Privacy         string            `json:"privacy"`
+	Job             Request           `json:"job"`
+	Contexts        []ModelContextRef `json:"contexts,omitempty"`
 }
 type ModelPolicy struct {
 	ModelPolicyRequest
-	OwnerID             string                `json:"owner_id"`
-	TaskRevision        int64                 `json:"task_revision"`
-	ConstraintsRevision int64                 `json:"constraints_revision"`
-	Authority           actionauth.Assignment `json:"authority"`
+	OwnerID             string                 `json:"owner_id"`
+	TaskRevision        int64                  `json:"task_revision"`
+	ConstraintsRevision int64                  `json:"constraints_revision"`
+	Authority           actionauth.Assignment  `json:"authority"`
+	ContextPins         []ModelContextPin      `json:"context_pins,omitempty"`
+	TerminalExperience  *terminalExperiencePin `json:"terminal_experience,omitempty"`
 }
 
 var ErrWaiting = errors.New("background memory admission is waiting")
@@ -48,8 +51,31 @@ func validAllowance(u budget.Units) bool {
 }
 
 func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (ModelPolicy, error) {
+	if _, ok := owneridentity.FromContext(ctx); !ok {
+		return ModelPolicy{}, ErrClaim
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return ModelPolicy{}, err
+	}
+	defer tx.Rollback(ctx)
+	p, err := s.CreateModelPolicyTx(ctx, tx, q)
+	if err != nil {
+		return p, err
+	}
+	return p, tx.Commit(ctx)
+}
+
+// CreateModelPolicyTx is the same owner-only finite policy admission in a caller
+// transaction. A trusted snapshot adapter can commit its source/pins and policy
+// atomically; it acquires domain/authority locks before creating source rows.
+func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest) (ModelPolicy, error) {
+	return s.createModelPolicyTx(ctx, tx, q, nil)
+}
+
+func (s *Store) createModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest, terminal *terminalExperiencePin) (ModelPolicy, error) {
 	actor, ok := owneridentity.FromContext(ctx)
-	if !ok || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
+	if !ok || tx == nil || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
 		return ModelPolicy{}, ErrClaim
 	}
 	switch q.Trigger {
@@ -60,18 +86,19 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	if (q.Trigger == "session_completed" || q.Trigger == "session_inactive") && q.Job.OriginalRunID == "" {
 		return ModelPolicy{}, ErrClaim
 	}
+	contexts, contextErr := orderedContextRefs(q.Contexts)
+	if contextErr != nil || len(contexts) > 0 && (q.Handler != ConsolidationHandler || q.Job.TaskID != "" || q.Job.OriginalRunID != "" || q.Privacy != "cloud_allowed") {
+		return ModelPolicy{}, ErrClaim
+	}
+	q.Contexts = contexts
 	q.Job.ID = ""
 	q.Job.Kind = "model"
 	q.Job.Purpose = "memory_model"
 	q.Job.Deadline = q.Job.Deadline.UTC().Truncate(time.Microsecond)
-	if err := s.catalog.CheckRestore(ctx); err != nil {
+	if err := s.catalog.CheckRestoreTx(ctx, tx); err != nil {
 		return ModelPolicy{}, err
 	}
-	tx, e := s.pool.Begin(ctx)
-	if e != nil {
-		return ModelPolicy{}, e
-	}
-	defer tx.Rollback(ctx)
+	var e error
 	var now time.Time
 	if e = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
 		return ModelPolicy{}, e
@@ -79,7 +106,7 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	if !q.Job.Deadline.After(now) || q.Job.Deadline.After(now.Add(7*24*time.Hour)) {
 		return ModelPolicy{}, ErrClaim
 	}
-	p := ModelPolicy{ModelPolicyRequest: q, OwnerID: actor.OwnerID}
+	p := ModelPolicy{ModelPolicyRequest: q, OwnerID: actor.OwnerID, TerminalExperience: terminal}
 	initial, e := s.catalog.CanonicalSourcesTx(ctx, tx, q.Job.Sources)
 	if e != nil {
 		return p, e
@@ -88,11 +115,27 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	if e = lockPolicySessionsTx(ctx, tx, p); e != nil {
 		return p, e
 	}
+	if e = lockContextTasksTx(ctx, tx, p.Contexts); e != nil {
+		return p, e
+	}
+	for _, ref := range p.Contexts {
+		pin, err := resolveContextPinTx(ctx, tx, p.OwnerID, ref, p.IntervalSeconds)
+		if err != nil {
+			return p, err
+		}
+		p.ContextPins = append(p.ContextPins, pin)
+	}
+	if e = validContextShape(p); e != nil {
+		return p, e
+	}
 	if q.Job.TaskID != "" {
 		var owner, status, parent string
 		e = tx.QueryRow(ctx, `SELECT owner_id,status,COALESCE(parent_task_id,''),revision,constraints_revision FROM tasks WHERE task_id=$1 FOR SHARE`, q.Job.TaskID).Scan(&owner, &status, &parent, &p.TaskRevision, &p.ConstraintsRevision)
-		if e != nil || owner != p.OwnerID || parent != "" || (status != "active" && status != "completed") {
+		if e != nil || owner != p.OwnerID || parent != "" {
 			return p, ErrClaim
+		}
+		if e = s.checkExperienceTerminalTaskTx(ctx, tx, p, status); e != nil {
+			return p, e
 		}
 		p.Authority, e = actionauth.CheckTaskAuthorityTx(ctx, tx, q.Job.TaskID, p.OwnerID, nil, now)
 		if e != nil {
@@ -143,7 +186,7 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 		if json.Unmarshal(old, &previous) != nil || string(jsonBytes(previous)) != string(jsonBytes(p)) {
 			return p, ErrClaim
 		}
-		return previous, tx.Commit(ctx)
+		return previous, nil
 	}
 	if e != pgx.ErrNoRows {
 		return p, e
@@ -155,7 +198,7 @@ func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (Mo
 	if e != nil {
 		return p, e
 	}
-	return p, tx.Commit(ctx)
+	return p, nil
 }
 
 func readPolicy(ctx context.Context, tx pgx.Tx, id string, lock bool) (ModelPolicy, string, error) {
@@ -179,6 +222,9 @@ func readPolicy(ctx context.Context, tx pgx.Tx, id string, lock bool) (ModelPoli
 	return p, state, nil
 }
 func (s *Store) checkPolicyTaskTx(ctx context.Context, tx pgx.Tx, p ModelPolicy) error {
+	if err := validContextShape(p); err != nil {
+		return err
+	}
 	if e := lockPolicySessionsTx(ctx, tx, p); e != nil {
 		return e
 	}
@@ -189,7 +235,13 @@ func (s *Store) checkPolicyTaskTx(ctx context.Context, tx pgx.Tx, p ModelPolicy)
 	if !p.Job.Deadline.After(now) {
 		return ErrClaim
 	}
+	if e := checkContextPinsTx(ctx, tx, p.OwnerID, p.ContextPins); e != nil {
+		return e
+	}
 	if p.Job.TaskID == "" {
+		if p.TerminalExperience != nil {
+			return ErrClaim
+		}
 		return nil
 	}
 	var owner, status, parent string
@@ -200,8 +252,11 @@ func (s *Store) checkPolicyTaskTx(ctx context.Context, tx pgx.Tx, p ModelPolicy)
 		}
 		return e
 	}
-	if owner != p.OwnerID || parent != "" || (status != "active" && status != "completed") || rev != p.TaskRevision || cr != p.ConstraintsRevision {
+	if owner != p.OwnerID || parent != "" || rev != p.TaskRevision || cr != p.ConstraintsRevision {
 		return ErrClaim
+	}
+	if e := s.checkExperienceTerminalTaskTx(ctx, tx, p, status); e != nil {
+		return e
 	}
 	if p.Authority.MandateID != "" {
 		var raw []byte
@@ -242,7 +297,7 @@ func (s *Store) checkModelPolicyTx(ctx context.Context, tx pgx.Tx, j Job) (Model
 	if e != nil {
 		return p, e
 	}
-	if p.OwnerID != j.OwnerID || p.Job.TaskID != j.TaskID || p.Job.OriginalRunID != j.OriginalRunID || p.TaskRevision != j.TaskRevision || p.ConstraintsRevision != j.ConstraintsRevision || p.Authority != j.Authority || p.Job.Allowance != j.Allowance || !p.Job.Deadline.Equal(j.Deadline) || j.Kind != "model" {
+	if p.OwnerID != j.OwnerID || p.Job.TaskID != j.TaskID || p.Job.OriginalRunID != j.OriginalRunID || p.TaskRevision != j.TaskRevision || p.ConstraintsRevision != j.ConstraintsRevision || p.Authority != j.Authority || p.Job.Allowance != j.Allowance || !p.Job.Deadline.Equal(j.Deadline) || j.Kind != "model" || string(jsonBytes(p.ContextPins)) != string(jsonBytes(j.Contexts)) {
 		return p, ErrClaim
 	}
 	if e = s.checkPolicyTaskTx(ctx, tx, p); e != nil {
@@ -422,6 +477,10 @@ func (s *Store) scheduleModelPolicy(ctx context.Context, id string, preparers ..
 	if e != nil {
 		return e
 	}
+	sum, e = modelFingerprint(current, p.ContextPins)
+	if e != nil {
+		return e
+	}
 	graph, e := s.catalog.CanonicalSourcesTx(ctx, tx, current)
 	if e != nil || len(graph) != len(current) {
 		return wait("source_graph_changed")
@@ -458,7 +517,7 @@ func (s *Store) scheduleModelPolicy(ctx context.Context, id string, preparers ..
 	}
 	digest := sha256.Sum256([]byte(id + ":" + event))
 	jid := "model_" + hex.EncodeToString(digest[:])
-	_, e = tx.Exec(ctx, `INSERT INTO memory_aux_jobs(job_id,owner_id,kind,purpose,task_id,task_revision,constraints_revision,original_run_id,authority,sources,source_fingerprint,allowance,deadline,policy_id) VALUES($1,$2,'model',$13,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING`, jid, p.OwnerID, p.Job.TaskID, p.TaskRevision, p.ConstraintsRevision, p.Job.OriginalRunID, jsonBytes(p.Authority), jsonBytes(current), sum, jsonBytes(p.Job.Allowance), p.Job.Deadline, p.ID, p.Handler)
+	_, e = tx.Exec(ctx, `INSERT INTO memory_aux_jobs(job_id,owner_id,kind,purpose,task_id,task_revision,constraints_revision,original_run_id,authority,sources,source_fingerprint,allowance,deadline,policy_id,context_manifest) VALUES($1,$2,'model',$13,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$14) ON CONFLICT DO NOTHING`, jid, p.OwnerID, p.Job.TaskID, p.TaskRevision, p.ConstraintsRevision, p.Job.OriginalRunID, jsonBytes(p.Authority), jsonBytes(current), sum, jsonBytes(p.Job.Allowance), p.Job.Deadline, p.ID, p.Handler, contextManifestJSON(p.ContextPins))
 	if e != nil {
 		return e
 	}
@@ -478,7 +537,11 @@ func lockPolicySessionsTx(ctx context.Context, tx pgx.Tx, p ModelPolicy) error {
 	}
 	// Sessions precede tasks/sources, matching deletion. FOR UPDATE also blocks
 	// FK inserts of a concurrent task that would invalidate the privacy predicate.
-	rows, e := tx.Query(ctx, `SELECT session_key FROM sessions WHERE session_key IN (SELECT scope_id FROM memory_sources WHERE source_id=ANY($1) AND scope_type='session') ORDER BY session_key FOR UPDATE`, ids)
+	contextSessions := make([]string, len(p.Contexts))
+	for i, c := range p.Contexts {
+		contextSessions[i] = c.SessionKey
+	}
+	rows, e := tx.Query(ctx, `SELECT session_key FROM sessions WHERE session_key IN (SELECT scope_id FROM memory_sources WHERE source_id=ANY($1) AND scope_type='session') OR session_key=ANY($2) ORDER BY session_key FOR UPDATE`, ids, contextSessions)
 	if e != nil {
 		return e
 	}
@@ -503,6 +566,9 @@ func sourcePolicyPrivacyTx(ctx context.Context, tx pgx.Tx, p ModelPolicy, source
 		return nil
 	}
 	for _, src := range sources {
+		if len(p.ContextPins) > 0 && contextPermits(p, src) {
+			continue
+		}
 		switch src.ScopeType {
 		case "task":
 			if p.Job.TaskID == "" || p.Job.TaskID != src.ScopeID {

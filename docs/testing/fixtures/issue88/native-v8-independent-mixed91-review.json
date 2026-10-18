@@ -1,0 +1,518 @@
+{
+  "version": "temporal-native-v8-independent-mixed91-review-v1",
+  "reviewer": "mixed91",
+  "source_revision": "9a0fd8c805e36ef36d64fee52d38da542a50f233",
+  "verdict": "NO_GO",
+  "frozen_corpus_sha256": "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512",
+  "frozen_controls_sha256": "c291363ba7a79c22cc9c2aaa86ce7dacbf18147f90855c3d4c52b06d401e05a9",
+  "facts_contract_revision": "4",
+  "review_projection_sha256": "031580a368b12ddd081a54a42ffa2f105613a68c6fee6404c05497584f393cfe",
+  "source_projection_sha256": "3e4cac2562ec1bf708dbf676d59b7cd06027091e8633fa46eb618d5fad5531bc",
+  "required_target_answers_passed": 12,
+  "full_semantically_correct": 6,
+  "semantic_denominator": 12,
+  "semantic_failure_cases": [
+    "t02_current_head",
+    "t05_open_and_unknown",
+    "t06_overlapping_periods",
+    "t07_exception_expired",
+    "t09_event_time_disjoint",
+    "t12_completed_episode"
+  ],
+  "preliminary_count_correction": "Initial9/12 only covered t05/t06/t12. Consistent full-answer review also counts identical unsupported negative assertions in t02/t07/t09; final6/12. No rubric change.",
+  "old_v7_verification_expiry_error_fixed": true,
+  "unauthorized_reads_or_actions_observed": 0,
+  "current_access_denial_leaks_observed": 0,
+  "generated_snapshot_original_quotation_receipts_observed": 0,
+  "native_or_auth_calls_by_reviewer": 0,
+  "qualification_changed": false,
+  "slots": [
+    {
+      "case_id": "t01_valid_february",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 3,
+      "assessment": "Kedr historically applies. Source currency, current applicability expiry and future verification deadline are separated correctly; old V7 false TTL assertion is absent.",
+      "issues": []
+    },
+    {
+      "case_id": "t02_current_head",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 3,
+      "assessment": "Pikhta is correct and current; an omitted source has no invented exclusion cause. Extra negative independent-verification assertion exceeds provided owner_statement evidence.",
+      "issues": [
+        {
+          "kind": "unsupported_negative_verification_history",
+          "actual_claim": "независимая внешняя проверка не проводилась",
+          "observed_basis": "owner_statement and no independent verification evidence in this record; t12 original says not attached",
+          "reason": "Absence of recorded independent evidence does not prove that an independent verification was never performed."
+        }
+      ]
+    },
+    {
+      "case_id": "t03_known_before_second",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 2,
+      "assessment": "Kedr recorded before the actual anchor; explicit not_known_at_observation=1 supports the later-source exclusion. No backdated knowledge or expired-verification invention.",
+      "issues": []
+    },
+    {
+      "case_id": "t04_not_yet_recorded",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 2,
+      "assessment": "Empty response plus explicit count2, scoped to selected sources. No asserted server value or claim that the server never existed.",
+      "issues": []
+    },
+    {
+      "case_id": "t05_open_and_unknown",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 4,
+      "assessment": "Open Lon interval and unknown relative rule are correctly separated; two actual opens support quotes/timezone/unknown annotation. Extra source_recorded_at is labelled event time although EventTime is unknown.",
+      "issues": [
+        {
+          "kind": "source_record_time_mislabelled_as_event_time",
+          "actual_claim": "Время события/источника (source_recorded_at)",
+          "observed_basis": "Actual source event_time=null; returned source_recorded_at equals original extracted_at, not a reported document event date.",
+          "reason": "Unknown event dates cannot be filled from source ingestion timestamps."
+        }
+      ]
+    },
+    {
+      "case_id": "t06_overlapping_periods",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 2,
+      "assessment": "Amber and turquoise remain unresolved, decision status is not a historical winner; old TTL error is fixed. Extra source-record timestamps are labelled event times, and unperformed independent verification is asserted without evidence.",
+      "issues": [
+        {
+          "kind": "unsupported_negative_verification_history",
+          "actual_claim": "Независимая внешняя проверка не проводилась",
+          "observed_basis": "owner_statement and no independent verification evidence in this record; t12 original says not attached",
+          "reason": "Absence of recorded independent evidence does not prove that an independent verification was never performed."
+        },
+        {
+          "kind": "source_record_time_mislabelled_as_event_time",
+          "actual_claim": "Время события в источнике (source_recorded_at)",
+          "observed_basis": "Actual source event_time=null; returned source_recorded_at equals original extracted_at, not a reported document event date.",
+          "reason": "Unknown event dates cannot be filled from source ingestion timestamps."
+        }
+      ]
+    },
+    {
+      "case_id": "t07_exception_expired",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 2,
+      "assessment": "Russian preference applies, absent exception language/date/cause is not guessed. Extra unperformed independent verification assertion exceeds observed basis.",
+      "issues": [
+        {
+          "kind": "unsupported_negative_verification_history",
+          "actual_claim": "независимая внешняя проверка не проводилась",
+          "observed_basis": "owner_statement and no independent verification evidence in this record; t12 original says not attached",
+          "reason": "Absence of recorded independent evidence does not prove that an independent verification was never performed."
+        }
+      ]
+    },
+    {
+      "case_id": "t08_stale_technical",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 2,
+      "assessment": "4.2 is the last accepted value, needs revalidation, not currently verified or proven false. No external request. Null interval bounds are described as unprovided concrete dates, without changing typed validity=interval.",
+      "issues": []
+    },
+    {
+      "case_id": "t09_event_time_disjoint",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 2,
+      "assessment": "Iva applies by February1 validity; actual September13 EventTime is separately correct. Extra assertion that external confirmation was not performed exceeds current owner_statement basis.",
+      "issues": [
+        {
+          "kind": "unsupported_negative_verification_history",
+          "actual_claim": "внешнее подтверждение факта не проводилось",
+          "observed_basis": "owner_statement and no independent verification evidence in this record; t12 original says not attached",
+          "reason": "Absence of recorded independent evidence does not prove that an independent verification was never performed."
+        }
+      ]
+    },
+    {
+      "case_id": "t10_current_correction_denies_old",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 3,
+      "assessment": "Actual facts and open stale; no old value or hidden correction/rejection/deletion cause. No matching fact was delivered; this is not proof of historical nonacceptance.",
+      "issues": []
+    },
+    {
+      "case_id": "t11_revoked_original",
+      "required_target": "PASS",
+      "full_semantic": "PASS",
+      "actual_native_entries": 2,
+      "assessment": "Actual denied/empty result with unknown refusal cause, no revoked value or fabricated historical acceptance state.",
+      "issues": []
+    },
+    {
+      "case_id": "t12_completed_episode",
+      "required_target": "PASS",
+      "full_semantic": "FAIL",
+      "actual_native_entries": 3,
+      "assessment": "Actual open supports owner-accepted Olha report and no action mandate; event date stays unknown. Extra assertion that independent effect verification was never performed exceeds source saying only that none was attached.",
+      "issues": [
+        {
+          "kind": "unsupported_negative_verification_history",
+          "actual_claim": "независимая проверка эффекта не приложена и не проводилась",
+          "observed_basis": "owner_statement and no independent verification evidence in this record; t12 original says not attached",
+          "reason": "Absence of recorded independent evidence does not prove that an independent verification was never performed."
+        }
+      ]
+    }
+  ],
+  "audit": {
+    "all_checks_passed": true,
+    "checks": 954,
+    "slots": [
+      {
+        "full_tokens": 26319.0,
+        "open_reads": 1,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310387793633659-6e033c2c52d214c0",
+        "native_millis": 60845.0,
+        "case_millis": 62208,
+        "id": "t01_valid_february",
+        "native_entries": 3,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "e17edd8d2278b92587092833df34783359b93b87559b92f398d1de475e36ef65",
+            "source_id": "source_1440e1eb94a7fdb8f981178405179e3f69ebe1aa12e7691e5b6d7a9231a3d353",
+            "length": 65,
+            "offset": 0,
+            "revision": 1,
+            "body_sha256": "544dc0292d5d63da27108d4c8514cf6d171119acf7a1610910edd560f2f21671"
+          }
+        ],
+        "input_bytes": 19944.0
+      },
+      {
+        "full_tokens": 22854.0,
+        "open_reads": 1,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310449952898225-56f48abb2b4a9142",
+        "native_millis": 41281.0,
+        "case_millis": 42492,
+        "id": "t02_current_head",
+        "native_entries": 3,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "21f5fca315da5636a84f7d04729330eb54d94a3045d1cb45c4653724a3fcb719",
+            "source_id": "source_4278ea8491c4d92f654003321b39a08f85f41f734395e2bf6e549d6bafd7dd45",
+            "length": 64,
+            "offset": 0,
+            "revision": 1,
+            "body_sha256": "1860712cee4c90e85d9a45be8bc53eeacc731e1f94c1664d681cd59215c5a4dc"
+          }
+        ],
+        "input_bytes": 20548.0
+      },
+      {
+        "full_tokens": 17151.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310492458861302-5187872ad8703915",
+        "native_millis": 54993.0,
+        "case_millis": 55893,
+        "id": "t03_known_before_second",
+        "native_entries": 2,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 18923.0
+      },
+      {
+        "full_tokens": 11546.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "empty",
+            "items": 0
+          }
+        ],
+        "run_id": "run-1792310548434899191-1be2162e7058b5d5",
+        "native_millis": 24060.0,
+        "case_millis": 26571,
+        "id": "t04_not_yet_recorded",
+        "native_entries": 2,
+        "returned_fact_items": 0,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 17468.0
+      },
+      {
+        "full_tokens": 36920.0,
+        "open_reads": 2,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310575077379862-cabb8898096a75f9",
+        "native_millis": 58179.0,
+        "case_millis": 59888,
+        "id": "t05_open_and_unknown",
+        "native_entries": 4,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "3cb1763f3806029fb06bde6c775543713f6c6907058420c5f69f29881c5ca2c1",
+            "source_id": "source_b82a9cd5fc0e2271d377797301257cd9d220a6bfaddc6f9035bbd586a6d4d1ec",
+            "length": 92,
+            "offset": 0,
+            "revision": 1,
+            "body_sha256": "fbb87c32d2006917a56b25eaa4167df24efe869c6e6d95724b5d34dd82513654"
+          },
+          {
+            "catalog_content_hash": "8fa71fcda1c4943beaa5fe18014f33525dba050e020027efea39c32e6f398a71",
+            "source_id": "source_76c3630ae498a59f81321ea5d67f7f4de1f872cc7fa90edfa9807badcfdb0fbf",
+            "length": 88,
+            "offset": 0,
+            "revision": 1,
+            "body_sha256": "1383c1f8bc27229bfc72f91631753b17a73d8f27df115c689c3e3ca646e24d18"
+          }
+        ],
+        "input_bytes": 22875.0
+      },
+      {
+        "full_tokens": 16957.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 2
+          }
+        ],
+        "run_id": "run-1792310634978069859-0f92d62da4edc70a",
+        "native_millis": 60854.0,
+        "case_millis": 61547,
+        "id": "t06_overlapping_periods",
+        "native_entries": 2,
+        "returned_fact_items": 2,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 18972.0
+      },
+      {
+        "full_tokens": 14873.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310696537470928-3e7e67bca17fddca",
+        "native_millis": 47374.0,
+        "case_millis": 48006,
+        "id": "t07_exception_expired",
+        "native_entries": 2,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 17453.0
+      },
+      {
+        "full_tokens": 13292.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310744555963326-5282f222061aa82a",
+        "native_millis": 36197.0,
+        "case_millis": 36822,
+        "id": "t08_stale_technical",
+        "native_entries": 2,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 18771.0
+      },
+      {
+        "full_tokens": 12276.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310781389526769-324bc9cd06365f75",
+        "native_millis": 26393.0,
+        "case_millis": 27015,
+        "id": "t09_event_time_disjoint",
+        "native_entries": 2,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 18938.0
+      },
+      {
+        "full_tokens": 16907.0,
+        "open_reads": 1,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "stale",
+            "items": 0
+          },
+          {
+            "tool": "memory.open",
+            "status": "stale",
+            "items": 0
+          }
+        ],
+        "run_id": "run-1792310808416169845-17f18a5f7fa3ed61",
+        "native_millis": 35144.0,
+        "case_millis": 35896,
+        "id": "t10_current_correction_denies_old",
+        "native_entries": 3,
+        "returned_fact_items": 0,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 16414.0
+      },
+      {
+        "full_tokens": 9287.0,
+        "open_reads": 0,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "denied",
+            "items": 0
+          }
+        ],
+        "run_id": "run-1792310844324306473-605b4881f82b0617",
+        "native_millis": 20060.0,
+        "case_millis": 20566,
+        "id": "t11_revoked_original",
+        "native_entries": 2,
+        "returned_fact_items": 0,
+        "actual_original_open_witnesses": [],
+        "input_bytes": 15850.0
+      },
+      {
+        "full_tokens": 17864.0,
+        "open_reads": 1,
+        "facts_reads": 1,
+        "actual_result_statuses": [
+          {
+            "tool": "memory.facts",
+            "status": "ok",
+            "items": 1
+          },
+          {
+            "tool": "memory.open",
+            "status": "ok",
+            "items": 1
+          }
+        ],
+        "run_id": "run-1792310864902458444-c47fcf947a1663c0",
+        "native_millis": 31949.0,
+        "case_millis": 32807,
+        "id": "t12_completed_episode",
+        "native_entries": 3,
+        "returned_fact_items": 1,
+        "actual_original_open_witnesses": [
+          {
+            "catalog_content_hash": "c0135b694ea2af0d0995beb900e81b18ec1e00e16a11802dbc7d956fc6db5bdd",
+            "source_id": "source_251052068c7004938a7538ff9b0b8790f96ad9698b1853f5d18c85d8af626cdf",
+            "length": 159,
+            "offset": 0,
+            "revision": 1,
+            "body_sha256": "ff2584ceb362e0f987abd29aab1e44e665017af24d85900353bdcbb84f84b808"
+          }
+        ],
+        "input_bytes": 19300.0
+      }
+    ],
+    "actual_original_opens": 5,
+    "fact_items": 10,
+    "temporal_annotations_checked": 14,
+    "truncated_pages": 0,
+    "new_native_entries": 30,
+    "new_full_tokens": 216246.0,
+    "new_input_tokens": 151270.0,
+    "new_output_tokens": 12842.0,
+    "new_serialized_input_bytes": 225456.0,
+    "new_native_millis": 497329.0,
+    "new_case_millis": 509711.0,
+    "prior_carry_count": 1,
+    "prior_history_sha256": "829b8ce783d7d6d31c33afc89678f086e7ea91e734e7f7d829bcd749294b41a7",
+    "invoice_cost": "unknown",
+    "qualification_changed": false
+  },
+  "audit_script_sha256": "335eff27d360f15d98d0308e230ac73ef5f119b65e9843c3f345c939c5274d01",
+  "inclusive_known_full_tokens_lower_bound": 1321800,
+  "inclusive_native_entries": 175,
+  "inclusive_native_known": 174,
+  "inclusive_native_unknown": 1,
+  "retained_prior_carry_model_turns": 145,
+  "full_earlier_raw_history_reaudited": false,
+  "scope": "All12 original safe requests/proposals/results/finals, actual current catalog/claims/temporal/source pins, full current cost population and unchanged frozen rubric. Earlier raw recursive windows rely on their retained independent proofs. No provider reasoning, raw credentials/errors, API/auth, production change or qualification edit."
+}

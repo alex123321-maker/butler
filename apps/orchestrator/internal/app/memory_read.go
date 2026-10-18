@@ -12,6 +12,8 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/experience"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/reader"
 	memoryservice "github.com/butler/butler/internal/memory/service"
@@ -25,21 +27,28 @@ import (
 // MemoryReads is the owning service boundary. The permanent Broker dispatch
 // supplies identity; model arguments can select only bounded exact DATA reads.
 type MemoryReads struct {
-	pool     *pgxpool.Pool
-	sources  *catalog.Store
-	leases   *session.PostgresLeaseManager
-	inputs   *durableinput.Store
-	hashes   map[string]string
-	adaptive *adaptive.Store
-	semantic memoryservice.PolicySemanticReader
+	pool         *pgxpool.Pool
+	sources      *catalog.Store
+	leases       *session.PostgresLeaseManager
+	inputs       *durableinput.Store
+	hashes       map[string]string
+	adaptive     *adaptive.Store
+	semantic     memoryservice.PolicySemanticReader
+	temporal     bool
+	sourceSubset []catalog.SourceRef
+	experience   *experience.Store
 }
 
 // AdaptiveReadOptions is trusted composition, never a request/model flag.
 // Tests may explicitly compose an unqualified policy without enabling it in a
 // running deployment. Semantic uses only the existing guarded local reader.
 type AdaptiveReadOptions struct {
-	Store    *adaptive.Store
-	Semantic memoryservice.PolicySemanticReader
+	Store      *adaptive.Store
+	Semantic   memoryservice.PolicySemanticReader
+	Experience *experience.Store
+	// Unexported trusted evaluation cohort. It adds denial only and cannot be
+	// supplied through a Broker envelope, stored flag or model request.
+	sourceSubset []catalog.SourceRef
 }
 
 func NewMemoryReads(pool *pgxpool.Pool, sources *catalog.Store, options ...AdaptiveReadOptions) (*MemoryReads, error) {
@@ -53,8 +62,20 @@ func NewMemoryReads(pool *pgxpool.Pool, sources *catalog.Store, options ...Adapt
 	if len(options) == 1 {
 		s.adaptive = options[0].Store
 		s.semantic = options[0].Semantic
+		s.experience = options[0].Experience
+		if options[0].sourceSubset != nil {
+			if len(options[0].sourceSubset) > 8 {
+				return nil, readcontrol.ErrDenied
+			}
+			s.sourceSubset = append([]catalog.SourceRef{}, options[0].sourceSubset...)
+			for _, ref := range s.sourceSubset {
+				if ref.ID == "" || ref.Revision < 1 || ref.AccessRevision < 1 || len(ref.Hash) != 64 {
+					return nil, readcontrol.ErrDenied
+				}
+			}
+		}
 	}
-	for _, c := range readcontrol.Contracts() {
+	for _, c := range append(readcontrol.Contracts(), factcontrol.Contract()) {
 		h, e := actionauth.ContractHash(c)
 		if e != nil {
 			return nil, e
@@ -71,6 +92,12 @@ func (s *MemoryReads) CheckReady(ctx context.Context) error {
 }
 func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope) (readcontrol.Result, error) {
 	a, err := readcontrol.DecodeArgs(e.Tool, e.ArgsJSON)
+	var facts *factcontrol.Args
+	if e.Tool == factcontrol.Tool && s != nil && s.temporal {
+		value, decodeErr := factcontrol.DecodeArgs(e.ArgsJSON)
+		facts = &value
+		err = decodeErr
+	}
 	if s == nil || err != nil || e.RunID == "" || e.ToolCallID == "" || e.EffectID == "" || e.ContractHash != s.hashes[e.Tool] {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
@@ -83,8 +110,12 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	envelope := delegation.AdmissionEnvelope{RunID: e.RunID, ToolCallID: e.ToolCallID, EffectID: e.EffectID, ArgsJSON: e.ArgsJSON, ContractHash: e.ContractHash}
+	contract := readcontrol.Contract(e.Tool)
+	if facts != nil {
+		contract = factcontrol.Contract()
+	}
 	read := func(ctx context.Context, q admissionQuery, lock bool) (actionauth.Grant, error) {
-		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], readcontrol.Contract(e.Tool).GetContractRevision(), actionauth.EffectRead, lock)
+		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], contract.GetContractRevision(), actionauth.EffectRead, lock)
 	}
 	grant, err := read(ctx, s.pool, false)
 	if err != nil {
@@ -122,6 +153,13 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	}
 	var candidates []reader.SemanticCandidate
 	var diagnostics []string
+	var lessonEnvironment experience.Prepared
+	if s.experience != nil {
+		lessonEnvironment, err = s.experience.Prepare(owned, e.RunID)
+		if err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+	}
 	if s.adaptive != nil {
 		// Check exact permanent dispatch before spending the conservative read
 		// reservation. No owning read transaction spans semantic IPC.
@@ -186,13 +224,25 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	if check(tx) != nil {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
-	result, err := (reader.Reader{Sources: s.sources, SemanticCandidates: candidates}).ReadTx(owned, tx, e.Tool, a)
+	var result readcontrol.Result
+	if facts != nil {
+		result, err = s.readTemporalFactsTx(owned, tx, *facts, lessonEnvironment)
+	} else {
+		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+			return s.experience.EligibleTx(ctx, tx, src, lessonEnvironment, true)
+		}}).ReadTx(owned, tx, e.Tool, a)
+	}
 	if err != nil {
 		return readcontrol.Empty("backend_error"), err
 	}
 	// Repeat after all source/fragment lock waits; a result cannot outlive its
 	// exact task, input, lease, source ancestor or deletion watermark.
 	result.Diagnostics = append(result.Diagnostics, diagnostics...)
+	if s.temporal && facts == nil {
+		if err = s.enrichTemporalReadTx(owned, tx, &result); err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+	}
 	if s.adaptive != nil {
 		if err = s.adaptive.ObserveTx(owned, tx, e, a, &result); err != nil {
 			return readcontrol.Empty("denied"), err
@@ -200,6 +250,9 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	}
 	if check(tx) != nil {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
+	}
+	if err = s.experience.CheckPinnedTx(owned, tx, e.RunID); err != nil {
+		return readcontrol.Empty("denied"), err
 	}
 	if err = tx.Commit(owned); err != nil {
 		return readcontrol.Empty("backend_error"), err

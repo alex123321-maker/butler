@@ -313,8 +313,11 @@ func formatChunkEntries(entries []map[string]any) string {
 	for _, entry := range entries {
 		title := strings.TrimSpace(stringValue(entry["title"]))
 		summary := strings.TrimSpace(stringValue(entry["summary"]))
-		if title == "" || summary == "" {
+		if summary == "" {
 			continue
+		}
+		if title == "" {
+			title = "Document"
 		}
 		lines = append(lines, "- "+title+": "+summary)
 	}
