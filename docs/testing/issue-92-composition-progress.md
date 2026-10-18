@@ -188,3 +188,29 @@ a confirmed production formatter defect: untitled selected documents were
 discarded after successful actual retrieval. The implementation now retains
 them under a neutral label; v5 fixes the formatter rather than changing input
 titles or the latency gate. All original failed/diagnostic windows remain.
+
+The foreground verification revision `53d68390` raises the default complete
+source proof from200ms to2s after the separately retained native88v6 timeout.
+This follows the owner's explicit authorization to increase frequently hit
+limits. Trusted explicit200ms..2s bounds remain valid; earlier parent deadlines,
+Stop, current post-wait source/authority proof and held DATA remain mandatory.
+The default nil-store experience adapter inherits the Core default. Background
+200ms and ownership750ms checks, provider300s and qualification flags are unchanged.
+
+Fresh `issue90-foreground-bound-20261018/reports/foreground-bound-v1` tested that
+source on actual isolated PostgreSQL with race detection and vet:37 test/subtest
+events,0 failures/skips. Both default and explicit2s paths held final/tool/batch
+DATA through300ms proofs, denied privacy withdrawal/cancellation and late lease
+expiry, and stopped an unreleased proof at2s. The existing50ms parent clamp and
+usage-drain/currentness controls passed. Evidence-list SHA256:
+`83dc388a2f89600bd091e2194006d47e5d7954f5bd6a6219375a9f948d8aefbd`.
+This controlled receipt does not repair or qualify any closed native cohort.
+
+Source `4d7e6a68` now starts fresh combined `composition-v6` and full controlled
+`coherent-lifecycle-v11` windows. Their final outcomes remain pending. The combined
+gate additionally requires the new default/compound held-event controls and
+consolidation-v3 worker, failed-closure, exact latest-leaf and current-day carry
+controls. Namespace consumption remains tested only in its dedicated disposable
+PostgreSQL. The new consolidation history retains all73 current-owner native
+attempts including the unknown entry; the separate adaptive population is not
+rebilled into that carry.
