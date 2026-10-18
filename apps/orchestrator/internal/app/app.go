@@ -38,6 +38,7 @@ type App struct {
 	inputWorker                *durableinput.Service
 	outboxWorker               *deliveryoutbox.Worker
 	initiativeDeliveryWorker   *deliveryoutbox.Worker
+	scheduleDeliveryWorker     *deliveryoutbox.Worker
 	verifiedTaskDeliveryWorker *deliveryoutbox.Worker
 	auxiliaryWorker            *completion.AuxiliaryWorker
 	memoryCleanup              *catalog.CleanupWorker

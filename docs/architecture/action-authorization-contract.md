@@ -1,5 +1,13 @@
 # Exact action authorization
 
+Optional `schedule.*` uses immutable owning contracts and the current private
+accepted-input claim, including in taskless conversations. Read/list is DATA;
+create/update/cancel is local preparation requiring exact approval or a current
+compatible mandate. The owning endpoint reconstructs the actual dispatched
+journal/grant/lease and retains finite occurrence/expiry bounds. Service proof,
+child output and the saved schedule grant no future effect authority. See
+[agent schedules](agent-schedules.md).
+
 Canonical workspace DATA tools require current owning workspace readiness and
 the original accepted-input claim pinned privately to the grant. Their immutable
 operation/body/path/file snapshot and source context are joined to shared budget

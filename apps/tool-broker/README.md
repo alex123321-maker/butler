@@ -1,5 +1,13 @@
 # Tool Broker
 
+Optional `BUTLER_SCHEDULES_ENABLED=true` registers immutable `schedule.*`
+contracts, filtered by current owning readiness and executor scope. The fixed
+operator `BUTLER_SCHEDULES_CONTROL_URL` routes actual dispatched calls to
+Orchestrator `/internal/schedules`, using existing private service authentication,
+exact grants, input claims and shared budgets. No credential values or owner IDs
+are model arguments. Enable the matching Orchestrator flag and migration085;
+see the [implemented contract](../../docs/architecture/agent-schedules.md).
+
 The optional `memory.facts` contract revision4 separates explicit validity expiry
 from verification deadlines. It preserves the bounded input/output schema and
 ordinary authorization/source pins. The general declaration adds no source

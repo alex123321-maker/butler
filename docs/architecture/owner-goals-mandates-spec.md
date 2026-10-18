@@ -1,5 +1,11 @@
 # Confirmed owner goals and broad durable autonomy
 
+Optional [agent schedules](agent-schedules.md) retain the current exact assignment
+and finite quota period. Automatic future work requires current initiative and
+scheduling permission; an exact owner-approved schedule authorizes its declared
+future occurrences without enabling unrelated initiative. No model can select a
+different mandate/purpose or turn saved scheduling permission into effect rights.
+
 Authenticated manual task admission accepts an optional `project_ref` plus
 SHA-256 `project_revision` pair. The typed owner metadata allows the installed
 initiative observer to follow current project attempts; it supplies no resource,

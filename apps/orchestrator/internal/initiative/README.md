@@ -1,5 +1,10 @@
 # Initiatives
 
+Clock arithmetic now comes from `internal/scheduling`, shared with the optional
+[agent scheduling subsystem](../../../../docs/architecture/agent-schedules.md).
+Initiative source configuration, observation policy, tick claims and promotion
+remain initiative-owned. Agent jobs do not fabricate observation candidates.
+
 Actual Broker/executor prepared-patch acceptance and its remaining integration
 limits are recorded in `docs/architecture/initiative-acceptance.md`. The fixture
 uses owner verification, not a model's final text, to complete the admitted task.

@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/(scheduling|schedulecontrol)/|apps/orchestrator/internal/(scheduled/|app/schedules|input/schedule_control)|apps/tool-broker/internal/broker/schedules|internal/config/schedules|migrations/085_|scripts/dev/schedules-)" {
+	  [void]$specs.Add("docs/architecture/agent-schedules.md")
+	  [void]$specs.Add("docs/architecture/initiative-contract.md")
+	  [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+	  [void]$tests.Add("pwsh -NoProfile -File scripts/dev/schedules-local.ps1 (isolated PostgreSQL, actual Broker, ordinary Input/Core, no native inference, race/vet)")
+	  continue
+	}
     "^mobile/android/|^scripts/dev/mobile-" {
       [void]$specs.Add("docs/architecture/android-companion.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/mobile-build.ps1 -Test")

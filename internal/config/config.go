@@ -70,6 +70,7 @@ type OrchestratorConfig struct {
 	GuardedTabRequestEnabled          bool
 	GuardedTabRuntimeEnabled          bool
 	MemoryCandidateEnabled            bool
+	SchedulesEnabled                  bool
 	MemoryReadEnabled                 bool
 	MemoryAdaptiveRetrievalEnabled    bool
 	MemoryTemporalEnabled             bool
@@ -141,6 +142,8 @@ type ToolBrokerConfig struct {
 	GuardedTabRequestEnabled      bool
 	GuardedTabRequestControlURL   string
 	MemoryCandidateEnabled        bool
+	SchedulesEnabled              bool
+	SchedulesControlURL           string
 	MemoryReadEnabled             bool
 	MemoryReadControlURL          string
 	MemoryTemporalEnabled         bool
@@ -366,6 +369,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
+	specs = append(specs, schedulesOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryReadOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryTemporalSpecs(&cfg)...)
 	specs = append(specs, workspaceOrchestratorSpecs(&cfg)...)
@@ -412,6 +416,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
+	specs = append(specs, schedulesBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryReadBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryTemporalBrokerSpecs(&cfg)...)
 	specs = append(specs, workspaceBrokerSpecs(&cfg)...)
@@ -789,6 +794,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if cfg.SchedulesEnabled && cfg.ActionAuthorityTokenFile == "" {
+		return fmt.Errorf("schedules require private Broker authentication")
+	}
 	if cfg.WorkspaceEnabled && cfg.ActionAuthorityTokenFile == "" {
 		return fmt.Errorf("workspace catalog requires private Broker authentication")
 	}

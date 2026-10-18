@@ -53,6 +53,7 @@ import (
 	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/schedulecontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/butler/butler/internal/workspaceexec"
@@ -64,6 +65,7 @@ type httpServerDeps struct {
 	guardedTabOwner            apiservice.GuardedTabDecisions
 	guardedRequestHandler      http.Handler
 	memoryCandidateHandler     http.Handler
+	scheduleHandler            http.Handler
 	memoryReadHandler          http.Handler
 	memoryFactHandler          http.Handler
 	delegationDecisions        apiservice.DelegationDecisions
@@ -230,6 +232,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	if deps.memoryCandidateHandler != nil {
 		mux.Handle(candidatecontrol.Path, deps.memoryCandidateHandler)
+	}
+	if deps.scheduleHandler != nil {
+		mux.Handle(schedulecontrol.Path, deps.scheduleHandler)
 	}
 	if deps.memoryReadHandler != nil {
 		mux.Handle(readcontrol.Path, deps.memoryReadHandler)

@@ -1,5 +1,13 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Optional `BUTLER_SCHEDULES_ENABLED=true` composes fixed Broker-mediated
+`schedule.create/list/get/update/cancel`, durable one-shot/daily/weekday/interval
+jobs and reminder delivery. Exact owner approval or current bounded authority
+remains required. Agent jobs enter ordinary Task/Input/Core; reminders spend no
+inference. Both services need the opt-in and migration085. See the
+[schedule contract](../../docs/architecture/agent-schedules.md) and run
+`pwsh -NoProfile -File scripts/dev/schedules-local.ps1` for isolated validation.
+
 Android assistance uses ordinary initiative/input/task execution with a standing
 owner-configured `mobile_inbox` source:20 new messages or an hour of pending
 messages. Broker controls `messages.inbox`, `messages.search` and

@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+Optional [agent schedules](agent-schedules.md) persist future instructions through
+exact Broker control and admit one ordinary Task/Input per due occurrence.
+They hold no run/lease during the delay. Schedule cancellation/revision and current
+source/authority checks fence queued/running occurrences through ordinary task
+authority, separately from task completion and final delivery. Reminders use the
+existing channel worker with their own durable outbox and no fake model run.
+
 The current kernel accepts one tool proposal per model response. Trusted
 orchestration instructions declare that limit independently of the operator's
 base prompt and ask the model to wait for its correlated tool result. The Broker

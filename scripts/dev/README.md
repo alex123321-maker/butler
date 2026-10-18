@@ -1,5 +1,13 @@
 # Butler Dev Scripts
 
+`pwsh -NoProfile -File scripts/dev/schedules-local.ps1` creates a disposable local
+PostgreSQL container and runs the scheduling acceptance in Go1.27.2 Linux. It
+builds the actual Broker, exercises private dispatch and ordinary Input/Core,
+checks restart/duplicate/cancel/overlap/delivery behavior under race detection,
+rejects mandatory skips and runs shared authority/budget/initiative regression
+and vet. Go caches and the JSONL report stay in repo-local `.cache/`; the created
+database container is removed. No provider credential or native inference is used.
+
 `memory-bootstrap-smoke-lab.sh ROOT FRESH_LABEL` runs the production `app.New`
 and `App.Run` with their own HTTP Memory Doctor, separate PostgreSQL/Redis and
 the existing compiled Broker/controlled Doctor runtime. It uses no cloud auth or

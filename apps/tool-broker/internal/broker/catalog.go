@@ -14,6 +14,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/schedulecontrol"
 	"github.com/butler/butler/internal/workspaceexec"
 )
 
@@ -68,6 +69,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if schedulecontrol.IsTool(contract.GetToolName()) && (!a.SchedulesReady || a.Delegation != nil) {
+			continue
+		}
 		if contract.GetToolName() == "converters.collect" {
 			// A queued developer receipt is not a candidate return. Advertising
 			// collection early invites a call that correctly fails Prepare.
