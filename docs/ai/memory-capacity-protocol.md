@@ -113,7 +113,7 @@ remain separate acceptance gates.
 The complete mixed-v2 window failed and remains NO_GO, including its1587.255 ms
 warm p95 miss against1500 ms. Its scratch-only UNKNOWN expectation conflicted
 with Catalog's deliberate same-owner working-memory erasure on deletion; the
-stale summary policy correctly lost its old working-state binding. Mixed-v3 is
+stale summary snapshot correctly lost its old transcript-revision binding. Mixed-v3 is
 a new whole window with the same sizes,1500/5000 ms bounds, two readers, warmup,
 hardware and complete denominator. It does not retry selected old measurements.
 
@@ -130,7 +130,7 @@ are separate. A window of blocked requests cannot qualify throughput.
 
 Corrections use the ordinary exact-revision Catalog correction API. Both original
 admitted model jobs must still yield with NULL usage and unchanged charges.
-The old summary policy must then terminate as stale after working erasure,
+The old summary policy must then terminate as stale after the concurrent transcript revision withdrawal,
 without a second model reservation. A separately predeclared fresh owner summary
 policy allows exactly one call against the current snapshot. Consolidation uses
 its original separately charged retry. Thus the whole window still admits four
