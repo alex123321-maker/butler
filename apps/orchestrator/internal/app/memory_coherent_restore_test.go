@@ -135,7 +135,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_MEMORY_COHERENT_RESTORE_DATABASE") != "coherent_lifecycle_restore_test" {
 		t.Skip("actual coordinated custom backup/fresh restore and bounded tmpfs required")
 	}
-	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[1], func(p *coherentPilot, r *experienceNativeRuntime, lessonID string) {
+	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[1], func(p *coherentPilot, r *experienceNativeRuntime, lessonID string, recipient *experienceRecipient) {
 		ctx := p.ctx
 		proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 		defer func() {
@@ -156,6 +156,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			t.Fatal("actual earlier context/independent result missing", err)
 		}
 		originalTask, originalRun, originalSession, ownerResult := lesson.Observation.TaskID, lesson.Observation.RunID, lesson.Observation.SessionKey, lesson.Observation.OwnerResultID
+		unknown := coherentActualUnknown(t, p, r, recipient)
 		// Real60-second quiet eligibility is part of preparation and activation.
 		// No durable timestamp is aged and no Session lease is fabricated.
 		select {
@@ -199,7 +200,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		// permitted dependencies. Source grants alone cannot make it applicable.
 		readID := experienceDigest("coherent-current-episode-consumer")
 		readTask := r.createTask(t, ctx, readID, "Сверить принятое предпочтение и проверенный эпизод для текущего alpha; артефакты не применять", "alpha", "prepare_and_verify_exact_resource")
-		readTask, err = r.tasks.SaveWorking(ctx, readTask.TaskID, readTask.WorkingRevision, task.WorkingState{Plan: []string{"read current DATA and compare"}, PendingActions: []string{"independently check UNKNOWN before any replay"}, Scratch: map[string]any{"tool_effect": "unknown"}})
+		readTask, err = r.tasks.SaveWorking(ctx, readTask.TaskID, readTask.WorkingRevision, task.WorkingState{Plan: []string{"read current DATA and compare"}, PendingActions: []string{"independently check UNKNOWN before any replay"}, Scratch: map[string]any{"tool_effect": "unknown", "unresolved_action_id": unknown.ActionID, "original_run_id": unknown.RunID}})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -240,6 +241,10 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			t.Fatal("DATA consumer performed an unrelated action or omitted actual read evidence", err)
 		}
 		p.record("ordinary_broker_reads_earlier_consolidated_episode_with_current_applicability", &receipt, map[string]any{"source": generation, "original_owner_result": ownerResult})
+		unknown.check(t, ctx, p.pool)
+		if recipient.snapshot().Dispatches != unknown.Dispatches {
+			t.Fatal("consolidation consumer repeated the unresolved external action")
+		}
 		effects, budgets := coherentStateDigest(t, ctx, p.pool)
 		coherentExternalPhase(t, ctx, proof, "backup", p.pool)
 		p.record("actual_custom_dump_of_same_prewithdrawal_timeline", nil, map[string]any{"effect_digest": effects, "budget_digest": budgets})
@@ -249,6 +254,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		if a, b := coherentStateDigest(t, ctx, p.pool); a != effects || b != budgets {
 			t.Fatal("privacy deletion changed effect truth or complete charges")
 		}
+		unknown.check(t, ctx, p.pool)
 		p.record("late_original_deletion_fences_episode_and_consolidation", nil, map[string]any{"source": p.provider.source.ID})
 		coherentExternalPhase(t, ctx, proof, "restore", p.pool)
 		cfg := p.pool.Config().Copy()
@@ -293,10 +299,11 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 		if a, b := coherentStateDigest(t, ctx, restored); a != effects || b != budgets {
 			t.Fatal("actual restore/replay changed independent effects or full budget ledger")
 		}
+		unknown.check(t, ctx, restored)
 		p.record("fresh_custom_restore_latest_anchor_erases_original_episode_view_retains_all_charges", nil, map[string]any{"remaining_private_copies": copies, "effect_digest": effects, "budget_digest": budgets})
 		coherentRestoredDiskFault(t, ctx, proof, current)
 		p.record("same_restored_timeline_actual_enospc_keeps_failed_deletion_uncommitted", nil, map[string]any{"enospc_observed": true})
-		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": true, "pass": !t.Failed(), "native_calls": 0, "steps": p.steps, "restored": true, "erased_private_copies": copies, "effect_journal_unchanged": true, "budget_ledger_unchanged": true, "enospc_observed": true, "limits": "controlled integrated mechanics only; supported-mode qualification, native quality/cost and staged human review remain pending"}, "", "  ")
+		raw, _ := json.MarshalIndent(map[string]any{"controlled_only": true, "pass": !t.Failed(), "native_calls": 0, "steps": p.steps, "restored": true, "actual_unknown_effect": unknown, "erased_private_copies": copies, "effect_journal_unchanged": true, "budget_ledger_unchanged": true, "enospc_observed": true, "limits": "controlled integrated mechanics only; supported-mode qualification, native quality/cost and staged human review remain pending"}, "", "  ")
 		if err = os.WriteFile(filepath.Join(proof, "timeline-lifecycle.json"), raw, 0600); err != nil {
 			t.Fatal(err)
 		}

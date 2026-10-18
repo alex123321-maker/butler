@@ -51,7 +51,7 @@ func TestMemoryCoherentVerifiedExperienceAfterRestartIntegration(t *testing.T) {
 	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[0])
 }
 
-func runMemoryCoherentVerifiedExperience(t *testing.T, arm string, after ...func(*coherentPilot, *experienceNativeRuntime, string)) {
+func runMemoryCoherentVerifiedExperience(t *testing.T, arm string, after ...func(*coherentPilot, *experienceNativeRuntime, string, *experienceRecipient)) {
 	if os.Getenv("BUTLER_MEMORY_COHERENT_PILOT") != "1" {
 		t.Skip("explicit coherent timeline and actual Broker/extension/HTTP runtimes required")
 	}
@@ -134,6 +134,6 @@ func runMemoryCoherentVerifiedExperience(t *testing.T, arm string, after ...func
 		t.Fatal(err)
 	}
 	for _, next := range after {
-		next(p, r, source)
+		next(p, r, source, recipient)
 	}
 }

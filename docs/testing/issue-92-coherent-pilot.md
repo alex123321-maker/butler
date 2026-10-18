@@ -252,3 +252,14 @@ owner-recorded working UNKNOWN do not certify native answer quality or an
 actual uncertain external effect in this complete scenario. The separate real
 effect controls remain distinct. Native87–90 quality/full-cost gates, current
 combined composition checks and staged owner review remain required.
+
+The next complete controlled window adds a24th checkpoint before consolidation:
+an actual current Flow dispatch through Broker/extension/HTTP receives an
+unsupported-value rejection and stops with a durable `effect_unknown` input,
+one prepare dispatch and no final result. The current consumer retains that
+actual action/run identity in working state; consolidation and subsequent reads
+must not replay it. The same UNKNOWN and absent final are checked after owner
+deletion and fresh custom restore, alongside byte-identical full effect and
+budget ledgers. This is a prospective control, with no run receipt yet. The
+earlier long-task/compaction prefix still uses owner-recorded working UNKNOWN;
+this later actual effect does not retroactively change that prefix or v8.
