@@ -160,3 +160,32 @@ it is neither a cold process nor a cold machine/model observation. OS cache
 state is not controlled, and no cache benefit is inferred from its difference
 from the warm concurrent phase. Cold shared-buffer isolation, if later measured,
 must be separately declared and may restart only the owned disposable PG.
+
+### Separate shared-buffer-cold-v1 slice
+
+Only after mixed-v4's owned containers/network have been cleaned up, a fresh
+private fixture repeats the same10000 synthetic-vector/current-Catalog setup,
+actual local initial100-fragment index and six controlled setup attempts. The
+client remains2 CPUs/2 GiB with race detection and PostgreSQL1 CPU/1 GiB. No
+background model job is dispatched in this cache slice. After all setup work
+has finished, the client stops its idle input worker and writes a content-free
+barrier containing its exact database/schema/postmaster identity. The driver
+must verify the exact owned PG container ID, report data mount and resource
+limits before restarting that container alone. It never restarts main, flushes
+host caches or changes a clock. A second barrier and changed postmaster start
+time prove the restart; connection-pool recovery and current Catalog checks
+precede the next request.
+
+The first actual query measures the ordinary input-to-terminal-receipt path,
+retrieval interval, authenticated local query IPC/queue/execution/peaks and the
+controlled provider's actual entry. PostgreSQL shared buffers were restarted;
+mandatory metadata recovery may have warmed metadata pages. The OS page cache
+is uncontrolled and the model is explicitly already warm from initial IPC.
+This is not a machine-cold or model-cold result. Twenty warmup queries precede
+one matched serial warm query and100 two-reader warm requests. All122 retrieval
+requests and every outcome/charge remain; the cold and matched serial requests
+must complete within5000 ms, and the100-request warm p95 must be≤1500 ms with
+all100 completed. There is no general p95 claim from the single cold observation
+and no cache-speedup inference from unlike concurrency. Database read/hit
+counters, complete ledgers, resource samples and exact restart receipts survive
+failure. This separate slice does not replace the mixed workload or any miss.
