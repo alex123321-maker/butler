@@ -102,7 +102,10 @@ func TestExperienceOriginalOwnerResumeReadReconcilesAbsentIntegration(t *testing
 	// This is the same owner-authenticated production operation required before
 	// Resume. It creates no note policy, job, reservation or model attempt.
 	sealToken := strings.Repeat("controlled-owner-observation-", 3)
-	policies := &experiencePolicies{store: r.lessons, evidence: verifier}
+	policies := configureExperiencePolicies(r.lessons, nil, r.tasks, r.history, r.results, cat)
+	if policies == nil {
+		t.Fatal("production observation creator depends on model jobs")
+	}
 	sealServer := httptest.NewServer((&api.MemoryCatalogServer{Store: cat, Auth: api.NewOwnerControlAuth(sealToken, experienceNativeOwner), ExperiencePolicies: policies}).Handle())
 	defer sealServer.Close()
 	sealRequest := func(endpoint, token, method, body, delivery string, want int) []byte {

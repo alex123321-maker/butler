@@ -40,7 +40,7 @@ type experiencePolicies struct {
 }
 
 func configureExperiencePolicies(s *experience.Store, j *jobs.Store, t *task.Store, h *transcript.Store, r *completion.Coordinator, c *catalog.Store) experience.PolicyCreator {
-	if s == nil || j == nil {
+	if s == nil {
 		return nil
 	}
 	return &experiencePolicies{store: s, jobs: j, evidence: &skillEvidence{tasks: t, journal: actionauth.NewPostgresStore(c.Pool()), transcript: h, budgets: budget.NewLedger(c.Pool()), results: r, sources: c, lessons: s}}
