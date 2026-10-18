@@ -33,6 +33,51 @@ def inspect(name):
     return json.loads(command(['docker', 'inspect', name]))[0]
 
 
+def harden(config):
+    services = config['services']
+    core = services['orchestrator']['environment']
+    core['BUTLER_RESTART_HELPER_URL'] = 'http://restart-helper:8080'
+    core['BUTLER_TOOL_BROKER_ADDR'] = 'butler-main-tool-broker-1:9090'
+    core['NO_PROXY'] = 'localhost,127.0.0.1,postgres,redis,tool-broker,orchestrator,local-models,memory-parser,oauth2.googleapis.com,butler-main-postgres-1,butler-main-redis-1,butler-main-tool-broker-1'
+    core['HTTPS_PROXY'] = 'http://antigravity-proxy:18080'
+    for key in list(core):
+        if key.startswith('BUTLER_VOICE_') and key.endswith('TOKEN_FILE'):
+            core[key] = '/run/secrets/local-model'
+    services['orchestrator']['networks'].pop('proxy', None)
+    config['networks'].pop('proxy', None)
+    services['antigravity-proxy'] = {'image': 'alpine:3.21', 'user': '10001:10001', 'restart': 'unless-stopped',
+                                    'entrypoint': ['/usr/local/bin/xray', 'run', '-config', '/private/xray.json'],
+                                    'volumes': [m['Source'] + ':' + m['Destination'] + ':ro' for m in inspect('butler-lab-antigravity-proxy-1')['Mounts'] if m['Type'] == 'bind'],
+                                    'networks': ['backend'], 'read_only': True, 'cap_drop': ['ALL'],
+                                    'security_opt': ['no-new-privileges:true'], 'mem_limit': '128m', 'pids_limit': 64,
+                                    'tmpfs': ['/tmp:noexec,nosuid,size=16m']}
+    allowed = ','.join(sorted(name for name in services if name not in ('migrator', 'antigravity-proxy')))
+    services['restart-helper'] = {'image': 'butler-lab-restart-helper', 'restart': 'unless-stopped', 'entrypoint': ['/candidate/restart-helper'],
+                                  'environment': {'BUTLER_HTTP_ADDR': ':8080', 'BUTLER_DOCKER_HOST': 'unix:///var/run/docker.sock',
+                                                  'BUTLER_RESTART_PROJECT': 'butler-main', 'BUTLER_RESTART_ALLOWED_SERVICES': allowed,
+                                                  'BUTLER_RESTART_SELF_SERVICE': 'restart-helper'},
+                                  'volumes': [str(ROOT / 'bin') + ':/candidate:ro', '/var/run/docker.sock:/var/run/docker.sock'],
+                                  'networks': ['backend'], 'read_only': True, 'cap_drop': ['ALL'], 'security_opt': ['no-new-privileges:true'],
+                                  'mem_limit': '128m', 'pids_limit': 64}
+    for name, service in services.items():
+        service['logging'] = {'driver': 'json-file', 'options': {'max-size': '5m', 'max-file': '3'}}
+        if name == 'migrator':
+            service['restart'] = 'no'
+            continue
+        if name in ('mobile-ingress', 'antigravity-proxy'):
+            continue
+        if name == 'postgres':
+            probe = ['CMD', 'pg_isready', '-U', 'butler', '-d', 'butler']
+        elif name == 'redis':
+            probe = ['CMD', 'redis-cli', 'ping']
+        else:
+            port = 3000 if name == 'web' else 8086 if name == 'tool-workspace' else 8080
+            path = '/' if name == 'web' else '/health'
+            probe = ['CMD', 'wget', '-qO-', 'http://127.0.0.1:' + str(port) + path]
+        service['healthcheck'] = {'test': probe, 'interval': '15s', 'timeout': '3s', 'retries': 3, 'start_period': '15s'}
+    return config
+
+
 def prepare():
     if (ROOT / 'compose.json').exists():
         raise RuntimeError('existing deployment assembly is preserved')
@@ -155,7 +200,7 @@ def prepare():
                 for i, name in enumerate(('backend', 'tool-runtime', 'tool-egress', 'diagnostics'))}
     for name, actual in [('proxy', 'backend'), ('local-models', 'local-inference'), ('parser', 'memory-parsing')]:
         networks[name] = {'external': True, 'name': 'butler-lab_' + actual}
-    write(ROOT / 'compose.json', json.dumps({'name': 'butler-main', 'services': services, 'networks': networks}, indent=2))
+    write(ROOT / 'compose.json', json.dumps(harden({'name': 'butler-main', 'services': services, 'networks': networks}), indent=2))
     # Use the unchanged canonical registry, not the stand's redirected Doctor.
     write(ROOT / 'bin/tools.json', (NATIVE / 'source/configs/tools.json').read_bytes(), 0o644)
     command(['docker', 'run', '--rm', '-v', str(ROOT) + ':/main', 'alpine:3.21', 'sh', '-c',
@@ -174,6 +219,9 @@ if __name__ == '__main__':
             core['BUTLER_POSTGRES_URL'] = core['BUTLER_POSTGRES_URL'].replace('@postgres:', '@butler-main-postgres-1:')
             core['BUTLER_REDIS_URL'] = 'redis://butler-main-redis-1:6379/0'
             (ROOT / 'bin/wifi-proxy').chmod(0o755)
+            write(ROOT / 'compose.json', json.dumps(config, indent=2))
+        elif sys.argv[1] == 'harden-assembly':
+            config = harden(json.loads((ROOT / 'compose.json').read_text()))
             write(ROOT / 'compose.json', json.dumps(config, indent=2))
         else:
             raise RuntimeError('unsupported migration action')

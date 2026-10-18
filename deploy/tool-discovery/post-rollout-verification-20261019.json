@@ -1,0 +1,141 @@
+{
+  "code_commits": {
+    "orchestrator": "1d345ff11bd892663ab02a4272ab041640d74951",
+    "broker": "f1753cd0b0ebf09beb25056fb5c65dfc03893f04"
+  },
+  "checked_at": "2026-10-18T19:26:09.5364909+00:00",
+  "linux_race_tests_passed": 24,
+  "failed": 0,
+  "skipped": 0,
+  "go_vet": "passed",
+  "log_sha256": "df887287a9cc3de9dbe27fcaf71780eeb0686a786d13b92be6147857130e59a4",
+  "candidate_control_linux_race": "passed",
+  "candidate_control_windows": "passed",
+  "orchestrator_windows_package": "passed",
+  "tests": [
+    {
+      "Package": "github.com/butler/butler/internal/transport",
+      "Test": "TestToolSetRejectsChangedRevisionAndDuplicateMethods",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/toolcatalog",
+      "Test": "TestToolSearchBeyond64PaginationAndStaleCursor",
+      "Elapsed": 0.04
+    },
+    {
+      "Package": "github.com/butler/butler/internal/toolcatalog",
+      "Test": "TestToolSearchRussianAndExactRefs",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/toolcatalog",
+      "Test": "TestToolSearchRussianOperationRanksBeforeCategoryOnlyMatch",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/transport/antigravity",
+      "Test": "TestToolDiscoveryOwnedSchemasFitNativeDialect",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/transport/antigravity",
+      "Test": "TestToolSetLoadsOnNextWireRequestWithStableSignedAliases",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/transport/githubcopilot",
+      "Test": "TestToolSetReplacementOnCopilotWire",
+      "Elapsed": 0.01
+    },
+    {
+      "Package": "github.com/butler/butler/internal/transport/openai",
+      "Test": "TestToolSetReplacementInResponsesAndRealtime",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/transport/openaicodex",
+      "Test": "TestToolSetReplacementPreservesCollisionAliasesAndEmptySet",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/actionauth",
+      "Test": "TestToolCatalogStandardReadRequiresExactLocalContractAndClaim",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/actionauth",
+      "Test": "TestToolCatalogConversationSlotsCannotLinkEffectsAcrossRuns",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/internal/config",
+      "Test": "TestToolDiscoveryRequiresOperatorFlagAndAuthentication",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/tool-broker/internal/broker",
+      "Test": "TestToolDiscoveryThroughAuthorizedBroker",
+      "Elapsed": 0.02
+    },
+    {
+      "Package": "github.com/butler/butler/apps/tool-broker/internal/broker",
+      "Test": "TestToolCatalogDoesNotTruncateCoreBeforeSearch",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "Test": "TestToolDiscoveryModelLoopSearchLoadCallFinal",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "Test": "TestToolDiscoveryDurableSelectionRecoveryAndRevocation",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "Test": "TestToolDiscoveryBudgetRejectsLoadWithoutChangingPreviousSelection",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+      "Test": "TestToolSchemaProjectionRespectsOwningAdaptiveComposition",
+      "Elapsed": 0
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/input",
+      "Test": "TestActionSlotPersistsBeforePrepareAndSurvivesApprovalRecoveryIntegration",
+      "Elapsed": 0.86
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/input",
+      "Test": "TestActionSlotDistinctIntentAndRevisionChecksIntegration",
+      "Elapsed": 0.22
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "Test": "TestToolDiscoveryOrdinaryCoreActualBrokerIntegration/skills=false",
+      "Elapsed": 2.21
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "Test": "TestToolDiscoveryOrdinaryCoreActualBrokerIntegration/skills=true",
+      "Elapsed": 2.19
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "Test": "TestToolDiscoveryOrdinaryCoreActualBrokerIntegration",
+      "Elapsed": 4.4
+    },
+    {
+      "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "Test": "TestToolDiscoveryActualBrokerProcessIntegration",
+      "Elapsed": 1.95
+    }
+  ],
+  "native_comparison": "native-comparison-20261019.json",
+  "native_usage_comparison_known_total": true,
+  "native_monetary_comparison_known": false,
+  "quality_noninferiority": "not_established"
+}
