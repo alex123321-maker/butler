@@ -165,6 +165,21 @@ func loadConsolidationV3History(path, expected string) (*consolidationScreenHist
 // Collector failure is retained separately from successful opaque handback.
 // A status1 window can carry paid quotes/NULLs without becoming a quality pass.
 func consolidationV3ValidateClosure(raw, outcomesRaw []byte) error {
+	var outcomes []temporalCaseObservation
+	if json.Unmarshal(outcomesRaw, &outcomes) != nil || len(outcomes) != 12 {
+		return errors.New("complete original temporal outcomes required")
+	}
+	completed := 0
+	for _, o := range outcomes {
+		if o.Status == "completed" {
+			completed++
+		}
+	}
+	return nativeValidateClosedHandback(raw, completed, 12)
+}
+
+// Count-independent handback proof; caller validates its original denominator.
+func nativeValidateClosedHandback(raw []byte, completed, total int) error {
 	var c struct {
 		Status   *int `json:"native_status"`
 		Returned struct {
@@ -184,8 +199,7 @@ func consolidationV3ValidateClosure(raw, outcomesRaw []byte) error {
 			Fresh bool `json:"fresh_main_snapshot_saved"`
 		} `json:"main_snapshot_safe"`
 	}
-	var outcomes []temporalCaseObservation
-	if json.Unmarshal(raw, &c) != nil || c.Status == nil || (*c.Status != 0 && *c.Status != 1) || !c.Returned.CAS || !c.Returned.Checked || !c.Main.Resolved || c.Main.Unsafe == nil || *c.Main.Unsafe || c.Main.Expired == nil || *c.Main.Expired || !c.Snapshot.Fresh || json.Unmarshal(outcomesRaw, &outcomes) != nil || len(outcomes) != 12 {
+	if total < 1 || completed < 0 || completed > total || json.Unmarshal(raw, &c) != nil || c.Status == nil || (*c.Status != 0 && *c.Status != 1) || !c.Returned.CAS || !c.Returned.Checked || !c.Main.Resolved || c.Main.Unsafe == nil || *c.Main.Unsafe || c.Main.Expired == nil || *c.Main.Expired || !c.Snapshot.Fresh {
 		return errors.New("exact closed original handback proof required")
 	}
 	paid200 := false
@@ -194,13 +208,7 @@ func consolidationV3ValidateClosure(raw, outcomesRaw []byte) error {
 			paid200 = true
 		}
 	}
-	completed := 0
-	for _, o := range outcomes {
-		if o.Status == "completed" {
-			completed++
-		}
-	}
-	if !paid200 || (*c.Status == 0 && completed != 12) || (*c.Status == 1 && completed == 12) {
+	if !paid200 || (*c.Status == 0 && completed != total) || (*c.Status == 1 && completed == total) {
 		return errors.New("original collector result and exact main200 proof differ")
 	}
 	return nil

@@ -47,9 +47,24 @@ type temporalV6History struct {
 }
 
 func temporalV6Leaf(priorRaw, ledgerRaw, screenRaw []byte, previous *consolidationScreenHistory, day string, deadline time.Time) (budget.Units, temporalV5CurrentUsage, error) {
+	if previous == nil || previous.Successor == nil {
+		return budget.Units{}, temporalV5CurrentUsage{}, errors.New("closed complete latest consolidation leaf required")
+	}
+	return temporalValidateConsolidationLeaf(priorRaw, ledgerRaw, screenRaw, day, deadline, temporalConsolidationRecipe{Format: "butler.temporal.predecessor89.v2", CarryPrefix: "issue89-v2-current-day-carry:", Namespace: "native89v2", Hash: previous.Hash, Carry: previous.CurrentCarry, Max: consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", previous.CurrentCarry).Day, ExpectedPaid: 11})
+}
+
+type temporalConsolidationRecipe struct {
+	Format, CarryPrefix, Namespace, Hash string
+	Carry, Max                           budget.Units
+	// Nonnegative preserves a fixed historical cohort. -1 supports a new closed
+	// cohort with independently counted model admissions and native entries.
+	ExpectedPaid int
+}
+
+func temporalValidateConsolidationLeaf(priorRaw, ledgerRaw, screenRaw []byte, day string, deadline time.Time, recipe temporalConsolidationRecipe) (budget.Units, temporalV5CurrentUsage, error) {
 	var prior temporalV5Predecessor
 	var usage temporalV5CurrentUsage
-	if previous == nil || previous.Successor == nil || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != "butler.temporal.predecessor89.v2" || !prior.Closed || prior.Paid != 11 || len(prior.Calls) != 11 {
+	if len(recipe.Hash) != 64 || recipe.Carry.ModelTurns < 0 || json.Unmarshal(priorRaw, &prior) != nil || prior.Format != recipe.Format || !prior.Closed || prior.Paid < 0 || prior.Paid > 99 || len(prior.Calls) != prior.Paid || (recipe.ExpectedPaid >= 0 && prior.Paid != recipe.ExpectedPaid) {
 		return budget.Units{}, usage, errors.New("closed complete latest consolidation leaf required")
 	}
 	// Corroboration is against both original immutable witnesses, not a second
@@ -57,8 +72,8 @@ func temporalV6Leaf(priorRaw, ledgerRaw, screenRaw []byte, previous *consolidati
 	if err := temporalCorroborateOriginal89(priorRaw, ledgerRaw, screenRaw, day); err != nil {
 		return budget.Units{}, usage, err
 	}
-	max := consolidationScreenPolicy("antigravity", "gemini-3.8-flash-high", previous.CurrentCarry).Day
-	used, actualDeadline, err := consolidationValidateHistoryWindow(prior.consolidationHistoryWindow, day, map[string]string{}, "native89v2")
+	max := recipe.Max
+	used, actualDeadline, err := consolidationValidateHistoryWindow(prior.consolidationHistoryWindow, day, map[string]string{}, recipe.Namespace)
 	if err != nil || !actualDeadline.Equal(deadline) || !consolidationV2Within(used, max) {
 		return used, usage, errors.New("latest inclusive scope differs from original reservations")
 	}
@@ -70,9 +85,9 @@ func temporalV6Leaf(priorRaw, ledgerRaw, screenRaw []byte, previous *consolidati
 			return used, usage, errors.New("duplicate or invalid latest leaf quote")
 		}
 		operations[r.Operation] = r.ID
-		if r.Operation == "issue89-v2-current-day-carry:"+previous.Hash {
+		if r.Operation == recipe.CarryPrefix+recipe.Hash {
 			carryCount++
-			if r.Request.Charge != previous.CurrentCarry {
+			if r.Request.Charge != recipe.Carry {
 				return used, usage, errors.New("altered inclusive predecessor charge")
 			}
 		} else if r.Request.Charge.ModelTurns == 1 {
@@ -81,7 +96,7 @@ func temporalV6Leaf(priorRaw, ledgerRaw, screenRaw []byte, previous *consolidati
 			return used, usage, errors.New("unlabelled inclusive quote")
 		}
 	}
-	if carryCount != 1 || len(modelQuotes) != 11 || used.ModelTurns != previous.CurrentCarry.ModelTurns+11 {
+	if carryCount != 1 || len(modelQuotes) > 99 || (recipe.ExpectedPaid >= 0 && len(modelQuotes) != recipe.ExpectedPaid) || used.ModelTurns != recipe.Carry.ModelTurns+int64(len(modelQuotes)) {
 		return used, usage, errors.New("latest model population omitted or counted twice")
 	}
 	// Original raw ledger rows include run IDs. Use its exact product population
@@ -139,7 +154,7 @@ func temporalV6Leaf(priorRaw, ledgerRaw, screenRaw []byte, previous *consolidati
 		}
 	}
 	usage.ProductWithoutNativeEntry = usage.ProductAttempts - usage.NativeEntries
-	if usage.ProductWithoutNativeEntry != 0 {
+	if usage.ProductWithoutNativeEntry < 0 || (recipe.ExpectedPaid >= 0 && usage.ProductWithoutNativeEntry != 0) {
 		return used, usage, errors.New("latest native/product population differs")
 	}
 	return used, usage, nil

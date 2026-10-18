@@ -66,6 +66,7 @@ type temporalV5History struct {
 	Carry       budget.Units
 	Usage       temporalV5CurrentUsage
 	SuccessorV6 *temporalV6History `json:"successor_v6,omitempty"`
+	SuccessorV7 *temporalV7History `json:"successor_v7,omitempty"`
 }
 
 func temporalCanonical(raw []byte) ([]byte, error) {
@@ -281,6 +282,13 @@ func loadTemporalV5History(path, expectedHash string) (*temporalV5History, error
 		return nil, errors.New("temporal v5 history hash differs")
 	}
 	var envelope struct{ Format string }
+	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.temporal.native-history.v3" {
+		v7, err := loadTemporalV7History(path, expectedHash)
+		if err != nil {
+			return nil, err
+		}
+		return &temporalV5History{Hash: v7.Hash, Manifest: temporalV5HistoryManifest{Day: v7.Manifest.Day, Deadline: v7.Manifest.Deadline}, Historical: v7.Previous, Carry: v7.Carry, Usage: consolidationV2AddUsage(v7.Previous.Successor.Current89And88, v7.Usage89), SuccessorV7: v7}, nil
+	}
 	if json.Unmarshal(raw, &envelope) == nil && envelope.Format == "butler.temporal.native-history.v2" {
 		v6, err := loadTemporalV6History(path, expectedHash)
 		if err != nil {
@@ -352,6 +360,9 @@ func temporalApplyV5History(ctx context.Context, pool *pgxpool.Pool, proof strin
 	prefix := "issue88-v5-current-day-carry:"
 	if h != nil && h.SuccessorV6 != nil {
 		prefix = "issue88-v6-current-day-carry:"
+	}
+	if h != nil && h.SuccessorV7 != nil {
+		prefix = "issue88-v7-current-day-carry:"
 	}
 	return temporalApplyHistory(ctx, pool, proof, h, prefix)
 }
