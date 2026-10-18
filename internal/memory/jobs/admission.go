@@ -95,7 +95,7 @@ func (s *Store) Admit(ctx context.Context, j Job, o Operation) (context.Context,
 				return
 			case <-ticker.C:
 				checkCtx, stop := context.WithTimeout(callCtx, 200*time.Millisecond)
-				e := s.catalog.CheckObjects(checkCtx, nil, j.Purpose)
+				e := s.checkLocalSupervisor(checkCtx, j)
 				stop()
 				if e != nil {
 					cancel()

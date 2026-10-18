@@ -34,10 +34,10 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod -e GOPROXY=off -e GOSUMDB=off -e GOTOOLCHAIN=local
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@postgres:5432/memory_index_observer_test?sslmode=disable'
  golang:1.27.2-bookworm)
-pattern='^Test(SlowLocalIndexRetainsBothCurrentnessObservers|LocalIndexObserverCommitDelayCancelsWithoutRefund|SlowLocalIndexCurrentnessCancellationRejectsLateBackend)Integration$'
+pattern='^Test(SlowLocalIndexRetainsBothCurrentnessObservers|LocalIndexObserverRollbackAvoidsCommitFault|SlowLocalIndexCurrentnessCancellationRejectsLateBackend)Integration$'
 "${runner[@]}" go test -json -race -p 1 -count=1 -timeout 4m -run "$pattern" ./internal/memory/indexing > "$proof/observers.jsonl" 2> "$proof/runner.log"
 if grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/observers.jsonl";then exit 1;fi
-for name in TestSlowLocalIndexRetainsBothCurrentnessObserversIntegration TestLocalIndexObserverCommitDelayCancelsWithoutRefundIntegration TestSlowLocalIndexCurrentnessCancellationRejectsLateBackendIntegration;do
+for name in TestSlowLocalIndexRetainsBothCurrentnessObserversIntegration TestLocalIndexObserverRollbackAvoidsCommitFaultIntegration TestSlowLocalIndexCurrentnessCancellationRejectsLateBackendIntegration;do
  jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name)' "$proof/observers.jsonl" >/dev/null
 done
 "${runner[@]}" go vet ./internal/memory/indexing > "$proof/vet.log" 2>&1

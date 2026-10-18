@@ -26,6 +26,7 @@ type indexObserverTrace struct {
 	mu                     sync.Mutex
 	proofs, commits, rolls int
 	chunkReads             int
+	writes                 int
 }
 
 func (p *indexObserverTrace) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
@@ -48,6 +49,9 @@ func (p *indexObserverTrace) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d
 		if strings.Contains(query, "FROM MEMORY_CHUNKS WHERE ID=") {
 			p.chunkReads++
 		}
+		if !strings.HasPrefix(query, "SELECT ") && !strings.HasPrefix(query, "WITH ") {
+			p.writes++
+		}
 	}
 	delay := p.delayCommit && query == "COMMIT"
 	p.mu.Unlock()
@@ -66,10 +70,10 @@ func (p *indexObserverTrace) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d
 
 func (*indexObserverTrace) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQueryEndData) {}
 
-func (p *indexObserverTrace) counts() (int, int, int, int) {
+func (p *indexObserverTrace) counts() (int, int, int, int, int) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return p.proofs, p.commits, p.rolls, p.chunkReads
+	return p.proofs, p.commits, p.rolls, p.chunkReads, p.writes
 }
 
 type slowIndexModel struct {
@@ -78,7 +82,7 @@ type slowIndexModel struct {
 	started      atomic.Int32
 	cancelled    atomic.Int32
 	hold         time.Duration
-	whileActive  func()
+	whileActive  func(context.Context)
 	ignoreCancel bool
 }
 
@@ -86,7 +90,7 @@ func (m *slowIndexModel) Infer(ctx context.Context, q *pb.InferRequest) (*pb.Inf
 	m.started.Add(1)
 	m.trace.armed.Store(true)
 	if m.whileActive != nil {
-		m.whileActive()
+		m.whileActive(ctx)
 	}
 	timer := time.NewTimer(m.hold)
 	defer timer.Stop()
@@ -160,35 +164,46 @@ func TestSlowLocalIndexRetainsBothCurrentnessObserversIntegration(t *testing.T) 
 	if !worked || err != nil {
 		t.Fatal("unchanged slow local index failed", worked)
 	}
-	proofs, commits, rolls, chunks := trace.counts()
+	proofs, commits, rolls, chunks, writes := trace.counts()
 	after, reserved, vectors := indexObserverState(t, r)
-	if m.started.Load() != 2 || m.cancelled.Load() != 0 || proofs < 4 || chunks < 2 || before != after || reserved != 2 || vectors != 5 {
-		t.Fatal("slow local observer coverage incomplete", m.started.Load(), m.cancelled.Load(), proofs, chunks, before == after, reserved, vectors)
+	if m.started.Load() != 2 || m.cancelled.Load() != 0 || proofs < 4 || chunks < 2 || commits != 0 || rolls != proofs || writes != 0 || before != after || reserved != 2 || vectors != 5 {
+		t.Fatal("slow local observer coverage incomplete", m.started.Load(), m.cancelled.Load(), proofs, chunks, commits, rolls, writes, before == after, reserved, vectors)
 	}
 	t.Logf("controlled slow backend: calls=%d bounded_proofs=%d commits=%d rollbacks=%d chunk_checks=%d; sources unchanged; reservations=%d vectors=%d", m.started.Load(), proofs, commits, rolls, chunks, reserved, vectors)
 }
 
-func TestLocalIndexObserverCommitDelayCancelsWithoutRefundIntegration(t *testing.T) {
+func TestLocalIndexObserverRollbackAvoidsCommitFaultIntegration(t *testing.T) {
 	trace := &indexObserverTrace{delayCommit: true}
 	r, owner, src, m := tracedIndexFixture(t, trace)
-	m.hold = 3 * time.Second
 	before, _, _ := indexObserverState(t, r)
 	if _, err := r.Enqueue(owner, request(src)); err != nil {
 		t.Fatal("controlled index enqueue failed")
 	}
 	ctx, stop := context.WithTimeout(context.Background(), 10*time.Second)
 	defer stop()
+	var counterfactual atomic.Int32
+	m.whileActive = func(callCtx context.Context) {
+		// The unchanged general full-proof API retains its durable commit.
+		// Exercise it directly to prove that the negative control is armed,
+		// without substituting it for either production periodic observer.
+		bounded, finish := context.WithTimeout(callCtx, 200*time.Millisecond)
+		err := r.Catalog.CheckObjects(bounded, nil, "memory_read")
+		finish()
+		if errors.Is(err, context.DeadlineExceeded) {
+			counterfactual.Add(1)
+		}
+	}
 	worked, err := r.ProcessOne(ctx)
-	proofs, commits, rolls, chunks := trace.counts()
+	proofs, commits, rolls, chunks, writes := trace.counts()
 	after, reserved, vectors := indexObserverState(t, r)
-	if !worked || !errors.Is(err, context.Canceled) || commits == 0 || m.started.Load() != 1 || m.cancelled.Load() != 1 || before != after || reserved != 1 || vectors != 0 {
-		t.Fatal("controlled commit fault did not retain denied attempt", worked, errors.Is(err, context.Canceled), commits, m.started.Load(), m.cancelled.Load(), before == after, reserved, vectors)
+	if !worked || err != nil || counterfactual.Load() != 2 || commits != 2 || rolls < 4 || writes != 0 || m.started.Load() != 2 || m.cancelled.Load() != 0 || before != after || reserved != 2 || vectors != 5 {
+		t.Fatal("read-only observers waited for unnecessary commit or lost full proof", worked, err == nil, counterfactual.Load(), commits, rolls, writes, m.started.Load(), m.cancelled.Load(), before == after, reserved, vectors)
 	}
 	var status, code string
-	if err = r.Catalog.Pool().QueryRow(context.Background(), `SELECT status,error_code FROM memory_aux_jobs WHERE job_id='index-job'`).Scan(&status, &code); err != nil || status != "failed" || code != "index_rejected" {
-		t.Fatal("controlled observer failure changed fixed job receipt", status, code)
+	if err = r.Catalog.Pool().QueryRow(context.Background(), `SELECT status,error_code FROM memory_aux_jobs WHERE job_id='index-job'`).Scan(&status, &code); err != nil || status != "done" || code != "" {
+		t.Fatal("controlled rollback observation lost successful job receipt", status, code)
 	}
-	t.Logf("injected observer COMMIT300ms against unchanged200ms proof: bounded_proofs=%d commits=%d rollbacks=%d chunk_checks=%d; one attempt remains charged, no vectors; historical e04 cause remains unproven", proofs, commits, rolls, chunks)
+	t.Logf("COMMIT300ms negative controls=%d; unchanged200ms production proofs=%d commits=%d rollbacks=%d chunk_checks=%d; sources unchanged; reservations=%d vectors=%d; historical e04 cause remains unproven", counterfactual.Load(), proofs, commits, rolls, chunks, reserved, vectors)
 }
 
 func TestSlowLocalIndexCurrentnessCancellationRejectsLateBackendIntegration(t *testing.T) {
@@ -200,7 +215,7 @@ func TestSlowLocalIndexCurrentnessCancellationRejectsLateBackendIntegration(t *t
 			if _, err := r.Enqueue(owner, request(src)); err != nil {
 				t.Fatal("controlled index enqueue failed")
 			}
-			m.whileActive = func() {
+			m.whileActive = func(context.Context) {
 				var err error
 				switch change {
 				case "source_revision":

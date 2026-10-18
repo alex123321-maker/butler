@@ -119,7 +119,7 @@ func (a *JobAdmission) Admit(ctx context.Context, o Operation) (context.Context,
 				return
 			case <-ticker.C:
 				checkCtx, stop := context.WithTimeout(callCtx, 200*time.Millisecond)
-				err := a.guard.checkStamps(checkCtx, o.Sources)
+				err := a.observeStamps(checkCtx, o.Sources)
 				stop()
 				if err != nil {
 					cancel()
@@ -129,6 +129,24 @@ func (a *JobAdmission) Admit(ctx context.Context, o Operation) (context.Context,
 		}
 	}()
 	return callCtx, func() { cancel(); <-done; release() }, nil
+}
+
+// The periodic index observation is bound to this private durable job claim;
+// unlike a live run, it cannot write memory_run_sources. Full catalog access,
+// chunk bodies/revisions and final claim proof still run in the same transaction.
+// Only the observation's unnecessary durable COMMIT is removed. Admission,
+// CheckResult, source reads and publication retain their existing transactions.
+func (a *JobAdmission) observeStamps(ctx context.Context, stamps []SourceStamp) error {
+	ctx = a.Context(ctx)
+	tx, err := a.guard.store.Pool().Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	if err = a.guard.checkStampsTx(ctx, tx, stamps); err != nil {
+		return err
+	}
+	return tx.Rollback(ctx)
 }
 
 func (a *JobAdmission) CheckResult(ctx context.Context, o Operation) error {

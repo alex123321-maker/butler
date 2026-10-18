@@ -325,6 +325,17 @@ metadata checks do not replace #22 contradiction, acceptance or backup tombstone
 semantics. Fixed Russian/code fixture quality is measured separately from
 production acceptance; reranking is optional and default-off.
 
+The two local-index in-flight source/chunk observations keep their complete
+catalog graph, current job claim, source-body and exact chunk proof at the
+unchanged250ms interval and200ms proof deadline. Their private job checker cannot
+bind run pins or execute a caller-supplied checker; these SELECT/row-lock
+transactions publish no business state and finish with bounded rollback. Full
+allowance admission, ordinary source reads, returned-result acceptance and
+publication retain their existing commit boundaries. A failed proof or rollback
+still cancels; late local results remain unusable and every attempted quote stays
+charged. A controlled commit-delay reproduction does not establish the cause of
+any historical generic `index_rejected` receipt.
+
 The optional `HybridReader` adds current exact identifier/path/version matching
 and Russian/simple PostgreSQL full-text search (derived GIN migration042), then
 reciprocal rank fusion with separate vector candidates. Only positions are fused;

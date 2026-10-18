@@ -87,6 +87,14 @@ sorted complete source manifest, current job claim, budget. A 250ms supervisor
 cancels in-flight local requests after revocation; every publication also checks
 fresh PG proof, so late callbacks cannot regain authority. Claim deadlines bound
 crash recovery. Attempt and allowance limits remain immutable across retries.
+The private local-call supervisor keeps its full source/claim proof and finishes
+that SELECT/row-lock observation with bounded rollback. It cannot bind run pins or
+call an independently supplied access checker. No durable business state is
+created by the observation, so a synchronous COMMIT is unnecessary within its
+unchanged200ms deadline. Allowance admission, ordinary source reads, result checks
+and publication retain their existing commit boundaries. Semantic indexing has a
+second exact chunk observer with the same read-only transaction boundary; neither
+observer is disabled or allowed to miss a current source/claim change.
 Private caller snapshots are compared against the complete canonical manifest,
 allowance, original references, deadline and exact live claim deadline before
 access or budget initialization. Context copies its source slice and claim time.

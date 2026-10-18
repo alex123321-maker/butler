@@ -80,6 +80,13 @@ index attempts. Both use current PostgreSQL authority and check source snapshots
 before IPC, after allowance waits, during in-flight calls and before accepting
 returned vectors/scores. A completed run lease is never resurrected for a job;
 completed-task jobs still require a separate finite owner policy and are denied.
+The independent local-job source and chunk supervisors still repeat their full
+catalog/claim/chunk proof every250ms with a200ms check deadline. Their private job
+contexts cannot create live-run pins; these read-only observations release locks
+with bounded rollback rather than an unnecessary durable COMMIT. Source reads,
+allowance admission, result acceptance and publication retain their existing
+transactions and commits. A rollback error still cancels the local call, and a
+late backend response cannot regain permission or refund its reservation.
 No bootstrap enables this module automatically. The production job worker/bundle
 composition and full acceptance/contradiction/tombstone/restore semantics and
 structured ingestion remain #22/#23 responsibilities. This module currently
