@@ -16,6 +16,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/jobs"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/butler/butler/internal/transport"
 )
@@ -30,6 +31,9 @@ type coherentExperienceOriginal struct {
 }
 
 func (p *coherentExperienceOriginal) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
+	if _, owner := owneridentity.FromContext(ctx); owner {
+		return nil, experience.ErrEvidence
+	}
 	if transport.CheckInferenceAuthority(ctx) != nil || transport.CheckInferenceDispatch(ctx) != nil {
 		return nil, experience.ErrEvidence
 	}
@@ -109,7 +113,7 @@ func runMemoryCoherentVerifiedExperience(t *testing.T, arm string, after ...func
 		screenOwnerAPI(t, server.URL, token, http.MethodPost, path, in, result)
 	}
 	post("/api/v4/memory/model-experience-policies", experience.PolicyRequest{RunID: out.Result.RunID, Policy: jobs.ModelPolicyRequest{ID: "coherent-verified-note", Privacy: "cloud_allowed", IntervalSeconds: 60, MaxJobs: 1, Job: jobs.Request{Deadline: time.Now().Add(10 * time.Minute), Allowance: budget.Units{ModelTurns: 1, Tokens: 1200000, ActiveMillis: 300000, ProviderInputBytes: 8388608}}}}, nil)
-	if err = js.PollModelPolicies(owner, func(handler string) bool { return handler == experience.Version }); err != nil {
+	if err = js.PollModelPolicies(ctx, func(handler string) bool { return handler == experience.Version }); err != nil {
 		t.Fatal(err)
 	}
 	if worked, err := worker.ProcessOne(ctx); err != nil || !worked || note.calls != 1 {

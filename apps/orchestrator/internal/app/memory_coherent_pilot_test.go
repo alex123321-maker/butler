@@ -89,6 +89,9 @@ func (p *coherentPilotProvider) ContinueRun(ctx context.Context, r transport.Con
 	return nil, errors.New("controlled pilot cannot replay a provider session")
 }
 func (p *coherentPilotProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if _, owner := owneridentity.FromContext(ctx); owner {
+		return nil, errors.New("worker inherited owner control identity")
+	}
 	if err := transport.CheckInferenceAuthority(ctx); err != nil {
 		return nil, err
 	}
@@ -266,7 +269,9 @@ func (p *coherentPilot) execute(record task.Record, text, existing string, b *bu
 	if _, err = p.pool.Exec(p.ctx, `UPDATE accepted_inputs SET max_attempts=1 WHERE input_id=$1`, receipt.InputID); err != nil {
 		p.t.Fatal(err)
 	}
-	ctx, stop := context.WithCancel(p.ctx)
+	// Owner identity belongs to ingress/control, never the background worker.
+	// Retain deadlines/cancellation while masking the setup actor before Flow.
+	ctx, stop := context.WithCancel(owneridentity.WithActor(p.ctx, owneridentity.Actor{}))
 	done := make(chan struct{})
 	go func() { _ = worker.Run(ctx); close(done) }()
 	var execution consolidationOrdinaryExecution
@@ -356,10 +361,10 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	q := jobs.ModelPolicyRequest{ID: "coherent-candidate-policy", Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{screenSourceRef(src)}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1200000, ActiveMillis: 300000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}
 	request("/api/v4/memory/model-policies", q, nil)
 	request("/api/v4/memory/model-worker-control", map[string]string{"state": "enabled"}, nil)
-	if err := js.PollModelPolicies(owner, func(handler string) bool { return mw.Handlers[handler] != nil }); err != nil {
+	if err := js.PollModelPolicies(ctx, func(handler string) bool { return mw.Handlers[handler] != nil }); err != nil {
 		t.Fatal(err)
 	}
-	if did, err := mw.ProcessOne(owner); err != nil || !did {
+	if did, err := mw.ProcessOne(ctx); err != nil || !did {
 		t.Fatal("candidate job failed", did, transport.DiagnosticCode(err))
 	}
 	claims, err := cat.Claims(owner)
@@ -456,13 +461,13 @@ func runMemoryCoherentPilotOrdinaryTimeline(t *testing.T, delegate transport.Mod
 	request("/api/v4/memory/model-summary-policies", compaction.PolicyRequest{SessionKey: work.SessionKey, Policy: jobs.ModelPolicyRequest{ID: "coherent-summary-policy", Handler: compaction.HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 2, Privacy: "cloud_allowed", Job: jobs.Request{TaskID: work.TaskID, OriginalRunID: receipt.RunID, Allowance: budget.Units{ModelTurns: 2, Tokens: 2400000, ActiveMillis: 600000, ProviderInputBytes: 2 * 8388608}, Deadline: time.Now().Add(time.Hour)}}}, &summaryPolicy)
 	provider.mode = "summary"
 	handlers := map[string]jobs.ModelScheduleHandler{compaction.HandlerName: mw.Handlers[compaction.HandlerName].(jobs.ModelScheduleHandler)}
-	if err = js.PollModelPolicies(owner, func(handler string) bool { return mw.Handlers[handler] != nil }, handlers); err != nil {
+	if err = js.PollModelPolicies(ctx, func(handler string) bool { return mw.Handlers[handler] != nil }, handlers); err != nil {
 		t.Fatal(err)
 	}
 	for _, hook := range beforeSummary {
 		hook(p, mw)
 	}
-	if did, e := mw.ProcessOne(owner); e != nil || !did {
+	if did, e := mw.ProcessOne(ctx); e != nil || !did {
 		t.Fatal("real compaction job failed", did, transport.DiagnosticCode(e))
 	}
 	snapshot, err := summary.NewStore(pool).GetSummarySnapshot(owner, work.SessionKey)

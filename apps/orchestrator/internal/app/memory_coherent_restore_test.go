@@ -19,6 +19,7 @@ import (
 	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,6 +34,9 @@ type coherentViewRead struct {
 
 func (*coherentViewRead) InferenceLimits() (int64, int64) { return 1048576, 32768 }
 func (p *coherentViewRead) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
+	if _, owner := owneridentity.FromContext(ctx); owner {
+		return nil, catalog.ErrDenied
+	}
 	if transport.CheckInferenceAuthority(ctx) != nil || transport.CheckInferenceDispatch(ctx) != nil {
 		return nil, catalog.ErrDenied
 	}
@@ -137,6 +141,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 	}
 	runMemoryCoherentVerifiedExperience(t, experienceNativeArms[1], func(p *coherentPilot, r *experienceNativeRuntime, lessonID string, recipient *experienceRecipient) {
 		ctx := p.ctx
+		workerCtx := owneridentity.WithActor(ctx, owneridentity.Actor{})
 		proof := os.Getenv("BUTLER_MEMORY_COHERENT_PROOF")
 		defer func() {
 			// Retain actual private boundaries even if a later mandatory phase
@@ -171,11 +176,11 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			t.Fatal("actual earlier contexts could not prepare reviewable consolidation", err)
 		}
 		handler := consolidation.Handler{}
-		if err = js.PollModelPolicies(ctx, func(name string) bool { return name == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
+		if err = js.PollModelPolicies(workerCtx, func(name string) bool { return name == consolidation.Version }, map[string]jobs.ModelScheduleHandler{consolidation.Version: handler}); err != nil {
 			t.Fatal(err)
 		}
 		worker := &jobs.ModelWorker{Jobs: js, Provider: p.provider.consolidationReadControl, Model: "gemini-3.8-flash-high", Handlers: map[string]jobs.ModelHandler{consolidation.Version: handler}}
-		if worked, err := worker.ProcessOne(ctx); err != nil || !worked {
+		if worked, err := worker.ProcessOne(workerCtx); err != nil || !worked {
 			t.Fatal("coherent consolidation did not publish one unactivated version", worked, err)
 		}
 		var generation string
@@ -224,7 +229,7 @@ func TestMemoryCoherentEpisodeConsolidationRestoreIntegration(t *testing.T) {
 			_ = os.WriteFile(filepath.Join(proof, "consolidated-reader.json"), raw, 0600)
 		}()
 		ref, _ := json.Marshal(screenSourceRef(view))
-		execution := r.execute(t, ctx, readTask, readID, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. В этом поручении инструментами только читай DATA. DATA reference: "+string(ref), reader)
+		execution := r.execute(t, workerCtx, readTask, readID, "Открой текущую консолидацию, проверь исходные данные и сохрани UNKNOWN. В этом поручении инструментами только читай DATA. DATA reference: "+string(ref), reader)
 		if execution.Err != nil || execution.Result == nil {
 			t.Fatal("ordinary consumer did not read the actual current consolidated episode", execution.Err)
 		}

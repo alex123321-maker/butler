@@ -285,3 +285,14 @@ Reports: `/srv/storage/butler/agents/issue92-20261018/reports/coherent-lifecycle
 This receipt is still a controlled mechanical composition. Current later
 reconciliation/privacy changes require fresh combined checks; native quality,
 full cost, repeated mixed-workload latency and staged owner review remain gates.
+
+Further fixture audit found that the original pilot and the v8/v9 continuation
+passed their setup `owneridentity.Actor` into some workers. Catalog's explicit
+owner inspection branch could therefore bypass ordinary task/read grants and
+the finalizing access restriction. Those receipts retain the measured physical
+deletion/restore/ENOSPC, effect and budget facts, but are not ordinary-worker
+authorization/publication evidence. The corrected fixture masks owner identity
+for foreground and independent worker execution and policy polling, while
+retaining verified owner identity solely for ingress, decisions and controls.
+Controlled provider entry rejects inherited owner identity. The corrected full
+scenario requires a fresh complete window; earlier PASS artifacts are immutable.

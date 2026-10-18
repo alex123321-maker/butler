@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -22,7 +23,7 @@ func coherentActualUnknown(t *testing.T, p *coherentPilot, r *experienceNativeRu
 	record := r.createTask(t, p.ctx, id, "Prepare only the current bounded alpha artifact; an unconfirmed effect must stop without replay", "alpha", "prepare_and_verify_exact_resource")
 	provider := &coherentExperienceOriginal{experienceOriginalControlProvider: &experienceOriginalControlProvider{ready: "maybe"}, preference: p.provider.source.Body}
 	before := recipient.snapshot().Dispatches
-	out := r.execute(t, p.ctx, record, id, "Inspect the current alpha and prepare its requested unapplied artifact. Stop on any unknown effect; do not retry or claim success.", provider)
+	out := r.execute(t, owneridentity.WithActor(p.ctx, owneridentity.Actor{}), record, id, "Inspect the current alpha and prepare its requested unapplied artifact. Stop on any unknown effect; do not retry or claim success.", provider)
 	if out.Err != nil || out.Result == nil || out.Result.ReceiptStatus != "blocked" || out.Result.ErrorCode != "effect_unknown" || provider.phase != 2 || len(provider.requests) != 1 {
 		t.Fatal("coherent actual dispatched rejection did not stop at UNKNOWN", out.Err)
 	}
