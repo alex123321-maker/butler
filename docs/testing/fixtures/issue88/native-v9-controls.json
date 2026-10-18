@@ -1,0 +1,28 @@
+{
+  "source": "5826480732190794cff4f21b813cae246d00ac19",
+  "proof": "/srv/storage/butler/agents/issue88-native-v9-20261018/reports/recipe-controls-v2",
+  "evidence_sha256": "ca6cad2d2e18ff706e319320443b18909a10b3bee98609753cef2080f8885c78",
+  "actual_pg": {"pass":84,"parents":12,"children":72,"fail":0,"skip":0,"race":true,"vet":true},
+  "client": {"cpu":1,"memory_bytes":2147483648},
+  "postgres": {"cpu":1,"memory_bytes":1073741824,"separate_disposable":true},
+  "auth_recovery_unit_tests": 3,
+  "auth_recovery_actual_pg_container": {
+    "pass":7,"fail":0,"skip":0,
+    "sha256":"b3a0b50bda7d85bc744c47c05e77467f33e362970a9bf7939e4aab9b7064ab07",
+    "synthetic_opaque_only":true,
+    "checks":["running_denied_before_sql","latest_durable_refresh_after_exit","repeat_denied","removed_collector_durable_refresh","missing_row_after_import_denied","unused_original_retained","native_entry_without_row_denied"]
+  },
+  "offline": {"parents":11,"children":50,"fail":0,"skip":0,"compiled_exact_pins":true,"nonroot_test2json":true},
+  "copier": {"pass":7,"fail":0,"skip":0,"files":198,"bytes":23354103,"sha256":"c24d5071c852c75564656427df8cbeaa1dbf704ef7ef19f617c4e9b0e6c7276b"},
+  "original_staging_failure": {
+    "source":"529df68ea1005ca1c1a4e94951f1543561da1cbd",
+    "pass":76,"fail":1,"skip":0,
+    "cause":"positive test expected8 instead of9; fixed before auth",
+    "receipt_sha256":"5ac99e51eb65a6216e09c9f60c1f2e567d30f5afdb8d5754824dd02a0630e806",
+    "native_calls":0,"auth_imported":false
+  },
+  "retained_stores_modified":false,
+  "native_calls":0,
+  "auth_imported":false,
+  "qualification":false
+}
