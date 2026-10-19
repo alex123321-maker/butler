@@ -8,6 +8,10 @@ Current state:
 - `http.request` executes with a domain allowlist enforced from the tool contract
 - `http.request` can inject resolved credential refs into outbound auth headers without exposing secrets in model-visible args
 - `http.download` enforces configurable size limits and `http.parse_html` provides selector-based extraction with bounded input size
+- `http.parse_html` validates the supported simple selector grammar before any
+  request: tag, .class, #id, tag.class or tag#id. Unsupported combinators,
+  attributes, pseudo-selectors and groups return an explicit validation error;
+  a valid selector with no matches returns `matches: []`, `count: 0`
 - Docker Compose deployment must attach the runtime to an egress-capable network in addition to the internal tool network so outbound requests can resolve public DNS
 - HTTP health endpoint and unit tests are in place
 

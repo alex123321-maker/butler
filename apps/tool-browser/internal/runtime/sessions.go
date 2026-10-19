@@ -19,6 +19,9 @@ type browserSession struct {
 	version                       uint64
 	generation                    uint64
 	closed                        bool
+	controlEpoch                  int64
+	controller                    string
+	allowedDomains                []string
 }
 
 // These are transient execution capabilities, not durable Butler identities.

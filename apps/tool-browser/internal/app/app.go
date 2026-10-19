@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/tool-browser/internal/runtime"
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/config"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	"github.com/butler/butler/internal/health"
@@ -45,6 +47,14 @@ func New(context.Context) (*App, error) {
 	runtimev1.RegisterToolRuntimeServiceServer(grpcServer, browserServer)
 
 	httpMux := http.NewServeMux()
+	if cfg.BrowserControlTokenFile != "" {
+		token, err := actionauth.ReadServiceToken(cfg.BrowserControlTokenFile)
+		if err != nil {
+			_ = grpcListener.Close()
+			return nil, err
+		}
+		httpMux.Handle(browsercontrol.Path, browsercontrol.Handler(token, browserServer))
+	}
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
 	httpMux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("tool-browser")) })
 	httpServer := &http.Server{Addr: cfg.Shared.HTTPAddr, Handler: httpMux, ReadHeaderTimeout: 5 * time.Second}

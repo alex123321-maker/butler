@@ -34,9 +34,9 @@ IP is passed directly to dial while HTTPS verifies the original hostname.
 Redirects are returned without following them. Caller Host, proxy, connection,
 authorization and cookie headers cannot replace the mediated destination/auth.
 
-Chromium receives a private proxy bound to one approved public origin and an
+Chromium receives a private multi-origin proxy with operator domain caps and an
 expiry. HTTP requests and CONNECT destinations pass the same DNS check.
-Subresources remain within that origin, service workers and WebSockets are
+Subresources can use permitted public origins; service workers and WebSockets are
 disabled, and ordinary observations permit GET/HEAD only. Authorized interaction
 temporarily enables write requests. Existing Browser session guards still check
 owner, exact current URL, observation version, scope and exclusive ownership.
@@ -48,7 +48,7 @@ including established CONNECT tunnels and in-flight HTTP. Delayed autosave canno
 send the newly injected draft during later observations. Only a separately
 authorized click opens a bounded window after live guards, then refreezes; its
 DOM acknowledgement still cannot prove external submission. Read/open/navigate
-revision 2 enforce GET/HEAD, while legacy live fill/type remain opaque. See the
+revision 3 enforce GET/HEAD, while legacy live fill/type remain opaque. See the
 [browser session contract](browser-session-contract.md) for exact proof semantics.
 
 Resolved credential and cookie values, including common URL/base64 variants,
@@ -179,7 +179,7 @@ change; final full tests and focused budget/task race checks passed afterward.
 | --- | --- | --- |
 | Instruction provenance | Malicious document/tool/summary/child context stays data; PG pipeline reload retains source refs and private sensitivity | Model compliance is not execution authority |
 | Workspace and privilege | os.Root escape/oversize tests; changed embedded helper is rejected; Chromium E2E runs read-only, no capabilities/no-new-privileges/no Docker socket | Approved user-tab relay and fixed restart helper retain documented operator exceptions |
-| Network destinations | Mixed/changing DNS, literals, redirects, CONNECT, expiry and cumulative-byte fixtures; real Chromium blocks POST/private iframe/foreign fetch/WebSocket and permits same-origin GET | Remote operator webfetch must enforce its own DNS policy |
+| Network destinations | Mixed/changing DNS, literals, redirects, CONNECT, expiry and cumulative-byte fixtures; real Chromium blocks POST/private iframe/WebSocket, enforces operator domain caps and permits public cross-origin GET | Remote operator webfetch must enforce its own DNS policy |
 | Data release and volume | Exact GET approval works through real PG Broker journal and HTTP recipient; changed query has zero dispatch; revoked mandate stops before credential inspection; fixed runtime and serialized model caps plus037 ledger | Unbudgeted auxiliary model jobs remain disabled |
 | Secret handling | Synthetic reflected credential/cookie/password masks; provider errors discard bodies; secret provenance cannot enter extraction/summary/bundles | No claim of discovering every arbitrary secret through pattern matching |
 | Reviewed code updates | Runtime executes embedded reviewed helper, validates workspace file equality; package-lock/npm ci without lifecycle scripts; reviewed HTTP-JSON manifests use immutable review/profile pins and current task/mandate admission before credential release/claim | Extension packages are declarative DATA and never load code; declared dependency provenance is not a measurement of a deployed binary; local-model provenance/runtime gate is not tensor-integrity proof |

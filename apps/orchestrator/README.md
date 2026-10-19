@@ -1128,3 +1128,13 @@ quality and this whole native lifecycle remain separate gates. The
 controlled mechanics/capture/NULL-charge preservation, with native/auth0; it
 does not change production qualification or enable the deployment.
 
+
+Optional server browser control uses `BUTLER_BROWSER_CONTROL_URL` through the
+Broker private endpoint and existing owner-control proof. Web `/browser` receives
+bounded private JPEG frames and sends explicit mouse/keyboard commands through
+`POST /api/v4/server-browser`. No pixels or owner input enter transcripts/model
+context. The kernel waits between model turns, proposals and received events
+while migration086 records owner control. Run cancellation, budgets and lease
+renewal remain authoritative; an already started inference can finish. Explicit
+return plus a fresh browser snapshot is required before further agent effects.
+See `deploy/docker-compose.server-browser.yml` and the browser-session contract.

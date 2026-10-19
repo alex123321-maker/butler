@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+	"^(internal/browsercontrol/|migrations/086_|scripts/dev/server-browser-|apps/orchestrator/internal/(api/server_browser|app/server_browser|orchestrator/browser_owner)|web/(pages/browser.vue|tests/e2e/server-browser))" {
+	  [void]$specs.Add("docs/architecture/browser-session-contract.md")
+	  [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+	  [void]$specs.Add("docs/architecture/credential-management.md")
+	  [void]$tests.Add("ssh laba: server-browser-lab.sh <owned-server-browser-root> unit, browser, broker and web-real (private PG, actual Core owner API/Broker/Chromium; no shared Compose)")
+	  continue
+	}
     "^(internal/(scheduling|schedulecontrol)/|apps/orchestrator/internal/(scheduled/|app/schedules|input/schedule_control)|apps/tool-broker/internal/broker/schedules|internal/config/schedules|migrations/085_|scripts/dev/schedules-)" {
 	  [void]$specs.Add("docs/architecture/agent-schedules.md")
 	  [void]$specs.Add("docs/architecture/initiative-contract.md")

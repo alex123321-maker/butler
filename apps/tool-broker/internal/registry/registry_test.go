@@ -126,8 +126,8 @@ func TestLoadActualProjectRegistry(t *testing.T) {
 	if !ok {
 		t.Fatal("expected single_tab.bind contract in project registry")
 	}
-	if singleTabBind.GetStatus() != "active" {
-		t.Fatalf("expected single_tab.bind to be active, got %q", singleTabBind.GetStatus())
+	if singleTabBind.GetStatus() != "disabled" {
+		t.Fatalf("expected legacy single_tab.bind to be disabled, got %q", singleTabBind.GetStatus())
 	}
 	if singleTabBind.GetRequiresApproval() {
 		t.Fatal("expected single_tab.bind to avoid generic pre-tool approval")

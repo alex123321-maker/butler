@@ -82,7 +82,7 @@
       </div>
     </section>
 
-    <section class="policy-panel">
+    <details class="policy-panel"><summary>Legacy user-tab extension (optional)</summary>
       <div class="policy-panel__header">
         <div>
           <p class="provider-panel__eyebrow">Browser Extension Remote</p>
@@ -131,14 +131,14 @@
         <li>Click “Load unpacked” and select the extracted extension folder.</li>
         <li>Open the extension popup and set `Rollout mode = remote_preferred`.</li>
         <li>Fill `Remote Butler URL` and `Remote API token`, then click `Connect relay`.</li>
-        <li>Ask Butler agent to run `single_tab.bind`.</li>
+        <li>Enable the optional user-tab tool profile before asking the agent to bind a tab. The standard server browser is available from Browser in the sidebar.</li>
       </ol>
       <ul class="warning-list extension-steps">
         <li>Set `BUTLER_EXTENSION_API_TOKENS` and copy one token into extension popup field “Remote API token”.</li>
         <li>Set `BUTLER_SINGLE_TAB_TRANSPORT_MODE=remote_preferred` for remote-first rollout.</li>
         <li>Set extension popup `Rollout mode = remote_preferred` and `Remote Butler URL` to this server.</li>
       </ul>
-    </section>
+    </details>
 
     <div v-if="providerState.providers.length" class="provider-panel">
       <div class="provider-panel__header">

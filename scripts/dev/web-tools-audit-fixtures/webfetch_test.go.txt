@@ -1,0 +1,80 @@
+// Audit expectations, injected only by web-tools-audit.sh probes into its owned
+// snapshot. Failures are defect reproductions, not acceptance passes.
+package runtime
+
+import (
+ "context"
+ "encoding/json"
+ "fmt"
+ "net/http"
+ "net/http/httptest"
+ "strings"
+ "testing"
+ "time"
+ runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
+ toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+ "github.com/butler/butler/internal/security/egress"
+ "github.com/butler/butler/internal/security/egress/egresstest"
+)
+
+func auditExecute(t *testing.T, name string, args any, handler http.HandlerFunc) (*toolbrokerv1.ToolResult, map[string]any) {
+ t.Helper()
+ fixture := httptest.NewServer(handler)
+ defer fixture.Close()
+ server := NewServer(NewProviderChainWithPolicy(egress.Policy{Resolver:egresstest.Resolver{}}, NewPlainHTTPProvider(egresstest.Client(fixture),true)),nil)
+ raw,_ := json.Marshal(args)
+ response,err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{ToolCall:&toolbrokerv1.ToolCall{ToolCallId:"audit",RunId:"audit",ToolName:name,ArgsJson:string(raw)}})
+ if err != nil {t.Fatal(err)}
+ result := response.GetResult()
+ payload := map[string]any{}
+ if result.GetResultJson() != "" {if err:=json.Unmarshal([]byte(result.GetResultJson()),&payload);err!=nil{t.Fatal(err)}}
+ return result,payload
+}
+
+func TestAuditReadableTextExcludesScriptAndStyle(t *testing.T) {
+ _,p:=auditExecute(t,"web.fetch",map[string]any{"url":egresstest.Origin},func(w http.ResponseWriter,r *http.Request){w.Header().Set("Content-Type","text/html");fmt.Fprint(w,`<html><head><style>STYLE_NOISE</style></head><body><main>Useful article</main><script>SCRIPT_NOISE</script></body></html>`)})
+ text,_:=p["content_text"].(string)
+ if strings.Contains(text,"NOISE") || !strings.Contains(text,"Useful article"){t.Errorf("readable text includes executable/style noise: %q",text)}
+}
+
+func TestAuditWebExtractPreservesHTTPFailure(t *testing.T) {
+ r,p:=auditExecute(t,"web.extract",map[string]any{"url":egresstest.Origin},func(w http.ResponseWriter,r *http.Request){w.WriteHeader(404);fmt.Fprint(w,"Missing document")})
+ if r.GetStatus()=="completed" && p["status_code"]==nil && p["error"]==nil {t.Errorf("HTTP 404 became ordinary text without failure/status: %s",r.GetResultJson())}
+}
+
+func TestAuditLargePageReportsTruncation(t *testing.T) {
+ r,p:=auditExecute(t,"web.fetch",map[string]any{"url":egresstest.Origin},func(w http.ResponseWriter,r *http.Request){w.Header().Set("Content-Type","text/plain");fmt.Fprint(w,strings.Repeat("x",2*1024*1024+128))})
+ meta,_:=p["metadata"].(map[string]any)
+ text,_:=p["content_text"].(string)
+ if r.GetStatus()=="completed" && p["truncated"]!=true && meta["truncated"]!=true {t.Errorf("oversized response silently shortened to %d bytes without truncated marker",len(text))}
+}
+
+func TestAuditBinaryResponseIsNotReadableText(t *testing.T) {
+ r,p:=auditExecute(t,"web.fetch",map[string]any{"url":egresstest.Origin},func(w http.ResponseWriter,r *http.Request){w.Header().Set("Content-Type","application/pdf");fmt.Fprint(w,"%PDF-1.7\n\x00\xff\x01binary")})
+ if r.GetStatus()=="completed" && p["content_text"]!="" && p["error"]==nil {t.Errorf("PDF bytes returned as readable text: MIME=%v text=%q",p["mime_type"],p["content_text"])}
+}
+
+func TestAuditBatchKeepsSuccessfulAndFailedItems(t *testing.T) {
+ r,p:=auditExecute(t,"web.fetch_batch",map[string]any{"urls":[]string{egresstest.Origin,"http://127.0.0.1/private"}},func(w http.ResponseWriter,r *http.Request){fmt.Fprint(w,"public fixture")})
+ items,ok:=p["items"].([]any)
+ if r.GetStatus()!="completed"||!ok||len(items)!=2 {t.Fatalf("unexpected mixed batch: %s",r.GetResultJson())}
+ if items[0].(map[string]any)["content_text"]!="public fixture"||items[1].(map[string]any)["error"]==nil {t.Fatalf("mixed outcomes lost: %v",items)}
+ t.Log("runtime-level mixed batch retains per-item failure; this is not Broker budget acceptance")
+}
+
+func TestAuditLivePublicPageReads(t *testing.T) {
+ server:=NewServer(NewProviderChain(NewPlainHTTPProvider(&http.Client{Timeout:20*time.Second},true)),nil)
+ for _,target:=range []struct{url,expected string}{{"https://example.com/","Example Domain"},{"https://go.dev/doc/","Documentation"}} {
+  t.Run(target.url,func(t *testing.T){
+   ctx,cancel:=context.WithTimeout(context.Background(),25*time.Second);defer cancel()
+   raw,_:=json.Marshal(map[string]any{"url":target.url})
+   response,err:=server.Execute(ctx,&runtimev1.ExecuteRequest{ToolCall:&toolbrokerv1.ToolCall{ToolCallId:"audit-live",RunId:"audit",ToolName:"web.fetch",ArgsJson:string(raw)}})
+   if err!=nil{t.Fatal(err)}
+   var p map[string]any
+   if err:=json.Unmarshal([]byte(response.GetResult().GetResultJson()),&p);err!=nil{t.Fatalf("runtime status=%s; no readable response",response.GetResult().GetStatus())}
+   text,_:=p["content_text"].(string)
+   t.Logf("url=%s status=%v provider=%v bytes=%d",target.url,p["status_code"],p["provider"],len(text))
+   if p["status_code"]!=float64(200)||!strings.Contains(text,target.expected){t.Errorf("expected public document not retrieved")}
+  })
+ }
+}

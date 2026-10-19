@@ -11,6 +11,16 @@ Current state:
   - plain HTTP fallback
 - keeps provider selection inside the runtime so Tool Broker can route one stable tool family
 - does not expose credential refs in public tool contracts
+- accepts UTF-8 text, JSON and XML MIME types (sniffs a missing MIME); PDF,
+  binary/invalid UTF-8 and NUL-containing input fail with a bounded validation
+  diagnostic instead of becoming readable text
+- excludes script/style subtrees from HTML text extraction
+- direct/Jina text bodies have a 2 MiB limit and explicit `metadata.truncated`;
+  a split UTF-8 rune is removed at the limit. The fixed self-hosted JSON envelope
+  exceeding that limit is refused. Serialized output above 3 MiB is refused
+- `web.extract` revision 2 URL mode requires HTTP 2xx, preserves status/provider/
+  final URL/MIME/truncation metadata, and distinguishes a successful empty page
+  from missing input. HTTP failure diagnostics contain status, never the body
 
 Local run:
 - `go run ./apps/tool-webfetch`

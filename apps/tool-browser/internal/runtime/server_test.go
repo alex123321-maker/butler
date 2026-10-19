@@ -41,7 +41,7 @@ func (s *stubRunner) Run(_ context.Context, req Request) (Result, error) {
 	return result, nil
 }
 func browserCall(tool, owner string, args map[string]any) *runtimev1.ExecuteRequest {
-	contract := &toolbrokerv1.ToolContract{ToolName: tool, AllowedDomains: []string{"example.com"}}
+	contract := &toolbrokerv1.ToolContract{ToolName: tool, ContractRevision: "3", AllowedDomains: []string{"example.com"}}
 	if tool == "browser.prepare_fill" || tool == "browser.prepare_type" {
 		contract.ContractRevision = "2"
 		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
@@ -140,10 +140,10 @@ func TestSessionGuardsBeforeEffect(t *testing.T) {
 		{"domain contract", "scope_denied", func(req *runtimev1.ExecuteRequest, _ *Server, _ Result) {
 			req.Contract.AllowedDomains = []string{"other.com"}
 		}},
-		{"navigate origin", "scope_denied", func(req *runtimev1.ExecuteRequest, _ *Server, obs Result) {
+		{"navigate domain cap", "scope_denied", func(req *runtimev1.ExecuteRequest, _ *Server, obs Result) {
 			req.ToolCall.ToolName = "browser.navigate"
 			req.Contract.ToolName = "browser.navigate"
-			req.Contract.AllowedDomains = nil
+			req.Contract.AllowedDomains = []string{"example.com"}
 			args := actionArgs(obs)
 			args["url"] = "https://other.com"
 			req.ToolCall.ArgsJson = mustJSON(args)

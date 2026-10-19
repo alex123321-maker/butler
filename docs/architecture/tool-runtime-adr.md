@@ -23,6 +23,36 @@ retain their existing authority boundaries.
 Tool metadata reads use GetToolContract, without validating synthetic arguments.
 Missing metadata is an error and cannot become execution permission.
 
+## Web result correctness
+
+Implemented reader fixes retain the current runtime/Broker/credential boundaries.
+HTML text extraction skips script/style subtrees. Network readers accept UTF-8
+text and JSON/XML media types; missing MIME is sniffed. Binary media, invalid UTF-8
+and NUL data return a bounded validation failure without publishing their bytes.
+Direct HTTP/Jina responses read at most 2 MiB plus a completeness byte, publish
+at most 2 MiB on a valid rune boundary and expose `metadata.truncated`. Oversized
+self-hosted JSON envelopes fail instead of parsing an incomplete object.
+Serialized results exceeding 3 MiB fail explicitly before private gRPC delivery.
+
+`web.extract` revision 2 URL mode requires HTTP 2xx. HTTP errors and redirects
+produce validation failures with `reason:http_status` and numeric `status_code`,
+without response bodies. Successful output also retains `status_code`, `provider`,
+`final_url`, `mime_type` and `metadata`; an empty HTTP2xx document is a valid empty
+observation. Inline HTML/text remains supported. The expanded output schema and
+revision participate in normal action/approval hashes; no old grant is rewritten.
+
+`http.parse_html` rejects selectors outside tag/.class/#id/tag.class/tag#id before
+network execution. Valid no-match responses contain `matches:[]`, never null.
+
+After durable outcome recording, Broker preserves an HTTP/WebFetch failed read's
+validation error only when the response is correlated to the actual grant, has
+no failed-result body, and there was no transport/schema error. Messages are at
+most 512 bytes and details at most 1024 bytes. Its status remains failed, retryable is false,
+and the existing effect_unknown journal state/evidence is retained. This neither
+confirms a read/document nor grants a retry. Writes, lost replies, malformed
+success outputs and mismatched identities retain the generic unknown response.
+The effect journal, current authority and automatic-retry guards are unchanged.
+
 Installed declarative capability admission is specified in
 [reviewed extension lifecycle](reviewed-extension-lifecycle.md). Immutable
 version/review state and current task permission are checked before credential
@@ -919,7 +949,7 @@ effect_unknown и останавливает продолжение модели
 Наблюдения инструмента не становятся системными инструкциями, включая их
 сводки и сохранённую память. HTTP/Chromium проверяют публичный адрес и все DNS
 ответы до отправки, не следуют перенаправлениям и ограничивают исходящие байты.
-Chromium использует отдельный origin-scoped proxy, запрещает WebSocket и
+Chromium использует отдельный public-network proxy с operator domain caps, запрещает WebSocket и
 service workers; helper исполняется только из встроенных проверенных байтов.
 Doctor получает фиксированный read-only ответ ядра без учётных данных.
 Подробные гарантии и ограничения:
@@ -934,7 +964,7 @@ Runtime замораживает все HTTP/CONNECT соединения и pag
 сеть снова замораживается. `local_browser_preparation_v1` подтверждает только
 локальное состояние с точным session/URL/новой observation version; не отправку
 формы. Legacy live fill/type и click сохраняют неизвестный внешний эффект без
-recipient proof. Read/open/navigate revision 2 имеют enforced GET/HEAD contract;
+recipient proof. Read/open/navigate revision 3 имеют enforced GET/HEAD contract;
 старые navigation contracts не наследуют это право. Подробности и evidence:
 [browser-session-contract.md](browser-session-contract.md).
 
@@ -997,3 +1027,12 @@ response128KiB. Общие run/tool/context budgets ограничивают п�
 Version1 — bounded PostgreSQL exact/full-text catalog search без внешних запросов;
 адаптивный hybrid retrieval и нагрузочная квалификация остаются отдельными gates.
 Полный контракт и диагностика: [memory read control](../../internal/memory/readcontrol/README.md).
+
+## Server browser owner channel
+
+Server Chromium supports public multi-origin navigation (revision3) and a
+private owner-only Web viewport. Core authenticates the human, Broker validates
+current ownership and routes frames/input with durable control fences, and the
+runtime serializes the actual page. This protocol is excluded from model tool
+schemas and transcripts. Legacy `single_tab.*` contracts are disabled in the
+standard catalog. See [browser owner control](browser-session-contract.md#owner-viewing-and-manual-control).

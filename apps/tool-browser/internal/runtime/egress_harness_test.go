@@ -3,13 +3,16 @@ package runtime
 import (
 	"context"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/browsercontrol"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/security/egress"
@@ -41,6 +44,15 @@ func TestBrowserRuntimeEgressHarness(t *testing.T) {
 	}
 	server := NewServer(runner, nil)
 	defer server.Close()
+	if address := os.Getenv("BUTLER_BROWSER_OWNER_HARNESS_ADDR"); address != "" {
+		privateListener, err := net.Listen("tcp", address)
+		if err != nil {
+			t.Fatal(err)
+		}
+		privateServer := &http.Server{Handler: browsercontrol.Handler(strings.Repeat("browser-fixture-", 3), server), ReadHeaderTimeout: time.Second}
+		go func() { _ = privateServer.Serve(privateListener) }()
+		defer privateServer.Close()
+	}
 	listener, err := net.Listen("tcp", os.Getenv("BUTLER_GRPC_ADDR"))
 	if err != nil {
 		t.Fatal("fixture grpc listener unavailable")

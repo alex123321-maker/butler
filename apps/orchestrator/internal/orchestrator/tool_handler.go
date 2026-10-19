@@ -42,6 +42,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
+	if s.config.WaitBrowserOwner != nil {
+		if err := s.config.WaitBrowserOwner(ctx, current.GetRunId()); err != nil {
+			return nil, current, err
+		}
+	}
 	if err := s.guardAdaptiveProposal(ctx, current.GetRunId(), requested.ToolName, requested.ArgsJSON); err != nil {
 		return nil, current, err
 	}

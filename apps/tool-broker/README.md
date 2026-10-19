@@ -1,5 +1,13 @@
 # Tool Broker
 
+Correlated explicit validation failures for HTTP/WebFetch read operations
+preserve their bounded diagnostic (512 bytes) and details (1024 bytes), for
+example an HTTP status or unsupported MIME, when no failed-result body is present. They
+remain `failed`, with the existing `effect_unknown` journal state and
+`retryable:false`; this is no completion proof or replay permission. Lost RPCs,
+malformed success schemas, mismatched identities and write failures retain the
+generic unknown-effect response. See the [web result contract](../../docs/architecture/tool-runtime-adr.md#web-result-correctness).
+
 Optional `BUTLER_SCHEDULES_ENABLED=true` registers immutable `schedule.*`
 contracts, filtered by current owning readiness and executor scope. The fixed
 operator `BUTLER_SCHEDULES_CONTROL_URL` routes actual dispatched calls to
@@ -283,3 +291,14 @@ action. The owning check repeats exact queued input/fence/current authority and
 complete original privacy dependencies; converter publication also repeats it.
 An internal readiness input never creates owner permission, tool capability or
 semantic completion. See the [contract](../../docs/architecture/converter-continuations.md).
+
+Server browser viewing/manual control uses the private owner channel at
+`/internal/server-browser` with existing core service authentication. Configure
+`BUTLER_BROWSER_CONTROL_RUNTIME_URL` and its dedicated runtime token file via
+`deploy/docker-compose.server-browser.yml`; migration086 is required. Broker
+registers only schema-valid correlated successful opens, validates live ownership,
+keeps durable takeover/release fences and content-free ACK audit, and blocks agent
+calls before Claim while human control is active. An explicit fresh observation
+is required on return. This composition supports ordinary workspace tools and is
+separate from optional guarded shared user tabs. Standard `single_tab.*` contracts
+are disabled. See the browser-session contract for limits and recovery.

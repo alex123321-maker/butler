@@ -8,18 +8,18 @@ Current state:
 - navigate/click/fill/type/wait/auth actions require the returned session ID, latest observation version and expected current URL; snapshot/extract never navigate
 - `browser.prepare_fill/prepare_type` freeze all routes and private HTTP/CONNECT connections before input; snapshot/extract/wait keep the freeze, including delayed autosave
 - a separately authorized click opens a bounded window only after live guards, then freezes again; navigation/live fill/type cannot thaw a prepared draft
-- revision 2 read/open/navigate enforce GET/HEAD; local preparation proof confirms only local state, while a DOM submit without recipient evidence remains an unknown external effect and blocks later effects
-- each context has a fixed origin, 15-minute TTL and exclusive operation lock; 32 live contexts maximum, with no cross-run transfer or implicit crash recovery
+- revision 3 read/open/navigate enforce GET/HEAD; local preparation proof confirms only local state, while a DOM submit without recipient evidence remains an unknown external effect and blocks later effects
+- each context permits public HTTP(S) origins, with a 15-minute TTL and exclusive operation lock; 32 live contexts maximum, with no cross-run transfer or implicit crash recovery
 - one long-lived Playwright helper keeps contexts between calls through private stdin/stdout messages; resolved secrets are never process arguments or diagnostics
 - URL and selector validation are enforced before execution, and extracted text is truncated to safe response sizes
 - password inputs require broker-resolved refs; cookie/storage inputs accept refs only, retain separate approval and cannot enlarge the session origin
 - auth persists within its live context; cookies/storage/password values are never exported and reflected secrets are masked in observations
-- credential actions use the verified exact-version Broker approval handoff; credential resolution rechecks the actual current URL and fixed origin before injection
+- credential actions use the verified exact-version Broker approval handoff; credential resolution rechecks the actual current URL and current origin before injection
 - Playwright helper resolution is deployment-safe through `BUTLER_TOOL_BROWSER_SCRIPT_PATH` instead of `runtime.Caller` path discovery
 - Docker Compose deployment must attach the runtime to an egress-capable network in addition to the internal tool network so outbound site navigation can resolve public DNS
 - HTTP health endpoint and unit tests are in place
 - real Chromium e2e checks form continuation, auth persistence/masking, stale observations, expiry and process loss via `scripts/dev/lab-browser.sh`; use only the isolated lab workflow
-- all requests/resources are restricted to the fixed origin, so cross-origin SSO/CDNs can be unavailable; `single_tab.*` remains separately approved and unchanged
+- public redirects and CDN resources work within contract/operator caps; native SOP, public DNS/IP checks and credential scope stay enforced; popup-only SSO remains unsupported
 
 Local run:
 - `go run ./apps/tool-browser`
@@ -38,15 +38,23 @@ Related docs:
 - `docs/architecture/credential-management.md`
 - `docs/planning/butler-implementation-roadmap.md`
 
-The reviewed helper is embedded in Go and checked against its workspace file; arbitrary helper updates fail before Node startup. Private expiring proxies pin public DNS and origin, share a 4 MiB outbound counter, deny WebSockets/service workers and allow writes only during authorized interactions. The image is read-only with temporary mounts and receives no model/PG credentials. Real Chromium tests include malicious POST/private iframe/foreign fetch/WebSocket attempts with zero effects, alongside permitted forms and auth. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+The reviewed helper is embedded in Go and checked against its workspace file; arbitrary helper updates fail before Node startup. Private expiring proxies pin public DNS and retain operator domain caps, share a 4 MiB outbound counter, deny WebSockets/service workers and allow writes only during authorized interactions. The image is read-only with temporary mounts and receives no model/PG credentials. Real Chromium tests include malicious POST/private iframe/foreign fetch/WebSocket attempts with zero effects, alongside permitted forms and auth. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
 
 The optional `resourceexec.NewRuntime` wrapper adds private one-use Broker tickets,
 online current authority/source checks and a bounded local resource lane before
 this existing backend. It receives no PostgreSQL access or owner policy. Known
 local completion returns a hashed receipt; a missing receipt keeps the durable
-inflight resource quarantined and returns an unknown effect. Origin/page CAS and
+inflight resource quarantined and returns an unknown effect. Current-origin credential checks and page CAS and
 credentials remain enforced by this backend. The constructors are not enabled by
 production bootstrap/Compose in this change. The actual isolated Chromium proof
 demonstrates controlled open plus stale-page click refusal with zero recipient
 POSTs. It does not establish user's legacy `single_tab` arbitration. See
 [resource adapter and required composition](../../internal/resourceexec/README.md).
+
+Owner viewing/control is available through the optional private owner channel in
+`deploy/docker-compose.server-browser.yml` and Web `/browser`. Set
+`BUTLER_BROWSER_CONTROL_TOKEN_FILE` to its dedicated service token. Broker owns
+owner/run mapping and durable control epochs (migration086); the runtime owns
+one exclusive context mutex and private rendered frames. Pixels/manual input
+never become model results. See [the owner protocol](../../docs/architecture/browser-session-contract.md#owner-viewing-and-manual-control).
+`single_tab.*` is disabled in the standard tool registry.

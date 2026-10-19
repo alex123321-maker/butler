@@ -55,6 +55,7 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
+	BrowserControlURL                 string
 	ExecutionBudgetPolicyJSON         string
 	OwnerControlToken                 string
 	OwnerControlTokenFile             string
@@ -124,6 +125,8 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
+	BrowserControlRuntimeURL      string
+	BrowserControlTokenFile       string
 	NetworkAllowlists             map[string][]string
 	ExecutionBudgetPolicyJSON     string
 	Shared                        SharedConfig
@@ -167,9 +170,10 @@ type ToolBrokerConfig struct {
 }
 
 type ToolBrowserConfig struct {
-	Shared           SharedConfig
-	NodeBinary       string
-	HelperScriptPath string
+	BrowserControlTokenFile string
+	Shared                  SharedConfig
+	NodeBinary              string
+	HelperScriptPath        string
 }
 
 type ToolBrowserLocalConfig struct {
@@ -313,6 +317,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_BROWSER_CONTROL_URL", component: "orchestrator", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlURL = v }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN", component: "orchestrator", typeName: "string", required: false, isSecret: true, requiresRestart: true, assign: func(v string) { cfg.OwnerControlToken = v }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN_FILE", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlOwnerID = v }},
@@ -387,6 +392,8 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	cfg := ToolBrokerConfig{}
 	sharedSpecs := sharedSpecs("tool-broker", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_BROWSER_CONTROL_RUNTIME_URL", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlRuntimeURL = v }},
+		fieldSpec{key: "BUTLER_BROWSER_CONTROL_TOKEN_FILE", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-broker", typeName: "string", required: false, isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.Postgres.URL = v }},
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "tool-broker", typeName: "int", required: false, defaultValue: "10", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-broker", typeName: "int", required: false, defaultValue: "2", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
@@ -427,6 +434,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 func loadToolBrowser(get envGetter) (ToolBrowserConfig, Snapshot, error) {
 	cfg := ToolBrowserConfig{}
 	specs := append(sharedSpecs("tool-browser", &cfg.Shared),
+		fieldSpec{key: "BUTLER_BROWSER_CONTROL_TOKEN_FILE", component: "tool-browser", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_NODE_BINARY", component: "tool-browser", typeName: "string", required: false, defaultValue: "node", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.NodeBinary = v }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_SCRIPT_PATH", component: "tool-browser", typeName: "string", required: false, defaultValue: "apps/tool-browser/scripts/browser_runtime.mjs", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.HelperScriptPath = v }},
 	)

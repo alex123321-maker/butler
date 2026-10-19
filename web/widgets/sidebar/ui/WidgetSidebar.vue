@@ -55,6 +55,7 @@ const toggleSidebar = () => {
 const workspaceItems = [
   { path: '/', label: 'Home', icon: 'H' },
   { path: '/tasks', label: 'Tasks', icon: 'T' },
+  { path: '/browser', label: 'Browser', icon: 'B' },
   { path: '/goals', label: 'Goals and autonomy', icon: 'G' },
   { path: '/initiatives', label: 'Initiatives', icon: 'I' },
   { path: '/approvals', label: 'Approvals', icon: 'A' },
@@ -63,11 +64,11 @@ const workspaceItems = [
   { path: '/mobile', label: 'Android devices', icon: 'P' },
   { path: '/extensions', label: 'Extensions', icon: 'E' },
   { path: '/skills', label: 'Skills', icon: 'K' },
-  { path: '/converters', label: 'Converters', icon: 'C' },
   { path: '/settings', label: 'Settings', icon: 'S' },
 ]
 
 const advancedItems = [
+  { path: '/converters', label: 'Converters', icon: 'C' },
   { path: '/sessions', label: 'Sessions', icon: 'S' },
   { path: '/activity', label: 'Activity', icon: 'A' },
   { path: '/system', label: 'System', icon: 'Y' },
