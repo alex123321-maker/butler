@@ -12,6 +12,7 @@
       <label v-if="sessions.length">Session <select :value="selectedID" aria-label="Browser session" :disabled="pending || manual" @change="selectSession(($event.target as HTMLSelectElement).value)"><option v-for="session in sessions" :key="session.browser_session_id" :value="session.browser_session_id">{{ session.task_id || session.run_id }} · {{ session.mode }}</option></select></label>
       <template v-if="selected">
         <p>{{ manual ? 'You control this browser. Agent browser actions are paused.' : selected.mode === 'owner' ? 'Manual control is active. Take control to recover this session.' : 'Viewing agent actions.' }}</p>
+        <p v-if="frame?.url" class="current-url">Current page: {{ frame.url }}</p>
         <div class="actions">
           <AppButton :disabled="pending || manual || !frame" @click="take">Take control</AppButton>
           <AppButton :disabled="pending || !manual" @click="release">Return to agent</AppButton>
@@ -38,7 +39,7 @@ import AppAlert from '~/shared/ui/AppAlert.vue'
 import { ownerAuthorityRequest } from '~/shared/api/owner-goals'
 
 interface BrowserSession { browser_session_id: string; run_id: string; task_id: string; mode: string; epoch: number }
-interface Frame { jpeg: string; frame_id: string; width: number; height: number; mode: string; epoch: number }
+interface Frame { jpeg: string; frame_id: string; width: number; height: number; mode: string; epoch: number; url?: string }
 interface Reply { ok: boolean; sessions?: BrowserSession[]; frame?: Frame }
 const token = ref(''), sessions = ref<BrowserSession[]>([]), selectedID = ref(''), frame = ref<Frame | null>(null)
 const pending = ref(false), loaded = ref(false), error = ref(''), manual = ref(false), text = ref(''), address = ref('')
@@ -55,7 +56,10 @@ async function action(body: Record<string, unknown>) {
   try {
     const reply = await request(body)
     if (current !== generation || disposed) return
-    if (reply.frame) frame.value = reply.frame
+    if (reply.frame) {
+      frame.value = reply.frame
+      if (manual.value && (reply.frame.epoch !== epoch || reply.frame.mode !== 'owner')) { manual.value = false; controller = ''; keys.length = 0; text.value = ''; error.value = 'Control changed. Load browsers before taking control again.' }
+    }
     return reply
   } catch { if (current === generation) error.value = 'Browser unavailable or page changed. Refresh and check the page before another input.' }
   finally { pending.value = false; schedule(); if (keys.length && !pumping) void pumpKeys() }
@@ -120,4 +124,5 @@ input, select { padding: 8px; border: 1px solid var(--color-border-default); bac
 .viewport:focus { outline: 2px solid var(--color-accent-primary); }
 .viewport img { width: 100%; display: block; user-select: none; }
 .viewport p { padding: 24px; color: var(--color-text-primary); }
+.current-url { overflow-wrap: anywhere; }
 </style>

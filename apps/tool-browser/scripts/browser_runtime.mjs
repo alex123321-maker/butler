@@ -271,7 +271,7 @@ async function ownerControl(session, command) {
   if (before.revision === after.revision && before.documentID === after.documentID) session.frames.set(id, after)
   while (session.frames.size > 4) session.frames.delete(session.frames.keys().next().value)
   if (jpeg.length > 1024 * 1024) return errorResult('frame_limit', 'browser frame exceeded limit')
-  return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720 } }
+  return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720, url: page.url() } }
 }
 
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity })

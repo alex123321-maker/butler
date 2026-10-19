@@ -39,6 +39,7 @@ type Command struct {
 	URL        string  `json:"url,omitempty"`
 }
 type Frame struct {
+	URL    string `json:"url,omitempty"`
 	JPEG   string `json:"jpeg,omitempty"`
 	ID     string `json:"frame_id,omitempty"`
 	Width  int    `json:"width,omitempty"`

@@ -15,6 +15,7 @@ test('actual owner Web API -> Broker -> PostgreSQL -> server Chromium viewing an
   await page.getByRole('button', { name: 'Load browsers' }).click()
   const image = page.getByAltText('Live server browser page')
   await expect(image).toBeVisible()
+  await expect(page.getByText('Current page: http://login.test/form')).toBeVisible()
   await page.getByRole('button', { name: 'Take control' }).click()
   await expect(page.getByText('You control this browser. Agent browser actions are paused.')).toBeVisible()
   let box = await image.boundingBox()

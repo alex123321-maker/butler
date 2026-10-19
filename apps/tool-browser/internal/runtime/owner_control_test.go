@@ -78,8 +78,8 @@ func TestPublicOriginsAndCurrentCredentialScope(t *testing.T) {
 }
 
 func TestOwnerPixelsCannotEnterModelResult(t *testing.T) {
-	result := Result{OK: true, OwnerFrame: &browsercontrol.Frame{JPEG: "private pixels"}}
-	if strings.Contains(buildResultJSON("browser.snapshot", result), "private pixels") {
+	result := Result{OK: true, OwnerFrame: &browsercontrol.Frame{JPEG: "private pixels", URL: "https://private-owner-url/?code=private-token"}}
+	if payload := buildResultJSON("browser.snapshot", result); strings.Contains(payload, "private pixels") || strings.Contains(payload, "private-owner-url") {
 		t.Fatal("owner frame leaked to model")
 	}
 }
