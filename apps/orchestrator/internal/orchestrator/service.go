@@ -145,7 +145,8 @@ type GuardedTabRequests interface {
 }
 
 type Config struct {
-	Metrics *metrics.Registry
+	ToolDiscoveryEnabled bool
+	Metrics              *metrics.Registry
 	// Trusted composition resolves opaque source-bound inputs only after live
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
 	InputSourcePreparation   func(context.Context, ingress.InputEvent) (ingress.InputEvent, error)

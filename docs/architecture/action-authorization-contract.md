@@ -1,5 +1,9 @@
 # Exact action authorization
 
+Conversation action slots use the exact live accepted input, owner/session and run when no task is assigned. Task revisions remain required for task slots; cross-run linking is unavailable without a task.
+
+Fixed [tool discovery](tool-discovery.md) controls are credential-free local reads of the current scoped catalog. Only their exact owned contracts/resources qualify as standard operations, including in delegated work. Input/lease/task authority, explicit denials and execution permissions remain independently enforced.
+
 Optional `schedule.*` uses immutable owning contracts and the current private
 accepted-input claim, including in taskless conversations. Read/list is DATA;
 create/update/cancel is local preparation requiring exact approval or a current

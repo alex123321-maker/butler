@@ -1,5 +1,7 @@
 # Durable bounded delegation
 
+Fixed [tool discovery](tool-discovery.md) controls are credential-free local reads of the current scoped catalog. Only their exact owned contracts/resources qualify as standard operations, including in delegated work. Input/lease/task authority, explicit denials and execution permissions remain independently enforced.
+
 The bounded issue16 implementation and High model acceptance are complete.
 Optional operator composition registers fixed context-only research admission
 using existing input workers and authenticated owner decisions. The shared lab

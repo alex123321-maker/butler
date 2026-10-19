@@ -34,6 +34,7 @@ type actionContextReader struct {
 	guardedTabRuntimeReady   bool
 	memoryCandidateReady     bool
 	schedulesReady           bool
+	toolDiscoveryReady       bool
 	memoryReadReady          bool
 	memoryTemporalReady      bool
 	workspaceReady           bool
@@ -75,7 +76,7 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	if r.lessons != nil {
 		c.ExperienceEnvironmentHash = r.lessons.EnvironmentHash
 	}
-	if r.schedulesReady || r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
+	if r.toolDiscoveryReady || r.schedulesReady || r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
 		var inputID, claimID string
 		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
 			c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)

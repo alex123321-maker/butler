@@ -45,6 +45,7 @@ type Config struct {
 }
 
 type Provider struct {
+	toolSets     map[string][]transport.ToolDefinition
 	config       Config
 	httpClient   *http.Client
 	capabilities transport.CapabilitySnapshot
@@ -439,6 +440,7 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 	} else {
 		p.clearInstructions(req.Context.RunID)
 	}
+	p.rememberTools(req.Context.RunID, req.ToolDefinitions)
 	if req.Context.ProviderSessionRef != nil && req.Context.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.Context.ProviderSessionRef.ResponseRef
 	}
@@ -454,6 +456,9 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
 	instructions, input := splitInstructions(req.InputItems)
 	payload := map[string]any{
 		"model":  p.config.Model,
@@ -471,6 +476,9 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
 	}
+	if defs, ok := p.currentTools(req.RunID); ok {
+		payload["tools"] = encodeTools(defs)
+	}
 	if options := mergeOptions(req.TransportOptionsJSON, req.TransportOptions); len(options) > 0 {
 		for key, value := range options {
 			payload[key] = value
@@ -480,6 +488,9 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
 	input := []map[string]any{{
 		"type":    "function_call_output",
 		"call_id": req.ToolCallRef,
@@ -495,6 +506,9 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 	}
 	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
+	}
+	if defs, ok := p.currentTools(req.RunID); ok {
+		payload["tools"] = encodeTools(defs)
 	}
 	if options := mergeOptions(req.TransportOptionsJSON, req.TransportOptions); len(options) > 0 {
 		for key, value := range options {
@@ -781,5 +795,6 @@ func (p *Provider) clearInstructions(runID string) {
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	delete(p.toolSets, runID)
 	delete(p.instructions, runID)
 }

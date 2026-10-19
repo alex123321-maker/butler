@@ -1,5 +1,8 @@
 # Logical model transport
 
+Optional `ToolSetSnapshot` on the in-process Go ContinueRun/SubmitToolResult interface replaces the selected definitions; nil preserves them and an explicit empty set clears them. Revision validation and stable historical aliases preserve function/result correlation. Orchestrator owns selection. See [deferred schemas](../../docs/architecture/tool-discovery.md); the protobuf service is not extended by this logical Go change.
+
+
 Optional trusted `WithInferenceAuthority` context checks are evaluated by
 Antigravity before authentication and HTTP. They are private current-source/
 ownership callbacks, not model options or credentials; callers retain budget,

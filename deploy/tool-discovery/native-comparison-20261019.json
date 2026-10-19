@@ -1,0 +1,3658 @@
+{
+  "provider": "antigravity",
+  "model": "gemini-3.8-flash-high",
+  "output_ceiling": 32768,
+  "timeout_seconds": 300,
+  "monetary_total": null,
+  "monetary_reason": "subscription_allocation_invoice_and_host_cost_not_observed",
+  "price_basis": "subscription_no_overage",
+  "windows": {
+    "initial": {
+      "cases": [
+        {
+          "label": "v2-deferred-0",
+          "arm": "deferred",
+          "case": "database",
+          "run_id": "run-1792349055381977018-2a56c23c22132d89",
+          "input_status": "blocked",
+          "error_code": "execution_stopped",
+          "independent_case_pass": false,
+          "elapsed_seconds": 1.5025992140001563,
+          "model_attempts": 0,
+          "known_input_tokens": 0,
+          "known_visible_output_tokens": 0,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": null,
+          "schema_observations": []
+        },
+        {
+          "label": "v3-deferred-0",
+          "arm": "deferred",
+          "case": "database",
+          "run_id": "run-1792349087711440357-2bed1729017abcfa",
+          "input_status": "blocked",
+          "error_code": "execution_stopped",
+          "independent_case_pass": false,
+          "elapsed_seconds": 11.253139136000073,
+          "model_attempts": 1,
+          "known_input_tokens": 0,
+          "known_visible_output_tokens": 0,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349087711440357-2bed1729017abcfa",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:44:47.875689+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-deferred-0",
+          "arm": "deferred",
+          "case": "database",
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 22.20856683499983,
+          "model_attempts": 4,
+          "known_input_tokens": 9305,
+          "known_visible_output_tokens": 170,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-e0593b78c6b9f8971e1d78d79cf8fb29-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:46:10.828636+00:00",
+              "finished_at": "2026-10-18T18:46:10.878826+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-e0593b78c6b9f8971e1d78d79cf8fb29-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:46:16.513443+00:00",
+              "finished_at": "2026-10-18T18:46:16.552937+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-e0593b78c6b9f8971e1d78d79cf8fb29-3",
+              "tool_name": "doctor.check_database",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:46:20.117705+00:00",
+              "finished_at": "2026-10-18T18:46:20.286073+00:00",
+              "checks": [
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:46:20Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:46:20Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+            "content": "Статус доступности сервисов по результатам диагностики:\n\n- **PostgreSQL**: доступен (`healthy`, время отклика ~2.9 мс)\n- **Redis**: доступен (`healthy`, время отклика ~593 мкс)",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:46:04.171496+00:00"
+            },
+            {
+              "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T18:46:10.941697+00:00"
+            },
+            {
+              "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1216,
+                "tool_set_revision": "d44782f34ffaa764bc734fa456b92c8a8eb247797c5e4d00d70eaeb291294b59"
+              },
+              "created_at": "2026-10-18T18:46:16.686697+00:00"
+            },
+            {
+              "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1216,
+                "tool_set_revision": "d44782f34ffaa764bc734fa456b92c8a8eb247797c5e4d00d70eaeb291294b59"
+              },
+              "created_at": "2026-10-18T18:46:20.401247+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-deferred-1",
+          "arm": "deferred",
+          "case": "containers",
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 23.93503893000002,
+          "model_attempts": 4,
+          "known_input_tokens": 9298,
+          "known_visible_output_tokens": 204,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-d5c0cb279bfbca59f90b798cfcbba2cf-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:21.831831+00:00",
+              "finished_at": "2026-10-18T18:47:21.881993+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-d5c0cb279bfbca59f90b798cfcbba2cf-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:27.223963+00:00",
+              "finished_at": "2026-10-18T18:47:27.258789+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-d5c0cb279bfbca59f90b798cfcbba2cf-3",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:33.673469+00:00",
+              "finished_at": "2026-10-18T18:47:33.848281+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:47:33Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:47:33Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+            "content": "По результатам диагностики контейнер `orchestrator` (`container.orchestrator`) имеет статус **`healthy`** (сообщение: `ok`, время отклика: `1.070739ms`, время проверки: `2026-10-18T18:47:33Z`). Никаких изменений в конфигурацию или состояние не вносилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:47:17.699878+00:00"
+            },
+            {
+              "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T18:47:22.000875+00:00"
+            },
+            {
+              "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T18:47:27.384634+00:00"
+            },
+            {
+              "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T18:47:33.899107+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-deferred-2",
+          "arm": "deferred",
+          "case": "provider",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_status": "blocked",
+          "error_code": "execution_stopped",
+          "independent_case_pass": false,
+          "elapsed_seconds": 38.6254207259999,
+          "model_attempts": 6,
+          "known_input_tokens": 16409,
+          "known_visible_output_tokens": 244,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-621b66c24837a0ecf8210d63bbac32ac-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:44.524605+00:00",
+              "finished_at": "2026-10-18T18:47:44.560325+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-621b66c24837a0ecf8210d63bbac32ac-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:48.821244+00:00",
+              "finished_at": "2026-10-18T18:47:48.854774+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-621b66c24837a0ecf8210d63bbac32ac-3",
+              "tool_name": "doctor.check_provider",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:55.248024+00:00",
+              "finished_at": "2026-10-18T18:47:55.284632+00:00",
+              "checks": [
+                {
+                  "name": "provider",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:47:55Z"
+                }
+              ]
+            },
+            {
+              "tool_call_id": "agy-621b66c24837a0ecf8210d63bbac32ac-4",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:48:09.159663+00:00",
+              "finished_at": "2026-10-18T18:48:09.195415+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-621b66c24837a0ecf8210d63bbac32ac-5",
+              "tool_name": "doctor.check_system",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:48:13.171579+00:00",
+              "finished_at": "2026-10-18T18:48:13.290443+00:00",
+              "checks": [
+                {
+                  "name": "config",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:13Z"
+                },
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:13Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:13Z"
+                }
+              ]
+            }
+          ],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:47:41.102271+00:00"
+            },
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T18:47:44.593509+00:00"
+            },
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1218,
+                "tool_set_revision": "a6b8089da1f6efe37142dc9fd956b243cd234d9253a9bdcb4127aefcfa5bd4cb"
+              },
+              "created_at": "2026-10-18T18:47:48.979617+00:00"
+            },
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1218,
+                "tool_set_revision": "a6b8089da1f6efe37142dc9fd956b243cd234d9253a9bdcb4127aefcfa5bd4cb"
+              },
+              "created_at": "2026-10-18T18:47:55.402159+00:00"
+            },
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 4,
+                "schema_bytes": 1401,
+                "tool_set_revision": "effbb3c2ec79757b55f643365bac46bc47ed9ecb96015197305da2832913002a"
+              },
+              "created_at": "2026-10-18T18:48:09.357118+00:00"
+            },
+            {
+              "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 4,
+                "schema_bytes": 1401,
+                "tool_set_revision": "effbb3c2ec79757b55f643365bac46bc47ed9ecb96015197305da2832913002a"
+              },
+              "created_at": "2026-10-18T18:48:13.323527+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-deferred-3",
+          "arm": "deferred",
+          "case": "no-tool",
+          "run_id": "run-1792349341939980360-e31a8fd1ccb4b528",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 5.943764662999911,
+          "model_attempts": 1,
+          "known_input_tokens": 1538,
+          "known_visible_output_tokens": 3,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": {
+            "run_id": "run-1792349341939980360-e31a8fd1ccb4b528",
+            "content": "391",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349341939980360-e31a8fd1ccb4b528",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:49:02.135585+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-eager-0",
+          "arm": "eager",
+          "case": "database",
+          "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 13.090268530000003,
+          "model_attempts": 2,
+          "known_input_tokens": 14507,
+          "known_visible_output_tokens": 66,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-159cc35cf4d3b9559c894472579118ed-1",
+              "tool_name": "doctor.check_database",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:46:52.193162+00:00",
+              "finished_at": "2026-10-18T18:46:52.254264+00:00",
+              "checks": [
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:46:52Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:46:52Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+            "content": "Результаты проверки доступности:\n\n- **PostgreSQL**: `healthy` (доступен, ответ получен за 1.59 мс)\n- **Redis**: `healthy` (доступен, ответ получен за 573 мкс)",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:46:47.125471+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-eager-1",
+          "arm": "eager",
+          "case": "containers",
+          "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 14.31057190499996,
+          "model_attempts": 2,
+          "known_input_tokens": 14538,
+          "known_visible_output_tokens": 107,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-8a9f097539977569c4a6ddb64b9c8d2c-1",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:47:07.751731+00:00",
+              "finished_at": "2026-10-18T18:47:07.786327+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:47:07Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:47:07Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+            "content": "Фактически полученный статус контейнера `orchestrator` (`container.orchestrator`): **healthy** (сообщение: `ok`, время проверки: `2026-10-18T18:47:07Z`, длительность проверки: `663.564µs`). Общий статус проверки контейнеров: **healthy**. Никаких изменений не вносилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:47:00.619285+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-eager-2",
+          "arm": "eager",
+          "case": "provider",
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 27.307656207000036,
+          "model_attempts": 4,
+          "known_input_tokens": 31624,
+          "known_visible_output_tokens": 223,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-8c06394efee981b0e0b354fab9974e4b-1",
+              "tool_name": "doctor.check_provider",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:48:29.389767+00:00",
+              "finished_at": "2026-10-18T18:48:29.539382+00:00",
+              "checks": [
+                {
+                  "name": "provider",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:29Z"
+                }
+              ]
+            },
+            {
+              "tool_call_id": "agy-8c06394efee981b0e0b354fab9974e4b-2",
+              "tool_name": "doctor.check_system",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:48:33.103698+00:00",
+              "finished_at": "2026-10-18T18:48:33.140898+00:00",
+              "checks": [
+                {
+                  "name": "config",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:33Z"
+                },
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:33Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:33Z"
+                }
+              ]
+            },
+            {
+              "tool_call_id": "agy-8c06394efee981b0e0b354fab9974e4b-3",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:48:36.340931+00:00",
+              "finished_at": "2026-10-18T18:48:36.375081+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:36Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:48:36Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349303377947840-d8d557b7189b995e",
+            "content": "Проверка состояния провайдера с помощью инструмента диагностики (`doctor.check_provider`) завершилась успешно:\n\n* **Статус проверки:** `healthy` (сообщение: `ok`, время отклика: ~2.1 мс).\n* **Конфигурация/доступность:** учетные данные и сетевая доступность провайдера подтверждены.\n\n**По поводу реальной генерации:**\nЭта проверка **не доказывает** факт успешной реальной генерации. Инструмент диагностики выполняет лишь проверку доступности эндпоинта и валидности учетных данных (probe reachability & credentials). Он не запускает инференс модели, не тестирует формирование ответа и не гарантирует отсутствие ошибок генерации (например, исчерпание квот, недоступность конкретной модели или сбои при обработке контекста).",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349303377947840-d8d557b7189b995e",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:48:23.531215+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v4-eager-3",
+          "arm": "eager",
+          "case": "no-tool",
+          "run_id": "run-1792349331376311588-fc32c3074e789e37",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 7.065743221000048,
+          "model_attempts": 1,
+          "known_input_tokens": 7009,
+          "known_visible_output_tokens": 3,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": {
+            "run_id": "run-1792349331376311588-fc32c3074e789e37",
+            "content": "391",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349331376311588-fc32c3074e789e37",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:48:51.743511+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-deferred-0",
+          "arm": "deferred",
+          "case": "database",
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 27.6457042359998,
+          "model_attempts": 4,
+          "known_input_tokens": 8949,
+          "known_visible_output_tokens": 173,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-25c5dca3a647e459f345797b64435afe-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:50:50.708697+00:00",
+              "finished_at": "2026-10-18T18:50:50.757149+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-25c5dca3a647e459f345797b64435afe-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:50:55.285382+00:00",
+              "finished_at": "2026-10-18T18:50:55.322029+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-25c5dca3a647e459f345797b64435afe-3",
+              "tool_name": "doctor.check_database",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:50:59.147845+00:00",
+              "finished_at": "2026-10-18T18:50:59.197901+00:00",
+              "checks": [
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:50:59Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:50:59Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349445031336410-28e39e86f8103aea",
+            "content": "Результаты проверки доступности:\n\n- **PostgreSQL**: `healthy` (доступен, статус: ok)\n- **Redis**: `healthy` (доступен, статус: ok)\n\nНикаких изменений в конфигурацию и сервисы не вносилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349445031336410-28e39e86f8103aea",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:50:45.104368+00:00"
+            },
+            {
+              "run_id": "run-1792349445031336410-28e39e86f8103aea",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T18:50:50.81072+00:00"
+            },
+            {
+              "run_id": "run-1792349445031336410-28e39e86f8103aea",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1216,
+                "tool_set_revision": "d44782f34ffaa764bc734fa456b92c8a8eb247797c5e4d00d70eaeb291294b59"
+              },
+              "created_at": "2026-10-18T18:50:55.380612+00:00"
+            },
+            {
+              "run_id": "run-1792349445031336410-28e39e86f8103aea",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1216,
+                "tool_set_revision": "d44782f34ffaa764bc734fa456b92c8a8eb247797c5e4d00d70eaeb291294b59"
+              },
+              "created_at": "2026-10-18T18:50:59.253297+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-deferred-1",
+          "arm": "deferred",
+          "case": "containers",
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 24.045648907000214,
+          "model_attempts": 4,
+          "known_input_tokens": 9920,
+          "known_visible_output_tokens": 224,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-c93e14bf2b1951bd3592891fe74f726b-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:51:18.52629+00:00",
+              "finished_at": "2026-10-18T18:51:18.560685+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-c93e14bf2b1951bd3592891fe74f726b-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T18:51:22.865599+00:00",
+              "finished_at": "2026-10-18T18:51:22.89704+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-c93e14bf2b1951bd3592891fe74f726b-3",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:51:31.983195+00:00",
+              "finished_at": "2026-10-18T18:51:32.015223+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:51:32Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:51:32Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+            "content": "Фактический статус контейнера `orchestrator`: **healthy** (`ok`).\n\nДетали проверки:\n- Имя проверки: `container.orchestrator`\n- Статус: `healthy`\n- Сообщение: `ok`\n- Время ответа: `566.414µs`\n- Дата проверки: `2026-10-18T18:51:32Z`\n\nНикаких изменений в системе не производилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:51:14.577671+00:00"
+            },
+            {
+              "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T18:51:18.613442+00:00"
+            },
+            {
+              "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T18:51:22.931234+00:00"
+            },
+            {
+              "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T18:51:32.04851+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-deferred-2",
+          "arm": "deferred",
+          "case": "provider",
+          "run_id": "run-1792349560685246126-51303ae354823675",
+          "input_status": "blocked",
+          "error_code": "budget_active_millis_owner_day",
+          "independent_case_pass": false,
+          "elapsed_seconds": 1.4962356099999852,
+          "model_attempts": 0,
+          "known_input_tokens": 0,
+          "known_visible_output_tokens": 0,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349560685246126-51303ae354823675",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:52:40.752241+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-deferred-3",
+          "arm": "deferred",
+          "case": "no-tool",
+          "run_id": "run-1792349562438564042-eccff39cf87b371d",
+          "input_status": "blocked",
+          "error_code": "budget_active_millis_owner_day",
+          "independent_case_pass": false,
+          "elapsed_seconds": 1.50012668699992,
+          "model_attempts": 0,
+          "known_input_tokens": 0,
+          "known_visible_output_tokens": 0,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349562438564042-eccff39cf87b371d",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T18:52:42.495418+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-eager-0",
+          "arm": "eager",
+          "case": "database",
+          "run_id": "run-1792349435135900194-a318eda6907dc610",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 8.089281361000303,
+          "model_attempts": 2,
+          "known_input_tokens": 14397,
+          "known_visible_output_tokens": 53,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-95e892b1c7f387c86eb3b2e660001de4-1",
+              "tool_name": "doctor.check_database",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:50:38.978349+00:00",
+              "finished_at": "2026-10-18T18:50:39.037584+00:00",
+              "checks": [
+                {
+                  "name": "postgres",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:50:39Z"
+                },
+                {
+                  "name": "redis",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:50:39Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349435135900194-a318eda6907dc610",
+            "content": "Результаты проверки доступности:\n\n* **PostgreSQL:** `healthy` (доступен, статус: ok)\n* **Redis:** `healthy` (доступен, статус: ok)",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349435135900194-a318eda6907dc610",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:50:35.208506+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-eager-1",
+          "arm": "eager",
+          "case": "containers",
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 23.938881104000302,
+          "model_attempts": 2,
+          "known_input_tokens": 14571,
+          "known_visible_output_tokens": 70,
+          "complete_native_total_tokens": 15209,
+          "complete_usage_coverage": 2,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-bc28686da1d1b334032951694565ebcb-1",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:51:58.451001+00:00",
+              "finished_at": "2026-10-18T18:51:58.504931+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:51:58Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:51:58Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792349513393385751-24389c5ca25b263c",
+            "content": "Фактический статус контейнера `orchestrator`: **healthy** (сообщение: `ok`, время проверки: `2026-10-18T18:51:58Z`). Никаких изменений не вносилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792349513393385751-24389c5ca25b263c",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:51:53.473573+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-eager-2",
+          "arm": "eager",
+          "case": "provider",
+          "run_id": "run-1792349523894941220-faa44925c869417b",
+          "input_status": "blocked",
+          "error_code": "budget_active_millis_owner_day",
+          "independent_case_pass": false,
+          "elapsed_seconds": 6.96828713900004,
+          "model_attempts": 1,
+          "known_input_tokens": 7023,
+          "known_visible_output_tokens": 14,
+          "complete_native_total_tokens": 7492,
+          "complete_usage_coverage": 1,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-dc1e4e98934c13e44812eecdd60e8384-1",
+              "tool_name": "doctor.check_provider",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T18:52:09.688051+00:00",
+              "finished_at": "2026-10-18T18:52:09.726497+00:00",
+              "checks": [
+                {
+                  "name": "provider",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T18:52:09Z"
+                }
+              ]
+            }
+          ],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349523894941220-faa44925c869417b",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:52:03.940823+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-eager-3",
+          "arm": "eager",
+          "case": "no-tool",
+          "run_id": "run-1792349565774754623-ea3b00f47941330b",
+          "input_status": "blocked",
+          "error_code": "budget_active_millis_owner_day",
+          "independent_case_pass": false,
+          "elapsed_seconds": 1.4884691719998955,
+          "model_attempts": 0,
+          "known_input_tokens": 0,
+          "known_visible_output_tokens": 0,
+          "complete_native_total_tokens": null,
+          "complete_usage_coverage": 0,
+          "tool_calls": [],
+          "final": null,
+          "schema_observations": [
+            {
+              "run_id": "run-1792349565774754623-ea3b00f47941330b",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T18:52:45.859931+00:00"
+            }
+          ]
+        }
+      ],
+      "attempts": [
+        {
+          "operation_id": "operation_f8843e082ec41ced280d413165afbad931de9cb4dab25c23",
+          "run_id": "run-1792349087711440357-2bed1729017abcfa",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": null,
+          "actual_output_tokens": null,
+          "created_at": "2026-10-18T18:44:47.914149+00:00",
+          "observed_at": null
+        },
+        {
+          "operation_id": "operation_34c5e56deca854645c735d897510c37be01c021c6b2f9693",
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1538,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T18:46:04.222197+00:00",
+          "observed_at": "2026-10-18T18:46:10.774185+00:00"
+        },
+        {
+          "operation_id": "operation_f2e0c4504c427d416181bc95981c141a0f96ae68b3cfee57",
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2222,
+          "actual_output_tokens": 86,
+          "created_at": "2026-10-18T18:46:10.946653+00:00",
+          "observed_at": "2026-10-18T18:46:16.397625+00:00"
+        },
+        {
+          "operation_id": "operation_65b366d22b5cb5690752388deb4e9332e43bdd91191a625c",
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2657,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:46:16.691107+00:00",
+          "observed_at": "2026-10-18T18:46:20.018808+00:00"
+        },
+        {
+          "operation_id": "operation_0dc136ce2d2d836e70bb6881829bb2b0dee26af3d0467adf",
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2888,
+          "actual_output_tokens": 52,
+          "created_at": "2026-10-18T18:46:20.405+00:00",
+          "observed_at": "2026-10-18T18:46:24.735559+00:00"
+        },
+        {
+          "operation_id": "operation_f7e8d778d125bc4eb815299476ba3d20aa8b2b734b24843e",
+          "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7011,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:46:47.159368+00:00",
+          "observed_at": "2026-10-18T18:46:52.078503+00:00"
+        },
+        {
+          "operation_id": "operation_2ce33c0f1931b50d8d1afdbb5531cab5ff451b086e8c6083",
+          "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7496,
+          "actual_output_tokens": 52,
+          "created_at": "2026-10-18T18:46:52.376599+00:00",
+          "observed_at": "2026-10-18T18:46:57.639864+00:00"
+        },
+        {
+          "operation_id": "operation_0ade451f70d034115d021b9172b49db5d98cd67388280b8e",
+          "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7011,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:47:00.73785+00:00",
+          "observed_at": "2026-10-18T18:47:07.63487+00:00"
+        },
+        {
+          "operation_id": "operation_c8d0171e63a312e373ae7e6a92988e493b1e4a849152ac52",
+          "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7527,
+          "actual_output_tokens": 93,
+          "created_at": "2026-10-18T18:47:07.908606+00:00",
+          "observed_at": "2026-10-18T18:47:12.722781+00:00"
+        },
+        {
+          "operation_id": "operation_dfe83b5b827bd4c0a12b4ac574ac8e634c79ee6c7e668450",
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1538,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T18:47:17.731339+00:00",
+          "observed_at": "2026-10-18T18:47:21.735374+00:00"
+        },
+        {
+          "operation_id": "operation_773ca95d24b3267d84e114f60f84f35f3fc865822ae8065b",
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2178,
+          "actual_output_tokens": 85,
+          "created_at": "2026-10-18T18:47:22.006018+00:00",
+          "observed_at": "2026-10-18T18:47:26.367675+00:00"
+        },
+        {
+          "operation_id": "operation_9de7e3d61b78dc3c5126bb9c43597d3cc81f4becb386813a",
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2489,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:47:27.388422+00:00",
+          "observed_at": "2026-10-18T18:47:33.296195+00:00"
+        },
+        {
+          "operation_id": "operation_f6059888b68a67821ca00661a355c523fb2db5d6e7a24e4a",
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 3093,
+          "actual_output_tokens": 87,
+          "created_at": "2026-10-18T18:47:33.904151+00:00",
+          "observed_at": "2026-10-18T18:47:39.087195+00:00"
+        },
+        {
+          "operation_id": "operation_c24507a0020c7e7266f14f9abc89b4de466c979329208258",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1554,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T18:47:41.126834+00:00",
+          "observed_at": "2026-10-18T18:47:44.488105+00:00"
+        },
+        {
+          "operation_id": "operation_6a6b53c650c04fd8376feba7e15742ba386f60d256f92284",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2142,
+          "actual_output_tokens": 90,
+          "created_at": "2026-10-18T18:47:44.607724+00:00",
+          "observed_at": "2026-10-18T18:47:48.70493+00:00"
+        },
+        {
+          "operation_id": "operation_8e88dff9a554d4507b26c64db293df80f9c51d5cdee9da81",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2408,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:47:48.985031+00:00",
+          "observed_at": "2026-10-18T18:47:55.094994+00:00"
+        },
+        {
+          "operation_id": "operation_70860feb73333bf95308fd770f1e2f821c10867b8168042a",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2965,
+          "actual_output_tokens": 88,
+          "created_at": "2026-10-18T18:47:55.406746+00:00",
+          "observed_at": "2026-10-18T18:48:00.241795+00:00"
+        },
+        {
+          "operation_id": "operation_0c1dd906d4b18ddb77f25d9b8dccc3ffeee5cfb01aafd323",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 3250,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:48:09.361502+00:00",
+          "observed_at": "2026-10-18T18:48:13.000287+00:00"
+        },
+        {
+          "operation_id": "operation_5d88a6244bf91a2d96c9a739e0d72c1a3f23b4da90b672af",
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 4090,
+          "actual_output_tokens": 21,
+          "created_at": "2026-10-18T18:48:13.326636+00:00",
+          "observed_at": "2026-10-18T18:48:18.35045+00:00"
+        },
+        {
+          "operation_id": "operation_f9ddbe5e19573520a370e784ceccae204927df16792eec62",
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7023,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:48:23.663494+00:00",
+          "observed_at": "2026-10-18T18:48:29.356519+00:00"
+        },
+        {
+          "operation_id": "operation_bba44015de27037444899113a7ebc987a7c67b1aad8ba122",
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7501,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:48:29.593527+00:00",
+          "observed_at": "2026-10-18T18:48:32.922711+00:00"
+        },
+        {
+          "operation_id": "operation_f5211049cfa0707e52760f388fe79cfcc232cfb722b8d7ea",
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 8443,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:48:33.324531+00:00",
+          "observed_at": "2026-10-18T18:48:36.186663+00:00"
+        },
+        {
+          "operation_id": "operation_7f2505ccf6afac0cb62532e50bcb95468d69b5e85dc93fb7",
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 8657,
+          "actual_output_tokens": 181,
+          "created_at": "2026-10-18T18:48:36.540309+00:00",
+          "observed_at": "2026-10-18T18:48:48.966119+00:00"
+        },
+        {
+          "operation_id": "operation_d566bc828d897cd7b033a5f57909c322a78d21b233f92803",
+          "run_id": "run-1792349331376311588-fc32c3074e789e37",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7009,
+          "actual_output_tokens": 3,
+          "created_at": "2026-10-18T18:48:51.778233+00:00",
+          "observed_at": "2026-10-18T18:48:55.734438+00:00"
+        },
+        {
+          "operation_id": "operation_9a4dd961d41a297d048807944d73a754ed7b94c52881f950",
+          "run_id": "run-1792349341939980360-e31a8fd1ccb4b528",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1538,
+          "actual_output_tokens": 3,
+          "created_at": "2026-10-18T18:49:02.294459+00:00",
+          "observed_at": "2026-10-18T18:49:05.702531+00:00"
+        },
+        {
+          "operation_id": "operation_142c0b8b515327c0d38f82ea7ccc498dcd9f11ffa2df38f5",
+          "run_id": "run-1792349435135900194-a318eda6907dc610",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7011,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:50:35.245148+00:00",
+          "observed_at": "2026-10-18T18:50:38.938598+00:00"
+        },
+        {
+          "operation_id": "operation_5980569954b6241a8471c585455ed94f3c2701d226becf6a",
+          "run_id": "run-1792349435135900194-a318eda6907dc610",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7386,
+          "actual_output_tokens": 39,
+          "created_at": "2026-10-18T18:50:39.095338+00:00",
+          "observed_at": "2026-10-18T18:50:42.51272+00:00"
+        },
+        {
+          "operation_id": "operation_0bc9249dc2c095d30cb69de1e9566e685d6370551000e153",
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1540,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T18:50:45.136338+00:00",
+          "observed_at": "2026-10-18T18:50:50.664345+00:00"
+        },
+        {
+          "operation_id": "operation_ab55b01733f1ec9975809d12e92084cb0ac9c64c4f4929fd",
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2173,
+          "actual_output_tokens": 86,
+          "created_at": "2026-10-18T18:50:50.816065+00:00",
+          "observed_at": "2026-10-18T18:50:55.237893+00:00"
+        },
+        {
+          "operation_id": "operation_497b67405e67a8cff2d85a5a20c7cb8cb4b7be4fe6eae15b",
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2497,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:50:55.384548+00:00",
+          "observed_at": "2026-10-18T18:50:59.113681+00:00"
+        },
+        {
+          "operation_id": "operation_640488427f14884544a835c2b9adeb38b98adf689036ada7",
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2739,
+          "actual_output_tokens": 55,
+          "created_at": "2026-10-18T18:50:59.258477+00:00",
+          "observed_at": "2026-10-18T18:51:05.822106+00:00"
+        },
+        {
+          "operation_id": "operation_bb1a149cf98e901d4e569e0d6a5e1df80dca55243f23cdf8",
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1539,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T18:51:14.609127+00:00",
+          "observed_at": "2026-10-18T18:51:18.497122+00:00"
+        },
+        {
+          "operation_id": "operation_b02e436839382f788bd5a39f1d3c9c90d5005d5fc4b69ccc",
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2197,
+          "actual_output_tokens": 85,
+          "created_at": "2026-10-18T18:51:18.617782+00:00",
+          "observed_at": "2026-10-18T18:51:22.829311+00:00"
+        },
+        {
+          "operation_id": "operation_ae24890625b6ce33cb39d4d95866fa524e2911c1e3198d9b",
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2512,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T18:51:22.934781+00:00",
+          "observed_at": "2026-10-18T18:51:31.957037+00:00"
+        },
+        {
+          "operation_id": "operation_f6624660f718f409a4ca3aee7f22583216653debd640f6f4",
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 3672,
+          "actual_output_tokens": 107,
+          "created_at": "2026-10-18T18:51:32.051768+00:00",
+          "observed_at": "2026-10-18T18:51:36.403714+00:00"
+        },
+        {
+          "operation_id": "operation_21d77fe04d7ead89d43591f686310e607e01f12f84eba390",
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7011,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:51:53.509773+00:00",
+          "observed_at": "2026-10-18T18:51:58.414336+00:00"
+        },
+        {
+          "operation_id": "operation_160c5bbdbdd6812920e980e8b3c7afd93133243f4d14d482",
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7560,
+          "actual_output_tokens": 56,
+          "created_at": "2026-10-18T18:51:58.560095+00:00",
+          "observed_at": "2026-10-18T18:52:02.674646+00:00"
+        },
+        {
+          "operation_id": "operation_e1684ae1396581aa4c3aa6b8ce88a920bac75630400e12eb",
+          "run_id": "run-1792349523894941220-faa44925c869417b",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7023,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T18:52:03.977435+00:00",
+          "observed_at": "2026-10-18T18:52:09.660027+00:00"
+        }
+      ],
+      "complete_usage": [
+        {
+          "time": "2026-10-18T18:51:58.413711059Z",
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "operation_id": "operation_21d77fe04d7ead89d43591f686310e607e01f12f84eba390",
+          "input_tokens": 7011,
+          "output_tokens": 14,
+          "total_tokens": 7374
+        },
+        {
+          "time": "2026-10-18T18:52:02.674200774Z",
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "operation_id": "operation_160c5bbdbdd6812920e980e8b3c7afd93133243f4d14d482",
+          "input_tokens": 7560,
+          "output_tokens": 56,
+          "total_tokens": 7835
+        },
+        {
+          "time": "2026-10-18T18:52:09.659834363Z",
+          "run_id": "run-1792349523894941220-faa44925c869417b",
+          "operation_id": "operation_e1684ae1396581aa4c3aa6b8ce88a920bac75630400e12eb",
+          "input_tokens": 7023,
+          "output_tokens": 14,
+          "total_tokens": 7492
+        }
+      ],
+      "effects": [
+        {
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349163973965899-0afbf286bdeb7f3b",
+          "tool_name": "doctor.check_database",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349206983036426-e64d49aa44694d6d",
+          "tool_name": "doctor.check_database",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349220479091313-e5b328a22c1c6c13",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349237561174807-dd9996ffb5ee80dc",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "tool_name": "doctor.check_provider",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349261054197287-b5d7d4c4603d9195",
+          "tool_name": "doctor.check_system",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "tool_name": "doctor.check_provider",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "tool_name": "doctor.check_system",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349303377947840-d8d557b7189b995e",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349435135900194-a318eda6907dc610",
+          "tool_name": "doctor.check_database",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349445031336410-28e39e86f8103aea",
+          "tool_name": "doctor.check_database",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349474526915336-8cbeb5fbf386e368",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349513393385751-24389c5ca25b263c",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792349523894941220-faa44925c869417b",
+          "tool_name": "doctor.check_provider",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        }
+      ],
+      "reservations": [
+        {
+          "operation_id": "operation_f8843e082ec41ced280d413165afbad931de9cb4dab25c23",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_34c5e56deca854645c735d897510c37be01c021c6b2f9693",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_4e1b330e6e8d9fe09e5df95ce1556fe6dd1c6a351629eace1a26fe6e7b974572",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_f2e0c4504c427d416181bc95981c141a0f96ae68b3cfee57",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_b17953a5bc462de32b740dae38ec596e559cafdd1f210fc5402be92527893747",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_65b366d22b5cb5690752388deb4e9332e43bdd91191a625c",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_73c02b6ccb22ab6d94f73b429520464e02fd729719a82b4174861341f5e0d88a",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_0dc136ce2d2d836e70bb6881829bb2b0dee26af3d0467adf",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_f7e8d778d125bc4eb815299476ba3d20aa8b2b734b24843e",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_74d61fc7a9b8652826eb6c079e720b3e645bf3595c30ef1b60d2250750cfd264",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_2ce33c0f1931b50d8d1afdbb5531cab5ff451b086e8c6083",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_0ade451f70d034115d021b9172b49db5d98cd67388280b8e",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_9232d913cbfd768272d23bb620d15c5966a0d2a40ae7b5046e8c5ab95a79fc03",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_c8d0171e63a312e373ae7e6a92988e493b1e4a849152ac52",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_dfe83b5b827bd4c0a12b4ac574ac8e634c79ee6c7e668450",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_e55cac5befa2960e0fc8dc9066d203a067ee89b0966c9783fccbeb202ae57850",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_773ca95d24b3267d84e114f60f84f35f3fc865822ae8065b",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_f8d431fee7e51a637adbb23a4edc246a26b6f1bc71e0cd497c0d0c2112065821",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_9de7e3d61b78dc3c5126bb9c43597d3cc81f4becb386813a",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_d450e108c8235bf1b91d196ffee4777a72f21492d11e47fcf369bd24ac3afe24",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_f6059888b68a67821ca00661a355c523fb2db5d6e7a24e4a",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_c24507a0020c7e7266f14f9abc89b4de466c979329208258",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_729c927369cd465d62e78d4dedf63aadef212e25c506cc48a5f7b3965d335470",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_6a6b53c650c04fd8376feba7e15742ba386f60d256f92284",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_19a9d6d7e5377c870d1e7f15b102bda6f95523b4a5db26e14cd627d03a0aaf5d",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_8e88dff9a554d4507b26c64db293df80f9c51d5cdee9da81",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_fe1d05259b54b369fc40943f2759415af85e866623ec8588e59decb0567eadd3",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_70860feb73333bf95308fd770f1e2f821c10867b8168042a",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_a5c2c5576bf8263d2cea4ef7945a4a234c76cdafd08e0b0ff0211a4dbe6b7244",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_0c1dd906d4b18ddb77f25d9b8dccc3ffeee5cfb01aafd323",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_fa72bb41ffde0d3a3651ec3100d55f988d97c638ad7bafc8a0bd2b0fc83107ef",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_5d88a6244bf91a2d96c9a739e0d72c1a3f23b4da90b672af",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_f9ddbe5e19573520a370e784ceccae204927df16792eec62",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_bf453ff9068a897fca4dc5b2b021ec7fe7a4d8331c5a5dccf2eeaace3764beb3",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_bba44015de27037444899113a7ebc987a7c67b1aad8ba122",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_7af84b69311cd9077ac179b34989176be04ba263b448489d83bbda031d216180",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_f5211049cfa0707e52760f388fe79cfcc232cfb722b8d7ea",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_4371302505a764bc1a0e19ee0bc1637788b781cb9f9658aa9373d9ec3b0e34e7",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_7f2505ccf6afac0cb62532e50bcb95468d69b5e85dc93fb7",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_d566bc828d897cd7b033a5f57909c322a78d21b233f92803",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_9a4dd961d41a297d048807944d73a754ed7b94c52881f950",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_142c0b8b515327c0d38f82ea7ccc498dcd9f11ffa2df38f5",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_36b5821b332b6d272171ee41e408e0007fed87ca98dfcd44c7bdd40d061cf11a",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_5980569954b6241a8471c585455ed94f3c2701d226becf6a",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_0bc9249dc2c095d30cb69de1e9566e685d6370551000e153",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_043b895893abe16294513b50185a7acd161de90e4c8423abf0c8d3d4fcb48277",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_ab55b01733f1ec9975809d12e92084cb0ac9c64c4f4929fd",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_f4a10b8a039d2f8936fc305b14be161efffbd2267694e7010a20bf06da601748",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_497b67405e67a8cff2d85a5a20c7cb8cb4b7be4fe6eae15b",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_8cee2267b9d781f3dfa1dbe55779418ef7798cbe2a4f6c372f774040bcaba8d3",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_640488427f14884544a835c2b9adeb38b98adf689036ada7",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_bb1a149cf98e901d4e569e0d6a5e1df80dca55243f23cdf8",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_81f910993566277cc1096ca27ea6e8dfb60643585c4055bcb8f734dd2abf569e",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_b02e436839382f788bd5a39f1d3c9c90d5005d5fc4b69ccc",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_b29d9d50b6c7851e18575ba629d9cc241d08aa30a4222328230b2e5baa0774ea",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_ae24890625b6ce33cb39d4d95866fa524e2911c1e3198d9b",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_320e2362b51c02da0faf184668e2816ab5a0bf8534c6ff4142375aad363fb4d5",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_f6624660f718f409a4ca3aee7f22583216653debd640f6f4",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_21d77fe04d7ead89d43591f686310e607e01f12f84eba390",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_7d7e76429e6827c531b45440d609cc39a01d2947d0267998cd44d9e08ad6571b",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_160c5bbdbdd6812920e980e8b3c7afd93133243f4d14d482",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_e1684ae1396581aa4c3aa6b8ce88a920bac75630400e12eb",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_76202aadf92c02e6a0dbf7a0d37317c1a3c90c00c1c6fab32282b5dadc1f4392",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        }
+      ],
+      "model_attempts": 38,
+      "unknown_input_output_attempts": 1,
+      "unknown_total_attempts": 35,
+      "source_archive_sha256": "b94e5452d2cceac24d067ee57edad8e59dfb1b76e12b445b46ba49e093b2d505"
+    },
+    "cost_pair": {
+      "cases": [
+        {
+          "label": "v5-deferred-1",
+          "arm": "deferred",
+          "case": "containers",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 26.503882900000008,
+          "model_attempts": 4,
+          "known_input_tokens": 10434,
+          "known_visible_output_tokens": 192,
+          "complete_native_total_tokens": 12732,
+          "complete_usage_coverage": 4,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-617cbf037b207dafc156602fb609af49-1",
+              "tool_name": "tools.search",
+              "args": {
+                "category": "doctor"
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T19:00:44.131735+00:00",
+              "finished_at": "2026-10-18T19:00:44.174316+00:00",
+              "receipt": {
+                "items": [
+                  {
+                    "name": "doctor.check_container",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                  },
+                  {
+                    "name": "doctor.check_database",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_database@03307882c2f94a4223b55039748f796406ff55141fec531048e6071c45fc81bf"
+                  },
+                  {
+                    "name": "doctor.check_provider",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_provider@710435289c34811787c749b7774e926d1f59559a732e277e2c42094386f39399"
+                  },
+                  {
+                    "name": "doctor.check_system",
+                    "category": "doctor",
+                    "tool_ref": "doctor.check_system@d1e046827b045011bde455d8301b0775d580b681e4394d00f60527af01e2d339"
+                  }
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-617cbf037b207dafc156602fb609af49-2",
+              "tool_name": "tools.load",
+              "args": {
+                "tool_refs": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ]
+              },
+              "status": "completed",
+              "started_at": "2026-10-18T19:00:47.309339+00:00",
+              "finished_at": "2026-10-18T19:00:47.343611+00:00",
+              "receipt": {
+                "loaded": [
+                  "doctor.check_container@52457d6c9a9fe6767b1b63f96f682807aca0068de833981b733f78af2730c999"
+                ],
+                "status": "ok"
+              }
+            },
+            {
+              "tool_call_id": "agy-617cbf037b207dafc156602fb609af49-3",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T19:01:00.268258+00:00",
+              "finished_at": "2026-10-18T19:01:00.308603+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T19:01:00Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T19:01:00Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+            "content": "Статус контейнера `orchestrator` (`container.orchestrator`): **healthy** (сообщение: `ok`, время ответа: ~1.05 мс, время проверки: 2026-10-18 19:01:00 UTC). Конфигурация и состояние не изменялись.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+              "details_json": {
+                "deferred": true,
+                "tool_count": 2,
+                "tool_names": [
+                  "tools.load",
+                  "tools.search"
+                ],
+                "schema_bytes": 1032
+              },
+              "created_at": "2026-10-18T19:00:39.637386+00:00"
+            },
+            {
+              "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 2,
+                "schema_bytes": 1032,
+                "tool_set_revision": "8ea1e3320affe89ef7a9d79d39c6611d5e219b27098ea2659f6aca6f67e06c7b"
+              },
+              "created_at": "2026-10-18T19:00:44.223992+00:00"
+            },
+            {
+              "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T19:00:47.397752+00:00"
+            },
+            {
+              "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+              "details_json": {
+                "mode": "deferred",
+                "phase": "continuation",
+                "tool_count": 3,
+                "schema_bytes": 1232,
+                "tool_set_revision": "24cc578111cd37b099f7c8aa8a7c0df5f06def5d24ac689dcc71c14c09e5cc81"
+              },
+              "created_at": "2026-10-18T19:01:00.358508+00:00"
+            }
+          ]
+        },
+        {
+          "label": "v5-eager-1",
+          "arm": "eager",
+          "case": "containers",
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "input_status": "completed",
+          "error_code": "",
+          "independent_case_pass": true,
+          "elapsed_seconds": 12.38020980300007,
+          "model_attempts": 2,
+          "known_input_tokens": 14466,
+          "known_visible_output_tokens": 72,
+          "complete_native_total_tokens": 15074,
+          "complete_usage_coverage": 2,
+          "tool_calls": [
+            {
+              "tool_call_id": "agy-58e05526ed89718734c32d9bbccf12fd-1",
+              "tool_name": "doctor.check_container",
+              "args": {},
+              "status": "completed",
+              "started_at": "2026-10-18T19:00:31.302552+00:00",
+              "finished_at": "2026-10-18T19:00:31.354923+00:00",
+              "checks": [
+                {
+                  "name": "container.orchestrator",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T19:00:31Z"
+                },
+                {
+                  "name": "container.tool-broker",
+                  "status": "healthy",
+                  "checked_at": "2026-10-18T19:00:31Z"
+                }
+              ]
+            }
+          ],
+          "final": {
+            "run_id": "run-1792350025353771342-ebea9072574afbe9",
+            "content": "По результатам диагностики контейнер `orchestrator` (`container.orchestrator`) имеет статус **healthy** (сообщение: `ok`, время ответа: 1.25 мс). Никаких изменений в конфигурацию и сервисы не вносилось.",
+            "verdict": "unverified",
+            "answer_state": "final"
+          },
+          "schema_observations": [
+            {
+              "run_id": "run-1792350025353771342-ebea9072574afbe9",
+              "details_json": {
+                "deferred": false,
+                "tool_count": 44,
+                "tool_names": [
+                  "browser.click",
+                  "browser.close",
+                  "browser.extract_text",
+                  "browser.fill",
+                  "browser.navigate",
+                  "browser.open",
+                  "browser.prepare_fill",
+                  "browser.prepare_type",
+                  "browser.read",
+                  "browser.restore_storage_state",
+                  "browser.set_cookie",
+                  "browser.snapshot",
+                  "browser.type",
+                  "browser.wait_for",
+                  "doctor.check_container",
+                  "doctor.check_database",
+                  "doctor.check_provider",
+                  "doctor.check_system",
+                  "http.download",
+                  "http.parse_html",
+                  "http.request",
+                  "schedule.cancel",
+                  "schedule.create",
+                  "schedule.get",
+                  "schedule.list",
+                  "schedule.update",
+                  "single_tab.bind",
+                  "single_tab.capture_visible",
+                  "single_tab.click",
+                  "single_tab.extract_text",
+                  "single_tab.fill",
+                  "single_tab.go_back",
+                  "single_tab.go_forward",
+                  "single_tab.navigate",
+                  "single_tab.press_keys",
+                  "single_tab.release",
+                  "single_tab.reload",
+                  "single_tab.scroll",
+                  "single_tab.status",
+                  "single_tab.type",
+                  "single_tab.wait_for",
+                  "web.extract",
+                  "web.fetch",
+                  "web.fetch_batch"
+                ],
+                "schema_bytes": 22450
+              },
+              "created_at": "2026-10-18T19:00:25.450703+00:00"
+            }
+          ]
+        }
+      ],
+      "attempts": [
+        {
+          "operation_id": "operation_f7a67935e22a84c12cef167cbe64342802470710ccde9d35",
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7011,
+          "actual_output_tokens": 14,
+          "created_at": "2026-10-18T19:00:25.487921+00:00",
+          "observed_at": "2026-10-18T19:00:31.26574+00:00"
+        },
+        {
+          "operation_id": "operation_4b4e4344c57c47c4fb019e4f3723b2e1cb087f512cf4aa18",
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 7455,
+          "actual_output_tokens": 58,
+          "created_at": "2026-10-18T19:00:31.406045+00:00",
+          "observed_at": "2026-10-18T19:00:36.15164+00:00"
+        },
+        {
+          "operation_id": "operation_c48a54d2cd24225d6dad23340db93e82dabd5aed6306f402",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 1539,
+          "actual_output_tokens": 19,
+          "created_at": "2026-10-18T19:00:39.673457+00:00",
+          "observed_at": "2026-10-18T19:00:44.088042+00:00"
+        },
+        {
+          "operation_id": "operation_a76665f1092087c74f0944bc7eadd54116b5a42192ad82b3",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2222,
+          "actual_output_tokens": 85,
+          "created_at": "2026-10-18T19:00:44.228766+00:00",
+          "observed_at": "2026-10-18T19:00:47.272268+00:00"
+        },
+        {
+          "operation_id": "operation_d0f89d4188c5b6df8987b0aa81c6f5139e20670f2cdc16a2",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 2561,
+          "actual_output_tokens": 13,
+          "created_at": "2026-10-18T19:00:47.402616+00:00",
+          "observed_at": "2026-10-18T19:01:00.236556+00:00"
+        },
+        {
+          "operation_id": "operation_37eabe9f1a45e63c123f4bd1025b13ad851f9c195cda9526",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "input_allowance": 1048576,
+          "output_allowance": 32768,
+          "actual_input_tokens": 4112,
+          "actual_output_tokens": 75,
+          "created_at": "2026-10-18T19:01:00.362244+00:00",
+          "observed_at": "2026-10-18T19:01:05.492673+00:00"
+        }
+      ],
+      "complete_usage": [
+        {
+          "time": "2026-10-18T19:00:31.265387705Z",
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "operation_id": "operation_f7a67935e22a84c12cef167cbe64342802470710ccde9d35",
+          "input_tokens": 7011,
+          "output_tokens": 14,
+          "total_tokens": 7270
+        },
+        {
+          "time": "2026-10-18T19:00:36.151194274Z",
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "operation_id": "operation_4b4e4344c57c47c4fb019e4f3723b2e1cb087f512cf4aa18",
+          "input_tokens": 7455,
+          "output_tokens": 58,
+          "total_tokens": 7804
+        },
+        {
+          "time": "2026-10-18T19:00:44.087456814Z",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "operation_id": "operation_c48a54d2cd24225d6dad23340db93e82dabd5aed6306f402",
+          "input_tokens": 1539,
+          "output_tokens": 19,
+          "total_tokens": 1772
+        },
+        {
+          "time": "2026-10-18T19:00:47.271893066Z",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "operation_id": "operation_a76665f1092087c74f0944bc7eadd54116b5a42192ad82b3",
+          "input_tokens": 2222,
+          "output_tokens": 85,
+          "total_tokens": 2425
+        },
+        {
+          "time": "2026-10-18T19:01:00.236393906Z",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "operation_id": "operation_d0f89d4188c5b6df8987b0aa81c6f5139e20670f2cdc16a2",
+          "input_tokens": 2561,
+          "output_tokens": 13,
+          "total_tokens": 3927
+        },
+        {
+          "time": "2026-10-18T19:01:05.492397803Z",
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "operation_id": "operation_37eabe9f1a45e63c123f4bd1025b13ad851f9c195cda9526",
+          "input_tokens": 4112,
+          "output_tokens": 75,
+          "total_tokens": 4608
+        }
+      ],
+      "effects": [
+        {
+          "run_id": "run-1792350025353771342-ebea9072574afbe9",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "tool_name": "tools.search",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "tool_name": "tools.load",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        },
+        {
+          "run_id": "run-1792350039574707303-9bacab1f95b41f1c",
+          "tool_name": "doctor.check_container",
+          "state": "effect_confirmed",
+          "dispatch_outcome": "dispatch_completed"
+        }
+      ],
+      "reservations": [
+        {
+          "operation_id": "operation_f7a67935e22a84c12cef167cbe64342802470710ccde9d35",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_2299b57f8d1b6bf91921085e0569dd19fa4bca29cb3ba6fb2ef872746e615ac4",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_4b4e4344c57c47c4fb019e4f3723b2e1cb087f512cf4aa18",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "operation_c48a54d2cd24225d6dad23340db93e82dabd5aed6306f402",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_f921c8aa3ec0b295ffba3dbc06ef8037d3c6e22a915af7e224f2d6d7d6646ded",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_a76665f1092087c74f0944bc7eadd54116b5a42192ad82b3",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_e29c47744948a5a15c4c67d9159f4b1ec99a8dedf11ad21e8c4764ff4d7fefb1",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_d0f89d4188c5b6df8987b0aa81c6f5139e20670f2cdc16a2",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        },
+        {
+          "operation_id": "effect:action_cfa3f4fd90abc15c5f8e4a6c2d4bb8070b8a3d81e9c681e6a712138ed14fc788",
+          "charge": {
+            "tokens": 0,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 0,
+            "egress_bytes": 4194304,
+            "active_millis": 120000,
+            "external_calls": 1,
+            "provider_input_bytes": 0
+          }
+        },
+        {
+          "operation_id": "operation_37eabe9f1a45e63c123f4bd1025b13ad851f9c195cda9526",
+          "charge": {
+            "tokens": 1081344,
+            "children": 0,
+            "cost_micros": 0,
+            "model_turns": 1,
+            "egress_bytes": 0,
+            "active_millis": 300000,
+            "external_calls": 0,
+            "provider_input_bytes": 8388608
+          }
+        }
+      ],
+      "model_attempts": 6,
+      "unknown_input_output_attempts": 0,
+      "unknown_total_attempts": 0,
+      "source_archive_sha256": "aab3a89dba259d3181e2c00bca137d9f7bab89420d4186332de56d550b643fac"
+    }
+  },
+  "comparison": {
+    "full_usage_pair_pass": true,
+    "native_chain": [
+      "tools.search",
+      "tools.load",
+      "doctor.check_container"
+    ],
+    "eager_total_tokens": 15074,
+    "deferred_total_tokens": 12732,
+    "token_reduction_percent": 15.536685683959139,
+    "eager_elapsed_seconds": 12.38020980300007,
+    "deferred_elapsed_seconds": 26.503882900000008,
+    "latency_ratio": 2.14082663555325,
+    "full_quality_noninferiority": "not_established",
+    "distinct_tasks": 4,
+    "initial_v4": {
+      "eager": {
+        "passed": 4,
+        "total": 4
+      },
+      "deferred": {
+        "passed": 3,
+        "total": 4
+      }
+    }
+  },
+  "cumulative_model_attempts": 44
+}

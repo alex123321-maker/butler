@@ -55,6 +55,7 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
+	ToolDiscoveryEnabled              bool
 	ExecutionBudgetPolicyJSON         string
 	OwnerControlToken                 string
 	OwnerControlTokenFile             string
@@ -124,6 +125,7 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
+	ToolDiscoveryEnabled          bool
 	NetworkAllowlists             map[string][]string
 	ExecutionBudgetPolicyJSON     string
 	Shared                        SharedConfig
@@ -369,6 +371,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
+	specs = append(specs, toolDiscoverySpec("orchestrator", &cfg.ToolDiscoveryEnabled))
 	specs = append(specs, schedulesOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryReadOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryTemporalSpecs(&cfg)...)
@@ -416,6 +419,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
+	specs = append(specs, toolDiscoverySpec("tool-broker", &cfg.ToolDiscoveryEnabled))
 	specs = append(specs, schedulesBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryReadBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryTemporalBrokerSpecs(&cfg)...)
@@ -794,6 +798,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if cfg.ToolDiscoveryEnabled && cfg.ActionAuthorityTokenFile == "" {
+		return fmt.Errorf("tool discovery requires private Broker authentication")
+	}
 	if cfg.SchedulesEnabled && cfg.ActionAuthorityTokenFile == "" {
 		return fmt.Errorf("schedules require private Broker authentication")
 	}

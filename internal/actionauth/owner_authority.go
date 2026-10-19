@@ -308,7 +308,7 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 }
 
 func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
-	standard := standardScheduleAction(b)
+	standard := standardScheduleAction(b) || standardCatalogAction(b)
 	if m.ScopeKind != "owner_goal" || m.Status != "active" || m.RevokedAt != nil || !m.ExpiresAt.After(at) || !WithinActiveHours(m.Hours, at) || m.OwnerID != b.OwnerID || m.GoalID != b.GoalID || m.GoalRevision != b.GoalRevision || m.ID != b.MandateID || m.Revision != b.MandateRevision || m.Purpose != b.Purpose || contains(m.DenyTools, b.ToolName) || (!contains(m.Tools, b.ToolName) && !standard) {
 		return false
 	}

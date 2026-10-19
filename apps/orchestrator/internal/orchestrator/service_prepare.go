@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
@@ -19,6 +20,7 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/content"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -219,6 +221,9 @@ func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID stri
 }
 
 func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {
+	if s.config.ToolDiscoveryEnabled && s.config.ToolCatalog == nil {
+		return fmt.Errorf("tool discovery requires a scoped Broker catalog")
+	}
 	if prepared == nil || s.config.ToolCatalog == nil {
 		return nil
 	}
@@ -234,6 +239,15 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 	if err != nil {
 		return fmt.Errorf("load tool contracts: %w", err)
 	}
+	if !s.config.ToolDiscoveryEnabled {
+		filtered := contracts[:0]
+		for _, c := range contracts {
+			if !toolcatalog.IsTool(c.ToolName) {
+				filtered = append(filtered, c)
+			}
+		}
+		contracts = filtered
+	}
 	if prepared.AdaptivePlan != nil && !prepared.AdaptivePlan.SearchEnabled() {
 		filtered := contracts[:0]
 		for _, contract := range contracts {
@@ -243,7 +257,33 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 		}
 		contracts = filtered
 	}
-	prepared.ToolDefs = toolDefinitionsFromContracts(contracts)
+	if s.config.ToolDiscoveryEnabled {
+		categories := map[string]bool{}
+		for _, c := range contracts {
+			if c.ToolClass != "tool_catalog" {
+				categories[c.ToolClass] = true
+			}
+		}
+		categoryNames := []string{}
+		for name := range categories {
+			categoryNames = append(categoryNames, name)
+		}
+		sort.Strings(categoryNames)
+		prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"available_tool_categories": categoryNames}, content.Origin{Kind: content.ToolOutput, Sensitivity: content.Private, SourceRefs: []string{"tool-catalog:" + prepared.CurrentRunID}}))
+		var stale []string
+		contracts, stale, err = s.selectToolContracts(ctx, prepared.CurrentRunID, contracts)
+		if err != nil {
+			return err
+		}
+		prepared.InputItems = append(prepared.InputItems, discoveryInstructions())
+		if len(stale) > 0 {
+			prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"unloaded_stale_tool_refs": stale}, content.Origin{Kind: content.ToolOutput, Sensitivity: content.Private, SourceRefs: []string{"tool-catalog:" + prepared.CurrentRunID}}))
+		}
+	}
+	prepared.ToolDefs, err = s.modelToolDefinitions(contracts)
+	if err != nil {
+		return err
+	}
 	for _, contract := range contracts {
 		if extension := contract.GetExtension(); extension != nil {
 			prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"extension_operation": contract.GetToolName(), "package_description": contract.GetDescription(), "manifest_source": extension.GetSource(), "manifest_version": extension.GetVersion()}, content.Origin{Kind: content.Document, Sensitivity: content.Private, SourceRefs: []string{"extension-manifest:" + extension.GetManifestHash()}}))
@@ -258,8 +298,10 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 		toolNames = append(toolNames, td.Name)
 	}
 	prepared.observabilityTools = map[string]any{
-		"tool_count": len(prepared.ToolDefs),
-		"tool_names": toolNames,
+		"tool_count":   len(prepared.ToolDefs),
+		"tool_names":   toolNames,
+		"schema_bytes": len(mustMarshalJSON(prepared.ToolDefs)),
+		"deferred":     s.config.ToolDiscoveryEnabled,
 	}
 	return nil
 }

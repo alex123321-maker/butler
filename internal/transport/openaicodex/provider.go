@@ -31,6 +31,7 @@ type Config struct {
 }
 
 type Provider struct {
+	toolSets      map[string][]transport.ToolDefinition
 	config        Config
 	httpClient    *http.Client
 	capabilities  transport.CapabilitySnapshot
@@ -383,6 +384,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 }
 
 func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
+	p.rememberTools(req.Context.RunID, req.ToolDefinitions)
 	instructions, input := splitInstructions(req.InputItems)
 	payload := map[string]any{"model": req.Context.ModelName, "input": input, "stream": req.StreamingEnabled, "store": false}
 	if instructions != "" {
@@ -394,11 +396,15 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 	if len(req.ToolDefinitions) > 0 {
 		payload["tools"] = encodeTools(req.ToolDefinitions)
 	}
+	p.attachCurrentTools(payload, req.Context.RunID)
 	mergeOptions(payload, req.TransportOptionsJSON, req.TransportOptions)
 	return json.Marshal(payload)
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
 	instructions, input := splitInstructions(req.InputItems)
 	payload := map[string]any{"model": p.config.Model, "input": input, "stream": true, "store": false}
 	if instructions != "" {
@@ -407,11 +413,15 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 	if sessionID := sessionIDFromRef(req.ProviderSessionRef); sessionID != "" {
 		payload["prompt_cache_key"] = sessionID
 	}
+	p.attachCurrentTools(payload, req.RunID)
 	mergeOptions(payload, req.TransportOptionsJSON, req.TransportOptions)
 	return json.Marshal(payload)
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
 	// The Codex API does not support previous_response_id, so each request is
 	// stateless.  We replay the function_call item alongside the
 	// function_call_output so the API can match the result to the call.
@@ -441,6 +451,7 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 	if sessionID := sessionIDFromRef(req.ProviderSessionRef); sessionID != "" {
 		payload["prompt_cache_key"] = sessionID
 	}
+	p.attachCurrentTools(payload, req.RunID)
 	mergeOptions(payload, req.TransportOptionsJSON, req.TransportOptions)
 	return json.Marshal(payload)
 }
@@ -683,6 +694,7 @@ func (p *Provider) clearRunState(runID string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	delete(p.toolAliases, runID)
+	delete(p.toolSets, runID)
 	delete(p.instructions, runID)
 	delete(p.lastToolCalls, runID)
 }

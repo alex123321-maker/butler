@@ -1,5 +1,8 @@
 # Butler Configuration Layering
 
+Optional `BUTLER_TOOL_DISCOVERY_ENABLED` is an operator-only, restart-required flag, default false on Orchestrator and Broker. Stored settings cannot enable it; matching private Broker authentication is required. See [tool discovery](tool-discovery.md).
+
+
 Sprint 8 adds a layered configuration flow for the orchestrator settings surface.
 
 Resolution order:
