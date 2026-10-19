@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"unicode"
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
@@ -266,6 +267,9 @@ func (s *Server) executeParseHTML(ctx context.Context, req *runtimev1.ExecuteReq
 	if strings.TrimSpace(args.Selector) == "" {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "selector is required", "{}")}, nil
 	}
+	if !validSimpleSelector(args.Selector) {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "unsupported selector; use tag, .class, #id, tag.class or tag#id", "{}")}, nil
+	}
 
 	var htmlContent string
 
@@ -333,7 +337,7 @@ func extractTextBySelector(htmlContent, selector string) []string {
 		return nil
 	}
 
-	var matches []string
+	matches := make([]string, 0)
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode && matchNode(n, tag, id, class) {
@@ -348,6 +352,25 @@ func extractTextBySelector(htmlContent, selector string) []string {
 	}
 	walk(doc)
 	return matches
+}
+
+func validSimpleSelector(selector string) bool {
+	selector = strings.TrimSpace(selector)
+	if selector == "" || strings.Count(selector, ".")+strings.Count(selector, "#") > 1 {
+		return false
+	}
+	tag, id, class := parseSimpleSelector(selector)
+	if strings.Contains(selector, "#") && id == "" || strings.Contains(selector, ".") && class == "" {
+		return false
+	}
+	for _, part := range []string{tag, id, class} {
+		for _, r := range part {
+			if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '-' && r != '_' {
+				return false
+			}
+		}
+	}
+	return tag != "" || id != "" || class != ""
 }
 
 // parseSimpleSelector supports: "tag", ".class", "#id", "tag.class", "tag#id".

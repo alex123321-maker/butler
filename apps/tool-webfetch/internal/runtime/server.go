@@ -3,8 +3,8 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -76,10 +76,16 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 	for _, provider := range c.providers {
 		result, err := provider.Fetch(ctx, rawURL, includeHTML)
 		if err == nil {
+			if _, err := textMIME(result.MIMEType, []byte(result.ContentText)); err != nil {
+				return FetchResult{}, err
+			}
 			if result.Provider == "" {
 				result.Provider = provider.Name()
 			}
 			return sanitizeFetchResult(result), nil
+		}
+		if errors.Is(err, errUnsupportedContent) || errors.Is(err, errResponseLimit) {
+			return FetchResult{}, err
 		}
 		lastErr = err
 	}
@@ -156,7 +162,7 @@ func (s *Server) executeFetch(ctx context.Context, req *runtimev1.ExecuteRequest
 
 	result, err := s.fetcher.Fetch(ctx, args.URL, args.IncludeHTML)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, err.Error())}, nil
+		return &runtimev1.ExecuteResponse{Result: fetchFailedResult(req, err)}, nil
 	}
 	return &runtimev1.ExecuteResponse{Result: completedResult(req, mustJSON(result))}, nil
 }
@@ -201,11 +207,18 @@ func (s *Server) executeExtract(ctx context.Context, req *runtimev1.ExecuteReque
 	text := strings.TrimSpace(args.Text)
 	htmlContent := strings.TrimSpace(args.HTML)
 	sourceURL := strings.TrimSpace(args.URL)
+	var fetched *FetchResult
 	if sourceURL != "" {
 		result, err := s.fetcher.Fetch(ctx, sourceURL, true)
 		if err != nil {
-			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, err.Error())}, nil
+			return &runtimev1.ExecuteResponse{Result: fetchFailedResult(req, err)}, nil
 		}
+		if result.StatusCode < 200 || result.StatusCode >= 300 {
+			failure := failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "web resource did not return a successful HTTP status")
+			failure.Error.DetailsJson = mustJSON(map[string]any{"reason": "http_status", "status_code": result.StatusCode})
+			return &runtimev1.ExecuteResponse{Result: failure}, nil
+		}
+		fetched = &result
 		if text == "" {
 			text = strings.TrimSpace(result.ContentText)
 		}
@@ -213,7 +226,7 @@ func (s *Server) executeExtract(ctx context.Context, req *runtimev1.ExecuteReque
 			htmlContent = strings.TrimSpace(result.ContentHTML)
 		}
 	}
-	if text == "" && htmlContent == "" {
+	if text == "" && htmlContent == "" && fetched == nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "url, text, or html is required")}, nil
 	}
 	if text == "" && htmlContent != "" {
@@ -223,6 +236,13 @@ func (s *Server) executeExtract(ctx context.Context, req *runtimev1.ExecuteReque
 	payload := map[string]any{
 		"url":          sourceURL,
 		"content_text": text,
+	}
+	if fetched != nil {
+		payload["status_code"] = fetched.StatusCode
+		payload["final_url"] = fetched.FinalURL
+		payload["mime_type"] = fetched.MIMEType
+		payload["provider"] = fetched.Provider
+		payload["metadata"] = fetched.Metadata
 	}
 	if args.IncludeHTML {
 		payload["content_html"] = htmlContent
@@ -277,7 +297,14 @@ func (p *SelfHostedProvider) Fetch(ctx context.Context, rawURL string, includeHT
 		ContentHTML string         `json:"content_html"`
 		Metadata    map[string]any `json:"metadata"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 2*1024*1024)).Decode(&payload); err != nil {
+	body, truncated, err := readContent(resp.Body)
+	if err != nil {
+		return FetchResult{}, err
+	}
+	if truncated {
+		return FetchResult{}, errResponseLimit
+	}
+	if err := json.Unmarshal(body, &payload); err != nil {
 		return FetchResult{}, err
 	}
 	return FetchResult{
@@ -323,7 +350,14 @@ func (p *JinaReaderProvider) Fetch(ctx context.Context, rawURL string, includeHT
 	if resp.StatusCode >= 400 {
 		return FetchResult{}, fmt.Errorf("jina reader returned status %d", resp.StatusCode)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024))
+	body, truncated, err := readContent(resp.Body)
+	if err != nil {
+		return FetchResult{}, err
+	}
+	if _, err := textMIME(resp.Header.Get("Content-Type"), body); err != nil {
+		return FetchResult{}, err
+	}
+	text, err := contentText(body, truncated)
 	if err != nil {
 		return FetchResult{}, err
 	}
@@ -333,9 +367,9 @@ func (p *JinaReaderProvider) Fetch(ctx context.Context, rawURL string, includeHT
 		FinalURL:     rawURL,
 		StatusCode:   resp.StatusCode,
 		MIMEType:     resp.Header.Get("Content-Type"),
-		ContentText:  redact.Values(sanitize.Text(string(body)), p.token),
+		ContentText:  redact.Values(sanitize.Text(text), p.token),
 		ContentHTML:  mapHTML(includeHTML, ""),
-		Metadata:     map[string]any{},
+		Metadata:     map[string]any{"truncated": truncated},
 	}, nil
 }
 
@@ -366,14 +400,25 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 		return FetchResult{}, err
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024))
+	body, truncated, err := readContent(resp.Body)
 	if err != nil {
 		return FetchResult{}, err
 	}
-	htmlContent := string(body)
 	mimeType := resp.Header.Get("Content-Type")
-	text := htmlContent
-	if strings.Contains(strings.ToLower(mimeType), "html") {
+	kind, err := textMIME(mimeType, body)
+	if err != nil {
+		return FetchResult{}, err
+	}
+	text, err := contentText(body, truncated)
+	if err != nil {
+		return FetchResult{}, err
+	}
+	if mimeType == "" {
+		mimeType = kind
+	}
+	htmlContent := ""
+	if kind == "text/html" || kind == "application/xhtml+xml" {
+		htmlContent = text
 		text = extractReadableText(htmlContent)
 	}
 	return FetchResult{
@@ -384,7 +429,7 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 		MIMEType:     mimeType,
 		ContentText:  text,
 		ContentHTML:  mapHTML(includeHTML, htmlContent),
-		Metadata:     map[string]any{},
+		Metadata:     map[string]any{"truncated": truncated},
 	}, nil
 }
 
@@ -396,6 +441,9 @@ func extractReadableText(htmlContent string) string {
 	var builder strings.Builder
 	var walk func(*html.Node)
 	walk = func(node *html.Node) {
+		if node.Type == html.ElementNode && (node.Data == "script" || node.Data == "style") {
+			return
+		}
 		if node.Type == html.TextNode {
 			text := strings.TrimSpace(node.Data)
 			if text != "" {
@@ -435,6 +483,11 @@ func sanitizeFetchResult(result FetchResult) FetchResult {
 }
 
 func completedResult(req *runtimev1.ExecuteRequest, resultJSON string) *toolbrokerv1.ToolResult {
+	// JSON escaping and optional HTML can expand a bounded HTTP response beyond
+	// the private gRPC response limit. Refuse explicitly rather than losing ACK.
+	if len(resultJSON) > 3*1024*1024 {
+		return failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "web resource output exceeds the supported size limit")
+	}
 	call := req.GetToolCall()
 	result := &toolbrokerv1.ToolResult{
 		Status:     "completed",
@@ -447,6 +500,19 @@ func completedResult(req *runtimev1.ExecuteRequest, resultJSON string) *toolbrok
 		result.ToolName = call.GetToolName()
 	}
 	return result
+}
+
+func fetchFailedResult(req *runtimev1.ExecuteRequest, err error) *toolbrokerv1.ToolResult {
+	if errors.Is(err, errUnsupportedContent) || errors.Is(err, errResponseLimit) {
+		result := failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, err.Error())
+		reason := "unsupported_content"
+		if errors.Is(err, errResponseLimit) {
+			reason = "response_limit"
+		}
+		result.Error.DetailsJson = mustJSON(map[string]any{"reason": reason})
+		return result
+	}
+	return failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "web resource unavailable or denied")
 }
 
 func failedResult(req *runtimev1.ExecuteRequest, class commonv1.ErrorClass, message string) *toolbrokerv1.ToolResult {

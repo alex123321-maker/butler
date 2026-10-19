@@ -10,10 +10,12 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/butler/butler/internal/browsercontrol"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/security/egress"
 )
 
 const maxSnapshotTextLen = 12000
@@ -34,26 +36,31 @@ type Server struct {
 	runner   Runner
 	sessions *sessionStore
 	log      *slog.Logger
+	// Set at startup when the private owner channel is enabled. Legacy isolated
+	// browser composition has no owner epochs and retains its existing contract.
+	RequireDispatchEpoch bool
 }
 
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
-	ToolName           string        `json:"tool_name"`
-	SessionID          string        `json:"browser_session_id,omitempty"`
-	URL                string        `json:"url,omitempty"`
-	ExpectedURL        string        `json:"expected_url,omitempty"`
-	ObservationVersion uint64        `json:"observation_version,omitempty"`
-	Selector           string        `json:"selector,omitempty"`
-	Value              string        `json:"value,omitempty"`
-	Text               string        `json:"text,omitempty"`
-	Timeout            int64         `json:"timeout,omitempty"`
-	ScopeOrigin        string        `json:"scope_origin,omitempty"`
-	ExpiresAt          string        `json:"expires_at,omitempty"`
-	ProxyURL           string        `json:"proxy_url,omitempty"`
-	SecretValues       []string      `json:"secret_values,omitempty"`
-	Cookie             *Cookie       `json:"cookie,omitempty"`
-	StorageState       *StorageState `json:"storage_state,omitempty"`
+	ToolName           string                  `json:"tool_name"`
+	SessionID          string                  `json:"browser_session_id,omitempty"`
+	URL                string                  `json:"url,omitempty"`
+	ExpectedURL        string                  `json:"expected_url,omitempty"`
+	ObservationVersion uint64                  `json:"observation_version,omitempty"`
+	Selector           string                  `json:"selector,omitempty"`
+	Value              string                  `json:"value,omitempty"`
+	Text               string                  `json:"text,omitempty"`
+	Timeout            int64                   `json:"timeout,omitempty"`
+	ScopeOrigin        string                  `json:"scope_origin,omitempty"`
+	ExpiresAt          string                  `json:"expires_at,omitempty"`
+	ProxyURL           string                  `json:"proxy_url,omitempty"`
+	SecretValues       []string                `json:"secret_values,omitempty"`
+	AllowedDomains     []string                `json:"allowed_domains,omitempty"`
+	OwnerCommand       *browsercontrol.Command `json:"owner_command,omitempty"`
+	Cookie             *Cookie                 `json:"cookie,omitempty"`
+	StorageState       *StorageState           `json:"storage_state,omitempty"`
 }
 type Cookie struct {
 	Name     string `json:"name"`
@@ -85,20 +92,21 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
-	SessionID          string       `json:"browser_session_id,omitempty"`
-	ObservationVersion uint64       `json:"observation_version,omitempty"`
-	ScopeOrigin        string       `json:"scope_origin,omitempty"`
-	ExpiresAt          string       `json:"expires_at,omitempty"`
-	FinalURL           string       `json:"final_url,omitempty"`
-	Title              string       `json:"title,omitempty"`
-	Text               string       `json:"text,omitempty"`
-	Matched            bool         `json:"matched"`
-	OK                 bool         `json:"ok"`
-	Links              []ResultLink `json:"links,omitempty"`
-	PageStatus         string       `json:"page_status,omitempty"`
-	LocalPreparation   bool         `json:"local_preparation,omitempty"`
-	NetworkState       string       `json:"network_state,omitempty"`
-	Error              *ResultError `json:"error,omitempty"`
+	SessionID          string                `json:"browser_session_id,omitempty"`
+	ObservationVersion uint64                `json:"observation_version,omitempty"`
+	ScopeOrigin        string                `json:"scope_origin,omitempty"`
+	ExpiresAt          string                `json:"expires_at,omitempty"`
+	FinalURL           string                `json:"final_url,omitempty"`
+	Title              string                `json:"title,omitempty"`
+	Text               string                `json:"text,omitempty"`
+	Matched            bool                  `json:"matched"`
+	OK                 bool                  `json:"ok"`
+	Links              []ResultLink          `json:"links,omitempty"`
+	PageStatus         string                `json:"page_status,omitempty"`
+	LocalPreparation   bool                  `json:"local_preparation,omitempty"`
+	NetworkState       string                `json:"network_state,omitempty"`
+	Error              *ResultError          `json:"error,omitempty"`
+	OwnerFrame         *browsercontrol.Frame `json:"owner_frame,omitempty"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
@@ -131,6 +139,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
 	}
+	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "public-origin navigation requires revision 3")
+	}
 	if (args.ToolName == "browser.prepare_fill" || args.ToolName == "browser.prepare_type") && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "unsafe" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1") {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "local preparation requires its pinned revision 2 contract")
 	}
@@ -148,6 +159,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		if !domainAllowed(parsed.Hostname(), contract.GetAllowedDomains()) {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "target domain is not allowed")
 		}
+		if _, err := (egress.Policy{}).ValidateURL(args.URL); err != nil {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "target must be a public HTTP(S) destination")
+		}
 	}
 	if args.ToolName != "browser.read" && strings.TrimSpace(call.GetRunId()) == "" {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_missing", "browser session requires a trusted run owner")
@@ -164,6 +178,8 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		session.mu.Lock()
 		defer session.mu.Unlock()
 		args.SessionID, args.ScopeOrigin, args.ExpiresAt = session.id, session.origin, session.expires.UTC().Format(time.RFC3339Nano)
+		args.AllowedDomains = contract.GetAllowedDomains()
+		session.allowedDomains = append([]string(nil), args.AllowedDomains...)
 	} else if args.ToolName != "browser.read" {
 		var code string
 		session, code = s.sessions.acquire(args.SessionID, call.GetRunId())
@@ -171,6 +187,15 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, code, "browser session is unavailable: "+code)
 		}
 		defer session.mu.Unlock()
+		if session.controller != "" {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_control", "owner is controlling this browser; wait for explicit return")
+		}
+		if s.RequireDispatchEpoch {
+			epoch, ok := browsercontrol.IncomingDispatchEpoch(ctx)
+			if !ok || epoch != session.controlEpoch {
+				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "stale_control_epoch", "browser control changed since admission; request a fresh snapshot")
+			}
+		}
 		if session.closed {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_lost", "browser session was closed or lost")
 		}
@@ -183,9 +208,6 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		if args.ToolName != "browser.close" && (parsed == nil || !domainAllowed(parsed.Hostname(), contract.GetAllowedDomains())) {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "current domain is not allowed by tool contract")
 		}
-		if args.ToolName != "browser.close" && originOf(session.currentURL) != session.origin {
-			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "observed page is outside the fixed browser origin")
-		}
 		if isGuardedAction(args.ToolName) {
 			if args.ObservationVersion == 0 || args.ObservationVersion != session.version {
 				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "stale_observation", "observe the current page before acting")
@@ -194,13 +216,13 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "page_changed", "expected_url does not match the observed page")
 			}
 		}
-		if args.ToolName == "browser.navigate" && originOf(args.URL) != session.origin {
-			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "navigation cannot expand the session origin")
-		}
-		args.ScopeOrigin, args.ExpiresAt = session.origin, session.expires.UTC().Format(time.RFC3339Nano)
-		if err := validateAuthScope(args, session.origin); err != nil {
+		args.ScopeOrigin, args.ExpiresAt = originOf(session.currentURL), session.expires.UTC().Format(time.RFC3339Nano)
+		if err := validateAuthScope(args, args.ScopeOrigin); err != nil {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", err.Error())
 		}
+	}
+	if args.ToolName == "browser.read" {
+		args.AllowedDomains = contract.GetAllowedDomains()
 	}
 	runCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
 	defer cancel()
@@ -230,7 +252,7 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 			session.closed = true
 			s.sessions.remove(session.id)
 		}
-		result.SessionID, result.ScopeOrigin, result.ExpiresAt = session.id, session.origin, session.expires.UTC().Format(time.RFC3339Nano)
+		result.SessionID, result.ScopeOrigin, result.ExpiresAt = session.id, originOf(session.currentURL), session.expires.UTC().Format(time.RFC3339Nano)
 	}
 	result.Text = truncate(result.Text, maxSnapshotTextLen)
 	if result.Error != nil {
@@ -272,7 +294,10 @@ func validateSelectorRequired(args Request) error {
 	}
 	return nil
 }
-func buildResultJSON(_ string, result Result) string { return mustJSON(result) }
+func buildResultJSON(_ string, result Result) string {
+	result.OwnerFrame = nil
+	return mustJSON(result)
+}
 func failedResult(req *runtimev1.ExecuteRequest, class commonv1.ErrorClass, message, detailsJSON string) *toolbrokerv1.ToolResult {
 	result := &toolbrokerv1.ToolResult{Status: "failed", FinishedAt: time.Now().UTC().Format(time.RFC3339Nano), Error: &toolbrokerv1.ToolError{ErrorClass: class, Message: message, Retryable: false, DetailsJson: detailsJSON}}
 	if call := req.GetToolCall(); call != nil {

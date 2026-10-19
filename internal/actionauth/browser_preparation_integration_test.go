@@ -33,10 +33,12 @@ func TestBrowserLocalPreparationJournalAndBudgetIntegration(t *testing.T) {
 	contract.AllowedDomains = []string{"external.test"}
 	version := uint64(1)
 	for index, tool := range []string{"browser.open", "browser.prepare_fill", "browser.prepare_type", "browser.click"} {
+		contract.ContractRevision = "2"
 		call.ToolName, call.ToolCallId, contract.ToolName = tool, fmt.Sprintf("browser-sequence-%d", index), tool
 		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "none"}
 		args := map[string]any{"browser_session_id": "context", "expected_url": egresstest.Origin + "/form", "observation_version": version, "selector": "#input", "value": "local-draft", "text": "more"}
 		if tool == "browser.open" {
+			contract.ContractRevision = "3"
 			args = map[string]any{"url": egresstest.Origin + "/form"}
 			contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
 		} else if tool != "browser.click" {

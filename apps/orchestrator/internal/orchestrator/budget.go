@@ -35,6 +35,11 @@ func (p *budgetedProvider) SubmitToolResult(ctx context.Context, r transport.Sub
 }
 func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
 	s := p.service
+	if s.config.WaitBrowserOwner != nil {
+		if err := s.config.WaitBrowserOwner(ctx, runID); err != nil {
+			return nil, err
+		}
+	}
 	limits, ok := p.ModelProvider.(interface{ InferenceLimits() (int64, int64) })
 	if !ok {
 		return nil, &budget.LoopError{Reason: "provider_inference_limits_unavailable"}

@@ -146,7 +146,7 @@ new WebSocket('ws://external.test/escape');
 		args["selector"], args["value"] = selector, value
 		return invoke("browser.fill", args)
 	}
-	t.Run("external page cannot POST reach private or foreign origins or open WebSocket", func(t *testing.T) {
+	t.Run("operator domain cap denies foreign resources POST private origins and WebSocket", func(t *testing.T) {
 		beforePosts, beforeEscapes, beforeReads := posts.Load(), escapes.Load(), allowedReads.Load()
 		obs := open("/untrusted")
 		time.Sleep(400 * time.Millisecond)

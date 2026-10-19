@@ -2,6 +2,11 @@
 
 Nuxt.js frontend for the Butler self-hosted AI agent platform.
 
+Generated converters are available under **Advanced**, rather than the primary
+Workspace navigation. Direct `/converters` links still open the existing owner
+review page and expand Advanced; this presentation change does not enable or
+disable converter tools or alter their permissions.
+
 Owner task controls show current assignment/source/result references and separate
 answer, verification, effects and notification delivery. A lost acknowledgement
 keeps its exact delivery/body for retry; child Stop uses the child's current
@@ -259,3 +264,13 @@ available independently. Synthesis is abortable presentation and preserves text
 on failure. Tokens stay only in page memory. The frozen human quality gate failed;
 see [voice evidence](../docs/architecture/russian-voice.md). Server composition is
 optional and exposing this page alone enables no worker or microphone.
+
+`/browser` shows live server Chromium pages and explicit Take control / Return to
+agent actions. Clicking, keyboard shortcuts, text paste, scrolling and navigation
+use the authenticated Core -> Broker -> runtime channel. Proof, controller and
+frames stay in page memory. A lost ACK or closed viewer never silently returns
+control; reload sessions and explicitly take/return control to recover. The
+runtime channel requires migration086 and `deploy/docker-compose.server-browser.yml`.
+Pixels/input are not model artifacts; this is a page viewport, not a native desktop.
+Failed control requests discard queued keystrokes. Return to agent can remove
+an existing controller after task cancellation without permitting new input.

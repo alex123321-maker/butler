@@ -57,7 +57,7 @@ func TestExecuteToolCallRoutesToRuntime(t *testing.T) {
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "tools.json")
-	registryJSON := `{"tools":[{"tool_name":"browser.navigate","tool_class":"browser","contract_revision":"2","effect_contract":{"retry_safety":"read_only","verification_method":"read_result"},"runtime_target":"` + listener.Addr().String() + `","input_schema_json":"{\"type\":\"object\",\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"additionalProperties\":false}","status":"enabled"}]}`
+	registryJSON := `{"tools":[{"tool_name":"browser.navigate","tool_class":"browser","contract_revision":"3","effect_contract":{"retry_safety":"read_only","verification_method":"read_result"},"runtime_target":"` + listener.Addr().String() + `","input_schema_json":"{\"type\":\"object\",\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"additionalProperties\":false}","status":"enabled"}]}`
 	if err := os.WriteFile(path, []byte(registryJSON), 0o600); err != nil {
 		t.Fatalf("write registry file: %v", err)
 	}

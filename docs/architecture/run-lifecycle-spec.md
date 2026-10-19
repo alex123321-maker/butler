@@ -1100,3 +1100,17 @@ and progress before channel-delivery observation. Only current independent owner
 verification of original criteria and the Task completion transaction create the
 one root notice. Source-only historical completion/send checks cannot borrow a
 completed run's execution authority. Approval/intervention delivery is preserved.
+
+## Server browser manual-control wait
+
+With the optional owner channel configured, the execution kernel checks the
+migration086 owner fence before model budget admission, before a tool proposal
+and before consuming each provider event. It waits within the existing run
+context; cancellation, authority/budget deadlines and lease renewal continue.
+This does not create a completed task, new run, approval or model continuation.
+An inference started before takeover cannot be undone. Broker independently
+blocks browser dispatch before Claim. An acknowledged explicit owner release
+restores agent mode, but a fresh observation is required before another guarded
+browser action. Lost release ACK keeps the durable fence closed; no timer other
+than the actual finite context expiry grants a resumed browser. See the
+[browser contract](browser-session-contract.md#owner-viewing-and-manual-control).

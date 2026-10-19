@@ -145,7 +145,7 @@ func TestAssemblerIncludesBrowserStrategySection(t *testing.T) {
 	if !contains(result.FinalPrompt, "DIRECT NAVIGATION FIRST") {
 		t.Fatalf("expected browser strategy content in prompt, got %q", result.FinalPrompt)
 	}
-	for _, required := range []string{"EXPLICIT CONTEXT", "observation_version", "PRIVATE AUTH STATE", "USER TAB", "CONTINUITY"} {
+	for _, required := range []string{"EXPLICIT CONTEXT", "observation_version", "PRIVATE AUTH STATE", "OWNER CONTROL", "CONTINUITY"} {
 		if !contains(result.FinalPrompt, required) {
 			t.Fatalf("browser rule %q was truncated from assembled prompt", required)
 		}
@@ -156,8 +156,8 @@ func TestAssemblerIncludesBrowserStrategySection(t *testing.T) {
 	if !contains(result.FinalPrompt, "A numeric reply selects an unambiguous option") {
 		t.Fatalf("expected numbered follow-up rule in browser strategy, got %q", result.FinalPrompt)
 	}
-	if !contains(result.FinalPrompt, "For the user's current tab prefer single_tab.*") {
-		t.Fatalf("expected single-tab autonomy rule in browser strategy, got %q", result.FinalPrompt)
+	if !contains(result.FinalPrompt, "single_tab.* is optional, disabled by default") {
+		t.Fatalf("expected optional single-tab rule in browser strategy, got %q", result.FinalPrompt)
 	}
 	if !contains(result.FinalPrompt, "avoid unnecessary recovery menus") {
 		t.Fatalf("expected recovery-menu rule in browser strategy, got %q", result.FinalPrompt)

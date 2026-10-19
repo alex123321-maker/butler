@@ -11,8 +11,9 @@ import (
 	"time"
 )
 
-// ScopedProxy is a private Chromium proxy, fixed to one public origin. The
-// context allowance survives later operations; expiry closes hijacked tunnels.
+// ScopedProxy is a private expiring proxy. NewScopedProxy fixes one origin;
+// NewBrowserProxy permits public origins under operator caps. Context byte
+// allowance survives later operations; expiry closes hijacked tunnels.
 type ScopedProxy struct {
 	server   *http.Server
 	listener net.Listener
@@ -33,16 +34,31 @@ type ScopedProxy struct {
 }
 
 func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64) (*ScopedProxy, error) {
+	return newProxy(policy, origin, expires, limit, false)
+}
+
+// NewBrowserProxy permits public HTTP(S) destinations under the operator's
+// domain policy. Each connection still uses checked DNS and pinned dialing.
+func NewBrowserProxy(policy Policy, origin string, expires time.Time, limit int64) (*ScopedProxy, error) {
+	return newProxy(policy, origin, expires, limit, true)
+}
+
+func newProxy(policy Policy, origin string, expires time.Time, limit int64, multiple bool) (*ScopedProxy, error) {
 	parsed, err := policy.ValidateURL(origin)
 	if err != nil || (parsed.Path != "" && parsed.Path != "/") || parsed.RawQuery != "" || !expires.After(time.Now()) {
 		return nil, ErrDenied
 	}
-	policy.AllowedDomains = []string{parsed.Hostname()}
+	if !multiple {
+		policy.AllowedDomains = []string{parsed.Hostname()}
+	}
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, ErrDenied
 	}
 	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(20 * 1024 * 1024), tunnels: map[net.Conn]bool{}, requests: map[uint64]context.CancelFunc{}}
+	if multiple {
+		proxy.origin = nil
+	}
 	proxy.server = &http.Server{Handler: proxy, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 32 * 1024}
 	// AfterFunc may call Close before the returned timer has been assigned. The
 	// callback reads timer under mu, so initialize it under the same lock.
@@ -53,8 +69,9 @@ func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64
 	return proxy, nil
 }
 
-func (p *ScopedProxy) URL() string   { return "http://" + p.listener.Addr().String() }
-func (p *ScopedProxy) Expired() bool { return !time.Now().Before(p.expires) }
+func (p *ScopedProxy) URL() string         { return "http://" + p.listener.Addr().String() }
+func (p *ScopedProxy) Deadline() time.Time { return p.expires }
+func (p *ScopedProxy) Expired() bool       { return !time.Now().Before(p.expires) }
 
 // Freeze survives subsequent observations. Cancel requests and close existing
 // CONNECT tunnels too; blocking only new connections would leave draft release
@@ -173,7 +190,7 @@ func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		p.connect(w, r, epoch)
 		return
 	}
-	if p.origin.Scheme != "http" || r.URL.Scheme != "http" || !strings.EqualFold(r.URL.Host, p.origin.Host) || r.URL.User != nil {
+	if r.URL.Scheme != "http" || r.URL.User != nil || (p.origin != nil && (p.origin.Scheme != "http" || !strings.EqualFold(r.URL.Host, p.origin.Host))) {
 		http.Error(w, "destination denied", http.StatusForbidden)
 		return
 	}
@@ -205,7 +222,7 @@ func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request, epoch uint64) {
-	if p.origin.Scheme != "https" || !strings.EqualFold(r.Host, net.JoinHostPort(p.origin.Hostname(), portFor(p.origin))) {
+	if _, err := p.policy.ValidateURL("https://" + r.Host); err != nil || (p.origin != nil && (p.origin.Scheme != "https" || !strings.EqualFold(r.Host, net.JoinHostPort(p.origin.Hostname(), portFor(p.origin))))) {
 		http.Error(w, "destination denied", http.StatusForbidden)
 		return
 	}

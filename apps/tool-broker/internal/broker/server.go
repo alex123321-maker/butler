@@ -31,7 +31,15 @@ type Server struct {
 	budgets           *budget.Controller
 	scopedCatalog     ScopedCatalog
 	resourceAdmission ResourceAdmission
+	browserControl    BrowserControl
 }
+type BrowserControl interface {
+	Before(context.Context, *toolbrokerv1.ToolCall) (context.Context, error)
+	Record(context.Context, *toolbrokerv1.ToolCall, actionauth.Grant, *toolbrokerv1.ToolResult) error
+}
+
+func (s *Server) SetBrowserControl(control BrowserControl) { s.browserControl = control }
+
 type ScopedCatalog interface {
 	ListForRun(context.Context, string, string, int) ([]*toolbrokerv1.ToolContract, error)
 }
@@ -105,6 +113,13 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	}
 	if s.authorizer == nil {
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "action authorization is not configured")}, nil
+	}
+	if s.browserControl != nil {
+		var err error
+		ctx, err = s.browserControl.Before(ctx, req.GetToolCall())
+		if err != nil {
+			return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "browser is under owner control, unavailable or requires a fresh snapshot; no action dispatched")}, nil
+		}
 	}
 	grant, err := s.authorizer.Verify(ctx, req.GetToolCall(), contract, req.GetAuthorizationId())
 	if err != nil {
@@ -192,6 +207,11 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 		}
 	}
 	result = redactResult(result, resolved)
+	if err == nil && s.browserControl != nil {
+		if controlErr := s.browserControl.Record(ctx, req.GetToolCall(), grant, result); controlErr != nil {
+			err = controlErr
+		}
+	}
 	finishCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancel()
 	recorded, finishErr := s.authorizer.Outcome(finishCtx, grant, result, err != nil)
@@ -202,6 +222,11 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	if recorded.State == actionauth.StateUnknown {
 		if result == nil {
 			result = unknownResult(req.GetToolCall(), effect.ActionID)
+		} else if err == nil && grant.Binding.Effect == actionauth.EffectRead && reportableReadFailure(result, contract, grant.Binding) {
+			// An explicit failed read has useful bounded runtime diagnostics (for
+			// example HTTP status or unsupported MIME). Keep them while retaining
+			// the journal's uncertain effect state; this grants no retry or success.
+			result.Error.Retryable = false
 		} else {
 			result.Status = "effect_unknown"
 			result.Error = &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, Message: "external effect outcome is unknown; verify before any new attempt", Retryable: false, DetailsJson: fmt.Sprintf(`{"action_id":%q,"dispatch_outcome":%q}`, effect.ActionID, recorded.DispatchOutcome)}
@@ -215,6 +240,17 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	result.EvidenceRefs = append([]string(nil), recorded.EvidenceRefs...)
 	s.log.Info("tool execution routed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("runtime_target", contract.GetRuntimeTarget()))
 	return &toolbrokerv1.ExecuteToolCallResponse{Result: result}, nil
+}
+
+func reportableReadFailure(result *toolbrokerv1.ToolResult, contract *toolbrokerv1.ToolContract, binding actionauth.ActionBinding) bool {
+	if contract.GetToolClass() != "http" && contract.GetToolClass() != "webfetch" {
+		return false
+	}
+	failure := result.GetError()
+	return result.GetStatus() == "failed" && failure != nil && failure.GetErrorClass() == commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR &&
+		len(failure.GetMessage()) <= 512 && len(failure.GetDetailsJson()) <= 1024 &&
+		(result.GetResultJson() == "" || result.GetResultJson() == "{}") &&
+		result.GetRunId() == binding.RunID && result.GetToolCallId() == binding.ToolCallID && result.GetToolName() == binding.ToolName
 }
 
 func unknownResult(call *toolbrokerv1.ToolCall, actionID string) *toolbrokerv1.ToolResult {

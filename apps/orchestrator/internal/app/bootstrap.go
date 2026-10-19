@@ -504,7 +504,8 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
-			Metrics: m,
+			WaitBrowserOwner: browserOwnerWait(cfg, postgres.Pool()),
+			Metrics:          m,
 			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
 				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")
 				if e != nil {

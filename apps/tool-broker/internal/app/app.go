@@ -17,6 +17,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
@@ -97,6 +98,12 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
+	if cfg.BrowserControlRuntimeURL != "" && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRuntimeEnabled) {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("server browser requires PostgreSQL, private authority authentication and a separate composition from guarded user tabs")
+	}
 	if cfg.MemoryReadEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.MemoryReadControlURL == "") {
 		if postgres != nil {
 			postgres.Close()
@@ -134,6 +141,7 @@ func New(ctx context.Context) (*App, error) {
 	var skillHandler http.Handler
 	var converterHandler http.Handler
 	var guardedResourceHandler http.Handler
+	var browserControlHandler http.Handler
 	var converterConn *grpc.ClientConn
 	ready := false
 	defer func() {
@@ -156,6 +164,30 @@ func New(ctx context.Context) (*App, error) {
 		if err != nil {
 			postgres.Close()
 			return nil, err
+		}
+		if cfg.BrowserControlRuntimeURL != "" {
+			runtimeToken, err := actionauth.ReadServiceToken(cfg.BrowserControlTokenFile)
+			if err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			if runtimeToken == token {
+				postgres.Close()
+				return nil, fmt.Errorf("browser runtime requires a dedicated token distinct from core authority")
+			}
+			var migrated bool
+			if err = postgres.Pool().QueryRow(ctx, `SELECT to_regclass('server_browser_sessions') IS NOT NULL AND to_regclass('server_browser_control_events') IS NOT NULL`).Scan(&migrated); err != nil || !migrated {
+				postgres.Close()
+				return nil, fmt.Errorf("server browser control requires migration086")
+			}
+			client, err := browsercontrol.NewClient(cfg.BrowserControlRuntimeURL, runtimeToken)
+			if err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			control := &browsercontrol.Store{Pool: postgres.Pool(), Contexts: reader, Runtime: client}
+			server.SetBrowserControl(control)
+			browserControlHandler = browsercontrol.Handler(token, control)
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
 		sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
@@ -333,7 +365,7 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, workspaceErr
 		}
-		admissions := broker.ResourceAdmissions{Workspace: workspaceStore}
+		admissions := broker.ResourceAdmissions{Workspace: workspaceStore, ServerBrowser: browserControlHandler != nil}
 		if cfg.GuardedTabRequestEnabled {
 			admissions.Browser = &broker.GuardedTabAdmission{Store: resourceStore}
 		}
@@ -350,7 +382,7 @@ func New(ctx context.Context) (*App, error) {
 			server.SetCatalogExecutor(executor)
 		}
 		if workspaceStore != nil {
-			catalog.BrowserResourcesUnavailable = resourceStore == nil
+			catalog.BrowserResourcesUnavailable = resourceStore == nil && browserControlHandler == nil
 			executor, err = broker.NewWorkspaceExecutor(workspaceStore, executor)
 			if err != nil {
 				postgres.Close()
@@ -438,6 +470,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	httpMux := http.NewServeMux()
+	if browserControlHandler != nil {
+		httpMux.Handle(browsercontrol.Path, browserControlHandler)
+	}
 	if guardedResourceHandler != nil {
 		httpMux.Handle("/internal/guarded-tab-resources", guardedResourceHandler)
 	}

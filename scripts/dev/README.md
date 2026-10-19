@@ -1,5 +1,22 @@
 # Butler Dev Scripts
 
+`web-tools-stage1-lab.sh OWN_AGENT_ROOT unit|broker` validates the six web result
+fixes with race/vet, actual Broker gRPC and runtime subprocesses, PostgreSQL
+authorization/journal/budgets and controlled recipient fixtures. Requires a
+fresh separately synced `web-tools-stage1-*` root. It pins image IDs, uses owned
+caches, read-only shared modules and network-none disposable PG; never Compose.
+See [stage 1 evidence](../../docs/testing/web-tools-stage1-2026-10-19.md).
+
+`web-tools-audit.sh OWN_AGENT_ROOT unit|browser|policy|probes|web` runs the
+web-tool audit in a separately synced `web-tools-audit-*` agent root. It uses
+owned bounded containers and a disposable network-none PostgreSQL instance;
+shared dependency/browser caches are read-only. It never changes shared Compose.
+`probes` runs independent desired-behavior expectations: the original baseline
+returned nonzero for six defects; their fixed permanent regression/acceptance
+tests now live in stage1. Historical failures remain audit evidence.
+See [results and limitations](../../docs/testing/web-tools-audit-2026-10-19.md)
+and [the proposed simplification plan](../../docs/planning/tool-simplification-plan.md).
+
 `pwsh -NoProfile -File scripts/dev/schedules-local.ps1` creates a disposable local
 PostgreSQL container and runs the scheduling acceptance in Go1.27.2 Linux. It
 builds the actual Broker, exercises private dispatch and ordinary Input/Core,
@@ -118,3 +135,19 @@ pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/transport/...
   return/CAS/main control-plane200/snapshot. No selective retry or qualification.
   See [protocol](../../docs/testing/issue-92-native-coherent-pilot.md) and
   [retained offline evidence](../../docs/testing/issue-92-native-coherent-offline.md).
+
+`server-browser-lab.sh <owned-server-browser-root> unit|browser|broker|web|web-real` uses
+only `/srv/storage/butler/agents/server-browser-*` snapshots, private caches and a
+root-local lock. Go/browser images are pinned by inspected ID per invocation;
+module/browser caches are read-only. Broker acceptance creates a network-none,
+unpublished dedicated PG container and removes that exact container on exit.
+No Compose, shared service restart or common database is used. Unit validation
+excludes the pre-existing doctor revision1 function-proposal pin mismatch; its
+failure must not be described as passing. Browser and Broker acceptance are
+mandatory explicit modes, not skipped unit entrypoints.
+
+`web-real` drives the built Web page through the production owner API handler,
+authenticated private Broker, isolated PG and real server Chromium. It checks
+an independently counted recipient POST. The UI's Chromium1.58 cache and the
+runtime image's Chromium1.52 cache remain separate. Test ingress is loopback-only
+inside the disposable PG network namespace; there are no published host ports.

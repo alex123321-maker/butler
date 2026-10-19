@@ -16,9 +16,9 @@ capability and accepts no credential material.
 `browser.open {url}` creates a context owned by the trusted `ToolCall.run_id`, which
 must match the broker-produced `ExecutionContext.run_id`. It returns an opaque
 `browser_session_id`, `scope_origin`, `expires_at`, `final_url` and
-`observation_version`, alongside the initial observation. The origin is fixed to
-the requested HTTP(S) origin and cannot be enlarged by model arguments. The tool
-contract's operator-configured domain restrictions also apply. URLs with embedded
+`observation_version`, alongside the initial observation. `scope_origin` reports the current page origin, not a navigation boundary.
+Revision 3 permits public HTTP(S) origins, redirects and CDN resources in the
+same isolated context. Operator-configured domain caps still apply to every request. URLs with embedded
 credentials or other schemes are refused. Every context is scoped to one run;
 there is no transfer or implicit reuse by another run.
 
@@ -33,10 +33,10 @@ PostgreSQL are not used to claim that a live DOM can be restored.
 | Tool | Effect | Required session guards |
 | --- | --- | --- |
 | `browser.read` | Navigate in a new temporary context, observe, destroy | Independent URL/domain check |
-| `browser.open` | Create a run-owned context and navigate once | Trusted owner, URL/domain check, fixed origin |
-| `browser.snapshot` | Observe the current page; **no navigation** | Session ID, owner, expiry, exclusive control, origin/domain |
+| `browser.open` | Create a run-owned context and navigate once | Trusted owner, public URL/domain checks |
+| `browser.snapshot` | Observe the current page; **no navigation** | Session ID, owner, expiry, exclusive control, current domain |
 | `browser.extract_text` | Observe visible selector text; **no navigation** | Same checks as snapshot; selector |
-| `browser.navigate` | Navigate the same context inside the fixed origin | Latest version and exact `expected_url`, plus session checks |
+| `browser.navigate` | Navigate the same context across permitted public origins | Latest version and exact `expected_url`, plus session checks |
 | `browser.click` | Click on the current page | Latest version and `expected_url`, plus session checks |
 | `browser.fill` / `browser.type` | Change the current input | Latest version and `expected_url`; credential refs for secrets |
 | `browser.prepare_fill` / `browser.prepare_type` | Change input locally with all network frozen persistently | Same latest observation/URL/owner checks; exact approval or current mandate; credential refs for secrets |
@@ -70,10 +70,10 @@ the trusted dispatch deadline and context expiry. The helper keeps its route
 frozen until the live DOM/version/URL guards pass. Stale clicks therefore cannot
 thaw a prepared draft. Success or failure freezes the context again; expiry,
 cancellation or process loss closes connections. A click permits the site's
-opaque effects inside that origin/window, including callbacks; it is not proof
+opaque effects inside that permitted public network window, including callbacks; it is not proof
 that one particular remote effect occurred.
 
-Revision 2 `browser.read/open/navigate` contracts classify their enforced
+Revision 3 `browser.read/open/navigate` contracts classify their enforced
 GET/HEAD observation as `read` (`read_only/read_result`). This is the same method
 boundary as HTTP reads, not a claim that an arbitrary application cannot mutate
 state on GET. Broker rejects older navigation contracts instead of granting
@@ -90,12 +90,13 @@ click stay opaque: a DOM acknowledgement without an independent recipient
 receipt becomes `effect_unknown`, and the durable unknown-effect guard blocks
 later effects. Approval is execution authority, not retrospective evidence.
 
-All page requests, redirects and frame/resource requests are constrained to the
-fixed origin; service workers and downloads are disabled. Popups are closed and
-do not grant another page capability. Sites requiring another origin, including
-cross-origin SSO or CDN resources, may be unavailable in this deliberately narrow
-baseline. A separate explicit open inside the user's authorized goal creates a
-separate context; it does not share auth or expand the previous context.
+All page requests, redirects and HTTP(S) frame/resource requests pass the private
+multi-origin proxy and the initial contract's domain caps. Checked DNS is pinned
+to public addresses for each new connection. Literal/private destinations and
+mixed public/private DNS remain denied. Native Chromium same-origin, cookie and
+TLS rules remain enabled. Service workers, WebSockets, downloads and extra popup
+pages remain disabled; popup-only SSO is not supported. Multi-origin navigation
+does not share another run's browser context or grant additional credentials.
 
 ## Private credential state
 
@@ -104,13 +105,13 @@ Password inputs require a broker-resolved reference. Cookie and storage-state
 arguments accept **only** a typed reference, not raw cookie/storage objects.
 Credential Broker checks the observed `expected_url`, tool and autonomy mode;
 browser mutations are classified as mutations, not read-only credential use.
-The runtime checks the actual page and fixed origin before applying resolved
+The runtime checks the actual current page origin before applying resolved
 material. A reference must match the resolved alias and field exactly.
 
 Cookie credentials resolve to JSON with `name`, `value`, `domain`, optional `path`,
 `secure`, `http_only`. Storage credentials resolve to JSON with `cookies` and/or
 `origins:[{origin,local_storage:[{name,value}]}]`. Cookies must match the session
-host; origin entries must match its fixed origin. Cookie path is preserved.
+current host; origin entries must match the current page origin. Cookie path is preserved.
 Installed state remains available to later calls in the **same live context**.
 
 Credential use follows the [exact action authorization contract](action-authorization-contract.md).
@@ -146,7 +147,7 @@ may be unknown. Failures conservatively invalidate the usable observation, and
 the next effect requires another snapshot or an explicit new-session decision.
 No guarantee of exact DOM continuation after a crash is made.
 
-`single_tab.*` remains a separate, explicitly approved user-tab capability routed
+`single_tab.*` is disabled in the standard registry. Its optional legacy capability is routed
 to `tool-browser-local`. It receives no new list/switch/open/focus capability and
 cannot use `browser.*` auth injection. These browser contexts do not access or
 automatically rebind a user tab.
@@ -188,3 +189,80 @@ The browser command compiles test binaries in a disposable Go container and runs
 them in the existing Playwright image. It does not start/change Compose services
 or production database tables. Approval e2e uses disposable schemas in the
 separate `butler_actionauth_test` database.
+
+## Owner viewing and manual control
+
+`/browser` displays 1280x720 Chromium page frames using bounded JPEG polling.
+It is the server's page viewport, not the user's laptop or a native Chrome
+window. The existing owner-control bearer authenticates the public
+`POST /api/v4/server-browser` before its body is parsed. Core supplies immutable
+owner identity and forwards to Broker over its private action-service channel.
+Broker validates the stored successful-open mapping, live core run/task/lease,
+and owner for every frame or input command. Releasing an existing controller is
+cleanup: it still checks authenticated owner, mapping, controller hash and epoch,
+but remains possible after task cancellation or lease expiry. This permits no new
+viewing/input or agent authority. A dedicated runtime-only token protects
+Broker -> browser HTTP; runtime receives no core, owner or PostgreSQL credential.
+Both private clients reject redirects and ambient proxy settings.
+
+Migration086 stores run/owner/task mapping, finite expiry, control mode,
+monotonic epoch and controller hash. It stores content-free operation/ACK audit
+rows only: no screenshot, URL, keyboard text, cookies or passwords. The actual
+Chromium context remains transient and expires after 15 minutes. Registration
+occurs only on a correlated schema-valid successful Broker `browser.open`.
+This optional composition supports workspace tools alongside independent server
+contexts; it is separate from guarded shared user-tab resource composition.
+
+Takeover commits the durable owner fence before contacting runtime. The runtime
+serializes human and agent requests with the same session mutex and checks the
+controller and epoch. Explicit takeover can replace a lost browser-page
+controller; old input/release commands cannot cross the new fence. Taking control
+resumes the site's background traffic within the existing public-address,
+domain, byte and expiry limits, including a previously frozen page. Agent
+browser actions are blocked before grant claim/budget spend. Core waits between
+model turns, proposals and received provider events while owner mode is active.
+An already started inference cannot be undone; normal run cancellation, lease
+renewal and budget deadlines remain in force.
+
+Broker pins each admitted session call to the current control epoch in private
+gRPC metadata. With the owner channel enabled, runtime requires exactly that
+epoch under its session mutex, including reads and close. Release advances the
+runtime epoch before ACK. Delayed calls from before takeover cannot execute
+after return. A late snapshot/extract result can clear `fresh_needed` only in
+the exact epoch admitted by Broker. An operation already executing can finish
+before takeover ACK; no human input is acknowledged concurrently with it.
+
+Manual click, double click, scroll, key, text and navigation commands use a bounded
+private protocol. Each input consumes its frame token and validates live document
+identity/revision of every main and child document against the captured frame,
+including cross-origin iframe replacement, navigation, DOM changes and scrolling.
+Playwright's screenshot caret
+mutation is disabled so taking a frame does not invalidate itself. Animated or
+changed pages can require another frame. Input is never automatically replayed;
+a lost command/ACK is reported as uncertain. Human input is independent direct
+owner activity, not an agent approval, action mandate, task result or proof of
+any recipient effect. The audit's acknowledged status means local runtime ACK.
+
+Release stops in-flight proxy traffic, disables page writes, restores ordinary
+GET/HEAD viewing and invalidates all preceding agent observations. Broker keeps
+the run blocked until release ACK and durable mode update both succeed. A fresh
+snapshot/extract is required before another guarded agent action. Lost release
+ACK keeps the durable fence closed; recovery requires explicit takeover/release.
+Closing/reloading the viewer does not silently release control. Session expiry
+or runtime loss never recreates or replays the browser.
+
+Frames, the actual current page URL and owner input are returned only to the authenticated viewer. Ordinary
+model results explicitly discard the private frame field. Typed text, password
+inputs, installed credentials and active input values are retained only inside
+the helper's redaction set; subsequent visible observations mask reflected values.
+Overlapping values and successive keyboard prefixes are masked against original
+text so a shorter match cannot prevent masking the complete longer value.
+The Web page keeps proof/controller/input/frame in memory and clears them when
+proof changes or the component unmounts; it uses no local/session storage.
+Any failed control request discards queued keyboard input; subsequent keys are
+not sent against the uncertain result of an earlier command.
+
+Compose the owner channel explicitly with `deploy/docker-compose.server-browser.yml`,
+a dedicated browser-control token file, existing owner authentication and migration086.
+No browser HTTP/CDP/VNC ports are published. The shared lab stack is not switched
+by the validation script; see `scripts/dev/server-browser-lab.sh`.

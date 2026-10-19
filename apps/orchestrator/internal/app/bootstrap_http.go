@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"net/http"
@@ -212,6 +213,21 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	var browserClient *browsercontrol.Client
+	if deps.cfg.BrowserControlURL != "" {
+		token, err := actionauth.ReadServiceToken(deps.cfg.ActionAuthorityTokenFile)
+		if err == nil {
+			browserClient, err = browsercontrol.NewClient(deps.cfg.BrowserControlURL, token)
+		}
+		if err != nil {
+			deps.log.Warn("server browser control unavailable")
+		}
+	}
+	var browserController browsercontrol.Controller
+	if browserClient != nil {
+		browserController = browserClient
+	}
+	mux.Handle("/api/v4/server-browser", apiservice.ServerBrowser(deps.ownerAuth, browserController))
 	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
 	var extensionClient *extensions.ControlClient

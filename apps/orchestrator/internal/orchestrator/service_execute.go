@@ -353,6 +353,11 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 				}
 				transportEvent = event
 			}
+			if s.config.WaitBrowserOwner != nil {
+				if err := s.config.WaitBrowserOwner(ctx, current.GetRunId()); err != nil {
+					return "", current, err
+				}
+			}
 			var err error
 			if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
 				return "", current, err

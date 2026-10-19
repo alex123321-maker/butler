@@ -683,3 +683,18 @@ No URL, project/account, body, raw error or credential is emitted. A client or
 context deadline is classified without printing the error. The memory evaluation
 preflight uses its own fresh encrypted PG auth database and retains refresh
 rotation for subsequent native requests; it never uses an ephemeral secret store.
+
+## Server browser owner input
+
+The separate authenticated Web browser-control channel carries human pixels and
+input through Core and Broker, outside model arguments/transcripts. Runtime uses
+a dedicated service token and never receives the owner/core proof. Direct human
+input is not an agent credential approval. Typed values stay in helper memory
+for masking subsequent visible observations; owner-control audit stores operation,
+epoch and local ACK state only. Redaction matches all raw/encoded values against
+the original text and masks the union of their spans; replacing a short typed
+prefix first must never expose the suffix of a longer password or token.
+Multi-origin navigation preserves native cookies
+and SOP. A broker-resolved cookie/storage injection remains scoped to the actual
+current page host/origin with its exact approved `expected_url`, never all origins
+visited by the context. See the browser-session contract.

@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"strings"
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/credentials"
@@ -15,11 +16,17 @@ import (
 // path. Missing workspace/browser composition denies that namespace, while
 // ordinary catalog operations retain their existing policy.
 type ResourceAdmissions struct {
-	Workspace *workspaceexec.DispatchStore
-	Browser   *GuardedTabAdmission
+	// Server contexts have independent run-owned runtime mutexes and the
+	// private owner-control fence, rather than a shared user-tab resource.
+	ServerBrowser bool
+	Workspace     *workspaceexec.DispatchStore
+	Browser       *GuardedTabAdmission
 }
 
 func (a ResourceAdmissions) PrepareContext(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, g actionauth.Grant) (context.Context, error) {
+	if a.ServerBrowser && strings.HasPrefix(call.GetToolName(), "browser.") {
+		return ctx, nil
+	}
 	if workspaceexec.Protected(call.GetToolName()) {
 		if a.Workspace == nil {
 			return ctx, workspaceexec.ErrDenied
@@ -35,6 +42,9 @@ func (a ResourceAdmissions) PrepareContext(ctx context.Context, call *toolbroker
 	return ctx, nil
 }
 func (a ResourceAdmissions) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, g actionauth.Grant) error {
+	if a.ServerBrowser && strings.HasPrefix(g.Binding.ToolName, "browser.") {
+		return nil
+	}
 	if workspaceexec.Protected(g.Binding.ToolName) {
 		if a.Workspace == nil {
 			return workspaceexec.ErrDenied
@@ -50,6 +60,9 @@ func (a ResourceAdmissions) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, g a
 	return nil
 }
 func (a ResourceAdmissions) ClaimActionTx(ctx context.Context, tx pgx.Tx, g actionauth.Grant, effect string) error {
+	if a.ServerBrowser && strings.HasPrefix(g.Binding.ToolName, "browser.") {
+		return nil
+	}
 	if workspaceexec.Protected(g.Binding.ToolName) {
 		if a.Workspace == nil {
 			return workspaceexec.ErrDenied

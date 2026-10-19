@@ -1,0 +1,17 @@
+# Explicit private owner channel; this file does not publish runtime ports.
+services:
+  tool-browser:
+    environment:
+      BUTLER_BROWSER_CONTROL_TOKEN_FILE: /run/secrets/browser-control
+    secrets: [browser-control]
+  tool-broker:
+    environment:
+      BUTLER_BROWSER_CONTROL_RUNTIME_URL: http://tool-browser:8080/internal/server-browser
+      BUTLER_BROWSER_CONTROL_TOKEN_FILE: /run/secrets/browser-control
+    secrets: [browser-control]
+  orchestrator:
+    environment:
+      BUTLER_BROWSER_CONTROL_URL: http://tool-broker:8080/internal/server-browser
+secrets:
+  browser-control:
+    file: ${BUTLER_BROWSER_CONTROL_TOKEN_SOURCE:?Dedicated private browser control token file is required}

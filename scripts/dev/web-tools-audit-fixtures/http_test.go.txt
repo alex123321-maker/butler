@@ -1,0 +1,51 @@
+package runtime
+
+import (
+ "context"
+ "encoding/json"
+ "strings"
+ "testing"
+ "time"
+ runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
+ toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+)
+
+func TestAuditUnsupportedSelectorIsExplicit(t *testing.T) {
+ server:=NewServer(nil,nil)
+ response,err:=server.Execute(context.Background(),&runtimev1.ExecuteRequest{
+ ToolCall:&toolbrokerv1.ToolCall{ToolCallId:"audit",RunId:"audit",ToolName:"http.parse_html",ArgsJson:`{"content":"<article><h1>Found heading</h1></article>","selector":"article h1"}`},
+ Contract:&toolbrokerv1.ToolContract{ToolName:"http.parse_html"},
+ })
+ if err!=nil{t.Fatal(err)}
+ var p map[string]any
+ _=json.Unmarshal([]byte(response.GetResult().GetResultJson()),&p)
+ if response.GetResult().GetStatus()=="completed" {t.Errorf("unsupported selector reported success instead of validation error: %v",p)}
+}
+
+func TestAuditNoMatchIsSchemaValidEmptyArray(t *testing.T) {
+ server:=NewServer(nil,nil)
+ response,err:=server.Execute(context.Background(),&runtimev1.ExecuteRequest{
+ ToolCall:&toolbrokerv1.ToolCall{ToolCallId:"audit",RunId:"audit",ToolName:"http.parse_html",ArgsJson:`{"content":"<h1>Present</h1>","selector":".absent"}`},
+ Contract:&toolbrokerv1.ToolContract{ToolName:"http.parse_html"},
+ })
+ if err!=nil{t.Fatal(err)}
+ var p map[string]any
+ if err:=json.Unmarshal([]byte(response.GetResult().GetResultJson()),&p);err!=nil{t.Fatal(err)}
+ if _,ok:=p["matches"].([]any);!ok{t.Errorf("valid no-match result violates matches:array output contract: %s",response.GetResult().GetResultJson())}
+}
+
+func TestAuditHTTPLivePublicReadAndDownload(t *testing.T) {
+ server:=NewServer(nil,nil)
+ for _,tool:=range []string{"http.request","http.download"}{
+  t.Run(tool,func(t *testing.T){
+   ctx,cancel:=context.WithTimeout(context.Background(),25*time.Second);defer cancel()
+   response,err:=server.Execute(ctx,&runtimev1.ExecuteRequest{ToolCall:&toolbrokerv1.ToolCall{ToolCallId:"audit",RunId:"audit",ToolName:tool,ArgsJson:`{"url":"https://example.com/"}`},Contract:&toolbrokerv1.ToolContract{ToolName:tool,AllowedDomains:[]string{"example.com"}}})
+   if err!=nil{t.Fatal(err)}
+   var p map[string]any
+   if err:=json.Unmarshal([]byte(response.GetResult().GetResultJson()),&p);err!=nil{t.Fatalf("runtime status=%s; no readable response",response.GetResult().GetStatus())}
+   body,_:=p["body"].(string)
+   t.Logf("tool=%s status=%v bytes=%d",tool,p["status_code"],len(body))
+   if p["status_code"]!=float64(200)||!strings.Contains(body,"Example Domain"){t.Error("expected public document not retrieved")}
+  })
+ }
+}

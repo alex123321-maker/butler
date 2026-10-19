@@ -36,11 +36,30 @@ async function ensureBrowser() {
 
 function redact(session, value) {
   let text = String(value ?? '')
+  const variants = new Set()
   for (const secret of session.secrets) {
     if (!secret) continue
     const b64 = Buffer.from(secret).toString('base64')
-    const variants = new Set([secret, encodeURIComponent(secret), encodeURIComponent(secret).replaceAll('%20', '+'), b64, b64.replace(/=+$/, ''), Buffer.from(secret).toString('base64url')])
-    for (const variant of variants) text = text.split(variant).join('[REDACTED]')
+    for (const variant of [secret, encodeURIComponent(secret), encodeURIComponent(secret).replaceAll('%20', '+'), b64, b64.replace(/=+$/, ''), Buffer.from(secret).toString('base64url')]) variants.add(variant)
+  }
+  // Match against the original text, then mask the union. Keyboard entry
+  // collects successive prefixes: replacing a prefix first would hide the
+  // longer match and expose its suffix. Overlapping secrets must merge too.
+  if (variants.size) {
+    const masked = new Uint8Array(text.length)
+    for (const variant of variants) {
+      for (let start = text.indexOf(variant); start >= 0; start = text.indexOf(variant, start + 1)) masked.fill(1, start, start + variant.length)
+    }
+    const parts = []
+    let cursor = 0, index = 0
+    while (index < text.length) {
+      if (!masked[index]) { index++; continue }
+      parts.push(text.slice(cursor, index), '[REDACTED]')
+      while (masked[index]) index++
+      cursor = index
+    }
+    parts.push(text.slice(cursor))
+    text = parts.join('')
   }
   return text.replace(/([?&#](?:access_token|refresh_token|token|password|api_key|secret|code)=)[^&#]*/gi, '$1[REDACTED]')
 }
@@ -49,7 +68,8 @@ async function collectSecretState(session) {
   // Values stay exclusively in process memory. Page-derived output is masked
   // against auth data even when a page reflects a cookie or local storage value.
   for (const cookie of await session.context.cookies()) if (cookie.value) session.secrets.add(cookie.value)
-  const values = await session.page.evaluate(() => {
+  for (const frame of session.page.frames()) {
+  const values = await frame.evaluate(() => {
     const values = []
     for (const input of document.querySelectorAll('input[type=password]')) if (input.value) values.push(input.value)
     try { for (let i = 0; i < localStorage.length; i++) values.push(localStorage.getItem(localStorage.key(i))) } catch {}
@@ -57,18 +77,21 @@ async function collectSecretState(session) {
     return values
   }).catch(() => [])
   for (const value of values) if (value) session.secrets.add(value)
+  }
 }
 
 async function newSession(request) {
   const browser = await ensureBrowser()
   if (!request.proxy_url) throw new Error('private egress proxy missing')
-  const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false, proxy: { server: request.proxy_url, bypass: '' } })
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: 'block', acceptDownloads: false, proxy: { server: request.proxy_url, bypass: '' } })
   const session = { context, page: undefined, scope: request.scope_origin || origin(request.url),
-    version: 0, dirty: true, secrets: new Set(), expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false }
-  // Restrict all page requests, redirects, iframe resources, and popups to the
-  // fixed origin. Opening a session cannot grant wider network capabilities.
+    version: 0, dirty: true, secrets: new Set(), frames: new Map(), allowedDomains: request.allowed_domains || [], expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false }
+  // Native same-origin and cookie rules remain enabled. The private proxy
+  // checks public DNS on every connection; this route retains contract caps.
   await context.route('**/*', async route => {
-    if (session.networkFrozen || origin(route.request().url()) !== session.scope || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
+    const url = new URL(route.request().url())
+    const allowed = ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && (!session.allowedDomains.length || session.allowedDomains.some(domain => domain === '*' || url.hostname === domain || url.hostname.endsWith('.' + domain)))
+    if (session.networkFrozen || !allowed || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
     else await route.continue()
   })
   await context.routeWebSocket('**/*', socket => socket.close())
@@ -81,6 +104,7 @@ async function newSession(request) {
     document.addEventListener('change', changed, true)
     window.addEventListener('popstate', changed)
     window.addEventListener('hashchange', changed)
+    window.addEventListener('scroll', changed, true)
   })
   const page = await context.newPage()
   session.page = page
@@ -131,20 +155,20 @@ async function execute(request) {
     session.expiryTimer.unref()
     try {
       await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 15000 })
-      if (origin(session.page.url()) !== session.scope) throw new Error('scope')
       return await observe(session)
     } catch (err) { await closeSession(request.browser_session_id); return safeError(err) }
   }
   const session = sessions.get(request.browser_session_id)
   if (!session) return errorResult('session_lost', 'browser session was closed, expired, or lost; explicitly open a new session')
   if (Date.now() >= session.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
+  if (tool === 'owner.control') return await ownerControl(session, request.owner_command)
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
   const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
   // Freeze before reading the live guards or injecting any new value. A stale
   // preparation can fail safely without resuming background page requests.
   if (localPreparation) session.networkFrozen = true
   if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool)) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
-  if (origin(session.page.url()) !== session.scope || request.scope_origin !== session.scope) return errorResult('scope_denied', 'current page is outside the fixed browser origin')
+  session.scope = origin(session.page.url())
   if (tool === 'browser.snapshot') return await observe(session)
   if (tool === 'browser.extract_text') return await observe(session, request.selector)
   // Re-check live page state immediately before every effect. Go already
@@ -162,7 +186,6 @@ async function execute(request) {
   try {
     switch (tool) {
       case 'browser.navigate':
-        if (origin(request.url) !== session.scope) return errorResult('scope_denied', 'navigation cannot expand browser origin')
         await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout }); break
       case 'browser.click':
         await session.page.locator(request.selector).click({ timeout });
@@ -213,6 +236,75 @@ async function execute(request) {
     session.allowWriteRequests = false
     if (tool === 'browser.click' || localPreparation) session.networkFrozen = true
   }
+}
+
+async function ownerControl(session, command) {
+  const page = session.page
+  if (command.operation === 'release') {
+    session.networkFrozen = false
+    session.allowWriteRequests = false
+    session.dirty = true
+    session.version++
+    session.frames.clear()
+    await collectSecretState(session)
+    return { ok: true }
+  }
+  if (command.operation === 'take') { session.dirty = true; session.frames.clear(); session.networkFrozen = false; session.allowWriteRequests = true }
+  if (!['frame', 'take'].includes(command.operation)) {
+    const frame = session.frames.get(command.frame_id)
+    const live = await captureFrameState(page)
+    if (!frame || frame !== live) return errorResult('stale_frame', 'page changed; refresh the frame')
+    session.frames.clear() // input is one-use, including failed/uncertain input
+    session.networkFrozen = false
+    session.allowWriteRequests = true
+    // Owner input may be a password, OTP or token even in an untyped field.
+    if (command.text) session.secrets.add(command.text)
+    try {
+      switch (command.operation) {
+        case 'click': await page.mouse.click(command.x, command.y, { button: command.button || 'left' }); break
+        case 'double_click': await page.mouse.dblclick(command.x, command.y, { button: command.button || 'left' }); break
+        case 'wheel': await page.mouse.move(command.x, command.y); await page.mouse.wheel(command.delta_x || 0, command.delta_y || 0); break
+        case 'key': await page.keyboard.press(command.key); break
+        case 'text': await page.keyboard.insertText(command.text || ''); break
+        case 'navigate': await page.goto(command.url, { waitUntil: 'domcontentloaded', timeout: 12000 }); break
+        default: return errorResult('invalid_control', 'unknown owner input')
+      }
+      session.dirty = true
+      await collectSecretState(session)
+      for (const frame of page.frames()) {
+      const entered = await frame.evaluate(() => {
+        const element = document.activeElement
+        return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.value : element?.isContentEditable ? element.innerText : ''
+      }).catch(() => '')
+      if (entered && entered.length >= 3) session.secrets.add(entered)
+      }
+    } finally { session.dirty = true }
+  }
+  // Owner-only pixels. No URL, DOM, inputs or browser state is published to
+  // the model. Capture guards before and after the screenshot to reject drift.
+  const capture = () => captureFrameState(page)
+  const before = await capture()
+  const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, caret: 'initial', timeout: 5000 })
+  const after = await capture()
+  const id = crypto.randomUUID()
+  if (before === after) session.frames.set(id, after)
+  while (session.frames.size > 4) session.frames.delete(session.frames.keys().next().value)
+  if (jpeg.length > 1024 * 1024) return errorResult('frame_limit', 'browser frame exceeded limit')
+  return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720, url: page.url() } }
+}
+
+// Coordinates can hit cross-origin child frames. Guard every document in the
+// screenshot, including child navigation, scrolling and iframe replacement.
+const frameIdentities = new WeakMap()
+async function captureFrameState(page) {
+  const frames = page.frames()
+  const state = await Promise.all(frames.map(async frame => {
+    if (!frameIdentities.has(frame)) frameIdentities.set(frame, crypto.randomUUID())
+    const document = await frame.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
+    return { frame: frameIdentities.get(frame), ...document }
+  }))
+  if (frames.length !== page.frames().length || frames.some((frame, i) => frame !== page.frames()[i])) throw new Error('frame changed during capture')
+  return JSON.stringify(state)
 }
 
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity })

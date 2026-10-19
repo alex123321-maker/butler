@@ -122,8 +122,8 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
-		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "2" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {
-			return p, fmt.Errorf("browser navigation requires the enforced read-only revision 2 contract")
+		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "3" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {
+			return p, fmt.Errorf("browser navigation requires the enforced public-origin revision 3 contract")
 		}
 		if p.RetrySafety != "unsafe" && p.RetrySafety != "read_only" && p.RetrySafety != "external_idempotency" {
 			return p, fmt.Errorf("read effect contract is incompatible")

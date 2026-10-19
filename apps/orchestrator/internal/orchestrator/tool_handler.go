@@ -43,6 +43,12 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
+	if s.config.WaitBrowserOwner != nil {
+		if err := s.config.WaitBrowserOwner(ctx, current.GetRunId()); err != nil {
+			return nil, current, err
+		}
+	}
+
 	loadedContractHash := ""
 	if s.config.ToolDiscoveryEnabled && !operatorDoctor(ctx) {
 		contracts, err := s.currentToolContracts(ctx, current.GetRunId())

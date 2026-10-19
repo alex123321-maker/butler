@@ -121,7 +121,7 @@ func TestBrowserReadContractsRequireEnforcedRevision(t *testing.T) {
 		if _, err := ResolveEffectPolicy(binding, contract); err == nil {
 			t.Fatal("old read contract inherited new enforcement")
 		}
-		binding.ContractRevision = "2"
+		binding.ContractRevision = "3"
 		if _, err := ResolveEffectPolicy(binding, contract); err != nil {
 			t.Fatal(err)
 		}

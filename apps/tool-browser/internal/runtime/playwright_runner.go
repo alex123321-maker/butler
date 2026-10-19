@@ -134,7 +134,11 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			}
 			origin = parsed.Scheme + "://" + parsed.Host
 		}
-		proxy, err := egress.NewScopedProxy(r.policy, origin, expires, egress.MaxRequestBytes)
+		policy := r.policy
+		// Contract caps and operator caps intersect; neither replaces the other.
+		// The helper checks the contract on every request; the proxy retains
+		// the independently configured operator policy and public-IP checks.
+		proxy, err := egress.NewBrowserProxy(policy, origin, expires, egress.MaxRequestBytes)
 		if err != nil {
 			return Result{}, err
 		}
@@ -174,6 +178,18 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			defer proxy.Freeze()
 		}
 	}
+	if req.OwnerCommand != nil && req.OwnerCommand.Operation == "take" {
+		if proxy := r.proxies[req.SessionID]; proxy != nil {
+			if err := proxy.AllowUntil(proxy.Deadline()); err != nil {
+				return Result{}, err
+			}
+		}
+	}
+	if req.OwnerCommand != nil && req.OwnerCommand.Operation == "release" {
+		if proxy := r.proxies[req.SessionID]; proxy != nil {
+			proxy.Freeze()
+		}
+	}
 	if r.cmd == nil {
 		if req.ToolName != "browser.open" && req.ToolName != "browser.read" {
 			return Result{Error: &ResultError{ErrorType: "session_lost", Message: "browser process lost; explicitly open a new session"}}, nil
@@ -195,6 +211,13 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 		if !ok || response.err != nil {
 			r.stop()
 			return Result{}, fmt.Errorf("browser process lost; previous sessions are invalid")
+		}
+		if req.OwnerCommand != nil && req.OwnerCommand.Operation == "release" && response.result.OK {
+			if proxy := r.proxies[req.SessionID]; proxy != nil {
+				if err := proxy.AllowUntil(proxy.Deadline()); err != nil {
+					return Result{}, err
+				}
+			}
 		}
 		return response.result, nil
 	case <-ctx.Done():

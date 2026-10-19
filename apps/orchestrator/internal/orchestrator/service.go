@@ -145,6 +145,8 @@ type GuardedTabRequests interface {
 }
 
 type Config struct {
+	WaitBrowserOwner func(context.Context, string) error
+
 	ToolDiscoveryEnabled bool
 	Metrics              *metrics.Registry
 	// Trusted composition resolves opaque source-bound inputs only after live
