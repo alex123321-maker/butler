@@ -51,6 +51,7 @@ type StartRunRequest struct {
 }
 
 type ContinueRunRequest struct {
+	ToolSet              *ToolSetSnapshot
 	RunID                string
 	ProviderSessionRef   *ProviderSessionRef
 	InputItems           []InputItem
@@ -59,6 +60,7 @@ type ContinueRunRequest struct {
 }
 
 type SubmitToolResultRequest struct {
+	ToolSet              *ToolSetSnapshot
 	RunID                string
 	ProviderSessionRef   *ProviderSessionRef
 	ToolCallRef          string
@@ -115,6 +117,9 @@ func (r StartRunRequest) Validate() error {
 }
 
 func (r ContinueRunRequest) Validate() error {
+	if err := r.ToolSet.Validate(); err != nil {
+		return err
+	}
 	if strings.TrimSpace(r.RunID) == "" {
 		return fmt.Errorf("run_id is required")
 	}
@@ -122,6 +127,9 @@ func (r ContinueRunRequest) Validate() error {
 }
 
 func (r SubmitToolResultRequest) Validate() error {
+	if err := r.ToolSet.Validate(); err != nil {
+		return err
+	}
 	if strings.TrimSpace(r.RunID) == "" {
 		return fmt.Errorf("run_id is required")
 	}

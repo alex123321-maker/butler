@@ -10,6 +10,7 @@ import (
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/extensions"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
@@ -45,6 +46,32 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if s.config.WaitBrowserOwner != nil {
 		if err := s.config.WaitBrowserOwner(ctx, current.GetRunId()); err != nil {
 			return nil, current, err
+		}
+	}
+
+	loadedContractHash := ""
+	if s.config.ToolDiscoveryEnabled && !operatorDoctor(ctx) {
+		contracts, err := s.currentToolContracts(ctx, current.GetRunId())
+		if err != nil {
+			return nil, current, err
+		}
+		selected, _, err := s.selectToolContracts(ctx, current.GetRunId(), contracts)
+		if err != nil {
+			return nil, current, err
+		}
+		found := false
+		for _, c := range selected {
+			if c.ToolName == requested.ToolName {
+				loadedContractHash, err = actionauth.ContractHash(c)
+				if err != nil {
+					return nil, current, fmt.Errorf("loaded tool contract unavailable: %w", err)
+				}
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, current, fmt.Errorf("tool is not currently loaded or permitted")
 		}
 	}
 	if err := s.guardAdaptiveProposal(ctx, current.GetRunId(), requested.ToolName, requested.ArgsJSON); err != nil {
@@ -99,6 +126,12 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	if prepared.Binding.RunID != brokerCall.GetRunId() || prepared.Binding.ToolCallID != toolCallID || prepared.Binding.ToolName != brokerCall.GetToolName() || prepared.Binding.ActionID == "" || prepared.Binding.ActionHash == "" {
 		return nil, current, fmt.Errorf("action authorizer returned an incompatible binding")
+	}
+	// Preparation independently resolves the current Broker contract. Do not
+	// silently execute a new revision installed after the selection check.
+	// Later changes are rejected by Broker's exact binding at authorize/dispatch.
+	if loadedContractHash != "" && prepared.Binding.ContractHash != loadedContractHash {
+		return nil, current, fmt.Errorf("loaded tool contract changed before authorization")
 	}
 	if recovered, ok := ctx.Value(recoveredApprovalKey{}).(approvalContinuation); ok && approvalID != "" && recovered.EffectID != "" && prepared.EffectID != recovered.EffectID {
 		return nil, current, fmt.Errorf("continuation external-effect identity changed")
@@ -233,7 +266,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 					return nil, current, fmt.Errorf("mark run awaiting_model_resume after rejection: %w", err)
 				}
 				current = next
-				stream, submitErr := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: toolResultEnvelope(rejectedResult)})
+				toolSet, setErr := s.toolSetForContinuation(ctx, current.GetRunId())
+				if setErr != nil {
+					return nil, current, setErr
+				}
+				stream, submitErr := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: toolResultEnvelope(rejectedResult), ToolSet: toolSet})
 				if submitErr != nil {
 					return nil, current, fmt.Errorf("submit rejected tool result: %w", submitErr)
 				}
@@ -325,8 +362,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	finishedAt := time.Now().UTC()
 	// Catalog prose remains only in current live context and deletion-aware
 	// sources. Transcript, artifact, scratch and event copies carry refs only.
+	if err := s.validateToolLoad(ctx, current.GetRunId(), result); err != nil {
+		return nil, current, err
+	}
 	liveResultJSON := toolResultEnvelope(result)
-	result = durableSkillObservation(result)
+	result = durableCatalogObservation(durableSkillObservation(result))
 	// Persist the known observation before auxiliary memory/Redis IO so a slow
 	// cache or process failure cannot discard the dispatch's durable result.
 	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(toolCallID, current.GetRunId(), requested, brokerCall, result, startedAt, finishedAt)); err != nil {

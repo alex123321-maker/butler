@@ -1,0 +1,350 @@
+{
+  "checked_at": "2026-10-18T19:29:49.282891+00:00",
+  "project": "butler-main",
+  "service_source": {
+    "orchestrator": "1d345ff11bd892663ab02a4272ab041640d74951",
+    "broker": "f1753cd0b0ebf09beb25056fb5c65dfc03893f04"
+  },
+  "compose_sha256": "28fd93ff85a2b151c36bd62919f9b935410720bdc400233151655c6dcfa95c8a",
+  "binary_sha256": {
+    "broker": "c30160e4ae0a0455dfec7e58382c777ea0f6e654680cf319ec999cc49f5e078f",
+    "memory-admin": "2976c54824b1456a46bea7b34c98c473429a3f9258bfded952febd14edd56b27",
+    "migrator": "8667ca79e8125d1a0bc97f1d9466e52884c0fb544ac1fb6028db5767d1847310",
+    "orchestrator": "45dd024b88b1617e88ec8f10d069db69efbd47c1750ba38ad9c92ab4463d3b20",
+    "restart-helper": "86379fb55969b9bba494a6f25421f0bb6074cf0c0aff87b2cee1c3e7d94e17ad",
+    "tool-browser": "7858e09fdcd0c4e68fe6e4c1d49ac0f33f7f3556bfea17019da060ab78b1d9d5",
+    "tool-browser-local": "aadac043b7763cfc45051d87bb49b7113dc32c1ec1392f45cb6c862448a8cb13",
+    "tool-converter": "163f26a8bf0deba11c72d80072bf56553bd2f4fabb3d149b8343dc09e01a64ca",
+    "tool-doctor": "51b418db9b7491c336be2452501f5b5f5e7ce30c470f84ce12b72b1706f7f891",
+    "tool-extension": "12b9e281c0fe103fa97c41ef6ba8a9f4c1fb9f5423538736d6d82e88b4f4aa04",
+    "tool-http": "c510151a74b0b126de21f2fa4192962de4870d64eb8c424c0fe3d5f74de6e095",
+    "tool-webfetch": "59576a92e7e38bea024238bd39de433c757e46fc38359cfa6d79029db38f23fa",
+    "tool-workspace": "26fcaec6ba0e82e75cb9d18c8e349c1a3964c2200ba9a299b33a4b246ae8dbfe",
+    "tools.json": "0d37f3e3722adc348102ea116d8fd03e6e92e7102da1156b832697476fb75d70",
+    "wifi-proxy": "b660b6d467cb53beedee6ac00bafc7153f1cb4ffb8ba67448b2c220345f24dad"
+  },
+  "flags": {
+    "orchestrator": {
+      "BUTLER_MEMORY_READ_ENABLED": "true",
+      "BUTLER_MODEL_PROVIDER": "antigravity",
+      "BUTLER_ANTIGRAVITY_MODEL": "gemini-3.8-flash-high",
+      "BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS": "32768",
+      "BUTLER_AUTONOMY_MODE": "mode_2",
+      "BUTLER_MEMORY_PIPELINE_ENABLED": "false",
+      "BUTLER_MEMORY_CANDIDATE_ENABLED": "true",
+      "BUTLER_MEMORY_TEMPORAL_ENABLED": "true",
+      "BUTLER_DELEGATION_ENABLED": "true",
+      "BUTLER_CONVERTER_DELEGATION_ENABLED": "true",
+      "BUTLER_WORKSPACE_ENABLED": "true",
+      "BUTLER_SCHEDULES_ENABLED": "true",
+      "BUTLER_TOOL_DISCOVERY_ENABLED": "true",
+      "BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED": "false",
+      "BUTLER_MEMORY_EXPERIENCE_ENABLED": "false",
+      "BUTLER_MEMORY_SEMANTIC_ENABLED": "true",
+      "BUTLER_MEMORY_PDF_PARSER_ENABLED": "true",
+      "BUTLER_MEMORY_MODEL_JOBS_ENABLED": "true",
+      "BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED": "true",
+      "BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED": "true",
+      "BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED": "true"
+    },
+    "tool-broker": {
+      "BUTLER_MEMORY_READ_ENABLED": "true",
+      "BUTLER_MEMORY_CANDIDATE_ENABLED": "true",
+      "BUTLER_MEMORY_TEMPORAL_ENABLED": "true",
+      "BUTLER_DELEGATION_ENABLED": "true",
+      "BUTLER_CONVERTER_DELEGATION_ENABLED": "true",
+      "BUTLER_WORKSPACE_ENABLED": "true",
+      "BUTLER_SCHEDULES_ENABLED": "true",
+      "BUTLER_TOOL_DISCOVERY_ENABLED": "true",
+      "BUTLER_SKILLS_ENABLED": "true",
+      "BUTLER_CONVERTERS_ENABLED": "true"
+    }
+  },
+  "services": [
+    {
+      "service": "orchestrator",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-broker",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:7dd645ebc24707867e410481fc82b98f499f7519f7b5b8a5655151f1d7dcb715",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-workspace",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:1dedad1f4c00fd570d4f53f790db236233a4fb75ea2a144351bbd6953efc7cba",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "redis",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "postgres",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-converter",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:1dedad1f4c00fd570d4f53f790db236233a4fb75ea2a144351bbd6953efc7cba",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-extension",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:1dedad1f4c00fd570d4f53f790db236233a4fb75ea2a144351bbd6953efc7cba",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-browser",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:3a2e719f086e2d2a110a79f817f235518350aaf87ea47cb51a9a75158e32d9c6",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "web",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:c800aa6c88aa88a97433ff260ab4de659b490e4367f345f88628f1b9d1a423f5",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-webfetch",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:ad2969d252f3557418ef5f530e18e52410401d404bcf9d2961f0a167a93dc08b",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "antigravity-proxy",
+      "state": "running",
+      "health": null,
+      "image_id": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-doctor",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:87c42e6feab896045bf08543aa8a686485e8bba7fc1d31523f46b20eef1a789c",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-http",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:bbe09307c86ac2b9e847ce93d240b7b1615b9266733659adf0ea34b75f6a8465",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "tool-browser-local",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:824f4151ba662eb1bae2618bda02ff65ede7aaa24b84472006af991671c23d18",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "mobile-ingress",
+      "state": "running",
+      "health": null,
+      "image_id": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+      "restart_policy": "unless-stopped"
+    },
+    {
+      "service": "restart-helper",
+      "state": "running",
+      "health": "healthy",
+      "image_id": "sha256:795aa8703b5ac0255bc7c0b6c4dce515a65f0b9eeec4a738df4509614c2944b8",
+      "restart_policy": "unless-stopped"
+    }
+  ],
+  "migrations": [
+    {
+      "applied": 83
+    }
+  ],
+  "mobile_devices": [
+    {
+      "status": "REVOKED",
+      "accepted_count": 0,
+      "duplicate_count": 0,
+      "rejected_count": 0,
+      "last_seen_at": null
+    },
+    {
+      "status": "ACTIVE",
+      "accepted_count": 211,
+      "duplicate_count": 0,
+      "rejected_count": 0,
+      "last_seen_at": "2026-10-18T19:04:24.877106+00:00"
+    }
+  ],
+  "mobile_messages": [
+    {
+      "state": "noise",
+      "count": 1
+    },
+    {
+      "state": "ignored",
+      "count": 45
+    },
+    {
+      "state": "pending",
+      "count": 62
+    }
+  ],
+  "mobile_ingress": [
+    {
+      "count": 211,
+      "newest": "2026-10-18T19:04:24.88071+00:00"
+    }
+  ],
+  "mobile_source": [
+    {
+      "enabled": true,
+      "revision": 6
+    }
+  ],
+  "mobile_batches": [
+    {
+      "finished": false,
+      "count": 1
+    },
+    {
+      "finished": true,
+      "count": 5
+    }
+  ],
+  "recent_input_states": [
+    {
+      "source": "web",
+      "status": "completed",
+      "error_code": "",
+      "count": 5
+    },
+    {
+      "source": "web",
+      "status": "cancelled",
+      "error_code": "owner_control",
+      "count": 1
+    },
+    {
+      "source": "initiative",
+      "status": "running",
+      "error_code": "",
+      "count": 1
+    },
+    {
+      "source": "initiative",
+      "status": "completed",
+      "error_code": "",
+      "count": 2
+    },
+    {
+      "source": "initiative",
+      "status": "cancelled",
+      "error_code": "owner_control",
+      "count": 2
+    }
+  ],
+  "recent_tool_states": [
+    {
+      "tool_name": "tools.load",
+      "status": "completed",
+      "count": 4
+    },
+    {
+      "tool_name": "tools.search",
+      "status": "completed",
+      "count": 8
+    },
+    {
+      "tool_name": "messages.search",
+      "status": "completed",
+      "count": 2
+    },
+    {
+      "tool_name": "messages.process",
+      "status": "completed",
+      "count": 47
+    },
+    {
+      "tool_name": "tools.search",
+      "status": "effect_unknown",
+      "count": 1
+    },
+    {
+      "tool_name": "messages.inbox",
+      "status": "completed",
+      "count": 8
+    },
+    {
+      "tool_name": "memory.search",
+      "status": "completed",
+      "count": 5
+    },
+    {
+      "tool_name": "memory.search",
+      "status": "effect_unknown",
+      "count": 1
+    },
+    {
+      "tool_name": "doctor.check_system",
+      "status": "completed",
+      "count": 1
+    }
+  ],
+  "unknown_effects_retained": [
+    {
+      "state": "effect_unknown",
+      "count": 3
+    }
+  ],
+  "model_worker_control": [
+    {
+      "state": "enabled"
+    }
+  ],
+  "active_phone_runs": [
+    {
+      "status": "model_running",
+      "current_state": "model_running",
+      "error_type": null
+    },
+    {
+      "status": "completed",
+      "current_state": "completed",
+      "error_type": null
+    },
+    {
+      "status": "completed",
+      "current_state": "completed",
+      "error_type": null
+    }
+  ],
+  "owner_policy_required": true,
+  "quality_noninferiority": "not_established",
+  "blocked_features": {
+    "adaptive_retrieval": "code_release_qualification_false",
+    "episodic_experience": "code_release_qualification_false",
+    "guarded_user_tab": "host_metadata_credentials_not_provisioned",
+    "russian_voice": "experimental_quality_and_composition_gate_not_passed",
+    "legacy_memory_pipeline": "superseded_pipeline_not_reactivated"
+  }
+}

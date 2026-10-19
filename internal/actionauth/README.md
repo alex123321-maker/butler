@@ -1,5 +1,8 @@
 # Exact action authority
 
+Fixed `tools.search`/`tools.load` contracts are credential-free local catalog reads. Only exact owning contract hashes/resources qualify as standard catalog operations for ordinary/delegated work. Current input claims, authority, mode policy and explicit denials remain required; search results and loading never grant execution permission.
+
+
 Enabled fixed schedule controls are standard owner-goal capabilities. Effective
 catalog tools include them without rewriting stored mandate lists; authorization
 accepts only their exact owning hash, local resource, no credentials and read/

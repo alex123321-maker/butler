@@ -257,6 +257,7 @@ services:
       tool-doctor:
         condition: service_healthy
     environment:
+      - BUTLER_TOOL_DISCOVERY_ENABLED=${BUTLER_TOOL_DISCOVERY_ENABLED:-false}
       - BUTLER_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
@@ -324,6 +325,7 @@ services:
       restart-helper:
         condition: service_healthy
     environment:
+      - BUTLER_TOOL_DISCOVERY_ENABLED=${BUTLER_TOOL_DISCOVERY_ENABLED:-false}
       - BUTLER_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
       - BUTLER_REDIS_URL=redis://redis:6379/0
       - BUTLER_TOOL_BROKER_ADDR=tool-broker:9090

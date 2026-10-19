@@ -81,7 +81,11 @@ func (s *Service) resumeProviderWithToolResult(ctx context.Context, current *ses
 	}
 	continuation, ok := ctx.Value(recoveredApprovalKey{}).(approvalContinuation)
 	if !ok || continuation.ToolCall == nil || continuation.ToolCall.ToolCallRef != toolCallID {
-		return s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: resultJSON})
+		toolSet, err := s.toolSetForContinuation(ctx, current.GetRunId())
+		if err != nil {
+			return nil, err
+		}
+		return s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: resultJSON, ToolSet: toolSet})
 	}
 	inputs := append([]transport.InputItem(nil), continuation.Prepared.InputItems...)
 	// Saved package data and definitions describe a past catalog. Reload current

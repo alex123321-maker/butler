@@ -60,7 +60,7 @@ func mandateAllows(m Mandate, b ActionBinding, now time.Time) bool {
 	if m.RevokedAt != nil || !m.ExpiresAt.After(now) || m.OwnerID != b.OwnerID || m.TaskID != b.TaskID || m.TaskRevision != b.TaskRevision || m.ConstraintsRevision != b.ConstraintsRevision {
 		return false
 	}
-	if !contains(m.Tools, b.ToolName) {
+	if !contains(m.Tools, b.ToolName) && !standardCatalogAction(b) {
 		return false
 	}
 	effectOK := false
@@ -82,7 +82,7 @@ func mandateAllows(m Mandate, b ActionBinding, now time.Time) bool {
 	if u, err := url.Parse(resource); err == nil && u.Hostname() != "" {
 		origin = strings.ToLower(u.Scheme + "://" + u.Host)
 	}
-	resourceOK := false
+	resourceOK := standardCatalogAction(b)
 	for _, allowed := range m.Resources {
 		if strings.TrimSuffix(strings.ToLower(allowed), "/") == strings.TrimSuffix(origin, "/") {
 			resourceOK = true

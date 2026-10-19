@@ -547,6 +547,7 @@ func New(ctx context.Context) (*App, error) {
 			Delivery:                 delivery,
 			Tools:                    toolBrokerClient,
 			ToolCatalog:              toolBrokerClient,
+			ToolDiscoveryEnabled:     cfg.ToolDiscoveryEnabled,
 			ApprovalChecker:          toolBrokerClient,
 			ApprovalGate:             approvalGate,
 			ApprovalService:          approvalService,
@@ -725,7 +726,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, schedulesReady: scheduleControl != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, schedulesReady: scheduleControl != nil, toolDiscoveryReady: cfg.ToolDiscoveryEnabled, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog, lessons: experienceMemory})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")

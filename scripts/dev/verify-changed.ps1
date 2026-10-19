@@ -33,6 +33,14 @@ foreach ($file in $files) {
 	  [void]$tests.Add("ssh laba: server-browser-lab.sh <owned-server-browser-root> unit, browser, broker and web-real (private PG, actual Core owner API/Broker/Chromium; no shared Compose)")
 	  continue
 	}
+
+    "^(internal/toolcatalog/|internal/(actionauth|config)/tool_catalog|internal/config/tool_discovery|apps/orchestrator/internal/(app/tool_discovery|orchestrator/tool_discovery)|apps/tool-broker/internal/broker/tool_catalog|scripts/dev/tool-discovery-)" {
+      [void]$specs.Add("docs/architecture/tool-discovery.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/tool-discovery-local.ps1 (isolated PostgreSQL, compiled Broker, model-loop/wire tests, Linux race/vet; no native inference)")
+      continue
+    }
+
     "^(internal/(scheduling|schedulecontrol)/|apps/orchestrator/internal/(scheduled/|app/schedules|input/schedule_control)|apps/tool-broker/internal/broker/schedules|internal/config/schedules|migrations/085_|scripts/dev/schedules-)" {
 	  [void]$specs.Add("docs/architecture/agent-schedules.md")
 	  [void]$specs.Add("docs/architecture/initiative-contract.md")

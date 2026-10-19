@@ -1,5 +1,8 @@
 # Butler — постоянный личный помощник
 
+Optional [deferred tool schemas](tool-discovery.md) expose current permitted capabilities through search and exact selection. Broker owns catalog authority; Orchestrator owns model context. Durable selection stays in PostgreSQL tool receipts and never grants additional task or delegated permissions.
+
+
 Реализованный опциональный контракт [запланированных поручений](agent-schedules.md)
 даёт агенту `schedule.*` через обычный Tool Broker. Принятое расписание переживает
 завершение разговора; каждое срабатывание создаёт обычные Task/Input с актуальными

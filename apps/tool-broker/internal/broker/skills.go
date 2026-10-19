@@ -21,7 +21,7 @@ func (s SkillEnvironment) GetActionContext(ctx context.Context, id string) (acti
 	return s.Contexts.GetActionContext(ctx, id)
 }
 func (s SkillEnvironment) ContractsForRun(ctx context.Context, id string) ([]*toolbrokerv1.ToolContract, error) {
-	return s.Catalog.ListForRun(ctx, id, "", 64)
+	return s.Catalog.ListForRun(ctx, id, "", 0)
 }
 
 type SkillContracts struct {

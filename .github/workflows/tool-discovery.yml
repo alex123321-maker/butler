@@ -1,0 +1,66 @@
+name: Tool discovery
+on:
+  pull_request:
+    paths:
+      - 'apps/orchestrator/**'
+      - 'apps/tool-broker/**'
+      - 'internal/actionauth/**'
+      - 'internal/config/**'
+      - 'internal/extensions/**'
+      - 'internal/generatedtools/**'
+      - 'internal/memory/candidatecontrol/**'
+      - 'internal/toolcatalog/**'
+      - 'internal/transport/**'
+      - 'migrations/**'
+      - 'scripts/dev/tool-discovery-*'
+      - '.github/workflows/tool-discovery.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/orchestrator/**'
+      - 'apps/tool-broker/**'
+      - 'internal/actionauth/**'
+      - 'internal/config/**'
+      - 'internal/extensions/**'
+      - 'internal/generatedtools/**'
+      - 'internal/memory/candidatecontrol/**'
+      - 'internal/toolcatalog/**'
+      - 'internal/transport/**'
+      - 'migrations/**'
+      - 'scripts/dev/tool-discovery-*'
+      - '.github/workflows/tool-discovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: butler_tool_discovery_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - run: go mod verify
+        env:
+          GOCACHE: '${{ github.workspace }}/.cache/go-build-linux'
+          GOMODCACHE: '${{ github.workspace }}/.cache/go-mod-linux'
+      - run: bash scripts/dev/tool-discovery-tests.sh
+      - name: Candidate control regression
+        run: go test -race -count=1 ./internal/memory/candidatecontrol
+        env:
+          GOCACHE: '${{ github.workspace }}/.cache/go-build-linux'
+          GOMODCACHE: '${{ github.workspace }}/.cache/go-mod-linux'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tool-discovery-test-results
+          path: .cache/tool-discovery/targeted-*.jsonl
+          if-no-files-found: error

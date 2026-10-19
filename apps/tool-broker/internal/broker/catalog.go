@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/schedulecontrol"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/workspaceexec"
 )
 
@@ -69,6 +70,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if toolcatalog.IsTool(contract.ToolName) && len(a.InputClaimHash) != 64 {
+			continue
+		}
 		if schedulecontrol.IsTool(contract.GetToolName()) && (!a.SchedulesReady || a.Delegation != nil) {
 			continue
 		}
@@ -76,7 +80,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			// A queued developer receipt is not a candidate return. Advertising
 			// collection early invites a call that correctly fails Prepare.
 			// This is availability only; actual Prepare/Claim repeat all guards.
-			if c.Converters == nil {
+			if c.Converters == nil || a.TaskID == "" {
 				continue
 			}
 			ready, e := c.Converters.CollectionAvailable(ctx, a)
@@ -124,7 +128,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		if actionauth.CheckExecutionPolicy(a, effect) != nil || a.AutonomyMode == 1 && effect != actionauth.EffectRead {
 			continue
 		}
-		if strings.HasPrefix(contract.GetToolName(), "extension.") || denied[contract.GetToolName()] || allowed != nil && !allowed[contract.GetToolName()] {
+		if strings.HasPrefix(contract.GetToolName(), "extension.") || denied[contract.GetToolName()] || allowed != nil && !allowed[contract.GetToolName()] && !toolcatalog.IsTool(contract.GetToolName()) {
 			continue
 		}
 		matches := true
@@ -140,14 +144,16 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		}
 	}
 	if c.Extensions != nil {
-		installed, e := c.Extensions.Catalog(ctx, a, query, 64)
+		installed, e := c.Extensions.Catalog(ctx, a, query, 0)
 		if e != nil {
 			return nil, e
 		}
 		result = append(result, installed...)
 	}
-	if c.Converters != nil {
-		installed, e := c.Converters.Catalog(ctx, a, query, 64)
+	// Converter lifecycle/catalog guards require a Task. Their composition must
+	// not block unrelated capabilities in an ordinary taskless conversation.
+	if c.Converters != nil && a.TaskID != "" {
+		installed, e := c.Converters.Catalog(ctx, a, query, 0)
 		if e != nil {
 			return nil, e
 		}
@@ -156,6 +162,10 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	if a.Delegation != nil {
 		filtered := result[:0]
 		for _, contract := range result {
+			if toolcatalog.IsTool(contract.ToolName) {
+				filtered = append(filtered, contract)
+				continue
+			}
 			hash, e := actionauth.ContractHash(contract)
 			if e != nil {
 				continue
@@ -170,10 +180,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		result = filtered
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].GetToolName() < result[j].GetToolName() })
-	if limit <= 0 || limit > 64 {
-		limit = 64
-	}
-	if len(result) > limit {
+	if limit > 0 && len(result) > limit {
 		result = result[:limit]
 	}
 	return result, nil

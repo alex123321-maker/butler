@@ -599,7 +599,14 @@ func (p *Provider) continueRunRealtimeMessages(req transport.ContinueRunRequest)
 	} else {
 		p.setInstructions(req.RunID, instructions)
 	}
-	events = append(events, map[string]any{"type": "session.update", "session": map[string]any{"instructions": instructions}})
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
+	sessionUpdate := map[string]any{"instructions": instructions}
+	if defs, ok := p.currentTools(req.RunID); ok {
+		sessionUpdate["tools"] = encodeRealtimeTools(defs)
+	}
+	events = append(events, map[string]any{"type": "session.update", "session": sessionUpdate})
 
 	for _, item := range inputItems {
 		events = append(events, map[string]any{
@@ -622,13 +629,20 @@ func (p *Provider) continueRunRealtimeMessages(req transport.ContinueRunRequest)
 // Realtime events: inject the function_call_output item then request a
 // new response.
 func (p *Provider) submitToolResultRealtimeMessages(req transport.SubmitToolResultRequest) ([]map[string]any, error) {
+	if req.ToolSet != nil {
+		p.rememberTools(req.RunID, req.ToolSet.Definitions)
+	}
+	sessionUpdate := map[string]any{"instructions": p.instructionsFor(req.RunID)}
+	if defs, ok := p.currentTools(req.RunID); ok {
+		sessionUpdate["tools"] = encodeRealtimeTools(defs)
+	}
 	item := map[string]any{
 		"type":    "function_call_output",
 		"call_id": req.ToolCallRef,
 		"output":  req.ToolResultJSON,
 	}
 	return []map[string]any{
-		{"type": "session.update", "session": map[string]any{"instructions": p.instructionsFor(req.RunID)}},
+		{"type": "session.update", "session": sessionUpdate},
 		{"type": "conversation.item.create", "item": item},
 		{"type": "response.create"},
 	}, nil

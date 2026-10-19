@@ -1,5 +1,12 @@
 # Deploy
 
+The owner moved the primary instance to the artifact-managed `butler-main`
+project on laba on2026-10-19. Use its private `/srv/storage/butler/main/compose.json`
+after installing reviewed binaries; root `current` identifies release sources.
+`lab.sh Status` recognizes the primary marker and legacy `Up` refuses a second
+primary. Source Sync alone does not install artifact binaries. See the
+[migration, features, evidence and rollback report](../docs/operations/laba-main-20261019.md).
+
 Docker Compose files and environment templates live here.
 
 The explicit optional `docker-compose.workspaces.yml` overlay installs bounded

@@ -36,6 +36,7 @@ import (
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/workspaceexec"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
@@ -148,6 +149,9 @@ func New(ctx context.Context) (*App, error) {
 			_ = converterConn.Close()
 		}
 	}()
+	if cfg.ToolDiscoveryEnabled && (cfg.ActionAuthorityTokenFile == "" || postgres == nil) {
+		return nil, fmt.Errorf("tool discovery requires PostgreSQL and private action authority")
+	}
 	serviceToken := ""
 	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
 		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -258,6 +262,14 @@ func New(ctx context.Context) (*App, error) {
 		server.SetScopedCatalog(catalog)
 		var skillStore *skills.Store
 		var executor broker.RuntimeExecutor = router
+		if cfg.ToolDiscoveryEnabled {
+			if err = registryStore.RegisterOwned(toolcatalog.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.ToolCatalogExecutor{Catalog: catalog, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
 		if cfg.SkillsEnabled {
 			if cfg.ExtensionOwnerID == "" {
 				postgres.Close()
@@ -274,7 +286,7 @@ func New(ctx context.Context) (*App, error) {
 			}
 			skillStore = skills.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, skills.NewClient(evidenceURL, token), broker.SkillContracts{Registry: registryStore, Extensions: extensionStore}, broker.SkillEnvironment{Contexts: reader, Catalog: catalog})
 			skillStore.SetSources(sourceCatalog)
-			executor = &skills.RoutedExecutor{Store: skillStore, Next: router}
+			executor = &skills.RoutedExecutor{Store: skillStore, Next: executor}
 			authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore})
 			skillHandler = skills.NewHandler(token, skillStore)
 		}

@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/butler/butler/internal/security/content"
@@ -10,6 +11,9 @@ import (
 
 func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string, inputs []transport.InputItem, oldDefs []transport.ToolDefinition) (preparedRun, error) {
 	p := preparedRun{CurrentRunID: runID, MemoryBundle: map[string]any{}}
+	if s.config.ToolDiscoveryEnabled && s.config.ToolCatalog == nil {
+		return preparedRun{}, fmt.Errorf("current discovery catalog unavailable")
+	}
 	if s.config.AdaptiveRetrieval != nil {
 		plan, err := s.config.AdaptiveRetrieval.Plan(ctx, runID)
 		if err != nil {
@@ -20,7 +24,7 @@ func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string,
 	for _, item := range inputs {
 		packageData := false
 		for _, ref := range content.ItemOrigin(item).SourceRefs {
-			if strings.HasPrefix(ref, "extension-manifest:") || strings.HasPrefix(ref, "skill:") || strings.HasPrefix(ref, "skill-index:") {
+			if strings.HasPrefix(ref, "extension-manifest:") || strings.HasPrefix(ref, "skill:") || strings.HasPrefix(ref, "skill-index:") || strings.HasPrefix(ref, "tool-catalog:") || ref == "kernel:tool-discovery-v1" || s.config.ToolDiscoveryEnabled && ref == "retrieval:tool_summary" {
 				packageData = true
 			}
 		}

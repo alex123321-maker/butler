@@ -1,5 +1,12 @@
 # Execution budget contract
 
+The budgeted transport emits one structured numeric `model turn usage observed`
+log record for each complete observation, including native total tokens. This
+preserves High's thinking consumption for retained operator comparison logs;
+the existing SQL input/candidate columns alone cannot reconstruct that total.
+Missing observations and historical totals remain unknown. No raw model content
+or credential is logged, and observations never refund reservations.
+
 Budget Service owns migration037's immutable scope policies, spent reservations,
 model attempt IDs and normalized loop observations. PostgreSQL is authoritative.
 Orchestrator requests conservative admission before each Start/Continue/Submit

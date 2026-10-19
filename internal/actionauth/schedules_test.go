@@ -132,11 +132,11 @@ func TestSchedulesStandardCapabilityPreservesAuthorityBounds(t *testing.T) {
 	}
 	m := testOwnerMandate(now)
 	before := len(m.Tools)
-	if len(EffectiveMandateTools(m)) != before+5 || len(m.Tools) != before {
+	if len(EffectiveMandateTools(m)) != before+7 || len(m.Tools) != before {
 		t.Fatal("effective kernel tools mutated stored mandate")
 	}
 	m.ScopeKind = ""
-	if len(EffectiveMandateTools(m)) != before {
-		t.Fatal("legacy exact task mandate widened")
+	if len(EffectiveMandateTools(m)) != before+2 {
+		t.Fatal("legacy task acquired non-catalog capabilities")
 	}
 }

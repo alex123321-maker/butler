@@ -32,6 +32,7 @@ import (
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/schedulecontrol"
 	"github.com/butler/butler/internal/singletabcontrol"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -163,7 +164,7 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 		call.ToolName, call.ToolCallId, call.ArgsJson = candidatecontrol.Tool, "memory-candidate-call", string(raw)
 		contract = candidatecontrol.Contract()
 	}
-	if memoryRead != "" && !schedulecontrol.IsTool(memoryRead) {
+	if memoryRead != "" && !schedulecontrol.IsTool(memoryRead) && !toolcatalog.IsTool(memoryRead) {
 		data := args.Sources[0]
 		value := map[string]any{"source_id": data.ID, "source_revision": data.Revision, "access_revision": data.AccessRevision, "content_hash": data.Hash, "max_chars": 64}
 		if memoryRead == readcontrol.Search {
@@ -195,6 +196,10 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 		call.ToolName, call.ToolCallId, call.ArgsJson = memoryRead, "schedule-call", string(raw)
 		contract = schedulecontrol.Contract(memoryRead)
 	}
+	if toolcatalog.IsTool(memoryRead) {
+		call.ToolName, call.ToolCallId, call.ArgsJson = memoryRead, "tool-discovery-call", `{"query":"doctor.check_system"}`
+		contract = toolcatalog.Contract(memoryRead)
+	}
 	repo := approvals.NewPostgresRepository(f.pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
 	approvalService := approvals.NewService(repo, nil)
@@ -203,6 +208,7 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 	reader.memoryCandidateReady = candidate
 	reader.memoryReadReady = memoryRead != ""
 	reader.schedulesReady = schedulecontrol.IsTool(memoryRead)
+	reader.toolDiscoveryReady = toolcatalog.IsTool(memoryRead)
 	reader.memoryTemporalReady = memoryRead == factcontrol.Tool
 	journal := actionauth.NewPostgresStore(f.pool)
 	journal.SetBudgets(f.budgets)

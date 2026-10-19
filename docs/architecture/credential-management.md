@@ -1,5 +1,12 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The candidate-proposal private client admits exactly the owning Compose HTTP
+destination `orchestrator:8080/internal/memory-candidate`, consistent with memory
+reads/facts. Arbitrary remote plain HTTP remains denied; other remote endpoints
+require HTTPS. Authentication, exact path, redirect refusal and Broker dispatch
+checks remain mandatory. This fixes startup when optional candidate proposals
+are composed in the standard multi-container deployment.
+
 Credential release now follows the
 [exact action authorization contract](action-authorization-contract.md).
 One-time approval binds canonical args, concrete resource, alias/field and
