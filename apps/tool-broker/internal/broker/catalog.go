@@ -80,7 +80,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			// A queued developer receipt is not a candidate return. Advertising
 			// collection early invites a call that correctly fails Prepare.
 			// This is availability only; actual Prepare/Claim repeat all guards.
-			if c.Converters == nil {
+			if c.Converters == nil || a.TaskID == "" {
 				continue
 			}
 			ready, e := c.Converters.CollectionAvailable(ctx, a)
@@ -150,7 +150,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		}
 		result = append(result, installed...)
 	}
-	if c.Converters != nil {
+	// Converter lifecycle/catalog guards require a Task. Their composition must
+	// not block unrelated capabilities in an ordinary taskless conversation.
+	if c.Converters != nil && a.TaskID != "" {
 		installed, e := c.Converters.Catalog(ctx, a, query, 0)
 		if e != nil {
 			return nil, e

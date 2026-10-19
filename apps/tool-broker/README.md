@@ -1,5 +1,10 @@
 # Tool Broker
 
+Taskless conversations exclude converter lifecycle/catalog and collection reads
+before their task-only guards, so enabling converters preserves ordinary catalog
+discovery. Core/Broker process checks exercise discovery with both skills and
+converters enabled; converter execution still requires current task authority.
+
 Optional candidate proposals support the exact private Compose destination
 `http://orchestrator:8080/internal/memory-candidate`; arbitrary remote plain HTTP
 is denied. This matches the read/fact clients and preserves authenticated dispatch.

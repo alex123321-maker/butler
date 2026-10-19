@@ -108,6 +108,9 @@ func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Hand
 		}
 		cmd = exec.Command(actual)
 		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_TOOL_DISCOVERY_ENABLED=true", "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
+		if os.Getenv("BUTLER_CONVERTERS_ENABLED") == "true" {
+			cmd.Env = append(cmd.Env, "BUTLER_CONVERTER_RUNTIME_TOKEN_FILE="+tokenPath)
+		}
 	}
 	log, err := os.OpenFile(filepath.Join(t.TempDir(), "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {

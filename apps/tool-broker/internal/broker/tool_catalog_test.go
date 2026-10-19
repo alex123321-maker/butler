@@ -9,6 +9,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/delegation"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/toolcatalog"
 	"strings"
 )
@@ -79,6 +80,43 @@ func TestToolCatalogDoesNotTruncateCoreBeforeSearch(t *testing.T) {
 type discoveryContext struct {
 	*authFixture
 	current actionauth.ContextSnapshot
+}
+
+func TestToolDiscoveryTasklessCatalogWithConvertersEnabled(t *testing.T) {
+	for _, collectionRegistered := range []bool{false, true} {
+		t.Run(fmt.Sprintf("collection=%t", collectionRegistered), func(t *testing.T) {
+			reg := loadTestRegistry(t)
+			if err := reg.RegisterOwned(toolcatalog.Contracts()); err != nil {
+				t.Fatal(err)
+			}
+			if collectionRegistered {
+				if err := reg.RegisterOwned(generatedtools.Contracts()); err != nil {
+					t.Fatal(err)
+				}
+			}
+			a, _ := newAuthFixture().GetActionContext(context.Background(), "run")
+			a.TaskID, a.TaskStatus = "", ""
+			a.TaskRevision, a.PinnedTaskRevision, a.ConstraintsRevision = 0, 0, 0
+			a.InputClaimHash = strings.Repeat("a", 64)
+			// Converter scope deliberately cannot be acquired. Taskless catalog
+			// reads must never consult its task-only lifecycle/collection guards.
+			catalog := &TaskCatalog{Registry: reg, Contexts: converterCatalogContext{a}, Converters: &generatedtools.Store{}}
+			contracts, err := catalog.ListForRun(context.Background(), "run", "", 0)
+			if err != nil {
+				t.Fatal("task-only converter guard blocked ordinary catalog", err)
+			}
+			names := map[string]bool{}
+			for _, c := range contracts {
+				if strings.HasPrefix(c.ToolName, "converters.") || strings.HasPrefix(c.ToolName, "converter.") {
+					t.Fatal("task-only converter exposed to conversation", c.ToolName)
+				}
+				names[c.ToolName] = true
+			}
+			if !names[toolcatalog.Search] || !names[toolcatalog.Load] || !names["http.request"] {
+				t.Fatal("ordinary capabilities disappeared", names)
+			}
+		})
+	}
 }
 
 func (d discoveryContext) GetActionContext(context.Context, string) (actionauth.ContextSnapshot, error) {
