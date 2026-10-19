@@ -61,6 +61,13 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if discoveryErr != nil {
 		return cfg, snapshot, discoveryErr
 	}
+	// This endpoint carries Broker service proof. Preserve it in the actual
+	// startup configuration, using operator environment only, never DB/UI.
+	browserSnapshot, browserErr := loadSpecs(get, []fieldSpec{serverBrowserOrchestratorSpec(&cfg)})
+	snapshot.keys = append(snapshot.keys, browserSnapshot.keys...)
+	if browserErr != nil {
+		return cfg, snapshot, browserErr
+	}
 	workspaceSnapshot, workspaceErr := loadSpecs(get, workspaceOrchestratorSpecs(&cfg))
 	readSnapshot, readErr := loadSpecs(get, append(memoryReadOrchestratorSpecs(&cfg), memoryTemporalSpecs(&cfg)...))
 	snapshot.keys = append(snapshot.keys, readSnapshot.keys...)

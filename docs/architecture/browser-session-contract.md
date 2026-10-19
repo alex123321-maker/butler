@@ -204,6 +204,11 @@ but remains possible after task cancellation or lease expiry. This permits no ne
 viewing/input or agent authority. A dedicated runtime-only token protects
 Broker -> browser HTTP; runtime receives no core, owner or PostgreSQL credential.
 Both private clients reject redirects and ambient proxy settings.
+Core's layered startup loader preserves `BUTLER_BROWSER_CONTROL_URL` from the
+operator environment only; DB/UI settings cannot enable or redirect this private
+authenticated route. Missing Broker service proof or an invalid endpoint path,
+userinfo, query or fragment prevents startup instead of presenting a working UI
+with no owner controller.
 
 Migration086 stores run/owner/task mapping, finite expiry, control mode,
 monotonic epoch and controller hash. It stores content-free operation/ACK audit
