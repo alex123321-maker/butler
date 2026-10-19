@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
 
+test.beforeEach(async ({ page }) => {
+  // Production LAN HTTP has getRandomValues but no secure-context randomUUID.
+  await page.addInitScript(() => { Object.defineProperty(Crypto.prototype, 'randomUUID', { value: undefined, configurable: true }) })
+})
+
 test('guarded tab choices keep identical origins distinct and send only owner decision', async ({ page }) => {
   const id = 'a'.repeat(48)
   const first = 'b'.repeat(48)
@@ -8,6 +13,7 @@ test('guarded tab choices keep identical origins distinct and send only owner de
   let selected = false
   let revoked = false
   let decisions = 0
+  const deliveryIDs: string[] = []
   await page.route('**/api/v2/approvals', route => route.fulfill({ json: { approvals: [{ approval_id: id, run_id: 'waiting-run', tool_name: 'single_tab.bind.guarded', status: selected ? 'approved' : 'pending', summary: 'Select one guarded browser origin' }] } }))
   await page.route(`**/api/v3/tab-choices/${id}`, route => {
     expect(route.request().headers().authorization).toBe(`Bearer ${ownerToken}`)
@@ -20,12 +26,14 @@ test('guarded tab choices keep identical origins distinct and send only owner de
     expect(route.request().headers().authorization).toBe(`Bearer ${ownerToken}`)
     expect(route.request().postDataJSON()).toEqual({ candidate_token: second })
     decisions++
+    deliveryIDs.push(route.request().headers()['x-butler-delivery-id'])
     selected = true
     await route.fulfill({ json: { single_tab_session_id: 'opaque-selected-session' } })
   })
   await page.route(`**/api/v3/tab-choices/${id}/revoke`, async route => {
     expect(route.request().postDataJSON()).toEqual({})
     revoked = true
+    deliveryIDs.push(route.request().headers()['x-butler-delivery-id'])
     await route.fulfill({ json: { revoked: true } })
   })
   await page.goto('/approvals')
@@ -40,6 +48,8 @@ test('guarded tab choices keep identical origins distinct and send only owner de
   await page.getByRole('button', { name: 'Revoke tab binding' }).click()
   await expect(page.getByText('Tab binding revoked. Previously recorded effects are retained.')).toBeVisible()
   expect(revoked).toBe(true)
+  expect(deliveryIDs.every(id => /^[a-f0-9]{32}$/.test(id))).toBe(true)
+  expect(new Set(deliveryIDs).size).toBe(2)
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toContain(ownerToken)
 })
 
@@ -68,7 +78,7 @@ test('saved approval requires an owner token and sends its exact identity', asyn
   await page.route('**/api/v2/approvals', (route) => route.fulfill({ json: { approvals: [{ approval_id: 'approval-stable', run_id: 'run-stable', status: decided ? 'approved' : 'pending', args_json: '{"body":"one"}', summary: 'Submit body one', requested_via: 'web', expires_at: '2030-01-01T00:00:00Z' }] } }))
   await page.route('**/api/v2/approvals/approval-stable/approve', async (route) => {
     expect(route.request().headers().authorization).toBe('Bearer fixture-owner-control-token-00000000')
-    expect(route.request().headers()['x-butler-delivery-id']).toBeTruthy()
+    expect(route.request().headers()['x-butler-delivery-id']).toMatch(/^[a-f0-9]{32}$/)
     decided = true
     await route.fulfill({ json: { changed: true } })
   })
