@@ -274,3 +274,6 @@ runtime channel requires migration086 and `deploy/docker-compose.server-browser.
 Pixels/input are not model artifacts; this is a page viewport, not a native desktop.
 Failed control requests discard queued keystrokes. Return to agent can remove
 an existing controller after task cancellation without permitting new input.
+Approval decisions and guarded tab selection/revocation generate their delivery
+IDs with cryptographic `getRandomValues`, so the existing owner-authenticated
+requests also work on self-hosted LAN HTTP without secure-context `randomUUID`.
