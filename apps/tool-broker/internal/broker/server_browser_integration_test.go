@@ -153,6 +153,7 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	journal := actionauth.NewPostgresStore(pool)
 	journal.SetBudgets(budgets)
 	reader := resourceReader{authFixture: newAuthFixture(), pool: pool}
+	server.SetScopedCatalog(&TaskCatalog{Registry: reg, Contexts: reader})
 	server.SetBudgets(budgets)
 	server.SetActionAuthorizer(actionauth.NewService(journal, reader, nil))
 	runtimeControl, err := browsercontrol.NewClient(endpoint, strings.Repeat("browser-fixture-", 3))
@@ -184,6 +185,22 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	defer conn.Close()
 	client := toolbrokerv1.NewToolBrokerServiceClient(conn)
 	callCtx := metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+serviceToken)
+	currentTools, catalogErr := client.ListTools(callCtx, &toolbrokerv1.ListToolsRequest{RunId: "run"})
+	if catalogErr != nil {
+		t.Fatal("current discovery catalog", catalogErr)
+	}
+	foundOpen := false
+	for _, contract := range currentTools.GetTools() {
+		if strings.HasPrefix(contract.ToolName, "single_tab.") {
+			t.Fatal("legacy tab leaked into current run catalog")
+		}
+		if contract.ToolName == "browser.open" {
+			foundOpen = contract.ContractRevision == "3"
+		}
+	}
+	if !foundOpen {
+		t.Fatal("current server browser unavailable to discovery")
+	}
 	sequence := 0
 	prepare := func(tool string, args map[string]any) (*toolbrokerv1.ToolCall, string) {
 		t.Helper()

@@ -136,7 +136,7 @@ pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/transport/...
   See [protocol](../../docs/testing/issue-92-native-coherent-pilot.md) and
   [retained offline evidence](../../docs/testing/issue-92-native-coherent-offline.md).
 
-`server-browser-lab.sh <owned-server-browser-root> unit|browser|broker|web` uses
+`server-browser-lab.sh <owned-server-browser-root> unit|browser|broker|web|web-real` uses
 only `/srv/storage/butler/agents/server-browser-*` snapshots, private caches and a
 root-local lock. Go/browser images are pinned by inspected ID per invocation;
 module/browser caches are read-only. Broker acceptance creates a network-none,
@@ -145,3 +145,9 @@ No Compose, shared service restart or common database is used. Unit validation
 excludes the pre-existing doctor revision1 function-proposal pin mismatch; its
 failure must not be described as passing. Browser and Broker acceptance are
 mandatory explicit modes, not skipped unit entrypoints.
+
+`web-real` drives the built Web page through the production owner API handler,
+authenticated private Broker, isolated PG and real server Chromium. It checks
+an independently counted recipient POST. The UI's Chromium1.58 cache and the
+runtime image's Chromium1.52 cache remain separate. Test ingress is loopback-only
+inside the disposable PG network namespace; there are no published host ports.

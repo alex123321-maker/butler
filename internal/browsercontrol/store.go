@@ -54,6 +54,9 @@ func validID(value string) bool {
 }
 
 func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant actionauth.Grant, result *toolbrokerv1.ToolResult) error {
+	if call == nil || !strings.HasPrefix(call.GetToolName(), "browser.") {
+		return nil
+	}
 	if result == nil || result.GetStatus() != "completed" {
 		return nil
 	}
