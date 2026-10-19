@@ -238,7 +238,7 @@ ACK keeps the durable fence closed; recovery requires explicit takeover/release.
 Closing/reloading the viewer does not silently release control. Session expiry
 or runtime loss never recreates or replays the browser.
 
-Frames and owner input are returned only to the authenticated viewer. Ordinary
+Frames, the actual current page URL and owner input are returned only to the authenticated viewer. Ordinary
 model results explicitly discard the private frame field. Typed text, password
 inputs, installed credentials and active input values are retained only inside
 the helper's redaction set; subsequent visible observations mask reflected values.
