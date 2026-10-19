@@ -13,6 +13,7 @@ Broker grants, credential mediation, public egress и operator domain caps.
 | P1 | Frame token проверял только главный документ. Изменение cross-origin iframe не мешало клику по устаревшему изображению. | Capture до/после JPEG и проверка перед вводом включают identity/revision всех документов и состав дерева фреймов. | Настоящий Chromium: независимый child DOM меняется с подтверждением recipient; ввод со старым кадром отклоняется, дополнительного POST нет. |
 | P2 | Накопленный Enter мог отправиться после неопределённого результата предыдущего ввода. | Любая ошибка control request очищает keyboard queue; unmount также очищает очередь и адрес. | Playwright держит text request, ставит Enter в очередь, возвращает 409 и подтверждает отсутствие последующей отправки клавиши. |
 | P2 | После отмены задачи владелец терял возможность release; ручные background writes оставались разрешены до TTL. | Release текущего controller проверяет owner mapping/hash/epoch, но не требует активной задачи. Это только снятие существующей write capability. | Реальный PG/Broker/Chromium: cancelled task запрещает frame и чужой release; правильный controller успешно завершает управление. |
+| P1 | Последовательная замена короткого private input prefix раньше полного значения могла оставить суффикс пароля в model text. | Все raw/encoded совпадения ищутся в исходном тексте; маскируется объединение перекрывающихся диапазонов. | Реальный Chromium посимвольно вводит пароль, затем открывает отражающую его страницу. Model text должен быть в точности `[REDACTED]`, без префиксов/суффиксов. |
 
 Потерянный release ACK по-прежнему оставляет durable owner fence закрытым.
 Явное восстановление Take/Return проверено с новым runtime epoch. До ACK takeover
@@ -22,12 +23,14 @@ Broker grants, credential mediation, public egress и operator domain caps.
 ## Проверки после исправлений
 
 Изолированный root `/srv/storage/butler/agents/server-browser-20261019-a7f9`,
-неизменяемые исходники `snapshots/20261019-130315-438`. Проверки используют
+финальные неизменяемые исходники `snapshots/20261019-130847-076`. Отдельный Web
+protocol тест запускался на `snapshots/20261019-130315-438`; после него Web исходники
+не менялись. Проверки используют
 `scripts/dev/server-browser-lab.sh`. Только собственные контейнеры и caches,
 network-none PG, без опубликованных host ports и без Compose общего стека.
 
 - `browser`: PASS, `TestBrowserSessionE2E` со всеми восемью subtests и
-  `TestServerBrowserChromium`, включая новую iframe regression.
+  `TestServerBrowserChromium`, включая iframe и посимвольную password regression.
 - `web-real`: PASS, production Web build/typecheck/lint, 1/1 Playwright и
   `TestServerBrowserBrokerIntegration`; обязательные acceptance проверки не пропущены.
 - `web`: PASS, typecheck/lint и 1/1 Playwright, включая очередь Enter после 409.
@@ -36,10 +39,10 @@ network-none PG, без опубликованных host ports и без Compos
 
 Журналы в `reports/` этого root:
 
-- `browser-20261019T060330Z-2863797.log`;
-- `web-real-20261019T060338Z-2865059.log`;
+- `browser-20261019T060913Z-2889759.log`;
+- `web-real-20261019T060922Z-2891169.log`;
 - `web-20261019T060420Z-2869326.log`;
-- `unit-20261019T060453Z-2871897.log`.
+- `unit-20261019T060959Z-2894781.log`.
 
 Run/task/lease и approval решения заданы fixtures; PG, runtime Chromium и
 production owner API/Broker реальные. Нет проверки внешнего аккаунта или живого

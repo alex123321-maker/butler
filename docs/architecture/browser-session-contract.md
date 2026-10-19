@@ -255,6 +255,8 @@ Frames, the actual current page URL and owner input are returned only to the aut
 model results explicitly discard the private frame field. Typed text, password
 inputs, installed credentials and active input values are retained only inside
 the helper's redaction set; subsequent visible observations mask reflected values.
+Overlapping values and successive keyboard prefixes are masked against original
+text so a shorter match cannot prevent masking the complete longer value.
 The Web page keeps proof/controller/input/frame in memory and clears them when
 proof changes or the component unmounts; it uses no local/session storage.
 Any failed control request discards queued keyboard input; subsequent keys are

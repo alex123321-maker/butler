@@ -36,11 +36,30 @@ async function ensureBrowser() {
 
 function redact(session, value) {
   let text = String(value ?? '')
+  const variants = new Set()
   for (const secret of session.secrets) {
     if (!secret) continue
     const b64 = Buffer.from(secret).toString('base64')
-    const variants = new Set([secret, encodeURIComponent(secret), encodeURIComponent(secret).replaceAll('%20', '+'), b64, b64.replace(/=+$/, ''), Buffer.from(secret).toString('base64url')])
-    for (const variant of variants) text = text.split(variant).join('[REDACTED]')
+    for (const variant of [secret, encodeURIComponent(secret), encodeURIComponent(secret).replaceAll('%20', '+'), b64, b64.replace(/=+$/, ''), Buffer.from(secret).toString('base64url')]) variants.add(variant)
+  }
+  // Match against the original text, then mask the union. Keyboard entry
+  // collects successive prefixes: replacing a prefix first would hide the
+  // longer match and expose its suffix. Overlapping secrets must merge too.
+  if (variants.size) {
+    const masked = new Uint8Array(text.length)
+    for (const variant of variants) {
+      for (let start = text.indexOf(variant); start >= 0; start = text.indexOf(variant, start + 1)) masked.fill(1, start, start + variant.length)
+    }
+    const parts = []
+    let cursor = 0, index = 0
+    while (index < text.length) {
+      if (!masked[index]) { index++; continue }
+      parts.push(text.slice(cursor, index), '[REDACTED]')
+      while (masked[index]) index++
+      cursor = index
+    }
+    parts.push(text.slice(cursor))
+    text = parts.join('')
   }
   return text.replace(/([?&#](?:access_token|refresh_token|token|password|api_key|secret|code)=)[^&#]*/gi, '$1[REDACTED]')
 }

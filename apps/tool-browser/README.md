@@ -61,3 +61,5 @@ never become model results. See [the owner protocol](../../docs/architecture/bro
 When the owner channel is enabled, session tools also require Broker's private
 dispatch epoch; delayed calls cannot cross a takeover/release cycle. Manual
 frame guards include cross-origin child documents, not just the main page.
+Masking merges secret spans in the original text, including successive typed
+password prefixes; shorter values cannot expose a longer value's suffix.

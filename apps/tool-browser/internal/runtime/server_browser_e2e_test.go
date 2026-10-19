@@ -112,7 +112,11 @@ func TestServerBrowserChromium(t *testing.T) {
 	if _, e := server.Control(context.Background(), stale); e == nil {
 		t.Fatal("replayed frame accepted")
 	}
-	reply = control("text", func(c *browsercontrol.Command) { c.Text = "owner-private-password" })
+	// Real keystrokes retain successive private input prefixes. Masking must
+	// hide the whole later reflected value, not just its earliest prefix.
+	for _, key := range "owner-private-password" {
+		reply = control("key", func(c *browsercontrol.Command) { c.Key = string(key) })
+	}
 	reply = control("key", func(c *browsercontrol.Command) { c.Key = "Tab" })
 	reply = control("click", func(c *browsercontrol.Command) { c.X = 60; c.Y = 200 })
 	deadline := time.Now().Add(time.Second)
@@ -152,7 +156,7 @@ func TestServerBrowserChromium(t *testing.T) {
 	}
 	assertCode(t, executeTest(t, server, browserCall("browser.click", "run-1", actionArgs(obs))), "scope_denied") // stale old contract cap still applies
 	obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
-	if strings.Contains(obs.Text, "owner-private-password") || !strings.Contains(obs.Text, "[REDACTED]") {
+	if strings.TrimSpace(obs.Text) != "[REDACTED]" {
 		t.Fatal("manual password leaked in model observation", obs.Text)
 	}
 	args := actionArgs(obs)
