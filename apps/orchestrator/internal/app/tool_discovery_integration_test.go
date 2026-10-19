@@ -25,6 +25,7 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/toolcatalog"
@@ -112,14 +113,14 @@ func (p *discoveryScriptedProvider) SubmitToolResult(_ context.Context, req tran
 }
 
 func TestToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T) {
-	for _, skillsEnabled := range []bool{false, true} {
-		t.Run(fmt.Sprintf("skills=%t", skillsEnabled), func(t *testing.T) {
-			testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t, skillsEnabled)
+	for _, composition := range []struct{ skills, converters bool }{{false, false}, {true, false}, {true, true}} {
+		t.Run(fmt.Sprintf("skills=%t/converters=%t", composition.skills, composition.converters), func(t *testing.T) {
+			testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t, composition.skills, composition.converters)
 		})
 	}
 }
 
-func testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T, skillsEnabled bool) {
+func testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T, skillsEnabled, convertersEnabled bool) {
 	if os.Getenv("BUTLER_TOOL_DISCOVERY_APP_BINARY") == "" {
 		t.Skip("compiled discovery Broker required")
 	}
@@ -127,6 +128,11 @@ func testToolDiscoveryOrdinaryCoreActualBrokerIntegration(t *testing.T, skillsEn
 	if skillsEnabled {
 		t.Setenv("BUTLER_SKILLS_ENABLED", "true")
 		t.Setenv("BUTLER_OWNER_CONTROL_OWNER_ID", f.f.parent.OwnerID)
+	}
+	if convertersEnabled {
+		t.Setenv("BUTLER_CONVERTERS_ENABLED", "true")
+		t.Setenv("BUTLER_CONVERTER_PROFILE_JSON", `{"dependency":{"id":"butler-converter-ir","version":"1.0.0","sha256":"`+strings.Repeat("a", 64)+`"},"checker":"butler.delimited-json.checks.v1"}`)
+		t.Setenv("BUTLER_CONVERTER_RUNTIME_TARGET", generatedtools.RuntimeTarget)
 	}
 	f.reader.memoryReadReady = false
 	listener, err := net.Listen("tcp", "127.0.0.1:0")

@@ -91,6 +91,11 @@ Quality noninferiority and complete monetary cost remain unestablished. Defaults
 remain false; the owner-requested laba opt-in is not a general release verdict.
 Broker wrappers, including reviewed skills, must preserve the prior executor;
 the actual Core/Broker process check exercises discovery with skills enabled too.
+With converters enabled, taskless conversations omit converter lifecycle and
+collection reads before their task-only guards. Those unavailable capabilities
+must not deny the rest of the conversation catalog. Their owning execution
+guards remain unchanged. Process checks also cover skills and converters enabled
+together for ordinary search -> load -> call -> final.
 
 `pwsh -NoProfile -File scripts/dev/tool-discovery-local.ps1` creates a disposable
 PostgreSQL container and runs Linux/race checks plus an actual compiled Broker
