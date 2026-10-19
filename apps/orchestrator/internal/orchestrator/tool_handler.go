@@ -10,6 +10,7 @@ import (
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/extensions"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
@@ -42,6 +43,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
+	loadedContractHash := ""
 	if s.config.ToolDiscoveryEnabled && !operatorDoctor(ctx) {
 		contracts, err := s.currentToolContracts(ctx, current.GetRunId())
 		if err != nil {
@@ -54,6 +56,10 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		found := false
 		for _, c := range selected {
 			if c.ToolName == requested.ToolName {
+				loadedContractHash, err = actionauth.ContractHash(c)
+				if err != nil {
+					return nil, current, fmt.Errorf("loaded tool contract unavailable: %w", err)
+				}
 				found = true
 				break
 			}
@@ -114,6 +120,12 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	if prepared.Binding.RunID != brokerCall.GetRunId() || prepared.Binding.ToolCallID != toolCallID || prepared.Binding.ToolName != brokerCall.GetToolName() || prepared.Binding.ActionID == "" || prepared.Binding.ActionHash == "" {
 		return nil, current, fmt.Errorf("action authorizer returned an incompatible binding")
+	}
+	// Preparation independently resolves the current Broker contract. Do not
+	// silently execute a new revision installed after the selection check.
+	// Later changes are rejected by Broker's exact binding at authorize/dispatch.
+	if loadedContractHash != "" && prepared.Binding.ContractHash != loadedContractHash {
+		return nil, current, fmt.Errorf("loaded tool contract changed before authorization")
 	}
 	if recovered, ok := ctx.Value(recoveredApprovalKey{}).(approvalContinuation); ok && approvalID != "" && recovered.EffectID != "" && prepared.EffectID != recovered.EffectID {
 		return nil, current, fmt.Errorf("continuation external-effect identity changed")

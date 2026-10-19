@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /src
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 export GOTOOLCHAIN=local
-export GOCACHE=/src/.cache/go-build-linux
-export GOMODCACHE=/src/.cache/go-mod-linux
+export GOCACHE="$PWD/.cache/go-build-linux"
+export GOMODCACHE="$PWD/.cache/go-mod-linux"
 export BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://postgres@127.0.0.1:5432/butler_tool_discovery_test?sslmode=disable'
 export BUTLER_TEST_INITIATIVE_POSTGRES_URL="$BUTLER_TEST_MEMORY_POSTGRES_URL"
 export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_MEMORY_POSTGRES_URL"

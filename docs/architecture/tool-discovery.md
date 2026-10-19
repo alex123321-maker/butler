@@ -49,6 +49,10 @@ messages. Explicit subsequent loading can replace the selected revision of a
 method. Stale, revoked or newly incompatible refs are removed, never silently
 rebound to the latest contract. An unselected/unavailable proposal is rejected
 before dispatch. Every eventual action retains normal Broker authorization.
+The selected contract's action hash is pinned before preparation and compared
+with Broker's independently prepared binding before approval/authorization.
+A replacement between catalog lookup and preparation is rejected; subsequent
+changes fail Broker's existing exact authorization/dispatch binding checks.
 
 The fixed catalog controls are standard local reads for owner-goal, legacy and
 delegated work; only their exact owned contracts, local resources and zero
@@ -95,6 +99,10 @@ process. It rejects skipped mandatory discovery tests and records JSONL under
 pagination/staleness, exact selection, parent/child scope, current input claims,
 schema budgets, transcript recovery, and native wire-schema/alias continuity.
 The scripted model-loop test covers search -> load -> call -> final.
+The same mandatory, no-skip process/race/vet suite runs in the `Tool discovery`
+GitHub Actions workflow against disposable PostgreSQL. It also checks unloaded
+and revoked proposals, contract replacement during preparation, and preservation
+of prior selection when the method-count limit rejects another load.
 
 These are application/process/wire checks, not native model-quality acceptance.
 Before production enablement, use a frozen task set for each selected real

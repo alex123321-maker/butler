@@ -3,10 +3,12 @@ package orchestrator
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/actionauth"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -69,6 +71,33 @@ type discoveryFlowTools struct {
 	contracts []*toolbrokerv1.ToolContract
 }
 
+type discoveryFlowAuthorizer struct {
+	mockApprovalChecker
+	contracts            []*toolbrokerv1.ToolContract
+	beforePrepare        func()
+	prepared, authorized int
+}
+
+func (a *discoveryFlowAuthorizer) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
+	a.prepared++
+	if a.beforePrepare != nil {
+		a.beforePrepare()
+	}
+	prepared, err := a.mockApprovalChecker.PrepareAction(ctx, call)
+	for _, c := range a.contracts {
+		if c.ToolName == call.ToolName {
+			prepared.Binding.ContractHash, err = actionauth.ContractHash(c)
+			break
+		}
+	}
+	return prepared, err
+}
+
+func (a *discoveryFlowAuthorizer) AuthorizeAction(ctx context.Context, call *toolbrokerv1.ToolCall, actionID, approvalID, mandateID string) (string, error) {
+	a.authorized++
+	return a.mockApprovalChecker.AuthorizeAction(ctx, call, actionID, approvalID, mandateID)
+}
+
 func (e *discoveryFlowTools) ExecuteAuthorizedToolCall(_ context.Context, c *toolbrokerv1.ToolCall, grant string) (*toolbrokerv1.ToolResult, error) {
 	e.calls = append(e.calls, c)
 	r := toolcatalog.Result{Status: "ok"}
@@ -92,7 +121,7 @@ func TestToolDiscoveryModelLoopSearchLoadCallFinal(t *testing.T) {
 	provider := &discoveryFlowProvider{t: t}
 	tools := &discoveryFlowTools{contracts: contracts}
 	history := &memoryTranscriptStore{}
-	s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), history, provider, Config{ProviderName: "openai", ModelName: "fixture", ToolDiscoveryEnabled: true, ToolCatalog: &recoveryCatalog{contracts: contracts}, Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
+	s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), history, provider, Config{ProviderName: "openai", ModelName: "fixture", ToolDiscoveryEnabled: true, ToolCatalog: &recoveryCatalog{contracts: contracts}, Tools: tools, ActionAuthorizer: &discoveryFlowAuthorizer{contracts: contracts}}, nil)
 
 	ctx := context.Background()
 	runs := s.runs.(*memoryRunManager)
@@ -213,5 +242,72 @@ func TestToolDiscoveryBudgetRejectsLoadWithoutChangingPreviousSelection(t *testi
 	set, err := s.toolSetForContinuation(context.Background(), "run")
 	if err != nil || len(set.Definitions) != 2 {
 		t.Fatal("failed load changed selection", err)
+	}
+}
+
+func TestToolDiscoveryRejectsUnloadedRevokedAndChangedContractBeforeAuthorization(t *testing.T) {
+	for _, scenario := range []string{"unloaded", "revoked", "changed_during_prepare"} {
+		t.Run(scenario, func(t *testing.T) {
+			method := &toolbrokerv1.ToolContract{ToolName: "doctor.check_system", Status: "active", ContractRevision: "1", InputSchemaJson: `{"type":"object"}`}
+			contracts := append(toolcatalog.Contracts(), method)
+			catalog := &recoveryCatalog{contracts: contracts}
+			history := &memoryTranscriptStore{}
+			if scenario != "unloaded" {
+				now := time.Now()
+				history.toolCalls = append(history.toolCalls, transcript.ToolCall{RunID: "run", ToolName: toolcatalog.Load, Status: "completed", FinishedAt: &now, ResultJSON: mustMarshalJSON(toolcatalog.Result{Status: "ok", Loaded: []string{toolcatalog.Ref(method)}})})
+			}
+			authorizer := &discoveryFlowAuthorizer{contracts: contracts}
+			if scenario == "revoked" {
+				catalog.contracts = toolcatalog.Contracts()
+			} else if scenario == "changed_during_prepare" {
+				authorizer.beforePrepare = func() { method.RuntimeTarget = "different-runtime:9090" }
+			}
+			tools := &discoveryFlowTools{contracts: contracts}
+			runs := newMemoryRunManager()
+			current := &sessionv1.RunRecord{RunId: "run", SessionKey: "session", CurrentState: commonv1.RunState_RUN_STATE_MODEL_RUNNING, LeaseId: "lease"}
+			runs.records["run"] = current
+			s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, history, &mockProvider{}, Config{ToolDiscoveryEnabled: true, ToolCatalog: catalog, Tools: tools, ActionAuthorizer: authorizer}, nil)
+			_, _, err := s.handleToolCall(context.Background(), s.log, current, "lease", &transport.ToolCallRequest{ToolCallRef: "use", ToolName: method.ToolName, ArgsJSON: `{}`})
+			if err == nil || authorizer.authorized != 0 || len(tools.calls) != 0 {
+				t.Fatalf("unselected contract reached authorization/dispatch: err=%v authorized=%d calls=%d", err, authorizer.authorized, len(tools.calls))
+			}
+			if scenario == "changed_during_prepare" {
+				if authorizer.prepared != 1 || !strings.Contains(err.Error(), "loaded tool contract changed") {
+					t.Fatal("contract replacement was not detected at preparation", err)
+				}
+			} else if authorizer.prepared != 0 {
+				t.Fatal("unloaded/revoked proposal reached preparation")
+			}
+		})
+	}
+}
+
+func TestToolDiscoveryCountBudgetPreservesPreviouslyLoadedMethods(t *testing.T) {
+	contracts := toolcatalog.Contracts()
+	history := &memoryTranscriptStore{}
+	refs := []string{}
+	for i := 0; i <= toolcatalog.MaxLoaded; i++ {
+		method := &toolbrokerv1.ToolContract{ToolName: fmt.Sprintf("doctor.method_%02d", i), Status: "active", InputSchemaJson: `{"type":"object"}`}
+		contracts = append(contracts, method)
+		refs = append(refs, toolcatalog.Ref(method))
+	}
+	now := time.Now()
+	for start := 0; start < toolcatalog.MaxLoaded; start += 8 {
+		history.toolCalls = append(history.toolCalls, transcript.ToolCall{RunID: "run", ToolName: toolcatalog.Load, Status: "completed", FinishedAt: &now, ResultJSON: mustMarshalJSON(toolcatalog.Result{Status: "ok", Loaded: refs[start : start+8]})})
+	}
+	runs := newMemoryRunManager()
+	runs.records["run"] = &sessionv1.RunRecord{RunId: "run", SessionKey: "session"}
+	s := &Service{runs: runs, transcript: history, config: Config{ToolDiscoveryEnabled: true, ToolCatalog: &recoveryCatalog{contracts: contracts}}}
+	result := &toolbrokerv1.ToolResult{ToolName: toolcatalog.Load, Status: "completed", ResultJson: mustMarshalJSON(toolcatalog.Result{Status: "ok", Loaded: refs[toolcatalog.MaxLoaded:]})}
+	if err := s.validateToolLoad(context.Background(), "run", result); err != nil {
+		t.Fatal(err)
+	}
+	var receipt toolcatalog.Result
+	if json.Unmarshal([]byte(result.ResultJson), &receipt) != nil || receipt.Status != "schema_budget_exceeded" || len(receipt.Loaded) != 0 {
+		t.Fatal("count budget admitted another method", result)
+	}
+	set, err := s.toolSetForContinuation(context.Background(), "run")
+	if err != nil || len(set.Definitions) != toolcatalog.MaxLoaded+2 {
+		t.Fatal("rejected load evicted earlier selection", err)
 	}
 }
