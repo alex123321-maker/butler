@@ -38,7 +38,7 @@ CI status and logs are attached to the PR's current commit; this report does
 not replace the checks for that commit.
 
 Complete Windows package suites passed for all14 targeted packages: toolcatalog,
-transport and its six adapters, actionauth, config, candidatecontrol, Broker
+transport and its adapters, actionauth, config, candidatecontrol, Broker
 core/app, Orchestrator core and input. These are ordinary package runs; unlike
 the mandatory Linux suite, database-dependent tests may skip without their
 test database configuration. PowerShell parsing, changed Bash parsing, evidence
