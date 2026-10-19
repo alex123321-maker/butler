@@ -321,7 +321,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
 	specs := append(sharedSpecs,
-		fieldSpec{key: "BUTLER_BROWSER_CONTROL_URL", component: "orchestrator", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlURL = v }},
+		serverBrowserOrchestratorSpec(&cfg),
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN", component: "orchestrator", typeName: "string", required: false, isSecret: true, requiresRestart: true, assign: func(v string) { cfg.OwnerControlToken = v }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN_FILE", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlOwnerID = v }},
@@ -808,6 +808,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if cfg.BrowserControlURL != "" && cfg.ActionAuthorityTokenFile == "" {
+		return fmt.Errorf("server browser control requires private Broker authentication")
+	}
 	if cfg.ToolDiscoveryEnabled && cfg.ActionAuthorityTokenFile == "" {
 		return fmt.Errorf("tool discovery requires private Broker authentication")
 	}

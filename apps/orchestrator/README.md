@@ -1155,3 +1155,10 @@ while migration086 records owner control. Run cancellation, budgets and lease
 renewal remain authoritative; an already started inference can finish. Explicit
 return plus a fresh browser snapshot is required before further agent effects.
 See `deploy/docker-compose.server-browser.yml` and the browser-session contract.
+
+## Server browser startup
+
+`BUTLER_BROWSER_CONTROL_URL` is preserved through the layered startup loader and
+accepted only from the operator environment. Stored/UI settings cannot redirect
+the Broker-authenticated route. The exact private endpoint path and existing
+action-authority token configuration are required before startup.
