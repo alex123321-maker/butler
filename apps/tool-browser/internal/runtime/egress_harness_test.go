@@ -45,6 +45,7 @@ func TestBrowserRuntimeEgressHarness(t *testing.T) {
 	server := NewServer(runner, nil)
 	defer server.Close()
 	if address := os.Getenv("BUTLER_BROWSER_OWNER_HARNESS_ADDR"); address != "" {
+		server.RequireDispatchEpoch = true
 		privateListener, err := net.Listen("tcp", address)
 		if err != nil {
 			t.Fatal(err)

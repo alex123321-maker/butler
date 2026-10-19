@@ -84,11 +84,15 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 		return err
 	}
 	if call.GetToolName() == "browser.snapshot" || call.GetToolName() == "browser.extract_text" {
+		epoch, ok := admittedEpoch(ctx)
+		if !ok {
+			return ErrDenied
+		}
 		var args struct {
 			ID string `json:"browser_session_id"`
 		}
 		_ = json.Unmarshal([]byte(call.GetArgsJson()), &args)
-		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET fresh_needed=false WHERE browser_session_id=$1 AND run_id=$2 AND mode='agent'`, args.ID, call.GetRunId())
+		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET fresh_needed=false WHERE browser_session_id=$1 AND run_id=$2 AND mode='agent' AND epoch=$3`, args.ID, call.GetRunId(), epoch)
 		return err
 	}
 	return nil
@@ -96,37 +100,38 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 
 // Wait happens before Verify/Claim and budget spend. Expiry or cancellation
 // cannot turn an unacknowledged owner release into permission to execute.
-func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) error {
+func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (context.Context, error) {
 	if !strings.HasPrefix(call.GetToolName(), "browser.") || call.GetToolName() == "browser.open" || call.GetToolName() == "browser.read" {
-		return nil
+		return ctx, nil
 	}
 	var args struct {
 		ID string `json:"browser_session_id"`
 	}
 	if json.Unmarshal([]byte(call.GetArgsJson()), &args) != nil {
-		return ErrDenied
+		return ctx, ErrDenied
 	}
 	timer := time.NewTicker(200 * time.Millisecond)
 	defer timer.Stop()
 	for {
 		var mode string
 		var fresh bool
-		err := s.Pool.QueryRow(ctx, `SELECT mode,fresh_needed FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND expires_at>clock_timestamp()`, args.ID, call.GetRunId()).Scan(&mode, &fresh)
+		var epoch int64
+		err := s.Pool.QueryRow(ctx, `SELECT mode,fresh_needed,epoch FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND expires_at>clock_timestamp()`, args.ID, call.GetRunId()).Scan(&mode, &fresh, &epoch)
 		if err != nil {
-			return ErrDenied
+			return ctx, ErrDenied
 		}
 		if mode == "agent" {
 			if fresh && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.close" {
-				return ErrDenied
+				return ctx, ErrDenied
 			}
-			return nil
+			return WithDispatchEpoch(ctx, epoch), nil
 		}
 		if mode != "owner" {
-			return ErrDenied
+			return ctx, ErrDenied
 		}
 		select {
 		case <-ctx.Done():
-			return ErrDenied
+			return ctx, ErrDenied
 		case <-timer.C:
 		}
 	}
@@ -169,14 +174,20 @@ func (s *Store) Control(ctx context.Context, command Command) (Reply, error) {
 	if err != nil {
 		return reply, ErrDenied
 	}
-	a, err := s.Contexts.GetActionContext(ctx, session.RunID)
-	if err != nil || a.OwnerID != command.OwnerID || a.RunID != session.RunID || a.TaskID != session.TaskID || a.LeaseID == "" || !a.LeaseExpiresAt.After(time.Now()) || a.TaskID != "" && (a.TaskStatus != "active" || a.TaskRevision != a.PinnedTaskRevision) {
-		return reply, ErrDenied
-	}
-	switch strings.TrimPrefix(a.RunState, "RUN_STATE_") {
-	case "PREPARING", "MODEL_RUNNING", "AWAITING_MODEL_RESUME", "TOOL_PENDING", "TOOL_RUNNING", "AWAITING_APPROVAL", "preparing", "model_running", "awaiting_model_resume", "tool_pending", "tool_running", "awaiting_approval":
-	default:
-		return reply, ErrDenied
+	// Releasing an existing controller only removes its write capability. It
+	// must remain possible after task cancellation/lease expiry; it grants no
+	// new viewing, input or agent authority. All other operations need live core
+	// authority. Owner mapping and controller/epoch checks still apply below.
+	if command.Operation != "release" {
+		a, err := s.Contexts.GetActionContext(ctx, session.RunID)
+		if err != nil || a.OwnerID != command.OwnerID || a.RunID != session.RunID || a.TaskID != session.TaskID || a.LeaseID == "" || !a.LeaseExpiresAt.After(time.Now()) || a.TaskID != "" && (a.TaskStatus != "active" || a.TaskRevision != a.PinnedTaskRevision) {
+			return reply, ErrDenied
+		}
+		switch strings.TrimPrefix(a.RunState, "RUN_STATE_") {
+		case "PREPARING", "MODEL_RUNNING", "AWAITING_MODEL_RESUME", "TOOL_PENDING", "TOOL_RUNNING", "AWAITING_APPROVAL", "preparing", "model_running", "awaiting_model_resume", "tool_pending", "tool_running", "awaiting_approval":
+		default:
+			return reply, ErrDenied
+		}
 	}
 	// This is a direct authenticated human action, not delegated agent authority.
 	// It grants no action mandate and does not reconcile any unknown agent effect.
@@ -199,10 +210,11 @@ func (s *Store) Control(ctx context.Context, command Command) (Reply, error) {
 		command.Controller = ""
 		command.Epoch = session.Epoch
 	}
+	ownerID := command.OwnerID
 	command.OwnerID = ""
 	var eventID int64
 	if command.Operation != "frame" {
-		if err = s.Pool.QueryRow(ctx, `INSERT INTO server_browser_control_events(browser_session_id,owner_id,epoch,operation,status) VALUES($1,$2,$3,$4,'started') RETURNING event_id`, session.ID, a.OwnerID, command.Epoch, command.Operation).Scan(&eventID); err != nil {
+		if err = s.Pool.QueryRow(ctx, `INSERT INTO server_browser_control_events(browser_session_id,owner_id,epoch,operation,status) VALUES($1,$2,$3,$4,'started') RETURNING event_id`, session.ID, ownerID, command.Epoch, command.Operation).Scan(&eventID); err != nil {
 			return Reply{}, ErrDenied
 		}
 	}

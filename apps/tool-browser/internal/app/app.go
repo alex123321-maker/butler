@@ -48,6 +48,7 @@ func New(context.Context) (*App, error) {
 
 	httpMux := http.NewServeMux()
 	if cfg.BrowserControlTokenFile != "" {
+		browserServer.RequireDispatchEpoch = true
 		token, err := actionauth.ReadServiceToken(cfg.BrowserControlTokenFile)
 		if err != nil {
 			_ = grpcListener.Close()

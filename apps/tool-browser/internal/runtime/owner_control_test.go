@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/browsercontrol"
+	"google.golang.org/grpc/metadata"
 )
 
 func TestOwnerControlFencesAgentAndRequiresFreshObservation(t *testing.T) {
@@ -81,5 +82,34 @@ func TestOwnerPixelsCannotEnterModelResult(t *testing.T) {
 	result := Result{OK: true, OwnerFrame: &browsercontrol.Frame{JPEG: "private pixels", URL: "https://private-owner-url/?code=private-token"}}
 	if payload := buildResultJSON("browser.snapshot", result); strings.Contains(payload, "private pixels") || strings.Contains(payload, "private-owner-url") {
 		t.Fatal("owner frame leaked to model")
+	}
+}
+
+func TestOwnerControlRejectsDispatchFromPreviousEpoch(t *testing.T) {
+	runner := &stubRunner{result: Result{OK: true}}
+	server := NewServer(runner, nil)
+	server.RequireDispatchEpoch = true
+	observed := openTest(t, server)
+	req := browserCall("browser.snapshot", "run-1", map[string]any{"browser_session_id": observed.SessionID})
+	command := browsercontrol.Command{Operation: "take", SessionID: observed.SessionID, RunID: "run-1", Controller: strings.Repeat("a", 32), Epoch: 1}
+	if _, err := server.Control(context.Background(), command); err != nil {
+		t.Fatal(err)
+	}
+	command.Operation = "release"
+	if _, err := server.Control(context.Background(), command); err != nil {
+		t.Fatal(err)
+	}
+	for _, values := range [][]string{nil, {"0"}, {"1"}, {"2", "2"}, {"invalid"}, {"-1"}} {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{"butler-browser-epoch": values})
+		resp, err := server.Execute(ctx, req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertCode(t, resp.Result, "stale_control_epoch")
+	}
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("butler-browser-epoch", "2"))
+	resp, err := server.Execute(ctx, req)
+	if err != nil || resp.GetResult().GetStatus() != "completed" {
+		t.Fatal("current epoch rejected", err, resp)
 	}
 }

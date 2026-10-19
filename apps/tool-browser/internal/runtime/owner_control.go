@@ -24,7 +24,9 @@ func (s *Server) Control(ctx context.Context, command browsercontrol.Command) (b
 		return reply, browsercontrol.ErrDenied
 	}
 	if command.Operation == "take" {
-		if command.Epoch <= session.controlEpoch || len(command.Controller) != 32 {
+		// Equality is allowed only after a local release whose ACK may have
+		// been lost. Broker still requires a fresh durable takeover CAS.
+		if command.Epoch < session.controlEpoch || command.Epoch == session.controlEpoch && session.controller != "" || len(command.Controller) != 32 {
 			return reply, browsercontrol.ErrDenied
 		}
 		// Fence before helper work; lost acknowledgments never resume the agent.
@@ -77,6 +79,7 @@ func (s *Server) Control(ctx context.Context, command browsercontrol.Command) (b
 	}
 	if command.Operation == "release" {
 		session.controller = ""
+		session.controlEpoch++
 	}
 	if result.OwnerFrame != nil {
 		result.OwnerFrame.Epoch = session.controlEpoch

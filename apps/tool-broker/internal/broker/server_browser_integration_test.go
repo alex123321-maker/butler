@@ -250,6 +250,11 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		t.Fatal("owner mapping missing", e)
 	}
 	id := listed.Sessions[0].ID
+	oldSnapshot := &toolbrokerv1.ToolCall{ToolName: "browser.snapshot", RunId: "run", ToolCallId: "old-snapshot", ArgsJson: fmt.Sprintf(`{"browser_session_id":%q}`, id)}
+	oldAdmission, e := control.Before(ctx, oldSnapshot)
+	if e != nil {
+		t.Fatal("pin initial dispatch epoch", e)
+	}
 	if _, e = ownerClient.Control(ctx, browsercontrol.Command{Operation: "frame", SessionID: id, OwnerID: "foreign"}); e == nil {
 		t.Fatal("foreign owner viewed pixels")
 	}
@@ -320,6 +325,29 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	}
 	if e = control.WaitRun(ctx, "run"); e != nil {
 		t.Fatal(e)
+	}
+	// A pre-takeover RPC delayed in transport cannot execute after release,
+	// even for a read without observation_version. This uses the actual gRPC
+	// runtime, with precisely the Broker admission captured before takeover.
+	var delayed *toolbrokerv1.ToolResult
+	var delayedErr error
+	for _, contract := range reg.List("", false) {
+		if contract.ToolName == "browser.snapshot" {
+			delayed, delayedErr = router.Execute(oldAdmission, oldSnapshot, contract, nil)
+		}
+	}
+	if delayedErr != nil || delayed == nil || delayed.Status == "completed" || !strings.Contains(delayed.GetError().GetDetailsJson(), "stale_control_epoch") {
+		t.Fatal("old admission crossed control generation", delayedErr, delayed)
+	}
+	// A snapshot completed before takeover but recorded after release must
+	// not clear the new generation's fresh-observation requirement.
+	oldResult := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "old-snapshot", ToolName: "browser.snapshot", Status: "completed", ResultJson: `{"ok":true}`}
+	if err := control.Record(oldAdmission, oldSnapshot, actionauth.Grant{}, oldResult); err != nil {
+		t.Fatal(err)
+	}
+	var fresh bool
+	if err := pool.QueryRow(ctx, `SELECT fresh_needed FROM server_browser_sessions WHERE browser_session_id=$1`, id).Scan(&fresh); err != nil || !fresh {
+		t.Fatal("late old snapshot cleared the new fence", err)
 	}
 	r, e := client.ExecuteToolCall(callCtx, &toolbrokerv1.ExecuteToolCallRequest{ToolCall: staleCall, AuthorizationId: staleGrant})
 	if e != nil || r.GetResult().GetStatus() != "failed" || r.GetResult().GetActionId() != "" {
@@ -392,11 +420,29 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		expectedPosts = 2
 	}
 	// Current core authority is checked for every owner request.
+	listed, e = ownerClient.Control(ctx, browsercontrol.Command{Operation: "list", OwnerID: "owner"})
+	if e != nil || len(listed.Sessions) != 1 {
+		t.Fatal("list before cancellation", e)
+	}
+	command.Operation, command.Epoch = "take", listed.Sessions[0].Epoch
+	if _, e = ownerClient.Control(ctx, command); e != nil {
+		t.Fatal("take before cancellation", e)
+	}
+	command.Epoch++
 	if _, err = pool.Exec(ctx, `UPDATE tasks SET status='cancelled' WHERE task_id='task'`); err != nil {
 		t.Fatal(err)
 	}
 	if _, e = ownerClient.Control(ctx, browsercontrol.Command{Operation: "frame", SessionID: id, OwnerID: "owner"}); e == nil {
 		t.Fatal("stopped task still exposed browser")
+	}
+	invalidRelease := command
+	invalidRelease.Operation, invalidRelease.Controller = "release", strings.Repeat("f", 32)
+	if _, e = ownerClient.Control(ctx, invalidRelease); e == nil {
+		t.Fatal("stopped task allowed another controller to release")
+	}
+	command.Operation = "release"
+	if _, e = ownerClient.Control(ctx, command); e != nil {
+		t.Fatal("stopped task prevented removal of existing write capability", e)
 	}
 	if private.Load() != 0 || posts.Load() != expectedPosts {
 		t.Fatal("unexpected external effects")

@@ -198,7 +198,10 @@ window. The existing owner-control bearer authenticates the public
 `POST /api/v4/server-browser` before its body is parsed. Core supplies immutable
 owner identity and forwards to Broker over its private action-service channel.
 Broker validates the stored successful-open mapping, live core run/task/lease,
-and owner for every frame or command. A dedicated runtime-only token protects
+and owner for every frame or input command. Releasing an existing controller is
+cleanup: it still checks authenticated owner, mapping, controller hash and epoch,
+but remains possible after task cancellation or lease expiry. This permits no new
+viewing/input or agent authority. A dedicated runtime-only token protects
 Broker -> browser HTTP; runtime receives no core, owner or PostgreSQL credential.
 Both private clients reject redirects and ambient proxy settings.
 
@@ -221,9 +224,19 @@ model turns, proposals and received provider events while owner mode is active.
 An already started inference cannot be undone; normal run cancellation, lease
 renewal and budget deadlines remain in force.
 
+Broker pins each admitted session call to the current control epoch in private
+gRPC metadata. With the owner channel enabled, runtime requires exactly that
+epoch under its session mutex, including reads and close. Release advances the
+runtime epoch before ACK. Delayed calls from before takeover cannot execute
+after return. A late snapshot/extract result can clear `fresh_needed` only in
+the exact epoch admitted by Broker. An operation already executing can finish
+before takeover ACK; no human input is acknowledged concurrently with it.
+
 Manual click, double click, scroll, key, text and navigation commands use a bounded
 private protocol. Each input consumes its frame token and validates live document
-identity/revision against the captured frame. Playwright's screenshot caret
+identity/revision of every main and child document against the captured frame,
+including cross-origin iframe replacement, navigation, DOM changes and scrolling.
+Playwright's screenshot caret
 mutation is disabled so taking a frame does not invalidate itself. Animated or
 changed pages can require another frame. Input is never automatically replayed;
 a lost command/ACK is reported as uncertain. Human input is independent direct
@@ -244,6 +257,8 @@ inputs, installed credentials and active input values are retained only inside
 the helper's redaction set; subsequent visible observations mask reflected values.
 The Web page keeps proof/controller/input/frame in memory and clears them when
 proof changes or the component unmounts; it uses no local/session storage.
+Any failed control request discards queued keyboard input; subsequent keys are
+not sent against the uncertain result of an earlier command.
 
 Compose the owner channel explicitly with `deploy/docker-compose.server-browser.yml`,
 a dedicated browser-control token file, existing owner authentication and migration086.

@@ -5,6 +5,7 @@ test('server browser supports viewing, exclusive control, input and explicit ret
   const id = '0123456789abcdef0123456789abcdef'
   const jpeg = (await page.screenshot({ type: 'jpeg' })).toString('base64')
   let mode = 'agent', epoch = 0, sequence = 0, rejectText = false
+  let releaseRejectedText: (() => void) | undefined
   const inputs: Record<string, unknown>[] = []
   await page.route('**/api/v4/server-browser', async route => {
     expect(route.request().headers().authorization).toBe(`Bearer ${token}`)
@@ -16,7 +17,7 @@ test('server browser supports viewing, exclusive control, input and explicit ret
     if (command.operation === 'release') { expect(command.epoch).toBe(epoch); mode = 'agent'; epoch++; return route.fulfill({ json: { ok: true } }) }
     if (!['frame', 'take'].includes(String(command.operation))) {
       expect(mode).toBe('owner'); expect(command.epoch).toBe(epoch); expect(command.frame_id).toBeTruthy(); inputs.push(command)
-      if (command.operation === 'text' && rejectText) return route.fulfill({ status: 409, json: { error: 'page changed' } })
+      if (command.operation === 'text' && rejectText) { await new Promise<void>(resolve => { releaseRejectedText = resolve }); return route.fulfill({ status: 409, json: { error: 'page changed' } }) }
     }
     sequence++
     return route.fulfill({ json: { ok: true, frame: { jpeg, frame_id: `frame-${sequence}`, width: 1280, height: 720, mode, epoch } } })
@@ -40,9 +41,15 @@ test('server browser supports viewing, exclusive control, input and explicit ret
   rejectText = true
   await page.getByLabel('Remote text').fill('second-private-input')
   await page.getByRole('button', { name: 'Send text' }).click()
+  await expect.poll(() => inputs.filter(input => input.operation === 'text').length).toBe(2)
+  // Queue an Enter while the preceding input is in flight. An uncertain reply
+  // must discard queued keys instead of submitting against unchecked state.
+  await page.getByRole('application', { name: 'Remote browser viewport' }).press('Enter')
+  releaseRejectedText?.()
   await expect(page.getByText('Browser unavailable or page changed. Refresh and check the page before another input.')).toBeVisible()
   await page.waitForTimeout(1100)
   expect(inputs.filter(input => input.operation === 'text')).toHaveLength(2)
+  expect(inputs.filter(input => input.operation === 'key')).toHaveLength(1)
   await page.getByRole('button', { name: 'Return to agent' }).click()
   await expect(page.getByText('Viewing agent actions.')).toBeVisible()
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toMatch(/fixture-browser-owner-token|owner-private-password|second-private-input/)

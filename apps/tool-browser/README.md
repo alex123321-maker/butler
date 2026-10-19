@@ -58,3 +58,6 @@ owner/run mapping and durable control epochs (migration086); the runtime owns
 one exclusive context mutex and private rendered frames. Pixels/manual input
 never become model results. See [the owner protocol](../../docs/architecture/browser-session-contract.md#owner-viewing-and-manual-control).
 `single_tab.*` is disabled in the standard tool registry.
+When the owner channel is enabled, session tools also require Broker's private
+dispatch epoch; delayed calls cannot cross a takeover/release cycle. Manual
+frame guards include cross-origin child documents, not just the main page.

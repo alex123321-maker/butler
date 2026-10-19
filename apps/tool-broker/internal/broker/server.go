@@ -34,7 +34,7 @@ type Server struct {
 	browserControl    BrowserControl
 }
 type BrowserControl interface {
-	Before(context.Context, *toolbrokerv1.ToolCall) error
+	Before(context.Context, *toolbrokerv1.ToolCall) (context.Context, error)
 	Record(context.Context, *toolbrokerv1.ToolCall, actionauth.Grant, *toolbrokerv1.ToolResult) error
 }
 
@@ -115,7 +115,9 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "action authorization is not configured")}, nil
 	}
 	if s.browserControl != nil {
-		if err := s.browserControl.Before(ctx, req.GetToolCall()); err != nil {
+		var err error
+		ctx, err = s.browserControl.Before(ctx, req.GetToolCall())
+		if err != nil {
 			return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "browser is under owner control, unavailable or requires a fresh snapshot; no action dispatched")}, nil
 		}
 	}

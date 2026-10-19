@@ -272,3 +272,5 @@ frames stay in page memory. A lost ACK or closed viewer never silently returns
 control; reload sessions and explicitly take/return control to recover. The
 runtime channel requires migration086 and `deploy/docker-compose.server-browser.yml`.
 Pixels/input are not model artifacts; this is a page viewport, not a native desktop.
+Failed control requests discard queued keystrokes. Return to agent can remove
+an existing controller after task cancellation without permitting new input.

@@ -36,6 +36,9 @@ type Server struct {
 	runner   Runner
 	sessions *sessionStore
 	log      *slog.Logger
+	// Set at startup when the private owner channel is enabled. Legacy isolated
+	// browser composition has no owner epochs and retains its existing contract.
+	RequireDispatchEpoch bool
 }
 
 // Request is a private execution message. Scope and expiry come from Go,
@@ -186,6 +189,12 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		defer session.mu.Unlock()
 		if session.controller != "" {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_control", "owner is controlling this browser; wait for explicit return")
+		}
+		if s.RequireDispatchEpoch {
+			epoch, ok := browsercontrol.IncomingDispatchEpoch(ctx)
+			if !ok || epoch != session.controlEpoch {
+				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "stale_control_epoch", "browser control changed since admission; request a fresh snapshot")
+			}
 		}
 		if session.closed {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_lost", "browser session was closed or lost")

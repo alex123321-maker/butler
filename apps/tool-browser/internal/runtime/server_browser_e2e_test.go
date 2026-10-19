@@ -23,6 +23,7 @@ func TestServerBrowserChromium(t *testing.T) {
 		t.Skip("isolated Chromium image required")
 	}
 	var posts, cdn, private atomic.Int32
+	var mutateFrame, frameMutated atomic.Bool
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		switch r.URL.Path {
@@ -39,6 +40,16 @@ func TestServerBrowserChromium(t *testing.T) {
 			fmt.Fprint(w, "ok")
 		case "/reflect":
 			fmt.Fprint(w, `<body>owner-private-password</body>`)
+		case "/with-frame":
+			fmt.Fprint(w, `<body><iframe src="http://child.test/child" style="position:absolute;left:0;top:0;width:500px;height:400px;border:0"></iframe></body>`)
+		case "/child":
+			fmt.Fprint(w, `<body><button style="position:absolute;left:20px;top:180px;width:200px;height:40px" onclick="fetch('/submit',{method:'POST'})">Child submit</button><script>const poll=setInterval(async()=>{if((await fetch('/frame-state')).status===201){clearInterval(poll);document.body.dataset.changed='true';await fetch('/frame-mutated')}},30)</script></body>`)
+		case "/frame-state":
+			if mutateFrame.Load() {
+				w.WriteHeader(201)
+			}
+		case "/frame-mutated":
+			frameMutated.Store(true)
 		case "/private":
 			private.Add(1)
 		default:
@@ -118,6 +129,22 @@ func TestServerBrowserChromium(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	reply = control("navigate", func(c *browsercontrol.Command) { c.URL = "http://third.test/reflect" })
+	reply = control("navigate", func(c *browsercontrol.Command) { c.URL = "http://parent.test/with-frame" })
+	mutateFrame.Store(true)
+	deadline = time.Now().Add(3 * time.Second)
+	for !frameMutated.Load() && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !frameMutated.Load() {
+		t.Fatal("cross-origin child mutation did not complete")
+	}
+	stale = command
+	stale.Operation, stale.FrameID, stale.X, stale.Y = "click", reply.Frame.ID, 50, 200
+	if _, err := server.Control(context.Background(), stale); err == nil || posts.Load() != 1 {
+		t.Fatal("changed child document accepted old screenshot input", err, posts.Load())
+	}
+	reply = control("frame", nil)
 	reply = control("navigate", func(c *browsercontrol.Command) { c.URL = "http://third.test/reflect" })
 	command.Operation = "release"
 	if _, err := server.Control(context.Background(), command); err != nil {

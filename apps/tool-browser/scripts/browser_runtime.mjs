@@ -233,8 +233,8 @@ async function ownerControl(session, command) {
   if (command.operation === 'take') { session.dirty = true; session.frames.clear(); session.networkFrozen = false; session.allowWriteRequests = true }
   if (!['frame', 'take'].includes(command.operation)) {
     const frame = session.frames.get(command.frame_id)
-    const live = await page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
-    if (!frame || frame.revision !== live.revision || frame.documentID !== live.documentID) return errorResult('stale_frame', 'page changed; refresh the frame')
+    const live = await captureFrameState(page)
+    if (!frame || frame !== live) return errorResult('stale_frame', 'page changed; refresh the frame')
     session.frames.clear() // input is one-use, including failed/uncertain input
     session.networkFrozen = false
     session.allowWriteRequests = true
@@ -263,15 +263,29 @@ async function ownerControl(session, command) {
   }
   // Owner-only pixels. No URL, DOM, inputs or browser state is published to
   // the model. Capture guards before and after the screenshot to reject drift.
-  const capture = () => page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
+  const capture = () => captureFrameState(page)
   const before = await capture()
   const jpeg = await page.screenshot({ type: 'jpeg', quality: 60, caret: 'initial', timeout: 5000 })
   const after = await capture()
   const id = crypto.randomUUID()
-  if (before.revision === after.revision && before.documentID === after.documentID) session.frames.set(id, after)
+  if (before === after) session.frames.set(id, after)
   while (session.frames.size > 4) session.frames.delete(session.frames.keys().next().value)
   if (jpeg.length > 1024 * 1024) return errorResult('frame_limit', 'browser frame exceeded limit')
   return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720, url: page.url() } }
+}
+
+// Coordinates can hit cross-origin child frames. Guard every document in the
+// screenshot, including child navigation, scrolling and iframe replacement.
+const frameIdentities = new WeakMap()
+async function captureFrameState(page) {
+  const frames = page.frames()
+  const state = await Promise.all(frames.map(async frame => {
+    if (!frameIdentities.has(frame)) frameIdentities.set(frame, crypto.randomUUID())
+    const document = await frame.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
+    return { frame: frameIdentities.get(frame), ...document }
+  }))
+  if (frames.length !== page.frames().length || frames.some((frame, i) => frame !== page.frames()[i])) throw new Error('frame changed during capture')
+  return JSON.stringify(state)
 }
 
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity })

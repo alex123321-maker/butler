@@ -318,3 +318,7 @@ calls before Claim while human control is active. An explicit fresh observation
 is required on return. This composition supports ordinary workspace tools and is
 separate from optional guarded shared user tabs. Standard `single_tab.*` contracts
 are disabled. See the browser-session contract for limits and recovery.
+Each session dispatch and fresh-observation update is pinned to its admitted
+control epoch. A late old snapshot cannot unlock a new generation. Release of
+the existing authenticated controller remains available after task cancellation
+as cleanup; viewing and input still require live core authority.

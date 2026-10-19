@@ -61,7 +61,7 @@ async function action(body: Record<string, unknown>) {
       if (manual.value && (reply.frame.epoch !== epoch || reply.frame.mode !== 'owner')) { manual.value = false; controller = ''; keys.length = 0; text.value = ''; error.value = 'Control changed. Load browsers before taking control again.' }
     }
     return reply
-  } catch { if (current === generation) error.value = 'Browser unavailable or page changed. Refresh and check the page before another input.' }
+  } catch { if (current === generation) { keys.length = 0; error.value = 'Browser unavailable or page changed. Refresh and check the page before another input.' } }
   finally { pending.value = false; schedule(); if (keys.length && !pumping) void pumpKeys() }
 }
 async function load() {
@@ -112,7 +112,7 @@ async function pumpKeys() {
 async function insertText() { const value = text.value; text.value = ''; await input('text', { text: value }) }
 async function navigate() { await input('navigate', { url: address.value }) }
 watch(token, () => { generation++; stop(); keys.length = 0; frame.value = null; sessions.value = []; selectedID.value = ''; manual.value = false; controller = ''; text.value = ''; address.value = ''; loaded.value = false })
-onBeforeUnmount(() => { disposed = true; generation++; stop(); token.value = ''; frame.value = null; text.value = ''; controller = '' })
+onBeforeUnmount(() => { disposed = true; generation++; stop(); keys.length = 0; token.value = ''; frame.value = null; text.value = ''; address.value = ''; controller = '' })
 </script>
 
 <style scoped>
