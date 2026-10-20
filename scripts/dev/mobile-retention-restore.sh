@@ -8,7 +8,7 @@ test ! -e "$root/.cache/retention-restore.manifest"
 phase() {
  local phase=$1 db=$2
  docker run --rm --pull never --network "$network" --memory 512m --cpus 1 \
-  -v "$root/.cache:/artifacts" \
+  -v "$root/.cache:/artifacts" -v "$root/current:/src:ro" \
   -e BUTLER_TEST_MOBILE_RETENTION_PHASE="$phase" \
   -e BUTLER_TEST_MOBILE_RETENTION_POSTGRES_URL="postgres://butler:synthetic-test@$pg:5432/$db?sslmode=disable" \
   -e BUTLER_TEST_MOBILE_RETENTION_MANIFEST=/artifacts/retention-restore.manifest \
