@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
@@ -102,13 +103,26 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	if s == nil || err != nil || e.RunID == "" || e.ToolCallID == "" || e.EffectID == "" || e.ContractHash != s.hashes[e.Tool] {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
-	if !readcontrol.IsMessageTool(e.Tool) && s.adaptive == nil && (a.Strategy == "semantic_hybrid" || a.EventFrom != "" || a.EventUntil != "") {
+	if !readcontrol.IsMessageTool(e.Tool) && s.adaptive == nil && (a.Strategy == "semantic_hybrid" && s.semantic == nil || a.EventFrom != "" || a.EventUntil != "") {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
+	}
+	if e.Tool == readcontrol.Search && s.adaptive == nil && s.semantic != nil && a.Page == 0 {
+		var fields map[string]json.RawMessage
+		if json.Unmarshal([]byte(e.ArgsJSON), &fields) == nil {
+			if _, explicit := fields["strategy"]; !explicit {
+				a.Strategy = "semantic_hybrid"
+				a.Limit = min(a.Limit, 4)
+			}
+		}
 	}
 	if _, owner := owneridentity.FromContext(ctx); owner {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	timeout := 5 * time.Second
+	if e.Tool == readcontrol.Search && a.Strategy == "semantic_hybrid" {
+		timeout = 30 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	envelope := delegation.AdmissionEnvelope{RunID: e.RunID, ToolCallID: e.ToolCallID, EffectID: e.EffectID, ArgsJSON: e.ArgsJSON, ContractHash: e.ContractHash}
 	contract := readcontrol.Contract(e.Tool)
@@ -165,7 +179,7 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 			return readcontrol.Empty("denied"), err
 		}
 	}
-	if s.adaptive != nil && !readcontrol.IsMessageTool(e.Tool) {
+	if s.adaptive != nil && !readcontrol.IsMessageTool(e.Tool) || e.Tool == readcontrol.Search && a.Strategy == "semantic_hybrid" && s.semantic != nil {
 		// Check exact permanent dispatch before spending the conservative read
 		// reservation. No owning read transaction spans semantic IPC.
 		proof, err := s.pool.Begin(owned)
@@ -177,8 +191,10 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 		if err != nil || rollbackErr != nil {
 			return readcontrol.Empty("denied"), readcontrol.ErrDenied
 		}
-		if _, err = s.adaptive.Reserve(owned, e, a); err != nil {
-			return readcontrol.Empty("denied"), err
+		if s.adaptive != nil {
+			if _, err = s.adaptive.Reserve(owned, e, a); err != nil {
+				return readcontrol.Empty("denied"), err
+			}
 		}
 		if e.Tool == readcontrol.Search && a.Strategy == "semantic_hybrid" {
 			if s.semantic == nil {
@@ -219,6 +235,12 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 				candidates = append(candidates, reader.SemanticCandidate{ID: id, Revision: revision})
 			}
 			diagnostics = found.Diagnostics
+			if len(candidates) == 0 {
+				a.Strategy = "catalog_exact"
+				if len(diagnostics) < 8 {
+					diagnostics = append(diagnostics, "semantic_empty_lexical_fallback")
+				}
+			}
 		}
 	}
 	tx, err := s.pool.Begin(owned)

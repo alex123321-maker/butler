@@ -94,6 +94,9 @@ func (r *Runtime) ProcessOne(ctx context.Context) (bool, error) {
 				s.Guard = guard
 				adapter := &semantic.Adapter{Backend: r.Backend, Space: r.Space, Admission: gate}
 				_, e = semantic.Rebuild(gate.Context(bounded), s, adapter, id, limit)
+				if e == nil {
+					e = r.publishAutomatic(gate.Context(bounded), j, s, id)
+				}
 			}
 		}
 	}
@@ -121,6 +124,9 @@ func (r *Runtime) Run(ctx context.Context) error {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
+		if err := r.Schedule(ctx); err != nil && r.Log != nil {
+			r.Log.Warn("automatic memory index scheduling deferred")
+		}
 		worked, err := r.ProcessOne(ctx)
 		if worked && err != nil && r.Log != nil {
 			// Persisted job diagnostics carry the outcome; no source text, token or

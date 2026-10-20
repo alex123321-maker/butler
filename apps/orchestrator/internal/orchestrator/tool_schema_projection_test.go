@@ -44,3 +44,14 @@ func TestToolSchemaProjectionRespectsOwningAdaptiveComposition(t *testing.T) {
 		}
 	}
 }
+
+func TestToolSchemaProjectionSupportsIndependentLocalSemanticSearch(t *testing.T) {
+	s := &Service{config: Config{SemanticSearchEnabled: true}}
+	defs, e := s.modelToolDefinitions([]*toolbrokerv1.ToolContract{readcontrol.Contract(readcontrol.Search)})
+	if e != nil || len(defs) != 1 {
+		t.Fatal(e)
+	}
+	if !strings.Contains(defs[0].SchemaJSON, "semantic_hybrid") || strings.Contains(defs[0].SchemaJSON, "event_from") {
+		t.Fatal("semantic composition enabled unqualified temporal/adaptive options")
+	}
+}

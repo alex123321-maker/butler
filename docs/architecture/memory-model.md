@@ -1,5 +1,9 @@
 # Butler — Memory Model Specification
 
+The [mobile memory/search contract](mobile-memory-search.md) adds task-scoped
+notification context, atomically searchable notes and explicit local automatic
+index maintenance. Vector publication remains separate from fact acceptance.
+
 [Memory Doctor](../../internal/memory/doctor/README.md) reports actual constructed
 feature composition separately from operator requests, code-owned qualification,
 supported provider profile and current durable worker/owner-policy controls. None

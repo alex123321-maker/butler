@@ -1,5 +1,9 @@
 # Android notification companion, protocol v1
 
+[Task-scoped context and automatic local note search](mobile-memory-search.md)
+define the implemented bounded processing context, atomic note fragments and
+explicit owner-authorized index maintenance policy.
+
 This implementation adds Android ingress and owner controls to the existing Go
 Orchestrator, plus a Kotlin application under `mobile/android`. It preserves
 Session, Run, Broker and provider boundaries. Notifications are external DATA,

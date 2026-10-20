@@ -7,7 +7,12 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/indexing"
+	"github.com/butler/butler/internal/memory/jobs"
+	"github.com/butler/butler/internal/memory/semantic"
 	"github.com/butler/butler/internal/owneridentity"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -137,6 +142,66 @@ func TestMobileAgentBrokerSearchRememberNoiseAndDeletionIntegration(t *testing.T
 	notes := call(readcontrol.Search, map[string]any{"query": "барберу"})
 	if len(notes.Items) < 2 {
 		t.Fatal("automatic note not searchable", notes.Status, len(notes.Items))
+	}
+	if tokenFile := os.Getenv("BUTLER_TEST_OWNED_INDEX_REAL_TOKEN_FILE"); tokenFile != "" {
+		policy := budget.DefaultPolicy()
+		policy.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
+		controller := budget.NewController(f.f.pool, policy)
+		controller.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+		target, e := budget.NewLocalTarget("local-models:9090", "operator-pinned-service")
+		if e != nil {
+			t.Fatal(e)
+		}
+		backend, closeBackend, e := semantic.NewPinnedBackend(target, tokenFile)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer closeBackend()
+		space := semantic.Space{ProfileID: "embeddinggemma2-text-bf16-v1", Model: "google/embeddinggemma-2", Revision: "914f7f89142e33e77833254d9c9b90c3cef7303b", Preprocessing: "embeddinggemma2-retrieval-v1", RuntimeVersion: "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0", ChunkVersion: "structured-go-v1", Dimensions: 768}
+		queue := jobs.New(f.f.pool, f.f.sources, controller, &jobs.LocalTarget{Endpoint: target.Endpoint(), Identity: target.Identity()})
+		index := &indexing.Runtime{Catalog: f.f.sources, Jobs: queue, Target: target, Backend: backend, Space: space, Price: budget.ModelPrice{Basis: "local_no_billing"}}
+		for i, text := range []string{"Стоматолог: лечение зубов 23 октября в 11:00.", "Массаж спины: запись на 25 октября в 17:00.", "Забрать заказ из пункта выдачи до 24 октября.", "Совещание по рабочему проекту в пятницу в 12:00.", "Записан на техническое обслуживание автомобиля 26 октября."} {
+			src, e := f.f.sources.Put(f.f.owner, catalog.PutSource{ExternalKey: fmt.Sprintf("native-distractor-%d", i), Kind: "document", ScopeType: "user", ScopeID: f.f.parent.OwnerID, Title: "Другая запись", Body: text})
+			if e != nil {
+				t.Fatal(e)
+			}
+			if _, e = f.f.sources.PublishFragments(f.f.owner, catalog.SourceRef{ID: src.ID}, []catalog.Fragment{{Key: "note", Title: src.Title, Text: text, Locator: json.RawMessage(`{}`)}}); e != nil {
+				t.Fatal(e)
+			}
+		}
+		proof, _ := json.Marshal(semantic.Proof{ArtifactRef: "controlled-native-profile-test", ArtifactSHA256: strings.Repeat("a", 64), CorpusVersion: "controlled-mobile-test", Cases: 12, BaselineTop1: .5, CandidateTop1: .75})
+		p := jobs.IndexPolicy{ID: "mobile-e2e-index-policy", SpaceID: space.ID(), MaxChunks: 100, MaxJobsPerDay: 8, Allowance: budget.Units{ModelTurns: 20, Tokens: 1000000, ActiveMillis: 600000, ProviderInputBytes: 1000000}, ExpiresAt: time.Now().UTC().Add(time.Hour).Truncate(time.Microsecond), Proof: proof}
+		if _, e = index.CreatePolicy(f.f.owner, p); e != nil {
+			t.Fatal("native policy", e)
+		}
+		if e = index.Schedule(context.Background()); e != nil {
+			t.Fatal("native automatic schedule", e)
+		}
+		if ok, e := index.ProcessOne(context.Background()); !ok || e != nil {
+			t.Fatal("native automatic index", ok, e)
+		}
+		guard, e := semantic.NewCatalogGuard(f.f.sources, "memory_read")
+		if e != nil {
+			t.Fatal(e)
+		}
+		admission, e := semantic.NewLiveAdmission(controller, guard, target)
+		if e != nil {
+			t.Fatal(e)
+		}
+		vectors := semantic.NewStore(f.f.pool)
+		vectors.Guard = guard
+		reads.semantic = &semantic.HybridReader{Store: vectors, Adapter: &semantic.Adapter{Backend: backend, Space: space, Admission: admission}}
+		semanticResult := call(readcontrol.Search, map[string]any{"query": "Когда запланирована стрижка?", "limit": 1})
+		matched := false
+		for _, item := range semanticResult.Items {
+			if item.Source.ID == saved.Items[0].Source.ID {
+				matched = true
+			}
+		}
+		if !matched || semanticResult.Strategy != "semantic_hybrid" {
+			t.Fatal("native paraphrase retrieval failed", semanticResult.Status, semanticResult.Strategy, len(semanticResult.Items))
+		}
+		t.Log("actual Broker remember -> automatic local index -> active generation -> paraphrased semantic search passed")
 	}
 	ads := call(readcontrol.MessageSearch, map[string]any{"query": "Скидка"})
 	if len(ads.Items) != 1 {

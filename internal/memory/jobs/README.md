@@ -1,5 +1,10 @@
 # Owned memory auxiliary jobs
 
+`index_policy.go` adds explicit immutable bounded owner-user local maintenance
+permission. Generic index jobs bind an independent policy revision and exact
+source graph. Both call admission and final publication reject revoked/expired
+policies. Shared execution budgets, retry limits and claim fencing still apply.
+
 An atomic trusted publication hook can propose neutral DATA anchored to its
 exact freshly constructed derivative. A private constructor receipt binds the
 source/hash/owner/scope and current top transaction (including savepoints).

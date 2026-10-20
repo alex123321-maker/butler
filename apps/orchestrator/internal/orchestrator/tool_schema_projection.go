@@ -39,7 +39,11 @@ func (s *Service) modelToolDefinitions(contracts []*toolbrokerv1.ToolContract) (
 		if !ok {
 			return nil, fmt.Errorf("owned memory search properties unavailable")
 		}
-		properties["strategy"] = map[string]any{"type": "string", "enum": []string{"catalog_exact"}}
+		strategies := []string{"catalog_exact"}
+		if s.config.SemanticSearchEnabled {
+			strategies = append(strategies, "semantic_hybrid")
+		}
+		properties["strategy"] = map[string]any{"type": "string", "enum": strategies}
 		delete(properties, "event_from")
 		delete(properties, "event_until")
 		encoded, err := json.Marshal(schema)

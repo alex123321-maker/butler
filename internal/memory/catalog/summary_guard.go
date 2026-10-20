@@ -45,7 +45,7 @@ func checkSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 		return err
 	}
 	var current bool
-	if err := tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current($1) AND butler_memory_experience_sources_current($1)`, ids).Scan(&current); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT to_regprocedure(format('%I.butler_memory_summary_sources_current(text[])',current_schema())) IS NOT NULL AND to_regprocedure(format('%I.butler_memory_experience_sources_current(text[])',current_schema())) IS NOT NULL AND butler_memory_summary_sources_current($1) AND butler_memory_experience_sources_current($1)`, ids).Scan(&current); err != nil {
 		return err
 	}
 	if !current {
@@ -74,10 +74,11 @@ func (s *Store) SnapshotForRefreshTx(ctx context.Context, tx pgx.Tx, ref SourceR
 		return Source{}, false, ErrDenied
 	}
 	var current, allowed bool
-	if err = tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current(ARRAY[$1::text]),butler_memory_summary_refresh_allowed($1)`, src.ID).Scan(&current, &allowed); err != nil {
+	var guards bool
+	if err = tx.QueryRow(ctx, `SELECT to_regprocedure(format('%I.butler_memory_summary_sources_current(text[])',current_schema())) IS NOT NULL AND to_regprocedure(format('%I.butler_memory_summary_refresh_allowed(text)',current_schema())) IS NOT NULL, butler_memory_summary_sources_current(ARRAY[$1::text]),butler_memory_summary_refresh_allowed($1)`, src.ID).Scan(&guards, &current, &allowed); err != nil {
 		return Source{}, false, err
 	}
-	if !current && !allowed {
+	if !guards || !current && !allowed {
 		return Source{}, false, ErrStale
 	}
 	return src, !current, nil
