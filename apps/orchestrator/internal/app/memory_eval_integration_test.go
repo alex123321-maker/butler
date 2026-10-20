@@ -104,12 +104,13 @@ func TestMemoryEvalCollectorFullCorrelationIntegration(t *testing.T) {
 		if cse.ID == "v2-d01" && i.Arm == "no_ltm" {
 			raw = []byte(`"foo"`)
 		}
+		var entryErr error
 		c.factory = func(json.RawMessage) (transport.ModelProvider, error) {
-			return &memoryFixtureProvider{raw: string(raw)}, nil
+			return &memoryFixtureProvider{raw: string(raw), observeStart: func(e error) { entryErr = e }}, nil
 		}
 		o, err := c.sample(ctx, cse, i)
 		if err != nil {
-			t.Fatal("fixture sample", cse.ID, i.Arm, err)
+			t.Fatal("fixture sample", cse.ID, i.Arm, err, "entry:", entryErr, "observation:", o.Reason)
 		}
 		c.measurements.Observations = append(c.measurements.Observations, o)
 		if err = c.fillUnused(ctx, i); err != nil {
