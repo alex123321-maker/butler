@@ -140,6 +140,17 @@ func (s *Store) retainMobileEvidenceTx(ctx context.Context, tx pgx.Tx, saved, or
 // original body is still available. No owner actor or access bypass is exported.
 // Callers hold the deletion advisory fence and current device policy (cleanup),
 // or the independent operator manifest/restore fence (reconciliation).
+func (s *Store) prepareMobileArchiveExpiryTx(ctx context.Context, tx pgx.Tx, sourceID, own string) error {
+	if err := lockDeletionAuthoritiesTx(ctx, tx, own); err != nil {
+		return err
+	}
+	// Lock the complete pre-conversion privacy graph in ordinary erasure order.
+	if _, err := lockDeletionSourceIDsTx(ctx, tx, sourceID, own, "archive_expire"); err != nil {
+		return err
+	}
+	return s.retainExpiredMobileNotesTx(ctx, tx, sourceID, own)
+}
+
 func (s *Store) retainExpiredMobileNotesTx(ctx context.Context, tx pgx.Tx, sourceID, own string) error {
 	rows, err := tx.Query(ctx, `SELECT n.source_id FROM mobile_messages m JOIN memory_sources n ON n.source_id=m.result_source_id WHERE m.source_id=$1 AND m.owner_id=$2 AND m.state='remembered' AND n.owner_id=$2 AND n.status='active' AND NOT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence e WHERE e.source_id=n.source_id) ORDER BY n.source_id`, sourceID, own)
 	if err != nil {
