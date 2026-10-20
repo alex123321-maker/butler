@@ -121,13 +121,14 @@ func (s *Store) RetainMobileNoteTx(ctx context.Context, tx pgx.Tx, note SourceRe
 // RetainedEvidenceTx releases only after the same current Catalog guard as body
 // reads. Callers cannot use a stored ID to bypass source ownership or privacy.
 func (s *Store) RetainedEvidenceTx(ctx context.Context, tx pgx.Tx, ref SourceRef) (json.RawMessage, error) {
-	if _, err := s.AccessTx(ctx, tx, []SourceRef{ref}, "memory_read"); err != nil {
+	sources, err := s.AccessTx(ctx, tx, []SourceRef{ref}, "memory_read")
+	if err != nil {
 		return nil, err
 	}
-	var raw json.RawMessage
-	err := tx.QueryRow(ctx, `SELECT evidence FROM memory_retained_mobile_evidence WHERE source_id=$1`, ref.ID).Scan(&raw)
-	if err == pgx.ErrNoRows {
-		return nil, nil
+	for _, source := range sources {
+		if source.ID == ref.ID {
+			return source.RetainedEvidence, nil
+		}
 	}
-	return raw, err
+	return nil, ErrDenied
 }

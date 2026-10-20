@@ -278,7 +278,7 @@ func getSourceTx(ctx context.Context, q interface {
 	} else {
 		lock = " FOR SHARE OF s"
 	}
-	e := q.QueryRow(ctx, `SELECT s.source_id,s.owner_id,s.source_kind,s.scope_type,s.scope_id,s.external_key,s.head_revision,s.access_revision,s.status,r.content_hash,r.title,r.body,r.locator,r.origin,r.author,r.event_time,r.extracted_at FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id=$1`+lock, id).Scan(&s.ID, &s.OwnerID, &s.Kind, &s.ScopeType, &s.ScopeID, &s.ExternalKey, &s.Revision, &s.AccessRevision, &s.Status, &s.Hash, &s.Title, &s.Body, &s.Locator, &origin, &s.Author, &s.EventTime, &s.ExtractedAt)
+	e := q.QueryRow(ctx, `SELECT s.source_id,s.owner_id,s.source_kind,s.scope_type,s.scope_id,s.external_key,s.head_revision,s.access_revision,s.status,r.content_hash,r.title,r.body,r.locator,r.origin,r.author,r.event_time,r.extracted_at,e.evidence FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision LEFT JOIN memory_retained_mobile_evidence e ON e.source_id=s.source_id WHERE s.source_id=$1`+lock, id).Scan(&s.ID, &s.OwnerID, &s.Kind, &s.ScopeType, &s.ScopeID, &s.ExternalKey, &s.Revision, &s.AccessRevision, &s.Status, &s.Hash, &s.Title, &s.Body, &s.Locator, &origin, &s.Author, &s.EventTime, &s.ExtractedAt, &s.RetainedEvidence)
 	if e == nil {
 		e = json.Unmarshal(origin, &s.Origin)
 	}

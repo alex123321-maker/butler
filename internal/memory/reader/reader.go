@@ -183,10 +183,8 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	v := item(src, a.FragmentKey, title, page, loc, a.MaxChars)
 	v.Redacted = v.Redacted || masked != text
 	v.NextOffset += a.Offset
-	v.Evidence, e = r.Sources.RetainedEvidenceTx(ctx, tx, catalog.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash})
-	if e != nil {
-		return readcontrol.Empty("backend_error"), e
-	}
+	// AccessTx already checked and locked the exact body/evidence privacy graph.
+	v.Evidence = src.RetainedEvidence
 	out.Items = append(out.Items, v)
 	out.Truncated = v.Truncated
 	if e = r.conflicts(ctx, tx, &out); e != nil {
