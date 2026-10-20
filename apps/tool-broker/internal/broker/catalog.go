@@ -68,6 +68,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		denied[name] = true
 	}
 	terms := strings.Fields(strings.ToLower(query))
+	converterScope := a.TaskID != "" && a.Authority != nil && a.ConverterLifecycleReady && actionauth.CheckExecutionPolicy(a, actionauth.EffectPrepare) == nil
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
 		if toolcatalog.IsTool(contract.ToolName) && len(a.InputClaimHash) != 64 {
@@ -80,7 +81,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			// A queued developer receipt is not a candidate return. Advertising
 			// collection early invites a call that correctly fails Prepare.
 			// This is availability only; actual Prepare/Claim repeat all guards.
-			if c.Converters == nil || a.TaskID == "" {
+			if c.Converters == nil || !converterScope {
 				continue
 			}
 			ready, e := c.Converters.CollectionAvailable(ctx, a)
@@ -152,7 +153,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	}
 	// Converter lifecycle/catalog guards require a Task. Their composition must
 	// not block unrelated capabilities in an ordinary taskless conversation.
-	if c.Converters != nil && a.TaskID != "" {
+	if c.Converters != nil && converterScope {
 		installed, e := c.Converters.Catalog(ctx, a, query, 0)
 		if e != nil {
 			return nil, e

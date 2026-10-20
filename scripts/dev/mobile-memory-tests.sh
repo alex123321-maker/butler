@@ -32,6 +32,7 @@ docker create --name "$runner" --network "$network" --cpus 3 --memory 4g \
  -e BUTLER_TEST_REDIS_URL=redis://butler-mobile-memory-tests-redis:6379/0 \
  -e BUTLER_TEST_OWNED_INDEX_REAL_TOKEN_FILE=/private-local-token \
  -e BUTLER_MEMORY_READ_APP_BINARY=/artifacts/tool-broker \
+ -e BUTLER_TOOL_DISCOVERY_APP_BINARY=/artifacts/tool-broker \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/artifacts/broker.test \
  golang:1.27.2-bookworm bash -eu -c '
  go build -o /artifacts/tool-broker ./apps/tool-broker > /reports/build.log 2>&1

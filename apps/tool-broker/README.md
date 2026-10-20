@@ -12,6 +12,8 @@ Taskless conversations exclude converter lifecycle/catalog and collection reads
 before their task-only guards, so enabling converters preserves ordinary catalog
 discovery. Core/Broker process checks exercise discovery with both skills and
 converters enabled; converter execution still requires current task authority.
+Ordinary tasks without a converter assignment also skip converter-only guards
+while retaining permitted core tools such as memory reads.
 
 Optional candidate proposals support the exact private Compose destination
 `http://orchestrator:8080/internal/memory-candidate`; arbitrary remote plain HTTP
