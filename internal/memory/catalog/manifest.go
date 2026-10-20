@@ -89,7 +89,7 @@ func (f *FileManifest) load(ctx context.Context) ([]ManifestRecord, error) {
 			return nil, ctx.Err()
 		}
 		var r ManifestRecord
-		if json.Unmarshal(scanner.Bytes(), &r) != nil || r.Sequence != int64(len(records)+1) || r.ID == "" || r.SourceID == "" || len(r.OwnerHash) != 64 || (r.Action != "delete" && r.Action != "revoke") || seen[r.ID] {
+		if json.Unmarshal(scanner.Bytes(), &r) != nil || r.Sequence != int64(len(records)+1) || r.ID == "" || r.SourceID == "" || len(r.OwnerHash) != 64 || (r.Action != "delete" && r.Action != "revoke" && r.Action != "archive_expire") || seen[r.ID] {
 			return nil, ErrRestore
 		}
 		seen[r.ID] = true

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -18,8 +20,11 @@ import (
 	"time"
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
+	runv1 "github.com/butler/butler/internal/gen/run/v1"
+	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/mobile"
+	"github.com/butler/butler/internal/ownership"
 )
 
 func TestMobileAgentBrokerSearchRememberNoiseAndDeletionIntegration(t *testing.T) {
@@ -216,11 +221,97 @@ func TestMobileAgentBrokerSearchRememberNoiseAndDeletionIntegration(t *testing.T
 	if out := call(readcontrol.MessageSearch, map[string]any{"query": "Скидка"}); len(out.Items) != 1 {
 		t.Fatal("noise erased searchable original")
 	}
+	// End the original attempt, expire its archive, and use a genuinely fresh run.
+	// Never remove old pins or manufacture success for a redacted attempt.
+	inputs := durableinput.NewStore(f.f.pool)
+	if err = inputs.Finish(f.f.ctx, f.inputClaim, "completed", "", "", 0); err != nil {
+		t.Fatal(err)
+	}
+	oldToken, _ := ownership.TokenFromContext(f.owned)
+	if _, err = f.f.leases.ReleaseLease(f.f.ctx, oldToken.LeaseID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.f.pool.Exec(f.f.ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '361 days' WHERE source_id=$1`, found.Items[0].Source.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err = store.Cleanup(f.f.ctx); err != nil {
+		t.Fatal("archive expiry", err)
+	}
+	if err = f.f.sources.CheckRunSources(f.owned, f.call.RunId); err == nil {
+		t.Fatal("old attempt regained archive authority")
+	}
+	const nextRun = "mobile-post-expiry-run"
+	if _, err = f.f.pool.Exec(f.f.ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,task_id,task_revision) VALUES($1,$2,'post-expiry','tool_running','tool_running','mode_2','fixture',clock_timestamp(),clock_timestamp(),$3,$4)`, nextRun, f.f.parent.SessionKey, f.f.parent.TaskID, f.f.parent.Revision); err != nil {
+		t.Fatal(err)
+	}
+	lease, err := f.f.leases.AcquireLease(f.f.ctx, session.AcquireLeaseParams{SessionKey: f.f.parent.SessionKey, RunID: nextRun, OwnerID: "fixture-worker", TTL: time.Minute})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.f.pool.Exec(f.f.ctx, `UPDATE runs SET lease_id=$2 WHERE run_id=$1`, nextRun, lease.LeaseID); err != nil {
+		t.Fatal(err)
+	}
+	f.owned = ownership.WithToken(f.f.ctx, f.f.leases.Authority(), ownership.Token{SessionKey: f.f.parent.SessionKey, RunID: nextRun, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	if _, _, err = inputs.Accept(f.f.ctx, ingress.InputEvent{EventID: "post-expiry", IdempotencyKey: "post-expiry", SessionKey: f.f.parent.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"read retained evidence"}`, CreatedAt: time.Now().UTC()}, f.f.parent.OwnerID, f.f.parent.TaskID); err != nil {
+		t.Fatal(err)
+	}
+	f.inputClaim, err = inputs.Claim(f.f.ctx, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.owned = durableinput.WithClaim(f.owned, f.inputClaim)
+	f.call.RunId = nextRun
+	if err = inputs.SaveCheckpoint(f.owned, nextRun, "prepared", `{"UserMessage":"read retained evidence"}`); err != nil {
+		t.Fatal(err)
+	}
+	var head int64
+	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT source_revision FROM transcript_heads WHERE session_key=$1`, f.f.parent.SessionKey).Scan(&head); err != nil {
+		t.Fatal(err)
+	}
+	if err = f.f.sources.PinTranscript(f.owned, f.f.parent.SessionKey, head); err != nil {
+		t.Fatal(err)
+	}
+	// Recreate the private reader, as on service restart. Broker remains a process.
+	semanticReader := reads.semantic
+	reads, err = NewMemoryReads(f.f.pool, f.f.sources)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reads.semantic = semanticReader
+	h, err = readcontrol.NewHandler("guarded-request-private-process-fixture-token", reads)
+	if err != nil {
+		t.Fatal(err)
+	}
+	process = controlBrokerProcess(t, f, h, readcontrol.Path, "BUTLER_MEMORY_READ_HARNESS="+readcontrol.Search)
+	query, strategy := "барберу", "catalog_exact"
+	if semanticReader != nil {
+		query, strategy = "Когда запланирована стрижка?", "semantic_hybrid"
+	}
+	retained := call(readcontrol.Search, map[string]any{"query": query, "strategy": strategy, "limit": 1})
+	if len(retained.Items) != 1 || retained.Items[0].Source.ID != saved.Items[0].Source.ID {
+		t.Fatal("post-expiry search lost note", retained.Status)
+	}
+	n := retained.Items[0]
+	opened := call(readcontrol.Open, map[string]any{"source_id": n.Source.ID, "source_revision": n.Source.Revision, "access_revision": n.Source.AccessRevision, "content_hash": n.Source.Hash, "fragment_key": n.FragmentKey})
+	if len(opened.Items) != 1 || !strings.Contains(string(opened.Items[0].Evidence), text) {
+		t.Fatal("Broker did not return retained exact evidence", opened.Status)
+	}
+	t.Log("actual Broker: archive expiry -> fresh run/restarted reader -> search -> open exact retained evidence")
+	var rememberedChunk int64
+	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT object_id FROM memory_object_sources WHERE source_id=$1 AND memory_type='chunk'`, saved.Items[0].Source.ID).Scan(&rememberedChunk); err != nil {
+		t.Fatal(err)
+	}
 	if _, err = f.f.sources.Delete(f.f.owner, found.Items[0].Source.ID, "delete", found.Items[0].Source.Revision); err != nil {
 		t.Fatal(err)
 	}
 	var remaining int
 	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_source_revisions WHERE source_id=$1 AND body<>''`, saved.Items[0].Source.ID).Scan(&remaining); err != nil || remaining != 0 {
 		t.Fatal("original deletion left remembered text", remaining, err)
+	}
+	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM semantic_index_entries WHERE chunk_id=$1`, rememberedChunk).Scan(&remaining); err != nil || remaining != 0 {
+		t.Fatal("explicit forgetting left semantic vectors", remaining, err)
+	}
+	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_retained_mobile_evidence WHERE source_id=$1`, saved.Items[0].Source.ID).Scan(&remaining); err != nil || remaining != 0 {
+		t.Fatal("explicit forgetting left retained evidence", remaining, err)
 	}
 }

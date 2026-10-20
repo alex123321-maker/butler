@@ -12,6 +12,7 @@ import (
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/security/egress"
 	"google.golang.org/protobuf/proto"
 )
@@ -209,6 +210,13 @@ func (r *Registry) ValidateContext(ctx context.Context, call *toolbrokerv1.ToolC
 	}
 	if err := ValidateArgs(contract.GetInputSchemaJson(), call.GetArgsJson()); err != nil {
 		return false, contract, validationError(err.Error())
+	}
+	// Fixed memory contracts also have strict bounds and cross-field rules.
+	// Reject malformed requests before a permanent effect dispatch is claimed.
+	if readcontrol.IsTool(toolName) {
+		if _, err := readcontrol.DecodeArgs(toolName, call.GetArgsJson()); err != nil {
+			return false, contract, validationError("invalid memory arguments; follow the loaded schema (search/inbox limit 1..10)")
+		}
 	}
 	if err := r.validateNetworkCap(call, contract); err != nil {
 		return false, contract, err

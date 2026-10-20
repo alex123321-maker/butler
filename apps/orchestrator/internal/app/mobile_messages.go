@@ -172,6 +172,9 @@ func (s *MemoryReads) processMessageTx(ctx context.Context, tx pgx.Tx, e readcon
 			return out, err
 		}
 		resultID = derived.ID
+		if err = s.sources.RetainMobileNoteTx(ctx, tx, catalog.SourceRef{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}); err != nil {
+			return out, err
+		}
 		if _, err = s.sources.PublishFragmentsTx(ctx, tx, catalog.SourceRef{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}, []catalog.Fragment{{Key: "note", Title: derived.Title, Text: body, Locator: locator}}); err != nil {
 			return out, err
 		}

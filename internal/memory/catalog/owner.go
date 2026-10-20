@@ -153,6 +153,7 @@ func (s *Store) Export(ctx context.Context, emit func(any) error) error {
 		{"temporal_revision", `SELECT to_jsonb(t) FROM memory_claim_temporal_revisions t JOIN memory_claims c USING(claim_id) WHERE c.owner_id=$1 ORDER BY claim_id,revision`},
 		{"decision_history", `SELECT to_jsonb(h) FROM memory_fact_decision_history h WHERE h.owner_id=$1 ORDER BY scope_type,scope_id,fact_key,head_revision`},
 		{"dependency", `SELECT to_jsonb(d) FROM memory_source_dependencies d JOIN memory_sources s ON s.source_id=d.child_source_id WHERE s.owner_id=$1 ORDER BY d.child_source_id,d.parent_source_id`},
+		{"retained_mobile_evidence", `SELECT to_jsonb(e) FROM memory_retained_mobile_evidence e JOIN memory_sources s USING(source_id) WHERE s.owner_id=$1 ORDER BY source_id`},
 		{"deletion", `SELECT to_jsonb(d) FROM memory_deletions d WHERE owner_id=$1 ORDER BY watermark`},
 		{"original_asset", `SELECT (to_jsonb(a)-'original_bytes')||jsonb_build_object('original_bytes_base64',encode(a.original_bytes,'base64')) FROM memory_source_assets a JOIN memory_sources s USING(source_id) WHERE s.owner_id=$1 ORDER BY source_id,source_revision`},
 	}

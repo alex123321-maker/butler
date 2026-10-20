@@ -71,11 +71,45 @@ with explicit semantic_empty_lexical_fallback diagnostics. Search has a bounded
 30-second cold-model allowance; other reads retain five seconds. Query/index
 calls share the existing serialized local GPU worker and ordinary budgets.
 
-Retention/deletion still removes originals and dependent notes/fragments/vectors.
-The current mobile archive retention is not silently extended. Durable notes
-survive restart, but their source expiry is still an explicit bound on retention.
-Longer-lived evidence retention is a separate privacy contract, not orphaning a
-derived note after deletion of its original.
+## Archive expiry and retained evidence
+
+New devices default to360 days (owner configurable1..365). Existing devices retain
+their explicit setting until owner control changes it. Selected remember notes
+and their exact evidence have no age/count TTL. This does not promote observations
+to accepted Profile facts or establish unlimited semantic job resources.
+
+The same remember transaction converts its ordinary raw-body dependency into
+memory_retained_mobile_evidence: an immutable typed privacy edge with exact source
+ID/revision/hash/access revision, message ID, app, sender, conversation, posted
+time, and a credential-masked exact prefix of at most2048 Unicode characters.
+Truncation is explicit. Evidence is extracted by trusted Go code from the original
+message part, never supplied by a model. memory.open returns retained_evidence
+alongside the note; the raw source reference remains historical after expiry.
+Corrections/access changes invalidate retained evidence; stale observations are
+never presented as current facts. Reported event validity remains separate from
+physical retention and owner acceptance.
+
+Automatic cleanup appends archive_expire to the fsynced independent deletion
+manifest. It erases the raw body, ordinary derivatives and raw-dependent caches,
+while preserving retained notes, evidence, fragments and derived vectors. Reads,
+indexing and provider release recheck the exact original metadata under a shared
+lock, allowing only the pinned active original or its exact single archive-expiry
+tombstone. Explicit delete/revoke follows both ordinary and typed privacy edges
+and physically erases retained evidence, facts and vectors. Deleting a note alone
+does not erase its original or sibling notes. Manifest reconciliation after a
+database restore preserves that distinction and prevents resurrection.
+
+The authorized local scanner backfills older notes before fragment repair, with
+the original still readable. Expiry refuses to erase originals with unconverted
+active remembered notes; missing authority/proof requires repair, not silent loss.
+Housekeeping protects class rows backed by retained evidence from age/count
+pruning. Explicit forgetting remains available through owner Catalog deletion.
+Migration088 refuses rollback while retained evidence or archive tombstones exist.
+
+Fixed memory arguments are decoded during Broker validation before permanent
+effect preparation/dispatch. In particular, messages.search(limit:50) is a
+validation failure; the declared maximum is10. Actual lost/dispatched outcomes
+still require ordinary reconciliation and are never relabelled as success.
 
 ## Acceptance and operations
 

@@ -795,6 +795,13 @@ Current Butler baseline now applies explicit housekeeping policies:
 * Episodic Memory and document chunks can be pruned by age while keeping the highest-confidence recent items per scope;
 * housekeeping operations are safe to rerun and report deletion counts for observability.
 
+Selected mobile notes and their immutable exact evidence have indefinite retention.
+Their class rows are exempt from age/count housekeeping. Raw notification archives
+default to360 days; automatic archive_expire preserves retained notes, while
+explicit owner forgetting erases their evidence and derived indexes. Observation
+retention does not imply Profile acceptance or infinite event validity. See
+[the implemented contract](mobile-memory-search.md#archive-expiry-and-retained-evidence).
+
 ## 21. Current observability baseline
 
 Current Butler baseline now includes memory-specific observability signals:

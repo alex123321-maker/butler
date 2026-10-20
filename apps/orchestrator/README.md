@@ -103,6 +103,11 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Mobile archive defaults to360 days. remember commits a note, exact bounded retained
+evidence and one fragment atomically; selected notes survive archive expiry.
+Explicit owner forgetting cascades through evidence and indexes. See
+[retention and privacy](../../docs/architecture/mobile-memory-search.md#archive-expiry-and-retained-evidence).
+
 Android notification ingress is mounted at `/api/v1/mobile/`; authenticated owner
 device controls use `/api/v1/mobile-owner/` and the Web `/mobile` page. It reuses
 the existing source catalog/deletion anchor and deterministic retention maintenance.

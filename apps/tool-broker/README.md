@@ -1,5 +1,10 @@
 # Tool Broker
 
+Fixed memory arguments are checked before effect preparation and dispatch, using
+the same strict decoder as execution. Out-of-range message limits fail validation
+without producing an unknown effect. memory.open can return bounded retained
+evidence authorized by the Catalog's current source/privacy guard.
+
 Correlated explicit validation failures for HTTP/WebFetch read operations
 preserve their bounded diagnostic (512 bytes) and details (1024 bytes), for
 example an HTTP status or unsupported MIME, when no failed-result body is present. They

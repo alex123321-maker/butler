@@ -1,5 +1,13 @@
 # Butler — Tooling and Execution Specification
 
+Fixed memory read/process controls apply their strict typed argument decoder
+during Broker validation, before effect preparation and dispatch. Numeric bounds
+and cross-field rules therefore cannot first fail after a dispatch is journalled.
+For example, messages.search accepts limit1..10; limit50 fails validation without
+an effect_unknown record. Actual transport/dispatched uncertainty retains its
+ordinary reconciliation contract. memory.open may return guarded retained mobile
+evidence, as described in [the memory contract](mobile-memory-search.md#archive-expiry-and-retained-evidence).
+
 Optional [deferred tool schemas](tool-discovery.md) add Broker-owned `tools.search`/`tools.load` under matching default-false operator flags. Search ranks the complete permitted catalog; loading only selects model schemas and grants no execution authority. Existing dispatch/input/approval/budget checks apply.
 
 

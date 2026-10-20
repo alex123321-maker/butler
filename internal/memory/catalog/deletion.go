@@ -12,6 +12,9 @@ import (
 // PostgreSQL advisory serialization also protects the shared manifest against
 // simultaneous orchestrator instances on the same authoritative database.
 func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRevision int64) (Deletion, error) {
+	if action != "delete" && action != "revoke" {
+		return Deletion{}, ErrInvalid
+	}
 	own, e := owner(ctx)
 	if e != nil {
 		return Deletion{}, e
@@ -22,11 +25,11 @@ func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRev
 // DeleteExpiredMobileObservation applies only durable owner-configured device
 // retention. It never manufactures an owner actor, grant or model authorization.
 func (s *Store) DeleteExpiredMobileObservation(ctx context.Context, sourceID string, expectedRevision int64) (Deletion, error) {
-	return s.deleteSource(ctx, sourceID, "delete", expectedRevision, "")
+	return s.deleteSource(ctx, sourceID, "archive_expire", expectedRevision, "")
 }
 
 func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expectedRevision int64, own string) (Deletion, error) {
-	if action != "delete" && action != "revoke" {
+	if action != "delete" && action != "revoke" && action != "archive_expire" {
 		return Deletion{}, ErrInvalid
 	}
 	if e := s.CheckRestore(ctx); e != nil {
@@ -54,6 +57,15 @@ func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expec
 	}
 	if rev != expectedRevision {
 		return Deletion{}, ErrStale
+	}
+	if action == "archive_expire" {
+		var pending bool
+		if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM mobile_messages m JOIN memory_sources n ON n.source_id=m.result_source_id WHERE m.source_id=$1 AND m.state='remembered' AND n.status='active' AND NOT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence e WHERE e.source_id=n.source_id))`, sourceID).Scan(&pending); e != nil {
+			return Deletion{}, e
+		}
+		if pending {
+			return Deletion{}, ErrDenied
+		}
 	}
 	records, e := s.manifest.Load(ctx)
 	if e != nil {
@@ -151,10 +163,11 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	rows, e := tx.Query(ctx, `WITH RECURSIVE privacy_edges(parent_source_id,child_source_id) AS NOT MATERIALIZED(
  SELECT parent_source_id,child_source_id FROM memory_source_dependencies
  UNION ALL SELECT original_source_id,source_id FROM memory_experience_reconciled_attempts
+ UNION ALL SELECT original_source_id,source_id FROM memory_retained_mobile_evidence WHERE $3<>'archive_expire'
 ),affected AS(
  SELECT source_id FROM memory_sources WHERE source_id=$1 OR source_id IN(SELECT snapshot_source_id FROM memory_summary_dependencies WHERE original_source_id=$1) OR source_id IN(SELECT x.source_id FROM memory_summary_sources x WHERE x.session_key IN(SELECT scope_id FROM memory_sources WHERE source_id=$1 AND scope_type='session')) OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined')
  UNION SELECT d.child_source_id FROM privacy_edges d JOIN affected a ON a.source_id=d.parent_source_id
-)SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own)
+)SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own, r.Action)
 	if e != nil {
 		return e
 	}
@@ -191,6 +204,9 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 		}
 	}
 	for _, id := range ids {
+		if _, e = tx.Exec(ctx, `DELETE FROM memory_retained_mobile_evidence WHERE source_id=$1`, id); e != nil {
+			return e
+		}
 		// Purge vectors/chunks before source text. Retain only audit IDs and hashes.
 		for _, pair := range []struct{ typ, table string }{{"profile", "memory_profile"}, {"episodic", "memory_episodes"}, {"chunk", "memory_chunks"}} {
 			if _, e = tx.Exec(ctx, `DELETE FROM `+pair.table+` WHERE id IN(SELECT object_id FROM memory_object_sources WHERE memory_type=$1 AND source_id=$2)`, pair.typ, id); e != nil {

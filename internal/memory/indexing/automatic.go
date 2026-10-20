@@ -45,7 +45,7 @@ func (r *Runtime) schedule(ctx context.Context, p jobs.IndexPolicy) error {
 	}
 	owned := r.Jobs.IndexPolicyContext(ctx, p)
 	// Repair notes saved before atomic fragment publication was introduced.
-	rows, e := r.Catalog.Pool().Query(ctx, `SELECT s.source_id,s.head_revision,s.access_revision,v.content_hash FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=s.head_revision WHERE s.owner_id=$1 AND s.scope_type='user' AND s.scope_id=$1 AND s.status='active' AND v.locator->>'adapter'='android_message_note_v1' AND NOT EXISTS(SELECT 1 FROM memory_object_sources o WHERE o.source_id=s.source_id AND o.memory_type='chunk') ORDER BY s.source_id LIMIT 20`, p.OwnerID)
+	rows, e := r.Catalog.Pool().Query(ctx, `SELECT s.source_id,s.head_revision,s.access_revision,v.content_hash FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=s.head_revision WHERE s.owner_id=$1 AND s.scope_type='user' AND s.scope_id=$1 AND s.status='active' AND v.locator->>'adapter'='android_message_note_v1' AND (NOT EXISTS(SELECT 1 FROM memory_object_sources o WHERE o.source_id=s.source_id AND o.memory_type='chunk') OR NOT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence e WHERE e.source_id=s.source_id)) ORDER BY s.source_id LIMIT 20`, p.OwnerID)
 	if e != nil {
 		return e
 	}
@@ -66,6 +66,14 @@ func (r *Runtime) schedule(ctx context.Context, p jobs.IndexPolicy) error {
 	for _, ref := range repair {
 		tx, e := r.Catalog.Pool().Begin(owned)
 		if e != nil {
+			return e
+		}
+		if _, e = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,19))`, p.OwnerID); e != nil {
+			tx.Rollback(ctx)
+			return e
+		}
+		if e = r.Catalog.RetainMobileNoteTx(owned, tx, ref); e != nil {
+			tx.Rollback(ctx)
 			return e
 		}
 		src, e := r.Catalog.AccessTx(owned, tx, []catalog.SourceRef{ref}, "memory_ingest")

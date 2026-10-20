@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-root=/srv/storage/butler/agents/mobile-memory-20261020
+root=${BUTLER_MOBILE_TEST_ROOT:-/srv/storage/butler/agents/mobile-memory-20261020}
 network=butler-mobile-memory-tests
 pg=butler-mobile-memory-tests-pg
 runner=butler-mobile-memory-tests-runner
@@ -37,10 +37,11 @@ docker create --name "$runner" --network "$network" --cpus 3 --memory 4g \
  golang:1.27.2-bookworm bash -eu -c '
  go build -o /artifacts/tool-broker ./apps/tool-broker > /reports/build.log 2>&1
  go test -c -o /artifacts/broker.test ./apps/tool-broker/internal/broker >> /reports/build.log 2>&1
- go test -race -json -p 1 -count=1 -timeout 10m -run "TestMobileTaskHistory|TestToolSchemaProjection|TestAutomaticIndex|TestMobileAgentBrokerSearchRememberNoiseAndDeletionIntegration|TestActualPinnedOwnedIndexRuntimeIntegration" ./apps/orchestrator/internal/orchestrator ./internal/memory/indexing ./apps/orchestrator/internal/app > /reports/targeted.jsonl 2>&1
- go test -race -json -p 1 -count=1 -timeout 15m ./internal/memory/catalog ./internal/memory/jobs ./internal/memory/indexing ./internal/memory/semantic ./internal/memory/transcript ./internal/memory/readcontrol ./internal/memory/reader ./internal/mobile ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/initiative ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api ./apps/tool-broker/internal/broker > /reports/regression.jsonl 2>&1
+ go test -c -o /artifacts/mobile.test ./internal/mobile >> /reports/build.log 2>&1
+ go test -race -json -p 1 -count=1 -timeout 10m -skip "^TestRetainedMobileActualBackupPhase$" -run "TestRetainedMobile|TestRetentionErases|TestMalformedMessageSearch|TestMobileTaskHistory|TestToolSchemaProjection|TestAutomaticIndex|TestMobileAgentBrokerSearchRememberNoiseAndDeletionIntegration|TestActualPinnedOwnedIndexRuntimeIntegration" ./apps/orchestrator/internal/orchestrator ./internal/memory/indexing ./internal/mobile ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/app > /reports/targeted.jsonl 2>&1
+ go test -race -json -p 1 -count=1 -timeout 15m ./internal/memory/catalog ./internal/memory/chunks ./internal/memory/profile ./internal/memory/episodic ./internal/memory/experience ./internal/memory/jobs ./internal/memory/indexing ./internal/memory/semantic ./internal/memory/transcript ./internal/memory/readcontrol ./internal/memory/reader ./internal/mobile ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/initiative ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/registry > /reports/regression.jsonl 2>&1
  go test -race -json -p 1 -count=1 -timeout 15m -run "TestMemory|TestMobile|TestPrivateRead|TestStrictRead|TestSearchOpen|TestCredentialFragment|TestBootstrap" ./apps/orchestrator/internal/app > /reports/app-regression.jsonl 2>&1
- go vet ./internal/memory/catalog ./internal/memory/jobs ./internal/memory/indexing ./internal/memory/semantic ./internal/memory/transcript ./internal/memory/readcontrol ./internal/memory/reader ./internal/mobile ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/initiative ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker > /reports/vet.log 2>&1
+ go vet ./internal/memory/catalog ./internal/memory/chunks ./internal/memory/profile ./internal/memory/episodic ./internal/memory/experience ./internal/memory/jobs ./internal/memory/indexing ./internal/memory/semantic ./internal/memory/transcript ./internal/memory/readcontrol ./internal/memory/reader ./internal/mobile ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/initiative ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/registry > /reports/vet.log 2>&1
  CGO_ENABLED=0 go build -o /artifacts/orchestrator ./apps/orchestrator > /reports/release-build.log 2>&1
  CGO_ENABLED=0 go build -o /artifacts/tool-broker ./apps/tool-broker >> /reports/release-build.log 2>&1
  CGO_ENABLED=0 go build -o /artifacts/migrator ./apps/migrator >> /reports/release-build.log 2>&1
