@@ -1,0 +1,549 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/alex123321-maker/butler/issues/17",
+  "date": "2026-10-20",
+  "verdict": "PASS: all eight resource arbitration criteria",
+  "runtime_baseline": "fbd4954102abc811be91f9c36ead544eab908576",
+  "tested_commit": "1d37d40910200504948b4f91206e687f91bff6fc",
+  "tested_working_diff_empty": true,
+  "source_manifest_before_sha256": "799eb9df123e53f3a661cb78bb7a2f02460a52e91a434e43548175f5c4c53063",
+  "source_manifest_after_sha256": "799eb9df123e53f3a661cb78bb7a2f02460a52e91a434e43548175f5c4c53063",
+  "source_unchanged_during_run": true,
+  "local_report": ".cache/issue17/20261020T141536Z-f0db000e",
+  "scope": {
+    "host": "owner Windows PC; Docker Desktop Linux engine",
+    "uid": 10001,
+    "isolated_postgresql": true,
+    "isolated_network": "internal; no published ports",
+    "unix_socket_parent": "container-private tmpfs; UID/GID10001; mode0700",
+    "ssh_calls": 0,
+    "model_calls": 0,
+    "operator_credentials_mounted": false,
+    "production_deployment_changed": false
+  },
+  "docker": "linux 29.1.3",
+  "images": [
+    "[golang:1.27.2] sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8",
+    "[pgvector/pgvector:pg17] sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "[butler-issue17-browser:1.52.0] sha256:dc0dfca692d0ed19d2ed9099bab3ea4ccd8777cab8ad8bd4f6cede9bf01195a5"
+  ],
+  "race_top_level_passes": 146.0,
+  "race_subtest_passes": 209.0,
+  "required_tests": [
+    "TestResourceReadersAndExclusiveWriterAcrossSessionsIntegration",
+    "TestResourceSetAtomicFailureAndOppositeOrderIntegration",
+    "TestResourceExpiredWriterRemainsBlockedUntilEvidenceReconciliationIntegration",
+    "TestResourceDeadlineIsRecheckedAfterContendedLockIntegration",
+    "TestConcurrentRealPatchesCannotOverwriteAcrossStoreInstancesIntegration",
+    "TestIsolatedCopiesScopesAndPrivateTempsIntegration",
+    "TestExpiredOrSupersededAuthorityCannotWriteAfterWorkspaceWaitIntegration",
+    "TestWorkspaceOwnerDiscardActualRuntimeProcessLossIntegration",
+    "TestWorkspaceOwnerDiscardUnknownPhysicalCopyIntegration",
+    "TestWorkspaceOwnerDiscardSupersedesOnlyStaleUnattemptedIntentIntegration",
+    "TestChildAndToolReservationsShareAtomicParentLimitsIntegration",
+    "TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration",
+    "TestChildAdmissionCannotResetRootBudgetIntegration",
+    "TestExtractionConcurrentWorkerCandidatesNeedOwnerHeadCASIntegration",
+    "TestMemoryCandidateDispatchedIntegration",
+    "TestWorkspaceActualApplicationBootstrapIntegration",
+    "TestGuardedTabRuntimeBootstrap",
+    "TestGuardedTabRequestCoreSuspendsBeforeGenericResult",
+    "TestOwnerWorkspaceRecoveryHTTPRejectsCallerAuthorityAndPreservesUnknown"
+  ],
+  "stages": [
+    {
+      "stage": "broker",
+      "top_level_passes": 21,
+      "subtest_passes": 16,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestGuardedTabRequestExecutorRequiresPrivateDispatch",
+        "TestGuardedTabAdmissionKeepsLocalRequestSeparate",
+        "TestResourceBrokerRuntimeAtomicClaimAndPrivateOneUseIntegration",
+        "TestResourceClaimWithoutActualBudgetReservationCannotDispatchIntegration",
+        "TestResourceMigrationEmptyRollbackAndBrowserOnlyHistoryGuardIntegration",
+        "TestResourceBrokerConflictRollsBackBudgetAndSecondDispatchIntegration",
+        "TestResourceBrokerLostReceiptBlocksSuccessorAndReplayIntegration",
+        "TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration",
+        "TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration",
+        "TestResourceClaimDeadlineAfterResourceWaitRollsBackWholeAdmissionIntegration",
+        "TestSingleTabResourceOwnerControlActualBrokerSerialOrder",
+        "TestSingleTabResourceGuardedMappingCannotBeLegacyOrMutated",
+        "TestSingleTabResourceOwnerReplayExpiresDuringLegacySessionWait",
+        "TestSingleTabResourceOwnerChoicesHaveNoNativeIdentity",
+        "TestSingleTabResourceActualPGCurrentnessAndAtomicBudget",
+        "TestSingleTabResourceAfterClaimExpiryDoesNotReachRuntime",
+        "TestSingleTabResourceMigrationKeepsBindingHistory",
+        "TestWorkspaceBrokerActualFileFlowAndStalePatchBeforeSpendIntegration",
+        "TestWorkspaceBrokerMissingReadinessAndChangedInputDenyIntegration",
+        "TestWorkspaceBrokerActualCommittedEffectLostAcknowledgementCannotReplayIntegration",
+        "TestResourceAdmissionsCannotSubstituteBrowserForWorkspace"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "child-budget",
+      "top_level_passes": 4,
+      "subtest_passes": 0,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestChildAdmissionCannotResetRootBudgetIntegration",
+        "TestControlStopPropagatesChildrenAndRetainsExternalObservations",
+        "TestControlTwoChannelsCASAndOwnerProof",
+        "TestHTTPControlRequiresProofAndCurrentRevisionIntegration"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "core-controls",
+      "top_level_passes": 5,
+      "subtest_passes": 32,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestGuardedTabRequestDispatchedIntegration",
+        "TestMemoryCandidateDispatchedIntegration",
+        "TestMemoryCandidateRejectsSensitiveData",
+        "TestMemoryCandidateInputExpiresDuringDedupWaitIntegration",
+        "TestWorkspaceOwningContextPinsCurrentInputIntegration"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "core-suspension",
+      "top_level_passes": 1,
+      "subtest_passes": 3,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestGuardedTabRequestCoreSuspendsBeforeGenericResult"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "memory-head",
+      "top_level_passes": 3,
+      "subtest_passes": 0,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestSourceDuplicateAndConflictingPreferencesIntegration",
+        "TestConcurrentExplicitSupersessionIntegration",
+        "TestExtractionConcurrentWorkerCandidatesNeedOwnerHeadCASIntegration"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "owner-controls",
+      "top_level_passes": 3,
+      "subtest_passes": 0,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestGuardedTabOwnerHTTPRejectsBodyAuthorityAndMasksDenial",
+        "TestOwnerWorkspaceRecoveryHTTPRejectsCallerAuthorityAndPreservesUnknown",
+        "TestOwnerWorkspaceRecoveryDiscoveryRequiresOwnerAndUsesBoundedTaskProjection"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "resources",
+      "top_level_passes": 33,
+      "subtest_passes": 11,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestResourceReadersAndExclusiveWriterAcrossSessionsIntegration",
+        "TestResourceTimedOutRunCannotAcquireOrClaimIntegration",
+        "TestResourceSetAtomicFailureAndOppositeOrderIntegration",
+        "TestResourceExpiredWriterRemainsBlockedUntilEvidenceReconciliationIntegration",
+        "TestResourceCurrentTaskParentAndOwnerFencesIntegration",
+        "TestResourceConfirmedWriteConsumesLeaseAndInvalidatesObservationIntegration",
+        "TestResourceDeadlineIsRecheckedAfterContendedLockIntegration",
+        "TestRuntimePrivateTicketSingleLaneFencingAndLoss",
+        "TestAuthorityHTTPRejectsAnonymousRedirectsAndExtraFields",
+        "TestRuntimePrivateServiceBoundaryRejectsMalformedComposition",
+        "TestBrowserResourceIdentityCannotBeChosenByToolPolicyOrCredential",
+        "TestSingleTabReadinessExactPrivateRoute",
+        "TestSingleTabResourceLegacyPinnedContractDenied",
+        "TestRuntimePrivateACKRequiresDurableFinish",
+        "TestSingleTabResourceIdentityUsesActualHostTabNotBindingID",
+        "TestSingleTabResourceOriginStripsPrivateURIFields",
+        "TestAuxiliaryCrossContextRejectsAmbiguousTopMandate",
+        "TestRuntimeAdmissionSurvivesNewRunAndChildWithoutResetIntegration",
+        "TestChildAndToolReservationsShareAtomicParentLimitsIntegration",
+        "TestRuntimeAdmissionRejectsFinishedRunAndAggregateBytesIntegration",
+        "TestBudgetRollbackRefusesUnspentImmutablePolicyIntegration",
+        "TestBudgetRootPreflightDoesNotChargeOrResetAdmissionIntegration",
+        "TestNormalizedLoopPersistsAcrossRestartAndTypedErrorsIntegration",
+        "TestParallelScopeAndReservationInitializationIntegration",
+        "TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration",
+        "TestLocalTargetIsIndependentOfDeclaredZeroPrice",
+        "TestModelAdmissionDeadlineOriginIntegration",
+        "TestModelRetryOperationWitnessIsRequestLocal",
+        "TestCostBasisAndFixedNativeReservation",
+        "TestNormalizeProgressIgnoresVolatileMetadata",
+        "TestCanonicalLoopArgumentsAreEquivalentWithoutNumberRounding",
+        "TestAdmissionDoesNotOverflowOrAcceptUnknownCost",
+        "TestDeadlineAndZeroLimitsAreHardBounds"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "tab-control",
+      "top_level_passes": 24,
+      "subtest_passes": 39,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestSingleTabResourcePrivateMetadataHTTP",
+        "TestGuardedRequestPrivateContract",
+        "TestBindRequestCannotReuseForeignResolvedOrExpiredApproval",
+        "TestSingleTabResourceLegacyActivationRejectsGuardedSelection",
+        "TestSingleTabResourceOwningApprovalGuardActualPG",
+        "TestPostgresRepository_CreateActivateAndLoadSingleTabSession",
+        "TestGuardedSelectionDurableInputAndFreshRecoveryIntegration",
+        "TestOwnerWaitingSelectionSchemaRejectsMissingOrReplacedImmutability",
+        "TestOwnerWaitingSelectionAfterActualLeaseReleaseIntegration",
+        "TestCreateBindRequestReusesExistingPendingApprovalByToolCallID",
+        "TestReleaseSessionMarksSessionRevoked",
+        "TestActivateFromApprovalCreatesActiveSessionAndResolvesGate",
+        "TestCreateBindRequestCreatesTypedApprovalAndDeliversCandidates",
+        "TestGuardedHostPrivateTokenFile",
+        "TestGuardedHostListenAddressPrivateLoopbackOnly",
+        "TestAppRunHandlesPingAndBindRequest",
+        "TestAppControlDispatchAction",
+        "TestDispatcherDispatchActionWithoutNativeClient",
+        "TestDispatcherDispatchAction",
+        "TestDispatcherDispatchActionReturnsNativeError",
+        "TestClientCreateBindRequestAndGetActiveSession",
+        "TestGuardedFramesBoundAllocationBeforeRead",
+        "TestReadRequestAndWriteResponse",
+        "TestReadMessageAndWriteRequest"
+      ],
+      "command_packages_without_tests": [
+        "github.com/butler/butler/apps/browser-bridge"
+      ]
+    },
+    {
+      "stage": "workspace-bootstrap",
+      "top_level_passes": 3,
+      "subtest_passes": 21,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestGuardedTabRuntimeBootstrap",
+        "TestGuardedTabOriginPolicyIsExplicit",
+        "TestWorkspaceActualApplicationBootstrapIntegration"
+      ],
+      "command_packages_without_tests": []
+    },
+    {
+      "stage": "workspaces",
+      "top_level_passes": 49,
+      "subtest_passes": 87,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "top_level_tests": [
+        "TestDeletionRuntimeContainsPrivateErasure",
+        "TestWorkspaceOwnerDiscardIndependentErasureObserver",
+        "TestWorkspaceObserverRejectsPhysicalConfirmationDriftIntegration",
+        "TestWorkspaceObserverUsesCurrentBindingAndActualMetadataIntegration",
+        "TestResourceWorkspaceCreateAndWriteConsumeExactClaimsIntegration",
+        "TestResourceWorkspaceRejectsHeldAndSameTransactionClaimsIntegration",
+        "TestResourceWorkspaceCurrentActionScopeAndSourcesIntegration",
+        "TestResourceWorkspaceTwoContendersAndStaleObservationsIntegration",
+        "TestResourceWorkspaceIndependentLeaseContendersIntegration",
+        "TestResourceWorkspaceUnknownClaimsSurviveFailureAndNeedOwnerEvidenceIntegration",
+        "TestWorkspaceRootOwnerRejectsSharedOrReplacedRoot",
+        "TestWorkspaceRootOwnerRejectsSymlink",
+        "TestWorkspaceRootOwnerProcesses",
+        "TestConcurrentRealPatchesCannotOverwriteAcrossStoreInstancesIntegration",
+        "TestIsolatedCopiesScopesAndPrivateTempsIntegration",
+        "TestExpiredOrSupersededAuthorityCannotWriteAfterWorkspaceWaitIntegration",
+        "TestPhysicalDriftAndFailedMetadataCommitBlockWithoutReplayIntegration",
+        "TestPathsSymlinksHardlinksAndScopeEscapesDeniedIntegration",
+        "TestWorkspaceLimitsAndMigrationHistoryCannotBeDiscardedIntegration",
+        "TestModelJSONCannotSupplyPrivateWorkspaceAuthority",
+        "TestWorkspaceDispatchClaimAtomicallyBindsInputBudgetSourceAndResourceIntegration",
+        "TestWorkspaceContractsKeepOnlyDataAndFileCAS",
+        "TestWorkspaceProvenancePersistsOriginalGraphAcrossRunIntegration",
+        "TestWorkspaceDeletedSourceBlocksAndPurgesActualCopiesIntegration",
+        "TestWorkspaceProvenanceFailureAfterRenamePublishesNoSourcesIntegration",
+        "TestWorkspaceProvenanceRejectsOwnerJobAndForeignScopeIntegration",
+        "TestWorkspaceProvenanceExpiresDuringActualSourceWaitIntegration",
+        "TestWorkspacePrivacyErasureSurvivesLostAcknowledgementIntegration",
+        "TestWorkspacePrivacyErasureRetriesAndCannotUnblockIntegration",
+        "TestWorkspaceProvenanceHistoryCannotBeOverwrittenIntegration",
+        "TestWorkspaceOwnerDiscardActualRuntimeProcessLossIntegration",
+        "TestWorkspaceOwnerDiscardRechecksAfterActualPool2RowWaitIntegration",
+        "TestWorkspaceOwnerDiscardDoesNotBlockIndependentActualCopyIntegration",
+        "TestWorkspaceOwnerDiscardRetainsImmutableDecisionAndDispatchIntegration",
+        "TestWorkspaceOwnerDiscardFairQueueSkipsRetainedDeniedRowsIntegration",
+        "TestWorkspaceOwnerDiscardTerminalEnumWithoutReceiptIsNotProofIntegration",
+        "TestWorkspaceOwnerDiscardUnknownPhysicalCopyIntegration",
+        "TestWorkspaceOwnerDiscardRejectsForeignStaleAndFabricatedProofIntegration",
+        "TestWorkspaceOwnerDiscardLostErasureAcknowledgmentObservesOnlyIntegration",
+        "TestWorkspaceOwnerDiscardReplacementRootAndActiveCopyRefuseIntegration",
+        "TestWorkspaceOwnerDiscardSupersedesOnlyStaleUnattemptedIntentIntegration",
+        "TestWorkspaceOwnerDiscardCannotSupersedeCurrentUnattemptedIntentIntegration",
+        "TestWorkspaceRuntimeRootBindingRejectsRestoredStartupReplacementIntegration",
+        "TestWorkspaceRuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration",
+        "TestWorkspaceRuntimeRootReplacementAfterAuthorityWaitDeniesEffectIntegration",
+        "TestWorkspaceInstalledReadinessRejectsWrongProfileRootAndDisabledHistoryIntegration",
+        "TestWorkspaceRuntimeActualPrivateRPCAndPhysicalConfirmationIntegration",
+        "TestWorkspaceRuntimeRejectsChangedInputBeforePhysicalEffectIntegration",
+        "TestWorkspaceRuntimeRejectsPrivateRPCMutationBeforePhysicalEffectIntegration"
+      ],
+      "command_packages_without_tests": []
+    }
+  ],
+  "chromium": {
+    "top_level_test": "TestSingleTabResourceActualChromiumNativeHostIntegration",
+    "passed_cases": [
+      "valid",
+      "manual_input",
+      "manual_new_observation",
+      "dom_mutation",
+      "navigation",
+      "foreign_origin",
+      "foreign_host",
+      "lost_ack_restart",
+      "two_executors",
+      "installed_native"
+    ],
+    "failed": 0,
+    "skipped": 0,
+    "binary": "static broker.test; actual production guarded-native-host",
+    "installed_native_manifest_verified": true,
+    "recipient_calls_checked": true,
+    "unknown_effect_and_restart_quarantine_checked": true
+  },
+  "vet": "PASS: targeted production packages; complete marker requires successful exit",
+  "binaries": [
+    "9a1e288ea6b03cfd90d79d03da3a60d08c973f8c728d46cc48f4c6807f1b490d  /proof/broker-race.test",
+    "aadafaea7081bf731c6067626c67e7effbd5d4d91128c93390cbfa76debeb6c6  /proof/broker.test",
+    "cc4b6acf072c81be2d033fab59ef739b6e50b04002083d9ed86fccb705b345b9  /proof/guarded-native-host",
+    "5b14f0984a5601e66b60746b25246f4836a685ada4f7a3976136ddc3c3f8172b  /proof/tool-broker",
+    "95e8af0c8cd0aa2040e9f0c4caab84fd021bfbc8e043a68f02418fd385e2e91f  /proof/workspace.test"
+  ],
+  "retained_prior_attempts": [
+    {
+      "run": "20261020T132310Z-3facbbaf",
+      "status": "incomplete",
+      "reason": "reporter rejected command-only package with no tests; no final PASS"
+    },
+    {
+      "run": "20261020T133502Z-b0625b31",
+      "status": "incomplete",
+      "reason": "non-root Go build could not read root-private cache entry; checkout cache ownership corrected"
+    },
+    {
+      "run": "20261020T133809Z-aa6da5fc",
+      "status": "failed",
+      "reason": "live-lease negative fixture assumed 1500ms lease still live; diagnostic measured -0.047s before recovery request"
+    },
+    {
+      "run": "20261020T134919Z-8adb06dc",
+      "status": "failed",
+      "reason": "Unix workspace app lacked required private socket parent in local runner; TCP and Broker tests passed"
+    },
+    {
+      "run": "20261020T140236Z-7d91bc24",
+      "status": "failed",
+      "reason": "three other shared 1500ms discard fixtures did not reach physical pending checkpoint; focused original repeats passed; shared finite fixture deadline changed to 10s"
+    }
+  ],
+  "focused_fixture_artifacts": [
+    {
+      "file": "butler-issue17-expiry-f656e857.jsonl",
+      "sha256": "658ca39d35d23afd82eb4551b5a3a51e69da38877f605db3943fa1825858954d"
+    },
+    {
+      "file": "butler-issue17-expiry-63a3be29.jsonl",
+      "sha256": "5f58f88b95a4c6e9fa15adaf9a94b84f4b8ae84e9d81b63f37182bc75ffb65d2"
+    },
+    {
+      "file": "butler-issue17-expiry-273baea0.jsonl",
+      "sha256": "ae596ce47a545c1d36a7a3b0c7b78aca37b6697d550e12a90146d95686a4c55c"
+    },
+    {
+      "file": "butler-issue17-expiry-f2752dfd.jsonl",
+      "sha256": "5503ee5587567dcd41323f345b53eb12b60250f754ceb6a1acc888cda7e1d424"
+    },
+    {
+      "file": "butler-issue17-expiry-2a24bfb1.jsonl",
+      "sha256": "58fd093d2fa2f102f6e2f0a7b731f9bb3d94e1d0553c6a88449a813df5f8e5ed"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "binaries.sha256",
+      "bytes": 441,
+      "sha256": "f8723458619e5892249b08b158521feb9f70f8d0aef72878d2cd532f50850e6c"
+    },
+    {
+      "file": "broker.jsonl",
+      "bytes": 58893,
+      "sha256": "8dfb6aa232a06fd89ce15dc8e347c2168d8db7f8ac30430216eb76018bd2bc22"
+    },
+    {
+      "file": "broker.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "browser-build.log",
+      "bytes": 1745,
+      "sha256": "7e4199112e08dd59b2d22c9a0e4304f6af63acd8dfceb57b268f501f2f2fdeb0"
+    },
+    {
+      "file": "child-budget.jsonl",
+      "bytes": 34031,
+      "sha256": "ab37358751a8806eb22f79c3db66b42dfaf2469a0eee64c1adb36a637ae0c39a"
+    },
+    {
+      "file": "child-budget.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "chromium.log",
+      "bytes": 9691,
+      "sha256": "317a075aaa3f4fc85e2b62d2871be3dc0ee83a57bb60fb29da521890d739db8b"
+    },
+    {
+      "file": "complete",
+      "bytes": 6,
+      "sha256": "d938fa189912f8776c3deb31a6bec42f403f57b9c8e3ed936bdb076caf6bd61c"
+    },
+    {
+      "file": "core-controls.jsonl",
+      "bytes": 36976,
+      "sha256": "fad0023a545417632125798dd4fa16c3a29aa1ccf6381b6c92e4dc47dd0c36d5"
+    },
+    {
+      "file": "core-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "core-suspension.jsonl",
+      "bytes": 5267,
+      "sha256": "5a06117d6549f9909648955f000dc4f8db4e48abe6f725d1da33a6413d126945"
+    },
+    {
+      "file": "core-suspension.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docker-version.txt",
+      "bytes": 14,
+      "sha256": "43525618c56055bc331845a28bd8eabeb8a85b3fd7264f9350d95409e30c0360"
+    },
+    {
+      "file": "images.txt",
+      "bytes": 292,
+      "sha256": "306a4e0ae33dcdc3714de1b89c8a8f1576ac824f57b238187a7e51bcbc39e370"
+    },
+    {
+      "file": "memory-head.jsonl",
+      "bytes": 3508,
+      "sha256": "a5e9bcef4dd6df6cb68cf7a8fce296881e5107d6316bfc29cf7fee419f011ce2"
+    },
+    {
+      "file": "memory-head.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "owner-controls.jsonl",
+      "bytes": 3839,
+      "sha256": "852d57278c76c96723197648f5c9b183ff496781491c42b9f70b4f9c4fccc029"
+    },
+    {
+      "file": "owner-controls.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "postgres.log",
+      "bytes": 8806,
+      "sha256": "a07f1f5483859a6500985666771637dfc3d6c72d6df8c5a74804b1a91c4eba96"
+    },
+    {
+      "file": "resources.jsonl",
+      "bytes": 43441,
+      "sha256": "adcbc12df37cb4a30d65ef5634d2e24d6bb68615949e4b03f78e3e7e8998b62c"
+    },
+    {
+      "file": "resources.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "SHA256SUMS",
+      "bytes": 2562,
+      "sha256": "13b4f35cad55e0d96922e499dda0ffd1ef0096ee8894a009412cf09aee4afb6a"
+    },
+    {
+      "file": "source-after.sha256",
+      "bytes": 448136,
+      "sha256": "799eb9df123e53f3a661cb78bb7a2f02460a52e91a434e43548175f5c4c53063"
+    },
+    {
+      "file": "source-before.sha256",
+      "bytes": 448136,
+      "sha256": "799eb9df123e53f3a661cb78bb7a2f02460a52e91a434e43548175f5c4c53063"
+    },
+    {
+      "file": "source-commit.txt",
+      "bytes": 42,
+      "sha256": "0aebf5a34c526a6429e614889811716e15068fdae4b13d48c308e1374fd0c7da"
+    },
+    {
+      "file": "source-diff.patch",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "file": "tab-control.jsonl",
+      "bytes": 86863,
+      "sha256": "f74de4e1edacd52bc463b80818614969aad8c39c701a52b37f14ac07d1c8d23a"
+    },
+    {
+      "file": "tab-control.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "workspace-bootstrap.jsonl",
+      "bytes": 207985,
+      "sha256": "51745ffddbe7a27e878dc3bd05ae6635825ca9e59d57a62206bae3965231bd44"
+    },
+    {
+      "file": "workspace-bootstrap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "workspaces.jsonl",
+      "bytes": 148190,
+      "sha256": "6dfc4a1f24bd5f302155088ab417d72ed21a50adb2de06d5514cf08c7f1cf200"
+    },
+    {
+      "file": "workspaces.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "final_publication_changes": "Only acceptance report/receipt finalized after this frozen run; production Go/config/schema/browser code is unchanged from runtime_baseline."
+}

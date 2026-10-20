@@ -1,7 +1,13 @@
 # Issue 17 current main local acceptance
 
 Date: 2026-10-20. Source baseline: `fbd4954102abc811be91f9c36ead544eab908576`.
-Final verdict: pending the complete local receipt.
+Final verdict: **PASS for all eight issue17 criteria**.
+
+The complete frozen run tested `1d37d40910200504948b4f91206e687f91bff6fc` with
+an empty working diff. Production Go, configuration, schemas and browser code
+match the current-main baseline; the only changed Go file is the recovery test
+fixture described below. This report and its [content-free JSON receipt](fixtures/issue17/current-main-local-20261020.json)
+were finalized after the run without changing executable code or test selection.
 
 The supported runtime is Linux inside Docker Desktop on the owner's Windows PC.
 No SSH, remote lab execution, model inference or personal browser account is used.
@@ -69,17 +75,52 @@ expiry and proves physical discard/replay behavior. No production timeout,
 resource expiry, clock or authority check was changed. The workspace package has
 a 10-minute test ceiling to accommodate all natural expiry waits. Both corrected
 create/write subcases passed under UID10001 with race detection in the initial
-focused regression; the full receipt is required for the final shared fixture.
+focused regression; the final shared fixture also passed the complete run.
 The final shared fixture also passed the focused queue, lost-ACK, root-replacement
 and live-lease create/write regressions with race detection under a one-CPU,
 UID10001 container before the complete run.
 
 ### Full receipt
 
-The final run records source SHA256 before/after, source commit/diff, container
-versions, stage JSONL, actual Chromium log, binary hashes, vet and a complete
-marker under a unique repository-local `.cache/issue17/` directory. A compact
-content-free receipt is added after the final run. No partial run closes the issue.
+Run: `.cache/issue17/20261020T141536Z-f0db000e`. The final entrypoint exited0
+and wrote `complete=PASS` only after every mandatory gate. It ran **146 top-level
+Go tests and 209 subtests with race detection**, plus all **10 actual Chromium
+scenarios**. There were **zero failed or skipped tests**. The command-only
+`apps/browser-bridge` package has no tests and is excluded from these counts.
+Targeted `go vet` passed. All19 specifically required integration tests passed.
+
+| Stage | Top-level passes | Subtest passes |
+| --- | ---: | ---: |
+| Resources and shared budgets | 33 | 11 |
+| Memory head CAS | 3 | 0 |
+| Child task control/budgets | 4 | 0 |
+| Guarded tab control/native protocol | 24 | 39 |
+| Broker resource/workspace admission | 21 | 16 |
+| Actual workspace and guarded runtime bootstrap | 3 | 21 |
+| Core owning context/candidate dispatch | 5 | 32 |
+| Owner HTTP controls | 3 | 0 |
+| Core guarded request suspension | 1 | 3 |
+| Workspace files, provenance, crash and owner recovery | 49 | 87 |
+
+Actual Chromium passed `valid`, `manual_input`, `manual_new_observation`,
+`dom_mutation`, `navigation`, `foreign_origin`, `foreign_host`, `lost_ack_restart`,
+`two_executors` and `installed_native`. The last case verifies Chrome's actual
+installed native manifest launch; the tests also assert real local recipient
+call counts, finite reservations and retained UNKNOWN/quarantine behavior.
+
+The source manifests before and after the run have the same SHA256:
+`799eb9df123e53f3a661cb78bb7a2f02460a52e91a434e43548175f5c4c53063`.
+The JSON receipt retains exact image IDs, binary/log hashes, stage test names and
+the five earlier incomplete/failed attempts. Raw logs, source manifests, source
+commit/diff, Chromium output and vet remain in the local run directory. Earlier
+attempts never received a final PASS and are not substituted for this run.
+
+One earlier full attempt exposed missing Unix socket provisioning in the new
+local runner: TCP bootstrap passed, Unix bootstrap denied its absent private
+parent. The runner now provisions an isolated UID10001/mode0700 tmpfs parent;
+both real transports passed. Runtime permission checks were unchanged. Only
+this invocation's temporary containers, network and executable volume were
+removed; the existing local PostgreSQL/Redis and primary checkout were preserved.
 
 Personal-account/browser installation, network-policy activation and production
 rollout remain separate operator actions. Same-tab UNKNOWN reconciliation is
