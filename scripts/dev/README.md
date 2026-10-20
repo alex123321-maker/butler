@@ -1,5 +1,16 @@
 # Butler Dev Scripts
 
+`pwsh -NoProfile -File scripts/dev/issue17-local.ps1` checks the eight resource
+arbitration criteria on this PC using Docker Desktop's Linux engine. It creates
+an internal network, unpublished disposable PostgreSQL and a private executable
+volume, then runs actual Broker/workspace subprocesses, race/vet and Chromium
+with the installed native host. It mounts no operator credentials and invokes
+no model or remote host. Go/npm/browser versions match the existing project
+pins. Caches and immutable per-run reports stay under repository `.cache/`;
+only this invocation's named containers/network/temporary volume are removed.
+The final gate requires named tests, all ten actual Chromium scenarios and an
+unchanged source manifest. See [acceptance](../../docs/testing/issue-17-current-main-local.md).
+
 `web-tools-stage1-lab.sh OWN_AGENT_ROOT unit|broker` validates the six web result
 fixes with race/vet, actual Broker gRPC and runtime subprocesses, PostgreSQL
 authorization/journal/budgets and controlled recipient fixtures. Requires a

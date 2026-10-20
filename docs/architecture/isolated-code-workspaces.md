@@ -2,9 +2,11 @@
 
 The kernel file storage part of issue #17 is implemented in `internal/workspace`
 and migration 060. The detailed API, storage and test contract is its
-[README](../../internal/workspace/README.md). Deployment and model access remain
-disabled until current owned resource leases, shared budgets, source/provenance
-policy and the Broker execution path are composed by the kernel.
+[README](../../internal/workspace/README.md). Deployment and model access require
+current owned resource leases, shared budgets, source/provenance policy and the
+Broker execution path to be composed by the kernel. The [current-main local
+acceptance](../testing/issue-17-current-main-local.md) checks that composition
+independently of operator deployment.
 
 Workspace identity is allocated by the kernel and bound immutably to owner,
 session, task and task/constraints revisions. Host paths and private lease proof
@@ -101,9 +103,9 @@ hashes, deletion anchor and enabled immutable-history triggers gate readiness.
 Compose shares only the private socket and token with Broker; artifact data and
 private temporary files remain exclusive to the runtime. Actual application tests
 cover loopback and Unix processes and scheduled physical source erasure.
-The overlay is explicit and has not been applied to main laba. Unknown writes
-remain quarantined until explicit owner discard; remaining integrated resource
-acceptance is separately required for full#17.
+The overlay is explicit; applying it remains a separate operator action. Unknown
+writes remain quarantined until explicit owner discard. The local issue17
+acceptance checks actual runtime/bootstrap, recovery and source/budget admission.
 
 Each production workspace Runtime now holds an exclusive Linux directory-inode
 `flock` for the lifetime of its fixed private root. A second participating process

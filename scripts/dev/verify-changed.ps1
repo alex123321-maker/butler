@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^scripts/dev/issue17-(local[.]ps1|tests[.]sh|browser[.]Dockerfile)$" {
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")
+      [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/issue17-local.ps1 (this PC only: isolated Linux PostgreSQL, actual Broker/workspace processes, Chromium/installed native host, mandatory no-skip race/vet gates; zero native inference)")
+      continue
+    }
 	"^(internal/browsercontrol/|migrations/086_|scripts/dev/server-browser-|apps/orchestrator/internal/(api/server_browser|app/server_browser|orchestrator/browser_owner)|web/(pages/browser.vue|tests/e2e/server-browser))" {
 	  [void]$specs.Add("docs/architecture/browser-session-contract.md")
 	  [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

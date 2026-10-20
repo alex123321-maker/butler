@@ -10,9 +10,12 @@ and spent budget. Neither owner Actor alone nor a model/RPC receipt string can
 reconcile. Lost erase acknowledgment permits observation only; another effect
 needs another explicit owner decision. No new lease or worker is minted.
 
-Status: implementation and lab acceptance in progress for issue17. Migration058
-and `internal/resources` are an additive kernel library; production tool/browser
-and isolated workspace adapters default disabled. Optional guarded single-tab
+Status: the resource, guarded-tab and workspace adapters are implemented for the
+supported Linux runtime. The [current-main local acceptance](../testing/issue-17-current-main-local.md)
+maps issue17's eight criteria to owning PostgreSQL, Broker, filesystem and actual
+Chromium checks. Operator enablement remains separate from kernel acceptance.
+Migration058 and `internal/resources` are an additive kernel library; production
+tool/browser and isolated workspace adapters default disabled. Optional guarded single-tab
 bootstrap is specified in [production composition](single-tab-production-composition.md);
 it joins the actual shared budget and permanent action claim on the same transaction.
 
@@ -57,9 +60,10 @@ record drift/unknown when filesystem effects occur but PostgreSQL persistence
 fails. Browser adapters must detect user interference. Memory facts still enter
 candidate/review queues; a lease cannot replace owner acceptance of preferences.
 
-Pending issue17 acceptance: production Broker/runtime wiring, actual workspace
-file conflicts, one user-tab executor with manual interference, task-tree stop
-of isolated executors and the combined root budget/memory-candidate scenarios.
+The local issue17 acceptance entrypoint exercises production Broker/runtime
+wiring, actual workspace conflicts and owner discard, one tab executor with
+manual interference, task-tree stop and shared root-budget/candidate admission.
+It uses synthetic resources without a personal browser profile or model calls.
 
 ## Optional controlled-browser dispatch boundary
 
@@ -108,9 +112,9 @@ See [composition and limitations](../../internal/resourceexec/README.md) and
 Migration063 adds the separately disabled [guarded user-tab boundary](single-tab-resource-boundary.md).
 Current selection, authority and finite budget remain necessary. Native-host and
 extension CAS/ACK quarantine supplement arbitration; real user/channel acceptance
-remains pending.
+and personal-account activation remain separate from the local kernel checks.
 
-## Current lab evidence
+## Historical foundation evidence
 
 Read-only source snapshot `20261011-071207-877` on `ssh laba` passed
 `go test -race -p1 -count=1 ./internal/resources` with actual isolated PostgreSQL
@@ -125,4 +129,5 @@ independent actual namespace/file evidence. Create and Write use committed claim
 resource update locks from their first check, and same-TX confirmation/consumption.
 The [combined audit](../ai/workspace-resource-acceptance.md) proves actual resource
 lease and file metadata behavior on PG/pool2; production Broker/runtime callbacks
-and full issue17 scenarios remain pending.
+and full issue17 scenarios were pending in that historical snapshot. The current
+local receipt above exercises the implemented production composition.

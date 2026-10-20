@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -336,8 +337,13 @@ func newDiscardFixture(t *testing.T, write bool) *discardFixture {
 		id = created.WorkspaceID
 	}
 	// The real admission takes this natural finite input deadline; no clock,
-	// resource expiry or production hook is replaced by the fixture.
-	if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET claim_expires_at=clock_timestamp()+interval '1500 milliseconds' WHERE input_id='wp-input'; CREATE FUNCTION fixture_recovery_confirmation_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture independent publication failure'; END $$; CREATE TRIGGER fixture_recovery_confirmation_failure BEFORE INSERT ON code_workspace_sources FOR EACH ROW EXECUTE FUNCTION fixture_recovery_confirmation_failure()`); err != nil {
+	// resource expiry or production hook is replaced by the fixture. Allow the
+	// actual runtime to reach the injected publication fault on slower hosts;
+	// expiry before that point would test admission denial instead of recovery.
+	if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET claim_expires_at=clock_timestamp()+interval '10 seconds' WHERE input_id='wp-input'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(f.ctx, `CREATE FUNCTION fixture_recovery_confirmation_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture independent publication failure'; END $$; CREATE TRIGGER fixture_recovery_confirmation_failure BEFORE INSERT ON code_workspace_sources FOR EACH ROW EXECUTE FUNCTION fixture_recovery_confirmation_failure()`); err != nil {
 		t.Fatal(err)
 	}
 	tool, args := CreateTool, `{}`
@@ -363,7 +369,12 @@ func newDiscardFixture(t *testing.T, write bool) *discardFixture {
 		t.Fatal("unknown outcome journal", err)
 	}
 	if _, err = os.Stat(filepath.Join(f.root, id, "private", "write-pending")); err != nil {
-		t.Fatal("physical pending checkpoint absent")
+		var remaining float64
+		var phase string
+		if err := f.pool.QueryRow(f.ctx, `SELECT EXTRACT(EPOCH FROM l.expires_at-clock_timestamp())::double precision,d.phase FROM code_workspace_dispatches d JOIN execution_resource_leases l ON l.lease_id=d.resource_lease_id WHERE ticket_id=$1`, ticket).Scan(&remaining, &phase); err != nil {
+			t.Fatal("physical pending checkpoint absent; lease observation unavailable", err)
+		}
+		t.Fatalf("physical pending checkpoint absent: status=%s error=%s phase=%s lease_remaining=%.3fs", result.GetStatus(), result.GetError().GetErrorClass(), phase, remaining)
 	}
 	if _, err = f.pool.Exec(f.ctx, `DROP TRIGGER fixture_recovery_confirmation_failure ON code_workspace_sources;DROP FUNCTION fixture_recovery_confirmation_failure(); UPDATE tasks SET status='cancelled',revision=revision+1 WHERE task_id='wp-task';UPDATE session_ownership SET lease_id='',fence_epoch=fence_epoch+1,expires_at=clock_timestamp() WHERE session_key='wp-session'`); err != nil {
 		t.Fatal(err)
@@ -377,7 +388,7 @@ func newDiscardFixture(t *testing.T, write bool) *discardFixture {
 }
 func (f *discardFixture) expired(t *testing.T) {
 	t.Helper()
-	deadline := time.Now().Add(3 * time.Second)
+	deadline := time.Now().Add(resources.MaxLeaseTTL + time.Second)
 	for {
 		var expired bool
 		if f.pool.QueryRow(f.ctx, `SELECT l.expires_at<=clock_timestamp() FROM code_workspace_dispatches d JOIN execution_resource_leases l ON l.lease_id=d.resource_lease_id WHERE ticket_id=$1`, f.ticket).Scan(&expired) != nil {
@@ -422,9 +433,31 @@ func (f *discardFixture) retained(t *testing.T, discarded bool) {
 func TestWorkspaceOwnerDiscardUnknownPhysicalCopyIntegration(t *testing.T) {
 	for _, write := range []bool{false, true} {
 		t.Run(map[bool]string{false: "create_rolled_back", true: "write_quarantined"}[write], func(t *testing.T) {
+			// This negative case needs an actually live lease after preparation.
+			// Select a finite input deadline before normal admission; never edit
+			// the resulting resource lease, substitute the clock or skip expiry.
 			f := newDiscardFixture(t, write)
-			if _, err := f.runtime.recovery.RequestDiscard(f.owner, f.req); err == nil {
-				t.Fatal("unexpired old lease accepted")
+			remaining := func() float64 {
+				t.Helper()
+				var seconds float64
+				if err := f.pool.QueryRow(f.ctx, `SELECT EXTRACT(EPOCH FROM l.expires_at-clock_timestamp())::double precision FROM code_workspace_dispatches d JOIN execution_resource_leases l ON l.lease_id=d.resource_lease_id WHERE ticket_id=$1`, f.ticket).Scan(&seconds); err != nil {
+					t.Fatal("old lease remaining-time observation", err)
+				}
+				return seconds
+			}
+			if seconds := remaining(); seconds < 5 {
+				t.Fatalf("fixture needs a live lease before recovery; remaining %.3fs", seconds)
+			}
+			if _, err := f.runtime.recovery.RequestDiscard(f.owner, f.req); !errors.Is(err, ErrRecoveryConflict) {
+				t.Fatal("live old lease did not return the exact recovery conflict", err)
+			}
+			if seconds := remaining(); seconds <= 0 {
+				t.Fatal("fixture lease expired during the negative assertion")
+			}
+			f.retained(t, false)
+			var decisions int
+			if err := f.pool.QueryRow(f.ctx, `SELECT count(*) FROM code_workspace_recoveries`).Scan(&decisions); err != nil || decisions != 0 {
+				t.Fatal("denied recovery published an owner intent", decisions, err)
 			}
 			status := f.request(t)
 			listed, err := f.runtime.recovery.ListForTask(f.owner, "wp-task")

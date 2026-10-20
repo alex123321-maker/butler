@@ -5,7 +5,8 @@ same PostgreSQL pool/transaction. It grants no tool, runtime, budget or credenti
 permission. Exact dispatch admission and the private gRPC file runtime are now
 implemented and tested through the actual Broker Server/router. Application
 bootstrap and operator/owning readiness are now composed under default-false
-operator configuration; owner reconciliation and main rollout remain pending;
+operator configuration. Discard-only owner reconciliation is implemented below;
+main rollout remains a separate operator action;
 the owning context projection and exact human approval in these tests are
 explicit fixtures. No model tools or production flags are enabled by this change.
 
@@ -111,9 +112,12 @@ independent Observer, source publication, a new run, delete/revoke erasure,
 failure after rename, immutable lineage, source-row wait expiry, owner/job scope
 shortcuts and lost erasure acknowledgement with a restarted runtime. Run
 `scripts/dev/workspace-lab.sh <isolated-agent-root> provenance` for this package
-first, or `all` to include storage and Catalog privacy regressions. All builds and
-tests run on laba. See the [acceptance audit](../../docs/ai/workspace-provenance-acceptance.md)
-for exact snapshots, event digests and remaining issue17 gates.
+first, or `all` to include storage and Catalog privacy regressions. Earlier builds
+and tests ran on laba. The current local alternative is
+`pwsh -NoProfile -File scripts/dev/issue17-local.ps1`: it uses isolated Linux
+containers on this PC, real PostgreSQL/files/private RPC, race detection and vet.
+See the [current-main acceptance](../../docs/testing/issue-17-current-main-local.md)
+and [historical provenance audit](../../docs/ai/workspace-provenance-acceptance.md).
 
 `RecoveryController` accepts discard-only controls from authenticated channel
 actors, with current workspace/resource/task CAS and stable delivery identity.
