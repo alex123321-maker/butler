@@ -142,15 +142,19 @@ exhaustion denies. Automatic uncertain-lane cleanup is absent. Future owner
 reconciliation must stop the old executor and independently verify its exact
 effect before clearing quarantine.
 
-Remaining for this component: production contracts/full startup and real owner
-channel composition without raw alternatives, exact account/network policy and
-owner effect reconciliation. The isolated Linux proof includes Chrome's actual
-installed native-manifest launch and owning selection; human interaction through
-the production Web/Telegram channel remains unmeasured. Windows private-file ACL
-support is unproven, a platform limitation rather than a Linux release criterion.
-Other supported issue17 gates are workspace/runtime callbacks, shared local
-weights and memory-conflict admission. Synthetic interference proves the mechanism
-and retains truthful uncertain outcomes; it does not finish the whole issue.
+Production contracts, guarded request suspension/recovery and private runtime
+bootstrap are implemented behind the separate operator gates described above.
+The [current-main local acceptance](../testing/issue-17-current-main-local.md)
+combines these boundaries with workspace recovery, shared budgets and candidate
+conflicts. It includes actual Chromium, the installed Linux native-host manifest,
+owning selection and synthetic manual/DOM interference. No model generation is
+needed to establish resource exclusion or stale-plan rejection.
+
+Personal-account installation, account/network policy and live human Web/Telegram
+interaction remain separate operator activation work. Same-tab uncertain effects
+remain quarantined; no automatic unblocking or recipient verification is claimed.
+Windows native-host private-file ACL support is unproven; the local Windows
+entrypoint tests the supported Linux runtime inside Docker Desktop.
 
 Primary references: Chrome [isolated worlds/main-frame injection](https://developer.chrome.com/docs/extensions/reference/api/scripting),
 [content isolation](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts),
