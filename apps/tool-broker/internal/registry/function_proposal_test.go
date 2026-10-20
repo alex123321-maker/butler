@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"errors"
 	"github.com/butler/butler/internal/functionproposal"
 	pb "github.com/butler/butler/internal/gen/localmodels/v1"
 	toolpb "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -17,6 +18,13 @@ func TestFunctionCandidatePassesOrdinaryBrokerSchemaOnly(t *testing.T) {
 		name := map[string]string{"check_system": "doctor.check_system", "check_database": "doctor.check_database", "read_webpage": "web.fetch"}[call.Name]
 		contract := r.toolsByName[name]
 		proposal, e := functionproposal.ToProposal(call, contract)
+		if call.Name == "check_system" {
+			// Doctor v2 added a current boundary; the frozen model mastered v1.
+			if contract.ContractRevision != "2" || !errors.Is(e, functionproposal.ErrDenied) {
+				t.Fatal("changed doctor contract implicitly mastered", e)
+			}
+			continue
+		}
 		if e != nil {
 			t.Fatal(e)
 		}

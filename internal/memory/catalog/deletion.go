@@ -59,12 +59,8 @@ func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expec
 		return Deletion{}, ErrStale
 	}
 	if action == "archive_expire" {
-		var pending bool
-		if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM mobile_messages m JOIN memory_sources n ON n.source_id=m.result_source_id WHERE m.source_id=$1 AND m.state='remembered' AND n.status='active' AND NOT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence e WHERE e.source_id=n.source_id))`, sourceID).Scan(&pending); e != nil {
+		if e = s.retainExpiredMobileNotesTx(ctx, tx, sourceID, own); e != nil {
 			return Deletion{}, e
-		}
-		if pending {
-			return Deletion{}, ErrDenied
 		}
 	}
 	records, e := s.manifest.Load(ctx)
@@ -124,6 +120,11 @@ func (s *Store) Reconcile(ctx context.Context) error {
 		}
 		if own != "" && hash(own) != r.OwnerHash {
 			return ErrDenied
+		}
+		if r.Action == "archive_expire" && own != "" {
+			if e = s.retainExpiredMobileNotesTx(ctx, tx, r.SourceID, own); e != nil {
+				return e
+			}
 		}
 		if e = s.applyDeletionTx(ctx, tx, r, own); e != nil {
 			return e

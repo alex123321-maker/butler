@@ -105,15 +105,6 @@ func TestRetainedMobileCurrentOriginalGuardsIntegration(t *testing.T) {
 
 func TestRetainedMobileBackfillAndIndependentForgetIntegration(t *testing.T) {
 	s, ctx, raw, note := retainedGuardFixture(t, false)
-	if _, err := s.Pool.Exec(ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '361 days'`); err != nil {
-		t.Fatal(err)
-	}
-	if err := s.Cleanup(context.Background()); !errors.Is(err, catalog.ErrDenied) {
-		t.Fatal("unconverted observation silently erased", err)
-	}
-	if err := s.Catalog.CheckRestore(ctx); err != nil {
-		t.Fatal("rejected expiry poisoned manifest", err)
-	}
 	tx, err := s.Pool.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -138,10 +129,55 @@ func TestRetainedMobileBackfillAndIndependentForgetIntegration(t *testing.T) {
 	if _, err = s.Catalog.Get(ctx, raw.ID); err != nil {
 		t.Fatal("independent note forgetting erased raw archive", err)
 	}
+	if _, err = s.Pool.Exec(ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '361 days'`); err != nil {
+		t.Fatal(err)
+	}
 	if err = s.Cleanup(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = s.Catalog.Get(ctx, note.ID); err == nil {
 		t.Fatal("expiry resurrected independently forgotten fact")
+	}
+}
+
+func TestRetainedMobileExpiryBackfillsWithoutIndexPolicyIntegration(t *testing.T) {
+	for _, bad := range []bool{false, true} {
+		t.Run(map[bool]string{false: "remembered", true: "bad_original_proof"}[bad], func(t *testing.T) {
+			s, ctx, raw, note := retainedGuardFixture(t, false)
+			if bad {
+				if _, err := s.Pool.Exec(ctx, `UPDATE memory_source_dependencies SET parent_revision=999 WHERE child_source_id=$1`, note.ID); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if _, err := s.Pool.Exec(ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '361 days'`); err != nil {
+				t.Fatal(err)
+			}
+			err := s.Cleanup(context.Background())
+			if bad {
+				if !errors.Is(err, catalog.ErrDenied) {
+					t.Fatal("invalid proof admitted", err)
+				}
+				if err = s.Catalog.CheckRestore(ctx); err != nil {
+					t.Fatal("rejected expiry poisoned anchor", err)
+				}
+				if _, err = s.Catalog.Get(ctx, raw.ID); err != nil {
+					t.Fatal("invalid proof silently erased original", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = s.Catalog.Get(ctx, note.ID); err != nil {
+				t.Fatal("backfill lost remembered note", err)
+			}
+			if _, err = s.Catalog.Get(ctx, raw.ID); err == nil {
+				t.Fatal("expired original retained")
+			}
+			var n int
+			if err = s.Pool.QueryRow(ctx, `SELECT count(*) FROM memory_retained_mobile_evidence`).Scan(&n); err != nil || n != 1 {
+				t.Fatal("evidence not retained", n, err)
+			}
+		})
 	}
 }

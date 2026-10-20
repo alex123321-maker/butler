@@ -5,8 +5,15 @@ import (
 	"encoding/json"
 
 	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/security/content"
 	"github.com/jackc/pgx/v5"
 )
+
+type mobileNoteLocator struct {
+	Adapter  string    `json:"adapter"`
+	Message  string    `json:"message_id"`
+	Original SourceRef `json:"original_source"`
+}
 
 // RetainMobileNoteTx converts a copied-body dependency into an immutable typed
 // privacy edge. Only an existing message decision or its invisible publication
@@ -26,11 +33,7 @@ func (s *Store) RetainMobileNoteTx(ctx context.Context, tx pgx.Tx, note SourceRe
 	if saved.ID == "" {
 		return ErrInvalid
 	}
-	var loc struct {
-		Adapter  string    `json:"adapter"`
-		Message  string    `json:"message_id"`
-		Original SourceRef `json:"original_source"`
-	}
+	var loc mobileNoteLocator
 	if json.Unmarshal(saved.Locator, &loc) != nil || loc.Adapter != "android_message_note_v1" || loc.Message == "" {
 		return ErrInvalid
 	}
@@ -42,17 +45,32 @@ func (s *Store) RetainMobileNoteTx(ctx context.Context, tx pgx.Tx, note SourceRe
 	if err != nil {
 		return err
 	}
-	if len(originals) != 1 || originals[0].OwnerID != saved.OwnerID || originals[0].Kind != "document" {
+	if len(originals) != 1 {
+		return ErrDenied
+	}
+	if err = s.retainMobileEvidenceTx(ctx, tx, saved, originals[0], loc); err != nil {
+		return err
+	}
+	_, err = s.AccessTx(ctx, tx, []SourceRef{note}, "memory_ingest")
+	return err
+}
+
+// The normal caller has current Catalog access. Expiry/restore callers instead
+// prove an existing remembered decision under the serialized erasure transaction;
+// this helper never publishes model inputs, accepts claims or grants authority.
+func (s *Store) retainMobileEvidenceTx(ctx context.Context, tx pgx.Tx, saved, original Source, loc mobileNoteLocator) error {
+	note := SourceRef{ID: saved.ID, Revision: saved.Revision, AccessRevision: saved.AccessRevision, Hash: saved.Hash}
+	if original.OwnerID != saved.OwnerID || original.Kind != "document" || saved.Kind != "model_candidate" || saved.Status != "active" || original.Status != "active" || original.Origin.Sensitivity == content.Secret || saved.Origin.Sensitivity == content.Secret || saved.ScopeType != "user" || saved.ScopeID != saved.OwnerID || original.ScopeType != "user" || original.ScopeID != saved.OwnerID || loc.Original != (SourceRef{ID: original.ID, Revision: original.Revision, AccessRevision: original.AccessRevision, Hash: original.Hash}) {
 		return ErrDenied
 	}
 	var adapter struct {
 		Adapter string `json:"adapter"`
 	}
-	if json.Unmarshal(originals[0].Locator, &adapter) != nil || adapter.Adapter != "android_notification_v1" {
+	if json.Unmarshal(original.Locator, &adapter) != nil || adapter.Adapter != "android_notification_v1" {
 		return ErrDenied
 	}
 	var part int
-	if err = tx.QueryRow(ctx, `SELECT part FROM mobile_messages WHERE message_id=$1 AND source_id=$2 AND owner_id=$3 AND (state='pending' OR state='remembered' AND result_source_id=$4) FOR SHARE`, loc.Message, loc.Original.ID, saved.OwnerID, note.ID).Scan(&part); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT part FROM mobile_messages WHERE message_id=$1 AND source_id=$2 AND owner_id=$3 AND (state='pending' OR state='remembered' AND result_source_id=$4) FOR SHARE`, loc.Message, loc.Original.ID, saved.OwnerID, note.ID).Scan(&part); err != nil {
 		return ErrDenied
 	}
 	var event struct {
@@ -70,7 +88,7 @@ func (s *Store) RetainMobileNoteTx(ctx context.Context, tx pgx.Tx, note SourceRe
 			} `json:"messages"`
 		} `json:"payload"`
 	}
-	if json.Unmarshal([]byte(originals[0].Body), &event) != nil {
+	if json.Unmarshal([]byte(original.Body), &event) != nil {
 		return ErrInvalid
 	}
 	text, sender, at := event.Payload.BigText, event.Payload.Title, event.Posted
@@ -102,20 +120,70 @@ func (s *Store) RetainMobileNoteTx(ctx context.Context, tx pgx.Tx, note SourceRe
 	evidence, _ := json.Marshal(map[string]any{"original_source": loc.Original, "message_id": loc.Message, "package": clip(event.Package), "sender": clip(sender), "conversation": clip(event.Payload.Conversation), "posted_at_epoch_ms": at, "quote": sanitize.MaskCredentials(string(quote)), "truncated": truncated, "retention": "indefinite_until_explicit_forget", "trust": "DATA"})
 	// A canonical ordinary edge must exist before conversion; no orphan adoption.
 	var linked bool
-	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_source_dependencies WHERE child_source_id=$1 AND parent_source_id=$2 AND parent_revision=$3)`, note.ID, loc.Original.ID, loc.Original.Revision).Scan(&linked); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT count(*)=1 AND COALESCE(bool_and(parent_source_id=$2 AND parent_revision=$3),FALSE) FROM memory_source_dependencies WHERE child_source_id=$1`, note.ID, loc.Original.ID, loc.Original.Revision).Scan(&linked); err != nil {
 		return err
 	}
 	if !linked {
 		return ErrDenied
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO memory_retained_mobile_evidence(source_id,original_source_id,original_revision,original_access_revision,original_hash,message_id,evidence) VALUES($1,$2,$3,$4,$5,$6,$7)`, note.ID, loc.Original.ID, loc.Original.Revision, loc.Original.AccessRevision, loc.Original.Hash, loc.Message, evidence); err != nil {
+	if _, err := tx.Exec(ctx, `INSERT INTO memory_retained_mobile_evidence(source_id,original_source_id,original_revision,original_access_revision,original_hash,message_id,evidence) VALUES($1,$2,$3,$4,$5,$6,$7)`, note.ID, loc.Original.ID, loc.Original.Revision, loc.Original.AccessRevision, loc.Original.Hash, loc.Message, evidence); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `DELETE FROM memory_source_dependencies WHERE child_source_id=$1 AND parent_source_id=$2`, note.ID, loc.Original.ID); err != nil {
+	if _, err := tx.Exec(ctx, `DELETE FROM memory_source_dependencies WHERE child_source_id=$1 AND parent_source_id=$2`, note.ID, loc.Original.ID); err != nil {
 		return err
 	}
-	_, err = s.AccessTx(ctx, tx, []SourceRef{note}, "memory_ingest")
-	return err
+	return nil
+}
+
+// An archive tombstone must also replay against a backup made before evidence
+// migration. Preserve only its already-committed remembered decisions, while the
+// original body is still available. No owner actor or access bypass is exported.
+// Callers hold the deletion advisory fence and current device policy (cleanup),
+// or the independent operator manifest/restore fence (reconciliation).
+func (s *Store) retainExpiredMobileNotesTx(ctx context.Context, tx pgx.Tx, sourceID, own string) error {
+	rows, err := tx.Query(ctx, `SELECT n.source_id FROM mobile_messages m JOIN memory_sources n ON n.source_id=m.result_source_id WHERE m.source_id=$1 AND m.owner_id=$2 AND m.state='remembered' AND n.owner_id=$2 AND n.status='active' AND NOT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence e WHERE e.source_id=n.source_id) ORDER BY n.source_id`, sourceID, own)
+	if err != nil {
+		return err
+	}
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			return err
+		}
+		ids = append(ids, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil || len(ids) == 0 {
+		return err
+	}
+	original, err := getSourceTx(ctx, tx, sourceID, false)
+	if err != nil || original.OwnerID != own {
+		return ErrDenied
+	}
+	for _, id := range ids {
+		note, err := getSourceTx(ctx, tx, id, true)
+		if err != nil {
+			return err
+		}
+		var exists bool
+		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_retained_mobile_evidence WHERE source_id=$1)`, id).Scan(&exists); err != nil {
+			return err
+		}
+		if exists {
+			continue
+		}
+		var loc mobileNoteLocator
+		if json.Unmarshal(note.Locator, &loc) != nil || loc.Adapter != "android_message_note_v1" || loc.Original.ID != sourceID {
+			return ErrDenied
+		}
+		if err = s.retainMobileEvidenceTx(ctx, tx, note, original, loc); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RetainedEvidenceTx releases only after the same current Catalog guard as body

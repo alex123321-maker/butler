@@ -98,9 +98,8 @@ func TestRetainedMobileActualBackupPhase(t *testing.T) {
 			t.Fatal(e)
 		}
 		ref := catalog.SourceRef{ID: note.ID, Revision: note.Revision, AccessRevision: note.AccessRevision, Hash: note.Hash}
-		if e = s.Catalog.RetainMobileNoteTx(ctx, tx, ref); e != nil {
-			t.Fatal(e)
-		}
+		// The actual dump deliberately predates conversion of this older note.
+		// Expiry replay must reconstruct evidence before erasing its raw parent.
 		if _, e = s.Catalog.PublishFragmentsTx(ctx, tx, ref, []catalog.Fragment{{Key: "note", Text: note.Body, Locator: loc}}); e != nil {
 			t.Fatal(e)
 		}

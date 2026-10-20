@@ -100,8 +100,13 @@ does not erase its original or sibling notes. Manifest reconciliation after a
 database restore preserves that distinction and prevents resurrection.
 
 The authorized local scanner backfills older notes before fragment repair, with
-the original still readable. Expiry refuses to erase originals with unconverted
-active remembered notes; missing authority/proof requires repair, not silent loss.
+the original still readable. Expiry and operator manifest replay also preserve
+already-committed remembered decisions from older backups, before raw erasure.
+This narrow erasure-only seam validates the exact same owner/user scope, original
+revision/hash/access, private source, remembered message binding and single
+ordinary dependency; it grants no run/model access and accepts no new fact.
+It needs no active indexing policy or fabricated owner actor. Invalid/missing
+original proof fails before erasure, requiring repair rather than silent loss.
 Housekeeping protects class rows backed by retained evidence from age/count
 pruning. Explicit forgetting remains available through owner Catalog deletion.
 Migration088 refuses rollback while retained evidence or archive tombstones exist.
