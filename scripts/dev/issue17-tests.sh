@@ -24,8 +24,11 @@ export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_POSTGRES_URL"
 
 run_tests() {
   local label=$1; shift
+  local timeout=5m
+  # Recovery cases wait for each real finite lease to expire, without clock edits.
+  [[ "$label" != workspaces ]] || timeout=10m
   echo "Running $label"
-  if ! go test -json -race -p 1 -count=1 -timeout=5m "$@" > "/reports/$label.jsonl" 2> "/reports/$label.stderr"; then
+  if ! go test -json -race -p 1 -count=1 -timeout="$timeout" "$@" > "/reports/$label.jsonl" 2> "/reports/$label.stderr"; then
     grep -E '"Action":"(build-output|build-fail|fail)"|"OutputType":"error"' "/reports/$label.jsonl" || true
     tail -50 "/reports/$label.jsonl"
     cat "/reports/$label.stderr"
@@ -40,7 +43,6 @@ run_tests() {
 
 if [[ "$phase" == core ]]; then
   run_tests resources ./internal/resources ./internal/resourceexec ./internal/budget
-  run_tests workspaces ./internal/workspace ./internal/workspaceexec
   run_tests memory-head -run '^Test(SourceDuplicateAndConflictingPreferencesIntegration|ConcurrentExplicitSupersessionIntegration|ExtractionConcurrentWorkerCandidatesNeedOwnerHeadCASIntegration)$' ./internal/memory/catalog
   run_tests child-budget -run '^Test(ChildAdmissionCannotResetRootBudgetIntegration|ControlStopPropagatesChildrenAndRetainsExternalObservations|ControlTwoChannelsCASAndOwnerProof|HTTPControlRequiresProofAndCurrentRevisionIntegration)$' ./apps/orchestrator/internal/task
   run_tests tab-control ./internal/singletabcontrol ./apps/orchestrator/internal/singletab ./apps/browser-bridge/...
@@ -61,6 +63,8 @@ if [[ "$phase" == core ]]; then
   run_tests core-controls -run '^Test(MemoryCandidate|GuardedTabRequestDispatchedIntegration|WorkspaceOwningContextPinsCurrentInputIntegration)' ./apps/orchestrator/internal/app
   run_tests owner-controls -run '^Test(OwnerWorkspace|GuardedTab)' ./apps/orchestrator/internal/api
   run_tests core-suspension -run '^TestGuardedTabRequestCoreSuspendsBeforeGenericResult$' ./apps/orchestrator/internal/orchestrator
+  # Check application composition before the longer natural-expiry recovery suite.
+  run_tests workspaces ./internal/workspace ./internal/workspaceexec
 
   go vet -p 1 ./internal/resources ./internal/resourceexec ./internal/budget ./internal/workspace ./internal/workspaceexec ./internal/singletabcontrol ./apps/browser-bridge/... ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/app ./apps/orchestrator/internal/api > /reports/vet.log 2>&1
   # Static binaries run in the existing production Playwright base (older libc).

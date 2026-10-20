@@ -54,14 +54,25 @@ measured **-0.047 seconds remaining before RequestDiscard** on the failing creat
 case: accepting that already-expired lease was correct behavior. The original
 failure and diagnostic remain retained separately.
 
-Only this negative test now selects a finite 10s input deadline before normal
-admission. It proves at least 5s remaining, requires the exact recovery-conflict
+The shared discard fixture now selects a finite 10s input deadline before normal
+admission. A later full run also exposed three setup failures with the original
+1500ms deadline: no physical pending checkpoint had been reached. Focused repeats
+did not reproduce those failures; their original failed full run remains retained.
+The longer finite fixture deadline allows the real runtime to reach the injected
+publication fault before expiry. Missing physical state still fails with dispatch
+phase/error class and remaining-lease diagnostics, never a retry or skip.
+
+The negative recovery test proves at least 5s remaining, requires the exact recovery-conflict
 error while the lease is still live, and checks unchanged UNKNOWN/version/fence/
 spending with no published recovery intent. It then waits for actual PostgreSQL
 expiry and proves physical discard/replay behavior. No production timeout,
-resource expiry, clock or authority check was changed. Other fixtures retain
-their 1500ms input deadline. Both corrected create/write subcases passed under
-UID10001 with race detection in the focused regression.
+resource expiry, clock or authority check was changed. The workspace package has
+a 10-minute test ceiling to accommodate all natural expiry waits. Both corrected
+create/write subcases passed under UID10001 with race detection in the initial
+focused regression; the full receipt is required for the final shared fixture.
+The final shared fixture also passed the focused queue, lost-ACK, root-replacement
+and live-lease create/write regressions with race detection under a one-CPU,
+UID10001 container before the complete run.
 
 ### Full receipt
 
