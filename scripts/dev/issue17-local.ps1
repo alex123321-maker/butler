@@ -54,7 +54,9 @@ try {
   & docker exec $name psql -v ON_ERROR_STOP=1 -U postgres -d butler_issue17_test -c 'CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public' | Out-Null
   Assert-LastExitCode -Action 'Initialize pgvector before independent test schemas'
   $dsn = 'postgres://postgres@issue17-postgres:5432/butler_issue17_test?sslmode=disable'
-  & docker run --rm --user 10001:10001 --network "$name-net" --memory 3g --cpus 4 --pids-limit 256 -v "$($state.RepoRoot):/src:ro" -v "$($state.CacheRoot):/src/.cache" -v "${report}:/reports" -v "${name}-binaries:/proof" -e HOME=/tmp -e "BUTLER_TEST_POSTGRES_URL=$dsn" -w /src golang:1.27.2 bash scripts/dev/issue17-tests.sh core
+  # The production Unix transport requires a private operator-provisioned parent.
+  # Keep it on this disposable container's tmpfs, owned by the actual test UID.
+  & docker run --rm --user 10001:10001 --network "$name-net" --memory 3g --cpus 4 --pids-limit 256 --tmpfs /run/butler-workspace:rw,nosuid,nodev,noexec,uid=10001,gid=10001,mode=0700 -v "$($state.RepoRoot):/src:ro" -v "$($state.CacheRoot):/src/.cache" -v "${report}:/reports" -v "${name}-binaries:/proof" -e HOME=/tmp -e "BUTLER_TEST_POSTGRES_URL=$dsn" -w /src golang:1.27.2 bash scripts/dev/issue17-tests.sh core
   Assert-LastExitCode -Action 'Current-source resource/workspace/Broker/owner acceptance'
   & docker run --rm --user 10001:10001 --network "$name-net" --memory 1536m --cpus 4 --pids-limit 256 --security-opt no-new-privileges:true -v "$($state.RepoRoot):/src:ro" -v "${report}:/reports" -v "${name}-binaries:/proof:ro" -e "BUTLER_TEST_POSTGRES_URL=$dsn" -e "BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=$dsn" --entrypoint bash butler-issue17-browser:1.52.0 /src/scripts/dev/issue17-tests.sh browser
   Assert-LastExitCode -Action 'Actual local Chromium/native-host arbitration acceptance'

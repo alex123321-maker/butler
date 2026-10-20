@@ -112,7 +112,7 @@ See [composition and limitations](../../internal/resourceexec/README.md) and
 Migration063 adds the separately disabled [guarded user-tab boundary](single-tab-resource-boundary.md).
 Current selection, authority and finite budget remain necessary. Native-host and
 extension CAS/ACK quarantine supplement arbitration; real user/channel acceptance
-remains pending.
+and personal-account activation remain separate from the local kernel checks.
 
 ## Historical foundation evidence
 
@@ -129,4 +129,5 @@ independent actual namespace/file evidence. Create and Write use committed claim
 resource update locks from their first check, and same-TX confirmation/consumption.
 The [combined audit](../ai/workspace-resource-acceptance.md) proves actual resource
 lease and file metadata behavior on PG/pool2; production Broker/runtime callbacks
-and full issue17 scenarios remain pending.
+and full issue17 scenarios were pending in that historical snapshot. The current
+local receipt above exercises the implemented production composition.

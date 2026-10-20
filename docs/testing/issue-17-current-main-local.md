@@ -32,6 +32,8 @@ The entrypoint uses the existing Go 1.27.2, pgvector PostgreSQL 17 and Playwrigh
 1.52.0 pins. Its isolated internal test network publishes no host ports. Fixture
 private roots, sockets, tokens and browser profiles live inside Linux container
 temporary directories. Existing local services and databases are not touched.
+The fixed production Unix socket parent is provisioned on container-private
+tmpfs with mode0700 and UID/GID10001, matching the non-root runtime requirement.
 Dependencies/image preparation uses the network; acceptance has no internet route.
 
 Every selected test must run; any test skip/failure denies the final marker.
