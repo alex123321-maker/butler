@@ -40,6 +40,14 @@ const sse = (events: RunEvent[]) =>
     .map((e) => `event: ${e.event_type}\ndata: ${JSON.stringify(e)}\n\n`)
     .join('') + 'event: stream_end\ndata: {}\n\n'
 
+test('error summary masks the same credentials as expanded event data', () => {
+  const rows = runLogRows('run-mind', [], [event('run_error', {
+    error_message: 'Upstream rejected Bearer SYNTHETIC_PRIVATE_TOKEN',
+  })], [])
+  expect(rows[0].text).toContain('Bearer ••••')
+  expect(JSON.stringify(rows)).not.toContain('SYNTHETIC_PRIVATE_TOKEN')
+})
+
 test('log correlates call IDs, preserves repeated calls and excludes another run', () => {
   const rows = runLogRows(
     'run-mind',

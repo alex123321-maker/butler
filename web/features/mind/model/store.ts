@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import type { TranscriptToolCall } from '~/composables/useApi'
+import { useCommunicationFeed } from './communications'
 import {
   calendarTasks,
   isWorking,
@@ -85,6 +86,7 @@ export const useMind = defineStore('mind', () => {
     memorySearch = 0
   let poll: ReturnType<typeof setTimeout> | undefined,
     receiptPoll: ReturnType<typeof setTimeout> | undefined
+  const communication = useCommunicationFeed(epoch, privateRead)
   const selectedTask = computed(
     () => tasks.value.find((task) => task.task_id === selectedId.value) || null,
   )
@@ -97,7 +99,7 @@ export const useMind = defineStore('mind', () => {
       '',
   )
   const working = computed(() => isWorking(selectedTask.value))
-  const conversation = computed(() => messages.value.filter(publicMessage))
+  const conversation = computed(() => messages.value.filter(message => publicMessage(message) && (!communication.communicationProfile.value || message.kind !== 'publication')))
   const calendar = computed(() => {
     const scheduled = (initiatives.value?.schedules || [])
       .filter((s) => s.enabled && s.next_at)
@@ -190,11 +192,23 @@ export const useMind = defineStore('mind', () => {
     busy.value = false
     loadingTask.value = false
     connectionError.value = ''
+    communication.clearCommunications()
     noticeHidden.value = []
     selectedNotice.value = null
     if (panel.value !== 'settings') panel.value = ''
   }
   watch(token, resetPrivate, { flush: 'sync' })
+  async function privateRead(path: string, signal?: AbortSignal): Promise<Response> {
+    const stamp = epoch.value, proof = token.value.trim()
+    if (!current(stamp)) throw new Error('owner_changed')
+    const response = await fetch(`${base}${path}`, {
+      headers: { Authorization: `Bearer ${proof}` },
+      signal: signal ? AbortSignal.any([controller.signal, signal]) : controller.signal,
+      cache: 'no-store',
+    })
+    if (!current(stamp)) throw new Error('owner_changed')
+    return response
+  }
   async function request<T>(
     path: string,
     body?: unknown,
@@ -241,6 +255,7 @@ export const useMind = defineStore('mind', () => {
       if (access.authenticated !== true) throw new Error('owner_denied')
       if (!current(stamp)) return
       connected.value = true
+      await communication.connectCommunications()
       await Promise.allSettled([loadMemory(''), refresh()])
       schedulePoll()
     } catch {
@@ -529,19 +544,25 @@ export const useMind = defineStore('mind', () => {
     if (
       sending.value ||
       !connected.value ||
+      communication.communicationBlocked.value ||
       (!retry && (!draft.value.trim() || pendingIngress.value))
     )
       return
     const stamp = epoch.value
     if (!sessionKey.value) sessionKey.value = `web:owner:${newID()}`
     const delivery = newID()
+    const profile = communication.communicationProfile.value
+    const reply = communication.replyPublication.value
     const pending = retry
       ? pendingIngress.value
       : {
-          path: '/api/v1/events',
+          path: profile ? reply ? '/api/v3/communications/replies' : '/api/v3/communications/messages' : '/api/v1/events',
           delivery,
           epoch: stamp,
-          body: {
+          body: profile ? reply ? {
+            binding_id: profile.binding_id, binding_version: profile.binding_version,
+            publication_ref: reply.publication_ref, text: draft.value.trim(),
+          } : { text: draft.value.trim() } : {
             event_id: delivery,
             idempotency_key: delivery,
             event_type: 'user_message',
@@ -560,15 +581,20 @@ export const useMind = defineStore('mind', () => {
           accepted?: boolean
           receipt_status?: string
           assistant_response?: string
+          input_ref?: string
+          session_ref?: string
         }
       >(pending.path, pending.body, { delivery: pending.delivery })
       if (!current(stamp)) return
+      accepted.input_id ||= accepted.input_ref || ''
+      accepted.session_key ||= accepted.session_ref || ''
       receipt.value = {
         ...accepted,
         status: accepted.receipt_status || accepted.status || 'queued',
       }
       pendingIngress.value = null
       draft.value = ''
+      communication.replyPublication.value = null
       if (accepted.task_id) await selectTask(accepted.task_id)
       if (accepted.input_id && current(stamp)) pollReceipt(accepted.input_id)
       await refresh()
@@ -634,6 +660,8 @@ export const useMind = defineStore('mind', () => {
     { flush: 'sync' },
   )
   return {
+    ...communication,
+    privateRead,
     token,
     connected,
     connecting,

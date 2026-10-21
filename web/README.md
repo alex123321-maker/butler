@@ -26,6 +26,16 @@ There is no iframe, second application or additional runtime dependency.
 - Conversation excludes internal attempt finals. Input uses durable /api/v1/events.
   Acceptance, processing, verification, external effects and delivery stay separate.
   Uncertain ingress/task control retain their exact body/delivery ID for retry.
+- An explicitly composed communication profile reads durable canonical
+  publications, owner inputs and independent Web/Telegram per-part outcomes.
+  Photo captions and complete typed reports use escaped text, scrollable tables,
+  authenticated media reads and SHA-256-checked downloads. Reply pins a selected
+  publication/binding/version; new conversations do not infer a Task from the
+  selected panel. Lost ACK repeats the exact body/delivery identity.
+  Authenticated fetch SSE carries cursor invalidation only; reconnect replaces
+  loaded REST pages and removes revoked content/media URLs. An unknown profile
+  blocks send; only an explicit legacy 404 retains /api/v1/events. Ordinary
+  startup has no communication profile enabled.
 - Owner access lives in page memory. Changing it aborts requests, destroys private
   panels/SSE and clears records, drafts and receipts. Only motion preference is
   persisted. Private actions continue to require current backend authorization.
@@ -65,6 +75,7 @@ Recorded attempts show public conversation and expandable stored tool calls.
 From web/: npm ci, npm run dev; or npm run build and npm run preview.
 BUTLER_API_BASE_URL sets the endpoint (default http://localhost:8080). Existing
 Docker/Nitro runtime configuration remains. Keep caches under repository .cache/.
+BUTLER_WEB_TEST_PORT selects an isolated Playwright preview port (default4173).
 
 Run npm run typecheck, npm run lint and npm run test:e2e. Chromium cases use
 synthetic intercepted fixtures to check layout, owner/source changes, durable

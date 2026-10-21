@@ -54,3 +54,21 @@ immutable persisted scope limits are never replaced by another process's default
 The native fixture selects autonomy mode 2 and resolves only its exact synthetic
 approval requests through the normal approval service; that does not qualify a
 Telegram approval UI or change any production autonomy default.
+# Optional isolated Web composition
+
+The same private profile may set WebBindingID and WebBindingVersion to compose
+the owner Web feed, full report/media renderer protocol, explicit replies and
+new conversations. The configured owner-control identity must match OwnerID.
+New Web targets are available without a send/read ACK; pending history is not
+adopted. The ordinary command/main remains off.
+
+`communication-agent-native-lab.sh ... application` is an explicit, bounded
+acceptance of actual App.Run and the separate communication Broker command.
+It uses a new test schema, Redis, fixed owner/bot and encrypted canonical auth
+through a programmatic refresh-only store reference. JSON cannot inject that
+store. Before workers start, only this dedicated test bot's previous backlog is
+acknowledged without execution. Native inputs then require real owner HTTP or
+Telegram ingress. Readiness alone spends no model turn. It stops on its private
+operator stop file or at eight minutes; twelve owner-day/eight conversation
+turns remain finite. The operator must retain all logs/accounting, including
+failures, and separately verify client artifacts. No production service restarts.

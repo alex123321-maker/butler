@@ -24,6 +24,7 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/providerauth"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -36,6 +37,13 @@ type TelegramCommunicationOptions struct {
 	BotAPIProxyFile                            string
 	ChatID                                     int64
 	BindingVersion                             int64
+	// Web remains opt-in even in this isolated composition. It never enables
+	// historical delivery or changes the ordinary product startup.
+	WebBindingID      string
+	WebBindingVersion int64
+	// Trusted programmatic reference for a lab that renews the canonical auth
+	// row. JSON/operator profiles cannot provide a store or credential material.
+	ProviderAuthStore providerauth.SecretStore `json:"-"`
 	// Export of private owner material to this precise private bot binding is
 	// an explicit operator decision. Public-only is the zero/default policy.
 	AllowPrivate bool
@@ -47,6 +55,7 @@ type telegramCommunication struct {
 	binding  telegramrich.OwnerBinding
 	policy   telegramExportPolicy
 	controls *task.Controller
+	web      *webCommunication
 }
 
 type telegramExportPolicy struct {
@@ -58,11 +67,11 @@ type telegramExportPolicy struct {
 }
 
 func (p telegramExportPolicy) check(ctx context.Context, tx pgx.Tx, run string, b communication.Binding, _ communicationcontrol.Args) error {
-	if p.catalog == nil || p.sourceGuard == nil || b.ID != p.binding.ID || b.Version != p.binding.Version || b.Channel != "telegram" || b.Recipient != p.binding.Recipient {
+	if p.catalog == nil || p.sourceGuard == nil || b.ID != p.binding.ID || b.Version != p.binding.Version || b.Channel != p.binding.Channel || b.Recipient != p.binding.Recipient {
 		return communication.ErrDenied
 	}
 	var owner string
-	if err := tx.QueryRow(ctx, `SELECT s.user_id FROM runs r JOIN sessions s USING(session_key) JOIN communication_bindings b ON b.binding_id=$2 AND b.version=$3 AND b.owner_id=s.user_id AND b.channel='telegram' AND b.recipient=$4 AND b.enabled AND b.verified WHERE r.run_id=$1 FOR SHARE OF s,b`, run, b.ID, b.Version, b.Recipient).Scan(&owner); err != nil || owner != p.owner {
+	if err := tx.QueryRow(ctx, `SELECT s.user_id FROM runs r JOIN sessions s USING(session_key) JOIN communication_bindings b ON b.binding_id=$2 AND b.version=$3 AND b.owner_id=s.user_id AND b.channel=$5 AND b.recipient=$4 AND b.enabled AND b.verified WHERE r.run_id=$1 FOR SHARE OF s,b`, run, b.ID, b.Version, b.Recipient, b.Channel).Scan(&owner); err != nil || owner != p.owner {
 		return communication.ErrDenied
 	}
 	if err := p.sourceGuard(ctx, tx, run); err != nil {
@@ -92,7 +101,7 @@ func (p telegramExportPolicy) check(ctx context.Context, tx pgx.Tx, run string, 
 	}
 	// Channel export reads through the Catalog's current revision/deletion and
 	// complete dependency graph checks, without pretending a delivery is a run.
-	actor := owneridentity.Actor{OwnerID: p.owner, Channel: "telegram", SessionKey: b.Recipient, DeliveryID: "communication-export"}
+	actor := owneridentity.Actor{OwnerID: p.owner, Channel: b.Channel, SessionKey: b.Recipient, DeliveryID: "communication-export"}
 	sources, err := p.catalog.AccessTx(owneridentity.WithActor(ctx, actor), tx, refs, "communication_export")
 	if err != nil {
 		return err
@@ -168,6 +177,9 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	}
 	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy}
 	c.installInputHooks()
+	if err = c.installWeb(ctx, o, guard); err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 
@@ -217,21 +229,23 @@ func (c *telegramCommunication) admit(ctx context.Context, run string) error {
 	// Other sessions never acquire the new profile just because the process can
 	// consume epoch 1. Cross-channel canonical replies retain their pinned mode.
 	if epoch == 0 {
-		if owner == c.binding.OwnerID && key == c.conversationKey() {
+		if owner == c.binding.OwnerID && (key == c.conversationKey() || c.web != nil && key == c.webConversationKey()) {
 			return communication.ErrDenied
 		}
 		return nil
 	}
 	var proof durableinput.CommunicationIngress
 	var event ingress.InputEvent
-	if epoch != 1 || owner != c.binding.OwnerID || json.Unmarshal(proofRaw, &proof) != nil || json.Unmarshal(eventRaw, &event) != nil || proof.OwnerID != owner || proof.BindingID != c.binding.BindingID || proof.BindingVersion != c.binding.Version || proof.BotID != c.binding.BotID || proof.DeliveryID != event.EventID || event.SessionKey != key {
+	if epoch != 1 || owner != c.binding.OwnerID || json.Unmarshal(proofRaw, &proof) != nil || json.Unmarshal(eventRaw, &event) != nil || proof.OwnerID != owner || proof.DeliveryID != event.EventID || event.SessionKey != key {
+		return communication.ErrDenied
+	}
+	web := c.web != nil && proof.BindingID == c.web.binding.ID && proof.BindingVersion == c.web.binding.Version && proof.BotID == 0 && proof.ActorChannel == "web" && (proof.Kind == "web_message" || proof.Kind == "owner_control")
+	telegram := proof.BindingID == c.binding.BindingID && proof.BindingVersion == c.binding.Version && proof.BotID == c.binding.BotID && (proof.Kind == "telegram_message" || proof.Kind == "owner_control")
+	if !web && !telegram {
 		return communication.ErrDenied
 	}
 	hash, err := actionauth.ArgumentsHash(event.PayloadJSON)
 	if err != nil || hash != proof.PayloadHash {
-		return communication.ErrDenied
-	}
-	if proof.Kind != "telegram_message" && proof.Kind != "owner_control" {
 		return communication.ErrDenied
 	}
 	return c.store.AdmitRun(ctx, run, false, []string{"communication.message", "communication.photo", "communication.report"})
@@ -246,9 +260,21 @@ func (c *telegramCommunication) installInputHooks() {
 		if err := guard(ctx, tx, run); err != nil {
 			return err
 		}
+		if c.web != nil {
+			if a, ok := owneridentity.FromContext(ctx); ok && a.Channel == "web" && a.OwnerID == c.binding.OwnerID {
+				return c.checkWebBinding(ctx, tx)
+			}
+			var origin string
+			if err := tx.QueryRow(ctx, `SELECT communication_ingress_json->>'BindingID' FROM accepted_inputs WHERE run_id=$1 AND communication_ingress_epoch=1`, run).Scan(&origin); err == nil && origin == c.web.binding.ID {
+				return c.checkWebBinding(ctx, tx)
+			}
+		}
 		return c.checkBinding(ctx, tx)
 	}
 	c.store.ReplyAdmission = func(ctx context.Context, tx pgx.Tx, r durableinput.Record, b communication.Binding) error {
+		if c.web != nil && b.ID == c.web.binding.ID && b.Version == c.web.binding.Version && b.Channel == "web" && b.Recipient == c.web.binding.Recipient {
+			return c.markWebInput(ctx, tx, r, "web_message")
+		}
 		if b.ID != c.binding.BindingID || b.Version != c.binding.Version || b.Channel != "telegram" || b.Recipient != c.policy.binding.Recipient {
 			return communication.ErrDenied
 		}
@@ -265,11 +291,21 @@ func (c *telegramCommunication) installInputHooks() {
 		}
 		if a.Channel != "telegram" {
 			var admitted bool
-			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=$1 AND communication_ingress_epoch=1 AND communication_ingress_json->>'BindingID'=$2)`, r.TaskID, c.binding.BindingID).Scan(&admitted); err != nil {
+			webID := ""
+			if c.web != nil {
+				webID = c.web.binding.ID
+			}
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=$1 AND communication_ingress_epoch=1 AND communication_ingress_json->>'BindingID' IN ($2,$3))`, r.TaskID, c.binding.BindingID, webID).Scan(&admitted); err != nil {
 				return err
 			}
 			if !admitted {
 				return nil
+			}
+			if c.web != nil && a.Channel == "web" {
+				if err = c.checkWebBinding(ctx, tx); err != nil {
+					return err
+				}
+				return c.markWebInput(ctx, tx, r, "owner_control")
 			}
 		}
 		if err = c.checkBinding(ctx, tx); err != nil {

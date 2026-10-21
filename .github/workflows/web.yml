@@ -1,0 +1,48 @@
+name: Web acceptance
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/web.yml'
+      - 'web/**'
+      - 'apps/orchestrator/internal/api/**'
+      - 'apps/orchestrator/internal/app/http_helpers.go'
+      - 'apps/orchestrator/internal/communication/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/web.yml'
+      - 'web/**'
+      - 'apps/orchestrator/internal/api/**'
+      - 'apps/orchestrator/internal/communication/**'
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e -- --workers=2
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-acceptance-evidence
+          path: web/test-results
+          if-no-files-found: ignore

@@ -124,9 +124,16 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		postgres.Close()
 		return nil, err
 	}
+	if telegramOptions != nil && telegramOptions.WebBindingID != "" && cfg.OwnerControlOwnerID != telegramOptions.OwnerID {
+		postgres.Close()
+		return nil, communicationcontrol.ErrDenied
+	}
 	// Provider OAuth credentials always require encrypted persistence, including
 	// installations that permit plaintext storage for unrelated legacy settings.
 	authManager := providerauth.NewManager(config.NewPostgresSettingsStore(postgres.Pool()))
+	if telegramOptions != nil && telegramOptions.ProviderAuthStore != nil {
+		authManager = providerauth.NewManager(telegramOptions.ProviderAuthStore)
+	}
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -843,6 +850,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		inputWorker:                inputWorker,
 		inputStore:                 inputStore,
 		ownerAuth:                  ownerAuth,
+		communicationWebHandler:    telegramFlow.webHandler(ownerAuth),
 		sessionRepo:                sessionRepo,
 		runRepo:                    runRepo,
 		taskStore:                  taskStore,

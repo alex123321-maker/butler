@@ -21,13 +21,17 @@ type CommunicationIngress struct {
 func (s *Store) MarkCommunicationTx(ctx context.Context, tx pgx.Tx, r Record, p CommunicationIngress) error {
 	a, ok := owneridentity.FromContext(ctx)
 	hash, err := actionauth.ArgumentsHash(r.Event.PayloadJSON)
-	if !ok || tx == nil || a.OwnerID != r.OwnerID || p.OwnerID != r.OwnerID || p.ActorChannel != a.Channel || p.ActorDeliveryID != a.DeliveryID || p.BindingID == "" || p.BindingVersion < 1 || p.BotID <= 0 || p.DeliveryID != r.Event.EventID || err != nil || p.PayloadHash != hash {
+	if !ok || tx == nil || a.OwnerID != r.OwnerID || p.OwnerID != r.OwnerID || p.ActorChannel != a.Channel || p.ActorDeliveryID != a.DeliveryID || p.BindingID == "" || p.BindingVersion < 1 || p.BotID < 0 || p.DeliveryID != r.Event.EventID || err != nil || p.PayloadHash != hash {
 		return errors.New("verified communication input required")
 	}
 	switch p.Kind {
 	case "telegram_message":
-		if a.Channel != "telegram" || r.Source != "telegram" || a.DeliveryID != r.Event.EventID {
+		if a.Channel != "telegram" || r.Source != "telegram" || a.DeliveryID != r.Event.EventID || p.BotID <= 0 {
 			return errors.New("verified Telegram delivery required")
+		}
+	case "web_message":
+		if a.Channel != "web" || r.Source != "web" || a.DeliveryID != r.Event.EventID || p.BotID != 0 {
+			return errors.New("verified Web delivery required")
 		}
 	case "owner_control":
 		var valid bool

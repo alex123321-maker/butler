@@ -1,12 +1,43 @@
 package app
 
 import (
+	"bufio"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/metrics"
 )
+
+func TestInstrumentHTTPPreservesLiveSSEFlush(t *testing.T) {
+	server := httptest.NewServer(instrumentHTTP("orchestrator", metrics.New(), corsMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			t.Error("instrumentation removed SSE flush")
+			w.WriteHeader(500)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = w.Write([]byte("event: refresh\ndata: {}\n\n"))
+		flusher.Flush()
+		<-r.Context().Done()
+	}))))
+	defer server.Close()
+	server.Client().Timeout = 3 * time.Second
+	response, err := server.Client().Get(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		t.Fatal(response.StatusCode)
+	}
+	line, err := bufio.NewReader(response.Body).ReadString('\n')
+	if err != nil || line != "event: refresh\n" {
+		t.Fatal("live stream not flushed", line, err)
+	}
+}
 
 func TestInstrumentHTTPRecordsMetrics(t *testing.T) {
 	registry := metrics.New()

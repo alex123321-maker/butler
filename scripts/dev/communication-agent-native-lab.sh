@@ -3,9 +3,10 @@
 # existing provider-auth utility renews the canonical encrypted row before
 # inference. The normal Manager can renew that row during inference through its
 # scoped encrypted store; no refresh lineage is copied.
-set -euo pipefail
+set -Eeuo pipefail
+trap 'printf "Native lab failed at line %s; inspect private evidence.\n" "$LINENO" >&2' ERR
 base=${1:?owned lab directory}
-mode=${2:?prepare, auth, execute or probe}
+mode=${2:?prepare, auth, execute, application or probe}
 [[ "$base" == /srv/storage/butler/agents/communication-130-20261021 ]] || exit 2
 src=$base/source
 umask 077
@@ -16,7 +17,7 @@ trap 'rm -f "$base/private/provider-operator.env"' EXIT INT TERM
 if [[ "$mode" == prepare ]]; then
  docker run --rm -v "$src:/workspace:ro" -v "$base/bin:/bin-output" -v "$base/.cache:/cache" -w /workspace \
   -e GOCACHE=/cache/go-build -e GOMODCACHE=/cache/go-mod golang:1.27.2 \
-  bash -eu -c 'go test -c -race -o /bin-output/orchestrator.test ./apps/orchestrator/internal/app; go test -c -race -o /bin-output/broker.test ./apps/tool-broker/internal/broker; go build -o /bin-output/provider-auth ./cmd/provider-auth; chmod 555 /bin-output/orchestrator.test /bin-output/broker.test /bin-output/provider-auth' \
+  bash -eu -c 'go test -c -race -o /bin-output/orchestrator.test ./apps/orchestrator/internal/app; go test -c -race -o /bin-output/broker.test ./apps/tool-broker/internal/broker; go build -o /bin-output/provider-auth ./cmd/provider-auth; go build -o /bin-output/communication-broker ./apps/tool-broker/cmd/communication-lab; chmod 555 /bin-output/orchestrator.test /bin-output/broker.test /bin-output/provider-auth /bin-output/communication-broker' \
   > "$base/reports/build.log" 2>&1
  sha256sum "$base/bin/"* > "$base/reports/binaries.sha256"
  printf 'PASS\n' > "$base/reports/prepared"
@@ -70,9 +71,11 @@ if [[ "$mode" == probe ]]; then
  printf 'Unauthenticated provider proxy connectivity probe completed.\n'
  exit 0
 fi
-[[ "$mode" == execute ]] || exit 2
+[[ "$mode" == execute || "$mode" == application ]] || exit 2
 test -s "$base/reports/prepared"
-test ! -e "$base/reports/execution-started"
+marker=execution-started
+[[ "$mode" != application ]] || marker=application-started
+test ! -e "$base/reports/$marker"
 test -s "$base/private/bot-token"
 sha256sum --check --status "$base/reports/binaries.sha256"
 refresh_provider_auth
@@ -83,8 +86,9 @@ network=$(docker inspect butler-main-postgres-1 | jq -r '.[0].NetworkSettings.Ne
 test -n "$network"
 test "$(docker network inspect "$network" --format '{{.Internal}}')" = false
 pg=butler-communication-agent-130-pg
+redis=butler-communication-application-130-redis
 test -z "$(docker ps -aq --filter name="^${pg}$")"
-cleanup(){ docker rm -f "$pg" >/dev/null 2>&1 || true; rm -f "$base/private/provider-runtime.env" "$base/private/telegram-proxy"; }
+cleanup(){ docker rm -f "$pg" >/dev/null 2>&1 || true; if [[ "$mode" == application ]];then docker rm -f "$redis" >/dev/null 2>&1 || true;fi; rm -f "$base/private/provider-runtime.env" "$base/private/telegram-proxy"; }
 trap cleanup EXIT INT TERM
 docker run --rm -d --name "$pg" --network "$network" --network-alias communication-agent-130-postgres \
  -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=butler_communication_agent_test \
@@ -103,8 +107,30 @@ test "$(grep -c '^HTTPS_PROXY=.' "$base/private/provider-runtime.env")" = 1
 docker inspect butler-main-orchestrator-1 | jq -er '.[0].Config.Env[]|select(startswith("HTTPS_PROXY="))|ltrimstr("HTTPS_PROXY=")|select(length>0)' > "$base/private/telegram-proxy"
 test -s "$base/private/telegram-proxy"
 chmod 600 "$base/private/"*
-cp "$base/reports/binaries.sha256" "$base/reports/execution-binaries.sha256"
-printf 'started\n' > "$base/reports/execution-started"
+cp "$base/reports/binaries.sha256" "$base/reports/$marker-binaries.sha256"
+printf 'started\n' > "$base/reports/$marker"
+if [[ "$mode" == application ]];then
+ test -z "$(docker ps -aq --filter name="^${redis}$")"
+ test ! -e "$base/private/application/ready"
+ test ! -e "$base/private/application/stop"
+ mkdir -p "$base/private/application"
+ chmod 700 "$base/private/application"
+ docker run --rm -d --name "$redis" --network "$network" --network-alias communication-application-130-redis redis:7.4-alpine > "$base/reports/application-redis.id"
+ docker run --rm --name butler-communication-application-130 --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
+  -p 127.0.0.1:18470:18470 --env-file "$base/private/provider-runtime.env" \
+  -e NO_PROXY=localhost,127.0.0.1,::1,postgres,communication-agent-130-postgres,communication-application-130-redis \
+  -v "$src:/workspace:ro" -v "$base/bin:/bin-output:ro" -v "$base/private/bot-token:/private/bot-token:ro" -v "$base/private/telegram-proxy:/private/telegram-proxy:ro" -v "$base/private/application:/private/application" -w /workspace \
+  -e BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://postgres@communication-agent-130-postgres:5432/butler_communication_agent_test?sslmode=disable \
+  -e BUTLER_REDIS_URL=redis://communication-application-130-redis:6379/0 \
+  -e BUTLER_COMMUNICATION_APPLICATION_LAB=1 -e BUTLER_COMMUNICATION_APPLICATION_PRIVATE=/private/application \
+  -e BUTLER_COMMUNICATION_BROKER_COMMAND=/bin-output/communication-broker \
+  -e BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE=/private/bot-token -e BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE=/private/telegram-proxy \
+  -e BUTLER_TEST_TELEGRAM_RICH_CHAT_ID=1893384316 -e BUTLER_TEST_TELEGRAM_RICH_BOT=butler_rich_lab_20261021_bot \
+  golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=10m -test.run '^TestNativeCommunicationApplicationLab$' > "$base/reports/application.log" 2>&1
+ sha256sum "$base/reports/application.log" > "$base/reports/application.sha256"
+ printf 'Actual application lab completed; private evidence retained.\n'
+ exit 0
+fi
 docker run --rm --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
  --env-file "$base/private/provider-runtime.env" \
  -e NO_PROXY=localhost,127.0.0.1,::1,postgres,communication-agent-130-postgres \

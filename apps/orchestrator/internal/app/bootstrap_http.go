@@ -121,6 +121,7 @@ type httpServerDeps struct {
 	inputWorker                *durableinput.Service
 	inputStore                 *durableinput.Store
 	ownerAuth                  *apiservice.OwnerControlAuth
+	communicationWebHandler    http.Handler
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
@@ -214,6 +215,11 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	if deps.communicationWebHandler != nil {
+		mux.Handle("/api/v3/communications", deps.communicationWebHandler)
+		mux.Handle("/api/v3/communications/", deps.communicationWebHandler)
+		mux.Handle("/api/v3/channel-bindings", deps.communicationWebHandler)
+	}
 	var browserClient *browsercontrol.Client
 	if deps.cfg.BrowserControlURL != "" {
 		token, err := actionauth.ReadServiceToken(deps.cfg.ActionAuthorityTokenFile)

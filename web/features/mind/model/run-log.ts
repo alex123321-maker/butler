@@ -154,7 +154,7 @@ export function runLogRows(
       at,
       type: displayType,
       label: eventLabels[displayType] || type,
-      text: eventText(type, payload),
+      text: pretty(eventText(type, payload)),
       pending: type === 'tool_started',
       failed,
       duration:

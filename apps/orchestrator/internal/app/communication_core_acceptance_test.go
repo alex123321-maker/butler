@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/api"
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
@@ -150,6 +151,13 @@ func TestCommunicationTelegramReadyCatalogIntegration(t *testing.T) {
 	communicationCoreScenarios(t, true)
 }
 
+func TestCommunicationWebTelegramComposedCoreBrokerIntegration(t *testing.T) {
+	t.Setenv("BUTLER_COMMUNICATION_NATIVE_HARNESS", "1")
+	t.Setenv("BUTLER_COMMUNICATION_REQUIRE_REPORT", "1")
+	t.Setenv("BUTLER_COMMUNICATION_TEST_WEB", "1")
+	communicationCoreScenarios(t, true)
+}
+
 func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool) {
 	isNative := len(native) > 0 && native[0]
 	if os.Getenv("BUTLER_GUARDED_REQUEST_BROKER_BINARY") == "" {
@@ -243,6 +251,12 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 				}
 			}
 			const token = "guarded-request-private-process-fixture-token"
+			webMode := telegramMode && os.Getenv("BUTLER_COMMUNICATION_TEST_WEB") == "1"
+			if webMode {
+				if e := telegramFlow.installWeb(f.ctx, TelegramCommunicationOptions{OwnerID: f.parent.OwnerID, WebBindingID: "web-composed"}, f.sources.CheckRunSourcesTx); e != nil {
+					t.Fatal(e)
+				}
+			}
 			h, e := communicationcontrol.NewHandler(token, &CommunicationControl{Store: store})
 			if e != nil {
 				t.Fatal(e)
@@ -416,6 +430,9 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 			if telegramMode {
 				deliveries = pubs
 			}
+			if webMode {
+				deliveries = pubs * 2
+			}
 			if isNative {
 				wantTurns = provider.starts
 				if wantTurns < 3 || wantTurns > 6 {
@@ -492,6 +509,43 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 				}
 				if m, err := d.Claim(f.ctx, 30*time.Second); err != nil || m != nil {
 					t.Fatal("unexpected final/status duplicate", m, err)
+				}
+			}
+			if webMode {
+				actor := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", SessionKey: telegramFlow.web.binding.Recipient, DeliveryID: "web-feed"})
+				page, err := telegramFlow.web.reader.Feed(actor, 0, 50)
+				if err != nil || len(page.Items) != pubs {
+					t.Fatal("composed owner Web feed", len(page.Items), pubs, err)
+				}
+				for _, p := range page.Items {
+					if !p.Available || p.Session != saved.SessionKey {
+						t.Fatal("lost canonical Web target", p)
+					}
+				}
+				if pubs > 0 && !blocked {
+					handler := api.CommunicationWeb(api.NewOwnerControlAuth(token, f.parent.OwnerID), telegramFlow.web.reader, nil, telegramFlow.webConversation)
+					body, _ := json.Marshal(communication.ReplyRequest{BindingID: telegramFlow.web.binding.ID, BindingVersion: 1, PublicationRef: page.Items[0].Ref, Text: "Bounded cross-channel follow-up"})
+					var inputID string
+					for n := 0; n < 2; n++ {
+						q := httptest.NewRequest("POST", "/api/v3/communications/replies", bytes.NewReader(body))
+						q.Header.Set("Authorization", "Bearer "+token)
+						q.Header.Set("X-Butler-Delivery-ID", "same-web-followup")
+						rec := httptest.NewRecorder()
+						handler.ServeHTTP(rec, q)
+						var receipt struct {
+							Input   string `json:"input_ref"`
+							Session string `json:"session_ref"`
+						}
+						if rec.Code != 202 || json.Unmarshal(rec.Body.Bytes(), &receipt) != nil || receipt.Session != saved.SessionKey || n > 0 && receipt.Input != inputID {
+							t.Fatal("Web reply changed canonical target/replayed", rec.Code, rec.Body.String())
+						}
+						inputID = receipt.Input
+					}
+					var epoch int
+					var kind string
+					if err = f.pool.QueryRow(f.ctx, `SELECT communication_ingress_epoch,communication_ingress_json->>'Kind' FROM accepted_inputs WHERE input_id=$1`, inputID).Scan(&epoch, &kind); err != nil || epoch != 1 || kind != "web_message" {
+						t.Fatal("Web lost owning private ingress proof", epoch, kind, err)
+					}
 				}
 			}
 		})

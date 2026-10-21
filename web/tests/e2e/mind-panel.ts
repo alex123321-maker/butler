@@ -10,6 +10,8 @@ export async function openMindPanel(
 ) {
   const bootstrap = async (route: Route) => {
     const pathname = new URL(route.request().url()).pathname
+    if (pathname === '/api/v3/communications/profile')
+      return route.fulfill({ status: 404, json: { error: 'legacy_fixture' } })
     const json = pathname.endsWith('/access')
       ? { authenticated: true }
       : pathname.endsWith('/browse')
@@ -22,6 +24,7 @@ export async function openMindPanel(
     await route.fulfill({ json })
   }
   const patterns = [
+    '**/api/v3/communications/profile',
     '**/api/v4/memory/access',
     '**/api/v4/memory/browse?limit=6&offset=0',
     '**/api/v2/tasks?limit=100&sort=updated_at_desc',

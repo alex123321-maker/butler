@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.7, 2026-10-21. **Статус: согласованный продуктовый контракт;
+Версия 0.8, 2026-10-22. **Статус: согласованный продуктовый контракт;
 backend foundation #127 в main; следующий Telegram этап в разработке,
 production profile выключен.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -11,6 +11,49 @@ production profile выключен.**
 этой работы не менялся и заново не проверялся.
 
 ### Граница текущей реализации
+
+По новому поручению владельца Web PR #131 интегрируется в изолированную
+App-композицию #132. `WebBindingID` / `WebBindingVersion` — доверенные operator
+параметры отдельного `_test` профиля; обычный `New` не включает этот путь.
+Owner proof существующего HTTP API должен соответствовать тому же владельцу.
+Web reader и planner используют актуальный Catalog/export guard и обязательные
+retained media. Только такая композиция устанавливает `Store.WebAvailable`:
+новые Web targets сохраняются как `result_ready`, а API представляет их как
+`available`, без ACK/прочтения. Старые pending targets не меняются и не рассылаются.
+Telegram по-прежнему отправляет только собственную закреплённую очередь.
+
+Owner-authenticated `/api/v3/communications[/publication:ref]` читает полные
+canonical payloads и независимые состояния/состав всех текущих targets. Cursor
+покрывает просмотренные publication sequences, включая недоступные записи.
+Отозванная запись возвращается без payload, files и manifests. `/media` разрешает
+только attachment из этой разрешённой публикации; повторно проверяет sources,
+binding, исходный run и SHA-256. Bytes передаются с no-store/nosniff, файлы — как
+attachment; изображения ограничены PNG/JPEG. Произвольных URL/host paths нет.
+Typed renderer экранирует текст, сохраняет все блоки, таблицы, captions и файлы;
+HTML, скрипты и вложенные executable структуры не поддерживаются. Оба planners
+используют одну shape-проверку плоских report blocks и прямоугольных таблиц.
+
+SSE `/events?cursor=...` принимает также `Last-Event-ID` и передаёт только scoped
+invalidation, без текста/refs. REST остаётся источником истины. Клиент после
+reconnect и каждого pulse перечитывает загруженные страницы, включая delivery
+changes/privacy, удаляет недоступные bytes/object URLs и не дублирует transcript.
+Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof
+останавливает stream, запросы, очищает publications/receipts/drafts и media URLs.
+HTTP instrumentation сохраняет Flusher; это проверяется настоящим HTTP stream.
+
+Новый Web conversation endpoint принимает только текст и owner delivery identity;
+он не выбирает последнюю Task. Reply явно pin-ит publication/binding/version и
+продолжает исходный canonical target через существующий Input/Controller.
+`web_message` proof с BotID=0 сохраняется в owning transaction и защищён epoch 1;
+Telegram proof по-прежнему требует закреплённый положительный BotID. Public
+payload не устанавливает proof. Неподтверждённый Web профиль блокирует отправку;
+только явный 404 обычного startup оставляет прежний legacy ingress.
+
+Изолированный native App lab может передать programmatic `ProviderAuthStore`:
+это reference на обычный Manager store с узкими refresh-only правами, а не
+raw credential/config flag. JSON profiles не принимают это поле. Так проверяется
+настоящий App.Run без копирования refresh-token lineage в тестовую БД. Native
+App/model/UI приёмка отражается отдельно в evidence; само наличие lab не есть pass.
 
 В #130 добавлена отдельная тестовая App/Broker-композиция: programmatic
 `NewForTelegramCommunication` / `NewForCommunication` и operator commands на
@@ -25,7 +68,7 @@ Source/export guard читает актуальный Catalog и полный de
 export требует явного `AllowPrivate`; secret/stale/revoked запрещены всегда.
 Вложения повторно проверяют policy источников как отправляющего, так и исходного
 run. После process death между Input commit и cursor commit новый poller
-переигрывает стабильную delivery identity без второго Input. Web остаётся #129;
+переигрывает стабильную delivery identity без второго Input. Web ведётся в #129;
 фактически пройденные native/UI gates указываются отдельно в evidence #130.
 Для тестового Telegram-клиента operator profile может задать `BotAPIProxyFile`:
 приватный файл с HTTP(S) proxy URL. Соединение идёт через CONNECT к фиксированному
@@ -66,7 +109,7 @@ Codec `channel/telegramrich` остаётся отдельным модулем;
 Выборка outbox, recovery истёкших claims/попыток, send authorization и Finish
 ограничены точным binding ID/version/channel/recipient. Общий owner или chat ID
 не даёт права потреблять очередь другого бота или Web.
-Web и production профиль не меняются. По уточнённому поручению владельца #101
+Production профиль не меняется. В предыдущей scoped поставке #101
 и #102 закрываются только в подтверждённом backend/Telegram объёме; Web остаток
 сохранён в [#129](https://github.com/alex123321-maker/butler/issues/129),
 настоящая App/Core/model-композиция и остаточная пользовательская приёмка — в

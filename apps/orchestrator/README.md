@@ -1210,7 +1210,11 @@ communication handler with the native adapter. It is available only through the
 separate [operator command](cmd/telegram-agent-lab/README.md) on a disposable
 `_test` database. `New` and normal main remain unchanged. Export uses current
 Catalog/dependency/revision checks and a fixed operator binding/privacy policy;
-media also rechecks its original run's sources. No Web files/routes are changed.
+media also rechecks its original run's sources. Optional WebBindingID/version
+joins the continuous Web interface through owner-authenticated publication,
+media, reply, conversation and scoped cursor/SSE routes. Only the composed Web
+reader/planner marks new targets available; old history remains unchanged.
+See [integration/review evidence](../../docs/ai/communication-web-integration-review-20261022.md).
 
 The continuous owner Web surface uses authenticated catalog browse, bounded
 Russian text search and owner-derived note creation under `/api/v4/memory`.

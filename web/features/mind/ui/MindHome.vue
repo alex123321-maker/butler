@@ -139,8 +139,9 @@
             role="log"
             aria-label="Сообщения"
           >
+            <MindCommunicationFeed v-if="store.communicationProfile" />
             <div
-              v-for="message in store.conversation.slice(-6)"
+              v-for="message in store.communicationProfile ? [] : store.conversation.slice(-6)"
               :key="message.message_id"
               :class="
                 message.role === 'user'
@@ -154,12 +155,17 @@
               <p>{{ message.content }}</p>
             </div>
             <p
-              v-if="store.connected && !store.conversation.length"
+              v-if="store.connected && !store.conversation.length && !store.publications.length"
               class="mind-chat-empty"
             >
               Что у вас на уме?
             </p>
           </div>
+          <p v-if="store.replyPublication" class="mind-muted">
+            Ответ на {{ store.replyPublication.payload?.title || store.replyPublication.payload?.text || 'выбранную публикацию' }}
+            <button class="mind-text-button" type="button" @click="store.replyPublication = null">Отменить привязку</button>
+          </p>
+          <p v-if="store.communicationError && !store.communicationProfile" class="mind-error" role="alert">{{ store.communicationError }}</p>
           <form class="mind-composer" @submit.prevent="store.send()">
             <button
               class="mind-icon-button"
@@ -173,16 +179,17 @@
               id="mind-message"
               v-model="store.draft"
               rows="1"
-              maxlength="12000"
+              :maxlength="store.communicationProfile ? 4000 : 12000"
               placeholder="Напишите Батлеру…"
               :disabled="
-                !store.connected || store.sending || !!store.pendingIngress
+                !store.connected || store.sending || !!store.pendingIngress || store.communicationBlocked
               "
               @keydown="messageKey"
             /><button
               class="mind-send"
               :disabled="
                 !store.connected ||
+                store.communicationBlocked ||
                 store.sending ||
                 !store.draft.trim() ||
                 !!store.pendingIngress
@@ -414,6 +421,7 @@ import MindTaskDetail from './MindTaskDetail.vue'
 import MindApprovals from './MindApprovals.vue'
 import MindAdvanced from './MindAdvanced.vue'
 import MindHistory from './MindHistory.vue'
+import MindCommunicationFeed from './MindCommunicationFeed.vue'
 const historyKind = ref<'run' | 'session'>('run'),
   historyId = ref('')
 const store = useMind(),
