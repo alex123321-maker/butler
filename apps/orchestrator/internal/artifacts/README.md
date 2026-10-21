@@ -1,5 +1,12 @@
 # Retained artifacts
 
+Canonical reports use `communication_report` artifacts with identity derived
+from the publication ID. `SaveReportTx` joins the owning publication transaction;
+one artifact contains every typed block/reference independently of channel parts.
+Transcript metadata contains its reference. A failed artifact/part/transcript
+write rolls back the entire report. Migration091 permits this type and refuses
+rollback while retained report/media history exists.
+
 The existing PostgreSQL artifact repository owns assistant/tool/browser artifacts.
 `SaveMedia` adds bounded private `communication_media` records in the same store
 with additive migration 091. It generates a fresh 128-bit artifact identity and

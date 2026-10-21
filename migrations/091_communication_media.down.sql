@@ -1,6 +1,6 @@
 -- Refuse rollback while retained media (including redacted history) exists.
 DO $$ BEGIN
- IF EXISTS (SELECT 1 FROM artifacts WHERE artifact_type='communication_media' OR content_format='private_media_v1') THEN
+ IF EXISTS (SELECT 1 FROM artifacts WHERE artifact_type IN ('communication_media','communication_report') OR content_format='private_media_v1') THEN
   RAISE EXCEPTION 'retained communication media prevents rollback';
  END IF;
 END $$;

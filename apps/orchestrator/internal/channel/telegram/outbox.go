@@ -14,6 +14,19 @@ import (
 // SendStored performs exactly one channel attempt. Plain text avoids a second
 // parse-mode fallback send, and every chunk is acknowledged independently.
 func (a *Adapter) SendStored(ctx context.Context, m deliveryoutbox.Message) deliveryoutbox.Outcome {
+	if a.explicit != nil {
+		if m.PublicationID == "" {
+			return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_rejected"}
+		}
+		me, err := a.explicit.sender.Client.GetMe(ctx)
+		if err != nil || me.ID != a.explicit.poller.Binding.BotID {
+			return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_unconfigured", Retryable: err != nil}
+		}
+		return a.explicit.sender.SendStored(ctx, m)
+	}
+	if m.PublicationID != "" {
+		return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_unconfigured"}
+	}
 	chatID, ok := ChatIDFromSessionKey(m.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) || m.Channel != "telegram" {
 		return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_chat_not_allowed"}

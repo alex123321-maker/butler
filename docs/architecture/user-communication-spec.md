@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.5, 2026-10-21. **Статус: согласованный продуктовый контракт;
+Версия 0.6, 2026-10-21. **Статус: согласованный продуктовый контракт;
 backend foundation #127 в main; следующий Telegram этап в разработке,
 production profile выключен.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -13,10 +13,23 @@ production profile выключен.**
 ### Граница текущей реализации
 
 После merge #127 начат #101 и Telegram-объём native Rich Messages из #102.
-Новый модуль `channel/telegramrich` отделён от действующего `channel/telegram`;
-Web, Bootstrap и production профиль остаются без изменений. Утверждена только
-изолированная проверка нового тестового бота. Наличие live ACK и рендера этого
-бота не закрывает Web-часть #101/#102, model behaviour или полный профиль.
+Codec `channel/telegramrich` остаётся отдельным модулем; основной
+`channel/telegram` получил явный `NewExplicitAdapter` с durable poller/outbox,
+подавлением model-final/status fallback и отказом от legacy rows в новом пути.
+Обычный Bootstrap не вызывает этот конструктор и сохраняет legacy режим.
+Web и production профиль не меняются. По уточнённому поручению владельца #101
+и #102 закрываются только в подтверждённом backend/Telegram объёме; Web остаток
+сохранён в [#129](https://github.com/alex123321-maker/butler/issues/129),
+настоящая App/Core/model-композиция и остаточная пользовательская приёмка — в
+[#130](https://github.com/alex123321-maker/butler/issues/130). Полный AC01–AC22
+контракт ниже не ослабляется таким разделением.
+
+Новый adapter profile по умолчанию пуст. `Capabilities.Methods()` показывает
+только реализованные методы; report требует полного native rich/photo/document
+mapping. Отсутствие capability отказывает до publication writes, без fallback.
+Завершённый report сохраняет отдельный canonical `communication_report` artifact
+в одной транзакции с publication, transcript и всеми outbox parts. Его identity
+производна от publication, а не от Telegram part; privacy очищает existing JSON.
 
 Опциональный `Store.PlanDelivery` строит immutable части в одной транзакции
 с publication/transcript/outbox. Photo/report admission требует этого hook;
@@ -43,8 +56,12 @@ Raw HTML не исполняется; fallback на ссылку/PDF и плат
 
 Новый ingress проверяет private chat/user/bot и отдельную binding/version,
 ответ на sent ACK поступает в существующий canonical Input/Task Controller.
-Poller и новые conversation admissions пока не подключены; `Updates` не владеет
-durable cursor. Реальная композиция должна сохранить update до сдвига offset.
+`Poller.ProcessOnce` хранит bot/binding-scoped cursor в PostgreSQL (миграция092),
+сериализует getUpdates и фиксирует его только после owning Input/control commit.
+Потеря ответа между commit-ами воспроизводит исходную delivery identity.
+Generic denial может скрывать storage error и не сдвигает cursor. Malformed
+owner input/ambiguity не угадывают Task. Rollback отказывает для consumed cursor.
+Poller и новые conversation admissions не подключены к обычному Bootstrap.
 См. [адаптер](../../apps/orchestrator/internal/channel/telegramrich/README.md),
 [изолированный lab](../../apps/orchestrator/cmd/telegram-rich-lab/README.md).
 

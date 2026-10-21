@@ -34,8 +34,9 @@ func main() {
 func run() error {
 	tokenFile := flag.String("token-file", "", "Private token file outside the repository")
 	expectedBot := flag.String("bot", "", "Exact test bot username (without @)")
-	action := flag.String("action", "probe", "probe, updates, or send-fixtures")
+	action := flag.String("action", "probe", "probe, updates, verify-document, or send-fixtures")
 	chatID := flag.Int64("chat-id", 0, "Explicit private test chat; never inferred from an incoming update")
+	replyID := flag.Int64("reply-id", 0, "Exact replied-to report ACK for a document verification")
 	flag.Parse()
 	if *tokenFile == "" || *expectedBot == "" {
 		return telegramrich.ErrUnavailable
@@ -73,6 +74,43 @@ func run() error {
 		if *chatID <= 0 {
 			return telegramrich.ErrUnavailable
 		}
+	case "verify-document":
+		if *chatID <= 0 || *replyID <= 0 {
+			return telegramrich.ErrUnavailable
+		}
+		updates, err := client.Updates(ctx, 0)
+		if err != nil {
+			return err
+		}
+		for _, u := range updates {
+			m := u.Message
+			if m == nil || m.Chat.ID != *chatID || m.Chat.Type != "private" || m.From.ID != *chatID || m.From.IsBot || m.Reply == nil || m.Reply.ID != *replyID || m.Reply.From.ID != me.ID {
+				continue
+			}
+			var rich struct {
+				Blocks []struct {
+					Type     string `json:"type"`
+					Document struct {
+						ID   string `json:"file_id"`
+						Name string `json:"file_name"`
+					} `json:"document"`
+				} `json:"blocks"`
+			}
+			if json.Unmarshal(m.Reply.Rich, &rich) != nil {
+				return telegramrich.ErrUnavailable
+			}
+			for _, block := range rich.Blocks {
+				if block.Type == "document" && block.Document.Name == "butler-lab.txt" {
+					want := media("artifact:lab-document", "butler-lab.txt", "text/plain", []byte("Butler isolated Telegram Rich Message fixture. No production or private data.\n"))
+					if client.VerifyDocument(ctx, block.Document.ID, want) != nil {
+						return telegramrich.ErrUnavailable
+					}
+					fmt.Printf("Document verified: %s, bytes=%d, sha256=%s\n", want.Name, len(want.Data), want.SHA256)
+					return nil
+				}
+			}
+		}
+		return telegramrich.ErrUnavailable
 	default:
 		return telegramrich.ErrUnavailable
 	}
@@ -89,7 +127,7 @@ func run() error {
 	photo := media("artifact:lab-photo", "butler-lab.png", "image/png", imageData.Bytes())
 	doc := media("artifact:lab-document", "butler-lab.txt", "text/plain", []byte("Butler isolated Telegram Rich Message fixture. No production or private data.\n"))
 	files := map[string]artifacts.Media{photo.Ref: photo, doc.Ref: doc}
-	planner := telegramrich.Planner{Resolve: func(_ context.Context, _ pgx.Tx, _ string, _ communication.Binding, ref string) (artifacts.Media, error) {
+	planner := telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true}, Resolve: func(_ context.Context, _ pgx.Tx, _ string, _ communication.Binding, ref string) (artifacts.Media, error) {
 		m, ok := files[ref]
 		if !ok {
 			return m, telegramrich.ErrUnavailable

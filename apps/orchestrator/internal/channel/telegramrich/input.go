@@ -3,6 +3,7 @@ package telegramrich
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
@@ -33,20 +34,25 @@ type Ingress struct {
 	Binding  OwnerBinding
 }
 
+var ErrRejectedUpdate = errors.New("Telegram update is outside the owning binding")
+
 func (i *Ingress) Reply(ctx context.Context, u Update) error {
 	if i == nil || i.Store == nil {
 		return ErrUnavailable
 	}
 	b := i.Binding
 	m := u.Message
-	if b.OwnerID == "" || b.BindingID == "" || b.Version <= 0 || b.ChatID <= 0 || b.UserID <= 0 || b.BotID <= 0 || u.ID < 0 || m == nil || m.ID <= 0 || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || m.From.IsBot || m.From.ID != b.UserID || m.Text == "" {
+	if b.OwnerID == "" || b.BindingID == "" || b.Version <= 0 || b.ChatID <= 0 || b.UserID <= 0 || b.BotID <= 0 {
 		return ErrUnavailable
+	}
+	if u.ID < 0 || m == nil || m.ID <= 0 || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || m.From.IsBot || m.From.ID != b.UserID || m.Text == "" {
+		return ErrRejectedUpdate
 	}
 	if m.Reply == nil {
 		return communication.ErrAmbiguous
 	}
 	if m.Reply.ID <= 0 || m.Reply.Chat.ID != b.ChatID || !m.Reply.From.IsBot || m.Reply.From.ID != b.BotID {
-		return ErrUnavailable
+		return ErrRejectedUpdate
 	}
 	actor := owneridentity.Actor{OwnerID: b.OwnerID, Channel: "telegram", SessionKey: "telegram:" + strconv.FormatInt(b.ChatID, 10), DeliveryID: "telegram-rich:" + strconv.FormatInt(b.BotID, 10) + ":" + strconv.FormatInt(u.ID, 10)}
 	ctx = owneridentity.WithActor(ctx, actor)

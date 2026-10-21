@@ -29,7 +29,7 @@ func picture() artifacts.Media {
 	return artifacts.Media{Ref: "artifact:photo", Name: "photo.png", MIME: "image/png", Data: b.Bytes(), SHA256: hex.EncodeToString(h[:])}
 }
 func planner() Planner {
-	return Planner{Resolve: func(_ context.Context, _ pgx.Tx, _ string, _ communication.Binding, ref string) (artifacts.Media, error) {
+	return Planner{Profile: Capabilities{Message: true, Photo: true, Rich: true, Document: true}, Resolve: func(_ context.Context, _ pgx.Tx, _ string, _ communication.Binding, ref string) (artifacts.Media, error) {
 		m := picture()
 		if ref != m.Ref {
 			return artifacts.Media{}, ErrUnavailable

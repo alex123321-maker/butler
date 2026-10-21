@@ -72,12 +72,36 @@ type Part struct {
 }
 
 type MediaResolver func(context.Context, pgx.Tx, string, communication.Binding, string) (artifacts.Media, error)
-type Planner struct{ Resolve MediaResolver }
+type Planner struct {
+	Resolve MediaResolver
+	Profile Capabilities
+}
+
+// Capabilities are trusted adapter readiness, never a model enable flag.
+// A zero profile exposes nothing. Reports require the complete native mapping.
+type Capabilities struct{ Message, Photo, Rich, Document bool }
+
+func (c Capabilities) Methods() []string {
+	methods := []string{}
+	if c.Message {
+		methods = append(methods, "communication.message")
+	}
+	if c.Message && c.Photo {
+		methods = append(methods, "communication.photo")
+	}
+	if c.Rich && c.Photo && c.Document {
+		methods = append(methods, "communication.report")
+	}
+	return methods
+}
 
 // Plan is called inside the owning publication transaction, after ChannelGuard.
 // Resolve must enforce current retained-artifact and per-channel export policy.
 func (p Planner) Plan(ctx context.Context, tx pgx.Tx, run string, binding communication.Binding, args communicationcontrol.Args) ([]string, error) {
 	if binding.Channel != "telegram" {
+		return nil, ErrUnavailable
+	}
+	if args.Text != "" && !p.Profile.Message || len(args.Images) > 0 && !p.Profile.Photo || args.Title != "" && (!p.Profile.Rich || !p.Profile.Photo || !p.Profile.Document) {
 		return nil, ErrUnavailable
 	}
 	var parts []Part

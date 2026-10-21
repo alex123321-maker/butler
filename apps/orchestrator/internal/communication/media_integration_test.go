@@ -31,7 +31,7 @@ func mediaFixture(t *testing.T) (*fixture, string) {
 		t.Fatal(err)
 	}
 	policy := func(ctx context.Context, tx pgx.Tx, run, ref string) error { return f.s.SourceGuard(ctx, tx, run) }
-	planner := telegramrich.Planner{Resolve: func(ctx context.Context, tx pgx.Tx, run string, b communication.Binding, ref string) (artifacts.Media, error) {
+	planner := telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true}, Resolve: func(ctx context.Context, tx pgx.Tx, run string, b communication.Binding, ref string) (artifacts.Media, error) {
 		return artifacts.ResolveMediaTx(ctx, tx, run, ref, policy)
 	}}
 	f.s.PlanDelivery = planner.Plan

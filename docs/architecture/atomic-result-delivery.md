@@ -6,6 +6,16 @@ verification, and channel delivery. A provider final event or a runtime
 
 ## Planned explicit-publication profile
 
+The Telegram follow-up freezes deterministic media/report parts in the same
+publication transaction. Reports also save one canonical Artifact Store row;
+channel parts do not create independent report identities. The explicit Telegram
+constructor consumes the existing outbox and suppresses direct model-final
+delivery; normal Bootstrap still uses legacy. A durable bot/binding cursor is
+committed after canonical Input/control acceptance, never before it. An ambiguous
+storage/policy failure retains the cursor; lost cursor commit replays the original
+Input delivery identity. This is transport recovery, not model/task re-execution.
+Web and complete model composition remain #129/#130 respectively.
+
 The dormant backend foundation now implements message/widget transactions,
 typed internal finals and the existing outbox outcome policy. It is not composed
 by Bootstrap. See [scope and evidence](../ai/communication-core-acceptance-20261021.md);

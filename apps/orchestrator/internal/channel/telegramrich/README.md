@@ -1,7 +1,8 @@
 # Telegram communication adapter (isolated opt-in)
 
-This package is separate from `../telegram`, which remains unchanged. Bootstrap,
-production flags, legacy delivery and Web do not install this package.
+This codec is consumed by the explicit constructor in `../telegram` while
+remaining separate from its legacy text client. Normal Bootstrap, production
+flags and Web do not install the new composition.
 
 `Planner.Plan` freezes one deterministic manifest per outbox part inside the
 Communication publication transaction. `Store.PlanDelivery` is required for
@@ -37,8 +38,17 @@ and owner-control paths. Trusted composition must pin owner, user, chat, bot,
 binding and version; the replied-to message must belong to that bot and have a
 stored sent ACK. An ordinary message without an explicit target is ambiguous.
 This does not implement new conversation admission, widgets or provider auth.
-`Updates` is a transport read only: the future polling owner must durably accept
-updates before advancing its cursor. There is no startup poller/webhook here.
+`Poller.ProcessOnce` serializes each bot's transport read and stores its cursor
+in PostgreSQL migration092 only after owning Input/control commit. Lost cursor
+commit replays stable delivery identity; generic denial/storage errors retain
+the cursor. Out-of-order batches are rejected before acceptance. There is no
+startup poller/webhook registration. Consumption history prevents rollback.
+
+`Capabilities` is an explicit trusted readiness profile; its zero value exposes
+no methods. Native report requires rich/photo/document support and cannot fall
+back to a link/PDF. `VerifyDocument` compares a selected uploaded file with
+retained bytes through fixed `getFile`/download endpoints; untrusted returned
+paths cannot select another host, dot segment, query, fragment or redirect.
 
 The client accepts a private operator token-file reference outside source. It
 uses the fixed HTTPS Bot API host, refuses redirects, disables environment

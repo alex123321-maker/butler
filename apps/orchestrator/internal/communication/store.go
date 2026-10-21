@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
@@ -340,6 +341,12 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 		return out, err
 	}
 	metadata, _ := json.Marshal(map[string]any{"kind": "publication", "publication_ref": pub, "purpose": purpose, "visibility": "owner"})
+	if kind == "report" {
+		if err = artifacts.SaveReportTx(ctx, tx, pub, p.RunID, p.SessionKey, a); err != nil {
+			return out, err
+		}
+		metadata, _ = json.Marshal(map[string]any{"kind": "publication", "publication_ref": pub, "purpose": purpose, "visibility": "owner", "report_artifact_ref": "artifact:" + artifacts.ReportID(pub)})
+	}
 	_, err = tx.Exec(ctx, `INSERT INTO messages(message_id,session_key,run_id,role,content,metadata) VALUES($1,$2,$3,'assistant',$4,$5::jsonb)`, pub, p.SessionKey, p.RunID, text, metadata)
 	if err != nil {
 		return out, err

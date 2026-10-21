@@ -37,6 +37,7 @@ type Config struct {
 }
 
 type Adapter struct {
+	explicit          *explicitChannel
 	client            *Client
 	allowedChatIDs    map[string]struct{}
 	pollTimeoutSecond int
@@ -95,6 +96,9 @@ func (a *Adapter) SetSingleTabSelector(selector BrowserTabSelector) {
 }
 
 func (a *Adapter) Run(ctx context.Context) error {
+	if a.explicit != nil {
+		return a.explicit.run(ctx)
+	}
 	if a.executor == nil {
 		return fmt.Errorf("telegram executor is not configured")
 	}
@@ -231,6 +235,9 @@ func (a *Adapter) DeliverAssistantDelta(ctx context.Context, event flow.Delivery
 }
 
 func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.DeliveryEvent) error {
+	if a.explicit != nil {
+		return nil
+	}
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) || strings.TrimSpace(event.Content) == "" {
 		return nil
@@ -246,6 +253,9 @@ func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.Delivery
 
 // DeliverToolCallEvent shows a chat action without creating per-tool messages.
 func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallEvent) error {
+	if a.explicit != nil {
+		return nil
+	}
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
@@ -269,6 +279,9 @@ func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallE
 // DeliverStatusEvent shows a chat action and optionally sends a short status
 // message so the user gets immediate feedback when the bot starts working.
 func (a *Adapter) DeliverStatusEvent(ctx context.Context, event flow.StatusEvent) error {
+	if a.explicit != nil {
+		return nil
+	}
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
@@ -409,6 +422,9 @@ const (
 // DeliverApprovalRequest sends an inline keyboard to the Telegram chat with
 // Approve and Reject buttons for the given tool call.
 func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalRequest) error {
+	if a.explicit != nil {
+		return ErrExplicitUnsupported
+	}
 	chatID, ok := ChatIDFromSessionKey(req.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil

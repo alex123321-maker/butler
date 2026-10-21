@@ -12,6 +12,7 @@ must match the explicit expected username. Send `/start` from your private chat.
 go run ./apps/orchestrator/cmd/telegram-rich-lab -token-file <private-file> -bot <test-bot> -action probe
 go run ./apps/orchestrator/cmd/telegram-rich-lab -token-file <private-file> -bot <test-bot> -action updates
 go run ./apps/orchestrator/cmd/telegram-rich-lab -token-file <private-file> -bot <test-bot> -action send-fixtures -chat-id <explicit-owner-chat>
+go run ./apps/orchestrator/cmd/telegram-rich-lab -token-file <private-file> -bot <test-bot> -action verify-document -chat-id <explicit-owner-chat> -reply-id <report-ACK>
 ```
 
 `updates` emits only update/chat/user/message IDs and reply presence, never message
@@ -26,5 +27,16 @@ There is no automatic retry, even on a second command invocation: invoking
 the chat before any new run. Use the existing durable Communication/outbox worker
 for actual publications; this command is not an outbox replacement.
 
-Live ACK and visual checks do not establish full #101/#102 acceptance, real model
-continuation or Web readiness. Do not close those issues from a fixture pass.
+`verify-document` selects an owner reply to the exact report ACK and verifies
+the uploaded synthetic file through Bot API download, comparing retained bytes.
+It prints filename/size/SHA-256 only, not the remote file ID/path/token URL.
+
+The opt-in `TestNativeTelegramRichOutboxProcessRestartIntegration` uses a real
+disposable PG test schema, canonical report/outbox and the main explicit adapter.
+It sends a two-part native report from separate processes which exit after their
+durable ACK. Explicit `BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE`, `_CHAT_ID` and `_BOT`
+environment variables authorize only that test bot. CI has no such variables.
+
+Live ACK and visual checks do not establish real model continuation or Web
+readiness. Scoped closure of #101/#102 preserves those gates in #129/#130;
+it does not close the complete product profile or authorize production enable.
