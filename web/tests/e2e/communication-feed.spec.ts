@@ -59,6 +59,16 @@ test('drain keeps the saved document readable while new messages and replies are
   await expect(page.getByRole('link', { name: 'Скачать проверка.txt' })).toBeVisible()
 })
 
+test('a blocked communication receipt is shown as blocked rather than accepted work', async ({ page }) => {
+  await communications(page)
+  await page.route('**/api/v3/communications/messages', route => route.fulfill({ status: 202, json: { input_ref: 'blocked-input', status: 'queued' } }))
+  await page.route('**/api/v3/inputs/blocked-input', route => route.fulfill({ json: { input_id: 'blocked-input', status: 'blocked', error_code: 'execution_stopped' } }))
+  await connect(page)
+  await page.getByLabel('Сообщение Батлеру', { exact: true }).fill('Проверка безопасного отказа')
+  await page.getByRole('button', { name: 'Отправить сообщение', exact: true }).click()
+  await expect(page.getByText('Запрос заблокирован. Требуется проверка причины.', { exact: true })).toBeVisible()
+})
+
 test('canonical report renders all typed blocks safely and downloads exact retained bytes', async ({ page }) => {
   await communications(page)
   await connect(page)
@@ -98,6 +108,27 @@ test('explicit Web reply pins publication/binding and lost ACK retries the exact
   await expect.poll(() => requests.length).toBe(2)
   expect(requests[1]).toEqual(requests[0])
   expect(JSON.parse(requests[0].body!)).toEqual({ binding_id: 'web-test', binding_version: 3, publication_ref: report.publication_ref, text: 'Продолжи этот разговор' })
+})
+
+test('unchanged feed refresh retains validated media instead of refetching it', async ({ page }) => {
+  await communications(page)
+  let mediaReads = 0
+  await page.route('**/api/v3/communications/*/media?*', route => {
+    mediaReads++
+    const ref = new URL(route.request().url()).searchParams.get('artifact_ref')
+    return route.fulfill({ body: ref === 'artifact:image' ? image : document })
+  })
+  let pulses = 0
+  await page.route('**/api/v3/communications/events?*', route => {
+    pulses++
+    return route.fulfill({ contentType: 'text/event-stream', body: 'id: 7\nevent: refresh\ndata: {}\n\n' })
+  })
+  await connect(page)
+  await expect(page.getByAltText('Проверочное изображение')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Скачать проверка.txt' })).toBeVisible()
+  const validatedReads = mediaReads
+  await expect.poll(() => pulses).toBeGreaterThanOrEqual(3)
+  expect(mediaReads).toBe(validatedReads)
 })
 
 test('reconnect rechecks source privacy and removes cached media without duplicate publications', async ({ page }) => {

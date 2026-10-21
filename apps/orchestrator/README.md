@@ -1214,6 +1214,10 @@ media also rechecks its original run's sources. Optional WebBindingID/version
 joins the continuous Web interface through owner-authenticated publication,
 media, reply, conversation and scoped cursor/SSE routes. Only the composed Web
 reader/planner marks new targets available; old history remains unchanged.
+Trusted `DrainOnly` retains readers and accepted epoch-1 work while rejecting
+new messages. HTTP streams stop with App.Run; Telegram read outages back off
+without stopping Web/Core or retrying uncertain sends. Authorized report files
+remain saveable in Telegram. No ordinary startup flag enables this profile.
 See [integration/review evidence](../../docs/ai/communication-web-integration-review-20261022.md).
 
 The continuous owner Web surface uses authenticated catalog browse, bounded

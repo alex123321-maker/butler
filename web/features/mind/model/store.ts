@@ -625,7 +625,7 @@ export const useMind = defineStore('mind', () => {
         if (!current(stamp)) return
         await refresh()
         if (
-          !['completed', 'failed', 'cancelled', 'expired'].includes(next.status)
+          !['completed', 'failed', 'cancelled', 'expired', 'blocked'].includes(next.status)
         )
           pollReceipt(id)
       } catch {

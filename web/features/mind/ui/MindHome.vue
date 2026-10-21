@@ -518,6 +518,8 @@ const receiptText = computed(() => {
     ? 'Запрос обработан'
     : status === 'waiting_for_user'
       ? store.approvals.some(a => a.status === 'pending' && a.run_id === store.receipt?.run_id) ? 'Ждёт разрешения' : 'Нужно уточнение'
+      : status === 'blocked'
+        ? 'Запрос заблокирован. Требуется проверка причины.'
       : status === 'failed'
         ? 'Не удалось обработать запрос'
         : status === 'cancelled'

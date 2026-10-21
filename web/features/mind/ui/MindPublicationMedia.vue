@@ -13,7 +13,10 @@ const props = defineProps<{ publication: string; file: PublicationFile; alt?: st
 const store = useMind(), url = ref(''), error = ref(false)
 let version = 0
 function clear() { version++; if (url.value) URL.revokeObjectURL(url.value); url.value = '' }
-watch(() => [props.publication, props.file.artifact_ref, props.file.sha256, store.epoch], async () => {
+watch([
+  () => props.publication, () => props.file.artifact_ref, () => props.file.sha256,
+  () => props.file.size, () => props.file.mime, () => props.file.name, () => store.epoch,
+], async () => {
   clear(); error.value = false
   const current = version, stamp = store.epoch
   try {
