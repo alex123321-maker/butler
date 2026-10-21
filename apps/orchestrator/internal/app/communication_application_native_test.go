@@ -35,7 +35,7 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 	if os.Getenv("BUTLER_COMMUNICATION_AUTH_POSTGRES_URL") == "" || os.Getenv("BUTLER_COMMUNICATION_BROKER_COMMAND") == "" || os.Getenv("BUTLER_REDIS_URL") == "" {
 		t.Fatal("private native service references required")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
 	route := communicationNativeModelRoute(t)
 	ctx = route.context(ctx)
@@ -49,6 +49,11 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 	manifest := filepath.Join(root, "deletions.log")
 	f := newDelegationGuardFixtureWithManifest(t, manifest)
 	f.ctx = ctx
+	defer func() {
+		if err := captureCommunicationApplication(root, f.pool); err != nil {
+			t.Error("private application evidence capture failed")
+		}
+	}()
 	dsn, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 	if err != nil {
 		t.Fatal("isolated database unavailable")
@@ -124,11 +129,12 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 			t.Fatal("test bot backlog exceeds bounded preflight")
 		}
 	}
-	app, err := NewForTelegramCommunication(ctx, TelegramCommunicationOptions{
+	options := TelegramCommunicationOptions{
 		OwnerID: f.parent.OwnerID, BindingID: "application-telegram", WebBindingID: "application-web", ChatID: chat,
 		ExpectedBot: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_BOT"), TokenFile: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE"), BotAPIProxyFile: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE"), AllowPrivate: true,
 		ProviderAuthStore: communicationProviderAuth{store: config.NewPostgresSettingsStore(authPool)},
-	})
+	}
+	app, err := NewForTelegramCommunication(ctx, options)
 	if err != nil {
 		t.Fatal("actual application construction failed:", err)
 	}
@@ -172,10 +178,18 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 		t.Fatal("actual Broker command unavailable")
 	}
 	defer func() { _ = command.Process.Kill(); _ = command.Wait() }()
-	result := make(chan error, 1)
-	go func() { result <- app.Run(ctx) }()
+	start := func(a *App) (context.CancelFunc, <-chan error) {
+		runCtx, stop := context.WithCancel(ctx)
+		done := make(chan error, 1)
+		go func() { done <- a.Run(runCtx) }()
+		return stop, done
+	}
+	stopApp, result := start(app)
 	defer func() {
-		cancel()
+		stopApp()
+		if result == nil {
+			return
+		}
 		select {
 		case err := <-result:
 			if err != nil {
@@ -209,21 +223,67 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 	t.Log("actual application ready; only real owner HTTP/Telegram inputs can start inference")
 	tick := time.NewTicker(500 * time.Millisecond)
 	defer tick.Stop()
+	restarted := false
 	for {
 		select {
 		case <-ctx.Done():
 			t.Fatal("bounded application lab expired")
 		case <-tick.C:
+			if _, e := os.Stat(filepath.Join(root, "restart")); e == nil && !restarted {
+				var active, before int
+				if e = f.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM accepted_inputs WHERE status IN ('queued','running')),(SELECT count(*) FROM execution_model_attempts)`).Scan(&active, &before); e != nil {
+					t.Fatal("restart admission unavailable")
+				}
+				if active > 0 {
+					continue
+				}
+				stopApp()
+				select {
+				case e = <-result:
+					result = nil
+					if e != nil {
+						t.Fatal("restart shutdown failed", e)
+					}
+				case <-time.After(15 * time.Second):
+					t.Fatal("restart shutdown timed out")
+				}
+				if _, e = os.Stat(filepath.Join(root, "drain")); e == nil {
+					options.DrainOnly = true
+				}
+				app, e = NewForTelegramCommunication(ctx, options)
+				if e != nil {
+					t.Fatal("same-profile application restart failed", e)
+				}
+				stopApp, result = start(app)
+				restarted = true
+				if e = os.Remove(filepath.Join(root, "restart")); e != nil {
+					t.Fatal(e)
+				}
+				if e = os.WriteFile(filepath.Join(root, "restarted"), []byte("same database/bindings/cursor; model attempt count at restart: "+strconv.Itoa(before)+"\n"), 0600); e != nil {
+					t.Fatal(e)
+				}
+			}
 			if _, err = os.Stat(filepath.Join(root, "stop")); err == nil {
-				var proof []byte
-				if err = f.pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT count(*) FROM communication_publications),'inputs',(SELECT count(*) FROM accepted_inputs),'model_attempts',(SELECT count(*) FROM execution_model_attempts),'observed_attempts',(SELECT count(actual_input_tokens) FROM execution_model_attempts),'unobserved_attempts',(SELECT count(*)-count(actual_input_tokens) FROM execution_model_attempts),'telegram_sent',(SELECT count(*) FROM delivery_outbox WHERE channel='telegram' AND status='sent'),'web_available',(SELECT count(*) FROM delivery_outbox WHERE channel='web' AND status='result_ready'))`).Scan(&proof); err != nil {
-					t.Fatal("durable final evidence unavailable")
-				}
-				if err = os.WriteFile(filepath.Join(root, "summary.json"), proof, 0600); err != nil {
-					t.Fatal(err)
-				}
 				return
 			}
 		}
 	}
+}
+
+func captureCommunicationApplication(root string, pool *pgxpool.Pool) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var proof, retained []byte
+	err := pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT count(*) FROM communication_publications),'inputs',(SELECT count(*) FROM accepted_inputs),'model_attempts',(SELECT count(*) FROM execution_model_attempts),'observed_attempts',(SELECT count(actual_input_tokens) FROM execution_model_attempts),'unobserved_attempts',(SELECT count(*)-count(actual_input_tokens) FROM execution_model_attempts),'telegram_sent',(SELECT count(*) FROM delivery_outbox WHERE channel='telegram' AND status='sent'),'web_available',(SELECT count(*) FROM delivery_outbox WHERE channel='web' AND status='result_ready'))`).Scan(&proof)
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(filepath.Join(root, "summary.json"), proof, 0600); err != nil {
+		return err
+	}
+	err = pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT coalesce(jsonb_agg(to_jsonb(p)),'[]') FROM communication_publications p),'deliveries',(SELECT coalesce(jsonb_agg(to_jsonb(d)),'[]') FROM delivery_outbox d),'messages',(SELECT coalesce(jsonb_agg(to_jsonb(m)),'[]') FROM messages m),'inputs',(SELECT coalesce(jsonb_agg(to_jsonb(i)),'[]') FROM accepted_inputs i),'model_attempts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM execution_model_attempts a),'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM artifacts a),'bindings',(SELECT coalesce(jsonb_agg(to_jsonb(b)),'[]') FROM communication_bindings b),'cursors',(SELECT coalesce(jsonb_agg(to_jsonb(c)),'[]') FROM communication_telegram_cursors c),'effects',(SELECT coalesce(jsonb_agg(to_jsonb(e)),'[]') FROM action_effects e),'runs',(SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]') FROM runs r))`).Scan(&retained)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(root, "retained-evidence.json"), retained, 0600)
 }

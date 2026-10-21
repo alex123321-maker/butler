@@ -30,7 +30,8 @@
         <p v-else class="mind-muted">Вложение недоступно.</p>
       </template>
       <small class="mind-muted">Доступно в Butler · {{ dateLabel(publication.created_at) }}</small>
-      <button class="mind-text-button" type="button" @click="reply">Ответить на публикацию</button>
+      <button v-if="publication.task_ref" class="mind-text-button" type="button" @click="store.selectTask(publication.task_ref!, true)">{{ store.tasks.find(task => task.task_id === publication.task_ref)?.goal || 'Открыть исходное поручение' }}</button>
+      <button class="mind-text-button" type="button" :disabled="store.communicationDraining" @click="reply">Ответить на публикацию</button>
       <details class="mind-publication-delivery"><summary>Доставка и части</summary>
         <p v-for="part in publication.parts" :key="`${part.binding_id}-${part.binding_version}-${part.index}`">
           {{ part.channel === 'web' ? 'Веб' : 'Telegram' }} · часть {{ part.index + 1 }} · {{ states[part.state] || 'Состояние неизвестно' }}

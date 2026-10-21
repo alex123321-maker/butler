@@ -23,6 +23,10 @@ a profile which advertises Web rendering or widgets through this adapter.
 - Required retained media is resolved during planning and again before sending.
   The manifest pins reference/name/MIME/size/SHA-256, without bytes or public URLs.
   Missing, changed, redacted or forbidden media refuses the send.
+- Authorized publications allow native file opening/saving. They do not force
+  Bot API protect_content, which prevents saving and contradicts report file
+  acceptance. Source/export authorization is the privacy boundary; already
+  exported client copies cannot be recalled by later Butler redaction.
 
 `Sender.Authorize` is mandatory and must use the owning `DeliveryStore` guard.
 It runs before media reads and again after multipart construction, immediately
@@ -51,6 +55,10 @@ adopt another bot's binding. `Notices` uses fixed source-free clarification text
 and migration094 pre-send receipts; unknown outcomes are never resent. A proven
 missing reply target can be consumed with clarification, while generic guarded
 SQL/policy failures preserve the cursor.
+The explicit adapter retries failed read-only polling with cancellable1–30s
+backoff. A Telegram transport/identity/storage failure cannot stop Web/Core.
+Delivery remains the existing independent outbox worker; this polling retry
+does not replay sends, regenerate an answer or advance an uncommitted cursor.
 
 `Capabilities` is an explicit trusted readiness profile; its zero value exposes
 no methods. Native report requires rich/photo/document support and cannot fall

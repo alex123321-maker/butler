@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -22,7 +23,7 @@ import (
 
 // CommunicationWeb is installed only by the isolated owning composition. Bearer
 // proof stays in the Authorization header, including streaming and media reads.
-func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, controls *task.Controller, conversation func(context.Context, string) (input.Record, error)) http.Handler {
+func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, controls *task.Controller, conversation func(context.Context, string) (input.Record, error), draining ...bool) http.Handler {
 	var store *communication.Store
 	if reader != nil {
 		store = reader.Core
@@ -70,6 +71,10 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 			}
 			v, err := conversation(ctx, q.Text)
 			if err != nil {
+				if errors.Is(err, communication.ErrDraining) {
+					writeJSON(w, 409, map[string]string{"error": "communication_draining"})
+					return
+				}
 				deny()
 				return
 			}
@@ -105,7 +110,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 				deny()
 				return
 			}
-			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": []string{"message", "photo", "report"}})
+			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": []string{"message", "photo", "report"}, "drain_only": len(draining) > 0 && draining[0]})
 		case "/api/v3/communications":
 			page, err := reader.Feed(ctx, after, 50)
 			if err != nil {

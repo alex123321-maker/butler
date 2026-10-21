@@ -180,7 +180,10 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 	if len(m.Content) > maxPartBytes || communicationcontrol.StrictJSON([]byte(m.Content), &part) != nil || part.Version != 1 || len(part.Files) > 50 {
 		return absent
 	}
-	fields := map[string]any{"chat_id": chat, "protect_content": true}
+	// Owner-authorized exports must remain openable/saveable in the native
+	// client. protect_content would contradict the report attachment contract;
+	// privacy is enforced before export, not by a client-side copy restriction.
+	fields := map[string]any{"chat_id": chat}
 	switch part.Method {
 	case "sendMessage":
 		if part.Text == "" || len(deliveryoutbox.Split(part.Text, 4096)) != 1 || part.Rich != nil || part.Photo != "" || len(part.Files) > 0 {

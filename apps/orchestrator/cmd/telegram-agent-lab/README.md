@@ -69,6 +69,16 @@ through a programmatic refresh-only store reference. JSON cannot inject that
 store. Before workers start, only this dedicated test bot's previous backlog is
 acknowledged without execution. Native inputs then require real owner HTTP or
 Telegram ingress. Readiness alone spends no model turn. It stops on its private
-operator stop file or at eight minutes; twelve owner-day/eight conversation
+operator stop file or at twelve minutes; twelve owner-day/eight conversation
 turns remain finite. The operator must retain all logs/accounting, including
-failures, and separately verify client artifacts. No production service restarts.
+failures, and separately verify client artifacts. A private restart file permits
+one same-profile restart only while no Input is queued/running. PostgreSQL budget,
+binding and cursor history remain authoritative. Deferred evidence capture runs
+after application shutdown and before test-schema cleanup, including on failures.
+No production service restarts.
+
+The trusted `DrainOnly` option keeps reads, retained epoch-1 inputs and outbox
+processing available while rejecting new messages transactionally. Exact receipt
+retries remain idempotent. The native operator can create its private `drain`
+file before the one allowed restart to qualify that boundary without resetting
+the database or budgets. It never hands epoch-1 work to legacy workers.

@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 
 export interface PublicationFile {
   artifact_ref: string
@@ -45,7 +45,7 @@ export interface Publication {
     manifest?: unknown
   }[]
 }
-interface Profile { ready: boolean; binding_id: string; binding_version: number }
+interface Profile { ready: boolean; binding_id: string; binding_version: number; drain_only?: boolean }
 export interface PublicationInput { message_id: string; session_ref: string; content: string; created_at: string }
 interface Page { items: Publication[]; messages?: PublicationInput[]; cursor: number; has_more: boolean }
 
@@ -62,6 +62,7 @@ export function useCommunicationFeed(
   const communicationError = ref('')
   const replyPublication = ref<Publication | null>(null)
   const communicationBlocked = ref(false)
+  const communicationDraining = computed(() => communicationProfile.value?.drain_only === true)
   let pages = 1, loading = false, refreshAgain = false, cursor = 0
   let stream: AbortController | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -180,5 +181,5 @@ export function useCommunicationFeed(
     }
   }
   return { communicationProfile, publications, publicationInputs, publicationMore, communicationError,
-    communicationBlocked, replyPublication, connectCommunications, loadPublications, clearCommunications }
+    communicationBlocked, communicationDraining, replyPublication, connectCommunications, loadPublications, clearCommunications }
 }

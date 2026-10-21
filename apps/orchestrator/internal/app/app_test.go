@@ -10,7 +10,7 @@ import (
 	"github.com/butler/butler/internal/metrics"
 )
 
-func TestInstrumentHTTPPreservesLiveSSEFlush(t *testing.T) {
+func TestCommunicationHTTPStreamingFlushIntegration(t *testing.T) {
 	server := httptest.NewServer(instrumentHTTP("orchestrator", metrics.New(), corsMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		flusher, ok := w.(http.Flusher)
 		if !ok {
@@ -102,7 +102,7 @@ func TestCORSMiddlewareHandlesSettingsPreflight(t *testing.T) {
 	if got := RR.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, PUT, DELETE, OPTIONS" {
 		t.Fatalf("unexpected allowed methods header: %q", got)
 	}
-	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization, X-Butler-Delivery-ID" {
+	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization, X-Butler-Delivery-ID, Last-Event-ID" {
 		t.Fatalf("unexpected allowed headers: %q", got)
 	}
 	if got := RR.Header().Get("Access-Control-Allow-Origin"); got != "*" {

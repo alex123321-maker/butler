@@ -317,6 +317,18 @@ func TestNativeCommunicationTelegramAgentIntegration(t *testing.T) {
 	communicationCoreScenarios(t, true, true)
 }
 
+func TestNativeCommunicationQuietAndMissingIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_COMMUNICATION_AUTH_POSTGRES_URL") == "" || os.Getenv("BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE") == "" {
+		t.Skip("explicit private native references required")
+	}
+	for _, scenario := range []string{"quiet", "missing_response_corrected"} {
+		t.Run(scenario, func(t *testing.T) {
+			t.Setenv("BUTLER_COMMUNICATION_NATIVE_CASE", scenario)
+			communicationCoreScenarios(t, true, true)
+		})
+	}
+}
+
 // Reachability only: no model inference, auth-store read, refresh or credential.
 func TestNativeCommunicationModelProxyConnectivity(t *testing.T) {
 	if os.Getenv("BUTLER_TEST_MODEL_PROXY_PROBE") != "1" {

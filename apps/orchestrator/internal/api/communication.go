@@ -81,6 +81,10 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 				code = 409
 				reason = "communication_conflict"
 			}
+			if errors.Is(err, communication.ErrDraining) {
+				code = 409
+				reason = "communication_draining"
+			}
 			writeJSON(w, code, map[string]string{"error": reason})
 		}
 		switch {

@@ -91,11 +91,14 @@
               />
             </button>
           </div>
+          <p v-if="store.communicationDraining" class="mind-muted">Новые сообщения приостановлены. Сохранённый разговор доступен.</p>
           <h1>
             <button type="button" @click="store.panel = 'task'">
               {{
                 store.selectedTask
                   ? taskTitle(store.selectedTask)
+                  : store.communicationProfile
+                    ? 'Разговор с Батлером'
                   : store.connected
                     ? 'Пока нет поручений'
                     : 'Butler'
@@ -182,7 +185,7 @@
               :maxlength="store.communicationProfile ? 4000 : 12000"
               placeholder="Напишите Батлеру…"
               :disabled="
-                !store.connected || store.sending || !!store.pendingIngress || store.communicationBlocked
+                !store.connected || store.sending || !!store.pendingIngress || store.communicationBlocked || store.communicationDraining
               "
               @keydown="messageKey"
             /><button
@@ -190,6 +193,7 @@
               :disabled="
                 !store.connected ||
                 store.communicationBlocked ||
+                store.communicationDraining ||
                 store.sending ||
                 !store.draft.trim() ||
                 !!store.pendingIngress
@@ -513,7 +517,7 @@ const receiptText = computed(() => {
   return status === 'completed'
     ? 'Запрос обработан'
     : status === 'waiting_for_user'
-      ? 'Нужно уточнение'
+      ? store.approvals.some(a => a.status === 'pending' && a.run_id === store.receipt?.run_id) ? 'Ждёт разрешения' : 'Нужно уточнение'
       : status === 'failed'
         ? 'Не удалось обработать запрос'
         : status === 'cancelled'

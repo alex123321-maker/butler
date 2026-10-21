@@ -92,13 +92,13 @@ export const useMind = defineStore('mind', () => {
   )
   const runId = computed(
     () =>
-      selectedTask.value?.run_id ||
-      (receipt.value?.task_id === selectedId.value
+      ((receipt.value?.task_id === selectedId.value || communication.communicationProfile.value && !selectedId.value)
         ? receipt.value?.run_id
         : '') ||
+      selectedTask.value?.run_id ||
       '',
   )
-  const working = computed(() => isWorking(selectedTask.value))
+  const working = computed(() => selectedTask.value ? isWorking(selectedTask.value) : !!communication.communicationProfile.value && receipt.value?.status === 'running')
   const conversation = computed(() => messages.value.filter(message => publicMessage(message) && (!communication.communicationProfile.value || message.kind !== 'publication')))
   const calendar = computed(() => {
     const scheduled = (initiatives.value?.schedules || [])
@@ -280,7 +280,7 @@ export const useMind = defineStore('mind', () => {
     if (result[0].status === 'fulfilled') {
       tasks.value = result[0].value.tasks || result[0].value.items || []
       error.value = ''
-      if (!selectedId.value) {
+      if (!selectedId.value && !communication.communicationProfile.value) {
         const first = tasks.value.find((t) => isWorking(t)) || tasks.value[0]
         if (first) await selectTask(first.task_id)
       }
@@ -311,7 +311,7 @@ export const useMind = defineStore('mind', () => {
     messages.value = []
     toolCalls.value = []
     pendingControl.value = null
-    if (!connected.value) return
+    if (!connected.value || !id) return
     await loadTask(id, selection)
   }
   async function loadTask(id: string, selected: number, background = false) {
@@ -545,6 +545,7 @@ export const useMind = defineStore('mind', () => {
       sending.value ||
       !connected.value ||
       communication.communicationBlocked.value ||
+      (communication.communicationDraining.value && !retry) ||
       (!retry && (!draft.value.trim() || pendingIngress.value))
     )
       return
@@ -595,6 +596,8 @@ export const useMind = defineStore('mind', () => {
       pendingIngress.value = null
       draft.value = ''
       communication.replyPublication.value = null
+      if (profile && !reply) await selectTask('')
+      else if (profile && reply?.task_ref) await selectTask(reply.task_ref)
       if (accepted.task_id) await selectTask(accepted.task_id)
       if (accepted.input_id && current(stamp)) pollReceipt(accepted.input_id)
       await refresh()

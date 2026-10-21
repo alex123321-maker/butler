@@ -101,6 +101,11 @@ func (c *telegramCommunication) markWebInput(ctx context.Context, tx pgx.Tx, r d
 	if !ok || c.web == nil || a.OwnerID != c.binding.OwnerID || a.Channel != "web" {
 		return communication.ErrDenied
 	}
+	if kind != "owner_control" {
+		if err := c.allowMessageIngress(ctx, tx, r); err != nil {
+			return err
+		}
+	}
 	if err := c.checkWebBinding(ctx, tx); err != nil {
 		return err
 	}
@@ -147,5 +152,5 @@ func (c *telegramCommunication) webHandler(auth *api.OwnerControlAuth) http.Hand
 	if c == nil || c.web == nil {
 		return nil
 	}
-	return api.CommunicationWeb(auth, c.web.reader, c.controls, c.webConversation)
+	return api.CommunicationWeb(auth, c.web.reader, c.controls, c.webConversation, c.draining)
 }

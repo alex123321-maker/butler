@@ -24,6 +24,7 @@ import (
 var ErrDenied = communicationcontrol.ErrDenied
 var ErrConflict = communicationcontrol.ErrConflict
 var ErrResolved = errors.New("interaction already resolved")
+var ErrDraining = errors.New("communication admission is draining")
 
 type Store struct {
 	Pool   *pgxpool.Pool

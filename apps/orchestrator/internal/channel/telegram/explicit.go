@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -48,29 +49,25 @@ func (e *explicitChannel) run(ctx context.Context) error {
 	if ctx.Err() != nil {
 		return nil
 	}
-	me, err := e.sender.Client.GetMe(ctx)
-	if err != nil || !me.IsBot || me.ID != e.poller.Binding.BotID {
-		return ErrExplicitUnsupported
+	delay := time.Second
+	for {
+		me, err := e.sender.Client.GetMe(ctx)
+		if err == nil && me.IsBot && me.ID == e.poller.Binding.BotID {
+			break
+		}
+		// A channel outage or failed identity check cannot take down Web/Core.
+		// No worker sends anything until this exact immutable client is verified.
+		if !explicitWait(ctx, delay) {
+			return nil
+		}
+		delay = min(delay*2, 30*time.Second)
 	}
 	run, cancel := context.WithCancel(ctx)
 	defer cancel()
 	finished := make(chan error, 2)
 	go func() { finished <- e.worker.Run(run) }()
 	go func() {
-		ticker := time.NewTicker(time.Second)
-		defer ticker.Stop()
-		for {
-			if _, err := e.poller.ProcessOnce(run); err != nil {
-				finished <- err
-				return
-			}
-			select {
-			case <-run.Done():
-				finished <- run.Err()
-				return
-			case <-ticker.C:
-			}
-		}
+		finished <- runExplicitPolling(run, func(ctx context.Context) error { _, err := e.poller.ProcessOnce(ctx); return err }, time.Second)
 	}()
 	<-finished
 	cancel()
@@ -79,4 +76,34 @@ func (e *explicitChannel) run(ctx context.Context) error {
 		return nil
 	}
 	return ErrExplicitUnsupported
+}
+
+func explicitWait(ctx context.Context, delay time.Duration) bool {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
+	}
+}
+
+func runExplicitPolling(ctx context.Context, poll func(context.Context) error, interval time.Duration) error {
+	delay := interval
+	for ctx.Err() == nil {
+		if err := poll(ctx); err != nil && ctx.Err() == nil {
+			slog.Warn("explicit Telegram polling unavailable; durable cursor retained", "component", "telegram")
+			if !explicitWait(ctx, delay) {
+				break
+			}
+			delay = min(delay*2, 30*time.Second)
+			continue
+		}
+		delay = interval
+		if !explicitWait(ctx, delay) {
+			break
+		}
+	}
+	return ctx.Err()
 }

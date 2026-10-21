@@ -6,7 +6,7 @@
 set -Eeuo pipefail
 trap 'printf "Native lab failed at line %s; inspect private evidence.\n" "$LINENO" >&2' ERR
 base=${1:?owned lab directory}
-mode=${2:?prepare, auth, execute, application or probe}
+mode=${2:?prepare, auth, execute, application, branches or probe}
 [[ "$base" == /srv/storage/butler/agents/communication-130-20261021 ]] || exit 2
 src=$base/source
 umask 077
@@ -71,10 +71,11 @@ if [[ "$mode" == probe ]]; then
  printf 'Unauthenticated provider proxy connectivity probe completed.\n'
  exit 0
 fi
-[[ "$mode" == execute || "$mode" == application ]] || exit 2
+[[ "$mode" == execute || "$mode" == application || "$mode" == branches ]] || exit 2
 test -s "$base/reports/prepared"
 marker=execution-started
 [[ "$mode" != application ]] || marker=application-started
+[[ "$mode" != branches ]] || marker=branches-started
 test ! -e "$base/reports/$marker"
 test -s "$base/private/bot-token"
 sha256sum --check --status "$base/reports/binaries.sha256"
@@ -131,11 +132,14 @@ if [[ "$mode" == application ]];then
   -e BUTLER_COMMUNICATION_BROKER_COMMAND=/bin-output/communication-broker \
   -e BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE=/private/bot-token -e BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE=/private/telegram-proxy \
   -e BUTLER_TEST_TELEGRAM_RICH_CHAT_ID=1893384316 -e BUTLER_TEST_TELEGRAM_RICH_BOT=butler_rich_lab_20261021_bot \
-  golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=10m -test.run '^TestNativeCommunicationApplicationLab$' > "$base/reports/application.log" 2>&1
+  golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=15m -test.run '^TestNativeCommunicationApplicationLab$' > "$base/reports/application.log" 2>&1
  sha256sum "$base/reports/application.log" > "$base/reports/application.sha256"
  printf 'Actual application lab completed; private evidence retained.\n'
  exit 0
 fi
+native_test='^TestNativeCommunicationTelegramAgentIntegration$'
+native_log=native
+if [[ "$mode" == branches ]];then native_test='^TestNativeCommunicationQuietAndMissingIntegration$';native_log=native-branches;fi
 docker run --rm --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
  --env-file "$base/private/provider-runtime.env" \
  -e NO_PROXY=localhost,127.0.0.1,::1,postgres,communication-agent-130-postgres \
@@ -146,7 +150,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL -
  -e BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE=/private/bot-token \
  -e BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE=/private/telegram-proxy \
  -e BUTLER_TEST_TELEGRAM_RICH_CHAT_ID=1893384316 -e BUTLER_TEST_TELEGRAM_RICH_BOT=butler_rich_lab_20261021_bot \
- golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=8m -test.run '^TestNativeCommunicationTelegramAgentIntegration$' \
- > "$base/reports/native.log" 2>&1
-sha256sum "$base/reports/native.log" > "$base/reports/native.sha256"
+ golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=8m -test.run "$native_test" \
+ > "$base/reports/$native_log.log" 2>&1
+sha256sum "$base/reports/$native_log.log" > "$base/reports/$native_log.sha256"
 printf 'Native acceptance completed; private structured evidence retained.\n'

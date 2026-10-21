@@ -167,7 +167,11 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 		if scenario == "report_result" && (!telegramMode || os.Getenv("BUTLER_COMMUNICATION_REQUIRE_REPORT") != "1") {
 			continue
 		}
-		if isNative && scenario != "different_terminal" {
+		nativeCase := os.Getenv("BUTLER_COMMUNICATION_NATIVE_CASE")
+		if nativeCase == "" {
+			nativeCase = "different_terminal"
+		}
+		if isNative && scenario != nativeCase {
 			continue
 		}
 		if telegramMode && scenario == "widget_handoff_after_25_hours" {
@@ -325,6 +329,12 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 				text := "Return the bounded result"
 				if isNative {
 					text = "Это изолированная проверка общения Butler на синтетических данных. Сначала отправь одно короткое сообщение communication.message с purpose=progress о начале проверки. После получения результата инструмента отправь один communication.report с purpose=result, заголовком «Проверка живого агента», кратким summary и таблицей: компонент/результат, Core/подключён, Broker/проверен. Вложения не нужны. Выполняй по одному вызову инструмента за ход. После успешной публикации заверши выполнение коротким внутренним итогом, не повторяй уже опубликованное. Не создавай других сообщений, покупок или внешних действий."
+					if scenario == "quiet" {
+						text = "Это синтетическая проверка доверенного quiet-входа. Ядро закрепило тихую политику. Не вызывай никакие инструменты общения и не отправляй владельцу сообщения. Верни только короткий внутренний итог «Тихая проверка завершена». Никаких внешних действий."
+					}
+					if scenario == "missing_response_corrected" {
+						text = "Это ограниченная синтетическая проверка защиты от пропущенного ответа, без внешних действий. В первом ответе верни только короткий внутренний final без communication tools. Если ядро затем явно сообщит о missing response и запросит исправление, выполни ровно один communication.message с purpose=result и текстом «Пропущенный ответ исправлен». После успешной публикации заверши внутренним итогом без других публикаций."
+					}
 				}
 				u := telegramrich.Update{ID: 1, Message: &telegramrich.Message{ID: 1, Text: text, Chat: telegramrich.Chat{ID: telegramFlow.binding.ChatID, Type: "private"}, From: telegramrich.User{ID: telegramFlow.binding.UserID}}}
 				i := &telegramrich.Ingress{Store: store, Binding: telegramFlow.binding, Conversation: telegramFlow.conversation}
@@ -435,8 +445,19 @@ func communicationCoreScenarios(t *testing.T, telegramMode bool, native ...bool)
 			}
 			if isNative {
 				wantTurns = provider.starts
-				if wantTurns < 3 || wantTurns > 6 {
+				minimum := 3
+				maximum := 6
+				if scenario == "quiet" {
+					minimum, maximum = 1, 1
+				}
+				if wantTurns < minimum || wantTurns > maximum {
 					t.Fatal("native model exceeded finite turn acceptance", wantTurns)
+				}
+			}
+			if scenario == "missing_response_corrected" {
+				var corrections int
+				if err := f.pool.QueryRow(f.ctx, `SELECT correction_count FROM communication_admissions WHERE input_id=$1`, accepted.InputID).Scan(&corrections); err != nil || corrections != 1 {
+					t.Fatal("missing-response branch was not exercised", corrections, err)
 				}
 			}
 			for table, want := range map[string]int{"communication_publications": pubs, "delivery_outbox": deliveries, "run_final_results": finals} {

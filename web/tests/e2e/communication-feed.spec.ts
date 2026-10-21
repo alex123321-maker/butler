@@ -27,8 +27,8 @@ const report: Publication = {
     { channel: 'telegram', binding_id: 'bot-test', binding_version: 2, index: 1, state: 'delivery_unknown', manifest: { version: 1, method: 'sendRichMessage' } },
   ],
 }
-async function communications(page: Page, current: () => Publication[] = () => [report], corrupt = false) {
-  await fixture(page)
+async function communications(page: Page, current: () => Publication[] = () => [report], corrupt = false, tasks = false) {
+  await fixture(page, { tasks })
   await page.route('**/api/v3/communications/profile', route => route.fulfill({ json: { ready: true, binding_id: 'web-test', binding_version: 3 } }))
   await page.route('**/api/v3/communications?*', route => route.fulfill({ json: {
     items: current(), messages: [{ message_id: 'canonical-owner-input', session_ref: report.session_ref, content: 'Подготовь отчёт', created_at: '2026-10-21T16:59:00Z' }], cursor: 7, has_more: false,
@@ -40,6 +40,24 @@ async function communications(page: Page, current: () => Publication[] = () => [
     return route.fulfill({ body: ref === 'artifact:image' ? image : corrupt ? Buffer.from('changed') : document, contentType: ref === 'artifact:image' ? 'image/png' : 'text/plain' })
   })
 }
+
+test('a communication profile never selects the most recently active task as a conversation target', async ({ page }) => {
+  await communications(page, () => [report], false, true)
+  await connect(page)
+  await expect(page.getByRole('heading', { name: 'Разговор с Батлером', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Приостановить поручение', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '1 поручений', exact: true })).toBeVisible()
+})
+
+test('drain keeps the saved document readable while new messages and replies are disabled', async ({ page }) => {
+  await communications(page)
+  await page.route('**/api/v3/communications/profile', route => route.fulfill({ json: { ready: true, binding_id: 'web-test', binding_version: 3, drain_only: true } }))
+  await connect(page)
+  await expect(page.getByRole('heading', { name: 'Полный отчёт 🧪', exact: true })).toBeVisible()
+  await expect(page.getByLabel('Сообщение Батлеру', { exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Ответить на публикацию', exact: true })).toBeDisabled()
+  await expect(page.getByRole('link', { name: 'Скачать проверка.txt' })).toBeVisible()
+})
 
 test('canonical report renders all typed blocks safely and downloads exact retained bytes', async ({ page }) => {
   await communications(page)

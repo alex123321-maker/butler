@@ -41,6 +41,7 @@ type TelegramCommunicationOptions struct {
 	// historical delivery or changes the ordinary product startup.
 	WebBindingID      string
 	WebBindingVersion int64
+	DrainOnly         bool
 	// Trusted programmatic reference for a lab that renews the canonical auth
 	// row. JSON/operator profiles cannot provide a store or credential material.
 	ProviderAuthStore providerauth.SecretStore `json:"-"`
@@ -56,6 +57,7 @@ type telegramCommunication struct {
 	policy   telegramExportPolicy
 	controls *task.Controller
 	web      *webCommunication
+	draining bool
 }
 
 type telegramExportPolicy struct {
@@ -175,7 +177,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err = pinTelegramBot(ctx, pool, b, me.ID); err != nil {
 		return nil, err
 	}
-	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy}
+	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly}
 	c.installInputHooks()
 	if err = c.installWeb(ctx, o, guard); err != nil {
 		return nil, err
@@ -289,6 +291,19 @@ func (c *telegramCommunication) installInputHooks() {
 		if err != nil {
 			return err
 		}
+		if c.draining && a.Channel == "telegram" {
+			var admitted bool
+			webID := ""
+			if c.web != nil {
+				webID = c.web.binding.ID
+			}
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=$1 AND communication_ingress_epoch=1 AND communication_ingress_json->>'BindingID' IN ($2,$3))`, r.TaskID, c.binding.BindingID, webID).Scan(&admitted); err != nil {
+				return err
+			}
+			if !admitted {
+				return communication.ErrDraining
+			}
+		}
 		if a.Channel != "telegram" {
 			var admitted bool
 			webID := ""
@@ -320,11 +335,30 @@ func (c *telegramCommunication) markInput(ctx context.Context, tx pgx.Tx, r dura
 	if !ok || a.OwnerID != c.binding.OwnerID {
 		return communication.ErrDenied
 	}
+	if kind != "owner_control" {
+		if err := c.allowMessageIngress(ctx, tx, r); err != nil {
+			return err
+		}
+	}
 	hash, err := actionauth.ArgumentsHash(r.Event.PayloadJSON)
 	if err != nil {
 		return err
 	}
 	return c.store.Inputs.MarkCommunicationTx(ctx, tx, r, durableinput.CommunicationIngress{OwnerID: a.OwnerID, BindingID: c.binding.BindingID, BindingVersion: c.binding.Version, BotID: c.binding.BotID, DeliveryID: r.Event.EventID, PayloadHash: hash, Kind: kind, ActorChannel: a.Channel, ActorDeliveryID: a.DeliveryID})
+}
+
+func (c *telegramCommunication) allowMessageIngress(ctx context.Context, tx pgx.Tx, r durableinput.Record) error {
+	if !c.draining {
+		return nil
+	}
+	var accepted bool
+	if err := tx.QueryRow(ctx, `SELECT communication_ingress_epoch=1 FROM accepted_inputs WHERE input_id=$1`, r.InputID).Scan(&accepted); err != nil {
+		return err
+	}
+	if !accepted {
+		return communication.ErrDraining
+	}
+	return nil
 }
 
 func (c *telegramCommunication) conversationKey() string {

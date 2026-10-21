@@ -40,6 +40,19 @@ changes/privacy, удаляет недоступные bytes/object URLs и не
 Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof
 останавливает stream, запросы, очищает publications/receipts/drafts и media URLs.
 HTTP instrumentation сохраняет Flusher; это проверяется настоящим HTTP stream.
+HTTP request context следует App.Run, поэтому shutdown/restart отменяет открытые
+SSE в пределах grace. Ошибки Telegram polling повторяют только чтение с
+отменяемой задержкой1–30s и сохранённым cursor; они не останавливают Web/Core.
+Sender/outbox остаётся независимым, UNKNOWN не переотправляется таким retry.
+Доверенный operator-параметр `DrainOnly` сохраняет чтение, обработку уже принятых
+epoch-1 Inputs и outbox, но транзакционно отклоняет новые сообщения. Повтор того
+же delivery identity восстанавливает прежний receipt. Profile сообщает
+`drain_only`; Web блокирует новый ввод, сохраняя историю и вложения. Это режим
+отдельной композиции, а не автоматический откат epoch-1 очереди к legacy worker.
+Разрешённые Telegram exports не устанавливают `protect_content`: сохранение и
+открытие файлов входят в контракт отчёта. Согласно [Bot API](https://core.telegram.org/bots/api#sendrichmessage),
+этот флаг запрещает forwarding/saving. Privacy проверяется до экспорта; уже
+полученную пользователем копию нельзя отозвать очисткой Butler history.
 
 Новый Web conversation endpoint принимает только текст и owner delivery identity;
 он не выбирает последнюю Task. Reply явно pin-ит publication/binding/version и
