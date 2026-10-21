@@ -33,9 +33,13 @@ The owner's authorized refresh used the existing `cmd/provider-auth` utility and
 normal Manager Resolve: expired before, OAuth HTTP200, encrypted refresh
 persistence completed, not expired after, `unsafe_refresh=false`. No token/import
 copy or modified expiry rule was used. The artificial ten-minute test rejection
-was replaced with the normal one-minute margin. The runner now invokes this
-maintenance before native execution under the shared operator auth lock and
-checks current production work; inference reads the canonical encrypted row.
+was removed. The runner invokes this maintenance before native execution under
+the shared operator auth lock and checks current production work. During inference
+the normal Manager can also renew at its standard one-minute margin. A narrow
+private store adapter permits only the canonical Antigravity encrypted
+`provider-auth-refresh` write; other keys, imports, plaintext and deletion are
+denied. A PostgreSQL regression proves expired reads reach Manager, permitted
+renewal persists encrypted and forbidden writes leave that row unchanged.
 Only this normal credential renewal changed production state; no deployment,
 configuration toggle or working container was changed.
 

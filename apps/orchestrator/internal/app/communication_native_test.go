@@ -28,41 +28,30 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// This test reads only the current encrypted provider row through the existing
-// system codec. No imported/rotated refresh-token lineage or provider settings
-// writes are permitted during inference. The outer runner first invokes the
-// existing provider-auth operator utility, including its normal renewal.
-type communicationReadOnlyAuth struct {
-	store   *config.PostgresSettingsStore
-	observe func(string)
+// The normal Manager owns renewal and encrypted persistence throughout the
+// native run. This adapter allows only that provider's routine refresh write;
+// no import, other setting, deletion or copied refresh lineage is permitted.
+type communicationProviderAuth struct {
+	store *config.PostgresSettingsStore
 }
 
-func (s communicationReadOnlyAuth) Get(ctx context.Context, key string) (config.Setting, error) {
+func (s communicationProviderAuth) Get(ctx context.Context, key string) (config.Setting, error) {
 	if key != "BUTLER_PROVIDER_AUTH_ANTIGRAVITY" {
 		return config.Setting{}, errors.New("unexpected provider credential reference")
 	}
 	v, err := s.store.Get(ctx, key)
 	if err != nil {
-		if s.observe != nil {
-			s.observe("credential_read_failed")
-		}
 		return config.Setting{}, errors.New("private provider reference unavailable")
-	}
-	var expiry struct {
-		Expires time.Time `json:"expires_at"`
-	}
-	if json.Unmarshal([]byte(v.Value), &expiry) != nil || time.Until(expiry.Expires) <= time.Minute {
-		if s.observe != nil {
-			s.observe("credential_unavailable_or_expiring")
-		}
-		return config.Setting{}, errors.New("current provider access token is unavailable or too close to expiry; no refresh attempted")
 	}
 	return v, nil
 }
-func (communicationReadOnlyAuth) Set(context.Context, config.Setting) (config.Setting, error) {
-	return config.Setting{}, errors.New("native acceptance cannot mutate provider credentials")
+func (s communicationProviderAuth) Set(ctx context.Context, setting config.Setting) (config.Setting, error) {
+	if setting.Key != "BUTLER_PROVIDER_AUTH_ANTIGRAVITY" || setting.UpdatedBy != "provider-auth-refresh" || setting.Component != "orchestrator" || !setting.IsSecret {
+		return config.Setting{}, errors.New("only normal encrypted provider renewal is permitted")
+	}
+	return s.store.Set(ctx, setting)
 }
-func (communicationReadOnlyAuth) Delete(context.Context, string) error {
+func (communicationProviderAuth) Delete(context.Context, string) error {
 	return errors.New("native acceptance cannot delete provider credentials")
 }
 
@@ -73,13 +62,12 @@ func communicationNativeProvider(t *testing.T, trace *communicationScript) trans
 	if err != nil {
 		t.Fatal("private provider database reference unavailable")
 	}
-	cfg.ConnConfig.RuntimeParams["default_transaction_read_only"] = "on"
 	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
 	if err != nil {
 		t.Fatal("private provider read unavailable")
 	}
 	t.Cleanup(pool.Close)
-	auth := providerauth.NewManager(communicationReadOnlyAuth{store: config.NewPostgresSettingsStore(pool), observe: func(code string) { t.Logf("native auth preflight: %s", code) }})
+	auth := providerauth.NewManager(communicationProviderAuth{store: config.NewPostgresSettingsStore(pool)})
 	p, err := providerfactory.New(auth, slog.New(slog.NewTextHandler(io.Discard, nil))).Build(context.Background(), providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", AntigravityMaximumOutputTokens: 8192, Timeout: 90 * time.Second})
 	if err != nil {
 		t.Fatal("native provider composition unavailable")

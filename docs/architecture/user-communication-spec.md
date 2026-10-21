@@ -42,7 +42,10 @@ HTTP statuses. Такая настройка не доказывает успе�
 обычный Manager Resolve/refresh под общим operator lock, с проверкой отсутствия
 текущей production работы. Ротация сохраняется в исходной зашифрованной строке;
 копия старой авторизации не импортируется. Тест использует штатный минутный
-expiry margin. Десятиминутный тестовый запрет удалён. Наблюдатель проверяет
+expiry margin. Тестовый запрет на refresh удалён: во время inference обычный
+Manager также может продлить token через узкий store adapter, допускающий только
+зашифрованную запись `provider-auth-refresh` для Antigravity. Остальные keys,
+imports, plaintext и deletion запрещены. Наблюдатель проверяет
 фактический HTTP socket, включая reused HTTP/2, и не отменяет локальные обращения
 к Broker/PostgreSQL. Неопределённый refresh/persistence требует reconciliation.
 Core и Broker тестового процесса получают одну и ту же finite budget policy;

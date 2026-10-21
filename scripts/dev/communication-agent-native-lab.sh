@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # One bounded synthetic Core/Broker/native-provider/Telegram acceptance. The
 # existing provider-auth utility renews the canonical encrypted row before
-# inference. The test then reads that row without copying a refresh lineage.
+# inference. The normal Manager can renew that row during inference through its
+# scoped encrypted store; no refresh lineage is copied.
 set -euo pipefail
 base=${1:?owned lab directory}
 mode=${2:?prepare, auth, execute or probe}
@@ -83,7 +84,7 @@ test -n "$network"
 test "$(docker network inspect "$network" --format '{{.Internal}}')" = false
 pg=butler-communication-agent-130-pg
 test -z "$(docker ps -aq --filter name="^${pg}$")"
-cleanup(){ docker rm -f "$pg" >/dev/null 2>&1 || true; rm -f "$base/private/provider-readonly.env" "$base/private/telegram-proxy"; }
+cleanup(){ docker rm -f "$pg" >/dev/null 2>&1 || true; rm -f "$base/private/provider-runtime.env" "$base/private/telegram-proxy"; }
 trap cleanup EXIT INT TERM
 docker run --rm -d --name "$pg" --network "$network" --network-alias communication-agent-130-postgres \
  -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=butler_communication_agent_test \
@@ -94,18 +95,18 @@ for n in $(seq 1 60); do
  sleep 1
 done
 # Secret material stays in a private process/file pipe. Only the exact provider
-# setting/key is read by the Go test, with PG default_transaction_read_only=on.
-docker inspect butler-main-orchestrator-1 | jq -r '.[0].Config.Env[]|select(startswith("BUTLER_SETTINGS_ENCRYPTION_KEY=") or startswith("BUTLER_POSTGRES_URL=") or startswith("HTTPS_PROXY=") or startswith("NO_PROXY="))|sub("^BUTLER_POSTGRES_URL=";"BUTLER_COMMUNICATION_AUTH_POSTGRES_URL=")' > "$base/private/provider-readonly.env"
-test "$(grep -c '^BUTLER_COMMUNICATION_AUTH_POSTGRES_URL=' "$base/private/provider-readonly.env")" = 1
-test "$(grep -c '^BUTLER_SETTINGS_ENCRYPTION_KEY=' "$base/private/provider-readonly.env")" = 1
-test "$(grep -c '^HTTPS_PROXY=.' "$base/private/provider-readonly.env")" = 1
+# provider key is exposed to the normal Manager through a refresh-only adapter.
+docker inspect butler-main-orchestrator-1 | jq -r '.[0].Config.Env[]|select(startswith("BUTLER_SETTINGS_ENCRYPTION_KEY=") or startswith("BUTLER_POSTGRES_URL=") or startswith("HTTPS_PROXY=") or startswith("NO_PROXY="))|sub("^BUTLER_POSTGRES_URL=";"BUTLER_COMMUNICATION_AUTH_POSTGRES_URL=")' > "$base/private/provider-runtime.env"
+test "$(grep -c '^BUTLER_COMMUNICATION_AUTH_POSTGRES_URL=' "$base/private/provider-runtime.env")" = 1
+test "$(grep -c '^BUTLER_SETTINGS_ENCRYPTION_KEY=' "$base/private/provider-runtime.env")" = 1
+test "$(grep -c '^HTTPS_PROXY=.' "$base/private/provider-runtime.env")" = 1
 docker inspect butler-main-orchestrator-1 | jq -er '.[0].Config.Env[]|select(startswith("HTTPS_PROXY="))|ltrimstr("HTTPS_PROXY=")|select(length>0)' > "$base/private/telegram-proxy"
 test -s "$base/private/telegram-proxy"
 chmod 600 "$base/private/"*
 cp "$base/reports/binaries.sha256" "$base/reports/execution-binaries.sha256"
 printf 'started\n' > "$base/reports/execution-started"
 docker run --rm --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
- --env-file "$base/private/provider-readonly.env" \
+ --env-file "$base/private/provider-runtime.env" \
  -e NO_PROXY=localhost,127.0.0.1,::1,postgres,communication-agent-130-postgres \
  -v "$src:/workspace:ro" -v "$base/bin:/bin-output:ro" -v "$base/private/bot-token:/private/bot-token:ro" -v "$base/private/telegram-proxy:/private/telegram-proxy:ro" -w /workspace \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://postgres@communication-agent-130-postgres:5432/butler_communication_agent_test?sslmode=disable \

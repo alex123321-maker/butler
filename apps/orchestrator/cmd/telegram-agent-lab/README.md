@@ -44,9 +44,11 @@ never proxy URLs or credentials. This changes no production provider defaults.
 The runner calls the existing `cmd/provider-auth -action diagnose-auth` before
 native execution, under the shared operator auth lock and after checking current
 production work. Normal Manager renewal persists the canonical encrypted row.
-No stale credential copy is imported. Inference reads that current row and uses
-the same one-minute renewal margin, rather than the former artificial ten-minute
-rejection. Unknown refresh/persistence outcome must be reconciled before retry.
+No stale credential copy is imported. During inference the normal Manager can
+also renew through its ordinary one-minute margin; the private store adapter
+permits only Antigravity's encrypted `provider-auth-refresh` write. Other keys,
+imports, plaintext writes and deletion are denied. No test expiry rejection
+preempts the Manager. Unknown refresh/persistence must be reconciled before retry.
 The native Broker receives the exact same finite budget policy as Core. Its
 immutable persisted scope limits are never replaced by another process's defaults.
 The native fixture selects autonomy mode 2 and resolves only its exact synthetic
