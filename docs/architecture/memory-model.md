@@ -29,6 +29,26 @@ may justify refusal but cannot count as recovered usefulness. Unknown tokenizer,
 invoice, physical-storage and effects remain unknown and deny promotion; synthetic
 QA grants no owner confirmation or execution authority.
 
+## Планируемое происхождение коммуникаций
+
+[User Communication](user-communication-spec.md) сохраняет одну каноническую
+publication/response в Transcript независимо от числа каналов. Delivery receipts
+и внутренний model final отличаются от опубликованного текста; ответы виджетов
+сохраняют actor/source provenance. Это целевое дополнение не вводит новый класс
+памяти, не превращает ответы в policy и не разрешает повторное извлечение
+отозванных sources из delivery history.
+
+До первой исполняемой publication целевой foundation C02 разделяет
+publication/attempt_final/owner_input/interaction_response по typed identity,
+kind и visibility независимо от role. Transcript final writer выбирает только
+собственный итог, не все assistant-записи run. Replay, compaction, extraction,
+summaries и episodic consumers сохраняют provenance: внутренний итог не является
+сообщением, уже отправленным владельцу. Разрешённые технические факты могут
+использоваться во внутренней памяти с этим типом происхождения; user feed не
+подменяет ими публикации. Проверяются несколько publications + иной/пустой
+terminal final + persistence recovery и последующая compaction. Это планируемое
+изменение readers/writer, а не уже реализованное свойство main.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Memory Model

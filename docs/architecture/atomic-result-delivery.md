@@ -4,6 +4,34 @@ This contract separates an external effect, a durable attempt result, task
 verification, and channel delivery. A provider final event or a runtime
 `completed` status proves none of the other three. PostgreSQL is authoritative.
 
+## Planned explicit-publication profile
+
+[User Communication](user-communication-spec.md) specifies a future admission
+profile that preserves immutable attempt results and verification while removing
+implicit notifications from model finalization. Explicit publications receive
+independent identities and transactional multi-channel outbox entries, including
+mid-run progress and widgets. Existing legacy and verified_task semantics below
+remain authoritative until the documented migration; communication tools cannot
+bypass the owner-configured verified_task gate. Reuse the existing UNKNOWN,
+channel-only dispatch and frozen-result recovery contracts.
+
+The planned foundation C02 separates publication transcript entries from the
+immutable internal attempt final before exposing a working communication method.
+`AppendFinalTx` must select its own final identity/kind rather than every assistant
+message in the run; multiple publications cannot conflict with final persistence.
+An explicit terminal may have no text after publication or a quiet run. Legacy
+finalization below remains unchanged until implementation of that profile.
+Replay, user history and memory consumers preserve the typed distinction.
+The isolated C02/C03 message flow proves publication, further tools and final
+without a duplicate before reports/widgets; production enable still needs the
+complete supported profile and separate owner authorization.
+
+For a planned blocking widget, publication/continuation, owning Input checkpoint,
+Run/Task wait intent and obligation commit together before delivery. Response
+readiness is monotonic across the old worker's late Finish; fresh ownership gates
+the unique resume. See the interaction handoff in User Communication. These are
+target contracts, not claims that current approval recovery handles widgets.
+
 ## Finalization transaction
 
 Orchestrator saves a frozen finalizing checkpoint before calling

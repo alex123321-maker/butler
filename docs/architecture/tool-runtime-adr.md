@@ -97,6 +97,16 @@ switching within the task tree. Runtime output schemas gate evidence; malformed
 completed responses stay uncertain. Batch execution is rejected before the first
 dispatch, and no partial result set is supplied as completed model input.
 
+## Планируемая owning tool family communication
+
+[User Communication](user-communication-spec.md) добавляет целевой контракт
+communication.message/photo/report/widget. Все операции проходят штатные
+Broker schema/policy/grant/effect/budget проверки и фиксированный приватный
+endpoint owning Communication module оркестратора. Это явно описанный owning
+control-tool путь по существующему паттерну, без нового runtime-контейнера.
+Только channel dispatcher исполняет сохранённые разрешённые доставки; он не
+принимает orchestration решений. Каталог пока не содержит эту реализацию.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Tooling Specification
