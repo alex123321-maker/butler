@@ -49,6 +49,10 @@ an old target. A new/rebound binding never replays backlog automatically.
 
 ## Final and delivery lifecycle
 
+Channel-specific compositions narrow `DeliveryStore.ForBinding` to the exact
+binding ID/version/channel/recipient. Claim, expired-claim/deadline recovery,
+send authorization and finish must not consume or mutate another bot/channel.
+
 Explicit transport requires assistant-final AND run-completed events; abrupt
 stream closure cannot succeed. Deltas are internal. Multiple publications do not
 conflict with `final:<run>`: explicit final is `attempt_final`, internal, stored
@@ -143,11 +147,10 @@ filter plus database trigger fence unsupported old claimers. Ordered down is
 allowed only with no accepted communication history; never erase live receipts
 to downgrade. Disable new admissions and drain with a compatible worker first.
 
-Web/Telegram renderers and callbacks, media/report validation, native model behavior, owner
-quotas/config, diagnostic UI and full rollback/deployment acceptance remain
-separate work. Do not enable the profile until those prerequisites are proved.
+Web rendering (#129), full App/Core/model composition and client acceptance
+(#130), widgets/callbacks (#104), owner quotas/config, diagnostic UI and full
+rollback/deployment acceptance remain separate work. Telegram media/native
+report component evidence is in PR #128; it does not establish full readiness.
+Do not enable the profile until the remaining prerequisites are proved.
 The C01/C02/C04 backend acceptance, full fault matrix and historical boundaries
 are in [verification](../../../../docs/ai/communication-backend-full-acceptance-20261021.md).
-Channel-specific compositions narrow `DeliveryStore.ForBinding` to the exact
-binding ID/version/channel/recipient. Claim, expired-claim/deadline recovery,
-send authorization and finish must not consume or mutate another bot/channel.

@@ -59,6 +59,7 @@ no token, raw BotFather screenshot or credential URL is published here.
 | Document | `butler-lab.txt`, 78 B; Bot API download matched retained bytes and SHA-256 `359d9ab057e633d25df3c4cca373760a9d5c9ee27788a69501f08055193a3030` | Private `getFile` download verified; independent client opening remains #130 |
 | Canonical report + process restart | 55 blocks saved as one canonical artifact and two outbox parts; native ACK 7/8 in the first run | Each part sent by a separate process exiting after its committed ACK |
 | Main adapter composition | Repeated the new code path through `telegram.NewExplicitAdapter`, native ACK 9/10 | A new fixture/publication; not a replay of ACK 7/8 or model execution |
+| Final binding-scope revision | Native subprocess test repeated on `3df41e05`, ACK 11/12 | Owning sender guard restricted to the exact bot destination snapshot |
 | Final persistence | Different typed internal final saved after those sends; publication/outbox count unchanged | No implicit duplicate report |
 
 ![Native report in the isolated test bot](../testing/communication-telegram-rich-20261021.png)

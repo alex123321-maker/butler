@@ -17,6 +17,9 @@ Codec `channel/telegramrich` остаётся отдельным модулем;
 `channel/telegram` получил явный `NewExplicitAdapter` с durable poller/outbox,
 подавлением model-final/status fallback и отказом от legacy rows в новом пути.
 Обычный Bootstrap не вызывает этот конструктор и сохраняет legacy режим.
+Выборка outbox, recovery истёкших claims/попыток, send authorization и Finish
+ограничены точным binding ID/version/channel/recipient. Общий owner или chat ID
+не даёт права потреблять очередь другого бота или Web.
 Web и production профиль не меняются. По уточнённому поручению владельца #101
 и #102 закрываются только в подтверждённом backend/Telegram объёме; Web остаток
 сохранён в [#129](https://github.com/alex123321-maker/butler/issues/129),
@@ -779,6 +782,3 @@ acceptance не нужны: разрешённый fixture проверяет о
 голосовые ответы, пользовательский HTML runtime, автоматическая публичная
 публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
 напоминания. Новые каналы подключаются через тот же versioned adapter contract.
-Scoped Telegram workers bind Claim, deadline/claim recovery, send authorization
-and Finish to one binding ID/version/channel/recipient snapshot. A shared owner
-or chat ID does not authorize consuming another bot's or Web channel's outbox.

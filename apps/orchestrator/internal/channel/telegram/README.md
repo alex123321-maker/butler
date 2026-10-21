@@ -8,6 +8,9 @@ message/photo/Rich Message sender. Construction requires matching bot/binding,
 the owning Store/source/export guards and existing Task Controller. Runtime
 verifies the actual bot before polling/sending. The constructor replaces the
 sender's authorization hook with the owning `DeliveryStore.AuthorizeSend`.
+The explicit worker is bound to its immutable destination snapshot. It never
+claims or expires another bot's or Web channel's publication rows, including
+bots which share the same owner's numeric chat ID.
 
 Model finals/deltas/tool/status events cannot create messages in this mode.
 Only stored publications send; legacy notifications are refused. Unsupported
@@ -36,6 +39,3 @@ Approval prompts use service-derived finite consequences/version metadata.
 Tests use a local fake Telegram HTTP server only. Run `scripts/dev/owner-state-lab.sh`
 on laba for channel tests and owning PG/HTTP regressions; no human messages or
 model calls are part of this acceptance.
-The explicit worker is bound to its immutable destination snapshot. It never
-claims or expires another bot's or Web channel's publication rows, including
-bots which share the same owner's numeric chat ID.
