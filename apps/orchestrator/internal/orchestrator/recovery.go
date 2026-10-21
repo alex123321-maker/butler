@@ -21,6 +21,11 @@ import (
 )
 
 type storedCheckpoint struct {
+	Interaction struct {
+		Kind    string `json:"kind"`
+		Version int    `json:"version"`
+		ID      string `json:"interaction_id"`
+	} `json:"interaction"`
 	ModelRetry   modelRetryCheckpoint `json:"model_retry"`
 	Prepared     preparedRun          `json:"prepared"`
 	Continuation struct {
@@ -29,9 +34,10 @@ type storedCheckpoint struct {
 		ApprovalID string `json:"approval_id"`
 	} `json:"continuation"`
 	Data struct {
-		FinalMessage string `json:"final_message"`
-		AnswerState  string `json:"answer_state"`
-		ToolCallID   string `json:"tool_call_id"`
+		FinalMessage     string `json:"final_message"`
+		AnswerState      string `json:"answer_state"`
+		TerminalObserved bool   `json:"terminal_observed"`
+		ToolCallID       string `json:"tool_call_id"`
 	} `json:"checkpoint_data"`
 }
 
@@ -59,11 +65,18 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	}
 	var continuation approvalContinuation
 	var decision approvals.Record
+	interactionWait := checkpoint.Interaction.Kind == "communication_interaction" && (stage == "awaiting_interaction" || stage == "interaction_ready")
+	if interactionWait && (s.config.Communication == nil || checkpoint.Interaction.Version != 1 || checkpoint.Interaction.ID == "") {
+		return blockedApprovalResult(current, "interaction_not_resumable"), nil
+	}
+	if interactionWait && stage == "awaiting_interaction" {
+		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
+	}
 	guardedSelection := checkpoint.Continuation.Kind == "guarded_tab_selection"
 	if guardedSelection && (checkpoint.Continuation.Version != 1 || checkpoint.Continuation.ApprovalID == "" || s.config.GuardedTabRecovery == nil || stage != "approval_ready") {
 		return blockedApprovalResult(current, "guarded_selection_not_resumable"), nil
 	}
-	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && !guardedSelection {
+	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && !guardedSelection && !interactionWait {
 		if s.config.ApprovalService == nil {
 			return nil, fmt.Errorf("approval recovery unavailable")
 		}
@@ -112,12 +125,27 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err != nil {
 		return nil, err
 	}
+	if stage == "communication_correction_started" && s.config.Communication != nil {
+		decision, e := s.config.Communication.BeforeFinal(ctx, runID, "")
+		if e != nil {
+			return nil, e
+		}
+		if decision == "failed" {
+			s.blockTaskRun(ctx, runID, "communication_result_missing")
+			return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "communication_result_missing"}, nil
+		}
+		return blockedApprovalResult(current, "communication_correction_not_resumable"), nil
+	}
 	modelRetry := stage == "model_retry_pending" && checkpoint.ModelRetry.Count == 1 && checkpoint.ModelRetry.State == "claimed"
-	if !modelRetry && !guardedSelection && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
+	if !modelRetry && !guardedSelection && !interactionWait && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
 		s.blockTaskRun(ctx, runID, "checkpoint_not_resumable")
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "checkpoint_not_resumable"}, nil
 	}
-	if stage == "finalizing" && checkpoint.Data.FinalMessage != "" && current.GetCurrentState() == commonv1.RunState_RUN_STATE_FINALIZING {
+	if stage == "finalizing" && (checkpoint.Data.FinalMessage != "" || checkpoint.Data.TerminalObserved) && current.GetCurrentState() == commonv1.RunState_RUN_STATE_FINALIZING {
+		if checkpoint.Data.TerminalObserved {
+			markFinalSeen(ctx)
+			markTerminalSeen(ctx)
+		}
 		return s.finalizeExecution(ctx, runLog, current, event, checkpoint.Prepared, lease.LeaseID, checkpoint.Data.FinalMessage)
 	}
 	if err = validateSourceCheckpoint(event, checkpoint.Prepared); err != nil {
@@ -133,6 +161,48 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	var stream transport.EventStream
 	if modelRetry {
 		stream, err = s.resumeModelRetry(ctx, current, checkpoint.Prepared, checkpoint.ModelRetry)
+		if err == nil && current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
+			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
+		}
+	} else if interactionWait {
+		if stage != "interaction_ready" {
+			return blockedApprovalResult(current, "interaction_not_ready"), nil
+		}
+		answer, resumeErr := s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+		if resumeErr != nil {
+			return blockedApprovalResult(current, "interaction_invalidated"), nil
+		}
+		refreshed, e := s.refreshRecoveredToolContext(ctx, runID, checkpoint.Prepared.InputItems, checkpoint.Prepared.ToolDefs)
+		if e != nil {
+			return nil, e
+		}
+		items := append([]transport.InputItem(nil), refreshed.InputItems...)
+		history, e := s.transcript.GetTranscript(ctx, event.SessionKey)
+		if e != nil {
+			return nil, e
+		}
+		for _, call := range history.ToolCalls {
+			if call.RunID == runID && call.FinishedAt != nil {
+				if call.Status == "effect_unknown" {
+					return uncertainResult(current), nil
+				}
+				items = append(items, recoveredActionResultItem(call.ToolCallID, call.ToolName, call.ArgsJSON, recordedToolResultEnvelope(call)))
+			}
+		}
+		items = append(items, content.Data(map[string]any{"kind": "interaction_response", "data": json.RawMessage(answer)}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{checkpoint.Interaction.ID}, Sensitivity: content.Private}))
+		if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, lease.LeaseID, "", "")
+			if err != nil {
+				return nil, err
+			}
+		}
+		if current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME && current.GetCurrentState() != commonv1.RunState_RUN_STATE_MODEL_RUNNING {
+			return blockedApprovalResult(current, "interaction_phase_changed"), nil
+		}
+		if err = s.discardProviderContext(ctx, runID); err != nil {
+			return nil, err
+		}
+		stream, err = s.provider.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: runID, SessionKey: event.SessionKey, ProviderName: s.config.ProviderName, ModelName: s.config.ModelName, SupportsStreaming: true, SupportsToolCalls: true}, InputItems: items, ToolDefinitions: refreshed.ToolDefs, StreamingEnabled: true})
 		if err == nil && current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
 			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 		}
@@ -216,6 +286,12 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 	}
 	if err != nil {
+		if errors.Is(err, ErrApprovalSuspended) {
+			return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
+		}
+		if errors.Is(err, ErrCommunicationStatePending) {
+			return nil, err
+		}
 		if s.scheduleModelRetry(ctx, current, err) {
 			return nil, ErrModelRetryPending
 		}
@@ -230,6 +306,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return nil, err
 	}
 	final, current, err := s.consumeModelStream(ctx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	if errors.Is(err, ErrCommunicationStatePending) {
+		return nil, err
+	}
 	if err != nil && s.scheduleModelRetry(ctx, current, err) {
 		return nil, ErrModelRetryPending
 	}

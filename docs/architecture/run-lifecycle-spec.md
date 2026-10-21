@@ -120,6 +120,45 @@ to an answer from before that action. A fresh final's own finish reason determin
 durable when a later model turn fails to provide a final. Streaming commentary
 does not become final content or a task-completion verdict.
 
+## Планируемый explicit communication profile
+
+Backend foundation теперь содержит optional hooks для explicit final и blocking
+interaction checkpoint. Они не подключены Bootstrap. Подробная граница и
+проверки — [communication acceptance](../ai/communication-core-acceptance-20261021.md).
+Coarse Run state переиспользует `awaiting_approval`, но Input checkpoint
+`awaiting_interaction` и marker `communication_interaction` отличают preference
+от Approval: approval/grant из ответа не создаётся. Pause сохраняет DATA;
+resume владельца создаёт новый Input, старый отменённый Input не оживает.
+Ошибка чтения durable question state не означает отсутствия вопроса:
+`communication_state_pending` сохраняет checkpoint, запрещает generic
+tool-result/model continuation и даёт только bounded повторную проверку.
+Input Finish удерживает существующий wait либо ранний ready marker, не выдавая
+дополнительного разрешения на исполнение и не расходуя ещё один model turn.
+Private communication после approved action может сама вернуть durable widget
+wait. Recovery распознаёт suspension до обработки ошибки transport/authorization,
+не блокирует уже сохранённое ожидание и не продолжает старый provider context.
+Optional trusted admission вызывается после Task/source preparation перед
+каталогом; тот же Input восстанавливается только с тем же pinned profile.
+Обычный reply поступает через проверенные binding/ACK refs в исходную canonical
+Input очередь. Он не получает lease, не меняет task constraints и не создаёт grant.
+
+[User Communication](user-communication-spec.md) задаёт будущий admission profile:
+публикации выполняются через Broker-tool; model final сохраняется как внутренний
+результат попытки без implicit send. Ожидание widget сохраняется без живого worker,
+а недостающий ответ получает bounded continuation. Описанный ниже текущий
+final-result/outbox путь остаётся baseline для legacy admissions до миграции.
+Task completion, execution, reply obligation и delivery не объединяются.
+
+Foundation C02 разделяет publication/attempt_final в transcript и memory readers
+и вводит минимальный explicit message lifecycle; C03 доказывает его сквозным
+сценарием до reports/widgets. Production enable ждёт полного профиля. Widget V1
+только blocking: owning publication, Input checkpoint и Run/Task wait intent
+коммитятся вместе до доставки. Ready marker раннего ответа не затирается поздним
+Finish старого worker; unique resume требует fresh ownership. Обычный ответ на
+публикацию из другого канала разрешается в canonical session/task через проверенный
+delivery mapping, без автоматического слияния сессий владельца. Это требования
+целевого профиля, не свойства уже включённого main.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

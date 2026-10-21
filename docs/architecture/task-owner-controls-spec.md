@@ -8,6 +8,15 @@ of claiming the control was applied. Repeating the same channel delivery returns
 the saved result; changed content with that identity conflicts. Explicit API
 controls require the expected current revision.
 
+The dormant communication owner ingress resolves an explicit publication/Web
+reference or a confirmed Telegram ACK through its current verified binding, then
+uses this same Controller with a same-transaction target/source guard. Recognized
+Stop/Pause/Resume/prepare-only replies bypass the waiting FIFO. The publication
+pins expected Task revision; an ambiguous or stale target does not broaden scope.
+An expired execution mandate cannot prevent an authenticated owner Stop. Original
+channel proof stays private, without fabricating a session or an execution grant.
+Neither this handler nor its controller hook is installed by Bootstrap.
+
 ## Authority and input meaning
 
 Web task mutations use the configured owner-control Bearer proof. Missing

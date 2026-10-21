@@ -1,5 +1,19 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+The [communication kernel](internal/communication/README.md) adds dormant
+message/widget publication, typed internal final and durable interaction hooks
+for #99–#100/#103. Bootstrap does not install those hooks, tools, private route,
+admissions or sender. Web and the current Telegram adapter are unchanged; no
+communication enable flag is introduced. Migrations089–090 preserve existing
+legacy outbox use while separating publication identities and privacy copies.
+The review hardening checks current owner authority/private claims at publication,
+expiry after export waits, typed proof for all explicit finals, and bounded
+failure closure. See [review evidence](../../docs/ai/communication-core-review-20261021.md).
+The follow-up adds dormant owner handlers and verified reply routing, a trusted
+programmatic admission hook, independent denied export targets and complete
+PostgreSQL fault/worker-crash matrices. No route or hook is installed at startup.
+See [backend acceptance](../../docs/ai/communication-backend-full-acceptance-20261021.md).
+
 Operator budget policy `disable_owner_day:true` disables the shared daily limit
 for new foreground/background admissions while retaining task, conversation,
 mandate and job bounds and historical spending. Set the same policy on Broker.
@@ -190,8 +204,8 @@ Hybrid queries above 2048 UTF-8 bytes skip optional
 lookup while the complete owner message proceeds through normal preparation.
 Zero-overlap profiles remain lower-priority candidates within their quota, and
 deduplication preserves different profile keys and document sources. See
-[bundle policy](../../../internal/memory/service/README.md) and
-[fresh comparison protocol](../../../docs/ai/memory-search-comparison-methodology-20261015.md).
+[bundle policy](../../internal/memory/service/README.md) and
+[fresh comparison protocol](../../docs/ai/memory-search-comparison-methodology-20261015.md).
 
 Core supports one durable model retry per accepted input after a trusted nominal
 model-turn timeout. The input worker queues a two-second pause, then obtains fresh

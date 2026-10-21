@@ -1,0 +1,63 @@
+name: Communication backend acceptance
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/communication-core.yml'
+      - 'apps/orchestrator/**'
+      - 'apps/tool-broker/**'
+      - 'internal/**'
+      - 'migrations/**'
+      - 'scripts/dev/communication-core-tests.sh'
+      - 'go.mod'
+      - 'go.sum'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/communication-core.yml'
+      - 'apps/orchestrator/**'
+      - 'apps/tool-broker/**'
+      - 'internal/**'
+      - 'migrations/**'
+      - 'scripts/dev/communication-core-tests.sh'
+      - 'go.mod'
+      - 'go.sum'
+
+permissions:
+  contents: read
+
+jobs:
+  communication-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: butler_communication_linux_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      BUTLER_TEST_COMMUNICATION_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/butler_communication_linux_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Required race, process-crash and PostgreSQL matrices plus regressions
+        run: bash scripts/dev/communication-core-tests.sh --regression
+      - name: Preserve test evidence including failures and skips
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: communication-postgres-evidence
+          path: .cache/communication-core/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error

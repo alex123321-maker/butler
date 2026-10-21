@@ -2,6 +2,7 @@ package transcript
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -20,7 +21,17 @@ func (s *Store) AppendFinalTx(ctx context.Context, tx pgx.Tx, m Message) (Messag
 	}
 	// Upgrade recovery may already have a final transcript from the previous
 	// non-atomic finalizer. Reuse an identical saved answer, never duplicate it.
-	rows, err := tx.Query(ctx, `SELECT message_id,content FROM messages WHERE run_id=$1 AND role='assistant' ORDER BY message_sequence LIMIT 2`, m.RunID)
+	var meta struct {
+		Kind string `json:"kind"`
+	}
+	_ = json.Unmarshal([]byte(m.MetadataJSON), &meta)
+	role := "assistant"
+	query := `SELECT message_id,content FROM messages WHERE run_id=$1 AND role='assistant' AND COALESCE(metadata->>'kind','')='' ORDER BY message_sequence LIMIT 2`
+	if meta.Kind == "attempt_final" {
+		role = "system"
+		query = `SELECT message_id,content FROM messages WHERE run_id=$1 AND message_id='final:'||$1 AND metadata->>'kind'='attempt_final'`
+	}
+	rows, err := tx.Query(ctx, query, m.RunID)
 	if err != nil {
 		return Message{}, err
 	}
@@ -45,6 +56,6 @@ func (s *Store) AppendFinalTx(ctx context.Context, tx pgx.Tx, m Message) (Messag
 		m.MessageID = existing.MessageID
 		return m, nil
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO messages(message_id,session_key,run_id,role,content,metadata,created_at) VALUES($1,$2,$3,'assistant',$4,$5::jsonb,$6)`, m.MessageID, m.SessionKey, m.RunID, m.Content, m.MetadataJSON, m.CreatedAt)
+	_, err = tx.Exec(ctx, `INSERT INTO messages(message_id,session_key,run_id,role,content,metadata,created_at) VALUES($1,$2,$3,$7,$4,$5::jsonb,$6)`, m.MessageID, m.SessionKey, m.RunID, m.Content, m.MetadataJSON, m.CreatedAt, role)
 	return m, err
 }

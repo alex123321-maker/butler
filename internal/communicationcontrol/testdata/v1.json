@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "telegram_contract": "Bot API 10.3",
+  "fixtures": [
+    {
+      "name": "message",
+      "tool": "communication.message",
+      "args": {
+        "schema_version": 1,
+        "purpose": "result",
+        "text": "Готово: проверенный результат."
+      },
+      "native": null
+    },
+    {
+      "name": "photo",
+      "tool": "communication.photo",
+      "args": {
+        "schema_version": 1,
+        "purpose": "progress",
+        "text": "Наблюдение",
+        "images": [
+          {
+            "artifact_ref": "artifact:image",
+            "alt": "Схема",
+            "caption": "Сохранённое изображение"
+          }
+        ]
+      },
+      "native": null
+    },
+    {
+      "name": "report",
+      "tool": "communication.report",
+      "args": {
+        "schema_version": 1,
+        "purpose": "result",
+        "title": "Отчёт",
+        "summary": "Проверенные наблюдения",
+        "blocks": [
+          {
+            "type": "heading",
+            "text": "Результат"
+          },
+          {
+            "type": "paragraph",
+            "text": "Текст отчёта"
+          },
+          {
+            "type": "list",
+            "items": [
+              "Первый",
+              "Второй"
+            ]
+          },
+          {
+            "type": "quote",
+            "text": "Наблюдение"
+          },
+          {
+            "type": "code",
+            "text": "x := 1"
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                "Пункт",
+                "Статус"
+              ],
+              [
+                "Проверка",
+                "Готово"
+              ]
+            ]
+          },
+          {
+            "type": "divider"
+          },
+          {
+            "type": "image",
+            "artifact_ref": "artifact:image",
+            "alt": "Схема"
+          },
+          {
+            "type": "document",
+            "artifact_ref": "artifact:document",
+            "alt": "Данные"
+          }
+        ],
+        "attachments": [
+          "artifact:document"
+        ]
+      },
+      "native": {
+        "method": "sendRichMessage",
+        "rich_message": {
+          "blocks": [
+            {
+              "type": "heading",
+              "text": "Результат",
+              "size": 2
+            },
+            {
+              "type": "paragraph",
+              "text": "Текст отчёта"
+            },
+            {
+              "type": "list",
+              "items": [
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "text": "Первый"
+                    }
+                  ]
+                },
+                {
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "text": "Второй"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "blockquote",
+              "blocks": [
+                {
+                  "type": "paragraph",
+                  "text": "Наблюдение"
+                }
+              ]
+            },
+            {
+              "type": "pre",
+              "text": "x := 1",
+              "language": "go"
+            },
+            {
+              "type": "table",
+              "cells": [
+                [
+                  {
+                    "text": "Пункт",
+                    "is_header": true
+                  },
+                  {
+                    "text": "Статус",
+                    "is_header": true
+                  }
+                ],
+                [
+                  {
+                    "text": "Проверка"
+                  },
+                  {
+                    "text": "Готово"
+                  }
+                ]
+              ]
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "photo",
+              "photo": {
+                "type": "photo",
+                "media": "attach://image"
+              }
+            },
+            {
+              "type": "document",
+              "document": {
+                "type": "document",
+                "media": "attach://document"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "single_choice",
+      "tool": "communication.widget",
+      "args": {
+        "schema_version": 1,
+        "question": "Какую пиццу выбрать?",
+        "input": {
+          "type": "single_choice",
+          "options": [
+            {
+              "id": "a",
+              "label": "Маргарита",
+              "description": "Без дополнительных ингредиентов",
+              "image_ref": "artifact:pizza"
+            },
+            {
+              "id": "b",
+              "label": "Овощная"
+            }
+          ],
+          "allow_text_answer": true
+        }
+      },
+      "answer": {
+        "option_ids": [
+          "a"
+        ]
+      },
+      "native": null
+    },
+    {
+      "name": "multi_choice",
+      "tool": "communication.widget",
+      "args": {
+        "schema_version": 1,
+        "question": "Какую пиццу выбрать?",
+        "wait_for_response": true,
+        "expires_at": "2030-01-01T00:00:00Z",
+        "input": {
+          "type": "multi_choice",
+          "options": [
+            {
+              "id": "a",
+              "label": "Маргарита",
+              "description": "Без дополнительных ингредиентов",
+              "image_ref": "artifact:pizza"
+            },
+            {
+              "id": "b",
+              "label": "Овощная"
+            }
+          ],
+          "min_selections": 1,
+          "max_selections": 2
+        }
+      },
+      "answer": {
+        "option_ids": [
+          "a",
+          "b"
+        ]
+      },
+      "native": null
+    },
+    {
+      "name": "text",
+      "tool": "communication.widget",
+      "args": {
+        "schema_version": 1,
+        "question": "Адрес доставки?",
+        "input": {
+          "type": "text",
+          "min_length": 1,
+          "max_length": 4000,
+          "placeholder": "Адрес"
+        }
+      },
+      "answer": {
+        "text": "Тестовый адрес"
+      },
+      "native": null
+    }
+  ]
+}

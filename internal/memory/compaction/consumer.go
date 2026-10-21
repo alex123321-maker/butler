@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/summary"
+	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/jackc/pgx/v5"
 )
@@ -27,6 +28,7 @@ var errSourceTooLarge = errors.New("summary primary source exceeds finite allowa
 // Neither model text nor summary JSON can manufacture a task or action state.
 type Consumer struct{ ContextBudget int }
 type Event struct {
+	Kind       string `json:"kind,omitempty"`
 	ID         string `json:"message_id"`
 	Sequence   int64  `json:"sequence"`
 	Role       string `json:"role"`
@@ -61,6 +63,7 @@ type Historical struct {
 	Tools   []ToolState       `json:"observed_tool_states"`
 }
 type HistoricalEvent struct {
+	Kind     string   `json:"kind,omitempty"`
 	ID       string   `json:"message_id"`
 	Sequence int64    `json:"sequence"`
 	Role     string   `json:"role"`
@@ -88,7 +91,7 @@ func sourceDocument(sources []catalog.Source) (Document, error) {
 	}
 	last := int64(0)
 	for _, e := range d.Events {
-		if e.ID == "" || e.Sequence <= last || e.Text == "" || (e.Role != "user" && e.Role != "assistant" && e.Role != "tool" && e.Role != "system") || sanitize.Text(e.Text) != e.Text {
+		if e.ID == "" || e.Sequence <= last || (e.Text == "" && e.Kind != "attempt_final") || (e.Role != "user" && e.Role != "assistant" && e.Role != "tool" && e.Role != "system") || sanitize.Text(e.Text) != e.Text {
 			return d, jobs.ErrClaim
 		}
 		last = e.Sequence
@@ -122,7 +125,7 @@ func (c Consumer) Validate(sources []catalog.Source, output string) (string, err
 				return "", jobs.ErrClaim
 			}
 		}
-		h.Events = append(h.Events, HistoricalEvent{ID: e.ID, Sequence: e.Sequence, Role: e.Role, Excerpts: s.Excerpts})
+		h.Events = append(h.Events, HistoricalEvent{ID: e.ID, Sequence: e.Sequence, Role: e.Role, Kind: e.Kind, Excerpts: s.Excerpts})
 	}
 	b, _ := json.Marshal(h)
 	if len(b) > 32768 || len(b) >= len(sources[0].Body) || sanitize.Text(string(b)) != string(b) {
@@ -147,16 +150,18 @@ func (c Consumer) PublishTx(ctx context.Context, tx pgx.Tx, cat *catalog.Store, 
 	// Compare primary bytes and observed tool states, not only a text-model claim
 	// that its input was complete. The complete new tail remains foreground data.
 	current.Events = current.Events[:0]
-	rows, err := tx.Query(ctx, `SELECT message_id,message_sequence,role,content,COALESCE(tool_call_id,'') FROM messages WHERE session_key=$1 AND message_sequence<=$2 ORDER BY message_sequence`, d.SessionKey, d.ThroughSequence)
+	rows, err := tx.Query(ctx, `SELECT message_id,message_sequence,role,content,COALESCE(tool_call_id,''),metadata::text FROM messages WHERE session_key=$1 AND message_sequence<=$2 ORDER BY message_sequence`, d.SessionKey, d.ThroughSequence)
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
 		var e Event
-		if err = rows.Scan(&e.ID, &e.Sequence, &e.Role, &e.Text, &e.ToolCallID); err != nil {
+		var metadata string
+		if err = rows.Scan(&e.ID, &e.Sequence, &e.Role, &e.Text, &e.ToolCallID, &metadata); err != nil {
 			rows.Close()
 			return err
 		}
+		e.Kind = transcript.MessageKind(metadata)
 		current.Events = append(current.Events, e)
 	}
 	err = rows.Err()
@@ -203,6 +208,7 @@ func readDocumentTx(ctx context.Context, tx pgx.Tx, session string, tail int) (D
 			rows.Close()
 			return d, 0, content.ErrSecret
 		}
+		e.Kind = transcript.MessageKind(metadata)
 		all = append(all, e)
 		sourceBytes += len(e.Text) + len(metadata) + 192
 		if len(all) > 4096 || sourceBytes > maxSourceBytes {

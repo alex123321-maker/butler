@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/delegation"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -107,7 +108,14 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	}
 	var executor RuntimeExecutor
 	contract := delegation.AdmissionContract()
-	if os.Getenv("BUTLER_MEMORY_FACT_HARNESS") == "1" {
+	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" {
+		client, err := communicationcontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &CommunicationExecutor{Communication: client}
+		contract = communicationcontrol.Contract("communication.message")
+	} else if os.Getenv("BUTLER_MEMORY_FACT_HARNESS") == "1" {
 		client, err := factcontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
 		if err != nil {
 			t.Fatal(err)
@@ -152,6 +160,11 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	}
 	if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{contract}); err != nil {
 		t.Fatal(err)
+	}
+	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" {
+		if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.widget")}); err != nil {
+			t.Fatal(err)
+		}
 	}
 	controller := budget.NewController(pool, budget.DefaultPolicy())
 	controller.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)

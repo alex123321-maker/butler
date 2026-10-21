@@ -128,6 +128,14 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err := s.attachFailedDelegationAttempts(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}
+	if s.config.CommunicationAdmission != nil {
+		if s.config.Communication == nil {
+			return preparedRun{}, fmt.Errorf("communication admission requires owning kernel")
+		}
+		if err := s.config.CommunicationAdmission(ctx, prepared.CurrentRunID); err != nil {
+			return preparedRun{}, err
+		}
+	}
 	if err := s.attachToolContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}

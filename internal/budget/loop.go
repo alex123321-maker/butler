@@ -17,6 +17,7 @@ func (e *LoopError) Error() string { return "execution stopped: " + e.Reason }
 // ToolIdentity contains Broker-owned exact binding metadata, not caller/model
 // fields. Equivalent numeric/object JSON is canonicalized by ArgumentsHash.
 type ToolIdentity struct {
+	OwnerCommunication                                                   bool
 	RunID, MandateID, EffectID, ToolName, ArgsHash, ContractHash, Effect string
 	TaskRevision, ConstraintsRevision                                    int64
 }
@@ -46,7 +47,13 @@ func (c *Controller) CheckToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity)
 			return err
 		}
 		if unknown {
-			return &LoopError{Reason: "external_effect_unknown"}
+			permitted := false
+			if i.OwnerCommunication && i.Effect == "prepare" && (i.ToolName == "communication.message" || i.ToolName == "communication.widget") {
+				_ = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM action_intents a JOIN accepted_inputs n ON n.run_id=a.run_id JOIN communication_admissions c USING(input_id) WHERE a.effect_id=$1 AND a.run_id=$2 AND a.binding->>'tool_name'=$3 AND a.binding->>'args_hash'=$4 AND a.binding->>'contract_hash'=$5 AND a.binding->>'owner_communication'='true' AND a.binding->>'resource'='tool:'||$3 AND jsonb_array_length(a.binding->'credential_refs')=0 AND length(a.binding->>'communication_destinations_hash')=64 AND c.owner_id=$6 AND c.schema_epoch=1 AND c.publication_count<20 AND c.methods ? $3)`, i.EffectID, i.RunID, i.ToolName, i.ArgsHash, i.ContractHash, owner).Scan(&permitted)
+			}
+			if !permitted {
+				return &LoopError{Reason: "external_effect_unknown"}
+			}
 		}
 	}
 	var repeated bool

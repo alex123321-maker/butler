@@ -144,7 +144,19 @@ type GuardedTabRequests interface {
 	PendingRequest(context.Context, string, string, string) (ApprovalRequest, error)
 }
 
+type CommunicationKernel interface {
+	Explicit(context.Context, string) (bool, error)
+	BeforeFinal(context.Context, string, string) (string, error)
+	PendingInteraction(context.Context, string) (string, error)
+	ResumeInteraction(context.Context, string, string) (string, error)
+}
+
 type Config struct {
+	Communication CommunicationKernel
+	// Optional trusted composition only, after source/task preparation and before
+	// catalog loading. Startup supplies no hook and exposes no enabling flag.
+	CommunicationAdmission func(context.Context, string) error
+
 	WaitBrowserOwner func(context.Context, string) error
 
 	ToolDiscoveryEnabled bool

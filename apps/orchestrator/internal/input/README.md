@@ -1,5 +1,15 @@
 # Durable input
 
+Dormant communication hooks use `CheckCommunicationClaimTx` for the exact private
+claim at admission, publication/correction and explicit completion. A live lease
+does not let an old caller borrow a replacement worker's current claim. Distinct
+interaction markers, ready/Finish monotonicity and ordinary legacy paths remain
+separate; the profile is not installed by Bootstrap.
+`ErrCommunicationStatePending` requeues only bounded verification. If the
+checkpoint already records a question wait, Finish retains waiting_for_user;
+if it records an early answer, it retains readiness. An uncertain durable read
+cannot turn a no-expiry question into a queued Input that expires by ordinary TTL.
+
 PostgreSQL-backed acceptance receipts and session-ordered worker claims. The
 adapter `Execute` commits admission and returns a receipt; `Run` owns execution
 independently of the request context. Orchestrator owns execution and recovery;
@@ -64,6 +74,12 @@ does not claim real external reconciliation or exactly-once delivery.
 
 
 Authenticated owner controls bypass the normal FIFO and atomically cancel old task inputs. Ambiguous targets are saved as `waiting_for_user`; explicit conversation/new-task selection or an explicit target control resolves them. See [Owner Controls](../../../../docs/architecture/task-owner-controls-spec.md).
+
+The dormant communication reply resolver joins `AcceptTx` only after current
+verified binding/ACK, canonical session/task, source and authority checks. It
+neither merges sessions nor guesses an ordinary reply's target. A repeated stable
+delivery returns its Input; changed payload returns typed `ErrDeliveryConflict`.
+The standalone communication owner handler maps that conflict to HTTP409.
 
 `ObserveStopped` returns content-free typed evidence to the owner-authorized
 experience adapter for one already blocked/failed original. It requires an empty

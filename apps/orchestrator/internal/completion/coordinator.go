@@ -32,6 +32,7 @@ type EvidenceReader interface {
 }
 type Request struct {
 	RunID, SessionKey, Content, AnswerState string
+	TerminalObserved                        bool
 	PipelineEnabled                         bool
 	TaskID                                  string
 	TaskRevision, ConstraintsRevision       int64
@@ -75,6 +76,9 @@ type Coordinator struct {
 	Transcript interface {
 		AppendFinalTx(context.Context, pgx.Tx, transcript.Message) (transcript.Message, error)
 	}
+	Communication interface {
+		FinalizeTx(context.Context, pgx.Tx, string) (bool, error)
+	}
 	Outbox    *deliveryoutbox.Store
 	Evidence  EvidenceReader
 	DataGuard func(context.Context, pgx.Tx, string) error
@@ -85,7 +89,7 @@ func New(pool *pgxpool.Pool) *Coordinator {
 }
 
 func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) {
-	if strings.TrimSpace(q.Content) == "" || q.RunID == "" || q.SessionKey == "" {
+	if (strings.TrimSpace(q.Content) == "" && c.Communication == nil) || q.RunID == "" || q.SessionKey == "" {
 		return FinalRecord{}, fmt.Errorf("final result requires identity and nonempty content")
 	}
 	token, ok := ownership.TokenFromContext(ctx)
@@ -115,6 +119,16 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 	channel, err := c.Sessions.LockCompletionTx(ctx, tx, q.SessionKey)
 	if err != nil {
 		return FinalRecord{}, err
+	}
+	explicit := false
+	if c.Communication != nil {
+		explicit, err = c.Communication.FinalizeTx(ctx, tx, q.RunID)
+		if err != nil {
+			return FinalRecord{}, err
+		}
+	}
+	if explicit && !q.TerminalObserved || strings.TrimSpace(q.Content) == "" && !explicit {
+		return FinalRecord{}, fmt.Errorf("typed terminal final required")
 	}
 	// A repeated persistence attempt returns the immutable record, never tools.
 	old, err := get(ctx, tx, q.RunID)
@@ -177,7 +191,11 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 			return r, err
 		}
 	}
-	message, err := c.Transcript.AppendFinalTx(ctx, tx, transcript.Message{MessageID: r.MessageID, RunID: r.RunID, SessionKey: r.SessionKey, Content: r.Content, MetadataJSON: `{"source":"model","authoritative_result":true}`, CreatedAt: now})
+	metadata := `{"source":"model","authoritative_result":true}`
+	if explicit {
+		metadata = `{"source":"model","kind":"attempt_final","visibility":"internal","published":false}`
+	}
+	message, err := c.Transcript.AppendFinalTx(ctx, tx, transcript.Message{MessageID: r.MessageID, RunID: r.RunID, SessionKey: r.SessionKey, Content: r.Content, MetadataJSON: metadata, CreatedAt: now})
 	if err != nil {
 		return r, err
 	}
@@ -195,7 +213,7 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 	if err != nil {
 		return r, err
 	}
-	if notify {
+	if notify && !explicit {
 		if err = c.Outbox.EnqueueTx(ctx, tx, r.ResultID, r.RunID, r.SessionKey, channel, r.NotificationContent(), now); err != nil {
 			return r, err
 		}

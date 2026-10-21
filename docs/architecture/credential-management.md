@@ -1,5 +1,10 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The dormant communication client uses the same private HTTP policy: literal
+loopback or the exact `orchestrator:8080/internal/communication` Compose route;
+other remote endpoints require HTTPS. It disables redirects and environment
+proxies. This does not register or enable the communication endpoint.
+
 The candidate-proposal private client admits exactly the owning Compose HTTP
 destination `orchestrator:8080/internal/memory-candidate`, consistent with memory
 reads/facts. Arbitrary remote plain HTTP remains denied; other remote endpoints

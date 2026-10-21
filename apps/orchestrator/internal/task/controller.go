@@ -39,6 +39,9 @@ type ControlTranscript interface {
 	AppendOwnerControlTx(context.Context, pgx.Tx, string, string, string, map[string]any) error
 }
 type Controller struct {
+	interactions interface {
+		OwnerControlTx(context.Context, pgx.Tx, []string, string, string) error
+	}
 	store      *Store
 	authority  *ownership.Authority
 	leases     ControlLeases
@@ -46,6 +49,14 @@ type Controller struct {
 	approvals  ControlApprovals
 	inputs     ControlInputs
 	transcript ControlTranscript
+}
+
+// SetInteractionControls composes optional waiting-state bookkeeping. It does
+// not replace owner authorization, versioning, lease revocation or input control.
+func (c *Controller) SetInteractionControls(h interface {
+	OwnerControlTx(context.Context, pgx.Tx, []string, string, string) error
+}) {
+	c.interactions = h
 }
 
 func NewController(store *Store, authority *ownership.Authority, leases ControlLeases, runs ControlRuns, approvals ControlApprovals, inputs ControlInputs, transcript ControlTranscript) *Controller {
@@ -420,6 +431,11 @@ func (c *Controller) ApplyWithGuard(ctx context.Context, req ControlRequest, gua
 		event.Source = channel
 		result.ContinuationInputID, err = c.inputs.AdmitControlTx(ctx, tx, event, actor.OwnerID, root.TaskID, "queued", "accepted", "")
 		if err != nil {
+			return result, err
+		}
+	}
+	if c.interactions != nil {
+		if err = c.interactions.OwnerControlTx(ctx, tx, ids, req.Kind, result.ContinuationInputID); err != nil {
 			return result, err
 		}
 	}

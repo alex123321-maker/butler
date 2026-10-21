@@ -242,6 +242,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
+		if errors.Is(err, ErrCommunicationStatePending) {
+			return nil, err
+		}
 		if s.scheduleModelRetry(transportCtx, current, err) {
 			return nil, ErrModelRetryPending
 		}
@@ -290,7 +293,44 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 			return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("memory evidence validation failed"))
 		}
 	}
-	if strings.TrimSpace(finalMessage) == "" {
+	explicit := false
+	if s.config.Communication != nil {
+		explicit, err = s.config.Communication.Explicit(ctx, current.GetRunId())
+		if err != nil {
+			return nil, err
+		}
+	}
+	if explicit && current.GetCurrentState() != commonv1.RunState_RUN_STATE_FINALIZING {
+		decision, e := s.config.Communication.BeforeFinal(ctx, current.GetRunId(), finalMessage)
+		if e != nil {
+			return nil, e
+		}
+		switch decision {
+		case "correct":
+			tools, e := s.toolSetForContinuation(ctx, current.GetRunId())
+			if e != nil {
+				return s.failedCommunicationCorrection(ctx, current, e)
+			}
+			stream, e := s.provider.ContinueRun(ctx, transport.ContinueRunRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolSet: tools, InputItems: []transport.InputItem{{Role: "system", Content: "Publish the requested answer through the available communication tool. Do not repeat completed actions. This is the single bounded missing-response correction."}}})
+			if e != nil {
+				return s.failedCommunicationCorrection(ctx, current, e)
+			}
+			final, updated, e := s.consumeModelStream(ctx, runLog, current, event.SessionKey, leaseID, stream)
+			if errors.Is(e, ErrApprovalSuspended) {
+				return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: updated.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
+			}
+			if e != nil {
+				return s.failedCommunicationCorrection(ctx, updated, e)
+			}
+			return s.finalizeExecution(ctx, runLog, updated, event, prepared, leaseID, final)
+		case "failed":
+			s.blockTaskRun(ctx, current.GetRunId(), "communication_result_missing")
+			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "communication_result_missing"}, nil
+		case "waiting":
+			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
+		}
+	}
+	if !explicit && strings.TrimSpace(finalMessage) == "" {
 		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("model run completed without assistant_final event"))
 	}
 
@@ -301,13 +341,13 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 		}
 		current = next
 	}
-	if err := s.checkpoint(ctx, current.GetRunId(), "finalizing", map[string]any{"final_message": finalMessage, "answer_state": answerState(ctx)}); err != nil {
+	if err := s.checkpoint(ctx, current.GetRunId(), "finalizing", map[string]any{"final_message": finalMessage, "answer_state": answerState(ctx), "terminal_observed": finalTerminalSeen(ctx)}); err != nil {
 		return nil, err
 	}
 	if s.config.Completion == nil {
 		return nil, fmt.Errorf("atomic result persistence unavailable")
 	}
-	request := completion.Request{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, AnswerState: answerState(ctx), PipelineEnabled: s.config.DurableMemoryPipeline}
+	request := completion.Request{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, AnswerState: answerState(ctx), PipelineEnabled: s.config.DurableMemoryPipeline, TerminalObserved: finalTerminalSeen(ctx)}
 	if prepared.Task != nil {
 		request.TaskID = prepared.Task.TaskID
 		request.TaskRevision = prepared.Task.Revision
@@ -335,9 +375,21 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 
 func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, initialStream transport.EventStream) (string, *sessionv1.RunRecord, error) {
 	var finalMessage string
+	resetAnswerState(ctx)
 	stream := initialStream
 	needsEvidence, _ := ctx.Value(adaptivePlanKey{}).(bool)
 	partialDelivery := !needsEvidence
+	explicit := false
+	if s.config.Communication != nil {
+		var e error
+		explicit, e = s.config.Communication.Explicit(ctx, current.GetRunId())
+		if e != nil {
+			return "", current, e
+		}
+		if explicit {
+			partialDelivery = false
+		}
+	}
 
 	for stream != nil {
 		var nextStream transport.EventStream
@@ -377,6 +429,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 				if transportEvent.AssistantFinal != nil {
 					finalMessage = transportEvent.AssistantFinal.Content
 					resetAnswerState(ctx)
+					markFinalSeen(ctx)
 					if partialFinishReason(transportEvent.AssistantFinal.FinishReason) {
 						setPartialAnswer(ctx)
 					}
@@ -410,6 +463,8 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					return "", current, &budget.LoopError{Reason: string(transportEvent.TransportError.Type)}
 				}
 				return "", current, transportError(transportEvent.TransportError)
+			case transport.EventTypeRunCompleted:
+				markTerminalSeen(ctx)
 			case transport.EventTypeRunTimedOut:
 				return "", current, &transport.Error{Type: transport.ErrorTypeProviderTimeout, Message: "provider_timeout"}
 			case transport.EventTypeRunCancelled:
@@ -419,6 +474,9 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 			}
 		}
 		stream = nextStream
+	}
+	if explicit && !finalTerminalSeen(ctx) {
+		return "", current, fmt.Errorf("explicit stream ended without typed final and terminal")
 	}
 	return finalMessage, current, nil
 }

@@ -1,5 +1,12 @@
 # Tool Broker
 
+Dormant `CommunicationExecutor` implements fixed owning control dispatch for
+the strict `communication.*` contracts. It forwards only actual dispatched action
+identity and attempts a read-only receipt lookup after lost ACK. It does not
+register the family in Bootstrap; no current provider receives these schemas.
+Exact approval/authority/budget checks remain mandatory. See
+[the kernel boundary](../orchestrator/internal/communication/README.md).
+
 Operator budget policy `disable_owner_day:true` omits the aggregate owner/day
 scope for new reservations. It must match Orchestrator. Task/mandate/delegation
 limits, authority and existing spending remain enforced; see
