@@ -110,7 +110,9 @@ func (c *Controller) scopeSpecsTx(ctx context.Context, tx pgx.Tx, runID, taskID,
 			specs = append(specs, ScopeSpec{Kind: "mandate", OwnerID: owner, SubjectID: mandateID, Limits: c.Policy.Mandate, Deadline: expiry})
 		}
 	}
-	specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: owner, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+	if !c.Policy.DisableOwnerDay {
+		specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: owner, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+	}
 	if taskID != "" {
 		branch, e := delegation.LoadTx(ctx, tx, taskID)
 		if e != nil {

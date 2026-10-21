@@ -16,6 +16,7 @@ type ModelPrice struct {
 	OutputMicrosPerToken int64  `json:"output_micros_per_token"`
 }
 type Policy struct {
+	DisableOwnerDay    bool                  `json:"disable_owner_day,omitempty"`
 	Task               Units                 `json:"task"`
 	Mandate            Units                 `json:"mandate"`
 	Day                Units                 `json:"day"`

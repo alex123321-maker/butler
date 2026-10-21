@@ -747,6 +747,7 @@ func New(ctx context.Context) (*App, error) {
 		delegationDecisions = childLifecycle
 	}
 	httpServer := newHTTPServer(httpServerDeps{
+		budgetPolicy:               budgetPolicy,
 		experiencePolicies:         configureExperiencePolicies(experienceMemory, memoryModelStore, taskStore, transcriptStore, finalResults, sourceCatalog),
 		experienceStore:            experienceMemory,
 		guardedTabOwner:            guardedTabOwner,

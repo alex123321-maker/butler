@@ -14,10 +14,20 @@ model turn; Broker reserves allowance in its permanent effect-claim transaction;
 Task Store reserves children before insertion. A model cannot supply scopes,
 quotes, reservation keys, rates, ownership or mandate authority.
 
-Applicable scopes are root task, current assigned mandate and owner UTC calendar
-day. Conversation uses session/day and owner/day without planner/critic overhead.
+Applicable scopes are root task, current assigned mandate and, by default, owner
+UTC calendar day. Conversation uses session/day and, by default, owner/day without
+planner/critic overhead. Operator policy `disable_owner_day:true` in
+`BUTLER_EXECUTION_BUDGET_POLICY_JSON` omits the shared owner/day scope from new
+model, tool, child, local retrieval, auxiliary and prospective initiative/schedule
+admissions. Orchestrator and Broker must use the same setting. Root, conversation,
+mandate, delegation, job/policy limits, authority and deadlines remain mandatory.
+Existing daily scopes/reservations/observations are retained unchanged; enabling
+the guard again reuses the same immutable daily allowance and spending. No large
+sentinel limit or ledger reset represents the opt-out. The authenticated budget
+read model includes `owner_day_enabled` so historical scopes do not imply current
+enforcement. This operator setting cannot be supplied through model arguments.
 Restart, worker/run ID change, delegation and amendments do not reset root or
-mandate spending. Daily counters change at midnight UTC; root/mandate counters
+mandate spending. Enabled daily counters change at midnight UTC; root/mandate counters
 continue. Migration057 delegation contracts add exact immutable child scopes to
 every reservation on that branch. Their limits/deadlines restrict existing scopes
 further, never replace them. Scheduling acceptance is tracked separately in

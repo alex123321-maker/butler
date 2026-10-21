@@ -3,7 +3,7 @@ package config
 import "testing"
 
 func TestExecutionBudgetPolicyIsValidatedForBothServices(t *testing.T) {
-	valid := `{"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}`
+	valid := `{"disable_owner_day":true,"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}`
 	get := envMap(map[string]string{"BUTLER_EXECUTION_BUDGET_POLICY_JSON": valid, "BUTLER_POSTGRES_URL": "postgres://butler:test@localhost/butler_test", "BUTLER_REDIS_URL": "redis://localhost/0"})
 	orch, _, err := loadOrchestrator(get)
 	if err != nil {

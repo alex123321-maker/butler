@@ -1,5 +1,11 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Operator budget policy `disable_owner_day:true` disables the shared daily limit
+for new foreground/background admissions while retaining task, conversation,
+mandate and job bounds and historical spending. Set the same policy on Broker.
+`GET /api/v3/execution-budgets` reports `owner_day_enabled`; see
+[the budget contract](../../docs/architecture/execution-budget-contract.md).
+
 Notification tasks use task-scoped history and atomically save searchable notes.
 Owner-approved index policies maintain the pinned local semantic index through
 the existing durable queue. See [the operating contract](../../docs/architecture/mobile-memory-search.md).

@@ -61,6 +61,7 @@ import (
 )
 
 type httpServerDeps struct {
+	budgetPolicy               budget.Policy
 	experiencePolicies         experience.PolicyCreator
 	experienceStore            *experience.Store
 	guardedTabOwner            apiservice.GuardedTabDecisions
@@ -229,7 +230,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	mux.Handle("/api/v4/server-browser", apiservice.ServerBrowser(deps.ownerAuth, browserController))
 	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
-	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
+	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth, !deps.budgetPolicy.DisableOwnerDay))
 	var extensionClient *extensions.ControlClient
 	if deps.cfg.ExtensionControlURL != "" {
 		token, tokenErr := actionauth.ReadServiceToken(deps.cfg.ActionAuthorityTokenFile)
