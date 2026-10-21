@@ -1192,3 +1192,9 @@ See `deploy/docker-compose.server-browser.yml` and the browser-session contract.
 accepted only from the operator environment. Stored/UI settings cannot redirect
 the Broker-authenticated route. The exact private endpoint path and existing
 action-authority token configuration are required before startup.
+The continuous owner Web surface uses authenticated catalog browse, bounded
+Russian text search and owner-derived note creation under `/api/v4/memory`.
+These routes do not admit semantic inference or change the execution kernel.
+See [source projections](../../docs/architecture/versioned-memory-sources.md)
+and [Web behavior](../../web/README.md). Server-browser ownership/manual control
+retain the existing private Broker/runtime protocol.

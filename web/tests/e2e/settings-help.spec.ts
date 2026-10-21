@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('settings show help and escape code-owned metadata', async ({ page }) => {
@@ -15,7 +16,7 @@ test('settings show help and escape code-owned metadata', async ({ page }) => {
       await route.fulfill({ json: {} })
     }
   })
-  await page.goto('/settings')
+  await openMindPanel(page, '/settings')
   const setting = page.locator('article.setting-row').filter({ hasText: 'BUTLER_LOG_LEVEL' })
   await expect(setting.getByText('Уровень детализации логов.', { exact: true })).toBeVisible()
   await expect(setting.getByText('Допустимые значения: info, debug', { exact: true })).toBeVisible()

@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('system prompt writes and preview use owner proof only in page memory', async ({ page }) => {
@@ -32,7 +33,7 @@ test('system prompt writes and preview use owner proof only in page memory', asy
       await route.fulfill({ json: {} })
     }
   })
-  await page.goto('/settings')
+  await openMindPanel(page, '/settings')
   await page.getByLabel('Owner control token').fill(token)
   await page.getByPlaceholder('Write the operator base prompt here').fill('Reviewed operator instructions')
   await page.getByRole('button', { name: 'Save prompt', exact: true }).click()
@@ -40,6 +41,6 @@ test('system prompt writes and preview use owner proof only in page memory', asy
   expect(updates).toBe(1)
   expect(previews).toBeGreaterThan(0)
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toContain(token)
-  await page.goto('/settings')
+  await openMindPanel(page, '/settings')
   await expect(page.getByLabel('Owner control token')).toHaveValue('')
 })

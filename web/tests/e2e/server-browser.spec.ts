@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
+import { fixture, connect, ownerToken } from './mind-fixture'
 
 test('server browser supports viewing, exclusive control, input and explicit return without storing secrets', async ({ page }) => {
-  const token = 'fixture-browser-owner-token-000000000000'
+  const token = ownerToken
+  await fixture(page)
   const id = '0123456789abcdef0123456789abcdef'
   const jpeg = (await page.screenshot({ type: 'jpeg' })).toString('base64')
   let mode = 'agent', epoch = 0, sequence = 0, rejectText = false
@@ -22,37 +24,52 @@ test('server browser supports viewing, exclusive control, input and explicit ret
     sequence++
     return route.fulfill({ json: { ok: true, frame: { jpeg, frame_id: `frame-${sequence}`, width: 1280, height: 720, mode, epoch } } })
   })
-  await page.goto('/browser')
-  await expect(page.getByRole('button', { name: 'Load browsers' })).toBeDisabled()
-  await page.getByLabel('Owner control token').fill(token)
-  await page.getByRole('button', { name: 'Load browsers' }).click()
-  await expect(page.getByAltText('Live server browser page')).toBeVisible()
-  await expect(page.getByText('Viewing agent actions.')).toBeVisible()
-  await page.getByRole('button', { name: 'Take control' }).click()
-  await expect(page.getByText('You control this browser. Agent browser actions are paused.')).toBeVisible()
-  await page.getByAltText('Live server browser page').click({ position: { x: 100, y: 100 } })
+  await connect(page)
+  await page.getByRole('button', {name:'Браузер',exact:true}).click()
+  await expect(page.getByAltText('Страница серверного браузера')).toBeVisible()
+  await expect(page.getByText('Управляет агент')).toBeVisible()
+  await page.getByRole('button', { name: 'Взять управление' }).click()
+  await expect(page.getByText('Вы управляете · агент ждёт')).toBeVisible()
+  await page.getByAltText('Страница серверного браузера').click({ position: { x: 100, y: 100 } })
   await expect.poll(() => inputs.filter(input => input.operation === 'click').length).toBe(1)
-  await page.getByLabel('Remote text').fill('owner-private-password')
-  await page.getByRole('button', { name: 'Send text' }).click()
+  await page.getByLabel('Текст для страницы').fill('owner-private-password')
+  await page.getByRole('button', { name: 'Ввести текст' }).click()
   await expect.poll(() => inputs.filter(input => input.operation === 'text').length).toBe(1)
-  await expect(page.getByLabel('Remote text')).toHaveValue('')
-  await page.getByRole('application', { name: 'Remote browser viewport' }).press('Tab')
+  await expect(page.getByLabel('Текст для страницы')).toHaveValue('')
+  await page.getByRole('application', { name: 'Страница серверного браузера' }).press('Tab')
   await expect.poll(() => inputs.filter(input => input.operation === 'key').length).toBe(1)
   rejectText = true
-  await page.getByLabel('Remote text').fill('second-private-input')
-  await page.getByRole('button', { name: 'Send text' }).click()
+  await page.getByLabel('Текст для страницы').fill('second-private-input')
+  await page.getByRole('button', { name: 'Ввести текст' }).click()
   await expect.poll(() => inputs.filter(input => input.operation === 'text').length).toBe(2)
   // Queue an Enter while the preceding input is in flight. An uncertain reply
   // must discard queued keys instead of submitting against unchecked state.
-  await page.getByRole('application', { name: 'Remote browser viewport' }).press('Enter')
+  await page.getByRole('application', { name: 'Страница серверного браузера' }).press('Enter')
   releaseRejectedText?.()
-  await expect(page.getByText('Browser unavailable or page changed. Refresh and check the page before another input.')).toBeVisible()
+  await expect(page.getByText('Команда не подтверждена или страница изменилась. Проверьте страницу перед следующим действием.')).toBeVisible()
   await page.waitForTimeout(1100)
   expect(inputs.filter(input => input.operation === 'text')).toHaveLength(2)
   expect(inputs.filter(input => input.operation === 'key')).toHaveLength(1)
-  await page.getByRole('button', { name: 'Return to agent' }).click()
-  await expect(page.getByText('Viewing agent actions.')).toBeVisible()
+  await page.getByRole('button', { name: 'Вернуть агенту' }).click()
+  await expect(page.getByText('Управляет агент')).toBeVisible()
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toMatch(/fixture-browser-owner-token|owner-private-password|second-private-input/)
-  await page.getByLabel('Owner control token').fill('changed-proof')
-  await expect(page.getByAltText('Live server browser page')).toHaveCount(0)
+  await page.getByRole('dialog').getByRole('button',{name:'Закрыть',exact:true}).click()
+  await page.getByRole('button',{name:'Настройки',exact:true}).first().click()
+  await page.getByLabel('Доступ владельца',{exact:true}).fill('changed-proof')
+  await expect(page.getByAltText('Страница серверного браузера')).toHaveCount(0)
+})
+
+test('closing a manually controlled browser keeps the agent fence and clears the frame',async({page})=>{
+ await fixture(page)
+ let mode='agent',epoch=0,releases=0
+ const jpeg=(await page.screenshot({type:'jpeg'})).toString('base64')
+ await page.route('**/api/v4/server-browser',r=>{
+  const body=r.request().postDataJSON()
+  if(body.operation==='list')return r.fulfill({json:{ok:true,sessions:[{browser_session_id:'session',task_id:'task-browser',run_id:'run-browser',mode,epoch}]}})
+  if(body.operation==='take'){mode='owner';epoch++}
+  if(body.operation==='release'){releases++;mode='agent';epoch++}
+  return r.fulfill({json:{ok:true,frame:{jpeg,frame_id:'current-frame',width:1280,height:720,mode,epoch,url:'https://example.invalid'}}})
+ })
+ await connect(page);await page.getByRole('button',{name:'Браузер',exact:true}).click();await page.getByRole('button',{name:'Взять управление'}).click();await expect(page.getByText('Вы управляете · агент ждёт')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'Закрыть',exact:true}).click();expect(releases).toBe(0);await expect(page.getByAltText('Страница серверного браузера')).toHaveCount(0)
+ await page.getByRole('button',{name:'Браузер',exact:true}).click();await expect(page.getByText('Ручное управление — восстановите доступ')).toBeVisible();expect(releases).toBe(0)
 })

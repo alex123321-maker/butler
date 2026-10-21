@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('initiative controls preserve quiet decisions, source revisions and current owner proof', async ({ page }) => {
@@ -52,7 +53,7 @@ test('initiative controls preserve quiet decisions, source revisions and current
     expect(request.schedule.missed_policy).toBe('coalesce')
     await route.fulfill({ json: { kind: 'schedule', subject_id: request.schedule.schedule_id, revision: 1 } })
   })
-  await page.goto('/initiatives')
+  await openMindPanel(page, '/initiatives')
   await expect(page.getByRole('button', { name: 'Load initiatives' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load initiatives' }).click()
@@ -91,7 +92,7 @@ test('a late initiative response does not restore data after owner proof changes
     await received
     await route.fulfill({ json: { sources: [], schedules: [], initiatives: [], events: [], digests: [], attention_used_today: 0, attention_daily_limit: 20 } })
   })
-  await page.goto('/initiatives')
+  await openMindPanel(page, '/initiatives')
   await page.getByLabel('Owner control token').fill('first-fixture-proof')
   await page.getByRole('button', { name: 'Load initiatives' }).click()
   await expect.poll(() => requested).toBe(true)

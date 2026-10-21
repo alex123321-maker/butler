@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 import { createHash } from 'node:crypto'
 
@@ -20,7 +21,7 @@ test('generated converter review keeps owner proof, exact version rights and cur
     expect(new URL(route.request().url()).searchParams.get('source_id')).toBe(ref.source_id)
     return route.fulfill({ json: { source: { ...ref, status: deleted ? 'deleted' : 'active', body: deleted ? '' : body } } })
   })
-  await page.goto('/converters')
+  await openMindPanel(page, '/converters')
   await expect(page.getByRole('button', { name: 'Load converters' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load converters' }).click()

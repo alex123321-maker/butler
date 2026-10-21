@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('owner Doctor displays partial observations, approvals and historical reports', async ({ page }) => {
@@ -24,14 +25,14 @@ test('owner Doctor displays partial observations, approvals and historical repor
 	 saved = { id: 8, status: report.status, checked_at: new Date().toISOString(), report }
     await route.fulfill({ status: body.input_id ? 200 : 202, json: saved })
   })
-  await page.goto('/doctor')
+  await openMindPanel(page, '/doctor')
   await expect(page.getByRole('button', { name: 'Run System Check' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill('owner-fixture')
   await page.getByRole('button', { name: 'Load reports' }).click()
   await expect(page.getByText('historical_config')).toBeVisible()
   await page.getByRole('button', { name: 'Run System Check' }).click()
   await expect(page.getByRole('link', { name: 'Review the exact action in Approvals' })).toBeVisible()
-	await page.reload()
+	await openMindPanel(page, '/doctor')
 	await page.getByLabel('Owner control token').fill('owner-fixture')
 	await page.getByRole('button', { name: 'Load reports' }).click()
 	await expect(page.getByRole('link', { name: 'Review the exact action in Approvals' })).toBeVisible()
@@ -55,7 +56,7 @@ test('changing owner proof discards an outstanding diagnostic response', async (
     await wait
     await route.fulfill({ json: { id: 0, status: 'unknown', report: { status: 'unknown', checks: [{ name: 'PRIVATE_OLD_REPORT', status: 'healthy' }] } } })
   })
-  await page.goto('/doctor')
+  await openMindPanel(page, '/doctor')
   await page.getByLabel('Owner control token').fill('first-owner')
   await page.getByRole('button', { name: 'Run System Check' }).click()
   await expect.poll(() => requested).toBeTruthy()

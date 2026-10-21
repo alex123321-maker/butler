@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('reviewed skills expose evidence, exact lifecycle and source deletion without new permissions', async ({ page }) => {
@@ -27,7 +28,7 @@ test('reviewed skills expose evidence, exact lifecycle and source deletion witho
     }
     await route.fulfill({ json: { item: view() } })
   })
-  await page.goto('/skills')
+  await openMindPanel(page, '/skills')
   await expect(page.getByRole('button', { name: 'Load skills', exact: true })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load skills', exact: true }).click()

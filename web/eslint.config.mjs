@@ -5,24 +5,10 @@ import vueParser from "vue-eslint-parser";
 
 const guardedFiles = [
   "app/**/*.{js,ts,vue}",
-  "widgets/**/*.{js,ts,vue}",
   "features/**/*.{js,ts,vue}",
   "entities/**/*.{js,ts,vue}",
   "shared/**/*.{js,ts,vue}",
-  "layouts/default.vue",
-  "pages/index.vue",
-  "pages/tasks.vue",
-  "pages/goals.vue",
-  "pages/initiatives.vue",
-  "pages/extensions.vue",
-  "pages/memory.vue",
-  "pages/mobile.vue",
-  "pages/voice.vue",
-  "pages/tasks/**/*.vue",
-  "pages/approvals.vue",
-  "pages/artifacts.vue",
-  "pages/activity.vue",
-  "pages/system.vue"
+  "pages/**/*.vue"
 ];
 
 export default [
