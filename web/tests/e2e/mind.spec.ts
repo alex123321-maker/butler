@@ -233,7 +233,9 @@ test('calendar, observed run log and controls use the actual task; result states
     page.getByText('Сводка сохранена', { exact: true }),
   ).toBeVisible()
   await expect(page.getByText('INTERNAL_ATTEMPT_SECRET')).toHaveCount(0)
-  await expect(page.getByText('Вспомнил нужное', { exact: true })).toBeVisible()
+  await expect(
+    page.locator('.mind-log [data-event-type="memory_loaded"] summary'),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Приостановить поручение' }).click()
   await page
     .getByRole('button', { name: 'Повторить действие', exact: true })

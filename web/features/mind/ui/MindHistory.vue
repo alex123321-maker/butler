@@ -27,7 +27,15 @@
       {{ statusLabel(run.run.current_state) }} ·
       {{ dateLabel(run.run.started_at) }}
     </p>
-    <MindRun :key="id" :run-id="id" :activity="[]" :motion="store.motion" />
+    <MindRun
+      :key="id"
+      :run-id="id"
+      :activity="[]"
+      :tools="run.tool_calls || []"
+      :motion="store.motion"
+      full
+      @result="refreshTools"
+    />
     <details>
       <summary>Записанный разговор</summary>
       <p
@@ -41,14 +49,7 @@
         Опубликованных сообщений нет.
       </p>
     </details>
-    <details v-if="run.tool_calls.length">
-      <summary>Инструменты</summary>
-      <p v-for="tool in run.tool_calls" :key="tool.tool_call_id">
-        {{ tool.tool_name }} · {{ tool.status
-        }}<small class="mind-muted"> {{ dateLabel(tool.started_at) }}</small>
-      </p>
-    </details></template
-  >
+  </template>
 </template>
 <script setup lang="ts">
 import type {
@@ -74,6 +75,22 @@ const visibleMessages = computed(
   () => run.value?.messages.filter(publicMessage) || [],
 )
 let version = 0
+async function refreshTools() {
+  const current = version,
+    id = props.id
+  try {
+    const data = await store.request<{ tool_calls?: TranscriptToolCall[] }>(
+      `/api/v1/runs/${encodeURIComponent(id)}/transcript`,
+    )
+    if (current === version && run.value)
+      run.value.tool_calls = data.tool_calls || []
+  } catch {
+    /* Keep the last acknowledged calls for this run. */
+  }
+}
+onUnmounted(() => {
+  version++
+})
 watch(
   () => [props.kind, props.id, store.epoch] as const,
   async ([kind, id], _, cleanup) => {

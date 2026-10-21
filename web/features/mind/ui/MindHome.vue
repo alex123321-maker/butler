@@ -107,9 +107,12 @@
             :key="`${store.epoch}-${store.runId}`"
             :run-id="store.runId"
             :activity="store.activity"
+            :tools="store.toolCalls"
             :motion="store.motion"
             @connection="streamConnected = $event"
-            @ended="store.refresh()"
+            @events="runEvents = $event"
+            @result="refreshLog"
+            @ended="refreshLog"
           />
           <p v-else class="mind-muted">
             {{
@@ -337,21 +340,12 @@
         <p v-if="!store.tasks.length" class="mind-muted">Поручений пока нет.</p>
       </div>
       <MindTaskDetail v-else-if="store.panel === 'task'" />
-      <div v-else-if="store.panel === 'journal'">
-        <p
-          v-for="entry in store.activity"
-          :key="entry.activity_id"
-          class="mind-journal-row"
-        >
-          <time>{{ timeLabel(entry.created_at) }}</time
-          ><span
-            >{{ entry.title }}<small>{{ entry.summary }}</small></span
-          >
-        </p>
-        <p v-if="!store.activity.length" class="mind-muted">
-          Журнал пока пуст.
-        </p>
-      </div>
+      <MindEventLog
+        v-else-if="store.panel === 'journal'"
+        :rows="journalRows"
+        :motion="store.motion"
+        :working="streamConnected && store.working"
+      />
       <MindApprovals v-else-if="store.panel === 'approvals'" />
       <div v-else-if="store.panel === 'notice' && store.selectedNotice">
         <p class="mind-readable">{{ store.selectedNotice.body }}</p>
@@ -398,6 +392,8 @@
 </template>
 <script setup lang="ts">
 import { useMind } from '../model/store'
+import type { RunEvent } from '~/composables/useRunEvents'
+import { runLogRows } from '../model/run-log'
 import type { CalendarItem, Notice, Panel } from '../model/types'
 import {
   dateLabel,
@@ -409,6 +405,7 @@ import {
 import CalendarGarden from './CalendarGarden.vue'
 import MindIcon from './MindIcon.vue'
 import MindRun from './MindRun.vue'
+import MindEventLog from './MindEventLog.vue'
 import MindDialog from './MindDialog.vue'
 import MindMemory from './MindMemory.vue'
 import MindMemoryEditor from './MindMemoryEditor.vue'
@@ -425,6 +422,30 @@ const store = useMind(),
   chat = ref<HTMLElement | null>(null),
   streamConnected = ref(false)
 const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+const runEvents = ref<RunEvent[]>([])
+const journalRows = computed(() =>
+  runLogRows(store.runId, store.activity, runEvents.value, store.toolCalls),
+)
+watch(
+  () => [store.epoch, store.runId],
+  () => {
+    runEvents.value = []
+  },
+  { flush: 'sync' },
+)
+let logRefresh: ReturnType<typeof setTimeout> | undefined
+function refreshLog() {
+  clearTimeout(logRefresh)
+  logRefresh = setTimeout(() => {
+    void store.refreshTask()
+  }, 100)
+}
+watch(
+  () => [store.epoch, store.runId],
+  () => clearTimeout(logRefresh),
+  { flush: 'sync' },
+)
+onUnmounted(() => clearTimeout(logRefresh))
 const month = new Intl.DateTimeFormat('ru-RU', {
   month: 'long',
   year: 'numeric',

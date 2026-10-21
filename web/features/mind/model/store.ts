@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, onScopeDispose, ref, watch } from 'vue'
+import type { TranscriptToolCall } from '~/composables/useApi'
 import {
   calendarTasks,
   isWorking,
@@ -51,7 +52,8 @@ export const useMind = defineStore('mind', () => {
     detail = ref<TaskDetail | null>(null),
     durable = ref<DurableTask | null>(null),
     activity = ref<Activity[]>([]),
-    messages = ref<Message[]>([])
+    messages = ref<Message[]>([]),
+    toolCalls = ref<TranscriptToolCall[]>([])
   const memories = ref<Source[]>([]),
     memoryMode = ref('recent'),
     memoryDiagnostics = ref<string[]>([]),
@@ -170,6 +172,7 @@ export const useMind = defineStore('mind', () => {
     durable.value = null
     activity.value = []
     messages.value = []
+    toolCalls.value = []
     memories.value = []
     inspection.value = null
     memoryQuery.value = ''
@@ -232,7 +235,9 @@ export const useMind = defineStore('mind', () => {
     connecting.value = true
     connectionError.value = ''
     try {
-      const access = await request<{ authenticated: boolean }>('/api/v4/memory/access')
+      const access = await request<{ authenticated: boolean }>(
+        '/api/v4/memory/access',
+      )
       if (access.authenticated !== true) throw new Error('owner_denied')
       if (!current(stamp)) return
       connected.value = true
@@ -289,6 +294,7 @@ export const useMind = defineStore('mind', () => {
     durable.value = null
     activity.value = []
     messages.value = []
+    toolCalls.value = []
     pendingControl.value = null
     if (!connected.value) return
     await loadTask(id, selection)
@@ -316,11 +322,14 @@ export const useMind = defineStore('mind', () => {
     const activeRun = selectedTask.value?.run_id
     if (activeRun) {
       try {
-        const transcript = await request<{ messages: Message[] }>(
-          `/api/v1/runs/${encodeURIComponent(activeRun)}/transcript`,
-        )
-        if (valid() && selectedTask.value?.run_id === activeRun)
+        const transcript = await request<{
+          messages: Message[]
+          tool_calls?: TranscriptToolCall[]
+        }>(`/api/v1/runs/${encodeURIComponent(activeRun)}/transcript`)
+        if (valid() && selectedTask.value?.run_id === activeRun) {
           messages.value = transcript.messages || []
+          toolCalls.value = transcript.tool_calls || []
+        }
       } catch {
         /* Keep the last acknowledged transcript for this exact run. */
       }
@@ -620,6 +629,7 @@ export const useMind = defineStore('mind', () => {
     () => {
       messages.value = []
       activity.value = []
+      toolCalls.value = []
     },
     { flush: 'sync' },
   )
@@ -638,6 +648,7 @@ export const useMind = defineStore('mind', () => {
     durable,
     activity,
     messages,
+    toolCalls,
     conversation,
     runId,
     working,

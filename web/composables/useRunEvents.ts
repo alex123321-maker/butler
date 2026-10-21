@@ -107,7 +107,19 @@ export function useRunEvents(runId: string): UseRunEventsReturn {
             teardown()
             return
           }
-          if (evt.event_type !== type || typeof evt.timestamp !== 'string' || !Number.isFinite(Date.parse(evt.timestamp)) || !evt.payload || typeof evt.payload !== 'object') return
+          if (
+            evt.event_type !== type ||
+            typeof evt.timestamp !== 'string' ||
+            !Number.isFinite(Date.parse(evt.timestamp))
+          )
+            return
+          if (evt.payload === undefined) evt.payload = {}
+          if (
+            !evt.payload ||
+            typeof evt.payload !== 'object' ||
+            Array.isArray(evt.payload)
+          )
+            return
 
           // Deduplicate events (replay events on reconnect may repeat).
           if (evt.event_id && seenEventIds.has(evt.event_id)) {
@@ -118,9 +130,11 @@ export function useRunEvents(runId: string): UseRunEventsReturn {
           }
 
           const rows = events.value
-          events.value = (type === 'assistant_delta' && rows.at(-1)?.event_type === type
-            ? [...rows.slice(0, -1), evt]
-            : [...rows, evt]).slice(-300)
+          events.value = (
+            type === 'assistant_delta' && rows.at(-1)?.event_type === type
+              ? [...rows.slice(0, -1), evt]
+              : [...rows, evt]
+          ).slice(-300)
         } catch {
           // Malformed event — skip.
         }

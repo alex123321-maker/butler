@@ -68,6 +68,8 @@ export interface Approval {
 }
 export interface Activity {
   activity_id: number
+  run_id?: string
+  details_json?: string
   title: string
   summary: string
   activity_type: string

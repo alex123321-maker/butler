@@ -190,8 +190,9 @@ a {
 }
 .mind-log summary {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 13px;
+  min-height: 38px;
   padding: 7px 0;
   list-style: none;
   cursor: pointer;
@@ -213,13 +214,72 @@ a {
   font-size: 10px;
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
-.mind-log details p {
-  margin: 5px 0 12px 53px;
-  font-size: 11px;
+.mind-log summary > span:not(.sr-only) {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.mind-log-duration {
+  margin-left: auto;
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+.mind-log summary > .mind-log-disclosure {
+  width: 10px;
+  height: 10px;
+  margin-left: auto;
+  transition: transform 180ms ease;
+}
+.mind-log details[open] > summary > .mind-log-disclosure {
+  transform: rotate(90deg);
+}
+.mind-log-body {
+  margin: 4px 0 16px 47px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.mind-log-section {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+.mind-log-section-icon {
+  padding-top: 9px;
+  color: var(--color-text-muted);
+}
+.mind-log-section-icon svg {
+  width: 14px;
+  height: 14px;
+}
+.mind-log-section pre {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
+  font:
+    11px / 1.65 ui-monospace,
+    monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  overflow: auto;
+  max-height: 260px;
+  min-width: 0;
+}
+.mind-log .mind-log-failed > summary > svg:first-of-type {
+  color: var(--color-state-error);
+}
+.mind-tool-pending {
+  animation: mind-tool-breathe 1.6s ease-in-out infinite;
+}
+@keyframes mind-tool-breathe {
+  50% {
+    opacity: 0.35;
+  }
 }
 .mind-journal-button {
   margin-top: 10px;
@@ -772,23 +832,6 @@ a {
 }
 .mind-panel-row > span:last-child {
   color: var(--color-text-muted);
-}
-.mind-journal-row {
-  display: flex;
-  gap: 13px;
-  align-items: baseline;
-  font-size: 12px;
-  margin: 17px 0;
-}
-.mind-journal-row time {
-  font-size: 10px;
-  color: var(--color-text-muted);
-}
-.mind-journal-row small {
-  display: block;
-  margin-top: 5px;
-  font-size: 11px;
-  color: var(--color-text-secondary);
 }
 .mind-task-state {
   display: flex;

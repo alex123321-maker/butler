@@ -14,6 +14,21 @@
 <script setup lang="ts">
 defineProps<{ name: string }>()
 const paths: Record<string, string> = {
+  state_transition: 'M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4',
+  memory_loaded: 'm4 7 8-4 8 4-8 4-8-4Zm0 5 8 4 8-4m-16 5 8 4 8-4',
+  tools_loaded: 'M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm13 0v6m-3-3h6',
+  prompt_assembled: 'M5 3h10l4 4v14H5V3Zm10 0v5h4M8 12h8m-8 4h5',
+  assistant_delta: 'M4 5h16v12H9l-5 4V5Zm4 6h.01M12 11h.01M16 11h.01',
+  assistant_final: 'M4 5h16v12H9l-5 4V5Zm4 6 3 3 5-6',
+  tool_started: 'M8 3H4v18h4M16 3h4v18h-4M10 8l5 4-5 4V8Z',
+  tool_completed: 'M8 3H4v18h4M16 3h4v18h-4m-7-9 3 3 5-6',
+  tool_failed: 'M8 3H4v18h4M16 3h4v18h-4M10 9l5 6m-5 0 5-6',
+  approval_requested: 'M5 10h14v11H5V10Zm3 0V7a4 4 0 0 1 8 0v3m-4 4v3m0 2h.01',
+  approval_resolved: 'M5 10h14v11H5V10Zm3 0V7a4 4 0 0 1 8 0m-8 15 3 3 4-5',
+  run_error: 'M12 3 2 21h20L12 3Zm0 6v5m0 3h.01',
+  run_completed: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-13 0 3 3 5-6',
+  input: 'M4 5h16v14H4V5Zm3 7h10m-4-3 3 3-3 3',
+  output: 'M4 5h16v14H4V5Zm13 7H7m3-3-3 3 3 3',
   browser: 'M3 5h18v15H3V5Zm0 4h18M6 7h.01M9 7h.01m1 7 2 2 4-4',
   search: 'M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Zm-2 5 6 6',
   settings:

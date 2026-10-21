@@ -11,8 +11,15 @@ There is no iframe, second application or additional runtime dependency.
   or updated_at; schedules use actual next_at. No demonstration tasks, invented
   future dates or simulated action timers are shipped. The approved vine geometry
   represents the selected day's items. Flowers are a visual clock, not verification.
-- The short log subscribes to existing run SSE. Typing animates observed event
-  labels, not hidden reasoning or invented model answers. Working animation
+- The short log subscribes to existing run SSE and shows three recent events;
+  the journal opens the full loaded history through the same stream. Each event
+  type has an icon with an accessible tooltip, without a visible category label.
+  Tool calls correlate by tool_call_id; saved transcript arguments, results,
+  errors, duration and execution identity expand in place. A completed tool call
+  is separate from task completion or effect verification. Known credential fields
+  are masked in the displayed data. Result events refresh the stored transcript;
+  SSE previews do not substitute for a missing durable result. Typing animates
+  observed tool names, not hidden reasoning or invented model answers. Working animation
   requires a working task and connected stream. OS reduced motion is respected.
   “Тихо на этом экране” stops the incoming attention pulse; it does not change
   server notification delivery policy.
@@ -51,7 +58,7 @@ retains detailed source history, upload, claim decisions, export and index contr
 Old bookmarks select new panels: /tasks[/id], /runs/id, /sessions[/key], /inputs/id,
 /memory?source_id=id, /memory/manage, /approvals, /browser, /settings and the other
 administrative module names. Private panels wait for explicit owner connection.
-Recorded attempts show public conversation/tool status without raw tool arguments.
+Recorded attempts show public conversation and expandable stored tool calls.
 
 ## Development and validation
 
