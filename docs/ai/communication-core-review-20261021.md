@@ -1,5 +1,9 @@
 # Review of PR127 — 2026-10-21
 
+Historical review at `a9ccc38f`. The remaining backend criteria below are addressed
+by the subsequent [full backend acceptance](communication-backend-full-acceptance-20261021.md);
+this report preserves the earlier findings and evidence without rewriting history.
+
 Reviewed the actual backend diff at `8e3b667bf38dac27260bcab5f8dd9a37baf4b865`,
 the architecture contracts and current #99/#100/#103 criteria. All seven GitHub
 checks for that original revision succeeded: Go, Android build, emulators31/33/

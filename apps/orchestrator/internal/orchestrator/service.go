@@ -153,6 +153,9 @@ type CommunicationKernel interface {
 
 type Config struct {
 	Communication CommunicationKernel
+	// Optional trusted composition only, after source/task preparation and before
+	// catalog loading. Startup supplies no hook and exposes no enabling flag.
+	CommunicationAdmission func(context.Context, string) error
 
 	WaitBrowserOwner func(context.Context, string) error
 

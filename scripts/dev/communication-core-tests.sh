@@ -11,8 +11,11 @@ export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_
 export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 export BUTLER_TEST_COMPLETION_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 mkdir -p .cache/communication-core
+go test -c -race -o .cache/communication-core/broker.test ./apps/tool-broker/internal/broker
+export BUTLER_GUARDED_REQUEST_BROKER_BINARY="$PWD/.cache/communication-core/broker.test"
+export BUTLER_DELEGATION_BROKER_BINARY="$BUTLER_GUARDED_REQUEST_BROKER_BINARY"
 report=.cache/communication-core/targeted.jsonl
-packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
+packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
 if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^TestCommunication' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1
@@ -29,8 +32,6 @@ if [[ ${1:-} == --regression ]]; then
   exit 1
  fi
  # A separately selected shared private-control fixture changed in this slice.
- go test -c -race -o .cache/communication-core/broker.test ./apps/tool-broker/internal/broker
- export BUTLER_DELEGATION_BROKER_BINARY="$PWD/.cache/communication-core/broker.test"
  if ! go test -p 1 -race -count=1 -json ./apps/orchestrator/internal/app -run '^TestDelegationAdmission' >.cache/communication-core/control-regression.jsonl; then
   grep -E '"Action":"fail"|"OutputType":"error"' .cache/communication-core/control-regression.jsonl || true
   exit 1

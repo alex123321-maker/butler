@@ -294,10 +294,18 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	if s.ChannelGuard == nil {
 		return out, ErrDenied
 	}
-	for _, b := range bindings {
+	denied := make(map[string]bool)
+	permitted := 0
+	for i, b := range bindings {
 		if err = s.ChannelGuard(ctx, tx, p.RunID, b, a); err != nil {
-			return out, ErrDenied
+			denied[b.ID] = true
+			out.Delivery[i].State = "failed"
+		} else {
+			permitted++
 		}
+	}
+	if permitted == 0 {
+		return out, ErrDenied
 	}
 	// Binding/export checks may wait for locks or policy. Recheck live deadlines
 	// and the exact private claim after those waits, before any publication write.
@@ -316,7 +324,11 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 		return out, err
 	}
 	for _, b := range bindings {
-		_, err = tx.Exec(ctx, `INSERT INTO delivery_outbox(notification_id,result_id,run_id,session_key,channel,chunk_index,content,status,deadline_at,publication_id,binding_id,binding_version,recipient_snapshot,representation_json) VALUES($1,NULL,$2,$3,$4,0,$5,'pending',clock_timestamp()+INTERVAL '24 hours',$6,$7,$8,$9,$10::jsonb)`, pub+":"+b.ID+":"+stringID(b.Version), p.RunID, p.SessionKey, b.Channel, text, pub, b.ID, b.Version, b.Recipient, canon)
+		status, code, body, representation := "pending", "", text, canon
+		if denied[b.ID] {
+			status, code, body, representation = "failed", "policy_denied", "", []byte(`{}`)
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO delivery_outbox(notification_id,result_id,run_id,session_key,channel,chunk_index,content,status,deadline_at,publication_id,binding_id,binding_version,recipient_snapshot,representation_json,error_code) VALUES($1,NULL,$2,$3,$4,0,$5,$11,clock_timestamp()+INTERVAL '24 hours',$6,$7,$8,$9,$10::jsonb,$12)`, pub+":"+b.ID+":"+stringID(b.Version), p.RunID, p.SessionKey, b.Channel, body, pub, b.ID, b.Version, b.Recipient, representation, status, code)
 		if err != nil {
 			return out, err
 		}

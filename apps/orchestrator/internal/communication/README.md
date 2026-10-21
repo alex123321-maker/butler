@@ -2,8 +2,8 @@
 
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
-There is no Bootstrap registration, public route, feature flag, model catalog
-entry, maintenance loop or channel sender. Existing Web and Telegram adapters
+There is no Bootstrap registration, installed public route, feature flag, model
+catalog entry, maintenance loop or channel sender. Existing Web and Telegram adapters
 are unchanged. Merely applying migrations does not admit an explicit Input.
 
 ## Ownership and transactions
@@ -16,6 +16,9 @@ Admission verifies the actual run/task binding, live lease/fence and exact priva
 Input claim. A replacement claim is not usable by the previous caller. Current
 goal/mandate authority is rechecked at publication, even after Broker dispatch;
 input/source/authority deadlines are rechecked after export-policy waits.
+`AdmitRun` derives identity from durable state; an explicitly supplied Core
+composition hook runs after source/task preparation and before catalog loading.
+Recovery accepts only the same pinned profile. Bootstrap supplies no hook.
 
 The private `app.CommunicationControl` reconstructs actual dispatched
 Prepare/Authorize/Execute journal evidence, exact method/args/contract, immutable
@@ -67,6 +70,29 @@ Known pre-send policy denial -> failed. ACK handling uses the existing worker;
 there is no actual channel sender here. Accepted does not mean sent/read/task done.
 Expired/resolved/cancelled questions cannot send their old open-widget payload.
 Future adapters still need a current resolved/cancelled projection for channel sync.
+One denied export target is stored as `failed/policy_denied` with empty content
+and representation; permitted targets proceed. If no target is permitted,
+publication fails without fulfilling the obligation. This uses existing outbox
+states. Send claims, task/mandate and question expiry are checked after policy
+waits too. Respond rechecks current per-channel export policy under binding locks.
+
+## Owner APIs and ordinary replies
+
+`api.CommunicationOwnerControls` is a separately constructed, unregistered backend
+handler using existing owner-control authentication. It accepts strict bounded
+binding decisions, ordinary replies and typed responses; body/header owner IDs
+do not authenticate. Its Web recipient is the authenticated owner's fixed
+`web:<owner>` scope. Binding enumeration omits private recipient/proof data.
+Telegram Bind/Respond/Reply require a trusted adapter's verified Actor; no current
+adapter is changed. Feed/SSE, drafts and rendering remain C05/C06 work.
+
+`Reply` resolves Web publication refs or Telegram's stored sent ACK plus current
+binding/version to the canonical session/task. It rechecks current task/constraint/
+goal/mandate/source/export policy, and joins the existing Input acceptance
+transaction. A stable delivery ID creates one Input; changed content conflicts.
+Unproved/ambiguous targets never pick the owner's latest task. Ordinary messages
+cannot answer a widget; its explicit typed response path is required. Sessions
+are never merged and a reply cannot mint an action grant.
 
 ## Waiting and owner controls
 
@@ -106,8 +132,8 @@ filter plus database trigger fence unsupported old claimers. Ordered down is
 allowed only with no accepted communication history; never erase live receipts
 to downgrade. Disable new admissions and drain with a compatible worker first.
 
-Owner APIs, generic reply/ACK mapping and ambiguity resolution, Web/Telegram
-renderers and callbacks, media/report validation, native model behavior, owner
+Web/Telegram renderers and callbacks, media/report validation, native model behavior, owner
 quotas/config, diagnostic UI and full rollback/deployment acceptance remain
 separate work. Do not enable the profile until those prerequisites are proved.
-See [verification](../../../../docs/ai/communication-core-acceptance-20261021.md).
+The C01/C02/C04 backend acceptance, full fault matrix and historical boundaries
+are in [verification](../../../../docs/ai/communication-backend-full-acceptance-20261021.md).

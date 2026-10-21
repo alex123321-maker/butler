@@ -40,7 +40,7 @@ type fixture struct {
 	bindings map[string]string
 }
 
-type fixtureOptions struct{ Task, Quiet, VerifiedTask bool }
+type fixtureOptions struct{ Task, Quiet, VerifiedTask, Authority bool }
 
 func setup(t *testing.T, options ...fixtureOptions) *fixture {
 	t.Helper()
@@ -73,13 +73,17 @@ func setup(t *testing.T, options ...fixtureOptions) *fixture {
 		t.Fatal(e)
 	}
 	var job task.Record
-	if opt.Task || opt.VerifiedTask {
+	if opt.Task || opt.VerifiedTask || opt.Authority {
 		tasks := task.NewStore(pool)
 		mode := "attempt"
 		if opt.VerifiedTask {
 			mode = "verified_task"
 		}
-		job, e = tasks.Create(ctx, task.CreateRequest{SessionKey: key, OwnerID: id + ":owner", Goal: "Choose a preference", CompletionCriteria: []string{"Owner response recorded"}, ResultDelivery: mode})
+		if opt.Authority {
+			job = communicationAssignedTask(t, pool, ctx, tasks, key, id+":owner", mode)
+		} else {
+			job, e = tasks.Create(ctx, task.CreateRequest{SessionKey: key, OwnerID: id + ":owner", Goal: "Choose a preference", CompletionCriteria: []string{"Owner response recorded"}, ResultDelivery: mode})
+		}
 		if e != nil {
 			t.Fatal(e)
 		}

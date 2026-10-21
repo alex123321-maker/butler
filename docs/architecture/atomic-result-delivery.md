@@ -16,6 +16,12 @@ empty and nonempty final text. A saved publication cannot turn an interrupted
 terminal stream into a completed attempt. A failed single correction closes its
 still-open obligation without another inference or raw-final fallback; quiet
 questions return to a satisfied obligation after their valid owner response.
+The backend follow-up verifies each publication/response write with failed storage
+responses and abrupt worker death, plus post-commit ACK loss. A denied export
+target uses existing `failed/policy_denied`, empty content and representation;
+other permitted targets proceed. All-target denial still rejects the publication.
+Current claim/task/mandate/question deadlines are rechecked after policy waits.
+See [the backend matrix](../ai/communication-backend-full-acceptance-20261021.md).
 
 [User Communication](user-communication-spec.md) specifies a future admission
 profile that preserves immutable attempt results and verification while removing

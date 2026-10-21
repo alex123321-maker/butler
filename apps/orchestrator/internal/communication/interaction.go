@@ -54,8 +54,8 @@ func loadInteraction(ctx context.Context, tx pgx.Tx, id string, lock bool) (inte
 // Respond is the authenticated control ingress, not an accepted FIFO input.
 // Actor proof is supplied by an owning adapter; a model/body owner ID is ignored.
 func (s *Store) Respond(ctx context.Context, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (communicationcontrol.Answer, error) {
-	actor, ok := owneridentity.FromContext(ctx)
-	if !ok || s == nil || s.SourceGuard == nil || s.Inputs == nil {
+	_, ok := owneridentity.FromContext(ctx)
+	if !ok || s == nil || s.SourceGuard == nil || s.ChannelGuard == nil || s.Inputs == nil {
 		return answer, ErrDenied
 	}
 	tx, e := s.Pool.Begin(ctx)
@@ -63,6 +63,24 @@ func (s *Store) Respond(ctx context.Context, id, bindingID string, bindingVersio
 		return answer, e
 	}
 	defer tx.Rollback(context.Background())
+	result, e := s.RespondTx(ctx, tx, id, bindingID, bindingVersion, expectedVersion, answer)
+	if e != nil {
+		return answer, e
+	}
+	if e = tx.Commit(ctx); e != nil {
+		return answer, e
+	}
+	return result, nil
+}
+
+// RespondTx joins an owning control transaction. Keeping the entire response,
+// transcript and ready marker here also permits transaction-boundary acceptance
+// without introducing production fault hooks or a second queue.
+func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (communicationcontrol.Answer, error) {
+	actor, ok := owneridentity.FromContext(ctx)
+	if !ok || s == nil || s.SourceGuard == nil || s.ChannelGuard == nil || s.Inputs == nil {
+		return answer, ErrDenied
+	}
 	v, e := loadInteraction(ctx, tx, id, false)
 	if e != nil || v.OwnerID != actor.OwnerID {
 		return answer, ErrDenied
@@ -94,10 +112,13 @@ func (s *Store) Respond(ctx context.Context, id, bindingID string, bindingVersio
 	if e != nil {
 		return answer, e
 	}
-	if tx.QueryRow(ctx, `SELECT TRUE FROM communication_bindings b JOIN delivery_outbox d ON d.binding_id=b.binding_id AND d.binding_version=b.version WHERE b.binding_id=$1 AND b.version=$2 AND b.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified AND d.publication_id=$6`, bindingID, bindingVersion, actor.OwnerID, actor.Channel, actor.SessionKey, v.PublicationID).Scan(&yes) != nil {
+	if tx.QueryRow(ctx, `SELECT TRUE FROM communication_bindings b JOIN delivery_outbox d ON d.binding_id=b.binding_id AND d.binding_version=b.version WHERE b.binding_id=$1 AND b.version=$2 AND b.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified AND d.publication_id=$6 FOR SHARE OF b,d`, bindingID, bindingVersion, actor.OwnerID, actor.Channel, actor.SessionKey, v.PublicationID).Scan(&yes) != nil {
 		return answer, ErrDenied
 	}
 	if e = s.SourceGuard(ctx, tx, v.RunID); e != nil {
+		return answer, ErrDenied
+	}
+	if e = s.ChannelGuard(ctx, tx, v.RunID, Binding{ID: bindingID, Version: bindingVersion, Channel: actor.Channel, Recipient: actor.SessionKey}, v.Question); e != nil {
 		return answer, ErrDenied
 	}
 	raw, _ := json.Marshal(answer)
@@ -145,7 +166,7 @@ func (s *Store) Respond(ctx context.Context, id, bindingID string, bindingVersio
 	if e = s.eventTx(ctx, tx, v.OwnerID, v.SessionKey, id, "interaction.resolved"); e != nil {
 		return answer, e
 	}
-	return answer, tx.Commit(ctx)
+	return answer, nil
 }
 
 // ResumeInteraction runs only after the old lease/claim has been replaced by a

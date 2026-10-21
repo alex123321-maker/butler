@@ -96,6 +96,24 @@ func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Mess
 	if e = d.Core.ChannelGuard(ctx, tx, m.RunID, Binding{ID: m.BindingID, Channel: m.Channel, Recipient: m.Recipient, Version: m.BindingVersion}, a); e != nil {
 		return deny()
 	}
+	// Policy/lock waits do not extend a sending claim or freeze wall-clock
+	// authority. Revalidate the current target and deadlines after those waits.
+	var current bool
+	if tx.QueryRow(ctx, `SELECT TRUE FROM delivery_outbox d JOIN communication_publications p USING(publication_id) JOIN communication_bindings b ON b.binding_id=d.binding_id LEFT JOIN tasks t ON t.task_id=p.task_id WHERE d.notification_id=$1 AND d.claim_id=$2 AND d.status='sending' AND d.claim_until>clock_timestamp() AND NOT d.privacy_redacted AND NOT p.privacy_redacted AND b.enabled AND b.verified AND b.owner_id=p.owner_id AND b.version=d.binding_version AND b.recipient=d.recipient_snapshot AND (p.task_id IS NULL OR t.revision=p.task_revision AND t.constraints_revision=p.constraints_revision AND t.status NOT IN ('cancelled','paused','blocked')) AND (p.kind<>'widget' OR EXISTS(SELECT 1 FROM communication_interactions x WHERE x.publication_id=p.publication_id AND x.state='open' AND NOT x.privacy_redacted AND (x.expires_at IS NULL OR x.expires_at>clock_timestamp())))`, m.NotificationID, m.ClaimID).Scan(&current) != nil {
+		return deny()
+	}
+	if taskID != "" {
+		var now time.Time
+		if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil {
+			return deny()
+		}
+		if _, e = actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, owner, nil, now); e != nil {
+			return deny()
+		}
+	}
+	if e = d.Core.SourceGuard(ctx, tx, m.RunID); e != nil {
+		return deny()
+	}
 	return tx.Commit(ctx)
 }
 

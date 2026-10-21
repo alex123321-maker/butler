@@ -10,3 +10,7 @@ readiness must reject them until their representations and artifact checks exist
 The fixed private client refuses remote plain HTTP. HTTPS is required except for
 literal loopback addresses and `http://orchestrator:8080/internal/communication`.
 Proxy use and redirects are disabled; the service token cannot choose authority.
+
+The version1 [fixture corpus](testdata/README.md) freezes four model formats,
+three typed question kinds and a separately authored native Rich Message shape.
+It is a C01 contract, not C06 rendering/live-delivery acceptance.

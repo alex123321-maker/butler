@@ -134,6 +134,13 @@ resume владельца создаёт новый Input, старый отме
 tool-result/model continuation и даёт только bounded повторную проверку.
 Input Finish удерживает существующий wait либо ранний ready marker, не выдавая
 дополнительного разрешения на исполнение и не расходуя ещё один model turn.
+Private communication после approved action может сама вернуть durable widget
+wait. Recovery распознаёт suspension до обработки ошибки transport/authorization,
+не блокирует уже сохранённое ожидание и не продолжает старый provider context.
+Optional trusted admission вызывается после Task/source preparation перед
+каталогом; тот же Input восстанавливается только с тем же pinned profile.
+Обычный reply поступает через проверенные binding/ACK refs в исходную canonical
+Input очередь. Он не получает lease, не меняет task constraints и не создаёт grant.
 
 [User Communication](user-communication-spec.md) задаёт будущий admission profile:
 публикации выполняются через Broker-tool; model final сохраняется как внутренний

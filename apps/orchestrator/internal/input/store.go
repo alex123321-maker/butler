@@ -49,6 +49,8 @@ type Store struct {
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
+var ErrDeliveryConflict = errors.New("delivery identity conflicts with accepted payload")
+
 const columns = `input_id,session_key,session_sequence,owner_id,source,COALESCE(task_id,''),COALESCE(run_id,''),status,checkpoint,checkpoint_json::text,event_json,attempts,max_attempts,claim_id,claim_expires_at,expires_at,accepted_at,updated_at,error_code,error_message`
 
 func scan(row interface{ Scan(...any) error }) (Record, error) {
@@ -141,7 +143,7 @@ func (s *Store) acceptTx(ctx context.Context, tx pgx.Tx, event ingress.InputEven
 		return Record{}, false, fmt.Errorf("input task or identity invalid: %w", err)
 	}
 	if r.OwnerID != ownerID || r.TaskID != taskID || r.Event.PayloadJSON != event.PayloadJSON || r.Event.EventType != event.EventType {
-		return Record{}, false, fmt.Errorf("delivery identity conflicts with accepted payload")
+		return Record{}, false, ErrDeliveryConflict
 	}
 	return r, false, nil
 }

@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.3, 2026-10-21. **Статус: согласованный продуктовый контракт;
+Версия 0.4, 2026-10-21. **Статус: согласованный продуктовый контракт;
 backend foundation реализован в отдельной ветке, production profile выключен.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
 готовностью и системным admission, а не наличием DTO.
@@ -26,12 +26,23 @@ private Input claim и сроков после export-policy waits; terminal pro
 См. [модуль](../../apps/orchestrator/internal/communication/README.md) и
 [проверки и ограничения](../ai/communication-core-acceptance-20261021.md).
 
+Следующая backend итерация добавляет owner-authenticated HTTP handlers без
+регистрации маршрутов, ACK/publication reply resolver в canonical Input очередь
+и version1 corpus четырёх форматов с native Rich Message expectation. `AdmitRun`
+и optional Core admission hook закрепляют профиль после подготовки Task/sources
+до загрузки каталога; startup hook не устанавливает. Потерянный ACK, каждый write
+publication/response и handoff проверяются на PostgreSQL с process death.
+Недопустимый export одного target хранится как existing outbox `failed` с
+`policy_denied` и пустым payload; разрешённые targets продолжают доставку.
+Response проверяет current channel policy; срок send claim/question проверяется
+повторно после policy wait. См. [полную backend матрицу](../ai/communication-backend-full-acceptance-20261021.md).
+
 Это программные точки композиции и изолированные проверки, не включённая
 пользовательская функция. Bootstrap не регистрирует tools, private endpoint,
 admission, sender, owner-control hook или maintenance loop; флага включения нет.
 По умолчанию worker поддерживает epoch 0 и не берёт epoch 1. Web и существующий
 Telegram adapter не изменяются. Photo/report пока только contracts; каналов,
-вложений, обычного cross-channel reply routing, UI и полной AC01–AC22 приёмки
+вложений, канальных callbacks/renderers, UI и полной AC01–AC22 приёмки
 эта поставка не заявляет. ChannelGuard обязателен для acceptance и send;
 будущее подключение должно предоставить настоящую policy экспорта и artifacts.
 
@@ -593,6 +604,16 @@ best-effort delete/edit сохраняется отдельным результ
 | POST /api/v3/interactions/{id}/draft | Expected revision; не submit |
 | POST /api/v3/interactions/{id}/responses | Typed answer, expected version, stable delivery ID |
 | GET/POST /api/v3/channel-bindings | Owner-only управление разрешёнными bindings |
+
+Backend C01/C04 имеет отдельно создаваемый, не зарегистрированный handler
+`CommunicationOwnerControls` для GET/POST bindings, POST ordinary replies и
+POST typed responses. Он использует существующий `OwnerControlAuth`; Web
+recipient фиксируется как `web:<authenticated owner>`, body/header owner ID
+не является proof. POST требует stable delivery ID и strict bounded JSON object.
+Обычный `POST /api/v3/communications/replies` принимает Web publication ref либо
+Telegram ACK из trusted adapter с binding/version. Неоднозначность — 409,
+никакой «последней задачи». Ответ на widget требует typed response path.
+Остальные endpoints таблицы, feed/SSE/drafts и канальные callbacks остаются C05.
 
 Adapters нормализуют Telegram callbacks/replies в тот же service API.
 HTTP 202 publication acceptance не означает delivery ACK. Invalid schema — 400,

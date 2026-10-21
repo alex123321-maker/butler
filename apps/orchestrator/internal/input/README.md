@@ -75,6 +75,12 @@ does not claim real external reconciliation or exactly-once delivery.
 
 Authenticated owner controls bypass the normal FIFO and atomically cancel old task inputs. Ambiguous targets are saved as `waiting_for_user`; explicit conversation/new-task selection or an explicit target control resolves them. See [Owner Controls](../../../../docs/architecture/task-owner-controls-spec.md).
 
+The dormant communication reply resolver joins `AcceptTx` only after current
+verified binding/ACK, canonical session/task, source and authority checks. It
+neither merges sessions nor guesses an ordinary reply's target. A repeated stable
+delivery returns its Input; changed payload returns typed `ErrDeliveryConflict`.
+The standalone communication owner handler maps that conflict to HTTP409.
+
 `ObserveStopped` returns content-free typed evidence to the owner-authorized
 experience adapter for one already blocked/failed original. It requires an empty
 claim, no current Session Service lease, exact owner/root-task/run identity and a
