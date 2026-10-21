@@ -199,6 +199,11 @@ func (s *Store) GetTaskTranscript(ctx context.Context, sessionKey, taskID string
 	if err != nil {
 		return Transcript{}, err
 	}
+	if len(messages) > 0 {
+		// Pin the revision observed with these bytes. A later revision read could
+		// otherwise bless text that was corrected/redacted between the queries.
+		return transcriptSnapshot(messages, nil), nil
+	}
 	var revision int64
 	if err = s.pool.QueryRow(ctx, `SELECT COALESCE((SELECT source_revision FROM transcript_heads WHERE session_key=$1),0)`, sessionKey).Scan(&revision); err != nil {
 		return Transcript{}, err

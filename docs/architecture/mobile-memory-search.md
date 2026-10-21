@@ -11,7 +11,9 @@ messages from runs of that task. Ordinary conversations still replay their full
 session or verified summary/tail. Session ownership, ordering, lease, transcript
 revision and source privacy guards remain unchanged. Current typed task goal,
 constraints and mandate are always attached. Recovered current inputs occur once.
-The full audit transcript remains stored. Each inbox/search response includes at
+The full audit transcript remains stored. The source revision is captured in the
+same query snapshot as nonempty task history; a concurrent correction/redaction
+cannot give old text a newer revision. Each inbox/search response includes at
 most8192 UTF-8 bytes of message text; longer originals remain available through
 bounded memory.open. A task continuation reads durable pending decisions.
 

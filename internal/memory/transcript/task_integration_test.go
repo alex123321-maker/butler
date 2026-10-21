@@ -2,9 +2,13 @@ package transcript
 
 import (
 	"context"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestTaskTranscriptUsesOnlyOwnRunsAndKeepsSessionRevisionIntegration(t *testing.T) {
@@ -35,5 +39,45 @@ func TestTaskTranscriptUsesOnlyOwnRunsAndKeepsSessionRevisionIntegration(t *test
 	empty, e := s.GetTaskTranscript(ctx, "empty", "new-batch")
 	if e != nil || len(empty.Messages) != 0 || empty.SourceRevision != 0 {
 		t.Fatal("new empty session cannot start", e)
+	}
+	// Invalidate privacy immediately after the message query has drained, before
+	// any subsequent head query. The old bytes must retain their old revision.
+	tracer := &taskTranscriptInvalidationTracer{pool: pool}
+	cfg := pool.Config()
+	cfg.ConnConfig.Tracer = tracer
+	interleaved, e := pgxpool.NewWithConfig(ctx, cfg)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer interleaved.Close()
+	stale, e := NewStore(interleaved).GetTaskTranscript(ctx, "mobile", "batch-b")
+	if e != nil || tracer.err != nil {
+		t.Fatal("interleaved transcript read failed", e, tracer.err)
+	}
+	var current int64
+	if e = pool.QueryRow(ctx, `SELECT source_revision FROM transcript_heads WHERE session_key='mobile'`).Scan(&current); e != nil {
+		t.Fatal(e)
+	}
+	if len(stale.Messages) != 1 || stale.SourceRevision != all.SourceRevision || current != stale.SourceRevision+1 {
+		t.Fatalf("stale bytes acquired a newer privacy revision: snapshot=%d original=%d current=%d", stale.SourceRevision, all.SourceRevision, current)
+	}
+}
+
+type taskTranscriptQueryKey struct{}
+type taskTranscriptInvalidationTracer struct {
+	pool *pgxpool.Pool
+	once sync.Once
+	err  error
+}
+
+func (*taskTranscriptInvalidationTracer) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
+	return context.WithValue(ctx, taskTranscriptQueryKey{}, strings.Contains(data.SQL, "r.task_id=$2"))
+}
+
+func (t *taskTranscriptInvalidationTracer) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryEndData) {
+	if selected, _ := ctx.Value(taskTranscriptQueryKey{}).(bool); selected {
+		t.once.Do(func() {
+			_, t.err = t.pool.Exec(ctx, `UPDATE transcript_heads SET source_revision=source_revision+1 WHERE session_key='mobile'`)
+		})
 	}
 }
