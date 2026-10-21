@@ -3,8 +3,9 @@
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
 There is no Bootstrap registration, installed public route, feature flag, model
-catalog entry, maintenance loop or channel sender. Existing Web and Telegram adapters
-are unchanged. Merely applying migrations does not admit an explicit Input.
+catalog entry or maintenance loop. The Telegram explicit constructor composes an
+opt-in channel worker; normal Bootstrap/legacy behavior and Web remain unchanged.
+Merely applying migrations does not admit an explicit Input.
 
 ## Ownership and transactions
 
@@ -147,3 +148,6 @@ quotas/config, diagnostic UI and full rollback/deployment acceptance remain
 separate work. Do not enable the profile until those prerequisites are proved.
 The C01/C02/C04 backend acceptance, full fault matrix and historical boundaries
 are in [verification](../../../../docs/ai/communication-backend-full-acceptance-20261021.md).
+Channel-specific compositions narrow `DeliveryStore.ForBinding` to the exact
+binding ID/version/channel/recipient. Claim, expired-claim/deadline recovery,
+send authorization and finish must not consume or mutate another bot/channel.

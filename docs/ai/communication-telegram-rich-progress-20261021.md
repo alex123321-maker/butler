@@ -119,3 +119,8 @@ Widgets remain #104. No full AC01–AC22/product readiness is implied.
 No production deployment, explicit-mode enable, Bootstrap registration or Web
 change is included. The main Telegram adapter changes only through its explicit
 constructor and guards; ordinary legacy behavior remains. No new dependencies.
+Final review additionally covered shared-outbox isolation. The main explicit
+adapter narrows its worker and owning sender guard to the exact bot binding
+snapshot. A PostgreSQL fixture with Web and two bots sharing one chat proves
+that foreign pending, expired sending and retry-exhausted rows remain intact;
+direct authorization/finish also reject a different destination snapshot.

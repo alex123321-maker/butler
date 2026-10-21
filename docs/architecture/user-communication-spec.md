@@ -779,3 +779,6 @@ acceptance не нужны: разрешённый fixture проверяет о
 голосовые ответы, пользовательский HTML runtime, автоматическая публичная
 публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
 напоминания. Новые каналы подключаются через тот же versioned adapter contract.
+Scoped Telegram workers bind Claim, deadline/claim recovery, send authorization
+and Finish to one binding ID/version/channel/recipient snapshot. A shared owner
+or chat ID does not authorize consuming another bot's or Web channel's outbox.

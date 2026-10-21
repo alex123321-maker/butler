@@ -35,8 +35,9 @@ func NewExplicitAdapter(p *telegramrich.Poller, d *communication.DeliveryStore, 
 		return nil, ErrExplicitUnsupported
 	}
 	e := &explicitChannel{poller: p, sender: *s}
-	e.sender.Authorize = d.AuthorizeSend // Caller hooks cannot weaken the owning guard.
-	e.worker = deliveryoutbox.Worker{Store: d, Sender: &e.sender}
+	scoped := d.ForBinding(communication.Binding{ID: b.BindingID, Version: b.Version, Channel: "telegram", Recipient: "telegram:" + strconv.FormatInt(b.ChatID, 10)})
+	e.sender.Authorize = scoped.AuthorizeSend // Caller hooks cannot weaken the owning guard.
+	e.worker = deliveryoutbox.Worker{Store: scoped, Sender: &e.sender}
 	return &Adapter{explicit: e, allowedChatIDs: map[string]struct{}{strconv.FormatInt(b.ChatID, 10): {}}}, nil
 }
 

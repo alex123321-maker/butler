@@ -36,3 +36,6 @@ Approval prompts use service-derived finite consequences/version metadata.
 Tests use a local fake Telegram HTTP server only. Run `scripts/dev/owner-state-lab.sh`
 on laba for channel tests and owning PG/HTTP regressions; no human messages or
 model calls are part of this acceptance.
+The explicit worker is bound to its immutable destination snapshot. It never
+claims or expires another bot's or Web channel's publication rows, including
+bots which share the same owner's numeric chat ID.

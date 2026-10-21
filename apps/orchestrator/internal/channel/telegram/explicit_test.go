@@ -43,6 +43,11 @@ func TestCommunicationExplicitAdapterSuppressesImplicitOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// A foreign row must fail the adapter's bound guard before touching the
+	// deliberately absent DB, even when a caller supplied a permissive hook.
+	if a.explicit.sender.Authorize(context.Background(), deliveryoutbox.Message{BindingID: "other-bot", BindingVersion: b.Version, Channel: "telegram", Recipient: "telegram:42"}) == nil {
+		t.Fatal("adapter failed to bind its owning delivery scope")
+	}
 	event := flow.DeliveryEvent{SessionKey: "telegram:chat:42", RunID: "run", Content: "Internal model final must not be sent"}
 	if a.DeliverAssistantFinal(context.Background(), event) != nil || a.DeliverAssistantDelta(context.Background(), event) != nil {
 		t.Fatal("implicit output failed")
