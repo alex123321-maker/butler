@@ -90,6 +90,16 @@ does not become final content or a task-completion verdict.
 final-result/outbox путь остаётся baseline для legacy admissions до миграции.
 Task completion, execution, reply obligation и delivery не объединяются.
 
+Foundation C02 разделяет publication/attempt_final в transcript и memory readers
+и вводит минимальный explicit message lifecycle; C03 доказывает его сквозным
+сценарием до reports/widgets. Production enable ждёт полного профиля. Widget V1
+только blocking: owning publication, Input checkpoint и Run/Task wait intent
+коммитятся вместе до доставки. Ready marker раннего ответа не затирается поздним
+Finish старого worker; unique resume требует fresh ownership. Обычный ответ на
+публикацию из другого канала разрешается в canonical session/task через проверенный
+delivery mapping, без автоматического слияния сессий владельца. Это требования
+целевого профиля, не свойства уже включённого main.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

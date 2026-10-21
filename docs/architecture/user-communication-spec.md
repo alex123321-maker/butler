@@ -1,12 +1,12 @@
 # Butler — общение агента с пользователем
 
-Версия 0.1, 2026-10-15. **Статус: согласованный продуктовый контракт,
+Версия 0.2, 2026-10-21. **Статус: согласованный продуктовый контракт,
 целевая архитектура; реализация планируется.** Этот документ не объявляет
 доступными описанные tools, API или миграции.
 
-Основа анализа — `origin/main` на `b20206d`. Старый локальный checkout
-`d343485` и его незакоммиченные изменения не использовались как baseline
-реализации. Production deployment в рамках подготовки документа не проверялся.
+Исходный анализ — `origin/main b20206d` от 2026-10-15; ревизия плана
+2026-10-21 сверена с `origin/main ab28dd88`. Production deployment в рамках
+этой документационной работы не проверялся. Реализация не начиналась.
 
 Связанные контракты: [постоянный помощник](persistent-assistant-spec.md),
 [durable execution](durable-execution-spec.md), [atomic result/delivery](atomic-result-delivery.md),
@@ -125,6 +125,28 @@ delivery receipts не превращаются в два assistant-сообще
 результат попытки и не выглядит в обычной ленте как уже отправленное сообщение.
 Скрытые reasoning traces в этот контракт не входят.
 
+### 4.1 Публикация и внутренний итог в transcript и памяти
+
+До первой исполняемой публикации C02 MUST разделить тип записи и роль автора:
+`publication`, `attempt_final`, `owner_input`, `interaction_response` имеют
+разные typed identities и visibility. Имена полей уточняются в C01; одна лишь
+роль `assistant` или изменение prompt не определяют факт общения.
+
+В проверенном main `internal/memory/transcript/completion.go:AppendFinalTx`
+считает любые assistant-записи run кандидатами на единственный финал и требует
+совпадения текста. Этот selector непригоден для нескольких публикаций и отдельного
+итога в одном run. Explicit final persistence MUST искать собственную immutable
+result/message identity и kind, не конфликтовать с publications и не дописывать
+их повторно. Legacy recovery сохраняет прежние проверки; история не переписывается.
+
+User feed и обычная история общения показывают publications и owner responses;
+attempt_final остаётся типизированным внутренним результатом. Replay, compaction,
+extraction, summaries и episodic consumers MUST сохранять это различие: внутренний
+текст не становится утверждением «это уже сообщено владельцу». Полезные технические
+факты допустимы в разрешённом внутреннем контексте со своей provenance. Отзыв
+source/privacy действует на оба вида записей. Регрессия «две publications + иной
+или пустой terminal final + recovery + compaction» входит в раннюю приёмку C02/C03.
+
 ## 5. Контракт инструмента
 
 Одна логическая tool family `communication` имеет четыре типизированные функции:
@@ -201,9 +223,10 @@ Report artifact имеет версию, hash и ссылки на все сос
 проходит обычную классификацию доверия; поле ответа не меняет правила ядра.
 
 `expires_at` необязателен. Его отсутствие означает отсутствие срока именно у
-вопроса, но не бессрочную execution/mandate authority. `wait_for_response`
-по умолчанию true. При false агент может выполнить независимую работу; принятие
-ответа всё равно проходит упорядоченный ingress и version checks.
+вопроса, но не бессрочную execution/mandate authority. В V1 все widgets блокируют
+свою execution branch: `wait_for_response` отсутствует либо равен true.
+Значение false отклоняется как invalid_payload до любого commit. Неблокирующие
+вопросы отложены до отдельного контракта доставки ответа работающему исполнителю.
 
 Составные формы, произвольные UI-компоненты и исполняемый frontend-код от модели
 отложены. System approval может использовать тот же renderer, сохраняя отдельные
@@ -261,6 +284,8 @@ HTTP mutation, произвольный адресат или другой non-r
 publication + canonical transcript event + response obligation linkage +
 interaction/continuation при необходимости + destinations/outbox + event.
 Никаких внешних сетевых send внутри транзакции.
+Для widget эта же транзакция фиксирует owning Input checkpoint/wait intent,
+ожидание Run/Task (если Task есть) и obligation; детали handoff — в разделе 10.
 
 Доставщик после commit заново проверяет владельца, binding, актуальность
 source/privacy и правила публикации. Он не заимствует execution lease уже
@@ -289,8 +314,13 @@ commit. Повторная отправка не расширяет этот sna
 Адаптер регистрирует versioned capabilities: message/photo/report/widget,
 ограничения payload, media types, rendering version, supported reply controls.
 Отсутствующая возможность отображается как unsupported; данные не отбрасываются.
-V1 supported profile требует оба полноценные адаптера. Перед запуском Doctor
-показывает несовместимую конфигурацию.
+Production V1 supported profile требует оба полноценные адаптера. Перед запуском
+Doctor показывает несовместимую конфигурацию. C02/C03 проверяют минимальный
+explicit profile только в изолированном fixture/test-owner окружении с системным
+allowlist готовых методов. Это не owner-wide/default enable и не готовность V1.
+Неготовые функции отсутствуют в модельном каталоге; прямой вызов отклоняется до
+commit. Legacy admission не получает communication tools. Readiness и schema epoch
+реализуются вместе с foundation, а C08 проверяет весь rollout/rollback.
 
 Внутри канала сохраняется порядок publication sequence и частей сообщения.
 UNKNOWN блокирует дальнейшие зависимые части, а не все задачи и каналы владельца.
@@ -357,15 +387,29 @@ IDs хранятся вне model payload; текущие права прове�
 Состояния: open -> resolved | expired | cancelled | superseded.
 Waiting execution — отдельное состояние Task/Input, не удерживаемая goroutine.
 
-Создание вопроса и continuation коммитится **до** появления кнопок в каналах.
-При wait=true worker сохраняет checkpoint и освобождает lease; provider context
-может быть закрыт. Продолжение содержит данные и refs, не Go stack и не секреты.
+Создание вопроса коммитится **до** появления кнопок в каналах. Под текущими
+ownership/session/run/task guards, в общем согласованном порядке блокировок,
+одна транзакция сохраняет publication, interaction, data-only continuation,
+owning Input checkpoint `awaiting_interaction`, wait intent Run/Task и
+`waiting_for_user` obligation, outbox и события. У question-only conversation
+те же гарантии для Input/Run, без искусственной Task. Сам lease освобождается
+после commit; continuation содержит данные и refs, не Go stack и не секреты.
+
+Core распознаёт durable suspension до обычного сохранения tool result и нового
+model turn, в том числе при потерянном internal ACK. Между commit и освобождением
+старого worker ответ уже может быть принят: response/ready marker сохраняется
+монотонно. Поздний Finish/suspend старого worker использует expected checkpoint
+version/CAS и MUST NOT заменить готовность обратно на waiting. Готовность не даёт
+второму исполнителю работать одновременно: resume требует освобождения/истечения
+старого ownership и свежего fence. Оба порядка «ответ → Finish» и «Finish → ответ»,
+crash и потеря ACK должны давать ровно одно продолжение без повторного tool.
 
 Ответ принимается через отдельный authenticated interaction control path,
 который не стоит за собственным ожидающим input в FIFO. Он атомарно:
-проверяет actor/owner и binding; блокирует interaction; сверяет schema/revision,
-task state и expiry по DB clock; CAS open->resolved; записывает ответ/транскрипт;
-ставит единственное продолжение в durable ingress; создаёт события обновления.
+проверяет actor/owner и binding; под тем же порядком owning locks сверяет
+schema/revision, task state и expiry по DB clock; CAS open->resolved; записывает
+ответ/транскрипт и единственный resume intent в durable ingress; создаёт события
+обновления. Input handoff не сбрасывает ready marker при позднем выходе worker.
 
 Уникальность accepted response по interaction ID плюс channel delivery identity
 исключает два продолжения. Повтор идентичного submit возвращает прежний receipt.
@@ -395,13 +439,37 @@ Expiry сохраняет состояние и один управляющий 
 и циклических напоминаний без отдельной policy нет.
 
 Для V1 допускается один открытый blocking widget на execution branch.
-Неблокирующие вопросы ограничены конфигурацией. Ответы сериализует Session
+Неблокирующих вопросов в V1 нет. Ответы сериализует Session
 Service; отвечать из Web на Telegram-вопрос разрешает подтверждённая owner
 identity, но не совпадение отображаемого имени.
 
 Выбор пиццы — preference DATA. Он не подтверждает оплату. Approval продолжает
 проверять exact action, args hash, resource, revisions и authority. Нажатие кнопки
 в ordinary widget не создаёт grant.
+
+### 10.1 Обычные ответы из другого канала
+
+Fan-out сам по себе не объединяет сессии владельца. Для каждого подтверждённого
+канального представления хранится приватное соответствие binding/version +
+chat/message ID -> publication -> canonical session/task и исходные revisions.
+Web передаёт publication ref через owner-authenticated ingress; Telegram reply
+разрешается через сохранённый ACK mapping, а не отображаемое имя или args модели.
+
+Обычный ответ на message/photo/report, например «переделай второй пункт», получает
+проверенный target исходной публикации даже из другого канала. Ingress повторно
+проверяет текущего owner, binding/source/privacy и состояние/revisions Task;
+старый reply не восстанавливает отозванные права и не меняет constraints молча.
+Input с explicit target поступает в каноническую Session Service очередь один раз.
+Текст «продолжай» без доказанного target не выбирает последнюю задачу владельца.
+При неоднозначности применяется существующее разрешение task target владельцем;
+новое сообщение в выбранной conversation остаётся обычным новым input.
+
+Явный reply на открытый widget проходит typed interaction path раздела 10;
+обычный ответ на публикацию не становится автоматически interaction response.
+Cancel/amend/pause/resume проходят existing authenticated owner-control path и не
+стоят за собственным waiting input. Неоднозначный control не получает расширенный
+scope. Новая очередь, lease authority из канала или автоматическое слияние всех
+session одного owner не создаются.
 
 ## 11. Обязательство ответить и завершение
 
@@ -425,7 +493,9 @@ typed terminal metadata и ссылки на публикации, без выд
 
 Состояния obligation: open, waiting_for_user, response_committed,
 closed_with_failure, cancelled. Delivery state хранится отдельно.
-Progress ничего не закрывает. Widget переводит обязательство в ожидание.
+Progress ничего не закрывает. Blocking widget атомарно переводит связанное
+обязательство в ожидание; принятый ответ возвращает его в open для продолжения
+при действующей policy (pause откладывает выполнение, cancel закрывает его).
 Result либо содержательное blocked-сообщение связывает ответ с обязательством.
 Постановка доставки закрывает необходимость повторно генерировать ответ, но
 недоставленные targets остаются операционной проблемой.
@@ -443,6 +513,7 @@ failure notice. В нём нет raw model/provider errors. Неисправно
 доставки видна в owner UI/Doctor; гарантировать уведомление по сломанному каналу
 невозможно.
 
+Контроль obligation структурный: он не гарантирует содержательный ответ.
 Purpose=result не подтверждает критерии Task. Семантическая проверка результата,
 effect evidence и owner-confirmed completion сохраняются. «Сейчас сделаю» с
 ложной меткой result может обойти простую структурную проверку: это отдельный
@@ -501,7 +572,8 @@ Owner config задаёт конечные лимиты публикаций, б
 Разумные стартовые V1 defaults для fixtures: message 4 000 Unicode characters;
 photo до 10 images; report до 200 000 characters, 2 000 blocks, nesting 8,
 20 table columns, 100 media; widget до 20 options, text answer до 4 000 characters;
-не более 20 agent publications на accepted request и 4 open nonblocking widgets.
+не более 20 agent publications на accepted request и один open blocking widget
+на execution branch; общее число открытых вопросов ограничено owner policy.
 Это Butler limits, не заявления о лимитах каналов. Media byte limits наследуются
 из artifact policy и пересекаются с текущими adapter limits.
 
@@ -525,8 +597,13 @@ Doctor показывает migration/tool/adapter readiness, bindings, Rich Mes
 сохраняются; их не переписывают в новые публикации с повторной отправкой.
 Mapping legacy delivery остаётся читаемым.
 
-Новый `explicit` admission profile включается только после готовности tools,
-каналов, interactions и obligation control. Он ортогонален Task
+Полный production `explicit` admission profile включается только после готовности
+tools, каналов, interactions и obligation control. До этого C02/C03 обязаны
+проверить минимальный message flow на изолированном fixture/test owner: публикация,
+продолжение tools, terminal final без implicit send, bounded missing-response
+recovery и сохранение legacy поведения. Неготовые методы закрыты readiness gate;
+тестовый профиль не обходится моделью и не объявляется поддержанным V1.
+Режим ортогонален Task
 `result_delivery=attempt|verified_task`. Legacy admissions продолжают прежний
 путь; для одной попытки никогда не работают два автоматических финальных send.
 
@@ -554,7 +631,7 @@ Prompt не заменяет enforcement и не раскрывает внутр
 | AC07 | Widget показан в двух каналах; конкурентные ответы дают одно решение и одно продолжение |
 | AC08 | Multi-choice toggles — draft; только Submit фиксирует набор; text reply привязан к нужному вопросу |
 | AC09 | Restart и ожидание более 24 часов не теряют no-expiry вопрос; execution budgets не обновляются |
-| AC10 | Ответ пришёл до окончания доставки: он сохранён, поздняя копия widget закрыта |
+| AC10 | Ответ до выхода initial worker/окончания доставки: оба порядка response/Finish, crash и lost ACK сохраняют один resume; поздняя копия widget закрыта |
 | AC11 | Cancel/amend/expiry/pause и stale authority не запускают устаревшее действие |
 | AC12 | Модель завершилась без ответа: одно bounded исправление; затем explicit failure без успеха task |
 | AC13 | Quiet background run без новости даёт ноль публикаций и ноль исправляющих циклов |
@@ -563,6 +640,10 @@ Prompt не заменяет enforcement и не раскрывает внутр
 | AC16 | verified_task, child scope и approval сохраняют authority; выбор пиццы не разрешает покупку |
 | AC17 | Уже опубликованный результат + final-save failure не создаёт вторую публикацию |
 | AC18 | Mixed version/rollback сохраняет старые receipts и принятые interactions |
+| AC19 | Несколько publications и отличный/пустой terminal final одного run не конфликтуют; replay/compaction не выдают внутренний итог за сообщение владельцу |
+| AC20 | Обычный reply на message/report из другого канала продолжает исходный explicit target; ambiguity, wrong owner и stale revisions не выбирают задачу молча |
+| AC21 | Ранний изолированный explicit message flow продолжает tools и завершается без дубля; readiness не допускает неготовые методы и не меняет legacy admission |
+| AC22 | Widget V1 принимает только blocking wait; false отклоняется до publication/continuation/outbox commit |
 
 Unit tests проверяют схемы, rendering и state transitions. PostgreSQL integration
 проверяет транзакции, CAS, restart, fencing и outbox. API/adapter tests проверяют
@@ -578,7 +659,7 @@ acceptance не нужны: разрешённый fixture проверяет о
 
 ## 16. Не входит в V1
 
-Составные формы, arbitrary executable widgets, сообщения посторонним адресатам,
+Неблокирующие вопросы, составные формы, arbitrary executable widgets, сообщения посторонним адресатам,
 голосовые ответы, пользовательский HTML runtime, автоматическая публичная
 публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
 напоминания. Новые каналы подключаются через тот же versioned adapter contract.
