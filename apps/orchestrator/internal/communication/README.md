@@ -9,8 +9,11 @@ are unchanged. Merely applying migrations does not admit an explicit Input.
 ## Ownership and transactions
 
 `Store.AdmitTx` pins epoch 1, supported methods and reply obligation to an already
-claimed Input under live session ownership. Only message/widget are supported;
-photo/report have contracts but cannot be admitted. Child publication is denied.
+claimed Input under live session ownership. Message/widget form the baseline.
+Photo/report additionally require an explicit transactional `PlanDelivery`
+composition. The separate [Telegram adapter](../channel/telegramrich/README.md)
+can freeze bounded media/rich parts with current artifact/export checks; this
+does not install a full Web/Telegram profile. Child publication is denied.
 `verified_task` admission does not demand an unverified result from the model.
 Admission verifies the actual run/task binding, live lease/fence and exact private
 Input claim. A replacement claim is not usable by the previous caller. Current

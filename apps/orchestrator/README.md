@@ -1,5 +1,12 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Work on #101 adds a separate [Telegram rich adapter](internal/channel/telegramrich/README.md),
+transactional per-part media manifests and retained artifacts (migration091).
+Native `sendRichMessage` reports begin the Telegram portion of #102. The
+[operator lab](cmd/telegram-rich-lab/README.md) sends synthetic fixtures only to
+an explicitly selected new test bot/chat. Legacy Telegram, Web and Bootstrap are
+unchanged; there is no product enable flag, startup poller or full-profile claim.
+
 The [communication kernel](internal/communication/README.md) adds dormant
 message/widget publication, typed internal final and durable interaction hooks
 for #99–#100/#103. Bootstrap does not install those hooks, tools, private route,

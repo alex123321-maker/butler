@@ -33,6 +33,10 @@ type Store struct {
 	// Required export policy, evaluated separately for every pinned destination
 	// at acceptance and immediately before send. Bootstrap supplies neither guard.
 	ChannelGuard func(context.Context, pgx.Tx, string, Binding, communicationcontrol.Args) error
+	// PlanDelivery freezes channel parts in the publication transaction. Media
+	// planners must resolve retained artifacts under current owner/export policy.
+	// A missing planner keeps photo/report unavailable, including at admission.
+	PlanDelivery func(context.Context, pgx.Tx, string, Binding, communicationcontrol.Args) ([]string, error)
 }
 type Principal struct {
 	DestinationsHash                            string
@@ -104,7 +108,7 @@ func (s *Store) AdmitTx(ctx context.Context, tx pgx.Tx, p Principal, quiet bool,
 	}
 	seen := map[string]bool{}
 	for _, m := range methods {
-		if m != "communication.message" && m != "communication.widget" || seen[m] {
+		if (!communicationcontrol.IsTool(m) || (m == "communication.photo" || m == "communication.report") && s.PlanDelivery == nil) || seen[m] {
 			return ErrDenied
 		}
 		seen[m] = true
@@ -230,7 +234,7 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 			return out, ErrDenied
 		}
 	}
-	if kind != "message" && kind != "widget" {
+	if kind != "message" && kind != "widget" && s.PlanDelivery == nil {
 		return out, ErrDenied
 	}
 	if a.ExpiresAt != nil {
@@ -256,6 +260,9 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	interaction := ""
 	purpose := a.Purpose
 	text := a.Text
+	if kind == "report" {
+		text = a.Title + "\n\n" + a.Summary
+	}
 	if kind == "widget" {
 		interaction = "interaction:" + hash(e.EffectID)
 		purpose = "question"
@@ -295,12 +302,26 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 		return out, ErrDenied
 	}
 	denied := make(map[string]bool)
+	plans := make(map[string][]string)
 	permitted := 0
 	for i, b := range bindings {
 		if err = s.ChannelGuard(ctx, tx, p.RunID, b, a); err != nil {
 			denied[b.ID] = true
 			out.Delivery[i].State = "failed"
 		} else {
+			parts := []string{text}
+			if s.PlanDelivery != nil && kind != "widget" {
+				parts, err = s.PlanDelivery(ctx, tx, p.RunID, b, a)
+				if err != nil || len(parts) == 0 || len(parts) > 100 {
+					return out, ErrDenied
+				}
+			}
+			for _, part := range parts {
+				if len(part) == 0 || len(part) > 256*1024 {
+					return out, ErrDenied
+				}
+			}
+			plans[b.ID] = parts
 			permitted++
 		}
 	}
@@ -325,12 +346,16 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	}
 	for _, b := range bindings {
 		status, code, body, representation := "pending", "", text, canon
+		parts := plans[b.ID]
 		if denied[b.ID] {
 			status, code, body, representation = "failed", "policy_denied", "", []byte(`{}`)
+			parts = []string{body}
 		}
-		_, err = tx.Exec(ctx, `INSERT INTO delivery_outbox(notification_id,result_id,run_id,session_key,channel,chunk_index,content,status,deadline_at,publication_id,binding_id,binding_version,recipient_snapshot,representation_json,error_code) VALUES($1,NULL,$2,$3,$4,0,$5,$11,clock_timestamp()+INTERVAL '24 hours',$6,$7,$8,$9,$10::jsonb,$12)`, pub+":"+b.ID+":"+stringID(b.Version), p.RunID, p.SessionKey, b.Channel, body, pub, b.ID, b.Version, b.Recipient, representation, status, code)
-		if err != nil {
-			return out, err
+		for index, part := range parts {
+			_, err = tx.Exec(ctx, `INSERT INTO delivery_outbox(notification_id,result_id,run_id,session_key,channel,chunk_index,content,status,deadline_at,publication_id,binding_id,binding_version,recipient_snapshot,representation_json,error_code) VALUES($1,NULL,$2,$3,$4,$13,$5,$11,clock_timestamp()+INTERVAL '24 hours',$6,$7,$8,$9,$10::jsonb,$12)`, pub+":"+b.ID+":"+stringID(b.Version)+":"+stringID(int64(index)), p.RunID, p.SessionKey, b.Channel, part, pub, b.ID, b.Version, b.Recipient, representation, status, code, index)
+			if err != nil {
+				return out, err
+			}
 		}
 	}
 	state := ""
