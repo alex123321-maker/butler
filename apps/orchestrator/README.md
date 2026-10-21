@@ -1203,3 +1203,11 @@ See `deploy/docker-compose.server-browser.yml` and the browser-session contract.
 accepted only from the operator environment. Stored/UI settings cannot redirect
 the Broker-authenticated route. The exact private endpoint path and existing
 action-authority token configuration are required before startup.
+## Isolated explicit Telegram composition (#130)
+
+`NewForTelegramCommunication` joins the actual Input/Core/Completion and private
+communication handler with the native adapter. It is available only through the
+separate [operator command](cmd/telegram-agent-lab/README.md) on a disposable
+`_test` database. `New` and normal main remain unchanged. Export uses current
+Catalog/dependency/revision checks and a fixed operator binding/privacy policy;
+media also rechecks its original run's sources. No Web files/routes are changed.

@@ -19,6 +19,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/delegation"
@@ -54,6 +55,19 @@ type App struct {
 }
 
 func New(ctx context.Context) (*App, error) {
+	return newApp(ctx, "")
+}
+
+// NewForCommunication composes canonical private dispatch only on a disposable
+// test database. The ordinary binary and environment config expose no toggle.
+func NewForCommunication(ctx context.Context, endpoint string) (*App, error) {
+	if endpoint == "" {
+		return nil, communicationcontrol.ErrDenied
+	}
+	return newApp(ctx, endpoint)
+}
+
+func newApp(ctx context.Context, communicationEndpoint string) (*App, error) {
 	cfg, snapshot, err := config.LoadToolBrokerFromEnv()
 	if err != nil {
 		return nil, err
@@ -69,6 +83,9 @@ func New(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	for _, c := range registryStore.List("", true) {
+		if strings.HasPrefix(c.GetToolName(), "communication.") {
+			return nil, fmt.Errorf("communication contracts require canonical private composition")
+		}
 		if workspaceexec.Protected(c.GetToolName()) {
 			return nil, fmt.Errorf("workspace contracts must come from canonical private startup composition")
 		}
@@ -98,6 +115,12 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
+	if communicationEndpoint != "" && (postgres == nil || !strings.HasSuffix(postgres.Pool().Config().ConnConfig.Database, "_test") || cfg.ActionAuthorityTokenFile == "" || cfg.ActionContextURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, communicationcontrol.ErrDenied
+	}
 	if cfg.BrowserControlRuntimeURL != "" && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRuntimeEnabled) {
 		if postgres != nil {
 			postgres.Close()
@@ -419,6 +442,23 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			executor = &broker.ScheduleExecutor{Schedules: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
+		if communicationEndpoint != "" {
+			client, clientErr := communicationcontrol.NewClient(communicationEndpoint, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			contracts := []*toolbrokerv1.ToolContract{}
+			for _, name := range []string{"communication.message", "communication.photo", "communication.report"} {
+				contracts = append(contracts, communicationcontrol.Contract(name))
+			}
+			if err = registryStore.RegisterOwned(contracts); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.CommunicationExecutor{Communication: client, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if cfg.MemoryReadEnabled {

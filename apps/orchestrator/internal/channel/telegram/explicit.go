@@ -31,6 +31,9 @@ func NewExplicitAdapter(p *telegramrich.Poller, d *communication.DeliveryStore, 
 		return nil, ErrExplicitUnsupported
 	}
 	b := p.Binding
+	if p.Notices != nil && (p.Notices.Pool != p.Pool || p.Notices.Client != s.Client || p.Notices.Binding != b) {
+		return nil, ErrExplicitUnsupported
+	}
 	if b.OwnerID == "" || b.BindingID == "" || b.Version < 1 || b.BotID <= 0 || b.ChatID <= 0 || b.UserID != b.ChatID {
 		return nil, ErrExplicitUnsupported
 	}

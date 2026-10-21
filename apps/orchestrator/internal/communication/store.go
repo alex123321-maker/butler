@@ -38,6 +38,10 @@ type Store struct {
 	// planners must resolve retained artifacts under current owner/export policy.
 	// A missing planner keeps photo/report unavailable, including at admission.
 	PlanDelivery func(context.Context, pgx.Tx, string, Binding, communicationcontrol.Args) ([]string, error)
+	// Optional trusted channel composition pins verified reply ingress in the
+	// same transaction as canonical Input acceptance. Payloads cannot opt in.
+	ReplyAdmission   func(context.Context, pgx.Tx, durableinput.Record, Binding) error
+	ControlAdmission func(context.Context, pgx.Tx, string) error
 }
 type Principal struct {
 	DestinationsHash                            string

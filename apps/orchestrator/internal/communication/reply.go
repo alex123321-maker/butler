@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -15,10 +16,19 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrAmbiguous = errors.New("explicit reply target required")
 var ErrInteractionRequired = errors.New("typed interaction response required")
+var ErrReplyTargetUnavailable = fmt.Errorf("%w: reply target unavailable", ErrDenied)
+
+func replyLookupError(err error) error {
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrReplyTargetUnavailable
+	}
+	return ErrDenied
+}
 
 // ChannelACK is private adapter DATA, never an instruction or execution grant.
 // It is accepted only with the current verified binding and a stored sent ACK.
@@ -72,14 +82,14 @@ func (s *Store) Reply(ctx context.Context, q ReplyRequest) (input.Record, error)
 		return input.Record{}, err
 	}
 	if n == 0 {
-		return input.Record{}, ErrDenied
+		return input.Record{}, ErrReplyTargetUnavailable
 	}
 	if n != 1 {
 		return input.Record{}, ErrAmbiguous
 	}
 	var yes bool
-	if tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 AND user_id=$2 FOR UPDATE`, key, a.OwnerID).Scan(&yes) != nil {
-		return input.Record{}, ErrDenied
+	if err = tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 AND user_id=$2 FOR UPDATE`, key, a.OwnerID).Scan(&yes); err != nil {
+		return input.Record{}, replyLookupError(err)
 	}
 	var runID, taskID, kind string
 	var rev, con int64
@@ -91,8 +101,8 @@ func (s *Store) Reply(ctx context.Context, q ReplyRequest) (input.Record, error)
 		return input.Record{}, ErrInteractionRequired
 	}
 	if taskID != "" {
-		if tx.QueryRow(ctx, `SELECT TRUE FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND revision=$4 AND constraints_revision=$5 AND status='active' FOR SHARE`, taskID, a.OwnerID, key, rev, con).Scan(&yes) != nil {
-			return input.Record{}, ErrDenied
+		if err = tx.QueryRow(ctx, `SELECT TRUE FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND revision=$4 AND constraints_revision=$5 AND status='active' FOR SHARE`, taskID, a.OwnerID, key, rev, con).Scan(&yes); err != nil {
+			return input.Record{}, replyLookupError(err)
 		}
 		var now time.Time
 		if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil {
@@ -132,6 +142,11 @@ func (s *Store) Reply(ctx context.Context, q ReplyRequest) (input.Record, error)
 			return input.Record{}, ErrConflict
 		}
 		return input.Record{}, err
+	}
+	if s.ReplyAdmission != nil {
+		if err = s.ReplyAdmission(ctx, tx, r, Binding{ID: q.BindingID, Version: q.BindingVersion, Channel: a.Channel, Recipient: a.SessionKey}); err != nil {
+			return input.Record{}, err
+		}
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return input.Record{}, err

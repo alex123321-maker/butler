@@ -165,7 +165,7 @@ func (s *Store) Claim(ctx context.Context, ttl time.Duration) (Record, error) {
 	// monopolizing the worker. SKIP LOCKED permits independent session workers.
 	return scan(s.pool.QueryRow(ctx, `WITH communication_epoch AS MATERIALIZED (SELECT set_config('butler.communication_epoch',$3,TRUE)), candidate AS (
  SELECT i.input_id FROM accepted_inputs i CROSS JOIN communication_epoch
- WHERE NOT EXISTS(SELECT 1 FROM communication_admissions a WHERE a.input_id=i.input_id AND a.schema_epoch>$3::int) AND i.status IN ('queued','running') AND i.checkpoint<>'awaiting_interaction' AND i.not_before<=clock_timestamp()
+ WHERE COALESCE((to_jsonb(i)->>'communication_ingress_epoch')::int,0)<=$3::int AND NOT EXISTS(SELECT 1 FROM communication_admissions a WHERE a.input_id=i.input_id AND a.schema_epoch>$3::int) AND i.status IN ('queued','running') AND i.checkpoint<>'awaiting_interaction' AND i.not_before<=clock_timestamp()
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())
  AND NOT EXISTS(SELECT 1 FROM accepted_inputs h WHERE h.session_key=i.session_key AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled'))
  ORDER BY i.accepted_at,i.session_sequence FOR UPDATE OF i SKIP LOCKED LIMIT 1

@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.6, 2026-10-21. **Статус: согласованный продуктовый контракт;
+Версия 0.7, 2026-10-21. **Статус: согласованный продуктовый контракт;
 backend foundation #127 в main; следующий Telegram этап в разработке,
 production profile выключен.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -11,6 +11,49 @@ production profile выключен.**
 этой работы не менялся и заново не проверялся.
 
 ### Граница текущей реализации
+
+В #130 добавлена отдельная тестовая App/Broker-композиция: programmatic
+`NewForTelegramCommunication` / `NewForCommunication` и operator commands на
+изолированном `_test` PostgreSQL. Обычные main/New/config не переключены.
+Admission ограничен закреплённой owner/bot/chat беседой; новые сообщения не
+выбирают последнюю Task, replies разрешаются по сохранённому sent ACK.
+Owner Stop/Pause/Resume/amend/prepare-only используют существующий Controller
+с повторной проверкой binding в его транзакции. Недоступные widget/approval UX
+не объявляются готовыми; существующие approval mechanisms не обходятся.
+Source/export guard читает актуальный Catalog и полный dependency graph, а также
+фиксированную operator privacy policy для конкретного bot binding. Private
+export требует явного `AllowPrivate`; secret/stale/revoked запрещены всегда.
+Вложения повторно проверяют policy источников как отправляющего, так и исходного
+run. После process death между Input commit и cursor commit новый poller
+переигрывает стабильную delivery identity без второго Input. Web остаётся #129;
+фактически пройденные native/UI gates указываются отдельно в evidence #130.
+Для тестового Telegram-клиента operator profile может задать `BotAPIProxyFile`:
+приватный файл с HTTP(S) proxy URL. Соединение идёт через CONNECT к фиксированному
+`api.telegram.org:443` с обычной проверкой TLS; token остаётся внутри HTTPS.
+Environment proxy не подхватывается неявно, redirects запрещены. Proxy credentials
+не входят в модельные аргументы, публикации или сообщения об ошибках. Тестовый
+native harness использует существующий приватный proxy без изменения production.
+Native model harness также требует этот `HTTPS_PROXY`: до запуска проверяет
+фактический proxy selection для discovery/inference/OAuth, исключает внешние
+адреса из тестового `NO_PROXY` и отменяет попытку соединиться в обход proxy.
+В диагностике остаются только счётчики соединений и фиксированные auth phases /
+HTTP statuses. Такая настройка не доказывает успешную авторизацию или inference.
+Перед native запуском существующий `cmd/provider-auth diagnose-auth` выполняет
+обычный Manager Resolve/refresh под общим operator lock, с проверкой отсутствия
+текущей production работы. Ротация сохраняется в исходной зашифрованной строке;
+копия старой авторизации не импортируется. Тест использует штатный минутный
+expiry margin. Десятиминутный тестовый запрет удалён. Наблюдатель проверяет
+фактический HTTP socket, включая reused HTTP/2, и не отменяет локальные обращения
+к Broker/PostgreSQL. Неопределённый refresh/persistence требует reconciliation.
+Core и Broker тестового процесса получают одну и ту же finite budget policy;
+persisted scope limits не сбрасываются при переходе границы процесса. Mode 2
+выбирается только для изолированного native fixture; его synthetic approvals
+разрешаются существующим approval service и не доказывают готовность Telegram UX.
+Миграция093 закрепляет приватный immutable ingress epoch/proof внутри owning
+Input/control транзакции. Модельный/public payload не выбирает этот режим.
+Миграция094 хранит fixed transport clarification receipts с claim до сети;
+неопределённые send/finish не повторяются. Доказанное отсутствие reply target
+отличается от generic guarded SQL/policy failure, который сохраняет cursor.
 
 После merge #127 начат #101 и Telegram-объём native Rich Messages из #102.
 Codec `channel/telegramrich` остаётся отдельным модулем; основной

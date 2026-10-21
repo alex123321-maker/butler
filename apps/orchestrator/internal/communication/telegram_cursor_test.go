@@ -2,14 +2,105 @@ package communication_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
+	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type cursorCrashRequest struct {
+	DSN, Schema string
+	Binding     telegramrich.OwnerBinding
+	Update      telegramrich.Update
+}
+
+func TestCommunicationTelegramCursorCrashChild(t *testing.T) {
+	raw := os.Getenv("BUTLER_COMMUNICATION_CURSOR_CRASH_CHILD")
+	if raw == "" {
+		return
+	}
+	var q cursorCrashRequest
+	if json.Unmarshal([]byte(raw), &q) != nil {
+		t.Fatal("invalid crash fixture")
+	}
+	cfg, err := pgxpool.ParseConfig(q.DSN)
+	if err != nil || !strings.HasSuffix(cfg.ConnConfig.Database, "_test") || !strings.HasPrefix(q.Schema, "memory_") {
+		t.Fatal("isolated database required")
+	}
+	cfg.ConnConfig.RuntimeParams["search_path"] = q.Schema + ",public"
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	core := &communication.Store{Pool: pool, Inputs: durableinput.NewStore(pool), SourceGuard: func(ctx context.Context, tx pgx.Tx, run string) error {
+		_, err := tx.Exec(ctx, `SELECT butler_memory_check_run_sources($1)`, run)
+		return err
+	}, ChannelGuard: func(_ context.Context, _ pgx.Tx, _ string, b communication.Binding, _ communicationcontrol.Args) error {
+		if b.ID != q.Binding.BindingID || b.Version != q.Binding.Version {
+			return communication.ErrDenied
+		}
+		return nil
+	}}
+	i := &telegramrich.Ingress{Store: core, Binding: q.Binding}
+	c := &cursorClient{bot: q.Binding.BotID, updates: []telegramrich.Update{q.Update}}
+	p := &telegramrich.Poller{Pool: pool, Client: c, Binding: q.Binding, Acceptor: replyFunc(func(ctx context.Context, u telegramrich.Update) error {
+		if err := i.Reply(ctx, u); err != nil {
+			return err
+		}
+		os.Exit(94) // Really kill the process after Input commit, before cursor.
+		return nil
+	})}
+	if _, err = p.ProcessOnce(ctx); err != nil {
+		t.Fatal(err)
+	}
+	t.Fatal("cursor crash boundary not reached")
+}
+
+func TestCommunicationTelegramCursorActualProcessDeathIntegration(t *testing.T) {
+	f, p, c, u := cursorFixture(t)
+	q := cursorCrashRequest{DSN: f.pool.Config().ConnConfig.ConnString(), Schema: strings.Split(f.pool.Config().ConnConfig.RuntimeParams["search_path"], ",")[0], Binding: p.Binding, Update: u}
+	raw, _ := json.Marshal(q)
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	child := exec.CommandContext(f.ctx, exe, "-test.run=^TestCommunicationTelegramCursorCrashChild$", "-test.timeout=25s")
+	child.Env = append(os.Environ(), "BUTLER_COMMUNICATION_CURSOR_CRASH_CHILD="+string(raw))
+	out, err := child.CombinedOutput()
+	var death *exec.ExitError
+	if !errors.As(err, &death) || death.ExitCode() != 94 {
+		t.Fatalf("worker missed committed Input: %v %s", err, out)
+	}
+	var inputs, cursors int
+	if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM accepted_inputs WHERE event_id='telegram-rich:77:5'`).Scan(&inputs); err != nil || inputs != 1 {
+		t.Fatal("Input lost", inputs, err)
+	}
+	if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM communication_telegram_cursors`).Scan(&cursors); err != nil || cursors != 0 {
+		t.Fatal("uncommitted cursor survived death", cursors, err)
+	}
+	p = &telegramrich.Poller{Pool: f.pool, Client: c, Binding: p.Binding, Acceptor: p.Acceptor}
+	r, err := p.ProcessOnce(f.ctx)
+	if err != nil || r.NextOffset != 6 || r.Accepted != 1 {
+		t.Fatal(r, err)
+	}
+	if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM accepted_inputs WHERE event_id='telegram-rich:77:5'`).Scan(&inputs); err != nil || inputs != 1 {
+		t.Fatal("Input duplicated after restart", inputs, err)
+	}
+}
 
 type cursorClient struct {
 	bot     int64
@@ -103,7 +194,7 @@ func TestCommunicationTelegramCursorCommitGapAndRestartIntegration(t *testing.T)
 }
 
 func TestCommunicationTelegramCursorRejectsForgedAndUnavailableInputsIntegration(t *testing.T) {
-	for _, attack := range []string{"wrong-bot", "stale-binding", "ambiguous", "unavailable", "indeterminate-denial", "out-of-order"} {
+	for _, attack := range []string{"wrong-bot", "stale-binding", "ambiguous", "missing-target", "unavailable", "indeterminate-denial", "out-of-order"} {
 		t.Run(attack, func(t *testing.T) {
 			f, p, c, u := cursorFixture(t)
 			switch attack {
@@ -116,6 +207,9 @@ func TestCommunicationTelegramCursorRejectsForgedAndUnavailableInputsIntegration
 				c.updates = []telegramrich.Update{u}
 			case "unavailable":
 				p.Acceptor = replyFunc(func(context.Context, telegramrich.Update) error { return telegramrich.ErrUnavailable })
+			case "missing-target":
+				u.Message.Reply.ID = 999999
+				c.updates = []telegramrich.Update{u}
 			case "indeterminate-denial":
 				p.Acceptor = replyFunc(func(context.Context, telegramrich.Update) error { return communication.ErrDenied })
 			case "out-of-order":
@@ -124,7 +218,7 @@ func TestCommunicationTelegramCursorRejectsForgedAndUnavailableInputsIntegration
 				c.updates = []telegramrich.Update{u, other}
 			}
 			r, err := p.ProcessOnce(f.ctx)
-			if attack == "ambiguous" {
+			if attack == "ambiguous" || attack == "missing-target" {
 				if err != nil || r.Rejected != 1 || r.NextOffset != 6 {
 					t.Fatal(r, err)
 				}
