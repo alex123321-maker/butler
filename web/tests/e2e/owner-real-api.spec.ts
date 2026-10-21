@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 // This opt-in fixture uses the actual Go HTTP handlers and disposable PostgreSQL.
@@ -7,12 +8,12 @@ test('actual owner API preserves branch boundaries and recovers a committed lost
   const api = process.env.BUTLER_API_BASE_URL!
   const state = await (await request.get(`${api}/fixture/state`)).json() as Record<string, string>
   const token = 'fixture-owner-token-000000000000000'
-  await page.goto(`/tasks/${state.root}`)
+  await openMindPanel(page, `/tasks/${state.root}`,undefined,token)
   await expect(page.getByText('Task version 1 · waiting_for_user · normal', { exact: true })).toBeVisible()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Pause task', exact: true }).click()
   await expect(page.getByText('Task version 2 · paused · normal', { exact: true })).toBeVisible()
-  await page.reload()
+  await openMindPanel(page,new URL(page.url()).pathname,undefined,token)
   await expect(page.getByText('Task version 2 · paused · normal', { exact: true })).toBeVisible()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Resume task', exact: true }).click()
@@ -25,7 +26,7 @@ test('actual owner API preserves branch boundaries and recovers a committed lost
   await page.getByRole('button', { name: `Stop branch ${state.child}`, exact: true }).click()
   await expect(page.getByText('Task version 4 · active · prepare_only', { exact: true })).toBeVisible()
 
-  await page.goto(`/tasks/${state.result}`)
+  await openMindPanel(page, `/tasks/${state.result}`,undefined,token)
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load task observations' }).click()
   await expect(page.getByText('Effect confirmed', { exact: false })).toBeVisible()
@@ -33,7 +34,7 @@ test('actual owner API preserves branch boundaries and recovers a committed lost
   await expect(page.getByText('notification delivery_unknown', { exact: false })).toBeVisible()
   await expect(page.getByRole('link', { name: `artifact ${state.artifact}`, exact: true }).first()).toHaveAttribute('href', `/artifacts?artifact_id=${encodeURIComponent(state.artifact)}`)
 
-  await page.goto(`/tasks/${state.lost}`)
+  await openMindPanel(page, `/tasks/${state.lost}`,undefined,token)
   await page.getByLabel('Owner control token').fill(token)
   let delivery = ''
   let body = ''

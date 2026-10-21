@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('private memory confirms scoped candidates, preserves history and deletes source content', async ({ page }) => {
@@ -19,7 +20,7 @@ test('private memory confirms scoped candidates, preserves history and deletes s
     else throw new Error(`Unexpected ${path}`)
     return route.fulfill({ json: source })
   })
-  await page.goto('/memory')
+  await openMindPanel(page, '/memory')
   await expect(page.getByRole('button', { name: 'Load private memory' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load private memory' }).click()
@@ -54,7 +55,7 @@ test('selected Russian file opens current original context and neighbouring frag
     if (path === '/api/v4/memory/citation') return route.fulfill({ json: { source, fragment: { Key: 'section:1', Text: text }, neighbors: [{ Key: 'next', Text: 'Соседний раздел поясняет ограничение' }] } })
     throw new Error(`Unexpected ${path}`)
   })
-  await page.goto('/memory'); await page.getByLabel('Owner control token').fill(token); await page.getByRole('button', { name: 'Load private memory' }).click()
+  await openMindPanel(page, '/memory'); await page.getByLabel('Owner control token').fill(token); await page.getByRole('button', { name: 'Load private memory' }).click()
   await page.getByLabel('Source file').setInputFiles({ name: 'русский.md', mimeType: 'text/markdown', buffer: Buffer.from(text) })
   await page.getByLabel('Stable source key').fill(source.external_key); await page.getByLabel('Source scope ID').fill('owner'); await page.getByLabel('Source format').selectOption('markdown')
   await page.getByRole('button', { name: 'Parse and save source' }).click()

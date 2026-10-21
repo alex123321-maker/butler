@@ -242,6 +242,7 @@ type messageDTO struct {
 	MessageID  string `json:"message_id"`
 	RunID      string `json:"run_id"`
 	Role       string `json:"role"`
+	Kind       string `json:"kind,omitempty"`
 	Content    string `json:"content"`
 	ToolCallID string `json:"tool_call_id,omitempty"`
 	CreatedAt  string `json:"created_at"`
@@ -295,6 +296,7 @@ func toMessageDTO(m transcript.Message) messageDTO {
 		MessageID:  m.MessageID,
 		RunID:      m.RunID,
 		Role:       m.Role,
+		Kind:       transcript.MessageKind(m.MetadataJSON),
 		Content:    m.Content,
 		ToolCallID: m.ToolCallID,
 		CreatedAt:  m.CreatedAt.UTC().Format(time.RFC3339),

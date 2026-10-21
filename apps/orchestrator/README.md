@@ -1211,3 +1211,10 @@ separate [operator command](cmd/telegram-agent-lab/README.md) on a disposable
 `_test` database. `New` and normal main remain unchanged. Export uses current
 Catalog/dependency/revision checks and a fixed operator binding/privacy policy;
 media also rechecks its original run's sources. No Web files/routes are changed.
+
+The continuous owner Web surface uses authenticated catalog browse, bounded
+Russian text search and owner-derived note creation under `/api/v4/memory`.
+These routes do not admit semantic inference or change the execution kernel.
+See [source projections](../../docs/architecture/versioned-memory-sources.md)
+and [Web behavior](../../web/README.md). Server-browser ownership/manual control
+retain the existing private Broker/runtime protocol.

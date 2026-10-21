@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "lint": "npm run lint:ts && npm run lint:css",
     "lint:ts": "eslint .",
-    "lint:css": "stylelint \"app/**/*.{css,vue}\" \"widgets/**/*.vue\" \"features/**/*.vue\" \"entities/**/*.vue\" \"shared/**/*.vue\" \"layouts/**/*.vue\" \"pages/**/*.vue\" \"components/**/*.vue\" \"assets/css/**/*.css\"",
+    "lint:css": "stylelint \"app/**/*.{css,vue}\" \"features/**/*.{css,vue}\" \"entities/**/*.vue\" \"shared/**/*.vue\" \"pages/**/*.vue\" \"assets/css/**/*.css\" --allow-empty-input",
     "typecheck": "vue-tsc --noEmit",
     "preview": "nuxt preview",
     "test:e2e": "playwright test",

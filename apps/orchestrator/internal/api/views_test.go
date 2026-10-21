@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,6 +13,19 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/memory/transcript"
 )
+
+func TestTranscriptDTOCarriesKindWithoutRawMetadata(t *testing.T) {
+	for _, kind := range []string{"publication", "attempt_final", "owner_input", "interaction_response"} {
+		dto := toMessageDTO(transcript.Message{Role: "assistant", Content: "recorded body", MetadataJSON: `{"kind":"` + kind + `","private":"PRIVATE_METADATA"}`})
+		raw, err := json.Marshal(dto)
+		if err != nil || dto.Kind != kind || strings.Contains(string(raw), "PRIVATE_METADATA") {
+			t.Fatal("lost message kind or exposed metadata", string(raw), err)
+		}
+	}
+	if dto := toMessageDTO(transcript.Message{Role: "assistant", MetadataJSON: "{}"}); dto.Kind != "" {
+		t.Fatal("legacy message reclassified")
+	}
+}
 
 // --- fakes ---
 

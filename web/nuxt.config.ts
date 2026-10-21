@@ -8,9 +8,10 @@ export default defineNuxtConfig({
 
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
 
+  components: [{ path: '~/features/mind/controls', pathPrefix: false }],
+
   alias: {
     '@app': fileURLToPath(new URL('./app', import.meta.url)),
-    '@widgets': fileURLToPath(new URL('./widgets', import.meta.url)),
     '@features': fileURLToPath(new URL('./features', import.meta.url)),
     '@entities': fileURLToPath(new URL('./entities', import.meta.url)),
     '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
@@ -35,7 +36,8 @@ export default defineNuxtConfig({
 
   css: [
     '~/app/styles/tokens.css',
-    '~/assets/css/main.css'
+    '~/features/mind/garden/calendar.css',
+    '~/assets/css/mind.css'
   ],
 
   typescript: {

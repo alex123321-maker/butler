@@ -46,6 +46,15 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 			writeJSON(w, 401, map[string]string{"error": "authenticated owner required"})
 			return
 		}
+		w.Header().Set("Cache-Control", "no-store")
+		if r.URL.Path == "/api/v4/memory/access" {
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			writeJSON(w, http.StatusOK, map[string]bool{"authenticated": true})
+			return
+		}
 		if s.Store == nil {
 			writeJSON(w, 503, map[string]string{"error": "memory catalog unavailable"})
 			return
@@ -103,6 +112,30 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		}
 		if r.Method == http.MethodGet {
 			switch r.URL.Path {
+			case "/api/v4/memory/browse":
+				limit, offset := 6, 0
+				if raw := r.URL.Query().Get("limit"); raw != "" {
+					var e error
+					limit, e = strconv.Atoi(raw)
+					if e != nil {
+						writeMemoryError(w, catalog.ErrInvalid)
+						return
+					}
+				}
+				if raw := r.URL.Query().Get("offset"); raw != "" {
+					var e error
+					offset, e = strconv.Atoi(raw)
+					if e != nil {
+						writeMemoryError(w, catalog.ErrInvalid)
+						return
+					}
+				}
+				v, e := s.Store.Browse(ctx, "", limit, offset)
+				if e != nil {
+					writeMemoryError(w, e)
+					return
+				}
+				writeJSON(w, 200, v)
 			case "/api/v4/memory/original":
 				if s.Ingestion == nil {
 					writeJSON(w, 503, map[string]string{"error": "source ingestion unavailable"})
@@ -195,6 +228,38 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 			return true
 		}
 		switch r.URL.Path {
+		case "/api/v4/memory/notes":
+			var q struct {
+				Title string `json:"title"`
+				Body  string `json:"body"`
+			}
+			if !decode(&q) {
+				return
+			}
+			v, e := s.Store.Put(ctx, catalog.PutSource{ExternalKey: "web-note:" + r.Header.Get("X-Butler-Delivery-ID"), Kind: "owner_statement", ScopeType: "user", ScopeID: a.OwnerID, Title: q.Title, Body: q.Body, Author: "Owner"})
+			if e != nil {
+				writeMemoryError(w, e)
+				return
+			}
+			writeJSON(w, 200, v)
+		case "/api/v4/memory/search":
+			var q struct {
+				Query  string `json:"query"`
+				Limit  int    `json:"limit"`
+				Offset int    `json:"offset"`
+			}
+			if !decode(&q) {
+				return
+			}
+			if q.Limit == 0 {
+				q.Limit = 6
+			}
+			v, e := s.Store.Browse(ctx, q.Query, q.Limit, q.Offset)
+			if e != nil {
+				writeMemoryError(w, e)
+				return
+			}
+			writeJSON(w, 200, v)
 		case "/api/v4/memory/index-policy":
 			if s.Indexing == nil {
 				writeJSON(w, 503, map[string]string{"error": "owned local indexing unavailable"})

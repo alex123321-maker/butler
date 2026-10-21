@@ -12,7 +12,7 @@ export interface RunEvent {
 }
 
 export interface UseRunEventsReturn {
-  /** All received events in order */
+  /** Recent events in order; consecutive model deltas share one display row. */
   events: Ref<RunEvent[]>
   /** Whether the SSE connection is active */
   connected: Ref<boolean>
@@ -97,14 +97,29 @@ export function useRunEvents(runId: string): UseRunEventsReturn {
 
     for (const type of EVENT_TYPES) {
       eventSource.addEventListener(type, (e: MessageEvent) => {
+        if (closed) return
         try {
           const evt: RunEvent = JSON.parse(e.data)
+          if (evt.run_id && evt.run_id !== runId) return
 
           if (type === 'stream_end') {
             ended.value = true
             teardown()
             return
           }
+          if (
+            evt.event_type !== type ||
+            typeof evt.timestamp !== 'string' ||
+            !Number.isFinite(Date.parse(evt.timestamp))
+          )
+            return
+          if (evt.payload === undefined) evt.payload = {}
+          if (
+            !evt.payload ||
+            typeof evt.payload !== 'object' ||
+            Array.isArray(evt.payload)
+          )
+            return
 
           // Deduplicate events (replay events on reconnect may repeat).
           if (evt.event_id && seenEventIds.has(evt.event_id)) {
@@ -114,7 +129,12 @@ export function useRunEvents(runId: string): UseRunEventsReturn {
             seenEventIds.add(evt.event_id)
           }
 
-          events.value = [...events.value, evt]
+          const rows = events.value
+          events.value = (
+            type === 'assistant_delta' && rows.at(-1)?.event_type === type
+              ? [...rows.slice(0, -1), evt]
+              : [...rows, evt]
+          ).slice(-300)
         } catch {
           // Malformed event — skip.
         }
