@@ -12,7 +12,7 @@ export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 export BUTLER_TEST_COMPLETION_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 mkdir -p .cache/communication-core
 report=.cache/communication-core/targeted.jsonl
-packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
+packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
 if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^TestCommunication' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1

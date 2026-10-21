@@ -23,8 +23,9 @@ import (
 )
 
 type resumedProvider struct {
-	f      *fixture
-	starts int
+	f          *fixture
+	starts     int
+	quietFinal bool
 }
 
 func (*resumedProvider) Name() string { return "fixture" }
@@ -50,16 +51,18 @@ func (p *resumedProvider) StartRun(ctx context.Context, q transport.StartRunRequ
 	}
 	// Test owning publication directly here. Exact Broker/private HTTP proof is
 	// exercised independently in app's real dispatched-control integration test.
-	tx, e := p.f.pool.Begin(ctx)
-	if e != nil {
-		return nil, e
-	}
-	defer tx.Rollback(ctx)
-	if _, e = p.f.s.ApplyTx(ctx, tx, p.f.p, communicationcontrol.Envelope{RunID: q.Context.RunID, ToolCallID: "resumed-result", EffectID: "resumed:" + q.Context.RunID, Tool: "communication.message", ArgsJSON: message}); e != nil {
-		return nil, e
-	}
-	if e = tx.Commit(ctx); e != nil {
-		return nil, e
+	if !p.quietFinal {
+		tx, e := p.f.pool.Begin(ctx)
+		if e != nil {
+			return nil, e
+		}
+		defer tx.Rollback(ctx)
+		if _, e = p.f.s.ApplyTx(ctx, tx, p.f.p, communicationcontrol.Envelope{RunID: q.Context.RunID, ToolCallID: "resumed-result", EffectID: "resumed:" + q.Context.RunID, Tool: "communication.message", ArgsJSON: message}); e != nil {
+			return nil, e
+		}
+		if e = tx.Commit(ctx); e != nil {
+			return nil, e
+		}
 	}
 	ch := make(chan transport.TransportEvent, 2)
 	ch <- transport.NewAssistantFinalEvent(q.Context.RunID, "fixture", transport.AssistantFinal{FinishReason: "stop"})
@@ -78,9 +81,10 @@ func (*resumedProvider) CancelRun(context.Context, transport.CancelRunRequest) (
 }
 
 func TestCommunicationActualCoreFreshContextResumeIntegration(t *testing.T) {
-	for _, phase := range []string{"awaiting_approval", "model_running"} {
+	for _, phase := range []string{"awaiting_approval", "model_running", "quiet", "verified_task"} {
 		t.Run(phase, func(t *testing.T) {
-			f := setup(t, fixtureOptions{Task: true})
+			quiet := phase == "quiet" || phase == "verified_task"
+			f := setup(t, fixtureOptions{Task: true, Quiet: phase == "quiet", VerifiedTask: phase == "verified_task"})
 			job, e := task.NewStore(f.pool).Get(f.ctx, f.p.TaskID)
 			if e != nil {
 				t.Fatal(e)
@@ -119,7 +123,7 @@ func TestCommunicationActualCoreFreshContextResumeIntegration(t *testing.T) {
 					t.Fatal(e)
 				}
 			}
-			provider := &resumedProvider{f: f}
+			provider := &resumedProvider{f: f, quietFinal: quiet}
 			writer := completion.New(f.pool)
 			writer.Communication = f.s
 			core := flow.NewService(session.NewPostgresRepository(f.pool), f.leases, run.NewService(run.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), provider, flow.Config{Communication: f.s, Completion: writer, Checkpoints: f.s.Inputs, OwnerID: "resumed-worker", LeaseTTL: 30, ProviderName: "fixture", ModelName: "fixture"}, nil)
@@ -127,7 +131,11 @@ func TestCommunicationActualCoreFreshContextResumeIntegration(t *testing.T) {
 			if e != nil || result.CurrentState != commonv1.RunState_RUN_STATE_COMPLETED || provider.starts != 1 {
 				t.Fatal(result, e, provider.starts)
 			}
-			if f.count(t, "communication_publications") != 2 || f.count(t, "messages") != 4 || f.count(t, "delivery_outbox") != 4 {
+			pubs, msgs, deliveries := 2, 4, 4
+			if quiet {
+				pubs, msgs, deliveries = 1, 3, 2
+			}
+			if f.count(t, "communication_publications") != pubs || f.count(t, "messages") != msgs || f.count(t, "delivery_outbox") != deliveries {
 				t.Fatal("resume duplicated publication/response/final")
 			}
 		})

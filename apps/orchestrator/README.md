@@ -6,6 +6,9 @@ for #99–#100/#103. Bootstrap does not install those hooks, tools, private rout
 admissions or sender. Web and the current Telegram adapter are unchanged; no
 communication enable flag is introduced. Migrations089–090 preserve existing
 legacy outbox use while separating publication identities and privacy copies.
+The review hardening checks current owner authority/private claims at publication,
+expiry after export waits, typed proof for all explicit finals, and bounded
+failure closure. See [review evidence](../../docs/ai/communication-core-review-20261021.md).
 
 Operator budget policy `disable_owner_day:true` disables the shared daily limit
 for new foreground/background admissions while retaining task, conversation,

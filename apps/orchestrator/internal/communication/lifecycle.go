@@ -55,7 +55,7 @@ func (s *Store) BeforeFinal(ctx context.Context, runID, body string) (string, er
 	if tx.QueryRow(ctx, `SELECT obligation_state,correction_count,quiet FROM communication_admissions WHERE input_id=$1 FOR UPDATE`, p.InputID).Scan(&state, &corrections, &quiet) != nil {
 		return "", ErrDenied
 	}
-	if state == "response_committed" || quiet {
+	if state == "response_committed" {
 		return "ready", tx.Commit(ctx)
 	}
 	if state == "waiting_for_user" {
@@ -63,6 +63,15 @@ func (s *Store) BeforeFinal(ctx context.Context, runID, body string) (string, er
 	}
 	if state != "open" {
 		return "failed", tx.Commit(ctx)
+	}
+	if quiet {
+		// An optional question temporarily opens even a quiet/verified_task
+		// obligation. Its answer must not force a forbidden/unnecessary result,
+		// but Completion still needs an explicitly satisfied obligation.
+		if _, e = tx.Exec(ctx, `UPDATE communication_admissions SET obligation_state='response_committed' WHERE input_id=$1`, p.InputID); e != nil {
+			return "", e
+		}
+		return "ready", tx.Commit(ctx)
 	}
 	if corrections == 0 {
 		metadata := `{"kind":"attempt_final","visibility":"internal","published":false}`
@@ -111,8 +120,8 @@ func (s *Store) BeforeFinal(ctx context.Context, runID, body string) (string, er
 // FinalizeTx is joined to the existing completion transaction. No automatic
 // notification is produced for explicit attempts; accepted publications own it.
 func (s *Store) FinalizeTx(ctx context.Context, tx pgx.Tx, runID string) (bool, error) {
-	var state string
-	e := tx.QueryRow(ctx, `SELECT a.obligation_state FROM communication_admissions a JOIN accepted_inputs i USING(input_id) WHERE i.run_id=$1 FOR UPDATE OF a`, runID).Scan(&state)
+	var state, inputID string
+	e := tx.QueryRow(ctx, `SELECT a.obligation_state,a.input_id FROM communication_admissions a JOIN accepted_inputs i USING(input_id) WHERE i.run_id=$1 FOR UPDATE OF a`, runID).Scan(&state, &inputID)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -122,7 +131,7 @@ func (s *Store) FinalizeTx(ctx context.Context, tx pgx.Tx, runID string) (bool, 
 	if state != "response_committed" {
 		return true, ErrDenied
 	}
-	if s.SourceGuard == nil {
+	if s.SourceGuard == nil || s.Inputs == nil || s.Inputs.CheckCommunicationClaimTx(ctx, tx, runID, inputID) != nil {
 		return true, ErrDenied
 	}
 	return true, s.SourceGuard(ctx, tx, runID)

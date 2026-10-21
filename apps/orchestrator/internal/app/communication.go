@@ -101,5 +101,14 @@ func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communic
 	if err != nil {
 		return out, err
 	}
+	if !e.Lookup {
+		// A grant/approval deadline can pass during export-policy or storage
+		// waits even while all mutable authority rows remain locked. Expiry is
+		// checked again after Apply, on the same rollback-capable transaction.
+		current, err := readOwnedDispatch(owned, tx, envelope, e.Tool, hash, "1", actionauth.EffectPrepare, false, true)
+		if err != nil || current.ID != grant.ID {
+			return communicationcontrol.Receipt{}, communication.ErrDenied
+		}
+	}
 	return out, tx.Commit(owned)
 }

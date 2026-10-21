@@ -17,6 +17,11 @@ func (s *Store) OwnerControlTx(ctx context.Context, tx pgx.Tx, ids []string, kin
 			state = "superseded"
 		}
 		_, e := tx.Exec(ctx, `WITH changed AS (UPDATE communication_interactions SET state=$2,version=version+1 WHERE task_id=ANY($1) AND state='open' RETURNING input_id,interaction_id,owner_id,session_key), closed AS (UPDATE communication_admissions SET obligation_state='cancelled' WHERE input_id IN(SELECT input_id FROM changed) RETURNING input_id) INSERT INTO communication_events(owner_id,session_key,aggregate_id,event_type) SELECT owner_id,session_key,interaction_id,'interaction.'||$2 FROM changed`, ids, state)
+		if e == nil {
+			// A response may already be resolved while its Input is still queued.
+			// Preserve that historical DATA, but cancel its unfulfilled obligation.
+			_, e = tx.Exec(ctx, `UPDATE communication_admissions a SET obligation_state='cancelled' FROM accepted_inputs i WHERE i.input_id=a.input_id AND i.task_id=ANY($1) AND a.obligation_state IN ('open','waiting_for_user')`, ids)
+		}
 		return e
 	case "pause", "resume":
 		rows, e := tx.Query(ctx, `SELECT x.interaction_id,x.input_id,x.state,x.owner_id,x.session_key,x.task_id FROM communication_interactions x WHERE x.task_id=ANY($1) AND x.state IN ('open','resolved') ORDER BY x.created_at DESC FOR UPDATE`, ids)
@@ -79,7 +84,9 @@ func (s *Store) OwnerControlTx(ctx context.Context, tx pgx.Tx, ids []string, kin
 // Review closes invalid/expired questions using DB time. It is explicitly
 // scheduled by a future composition; this revision installs no background loop.
 func (s *Store) Review(ctx context.Context) error {
-	rows, e := s.Pool.Query(ctx, `SELECT interaction_id,session_key,run_id,COALESCE(task_id,''),input_id FROM communication_interactions WHERE state='open' ORDER BY created_at LIMIT 100`)
+	// Select actionable rows before the batch limit: old valid no-expiry waits
+	// otherwise occupy every batch forever and starve later invalid questions.
+	rows, e := s.Pool.Query(ctx, `SELECT x.interaction_id,x.session_key,x.run_id,COALESCE(x.task_id,''),x.input_id FROM communication_interactions x LEFT JOIN tasks t ON t.task_id=x.task_id WHERE x.state='open' AND (t.status IN ('cancelled','completed') OR t.revision<>x.task_revision OR t.constraints_revision<>x.constraints_revision OR x.expires_at<=clock_timestamp()) ORDER BY x.created_at,x.interaction_id LIMIT 100`)
 	if e != nil {
 		return e
 	}

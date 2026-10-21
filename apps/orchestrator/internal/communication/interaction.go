@@ -3,6 +3,7 @@ package communication
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	runstore "github.com/butler/butler/apps/orchestrator/internal/run"
@@ -207,5 +208,8 @@ func (s *Store) PendingInteraction(ctx context.Context, runID string) (string, e
 	}
 	var id string
 	e := s.Pool.QueryRow(ctx, `SELECT x.interaction_id FROM communication_interactions x JOIN accepted_inputs i USING(input_id) WHERE x.run_id=$1 AND x.session_key=$2 AND i.checkpoint IN ('awaiting_interaction','interaction_ready') AND i.checkpoint_json->'interaction'->>'interaction_id'=x.interaction_id AND x.state IN ('open','resolved')`, runID, t.SessionKey).Scan(&id)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return "", nil
+	}
 	return id, e
 }

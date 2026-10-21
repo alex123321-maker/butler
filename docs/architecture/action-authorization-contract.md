@@ -9,6 +9,12 @@ authority, journal, quota and all other budgets. It cannot authorize an external
 write or manufacture consent from a preference. See
 [scope and evidence](../ai/communication-core-acceptance-20261021.md).
 
+Communication admission/commit verifies the exact private Input claim as well as
+the current run/task/lease/fence. An old caller cannot borrow a replacement claim.
+The owning publication transaction rechecks goal/mandate authority independently
+of an earlier Broker claim and checks dispatch/grant/approval expiry again after
+export-policy/storage waits, before committing any staged publication or outbox.
+
 Conversation action slots use the exact live accepted input, owner/session and run when no task is assigned. Task revisions remain required for task slots; cross-run linking is unavailable without a task.
 
 Fixed [tool discovery](tool-discovery.md) controls are credential-free local reads of the current scoped catalog. Only their exact owned contracts/resources qualify as standard operations, including in delegated work. Input/lease/task authority, explicit denials and execution permissions remain independently enforced.

@@ -53,7 +53,7 @@ regression selection; any other skipped regression is recorded, not called a pas
 
 Reports remain local in `.cache/communication-core/{targeted,regression,control-regression}.jsonl`.
 
-Current results: **29 distinct top-level communication checks passed with race,
+Initial results for `8e3b667b` (before review hardening): **29 distinct top-level communication checks passed with race,
 zero failures and zero skips**. The final-source reruns in `core-final.jsonl`
 (17 kernel checks) and `memory-final.jsonl` (2 compaction checks) include the last
 control/privacy and actual PostgreSQL typed-compaction fixes. These overlap the
@@ -80,6 +80,11 @@ channel adapter, Bootstrap, go.mod or go.sum changes.
 Physical FileManifest deletion checks ran on Linux, matching Docker deployment.
 The Windows host's directory-sync restriction is not reported as a passing
 native-Windows privacy test.
+
+For the subsequent review/fixes, final-source rerun and issue closure assessment,
+use [the review report](communication-core-review-20261021.md). The initial
+numbers above are retained as historical evidence, not the current revision's
+test count or proof that every original issue criterion is complete.
 
 ## Evidence by boundary
 

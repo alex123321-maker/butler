@@ -88,4 +88,14 @@ func TestCommunicationPrivateHTTPBoundary(t *testing.T) {
 			t.Fatal("unsafe endpoint accepted", url)
 		}
 	}
+	for _, endpoint := range []string{"http://other:8080" + Path, "http://192.168.1.2" + Path, "http://orchestrator:9090" + Path, "http://orchestrator.evil:8080" + Path} {
+		if _, e = NewClient(endpoint, token); e == nil {
+			t.Fatal("private bearer token permitted over remote plain HTTP", endpoint)
+		}
+	}
+	for _, endpoint := range []string{"http://orchestrator:8080" + Path, "https://private.example" + Path} {
+		if _, e = NewClient(endpoint, token); e != nil {
+			t.Fatal("allowed private/TLS endpoint rejected", endpoint, e)
+		}
+	}
 }

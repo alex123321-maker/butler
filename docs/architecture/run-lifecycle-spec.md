@@ -129,6 +129,11 @@ Coarse Run state переиспользует `awaiting_approval`, но Input ch
 `awaiting_interaction` и marker `communication_interaction` отличают preference
 от Approval: approval/grant из ответа не создаётся. Pause сохраняет DATA;
 resume владельца создаёт новый Input, старый отменённый Input не оживает.
+Ошибка чтения durable question state не означает отсутствия вопроса:
+`communication_state_pending` сохраняет checkpoint, запрещает generic
+tool-result/model continuation и даёт только bounded повторную проверку.
+Input Finish удерживает существующий wait либо ранний ready marker, не выдавая
+дополнительного разрешения на исполнение и не расходуя ещё один model turn.
 
 [User Communication](user-communication-spec.md) задаёт будущий admission profile:
 публикации выполняются через Broker-tool; model final сохраняется как внутренний

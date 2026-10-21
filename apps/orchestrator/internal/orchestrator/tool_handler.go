@@ -339,13 +339,24 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
 	if requested.ToolName == "communication.widget" && s.config.Communication != nil {
-		if _, pendingErr := s.config.Communication.PendingInteraction(ctx, current.GetRunId()); pendingErr == nil {
+		pendingID, pendingErr := s.config.Communication.PendingInteraction(ctx, current.GetRunId())
+		if pendingErr != nil || pendingID != "" || (err == nil && result.GetStatus() == "completed") {
+			_ = s.discardProviderContext(ctx, current.GetRunId())
+		}
+		if pendingErr != nil {
+			return nil, current, ErrCommunicationStatePending
+		}
+		if pendingID != "" {
 			stored, e := s.runs.GetRun(ctx, current.GetRunId())
 			if e != nil {
-				return nil, current, e
+				return nil, current, ErrCommunicationStatePending
 			}
-			_ = s.discardProviderContext(ctx, current.GetRunId())
 			return nil, stored, ErrApprovalSuspended
+		}
+		if err == nil && result.GetStatus() == "completed" {
+			// An accepted widget cannot lack its atomic suspension checkpoint.
+			// Preserve dispatch identity for reconciliation instead of continuing.
+			return nil, current, ErrCommunicationStatePending
 		}
 	}
 	if requested.ToolName == singletabcontrol.BindTool {

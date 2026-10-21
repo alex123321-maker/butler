@@ -16,6 +16,13 @@ backend foundation реализован в отдельной ветке, produc
 атомарные message/widget publications в существующем outbox, exact dispatched
 Broker control, reply obligations, одно исправление и durable blocking questions.
 Миграции 089–090 добавляют эти записи и удаление копий при privacy redaction.
+Review этой backend поставки добавил повторную проверку goal/mandate, точного
+private Input claim и сроков после export-policy waits; terminal proof требуется
+и для непустого explicit final. Quiet/verified_task после ответа на optional
+вопрос завершается без требования нового result. Ошибка единственного correction
+закрывает obligation с failure. Просроченный/закрытый open-widget payload не
+отправляется; maintenance выбирает только actionable вопросы до batch limit.
+См. [результаты review и критерии закрытия issues](../ai/communication-core-review-20261021.md).
 См. [модуль](../../apps/orchestrator/internal/communication/README.md) и
 [проверки и ограничения](../ai/communication-core-acceptance-20261021.md).
 

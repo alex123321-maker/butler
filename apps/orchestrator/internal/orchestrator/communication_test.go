@@ -28,7 +28,7 @@ func (k *communicationKernelFixture) BeforeFinal(context.Context, string, string
 	return "ready", nil
 }
 func (*communicationKernelFixture) PendingInteraction(context.Context, string) (string, error) {
-	return "", errors.New("none")
+	return "", nil
 }
 func (*communicationKernelFixture) ResumeInteraction(context.Context, string, string) (string, error) {
 	return "", errors.New("none")
@@ -61,16 +61,39 @@ func TestCommunicationRequiresFinalAndTerminalAndSuppressesDeltas(t *testing.T) 
 
 type communicationProvider struct {
 	mockProvider
-	continuations int
+	continuations                    int
+	failCorrection, abruptCorrection bool
 }
 
 func (p *communicationProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
 	p.continuations++
+	if p.failCorrection {
+		return nil, errors.New("fixture correction unavailable")
+	}
 	ch := make(chan transport.TransportEvent, 2)
+	if p.abruptCorrection {
+		close(ch)
+		return ch, nil
+	}
 	ch <- transport.NewAssistantFinalEvent("", "fixture", transport.AssistantFinal{Content: "", FinishReason: "stop"})
 	ch <- transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "fixture")
 	close(ch)
 	return ch, nil
+}
+
+func TestCommunicationCorrectionFailureClosesObligation(t *testing.T) {
+	for _, phase := range []string{"admission", "stream"} {
+		t.Run(phase, func(t *testing.T) {
+			kernel := &communicationKernelFixture{decisions: []string{"correct", "failed"}}
+			writer := &communicationCompletion{}
+			provider := &communicationProvider{failCorrection: phase == "admission", abruptCorrection: phase == "stream", mockProvider: mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", "fixture", transport.AssistantFinal{Content: "not published", FinishReason: "stop"}), transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "fixture")}}}
+			s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Communication: kernel, Completion: writer}, nil)
+			r, e := s.Execute(context.Background(), ingress.InputEvent{EventID: "event", IdempotencyKey: "event", SessionKey: "web:test", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"answer"}`, CreatedAt: time.Now()})
+			if e != nil || r.ReceiptStatus != "blocked" || r.ErrorCode != "communication_result_missing" || kernel.calls != 2 || provider.continuations != 1 || len(writer.requests) != 0 {
+				t.Fatal("failed single correction abandoned an open obligation", r, e, kernel.calls, provider.continuations)
+			}
+		})
+	}
 }
 
 type communicationCompletion struct{ requests []completion.Request }

@@ -11,6 +11,12 @@ typed internal finals and the existing outbox outcome policy. It is not composed
 by Bootstrap. See [scope and evidence](../ai/communication-core-acceptance-20261021.md);
 legacy delivery remains the enabled path.
 
+Explicit completion requires typed assistant-final/run-completed proof for both
+empty and nonempty final text. A saved publication cannot turn an interrupted
+terminal stream into a completed attempt. A failed single correction closes its
+still-open obligation without another inference or raw-final fallback; quiet
+questions return to a satisfied obligation after their valid owner response.
+
 [User Communication](user-communication-spec.md) specifies a future admission
 profile that preserves immutable attempt results and verification while removing
 implicit notifications from model finalization. Explicit publications receive

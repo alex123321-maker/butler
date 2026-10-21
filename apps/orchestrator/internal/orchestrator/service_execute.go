@@ -242,6 +242,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
+		if errors.Is(err, ErrCommunicationStatePending) {
+			return nil, err
+		}
 		if s.scheduleModelRetry(transportCtx, current, err) {
 			return nil, ErrModelRetryPending
 		}
@@ -306,18 +309,18 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 		case "correct":
 			tools, e := s.toolSetForContinuation(ctx, current.GetRunId())
 			if e != nil {
-				return nil, e
+				return s.failedCommunicationCorrection(ctx, current, e)
 			}
 			stream, e := s.provider.ContinueRun(ctx, transport.ContinueRunRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolSet: tools, InputItems: []transport.InputItem{{Role: "system", Content: "Publish the requested answer through the available communication tool. Do not repeat completed actions. This is the single bounded missing-response correction."}}})
 			if e != nil {
-				return nil, e
+				return s.failedCommunicationCorrection(ctx, current, e)
 			}
 			final, updated, e := s.consumeModelStream(ctx, runLog, current, event.SessionKey, leaseID, stream)
 			if errors.Is(e, ErrApprovalSuspended) {
 				return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: updated.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
 			}
 			if e != nil {
-				return nil, e
+				return s.failedCommunicationCorrection(ctx, updated, e)
 			}
 			return s.finalizeExecution(ctx, runLog, updated, event, prepared, leaseID, final)
 		case "failed":

@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -60,7 +61,12 @@ type Client struct {
 
 func NewClient(endpoint, token string) (*Client, error) {
 	u, err := url.Parse(endpoint)
-	if err != nil || u.Hostname() == "" || u.User != nil || u.Path != Path || u.RawPath != "" || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.Opaque != "" || (u.Scheme != "http" && u.Scheme != "https") || !validToken(token) {
+	if err != nil {
+		return nil, ErrDenied
+	}
+	ip := net.ParseIP(u.Hostname())
+	privateHTTP := u.Scheme == "http" && (u.Host == "orchestrator:8080" || ip != nil && ip.IsLoopback())
+	if u.Hostname() == "" || u.User != nil || u.Path != Path || u.RawPath != "" || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.Opaque != "" || u.Scheme != "https" && !privateHTTP || !validToken(token) {
 		return nil, ErrDenied
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()

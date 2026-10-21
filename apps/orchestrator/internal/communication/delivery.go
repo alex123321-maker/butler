@@ -75,6 +75,12 @@ func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Mess
 	if e != nil {
 		return deny()
 	}
+	if kind == "widget" {
+		var current bool
+		if tx.QueryRow(ctx, `SELECT TRUE FROM communication_interactions WHERE publication_id=$1 AND state='open' AND NOT privacy_redacted AND (expires_at IS NULL OR expires_at>clock_timestamp())`, m.PublicationID).Scan(&current) != nil {
+			return deny()
+		}
+	}
 	if taskID != "" {
 		if _, e = actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, owner, nil, time.Now().UTC()); e != nil {
 			return deny()

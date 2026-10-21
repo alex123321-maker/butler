@@ -6,3 +6,7 @@ V1 widgets always block; false wait is rejected before persistence. An accepted
 receipt proves a durable publication only. This package registers nothing and
 enables no transport or user profile. Photo/report contracts are foundations;
 readiness must reject them until their representations and artifact checks exist.
+
+The fixed private client refuses remote plain HTTP. HTTPS is required except for
+literal loopback addresses and `http://orchestrator:8080/internal/communication`.
+Proxy use and redirects are disabled; the service token cannot choose authority.

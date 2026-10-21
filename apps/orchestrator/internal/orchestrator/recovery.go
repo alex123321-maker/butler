@@ -286,6 +286,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 	}
 	if err != nil {
+		if errors.Is(err, ErrCommunicationStatePending) {
+			return nil, err
+		}
 		if s.scheduleModelRetry(ctx, current, err) {
 			return nil, ErrModelRetryPending
 		}
@@ -300,6 +303,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return nil, err
 	}
 	final, current, err := s.consumeModelStream(ctx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	if errors.Is(err, ErrCommunicationStatePending) {
+		return nil, err
+	}
 	if err != nil && s.scheduleModelRetry(ctx, current, err) {
 		return nil, ErrModelRetryPending
 	}

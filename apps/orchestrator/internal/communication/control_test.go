@@ -104,3 +104,30 @@ func TestCommunicationTaskAmendAndStopCloseQuestionIntegration(t *testing.T) {
 func controlActor(f *fixture, delivery string) context.Context {
 	return owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.p.OwnerID, Channel: "web", SessionKey: f.p.SessionKey, DeliveryID: delivery})
 }
+
+func TestCommunicationStopAmendAfterResponseCancelsObligationIntegration(t *testing.T) {
+	for _, kind := range []string{task.ControlStop, task.ControlAmend} {
+		t.Run(kind, func(t *testing.T) {
+			f := setup(t, fixtureOptions{Task: true})
+			r, e := f.publish(t, "question", "communication.widget", widget)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = f.s.Inputs.Finish(f.ctx, f.claim, "waiting_for_user", "", "", 0); e != nil {
+				t.Fatal(e)
+			}
+			if _, e = f.s.Respond(f.actor("telegram", "answer"), r.InteractionRef, f.bindings["telegram"], 1, 1, communicationcontrol.Answer{OptionIDs: []string{"a"}}); e != nil {
+				t.Fatal(e)
+			}
+			ctrl := task.NewController(task.NewStore(f.pool), f.leases.Authority(), f.leases, run.NewPostgresRepository(f.pool), approval.NewPostgresRepository(f.pool), f.s.Inputs, transcript.NewStore(f.pool))
+			ctrl.SetInteractionControls(f.s)
+			if _, e = ctrl.Apply(controlActor(f, "control"), task.ControlRequest{TaskID: f.p.TaskID, ExpectedRevision: f.p.TaskRevision, Kind: kind, Instruction: "Change request"}); e != nil {
+				t.Fatal(e)
+			}
+			var state string
+			if e = f.pool.QueryRow(f.ctx, `SELECT obligation_state FROM communication_admissions WHERE input_id=$1`, f.claim.InputID).Scan(&state); e != nil || state != "cancelled" {
+				t.Fatal("resolved question left abandoned obligation after control", state, e)
+			}
+		})
+	}
+}

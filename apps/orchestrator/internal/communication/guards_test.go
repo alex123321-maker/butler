@@ -48,6 +48,39 @@ func TestCommunicationQuietAndVerifiedTaskDoNotDemandPublicationIntegration(t *t
 	}
 }
 
+func TestCommunicationNonemptyFinalRequiresTerminalProofIntegration(t *testing.T) {
+	f := setup(t)
+	if _, e := f.publish(t, "answer", "communication.message", message); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := f.pool.Exec(f.ctx, `UPDATE runs SET current_state='finalizing',status='finalizing' WHERE run_id=$1`, f.p.RunID); e != nil {
+		t.Fatal(e)
+	}
+	c := completion.New(f.pool)
+	c.Communication = f.s
+	q := completion.Request{RunID: f.p.RunID, SessionKey: f.p.SessionKey, Content: "Internal final with no terminal observation"}
+	if _, e := c.Save(f.ctx, q); e == nil {
+		t.Fatal("nonempty explicit final bypassed terminal proof")
+	}
+	if f.count(t, "run_final_results") != 0 {
+		t.Fatal("unproved final partially committed")
+	}
+	q.TerminalObserved = true
+	if _, e := c.Save(f.ctx, q); e != nil {
+		t.Fatal("typed nonempty terminal final rejected", e)
+	}
+}
+
+func TestCommunicationQuietQuestionStillWaitsIntegration(t *testing.T) {
+	f := setup(t, fixtureOptions{Quiet: true})
+	if _, e := f.publish(t, "question", "communication.widget", widget); e != nil {
+		t.Fatal(e)
+	}
+	if decision, e := f.s.BeforeFinal(f.ctx, f.p.RunID, ""); e != nil || decision != "waiting" {
+		t.Fatal("quiet policy bypassed open question", decision, e)
+	}
+}
+
 func TestCommunicationExhaustedOrUnavailableNoticeStillTerminatesIntegration(t *testing.T) {
 	for _, unavailable := range []bool{false, true} {
 		t.Run(fmt.Sprint(unavailable), func(t *testing.T) {

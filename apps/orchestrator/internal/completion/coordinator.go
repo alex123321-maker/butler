@@ -127,7 +127,7 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 			return FinalRecord{}, err
 		}
 	}
-	if strings.TrimSpace(q.Content) == "" && (!explicit || !q.TerminalObserved) {
+	if explicit && !q.TerminalObserved || strings.TrimSpace(q.Content) == "" && !explicit {
 		return FinalRecord{}, fmt.Errorf("typed terminal final required")
 	}
 	// A repeated persistence attempt returns the immutable record, never tools.

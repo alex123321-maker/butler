@@ -12,6 +12,7 @@ import (
 	"time"
 
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
@@ -90,7 +91,15 @@ func (s *Store) Bind(ctx context.Context, b Binding, expected int64) error {
 // It pins only supported backend methods, under the existing owned Input. This
 // revision deliberately provides no startup flag or production admission path.
 func (s *Store) AdmitTx(ctx context.Context, tx pgx.Tx, p Principal, quiet bool, methods []string) error {
-	if !checkToken(ctx, p) || len(methods) == 0 {
+	if !checkToken(ctx, p) || s.Inputs == nil || s.SourceGuard == nil || len(methods) == 0 {
+		return ErrDenied
+	}
+	var valid bool
+	if tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 AND user_id=$2 FOR UPDATE`, p.SessionKey, p.OwnerID).Scan(&valid) != nil {
+		return ErrDenied
+	}
+	tok, _ := ownership.TokenFromContext(ctx)
+	if tx.QueryRow(ctx, `SELECT TRUE FROM runs r JOIN session_ownership o USING(session_key) WHERE r.run_id=$1 AND r.session_key=$2 AND COALESCE(r.task_id,'')=$3 AND COALESCE(r.task_revision,0)=$4 AND r.lease_id=$5 AND o.run_id=r.run_id AND o.lease_id=$5 AND o.fence_epoch=$6 AND o.expires_at>clock_timestamp() AND r.current_state IN ('preparing','model_running','tool_pending','tool_running','awaiting_model_resume') FOR SHARE OF r,o`, p.RunID, p.SessionKey, p.TaskID, p.TaskRevision, tok.LeaseID, tok.FenceEpoch).Scan(&valid) != nil {
 		return ErrDenied
 	}
 	seen := map[string]bool{}
@@ -104,12 +113,21 @@ func (s *Store) AdmitTx(ctx context.Context, tx pgx.Tx, p Principal, quiet bool,
 	if p.TaskID != "" {
 		var mode string
 		var parent *string
-		if tx.QueryRow(ctx, `SELECT result_delivery,parent_task_id FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND revision=$4 AND constraints_revision=$5 FOR SHARE`, p.TaskID, p.OwnerID, p.SessionKey, p.TaskRevision, p.ConstraintsRevision).Scan(&mode, &parent) != nil || parent != nil {
+		if tx.QueryRow(ctx, `SELECT result_delivery,parent_task_id FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND revision=$4 AND constraints_revision=$5 AND status='active' FOR SHARE`, p.TaskID, p.OwnerID, p.SessionKey, p.TaskRevision, p.ConstraintsRevision).Scan(&mode, &parent) != nil || parent != nil {
+			return ErrDenied
+		}
+		if _, e := actionauth.CheckTaskAuthorityTx(ctx, tx, p.TaskID, p.OwnerID, nil, time.Now().UTC()); e != nil {
 			return ErrDenied
 		}
 		// Verification owns result delivery; asking the model to publish an
 		// unverified result would contradict the owner's stricter policy.
 		quiet = quiet || mode == "verified_task"
+	}
+	if s.Inputs.CheckCommunicationClaimTx(ctx, tx, p.RunID, p.InputID) != nil {
+		return ErrDenied
+	}
+	if e := s.SourceGuard(ctx, tx, p.RunID); e != nil {
+		return ErrDenied
 	}
 	state := "open"
 	if quiet {
@@ -126,7 +144,7 @@ func (s *Store) AdmitTx(ctx context.Context, tx pgx.Tx, p Principal, quiet bool,
 }
 
 func (s *Store) guard(ctx context.Context, tx pgx.Tx, p Principal) error {
-	if s.SourceGuard == nil || !checkToken(ctx, p) {
+	if s.SourceGuard == nil || s.Inputs == nil || !checkToken(ctx, p) {
 		return ErrDenied
 	}
 	var yes bool
@@ -140,6 +158,12 @@ func (s *Store) guard(ctx context.Context, tx pgx.Tx, p Principal) error {
 		if e != nil {
 			return ErrDenied
 		}
+		if _, e = actionauth.CheckTaskAuthorityTx(ctx, tx, p.TaskID, p.OwnerID, nil, time.Now().UTC()); e != nil {
+			return ErrDenied
+		}
+	}
+	if s.Inputs.CheckCommunicationClaimTx(ctx, tx, p.RunID, p.InputID) != nil {
+		return ErrDenied
 	}
 	return s.SourceGuard(ctx, tx, p.RunID)
 }
@@ -274,6 +298,11 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 		if err = s.ChannelGuard(ctx, tx, p.RunID, b, a); err != nil {
 			return out, ErrDenied
 		}
+	}
+	// Binding/export checks may wait for locks or policy. Recheck live deadlines
+	// and the exact private claim after those waits, before any publication write.
+	if err = s.guard(ctx, tx, p); err != nil {
+		return out, err
 	}
 	receipt, _ = json.Marshal(out)
 	sources, _ := json.Marshal(a.SourceRefs)
