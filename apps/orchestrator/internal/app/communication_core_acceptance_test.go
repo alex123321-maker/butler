@@ -100,6 +100,9 @@ func (p *communicationScript) SubmitToolResult(ctx context.Context, q transport.
 	return p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: q.RunID}})
 }
 func (p *communicationScript) ContinueRun(_ context.Context, q transport.ContinueRunRequest) (transport.EventStream, error) {
+	if len(q.InputItems) != 1 || q.InputItems[0].Role != "user" {
+		return nil, errors.New("correction must preserve system instructions")
+	}
 	if !strings.HasPrefix(p.scenario, "missing_response") {
 		return nil, errors.New("unexpected missing-response correction")
 	}

@@ -111,7 +111,7 @@ test "$(grep -c '^BUTLER_SETTINGS_ENCRYPTION_KEY=' "$base/private/provider-runti
 test "$(grep -c '^HTTPS_PROXY=.' "$base/private/provider-runtime.env")" = 1
 docker inspect butler-main-orchestrator-1 | jq -er '.[0].Config.Env[]|select(startswith("HTTPS_PROXY="))|ltrimstr("HTTPS_PROXY=")|select(length>0)' > "$base/private/telegram-proxy"
 test -s "$base/private/telegram-proxy"
-chmod 600 "$base/private/"*
+find "$base/private" -maxdepth 1 -type f -exec chmod 600 {} +
 cp "$base/reports/binaries.sha256" "$base/reports/$marker-binaries.sha256"
 printf 'started\n' > "$base/reports/$marker"
 if [[ "$mode" == application ]];then

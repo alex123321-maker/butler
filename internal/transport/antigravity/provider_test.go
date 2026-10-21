@@ -20,6 +20,97 @@ import (
 
 type authSource struct{ legacyProject string }
 
+func TestExpiredFinalContextCannotContinueOrSendInference(t *testing.T) {
+	var calls atomic.Int32
+	p := newFixture(t, func(*http.Request) (*http.Response, error) {
+		calls.Add(1)
+		return response(frame(`{"text":"done"}`, "STOP")), nil
+	})
+	stream, err := p.StartRun(context.Background(), request("expiry"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	collect(t, stream)
+	p.mu.Lock()
+	state := p.runs["expiry"]
+	p.mu.Unlock()
+	if state == nil {
+		t.Fatal("no final context")
+	}
+	defer state.finalExpiry.Stop()
+	p.expireFinal("expiry", state, 1)
+	if _, err = p.ContinueRun(context.Background(), transport.ContinueRunRequest{RunID: "expiry", InputItems: []transport.InputItem{{Role: "user", Content: "late reminder"}}}); err == nil {
+		t.Fatal("expired context accepted")
+	}
+	if calls.Load() != 1 {
+		t.Fatal("expiry or rejected continuation sent inference")
+	}
+}
+
+func TestTextFinalAllowsOwnedContinuationWithoutReplacingSystem(t *testing.T) {
+	var calls atomic.Int32
+	p := newFixture(t, func(req *http.Request) (*http.Response, error) {
+		var body requestEnvelope
+		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+			t.Error(err)
+		}
+		if calls.Add(1) == 1 {
+			return response(frame(`{"text":"internal final"}`, "STOP")), nil
+		}
+		encoded, _ := json.Marshal(body.Contents)
+		if len(body.Contents) != 3 || !strings.Contains(string(encoded), "internal final") || !strings.Contains(string(encoded), "delivery reminder") {
+			t.Error("continuation lost original input or completed answer")
+		}
+		return response(frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"https://example.com"}}}`, "STOP")), nil
+	})
+	stream, err := p.StartRun(context.Background(), request("correction"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ref *transport.ProviderSessionRef
+	for _, e := range collect(t, stream) {
+		if e.ProviderSessionRef != nil {
+			ref = e.ProviderSessionRef
+		}
+		if e.TransportError != nil {
+			t.Fatal(e.TransportError)
+		}
+	}
+	p.mu.Lock()
+	state := p.runs["correction"]
+	p.mu.Unlock()
+	if state == nil || state.finalExpiry == nil {
+		t.Fatal("completed native context discarded before Core decision")
+	}
+	if _, err = p.ContinueRun(context.Background(), transport.ContinueRunRequest{RunID: "correction", ProviderSessionRef: ref, InputItems: []transport.InputItem{{Role: "system", Content: "replace authority"}}}); err == nil {
+		t.Fatal("continuation replaced system instructions")
+	}
+	stream, err = p.ContinueRun(context.Background(), transport.ContinueRunRequest{RunID: "correction", ProviderSessionRef: ref, InputItems: []transport.InputItem{{Role: "user", Content: "delivery reminder"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	proposal := false
+	for _, e := range collect(t, stream) {
+		if e.TransportError != nil {
+			t.Fatal(e.TransportError)
+		}
+		proposal = proposal || e.ToolCall != nil
+	}
+	p.expireFinal("correction", state, 1)
+	p.mu.Lock()
+	retained := p.runs["correction"] == state
+	p.mu.Unlock()
+	if !proposal || !retained || calls.Load() != 2 {
+		t.Fatal("old expiry discarded the active continuation")
+	}
+	if _, err = p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "correction", ProviderSessionRef: ref}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = p.ContinueRun(context.Background(), transport.ContinueRunRequest{RunID: "correction", ProviderSessionRef: ref}); err == nil {
+		t.Fatal("cancelled context continued")
+	}
+}
+
 func TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures(t *testing.T) {
 	var calls atomic.Int32
 	p := newFixture(t, func(req *http.Request) (*http.Response, error) {

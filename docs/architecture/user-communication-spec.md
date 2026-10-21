@@ -44,6 +44,9 @@ HTTP request context следует App.Run, поэтому shutdown/restart о�
 SSE в пределах grace. Ошибки Telegram polling повторяют только чтение с
 отменяемой задержкой1–30s и сохранённым cursor; они не останавливают Web/Core.
 Sender/outbox остаётся независимым, UNKNOWN не переотправляется таким retry.
+Единственная missing-response коррекция продолжает тот же run с новым актуальным
+tool set и user-role reminder; системный prompt остаётся неизменным. Reminder не
+создаёт новый owner Input и не расширяет полномочия.
 Доверенный operator-параметр `DrainOnly` сохраняет чтение, обработку уже принятых
 epoch-1 Inputs и outbox, но транзакционно отклоняет новые сообщения. Повтор того
 же delivery identity восстанавливает прежний receipt. Profile сообщает

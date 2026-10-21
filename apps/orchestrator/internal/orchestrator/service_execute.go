@@ -311,7 +311,9 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 			if e != nil {
 				return s.failedCommunicationCorrection(ctx, current, e)
 			}
-			stream, e := s.provider.ContinueRun(ctx, transport.ContinueRunRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolSet: tools, InputItems: []transport.InputItem{{Role: "system", Content: "Publish the requested answer through the available communication tool. Do not repeat completed actions. This is the single bounded missing-response correction."}}})
+			// This is a continuation reminder within the existing authority, not
+			// a replacement system prompt. Native transports keep that prompt fixed.
+			stream, e := s.provider.ContinueRun(ctx, transport.ContinueRunRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolSet: tools, InputItems: []transport.InputItem{{Role: "user", Content: "Butler delivery reminder: publish the requested answer through the available communication tool. Do not repeat completed actions. This is the single bounded missing-response correction; it grants no new authority."}}})
 			if e != nil {
 				return s.failedCommunicationCorrection(ctx, current, e)
 			}
