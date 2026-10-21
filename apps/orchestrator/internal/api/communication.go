@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 )
@@ -14,7 +15,7 @@ import (
 // CommunicationOwnerControls constructs a dormant backend handler. Neither
 // Server nor Bootstrap registers it. Existing owner credentials prove the Web
 // actor; Telegram identity remains the responsibility of its trusted adapter.
-func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Store) http.Handler {
+func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Store, controls ...*task.Controller) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		a, ok := auth.Authenticate(r)
@@ -76,6 +77,10 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 				code = 409
 				reason = "typed_response_required"
 			}
+			if errors.Is(err, task.ErrConflict) {
+				code = 409
+				reason = "communication_conflict"
+			}
 			writeJSON(w, code, map[string]string{"error": reason})
 		}
 		switch {
@@ -100,6 +105,19 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 			var q communication.ReplyRequest
 			if communicationcontrol.StrictJSON(raw, &q) != nil {
 				bad()
+				return
+			}
+			if kind, _ := task.ClassifyOwnerText(q.Text); kind != "" {
+				if len(controls) != 1 || controls[0] == nil {
+					writeJSON(w, 503, map[string]string{"error": "owner_control_unavailable"})
+					return
+				}
+				v, err := store.ControlReply(ctx, controls[0], q)
+				if err != nil {
+					failed(err)
+					return
+				}
+				writeJSON(w, 200, v)
 				return
 			}
 			v, err := store.Reply(ctx, q)

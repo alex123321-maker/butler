@@ -613,6 +613,11 @@ recipient фиксируется как `web:<authenticated owner>`, body/header
 Обычный `POST /api/v3/communications/replies` принимает Web publication ref либо
 Telegram ACK из trusted adapter с binding/version. Неоднозначность — 409,
 никакой «последней задачи». Ответ на widget требует typed response path.
+Распознанные существующим owner classifier stop/pause/resume/prepare-only команды
+проходят существующий Task Controller, вне waiting FIFO. Binding/ACK/source proof
+повторяется в control transaction; expected Task revision берётся из publication.
+Отозванный execution mandate не мешает владельцу остановить задачу. Без controller
+composition API отказывает явно, а не передаёт такую команду обычному worker.
 Остальные endpoints таблицы, feed/SSE/drafts и канальные callbacks остаются C05.
 
 Adapters нормализуют Telegram callbacks/replies в тот же service API.

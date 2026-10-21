@@ -93,6 +93,13 @@ transaction. A stable delivery ID creates one Input; changed content conflicts.
 Unproved/ambiguous targets never pick the owner's latest task. Ordinary messages
 cannot answer a widget; its explicit typed response path is required. Sessions
 are never merged and a reply cannot mint an action grant.
+Recognized owner commands use `ControlReply` and the existing Task Controller
+outside the waiting FIFO. The controller rechecks the exact binding/ACK/source
+target in its own transaction, pins the publication's task revision and dedupes
+the owner delivery. Stop requires owner proof, not a still-active execution
+mandate. Original channel proof remains private; no channel session is fabricated.
+Ordinary `Reply` refuses those commands, and an owner handler without a configured
+controller fails explicitly instead of queuing them as model work.
 
 ## Waiting and owner controls
 

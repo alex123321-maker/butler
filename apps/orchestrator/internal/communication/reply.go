@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
@@ -36,6 +37,9 @@ func (s *Store) Reply(ctx context.Context, q ReplyRequest) (input.Record, error)
 	}
 	if (q.PublicationRef == "") == (q.ChannelACK == "") {
 		return input.Record{}, ErrAmbiguous
+	}
+	if kind, _ := task.ClassifyOwnerText(q.Text); kind != "" {
+		return input.Record{}, ErrOwnerControlRequired
 	}
 	if q.BindingID == "" || len(q.BindingID) > 128 || q.BindingVersion < 1 || len(q.PublicationRef) > 128 {
 		return input.Record{}, ErrDenied

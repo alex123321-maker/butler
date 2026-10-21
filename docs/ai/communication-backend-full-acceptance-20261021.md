@@ -16,6 +16,10 @@ live channel/model call. Photo/report remain contract-only and cannot be admitte
 - A separately constructed owner-authenticated HTTP handler manages Web bindings,
   accepts ordinary replies and typed responses. It is not registered by Server or
   Bootstrap. Body/header owner IDs and arbitrary recipients do not authenticate.
+- Recognized owner control replies bypass waiting FIFO through the existing Task
+  Controller. Its same-transaction guard rechecks the proved target, binding and
+  source; publication revision pins the control. Stale/ambiguous targets deny,
+  exact replay returns the old receipt, and owner Stop works after mandate expiry.
 - Version1 fixtures freeze the four formats, three blocking input types and a
   separately authored native Rich Message representation including photo/document
   blocks. These are shape fixtures for C01, not a C06 renderer or live send.
@@ -28,6 +32,8 @@ live channel/model call. Photo/report remain contract-only and cannot be admitte
   representation. Other permitted destinations continue. All-target denial fails
   publication. Respond rechecks current export policy under binding locks; send
   rechecks claim, binding, task/mandate and question deadlines after policy waits.
+  The DB-clock check is last, including after the final source-check wait. Its
+  regression was reproduced as a failing test before the final correction.
 
 ## Criterion mapping
 
@@ -39,7 +45,7 @@ Names below are actual Go tests. Communication-module tests live in
 | #99.1 Model schemas contain no owner/chat/token/lease/grant authority; forged bindings denied | `internal/communicationcontrol.TestCommunicationStrictIntentAndBlockingQuestions`; `TestCommunicationOwnerHTTPProofAndStrictBodiesIntegration`; `TestCommunicationReplyProofAndBindingRevocationIntegration` |
 | #99.2 One owner has two verified channels; new/rebound target gets no old backlog | `TestCommunicationNewOrReboundBindingNeverReplaysBacklogIntegration`; `TestCommunicationCrossChannelReplyCanonicalTargetIntegration` |
 | #99.3 Owner decisions/native Rich Message frozen; no forms/nonblocking V1 | `internal/communicationcontrol.TestCommunicationV1FormatAndNativeRichMessageCorpus`, `TestCommunicationStrictIntentAndBlockingQuestions`, `TestCommunicationTypedAnswers`; `TestCommunicationMultiAndTextResponsesRemainDataIntegration` |
-| #99.4 Publications/final have different identities; ordinary reply has proved target or explicit ambiguity | `TestCommunicationPublicationAtomicIdentityAndSeparateFinalIntegration`; `TestCommunicationCrossChannelReplyCanonicalTargetIntegration`; `TestCommunicationACKAmbiguityNeverChoosesLatestPublicationIntegration` |
+| #99.4 Publications/final have different identities; ordinary reply has proved target or explicit ambiguity | `TestCommunicationPublicationAtomicIdentityAndSeparateFinalIntegration`; `TestCommunicationCrossChannelReplyCanonicalTargetIntegration`; `TestCommunicationACKAmbiguityNeverChoosesLatestPublicationIntegration`; `TestCommunicationCrossChannelOwnerControlBypassesWaitingFIFOIntegration`; `TestCommunicationOwnerHTTPRecognizesStopWithoutQueuingIntegration` |
 | #100.1 Mid-run publication survives crash independently of final; accepted is persistence | `TestCommunicationEveryPublicationWriteFailureAndProcessCrashIntegration`, including commit then abrupt worker death; `app.TestCommunicationActualCoreBrokerTwoMessagesAndFrozenFinalIntegration` |
 | #100.2 Exact replay returns original receipt; changed body conflicts; lost ACK reads receipt | `TestCommunicationPublicationAtomicIdentityAndSeparateFinalIntegration`; `app.TestCommunicationOwningDispatchAndReceiptRecoveryIntegration`; actual Core/Broker `lost_private_ack` case |
 | #100.3 Any failed write rolls back; one failed target does not block others | Every-publication-write matrix; `TestCommunicationConcurrentDeliveryAndKnownAbsenceMatrixIntegration`; `TestCommunicationActualACKPersistenceFailureNeverResendsIntegration`; `TestCommunicationDeniedExportTargetDoesNotBlockPermittedTargetIntegration` |
@@ -111,7 +117,7 @@ CI runs the same command in `communication-postgres`, with an ephemeral database
 and retained JSONL artifact. [Current PR127 checks](https://github.com/alex123321-maker/butler/pull/127/checks)
 identify the tested commit; the preceding review's green CI is not substituted.
 
-Local validation: 60 distinct required communication tests passed across the
+Local validation: 62 distinct required communication tests passed across the
 required race selection and final review supplements, with zero failures/skips.
 The full affected regression selection passed 383 tests; 12 shared private-control
 tests passed with race and zero skips. Scoped vet, both service builds and diff

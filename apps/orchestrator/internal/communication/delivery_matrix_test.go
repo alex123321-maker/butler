@@ -64,7 +64,7 @@ type matrixSender struct {
 }
 
 func TestCommunicationSendPolicyWaitDoesNotExtendClaimOrQuestionIntegration(t *testing.T) {
-	for _, scenario := range []string{"claim_expired", "question_expired"} {
+	for _, scenario := range []string{"claim_expired", "question_expired", "final_source_wait"} {
 		t.Run(scenario, func(t *testing.T) {
 			f := setup(t)
 			p, e := f.publish(t, "question", "communication.widget", widget)
@@ -73,7 +73,7 @@ func TestCommunicationSendPolicyWaitDoesNotExtendClaimOrQuestionIntegration(t *t
 			}
 			store := &communication.DeliveryStore{Core: f.s}
 			ttl := time.Minute
-			if scenario == "claim_expired" {
+			if scenario != "question_expired" {
 				ttl = 100 * time.Millisecond
 			} else {
 				if _, e = f.pool.Exec(f.ctx, `UPDATE communication_interactions SET expires_at=clock_timestamp()+INTERVAL '100 milliseconds' WHERE interaction_id=$1`, p.InteractionRef); e != nil {
@@ -86,9 +86,23 @@ func TestCommunicationSendPolicyWaitDoesNotExtendClaimOrQuestionIntegration(t *t
 			}
 			entered := false
 			f.s.ChannelGuard = func(context.Context, pgx.Tx, string, communication.Binding, communicationcontrol.Args) error {
+				if scenario == "final_source_wait" {
+					return nil
+				}
 				entered = true
 				time.Sleep(150 * time.Millisecond)
 				return nil
+			}
+			if scenario == "final_source_wait" {
+				checks := 0
+				f.s.SourceGuard = func(context.Context, pgx.Tx, string) error {
+					checks++
+					if checks == 2 {
+						entered = true
+						time.Sleep(150 * time.Millisecond)
+					}
+					return nil
+				}
 			}
 			if e = store.AuthorizeSend(f.ctx, *m); e == nil || !entered {
 				t.Fatal("send deadline crossed policy wait", entered, e)
