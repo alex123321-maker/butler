@@ -130,9 +130,10 @@ production services/configuration remain unchanged.
 Telegram filenames showed downloaded state, but that CSS state and Bot API ACK
 do not prove client file opening/saving. The owner was asked to verify the new
 unprotected PNG in report v6; this criterion remains pending until confirmed.
-Supported observed client: Telegram Web K `/k/` on the above date; its exact build
-was not exposed by the inspected UI. Planner bounds are not certified Bot API
-maxima or evidence for untested Telegram clients.
+Supported observed client: Telegram Web K `/k/` on the above date. Its public DOM
+loads `index-BcovhLpe.js` and `app-BMaWPa4l.js`; these observed bundle fingerprints
+identify the checked build without inventing an unavailable semantic version.
+Planner bounds are not certified Bot API maxima or evidence for untested clients.
 
 | Retained artifact | SHA256 |
 | --- | --- |
@@ -185,10 +186,45 @@ four focused actual PostgreSQL/Core/Broker correction/quiet scenarios pass. Fina
 GitHub CI on the final revision remains a separate gate.
 
 The bounded Unicode/table/multipart/media corpus and its local oversized/nesting
-rejections are covered by [Telegram evidence](communication-telegram-rich-progress-20261021.md)
-and targeted tests. Exact supported client builds, independent native file-open
-and complete server-limit qualification are not inferred from those passes.
-These remain explicit acceptance items of #129/#130 where applicable.
+rejections combine [prior Telegram evidence](communication-telegram-rich-progress-20261021.md),
+targeted tests and the actual server corpus below. Independent native file-open
+still requires its separate owner confirmation.
+
+## Native format/server corpus (zero inference)
+
+`TestNativeCommunicationTelegramFormatCorpus` pins only the dedicated test bot
+and owner, requires the private proxy file and makes one attempt per fixed
+synthetic request. It is an operator transport test, not a substitute for the
+actual App/Broker qualification above. No Stars/paid broadcast or provider request.
+The [official Bot API](https://core.telegram.org/bots/api#sendmessage) documents
+the text bound; rich article maxima are not published in the inspected schema.
+
+| Fixture | Observed result |
+| --- | --- |
+|4096 Cyrillic characters,8192 bytes|HTTP200; returned text exactly equal|
+|4097 Cyrillic characters|HTTP400/error_code400; no send retry|
+|2048 emoji,4096 UTF-16 units,8192 bytes|HTTP200; exact text preserved|
+|50 rich blocks and Unicode20-column ×3-row table|native ACK; Web K renders20 columns/3 rows|
+|One complete32768-byte manifest, including indivisible code block|native ACK; no truncation|
+|Indivisible block whose standalone manifest is32769 bytes|local rejection before HTTP|
+|Nested canonical report block|typed schema rejection before HTTP|
+|PNG/photo/caption + PNG/TXT documents|actual App v6 report/media evidence above; file-open remains pending|
+|55 retained blocks across2 native parts after process death|prior native process-restart evidence; no replay|
+
+Final corpus passed7 cases in1.59s; native message ACK38/39 and rich ACK40/41.
+Earlier corpus v1 passed the30KiB fixture. Corpus v2's negative fixture failed
+because it overflowed the combined title+body part but still fit as a standalone
+block: splitting was correct. The final fixture measures the indivisible block
+alone. Both negative logs are retained; no product limit was weakened. All three
+corpus windows made zero model requests, so native usage totals above are unchanged.
+Only the observed Web K build is qualified for rendering, and only the implemented
+flat report profile is claimed.32KiB/50-block/20-column limits remain conservative
+Butler bounds; acceptance of those fixtures is not discovery of Telegram maxima.
+
+Final source `source.application-v11.tgz` SHA256
+`87be66f31e3e144a1b7576f74742fa044ee853934845a39401633c0e28ed4e60`;
+native format binary `0d2fd752a29a0c2d618ca191b3f879dc02f2e63cbbad435127f5e17e04cf7107`;
+log `798e354271915cba3aeb7d27fdbd5580adbc819077cc4ad86a1820cbf1fe2ee7`.
 
 For [#76](https://github.com/alex123321-maker/butler/issues/76), this is a bounded
 failure→hypothesis→fix→native rerun record with retained negative observations.

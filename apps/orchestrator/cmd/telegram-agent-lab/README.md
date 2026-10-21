@@ -82,3 +82,10 @@ processing available while rejecting new messages transactionally. Exact receipt
 retries remain idempotent. The native operator can create its private `drain`
 file before the one allowed restart to qualify that boundary without resetting
 the database or budgets. It never hands epoch-1 work to legacy workers.
+
+The separate `corpus` runner mode qualifies fixed native Bot API format bounds
+with the dedicated pinned bot/owner, via the explicit private Telegram proxy.
+It builds a separate test binary, makes no provider/auth-store/model request and
+uses no PostgreSQL/Redis. Its fixed invalid request tests server rejection; it is
+an operator transport test, not a Broker-authorized agent action. A one-shot marker
+and retained binary/log hashes prevent an unnoticed repeat after an unknown send.

@@ -1,5 +1,12 @@
 # Telegram communication adapter (isolated opt-in)
 
+The explicitly gated native format corpus pins the dedicated lab bot/owner and
+requires a private proxy reference. It makes one attempt per fixed synthetic
+request, including the documented text rejection boundary, with no paid broadcast,
+inference, production activation or automatic retry. It qualifies transport
+formats, not agent authorization or task completion. See the dated integration
+evidence for tested client bundle fingerprints, server observations and limits.
+
 This codec is consumed by the explicit constructor in `../telegram` while
 remaining separate from its legacy text client. Normal Bootstrap, production
 flags and Web do not install the new composition.

@@ -6,7 +6,7 @@
 set -Eeuo pipefail
 trap 'printf "Native lab failed at line %s; inspect private evidence.\n" "$LINENO" >&2' ERR
 base=${1:?owned lab directory}
-mode=${2:?prepare, auth, execute, application, branches or probe}
+mode=${2:?prepare, auth, execute, application, branches, corpus or probe}
 [[ "$base" == /srv/storage/butler/agents/communication-130-20261021 ]] || exit 2
 src=$base/source
 umask 077
@@ -17,7 +17,7 @@ trap 'rm -f "$base/private/provider-operator.env"' EXIT INT TERM
 if [[ "$mode" == prepare ]]; then
  docker run --rm -v "$src:/workspace:ro" -v "$base/bin:/bin-output" -v "$base/.cache:/cache" -w /workspace \
   -e GOCACHE=/cache/go-build -e GOMODCACHE=/cache/go-mod golang:1.27.2 \
-  bash -eu -c 'go test -c -race -o /bin-output/orchestrator.test ./apps/orchestrator/internal/app; go test -c -race -o /bin-output/broker.test ./apps/tool-broker/internal/broker; go build -o /bin-output/provider-auth ./cmd/provider-auth; go build -o /bin-output/communication-broker ./apps/tool-broker/cmd/communication-lab; chmod 555 /bin-output/orchestrator.test /bin-output/broker.test /bin-output/provider-auth /bin-output/communication-broker' \
+  bash -eu -c 'go test -c -race -o /bin-output/orchestrator.test ./apps/orchestrator/internal/app; go test -c -race -o /bin-output/broker.test ./apps/tool-broker/internal/broker; go test -c -race -o /bin-output/telegramrich.test ./apps/orchestrator/internal/channel/telegramrich; go build -o /bin-output/provider-auth ./cmd/provider-auth; go build -o /bin-output/communication-broker ./apps/tool-broker/cmd/communication-lab; chmod 555 /bin-output/orchestrator.test /bin-output/broker.test /bin-output/telegramrich.test /bin-output/provider-auth /bin-output/communication-broker' \
   > "$base/reports/build.log" 2>&1
  sha256sum "$base/bin/"* > "$base/reports/binaries.sha256"
  printf 'PASS\n' > "$base/reports/prepared"
@@ -69,6 +69,25 @@ if [[ "$mode" == probe ]]; then
   golang:1.27.2 /bin-output/orchestrator.test -test.v -test.timeout=45s -test.run '^TestNativeCommunicationModelProxyConnectivity$' \
   > "$base/reports/proxy-probe.log" 2>&1
  printf 'Unauthenticated provider proxy connectivity probe completed.\n'
+ exit 0
+fi
+if [[ "$mode" == corpus ]]; then
+ test -s "$base/reports/prepared"
+ test ! -e "$base/reports/corpus-started"
+ sha256sum --check --status "$base/reports/binaries.sha256"
+ network=$(docker inspect butler-main-postgres-1 | jq -r '.[0].NetworkSettings.Networks|keys[0]')
+ test "$(docker network inspect "$network" --format '{{.Internal}}')" = false
+ trap 'rm -f "$base/private/corpus-proxy"' EXIT INT TERM
+ docker inspect butler-main-orchestrator-1 | jq -er '.[0].Config.Env[]|select(startswith("HTTPS_PROXY="))|ltrimstr("HTTPS_PROXY=")|select(length>0)' > "$base/private/corpus-proxy"
+ chmod 600 "$base/private/corpus-proxy"
+ cp "$base/reports/binaries.sha256" "$base/reports/corpus-binaries.sha256"
+ printf 'started\n' > "$base/reports/corpus-started"
+ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
+  -v "$base/bin:/bin-output:ro" -v "$base/private/bot-token:/private/bot-token:ro" -v "$base/private/corpus-proxy:/private/proxy:ro" \
+  -e BUTLER_COMMUNICATION_NATIVE_CORPUS=1 -e BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE=/private/bot-token -e BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE=/private/proxy \
+  golang:1.27.2 /bin-output/telegramrich.test -test.v -test.timeout=3m -test.run '^TestNativeCommunicationTelegramFormatCorpus$' > "$base/reports/native-corpus.log" 2>&1
+ sha256sum "$base/reports/native-corpus.log" > "$base/reports/native-corpus.sha256"
+ printf 'Native transport corpus completed; zero model requests.\n'
  exit 0
 fi
 [[ "$mode" == execute || "$mode" == application || "$mode" == branches ]] || exit 2
