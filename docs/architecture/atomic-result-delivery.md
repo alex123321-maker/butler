@@ -6,6 +6,11 @@ verification, and channel delivery. A provider final event or a runtime
 
 ## Planned explicit-publication profile
 
+The dormant backend foundation now implements message/widget transactions,
+typed internal finals and the existing outbox outcome policy. It is not composed
+by Bootstrap. See [scope and evidence](../ai/communication-core-acceptance-20261021.md);
+legacy delivery remains the enabled path.
+
 [User Communication](user-communication-spec.md) specifies a future admission
 profile that preserves immutable attempt results and verification while removing
 implicit notifications from model finalization. Explicit publications receive

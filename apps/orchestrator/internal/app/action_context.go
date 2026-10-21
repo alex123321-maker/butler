@@ -2,7 +2,10 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/apps/orchestrator/internal/communication"
+	"strings"
 	"time"
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
@@ -33,6 +36,7 @@ type actionContextReader struct {
 	guardedTabRequestReady   bool
 	guardedTabRuntimeReady   bool
 	memoryCandidateReady     bool
+	communicationReady       bool
 	schedulesReady           bool
 	toolDiscoveryReady       bool
 	memoryReadReady          bool
@@ -70,13 +74,27 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	c.GuardedTabRuntimeReady = r.guardedTabRuntimeReady
 	c.MemoryCandidateReady = r.memoryCandidateReady
 	c.SchedulesReady = r.schedulesReady
+	if r.communicationReady {
+		var raw []byte
+		e := r.pool.QueryRow(ctx, `SELECT a.methods FROM communication_admissions a JOIN accepted_inputs i USING(input_id) WHERE i.run_id=$1 AND a.schema_epoch=1 AND a.owner_id=$2 AND a.session_key=$3`, runID, c.OwnerID, c.SessionKey).Scan(&raw)
+		if e == nil && json.Unmarshal(raw, &c.CommunicationMethods) == nil {
+			c.CommunicationReady = true
+			c.CommunicationMode = "explicit"
+			c.CommunicationTargets = map[string]string{}
+			for _, method := range c.CommunicationMethods {
+				if hash, e := communication.DestinationHash(ctx, r.pool, c.OwnerID, strings.TrimPrefix(method, "communication.")); e == nil {
+					c.CommunicationTargets[method] = hash
+				}
+			}
+		}
+	}
 	c.MemoryReadReady = r.memoryReadReady
 	c.MemoryTemporalReady = r.memoryTemporalReady
 	c.WorkspaceReady = r.workspaceReady
 	if r.lessons != nil {
 		c.ExperienceEnvironmentHash = r.lessons.EnvironmentHash
 	}
-	if r.toolDiscoveryReady || r.schedulesReady || r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
+	if r.communicationReady || r.toolDiscoveryReady || r.schedulesReady || r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
 		var inputID, claimID string
 		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
 			c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)

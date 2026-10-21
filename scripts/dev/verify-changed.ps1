@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/communicationcontrol/|internal/(actionauth|budget)/communication|apps/orchestrator/internal/(communication/|app/communication|input/interaction|run/interaction|task/interaction|orchestrator/communication)|apps/tool-broker/internal/broker/communication|migrations/(089|090)_|scripts/dev/communication-core-)" {
+      [void]$specs.Add("docs/architecture/user-communication-spec.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
+      [void]$tests.Add("Linux + isolated PostgreSQL *_test: scripts/dev/communication-core-tests.sh (targeted race/vet, no skipped required cases; dormant backend only, no inference or actual channels)")
+      continue
+    }
     "^scripts/dev/issue17-(local[.]ps1|tests[.]sh|browser[.]Dockerfile)$" {
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
       [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")

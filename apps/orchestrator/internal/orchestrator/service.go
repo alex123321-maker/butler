@@ -144,7 +144,16 @@ type GuardedTabRequests interface {
 	PendingRequest(context.Context, string, string, string) (ApprovalRequest, error)
 }
 
+type CommunicationKernel interface {
+	Explicit(context.Context, string) (bool, error)
+	BeforeFinal(context.Context, string, string) (string, error)
+	PendingInteraction(context.Context, string) (string, error)
+	ResumeInteraction(context.Context, string, string) (string, error)
+}
+
 type Config struct {
+	Communication CommunicationKernel
+
 	WaitBrowserOwner func(context.Context, string) error
 
 	ToolDiscoveryEnabled bool

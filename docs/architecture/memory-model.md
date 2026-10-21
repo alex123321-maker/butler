@@ -31,6 +31,14 @@ QA grants no owner confirmation or execution authority.
 
 ## Планируемое происхождение коммуникаций
 
+Dormant backend реализует typed kinds и отдельную identity final. Explicit
+`attempt_final` хранится с role=system, visibility=internal, published=false;
+extractor/compactor сохраняют эту provenance, а не представляют её публичным
+ответом. Publication role=assistant не доказывает доставку. Миграция090 стирает
+payload, question/answer и outbox representations при удалении canonical
+message через Catalog, сохраняя identities и hashes. См.
+[проверки](../ai/communication-core-acceptance-20261021.md); startup остаётся legacy.
+
 [User Communication](user-communication-spec.md) сохраняет одну каноническую
 publication/response в Transcript независимо от числа каналов. Delivery receipts
 и внутренний model final отличаются от опубликованного текста; ответы виджетов

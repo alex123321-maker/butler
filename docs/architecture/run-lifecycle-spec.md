@@ -122,6 +122,14 @@ does not become final content or a task-completion verdict.
 
 ## Планируемый explicit communication profile
 
+Backend foundation теперь содержит optional hooks для explicit final и blocking
+interaction checkpoint. Они не подключены Bootstrap. Подробная граница и
+проверки — [communication acceptance](../ai/communication-core-acceptance-20261021.md).
+Coarse Run state переиспользует `awaiting_approval`, но Input checkpoint
+`awaiting_interaction` и marker `communication_interaction` отличают preference
+от Approval: approval/grant из ответа не создаётся. Pause сохраняет DATA;
+resume владельца создаёт новый Input, старый отменённый Input не оживает.
+
 [User Communication](user-communication-spec.md) задаёт будущий admission profile:
 публикации выполняются через Broker-tool; model final сохраняется как внутренний
 результат попытки без implicit send. Ожидание widget сохраняется без живого worker,

@@ -1,5 +1,12 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+The [communication kernel](internal/communication/README.md) adds dormant
+message/widget publication, typed internal final and durable interaction hooks
+for #99–#100/#103. Bootstrap does not install those hooks, tools, private route,
+admissions or sender. Web and the current Telegram adapter are unchanged; no
+communication enable flag is introduced. Migrations089–090 preserve existing
+legacy outbox use while separating publication identities and privacy copies.
+
 Operator budget policy `disable_owner_day:true` disables the shared daily limit
 for new foreground/background admissions while retaining task, conversation,
 mandate and job bounds and historical spending. Set the same policy on Broker.

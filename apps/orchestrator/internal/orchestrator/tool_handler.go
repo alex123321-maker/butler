@@ -338,6 +338,16 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
+	if requested.ToolName == "communication.widget" && s.config.Communication != nil {
+		if _, pendingErr := s.config.Communication.PendingInteraction(ctx, current.GetRunId()); pendingErr == nil {
+			stored, e := s.runs.GetRun(ctx, current.GetRunId())
+			if e != nil {
+				return nil, current, e
+			}
+			_ = s.discardProviderContext(ctx, current.GetRunId())
+			return nil, stored, ErrApprovalSuspended
+		}
+	}
 	if requested.ToolName == singletabcontrol.BindTool {
 		if s.config.GuardedTabRequests == nil {
 			return nil, current, ErrActionOutcomeUnknown

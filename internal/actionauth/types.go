@@ -34,38 +34,40 @@ type DataRef struct {
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
-	ActionID                 string          `json:"action_id"`
-	ActionHash               string          `json:"action_hash"`
-	RunID                    string          `json:"run_id"`
-	ToolCallID               string          `json:"tool_call_id"`
-	ToolName                 string          `json:"tool_name"`
-	ContractHash             string          `json:"contract_hash"`
-	ContractRevision         string          `json:"contract_revision,omitempty"`
-	ArgsHash                 string          `json:"args_hash"`
-	Resource                 string          `json:"resource"`
-	CredentialRefs           []CredentialRef `json:"credential_refs"`
-	CredentialMetadataHash   string          `json:"credential_metadata_hash"`
-	TaskID                   string          `json:"task_id"`
-	TaskRevision             int64           `json:"task_revision"`
-	ConstraintsRevision      int64           `json:"constraints_revision"`
-	OwnerID                  string          `json:"owner_id"`
-	Effect                   Effect          `json:"effect"`
-	GoalID                   string          `json:"goal_id,omitempty"`
-	GoalRevision             int64           `json:"goal_revision,omitempty"`
-	MandateID                string          `json:"owner_mandate_id,omitempty"`
-	MandateRevision          int64           `json:"owner_mandate_revision,omitempty"`
-	Purpose                  string          `json:"purpose,omitempty"`
-	OwnerPolicyRevision      int64           `json:"owner_policy_revision,omitempty"`
-	ExtensionID              string          `json:"extension_id,omitempty"`
-	ExtensionManifestHash    string          `json:"extension_manifest_hash,omitempty"`
-	ExtensionGeneration      int64           `json:"extension_generation,omitempty"`
-	ExtensionAccessRevision  int64           `json:"extension_access_revision,omitempty"`
-	ExtensionAccessExpiresAt *time.Time      `json:"extension_access_expires_at,omitempty"`
-	ConverterID              string          `json:"converter_id,omitempty"`
-	ConverterPackageHash     string          `json:"converter_package_hash,omitempty"`
-	ConverterNeedHash        string          `json:"converter_need_hash,omitempty"`
-	ConverterGeneration      int64           `json:"converter_generation,omitempty"`
-	DataSources              []DataRef       `json:"data_sources,omitempty"`
+	OwnerCommunication            bool            `json:"owner_communication,omitempty"`
+	CommunicationDestinationsHash string          `json:"communication_destinations_hash,omitempty"`
+	ActionID                      string          `json:"action_id"`
+	ActionHash                    string          `json:"action_hash"`
+	RunID                         string          `json:"run_id"`
+	ToolCallID                    string          `json:"tool_call_id"`
+	ToolName                      string          `json:"tool_name"`
+	ContractHash                  string          `json:"contract_hash"`
+	ContractRevision              string          `json:"contract_revision,omitempty"`
+	ArgsHash                      string          `json:"args_hash"`
+	Resource                      string          `json:"resource"`
+	CredentialRefs                []CredentialRef `json:"credential_refs"`
+	CredentialMetadataHash        string          `json:"credential_metadata_hash"`
+	TaskID                        string          `json:"task_id"`
+	TaskRevision                  int64           `json:"task_revision"`
+	ConstraintsRevision           int64           `json:"constraints_revision"`
+	OwnerID                       string          `json:"owner_id"`
+	Effect                        Effect          `json:"effect"`
+	GoalID                        string          `json:"goal_id,omitempty"`
+	GoalRevision                  int64           `json:"goal_revision,omitempty"`
+	MandateID                     string          `json:"owner_mandate_id,omitempty"`
+	MandateRevision               int64           `json:"owner_mandate_revision,omitempty"`
+	Purpose                       string          `json:"purpose,omitempty"`
+	OwnerPolicyRevision           int64           `json:"owner_policy_revision,omitempty"`
+	ExtensionID                   string          `json:"extension_id,omitempty"`
+	ExtensionManifestHash         string          `json:"extension_manifest_hash,omitempty"`
+	ExtensionGeneration           int64           `json:"extension_generation,omitempty"`
+	ExtensionAccessRevision       int64           `json:"extension_access_revision,omitempty"`
+	ExtensionAccessExpiresAt      *time.Time      `json:"extension_access_expires_at,omitempty"`
+	ConverterID                   string          `json:"converter_id,omitempty"`
+	ConverterPackageHash          string          `json:"converter_package_hash,omitempty"`
+	ConverterNeedHash             string          `json:"converter_need_hash,omitempty"`
+	ConverterGeneration           int64           `json:"converter_generation,omitempty"`
+	DataSources                   []DataRef       `json:"data_sources,omitempty"`
 }
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.
@@ -90,20 +92,24 @@ type ContextSnapshot struct {
 	AuthorityDeadline   time.Time            `json:"authority_deadline,omitempty"`
 	ModelPrivacy        string               `json:"model_privacy,omitempty"`
 	// Operator-attested applicability metadata; missing is not compatible.
-	ExperienceEnvironmentHash string          `json:"experience_environment_hash,omitempty"`
-	DenyTools                 []string        `json:"deny_tools,omitempty"`
-	DenyResources             []ResourceScope `json:"deny_resources,omitempty"`
-	ConverterLifecycleReady   bool            `json:"converter_lifecycle_ready,omitempty"`
-	DelegationReady           bool            `json:"delegation_ready,omitempty"`
-	GuardedTabRequestReady    bool            `json:"guarded_tab_request_ready,omitempty"`
-	GuardedTabRuntimeReady    bool            `json:"guarded_tab_runtime_ready,omitempty"`
-	MemoryCandidateReady      bool            `json:"memory_candidate_ready,omitempty"`
-	SchedulesReady            bool            `json:"schedules_ready,omitempty"`
-	MemoryReadReady           bool            `json:"memory_read_ready,omitempty"`
-	MemoryTemporalReady       bool            `json:"memory_temporal_ready,omitempty"`
-	WorkspaceReady            bool            `json:"workspace_ready,omitempty"`
-	InputClaimHash            string          `json:"input_claim_hash,omitempty"`
-	ConverterDelegationReady  bool            `json:"converter_delegation_ready,omitempty"`
+	ExperienceEnvironmentHash string            `json:"experience_environment_hash,omitempty"`
+	DenyTools                 []string          `json:"deny_tools,omitempty"`
+	DenyResources             []ResourceScope   `json:"deny_resources,omitempty"`
+	ConverterLifecycleReady   bool              `json:"converter_lifecycle_ready,omitempty"`
+	DelegationReady           bool              `json:"delegation_ready,omitempty"`
+	GuardedTabRequestReady    bool              `json:"guarded_tab_request_ready,omitempty"`
+	GuardedTabRuntimeReady    bool              `json:"guarded_tab_runtime_ready,omitempty"`
+	MemoryCandidateReady      bool              `json:"memory_candidate_ready,omitempty"`
+	CommunicationTargets      map[string]string `json:"communication_targets,omitempty"`
+	CommunicationReady        bool              `json:"communication_ready,omitempty"`
+	CommunicationMethods      []string          `json:"communication_methods,omitempty"`
+	CommunicationMode         string            `json:"communication_mode,omitempty"`
+	SchedulesReady            bool              `json:"schedules_ready,omitempty"`
+	MemoryReadReady           bool              `json:"memory_read_ready,omitempty"`
+	MemoryTemporalReady       bool              `json:"memory_temporal_ready,omitempty"`
+	WorkspaceReady            bool              `json:"workspace_ready,omitempty"`
+	InputClaimHash            string            `json:"input_claim_hash,omitempty"`
+	ConverterDelegationReady  bool              `json:"converter_delegation_ready,omitempty"`
 }
 
 type ApprovalRequest struct {

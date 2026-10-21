@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"github.com/butler/butler/apps/orchestrator/internal/communication"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -164,7 +166,7 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 		call.ToolName, call.ToolCallId, call.ArgsJson = candidatecontrol.Tool, "memory-candidate-call", string(raw)
 		contract = candidatecontrol.Contract()
 	}
-	if memoryRead != "" && !schedulecontrol.IsTool(memoryRead) && !toolcatalog.IsTool(memoryRead) {
+	if memoryRead != "" && !communicationcontrol.IsTool(memoryRead) && !schedulecontrol.IsTool(memoryRead) && !toolcatalog.IsTool(memoryRead) {
 		data := args.Sources[0]
 		value := map[string]any{"source_id": data.ID, "source_revision": data.Revision, "access_revision": data.AccessRevision, "content_hash": data.Hash, "max_chars": 64}
 		if memoryRead == readcontrol.Search {
@@ -182,6 +184,35 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 		if memoryRead == factcontrol.Tool {
 			contract = factcontrol.Contract()
 		}
+	}
+	if communicationcontrol.IsTool(memoryRead) {
+		call.ToolName, call.ToolCallId, call.ArgsJson = memoryRead, "communication-call", `{"schema_version":1,"purpose":"result","text":"saved answer"}`
+		if memoryRead == "communication.widget" {
+			call.ArgsJson = `{"schema_version":1,"question":"Choose","input":{"type":"single_choice","options":[{"id":"a","label":"A"}]}}`
+		}
+		contract = communicationcontrol.Contract(memoryRead)
+		core := &communication.Store{Pool: f.pool, Inputs: durableinput.NewStore(f.pool), SourceGuard: f.sources.CheckRunSourcesTx}
+		tx, e := f.pool.Begin(owned)
+		if e != nil {
+			t.Fatal(e)
+		}
+		rev, con := int64(0), int64(0)
+		if taskID != "" {
+			rev, con = f.parent.Revision, f.parent.ConstraintsRevision
+		}
+		if e = core.AdmitTx(owned, tx, communication.Principal{OwnerID: f.parent.OwnerID, SessionKey: f.parent.SessionKey, RunID: id, InputID: inputClaim.InputID, TaskID: taskID, TaskRevision: rev, ConstraintsRevision: con}, false, []string{"communication.message", "communication.widget"}); e != nil {
+			t.Fatal(e)
+		}
+		if e = tx.Commit(owned); e != nil {
+			t.Fatal(e)
+		}
+		actor := owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", SessionKey: f.parent.SessionKey, DeliveryID: "binding"})
+		if e = core.Bind(actor, communication.Binding{ID: "communication-fixture-binding", Channel: "web", Recipient: f.parent.SessionKey, Enabled: true, Capabilities: []string{"message", "widget"}}, 0); e != nil {
+			t.Fatal(e)
+		}
+		t.Cleanup(func() {
+			_, _ = f.pool.Exec(context.Background(), `DELETE FROM communication_bindings WHERE binding_id='communication-fixture-binding'`)
+		})
 	}
 	if schedulecontrol.IsTool(memoryRead) {
 		value := schedulecontrol.Args{}
@@ -204,6 +235,7 @@ func newNamedToolControlDispatchFixture(t *testing.T, setup func(*delegationGuar
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
 	approvalService := approvals.NewService(repo, nil)
 	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: sessions, leases: f.leases, tasks: f.store, approvals: approvalService, pool: f.pool, delegationReady: service.Manager != nil}
+	reader.communicationReady = communicationcontrol.IsTool(memoryRead)
 	reader.guardedTabRequestReady = guarded
 	reader.memoryCandidateReady = candidate
 	reader.memoryReadReady = memoryRead != ""

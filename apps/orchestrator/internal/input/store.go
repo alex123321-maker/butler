@@ -42,7 +42,10 @@ type Record struct {
 	ErrorMessage   string             `json:"error_message,omitempty"`
 }
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool               *pgxpool.Pool
+	CommunicationEpoch int
+}
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
@@ -158,14 +161,14 @@ func (s *Store) Claim(ctx context.Context, ttl time.Duration) (Record, error) {
 	// A waiting/blocked head intentionally blocks later work in that session.
 	// Across sessions, the oldest ready head wins, preventing a busy chat from
 	// monopolizing the worker. SKIP LOCKED permits independent session workers.
-	return scan(s.pool.QueryRow(ctx, `WITH candidate AS (
- SELECT i.input_id FROM accepted_inputs i
- WHERE i.status IN ('queued','running') AND i.not_before<=clock_timestamp()
+	return scan(s.pool.QueryRow(ctx, `WITH communication_epoch AS MATERIALIZED (SELECT set_config('butler.communication_epoch',$3,TRUE)), candidate AS (
+ SELECT i.input_id FROM accepted_inputs i CROSS JOIN communication_epoch
+ WHERE NOT EXISTS(SELECT 1 FROM communication_admissions a WHERE a.input_id=i.input_id AND a.schema_epoch>$3::int) AND i.status IN ('queued','running') AND i.checkpoint<>'awaiting_interaction' AND i.not_before<=clock_timestamp()
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())
  AND NOT EXISTS(SELECT 1 FROM accepted_inputs h WHERE h.session_key=i.session_key AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled'))
  ORDER BY i.accepted_at,i.session_sequence FOR UPDATE OF i SKIP LOCKED LIMIT 1
- ) UPDATE accepted_inputs i SET status='running',claim_id=$1,claim_expires_at=clock_timestamp()+$2*INTERVAL '1 millisecond',attempts=attempts+CASE WHEN checkpoint='approval_ready' AND status='queued' THEN 0 ELSE 1 END,updated_at=clock_timestamp()
- FROM candidate WHERE i.input_id=candidate.input_id RETURNING `+qualifiedColumns("i"), id, ttl.Milliseconds()))
+ ) UPDATE accepted_inputs i SET status='running',claim_id=$1,claim_expires_at=clock_timestamp()+$2*INTERVAL '1 millisecond',attempts=attempts+CASE WHEN checkpoint IN ('approval_ready','interaction_ready') AND status='queued' THEN 0 ELSE 1 END,updated_at=clock_timestamp()
+ FROM candidate WHERE i.input_id=candidate.input_id RETURNING `+qualifiedColumns("i"), id, ttl.Milliseconds(), fmt.Sprint(s.CommunicationEpoch)))
 }
 func qualifiedColumns(alias string) string {
 	// Keep the RETURNING shape explicit: expressions cannot be prefix-concatenated.
@@ -206,7 +209,7 @@ func (s *Store) LoadCheckpoint(ctx context.Context, runID string) (string, strin
 	return stage, payload, err
 }
 func (s *Store) Finish(ctx context.Context, r Record, status, code, message string, delay time.Duration) error {
-	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET status=CASE WHEN $3='waiting_for_user' AND checkpoint='approval_ready' THEN 'queued' ELSE $3 END,attempts=CASE WHEN $4='session_busy' THEN GREATEST(attempts-1,0) ELSE attempts END,error_code=$4,error_message=$5,claim_id='',claim_expires_at=NULL,not_before=CASE WHEN $4='model_retry_pending' THEN GREATEST(clock_timestamp(),(checkpoint_json->'model_retry'->>'not_before')::timestamptz) ELSE clock_timestamp()+$6*INTERVAL '1 millisecond' END,updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, status, code, message, delay.Milliseconds())
+	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET status=CASE WHEN $3='waiting_for_user' AND checkpoint IN ('approval_ready','interaction_ready') THEN 'queued' ELSE $3 END,attempts=CASE WHEN $4='session_busy' THEN GREATEST(attempts-1,0) ELSE attempts END,error_code=$4,error_message=$5,claim_id='',claim_expires_at=NULL,not_before=CASE WHEN $4='model_retry_pending' THEN GREATEST(clock_timestamp(),(checkpoint_json->'model_retry'->>'not_before')::timestamptz) ELSE clock_timestamp()+$6*INTERVAL '1 millisecond' END,updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, status, code, message, delay.Milliseconds())
 	if err == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost
 	}

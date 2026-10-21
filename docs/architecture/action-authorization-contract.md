@@ -1,5 +1,14 @@
 # Exact action authorization
 
+The dormant communication foundation binds exact method/args/contract and a
+digest of enabled verified destination snapshots to the current Input claim.
+Only message/widget can become ready through explicit kernel composition;
+Bootstrap leaves them unavailable. A narrowly bound owner question or blocked
+notice may cross the unknown-effect *loop gate*, retaining approval, current
+authority, journal, quota and all other budgets. It cannot authorize an external
+write or manufacture consent from a preference. See
+[scope and evidence](../ai/communication-core-acceptance-20261021.md).
+
 Conversation action slots use the exact live accepted input, owner/session and run when no task is assigned. Task revisions remain required for task slots; cross-run linking is unavailable without a task.
 
 Fixed [tool discovery](tool-discovery.md) controls are credential-free local reads of the current scoped catalog. Only their exact owned contracts/resources qualify as standard operations, including in delegated work. Input/lease/task authority, explicit denials and execution permissions remain independently enforced.

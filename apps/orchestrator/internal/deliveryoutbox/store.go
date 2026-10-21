@@ -15,18 +15,23 @@ import (
 )
 
 type Message struct {
-	NotificationID string `json:"notification_id"`
-	ResultID       string `json:"result_id"`
-	RunID          string `json:"run_id"`
-	SessionKey     string `json:"session_key"`
-	Channel        string `json:"channel"`
-	ChunkIndex     int    `json:"chunk_index"`
-	Content        string `json:"content"`
-	Status         string `json:"status"`
-	AttemptCount   int    `json:"attempt_count"`
-	ClaimID        string `json:"-"`
-	ChannelACK     string `json:"channel_ack,omitempty"`
-	ErrorCode      string `json:"error_code,omitempty"`
+	PublicationID      string `json:"publication_id,omitempty"`
+	BindingID          string `json:"-"`
+	BindingVersion     int64  `json:"-"`
+	Recipient          string `json:"-"`
+	RepresentationJSON string `json:"-"`
+	NotificationID     string `json:"notification_id"`
+	ResultID           string `json:"result_id"`
+	RunID              string `json:"run_id"`
+	SessionKey         string `json:"session_key"`
+	Channel            string `json:"channel"`
+	ChunkIndex         int    `json:"chunk_index"`
+	Content            string `json:"content"`
+	Status             string `json:"status"`
+	AttemptCount       int    `json:"attempt_count"`
+	ClaimID            string `json:"-"`
+	ChannelACK         string `json:"channel_ack,omitempty"`
+	ErrorCode          string `json:"error_code,omitempty"`
 }
 
 // Absent is allowed only when the channel explicitly confirms no message was accepted.
@@ -44,7 +49,7 @@ type Store struct{ pool *pgxpool.Pool }
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
-const columns = `notification_id,result_id,run_id,session_key,channel,chunk_index,content,status,attempt_count,claim_id,channel_ack,error_code`
+const columns = `notification_id,COALESCE(result_id,''),run_id,session_key,channel,chunk_index,content,status,attempt_count,claim_id,channel_ack,error_code`
 
 func scan(row interface{ Scan(...any) error }) (Message, error) {
 	var m Message
@@ -140,7 +145,7 @@ func (s *Store) Claim(ctx context.Context, ttl time.Duration) (*Message, error) 
 		return nil, err
 	}
 	id := randomID()
-	m, err := scan(tx.QueryRow(ctx, `UPDATE delivery_outbox SET status='sending',claim_id=$1,claim_until=clock_timestamp()+$2::interval,attempt_count=attempt_count+1,updated_at=NOW() WHERE notification_id=(SELECT d.notification_id FROM delivery_outbox d WHERE d.status='pending' AND d.next_attempt_at<=clock_timestamp() AND d.deadline_at>clock_timestamp() AND d.attempt_count<6 AND NOT EXISTS(SELECT 1 FROM delivery_outbox p WHERE p.result_id=d.result_id AND p.channel=d.channel AND p.chunk_index<d.chunk_index AND p.status<>'sent') ORDER BY d.created_at,d.chunk_index FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING `+columns, id, ttl.String()))
+	m, err := scan(tx.QueryRow(ctx, `UPDATE delivery_outbox SET status='sending',claim_id=$1,claim_until=clock_timestamp()+$2::interval,attempt_count=attempt_count+1,updated_at=NOW() WHERE notification_id=(SELECT d.notification_id FROM delivery_outbox d WHERE d.status='pending' AND (to_jsonb(d)->>'publication_id') IS NULL AND d.next_attempt_at<=clock_timestamp() AND d.deadline_at>clock_timestamp() AND d.attempt_count<6 AND NOT EXISTS(SELECT 1 FROM delivery_outbox p WHERE p.result_id=d.result_id AND p.channel=d.channel AND p.chunk_index<d.chunk_index AND p.status<>'sent') ORDER BY d.created_at,d.chunk_index FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING `+columns, id, ttl.String()))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, tx.Commit(ctx)
 	}

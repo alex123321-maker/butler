@@ -99,6 +99,13 @@ dispatch, and no partial result set is supplied as completed model input.
 
 ## Планируемая owning tool family communication
 
+Добавлены dormant contracts, strict decoder, fixed authenticated HTTP control и
+Broker executor. Startup не регистрирует эту family или route. Private token не
+заменяет actual dispatched journal/grant/Input/lease proof. Lookup после lost ACK
+только читает сохранённый receipt; публикация повторно не исполняется.
+Message/widget readiness требует отдельной композиции, photo/report не готовы.
+См. [backend scope](../ai/communication-core-acceptance-20261021.md).
+
 [User Communication](user-communication-spec.md) добавляет целевой контракт
 communication.message/photo/report/widget. Все операции проходят штатные
 Broker schema/policy/grant/effect/budget проверки и фиксированный приватный

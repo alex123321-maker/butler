@@ -1,12 +1,32 @@
 # Butler — общение агента с пользователем
 
-Версия 0.2, 2026-10-21. **Статус: согласованный продуктовый контракт,
-целевая архитектура; реализация планируется.** Этот документ не объявляет
-доступными описанные tools, API или миграции.
+Версия 0.3, 2026-10-21. **Статус: согласованный продуктовый контракт;
+backend foundation реализован в отдельной ветке, production profile выключен.**
+Полный контракт ниже остаётся целевым; доступность каждого метода определяется
+готовностью и системным admission, а не наличием DTO.
 
 Исходный анализ — `origin/main b20206d` от 2026-10-15; ревизия плана
 2026-10-21 сверена с `origin/main ab28dd88`. Production deployment в рамках
-этой документационной работы не проверялся. Реализация не начиналась.
+этой работы не менялся и заново не проверялся.
+
+### Граница текущей реализации
+
+По поручению владельца реализуются ядро #99–#100 и затем backend ожидания #103.
+Есть strict versioned schemas четырёх методов, typed transcript/final, bindings,
+атомарные message/widget publications в существующем outbox, exact dispatched
+Broker control, reply obligations, одно исправление и durable blocking questions.
+Миграции 089–090 добавляют эти записи и удаление копий при privacy redaction.
+См. [модуль](../../apps/orchestrator/internal/communication/README.md) и
+[проверки и ограничения](../ai/communication-core-acceptance-20261021.md).
+
+Это программные точки композиции и изолированные проверки, не включённая
+пользовательская функция. Bootstrap не регистрирует tools, private endpoint,
+admission, sender, owner-control hook или maintenance loop; флага включения нет.
+По умолчанию worker поддерживает epoch 0 и не берёт epoch 1. Web и существующий
+Telegram adapter не изменяются. Photo/report пока только contracts; каналов,
+вложений, обычного cross-channel reply routing, UI и полной AC01–AC22 приёмки
+эта поставка не заявляет. ChannelGuard обязателен для acceptance и send;
+будущее подключение должно предоставить настоящую policy экспорта и artifacts.
 
 Связанные контракты: [постоянный помощник](persistent-assistant-spec.md),
 [durable execution](durable-execution-spec.md), [atomic result/delivery](atomic-result-delivery.md),
@@ -63,7 +83,7 @@ rich blocks, взаимодействия и несколько адресато
 
 В baseline обычный финал по-прежнему связан с формированием уведомления;
 исключение `verified_task` не является универсальным инструментом общения.
-Универсальных communication tools и widget lifecycle из этого документа пока нет.
+Новый backend реализован отдельно и не подключён к baseline.
 
 ## 3. Границы ответственности
 
@@ -512,6 +532,12 @@ blocked с communication_result_missing; система публикует од�
 failure notice. В нём нет raw model/provider errors. Неисправность самой
 доставки видна в owner UI/Doctor; гарантировать уведомление по сломанному каналу
 невозможно.
+
+Kernel notice имеет стабильную identity и отдельный allowance максимум один
+сверх 20 agent publications. Модель не может запросить этот allowance.
+Если нет разрешённого канала или export policy отказала, obligation всё равно
+закрывается с failure и durable диагностическим событием; повторного inference
+или raw-final fallback нет. Owner UI/Doctor для этого события относится к C08.
 
 Контроль obligation структурный: он не гарантирует содержательный ответ.
 Purpose=result не подтверждает критерии Task. Семантическая проверка результата,

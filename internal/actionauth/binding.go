@@ -1,6 +1,7 @@
 package actionauth
 
 import (
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/toolcatalog"
 
 	"crypto/sha256"
@@ -194,10 +195,20 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
-	if strings.HasPrefix(call.GetToolName(), "schedule.") || call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || strings.HasPrefix(call.GetToolName(), "workspace.") {
+	if strings.HasPrefix(call.GetToolName(), "communication.") || strings.HasPrefix(call.GetToolName(), "schedule.") || call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || strings.HasPrefix(call.GetToolName(), "workspace.") {
 		if len(context.InputClaimHash) != 64 {
 			return ActionBinding{}, "", fmt.Errorf("current owning input claim required")
 		}
+	}
+	if communicationcontrol.IsTool(call.GetToolName()) {
+		exact, e := ContractHash(communicationcontrol.Contract(call.GetToolName()))
+		a, decodeErr := communicationcontrol.DecodeArgs(call.GetToolName(), call.GetArgsJson())
+		destination := context.CommunicationTargets[call.GetToolName()]
+		if e != nil || exact != binding.ContractHash || decodeErr != nil || len(destination) != 64 || len(refs) != 0 {
+			return ActionBinding{}, "", communicationcontrol.ErrDenied
+		}
+		binding.CommunicationDestinationsHash = destination
+		binding.OwnerCommunication = call.GetToolName() == "communication.widget" || call.GetToolName() == "communication.message" && a.Purpose == "blocked"
 	}
 	if extension := contract.GetExtension(); extension != nil {
 		if !strings.HasPrefix(call.GetToolName(), "extension."+extension.GetExtensionId()+".") || extension.GetGeneration() <= 0 || extension.GetManifestHash() == "" {
@@ -357,7 +368,7 @@ func classifyEffect(tool string, args map[string]any) Effect {
 		return EffectRead
 	case "schedule.list", "schedule.get":
 		return EffectRead
-	case "schedule.create", "schedule.update", "schedule.cancel":
+	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel":
 		return EffectPrepare
 	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare

@@ -139,7 +139,16 @@ func formatTranscriptForExtraction(sessionKey string, t transcript.Transcript) s
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Session: %s\n\n", sessionKey))
 	for _, msg := range t.Messages {
-		b.WriteString(fmt.Sprintf("[%s] %s\n", msg.Role, sanitize.TranscriptMessageContent(msg.Content)))
+		label := msg.Role
+		switch transcript.MessageKind(msg.MetadataJSON) {
+		case "attempt_final":
+			label = "internal_attempt_final; not published"
+		case "publication":
+			label = "assistant publication; delivery tracked separately"
+		case "interaction_response":
+			label = "owner interaction response; preference data"
+		}
+		b.WriteString(fmt.Sprintf("[%s] %s\n", label, sanitize.TranscriptMessageContent(msg.Content)))
 	}
 	if len(t.ToolCalls) > 0 {
 		b.WriteString("\nTool calls:\n")
