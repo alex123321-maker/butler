@@ -1,5 +1,12 @@
 # Durable execution budgets
 
+Explicit operator `disable_owner_day:true` in the shared budget policy disables
+the aggregate owner/day scope for new admissions, including preflight and local
+auxiliary calls. Default behavior keeps the guard enabled. Existing daily history
+is immutable and is reused when re-enabled. All task, conversation, mandate,
+delegation and job/policy bounds and execution guards still apply. The owner read
+API reports `owner_day_enabled` alongside its historical scopes and attempts.
+
 Generative memory jobs reuse `ReserveAuxiliaryTx` with a trusted `ModelQuote` and
 an additional finite policy scope. Job/policy/root/mandate/owner-day counters are
 initialized and locked together in canonical order. The job owner validates

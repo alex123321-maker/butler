@@ -57,8 +57,11 @@ func (c *Controller) checkRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerI
 	if _, err = addWithin(Scope{ScopeSpec: ScopeSpec{Kind: "task", OwnerID: ownerID, SubjectID: "prospective_root", Limits: c.Policy.Task, Deadline: now.Add(time.Duration(c.Policy.TaskLifetimeMillis) * time.Millisecond)}}, quote, now); err != nil {
 		return err
 	}
-	day := now.UTC().Truncate(24 * time.Hour)
-	specs := []ScopeSpec{{Kind: "owner_day", OwnerID: ownerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)}}
+	var specs []ScopeSpec
+	if !c.Policy.DisableOwnerDay {
+		day := now.UTC().Truncate(24 * time.Hour)
+		specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: ownerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+	}
 	if m != nil {
 		specs = append(specs, ScopeSpec{Kind: "mandate", OwnerID: ownerID, SubjectID: m.ID, Limits: m.Limits, Deadline: m.Deadline})
 	}

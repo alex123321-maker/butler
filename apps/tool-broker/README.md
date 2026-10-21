@@ -1,5 +1,10 @@
 # Tool Broker
 
+Operator budget policy `disable_owner_day:true` omits the aggregate owner/day
+scope for new reservations. It must match Orchestrator. Task/mandate/delegation
+limits, authority and existing spending remain enforced; see
+[the budget contract](../../docs/architecture/execution-budget-contract.md).
+
 Fixed memory arguments are checked before effect preparation and dispatch, using
 the same strict decoder as execution. Out-of-range message limits fail validation
 without producing an unknown effect. memory.open can return bounded retained

@@ -48,7 +48,7 @@ func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i Auxili
 			return ModelAdmission{}, ErrConflict
 		}
 		specs = shared
-	} else {
+	} else if !c.Policy.DisableOwnerDay {
 		day := now.UTC().Truncate(24 * time.Hour)
 		specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: i.OwnerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
 	}

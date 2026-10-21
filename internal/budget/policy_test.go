@@ -5,6 +5,22 @@ import (
 	"testing"
 )
 
+func TestOwnerDayPolicyRequiresExplicitOperatorOptOut(t *testing.T) {
+	for _, raw := range []string{"", `{}`, `{"disable_owner_day":false}`} {
+		p, err := ParsePolicy(raw)
+		if err != nil || p.DisableOwnerDay {
+			t.Fatal("default daily guard changed", raw, err)
+		}
+	}
+	p, err := ParsePolicy(`{"disable_owner_day":true}`)
+	if err != nil || !p.DisableOwnerDay || p.Task != DefaultPolicy().Task || p.Mandate != DefaultPolicy().Mandate {
+		t.Fatal("explicit opt-out changed other bounds", err)
+	}
+	if _, err = ParsePolicy(`{"disable_owner_day":"true"}`); err == nil {
+		t.Fatal("nonboolean opt-out accepted")
+	}
+}
+
 func TestCostBasisAndFixedNativeReservation(t *testing.T) {
 	p := DefaultPolicy()
 	if _, err := p.ModelQuote("antigravity", "gemini-3.8-flash-tiered", 1048576); !errors.Is(err, ErrUnknownCost) {
