@@ -45,6 +45,7 @@ test('a communication profile never selects the most recently active task as a c
   await communications(page, () => [report], false, true)
   await connect(page)
   await expect(page.getByRole('heading', { name: 'Разговор с Батлером', exact: true })).toBeVisible()
+  await expect(page.getByRole('status', { name: 'Поручение не выбрано', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Приостановить поручение', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: '1 поручений', exact: true })).toBeVisible()
 })

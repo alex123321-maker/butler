@@ -467,7 +467,7 @@ const stateTitle = computed(() =>
     ? 'Нет подключения'
     : store.selectedTask
       ? statusLabel(taskStatus(store.selectedTask))
-      : 'Нет активных поручений',
+      : 'Поручение не выбрано',
 )
 const panelTitle = computed(
   () =>

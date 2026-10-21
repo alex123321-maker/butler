@@ -215,7 +215,7 @@ Final corpus passed7 cases in1.59s; native message ACK38/39 and rich ACK40/41.
 Earlier corpus v1 passed the30KiB fixture. Corpus v2's negative fixture failed
 because it overflowed the combined title+body part but still fit as a standalone
 block: splitting was correct. The final fixture measures the indivisible block
-alone. Both negative logs are retained; no product limit was weakened. All three
+alone. Both earlier logs are retained; no product limit was weakened. All three
 corpus windows made zero model requests, so native usage totals above are unchanged.
 Only the observed Web K build is qualified for rendering, and only the implemented
 flat report profile is claimed.32KiB/50-block/20-column limits remain conservative
