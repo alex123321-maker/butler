@@ -88,9 +88,13 @@ test "$(docker network inspect "$network" --format '{{.Internal}}')" = false
 pg=butler-communication-agent-130-pg
 redis=butler-communication-application-130-redis
 test -z "$(docker ps -aq --filter name="^${pg}$")"
-cleanup(){ docker rm -f "$pg" >/dev/null 2>&1 || true; if [[ "$mode" == application ]];then docker rm -f "$redis" >/dev/null 2>&1 || true;fi; rm -f "$base/private/provider-runtime.env" "$base/private/telegram-proxy"; }
+cleanup(){ docker logs "$pg" > "$base/reports/postgres-startup.log" 2>&1 || true; docker rm -fv "$pg" >/dev/null 2>&1 || true; if [[ "$mode" == application ]];then docker rm -fv "$redis" >/dev/null 2>&1 || true;fi; rm -f "$base/private/provider-runtime.env" "$base/private/telegram-proxy"; }
 trap cleanup EXIT INT TERM
-docker run --rm -d --name "$pg" --network "$network" --network-alias communication-agent-130-postgres \
+mkdir -p "$base/data"
+pgdata=$(mktemp -d "$base/data/postgres.XXXXXX")
+printf '%s\n' "$pgdata" > "$base/reports/postgres-data.path"
+docker run -d --name "$pg" --network "$network" --network-alias communication-agent-130-postgres \
+ -v "$pgdata:/var/lib/postgresql/data" \
  -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=butler_communication_agent_test \
  pgvector/pgvector:pg17 > "$base/reports/postgres.id"
 for n in $(seq 1 60); do
@@ -115,7 +119,8 @@ if [[ "$mode" == application ]];then
  test ! -e "$base/private/application/stop"
  mkdir -p "$base/private/application"
  chmod 700 "$base/private/application"
- docker run --rm -d --name "$redis" --network "$network" --network-alias communication-application-130-redis redis:7.4-alpine > "$base/reports/application-redis.id"
+ redisdata=$(mktemp -d "$base/data/redis.XXXXXX")
+ docker run --rm -d --name "$redis" --network "$network" --network-alias communication-application-130-redis -v "$redisdata:/data" redis:7.4-alpine > "$base/reports/application-redis.id"
  docker run --rm --name butler-communication-application-130 --user "$(id -u):$(id -g)" --network "$network" --cap-drop ALL --security-opt no-new-privileges:true \
   -p 127.0.0.1:18470:18470 --env-file "$base/private/provider-runtime.env" \
   -e NO_PROXY=localhost,127.0.0.1,::1,postgres,communication-agent-130-postgres,communication-application-130-redis \

@@ -21,7 +21,9 @@ permissions:
 
 jobs:
   web:
-    runs-on: ubuntu-latest
+    # The pinned Playwright version supports this image; ubuntu-latest has
+    # advanced beyond its Chromium dependency installer.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
       NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
