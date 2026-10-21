@@ -1,7 +1,9 @@
 # Butler — Model Transport Contract
 
-When the owning adaptive memory reader is absent, Orchestrator narrows the native
-`memory.search` presentation to `catalog_exact` and omits event-date filters.
+When the owning adaptive memory reader is absent, Orchestrator omits event-date
+filters from the native `memory.search` presentation. It advertises `catalog_exact`
+and also `semantic_hybrid` when the local semantic reader is composed; without
+either reader it advertises only `catalog_exact`.
 The canonical Broker contract, immutable ref/hash and all execution/privacy
 guards remain unchanged. Initial and deferred/recovered tool sets use the same
 projection. This prevents advertising currently unavailable adaptive choices;

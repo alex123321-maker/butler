@@ -1,5 +1,10 @@
 # Memory source catalog
 
+`PublishFragmentsTx` is the same guarded projection as ordinary fragment
+publication inside an owning transaction. Mobile processing uses it to commit
+the source-backed note, stable fragment and terminal message decision atomically.
+Publishing a searchable fragment does not accept a Profile claim.
+
 The Android ingress uses `PutMobileObservationTx` to create immutable private
 quarantined sources in the authenticated receipt transaction. Background device
 retention uses `DeleteExpiredMobileObservation`: it rechecks expiry under a

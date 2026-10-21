@@ -86,6 +86,7 @@ func (s *MemoryReads) messagesTx(ctx context.Context, tx pgx.Tx, e readcontrol.E
 		out.Truncated = true
 		found = found[:a.Limit]
 	}
+	textBytes := 0
 	for _, m := range found {
 		sources, err := s.sources.AccessTx(ctx, tx, []catalog.SourceRef{m.source}, "memory_read")
 		if err != nil {
@@ -100,7 +101,13 @@ func (s *MemoryReads) messagesTx(ctx context.Context, tx pgx.Tx, e readcontrol.E
 		if !ok {
 			continue
 		}
-		out.Items = append(out.Items, messageItem(src, m.id, part.Text, map[string]any{"message_id": m.id, "package": event.Package, "sender": clipMessageLabel(part.Sender), "conversation": clipMessageLabel(event.Payload.Conversation), "state": m.state, "posted_at_epoch_ms": part.Timestamp}))
+		item := messageItem(src, m.id, part.Text, map[string]any{"message_id": m.id, "package": event.Package, "sender": clipMessageLabel(part.Sender), "conversation": clipMessageLabel(event.Payload.Conversation), "state": m.state, "posted_at_epoch_ms": part.Timestamp})
+		if textBytes+len(item.Text) > 8192 && len(out.Items) > 0 {
+			out.Truncated = true
+			break
+		}
+		textBytes += len(item.Text)
+		out.Items = append(out.Items, item)
 	}
 	if len(out.Items) > 0 {
 		out.Status = "ok"
@@ -165,6 +172,12 @@ func (s *MemoryReads) processMessageTx(ctx context.Context, tx pgx.Tx, e readcon
 			return out, err
 		}
 		resultID = derived.ID
+		if err = s.sources.RetainMobileNoteTx(ctx, tx, catalog.SourceRef{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}); err != nil {
+			return out, err
+		}
+		if _, err = s.sources.PublishFragmentsTx(ctx, tx, catalog.SourceRef{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}, []catalog.Fragment{{Key: "note", Title: derived.Title, Text: body, Locator: locator}}); err != nil {
+			return out, err
+		}
 		state = "remembered"
 		out.Items = append(out.Items, messageItem(derived, a.MessageID, body, map[string]any{"message_id": a.MessageID, "original_source": refs[0], "observed_at": observed}))
 	case "noise":

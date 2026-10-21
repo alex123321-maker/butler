@@ -95,7 +95,11 @@ func (s *Store) enqueue(ctx context.Context, r Request, publish func(context.Con
 	r.Deadline = r.Deadline.UTC().Truncate(time.Microsecond)
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok {
-		return Job{}, ErrClaim
+		admission, exists := ctx.Value(indexPolicyKey{}).(indexPolicyAdmission)
+		if !exists || r.Kind != "index" || r.Purpose != "memory_index_maintenance" {
+			return Job{}, ErrClaim
+		}
+		a.OwnerID = admission.Policy.OwnerID
 	}
 	if len(r.ID) < 8 || len(r.ID) > 512 || len(r.Purpose) < 1 || len(r.Purpose) > 512 {
 		return Job{}, ErrClaim
@@ -120,6 +124,23 @@ func (s *Store) enqueue(ctx context.Context, r Request, publish func(context.Con
 		return Job{}, e
 	}
 	defer tx.Rollback(ctx)
+	if admission, exists := ctx.Value(indexPolicyKey{}).(indexPolicyAdmission); exists {
+		p := admission.Policy
+		var revision int64
+		if e = tx.QueryRow(ctx, `SELECT revision FROM memory_index_policies WHERE policy_id=$1 FOR UPDATE`, p.ID).Scan(&revision); e != nil {
+			return Job{}, e
+		}
+		if e = s.checkIndexPolicyTx(ctx, tx, p); e != nil {
+			return Job{}, e
+		}
+		tag, err := tx.Exec(ctx, `UPDATE memory_index_policies SET day=(clock_timestamp() AT TIME ZONE 'UTC')::date,jobs_today=CASE WHEN day=(clock_timestamp() AT TIME ZONE 'UTC')::date THEN jobs_today+1 ELSE 1 END,last_job_id=$2,last_fingerprint=$3,next_at=clock_timestamp()+interval '30 seconds' WHERE policy_id=$1 AND (day<>(clock_timestamp() AT TIME ZONE 'UTC')::date OR jobs_today<max_jobs_per_day) AND NOT EXISTS(SELECT 1 FROM memory_aux_jobs j WHERE j.job_id=last_job_id AND j.status IN ('pending','running'))`, p.ID, r.ID, admission.Fingerprint)
+		if err != nil {
+			return Job{}, err
+		}
+		if tag.RowsAffected() != 1 {
+			return Job{}, ErrWaiting
+		}
+	}
 	var now time.Time
 	_ = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now)
 	if !r.Deadline.After(now) || r.Deadline.After(now.Add(7*24*time.Hour)) {
@@ -285,6 +306,9 @@ type claimChecker struct {
 
 func (s *Store) Context(ctx context.Context, j Job) context.Context {
 	j = copyJob(j)
+	if j.Kind == "index" {
+		ctx = context.WithValue(ctx, indexClaimKey{}, j.ID)
+	}
 	return catalog.WithAccessChecker(owneridentity.WithActor(ctx, owneridentity.Actor{}), &claimChecker{s, j})
 }
 
@@ -341,6 +365,9 @@ func (c *claimChecker) PinnedMemorySources() []catalog.SourceRef {
 }
 func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) (string, error) {
 	j := c.j
+	if e := c.s.checkIndexJobPolicyTx(ctx, tx, j); e != nil {
+		return "", e
+	}
 	if _, e := c.checkSnapshot(ctx, tx, false); e != nil {
 		return "", e
 	}
@@ -373,6 +400,9 @@ func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs 
 	return j.OwnerID, nil
 }
 func (c *claimChecker) FinalizeMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) error {
+	if e := c.s.checkIndexJobPolicyTx(ctx, tx, c.j); e != nil {
+		return e
+	}
 	// Policy/task rows were locked before the source graph. Repeat deadlines
 	// after waits; this never obtains new authority or borrows a connection.
 	if c.j.PolicyID != "" {

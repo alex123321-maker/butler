@@ -109,10 +109,10 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 			return preparedRun{}, err
 		}
 	}
-	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
+	if err := s.attachTaskContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
 	}
-	if err := s.attachTaskContext(ctx, event.SessionKey, &prepared); err != nil {
+	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
 	}
 	if prepared.AdaptivePlan != nil {
@@ -308,6 +308,42 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 
 func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string, prepared *preparedRun) error {
 	if prepared == nil || s.transcript == nil {
+		return nil
+	}
+	// Mobile batches share delivery/session identity, but each task owns a finite
+	// processing context. Ordinary conversations retain complete session replay.
+	if prepared.Task != nil && prepared.Task.Source["type"] == "initiative" && prepared.Task.Source["mobile_batch_id"] != nil {
+		reader, ok := s.transcript.(interface {
+			GetTaskTranscript(context.Context, string, string) (transcript.Transcript, error)
+		})
+		if !ok {
+			return fmt.Errorf("mobile task transcript reader unavailable")
+		}
+		full, err := reader.GetTaskTranscript(ctx, sessionKey, prepared.Task.TaskID)
+		if err != nil {
+			return fmt.Errorf("load mobile task transcript: %w", err)
+		}
+		if s.config.MemorySources != nil {
+			if err = s.config.MemorySources.PinTranscript(ctx, sessionKey, full.SourceRevision); err != nil {
+				return err
+			}
+		}
+		for _, message := range full.Messages {
+			if historicalMessageOrigin(message).Sensitivity == content.Secret {
+				return content.ErrSecret
+			}
+		}
+		messages := full.Messages[:0]
+		for _, m := range full.Messages {
+			if prepared.CurrentRunID != "" && m.RunID == prepared.CurrentRunID && m.Role == "user" {
+				prepared.InputAlreadyRecorded = true
+				continue
+			}
+			messages = append(messages, m)
+		}
+		items := transcriptInputItems(messages)
+		prepared.InputItems = append(items, prepared.InputItems...)
+		prepared.observabilityHistory = map[string]any{"replayed_message_count": len(items), "coverage_mode": "mobile_task_history", "source_revision": full.SourceRevision}
 		return nil
 	}
 	full, err := s.transcript.GetTranscript(ctx, sessionKey)

@@ -68,6 +68,7 @@ type Item struct {
 	Redacted    bool               `json:"redacted"`
 	NextOffset  int                `json:"next_offset"`
 	ReadRef     string             `json:"read_ref,omitempty"`
+	Evidence    json.RawMessage    `json:"retained_evidence,omitempty"`
 	Temporal    []TemporalEvidence `json:"temporal,omitempty"`
 }
 type Result struct {

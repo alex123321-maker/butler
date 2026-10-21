@@ -1,5 +1,11 @@
 # Broker memory reads
 
+With the pinned local reader composed independently, an omitted search strategy
+on page0 selects the existing hybrid search (up to four results). Explicit
+catalog_exact stays lexical. Local cold-model searches have a30-second bound;
+other private reads retain five seconds. This does not enable adaptive planning
+or its event-date controls. See [mobile memory/search](../../../docs/architecture/mobile-memory-search.md).
+
 The same private control additionally registers revision1 `messages.inbox`,
 `messages.search` and `messages.process` when memory reads are composed. The first
 two are bounded DATA reads; process is an explicit prepare effect, guarded by the
@@ -69,9 +75,9 @@ snapshot to the task's isolated `current` directory. It uses existing images and
 cached modules offline, disposable PostgreSQL, actual Broker executable and
 mandatory no-skip gates. Historical native windows are not evidence for this code.
 
-Revision2 adds strategy=semantic_hybrid only through the explicitly composed
-adaptive consumer, plus reported event_from/event_until UTC bounds. Legacy
-composition denies these opt-in arguments. The existing guarded local semantic
+Revision2 supports strategy=semantic_hybrid through the pinned local or adaptive
+reader. Reported event_from/event_until UTC bounds still require the adaptive
+consumer. Unconfigured composition denies unavailable opt-in arguments. The local
 reader runs outside the owning read transaction; every returned chunk ID and
 revision is reauthorized again. Only an actual successful open/neighbors receives
 a read_ref in adaptive composition; search snippets never do. Optional temporal

@@ -1,13 +1,18 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Notification tasks use task-scoped history and atomically save searchable notes.
+Owner-approved index policies maintain the pinned local semantic index through
+the existing durable queue. See [the operating contract](../../docs/architecture/mobile-memory-search.md).
+
 Deferred calls pin the selected contract hash through Broker preparation before
 approval or authorization, so a concurrently replaced runtime/schema cannot
 silently become the selected action. Broker still rechecks the exact binding
 at authorization and dispatch.
 
-Without a composed adaptive reader, native memory.search schemas offer only
-catalog_exact and omit event-date filters, including after deferred loading and
-recovery. Canonical Broker contract hashes and authorization stay unchanged.
+Native memory.search schemas advertise semantic_hybrid when the pinned local
+reader or adaptive reader is composed. Event-date filters still require the
+adaptive reader. This applies after deferred loading and recovery; canonical
+Broker contract hashes and authorization stay unchanged.
 
 The budget wrapper logs one numeric `model turn usage observed` record per
 complete observed turn, including the provider's total tokens. High's total
@@ -97,6 +102,11 @@ resume the remaining original task; they do not establish semantic verification
 or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
+
+Mobile archive defaults to360 days. remember commits a note, exact bounded retained
+evidence and one fragment atomically; selected notes survive archive expiry.
+Explicit owner forgetting cascades through evidence and indexes. See
+[retention and privacy](../../docs/architecture/mobile-memory-search.md#archive-expiry-and-retained-evidence).
 
 Android notification ingress is mounted at `/api/v1/mobile/`; authenticated owner
 device controls use `/api/v1/mobile-owner/` and the Web `/mobile` page. It reuses

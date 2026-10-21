@@ -53,6 +53,19 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		ctx, cancel := context.WithTimeout(owneridentity.WithActor(r.Context(), a), 30*time.Second)
 		defer cancel()
 		w.Header().Set("Cache-Control", "no-store")
+		if r.URL.Path == "/api/v4/memory/index-policy" && r.Method == http.MethodGet {
+			if s.Indexing == nil {
+				writeJSON(w, 503, map[string]string{"error": "owned local indexing unavailable"})
+				return
+			}
+			v, e := s.Indexing.Jobs.OwnerIndexPolicies(ctx)
+			if e != nil {
+				writeMemoryError(w, e)
+				return
+			}
+			writeJSON(w, 200, map[string]any{"policies": v, "space_id": s.Indexing.Space.ID()})
+			return
+		}
 		if r.URL.Path == "/api/v4/memory/experience-observations" {
 			if r.Method != http.MethodPost {
 				writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
@@ -182,6 +195,39 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 			return true
 		}
 		switch r.URL.Path {
+		case "/api/v4/memory/index-policy":
+			if s.Indexing == nil {
+				writeJSON(w, 503, map[string]string{"error": "owned local indexing unavailable"})
+				return
+			}
+			var q jobs.IndexPolicy
+			if !decode(&q) {
+				return
+			}
+			v, e := s.Indexing.CreatePolicy(ctx, q)
+			if e != nil {
+				writeMemoryError(w, e)
+				return
+			}
+			writeJSON(w, 201, v)
+		case "/api/v4/memory/index-policy-control":
+			if s.Indexing == nil {
+				writeJSON(w, 503, map[string]string{"error": "owned local indexing unavailable"})
+				return
+			}
+			var q struct {
+				ID       string `json:"policy_id"`
+				Revision int64  `json:"expected_revision"`
+				Enabled  bool   `json:"enabled"`
+			}
+			if !decode(&q) {
+				return
+			}
+			if e := s.Indexing.Jobs.ControlIndexPolicy(ctx, q.ID, q.Revision, q.Enabled); e != nil {
+				writeMemoryError(w, e)
+				return
+			}
+			writeJSON(w, 200, map[string]bool{"applied": true})
 		case "/api/v4/memory/index":
 			if s.Indexing == nil {
 				writeJSON(w, 503, map[string]string{"error": "owned local indexing unavailable"})

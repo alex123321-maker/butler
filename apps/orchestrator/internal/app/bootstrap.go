@@ -457,6 +457,9 @@ func New(ctx context.Context) (*App, error) {
 		}
 		var adaptiveOptions []AdaptiveReadOptions
 		option := AdaptiveReadOptions{Experience: experienceMemory}
+		if policyReader, ok := semanticReader.(memoryservice.PolicySemanticReader); ok {
+			option.Semantic = policyReader
+		}
 		if adaptiveRetrieval != nil {
 			option.Store = adaptiveRetrieval
 			if policyReader, ok := semanticReader.(memoryservice.PolicySemanticReader); ok {
@@ -519,6 +522,7 @@ func New(ctx context.Context) (*App, error) {
 			},
 			SemanticMemory:           semanticReader,
 			AdaptiveRetrieval:        adaptiveRetrieval,
+			SemanticSearchEnabled:    memoryReads != nil && memoryReads.semantic != nil,
 			MemorySources:            memorySources,
 			DelegationContexts:       childContexts,
 			FailedDelegationAttempts: failedAttempts,

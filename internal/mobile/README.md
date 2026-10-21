@@ -24,8 +24,8 @@ Sources use existing memory deletion/restore guards. Each event is an immutable
 source revision; notification_hash and previous_device_event_id link card
 updates/removals without overwriting earlier observations. Only the catalog
 holds text. Owner deletion and deterministic retention use its fsynced external
-anchor, erase derivatives and retain tombstones. Missing/rolled-back anchors
-deny receipt creation and private reads. Retention is 1–365 days, default 30,
+anchor and retain tombstones. Explicit forgetting erases all privacy descendants; archive_expire preserves selected notes and their exact retained evidence. Missing/rolled-back anchors
+deny receipt creation and private reads. Retention is 1–365 days, default360,
 bounded to 100 sources per sweep. Content-bearing backups retain the existing
 30-day maximum and require the latest independent deletion anchor on restore.
 Retention calls the catalog's narrow expired-mobile-source operation, which
@@ -40,8 +40,7 @@ Catalog derivatives and current Broker/task/mandate authority, not device auth.
 `messages.go` projects distinct message identities without copying text; bounded
 backfill supports already saved events. The owning Orchestrator composes the
 observer and Tool Broker controls. Noise suppresses attention, retains search,
-and can be undone via the owner attention view. Source deletion/retention also
-erases dependent notes/rules. No content is logged; diagnostics contain counters.
+and can be undone via the owner attention view. Explicit source deletion erases dependent notes/rules and retained evidence; automatic expiry preserves retained memory. No content is logged; diagnostics contain counters.
 
 Run `go test ./internal/mobile` on Linux with
 `BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://.../mobile_test`. Every integration

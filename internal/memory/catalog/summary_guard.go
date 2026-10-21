@@ -12,7 +12,7 @@ func lockSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 	if len(ids) == 0 {
 		return nil
 	}
-	_, err := tx.Exec(ctx, `WITH RECURSIVE roots AS(SELECT unnest($1::text[]) AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id),all_ids AS(SELECT id FROM roots UNION SELECT d.original_source_id FROM memory_summary_dependencies d JOIN roots r ON r.id=d.snapshot_source_id UNION SELECT a.original_source_id FROM memory_experience_reconciled_attempts a JOIN roots r ON r.id=a.source_id)SELECT s.source_id FROM memory_sources s JOIN all_ids a ON a.id=s.source_id ORDER BY s.source_id FOR SHARE OF s`, ids)
+	_, err := tx.Exec(ctx, `WITH RECURSIVE roots AS(SELECT unnest($1::text[]) AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id),all_ids AS(SELECT id FROM roots UNION SELECT d.original_source_id FROM memory_summary_dependencies d JOIN roots r ON r.id=d.snapshot_source_id UNION SELECT a.original_source_id FROM memory_experience_reconciled_attempts a JOIN roots r ON r.id=a.source_id UNION SELECT e.original_source_id FROM memory_retained_mobile_evidence e JOIN roots r ON r.id=e.source_id)SELECT s.source_id FROM memory_sources s JOIN all_ids a ON a.id=s.source_id ORDER BY s.source_id FOR SHARE OF s`, ids)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func checkSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 		return err
 	}
 	var current bool
-	if err := tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current($1) AND butler_memory_experience_sources_current($1)`, ids).Scan(&current); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT to_regprocedure(format('%I.butler_memory_summary_sources_current(text[])',current_schema())) IS NOT NULL AND to_regprocedure(format('%I.butler_memory_experience_sources_current(text[])',current_schema())) IS NOT NULL AND to_regprocedure(format('%I.butler_memory_retained_sources_current(text[])',current_schema())) IS NOT NULL AND butler_memory_summary_sources_current($1) AND butler_memory_experience_sources_current($1) AND butler_memory_retained_sources_current($1)`, ids).Scan(&current); err != nil {
 		return err
 	}
 	if !current {
@@ -74,10 +74,11 @@ func (s *Store) SnapshotForRefreshTx(ctx context.Context, tx pgx.Tx, ref SourceR
 		return Source{}, false, ErrDenied
 	}
 	var current, allowed bool
-	if err = tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current(ARRAY[$1::text]),butler_memory_summary_refresh_allowed($1)`, src.ID).Scan(&current, &allowed); err != nil {
+	var guards bool
+	if err = tx.QueryRow(ctx, `SELECT to_regprocedure(format('%I.butler_memory_summary_sources_current(text[])',current_schema())) IS NOT NULL AND to_regprocedure(format('%I.butler_memory_summary_refresh_allowed(text)',current_schema())) IS NOT NULL, butler_memory_summary_sources_current(ARRAY[$1::text]),butler_memory_summary_refresh_allowed($1)`, src.ID).Scan(&guards, &current, &allowed); err != nil {
 		return Source{}, false, err
 	}
-	if !current && !allowed {
+	if !guards || !current && !allowed {
 		return Source{}, false, ErrStale
 	}
 	return src, !current, nil

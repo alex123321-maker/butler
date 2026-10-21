@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/jackc/pgx/v5"
 )
 
 type FragmentResult struct {
@@ -36,6 +37,29 @@ func (s *Store) PublishFragments(ctx context.Context, ref SourceRef, fragments [
 		return result, e
 	}
 	defer tx.Rollback(ctx)
+	result, e = s.PublishFragmentsTx(ctx, tx, ref, fragments)
+	if e != nil {
+		return result, e
+	}
+	return result, tx.Commit(ctx)
+}
+
+// PublishFragmentsTx commits a note and its searchable projection together.
+func (s *Store) PublishFragmentsTx(ctx context.Context, tx pgx.Tx, ref SourceRef, fragments []Fragment) (FragmentResult, error) {
+	var result FragmentResult
+	if tx == nil || len(fragments) > 2000 {
+		return result, ErrInvalid
+	}
+	seen := map[string]bool{}
+	for _, f := range fragments {
+		if !bounded(f.Key, 512) || sanitize.Text(f.Key) != f.Key || seen[f.Key] || len(f.Title) > 2048 || len(f.Text) > 32768 || !json.Valid(f.Locator) {
+			return result, ErrInvalid
+		}
+		seen[f.Key] = true
+	}
+	if e := s.CheckRestoreTx(ctx, tx); e != nil {
+		return result, e
+	}
 	sources, e := s.AccessTx(context.WithValue(ctx, writeSourcesKey{}, true), tx, []SourceRef{ref}, "memory_ingest")
 	if e != nil {
 		return result, e
@@ -99,7 +123,7 @@ func (s *Store) PublishFragments(ctx context.Context, ref SourceRef, fragments [
 		}
 		result.Deleted++
 	}
-	return result, tx.Commit(ctx)
+	return result, nil
 }
 
 type Citation struct {

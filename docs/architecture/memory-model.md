@@ -1,5 +1,9 @@
 # Butler — Memory Model Specification
 
+The [mobile memory/search contract](mobile-memory-search.md) adds task-scoped
+notification context, atomically searchable notes and explicit local automatic
+index maintenance. Vector publication remains separate from fact acceptance.
+
 [Memory Doctor](../../internal/memory/doctor/README.md) reports actual constructed
 feature composition separately from operator requests, code-owned qualification,
 supported provider profile and current durable worker/owner-policy controls. None
@@ -790,6 +794,13 @@ Current Butler baseline now applies explicit housekeeping policies:
 * inactive / superseded Profile Memory versions can be removed after retention windows;
 * Episodic Memory and document chunks can be pruned by age while keeping the highest-confidence recent items per scope;
 * housekeeping operations are safe to rerun and report deletion counts for observability.
+
+Selected mobile notes and their immutable exact evidence have indefinite retention.
+Their class rows are exempt from age/count housekeeping. Raw notification archives
+default to360 days; automatic archive_expire preserves retained notes, while
+explicit owner forgetting erases their evidence and derived indexes. Observation
+retention does not imply Profile acceptance or infinite event validity. See
+[the implemented contract](mobile-memory-search.md#archive-expiry-and-retained-evidence).
 
 ## 21. Current observability baseline
 

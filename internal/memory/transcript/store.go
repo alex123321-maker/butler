@@ -189,6 +189,28 @@ func (s *Store) GetTranscript(ctx context.Context, sessionKey string) (Transcrip
 	return transcriptSnapshot(messages, toolCalls), nil
 }
 
+// GetTaskTranscript selects only this task's primary messages, retaining the
+// session revision for ordinary privacy fencing. It does not move session data.
+func (s *Store) GetTaskTranscript(ctx context.Context, sessionKey, taskID string) (Transcript, error) {
+	messages, err := s.loadMessages(ctx, `
+	 SELECT m.message_id,m.session_key,COALESCE(m.run_id,''),m.role,m.content,COALESCE(m.tool_call_id,''),m.metadata::text,m.created_at,m.message_sequence,h.source_revision
+	 FROM messages m JOIN transcript_heads h USING(session_key) JOIN runs r ON r.run_id=m.run_id
+	 WHERE m.session_key=$1 AND r.task_id=$2 ORDER BY m.message_sequence`, sessionKey, taskID)
+	if err != nil {
+		return Transcript{}, err
+	}
+	if len(messages) > 0 {
+		// Pin the revision observed with these bytes. A later revision read could
+		// otherwise bless text that was corrected/redacted between the queries.
+		return transcriptSnapshot(messages, nil), nil
+	}
+	var revision int64
+	if err = s.pool.QueryRow(ctx, `SELECT COALESCE((SELECT source_revision FROM transcript_heads WHERE session_key=$1),0)`, sessionKey).Scan(&revision); err != nil {
+		return Transcript{}, err
+	}
+	return Transcript{Messages: messages, SourceRevision: revision}, nil
+}
+
 func (s *Store) GetRunTranscript(ctx context.Context, runID string) (Transcript, error) {
 	messages, err := s.loadMessages(ctx, `
 		SELECT m.message_id, m.session_key, COALESCE(m.run_id, ''), m.role, m.content, COALESCE(m.tool_call_id, ''), m.metadata::text, m.created_at, m.message_sequence, h.source_revision
@@ -219,8 +241,8 @@ func transcriptSnapshot(messages []Message, toolCalls []ToolCall) Transcript {
 	return result
 }
 
-func (s *Store) loadMessages(ctx context.Context, query, arg string) ([]Message, error) {
-	rows, err := s.pool.Query(ctx, query, arg)
+func (s *Store) loadMessages(ctx context.Context, query string, args ...any) ([]Message, error) {
+	rows, err := s.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("query transcript messages: %w", err)
 	}

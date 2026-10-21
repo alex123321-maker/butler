@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/toolcatalog"
 	"strings"
 )
@@ -80,6 +81,36 @@ func TestToolCatalogDoesNotTruncateCoreBeforeSearch(t *testing.T) {
 type discoveryContext struct {
 	*authFixture
 	current actionauth.ContextSnapshot
+}
+
+func TestUnassignedTaskRetainsMemoryCatalogWithConvertersEnabled(t *testing.T) {
+	reg := loadTestRegistry(t)
+	for _, contracts := range [][]*toolbrokerv1.ToolContract{toolcatalog.Contracts(), generatedtools.Contracts(), readcontrol.Contracts()} {
+		if err := reg.RegisterOwned(contracts); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a, _ := newAuthFixture().GetActionContext(context.Background(), "run")
+	a.TaskID, a.TaskStatus = "ordinary-task", "active"
+	a.TaskRevision, a.PinnedTaskRevision, a.ConstraintsRevision = 1, 1, 1
+	a.Authority = nil
+	a.InputClaimHash = strings.Repeat("a", 64)
+	a.MemoryReadReady, a.ConverterLifecycleReady = true, true
+	catalog := &TaskCatalog{Registry: reg, Contexts: converterCatalogContext{a}, Converters: &generatedtools.Store{}}
+	contracts, err := catalog.ListForRun(context.Background(), "run", "", 0)
+	if err != nil {
+		t.Fatal("converter mandate blocked unrelated memory reads", err)
+	}
+	names := map[string]bool{}
+	for _, c := range contracts {
+		if c.ToolName == "converters.collect" || strings.HasPrefix(c.ToolName, "converter.") {
+			t.Fatal("unassigned task received an installed/collection capability", c.ToolName)
+		}
+		names[c.ToolName] = true
+	}
+	if !names[toolcatalog.Search] || !names[toolcatalog.Load] || !names[readcontrol.Search] || !names[readcontrol.Open] {
+		t.Fatal("permitted memory catalog disappeared", names)
+	}
 }
 
 func TestToolDiscoveryTasklessCatalogWithConvertersEnabled(t *testing.T) {

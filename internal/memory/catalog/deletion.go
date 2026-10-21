@@ -12,6 +12,9 @@ import (
 // PostgreSQL advisory serialization also protects the shared manifest against
 // simultaneous orchestrator instances on the same authoritative database.
 func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRevision int64) (Deletion, error) {
+	if action != "delete" && action != "revoke" {
+		return Deletion{}, ErrInvalid
+	}
 	own, e := owner(ctx)
 	if e != nil {
 		return Deletion{}, e
@@ -22,11 +25,11 @@ func (s *Store) Delete(ctx context.Context, sourceID, action string, expectedRev
 // DeleteExpiredMobileObservation applies only durable owner-configured device
 // retention. It never manufactures an owner actor, grant or model authorization.
 func (s *Store) DeleteExpiredMobileObservation(ctx context.Context, sourceID string, expectedRevision int64) (Deletion, error) {
-	return s.deleteSource(ctx, sourceID, "delete", expectedRevision, "")
+	return s.deleteSource(ctx, sourceID, "archive_expire", expectedRevision, "")
 }
 
 func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expectedRevision int64, own string) (Deletion, error) {
-	if action != "delete" && action != "revoke" {
+	if action != "delete" && action != "revoke" && action != "archive_expire" {
 		return Deletion{}, ErrInvalid
 	}
 	if e := s.CheckRestore(ctx); e != nil {
@@ -54,6 +57,11 @@ func (s *Store) deleteSource(ctx context.Context, sourceID, action string, expec
 	}
 	if rev != expectedRevision {
 		return Deletion{}, ErrStale
+	}
+	if action == "archive_expire" {
+		if e = s.prepareMobileArchiveExpiryTx(ctx, tx, sourceID, own); e != nil {
+			return Deletion{}, e
+		}
 	}
 	records, e := s.manifest.Load(ctx)
 	if e != nil {
@@ -113,6 +121,11 @@ func (s *Store) Reconcile(ctx context.Context) error {
 		if own != "" && hash(own) != r.OwnerHash {
 			return ErrDenied
 		}
+		if r.Action == "archive_expire" && own != "" {
+			if e = s.prepareMobileArchiveExpiryTx(ctx, tx, r.SourceID, own); e != nil {
+				return e
+			}
+		}
 		if e = s.applyDeletionTx(ctx, tx, r, own); e != nil {
 			return e
 		}
@@ -120,15 +133,7 @@ func (s *Store) Reconcile(ctx context.Context) error {
 	return tx.Commit(ctx)
 }
 func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord, own string) error {
-	// Transcript append/finalization lock sessions/heads before publication source
-	// rows. Take the same order before redacting messages or covered summaries.
-	if _, e := tx.Exec(ctx, `SELECT session_key FROM sessions ORDER BY session_key FOR UPDATE`); e != nil {
-		return e
-	}
-	if _, e := tx.Exec(ctx, `SELECT task_id FROM tasks WHERE owner_id=$1 ORDER BY task_id FOR UPDATE`, own); e != nil {
-		return e
-	}
-	if _, e := tx.Exec(ctx, `SELECT session_key FROM transcript_heads ORDER BY session_key FOR UPDATE`); e != nil {
+	if e := lockDeletionAuthoritiesTx(ctx, tx, own); e != nil {
 		return e
 	}
 	if _, e := tx.Exec(ctx, `INSERT INTO memory_deletions(deletion_id,source_id,owner_id,action,watermark) OVERRIDING SYSTEM VALUE VALUES($1,$2,$3,$4,$5) ON CONFLICT(deletion_id) DO NOTHING`, r.ID, r.SourceID, own, r.Action, r.Sequence); e != nil {
@@ -148,27 +153,7 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	// Metadata-only witnesses are privacy ancestors without becoming readable
 	// body parents. Follow those edges at every depth along with ordinary copied
 	// source dependencies; witness deletion must physically erase its R copies.
-	rows, e := tx.Query(ctx, `WITH RECURSIVE privacy_edges(parent_source_id,child_source_id) AS NOT MATERIALIZED(
- SELECT parent_source_id,child_source_id FROM memory_source_dependencies
- UNION ALL SELECT original_source_id,source_id FROM memory_experience_reconciled_attempts
-),affected AS(
- SELECT source_id FROM memory_sources WHERE source_id=$1 OR source_id IN(SELECT snapshot_source_id FROM memory_summary_dependencies WHERE original_source_id=$1) OR source_id IN(SELECT x.source_id FROM memory_summary_sources x WHERE x.session_key IN(SELECT scope_id FROM memory_sources WHERE source_id=$1 AND scope_type='session')) OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined')
- UNION SELECT d.child_source_id FROM privacy_edges d JOIN affected a ON a.source_id=d.parent_source_id
-)SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own)
-	if e != nil {
-		return e
-	}
-	var ids []string
-	for rows.Next() {
-		var id string
-		if e = rows.Scan(&id); e != nil {
-			rows.Close()
-			return e
-		}
-		ids = append(ids, id)
-	}
-	e = rows.Err()
-	rows.Close()
+	ids, e := lockDeletionSourceIDsTx(ctx, tx, r.SourceID, own, r.Action)
 	if e != nil {
 		return e
 	}
@@ -191,6 +176,9 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 		}
 	}
 	for _, id := range ids {
+		if _, e = tx.Exec(ctx, `DELETE FROM memory_retained_mobile_evidence WHERE source_id=$1`, id); e != nil {
+			return e
+		}
 		// Purge vectors/chunks before source text. Retain only audit IDs and hashes.
 		for _, pair := range []struct{ typ, table string }{{"profile", "memory_profile"}, {"episodic", "memory_episodes"}, {"chunk", "memory_chunks"}} {
 			if _, e = tx.Exec(ctx, `DELETE FROM `+pair.table+` WHERE id IN(SELECT object_id FROM memory_object_sources WHERE memory_type=$1 AND source_id=$2)`, pair.typ, id); e != nil {
@@ -223,4 +211,48 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	}
 	_, e = tx.Exec(ctx, `UPDATE memory_restore_state SET watermark=$1 WHERE singleton`, r.Sequence)
 	return e
+}
+
+func lockDeletionAuthoritiesTx(ctx context.Context, tx pgx.Tx, own string) error {
+	// Transcript append/finalization lock sessions/heads before publication source
+	// rows. Take the same order before redacting messages or covered summaries.
+	if _, e := tx.Exec(ctx, `SELECT session_key FROM sessions ORDER BY session_key FOR UPDATE`); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `SELECT task_id FROM tasks WHERE owner_id=$1 ORDER BY task_id FOR UPDATE`, own); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `SELECT session_key FROM transcript_heads ORDER BY session_key FOR UPDATE`); e != nil {
+		return e
+	}
+	return nil
+}
+
+func lockDeletionSourceIDsTx(ctx context.Context, tx pgx.Tx, sourceID, own, action string) ([]string, error) {
+	rows, e := tx.Query(ctx, `WITH RECURSIVE privacy_edges(parent_source_id,child_source_id) AS NOT MATERIALIZED(
+ SELECT parent_source_id,child_source_id FROM memory_source_dependencies
+ UNION ALL SELECT original_source_id,source_id FROM memory_experience_reconciled_attempts
+ UNION ALL SELECT original_source_id,source_id FROM memory_retained_mobile_evidence WHERE $3<>'archive_expire'
+),affected AS(
+ SELECT source_id FROM memory_sources WHERE source_id=$1 OR source_id IN(SELECT snapshot_source_id FROM memory_summary_dependencies WHERE original_source_id=$1) OR source_id IN(SELECT x.source_id FROM memory_summary_sources x WHERE x.session_key IN(SELECT scope_id FROM memory_sources WHERE source_id=$1 AND scope_type='session')) OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined')
+ UNION SELECT d.child_source_id FROM privacy_edges d JOIN affected a ON a.source_id=d.parent_source_id
+)SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, sourceID, own, action)
+	if e != nil {
+		return nil, e
+	}
+	var ids []string
+	for rows.Next() {
+		var id string
+		if e = rows.Scan(&id); e != nil {
+			rows.Close()
+			return nil, e
+		}
+		ids = append(ids, id)
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return nil, e
+	}
+	return ids, nil
 }

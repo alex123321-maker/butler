@@ -9,6 +9,13 @@ rules are source-dependent DATA derivatives, not owner-confirmed facts.
 Deletion and retention use the same external manifest; redelivery retains the
 receipt and cannot rehydrate source text.
 
+Migration088 distinguishes archive_expire from owner delete/revoke. Selected
+mobile observations retain immutable bounded exact evidence through a typed
+privacy edge, independently of raw archive expiry. Explicit forgetting still
+traverses that edge, purges evidence and descendants, and replays after restore.
+All Catalog/pinned model-job release guards check its current original metadata.
+See [retained mobile evidence](mobile-memory-search.md#archive-expiry-and-retained-evidence).
+
 Migration079 extends source/run privacy to primary Transcript tool caches and
 copied approval payloads. An irreversible content-free run marker is committed
 with erasure; late tool publication and payload rewrites cannot resurrect it.

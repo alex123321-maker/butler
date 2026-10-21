@@ -448,10 +448,10 @@ func (s *Store) Prune(ctx context.Context, cutoff time.Time, keepPerScope int) (
 			WHERE created_at < $1
 		)
 		DELETE FROM memory_episodes
-		WHERE id IN (
+		WHERE NOT butler_memory_object_retained('episodic',id) AND (id IN (
 			SELECT id FROM ranked WHERE rn > $2
 		)
-		   OR (status <> $3 AND created_at < $1)
+		   OR (status <> $3 AND created_at < $1))
 	`, cutoff.UTC(), keepPerScope, StatusActive)
 	if err != nil {
 		return 0, fmt.Errorf("prune episodic memory entries: %w", err)

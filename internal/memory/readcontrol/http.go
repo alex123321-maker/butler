@@ -37,9 +37,15 @@ func NewClient(endpoint, token string) (*Client, error) {
 	}
 	t := http.DefaultTransport.(*http.Transport).Clone()
 	t.Proxy = nil
-	return &Client{endpoint, token, &http.Client{Transport: t, Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	return &Client{endpoint, token, &http.Client{Transport: t, Timeout: 35 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
 func (c *Client) ReadDispatched(ctx context.Context, e Envelope) (Result, error) {
+	timeout := 5 * time.Second
+	if e.Tool == Search {
+		timeout = 30 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	if c == nil {
 		return Empty("denied"), ErrDenied
 	}

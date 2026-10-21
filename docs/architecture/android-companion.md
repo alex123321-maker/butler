@@ -1,5 +1,9 @@
 # Android notification companion, protocol v1
 
+[Task-scoped context and automatic local note search](mobile-memory-search.md)
+define the implemented bounded processing context, atomic note fragments and
+explicit owner-authorized index maintenance policy.
+
 This implementation adds Android ingress and owner controls to the existing Go
 Orchestrator, plus a Kotlin application under `mobile/android`. It preserves
 Session, Run, Broker and provider boundaries. Notifications are external DATA,
@@ -198,12 +202,13 @@ inputs resume the same task/root budget after30 seconds. One queued/running
 input blocks duplicate continuations; paused/blocked tasks remain stopped.
 
 Owner deletion/retention uses the existing fsynced external deletion manifest,
-purges source revisions and derivatives, and retains content-free receipts.
+purges source revisions and ordinary derivatives, and retains content-free receipts.
 Identical redelivery cannot recreate content. Replay after restoration must
 reconcile the latest independent manifest before reads/ACK. Retention defaults
-to 30 days per device (owner configurable 1–365). Sweeps are bounded to 100
+to360 days per device (owner configurable 1–365). Sweeps are bounded to 100
 sources. Existing backup retention/erasure rules apply; unknown offline copies
 and already exported content cannot be recalled by this feature.
+Selected remember notes retain exact bounded evidence indefinitely through a typed privacy edge. Automatic archive_expire preserves them; explicit owner forgetting erases them and their indexes. See [retained evidence](mobile-memory-search.md#archive-expiry-and-retained-evidence).
 The background retention seam rechecks expiry and locks the current device policy
 before deletion. It has no owner actor and cannot delete an unexpired or unrelated
 catalog source; owner-initiated deletion continues to require owner proof.

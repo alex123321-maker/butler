@@ -1,5 +1,11 @@
 # Butler — Run Lifecycle Specification
 
+Kernel-admitted mobile batch tasks use primary history from that task's runs,
+while retaining Session ownership/order and transcript revision/privacy fences.
+Current typed goals, constraints and mandates remain mandatory. See
+[notification task context](mobile-memory-search.md); ordinary session replay
+and verified summary coverage are unchanged.
+
 Optional [tool discovery](tool-discovery.md) starts with two catalog schemas and reconstructs selected exact method refs from successful current-run tool receipts. Every continuation and recovery revalidates current scope. Loading cannot replay actions or replace approval/authority, and stale refs never silently upgrade.
 
 

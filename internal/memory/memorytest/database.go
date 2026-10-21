@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -16,6 +17,20 @@ import (
 )
 
 func Database(t *testing.T) *pgxpool.Pool {
+	return database(t, 0)
+}
+
+// DatabaseAtVersion is for ordered migration rollback tests. It never drops an
+// old migration underneath newer dependent schemas.
+func DatabaseAtVersion(t *testing.T, version int) *pgxpool.Pool {
+	t.Helper()
+	if version < 1 || version > 999 {
+		t.Fatal("invalid test schema version")
+	}
+	return database(t, version)
+}
+
+func database(t *testing.T, version int) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL")
 	if dsn == "" {
@@ -61,6 +76,15 @@ func Database(t *testing.T) *pgxpool.Pool {
 	}
 	sort.Strings(paths)
 	for _, path := range paths {
+		if version > 0 {
+			number, e := strconv.Atoi(filepath.Base(path)[:3])
+			if e != nil {
+				t.Fatal(e)
+			}
+			if number > version {
+				continue
+			}
+		}
 		data, e := os.ReadFile(path)
 		if e != nil {
 			t.Fatal(e)

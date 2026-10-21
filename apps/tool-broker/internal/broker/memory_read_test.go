@@ -2,9 +2,11 @@ package broker
 
 import (
 	"context"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -14,6 +16,27 @@ import (
 type readDispatchFixture struct {
 	calls    int
 	envelope readcontrol.Envelope
+}
+
+func TestMalformedMessageSearchRejectedBeforeEffectPreparation(t *testing.T) {
+	reg, err := registry.Load(filepath.Join("..", "..", "..", "..", "configs", "tools.json"), "local")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = reg.RegisterOwned(readcontrol.Contracts()); err != nil {
+		t.Fatal(err)
+	}
+	next := &delegationNextFixture{}
+	service := NewServer(reg, next, nil, nil) // no authorizer: invalid args must fail first
+	call := &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "invalid-limit", ToolName: readcontrol.MessageSearch, ArgsJson: `{"limit":50}`}
+	p, err := service.PrepareToolCall(context.Background(), &toolbrokerv1.PrepareToolCallRequest{ToolCall: call})
+	if err != nil || p.GetError() == nil || p.GetAction() != nil {
+		t.Fatal("invalid search reached effect preparation", p, err)
+	}
+	result, err := service.ExecuteToolCall(context.Background(), &toolbrokerv1.ExecuteToolCallRequest{ToolCall: call})
+	if err != nil || result.GetResult().GetStatus() != "failed" || result.GetResult().GetEffectState() == "effect_unknown" {
+		t.Fatal("invalid search became unknown effect", result, err)
+	}
 }
 
 func (f *readDispatchFixture) ReadDispatched(_ context.Context, e readcontrol.Envelope) (readcontrol.Result, error) {

@@ -24,7 +24,11 @@ descriptions remain DATA, not instructions. Durable search observations retain
 names, categories and refs while removing descriptions.
 
 Search runs over the complete already-filtered catalog, including installed
-extensions and converters. A zero limit on the private catalog reader means
+extensions and converters. Collection and installed-converter
+catalog reads require a current task assignment, lifecycle readiness and permission
+to prepare. Ordinary tasks without converter authority retain their permitted core
+catalog, including memory reads. Converter execution guards remain unchanged.
+A zero limit on the private catalog reader means
 complete results; explicit positive limits still apply after filtering. The
 historical pre-selection 64-method truncation is removed, including the
 converter SQL list. Rank uses exact name, prefix, name/class/description words

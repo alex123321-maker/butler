@@ -422,7 +422,7 @@ func (s *Store) DeleteInactiveBefore(ctx context.Context, cutoff time.Time) (int
 	}
 	commandTag, err := s.pool.Exec(ctx, `
 		DELETE FROM memory_profile
-		WHERE status <> $1
+		WHERE NOT butler_memory_object_retained('profile',id) AND status <> $1
 		  AND COALESCE(effective_to, updated_at, created_at) < $2
 	`, StatusActive, cutoff.UTC())
 	if err != nil {

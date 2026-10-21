@@ -53,7 +53,10 @@ func (s *Store) checkModelSupervisor(ctx context.Context, j Job, observePhase ..
 	err = tx.QueryRow(ctx, `WITH pins AS MATERIALIZED (
  SELECT * FROM jsonb_to_recordset($1::jsonb) AS p(source_id text,revision bigint,access_revision bigint,content_hash text)
 )
-SELECT butler_memory_summary_sources_current($5) AND butler_memory_temporal_sources_current($5) AND butler_memory_experience_sources_current($5) AND NOT EXISTS (
+SELECT to_regprocedure(format('%I.butler_memory_summary_sources_current(text[])',current_schema())) IS NOT NULL
+ AND to_regprocedure(format('%I.butler_memory_temporal_sources_current(text[])',current_schema())) IS NOT NULL
+ AND to_regprocedure(format('%I.butler_memory_experience_sources_current(text[])',current_schema())) IS NOT NULL
+ AND to_regprocedure(format('%I.butler_memory_retained_sources_current(text[])',current_schema())) IS NOT NULL AND butler_memory_retained_sources_current($5) AND butler_memory_summary_sources_current($5) AND butler_memory_temporal_sources_current($5) AND butler_memory_experience_sources_current($5) AND NOT EXISTS (
  SELECT 1 FROM pins p LEFT JOIN memory_sources s ON s.source_id=p.source_id
  LEFT JOIN memory_source_revisions r ON r.source_id=p.source_id AND r.revision=s.head_revision
  WHERE s.owner_id IS DISTINCT FROM $2 OR s.status IS DISTINCT FROM 'active'

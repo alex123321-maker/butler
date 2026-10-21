@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -435,29 +437,32 @@ func TestModelWorkerShutdownNormalizedTransportErrorIntegration(t *testing.T) {
 }
 
 func TestModelMigrationRollbackRetainsHistoryIntegration(t *testing.T) {
-	w, ctx, src := modelFixture(t)
+	// Test071 at its actual schema boundary; later provenance migrations have
+	// legitimate foreign keys and must not be downgraded out of order.
+	pool := memorytest.DatabaseAtVersion(t, 71)
+	ctx := context.Background()
 	down, e := os.ReadFile(filepath.Join("..", "..", "..", "migrations", "071_memory_model_jobs.down.sql"))
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = w.Jobs.pool.Exec(ctx, string(down)); e != nil {
+	if _, e = pool.Exec(ctx, string(down)); e != nil {
 		t.Fatal("unused migration rollback", e)
 	}
 	up, e := os.ReadFile(filepath.Join("..", "..", "..", "migrations", "071_memory_model_jobs.up.sql"))
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = w.Jobs.pool.Exec(ctx, string(up)); e != nil {
+	if _, e = pool.Exec(ctx, string(up)); e != nil {
 		t.Fatal("reapply migration", e)
 	}
-	if _, e = w.Jobs.CreateModelPolicy(ctx, policyRequest(src)); e != nil {
+	if _, e = pool.Exec(ctx, `INSERT INTO memory_model_policies(policy_id,owner_id,policy) VALUES('retained-policy','owner','{}')`); e != nil {
 		t.Fatal(e)
 	}
-	if _, e = w.Jobs.pool.Exec(ctx, string(down)); e == nil {
+	if _, e = pool.Exec(ctx, string(down)); e == nil || !strings.Contains(e.Error(), "retain background policy") {
 		t.Fatal("history was discarded by rollback")
 	}
 	var count int
-	if e = w.Jobs.pool.QueryRow(ctx, `SELECT count(*) FROM memory_model_policies`).Scan(&count); e != nil || count != 1 {
+	if e = pool.QueryRow(ctx, `SELECT count(*) FROM memory_model_policies`).Scan(&count); e != nil || count != 1 {
 		t.Fatal("history not preserved", count, e)
 	}
 }

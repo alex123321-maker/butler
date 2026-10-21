@@ -242,7 +242,7 @@ func TestRetentionErasesOriginalAndPreservesReceiptIntegration(t *testing.T) {
 	if _, err = s.Catalog.DeleteExpiredMobileObservation(context.Background(), list[0].Source, 1); !errors.Is(err, catalog.ErrDenied) {
 		t.Fatal("unexpired source erased", err)
 	}
-	if _, err := s.Pool.Exec(ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '31 days'`); err != nil {
+	if _, err := s.Pool.Exec(ctx, `UPDATE mobile_events SET received_at=clock_timestamp()-interval '361 days'`); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Cleanup(ctx); err != nil {

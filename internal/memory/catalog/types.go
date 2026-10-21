@@ -21,6 +21,8 @@ var (
 )
 
 type Source struct {
+	// Loaded only inside a guarded Catalog read; never a serialized capability.
+	RetainedEvidence json.RawMessage `json:"-"`
 	// Constructor-only receipt; serialized/reloaded sources cannot acquire it.
 	creation       *derivedCreation
 	ID             string          `json:"source_id"`

@@ -1,5 +1,9 @@
 # Migrations
 
+087 adds explicit owner local index maintenance policies and job-policy revision
+projections. It does not enable a policy, accept a fact or publish an index.
+Deploy new binaries after this additive migration.
+
 SQL migrations live here.
 
 `034_atomic_results_outbox` atomically separates immutable attempt results,

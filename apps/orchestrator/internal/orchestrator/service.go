@@ -195,6 +195,7 @@ type Config struct {
 	TransientStore        TransientWorkingStore
 	TransientTTL          time.Duration
 	MemoryBundles         MemoryBundleService
+	SemanticSearchEnabled bool
 	AdaptiveRetrieval     *adaptive.Store
 	SemanticMemory        memoryservice.SemanticReader
 	MemoryScopeResolver   func(context.Context) ([]memoryservice.Scope, error)

@@ -1,5 +1,11 @@
 # Owned local indexing runtime
 
+`automatic.go` maintains an explicitly owner-approved user-scope index using
+finite jobs and the existing claim/admission path. Complete current coverage and
+policy revision precede CAS activation; a maintenance receipt is distinct from a
+new quality experiment. Manual index review retains its existing contract.
+See [policy API and limits](../../../docs/architecture/mobile-memory-search.md).
+
 Runtime composes the source catalog, job-owned admission and derived semantic
 store. `EnqueueWithPublication` saves the immutable finite owner job, new building
 generation and index projection in one PG transaction. Job IDs are idempotent;
