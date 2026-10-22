@@ -1239,3 +1239,15 @@ external NO_PROXY bypass. Broker must use the same profile and existing private
 authority token. No historical run or pending publication is upgraded. Rollback
 first uses drain mode with this compatible binary and preserved durable state.
 See [the communication contract](../../docs/architecture/user-communication-spec.md).
+
+### Opt-in communication widgets (#104)
+
+Private `OwnerProfile.Widgets` and isolated Telegram options compose C05 Web and
+Telegram controls; default false preserves the deployed three-method profile.
+Both binding snapshots must explicitly include widget. No historical admission
+is upgraded, no recipient is inferred and ordinary startup remains unchanged.
+Authenticated `/api/v3/interactions/<ref>/actions` controls shared draft CAS and
+explicit submit; answers bypass the suspended FIFO through the existing owning
+interaction service. Widgets grant preferences only, never payment approval.
+Native widget lab is the explicit `BUTLER_COMMUNICATION_WIDGET_LAB=1` variant of
+the existing application lab; it uses bounded synthetic policy and real Broker.

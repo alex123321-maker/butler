@@ -34,10 +34,6 @@ func TestCommunicationWidgetTelegramRenderMatrix(t *testing.T) {
 					}
 					return
 				}
-				var keyboard struct {
-					Rows [][]struct{ Text, Data string } `json:"-"`
-				}
-				_ = keyboard
 				var data map[string][][]map[string]string
 				if json.Unmarshal(raw, &data) != nil {
 					t.Fatal("keyboard malformed")

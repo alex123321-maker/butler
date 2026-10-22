@@ -106,47 +106,76 @@ func (p *Poller) RefreshWidgets(ctx context.Context) error {
 		return err
 	}
 	for _, it := range items {
-		var part Part
-		if communicationJSON(it.m.Content, &part) != nil || !part.Widget {
-			continue
+		if err := p.refreshWidget(ctx, in, client, it.m, it.ack); err != nil {
+			return err
 		}
-		view, e := in.Store.DeliveryWidget(ctx, it.m)
-		if e != nil {
-			continue
-		}
-		revision := widgetRevision(view)
-		tag, e := p.Pool.Exec(ctx, `INSERT INTO communication_widget_projection_ops(notification_id,revision,status) VALUES($1,$2,'sending') ON CONFLICT DO NOTHING`, it.m.NotificationID, revision)
-		if e != nil {
-			return e
-		}
-		if tag.RowsAffected() == 0 {
-			continue
-		}
-		status := "failed"
-		current, e := in.Store.DeliveryWidget(ctx, it.m)
-		if e == nil && widgetRevision(current) == revision {
-			text, markup := renderWidget(current, part.Text)
-			body, _ := json.Marshal(map[string]any{"chat_id": b.ChatID, "message_id": it.ack, "text": text, "reply_markup": markup})
-			response, httpStatus, callErr := client.call(ctx, "editMessageText", body, "application/json")
-			status = "delivery_unknown"
-			if callErr == nil {
-				if httpStatus == 200 && *response.OK {
-					var m Message
-					if json.Unmarshal(response.Result, &m) == nil && strconv.FormatInt(m.ID, 10) == it.ack && m.Chat.ID == b.ChatID {
-						status = "sent"
-					}
-				}
-				if !*response.OK && httpStatus >= 400 && httpStatus < 600 && response.Code >= 400 && response.Code < 600 {
-					status = "failed"
+	}
+	return nil
+}
+
+func (p *Poller) refreshWidget(ctx context.Context, in *Ingress, client *Client, message deliveryoutbox.Message, ack string) error {
+	b := p.Binding
+	// Serialise edits per known message across workers without blocking owner
+	// responses on the outbox row. A newer projection cannot finish before an
+	// older in-flight edit and then be overwritten by it.
+	ctx, cancel := context.WithTimeout(ctx, 25*time.Second)
+	defer cancel()
+	serial, e := p.Pool.Begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer serial.Rollback(context.Background())
+	var locked bool
+	if e = serial.QueryRow(ctx, `SELECT pg_try_advisory_xact_lock(hashtextextended($1,104))`, message.NotificationID).Scan(&locked); e != nil {
+		return e
+	}
+	if !locked {
+		return nil
+	}
+	it := struct {
+		m   deliveryoutbox.Message
+		ack string
+	}{message, ack}
+	var part Part
+	if communicationJSON(it.m.Content, &part) != nil || !part.Widget {
+		return nil
+	}
+	view, e := in.Store.DeliveryWidget(ctx, it.m)
+	if e != nil {
+		return nil
+	}
+	revision := widgetRevision(view)
+	tag, e := p.Pool.Exec(ctx, `INSERT INTO communication_widget_projection_ops(notification_id,revision,status) VALUES($1,$2,'sending') ON CONFLICT DO NOTHING`, it.m.NotificationID, revision)
+	if e != nil {
+		return e
+	}
+	if tag.RowsAffected() == 0 {
+		return nil
+	}
+	status := "failed"
+	current, e := in.Store.DeliveryWidget(ctx, it.m)
+	if e == nil && widgetRevision(current) == revision {
+		text, markup := renderWidget(current, part.Text)
+		body, _ := json.Marshal(map[string]any{"chat_id": b.ChatID, "message_id": it.ack, "text": text, "reply_markup": markup})
+		response, httpStatus, callErr := client.call(ctx, "editMessageText", body, "application/json")
+		status = "delivery_unknown"
+		if callErr == nil {
+			if httpStatus == 200 && *response.OK {
+				var m Message
+				if json.Unmarshal(response.Result, &m) == nil && strconv.FormatInt(m.ID, 10) == it.ack && m.Chat.ID == b.ChatID {
+					status = "sent"
 				}
 			}
+			if !*response.OK && httpStatus >= 400 && httpStatus < 600 && response.Code >= 400 && response.Code < 600 {
+				status = "failed"
+			}
 		}
-		finish, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		_, e = p.Pool.Exec(finish, `UPDATE communication_widget_projection_ops SET status=$3 WHERE notification_id=$1 AND revision=$2 AND status='sending'`, it.m.NotificationID, revision, status)
-		cancel()
-		if e != nil {
-			return e
-		}
+	}
+	finish, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	_, e = p.Pool.Exec(finish, `UPDATE communication_widget_projection_ops SET status=$3 WHERE notification_id=$1 AND revision=$2 AND status='sending'`, it.m.NotificationID, revision, status)
+	cancel()
+	if e != nil {
+		return e
 	}
 	return nil
 }

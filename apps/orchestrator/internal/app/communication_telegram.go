@@ -268,6 +268,23 @@ func (c *telegramCommunication) admit(ctx context.Context, run string) error {
 	if c.widgets {
 		methods = append(methods, "communication.widget")
 	}
+	// Recovery keeps the admission's immutable method set. A newly qualified
+	// channel capability cannot upgrade an already accepted run.
+	var retained []byte
+	if err := c.store.Pool.QueryRow(ctx, `SELECT a.methods FROM communication_admissions a JOIN accepted_inputs i USING(input_id) WHERE i.run_id=$1`, run).Scan(&retained); err == nil {
+		var old []string
+		if json.Unmarshal(retained, &old) != nil {
+			return communication.ErrDenied
+		}
+		for _, method := range old {
+			if !slices.Contains(methods, method) {
+				return communication.ErrDenied
+			}
+		}
+		methods = old
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
 	return c.store.AdmitRun(ctx, run, false, methods)
 }
 

@@ -50,3 +50,24 @@ func TestCommunicationRollbackRefusesAcceptedHistoryIntegration(t *testing.T) {
 		t.Fatal("accepted history lost")
 	}
 }
+
+func TestCommunicationWidgetMigrationRollbackIntegration(t *testing.T) {
+	pool := memorytest.DatabaseAtVersion(t, 94)
+	for _, name := range []string{"095_communication_widgets.up.sql", "095_communication_widgets.down.sql", "095_communication_widgets.up.sql"} {
+		if _, err := pool.Exec(context.Background(), migration(t, name)); err != nil {
+			t.Fatal(name, err)
+		}
+	}
+	f := setup(t)
+	if _, err := f.publish(t, "question", "communication.widget", multiWidget); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := f.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(context.Background())
+	if _, err = tx.Exec(f.ctx, migration(t, "095_communication_widgets.down.sql")); err == nil {
+		t.Fatal("rollback erased a waiting draft")
+	}
+}

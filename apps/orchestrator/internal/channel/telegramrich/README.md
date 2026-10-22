@@ -89,3 +89,19 @@ API mapping checked 2026-10-21 against [Telegram Bot API 10.3](https://core.tele
 Unit/HTTP tests and PostgreSQL manifests are synthetic evidence. Actual channel
 ACK, client rendering, model behaviour and task completion are separate gates.
 See the [lab command](../../../cmd/telegram-rich-lab/README.md).
+
+## C05 widgets
+
+Trusted `Capabilities.Widget` enables single/multiple choice and explicit text
+reply. Short callback data is a locator; the actual owner, numeric bot and sent
+ACK mapping remain mandatory. Multi-choice toggles share a durable draft CAS,
+Submit alone resumes. Full option labels/descriptions and retained images precede
+the controls; long button labels have a short preview with the complete text
+retained above. Text uses ForceReply. Unknown/ambiguous replies never select the
+latest question.
+
+The sender reads current state before initial I/O. Closed questions have no live
+buttons. Projection edits target a known message ID, serialize per ACK and record
+sent/failed/UNKNOWN separately. Interrupted edits never resend a publication.
+A stale client is always fenced by current backend state. Mapping checked against
+[Bot API](https://core.telegram.org/bots/api#inlinekeyboardbutton), 2026-10-22.

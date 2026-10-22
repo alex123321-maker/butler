@@ -298,7 +298,7 @@ func DecodeArgs(tool, raw string) (Args, error) {
 			}
 			seen := map[string]bool{}
 			for _, o := range q.Options {
-				if !bounded(o.ID, 64) || !bounded(o.Label, 300) || seen[o.ID] {
+				if !bounded(o.ID, 64) || !bounded(o.Label, 300) || seen[o.ID] || o.Description != "" && !bounded(o.Description, 2000) || o.ImageRef != "" && (!strings.HasPrefix(o.ImageRef, "artifact:") || !bounded(o.ImageRef, 512)) {
 					return a, ErrDenied
 				}
 				seen[o.ID] = true

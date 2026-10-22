@@ -36,6 +36,11 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 		t.Fatal("private native service references required")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
+	widgetLab := os.Getenv("BUTLER_COMMUNICATION_WIDGET_LAB") == "1"
+	if widgetLab {
+		cancel()
+		ctx, cancel = context.WithTimeout(context.Background(), 30*time.Minute)
+	}
 	defer cancel()
 	route := communicationNativeModelRoute(t)
 	ctx = route.context(ctx)
@@ -67,6 +72,12 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 	f.budgets.Policy.Day.Tokens = 12 * (1048576 + 8192)
 	f.budgets.Policy.Conversation.ModelTurns = 8
 	f.budgets.Policy.Conversation.Tokens = 8 * (1048576 + 8192)
+	if widgetLab {
+		f.budgets.Policy.Day.ModelTurns = 32
+		f.budgets.Policy.Day.Tokens = 32 * (1048576 + 8192)
+		f.budgets.Policy.Conversation.ModelTurns = 32
+		f.budgets.Policy.Conversation.Tokens = 32 * (1048576 + 8192)
+	}
 	policy, _ := json.Marshal(f.budgets.Policy)
 	t.Setenv("BUTLER_EXECUTION_BUDGET_POLICY_JSON", string(policy))
 	for key, value := range map[string]string{
@@ -133,6 +144,7 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 		OwnerID: f.parent.OwnerID, BindingID: "application-telegram", WebBindingID: "application-web", ChatID: chat,
 		ExpectedBot: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_BOT"), TokenFile: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_TOKEN_FILE"), BotAPIProxyFile: os.Getenv("BUTLER_TEST_TELEGRAM_RICH_PROXY_FILE"), AllowPrivate: true,
 		ProviderAuthStore: communicationProviderAuth{store: config.NewPostgresSettingsStore(authPool)},
+		Widgets:           widgetLab,
 	}
 	app, err := NewForTelegramCommunication(ctx, options)
 	if err != nil {
@@ -170,7 +182,11 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 		t.Fatal("private Broker log unavailable")
 	}
 	defer brokerLog.Close()
-	command := exec.CommandContext(ctx, os.Getenv("BUTLER_COMMUNICATION_BROKER_COMMAND"), "-control-url", "http://127.0.0.1:18470/internal/communication")
+	arguments := []string{"-control-url", "http://127.0.0.1:18470/internal/communication"}
+	if widgetLab {
+		arguments = append(arguments, "-widgets")
+	}
+	command := exec.CommandContext(ctx, os.Getenv("BUTLER_COMMUNICATION_BROKER_COMMAND"), arguments...)
 	command.Env = append(os.Environ(), "BUTLER_HTTP_ADDR=127.0.0.1:18471", "BUTLER_GRPC_ADDR=127.0.0.1:19471", "BUTLER_ACTION_CONTEXT_URL=http://127.0.0.1:18470/internal/action-context")
 	command.Stdout = brokerLog
 	command.Stderr = brokerLog
@@ -281,7 +297,7 @@ func captureCommunicationApplication(root string, pool *pgxpool.Pool) error {
 	if err = os.WriteFile(filepath.Join(root, "summary.json"), proof, 0600); err != nil {
 		return err
 	}
-	err = pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT coalesce(jsonb_agg(to_jsonb(p)),'[]') FROM communication_publications p),'deliveries',(SELECT coalesce(jsonb_agg(to_jsonb(d)),'[]') FROM delivery_outbox d),'messages',(SELECT coalesce(jsonb_agg(to_jsonb(m)),'[]') FROM messages m),'inputs',(SELECT coalesce(jsonb_agg(to_jsonb(i)),'[]') FROM accepted_inputs i),'model_attempts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM execution_model_attempts a),'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM artifacts a),'bindings',(SELECT coalesce(jsonb_agg(to_jsonb(b)),'[]') FROM communication_bindings b),'cursors',(SELECT coalesce(jsonb_agg(to_jsonb(c)),'[]') FROM communication_telegram_cursors c),'effects',(SELECT coalesce(jsonb_agg(to_jsonb(e)),'[]') FROM action_effects e),'runs',(SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]') FROM runs r))`).Scan(&retained)
+	err = pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT coalesce(jsonb_agg(to_jsonb(p)),'[]') FROM communication_publications p),'deliveries',(SELECT coalesce(jsonb_agg(to_jsonb(d)),'[]') FROM delivery_outbox d),'messages',(SELECT coalesce(jsonb_agg(to_jsonb(m)),'[]') FROM messages m),'inputs',(SELECT coalesce(jsonb_agg(to_jsonb(i)),'[]') FROM accepted_inputs i),'model_attempts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM execution_model_attempts a),'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM artifacts a),'bindings',(SELECT coalesce(jsonb_agg(to_jsonb(b)),'[]') FROM communication_bindings b),'cursors',(SELECT coalesce(jsonb_agg(to_jsonb(c)),'[]') FROM communication_telegram_cursors c),'effects',(SELECT coalesce(jsonb_agg(to_jsonb(e)),'[]') FROM action_effects e),'interactions',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_interactions x),'widget_views',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_views x),'widget_actions',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_actions x),'widget_projection_ops',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_projection_ops x),'runs',(SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]') FROM runs r))`).Scan(&retained)
 	if err != nil {
 		return err
 	}

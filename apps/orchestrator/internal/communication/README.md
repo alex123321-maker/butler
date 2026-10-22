@@ -172,3 +172,13 @@ reader. The actual Telegram worker retains its exact binding scope.
 Owner Web ingress/replies acquire private immutable epoch-1 proof in their Input
 transaction. REST cursor history is authoritative; the authenticated SSE wrapper
 only invalidates loaded pages. See user-communication-spec v0.8 and #129/#130.
+
+## C05 widget projections
+
+Migration095 adds shared draft CAS, channel-scoped action receipts and a journal
+for edits of existing Telegram ACKs. `WidgetActionTx` reuses the current owner,
+binding, Catalog, session/run/task/input lock order and `RespondTx`; drafts never
+ready the Input. Only explicit submit/answer resolves the question. Privacy
+erasure removes derived draft/receipt content. Schema rollback refuses accepted
+widget history; use compatible drain. Web exposes the live interaction projection
+and separates native edit outcomes from original delivery.

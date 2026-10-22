@@ -12,6 +12,9 @@ CREATE TABLE communication_widget_actions (
  receipt jsonb NOT NULL,
  PRIMARY KEY(interaction_id,delivery_id)
 );
+INSERT INTO communication_widget_views(interaction_id,callback_token)
+ SELECT interaction_id,substr(replace(gen_random_uuid()::text,'-',''),1,24)
+ FROM communication_interactions WHERE NOT privacy_redacted;
 -- Journal for edits of known ACKs; never creates or retries a publication send.
 CREATE TABLE communication_widget_projection_ops (
  notification_id text NOT NULL REFERENCES delivery_outbox ON DELETE CASCADE,

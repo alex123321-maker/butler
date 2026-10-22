@@ -36,6 +36,7 @@
       <details class="mind-publication-delivery"><summary>Доставка и части</summary>
         <p v-for="part in publication.parts" :key="`${part.binding_id}-${part.binding_version}-${part.index}`">
           {{ part.channel === 'web' ? 'Веб' : 'Telegram' }} · часть {{ part.index + 1 }} · {{ states[part.state] || 'Состояние неизвестно' }}
+          <small v-if="part.projection_state === 'failed' || part.projection_state === 'delivery_unknown'">Обновление вопроса в канале не подтверждено. Сохранённый ответ действует; повторно выполнить действие кнопкой нельзя.</small>
         </p>
         <details><summary>Сохранённый состав</summary><pre>{{ JSON.stringify(publication.parts, null, 2) }}</pre></details>
       </details>

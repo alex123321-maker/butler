@@ -93,3 +93,14 @@ A skipped database test is not integration evidence.
 See [browser control](../docs/architecture/browser-session-contract.md),
 [source catalog](../docs/architecture/versioned-memory-sources.md) and
 [garden lifecycle](features/mind/garden/README.md).
+
+### Communication widgets
+
+`MindWidget` renders single/multiple choice and text inside the existing feed.
+The shared multi-choice draft is read from PostgreSQL-backed REST and submitted
+with its own CAS version. Draft changes never submit an answer. An uncertain
+request retains its exact body/delivery ID for explicit retry; stale responses
+reload the winner. Terminal questions disable controls, with server enforcement
+independent of disabled HTML. Unicode text limits count characters. Existing
+private verified media rendering supplies optional option images. Targeted UI
+checks: `npm run test:e2e -- communication-widget.spec.ts`.

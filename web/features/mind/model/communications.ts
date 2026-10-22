@@ -66,6 +66,7 @@ export interface Publication {
     ack?: string
     error?: string
     manifest?: unknown
+    projection_state?: string
   }[]
 }
 interface Profile { ready: boolean; binding_id: string; binding_version: number; drain_only?: boolean }

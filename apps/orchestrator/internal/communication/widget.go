@@ -73,9 +73,10 @@ func (s *Store) WidgetActionTx(ctx context.Context, tx pgx.Tx, id string, q Widg
 	}
 	raw, _ := json.Marshal(q)
 	digest := hash(string(raw))
+	delivery := actor.Channel + ":" + actor.DeliveryID
 	var oldHash string
 	var oldReceipt []byte
-	err = tx.QueryRow(ctx, `SELECT payload_hash,receipt FROM communication_widget_actions WHERE interaction_id=$1 AND delivery_id=$2`, id, actor.DeliveryID).Scan(&oldHash, &oldReceipt)
+	err = tx.QueryRow(ctx, `SELECT payload_hash,receipt FROM communication_widget_actions WHERE interaction_id=$1 AND delivery_id=$2`, id, delivery).Scan(&oldHash, &oldReceipt)
 	if err == nil {
 		if oldHash != digest {
 			return view, ErrConflict
@@ -147,7 +148,7 @@ func (s *Store) WidgetActionTx(ctx context.Context, tx pgx.Tx, id string, q Widg
 		return view, err
 	}
 	receipt, _ := json.Marshal(view)
-	if _, err = tx.Exec(ctx, `INSERT INTO communication_widget_actions(interaction_id,delivery_id,payload_hash,receipt) VALUES($1,$2,$3,$4)`, id, actor.DeliveryID, digest, receipt); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO communication_widget_actions(interaction_id,delivery_id,payload_hash,receipt) VALUES($1,$2,$3,$4)`, id, delivery, digest, receipt); err != nil {
 		return view, err
 	}
 	if err = s.eventTx(ctx, tx, v.OwnerID, v.SessionKey, id, "interaction.updated"); err != nil {

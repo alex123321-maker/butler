@@ -27,7 +27,9 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 			writeJSON(w, 503, map[string]string{"error": "communication_unavailable"})
 			return
 		}
-		if r.URL.RawQuery != "" || r.URL.RawPath != "" || r.URL.ForceQuery {
+		// Accept the canonical percent-encoding of typed reference colons only.
+		// Encoded separators/dot segments and double decoding remain forbidden.
+		if r.URL.RawQuery != "" || r.URL.RawPath != "" && r.URL.RawPath!=strings.ReplaceAll(r.URL.Path,":","%3A") || r.URL.ForceQuery {
 			writeJSON(w, 400, map[string]string{"error": "fixed_communication_path_required"})
 			return
 		}

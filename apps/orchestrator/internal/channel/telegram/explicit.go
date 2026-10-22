@@ -69,11 +69,11 @@ func (e *explicitChannel) run(ctx context.Context) error {
 	go func() { finished <- e.worker.Run(run) }()
 	go func() {
 		finished <- runExplicitPolling(run, func(ctx context.Context) error {
-			_, err := e.poller.ProcessOnce(ctx)
-			if err != nil {
+			if err := e.poller.RefreshWidgets(ctx); err != nil {
 				return err
 			}
-			return e.poller.RefreshWidgets(ctx)
+			_, err := e.poller.ProcessOnce(ctx)
+			return err
 		}, time.Second)
 	}()
 	<-finished

@@ -100,7 +100,7 @@ func (s *Store) lockInteractionTx(ctx context.Context, tx pgx.Tx, id, bindingID 
 		if tx.QueryRow(ctx, `SELECT status,revision,constraints_revision FROM tasks WHERE task_id=$1 AND owner_id=$2 FOR UPDATE`, v.TaskID, actor.OwnerID).Scan(&status, &rev, &con) != nil {
 			return interaction{}, false, ErrDenied
 		}
-		if status == "cancelled" || status == "completed" || rev != v.TaskRevision || con != v.ConstraintsRevision {
+		if v.State == "open" && (status == "cancelled" || status == "completed" || rev != v.TaskRevision || con != v.ConstraintsRevision) {
 			return interaction{}, false, ErrDenied
 		}
 		paused = status == "paused"

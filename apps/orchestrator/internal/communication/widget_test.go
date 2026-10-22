@@ -100,7 +100,7 @@ func TestCommunicationWidgetConcurrentCrossChannelSubmitIntegration(t *testing.T
 	if success != 1 || resolved != 1 {
 		t.Fatal(success, resolved)
 	}
-	if f.count(t, "communication_widget_actions") != 1 {
+	if widgetCount(t, f, "communication_widget_actions") != 1 {
 		t.Fatal("two accepted responses")
 	}
 }
@@ -115,7 +115,7 @@ func TestCommunicationWidgetDraftRollbackAndPolicyMatrixIntegration(t *testing.T
 			}
 			pub, e := f.publish(t, "widget", "communication.widget", raw)
 			if scenario == "false_wait" {
-				if e == nil || f.count(t, "communication_publications") != 0 || f.count(t, "communication_widget_views") != 0 {
+				if e == nil || f.count(t, "communication_publications") != 0 || widgetCount(t, f, "communication_widget_views") != 0 {
 					t.Fatal("nonblocking committed", e)
 				}
 				return
@@ -135,7 +135,7 @@ func TestCommunicationWidgetDraftRollbackAndPolicyMatrixIntegration(t *testing.T
 				}
 				_ = tx.Rollback(context.Background())
 				var version int64
-				if e = f.pool.QueryRow(f.ctx, `SELECT draft_version FROM communication_widget_views WHERE interaction_id=$1`, pub.InteractionRef).Scan(&version); e != nil || version != 1 || f.count(t, "communication_widget_actions") != 0 {
+				if e = f.pool.QueryRow(f.ctx, `SELECT draft_version FROM communication_widget_views WHERE interaction_id=$1`, pub.InteractionRef).Scan(&version); e != nil || version != 1 || widgetCount(t, f, "communication_widget_actions") != 0 {
 					t.Fatal("partial commit", version, e)
 				}
 				return
@@ -156,7 +156,7 @@ func TestCommunicationWidgetDraftRollbackAndPolicyMatrixIntegration(t *testing.T
 			if _, e = f.s.WidgetAction(f.actor("web", scenario), pub.InteractionRef, q); e == nil {
 				t.Fatal("invalid action accepted")
 			}
-			if f.count(t, "communication_widget_actions") != 0 {
+			if widgetCount(t, f, "communication_widget_actions") != 0 {
 				t.Fatal("denied action committed")
 			}
 		})
@@ -216,11 +216,20 @@ func TestCommunicationWidgetDraftPrivacyErasureIntegration(t *testing.T) {
 	}
 	var v map[string]any
 	_ = json.Unmarshal(raw, &v)
-	if len(v) != 0 || f.count(t, "communication_widget_actions") != 0 {
+	if len(v) != 0 || widgetCount(t, f, "communication_widget_actions") != 0 {
 		t.Fatal("derivative retained private answer")
 	}
 	f.s.SourceGuard = func(context.Context, pgx.Tx, string) error { return nil }
 	if _, e = f.s.WidgetAction(f.actor("web", "stale"), pub.InteractionRef, widgetAction(f, "web", "submit", 2)); e == nil {
 		t.Fatal("redacted question accepted")
 	}
+}
+
+func widgetCount(t *testing.T, f *fixture, table string) int {
+	t.Helper()
+	var n int
+	if e := f.pool.QueryRow(f.ctx, "SELECT count(*) FROM "+pgx.Identifier{table}.Sanitize()).Scan(&n); e != nil {
+		t.Fatal(e)
+	}
+	return n
 }
