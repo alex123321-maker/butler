@@ -56,6 +56,12 @@ func (i *Ingress) Reply(ctx context.Context, u Update) error {
 	}
 	b := i.Binding
 	m := u.Message
+	if b.OwnerID == "" || b.BindingID == "" || b.Version <= 0 || b.ChatID <= 0 || b.UserID <= 0 || b.BotID <= 0 {
+		return ErrUnavailable
+	}
+	if u.ID < 0 {
+		return ErrRejectedUpdate
+	}
 	if u.Callback != nil {
 		c := u.Callback
 		if !i.Widgets || u.Message != nil || c.ID == "" || len(c.ID) > 128 || c.Message == nil || c.Message.ID <= 0 || c.From.ID != b.UserID || c.From.IsBot || c.Message.Chat.Type != "private" || c.Message.Chat.ID != b.ChatID || !c.Message.From.IsBot || c.Message.From.ID != b.BotID {
@@ -64,9 +70,6 @@ func (i *Ingress) Reply(ctx context.Context, u Update) error {
 		actor := owneridentity.Actor{OwnerID: b.OwnerID, Channel: "telegram", SessionKey: "telegram:" + strconv.FormatInt(b.ChatID, 10), DeliveryID: "telegram-widget:" + strconv.FormatInt(b.BotID, 10) + ":" + strconv.FormatInt(u.ID, 10)}
 		_, err := i.Store.TelegramWidgetAction(owneridentity.WithActor(ctx, actor), communication.Binding{ID: b.BindingID, Version: b.Version, Channel: "telegram"}, strconv.FormatInt(c.Message.ID, 10), c.Data, "")
 		return err
-	}
-	if b.OwnerID == "" || b.BindingID == "" || b.Version <= 0 || b.ChatID <= 0 || b.UserID <= 0 || b.BotID <= 0 {
-		return ErrUnavailable
 	}
 	if u.ID < 0 || m == nil || m.ID <= 0 || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || m.From.IsBot || m.From.ID != b.UserID || m.Text == "" {
 		return ErrRejectedUpdate

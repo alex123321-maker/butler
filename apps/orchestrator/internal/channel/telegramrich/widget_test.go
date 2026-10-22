@@ -76,11 +76,13 @@ func TestCommunicationWidgetSenderReadsCurrentTerminalState(t *testing.T) {
 }
 
 func TestCommunicationWidgetCallbackRejectsForeignIdentityBeforeStore(t *testing.T) {
-	for _, attack := range []string{"wrong_user", "wrong_chat", "wrong_bot", "group", "both_envelopes", "disabled"} {
+	for _, attack := range []string{"wrong_user", "wrong_chat", "wrong_bot", "group", "both_envelopes", "disabled", "negative_update"} {
 		t.Run(attack, func(t *testing.T) {
 			in := Ingress{Store: &communication.Store{}, Widgets: true, Binding: OwnerBinding{OwnerID: "owner", BindingID: "bot", Version: 1, BotID: 77, UserID: 42, ChatID: 42}}
 			u := Update{ID: 4, Callback: &CallbackQuery{ID: "cb", From: User{ID: 42}, Data: "cw:opaque:1:1:o0", Message: &Message{ID: 7, Chat: Chat{ID: 42, Type: "private"}, From: User{ID: 77, IsBot: true}}}}
 			switch attack {
+			case "negative_update":
+				u.ID = -1
 			case "wrong_user":
 				u.Callback.From.ID = 43
 			case "wrong_chat":

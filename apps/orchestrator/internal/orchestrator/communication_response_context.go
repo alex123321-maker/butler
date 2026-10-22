@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"encoding/json"
+	"github.com/butler/butler/internal/memory/sanitize"
 	"slices"
 
 	"github.com/butler/butler/internal/security/content"
@@ -16,7 +17,7 @@ func interactionResponsePreparation(prepared, refreshed preparedRun, id, answer 
 		}
 		prepared.InputItems = append(prepared.InputItems, item)
 	}
-	prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"kind": "interaction_response", "data": json.RawMessage(answer)}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{id}, Sensitivity: content.Private}))
+	prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"kind": "interaction_response", "data": json.RawMessage(sanitize.JSON(answer))}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{id}, Sensitivity: content.Private}))
 	prepared.ToolDefs = refreshed.ToolDefs
 	return prepared
 }

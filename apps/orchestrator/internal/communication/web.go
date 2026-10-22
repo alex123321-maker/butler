@@ -123,6 +123,13 @@ func (w *WebReader) Plan(ctx context.Context, tx pgx.Tx, run string, b Binding, 
 		if err != nil || m.Ref != ref || m.Validate() != nil {
 			return nil, ErrDenied
 		}
+		if a.Input != nil {
+			for _, option := range a.Input.Options {
+				if option.ImageRef == ref && m.MIME != "image/png" && m.MIME != "image/jpeg" {
+					return nil, ErrDenied
+				}
+			}
+		}
 	}
 	raw, err := json.Marshal(a)
 	if err != nil || len(raw) > 256*1024 {

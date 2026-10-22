@@ -38,3 +38,10 @@ func TestCommunicationWidgetAnswerSurvivesApprovalProviderRebuild(t *testing.T) 
 		t.Fatal("approval replay lost the response", string(requestRaw))
 	}
 }
+
+func TestCommunicationWidgetResponseContextMasksCredentialText(t *testing.T) {
+	prepared := interactionResponsePreparation(preparedRun{}, preparedRun{}, "interaction:one", `{"answer":{"text":"password=synthetic-secret"},"preference_data":true}`)
+	if len(prepared.InputItems) != 1 || strings.Contains(prepared.InputItems[0].Content, "synthetic-secret") || !strings.Contains(prepared.InputItems[0].Content, "REDACTED_PASSWORD") {
+		t.Fatal("credential entered response context")
+	}
+}
