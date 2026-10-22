@@ -56,6 +56,18 @@ func (s *Store) checkReturnedPackageTx(ctx context.Context, tx pgx.Tx, c actiona
 // Compose after current run/source authority on provider/recovery/final paths.
 // It is read-only and uses neither an old worker lease nor another connection.
 func CheckDeveloperReturnLifecycleTx(ctx context.Context, tx pgx.Tx, sources *catalog.Store, runID string) error {
+	// This guard is also composed into retained publication reads/delivery.
+	// An unrelated run has no returned-package authority to revalidate and must
+	// not borrow a completed worker's lease merely to expose its own message.
+	// Check actual captured provenance before requiring the execution context;
+	// returned packages keep the original owned-snapshot and lifecycle checks.
+	var applicable bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_run_sources p JOIN converter_versions v ON v.source_ref_json->>'source_id'=p.source_id JOIN runs created ON created.run_id=v.created_by_run JOIN converter_developer_snapshots a ON a.task_id=created.task_id WHERE p.run_id=r.run_id) FROM runs r WHERE r.run_id=$1`, runID).Scan(&applicable); err != nil {
+		return ErrAccess
+	}
+	if !applicable {
+		return nil
+	}
 	s := Store{sources: sources}
 	c, err := s.ownedSnapshotTx(ctx, tx)
 	if err != nil || c.RunID != runID {

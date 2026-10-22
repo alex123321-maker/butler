@@ -16,6 +16,14 @@ regular-expression operator, file path, URL, process, import or credential opera
 
 ## Current implementation boundary
 
+The returned-package lifecycle guard checks whether this run actually captured
+developer-return provenance before requiring its owned execution snapshot.
+Unrelated retained publications therefore remain readable/deliverable after
+completion. Captured returned packages retain all previous role/source/return
+and ownership checks; this is not completed-run inference authority. Communication
+integration tests cover lease-free Web/Telegram delivery and source revocation,
+with a separate negative check for actual returned-package pins.
+
 Migration052 retains content-free need/discovery receipts, versions, independent
 reports, spent trials, catalog generations, use and owner decisions. The optional
 Broker path implements discovery, development, fixed checks, bounded trials,
