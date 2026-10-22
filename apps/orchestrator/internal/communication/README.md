@@ -3,14 +3,18 @@
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
 There is no Bootstrap registration, installed public route, feature flag, model
-catalog entry, maintenance loop or channel sender. Existing Web and Telegram adapters
-are unchanged. Merely applying migrations does not admit an explicit Input.
+catalog entry or maintenance loop. The Telegram explicit constructor composes an
+opt-in channel worker; normal Bootstrap/legacy behavior and Web remain unchanged.
+Merely applying migrations does not admit an explicit Input.
 
 ## Ownership and transactions
 
 `Store.AdmitTx` pins epoch 1, supported methods and reply obligation to an already
-claimed Input under live session ownership. Only message/widget are supported;
-photo/report have contracts but cannot be admitted. Child publication is denied.
+claimed Input under live session ownership. Message/widget form the baseline.
+Photo/report additionally require an explicit transactional `PlanDelivery`
+composition. The separate [Telegram adapter](../channel/telegramrich/README.md)
+can freeze bounded media/rich parts with current artifact/export checks; this
+does not install a full Web/Telegram profile. Child publication is denied.
 `verified_task` admission does not demand an unverified result from the model.
 Admission verifies the actual run/task binding, live lease/fence and exact private
 Input claim. A replacement claim is not usable by the previous caller. Current
@@ -44,6 +48,10 @@ actor and that adapter's canonical recipient key; version CAS prevents replay of
 an old target. A new/rebound binding never replays backlog automatically.
 
 ## Final and delivery lifecycle
+
+Channel-specific compositions narrow `DeliveryStore.ForBinding` to the exact
+binding ID/version/channel/recipient. Claim, expired-claim/deadline recovery,
+send authorization and finish must not consume or mutate another bot/channel.
 
 Explicit transport requires assistant-final AND run-completed events; abrupt
 stream closure cannot succeed. Deltas are internal. Multiple publications do not
@@ -139,8 +147,10 @@ filter plus database trigger fence unsupported old claimers. Ordered down is
 allowed only with no accepted communication history; never erase live receipts
 to downgrade. Disable new admissions and drain with a compatible worker first.
 
-Web/Telegram renderers and callbacks, media/report validation, native model behavior, owner
-quotas/config, diagnostic UI and full rollback/deployment acceptance remain
-separate work. Do not enable the profile until those prerequisites are proved.
+Web rendering (#129), full App/Core/model composition and client acceptance
+(#130), widgets/callbacks (#104), owner quotas/config, diagnostic UI and full
+rollback/deployment acceptance remain separate work. Telegram media/native
+report component evidence is in PR #128; it does not establish full readiness.
+Do not enable the profile until the remaining prerequisites are proved.
 The C01/C02/C04 backend acceptance, full fault matrix and historical boundaries
 are in [verification](../../../../docs/ai/communication-backend-full-acceptance-20261021.md).

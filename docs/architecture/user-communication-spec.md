@@ -1,7 +1,8 @@
 # Butler — общение агента с пользователем
 
-Версия 0.4, 2026-10-21. **Статус: согласованный продуктовый контракт;
-backend foundation реализован в отдельной ветке, production profile выключен.**
+Версия 0.6, 2026-10-21. **Статус: согласованный продуктовый контракт;
+backend foundation #127 в main; следующий Telegram этап в разработке,
+production profile выключен.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
 готовностью и системным admission, а не наличием DTO.
 
@@ -10,6 +11,65 @@ backend foundation реализован в отдельной ветке, produc
 этой работы не менялся и заново не проверялся.
 
 ### Граница текущей реализации
+
+После merge #127 начат #101 и Telegram-объём native Rich Messages из #102.
+Codec `channel/telegramrich` остаётся отдельным модулем; основной
+`channel/telegram` получил явный `NewExplicitAdapter` с durable poller/outbox,
+подавлением model-final/status fallback и отказом от legacy rows в новом пути.
+Обычный Bootstrap не вызывает этот конструктор и сохраняет legacy режим.
+Выборка outbox, recovery истёкших claims/попыток, send authorization и Finish
+ограничены точным binding ID/version/channel/recipient. Общий owner или chat ID
+не даёт права потреблять очередь другого бота или Web.
+Web и production профиль не меняются. По уточнённому поручению владельца #101
+и #102 закрываются только в подтверждённом backend/Telegram объёме; Web остаток
+сохранён в [#129](https://github.com/alex123321-maker/butler/issues/129),
+настоящая App/Core/model-композиция и остаточная пользовательская приёмка — в
+[#130](https://github.com/alex123321-maker/butler/issues/130). Полный AC01–AC22
+контракт ниже не ослабляется таким разделением.
+
+Новый adapter profile по умолчанию пуст. `Capabilities.Methods()` показывает
+только реализованные методы; report требует полного native rich/photo/document
+mapping. Отсутствие capability отказывает до publication writes, без fallback.
+Завершённый report сохраняет отдельный canonical `communication_report` artifact
+в одной транзакции с publication, transcript и всеми outbox parts. Его identity
+производна от publication, а не от Telegram part; privacy очищает existing JSON.
+
+Опциональный `Store.PlanDelivery` строит immutable части в одной транзакции
+с publication/transcript/outbox. Photo/report admission требует этого hook;
+композиция без него сохраняет message/widget-only foundation. Новый Telegram
+planner сохраняет message части по 4096 UTF-16 units; photo — отдельный текст
+и индивидуальные uploads с caption до 1024 units; report — native blocks через
+`sendRichMessage`. Каждая часть имеет собственный outbox row/ACK. Рестарт
+продолжает только сохранённые части; UNKNOWN не разрешает автоматический replay.
+
+Миграция091 расширяет существующий Artifact Store типом `communication_media`
+и `private_media_v1`: bytes/base64, name, MIME, SHA-256, current owner/source/
+privacy policy. Референсы не являются URLs/host paths. Лимит artifact 10 MiB;
+для PNG/JPEG проверяются MIME/декодирование/размеры. Rollback отказывается при
+наличии media history. Уже существующий privacy lifecycle очищает content_json.
+Manifest не копирует bytes и pin-ит ref/name/MIME/size/digest. Sender разрешает
+bytes заново и повторяет owning claim/binding/source guard после этих чтений
+и подготовки multipart непосредственно перед сетью. Без guard send запрещён.
+
+Локальные пределы report: 32 KiB manifest, 50 blocks, 20 MiB uploads на часть,
+100 частей на публикацию. Деление только по границам блоков; неделимый oversized
+block, отсутствующее обязательное вложение или неподдержанный renderer дают
+ошибку до publication writes. Это пределы Butler, не утверждение о лимитах API.
+Raw HTML не исполняется; fallback на ссылку/PDF и платные рассылки отсутствуют.
+
+Новый ingress проверяет private chat/user/bot и отдельную binding/version,
+ответ на sent ACK поступает в существующий canonical Input/Task Controller.
+`Poller.ProcessOnce` хранит bot/binding-scoped cursor в PostgreSQL (миграция092),
+сериализует getUpdates и фиксирует его только после owning Input/control commit.
+Потеря ответа между commit-ами воспроизводит исходную delivery identity.
+Generic denial может скрывать storage error и не сдвигает cursor. Malformed
+owner input/ambiguity не угадывают Task. Rollback отказывает для consumed cursor.
+Poller и новые conversation admissions не подключены к обычному Bootstrap.
+См. [адаптер](../../apps/orchestrator/internal/channel/telegramrich/README.md),
+[изолированный lab](../../apps/orchestrator/cmd/telegram-rich-lab/README.md).
+
+Далее зафиксирован объём foundation #127; утверждения photo/report contract-only
+относятся к этой предыдущей поставке и композиции без нового planner.
 
 По поручению владельца реализуются ядро #99–#100 и затем backend ожидания #103.
 Есть strict versioned schemas четырёх методов, typed transcript/final, bindings,

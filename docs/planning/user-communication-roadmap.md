@@ -1,14 +1,24 @@
 # План реализации общения Butler с пользователем
 
-Дата ревизии: 2026-10-21. Статус: backend foundation в реализации;
+Дата ревизии: 2026-10-21. Статус: backend foundation #127 merged;
 полный communication profile и production rollout не включены.
 Основание: [подробная спецификация](../architecture/user-communication-spec.md).
 Исходный baseline: `origin/main b20206d`; ревизия сверена с `ab28dd88`.
 Deployed snapshot в этой документационной работе не проверялся.
 
-Текущий утверждённый объём: **C01/C02 (#99–#100) ядро -> C04 (#103) backend**.
-Web и действующий Telegram adapter исключены из этой поставки. C03/C05/C06
-продолжаются после отдельных решений о рефакторинге каналов. Это уточнение
+Выполнены **C01/C02 (#99–#100) ядро -> C04 (#103) backend**.
+Следующий утверждённый объём: **C03 (#101) backend + отдельный новый Telegram
+adapter, включая native Rich Message основу Telegram-части C06 (#102)**.
+Владелец разрешил новый тестовый бот и изменение основного Telegram adapter под
+новый стиль. Добавлен programmatic `NewExplicitAdapter`; обычный Bootstrap и
+production режим не переключаются. Web исключён. По отдельному решению владельца
+#101/#102 закрываются только в подтверждённом backend/Telegram объёме: Web
+требования переносятся в [#129](https://github.com/alex123321-maker/butler/issues/129),
+App/Core/model-композиция и оставшаяся пользовательская приёмка — в
+[#130](https://github.com/alex123321-maker/butler/issues/130). Ни один исходный
+критерий обоих каналов не объявляется пройденным из-за этого переноса. Описания
+C03/C06 ниже сохраняют исходную полную цель; до неё обязательны оба follow-up.
+Это уточнение
 порядка имеет приоритет над рекомендуемой полной последовательностью ниже.
 Схемы photo/report не означают готовность соответствующих методов.
 [Backend acceptance и матрицы сбоев](../ai/communication-backend-full-acceptance-20261021.md).
@@ -32,11 +42,13 @@ C01/C02 и backend C04 включают проверенную маршрути�
 | C02 | [#100](https://github.com/alex123321-maker/butler/issues/100) | [#99](https://github.com/alex123321-maker/butler/issues/99) |
 | C03 | [#101](https://github.com/alex123321-maker/butler/issues/101) | [#100](https://github.com/alex123321-maker/butler/issues/100) |
 | C04 | [#103](https://github.com/alex123321-maker/butler/issues/103) | [#99](https://github.com/alex123321-maker/butler/issues/99), [#100](https://github.com/alex123321-maker/butler/issues/100) |
-| C05 | [#104](https://github.com/alex123321-maker/butler/issues/104) | [#101](https://github.com/alex123321-maker/butler/issues/101), [#103](https://github.com/alex123321-maker/butler/issues/103) |
+| C05 | [#104](https://github.com/alex123321-maker/butler/issues/104) | #101, #103, #129, #130 |
 | C06 | [#102](https://github.com/alex123321-maker/butler/issues/102) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#101](https://github.com/alex123321-maker/butler/issues/101) |
-| C07 | [#105](https://github.com/alex123321-maker/butler/issues/105) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#101](https://github.com/alex123321-maker/butler/issues/101), [#102](https://github.com/alex123321-maker/butler/issues/102), [#103](https://github.com/alex123321-maker/butler/issues/103), [#104](https://github.com/alex123321-maker/butler/issues/104) |
+| C07 | [#105](https://github.com/alex123321-maker/butler/issues/105) | #100, #101, #102, #103, #104, #129, #130 |
 | C08 | [#106](https://github.com/alex123321-maker/butler/issues/106) | [#100](https://github.com/alex123321-maker/butler/issues/100), [#105](https://github.com/alex123321-maker/butler/issues/105) |
-| C09 | [#107](https://github.com/alex123321-maker/butler/issues/107) | [#101](https://github.com/alex123321-maker/butler/issues/101), [#102](https://github.com/alex123321-maker/butler/issues/102), [#103](https://github.com/alex123321-maker/butler/issues/103), [#104](https://github.com/alex123321-maker/butler/issues/104), [#105](https://github.com/alex123321-maker/butler/issues/105), [#106](https://github.com/alex123321-maker/butler/issues/106) |
+| C09 | [#107](https://github.com/alex123321-maker/butler/issues/107) | #101, #102, #103, #104, #105, #106, #129, #130 |
+| Web follow-up | #129 | принятый код PR #128 |
+| Полная композиция | #130 | принятый код PR #128; совместная приёмка с #129 |
 
 ## Подтверждённые решения
 

@@ -14,7 +14,21 @@ import (
 
 // DeliveryStore reuses the existing channel-only Worker and outcome policy.
 // Bootstrap does not construct this store/worker or a real sender in this phase.
-type DeliveryStore struct{ Core *Store }
+type DeliveryStore struct {
+	Core    *Store
+	binding *Binding
+}
+
+// ForBinding narrows a channel worker to one immutable destination snapshot.
+// Other bots/channels keep their own pending, sending and expired rows.
+func (d *DeliveryStore) ForBinding(b Binding) *DeliveryStore {
+	return &DeliveryStore{Core: d.Core, binding: &b}
+}
+
+func (d *DeliveryStore) matches(m deliveryoutbox.Message) bool {
+	b := d.binding
+	return b == nil || b.ID != "" && b.Version > 0 && b.Channel != "" && b.Recipient != "" && m.BindingID == b.ID && m.BindingVersion == b.Version && m.Channel == b.Channel && m.Recipient == b.Recipient
+}
 
 func (d *DeliveryStore) Claim(ctx context.Context, ttl time.Duration) (*deliveryoutbox.Message, error) {
 	if d == nil || d.Core == nil || d.Core.SourceGuard == nil || d.Core.ChannelGuard == nil || ttl <= 0 || ttl > time.Minute {
@@ -25,11 +39,18 @@ func (d *DeliveryStore) Claim(ctx context.Context, ttl time.Duration) (*delivery
 		return nil, e
 	}
 	defer tx.Rollback(context.Background())
-	_, e = tx.Exec(ctx, `UPDATE delivery_outbox SET status='delivery_unknown',claim_id='',claim_until=NULL,error_code='sending_claim_expired' WHERE publication_id IS NOT NULL AND status='sending' AND claim_until<=clock_timestamp()`)
+	b := Binding{}
+	if d.binding != nil {
+		b = *d.binding
+		if !d.matches(deliveryoutbox.Message{BindingID: b.ID, BindingVersion: b.Version, Channel: b.Channel, Recipient: b.Recipient}) {
+			return nil, ErrDenied
+		}
+	}
+	_, e = tx.Exec(ctx, `UPDATE delivery_outbox SET status='delivery_unknown',claim_id='',claim_until=NULL,error_code='sending_claim_expired' WHERE publication_id IS NOT NULL AND status='sending' AND claim_until<=clock_timestamp() AND ($1='' OR binding_id=$1 AND binding_version=$2 AND channel=$3 AND recipient_snapshot=$4)`, b.ID, b.Version, b.Channel, b.Recipient)
 	if e != nil {
 		return nil, e
 	}
-	_, e = tx.Exec(ctx, `UPDATE delivery_outbox SET status='failed',error_code='delivery_deadline_exceeded' WHERE publication_id IS NOT NULL AND status='pending' AND (deadline_at<=clock_timestamp() OR attempt_count>=6)`)
+	_, e = tx.Exec(ctx, `UPDATE delivery_outbox SET status='failed',error_code='delivery_deadline_exceeded' WHERE publication_id IS NOT NULL AND status='pending' AND (deadline_at<=clock_timestamp() OR attempt_count>=6) AND ($1='' OR binding_id=$1 AND binding_version=$2 AND channel=$3 AND recipient_snapshot=$4)`, b.ID, b.Version, b.Channel, b.Recipient)
 	if e != nil {
 		return nil, e
 	}
@@ -39,7 +60,7 @@ func (d *DeliveryStore) Claim(ctx context.Context, ttl time.Duration) (*delivery
 	}
 	claim := hex.EncodeToString(raw[:])
 	var m deliveryoutbox.Message
-	e = tx.QueryRow(ctx, `UPDATE delivery_outbox SET status='sending',claim_id=$1,claim_until=clock_timestamp()+$2::interval,attempt_count=attempt_count+1 WHERE notification_id=(SELECT d.notification_id FROM delivery_outbox d JOIN communication_publications c USING(publication_id) WHERE d.publication_id IS NOT NULL AND d.status='pending' AND d.next_attempt_at<=clock_timestamp() AND d.deadline_at>clock_timestamp() AND d.attempt_count<6 AND NOT EXISTS(SELECT 1 FROM delivery_outbox p WHERE p.publication_id=d.publication_id AND p.binding_id=d.binding_id AND p.chunk_index<d.chunk_index AND p.status<>'sent') AND NOT EXISTS(SELECT 1 FROM delivery_outbox p JOIN communication_publications pc ON pc.publication_id=p.publication_id WHERE p.binding_id=d.binding_id AND pc.session_key=c.session_key AND pc.publication_sequence<c.publication_sequence AND p.status IN ('pending','sending')) ORDER BY c.publication_sequence,d.chunk_index FOR UPDATE OF d SKIP LOCKED LIMIT 1) RETURNING notification_id,run_id,session_key,channel,chunk_index,content,status,attempt_count,claim_id,publication_id,binding_id,binding_version,recipient_snapshot,representation_json::text`, claim, ttl.String()).Scan(&m.NotificationID, &m.RunID, &m.SessionKey, &m.Channel, &m.ChunkIndex, &m.Content, &m.Status, &m.AttemptCount, &m.ClaimID, &m.PublicationID, &m.BindingID, &m.BindingVersion, &m.Recipient, &m.RepresentationJSON)
+	e = tx.QueryRow(ctx, `UPDATE delivery_outbox SET status='sending',claim_id=$1,claim_until=clock_timestamp()+$2::interval,attempt_count=attempt_count+1 WHERE notification_id=(SELECT d.notification_id FROM delivery_outbox d JOIN communication_publications c USING(publication_id) WHERE d.publication_id IS NOT NULL AND d.status='pending' AND d.next_attempt_at<=clock_timestamp() AND d.deadline_at>clock_timestamp() AND d.attempt_count<6 AND ($3='' OR d.binding_id=$3 AND d.binding_version=$4 AND d.channel=$5 AND d.recipient_snapshot=$6) AND NOT EXISTS(SELECT 1 FROM delivery_outbox p WHERE p.publication_id=d.publication_id AND p.binding_id=d.binding_id AND p.chunk_index<d.chunk_index AND p.status<>'sent') AND NOT EXISTS(SELECT 1 FROM delivery_outbox p JOIN communication_publications pc ON pc.publication_id=p.publication_id WHERE p.binding_id=d.binding_id AND pc.session_key=c.session_key AND pc.publication_sequence<c.publication_sequence AND p.status IN ('pending','sending')) ORDER BY c.publication_sequence,d.chunk_index FOR UPDATE OF d SKIP LOCKED LIMIT 1) RETURNING notification_id,run_id,session_key,channel,chunk_index,content,status,attempt_count,claim_id,publication_id,binding_id,binding_version,recipient_snapshot,representation_json::text`, claim, ttl.String(), b.ID, b.Version, b.Channel, b.Recipient).Scan(&m.NotificationID, &m.RunID, &m.SessionKey, &m.Channel, &m.ChunkIndex, &m.Content, &m.Status, &m.AttemptCount, &m.ClaimID, &m.PublicationID, &m.BindingID, &m.BindingVersion, &m.Recipient, &m.RepresentationJSON)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return nil, tx.Commit(ctx)
 	}
@@ -52,7 +73,7 @@ func (d *DeliveryStore) Claim(ctx context.Context, ttl time.Duration) (*delivery
 	return &m, nil
 }
 func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Message) error {
-	if d.Core.SourceGuard == nil || d.Core.ChannelGuard == nil {
+	if !d.matches(m) || d.Core.SourceGuard == nil || d.Core.ChannelGuard == nil {
 		return ErrDenied
 	}
 	tx, e := d.Core.Pool.Begin(ctx)
@@ -121,6 +142,9 @@ func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Mess
 }
 
 func (d *DeliveryStore) Finish(ctx context.Context, m deliveryoutbox.Message, o deliveryoutbox.Outcome) error {
+	if !d.matches(m) {
+		return ErrDenied
+	}
 	return deliveryoutbox.NewStore(d.Core.Pool).Finish(ctx, m, o)
 }
 

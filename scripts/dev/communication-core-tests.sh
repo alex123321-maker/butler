@@ -15,7 +15,7 @@ go test -c -race -o .cache/communication-core/broker.test ./apps/tool-broker/int
 export BUTLER_GUARDED_REQUEST_BROKER_BINARY="$PWD/.cache/communication-core/broker.test"
 export BUTLER_DELEGATION_BROKER_BINARY="$BUTLER_GUARDED_REQUEST_BROKER_BINARY"
 report=.cache/communication-core/targeted.jsonl
-packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
+packages=(./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/artifacts ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
 if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^TestCommunication' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1
@@ -26,7 +26,7 @@ if grep -q '"Action":"skip"' "$report"; then
 fi
 go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript
 if [[ ${1:-} == --regression ]]; then
- regression=(./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./apps/orchestrator/internal/orchestrator ./apps/tool-broker/internal/broker ./internal/actionauth ./internal/budget ./internal/memory/transcript ./internal/memory/compaction ./internal/memory/pipeline)
+ regression=(./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/artifacts ./apps/tool-broker/internal/broker ./internal/actionauth ./internal/budget ./internal/memory/transcript ./internal/memory/compaction ./internal/memory/pipeline)
  if ! go test -p 1 -count=1 -json "${regression[@]}" -skip '(Native|Backup|ServerBrowser)' >.cache/communication-core/regression.jsonl; then
   grep -E '"Action":"fail"|"OutputType":"error"' .cache/communication-core/regression.jsonl || true
   exit 1
@@ -41,5 +41,6 @@ if [[ ${1:-} == --regression ]]; then
  fi
  go build -o .cache/communication-core/orchestrator ./apps/orchestrator
  go build -o .cache/communication-core/tool-broker ./apps/tool-broker
+ go build -o .cache/communication-core/telegram-rich-lab ./apps/orchestrator/cmd/telegram-rich-lab
 fi
 echo 'Communication kernel: targeted PostgreSQL/race checks passed without skips; vet passed. No model inference or channel send.'

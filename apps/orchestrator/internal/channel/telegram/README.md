@@ -1,5 +1,29 @@
 # Telegram owner channel
 
+## Explicit publication composition
+
+`NewExplicitAdapter` provides the new style through the same Telegram adapter:
+durable `telegramrich.Poller`, existing Communication outbox worker and native
+message/photo/Rich Message sender. Construction requires matching bot/binding,
+the owning Store/source/export guards and existing Task Controller. Runtime
+verifies the actual bot before polling/sending. The constructor replaces the
+sender's authorization hook with the owning `DeliveryStore.AuthorizeSend`.
+The explicit worker is bound to its immutable destination snapshot. It never
+claims or expires another bot's or Web channel's publication rows, including
+bots which share the same owner's numeric chat ID.
+
+Model finals/deltas/tool/status events cannot create messages in this mode.
+Only stored publications send; legacy notifications are refused. Unsupported
+approval/widget UX fails closed. The legacy constructor refuses publication rows
+instead of using its weaker text-only sender. Its ordinary result path remains.
+
+Default Bootstrap does not use the new constructor. No environment flag or
+production switch is added. New-conversation/model admission belongs to #130;
+Web belongs to #129. Native test-bot evidence and code boundaries are recorded in
+[the scoped acceptance](../../../../../docs/ai/communication-telegram-rich-progress-20261021.md).
+
+## Legacy owner controls
+
 The adapter binds controls to allowed chat, numeric sender ID, session and stable
 Telegram update delivery. Owner commands bypass provider login and model execution.
 `/task TASK_ID` reads safe recorded state; `/amend TASK_ID INSTRUCTION`, `/pause

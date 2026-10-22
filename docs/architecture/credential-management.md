@@ -1,5 +1,17 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The isolated Telegram rich adapter accepts a private operator token-file
+reference outside the source tree. Raw values stay in its private HTTPS client;
+no model tool, error, log or manifest contains a token/URL. New test bots use
+separate binding identities and cannot consume legacy backlog. Fixed host,
+redirect refusal and explicit test-chat selection preserve the operator
+boundary. This installs no model credential alias or product admission; see
+[the adapter](../../apps/orchestrator/internal/channel/telegramrich/README.md).
+The fixed Bot API `getFile` verification also keeps file IDs/paths and token URLs
+inside the private client. Returned paths cannot change the host, add a query or
+fragment, use dot segments/encoding or redirect to another endpoint. Verification
+compares bounded downloaded bytes to retained data without publishing the URL.
+
 The dormant communication client uses the same private HTTP policy: literal
 loopback or the exact `orchestrator:8080/internal/communication` Compose route;
 other remote endpoints require HTTPS. It disables redirects and environment
