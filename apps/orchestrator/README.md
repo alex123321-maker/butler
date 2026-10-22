@@ -1242,6 +1242,16 @@ See [the communication contract](../../docs/architecture/user-communication-spec
 
 ### Opt-in communication widgets (#104)
 
+C07 response recovery supplies a fixed kernel instruction to continue the original
+request after a blocking question. Canonical question/options and the selected
+answer remain source-checked private DATA; the instruction carries no user bytes
+or authorization. Recovery/approval rebuilds preserve one instruction and one
+answer per interaction. Do not re-ask an answered question; material new ambiguity
+can require a new clarification. Quiet/verified-task policy and task verification
+remain independent of publication/ACK. See [C07 acceptance](../../docs/ai/communication-obligations-acceptance-20261022.md)
+for measured client results and limitations; candidate code does not change a
+running owner profile automatically.
+
 Private `OwnerProfile.Widgets` and isolated Telegram options compose C05 Web and
 Telegram controls; default false preserves the deployed three-method profile.
 Both binding snapshots must explicitly include widget. No historical admission

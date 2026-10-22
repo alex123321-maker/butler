@@ -229,7 +229,10 @@ func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string
 			return "", ErrDenied
 		}
 	}
-	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "publication_ref": v.PublicationID, "source_ref": sourceRef, "answer": v.Response, "preference_data": true})
+	// An ordinary owner request need not contain the option IDs/labels chosen by
+	// the model. Rebuild that mapping from the canonical question, not old provider
+	// state or channel-rendered text, so the resumed model can use the answer.
+	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "publication_ref": v.PublicationID, "source_ref": sourceRef, "question": v.Question.Question, "input": v.Question.Input, "answer": v.Response, "preference_data": true})
 	if e = tx.Commit(ctx); e != nil {
 		return "", e
 	}

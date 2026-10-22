@@ -175,6 +175,12 @@ only invalidates loaded pages. See user-communication-spec v0.8 and #129/#130.
 
 ## C05 widget projections
 
+C07 returns the canonical question and input/options alongside the answer and
+separate interaction/publication/Catalog refs. The resumed Core adds fixed kernel
+phase guidance separately; payload text stays preference DATA. This avoids relying
+on an old provider session or an owner's prompt containing model-generated option
+IDs. Current source, ownership, authority and input-claim checks are unchanged.
+
 Migration095 adds shared draft CAS, channel-scoped action receipts and a journal
 for edits of existing Telegram ACKs. `WidgetActionTx` reuses the current owner,
 binding, Catalog, session/run/task/input lock order and `RespondTx`; drafts never
