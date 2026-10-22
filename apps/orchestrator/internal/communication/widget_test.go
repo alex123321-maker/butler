@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 
@@ -232,4 +233,27 @@ func widgetCount(t *testing.T, f *fixture, table string) int {
 		t.Fatal(e)
 	}
 	return n
+}
+
+func TestCommunicationWidgetRetainPreparationDoesNotConsumeReadyIntegration(t *testing.T) {
+	f := setup(t)
+	pub, e := f.publish(t, "widget", "communication.widget", widget)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.s.WidgetAction(f.actor("web", "answer"), pub.InteractionRef, widgetAction(f, "web", "answer", 1, "b")); e != nil {
+		t.Fatal(e)
+	}
+	if e = f.s.Inputs.SaveInteractionPreparation(f.ctx, f.p.RunID, "interaction:wrong", `{"response":"wrong"}`); e == nil {
+		t.Fatal("wrong interaction changed context")
+	}
+	for n := 0; n < 2; n++ {
+		if e = f.s.Inputs.SaveInteractionPreparation(f.ctx, f.p.RunID, pub.InteractionRef, `{"input_items":[{"role":"user","content":"saved preference DATA"}]}`); e != nil {
+			t.Fatal(e)
+		}
+	}
+	stage, raw, e := f.s.Inputs.LoadCheckpoint(f.ctx, f.p.RunID)
+	if e != nil || stage != "interaction_ready" || !strings.Contains(raw, "saved preference DATA") || !strings.Contains(raw, pub.InteractionRef) {
+		t.Fatal("ready marker lost", stage, raw, e)
+	}
 }

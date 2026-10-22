@@ -26,6 +26,12 @@ resume intent или grant. Submit проходит прежний `RespondTx`; 
 другой payload конфликтует, stale version требует обновления. Чтение Web
 показывает question/state/draft/answer; текст решения находится внутри вопроса,
 а не дублируется в ленте сырым JSON.
+После проверки ответа восстановленный prepared context сохраняет его как private
+preference DATA до нового model turn. Узкий owning checkpoint writer сохраняет
+`interaction_ready` и его identity: crash не теряет wakeup, последующий exact-action
+approval не возвращает модель к вопросу без уже принятого ответа. Повторная
+подготовка заменяет только DATA того же interaction, не добавляет второй ответ,
+не меняет owner instruction и не восстанавливает старые tool grants.
 
 Telegram callbacks проверяют numeric bot, private chat, sender, binding/version,
 сохранённый sent ACK и текущий interaction; callback token не является authority.
