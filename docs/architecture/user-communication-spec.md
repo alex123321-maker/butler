@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.10, 2026-10-22. **Статус: согласованный продуктовый контракт;
+Версия 0.11, 2026-10-22. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -11,6 +11,27 @@
 message/photo/report документируется отдельно; C05 не обновляет его автоматически.
 
 ### Граница текущей реализации
+
+C07 (#105) добавляет к принятому ответу фиксированную kernel-инструкцию о фазе
+продолжения исходного запроса. Она не содержит question/answer bytes: эти поля,
+включая канонические подписи options, остаются private preference DATA с Catalog
+provenance. После ответа этап вопроса завершён; повтор уже отвеченного вопроса
+является behavioral failure. Новый вопрос допустим для существенно иной недостающей
+информации. Exact-action approval, budgets, quiet/verified_task и owner verification
+сохраняются. Повторная подготовка и approval recovery не дублируют инструкцию и
+не превращают текст ответа в полномочие. Один успешный live опыт не доказывает
+отсутствие ошибок модели; все неуспешные окна также входят в evidence и стоимость.
+Проверка C07 использует отдельный content verdict вместе с owning kernel records:
+purpose=result/ACK не доказывают содержательность. Публичный synthetic corpus и
+self-review не объявляются независимой holdout-оценкой. Приёмка и фактический
+статус rollout указаны [в отчёте C07](../ai/communication-obligations-acceptance-20261022.md).
+Owner pause/resume переносит тот же interaction marker и потраченные allowances
+в новый owning Input как для уже принятого, так и для позднего ответа. Новый run
+читает canonical ответ через отдельный store reader после admission: только
+перенесённый контроллером Input, совпадающие owner/session/task/revisions, текущие
+claim/lease и Catalog позволяют получить DATA. Старый run/grant не возобновляется,
+public payload не выбирает исторический вопрос. Это также проверяется настоящим
+Core.Execute после двух порядков answer/resume, а не только статусом очереди.
 
 C05 (#104) добавляет opt-in `Widgets` в private operator/lab composition:
 single-choice, multi-choice и text в Web/Telegram. Полная приёмка фиксируется

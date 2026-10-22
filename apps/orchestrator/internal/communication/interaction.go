@@ -229,11 +229,19 @@ func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string
 			return "", ErrDenied
 		}
 	}
-	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "publication_ref": v.PublicationID, "source_ref": sourceRef, "answer": v.Response, "preference_data": true})
+	// An ordinary owner request need not contain the option IDs/labels chosen by
+	// the model. Rebuild that mapping from the canonical question, not old provider
+	// state or channel-rendered text, so the resumed model can use the answer.
+	raw := interactionResponse(v)
 	if e = tx.Commit(ctx); e != nil {
 		return "", e
 	}
-	return string(raw), nil
+	return raw, nil
+}
+
+func interactionResponse(v interaction) string {
+	raw, _ := json.Marshal(map[string]any{"interaction_ref": v.ID, "publication_ref": v.PublicationID, "source_ref": "message:response:" + v.ID, "question": v.Question.Question, "input": v.Question.Input, "answer": v.Response, "preference_data": true})
+	return string(raw)
 }
 
 // PendingInteraction is also used after a lost owning-endpoint ACK. A durable

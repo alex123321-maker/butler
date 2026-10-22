@@ -2,6 +2,7 @@ package communication_test
 
 import (
 	"context"
+	"encoding/json"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -60,6 +61,13 @@ func TestCommunicationWidgetResponseCapturedByCatalogAndRevokedIntegration(t *te
 	ref := "message:response:" + pub.InteractionRef
 	if !strings.Contains(data, ref) || !strings.Contains(data, pub.PublicationRef) {
 		t.Fatal("response lacks canonical provenance", data)
+	}
+	var response struct {
+		Question string                             `json:"question"`
+		Input    communicationcontrol.QuestionInput `json:"input"`
+	}
+	if json.Unmarshal([]byte(data), &response) != nil || response.Question != "Choose" || len(response.Input.Options) != 2 || response.Input.Options[0].ID != "a" || response.Input.Options[0].Label != "A" {
+		t.Fatal("canonical question/option mapping missing from resumed DATA", data)
 	}
 	var pinned bool
 	if e = f.pool.QueryRow(live, `SELECT EXISTS(SELECT 1 FROM memory_run_sources WHERE run_id=$1 AND source_id=$2)`, f.p.RunID, ref).Scan(&pinned); e != nil || !pinned {

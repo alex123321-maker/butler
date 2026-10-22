@@ -19,6 +19,11 @@ func TestCommunicationTaskPauseResponseAndFreshResumeIntegration(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
+			// A spent correction and the question publication belong to this
+			// obligation, even when owner resume creates another Input/run.
+			if _, e = f.pool.Exec(f.ctx, `UPDATE communication_admissions SET correction_count=1 WHERE input_id=$1`, f.p.InputID); e != nil {
+				t.Fatal(e)
+			}
 			if e = f.s.Inputs.Finish(f.ctx, f.claim, "waiting_for_user", "", "", 0); e != nil {
 				t.Fatal(e)
 			}
@@ -41,6 +46,10 @@ func TestCommunicationTaskPauseResponseAndFreshResumeIntegration(t *testing.T) {
 			fresh, e := f.s.Inputs.Get(f.ctx, resumed.ContinuationInputID)
 			if e != nil {
 				t.Fatal(e)
+			}
+			var corrections, publications int
+			if e = f.pool.QueryRow(f.ctx, `SELECT correction_count,publication_count FROM communication_admissions WHERE input_id=$1`, resumed.ContinuationInputID).Scan(&corrections, &publications); e != nil || corrections != 1 || publications != 1 {
+				t.Fatal("owner resume replenished obligation allowance", corrections, publications, e)
 			}
 			if respondWhilePaused {
 				if fresh.Status != "queued" {
