@@ -33,6 +33,8 @@ type Store struct {
 	// Only a composed Web reader/planner can promise availability. Dormant
 	// foundation and previously pending history retain their original epoch.
 	WebAvailable bool
+	// Terminal delivery is safe only with a composed current-state renderer.
+	WidgetProjections bool
 	// Required current Catalog checks. A missing guard always denies publication,
 	// read, submit, send and continuation, rather than trusting copied source refs.
 	SourceGuard func(context.Context, pgx.Tx, string) error
