@@ -43,7 +43,7 @@ func (p *resumedProvider) StartRun(ctx context.Context, q transport.StartRunRequ
 		if content.ItemOrigin(item).Kind == content.KernelInstruction && strings.Contains(item.Content, "question-asking step is complete") {
 			guidance = true
 		}
-		if strings.Contains(item.Content, "interaction_response") {
+		if strings.Contains(item.Content, `"kind":"interaction_response"`) {
 			if item.Role != "user" || content.ItemOrigin(item).Kind != content.ToolOutput {
 				return nil, errors.New("preference became instruction")
 			}
