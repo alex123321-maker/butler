@@ -32,6 +32,12 @@ preference DATA до нового model turn. Узкий owning checkpoint write
 approval не возвращает модель к вопросу без уже принятого ответа. Повторная
 подготовка заменяет только DATA того же interaction, не добавляет второй ответ,
 не меняет owner instruction и не восстанавливает старые tool grants.
+Перед release ответа в model context owning worker читает канонический
+`message:response:<interaction>` через тот же Catalog AccessTx. Текущие source,
+scope, dependency и lease проверки захватывают этот source в `memory_run_sources`;
+provenance ссылается на него, а не на канальный interaction locator. Последующее
+удаление ответа запрещает cached context/publication; text проходит обычное
+маскирование credential material. Callback refs не становятся Catalog authority.
 
 Telegram callbacks проверяют numeric bot, private chat, sender, binding/version,
 сохранённый sent ACK и текущий interaction; callback token не является authority.

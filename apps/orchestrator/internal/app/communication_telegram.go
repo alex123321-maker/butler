@@ -158,7 +158,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if o.Widgets {
 		b.Capabilities = append(b.Capabilities, "widget")
 	}
-	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets}
+	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets, Sources: sources}
 	policy := telegramExportPolicy{owner: o.OwnerID, binding: b, allowPrivate: o.AllowPrivate, catalog: sources, sourceGuard: guard}
 	core.ChannelGuard = policy.check
 	core.PlanDelivery = (telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true, Widget: o.Widgets}, Resolve: policy.media}).Plan

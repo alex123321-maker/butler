@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/internal/communicationcontrol"
@@ -255,5 +256,30 @@ func TestCommunicationWidgetRetainPreparationDoesNotConsumeReadyIntegration(t *t
 	stage, raw, e := f.s.Inputs.LoadCheckpoint(f.ctx, f.p.RunID)
 	if e != nil || stage != "interaction_ready" || !strings.Contains(raw, "saved preference DATA") || !strings.Contains(raw, pub.InteractionRef) {
 		t.Fatal("ready marker lost", stage, raw, e)
+	}
+}
+
+func TestCommunicationWidgetLateInitialDeliveryRequiresQualifiedRendererIntegration(t *testing.T) {
+	f := setup(t)
+	pub, e := f.publish(t, "widget", "communication.widget", widget)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.s.WidgetAction(f.actor("web", "answer"), pub.InteractionRef, widgetAction(f, "web", "answer", 1, "a")); e != nil {
+		t.Fatal(e)
+	}
+	f.s.WidgetProjections = true
+	b := communication.Binding{ID: f.bindings["telegram"], Version: 1, Channel: "telegram", Recipient: "telegram:verified"}
+	d := (&communication.DeliveryStore{Core: f.s}).ForBinding(b)
+	m, e := d.Claim(f.ctx, time.Minute)
+	if e != nil || m == nil {
+		t.Fatal(m, e)
+	}
+	if e = d.AuthorizeSend(f.ctx, *m); e != nil {
+		t.Fatal("qualified closed representation denied", e)
+	}
+	view, e := f.s.DeliveryWidget(f.ctx, *m)
+	if e != nil || view.State != "resolved" {
+		t.Fatal("late delivery reopened question", view, e)
 	}
 }

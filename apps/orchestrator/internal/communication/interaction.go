@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -222,7 +223,13 @@ func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string
 	if e = s.SourceGuard(ctx, tx, runID); e != nil {
 		return "", ErrDenied
 	}
-	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "answer": v.Response, "preference_data": true})
+	sourceRef := "message:response:" + id
+	if s.Sources != nil {
+		if _, e = s.Sources.AccessTx(ctx, tx, []catalog.SourceRef{{ID: sourceRef}}, "memory_read"); e != nil {
+			return "", ErrDenied
+		}
+	}
+	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "source_ref": sourceRef, "answer": v.Response, "preference_data": true})
 	if e = tx.Commit(ctx); e != nil {
 		return "", e
 	}

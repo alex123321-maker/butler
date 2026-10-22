@@ -128,3 +128,55 @@ func TestCommunicationWidgetProjectionFailureJournalIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestCommunicationWidgetProjectionEditsCannotOvertakeIntegration(t *testing.T) {
+	entered, release := make(chan struct{}), make(chan struct{})
+	var calls atomic.Int32
+	c := client(t, func(w http.ResponseWriter, r *http.Request) {
+		if calls.Add(1) == 1 {
+			close(entered)
+			<-release
+		}
+		_, _ = w.Write([]byte(`{"ok":true,"result":{"message_id":7,"chat":{"id":42}}}`))
+	})
+	p, _ := widgetProjectionFixture(t, c)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if _, e := p.Pool.Exec(ctx, `UPDATE communication_interactions SET state='open',version=1; UPDATE communication_widget_views SET draft_version=2,draft_json='{"option_ids":["a"]}'`); e != nil {
+		t.Fatal(e)
+	}
+	done := make(chan error, 1)
+	go func() { done <- p.RefreshWidgets(ctx) }()
+	select {
+	case <-entered:
+	case <-ctx.Done():
+		close(release)
+		t.Fatal("first edit did not reach server")
+	}
+	if _, e := p.Pool.Exec(ctx, `UPDATE communication_widget_views SET draft_version=3,draft_json='{"option_ids":["b"]}'`); e != nil {
+		close(release)
+		t.Fatal(e)
+	}
+	if e := p.RefreshWidgets(ctx); e != nil {
+		close(release)
+		t.Fatal(e)
+	}
+	if calls.Load() != 1 {
+		close(release)
+		t.Fatal("new projection overtook old in-flight edit")
+	}
+	close(release)
+	if e := <-done; e != nil {
+		t.Fatal(e)
+	}
+	if e := p.RefreshWidgets(ctx); e != nil {
+		t.Fatal(e)
+	}
+	if calls.Load() != 2 {
+		t.Fatal("newest projection did not follow", calls.Load())
+	}
+	var versions int
+	if e := p.Pool.QueryRow(ctx, `SELECT count(*) FROM communication_widget_projection_ops WHERE status='sent' AND revision IN ('1:2:open','1:3:open')`).Scan(&versions); e != nil || versions != 2 {
+		t.Fatal(versions, e)
+	}
+}

@@ -16,6 +16,7 @@ import (
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -35,6 +36,9 @@ type Store struct {
 	WebAvailable bool
 	// Terminal delivery is safe only with a composed current-state renderer.
 	WidgetProjections bool
+	// The composed Catalog captures the canonical owner response before model
+	// release, so later deletion/source checks cover the new DATA too.
+	Sources *catalog.Store
 	// Required current Catalog checks. A missing guard always denies publication,
 	// read, submit, send and continuation, rather than trusting copied source refs.
 	SourceGuard func(context.Context, pgx.Tx, string) error
