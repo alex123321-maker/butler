@@ -11,6 +11,21 @@ export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_
 export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 export BUTLER_TEST_COMPLETION_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 mkdir -p .cache/communication-core
+if [[ ${1:-} == --converter ]]; then
+ # Separate runtime ContainerE2E requires its explicit topology. Every selected
+ # pure converter and source/role/return/lease lifecycle case is mandatory.
+ go test -p 1 -race -count=1 -json ./internal/generatedtools >.cache/communication-core/converter-unit.jsonl
+ if ! go test -p 1 -race -count=1 -json ./apps/orchestrator/internal/app -run '^TestConverter' -skip 'ContainerE2E' >.cache/communication-core/converter-lifecycle-regression.jsonl; then
+  grep -E '"Action":"fail"|"OutputType":"error"|"Output":".*[.]go:[0-9]+' .cache/communication-core/converter-lifecycle-regression.jsonl || tail -40 .cache/communication-core/converter-lifecycle-regression.jsonl
+  exit 1
+ fi
+ if grep -q '"Action":"skip"' .cache/communication-core/converter-unit.jsonl .cache/communication-core/converter-lifecycle-regression.jsonl; then
+  echo 'Required converter lifecycle case skipped'; exit 1
+ fi
+ go vet ./internal/generatedtools ./apps/orchestrator/internal/app
+ echo 'Converter lifecycle: required PostgreSQL/race checks passed without skips; vet passed. No inference or channel send.'
+ exit 0
+fi
 go test -c -race -o .cache/communication-core/broker.test ./apps/tool-broker/internal/broker
 export BUTLER_GUARDED_REQUEST_BROKER_BINARY="$PWD/.cache/communication-core/broker.test"
 export BUTLER_DELEGATION_BROKER_BINARY="$BUTLER_GUARDED_REQUEST_BROKER_BINARY"
@@ -44,13 +59,5 @@ if [[ ${1:-} == --regression ]]; then
  go build -o .cache/communication-core/telegram-rich-lab ./apps/orchestrator/cmd/telegram-rich-lab
  go build -o .cache/communication-core/telegram-agent-lab ./apps/orchestrator/cmd/telegram-agent-lab
  go build -o .cache/communication-core/communication-broker-lab ./apps/tool-broker/cmd/communication-lab
- # Retained communication reads must compose with enabled converter lifecycle
- # guards. ContainerE2E requires its separate runtime topology and is not part
- # of this gate; all selected source/role/return/lease matrices are mandatory.
- go test -p 1 -race -count=1 -json ./internal/generatedtools >.cache/communication-core/converter-unit.jsonl
- go test -p 1 -race -count=1 -json ./apps/orchestrator/internal/app -run '^TestConverter' -skip 'ContainerE2E' >.cache/communication-core/converter-lifecycle-regression.jsonl
- if grep -q '"Action":"skip"' .cache/communication-core/converter-unit.jsonl .cache/communication-core/converter-lifecycle-regression.jsonl; then
-  echo 'Required converter lifecycle case skipped'; exit 1
- fi
 fi
 echo 'Communication kernel: targeted PostgreSQL/race checks passed without skips; vet passed. No model inference or channel send.'

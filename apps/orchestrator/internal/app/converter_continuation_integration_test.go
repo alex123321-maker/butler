@@ -221,7 +221,10 @@ func TestConverterContinuationQueueFailureRollsBackIntegration(t *testing.T) {
 }
 
 func TestConverterContinuationDeadlineAfterWaitIntegration(t *testing.T) {
-	c := newContinuationFixture(t, 4*time.Second)
+	// Setup itself creates and checks an actual child return. Keep a finite
+	// setup window large enough for race-enabled CI; expire the real immutable
+	// deadline only after observing the intended PostgreSQL lock wait.
+	c := newContinuationFixture(t, 20*time.Second)
 	blocker, err := c.f.f.pool.Begin(c.f.f.ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +235,27 @@ func TestConverterContinuationDeadlineAfterWaitIntegration(t *testing.T) {
 	}
 	done := make(chan bool, 1)
 	go func() { created, _ := c.service.Enqueue(c.f.f.ctx, c.f.f.parent.TaskID, c.id); done <- created }()
-	time.Sleep(4200 * time.Millisecond)
+	for {
+		var waiting bool
+		if err = c.f.f.pool.QueryRow(c.f.f.ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1::int=ANY(pg_blocking_pids(pid)))`, int32(blocker.Conn().PgConn().PID())).Scan(&waiting); err != nil {
+			t.Fatal(err)
+		}
+		if waiting {
+			break
+		}
+		select {
+		case <-done:
+			t.Fatal("continuation finished before the intended source lock wait")
+		case <-c.f.f.ctx.Done():
+			t.Fatal("source lock wait not observed")
+		case <-time.After(10 * time.Millisecond):
+		}
+	}
+	remaining := time.Until(c.f.deadline)
+	if remaining <= 0 {
+		t.Fatal("fixture deadline expired before the fault window")
+	}
+	time.Sleep(remaining + 200*time.Millisecond)
 	if err = blocker.Commit(c.f.f.ctx); err != nil {
 		t.Fatal(err)
 	}
