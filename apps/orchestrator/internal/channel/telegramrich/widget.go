@@ -14,6 +14,12 @@ import (
 
 func renderWidget(v communication.WidgetView, base string) (string, any) {
 	empty := map[string]any{"inline_keyboard": [][]any{}}
+	// Bot API10.3 permits forced reply on an inline keyboard. Unlike standalone
+	// ForceReply, that representation remains editable after the answer. Its
+	// force_reply flag is immutable and must also be retained on terminal edits.
+	if v.Question.Input != nil && v.Question.Input.Type == "text" {
+		empty["force_reply"] = true
+	}
 	if v.State != "open" {
 		state := map[string]string{"resolved": "Ответ принят. Вопрос закрыт.", "expired": "Срок ответа истёк.", "cancelled": "Вопрос отменён.", "superseded": "Вопрос заменён новым уточнением."}[v.State]
 		if state == "" {
@@ -26,7 +32,7 @@ func renderWidget(v communication.WidgetView, base string) (string, any) {
 	}
 	q := v.Question.Input
 	if q.Type == "text" {
-		return base + "\n\nОтветьте на это сообщение текстом.", map[string]any{"force_reply": true, "selective": true}
+		return base + "\n\nОтветьте на это сообщение текстом.", empty
 	}
 	prefix := "cw:" + v.Token + ":" + strconv.FormatInt(v.Version, 36) + ":" + strconv.FormatInt(v.DraftVersion, 36) + ":"
 	rows := [][]map[string]string{}

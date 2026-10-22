@@ -23,13 +23,17 @@ func TestCommunicationWidgetTelegramRenderMatrix(t *testing.T) {
 					t.Fatal("question lost")
 				}
 				if state != "open" {
-					if string(raw) != `{"inline_keyboard":[]}` || strings.Contains(string(raw), "callback_data") {
+					want := `{"inline_keyboard":[]}`
+					if kind == "text" {
+						want = `{"force_reply":true,"inline_keyboard":[]}`
+					}
+					if string(raw) != want || strings.Contains(string(raw), "callback_data") {
 						t.Fatal("closed buttons", string(raw))
 					}
 					return
 				}
 				if kind == "text" {
-					if !strings.Contains(string(raw), `"force_reply":true`) {
+					if string(raw) != `{"force_reply":true,"inline_keyboard":[]}` {
 						t.Fatal(string(raw))
 					}
 					return

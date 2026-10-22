@@ -97,7 +97,9 @@ reply. Short callback data is a locator; the actual owner, numeric bot and sent
 ACK mapping remain mandatory. Multi-choice toggles share a durable draft CAS,
 Submit alone resumes. Full option labels/descriptions and retained images precede
 the controls; long button labels have a short preview with the complete text
-retained above. Text uses ForceReply. Unknown/ambiguous replies never select the
+retained above. Text uses Bot API10.3 InlineKeyboardMarkup with an empty keyboard
+and `force_reply: true`, which remains editable; terminal edits preserve this
+immutable flag. Standalone ForceReply cannot be edited. Unknown/ambiguous replies never select the
 latest question.
 
 The sender reads current state before initial I/O. Closed questions have no live

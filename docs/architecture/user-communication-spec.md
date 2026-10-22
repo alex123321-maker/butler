@@ -41,8 +41,11 @@ provenance ссылается на него, а не на канальный int
 
 Telegram callbacks проверяют numeric bot, private chat, sender, binding/version,
 сохранённый sent ACK и текущий interaction; callback token не является authority.
-Текстовый ответ требует явного reply на сохранённый вопрос. ForceReply и inline
-buttons — канальные представления тех же данных. Option media проходит прежние
+Текстовый ответ требует явного reply на сохранённый вопрос. В Bot API10.3
+используется пустой InlineKeyboardMarkup с `force_reply: true`: он открывает reply
+и остаётся редактируемым. Неизменяемый флаг сохраняется и при terminal edit;
+сам terminal state проверяется backend. Inline buttons — канальное представление
+тех же данных. Option media проходит прежние
 Artifact/Catalog/export guards до publication и перед отправкой.
 
 Редактирование проекции сохраняется отдельно от первоначальной доставки, по
@@ -55,7 +58,7 @@ Privacy erasure удаляет производные drafts/receipts; rollback 
 при принятой widget history, для неё сохраняется compatible drain.
 
 Mapping сверено с [InlineKeyboardButton](https://core.telegram.org/bots/api#inlinekeyboardbutton),
-[ForceReply](https://core.telegram.org/bots/api#forcereply) и
+[InlineKeyboardMarkup](https://core.telegram.org/bots/api#inlinekeyboardmarkup) и
 [editMessageText](https://core.telegram.org/bots/api#editmessagetext), 2026-10-22.
 
 При совместном включении converters retained message/report не должен требовать
