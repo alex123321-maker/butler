@@ -1,6 +1,12 @@
 package acceptance
 
-import "testing"
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"os"
+	"testing"
+)
 
 func TestCommunicationBehaviorSeparatesStructuralAndSemanticResults(t *testing.T) {
 	measured := 3
@@ -59,5 +65,44 @@ func TestCommunicationBehaviorSeparatesStructuralAndSemanticResults(t *testing.T
 	quiet.ProgressPublications = 1
 	if ReviewCommunication(quiet) == nil {
 		t.Fatal("quiet notification accepted")
+	}
+}
+
+// An operator supplies separate content reviews after inspecting retained native
+// transcripts. The counters in this file must come from the kernel ledger; this
+// gate makes no model call and does not turn the reviewer into an authority.
+func TestNativeCommunicationRetainedContentReviews(t *testing.T) {
+	path := os.Getenv("BUTLER_COMMUNICATION_REVIEW_FILE")
+	if path == "" {
+		t.Skip("explicit retained native reviews required")
+	}
+	if path != "/private/communication-review.json" {
+		t.Fatal("fixed private review path required")
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil || len(raw) > 64*1024 {
+		t.Fatal("bounded review evidence unavailable")
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.DisallowUnknownFields()
+	var rows []CommunicationReview
+	if d.Decode(&rows) != nil || len(rows) == 0 || len(rows) > 32 {
+		t.Fatal("review evidence invalid")
+	}
+	var tail any
+	if d.Decode(&tail) != io.EOF {
+		t.Fatal("review evidence trailing data")
+	}
+	seen := map[string]bool{}
+	for _, r := range rows {
+		if seen[r.CaseID] {
+			t.Fatal("duplicate review case")
+		}
+		seen[r.CaseID] = true
+		t.Run(r.CaseID, func(t *testing.T) {
+			if err := ReviewCommunication(r); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }

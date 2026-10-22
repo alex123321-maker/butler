@@ -2,6 +2,7 @@ package communication_test
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -14,7 +15,9 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/communicationcontrol"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -38,10 +41,21 @@ func TestCommunicationOwnerResumeNewRunRetainsCanonicalAnswerIntegration(t *test
 		beforeResume bool
 		invalid      string
 	}{
-		{"answer_before_resume", true, ""}, {"answer_after_resume", false, ""}, {"wrong_input", true, "input"}, {"wrong_revision", true, "revision"},
+		{"answer_before_resume", true, ""}, {"answer_after_resume", false, ""}, {"wrong_input", true, "input"}, {"wrong_revision", true, "revision"}, {"catalog", true, ""}, {"deleted_answer", true, "deleted"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := setup(t, fixtureOptions{Task: true})
+			if tc.name == "catalog" || tc.invalid == "deleted" {
+				manifest := catalog.NewFileManifest(filepath.Join(t.TempDir(), "privacy"))
+				if e := manifest.Initialize(); e != nil {
+					t.Fatal(e)
+				}
+				f.s.Sources = catalog.New(f.pool, manifest)
+				if e := f.s.Sources.PinTranscript(f.ctx, f.p.SessionKey, 0); e != nil {
+					t.Fatal(e)
+				}
+				f.s.SourceGuard = f.s.Sources.CheckRunSourcesTx
+			}
 			question, e := f.publish(t, "question", "communication.widget", widget)
 			if e != nil {
 				t.Fatal(e)
@@ -83,6 +97,17 @@ func TestCommunicationOwnerResumeNewRunRetainsCanonicalAnswerIntegration(t *test
 			}
 			if tc.invalid == "revision" {
 				if _, e = f.pool.Exec(f.ctx, `UPDATE communication_interactions SET task_revision=task_revision-1 WHERE interaction_id=$1`, question.InteractionRef); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if tc.invalid == "deleted" {
+				actor := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: f.p.OwnerID, Channel: "web", DeliveryID: "erase"})
+				ref := "message:response:" + question.InteractionRef
+				src, e := f.s.Sources.Get(actor, ref)
+				if e != nil {
+					t.Fatal(e)
+				}
+				if _, e = f.s.Sources.Delete(actor, ref, "delete", src.Revision); e != nil {
 					t.Fatal(e)
 				}
 			}
