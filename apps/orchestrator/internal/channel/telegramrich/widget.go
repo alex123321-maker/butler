@@ -14,11 +14,17 @@ import (
 
 func renderWidget(v communication.WidgetView, base string) (string, any) {
 	empty := map[string]any{"inline_keyboard": [][]any{}}
-	// Bot API10.3 permits forced reply on an inline keyboard. Unlike standalone
-	// ForceReply, that representation remains editable after the answer. Its
-	// force_reply flag is immutable and must also be retained on terminal edits.
+	// A nonempty Bot API10.3 inline keyboard keeps forced-reply messages
+	// editable. An empty keyboard is treated as standalone ForceReply and
+	// cannot be edited. This disabled status has no callback or authority.
+	// The immutable force_reply flag is retained on terminal edits.
 	if v.Question.Input != nil && v.Question.Input.Type == "text" {
 		empty["force_reply"] = true
+		label := "Ожидается текстовый ответ"
+		if v.State != "open" {
+			label = "Вопрос закрыт"
+		}
+		empty["inline_keyboard"] = [][]map[string]any{{{"text": label, "disabled": map[string]any{}}}}
 	}
 	if v.State != "open" {
 		state := map[string]string{"resolved": "Ответ принят. Вопрос закрыт.", "expired": "Срок ответа истёк.", "cancelled": "Вопрос отменён.", "superseded": "Вопрос заменён новым уточнением."}[v.State]

@@ -42,8 +42,10 @@ provenance ссылается на него, а не на канальный int
 Telegram callbacks проверяют numeric bot, private chat, sender, binding/version,
 сохранённый sent ACK и текущий interaction; callback token не является authority.
 Текстовый ответ требует явного reply на сохранённый вопрос. В Bot API10.3
-используется пустой InlineKeyboardMarkup с `force_reply: true`: он открывает reply
-и остаётся редактируемым. Неизменяемый флаг сохраняется и при terminal edit;
+используется непустой InlineKeyboardMarkup с `force_reply: true` и неактивным
+индикатором ожидания (`disabled: {}`), без callback: он открывает reply и остаётся
+редактируемым. Пустая keyboard на реальном API интерпретируется как standalone
+ForceReply и запрещает edit; это отдельно проверено native contract probe. Неизменяемый флаг сохраняется и при terminal edit;
 сам terminal state проверяется backend. Inline buttons — канальное представление
 тех же данных. Option media проходит прежние
 Artifact/Catalog/export guards до publication и перед отправкой.
