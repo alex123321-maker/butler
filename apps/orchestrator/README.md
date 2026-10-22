@@ -134,6 +134,13 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Conversation loop detection attributes repeated tool results to the original
+durable Input event through existing effect/run records. Independent requests in
+one session can rediscover tools; answer resume/restart retain the same Input's
+guard. This changes no conversation/day budgets, task-tree limits or unknown-write
+protection and rewrites no history. See the
+[budget contract](../../docs/architecture/execution-budget-contract.md).
+
 Mobile archive defaults to360 days. remember commits a note, exact bounded retained
 evidence and one fragment atomically; selected notes survive archive expiry.
 Explicit owner forgetting cascades through evidence and indexes. See

@@ -63,11 +63,9 @@ func setup(t *testing.T, options ...fixtureOptions) *fixture {
 	if e != nil {
 		t.Fatal(e)
 	}
-	t.Cleanup(func() {
-		if _, e := pool.Exec(context.Background(), `DELETE FROM sessions WHERE session_key=$1`, key); e != nil {
-			t.Error("cleanup", e)
-		}
-	})
+	// memorytest.Database owns a unique disposable schema and drops it after
+	// this fixture. Deleting its session first races FK cascades through durable
+	// publication/interaction history and is neither required nor a product API.
 	_, e = run.NewPostgresRepository(pool).CreateRun(ctx, run.Record{RunID: id, SessionKey: key, InputEventID: id, Status: "tool_running", CurrentState: "tool_running", AutonomyMode: "mode_1", ModelProvider: "fixture", StartedAt: time.Now(), UpdatedAt: time.Now(), MetadataJSON: `{}`})
 	if e != nil {
 		t.Fatal(e)

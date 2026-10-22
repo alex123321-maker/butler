@@ -1,5 +1,11 @@
 # Tool Broker
 
+Conversation repetition is scoped to the original Input event using existing
+permanent effect/run provenance; a new owner request may repeat a catalog read.
+This does not reset conversation/day spending, task-tree loops or session-wide
+unknown-write protection. Missing provenance remains conservative. See
+[the budget contract](../../docs/architecture/execution-budget-contract.md).
+
 Dormant `CommunicationExecutor` implements fixed owning control dispatch for
 the strict `communication.*` contracts. It forwards only actual dispatched action
 identity and attempts a read-only receipt lookup after lost ACK. It does not

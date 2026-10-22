@@ -108,6 +108,21 @@ effects throughout the task tree block new non-read calls even with a different
 tool. Independent authorized reads may reconcile. Compensation needs a new
 explicit authorized action; no unsupported exactly-once guarantee is claimed.
 
+For a conversation without Task, independent durable `runs.input_event_id`
+values are progress boundaries for repetition only. Session/owner identity still
+comes from the run. The repetition reader attributes existing observations via
+their permanent effect's initial run binding and that run's original Input event;
+only a proved different Input in the same owner/session is excluded. A new run
+for the same event, answer resume and process restart retain the same repetition
+history. Missing or inconsistent provenance keeps the old restrictive meaning.
+Observation rows/keys are not migrated, deleted or rewritten. Root-task/child
+repetition stays unchanged. Conversation/day and owner/day spending, historical
+model attempts and the session-wide UNKNOWN/executing-write guard do not acquire
+a new scope or allowance when a new owner Input is accepted.
+Core and Broker both embed this reader. A working rollout must update both;
+an older process can still reject a new conversation under the former session
+scope. Mixed versions do not gain permission or discard existing observations.
+
 Stops persist execution_stopped with a concrete reason and prior continuation,
 block durable task/input and cancel transport. They do not finalize successful
 work. Frozen finalizing recovery saves its frozen result without another model or
