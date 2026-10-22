@@ -95,7 +95,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	if err != nil {
 		return nil, err
 	}
-	if telegramOptions != nil && !strings.HasSuffix(postgres.Pool().Config().ConnConfig.Database, "_test") {
+	if telegramOptions != nil && !telegramOptions.databaseAllowed(postgres.Pool().Config().ConnConfig.Database) {
 		postgres.Close()
 		return nil, communicationcontrol.ErrDenied
 	}

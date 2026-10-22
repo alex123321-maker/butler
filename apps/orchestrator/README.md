@@ -1226,3 +1226,16 @@ These routes do not admit semantic inference or change the execution kernel.
 See [source projections](../../docs/architecture/versioned-memory-sources.md)
 and [Web behavior](../../web/README.md). Server-browser ownership/manual control
 retain the existing private Broker/runtime protocol.
+
+## Explicit owner rollout
+
+`orchestrator -communication-profile /private/profile.json` selects the scoped
+message/photo/report composition on an exactly pinned working database/owner.
+The private strict `communicationcontrol.OwnerProfile` v1 also pins numeric bot,
+chat, both binding versions, token/proxy file references and active/drain mode.
+The ordinary no-argument constructor remains legacy, and lab constructors still
+require `_test`. Model discovery, inference and OAuth require HTTPS_PROXY without
+external NO_PROXY bypass. Broker must use the same profile and existing private
+authority token. No historical run or pending publication is upgraded. Rollback
+first uses drain mode with this compatible binary and preserved durable state.
+See [the communication contract](../../docs/architecture/user-communication-spec.md).

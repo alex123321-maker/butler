@@ -1,5 +1,14 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The explicit owner rollout accepts a private strict operator profile containing
+only credential file references and pinned database/owner/bot/binding metadata.
+Core resolves the Telegram token and explicit CONNECT proxy from those files;
+Broker only reads the profile and uses its existing authenticated private Core
+client. Neither profile fields nor the startup flag grant model/tool authority.
+Provider auth remains in the existing encrypted Manager with ordinary renewal;
+the owner profile checks effective proxy routing for inference/discovery/OAuth.
+No provider credential is copied from the native test store or put in JSON.
+
 The isolated Telegram rich adapter accepts a private operator token-file
 reference outside the source tree. Raw values stay in its private HTTPS client;
 no model tool, error, log or manifest contains a token/URL. New test bots use

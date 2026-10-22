@@ -97,13 +97,22 @@ switching within the task tree. Runtime output schemas gate evidence; malformed
 completed responses stay uncertain. Batch execution is rejected before the first
 dispatch, and no partial result set is supplied as completed model input.
 
-## Планируемая owning tool family communication
+## Owning tool family communication
 
-Добавлены dormant contracts, strict decoder, fixed authenticated HTTP control и
-Broker executor. Startup не регистрирует эту family или route. Private token не
+После #128/#132 message/photo/report квалифицированы для явной ограниченной
+композиции. Operator-only `-communication-profile` на Core/Broker регистрирует
+их на точно закреплённых Database/OwnerID и authenticated control URL.
+Без аргумента сохраняется legacy; отдельный lab constructor требует `_test`.
+Новый профиль не меняет exact dispatch, grants, source/privacy, budgets или
+approval checks и не делает widget готовым. См. актуальный scoped rollout
+в [User Communication](user-communication-spec.md).
+
+Добавлены contracts, strict decoder, fixed authenticated HTTP control и
+Broker executor. Startup без operator profile не регистрирует family или route. Private token не
 заменяет actual dispatched journal/grant/Input/lease proof. Lookup после lost ACK
 только читает сохранённый receipt; публикация повторно не исполняется.
-Message/widget readiness требует отдельной композиции, photo/report не готовы.
+Widget readiness требует отдельной композиции; scoped profile рекламирует
+только принятые message/photo/report.
 См. [backend scope](../ai/communication-core-acceptance-20261021.md).
 
 [User Communication](user-communication-spec.md) добавляет целевой контракт

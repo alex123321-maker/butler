@@ -55,7 +55,7 @@ type App struct {
 }
 
 func New(ctx context.Context) (*App, error) {
-	return newApp(ctx, "")
+	return newApp(ctx, "", nil)
 }
 
 // NewForCommunication composes canonical private dispatch only on a disposable
@@ -64,10 +64,18 @@ func NewForCommunication(ctx context.Context, endpoint string) (*App, error) {
 	if endpoint == "" {
 		return nil, communicationcontrol.ErrDenied
 	}
-	return newApp(ctx, endpoint)
+	return newApp(ctx, endpoint, nil)
 }
 
-func newApp(ctx context.Context, communicationEndpoint string) (*App, error) {
+// NewForOwnerCommunication is the separately pinned operator deployment path.
+func NewForOwnerCommunication(ctx context.Context, p communicationcontrol.OwnerProfile) (*App, error) {
+	if p.Validate() != nil {
+		return nil, communicationcontrol.ErrDenied
+	}
+	return newApp(ctx, p.ControlURL, &p)
+}
+
+func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *communicationcontrol.OwnerProfile) (*App, error) {
 	cfg, snapshot, err := config.LoadToolBrokerFromEnv()
 	if err != nil {
 		return nil, err
@@ -115,7 +123,11 @@ func newApp(ctx context.Context, communicationEndpoint string) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
-	if communicationEndpoint != "" && (postgres == nil || !strings.HasSuffix(postgres.Pool().Config().ConnConfig.Database, "_test") || cfg.ActionAuthorityTokenFile == "" || cfg.ActionContextURL == "") {
+	databaseAllowed := postgres != nil && strings.HasSuffix(postgres.Pool().Config().ConnConfig.Database, "_test")
+	if ownerProfile != nil {
+		databaseAllowed = postgres != nil && postgres.Pool().Config().ConnConfig.Database == ownerProfile.Database && cfg.ExtensionOwnerID == ownerProfile.OwnerID
+	}
+	if communicationEndpoint != "" && (!databaseAllowed || cfg.ActionAuthorityTokenFile == "" || cfg.ActionContextURL == "") {
 		if postgres != nil {
 			postgres.Close()
 		}

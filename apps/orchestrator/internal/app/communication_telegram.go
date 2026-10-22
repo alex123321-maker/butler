@@ -48,6 +48,11 @@ type TelegramCommunicationOptions struct {
 	// Export of private owner material to this precise private bot binding is
 	// an explicit operator decision. Public-only is the zero/default policy.
 	AllowPrivate bool
+	// Set only by the separate trusted production constructor; JSON cannot
+	// remove the disposable-database restriction of the lab constructor.
+	ownerDatabase   string
+	expectedBotID   int64
+	initialUpdateID int64
 }
 
 type telegramCommunication struct {
@@ -130,7 +135,7 @@ func (p telegramExportPolicy) media(ctx context.Context, tx pgx.Tx, run string, 
 }
 
 func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *catalog.Store, inputs *durableinput.Store, guard func(context.Context, pgx.Tx, string) error, o TelegramCommunicationOptions) (*telegramCommunication, error) {
-	if pool == nil || sources == nil || inputs == nil || guard == nil || !strings.HasSuffix(pool.Config().ConnConfig.Database, "_test") || o.OwnerID == "" || o.BindingID == "" || len(o.BindingID) > 128 || o.ChatID <= 0 || o.ExpectedBot == "" {
+	if pool == nil || sources == nil || inputs == nil || guard == nil || !o.databaseAllowed(pool.Config().ConnConfig.Database) || o.OwnerID == "" || o.BindingID == "" || len(o.BindingID) > 128 || o.ChatID <= 0 || o.ExpectedBot == "" {
 		return nil, telegram.ErrExplicitUnsupported
 	}
 	client, err := telegramrich.NewClientFromTokenFileWithProxyFile(o.TokenFile, o.BotAPIProxyFile)
@@ -138,7 +143,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 		return nil, err
 	}
 	me, err := client.GetMe(ctx)
-	if err != nil || me.Username != o.ExpectedBot {
+	if err != nil || me.Username != o.ExpectedBot || o.expectedBotID != 0 && me.ID != o.expectedBotID {
 		return nil, telegram.ErrExplicitUnsupported
 	}
 	if o.BindingVersion == 0 {
@@ -174,7 +179,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err != nil {
 		return nil, err
 	}
-	if err = pinTelegramBot(ctx, pool, b, me.ID); err != nil {
+	if err = pinTelegramBotAt(ctx, pool, b, me.ID, o.initialUpdateID); err != nil {
 		return nil, err
 	}
 	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly}
@@ -188,6 +193,10 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 // Pin the verified numeric bot before admission/sending. A recreated username
 // cannot adopt another bot's binding or an unqualified historical queue.
 func pinTelegramBot(ctx context.Context, pool *pgxpool.Pool, b communication.Binding, botID int64) error {
+	return pinTelegramBotAt(ctx, pool, b, botID, 0)
+}
+
+func pinTelegramBotAt(ctx context.Context, pool *pgxpool.Pool, b communication.Binding, botID, initialUpdateID int64) error {
 	if botID <= 0 {
 		return telegram.ErrExplicitUnsupported
 	}
@@ -210,7 +219,7 @@ func pinTelegramBot(ctx context.Context, pool *pgxpool.Pool, b communication.Bin
 		if history {
 			return telegram.ErrExplicitUnsupported
 		}
-		if _, err = tx.Exec(ctx, `INSERT INTO communication_telegram_cursors(bot_id,binding_id) VALUES($1,$2) ON CONFLICT DO NOTHING`, botID, b.ID); err != nil {
+		if _, err = tx.Exec(ctx, `INSERT INTO communication_telegram_cursors(bot_id,binding_id,next_update_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, botID, b.ID, initialUpdateID); err != nil {
 			return err
 		}
 		err = tx.QueryRow(ctx, `SELECT bot_id FROM communication_telegram_cursors WHERE binding_id=$1`, b.ID).Scan(&current)
