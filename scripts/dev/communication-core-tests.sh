@@ -44,5 +44,13 @@ if [[ ${1:-} == --regression ]]; then
  go build -o .cache/communication-core/telegram-rich-lab ./apps/orchestrator/cmd/telegram-rich-lab
  go build -o .cache/communication-core/telegram-agent-lab ./apps/orchestrator/cmd/telegram-agent-lab
  go build -o .cache/communication-core/communication-broker-lab ./apps/tool-broker/cmd/communication-lab
+ # Retained communication reads must compose with enabled converter lifecycle
+ # guards. ContainerE2E requires its separate runtime topology and is not part
+ # of this gate; all selected source/role/return/lease matrices are mandatory.
+ go test -p 1 -race -count=1 -json ./internal/generatedtools >.cache/communication-core/converter-unit.jsonl
+ go test -p 1 -race -count=1 -json ./apps/orchestrator/internal/app -run '^TestConverter' -skip 'ContainerE2E' >.cache/communication-core/converter-lifecycle-regression.jsonl
+ if grep -q '"Action":"skip"' .cache/communication-core/converter-unit.jsonl .cache/communication-core/converter-lifecycle-regression.jsonl; then
+  echo 'Required converter lifecycle case skipped'; exit 1
+ fi
 fi
 echo 'Communication kernel: targeted PostgreSQL/race checks passed without skips; vet passed. No model inference or channel send.'

@@ -155,6 +155,24 @@ func TestConverterDeveloperCollectedReportDeletionIntegration(t *testing.T) {
 	}
 }
 
+func TestCommunicationConverterReturnStillRequiresOwnedScopeIntegration(t *testing.T) {
+	f := newDeveloperFixture(t)
+	child, candidate, _ := f.returnedChild(t)
+	f.dispatch(t, f.parentRun, "converters.collect", map[string]any{"child_task_id": child.TaskID, "digest": candidate.Digest})
+	var pins int
+	if err := f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_run_sources WHERE run_id=$1 AND source_id=$2`, f.parentRun, candidate.BodySource.ID).Scan(&pins); err != nil || pins != 1 {
+		t.Fatal("returned source was not captured", pins, err)
+	}
+	tx, err := f.f.pool.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(context.Background())
+	if err = generatedtools.CheckDeveloperReturnLifecycleTx(context.Background(), tx, f.f.sources, f.parentRun); err == nil {
+		t.Fatal("returned converter acquired ambient completed-run authority")
+	}
+}
+
 func TestConverterDeveloperUnknownFinalCannotReturnIntegration(t *testing.T) {
 	f := newDeveloperFixture(t)
 	child, worker, _ := f.testedChild(t)

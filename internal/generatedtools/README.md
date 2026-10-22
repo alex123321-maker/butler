@@ -1,5 +1,11 @@
 # Generated pure converters
 
+The developer-return lifecycle guard first checks captured returned-package
+provenance. Unrelated retained publications can be read/delivered without a live
+worker lease. Actual returned-package pins still require the existing owned
+snapshot and complete source/role/return checks; this does not grant execution
+authority to a completed run or weaken Catalog/export revocation.
+
 This Go module owns the single finite delimited-to-JSON IR, strict package/need
 validation, fixed independent checker and Broker-owned PG lifecycle. Creation,
 testing, trials, activation/rollback and use require ordinary exact action grants,

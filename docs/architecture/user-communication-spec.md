@@ -12,6 +12,13 @@
 
 ### Граница текущей реализации
 
+При совместном включении converters retained message/report не должен требовать
+живую lease уже завершённого unrelated run. Developer-return guard сначала
+проверяет фактически captured package provenance; только при её наличии
+применяет прежнюю owned lifecycle проверку. Catalog/source/binding/media guards
+сохраняются всегда. Policy-denied delivery, выявленная до исправления, остаётся
+failed; перезапуск не превращает её в sent и не повторяет её автоматически.
+
 По поручению владельца от 2026-10-22 обычные Core/Broker binaries поддерживают
 явный `-communication-profile /private/profile.json`. Без аргумента сохраняется
 legacy startup. Private strict JSON v1 фиксирует точные Database/OwnerID,

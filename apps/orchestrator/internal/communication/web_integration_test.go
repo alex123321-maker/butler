@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 )
@@ -104,6 +105,47 @@ func TestCommunicationWebCanonicalReportAndIndependentDeliveryIntegration(t *tes
 	}
 	if _, err = d.Claim(f.ctx, 30*time.Second); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCommunicationUnrelatedConverterGuardRetainedReadAndSendIntegration(t *testing.T) {
+	f, w, image, document := webFixture(t)
+	prior := f.s.SourceGuard
+	f.s.SourceGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
+		if err := prior(ctx, tx, run); err != nil {
+			return err
+		}
+		return generatedtools.CheckDeveloperReturnLifecycleTx(ctx, tx, nil, run)
+	}
+	r, err := f.publish(t, "converter-enabled-report", "communication.report", webReport(image, document))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Channel/owner contexts carry no worker token; delivery must remain valid
+	// after the owning run has completed and its worker lease is gone.
+	if _, err = f.pool.Exec(f.ctx, `UPDATE runs SET status='completed',current_state='completed' WHERE run_id=$1`, f.p.RunID); err != nil {
+		t.Fatal(err)
+	}
+	owner := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: f.p.OwnerID, Channel: "web", SessionKey: "web:verified", DeliveryID: "retained-owner-read"})
+	p, err := w.Detail(owner, r.PublicationRef)
+	if err != nil || !p.Available {
+		t.Fatal("unrelated converter guard hid retained report", err)
+	}
+	d := (&communication.DeliveryStore{Core: f.s}).ForBinding(communication.Binding{ID: f.bindings["telegram"], Version: 2, Channel: "telegram", Recipient: "telegram:42"})
+	part, err := d.Claim(context.Background(), 30*time.Second)
+	if err != nil || part == nil {
+		t.Fatal(err)
+	}
+	if err = d.AuthorizeSend(context.Background(), *part); err != nil {
+		t.Fatal("unrelated converter guard denied channel send", err)
+	}
+	f.revoked.Store(true)
+	p, err = w.Detail(owner, r.PublicationRef)
+	if err == nil && p.Available {
+		t.Fatal("source revocation bypassed")
+	}
+	if err = d.AuthorizeSend(context.Background(), *part); err == nil {
+		t.Fatal("revoked source sent")
 	}
 }
 
