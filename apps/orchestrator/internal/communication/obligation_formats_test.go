@@ -12,6 +12,11 @@ func TestCommunicationAllResultFormatsPreserveObligationAndUnverifiedCompletionI
 	for _, kind := range []string{"message", "photo", "report"} {
 		t.Run(kind, func(t *testing.T) {
 			f, imageRef := mediaFixture(t)
+			if kind == "message" {
+				// mediaFixture's planner intentionally handles only media; plain
+				// messages use the kernel's existing text planner.
+				f.s.PlanDelivery = nil
+			}
 			a := communicationcontrol.Args{SchemaVersion: 1, Purpose: "progress", Text: "Checking the requested fixture"}
 			if kind == "photo" {
 				a.Images = []communicationcontrol.Image{{ArtifactRef: imageRef, Alt: "Fixture"}}
