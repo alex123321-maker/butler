@@ -169,26 +169,60 @@ func TestCommunicationConversationLoopNewInputCannotEvadeUnknownEffectIntegratio
 }
 
 func TestCommunicationConversationLoopMissingProvenanceRemainsConservativeIntegration(t *testing.T) {
-	pool := conversationLoopDB(t)
-	ctx := context.Background()
-	p := testPolicy()
-	c := NewController(pool, p)
-	// Legacy observations without a surviving exact effect/run cannot safely be
-	// attributed to another Input. Preserve their prior restrictive meaning.
-	for n := int64(0); n < p.RepeatLimit; n++ {
-		tx, err := pool.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = c.ObserveToolTx(ctx, tx, conversationLoopCall("conversation-a", fmt.Sprintf("legacy-%d", n)), "success", "same-permitted-catalog")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err = tx.Commit(ctx); err != nil {
-			t.Fatal(err)
-		}
+	for _, scenario := range []string{"no_effect", "missing_run", "missing_event", "wrong_owner", "foreign_session", "task_binding", "legacy_current_event"} {
+		t.Run(scenario, func(t *testing.T) {
+			pool := conversationLoopDB(t)
+			ctx := context.Background()
+			p := testPolicy()
+			c := NewController(pool, p)
+			if _, err := pool.Exec(ctx, `INSERT INTO sessions VALUES('foreign-session','other-owner'); INSERT INTO runs(run_id,session_key,input_event_id) VALUES('foreign-run','foreign-session','old-input')`); err != nil {
+				t.Fatal(err)
+			}
+			if scenario == "missing_event" || scenario == "legacy_current_event" {
+				run := "conversation-a"
+				if scenario == "legacy_current_event" {
+					run = "conversation-b"
+				}
+				if _, err := pool.Exec(ctx, `UPDATE runs SET input_event_id='' WHERE run_id=$1`, run); err != nil {
+					t.Fatal(err)
+				}
+			}
+			// Historical evidence which cannot prove a different owner Input must
+			// retain the prior restriction rather than silently becoming eligible.
+			for n := int64(0); n < p.RepeatLimit; n++ {
+				i := conversationLoopCall("conversation-a", fmt.Sprintf("legacy-%d", n))
+				binding := map[string]string{"owner_id": "owner", "run_id": "conversation-a", "task_id": "", "effect": "read"}
+				switch scenario {
+				case "missing_run":
+					binding["run_id"] = "deleted-run"
+				case "wrong_owner":
+					binding["owner_id"] = "other-owner"
+				case "foreign_session":
+					binding["run_id"] = "foreign-run"
+				case "task_binding":
+					binding["run_id"] = "run"
+				}
+				tx, err := pool.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer tx.Rollback(ctx)
+				if scenario != "no_effect" {
+					raw, _ := json.Marshal(binding)
+					if _, err = tx.Exec(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) VALUES($1,$1,$2,'{}','effect_confirmed')`, i.EffectID, raw); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if err = c.ObserveToolTx(ctx, tx, i, "success", "same-permitted-catalog"); err != nil {
+					t.Fatal(err)
+				}
+				if err = tx.Commit(ctx); err != nil {
+					t.Fatal(err)
+				}
+			}
+			assertConversationLoopStopped(t, checkConversationCall(t, pool, NewController(pool, p), conversationLoopCall("conversation-b", "cannot-prove")), "repeated_action_without_progress")
+		})
 	}
-	assertConversationLoopStopped(t, checkConversationCall(t, pool, NewController(pool, p), conversationLoopCall("conversation-b", "cannot-prove")), "repeated_action_without_progress")
 }
 
 func TestCommunicationConversationLoopTaskAncestryCannotBecomeInputScopeIntegration(t *testing.T) {
