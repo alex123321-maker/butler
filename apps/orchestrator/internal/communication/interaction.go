@@ -229,7 +229,7 @@ func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string
 			return "", ErrDenied
 		}
 	}
-	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "source_ref": sourceRef, "answer": v.Response, "preference_data": true})
+	raw, _ := json.Marshal(map[string]any{"interaction_ref": id, "publication_ref": v.PublicationID, "source_ref": sourceRef, "answer": v.Response, "preference_data": true})
 	if e = tx.Commit(ctx); e != nil {
 		return "", e
 	}

@@ -58,7 +58,7 @@ func TestCommunicationWidgetResponseCapturedByCatalogAndRevokedIntegration(t *te
 		t.Fatal("canonical response read", e)
 	}
 	ref := "message:response:" + pub.InteractionRef
-	if !strings.Contains(data, ref) {
+	if !strings.Contains(data, ref) || !strings.Contains(data, pub.PublicationRef) {
 		t.Fatal("response lacks canonical provenance", data)
 	}
 	var pinned bool

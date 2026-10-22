@@ -9,9 +9,9 @@ import (
 	"github.com/butler/butler/internal/communicationcontrol"
 )
 
-// NewForOwnerCommunication enables only the qualified message/photo/report
-// profile for the explicitly pinned owner. Widgets and historical admissions
-// are not upgraded. The lab constructor retains its separate *_test guard.
+// NewForOwnerCommunication enables qualified message/photo/report and optional widget
+// profile for the explicitly pinned owner. Existing bindings and historical
+// admissions are never upgraded. The lab constructor retains its separate *_test guard.
 func NewForOwnerCommunication(ctx context.Context, p communicationcontrol.OwnerProfile) (*App, error) {
 	if p.Validate() != nil {
 		return nil, communicationcontrol.ErrDenied
