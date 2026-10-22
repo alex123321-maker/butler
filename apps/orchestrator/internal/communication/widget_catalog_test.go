@@ -70,7 +70,7 @@ func TestCommunicationWidgetResponseCapturedByCatalogAndRevokedIntegration(t *te
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = sources.Delete(actor, ref, "erase-response", src.Revision); e != nil {
+	if _, e = sources.Delete(actor, ref, "delete", src.Revision); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = f.s.ResumeInteraction(live, f.p.RunID, pub.InteractionRef); e == nil {
