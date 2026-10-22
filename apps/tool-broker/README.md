@@ -357,3 +357,11 @@ database and configured owner, and pin the Core control URL; Core uses the same
 profile. Without the flag legacy composition remains unchanged. The separate
 lab constructor still requires `_test`. A profile never grants tool/task/source
 authority or enables widgets, and cannot provide raw credential material.
+
+### Widget composition
+
+Private owner profile `Widgets=true` registers `communication.widget` alongside
+the three accepted methods. Isolated communication-lab accepts `-widgets`; its
+existing disposable database guard remains mandatory. Registration is not grant
+authority: current immutable admission, target hash, exact prepare authorization,
+source policy and finite budgets still govern dispatch.

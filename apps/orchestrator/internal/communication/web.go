@@ -36,6 +36,7 @@ type WebPart struct {
 	ACK            string          `json:"ack,omitempty"`
 	Error          string          `json:"error,omitempty"`
 	Manifest       json.RawMessage `json:"manifest,omitempty"`
+	Projection     string          `json:"projection_state,omitempty"`
 }
 type WebPublication struct {
 	Ref          string                     `json:"publication_ref"`
@@ -47,6 +48,7 @@ type WebPublication struct {
 	CreatedAt    time.Time                  `json:"created_at"`
 	Available    bool                       `json:"available"`
 	Payload      *communicationcontrol.Args `json:"payload,omitempty"`
+	Interaction  *WidgetView                `json:"interaction,omitempty"`
 	Files        []WebFile                  `json:"files"`
 	Parts        []WebPart                  `json:"parts"`
 }
@@ -87,6 +89,13 @@ func mediaRefs(a communicationcontrol.Args) []string {
 			refs = append(refs, block.ArtifactRef)
 		}
 	}
+	if a.Input != nil {
+		for _, option := range a.Input.Options {
+			if option.ImageRef != "" {
+				refs = append(refs, option.ImageRef)
+			}
+		}
+	}
 	seen := map[string]bool{}
 	out := []string{}
 	for _, ref := range refs {
@@ -113,6 +122,13 @@ func (w *WebReader) Plan(ctx context.Context, tx pgx.Tx, run string, b Binding, 
 		m, err := w.Resolve(ctx, tx, run, b, ref)
 		if err != nil || m.Ref != ref || m.Validate() != nil {
 			return nil, ErrDenied
+		}
+		if a.Input != nil {
+			for _, option := range a.Input.Options {
+				if option.ImageRef == ref && m.MIME != "image/png" && m.MIME != "image/jpeg" {
+					return nil, ErrDenied
+				}
+			}
 		}
 	}
 	raw, err := json.Marshal(a)
@@ -142,14 +158,14 @@ func (w *WebReader) loadTx(ctx context.Context, tx pgx.Tx, id string) (WebPublic
 		}
 		out.Files = append(out.Files, WebFile{Ref: ref, Name: m.Name, MIME: m.MIME, SHA256: m.SHA256, Size: len(m.Data)})
 	}
-	rows, err := tx.Query(ctx, `SELECT d.channel,d.binding_id,d.binding_version,d.chunk_index,d.status,d.channel_ack,d.error_code,d.content FROM delivery_outbox d JOIN communication_bindings b ON b.binding_id=d.binding_id AND b.version=d.binding_version WHERE d.publication_id=$1 AND b.owner_id=$2 AND b.enabled AND b.verified AND b.recipient=d.recipient_snapshot AND NOT d.privacy_redacted ORDER BY d.binding_id,d.chunk_index`, id, actor.OwnerID)
+	rows, err := tx.Query(ctx, `SELECT d.channel,d.binding_id,d.binding_version,d.chunk_index,d.status,d.channel_ack,d.error_code,d.content,COALESCE((SELECT op.status FROM communication_widget_projection_ops op WHERE op.notification_id=d.notification_id ORDER BY op.created_at DESC,op.revision DESC LIMIT 1),'') FROM delivery_outbox d JOIN communication_bindings b ON b.binding_id=d.binding_id AND b.version=d.binding_version WHERE d.publication_id=$1 AND b.owner_id=$2 AND b.enabled AND b.verified AND b.recipient=d.recipient_snapshot AND NOT d.privacy_redacted ORDER BY d.binding_id,d.chunk_index`, id, actor.OwnerID)
 	if err != nil {
 		return out, "", err
 	}
 	for rows.Next() {
 		var p WebPart
 		var content string
-		if err = rows.Scan(&p.Channel, &p.BindingID, &p.BindingVersion, &p.Index, &p.State, &p.ACK, &p.Error, &content); err != nil {
+		if err = rows.Scan(&p.Channel, &p.BindingID, &p.BindingVersion, &p.Index, &p.State, &p.ACK, &p.Error, &content, &p.Projection); err != nil {
 			rows.Close()
 			return out, "", err
 		}
@@ -177,6 +193,13 @@ func (w *WebReader) loadTx(ctx context.Context, tx pgx.Tx, id string) (WebPublic
 	}
 	out.Kind = kind
 	out.Payload = &a
+	if kind == "widget" {
+		view, e := widgetViewTx(ctx, tx, id)
+		if e != nil {
+			return out, "", e
+		}
+		out.Interaction = &view
+	}
 	out.Available = true
 	return out, run, nil
 }
@@ -236,7 +259,7 @@ func (w *WebReader) Feed(ctx context.Context, after int64, limit int) (WebPage, 
 		out.Items = append(out.Items, p)
 		out.Cursor = r.seq
 	}
-	rows, err = tx.Query(ctx, `SELECT message_id,session_key,content,created_at FROM messages WHERE run_id=ANY($1::text[]) AND role='user' AND NOT privacy_redacted ORDER BY created_at,message_id`, runs)
+	rows, err = tx.Query(ctx, `SELECT message_id,session_key,content,created_at FROM messages WHERE run_id=ANY($1::text[]) AND role='user' AND NOT privacy_redacted AND COALESCE(metadata->>'kind','')<>'interaction_response' ORDER BY created_at,message_id`, runs)
 	if err != nil {
 		return out, err
 	}

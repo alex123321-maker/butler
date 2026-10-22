@@ -69,6 +69,7 @@ type Part struct {
 	Caption string       `json:"caption,omitempty"`
 	Rich    *RichMessage `json:"rich_message,omitempty"`
 	Files   []File       `json:"files,omitempty"`
+	Widget  bool         `json:"widget,omitempty"`
 }
 
 type MediaResolver func(context.Context, pgx.Tx, string, communication.Binding, string) (artifacts.Media, error)
@@ -79,7 +80,7 @@ type Planner struct {
 
 // Capabilities are trusted adapter readiness, never a model enable flag.
 // A zero profile exposes nothing. Reports require the complete native mapping.
-type Capabilities struct{ Message, Photo, Rich, Document bool }
+type Capabilities struct{ Message, Photo, Rich, Document, Widget bool }
 
 func (c Capabilities) Methods() []string {
 	methods := []string{}
@@ -91,6 +92,9 @@ func (c Capabilities) Methods() []string {
 	}
 	if c.Rich && c.Photo && c.Document {
 		methods = append(methods, "communication.report")
+	}
+	if c.Message && c.Widget {
+		methods = append(methods, "communication.widget")
 	}
 	return methods
 }
@@ -243,6 +247,32 @@ func (p Planner) Plan(ctx context.Context, tx pgx.Tx, run string, binding commun
 			}
 		}
 		flush()
+	}
+	if args.Input != nil {
+		if !p.Profile.Widget || !p.Profile.Message {
+			return nil, ErrUnavailable
+		}
+		var options strings.Builder
+		for index, o := range args.Input.Options {
+			fmt.Fprintf(&options, "%d. %s\n", index+1, o.Label)
+			if o.Description != "" {
+				options.WriteString(o.Description + "\n")
+			}
+			if o.ImageRef != "" {
+				f, e := file(o.ImageRef, true)
+				if e != nil {
+					return nil, e
+				}
+				parts = append(parts, Part{Version: 1, Method: "sendPhoto", Photo: "attach://" + f.Field, Caption: fmt.Sprintf("Вариант %d", index+1), Files: []File{f}})
+			}
+		}
+		for _, text := range deliveryoutbox.Split(options.String(), 3600) {
+			parts = append(parts, Part{Version: 1, Method: "sendMessage", Text: text})
+		}
+		questions := deliveryoutbox.Split(args.Question, 3600)
+		for index, text := range questions {
+			parts = append(parts, Part{Version: 1, Method: "sendMessage", Text: text, Widget: index == len(questions)-1})
+		}
 	}
 	if len(parts) == 0 || len(parts) > 100 {
 		return nil, ErrUnavailable

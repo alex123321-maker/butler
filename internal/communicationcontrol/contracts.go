@@ -101,7 +101,11 @@ func Contract(n string) *toolbrokerv1.ToolContract {
 	if !IsTool(n) {
 		return nil
 	}
-	props := map[string]any{"schema_version": map[string]any{"type": "integer", "enum": []int{1}}, "reply_to_publication_ref": map[string]string{"type": "string"}, "source_refs": map[string]any{"type": "array", "items": map[string]string{"type": "string"}}}
+	props := map[string]any{
+		"schema_version":           map[string]any{"type": "integer", "enum": []int{1}},
+		"reply_to_publication_ref": map[string]string{"type": "string", "description": "Optional publication_ref returned by a communication receipt. Never use interaction_ref or a Catalog source_ref here."},
+		"source_refs":              map[string]any{"type": "array", "description": "Optional canonical Catalog source_ref values for evidence already read in this run, including message:response:interaction:... for an owner answer. Never use interaction_ref or publication_ref here.", "items": map[string]string{"type": "string"}},
+	}
 	str := func() map[string]string { return map[string]string{"type": "string"} }
 	arr := func(item any) map[string]any { return map[string]any{"type": "array", "items": item} }
 	obj := func(p map[string]any, req ...string) map[string]any {
@@ -298,7 +302,7 @@ func DecodeArgs(tool, raw string) (Args, error) {
 			}
 			seen := map[string]bool{}
 			for _, o := range q.Options {
-				if !bounded(o.ID, 64) || !bounded(o.Label, 300) || seen[o.ID] {
+				if !bounded(o.ID, 64) || !bounded(o.Label, 300) || seen[o.ID] || o.Description != "" && !bounded(o.Description, 2000) || o.ImageRef != "" && (!strings.HasPrefix(o.ImageRef, "artifact:") || !bounded(o.ImageRef, 512)) {
 					return a, ErrDenied
 				}
 				seen[o.ID] = true

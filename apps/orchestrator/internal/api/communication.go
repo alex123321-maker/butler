@@ -27,7 +27,9 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 			writeJSON(w, 503, map[string]string{"error": "communication_unavailable"})
 			return
 		}
-		if r.URL.RawQuery != "" || r.URL.RawPath != "" || r.URL.ForceQuery {
+		// Accept the canonical percent-encoding of typed reference colons only.
+		// Encoded separators/dot segments and double decoding remain forbidden.
+		if r.URL.RawQuery != "" || r.URL.RawPath != "" && r.URL.RawPath!=strings.ReplaceAll(r.URL.Path,":","%3A") || r.URL.ForceQuery {
 			writeJSON(w, 400, map[string]string{"error": "fixed_communication_path_required"})
 			return
 		}
@@ -68,6 +70,18 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 			if errors.Is(err, communication.ErrConflict) || errors.Is(err, communication.ErrResolved) {
 				code = 409
 				reason = "communication_conflict"
+			}
+			if errors.Is(err, communication.ErrResolved) {
+				code = 409
+				reason = "already_resolved"
+			}
+			if errors.Is(err, communication.ErrWidgetStale) {
+				code = 409
+				reason = "stale_interaction"
+			}
+			if errors.Is(err, communication.ErrWidgetAnswer) {
+				code = 422
+				reason = "invalid_answer"
 			}
 			if errors.Is(err, communication.ErrAmbiguous) {
 				code = 409
@@ -130,6 +144,19 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 				return
 			}
 			writeJSON(w, 202, map[string]string{"input_ref": v.InputID, "session_ref": v.SessionKey, "status": v.Status})
+		case strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") && strings.HasSuffix(r.URL.Path, "/actions"):
+			id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/v3/interactions/"), "/actions")
+			var q communication.WidgetAction
+			if !strings.HasPrefix(id, "interaction:") || len(id) > 128 || strings.Contains(id, "/") || communicationcontrol.StrictJSON(raw, &q) != nil {
+				bad()
+				return
+			}
+			v, e := store.WidgetAction(ctx, id, q)
+			if e != nil {
+				failed(e)
+				return
+			}
+			writeJSON(w, 200, v)
 		case strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") && strings.HasSuffix(r.URL.Path, "/responses"):
 			id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/v3/interactions/"), "/responses")
 			if id == "" || len(id) > 128 || strings.Contains(id, "/") {

@@ -45,3 +45,23 @@ func (s *Store) CheckInteractionClaimTx(ctx context.Context, tx pgx.Tx, runID, i
 	}
 	return nil
 }
+
+// SaveInteractionPreparation retains answer DATA for subsequent approval/model
+// recovery without consuming or replacing the monotonic interaction-ready marker.
+func (s *Store) SaveInteractionPreparation(ctx context.Context, runID, id, payload string) error {
+	r, ok := ctx.Value(claimKey{}).(Record)
+	tok, owned := ownership.TokenFromContext(ctx)
+	if !ok || !owned || tok.RunID != runID {
+		return ErrClaimLost
+	}
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET checkpoint_json=jsonb_set(checkpoint_json,'{prepared}',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND checkpoint='interaction_ready' AND checkpoint_json->'interaction'->>'interaction_id'=$5 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, payload, id)
+	if err == nil && tag.RowsAffected() != 1 {
+		return ErrClaimLost
+	}
+	return err
+}

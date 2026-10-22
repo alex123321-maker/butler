@@ -2,6 +2,7 @@ package telegramrich
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"math"
 	"strconv"
@@ -82,14 +83,18 @@ func (p *Poller) ProcessOnce(ctx context.Context) (PollResult, error) {
 	outcome := ""
 	for _, u := range updates {
 		m := u.Message
-		if m == nil || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || m.From.ID != b.UserID || m.From.IsBot {
+		if u.Callback != nil {
+			m = u.Callback.Message
+		}
+		ownedCallback := u.Callback != nil && m != nil && u.Callback.From.ID == b.UserID && !u.Callback.From.IsBot && m.From.IsBot && m.From.ID == b.BotID
+		if m == nil || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || !ownedCallback && (m.From.ID != b.UserID || m.From.IsBot) {
 			result.Ignored++
 			outcome = "ignored"
 		} else if err = p.Acceptor.Reply(ctx, u); err == nil {
 			result.Accepted++
 			outcome = "accepted"
-		} else if errors.Is(err, communication.ErrAmbiguous) || errors.Is(err, communication.ErrInteractionRequired) || errors.Is(err, communication.ErrReplyTargetUnavailable) || errors.Is(err, ErrRejectedUpdate) {
-			if p.Notices != nil {
+		} else if errors.Is(err, communication.ErrAmbiguous) || errors.Is(err, communication.ErrInteractionRequired) || errors.Is(err, communication.ErrReplyTargetUnavailable) || errors.Is(err, ErrRejectedUpdate) || errors.Is(err, communication.ErrResolved) || errors.Is(err, communication.ErrWidgetStale) || errors.Is(err, communication.ErrWidgetAnswer) {
+			if p.Notices != nil && u.Callback == nil {
 				code := "unsupported_input"
 				if errors.Is(err, communication.ErrAmbiguous) {
 					code = "target_required"
@@ -112,6 +117,16 @@ func (p *Poller) ProcessOnce(ctx context.Context) (PollResult, error) {
 			// ErrDenied also masks failed guarded SQL reads. It is not proof of
 			// permanent rejection: preserve the update/cursor on that boundary.
 			return result, err
+		}
+		if u.Callback != nil && ownedCallback {
+			if client, ok := p.Client.(*Client); ok {
+				text := "Выбор сохранён."
+				if outcome == "rejected" {
+					text = "Вопрос уже закрыт или изменился. Откройте актуальный вопрос."
+				}
+				body, _ := json.Marshal(map[string]any{"callback_query_id": u.Callback.ID, "text": text})
+				_, _, _ = client.call(ctx, "answerCallbackQuery", body, "application/json")
+			}
 		}
 		result.NextOffset = u.ID + 1
 	}

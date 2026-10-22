@@ -1,16 +1,70 @@
 # Butler — общение агента с пользователем
 
-Версия 0.9, 2026-10-22. **Статус: согласованный продуктовый контракт;
+Версия 0.10, 2026-10-22. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
 готовностью и системным admission, а не наличием DTO.
 
 Исходный анализ — `origin/main b20206d` от 2026-10-15; ревизия плана
-2026-10-21 сверена с `origin/main ab28dd88`. Production deployment в рамках
-предыдущей работы не менялся; текущий owner rollout документируется отдельно.
+2026-10-21 сверена с `origin/main ab28dd88`. Текущий ограниченный owner rollout
+message/photo/report документируется отдельно; C05 не обновляет его автоматически.
 
 ### Граница текущей реализации
+
+C05 (#104) добавляет opt-in `Widgets` в private operator/lab composition:
+single-choice, multi-choice и text в Web/Telegram. Полная приёмка фиксируется
+[отдельной приёмкой C05](../ai/communication-widgets-acceptance-20261022.md); существующий рабочий message/photo/report профиль не
+обновляется автоматически. Новая capability требует явно квалифицированных
+binding snapshots; включение флага не переписывает старые admissions/receipts.
+
+Миграция095 хранит общий multi-choice draft с отдельным `draft_version`,
+короткий callback locator, идемпотентные channel-scoped receipts и журнал
+изменений известного Telegram ACK. Draft/toggle не создаёт transcript response,
+resume intent или grant. Submit проходит прежний `RespondTx`; только первый
+ответ разрешает прежний owning Input. Повтор delivery возвращает тот же receipt,
+другой payload конфликтует, stale version требует обновления. Чтение Web
+показывает question/state/draft/answer; текст решения находится внутри вопроса,
+а не дублируется в ленте сырым JSON.
+После проверки ответа восстановленный prepared context сохраняет его как private
+preference DATA до нового model turn. Узкий owning checkpoint writer сохраняет
+`interaction_ready` и его identity: crash не теряет wakeup, последующий exact-action
+approval не возвращает модель к вопросу без уже принятого ответа. Повторная
+подготовка заменяет только DATA того же interaction, не добавляет второй ответ,
+не меняет owner instruction и не восстанавливает старые tool grants.
+Перед release ответа в model context owning worker читает канонический
+`message:response:<interaction>` через тот же Catalog AccessTx. Текущие source,
+scope, dependency и lease проверки захватывают этот source в `memory_run_sources`;
+provenance ссылается на него, а не на канальный interaction locator. Ответ DATA
+содержит отдельные `interaction_ref`, `publication_ref` и `source_ref`; schema
+явно различает publication reply link и Catalog evidence refs. Последующее
+удаление ответа запрещает cached context/publication; text проходит обычное
+маскирование credential material. Callback refs не становятся Catalog authority.
+
+Telegram callbacks проверяют numeric bot, private chat, sender, binding/version,
+сохранённый sent ACK и текущий interaction; callback token не является authority.
+Текстовый ответ требует явного reply на сохранённый вопрос. В Bot API10.3
+используется непустой InlineKeyboardMarkup с `force_reply: true` и неактивным
+индикатором ожидания (`disabled: {}`), без callback: он открывает reply и остаётся
+редактируемым. Пустая keyboard на реальном API интерпретируется как standalone
+ForceReply и запрещает edit; это отдельно проверено native contract probe.
+Неизменяемый флаг сохраняется и при terminal edit;
+сам terminal state проверяется backend. Inline buttons — канальное представление
+тех же данных. Option media проходит прежние
+Artifact/Catalog/export guards до publication и перед отправкой.
+
+Редактирование проекции сохраняется отдельно от первоначальной доставки, по
+notification ID и версии состояния. Worker сериализует edits одного ACK;
+потеря ответа/процесса оставляет UNKNOWN без нового send или inference replay.
+Ошибки edit не открывают вопрос заново. Web показывает неподтверждённое edit;
+любая устаревшая кнопка всё равно проверяется backend. Поздняя исходная доставка
+считывает terminal state и не создаёт активных кнопок закрытого вопроса.
+Privacy erasure удаляет производные drafts/receipts; rollback schema запрещён
+при принятой widget history, для неё сохраняется compatible drain.
+
+Mapping сверено с [InlineKeyboardButton](https://core.telegram.org/bots/api#inlinekeyboardbutton),
+[InlineKeyboardMarkup](https://core.telegram.org/bots/api#inlinekeyboardmarkup) и
+[editMessageText](https://core.telegram.org/bots/api#editmessagetext), 2026-10-22.
 
 При совместном включении converters retained message/report не должен требовать
 живую lease уже завершённого unrelated run. Developer-return guard сначала

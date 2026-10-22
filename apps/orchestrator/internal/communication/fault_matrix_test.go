@@ -128,7 +128,16 @@ func TestCrashCommunicationWorker(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 	b := &boundaryTx{Tx: tx, stop: q.Stop, kill: true}
-	if q.Kind == "response" {
+	if strings.HasPrefix(q.Kind, "widget:") {
+		actor := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: q.Principal.OwnerID, Channel: "web", SessionKey: "web:verified", DeliveryID: "fault-answer"})
+		action := communication.WidgetAction{BindingID: q.Principal.RunID + ":web", BindingVersion: 1, ExpectedVersion: 1, DraftVersion: 1, Operation: "draft", Answer: communicationcontrol.Answer{OptionIDs: []string{"a"}}}
+		if q.Kind == "widget:submit" {
+			action.Operation = "submit"
+			action.DraftVersion = 2
+			action.Answer = communicationcontrol.Answer{}
+		}
+		_, e = s.WidgetActionTx(actor, b, q.Interaction, action)
+	} else if q.Kind == "response" {
 		actor := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: q.Principal.OwnerID, Channel: "web", SessionKey: "web:verified", DeliveryID: "fault-answer"})
 		_, e = s.RespondTx(actor, b, q.Interaction, q.Principal.RunID+":web", 1, 1, communicationcontrol.Answer{OptionIDs: []string{"a"}})
 	} else {

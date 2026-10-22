@@ -41,6 +41,7 @@ func NewExplicitAdapter(p *telegramrich.Poller, d *communication.DeliveryStore, 
 	e := &explicitChannel{poller: p, sender: *s}
 	scoped := d.ForBinding(communication.Binding{ID: b.BindingID, Version: b.Version, Channel: "telegram", Recipient: "telegram:" + strconv.FormatInt(b.ChatID, 10)})
 	e.sender.Authorize = scoped.AuthorizeSend // Caller hooks cannot weaken the owning guard.
+	e.sender.Widget = d.Core.DeliveryWidget
 	e.worker = deliveryoutbox.Worker{Store: scoped, Sender: &e.sender}
 	return &Adapter{explicit: e, allowedChatIDs: map[string]struct{}{strconv.FormatInt(b.ChatID, 10): {}}}, nil
 }
@@ -67,7 +68,13 @@ func (e *explicitChannel) run(ctx context.Context) error {
 	finished := make(chan error, 2)
 	go func() { finished <- e.worker.Run(run) }()
 	go func() {
-		finished <- runExplicitPolling(run, func(ctx context.Context) error { _, err := e.poller.ProcessOnce(ctx); return err }, time.Second)
+		finished <- runExplicitPolling(run, func(ctx context.Context) error {
+			if err := e.poller.RefreshWidgets(ctx); err != nil {
+				return err
+			}
+			_, err := e.poller.ProcessOnce(ctx)
+			return err
+		}, time.Second)
 	}()
 	<-finished
 	cancel()

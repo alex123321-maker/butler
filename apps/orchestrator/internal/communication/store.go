@@ -4,6 +4,7 @@ package communication
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -32,6 +34,11 @@ type Store struct {
 	// Only a composed Web reader/planner can promise availability. Dormant
 	// foundation and previously pending history retain their original epoch.
 	WebAvailable bool
+	// Terminal delivery is safe only with a composed current-state renderer.
+	WidgetProjections bool
+	// The composed Catalog captures the canonical owner response before model
+	// release, so later deletion/source checks cover the new DATA too.
+	Sources *catalog.Store
 	// Required current Catalog checks. A missing guard always denies publication,
 	// read, submit, send and continuation, rather than trusting copied source refs.
 	SourceGuard func(context.Context, pgx.Tx, string) error
@@ -319,7 +326,7 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 			out.Delivery[i].State = "failed"
 		} else {
 			parts := []string{text}
-			if s.PlanDelivery != nil && kind != "widget" {
+			if s.PlanDelivery != nil {
 				parts, err = s.PlanDelivery(ctx, tx, p.RunID, b, a)
 				if err != nil || len(parts) == 0 || len(parts) > 100 {
 					return out, ErrDenied
@@ -397,6 +404,13 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	if kind == "widget" {
 		_, err = tx.Exec(ctx, `INSERT INTO communication_interactions(interaction_id,publication_id,input_id,owner_id,session_key,run_id,task_id,task_revision,constraints_revision,question_json,state,expires_at) VALUES($1,$2,$3,$4,$5,$6,NULLIF($7,''),$8,$9,$10::jsonb,'open',$11)`, interaction, pub, p.InputID, p.OwnerID, p.SessionKey, p.RunID, p.TaskID, p.TaskRevision, p.ConstraintsRevision, canon, a.ExpiresAt)
 		if err != nil {
+			return out, err
+		}
+		var token [12]byte
+		if _, err = rand.Read(token[:]); err != nil {
+			return out, err
+		}
+		if _, err = tx.Exec(ctx, `INSERT INTO communication_widget_views(interaction_id,callback_token) VALUES($1,$2)`, interaction, hex.EncodeToString(token[:])); err != nil {
 			return out, err
 		}
 		if err = s.Inputs.SuspendInteractionTx(ctx, tx, p.RunID, interaction); err != nil {

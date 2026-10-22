@@ -219,6 +219,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		mux.Handle("/api/v3/communications", deps.communicationWebHandler)
 		mux.Handle("/api/v3/communications/", deps.communicationWebHandler)
 		mux.Handle("/api/v3/channel-bindings", deps.communicationWebHandler)
+		mux.Handle("/api/v3/interactions/", deps.communicationWebHandler)
 	}
 	var browserClient *browsercontrol.Client
 	if deps.cfg.BrowserControlURL != "" {

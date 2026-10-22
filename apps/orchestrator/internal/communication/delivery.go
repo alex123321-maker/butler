@@ -96,12 +96,6 @@ func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Mess
 	if e != nil {
 		return deny()
 	}
-	if kind == "widget" {
-		var current bool
-		if tx.QueryRow(ctx, `SELECT TRUE FROM communication_interactions WHERE publication_id=$1 AND state='open' AND NOT privacy_redacted AND (expires_at IS NULL OR expires_at>clock_timestamp())`, m.PublicationID).Scan(&current) != nil {
-			return deny()
-		}
-	}
 	if taskID != "" {
 		if _, e = actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, owner, nil, time.Now().UTC()); e != nil {
 			return deny()
@@ -135,7 +129,7 @@ func (d *DeliveryStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Mess
 	// waited beyond the claim or question deadline. The authority rows read
 	// above remain locked through this transaction.
 	var current bool
-	if tx.QueryRow(ctx, `SELECT TRUE FROM delivery_outbox d JOIN communication_publications p USING(publication_id) JOIN communication_bindings b ON b.binding_id=d.binding_id LEFT JOIN tasks t ON t.task_id=p.task_id WHERE d.notification_id=$1 AND d.claim_id=$2 AND d.status='sending' AND d.claim_until>clock_timestamp() AND NOT d.privacy_redacted AND NOT p.privacy_redacted AND b.enabled AND b.verified AND b.owner_id=p.owner_id AND b.version=d.binding_version AND b.recipient=d.recipient_snapshot AND (p.task_id IS NULL OR t.revision=p.task_revision AND t.constraints_revision=p.constraints_revision AND t.status NOT IN ('cancelled','paused','blocked')) AND (p.kind<>'widget' OR EXISTS(SELECT 1 FROM communication_interactions x WHERE x.publication_id=p.publication_id AND x.state='open' AND NOT x.privacy_redacted AND (x.expires_at IS NULL OR x.expires_at>clock_timestamp())))`, m.NotificationID, m.ClaimID).Scan(&current) != nil {
+	if tx.QueryRow(ctx, `SELECT TRUE FROM delivery_outbox d JOIN communication_publications p USING(publication_id) JOIN communication_bindings b ON b.binding_id=d.binding_id LEFT JOIN tasks t ON t.task_id=p.task_id WHERE d.notification_id=$1 AND d.claim_id=$2 AND d.status='sending' AND d.claim_until>clock_timestamp() AND NOT d.privacy_redacted AND NOT p.privacy_redacted AND b.enabled AND b.verified AND b.owner_id=p.owner_id AND b.version=d.binding_version AND b.recipient=d.recipient_snapshot AND (p.task_id IS NULL OR t.revision=p.task_revision AND t.constraints_revision=p.constraints_revision AND t.status NOT IN ('cancelled','paused','blocked')) AND (p.kind<>'widget' OR EXISTS(SELECT 1 FROM communication_interactions x WHERE x.publication_id=p.publication_id AND NOT x.privacy_redacted AND ((x.state='open' AND (x.expires_at IS NULL OR x.expires_at>clock_timestamp())) OR $3 AND x.state<>'open')))`, m.NotificationID, m.ClaimID, d.Core.WidgetProjections).Scan(&current) != nil {
 		return deny()
 	}
 	return tx.Commit(ctx)

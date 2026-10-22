@@ -235,6 +235,8 @@ export const useMind = defineStore('mind', () => {
       throw new Error(
         response.status === 409
           ? 'version_changed'
+          : response.status === 422
+            ? 'invalid_answer'
           : response.status === 401 || response.status === 403
             ? 'owner_denied'
             : 'unavailable',

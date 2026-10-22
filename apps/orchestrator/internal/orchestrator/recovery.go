@@ -176,7 +176,17 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		if e != nil {
 			return nil, e
 		}
-		items := append([]transport.InputItem(nil), refreshed.InputItems...)
+		checkpoint.Prepared = interactionResponsePreparation(checkpoint.Prepared, refreshed, checkpoint.Interaction.ID, answer)
+		retainer, ok := s.config.Checkpoints.(interface {
+			SaveInteractionPreparation(context.Context, string, string, string) error
+		})
+		if !ok {
+			return nil, fmt.Errorf("durable interaction preparation unavailable")
+		}
+		if e = retainer.SaveInteractionPreparation(ctx, runID, checkpoint.Interaction.ID, mustMarshalJSON(durableSourcePreparation(durableSkillPreparation(checkpoint.Prepared)))); e != nil {
+			return nil, e
+		}
+		items := append([]transport.InputItem(nil), checkpoint.Prepared.InputItems...)
 		history, e := s.transcript.GetTranscript(ctx, event.SessionKey)
 		if e != nil {
 			return nil, e
@@ -189,7 +199,6 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 				items = append(items, recoveredActionResultItem(call.ToolCallID, call.ToolName, call.ArgsJSON, recordedToolResultEnvelope(call)))
 			}
 		}
-		items = append(items, content.Data(map[string]any{"kind": "interaction_response", "data": json.RawMessage(answer)}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{checkpoint.Interaction.ID}, Sensitivity: content.Private}))
 		if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, lease.LeaseID, "", "")
 			if err != nil {

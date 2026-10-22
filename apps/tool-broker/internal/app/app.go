@@ -60,11 +60,11 @@ func New(ctx context.Context) (*App, error) {
 
 // NewForCommunication composes canonical private dispatch only on a disposable
 // test database. The ordinary binary and environment config expose no toggle.
-func NewForCommunication(ctx context.Context, endpoint string) (*App, error) {
+func NewForCommunication(ctx context.Context, endpoint string, widgets ...bool) (*App, error) {
 	if endpoint == "" {
 		return nil, communicationcontrol.ErrDenied
 	}
-	return newApp(ctx, endpoint, nil)
+	return newApp(ctx, endpoint, nil, widgets...)
 }
 
 // NewForOwnerCommunication is the separately pinned operator deployment path.
@@ -75,7 +75,7 @@ func NewForOwnerCommunication(ctx context.Context, p communicationcontrol.OwnerP
 	return newApp(ctx, p.ControlURL, &p)
 }
 
-func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *communicationcontrol.OwnerProfile) (*App, error) {
+func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *communicationcontrol.OwnerProfile, widgets ...bool) (*App, error) {
 	cfg, snapshot, err := config.LoadToolBrokerFromEnv()
 	if err != nil {
 		return nil, err
@@ -465,6 +465,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 			contracts := []*toolbrokerv1.ToolContract{}
 			for _, name := range []string{"communication.message", "communication.photo", "communication.report"} {
 				contracts = append(contracts, communicationcontrol.Contract(name))
+			}
+			if ownerProfile != nil && ownerProfile.Widgets || ownerProfile == nil && len(widgets) == 1 && widgets[0] {
+				contracts = append(contracts, communicationcontrol.Contract("communication.widget"))
 			}
 			if err = registryStore.RegisterOwned(contracts); err != nil {
 				postgres.Close()

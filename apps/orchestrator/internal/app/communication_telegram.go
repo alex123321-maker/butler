@@ -48,6 +48,7 @@ type TelegramCommunicationOptions struct {
 	// Export of private owner material to this precise private bot binding is
 	// an explicit operator decision. Public-only is the zero/default policy.
 	AllowPrivate bool
+	Widgets      bool
 	// Set only by the separate trusted production constructor; JSON cannot
 	// remove the disposable-database restriction of the lab constructor.
 	ownerDatabase   string
@@ -63,6 +64,7 @@ type telegramCommunication struct {
 	controls *task.Controller
 	web      *webCommunication
 	draining bool
+	widgets  bool
 }
 
 type telegramExportPolicy struct {
@@ -153,10 +155,13 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 		return nil, telegram.ErrExplicitUnsupported
 	}
 	b := communication.Binding{ID: o.BindingID, Version: o.BindingVersion, Channel: "telegram", Recipient: "telegram:" + strconv.FormatInt(o.ChatID, 10), Enabled: true, Capabilities: []string{"message", "photo", "report"}}
-	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard}
+	if o.Widgets {
+		b.Capabilities = append(b.Capabilities, "widget")
+	}
+	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets, Sources: sources}
 	policy := telegramExportPolicy{owner: o.OwnerID, binding: b, allowPrivate: o.AllowPrivate, catalog: sources, sourceGuard: guard}
 	core.ChannelGuard = policy.check
-	core.PlanDelivery = (telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true}, Resolve: policy.media}).Plan
+	core.PlanDelivery = (telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true, Widget: o.Widgets}, Resolve: policy.media}).Plan
 	var owner, channel, recipient string
 	var version int64
 	var enabled, verified bool
@@ -182,7 +187,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err = pinTelegramBotAt(ctx, pool, b, me.ID, o.initialUpdateID); err != nil {
 		return nil, err
 	}
-	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly}
+	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly, widgets: o.Widgets}
 	c.installInputHooks()
 	if err = c.installWeb(ctx, o, guard); err != nil {
 		return nil, err
@@ -259,7 +264,28 @@ func (c *telegramCommunication) admit(ctx context.Context, run string) error {
 	if err != nil || hash != proof.PayloadHash {
 		return communication.ErrDenied
 	}
-	return c.store.AdmitRun(ctx, run, false, []string{"communication.message", "communication.photo", "communication.report"})
+	methods := []string{"communication.message", "communication.photo", "communication.report"}
+	if c.widgets {
+		methods = append(methods, "communication.widget")
+	}
+	// Recovery keeps the admission's immutable method set. A newly qualified
+	// channel capability cannot upgrade an already accepted run.
+	var retained []byte
+	if err := c.store.Pool.QueryRow(ctx, `SELECT a.methods FROM communication_admissions a JOIN accepted_inputs i USING(input_id) WHERE i.run_id=$1`, run).Scan(&retained); err == nil {
+		var old []string
+		if json.Unmarshal(retained, &old) != nil {
+			return communication.ErrDenied
+		}
+		for _, method := range old {
+			if !slices.Contains(methods, method) {
+				return communication.ErrDenied
+			}
+		}
+		methods = old
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+	return c.store.AdmitRun(ctx, run, false, methods)
 }
 
 func (c *telegramCommunication) installInputHooks() {
@@ -438,9 +464,9 @@ func (c *telegramCommunication) adapter(controls *task.Controller) (*telegram.Ad
 	}
 	c.controls = controls
 	controls.SetInteractionControls(c.store)
-	ingress := &telegramrich.Ingress{Store: c.store, Controls: controls, Binding: c.binding, Conversation: c.conversation}
+	ingress := &telegramrich.Ingress{Store: c.store, Controls: controls, Binding: c.binding, Conversation: c.conversation, Widgets: c.widgets}
 	d := &communication.DeliveryStore{Core: c.store}
-	s := &telegramrich.Sender{Client: c.client, Resolve: func(ctx context.Context, m deliveryoutbox.Message, f telegramrich.File) (artifacts.Media, error) {
+	s := &telegramrich.Sender{Client: c.client, Widget: c.store.DeliveryWidget, Resolve: func(ctx context.Context, m deliveryoutbox.Message, f telegramrich.File) (artifacts.Media, error) {
 		tx, err := c.store.Pool.Begin(ctx)
 		if err != nil {
 			return artifacts.Media{}, err
