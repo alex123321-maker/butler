@@ -1203,3 +1203,26 @@ See `deploy/docker-compose.server-browser.yml` and the browser-session contract.
 accepted only from the operator environment. Stored/UI settings cannot redirect
 the Broker-authenticated route. The exact private endpoint path and existing
 action-authority token configuration are required before startup.
+## Isolated explicit Telegram composition (#130)
+
+`NewForTelegramCommunication` joins the actual Input/Core/Completion and private
+communication handler with the native adapter. It is available only through the
+separate [operator command](cmd/telegram-agent-lab/README.md) on a disposable
+`_test` database. `New` and normal main remain unchanged. Export uses current
+Catalog/dependency/revision checks and a fixed operator binding/privacy policy;
+media also rechecks its original run's sources. Optional WebBindingID/version
+joins the continuous Web interface through owner-authenticated publication,
+media, reply, conversation and scoped cursor/SSE routes. Only the composed Web
+reader/planner marks new targets available; old history remains unchanged.
+Trusted `DrainOnly` retains readers and accepted epoch-1 work while rejecting
+new messages. HTTP streams stop with App.Run; Telegram read outages back off
+without stopping Web/Core or retrying uncertain sends. Authorized report files
+remain saveable in Telegram. No ordinary startup flag enables this profile.
+See [integration/review evidence](../../docs/ai/communication-web-integration-review-20261022.md).
+
+The continuous owner Web surface uses authenticated catalog browse, bounded
+Russian text search and owner-derived note creation under `/api/v4/memory`.
+These routes do not admit semantic inference or change the execution kernel.
+See [source projections](../../docs/architecture/versioned-memory-sources.md)
+and [Web behavior](../../web/README.md). Server-browser ownership/manual control
+retain the existing private Broker/runtime protocol.

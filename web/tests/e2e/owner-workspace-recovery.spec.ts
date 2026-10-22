@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('workspace discard discovers the copy, keeps exact lost-ACK intent and original effect unknown', async ({ page }) => {
@@ -25,7 +26,7 @@ test('workspace discard discovers the copy, keeps exact lost-ACK intent and orig
       await route.fulfill({ json: { ...status, phase: 'requested', can_discard: false, recovery_id: 'saved-recovery-intent' } })
     }
   })
-  await page.goto('/tasks/recovery-owner')
+  await openMindPanel(page, '/tasks/recovery-owner')
   await expect(page.getByRole('button', { name: 'Load workspace recovery' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill('fixture-current-owner-proof')
   await page.getByRole('button', { name: 'Load workspace recovery' }).click()
@@ -63,7 +64,7 @@ test('a changed recovery CAS permits a new delivery only after explicit authenti
     expect(route.request().postDataJSON().resource_version).toBe(9)
     return route.fulfill({ json: { ...current, resource_version: 9, phase: 'requested', can_discard: false } })
   })
-  await page.goto('/tasks/recovery-owner')
+  await openMindPanel(page, '/tasks/recovery-owner')
   await page.getByLabel('Owner control token').fill('fixture-current-owner-proof')
   await page.getByRole('button', { name: 'Load workspace recovery', exact: true }).click()
   await page.getByRole('button', { name: 'Discard this quarantined copy', exact: true }).click()

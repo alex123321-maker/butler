@@ -1,5 +1,12 @@
 # Telegram communication adapter (isolated opt-in)
 
+The explicitly gated native format corpus pins the dedicated lab bot/owner and
+requires a private proxy reference. It makes one attempt per fixed synthetic
+request, including the documented text rejection boundary, with no paid broadcast,
+inference, production activation or automatic retry. It qualifies transport
+formats, not agent authorization or task completion. See the dated integration
+evidence for tested client bundle fingerprints, server observations and limits.
+
 This codec is consumed by the explicit constructor in `../telegram` while
 remaining separate from its legacy text client. Normal Bootstrap, production
 flags and Web do not install the new composition.
@@ -23,6 +30,10 @@ a profile which advertises Web rendering or widgets through this adapter.
 - Required retained media is resolved during planning and again before sending.
   The manifest pins reference/name/MIME/size/SHA-256, without bytes or public URLs.
   Missing, changed, redacted or forbidden media refuses the send.
+- Authorized publications allow native file opening/saving. They do not force
+  Bot API protect_content, which prevents saving and contradicts report file
+  acceptance. Source/export authorization is the privacy boundary; already
+  exported client copies cannot be recalled by later Butler redaction.
 
 `Sender.Authorize` is mandatory and must use the owning `DeliveryStore` guard.
 It runs before media reads and again after multipart construction, immediately
@@ -36,13 +47,25 @@ an explicit Bot API rejection can establish absence and bounded retry.
 `Ingress.Reply` normalizes private owner replies to the existing canonical Input
 and owner-control paths. Trusted composition must pin owner, user, chat, bot,
 binding and version; the replied-to message must belong to that bot and have a
-stored sent ACK. An ordinary message without an explicit target is ambiguous.
-This does not implement new conversation admission, widgets or provider auth.
+stored sent ACK. A message without a reply is ambiguous unless trusted
+composition supplies `Conversation`, which joins the kernel's normal Input path.
+Invalid replies never fall back into that hook. Transport does not run a model
+or implement widget/approval decisions.
 `Poller.ProcessOnce` serializes each bot's transport read and stores its cursor
 in PostgreSQL migration092 only after owning Input/control commit. Lost cursor
 commit replays stable delivery identity; generic denial/storage errors retain
 the cursor. Out-of-order batches are rejected before acceptance. There is no
 startup poller/webhook registration. Consumption history prevents rollback.
+The isolated App command is the explicit opt-in startup composition. Its numeric
+bot identity is pinned before admission/sending; a recreated username cannot
+adopt another bot's binding. `Notices` uses fixed source-free clarification text
+and migration094 pre-send receipts; unknown outcomes are never resent. A proven
+missing reply target can be consumed with clarification, while generic guarded
+SQL/policy failures preserve the cursor.
+The explicit adapter retries failed read-only polling with cancellable1–30s
+backoff. A Telegram transport/identity/storage failure cannot stop Web/Core.
+Delivery remains the existing independent outbox worker; this polling retry
+does not replay sends, regenerate an answer or advance an uncommitted cursor.
 
 `Capabilities` is an explicit trusted readiness profile; its zero value exposes
 no methods. Native report requires rich/photo/document support and cannot fall
@@ -53,6 +76,10 @@ paths cannot select another host, dot segment, query, fragment or redirect.
 The client accepts a private operator token-file reference outside source. It
 uses the fixed HTTPS Bot API host, refuses redirects, disables environment
 proxies and exposes fixed errors without URLs, token values or remote bodies.
+Trusted operator composition can explicitly supply a private HTTP(S) proxy URL
+file with `NewClientFromTokenFileWithProxyFile`. This uses CONNECT to the fixed
+official HTTPS host and keeps normal certificate verification enabled. Proxy
+credentials remain inside the client, outside model inputs and diagnostics.
 Paid broadcasts are never requested. Different bots must have different binding
 identities; do not attach the new token to a legacy binding/backlog.
 

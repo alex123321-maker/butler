@@ -57,6 +57,7 @@ type runState struct {
 	pendingNative functionCall
 	turn          int
 	cancel        context.CancelFunc
+	finalExpiry   *time.Timer
 }
 
 var capabilities = transport.CapabilitySnapshot{SupportsStreaming: true, SupportsToolCalls: true, SupportsCancel: true, SupportsUsageMetadata: true}
@@ -156,6 +157,10 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err := replaceTools(state, req.ToolSet); err != nil {
 		return nil, err
 	}
+	if state.finalExpiry != nil {
+		state.finalExpiry.Stop()
+		state.finalExpiry = nil
+	}
 	state.contents = append(state.contents, items...)
 	return p.executeLocked(ctx, req.RunID, state), nil
 }
@@ -205,6 +210,9 @@ func (p *Provider) CancelRun(_ context.Context, req transport.CancelRunRequest) 
 		}
 		if state.cancel != nil {
 			state.cancel()
+		}
+		if state.finalExpiry != nil {
+			state.finalExpiry.Stop()
 		}
 		delete(p.runs, req.RunID)
 	} else if req.ProviderSessionRef != nil {
@@ -296,21 +304,35 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			}
 			return
 		}
-		delete(p.runs, runID)
-		p.mu.Unlock()
 		if answer.Text == "" {
+			delete(p.runs, runID)
+			p.mu.Unlock()
 			event := transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function"))
 			event.Usage = answer.Usage
 			event.ProviderModelVersion = answer.ModelVersion
 			send(event)
 			return
 		}
+		// A provider final does not finalize the owning Butler run: Core may
+		// request its single delivery correction. Keep only a bounded private
+		// continuation context; no inference is scheduled by this timer.
+		state.contents = append(state.contents, content{Role: "model", Parts: answer.Parts})
+		state.finalExpiry = time.AfterFunc(time.Minute, func() { p.expireFinal(runID, state, turn) })
+		p.mu.Unlock()
 		final := transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage})
 		final.ProviderModelVersion = answer.ModelVersion
 		send(final)
 		send(transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, Name))
 	}()
 	return out
+}
+
+func (p *Provider) expireFinal(runID string, state *runState, turn int) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.runs[runID] == state && state.turn == turn && state.cancel == nil && state.pending == nil {
+		delete(p.runs, runID)
+	}
 }
 
 func (p *Provider) discard(runID string, state *runState) {

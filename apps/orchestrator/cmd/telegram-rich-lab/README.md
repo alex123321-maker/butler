@@ -7,6 +7,9 @@ the explicit communication profile. Production bots and Web remain unchanged.
 Store the new bot's token in a private file outside the repository with owner-only
 permissions. Supply the filename, never the token, on the command line. The bot
 must match the explicit expected username. Send `/start` from your private chat.
+To use an operator proxy, add `-proxy-file <private-proxy-file>` to each command.
+The file contains an HTTP(S) proxy URL and must have owner-only permissions;
+never put a credential-bearing proxy URL in command arguments or source.
 
 ```
 go run ./apps/orchestrator/cmd/telegram-rich-lab -token-file <private-file> -bot <test-bot> -action probe

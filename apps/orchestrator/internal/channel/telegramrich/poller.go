@@ -23,6 +23,7 @@ type Poller struct {
 	Client   UpdateClient
 	Acceptor ReplyAcceptor
 	Binding  OwnerBinding
+	Notices  *Notices
 }
 type PollResult struct {
 	NextOffset                  int64
@@ -87,7 +88,22 @@ func (p *Poller) ProcessOnce(ctx context.Context) (PollResult, error) {
 		} else if err = p.Acceptor.Reply(ctx, u); err == nil {
 			result.Accepted++
 			outcome = "accepted"
-		} else if errors.Is(err, communication.ErrAmbiguous) || errors.Is(err, communication.ErrInteractionRequired) || errors.Is(err, ErrRejectedUpdate) {
+		} else if errors.Is(err, communication.ErrAmbiguous) || errors.Is(err, communication.ErrInteractionRequired) || errors.Is(err, communication.ErrReplyTargetUnavailable) || errors.Is(err, ErrRejectedUpdate) {
+			if p.Notices != nil {
+				code := "unsupported_input"
+				if errors.Is(err, communication.ErrAmbiguous) {
+					code = "target_required"
+				}
+				if errors.Is(err, communication.ErrInteractionRequired) {
+					code = "interaction_required"
+				}
+				if errors.Is(err, communication.ErrReplyTargetUnavailable) {
+					code = "reply_target_unavailable"
+				}
+				if noticeErr := p.Notices.Notify(ctx, u, code); noticeErr != nil {
+					return result, noticeErr
+				}
+			}
 			// A rejected owner reply is not routed to a guessed Task or the legacy
 			// executor. A caller can surface the typed decision to the owner.
 			result.Rejected++

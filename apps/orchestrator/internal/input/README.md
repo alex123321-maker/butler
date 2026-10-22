@@ -81,6 +81,12 @@ neither merges sessions nor guesses an ordinary reply's target. A repeated stabl
 delivery returns its Input; changed payload returns typed `ErrDeliveryConflict`.
 The standalone communication owner handler maps that conflict to HTTP409.
 
+Migration093 adds a private immutable communication ingress proof. Verified
+Telegram messages and real Task-controller continuations mark their accepted
+Input inside the owning transaction. Public payload fields cannot select this
+epoch; epoch-0 workers and the database claim fence refuse such Inputs. The proof
+pins actor/delivery, bot/binding/version and the actual accepted payload hash.
+
 `ObserveStopped` returns content-free typed evidence to the owner-authorized
 experience adapter for one already blocked/failed original. It requires an empty
 claim, no current Session Service lease, exact owner/root-task/run identity and a

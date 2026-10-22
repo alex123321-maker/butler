@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('owner goals distinguish assumptions and revoke current mandate authority', async ({ page }) => {
@@ -23,7 +24,7 @@ test('owner goals distinguish assumptions and revoke current mandate authority',
     mandateRevision++
     await route.fulfill({ json: { subject_id: mandate.mandate_id, revision: mandateRevision, propagation: 'pending' } })
   })
-  await page.goto('/goals')
+  await openMindPanel(page, '/goals')
   await expect(page.getByRole('button', { name: 'Load owner authority' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load owner authority' }).click()

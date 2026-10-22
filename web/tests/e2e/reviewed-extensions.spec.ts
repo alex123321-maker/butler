@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('reviewed extension lifecycle keeps setup, health and task permission distinct', async ({ page }) => {
@@ -24,7 +25,7 @@ test('reviewed extension lifecycle keeps setup, health and task permission disti
     }
     await route.fulfill({ json: { item: { state, manifest } } })
   })
-  await page.goto('/extensions')
+  await openMindPanel(page, '/extensions')
   await expect(page.getByRole('button', { name: 'Load extensions' })).toBeDisabled()
   await page.getByLabel('Owner control token').fill(token)
   await page.getByRole('button', { name: 'Load extensions' }).click()

@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 const source = { source_id: 'target-source', external_key: 'target-source', source_kind: 'owner_statement', scope_type: 'user', scope_id: 'owner', revision: 2, status: 'active', title: 'Target evidence', body: 'EXACT_SOURCE_BODY', author: 'Owner', event_time: null, extracted_at: '2026-10-12T00:00:00Z' }
@@ -19,14 +20,14 @@ test('same-owner source route change queues the exact latest source and never re
     if (id === 'target-source') { started(); await delayed }
     return route.fulfill({ json: { ...detail, source: { ...source, source_id: id, body: id === 'next-source' ? 'LATEST_SOURCE_BODY' : 'PRIVATE_OLD_SOURCE_BODY' } } })
   })
-  await page.goto('/memory?source_id=target-source')
+  await openMindPanel(page, '/memory?source_id=target-source')
   await page.getByLabel('Owner control token').fill('current-owner-proof')
   await page.getByRole('button', { name: 'Load private memory' }).click()
   await oldStarted
   // Drive the actual mounted Vue router, preserving the page and current proof.
   await page.evaluate(async () => {
     const root = document.getElementById('__nuxt') as HTMLElement & { __vue_app__: { config: { globalProperties: { $router: { push(path: string): Promise<void> } } } } }
-    await root.__vue_app__.config.globalProperties.$router.push('/memory?source_id=next-source')
+    await root.__vue_app__.config.globalProperties.$router.push('/memory/manage?source_id=next-source')
   })
   await expect(page).toHaveURL(/source_id=next-source/)
   await expect(page.getByLabel('Source text', { exact: true })).toHaveCount(0)
@@ -48,7 +49,7 @@ test('exact evidence source loads only after explicit owner authentication', asy
     }
     return route.fulfill({ json: view })
   })
-  await page.goto('/memory?source_id=target-source')
+  await openMindPanel(page, '/memory?source_id=target-source')
   await expect(page.getByRole('button', { name: 'Load private memory' })).toBeDisabled()
   expect(paths).toEqual([])
   await page.getByLabel('Owner control token').fill('current-owner-proof')
@@ -71,7 +72,7 @@ test('old proof cannot republish a delayed source body', async ({ page }) => {
     }
     return route.fulfill({ json: view })
   })
-  await page.goto('/memory?source_id=target-source')
+  await openMindPanel(page, '/memory?source_id=target-source')
   await page.getByLabel('Owner control token').fill('previous-owner-proof')
   await page.getByRole('button', { name: 'Load private memory' }).click()
   await requestStarted
@@ -97,7 +98,7 @@ test('acknowledged old-proof mutation starts no followup request under a changed
     if (path === '/api/v4/memory/correct') { started(); await delayed; return route.fulfill({ json: { ...source, revision: 3 } }) }
     return route.fulfill({ json: view })
   })
-  await page.goto('/memory?source_id=target-source')
+  await openMindPanel(page, '/memory?source_id=target-source')
   await page.getByLabel('Owner control token').fill('previous-owner-proof')
   await page.getByRole('button', { name: 'Load private memory' }).click()
   await page.getByLabel('Source text', { exact: true }).fill('A reviewed correction')
@@ -124,7 +125,7 @@ test('export response from an old proof cannot start a browser download', async 
     if (new URL(route.request().url()).pathname === '/api/v4/memory/export') { started(); await delayed; return route.fulfill({ contentType: 'application/x-ndjson', body: 'PRIVATE_OLD_EXPORT' }) }
     return route.fulfill({ json: view })
   })
-  await page.goto('/memory')
+  await openMindPanel(page, '/memory')
   await page.getByLabel('Owner control token').fill('previous-owner-proof')
   await page.getByRole('button', { name: 'Load private memory' }).click()
   await page.getByRole('button', { name: 'Export all memory' }).click()
@@ -153,7 +154,7 @@ test('changed owner proof during local file reading prevents upload egress', asy
     if (new URL(route.request().url()).pathname === '/api/v4/memory/ingest') uploads++
     return route.fulfill({ json: view })
   })
-  await page.goto('/memory')
+  await openMindPanel(page, '/memory')
   await page.getByLabel('Owner control token').fill('previous-owner-proof')
   await page.getByRole('button', { name: 'Load private memory' }).click()
   await page.getByLabel('Source file').setInputFiles({ name: 'private.txt', mimeType: 'text/plain', buffer: Buffer.from('PRIVATE_UPLOAD_BODY') })

@@ -33,6 +33,7 @@ func main() {
 }
 func run() error {
 	tokenFile := flag.String("token-file", "", "Private token file outside the repository")
+	proxyFile := flag.String("proxy-file", "", "Private HTTP(S) proxy URL file outside the repository")
 	expectedBot := flag.String("bot", "", "Exact test bot username (without @)")
 	action := flag.String("action", "probe", "probe, updates, verify-document, or send-fixtures")
 	chatID := flag.Int64("chat-id", 0, "Explicit private test chat; never inferred from an incoming update")
@@ -41,7 +42,7 @@ func run() error {
 	if *tokenFile == "" || *expectedBot == "" {
 		return telegramrich.ErrUnavailable
 	}
-	client, err := telegramrich.NewClientFromTokenFile(*tokenFile)
+	client, err := telegramrich.NewClientFromTokenFileWithProxyFile(*tokenFile, *proxyFile)
 	if err != nil {
 		return err
 	}

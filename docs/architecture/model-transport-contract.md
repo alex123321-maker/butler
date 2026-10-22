@@ -1,5 +1,13 @@
 # Butler — Model Transport Contract
 
+The single bounded missing-response correction is a user-role continuation
+reminder under the existing authority and freshly selected tool set. It does not
+replace system instructions, create another owner input or grant permissions.
+Native Antigravity keeps its initial system prompt immutable on ContinueRun.
+Its successful text final retains a private continuation context for at most one
+minute, until explicit cancellation or a new turn. Expiry removes only that
+context; it never sends HTTP, retries inference or changes Butler durable state.
+
 When the owning adaptive memory reader is absent, Orchestrator omits event-date
 filters from the native `memory.search` presentation. It advertises `catalog_exact`
 and also `semantic_hybrid` when the local semantic reader is composed; without

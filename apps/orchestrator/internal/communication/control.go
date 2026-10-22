@@ -10,6 +10,11 @@ import (
 // lease changes. Pause retains the question/answer DATA; resume uses the fresh
 // owning Input admitted by that controller, never a resurrected cancelled run.
 func (s *Store) OwnerControlTx(ctx context.Context, tx pgx.Tx, ids []string, kind, continuationID string) error {
+	if continuationID != "" && s.ControlAdmission != nil {
+		if err := s.ControlAdmission(ctx, tx, continuationID); err != nil {
+			return err
+		}
+	}
 	switch kind {
 	case "stop", "amend":
 		state := "cancelled"

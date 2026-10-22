@@ -24,10 +24,14 @@ import (
 var ErrDenied = communicationcontrol.ErrDenied
 var ErrConflict = communicationcontrol.ErrConflict
 var ErrResolved = errors.New("interaction already resolved")
+var ErrDraining = errors.New("communication admission is draining")
 
 type Store struct {
 	Pool   *pgxpool.Pool
 	Inputs *durableinput.Store
+	// Only a composed Web reader/planner can promise availability. Dormant
+	// foundation and previously pending history retain their original epoch.
+	WebAvailable bool
 	// Required current Catalog checks. A missing guard always denies publication,
 	// read, submit, send and continuation, rather than trusting copied source refs.
 	SourceGuard func(context.Context, pgx.Tx, string) error
@@ -38,6 +42,10 @@ type Store struct {
 	// planners must resolve retained artifacts under current owner/export policy.
 	// A missing planner keeps photo/report unavailable, including at admission.
 	PlanDelivery func(context.Context, pgx.Tx, string, Binding, communicationcontrol.Args) ([]string, error)
+	// Optional trusted channel composition pins verified reply ingress in the
+	// same transaction as canonical Input acceptance. Payloads cannot opt in.
+	ReplyAdmission   func(context.Context, pgx.Tx, durableinput.Record, Binding) error
+	ControlAdmission func(context.Context, pgx.Tx, string) error
 }
 type Principal struct {
 	DestinationsHash                            string
@@ -323,6 +331,9 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 				}
 			}
 			plans[b.ID] = parts
+			if b.Channel == "web" && s.WebAvailable {
+				out.Delivery[i].State = "available"
+			}
 			permitted++
 		}
 	}
@@ -353,6 +364,9 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	}
 	for _, b := range bindings {
 		status, code, body, representation := "pending", "", text, canon
+		if b.Channel == "web" && s.WebAvailable {
+			status = "result_ready"
+		}
 		parts := plans[b.ID]
 		if denied[b.ID] {
 			status, code, body, representation = "failed", "policy_denied", "", []byte(`{}`)

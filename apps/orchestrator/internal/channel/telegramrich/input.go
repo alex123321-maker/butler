@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -32,6 +34,9 @@ type Ingress struct {
 	Store    *communication.Store
 	Controls *task.Controller
 	Binding  OwnerBinding
+	// Conversation is an owning Input admission hook, never a model executor.
+	// Replies always retain canonical ACK resolution, including invalid replies.
+	Conversation func(context.Context, Update) error
 }
 
 var ErrRejectedUpdate = errors.New("Telegram update is outside the owning binding")
@@ -48,18 +53,27 @@ func (i *Ingress) Reply(ctx context.Context, u Update) error {
 	if u.ID < 0 || m == nil || m.ID <= 0 || m.Chat.Type != "private" || m.Chat.ID != b.ChatID || m.From.IsBot || m.From.ID != b.UserID || m.Text == "" {
 		return ErrRejectedUpdate
 	}
+	actor := owneridentity.Actor{OwnerID: b.OwnerID, Channel: "telegram", SessionKey: "telegram:" + strconv.FormatInt(b.ChatID, 10), DeliveryID: "telegram-rich:" + strconv.FormatInt(b.BotID, 10) + ":" + strconv.FormatInt(u.ID, 10)}
+	ctx = owneridentity.WithActor(ctx, actor)
 	if m.Reply == nil {
-		return communication.ErrAmbiguous
+		if i.Conversation == nil {
+			return communication.ErrAmbiguous
+		}
+		if !utf8.ValidString(m.Text) || utf8.RuneCountInString(m.Text) > 4000 || strings.TrimSpace(m.Text) == "" {
+			return ErrRejectedUpdate
+		}
+		return i.Conversation(ctx, u)
 	}
 	if m.Reply.ID <= 0 || m.Reply.Chat.ID != b.ChatID || !m.Reply.From.IsBot || m.Reply.From.ID != b.BotID {
 		return ErrRejectedUpdate
 	}
-	actor := owneridentity.Actor{OwnerID: b.OwnerID, Channel: "telegram", SessionKey: "telegram:" + strconv.FormatInt(b.ChatID, 10), DeliveryID: "telegram-rich:" + strconv.FormatInt(b.BotID, 10) + ":" + strconv.FormatInt(u.ID, 10)}
-	ctx = owneridentity.WithActor(ctx, actor)
 	q := communication.ReplyRequest{BindingID: b.BindingID, BindingVersion: b.Version, ChannelACK: strconv.FormatInt(m.Reply.ID, 10), Text: m.Text}
 	if kind, _ := task.ClassifyOwnerText(m.Text); kind != "" {
 		_, err := i.Store.ControlReply(ctx, i.Controls, q)
 		return err
+	}
+	if strings.HasPrefix(m.Text, "/") {
+		return ErrRejectedUpdate
 	}
 	_, err := i.Store.Reply(ctx, q)
 	return err

@@ -1,17 +1,21 @@
+import { fixture,connect } from './mind-fixture'
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('approval shows exact server consequences and authority without private details', async ({ page }) => {
+  await fixture(page)
   await page.route('**/api/v2/approvals*', route => route.fulfill({ json: { approvals: [{
     approval_id: 'exact-approval', run_id: 'run-owner', status: 'pending', tool_name: 'http.request', risk_level: 'high', requested_via: 'both',
     details_json: JSON.stringify({ private: 'PRIVATE_PROPOSAL_DETAILS' }),
     owner_facts: { summary: 'http.request (commit) on https://example.invalid/account', effect: 'commit', resource: 'https://example.invalid/account', task_id: 'task-owner', task_revision: 4, constraints_revision: 3, goal_id: 'goal-owner', goal_revision: 2, mandate_id: 'mandate-owner', mandate_revision: 5, contract_hash: 'a'.repeat(64), args_hash: 'b'.repeat(64), credential_reference_count: 1 },
   }] } }))
-  await page.goto('/approvals')
-  await expect(page.getByText('http.request (commit) on https://example.invalid/account', { exact: true })).toBeVisible()
-  await expect(page.getByText('Task task-owner version 4 · constraints 3', { exact: true })).toBeVisible()
-  await expect(page.getByText('Goal goal-owner version 2 · mandate mandate-owner version 5', { exact: true })).toBeVisible()
-  await expect(page.getByText('Credential references 1; values hidden.', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Approve', exact: true })).toBeDisabled()
+  await connect(page,'/approvals')
+  await page.getByText('Версии и основание',{exact:true}).click()
+  await expect(page.getByRole('dialog').getByText('http.request (commit) on https://example.invalid/account', { exact: true })).toBeVisible()
+  await expect(page.getByText('Поручение 4 · ограничения 3', { exact: true })).toBeVisible()
+  await expect(page.getByText('Цель goal-owner · версия 2 · полномочие mandate-owner · версия 5', { exact: true })).toBeVisible()
+  await expect(page.getByText('Ссылок на реквизиты: 1. Значения скрыты.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Разрешить', exact: true })).toBeEnabled()
   await expect(page.getByText('PRIVATE_PROPOSAL_DETAILS')).toHaveCount(0)
 })
 
@@ -27,7 +31,7 @@ test('artifact reference opens its exact retained record and fences an older pre
     if (id === 'older-record') { started(); await delayed }
     await route.fulfill({ json: { artifact: artifact(id) } })
   })
-  await page.goto('/artifacts?artifact_id=older-record')
+  await openMindPanel(page,'/artifacts?artifact_id=older-record')
   await oldStarted
   await page.locator('.app-dialog__backdrop').click({ position: { x: 5, y: 5 } })
   await page.getByRole('row').filter({ hasText: 'checked-artifact' }).getByRole('button', { name: 'Preview', exact: true }).click()

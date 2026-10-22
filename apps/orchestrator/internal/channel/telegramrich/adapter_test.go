@@ -107,7 +107,7 @@ func TestCommunicationRichNativeReportAndMultipart(t *testing.T) {
 		if json.Unmarshal([]byte(r.FormValue("rich_message")), &rich) != nil || len(rich.Blocks) != 6 || rich.Blocks[3].Cells[0][0].Text != "Шаг" {
 			t.Fatal("lost rich content")
 		}
-		if r.FormValue("chat_id") != "42" || r.FormValue("allow_paid_broadcast") != "" {
+		if r.FormValue("chat_id") != "42" || r.FormValue("allow_paid_broadcast") != "" || r.FormValue("protect_content") == "true" {
 			t.Fatal("unexpected send settings")
 		}
 		for _, f := range p.Files {

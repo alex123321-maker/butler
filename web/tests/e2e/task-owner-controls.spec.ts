@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('owner amendment pins the current task version and stop preserves uncertainty', async ({ page }) => {
@@ -28,7 +29,7 @@ test('owner amendment pins the current task version and stop preserves uncertain
     revision++
     await route.fulfill({ json: { task: { revision, status, execution_policy: policy }, input_id: 'control-input', effect_boundary: 'dispatch_may_have_committed_reconciliation_required' } })
   })
-  await page.goto('/tasks/task-control')
+  await openMindPanel(page, '/tasks/task-control')
   await expect(page.getByRole('button', { name: 'Stop task', exact: true })).toBeDisabled()
   await page.getByLabel('Owner control token').fill('fixture-owner-token-000000000000000')
   await page.getByLabel('Amendment', { exact: true }).fill('Only prepare the draft')
@@ -51,7 +52,7 @@ async function openObservedTask(page: import('@playwright/test').Page) {
     result: { has_result: false }, error: { has_error: false }, timeline_preview: [], artifacts: [], run_ids: [],
   } }))
   await page.route('**/api/v3/tasks/task-observed', (route) => route.fulfill({ json: { task: { revision: 4, status: 'active', execution_policy: 'normal' } } }))
-  await page.goto('/tasks/task-observed')
+  await openMindPanel(page, '/tasks/task-observed')
   await page.getByLabel('Owner control token').fill('fixture-owner-token-000000000000000')
 }
 

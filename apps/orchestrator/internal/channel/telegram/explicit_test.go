@@ -2,10 +2,12 @@ package telegram
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
@@ -18,6 +20,47 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func TestCommunicationExplicitPollingOutageDoesNotEndOwningRuntime(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	healthy := make(chan struct{})
+	done := make(chan error, 1)
+	calls := 0
+	go func() {
+		done <- runExplicitPolling(ctx, func(context.Context) error {
+			calls++
+			if calls < 4 {
+				return errors.New("synthetic transport or storage outage")
+			}
+			if calls == 4 {
+				close(healthy)
+			}
+			return nil
+		}, time.Millisecond)
+	}()
+	select {
+	case <-healthy:
+	case <-done:
+		t.Fatal("channel outage terminated owning application")
+	case <-time.After(time.Second):
+		t.Fatal("polling did not recover")
+	}
+	select {
+	case <-done:
+		t.Fatal("successful polling terminated owning application")
+	default:
+	}
+	cancel()
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatal(err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("backoff ignored cancellation")
+	}
+}
 
 func TestCommunicationExplicitAdapterSuppressesImplicitOutput(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "synthetic-token")

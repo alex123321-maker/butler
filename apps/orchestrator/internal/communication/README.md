@@ -152,5 +152,23 @@ Web rendering (#129), full App/Core/model composition and client acceptance
 rollback/deployment acceptance remain separate work. Telegram media/native
 report component evidence is in PR #128; it does not establish full readiness.
 Do not enable the profile until the remaining prerequisites are proved.
+The isolated #130 composition joins optional `ReplyAdmission` and
+`ControlAdmission` hooks inside the existing Input/Controller transactions to
+attach private migration093 ingress proof; they cannot grant tool authority.
+Migration094 stores fixed Telegram transport clarification receipts with a
+durable pre-send claim. Unknown send/finish outcomes never trigger a resend.
 The C01/C02/C04 backend acceptance, full fault matrix and historical boundaries
 are in [verification](../../../../docs/ai/communication-backend-full-acceptance-20261021.md).
+# Authorized Web projection
+
+`WebReader` reads only publications pinned to its current owner Web binding.
+Feed/detail/download recheck current Catalog/export and retained media; an
+unavailable entry carries no copied payload or manifests. Artifact reads are
+limited to the selected publication's required refs and validate digest/size.
+`Store.WebAvailable` is a trusted composition capability, default false. New
+targets use existing result_ready storage and available API state without send
+ACK or human read. Pending history is never upgraded or resent by enabling a
+reader. The actual Telegram worker retains its exact binding scope.
+Owner Web ingress/replies acquire private immutable epoch-1 proof in their Input
+transaction. REST cursor history is authoritative; the authenticated SSE wrapper
+only invalidates loaded pages. See user-communication-spec v0.8 and #129/#130.

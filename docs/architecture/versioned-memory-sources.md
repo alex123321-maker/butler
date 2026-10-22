@@ -262,3 +262,33 @@ image; mocked PageAdapter tests only cover selection/error logic. Browser fixtur
 exercise owner proof, supersession history, correction/export/delete and upload
 with original context. Retrieval/index quality is independently measured; none
 of these checks establishes truth of extracted claims or new action permission.
+# Owner Web browse projection (2026-10-21)
+
+`GET /api/v4/memory/access` checks the existing owner bearer without reading
+catalog data and returns only `{authenticated:true}` with `no-store`. It does not
+issue a session token or grant any action. Catalog readiness cannot prevent the
+owner from connecting to the other Web modules; every later request authenticates
+independently.
+
+`GET /api/v4/memory/browse?limit=6&offset=0` lists active source heads ordered by
+creation time and source ID descending. Correcting an older source does not move
+it to the front. Limits are 1–20, offset 0–1000; lookahead reports `has_more`.
+Selected sources and dependencies pass current `AccessTx`/restore checks before
+preview publication. A stale or denied graph fails closed.
+
+`POST /api/v4/memory/search` accepts `{query,limit,offset}`. It uses PostgreSQL
+Russian text search/ranking on active current titles/bodies. Query size is bounded
+to 2048 UTF-8 bytes. The response explicitly reports `mode: text` and diagnostic
+`owner_semantic_inference_not_admitted`. Empty queries return recent records.
+Semantic inference retains its existing live-run/finite-budget admission; this
+owner HTTP route does not fabricate a run lease or admit inference.
+
+Both projections authenticate before parsing, return `Cache-Control: no-store`,
+bound title/body previews to 200/512 Unicode characters, and mask credentials
+before slicing. Secret-classified heads are excluded by the existing access policy. Previews are not
+fact verdicts, task grants or substitutes for current exact-source inspection.
+
+`POST /api/v4/memory/notes` accepts only `{title,body}`. Owner and user scope derive
+from the authenticated actor. Source identity derives from required delivery ID;
+an exact retry returns the same source. A changed body cannot overwrite its
+revision silently. Correction/deletion retain existing version-pinned endpoints.

@@ -1,5 +1,12 @@
 # Antigravity native transport
 
+A successful provider text final retains its private context for at most one
+minute so the owning Core can issue its bounded missing-response correction via
+ContinueRun. The model answer remains in native conversation history; system
+instructions stay fixed. Cancellation removes the context and stops its timer;
+expiry only removes state and never schedules inference. Butler's durable run,
+authority and budgets still decide whether another turn may occur.
+
 Canonical tool schemas may contain `minLength`, `maxLength`, `minimum`,
 `minItems`, `maxItems` and
 `maximum`. The adapter checks these annotation types, removes only these known

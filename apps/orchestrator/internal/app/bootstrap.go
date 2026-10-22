@@ -33,6 +33,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/delegation"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
@@ -69,6 +70,16 @@ import (
 )
 
 func New(ctx context.Context) (*App, error) {
+	return newApp(ctx, nil)
+}
+
+// NewForTelegramCommunication is an isolated operator/test composition. Normal
+// main still calls New; no environment toggle or production enable is added.
+func NewForTelegramCommunication(ctx context.Context, options TelegramCommunicationOptions) (*App, error) {
+	return newApp(ctx, &options)
+}
+
+func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) (*App, error) {
 	baseCfg, _, err := config.LoadOrchestratorFromEnv()
 	if err != nil {
 		return nil, err
@@ -83,6 +94,10 @@ func New(ctx context.Context) (*App, error) {
 	postgres, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
 	if err != nil {
 		return nil, err
+	}
+	if telegramOptions != nil && !strings.HasSuffix(postgres.Pool().Config().ConnConfig.Database, "_test") {
+		postgres.Close()
+		return nil, communicationcontrol.ErrDenied
 	}
 
 	settingsOptions := []config.SettingsStoreOption{}
@@ -109,9 +124,16 @@ func New(ctx context.Context) (*App, error) {
 		postgres.Close()
 		return nil, err
 	}
+	if telegramOptions != nil && telegramOptions.WebBindingID != "" && cfg.OwnerControlOwnerID != telegramOptions.OwnerID {
+		postgres.Close()
+		return nil, communicationcontrol.ErrDenied
+	}
 	// Provider OAuth credentials always require encrypted persistence, including
 	// installations that permit plaintext storage for unrelated legacy settings.
 	authManager := providerauth.NewManager(config.NewPostgresSettingsStore(postgres.Pool()))
+	if telegramOptions != nil && telegramOptions.ProviderAuthStore != nil {
+		authManager = providerauth.NewManager(telegramOptions.ProviderAuthStore)
+	}
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -189,7 +211,7 @@ func New(ctx context.Context) (*App, error) {
 	activityService := activity.NewService(activityRepo)
 	deliveryEventsRepo := deliveryevents.NewPostgresRepository(postgres.Pool())
 	deliveryEventsService := deliveryevents.NewService(deliveryEventsRepo)
-	if strings.TrimSpace(cfg.TelegramBotToken) != "" {
+	if telegramOptions == nil && strings.TrimSpace(cfg.TelegramBotToken) != "" {
 		telegramClient, err := telegramadapter.NewClient(cfg.TelegramBaseURL, cfg.TelegramBotToken, nil)
 		if err != nil {
 			redis.Close()
@@ -500,6 +522,26 @@ func New(ctx context.Context) (*App, error) {
 	if guardedRequests != nil {
 		guardedRequestAdapter = guardedRequests
 	}
+	var telegramFlow *telegramCommunication
+	var communicationKernel flow.CommunicationKernel
+	var communicationAdmission func(context.Context, string) error
+	if telegramOptions != nil {
+		if cfg.ActionAuthorityTokenFile == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, communicationcontrol.ErrDenied
+		}
+		telegramFlow, err = newTelegramCommunication(ctx, postgres.Pool(), sourceCatalog, inputStore, finalResults.DataGuard, *telegramOptions)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		communicationKernel = telegramFlow.store
+		communicationAdmission = telegramFlow.admit
+		finalResults.Communication = telegramFlow.store
+		inputStore.CommunicationEpoch = 1
+	}
 	executor := flow.NewService(
 		sessionRepo,
 		sessionLeaseManager,
@@ -507,8 +549,10 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
-			WaitBrowserOwner: browserOwnerWait(cfg, postgres.Pool()),
-			Metrics:          m,
+			Communication:          communicationKernel,
+			CommunicationAdmission: communicationAdmission,
+			WaitBrowserOwner:       browserOwnerWait(cfg, postgres.Pool()),
+			Metrics:                m,
 			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
 				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")
 				if e != nil {
@@ -574,13 +618,25 @@ func New(ctx context.Context) (*App, error) {
 	)
 	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
 	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
+	if telegramFlow != nil {
+		telegram, err = telegramFlow.adapter(taskControls)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		// The isolated bot owns explicit publications only. Existing notification
+		// kinds have no configured sender in this test composition.
+		outboxWorker = nil
+		verifiedTaskDeliveryWorker = nil
+	}
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
 	initiativeStore := initiative.NewStore(postgres.Pool())
 	initiativeStore.MobileCatalog = sourceCatalog
 	initiativeStore.RunDataGuardTx = sourceCatalog.CheckRunSourcesTx
 	initiativeDeliveryWorker := &deliveryoutbox.Worker{Store: initiative.DigestStore{Store: initiativeStore}}
-	if telegram != nil {
+	if telegram != nil && telegramFlow == nil {
 		initiativeDeliveryWorker.Sender = telegram
 	}
 	allowance := budget.ModelAllowance{Provider: providerResult.ProviderName, Model: providerResult.ModelName}
@@ -606,7 +662,7 @@ func New(ctx context.Context) (*App, error) {
 		}
 		scheduleControl = &ScheduleControl{Store: store}
 		scheduleDeliveryWorker = &deliveryoutbox.Worker{Store: scheduled.ReminderStore{Jobs: store}}
-		if telegram != nil {
+		if telegram != nil && telegramFlow == nil {
 			scheduleDeliveryWorker.Sender = telegram
 		}
 	}
@@ -632,7 +688,7 @@ func New(ctx context.Context) (*App, error) {
 		}
 		return maintenanceErr
 	})
-	if telegram != nil {
+	if telegram != nil && telegramFlow == nil {
 		telegram.SetExecutor(inputWorker)
 		telegram.SetOwnerTaskReader(taskStore)
 		telegram.SetOwnerAuthority(ownerGoals)
@@ -642,6 +698,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	var actionAuthorityHandler http.Handler
+	var communicationPrivateHandler http.Handler
 	var skillEvidenceHandler http.Handler
 	var delegationHandler http.Handler
 	var guardedRequestHandler http.Handler
@@ -672,6 +729,14 @@ func New(ctx context.Context) (*App, error) {
 			redis.Close()
 			postgres.Close()
 			return nil, readErr
+		}
+		if telegramFlow != nil {
+			communicationPrivateHandler, err = communicationcontrol.NewHandler(token, &CommunicationControl{Store: telegramFlow.store})
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
 		}
 		if childAdmission != nil {
 			delegationHandler, err = delegation.NewAdmissionHandler(token, childAdmission)
@@ -730,7 +795,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, schedulesReady: scheduleControl != nil, toolDiscoveryReady: cfg.ToolDiscoveryEnabled, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), communicationReady: telegramFlow != nil, mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, schedulesReady: scheduleControl != nil, toolDiscoveryReady: cfg.ToolDiscoveryEnabled, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog, lessons: experienceMemory})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -785,6 +850,7 @@ func New(ctx context.Context) (*App, error) {
 		inputWorker:                inputWorker,
 		inputStore:                 inputStore,
 		ownerAuth:                  ownerAuth,
+		communicationWebHandler:    telegramFlow.webHandler(ownerAuth),
 		sessionRepo:                sessionRepo,
 		runRepo:                    runRepo,
 		taskStore:                  taskStore,
@@ -808,6 +874,9 @@ func New(ctx context.Context) (*App, error) {
 		episodicStore:              episodicStore,
 		chunkStore:                 chunkStore,
 	})
+	if communicationPrivateHandler != nil {
+		httpServer.Handler = communicationHandler(httpServer.Handler, communicationPrivateHandler)
+	}
 
 	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)
 	if err != nil {

@@ -53,7 +53,7 @@ func (s *Store) controlTargetTx(ctx context.Context, tx pgx.Tx, q ReplyRequest) 
 		return out, ErrAmbiguous
 	}
 	if n != 1 || out.task == "" {
-		return out, ErrDenied
+		return out, ErrReplyTargetUnavailable
 	}
 	var payload []byte
 	var kind string

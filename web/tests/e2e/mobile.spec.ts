@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 test('owner mobile view hides text until reveal and clears private state on proof change', async ({ page }) => {
@@ -8,7 +9,7 @@ test('owner mobile view hides text until reveal and clears private state on proo
     else if (path.endsWith('/events')) await route.fulfill({ json: [{ source_id: 'synthetic-source', revision: 1, package_name: 'dev.butler.fixture', change_type: 'POSTED', status: 'quarantined', observed_at: '2026-10-18T00:00:00Z', received_at: '2026-10-18T00:00:01Z', body: marker }] })
     else await route.fulfill({ status: 204 })
   })
-  await page.goto('/mobile')
+  await openMindPanel(page, '/mobile')
   await page.getByLabel('Owner control token').fill('synthetic-owner-proof-that-is-not-a-real-token')
   await page.getByRole('button', { name: 'Load devices' }).click()
   await expect(page.getByText('Fixture phone · ACTIVE')).toBeVisible()
@@ -35,7 +36,7 @@ test('noise rules require reveal, can be disabled and clear when owner proof cha
       await route.fulfill({ json: { enabled: true, pending: 1, remembered: 2, noise: 18, rules: [{ rule_id: 'synthetic-rule', enabled, ...(url.searchParams.get('reveal') === 'true' ? { body: marker } : {}) }] } })
     } else await route.fulfill({ status: 204 })
   })
-  await page.goto('/mobile')
+  await openMindPanel(page, '/mobile')
   await page.getByLabel('Owner control token').fill('synthetic-owner-proof-that-is-not-a-real-token')
   await page.getByRole('button', { name: 'Load devices' }).click()
   await page.getByRole('button', { name: 'Refresh attention and noise rules' }).click()

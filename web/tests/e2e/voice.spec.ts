@@ -1,3 +1,4 @@
+import { openMindPanel } from './mind-panel'
 import { expect, test } from '@playwright/test'
 
 const token = 'fixture-voice-owner-token-000000000000'
@@ -27,7 +28,7 @@ test('explicit microphone capture shows state, releases tracks and sends bounded
     uploads++
     return route.fulfill({ json: { clip_id: 'capture', role: 'note', state: 'stored', revision: 1, transcript: '' } })
   })
-  await page.goto('/voice')
+  await openMindPanel(page, '/voice')
   await page.getByLabel('Токен владельца').fill(token)
   await page.getByRole('button', { name: 'Проверить доступность' }).click()
   await page.getByRole('button', { name: 'Включить микрофон', exact: true }).click()
@@ -66,7 +67,7 @@ test('voice starts off, external and partial speech cannot confirm commands, tex
     expect(route.request().postDataJSON()).toEqual({ kind: 'stop', expected_revision: 7 }); stops++
     await route.fulfill({ json: { task: { status: 'cancelled', revision: 8 } } })
   })
-  await page.goto('/voice')
+  await openMindPanel(page, '/voice')
   await expect(page.getByTestId('microphone-state')).toHaveText('Микрофон выключен')
   await expect(page.getByRole('button', { name: 'Включить микрофон', exact: true })).toBeDisabled()
   expect(microphoneRequests).toBe(0); expect(voiceRequests).toBe(0)
@@ -107,15 +108,17 @@ test('speech failure and owner interruption preserve reviewed text', async ({ pa
     }
     return route.fulfill({ json: clip })
   })
-  await page.goto('/voice')
+  await openMindPanel(page, '/voice')
   await page.getByLabel('Токен владельца').fill(token)
   await page.getByRole('button', { name: 'Проверить доступность' }).click()
+  await expect(page.locator('input[type=file]')).toBeEnabled()
   await page.locator('input[type=file]').setInputFiles(wav())
   await page.getByRole('button', { name: 'Сохранить запись на Butler' }).click()
   // A current reload returns the stored transcript, rather than relying on local upload bytes.
-  await page.reload()
+  await openMindPanel(page, '/voice')
   await page.getByLabel('Токен владельца').fill(token)
   await page.getByRole('button', { name: 'Проверить доступность' }).click()
+  await expect(page.locator('input[type=file]')).toBeEnabled()
   await page.locator('input[type=file]').setInputFiles(wav())
   await page.getByRole('button', { name: 'Сохранить запись на Butler' }).click()
   await page.getByLabel('Текст для просмотра').fill(text)

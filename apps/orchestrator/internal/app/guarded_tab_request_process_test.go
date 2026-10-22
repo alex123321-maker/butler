@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -54,8 +55,19 @@ func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Hand
 	query.Set("search_path", f.f.pool.Config().ConnConfig.RuntimeParams["search_path"])
 	dsn.RawQuery = query.Encode()
 	address := freeAddress(t)
-	cmd := exec.Command(binary, "-test.run=^TestDelegationBrokerHarness$", "-test.timeout=50s")
+	processTimeout := "-test.timeout=50s"
+	if harness == "BUTLER_COMMUNICATION_HARNESS=1" && os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
+		processTimeout = "-test.timeout=7m"
+	}
+	cmd := exec.Command(binary, "-test.run=^TestDelegationBrokerHarness$", processTimeout)
 	cmd.Env = append(os.Environ(), "BUTLER_DELEGATION_BROKER_HARNESS=1", harness, "BUTLER_DELEGATION_POSTGRES_URL="+dsn.String(), "BUTLER_DELEGATION_TOKEN_FILE="+tokenPath, "BUTLER_DELEGATION_CONTEXT_URL="+control.URL+"/context", "BUTLER_DELEGATION_ADMISSION_URL="+control.URL+path, "BUTLER_DELEGATION_GRPC_ADDRESS="+address, "BUTLER_DELEGATION_MANIFEST_FILE="+f.manifestPath)
+	if harness == "BUTLER_COMMUNICATION_HARNESS=1" && os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
+		policy, err := json.Marshal(f.f.budgets.Policy)
+		if err != nil {
+			t.Fatal("native fixture budget policy unavailable")
+		}
+		cmd.Env = append(cmd.Env, "BUTLER_EXECUTION_BUDGET_POLICY_JSON="+string(policy))
+	}
 	if harness == "BUTLER_MEMORY_CANDIDATE_HARNESS=1" {
 		actual := os.Getenv("BUTLER_MEMORY_CANDIDATE_APP_BINARY")
 		if actual == "" {

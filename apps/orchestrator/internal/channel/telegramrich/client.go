@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -31,6 +32,17 @@ func (*Client) GoString() string { return "telegramrich.Client([redacted])" }
 // NewClientFromTokenFile reads a private operator reference, never a model arg.
 // The token cannot be formatted through this type or returned by an API error.
 func NewClientFromTokenFile(path string) (*Client, error) {
+	return newClientFromTokenFile(path, "")
+}
+
+// NewClientFromTokenFileWithProxyFile reads an explicit private operator proxy
+// reference. CONNECT carries the fixed official HTTPS endpoint; TLS verification
+// remains enabled and the bot token is never sent in proxy request headers.
+func NewClientFromTokenFileWithProxyFile(path, proxyFile string) (*Client, error) {
+	return newClientFromTokenFile(path, proxyFile)
+}
+
+func newClientFromTokenFile(path, proxyFile string) (*Client, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, ErrUnavailable
@@ -50,7 +62,40 @@ func NewClientFromTokenFile(path string) (*Client, error) {
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.Proxy = nil
+	if proxyFile != "" {
+		proxy, err := readProxyFile(proxyFile)
+		if err != nil {
+			return nil, ErrUnavailable
+		}
+		transport.Proxy = func(req *http.Request) (*url.URL, error) {
+			if req.URL.Scheme != "https" || req.URL.Host != "api.telegram.org" {
+				return nil, ErrUnavailable
+			}
+			return proxy, nil
+		}
+	}
 	return &Client{token: token, base: "https://api.telegram.org", http: &http.Client{Transport: transport, Timeout: 20 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+}
+
+func readProxyFile(path string) (*url.URL, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil || !info.Mode().IsRegular() || info.Size() > 4096 {
+		return nil, ErrUnavailable
+	}
+	raw, err := io.ReadAll(io.LimitReader(f, 4097))
+	if err != nil || len(raw) > 4096 {
+		return nil, ErrUnavailable
+	}
+	u, err := url.Parse(strings.TrimSpace(string(raw)))
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.Opaque != "" || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
+		return nil, ErrUnavailable
+	}
+	return u, nil
 }
 
 type User struct {
@@ -135,7 +180,10 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 	if len(m.Content) > maxPartBytes || communicationcontrol.StrictJSON([]byte(m.Content), &part) != nil || part.Version != 1 || len(part.Files) > 50 {
 		return absent
 	}
-	fields := map[string]any{"chat_id": chat, "protect_content": true}
+	// Owner-authorized exports must remain openable/saveable in the native
+	// client. protect_content would contradict the report attachment contract;
+	// privacy is enforced before export, not by a client-side copy restriction.
+	fields := map[string]any{"chat_id": chat}
 	switch part.Method {
 	case "sendMessage":
 		if part.Text == "" || len(deliveryoutbox.Split(part.Text, 4096)) != 1 || part.Rich != nil || part.Photo != "" || len(part.Files) > 0 {

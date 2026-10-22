@@ -260,29 +260,5 @@ func (p Planner) Plan(ctx context.Context, tx pgx.Tx, run string, binding commun
 
 // Never silently discard fields which do not belong to a report block kind.
 func validBlockShape(b communicationcontrol.Block) bool {
-	text := strings.TrimSpace(b.Text) != ""
-	items, rows, ref, alt := len(b.Items) > 0, len(b.Rows) > 0, b.ArtifactRef != "", b.Alt != ""
-	switch b.Type {
-	case "paragraph", "heading", "quote", "code":
-		return text && !items && !rows && !ref && !alt
-	case "list":
-		if b.Text != "" || !items || rows || ref || alt {
-			return false
-		}
-		for _, item := range b.Items {
-			if strings.TrimSpace(item) == "" {
-				return false
-			}
-		}
-		return true
-	case "table":
-		return b.Text == "" && !items && rows && !ref && !alt
-	case "divider":
-		return b.Text == "" && !items && !rows && !ref && !alt
-	case "image":
-		return b.Text == "" && !items && !rows && ref && strings.TrimSpace(b.Alt) != ""
-	case "document":
-		return b.Text == "" && !items && !rows && ref
-	}
-	return false
+	return communicationcontrol.ValidReportBlock(b)
 }

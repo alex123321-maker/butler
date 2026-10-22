@@ -18,6 +18,9 @@ func (a *App) Run(ctx context.Context) error {
 	errCh := make(chan error, 5)
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	// Streaming requests must stop with their owning application. Otherwise
+	// Shutdown waits for an independent SSE deadline and can exceed its grace.
+	a.httpServer.BaseContext = func(net.Listener) context.Context { return runCtx }
 	completionDone := make(chan struct{})
 	go func() {
 		defer close(completionDone)

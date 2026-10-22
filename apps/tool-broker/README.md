@@ -341,3 +341,9 @@ Each session dispatch and fresh-observation update is pinned to its admitted
 control epoch. A late old snapshot cannot unlock a new generation. Release of
 the existing authenticated controller remains available after task cancellation
 as cleanup; viewing and input still require live core authority.
+## Isolated communication composition (#130)
+
+The [communication lab command](cmd/communication-lab/README.md) adds canonical
+message/photo/report contracts and the existing exact-dispatch executor to the
+normal Broker on a disposable `_test` database. Normal `New`/main and production
+configuration remain unchanged. Static registry files cannot define this family.

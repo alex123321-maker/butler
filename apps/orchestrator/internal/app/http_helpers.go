@@ -16,7 +16,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Butler-Delivery-ID")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Butler-Delivery-ID, Last-Event-ID")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -29,7 +29,11 @@ func instrumentHTTP(service string, registry *metrics.Registry, next http.Handle
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		started := time.Now()
 		ww := &statusWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		next.ServeHTTP(ww, r)
+		var writer http.ResponseWriter = ww
+		if flusher, ok := w.(http.Flusher); ok {
+			writer = &flushingStatusWriter{statusWriter: ww, flusher: flusher}
+		}
+		next.ServeHTTP(writer, r)
 		status := "ok"
 		if ww.statusCode >= 400 {
 			status = "error"
@@ -55,6 +59,13 @@ type statusWriter struct {
 	http.ResponseWriter
 	statusCode int
 }
+
+type flushingStatusWriter struct {
+	*statusWriter
+	flusher http.Flusher
+}
+
+func (w *flushingStatusWriter) Flush() { w.flusher.Flush() }
 
 func (w *statusWriter) WriteHeader(code int) {
 	w.statusCode = code

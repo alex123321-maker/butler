@@ -192,7 +192,9 @@ separate `butler_actionauth_test` database.
 
 ## Owner viewing and manual control
 
-`/browser` displays 1280x720 Chromium page frames using bounded JPEG polling.
+`/browser` opens the browser panel on the continuous Mind Web surface, also
+available from its top browser icon. It displays 1280x720 Chromium page frames
+using bounded JPEG polling, with no separate legacy route or layout.
 It is the server's page viewport, not the user's laptop or a native Chrome
 window. The existing owner-control bearer authenticates the public
 `POST /api/v4/server-browser` before its body is parsed. Core supplies immutable

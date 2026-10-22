@@ -86,7 +86,13 @@ func TestDelegationBrokerHarness(t *testing.T) {
 		t.Fatal("isolated schema/database required")
 	}
 	cfg.MaxConns = 2
-	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+	harnessTimeout := 45 * time.Second
+	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" && os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
+		// Real High generation can outlive the synthetic fixture's 45s
+		// process lifetime. The owning native test still ends after 300s.
+		harnessTimeout = 6 * time.Minute
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), harnessTimeout)
 	defer cancel()
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
@@ -162,11 +168,22 @@ func TestDelegationBrokerHarness(t *testing.T) {
 		t.Fatal(err)
 	}
 	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" {
-		if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.widget")}); err != nil {
+		if os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
+			if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.photo"), communicationcontrol.Contract("communication.report")}); err != nil {
+				t.Fatal(err)
+			}
+		} else if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.widget")}); err != nil {
 			t.Fatal(err)
 		}
 	}
-	controller := budget.NewController(pool, budget.DefaultPolicy())
+	policy := budget.DefaultPolicy()
+	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" && os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
+		policy, err = budget.LoadPolicy()
+		if err != nil {
+			t.Fatal("native fixture budget policy unavailable")
+		}
+	}
+	controller := budget.NewController(pool, policy)
 	controller.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	journal := actionauth.NewPostgresStore(pool)
 	journal.SetBudgets(controller)
