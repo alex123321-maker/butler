@@ -78,6 +78,17 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 		f.budgets.Policy.Conversation.ModelTurns = 32
 		f.budgets.Policy.Conversation.Tokens = 32 * (1048576 + 8192)
 	}
+	// Eight ordinary requests (four per channel) exercise the old session-wide
+	// discovery repetition limit. This is one finite isolated window, not a
+	// per-request refill or a change to the working owner profile.
+	if os.Getenv("BUTLER_COMMUNICATION_INPUT_LOOP_LAB") == "1" {
+		if !widgetLab || os.Getenv("BUTLER_TOOL_DISCOVERY_ENABLED") != "true" {
+			t.Fatal("input-loop lab requires widgets and actual tool discovery")
+		}
+		f.budgets.Policy.Day.ModelTurns = 64
+		f.budgets.Policy.Day.Tokens = 64 * (1048576 + 8192)
+		f.budgets.Policy.Conversation.ActiveMillis = 2 * 60 * 60 * 1000
+	}
 	policy, _ := json.Marshal(f.budgets.Policy)
 	t.Setenv("BUTLER_EXECUTION_BUDGET_POLICY_JSON", string(policy))
 	for key, value := range map[string]string{
@@ -298,6 +309,24 @@ func captureCommunicationApplication(root string, pool *pgxpool.Pool) error {
 		return err
 	}
 	err = pool.QueryRow(ctx, `SELECT jsonb_build_object('publications',(SELECT coalesce(jsonb_agg(to_jsonb(p)),'[]') FROM communication_publications p),'deliveries',(SELECT coalesce(jsonb_agg(to_jsonb(d)),'[]') FROM delivery_outbox d),'messages',(SELECT coalesce(jsonb_agg(to_jsonb(m)),'[]') FROM messages m),'inputs',(SELECT coalesce(jsonb_agg(to_jsonb(i)),'[]') FROM accepted_inputs i),'model_attempts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM execution_model_attempts a),'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM artifacts a),'bindings',(SELECT coalesce(jsonb_agg(to_jsonb(b)),'[]') FROM communication_bindings b),'cursors',(SELECT coalesce(jsonb_agg(to_jsonb(c)),'[]') FROM communication_telegram_cursors c),'effects',(SELECT coalesce(jsonb_agg(to_jsonb(e)),'[]') FROM action_effects e),'interactions',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_interactions x),'widget_views',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_views x),'widget_actions',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_actions x),'widget_projection_ops',(SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM communication_widget_projection_ops x),'runs',(SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]') FROM runs r))`).Scan(&retained)
+	if err != nil {
+		return err
+	}
+	var records map[string]json.RawMessage
+	if err = json.Unmarshal(retained, &records); err != nil {
+		return err
+	}
+	// Retain the exact pre-existing keys, spent allowances and owning admissions
+	// so the no-reset check survives disposal of the isolated schema. Fixed tables
+	// only; never capture system_settings or provider credentials.
+	for _, table := range []string{"execution_loop_observations", "execution_budget_scopes", "execution_budget_reservations", "communication_admissions", "tool_calls"} {
+		var data []byte
+		if err = pool.QueryRow(ctx, `SELECT coalesce(jsonb_agg(to_jsonb(x)),'[]') FROM `+table+` x`).Scan(&data); err != nil {
+			return err
+		}
+		records[table] = data
+	}
+	retained, err = json.Marshal(records)
 	if err != nil {
 		return err
 	}

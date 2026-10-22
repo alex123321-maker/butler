@@ -22,19 +22,19 @@ type ToolIdentity struct {
 	TaskRevision, ConstraintsRevision                                    int64
 }
 
-func (c *Controller) loopIdentity(ctx context.Context, tx pgx.Tx, i ToolIdentity) (string, string, string, string, error) {
+func (c *Controller) loopIdentity(ctx context.Context, tx pgx.Tx, i ToolIdentity) (string, string, string, string, string, error) {
 	if canonical, ok := ctx.Value(canonicalArgumentsKey{}).(string); ok {
 		i.ArgsHash = canonical
 	}
-	var owner, root string
+	var owner, root, inputEvent string
 	err := tx.QueryRow(ctx, `WITH RECURSIVE ancestors AS(SELECT t.task_id,t.parent_task_id,t.owner_id FROM tasks t JOIN runs r ON r.task_id=t.task_id WHERE r.run_id=$1 UNION ALL SELECT t.task_id,t.parent_task_id,t.owner_id FROM tasks t JOIN ancestors a ON t.task_id=a.parent_task_id) SELECT owner_id,task_id FROM ancestors WHERE parent_task_id IS NULL`, i.RunID).Scan(&owner, &root)
 	if err == pgx.ErrNoRows {
-		err = tx.QueryRow(ctx, `SELECT s.user_id,r.session_key FROM runs r JOIN sessions s ON s.session_key=r.session_key WHERE r.run_id=$1`, i.RunID).Scan(&owner, &root)
+		err = tx.QueryRow(ctx, `SELECT s.user_id,r.session_key,r.input_event_id FROM runs r JOIN sessions s ON s.session_key=r.session_key WHERE r.run_id=$1 AND COALESCE(r.task_id,'')=''`, i.RunID).Scan(&owner, &root, &inputEvent)
 	}
-	return owner, root, digest([]int64{i.TaskRevision, i.ConstraintsRevision}), digest([]string{i.ToolName, i.ArgsHash, i.ContractHash}), err
+	return owner, root, digest([]int64{i.TaskRevision, i.ConstraintsRevision}), digest([]string{i.ToolName, i.ArgsHash, i.ContractHash}), inputEvent, err
 }
 func (c *Controller) CheckToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity) error {
-	owner, root, state, call, err := c.loopIdentity(ctx, tx, i)
+	owner, root, state, call, inputEvent, err := c.loopIdentity(ctx, tx, i)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,25 @@ func (c *Controller) CheckToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity)
 		}
 	}
 	var repeated bool
-	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_loop_observations WHERE owner_id=$1 AND task_root=$2 AND state_key=$3 AND call_key=$4 GROUP BY category,result_digest HAVING COUNT(*) >= $5)`, owner, root, state, call, c.Policy.RepeatLimit).Scan(&repeated)
+	query := `SELECT EXISTS(SELECT 1 FROM execution_loop_observations WHERE owner_id=$1 AND task_root=$2 AND state_key=$3 AND call_key=$4 GROUP BY category,result_digest HAVING COUNT(*) >= $5)`
+	args := []any{owner, root, state, call, c.Policy.RepeatLimit}
+	if inputEvent != "" {
+		// Independent owner Inputs are progress boundaries for conversation
+		// repetition, not for budgets or uncertain effects above. Attribute old
+		// observations through their permanent journal/run; never rewrite them.
+		// Missing/inconsistent provenance keeps the old restrictive scope.
+		query = `SELECT EXISTS(
+ SELECT 1 FROM execution_loop_observations o
+ LEFT JOIN action_effects e ON e.action_id=o.effect_id
+ LEFT JOIN runs r ON r.run_id=e.initial_binding->>'run_id'
+ WHERE o.owner_id=$1 AND o.task_root=$2 AND o.state_key=$3 AND o.call_key=$4
+ AND (r.input_event_id IS NULL OR r.input_event_id='' OR r.input_event_id=$6
+      OR r.session_key IS DISTINCT FROM $2 OR COALESCE(r.task_id,'')<>''
+      OR e.initial_binding->>'owner_id' IS DISTINCT FROM $1)
+ GROUP BY o.category,o.result_digest HAVING COUNT(*) >= $5)`
+		args = append(args, inputEvent)
+	}
+	err = tx.QueryRow(ctx, query, args...).Scan(&repeated)
 	if err != nil {
 		return err
 	}
@@ -67,7 +85,7 @@ func (c *Controller) CheckToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity)
 	return nil
 }
 func (c *Controller) ObserveToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity, category, resultDigest string) error {
-	owner, root, state, call, err := c.loopIdentity(ctx, tx, i)
+	owner, root, state, call, _, err := c.loopIdentity(ctx, tx, i)
 	if err != nil {
 		return err
 	}

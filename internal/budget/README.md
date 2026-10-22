@@ -30,6 +30,12 @@ and Task Store bootstraps install its controller.
 Root task, assigned mandate and owner UTC-day scopes share counters across runs,
 children and amendments. Conversation uses session/day plus owner/day without a
 separate planner or critic. Identity comes from durable run/session/task ancestry.
+Conversation repetition additionally distinguishes original Input events using
+the permanent effect/run provenance. Independent owner requests can repeat a
+catalog read; retries, answer resumes and replacement runs for the same event
+retain its loop limit. Existing observations are read in place, with conservative
+fallback for missing provenance. Task-tree loops, session-wide uncertain writes,
+finite conversation/day budgets and all retained spending stay unchanged.
 An owning AuthorityResolver checks current assignments on the same transaction
 and returns immutable mandate limits/deadline. Model arguments cannot supply
 scope, owner, quote, reservation ID, monetary rates or authority.
