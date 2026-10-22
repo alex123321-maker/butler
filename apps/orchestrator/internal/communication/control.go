@@ -71,12 +71,17 @@ func (s *Store) OwnerControlTx(ctx context.Context, tx pgx.Tx, ids []string, kin
 			if e != nil {
 				return e
 			}
-			if v.state == "open" {
-				if e = s.Inputs.HoldInteractionControlTx(ctx, tx, continuationID, v.id); e != nil {
-					return e
-				}
-				_, e = tx.Exec(ctx, `UPDATE communication_interactions SET input_id=$2 WHERE interaction_id=$1`, v.id, continuationID)
-				if e != nil {
+			// The fresh owning Input must retain the exact question even when
+			// its answer arrived during pause. Transcript text alone loses the
+			// canonical option mapping and the completed question phase.
+			if e = s.Inputs.HoldInteractionControlTx(ctx, tx, continuationID, v.id); e != nil {
+				return e
+			}
+			if _, e = tx.Exec(ctx, `UPDATE communication_interactions SET input_id=$2 WHERE interaction_id=$1`, v.id, continuationID); e != nil {
+				return e
+			}
+			if v.state == "resolved" {
+				if e = s.Inputs.ReadyInteractionTx(ctx, tx, continuationID, v.id, false); e != nil {
 					return e
 				}
 			}

@@ -25,6 +25,13 @@ provenance. После ответа этап вопроса завершён; п
 purpose=result/ACK не доказывают содержательность. Публичный synthetic corpus и
 self-review не объявляются независимой holdout-оценкой. Приёмка и фактический
 статус rollout указаны [в отчёте C07](../ai/communication-obligations-acceptance-20261022.md).
+Owner pause/resume переносит тот же interaction marker и потраченные allowances
+в новый owning Input как для уже принятого, так и для позднего ответа. Новый run
+читает canonical ответ через отдельный store reader после admission: только
+перенесённый контроллером Input, совпадающие owner/session/task/revisions, текущие
+claim/lease и Catalog позволяют получить DATA. Старый run/grant не возобновляется,
+public payload не выбирает исторический вопрос. Это также проверяется настоящим
+Core.Execute после двух порядков answer/resume, а не только статусом очереди.
 
 C05 (#104) добавляет opt-in `Widgets` в private operator/lab composition:
 single-choice, multi-choice и text в Web/Telegram. Полная приёмка фиксируется

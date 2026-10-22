@@ -1,6 +1,9 @@
 package acceptance
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // CommunicationReview combines kernel observations with an explicit content
 // review. It does not infer semantic correctness from a purpose tag, a tool ACK,
@@ -19,6 +22,11 @@ func ReviewCommunication(r CommunicationReview) error {
 	if r.CaseID == "" || len(r.EvidenceRefs) == 0 || r.ModelAttempts == nil || r.ObservedAttempts == nil || *r.ModelAttempts < 0 || *r.ObservedAttempts != *r.ModelAttempts || r.ResultPublications < 0 || r.ProgressPublications < 0 || r.RepeatedQuestions < 0 {
 		return fmt.Errorf("incomplete communication evidence")
 	}
+	for _, ref := range r.EvidenceRefs {
+		if strings.TrimSpace(ref) == "" {
+			return fmt.Errorf("incomplete communication evidence")
+		}
+	}
 	if r.RepeatedQuestions != 0 {
 		return fmt.Errorf("behavioral failure: repeated answered question")
 	}
@@ -28,7 +36,7 @@ func ReviewCommunication(r CommunicationReview) error {
 			return fmt.Errorf("behavioral failure: result is missing, premature or unsubstantiated")
 		}
 	case "progress":
-		if r.ContentVerdict != "useful_progress" || r.ProgressPublications < 1 || r.ResultPublications != 0 || r.Obligation != "open" || r.InputStatus == "completed" {
+		if r.ContentVerdict != "useful_progress" || r.ProgressPublications < 1 || r.ResultPublications != 0 || r.Obligation != "open" || r.InputStatus != "running" {
 			return fmt.Errorf("behavioral failure: progress incorrectly completed the request")
 		}
 	case "quiet":

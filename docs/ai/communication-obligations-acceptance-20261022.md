@@ -17,6 +17,13 @@ answer DATA в provider, но модель повторно предложила
 Регрессии: guidance survives exact-action approval/provider rebuild; poison в
 question/answer не становится инструкцией; повторная подготовка не дублирует DATA.
 
+Ревью дополнительно выявило потерю canonical ответа при owner pause/resume:
+новый Input получал allowances, но не marker уже принятого ответа. Новый
+`TestCommunicationOwnerResumeNewRunRetainsCanonicalAnswerIntegration` на предыдущем
+candidate воспроизвёл обе потери (answer до/после resume): provider не получил DATA.
+Исправление переносит marker через owning Input methods и читает ответ под текущими
+guards до старта нового run; чужой Input и старая task revision отклоняются.
+
 ## Матрица критериев
 
 | Критерий | Воспроизводимая проверка | Результат |

@@ -180,6 +180,10 @@ separate interaction/publication/Catalog refs. The resumed Core adds fixed kerne
 phase guidance separately; payload text stays preference DATA. This avoids relying
 on an old provider session or an owner's prompt containing model-generated option
 IDs. Current source, ownership, authority and input-claim checks are unchanged.
+Owner resume transfers the same question marker to its new Input whether the
+answer arrived before or after resume. `ContinuedResponse` reads that exact owned
+marker under current task/claim/lease and Catalog checks during preparation of
+the new run. It never reconstructs authority from old run grants or public input.
 
 Migration095 adds shared draft CAS, channel-scoped action receipts and a journal
 for edits of existing Telegram ACKs. `WidgetActionTx` reuses the current owner,

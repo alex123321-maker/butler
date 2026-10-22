@@ -135,6 +135,17 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		if err := s.config.CommunicationAdmission(ctx, prepared.CurrentRunID); err != nil {
 			return preparedRun{}, err
 		}
+		if reader, ok := s.config.Communication.(interface {
+			ContinuedResponse(context.Context, string) (string, string, error)
+		}); ok {
+			id, answer, err := reader.ContinuedResponse(ctx, prepared.CurrentRunID)
+			if err != nil {
+				return preparedRun{}, err
+			}
+			if id != "" {
+				prepared = interactionResponsePreparation(prepared, prepared, id, answer)
+			}
+		}
 	}
 	if err := s.attachToolContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
