@@ -182,3 +182,9 @@ ready the Input. Only explicit submit/answer resolves the question. Privacy
 erasure removes derived draft/receipt content. Schema rollback refuses accepted
 widget history; use compatible drain. Web exposes the live interaction projection
 and separates native edit outcomes from original delivery.
+
+Delivery authorization and known-ACK widget reads lock the publication session
+before source/export guards can lock its run. This matches owning response/resume
+order; a renderer waiting for the session cannot hold the run and deadlock that
+resume. Locks are released before channel I/O. The PostgreSQL lock-wait regression
+covers both projection reads and initial send authorization.

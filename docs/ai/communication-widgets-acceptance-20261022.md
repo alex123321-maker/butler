@@ -142,3 +142,29 @@ the isolated host; a later success never overwrites an earlier failed outcome.
 
 The remaining cross-format obligations/model behavior campaign belongs to #105;
 operational diagnostics/cutover to #106; full AC01–AC22/profile rollout to #107.
+
+
+## Owner rollout lock-order regression
+
+After PR136 merged, the real owner rollout exposed a projection/resume race:
+a Web Submit to a Telegram-origin multi-choice question committed its response
+and closed both projections, but the fresh continuation blocked with
+`interaction_invalidated`. PostgreSQL retained a cancelled resume statement
+waiting to lock its run. The failed Input and canonical answer are preserved;
+they are not manually reset or relabelled successful.
+
+Projection/source authorization could lock the run before the channel guard
+requested its session, opposite to the owning resume's session→run order. The
+follow-up locks the exact publication session before source/export guards in
+both DeliveryWidget and initial send authorization. It adds no retry, grant,
+receipt mutation, schema or channel I/O inside a transaction.
+
+`TestCommunicationWidgetDeliveryCannotBlockOwningResumeIntegration` holds an
+owning session lock, observes the competing PostgreSQL lock wait through an
+independent read connection, then takes the run lock with NOWAIT. Both projection
+and authorize_send cases reproduced SQLSTATE55P03 before the fix, and both pass
+afterwards with `-race`. The test preserves the deliberately small two-connection
+business pool; its observer does not borrow a required write connection. An
+initial observer-pool fixture failure is retained separately from the reproduced
+product failures. Final CI/review and repeated owner-channel outcomes belong to
+the follow-up PR and rollout report, not the earlier clean native fixtures.

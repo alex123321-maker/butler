@@ -270,9 +270,16 @@ func (s *Store) DeliveryWidget(ctx context.Context, m deliveryoutbox.Message) (W
 		return WidgetView{}, err
 	}
 	defer tx.Rollback(context.Background())
-	var owner string
-	err = tx.QueryRow(ctx, `SELECT p.owner_id FROM delivery_outbox d JOIN communication_publications p USING(publication_id) JOIN communication_bindings b ON b.binding_id=d.binding_id AND b.version=d.binding_version WHERE d.notification_id=$1 AND d.publication_id=$2 AND d.binding_id=$3 AND d.binding_version=$4 AND d.recipient_snapshot=$5 AND d.channel='telegram' AND b.recipient=d.recipient_snapshot AND b.owner_id=p.owner_id AND b.enabled AND b.verified AND NOT p.privacy_redacted AND NOT d.privacy_redacted`, m.NotificationID, m.PublicationID, m.BindingID, m.BindingVersion, m.Recipient).Scan(&owner)
+	var owner, session string
+	err = tx.QueryRow(ctx, `SELECT p.owner_id,p.session_key FROM delivery_outbox d JOIN communication_publications p USING(publication_id) JOIN communication_bindings b ON b.binding_id=d.binding_id AND b.version=d.binding_version WHERE d.notification_id=$1 AND d.publication_id=$2 AND d.binding_id=$3 AND d.binding_version=$4 AND d.recipient_snapshot=$5 AND d.channel='telegram' AND b.recipient=d.recipient_snapshot AND b.owner_id=p.owner_id AND b.enabled AND b.verified AND NOT p.privacy_redacted AND NOT d.privacy_redacted`, m.NotificationID, m.PublicationID, m.BindingID, m.BindingVersion, m.Recipient).Scan(&owner, &session)
 	if err != nil {
+		return WidgetView{}, err
+	}
+	// Owning response/resume locks session before run. SourceGuard may lock
+	// the run, and ChannelGuard locks the session; establish the same order
+	// before either guard so a projection cannot deadlock that continuation.
+	var yes bool
+	if err = tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 AND user_id=$2 FOR SHARE`, session, owner).Scan(&yes); err != nil {
 		return WidgetView{}, err
 	}
 	v, err := widgetViewTx(ctx, tx, m.PublicationID)
