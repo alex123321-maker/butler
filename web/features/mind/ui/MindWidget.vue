@@ -7,7 +7,7 @@
         <legend class="mind-muted">{{ input.type === 'multi_choice' ? 'Выберите варианты, затем отправьте ответ' : input.type === 'text' ? 'Ваш ответ' : 'Выберите один вариант' }}</legend>
         <template v-for="option in input.options || []" :key="option.id">
           <label class="mind-widget-option">
-            <input v-if="input.type === 'multi_choice'" type="checkbox" :checked="view.draft.option_ids?.includes(option.id)" @change="toggle(option.id)" />
+            <input v-if="input.type === 'multi_choice'" :key="`${view.draft_version}:${choiceRenderRevision}`" type="checkbox" :checked="view.draft.option_ids?.includes(option.id)" @change="toggle(option.id)" />
             <input v-else type="radio" :name="view.interaction_ref" :checked="selected === option.id" @change="selected = option.id" />
             <span>{{ option.label }}<small v-if="option.description">{{ option.description }}</small></span>
           </label>
@@ -32,6 +32,7 @@ import { useMind } from '../model/store'
 import MindPublicationMedia from './MindPublicationMedia.vue'
 const props = defineProps<{ publication: Publication }>()
 const store = useMind(), selected = ref(''), text = ref(''), busy = ref(false), error = ref('')
+const choiceRenderRevision = ref(0)
 const view = computed(() => props.publication.interaction), input = computed(() => props.publication.payload?.input)
 const question = computed(() => props.publication.payload?.question || 'Вопрос Батлера')
 const file = (id: string) => props.publication.files.find(f => f.artifact_ref === id)
@@ -78,7 +79,7 @@ async function sendPending() {
       error.value = e.message === 'version_changed' ? 'Вопрос уже закрыт или выбор изменён в другом канале. Проверьте актуальное состояние.' : e.message === 'invalid_answer' ? 'Проверьте допустимое число вариантов и длину ответа.' : 'Доступ к вопросу изменился.'
       await store.loadPublications()
     } else error.value = 'Ответ не подтверждён. Можно повторить тот же запрос.'
-  } finally { if (stamp === store.epoch) busy.value = false }
+  } finally { if (stamp === store.epoch) { choiceRenderRevision.value++; busy.value = false } }
 }
 </script>
 <style scoped>

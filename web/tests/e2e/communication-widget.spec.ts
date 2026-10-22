@@ -96,3 +96,14 @@ test('text limits count Unicode characters and terminal questions have no active
   expect(answer).toBe('🍕🍕🍕🍕')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
+
+test('a rejected draft restores the server choice instead of keeping a local toggle', async ({ page }) => {
+  const pub = question(); await widgets(page, pub)
+  await page.route('**/api/v3/interactions/*/actions', route => route.fulfill({ status: 409, json: { error: 'stale_interaction' } }))
+  await connect(page)
+  const option = page.getByRole('checkbox', { name: 'Маргарита Без покупки и оплаты' })
+  await option.click()
+  await expect(page.getByRole('alert')).toContainText('выбор изменён')
+  await expect(option).not.toBeChecked()
+  await expect(page.getByRole('button', { name: 'Отправить ответ', exact: true })).toBeDisabled()
+})
