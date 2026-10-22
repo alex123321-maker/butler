@@ -7,14 +7,14 @@
 готовностью и системным admission, а не наличием DTO.
 
 Исходный анализ — `origin/main b20206d` от 2026-10-15; ревизия плана
-2026-10-21 сверена с `origin/main ab28dd88`. Production deployment в рамках
-предыдущей работы не менялся; текущий owner rollout документируется отдельно.
+2026-10-21 сверена с `origin/main ab28dd88`. Текущий ограниченный owner rollout
+message/photo/report документируется отдельно; C05 не обновляет его автоматически.
 
 ### Граница текущей реализации
 
 C05 (#104) добавляет opt-in `Widgets` в private operator/lab composition:
 single-choice, multi-choice и text в Web/Telegram. Полная приёмка фиксируется
-отдельным evidence; существующий рабочий message/photo/report профиль не
+[отдельной приёмкой C05](../ai/communication-widgets-acceptance-20261022.md); существующий рабочий message/photo/report профиль не
 обновляется автоматически. Новая capability требует явно квалифицированных
 binding snapshots; включение флага не переписывает старые admissions/receipts.
 
@@ -35,7 +35,9 @@ approval не возвращает модель к вопросу без уже 
 Перед release ответа в model context owning worker читает канонический
 `message:response:<interaction>` через тот же Catalog AccessTx. Текущие source,
 scope, dependency и lease проверки захватывают этот source в `memory_run_sources`;
-provenance ссылается на него, а не на канальный interaction locator. Последующее
+provenance ссылается на него, а не на канальный interaction locator. Ответ DATA
+содержит отдельные `interaction_ref`, `publication_ref` и `source_ref`; schema
+явно различает publication reply link и Catalog evidence refs. Последующее
 удаление ответа запрещает cached context/publication; text проходит обычное
 маскирование credential material. Callback refs не становятся Catalog authority.
 
@@ -45,7 +47,8 @@ Telegram callbacks проверяют numeric bot, private chat, sender, binding
 используется непустой InlineKeyboardMarkup с `force_reply: true` и неактивным
 индикатором ожидания (`disabled: {}`), без callback: он открывает reply и остаётся
 редактируемым. Пустая keyboard на реальном API интерпретируется как standalone
-ForceReply и запрещает edit; это отдельно проверено native contract probe. Неизменяемый флаг сохраняется и при terminal edit;
+ForceReply и запрещает edit; это отдельно проверено native contract probe.
+Неизменяемый флаг сохраняется и при terminal edit;
 сам terminal state проверяется backend. Inline buttons — канальное представление
 тех же данных. Option media проходит прежние
 Artifact/Catalog/export guards до publication и перед отправкой.
