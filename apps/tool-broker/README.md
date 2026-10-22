@@ -347,3 +347,13 @@ The [communication lab command](cmd/communication-lab/README.md) adds canonical
 message/photo/report contracts and the existing exact-dispatch executor to the
 normal Broker on a disposable `_test` database. Normal `New`/main and production
 configuration remain unchanged. Static registry files cannot define this family.
+
+## Explicit owner rollout
+
+`tool-broker -communication-profile /private/profile.json` registers only the
+qualified message/photo/report private contracts through the existing dispatch
+and authority checks. The strict v1 operator profile must match the exact current
+database and configured owner, and pin the Core control URL; Core uses the same
+profile. Without the flag legacy composition remains unchanged. The separate
+lab constructor still requires `_test`. A profile never grants tool/task/source
+authority or enables widgets, and cannot provide raw credential material.

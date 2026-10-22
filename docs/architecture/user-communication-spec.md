@@ -1,16 +1,38 @@
 # Butler — общение агента с пользователем
 
-Версия 0.8, 2026-10-22. **Статус: согласованный продуктовый контракт;
-backend foundation #127 в main; следующий Telegram этап в разработке,
-production profile выключен.**
+Версия 0.9, 2026-10-22. **Статус: согласованный продуктовый контракт;
+#127/#128/#132 в main; message/photo/report приняты в обоих каналах.
+Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
 готовностью и системным admission, а не наличием DTO.
 
 Исходный анализ — `origin/main b20206d` от 2026-10-15; ревизия плана
 2026-10-21 сверена с `origin/main ab28dd88`. Production deployment в рамках
-этой работы не менялся и заново не проверялся.
+предыдущей работы не менялся; текущий owner rollout документируется отдельно.
 
 ### Граница текущей реализации
+
+По поручению владельца от 2026-10-22 обычные Core/Broker binaries поддерживают
+явный `-communication-profile /private/profile.json`. Без аргумента сохраняется
+legacy startup. Private strict JSON v1 фиксирует точные Database/OwnerID,
+числовые BotID/ChatID, username, binding IDs/versions обоих каналов, ссылки
+TokenFile/BotAPIProxyFile, authenticated ControlURL и Mode=active|drain.
+Неизвестные поля, неверные значения, публично читаемый профиль и несовпадение
+рабочей БД/owner запрещают запуск. Lab constructors по-прежнему требуют `_test`;
+JSON/настройки/модель не могут снять этот запрет. Канальная привязка проверяется
+через getMe до admission. Model HTTPS_PROXY обязателен, включая discovery/OAuth;
+NO_PROXY не должен обходить прокси для внешних provider endpoints.
+
+Это ограниченный message/photo/report профиль для одного владельца, а не
+объявление готовности widgets/approval UX или всего V1. Существующий Task
+Controller, approvals, Catalog, budgets и Broker неизменны. Только новые
+доказанные канальные входы получают epoch1; старые runs/history не мигрируют.
+InitialUpdateID используется только при создании нового numeric bot cursor;
+оператор сохраняет pending backlog при cutover. Restart не перезаписывает
+существующий cursor. Перед переключением останавливается единственный старый
+primary, сохраняются dump, fresh deletion anchor и rollback configuration.
+Откат начинается с Mode=drain на совместимом новом binary, а не с запуска
+старого worker поверх живых epoch1 inputs/outbox/interactions.
 
 По новому поручению владельца Web PR #131 интегрируется в изолированную
 App-композицию #132. `WebBindingID` / `WebBindingVersion` — доверенные operator

@@ -15,11 +15,15 @@ func TestCommunicationTelegramBotIdentityPinnedBeforeQueueIntegration(t *testing
 		t.Fatal(err)
 	}
 	b := communication.Binding{ID: "bot", Version: 1}
-	if err := pinTelegramBot(ctx, pool, b, 77); err != nil {
+	if err := pinTelegramBotAt(ctx, pool, b, 77, 123); err != nil {
 		t.Fatal(err)
 	}
-	if err := pinTelegramBot(ctx, pool, b, 77); err != nil {
+	if err := pinTelegramBotAt(ctx, pool, b, 77, 999); err != nil {
 		t.Fatal("same bot restart denied", err)
+	}
+	var offset int64
+	if err := pool.QueryRow(ctx, `SELECT next_update_id FROM communication_telegram_cursors WHERE bot_id=77`).Scan(&offset); err != nil || offset != 123 {
+		t.Fatal("restart reset durable cutover offset", offset, err)
 	}
 	if err := pinTelegramBot(ctx, pool, b, 88); err == nil {
 		t.Fatal("different bot adopted binding")

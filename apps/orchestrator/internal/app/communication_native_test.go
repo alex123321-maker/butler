@@ -104,26 +104,6 @@ func communicationNativeModelRoute(t *testing.T) *communicationModelRoute {
 	return route
 }
 
-// Both the auth manager and native provider use the standard environment proxy
-// selector. Validate its effective decision, including NO_PROXY, before release.
-func communicationModelProxy(raw string, selectProxy func(*http.Request) (*url.URL, error)) (*url.URL, error) {
-	if len(raw) == 0 || len(raw) > 4096 {
-		return nil, errors.New("model proxy unavailable")
-	}
-	u, err := url.Parse(raw)
-	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
-		return nil, errors.New("model proxy unavailable")
-	}
-	for _, endpoint := range []string{"https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist", "https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent", "https://aicode.googleapis.com/v1:streamGenerateContent", "https://oauth2.googleapis.com/token"} {
-		req, _ := http.NewRequest(http.MethodPost, endpoint, nil)
-		selected, err := selectProxy(req)
-		if err != nil || selected == nil || selected.String() != u.String() {
-			return nil, errors.New("model proxy selection denied")
-		}
-	}
-	return u, nil
-}
-
 type communicationModelRoute struct {
 	proxyAddresses               map[string]bool
 	t                            *testing.T
