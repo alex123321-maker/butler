@@ -233,11 +233,29 @@ func TestConverterContinuationDeadlineAfterWaitIntegration(t *testing.T) {
 	if _, err = blocker.Exec(c.f.f.ctx, `SELECT source_id FROM memory_sources WHERE source_id=$1 FOR UPDATE`, c.f.needRef.ID); err != nil {
 		t.Fatal(err)
 	}
-	done := make(chan bool, 1)
-	go func() { created, _ := c.service.Enqueue(c.f.f.ctx, c.f.f.parent.TaskID, c.id); done <- created }()
+	// Enqueue has a five-second operation timeout. Start its real source wait
+	// shortly before the immutable fixture deadline so expiry, rather than that
+	// unrelated operation timeout, is the boundary being exercised.
+	untilFault := time.Until(c.f.deadline) - 2*time.Second
+	if untilFault <= 0 {
+		t.Fatal("fixture setup exhausted the fault preparation window")
+	}
+	time.Sleep(untilFault)
+	type outcome struct {
+		created bool
+		err     error
+	}
+	done := make(chan outcome, 1)
+	go func() {
+		created, e := c.service.Enqueue(c.f.f.ctx, c.f.f.parent.TaskID, c.id)
+		done <- outcome{created, e}
+	}()
 	for {
 		var waiting bool
-		if err = c.f.f.pool.QueryRow(c.f.f.ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1::int=ANY(pg_blocking_pids(pid)))`, int32(blocker.Conn().PgConn().PID())).Scan(&waiting); err != nil {
+		// The fixture deliberately has only two pool connections: blocker and
+		// Enqueue already occupy both. Observe live lock-manager state through
+		// the blocker connection rather than starving on a third pool checkout.
+		if err = blocker.QueryRow(c.f.f.ctx, `SELECT EXISTS(SELECT 1 FROM pg_locks WHERE NOT granted AND $1::int=ANY(pg_blocking_pids(pid)))`, int32(blocker.Conn().PgConn().PID())).Scan(&waiting); err != nil {
 			t.Fatal(err)
 		}
 		if waiting {
@@ -256,11 +274,17 @@ func TestConverterContinuationDeadlineAfterWaitIntegration(t *testing.T) {
 		t.Fatal("fixture deadline expired before the fault window")
 	}
 	time.Sleep(remaining + 200*time.Millisecond)
+	select {
+	case <-done:
+		t.Fatal("operation ended before the source lock was released")
+	default:
+	}
 	if err = blocker.Commit(c.f.f.ctx); err != nil {
 		t.Fatal(err)
 	}
-	if <-done {
-		t.Fatal("expired lock wait queued continuation")
+	result := <-done
+	if result.created || result.err == nil || errors.Is(result.err, context.DeadlineExceeded) || errors.Is(result.err, context.Canceled) {
+		t.Fatal("expired source wait must deny without an operation timeout", result)
 	}
 	if a, b := c.counts(t); a != 0 || b != 0 {
 		t.Fatal("expired wait retained queue", a, b)
