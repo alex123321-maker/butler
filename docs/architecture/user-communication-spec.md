@@ -59,6 +59,10 @@ notification ID и версии состояния. Worker сериализуе�
 Ошибки edit не открывают вопрос заново. Web показывает неподтверждённое edit;
 любая устаревшая кнопка всё равно проверяется backend. Поздняя исходная доставка
 считывает terminal state и не создаёт активных кнопок закрытого вопроса.
+Read/authorization исходной доставки и edit сначала берут shared session lock,
+затем source/export guards могут читать run. Это тот же session → run порядок,
+что у Respond/Resume: renderer не удерживает run, ожидая session владельца.
+Locks освобождаются до канального HTTP; порядок не ослабляет policy проверки.
 Privacy erasure удаляет производные drafts/receipts; rollback schema запрещён
 при принятой widget history, для неё сохраняется compatible drain.
 
