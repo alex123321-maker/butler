@@ -39,7 +39,13 @@ func TestNativeCommunicationApplicationLab(t *testing.T) {
 	widgetLab := os.Getenv("BUTLER_COMMUNICATION_WIDGET_LAB") == "1"
 	if widgetLab {
 		cancel()
-		ctx, cancel = context.WithTimeout(context.Background(), 30*time.Minute)
+		duration := 30 * time.Minute
+		if os.Getenv("BUTLER_COMMUNICATION_INPUT_LOOP_LAB") == "1" {
+			// Allow manual inspection/approval of all eight discovery flows. The
+			// initially fixed model/call budgets below do not change during a run.
+			duration = time.Hour
+		}
+		ctx, cancel = context.WithTimeout(context.Background(), duration)
 	}
 	defer cancel()
 	route := communicationNativeModelRoute(t)
