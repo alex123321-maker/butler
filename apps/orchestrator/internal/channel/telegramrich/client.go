@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	"github.com/butler/butler/internal/communicationcontrol"
 )
@@ -167,6 +168,7 @@ type Sender struct {
 	// retained media reads and immediately before the network boundary.
 	Authorize func(context.Context, deliveryoutbox.Message) error
 	Resolve   func(context.Context, deliveryoutbox.Message, File) (artifacts.Media, error)
+	Widget    func(context.Context, deliveryoutbox.Message) (communication.WidgetView, error)
 }
 
 func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliveryoutbox.Outcome {
@@ -267,6 +269,20 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 	}
 	if err != nil || s.Authorize(ctx, m) != nil {
 		return absent
+	}
+	if part.Widget {
+		if s.Widget == nil || part.Method != "sendMessage" || len(files) > 0 {
+			return absent
+		}
+		view, e := s.Widget(ctx, m)
+		if e != nil {
+			return absent
+		}
+		fields["text"], fields["reply_markup"] = renderWidget(view, part.Text)
+		body, err = json.Marshal(fields)
+		if err != nil {
+			return absent
+		}
 	}
 	e, status, err := s.Client.call(ctx, part.Method, body, contentType)
 	if err != nil {

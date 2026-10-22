@@ -20,6 +20,7 @@ type OwnerProfile struct {
 	TokenFile, BotAPIProxyFile, ControlURL     string
 	Mode                                       string
 	AllowPrivate                               bool
+	Widgets                                    bool
 	// Applied only when the pinned bot cursor is first created. Restarts never
 	// overwrite its durable offset. The operator retains the cutover backlog.
 	InitialUpdateID int64

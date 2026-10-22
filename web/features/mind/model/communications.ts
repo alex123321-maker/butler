@@ -15,6 +15,26 @@ export interface PublicationBlock {
   artifact_ref?: string
   alt?: string
 }
+export interface WidgetAnswer { option_ids?: string[]; text?: string }
+export interface WidgetView {
+  interaction_ref: string
+  version: number
+  state: 'open' | 'resolved' | 'expired' | 'cancelled' | 'superseded'
+  draft_version: number
+  draft: WidgetAnswer
+  answer: WidgetAnswer
+  expires_at?: string
+}
+export interface WidgetInput {
+  type: 'single_choice' | 'multi_choice' | 'text'
+  options?: { id: string; label: string; description?: string; image_ref?: string }[]
+  allow_text_answer?: boolean
+  min_selections?: number
+  max_selections?: number
+  min_length?: number
+  max_length?: number
+  placeholder?: string
+}
 export interface Publication {
   publication_ref: string
   sequence: number
@@ -24,6 +44,7 @@ export interface Publication {
   kind?: string
   created_at: string
   available: boolean
+  interaction?: WidgetView
   payload?: {
     purpose?: string
     text?: string
@@ -32,6 +53,8 @@ export interface Publication {
     images?: { artifact_ref: string; alt: string; caption?: string }[]
     blocks?: PublicationBlock[]
     attachments?: string[]
+    question?: string
+    input?: WidgetInput
   }
   files: PublicationFile[]
   parts: {

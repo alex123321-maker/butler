@@ -76,50 +76,59 @@ func (s *Store) Respond(ctx context.Context, id, bindingID string, bindingVersio
 // RespondTx joins an owning control transaction. Keeping the entire response,
 // transcript and ready marker here also permits transaction-boundary acceptance
 // without introducing production fault hooks or a second queue.
-func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (communicationcontrol.Answer, error) {
+func (s *Store) lockInteractionTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion int64) (interaction, bool, error) {
 	actor, ok := owneridentity.FromContext(ctx)
 	if !ok || s == nil || s.SourceGuard == nil || s.ChannelGuard == nil || s.Inputs == nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	v, e := loadInteraction(ctx, tx, id, false)
 	if e != nil || v.OwnerID != actor.OwnerID {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	var yes bool
 	if tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 AND user_id=$2 FOR UPDATE`, v.SessionKey, actor.OwnerID).Scan(&yes) != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	// Stabilize run/task before input/interaction, matching the publication writer.
 	if tx.QueryRow(ctx, `SELECT TRUE FROM runs WHERE run_id=$1 AND session_key=$2 FOR UPDATE`, v.RunID, v.SessionKey).Scan(&yes) != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	paused := false
 	if v.TaskID != "" {
 		var status string
 		var rev, con int64
 		if tx.QueryRow(ctx, `SELECT status,revision,constraints_revision FROM tasks WHERE task_id=$1 AND owner_id=$2 FOR UPDATE`, v.TaskID, actor.OwnerID).Scan(&status, &rev, &con) != nil {
-			return answer, ErrDenied
+			return interaction{}, false, ErrDenied
 		}
 		if status == "cancelled" || status == "completed" || rev != v.TaskRevision || con != v.ConstraintsRevision {
-			return answer, ErrDenied
+			return interaction{}, false, ErrDenied
 		}
 		paused = status == "paused"
 	}
 	if tx.QueryRow(ctx, `SELECT TRUE FROM accepted_inputs WHERE input_id=$1 FOR UPDATE`, v.InputID).Scan(&yes) != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	v, e = loadInteraction(ctx, tx, id, true)
 	if e != nil {
-		return answer, e
+		return interaction{}, false, e
 	}
 	if tx.QueryRow(ctx, `SELECT TRUE FROM communication_bindings b JOIN delivery_outbox d ON d.binding_id=b.binding_id AND d.binding_version=b.version WHERE b.binding_id=$1 AND b.version=$2 AND b.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified AND d.publication_id=$6 FOR SHARE OF b,d`, bindingID, bindingVersion, actor.OwnerID, actor.Channel, actor.SessionKey, v.PublicationID).Scan(&yes) != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	if e = s.SourceGuard(ctx, tx, v.RunID); e != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
 	}
 	if e = s.ChannelGuard(ctx, tx, v.RunID, Binding{ID: bindingID, Version: bindingVersion, Channel: actor.Channel, Recipient: actor.SessionKey}, v.Question); e != nil {
-		return answer, ErrDenied
+		return interaction{}, false, ErrDenied
+	}
+	return v, paused, nil
+}
+
+func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (communicationcontrol.Answer, error) {
+	actor, _ := owneridentity.FromContext(ctx)
+	v, paused, e := s.lockInteractionTx(ctx, tx, id, bindingID, bindingVersion)
+	if e != nil {
+		return answer, e
 	}
 	raw, _ := json.Marshal(answer)
 	digest := hash(string(raw))

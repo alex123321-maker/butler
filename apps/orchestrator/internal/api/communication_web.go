@@ -43,7 +43,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 		}
 		a.SessionKey = reader.Binding.Recipient
 		ctx := owneridentity.WithActor(r.Context(), a)
-		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" {
+		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" || strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") {
 			owner.ServeHTTP(w, r)
 			return
 		}
@@ -110,7 +110,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 				deny()
 				return
 			}
-			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": []string{"message", "photo", "report"}, "drain_only": len(draining) > 0 && draining[0]})
+			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": reader.Binding.Capabilities, "drain_only": len(draining) > 0 && draining[0]})
 		case "/api/v3/communications":
 			page, err := reader.Feed(ctx, after, 50)
 			if err != nil {

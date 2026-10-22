@@ -47,6 +47,7 @@ type WebPublication struct {
 	CreatedAt    time.Time                  `json:"created_at"`
 	Available    bool                       `json:"available"`
 	Payload      *communicationcontrol.Args `json:"payload,omitempty"`
+	Interaction  *WidgetView                `json:"interaction,omitempty"`
 	Files        []WebFile                  `json:"files"`
 	Parts        []WebPart                  `json:"parts"`
 }
@@ -85,6 +86,13 @@ func mediaRefs(a communicationcontrol.Args) []string {
 	for _, block := range a.Blocks {
 		if block.ArtifactRef != "" {
 			refs = append(refs, block.ArtifactRef)
+		}
+	}
+	if a.Input != nil {
+		for _, option := range a.Input.Options {
+			if option.ImageRef != "" {
+				refs = append(refs, option.ImageRef)
+			}
 		}
 	}
 	seen := map[string]bool{}
@@ -177,6 +185,13 @@ func (w *WebReader) loadTx(ctx context.Context, tx pgx.Tx, id string) (WebPublic
 	}
 	out.Kind = kind
 	out.Payload = &a
+	if kind == "widget" {
+		view, e := widgetViewTx(ctx, tx, id)
+		if e != nil {
+			return out, "", e
+		}
+		out.Interaction = &view
+	}
 	out.Available = true
 	return out, run, nil
 }

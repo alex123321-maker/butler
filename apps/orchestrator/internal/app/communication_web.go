@@ -43,6 +43,9 @@ func (c *telegramCommunication) installWeb(ctx context.Context, o TelegramCommun
 		return communication.ErrDenied
 	}
 	b := communication.Binding{ID: o.WebBindingID, Version: o.WebBindingVersion, Channel: "web", Recipient: "web:" + o.OwnerID, Enabled: true, Capabilities: []string{"message", "photo", "report"}}
+	if o.Widgets {
+		b.Capabilities = append(b.Capabilities, "widget")
+	}
 	var owner, channel, recipient string
 	var version int64
 	var enabled, verified bool

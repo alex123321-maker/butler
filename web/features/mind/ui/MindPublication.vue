@@ -2,6 +2,7 @@
   <article class="mind-publication" :data-publication="publication.publication_ref">
     <p v-if="!publication.available || !publication.payload" class="mind-muted">Публикация недоступна: доступ или содержимое изменились.</p>
     <template v-else>
+      <MindWidget v-if="publication.kind === 'widget'" :publication="publication" />
       <h2 v-if="publication.payload.title">{{ publication.payload.title }}</h2>
       <p v-if="publication.payload.summary" class="mind-readable">{{ publication.payload.summary }}</p>
       <p v-if="publication.payload.text" class="mind-readable">{{ publication.payload.text }}</p>
@@ -31,7 +32,7 @@
       </template>
       <small class="mind-muted">Доступно в Butler · {{ dateLabel(publication.created_at) }}</small>
       <button v-if="publication.task_ref" class="mind-text-button" type="button" @click="store.selectTask(publication.task_ref!, true)">{{ store.tasks.find(task => task.task_id === publication.task_ref)?.goal || 'Открыть исходное поручение' }}</button>
-      <button class="mind-text-button" type="button" :disabled="store.communicationDraining" @click="reply">Ответить на публикацию</button>
+      <button v-if="publication.kind !== 'widget'" class="mind-text-button" type="button" :disabled="store.communicationDraining" @click="reply">Ответить на публикацию</button>
       <details class="mind-publication-delivery"><summary>Доставка и части</summary>
         <p v-for="part in publication.parts" :key="`${part.binding_id}-${part.binding_version}-${part.index}`">
           {{ part.channel === 'web' ? 'Веб' : 'Telegram' }} · часть {{ part.index + 1 }} · {{ states[part.state] || 'Состояние неизвестно' }}
@@ -46,6 +47,7 @@ import type { Publication } from '../model/communications'
 import { dateLabel } from '../model/presentation'
 import { useMind } from '../model/store'
 import MindPublicationMedia from './MindPublicationMedia.vue'
+import MindWidget from './MindWidget.vue'
 const props = defineProps<{ publication: Publication }>()
 const store = useMind()
 const file = (ref?: string) => props.publication.files.find(f => f.artifact_ref === ref)
