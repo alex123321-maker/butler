@@ -59,6 +59,16 @@ ABSENT/confirmed и не запускается повторно. Запрос �
 checkpoints/errors, publications, reservations, observations и NULL usage
 сохраняются. Повтор принятого close возвращает failed без второго audit;
 содержимое body не может выбрать completed, retry, grant или новые allowances.
+
+Независимый следующий taskless owner Input может опубликовать обычный
+`communication.message`, если все мешающие UNKNOWN — локальные message/widget
+prepare из других failed Input/run с `closed_with_failure` obligation и точными
+`input.closed_failed`, `input.uncertainty_retained`, `effect.uncertainty_retained`
+audit. Текущие intent/args/contract, исходное событие Input, owner/session, live
+claim, destination digest, admission method/quota проверяются заново. Это только
+loop gate: старые UNKNOWN/grants не меняются; тот же Input, внешние эффекты,
+executing, Task и отсутствие любого доказательства сохраняют блокировку.
+Broker, approval, SourceGuard и лимиты текущего действия остаются обязательными.
 Этот control не является модельным инструментом, не воспроизводит эффект и
 не означает успешную доставку/выполнение. Рабочая приёмка и rollout требуют
 отдельных доказательств; наличие кода не переводит полный V1 в ready.

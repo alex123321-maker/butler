@@ -9,6 +9,13 @@ uses this reserve at the unchanged250ms/200ms bounds, with rollback-only source
 observations and safe cancellation causes. Admission/result acceptance retain
 business transactions and immutable budget history. Both pools close with Core.
 
+An independent taskless owner result may cross the loop gate after an older
+local message/widget uncertainty was explicitly abandoned through failure
+control. Exact current intent/admission/claim and every old failure/per-effect
+audit must match. The old effect remains UNKNOWN; Task/external/executing or
+unacknowledged effects and same-Input retries still block. Broker, approval,
+source/destination checks and finite allowances remain mandatory.
+
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on
 page0 when the existing owned semantic runtime is configured. It uses a separate
 bounded owner query admission, the pinned local model and current indexed sources;
