@@ -60,6 +60,9 @@ type memoryEvalCollector struct {
 	readSuffix          string
 	searchVariant       string
 	profileFixtures     map[string][]memorySearchProfile
+	// Prospective bounded diagnostic extensions; legacy windows retain defaults.
+	nativeSchema json.RawMessage
+	maximumCalls int64
 }
 
 type memoryEvalBackend struct {
@@ -186,6 +189,9 @@ CREATE TRIGGER memory_window_no_delete BEFORE DELETE ON fixture_memory_eval_wind
 		priorCalls, priorUnits = c.priorPins.Calls, c.priorPins.ReservedUnits
 	}
 	maxCalls := acceptance.MemorySuitePolicy(c.suite).MaxCalls
+	if c.maximumCalls > 0 && c.maximumCalls < maxCalls {
+		maxCalls = c.maximumCalls
+	}
 	if c.renewed {
 		maxCalls = priorCalls + 5
 	}

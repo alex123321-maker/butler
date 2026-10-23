@@ -68,10 +68,15 @@ func relevance(key, text, query string) int {
 }
 
 func relevantProfiles(entries []map[string]any, query string, limit int) []map[string]any {
+	return relevantProfilesForTask(entries, query, "", limit)
+}
+
+func relevantProfilesForTask(entries []map[string]any, query, taskGoal string, limit int) []map[string]any {
 	type ranked struct {
 		item         map[string]any
 		score, scope int
 		key          string
+		goalScore    int
 	}
 	var rankedEntries []ranked
 	scopes := map[string]int{}
@@ -90,12 +95,15 @@ func relevantProfiles(entries []map[string]any, query string, limit int) []map[s
 		}
 		// No lexical overlap is not proof of inapplicability. Keep these
 		// already authorized entries behind matches, within the profile quota.
-		rankedEntries = append(rankedEntries, ranked{item, score, scopes[scope], key})
+		rankedEntries = append(rankedEntries, ranked{item, score, scopes[scope], key, relevance(key, text, taskGoal)})
 	}
 	sort.SliceStable(rankedEntries, func(i, j int) bool {
 		a, b := rankedEntries[i], rankedEntries[j]
 		if a.score != b.score {
 			return a.score > b.score
+		}
+		if a.goalScore != b.goalScore {
+			return a.goalScore > b.goalScore
 		}
 		if a.scope != b.scope {
 			return a.scope < b.scope

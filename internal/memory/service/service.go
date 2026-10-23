@@ -133,10 +133,14 @@ type Service struct {
 }
 
 type BundleRequest struct {
-	SessionKey   string
-	UserID       string
-	UserMessage  string
-	IncludeQuery bool
+	SessionKey  string
+	UserID      string
+	UserMessage string
+	// ProfileTaskGoal is a ranking hint from validated current typed task
+	// state. Empty preserves current-message-only ranking. It never grants scope or
+	// instruction authority and is not sent to an embedding backend.
+	ProfileTaskGoal string
+	IncludeQuery    bool
 	// QueryPolicy supersedes IncludeQuery. Nil preserves explicit legacy callers.
 	QueryPolicy *QueryPolicy
 	// Adaptive Broker reads replace optional episode/document lookup, never
@@ -258,7 +262,7 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (bundle Bu
 		diagnostics = []string{"adaptive_broker_reads"}
 	}
 	// Read profile eligibility after potentially slow retrieval, not before it.
-	profileEntries, filteredProfiles, err := s.loadProfile(ctx, scopes, req.UserMessage)
+	profileEntries, filteredProfiles, err := s.loadProfile(ctx, scopes, req.UserMessage, sanitize.Text(req.ProfileTaskGoal))
 	if err != nil {
 		return Bundle{}, err
 	}
@@ -273,6 +277,9 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (bundle Bu
 		return Bundle{}, err
 	}
 	selection.Retrieval = diagnostics
+	if strings.TrimSpace(req.ProfileTaskGoal) != "" {
+		selection.Version = "memory-context-v3-task-goal-tiebreak-experiment-v1"
+	}
 	selection.Omitted["profile_relevance_or_limit"] = filteredProfiles
 	s.observeSelection(found, selection)
 	s.recordRetrievalMetric("profile", len(promptProfile) > 0)
@@ -302,7 +309,7 @@ func (s *Service) scopes(sessionKey, userID string) []Scope {
 	return result
 }
 
-func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string) (items []map[string]any, omitted int, loadErr error) {
+func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query, taskGoal string) (items []map[string]any, omitted int, loadErr error) {
 	started := time.Now()
 	outcome := "empty"
 	restricted := false
@@ -341,7 +348,7 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string)
 			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin, "source_refs": origin.SourceRefs})
 		}
 	}
-	selected := relevantProfiles(result, query, s.config.ProfileLimit)
+	selected := relevantProfilesForTask(result, query, taskGoal, s.config.ProfileLimit)
 	return selected, len(result) - len(selected), nil
 }
 
@@ -644,16 +651,8 @@ func FormatPrompt(working WorkingContext, profileEntries, episodes, chunks []map
 	if lines := formatWorkingMemoryLines(working); len(lines) > 0 {
 		sections = append(sections, "Working memory:\n"+strings.Join(lines, "\n"))
 	}
-	if len(profileEntries) > 0 {
-		lines := make([]string, 0, len(profileEntries))
-		for _, entry := range profileEntries {
-			line := fmt.Sprintf("- %s: %s", entry["key"], entry["summary"])
-			if refs, ok := entry["source_refs"].([]string); ok && len(refs) > 0 {
-				line += " (sources " + strings.Join(refs, ", ") + "; stored evidence)"
-			}
-			lines = append(lines, line)
-		}
-		sections = append(sections, "Profile memory:\n"+strings.Join(lines, "\n"))
+	if profile := FormatProfileEntries(profileEntries); profile != "" {
+		sections = append(sections, "Profile memory:\n"+profile)
 	}
 	if len(episodes) > 0 {
 		lines := make([]string, 0, len(episodes))

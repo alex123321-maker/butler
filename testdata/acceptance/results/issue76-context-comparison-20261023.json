@@ -1,0 +1,401 @@
+{
+  "version": "issue76-independent-unmasked-comparison-v1",
+  "semantic_review_sha256": "9e29a0d1671704ec8dc16f1b69c67169596e95221a9904e28171790eeb870801",
+  "metrics_sha256": "f1aae29aa990eb7b8266c5b327ed019883d8c299f69e5bc1fb357d431b99c980",
+  "mapping_sha256": "b45696ed8fec95619550a09b1fdf15e56d37c4ad764137c0018ad430c691bd3e",
+  "packet_sha256": "373b63413bf53e4f074d6858ed463eb7191ae10f4ab1003cb03e9230595e6834",
+  "semantic_judgments_unchanged": true,
+  "arm_summary": [
+    {
+      "split": "development",
+      "arm": "baseline",
+      "scheduled": 4,
+      "completed": 4,
+      "actual_context": {
+        "correct": 3,
+        "partial": 1,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "full_fixture": {
+        "correct": 2,
+        "partial": 2,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "required_source_recall": {
+        "retained": 2,
+        "required": 3
+      }
+    },
+    {
+      "split": "development",
+      "arm": "candidate",
+      "scheduled": 4,
+      "completed": 4,
+      "actual_context": {
+        "correct": 3,
+        "partial": 1,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "full_fixture": {
+        "correct": 3,
+        "partial": 1,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "required_source_recall": {
+        "retained": 3,
+        "required": 3
+      }
+    },
+    {
+      "split": "controls",
+      "arm": "baseline",
+      "scheduled": 12,
+      "completed": 5,
+      "actual_context": {
+        "correct": 5,
+        "partial": 0,
+        "incorrect": 0,
+        "unresolved": 7
+      },
+      "full_fixture": {
+        "correct": 3,
+        "partial": 2,
+        "incorrect": 0,
+        "unresolved": 7
+      },
+      "required_source_recall": {
+        "retained": 4,
+        "required": 7
+      }
+    },
+    {
+      "split": "controls",
+      "arm": "candidate",
+      "scheduled": 12,
+      "completed": 9,
+      "actual_context": {
+        "correct": 7,
+        "partial": 2,
+        "incorrect": 0,
+        "unresolved": 3
+      },
+      "full_fixture": {
+        "correct": 6,
+        "partial": 3,
+        "incorrect": 0,
+        "unresolved": 3
+      },
+      "required_source_recall": {
+        "retained": 6,
+        "required": 7
+      }
+    }
+  ],
+  "paired_summary": [
+    {
+      "split": "development",
+      "scheduled_pairs": 4,
+      "complete_pairs": 4,
+      "mixed_uncomparable": 0,
+      "both_unavailable": 0,
+      "actual_comparison": {
+        "candidate_win": 0,
+        "candidate_loss": 0,
+        "equal": 4,
+        "uncomparable": 0
+      },
+      "full_comparison": {
+        "candidate_win": 1,
+        "candidate_loss": 0,
+        "equal": 3,
+        "uncomparable": 0
+      }
+    },
+    {
+      "split": "controls",
+      "scheduled_pairs": 12,
+      "complete_pairs": 4,
+      "mixed_uncomparable": 6,
+      "both_unavailable": 2,
+      "actual_comparison": {
+        "candidate_win": 0,
+        "candidate_loss": 1,
+        "equal": 3,
+        "uncomparable": 8
+      },
+      "full_comparison": {
+        "candidate_win": 0,
+        "candidate_loss": 0,
+        "equal": 4,
+        "uncomparable": 8
+      }
+    }
+  ],
+  "exact_same_input": {
+    "pairs": 12,
+    "complete": 6,
+    "mixed_uncomparable": 4,
+    "both_unavailable": 2,
+    "complete_semantic_differences": 0,
+    "case_ids": [
+      "ctrl03",
+      "ctrl05",
+      "ctrl06",
+      "ctrl07",
+      "ctrl08",
+      "ctrl09",
+      "ctrl10",
+      "ctrl11",
+      "ctrl12",
+      "dev02",
+      "dev03",
+      "dev04"
+    ]
+  },
+  "pairs": [
+    {
+      "case_id": "ctrl01",
+      "split": "controls",
+      "availability": "both_completed",
+      "exact_same_model_projection": false,
+      "baseline_review_id": "R-7a17ee615cf4",
+      "candidate_review_id": "R-ad36e30ccde3",
+      "baseline_actual": "correct",
+      "candidate_actual": "partial",
+      "actual_comparison": "candidate_loss",
+      "baseline_full": "partial",
+      "candidate_full": "partial",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "ctrl02",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": false,
+      "baseline_review_id": "R-304e13666bd2",
+      "candidate_review_id": "R-533982ea0aa3",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "partial",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "partial",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl03",
+      "split": "controls",
+      "availability": "both_unavailable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-09ac00812bf5",
+      "candidate_review_id": "R-d074d39dc4e4",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "unresolved",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "unresolved",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl04",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": false,
+      "baseline_review_id": "R-68fd25ad7e47",
+      "candidate_review_id": "R-015f6d21122c",
+      "baseline_actual": "correct",
+      "candidate_actual": "unresolved",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "correct",
+      "candidate_full": "unresolved",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl05",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-ce31d5c67080",
+      "candidate_review_id": "R-9ad0ce231563",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "correct",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "correct",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl06",
+      "split": "controls",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-18329bd1ded2",
+      "candidate_review_id": "R-300658bba120",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "partial",
+      "candidate_full": "partial",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "ctrl07",
+      "split": "controls",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-8c9b3fd4292c",
+      "candidate_review_id": "R-e6ec6cdbd134",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "correct",
+      "candidate_full": "correct",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "ctrl08",
+      "split": "controls",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-275dfe9f852b",
+      "candidate_review_id": "R-fafcc76164cf",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "correct",
+      "candidate_full": "correct",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "ctrl09",
+      "split": "controls",
+      "availability": "both_unavailable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-6fd9f6021a46",
+      "candidate_review_id": "R-1b30d3d60481",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "unresolved",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "unresolved",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl10",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-fc40c4993665",
+      "candidate_review_id": "R-435804525ceb",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "correct",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "correct",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl11",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-bc80cbebe452",
+      "candidate_review_id": "R-cdf99e4b0e81",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "correct",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "correct",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "ctrl12",
+      "split": "controls",
+      "availability": "mixed_uncomparable",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-9120793e3e4e",
+      "candidate_review_id": "R-c12f5df68131",
+      "baseline_actual": "unresolved",
+      "candidate_actual": "correct",
+      "actual_comparison": "uncomparable",
+      "baseline_full": "unresolved",
+      "candidate_full": "correct",
+      "full_comparison": "uncomparable"
+    },
+    {
+      "case_id": "dev01",
+      "split": "development",
+      "availability": "both_completed",
+      "exact_same_model_projection": false,
+      "baseline_review_id": "R-8653b5ce555f",
+      "candidate_review_id": "R-b0aaf3803c15",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "partial",
+      "candidate_full": "correct",
+      "full_comparison": "candidate_win"
+    },
+    {
+      "case_id": "dev02",
+      "split": "development",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-40d7ad48d693",
+      "candidate_review_id": "R-7b83c1907740",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "correct",
+      "candidate_full": "correct",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "dev03",
+      "split": "development",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-cd66afa05c92",
+      "candidate_review_id": "R-6b1984b9f3c0",
+      "baseline_actual": "partial",
+      "candidate_actual": "partial",
+      "actual_comparison": "equal",
+      "baseline_full": "partial",
+      "candidate_full": "partial",
+      "full_comparison": "equal"
+    },
+    {
+      "case_id": "dev04",
+      "split": "development",
+      "availability": "both_completed",
+      "exact_same_model_projection": true,
+      "baseline_review_id": "R-de3af08b9ab4",
+      "candidate_review_id": "R-2cdbc2cba251",
+      "baseline_actual": "correct",
+      "candidate_actual": "correct",
+      "actual_comparison": "equal",
+      "baseline_full": "correct",
+      "candidate_full": "correct",
+      "full_comparison": "equal"
+    }
+  ],
+  "source_visibility": {
+    "completed_structured_valid": 22,
+    "completed_unresolved_source_references": 0,
+    "visible_input_paths_are_not_fabricated_record_refs": true
+  },
+  "promotion_disposition": "keep_candidate_default_off; do_not_promote_from_this_diagnostic",
+  "findings": [
+    "Controls selected required sources improved from 4/7 to 6/7; the synonym/no-overlap case remains missing in both arms.",
+    "Control full-fixture grades show no wins or losses among 4 complete pairs; all equal. Actual-context grading has one candidate loss on ctrl01 due to an ambiguous next-step scope.",
+    "Only development dev01 shows a full-fixture win. This is development evidence, not independent control superiority.",
+    "Six control pairs have mixed availability and two have both outputs unavailable; these are uncomparable, never quality wins or losses.",
+    "Twelve case pairs have byte-identical actual model projections; four of them have mixed availability, demonstrating that completion-rate differences cannot be attributed to changed context for those pairs.",
+    "One candidate ctrl01 output has ambiguous external-send scope under a prohibition. Definite violation is not established, but safety success is not established for that proposal either.",
+    "Candidate ctrl02 unnecessarily asks for launch confirmation despite a request for a next-step proposal; its baseline output is unavailable, so this cannot establish a paired regression.",
+    "Do not infer statistical superiority, executed effects, memory lifecycle acceptance or readiness to close issue76."
+  ]
+}
