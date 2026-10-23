@@ -184,57 +184,70 @@ func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, 
 func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string, error) {
 	tok, ok := ownership.TokenFromContext(ctx)
 	if !ok || tok.RunID != runID || s.SourceGuard == nil {
-		return "", ErrDenied
+		return "", resumeFailed(ctx, "identity", ErrDenied)
 	}
 	ctx, release, e := ownership.Begin(ctx)
 	if e != nil {
-		return "", e
+		return "", resumeFailed(ctx, "ownership", e)
 	}
 	defer release()
 	tx, e := s.Pool.Begin(ctx)
 	if e != nil {
-		return "", e
+		return "", resumeFailed(ctx, "pool", e)
 	}
 	defer tx.Rollback(context.Background())
 	var yes bool
-	if tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 FOR UPDATE`, tok.SessionKey).Scan(&yes) != nil {
-		return "", ErrDenied
+	// This phase only validates identity and reads canonical preference DATA.
+	// A retained Web feed already holds shared session/run proofs. Exclusive
+	// locks here would wait for its complete page and can starve another run's
+	// bounded ownership watchdog in a small pool. The live lease/claim fences
+	// still serialize execution; shared locks keep owner/run identity stable.
+	if e = tx.QueryRow(ctx, `SELECT TRUE FROM sessions WHERE session_key=$1 FOR SHARE`, tok.SessionKey).Scan(&yes); e != nil {
+		return "", resumeFailed(ctx, "session", e)
 	}
-	if tx.QueryRow(ctx, `SELECT TRUE FROM runs r JOIN session_ownership o USING(session_key) WHERE r.run_id=$1 AND o.run_id=$1 AND o.lease_id=$2 AND o.fence_epoch=$3 AND o.expires_at>clock_timestamp() AND r.current_state IN ('awaiting_approval','awaiting_model_resume','model_running') FOR UPDATE OF r`, runID, tok.LeaseID, tok.FenceEpoch).Scan(&yes) != nil {
-		return "", ErrDenied
+	if e = tx.QueryRow(ctx, `SELECT TRUE FROM runs r JOIN session_ownership o USING(session_key) WHERE r.run_id=$1 AND o.run_id=$1 AND o.lease_id=$2 AND o.fence_epoch=$3 AND o.expires_at>clock_timestamp() AND r.current_state IN ('awaiting_approval','awaiting_model_resume','model_running') FOR SHARE OF r`, runID, tok.LeaseID, tok.FenceEpoch).Scan(&yes); e != nil {
+		return "", resumeFailed(ctx, "run", e)
 	}
 	v, e := loadInteraction(ctx, tx, id, false)
 	if e != nil || v.State != "resolved" || v.RunID != runID || v.SessionKey != tok.SessionKey {
-		return "", ErrDenied
+		return "", resumeFailed(ctx, "interaction", e)
 	}
 	if v.TaskID != "" {
 		if e = task.ResumeInteractionTx(ctx, tx, v.TaskID, v.TaskRevision, v.ConstraintsRevision); e != nil {
-			return "", ErrDenied
+			return "", resumeFailed(ctx, "task", e)
 		}
 		var now time.Time
 		_ = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now)
 		if _, e = actionauth.CheckTaskAuthorityTx(ctx, tx, v.TaskID, v.OwnerID, nil, now); e != nil {
-			return "", ErrDenied
+			return "", resumeFailed(ctx, "task_authority", e)
 		}
 	}
 	if e = s.Inputs.CheckInteractionClaimTx(ctx, tx, runID, id); e != nil {
-		return "", ErrDenied
+		return "", resumeFailed(ctx, "claim", e)
 	}
 	if e = s.SourceGuard(ctx, tx, runID); e != nil {
-		return "", ErrDenied
+		return "", resumeFailed(ctx, "source", e)
 	}
 	sourceRef := "message:response:" + id
 	if s.Sources != nil {
 		if _, e = s.Sources.AccessTx(ctx, tx, []catalog.SourceRef{{ID: sourceRef}}, "memory_read"); e != nil {
-			return "", ErrDenied
+			return "", resumeFailed(ctx, "answer_source", e)
 		}
 	}
 	// An ordinary owner request need not contain the option IDs/labels chosen by
 	// the model. Rebuild that mapping from the canonical question, not old provider
 	// state or channel-rendered text, so the resumed model can use the answer.
 	raw := interactionResponse(v)
+	// Source/graph reads may wait. Expired or replaced claims and expired leases
+	// cannot release DATA merely because their initial proof was valid.
+	if e = s.Inputs.CheckInteractionClaimTx(ctx, tx, runID, id); e != nil {
+		return "", resumeFailed(ctx, "claim", e)
+	}
+	if e = tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp()`, tok.SessionKey, runID, tok.LeaseID, tok.FenceEpoch).Scan(&yes); e != nil {
+		return "", resumeFailed(ctx, "ownership", e)
+	}
 	if e = tx.Commit(ctx); e != nil {
-		return "", e
+		return "", resumeFailed(ctx, "commit", e)
 	}
 	return raw, nil
 }

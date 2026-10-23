@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.11, 2026-10-22. **Статус: согласованный продуктовый контракт;
+Версия 0.12, 2026-10-23. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -11,6 +11,32 @@
 message/photo/report документируется отдельно; C05 не обновляет его автоматически.
 
 ### Граница текущей реализации
+
+Продолжение после ответа (#142) читает канонический ответ под совместными
+блокировками Session/run. Длительное чтение старой Web-ленты не требует
+исключительного доступа к этим же строкам. Текущие lease/fence, Input claim,
+Task/authority и Catalog остаются обязательными; после ожидания источников
+повторно проверяются claim и срок lease. Это чтение DATA, не разрешение действия.
+Изменения состояния, публикации и эффекты сохраняют прежние owning writers.
+Отказ продолжения хранит фиксированные phase/reason `interaction_resume_*`;
+отмена по ownership watchdog сохраняет owning cause и при recovery. Heartbeat
+различает `input_claim_lost` и `input_claim_renewal_failed`, не раскрывая SQL,
+credential/body или заменяя независимую ошибку provider/истёкший deadline.
+
+Для остановленного taskless explicit Input доступен узкий owner control:
+`POST /api/v3/communications/inputs/{input_id}/close-failed` с прежним Bearer
+proof, одним стабильным `X-Butler-Delivery-ID` и strict JSON `binding_id`,
+`binding_version`, `expected_checkpoint`, `expected_error_code`. Текущие
+owner/session и verified Web binding обязательны. Только `blocked` без claim,
+живой lease и executing/UNKNOWN write может стать `failed`; Task закрывается
+прежним Task controller. Переход run в failed и `input.closed_failed` audit
+атомарны. Обязательство получает `closed_with_failure`; question/answer,
+checkpoints/errors, publications, reservations, observations и NULL usage
+сохраняются. Повтор принятого close возвращает failed без второго audit;
+содержимое body не может выбрать completed, retry, grant или новые allowances.
+Этот control не является модельным инструментом, не воспроизводит эффект и
+не означает успешную доставку/выполнение. Рабочая приёмка и rollout требуют
+отдельных доказательств; наличие кода не переводит полный V1 в ready.
 
 C07 (#105) добавляет к принятому ответу фиксированную kernel-инструкцию о фазе
 продолжения исходного запроса. Она не содержит question/answer bytes: эти поля,

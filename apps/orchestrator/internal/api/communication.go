@@ -29,7 +29,7 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 		}
 		// Accept the canonical percent-encoding of typed reference colons only.
 		// Encoded separators/dot segments and double decoding remain forbidden.
-		if r.URL.RawQuery != "" || r.URL.RawPath != "" && r.URL.RawPath!=strings.ReplaceAll(r.URL.Path,":","%3A") || r.URL.ForceQuery {
+		if r.URL.RawQuery != "" || r.URL.RawPath != "" && r.URL.RawPath != strings.ReplaceAll(r.URL.Path, ":", "%3A") || r.URL.ForceQuery {
 			writeJSON(w, 400, map[string]string{"error": "fixed_communication_path_required"})
 			return
 		}
@@ -102,6 +102,19 @@ func CommunicationOwnerControls(auth *OwnerControlAuth, store *communication.Sto
 			writeJSON(w, code, map[string]string{"error": reason})
 		}
 		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v3/communications/inputs/"):
+			path := strings.TrimPrefix(r.URL.Path, "/api/v3/communications/inputs/")
+			id, valid := strings.CutSuffix(path, "/close-failed")
+			var q communication.CloseFailedRequest
+			if !valid || id == "" || strings.ContainsAny(id, "/\\") || communicationcontrol.StrictJSON(raw, &q) != nil {
+				bad()
+				return
+			}
+			if err = store.CloseFailed(ctx, id, q); err != nil {
+				failed(err)
+				return
+			}
+			writeJSON(w, 200, map[string]string{"input_id": id, "status": "failed"})
 		case r.URL.Path == "/api/v3/channel-bindings":
 			var q struct {
 				BindingID       string   `json:"binding_id"`

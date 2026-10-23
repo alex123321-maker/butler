@@ -43,7 +43,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 		}
 		a.SessionKey = reader.Binding.Recipient
 		ctx := owneridentity.WithActor(r.Context(), a)
-		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" || strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") {
+		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" || strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") || strings.HasPrefix(r.URL.Path, "/api/v3/communications/inputs/") {
 			owner.ServeHTTP(w, r)
 			return
 		}

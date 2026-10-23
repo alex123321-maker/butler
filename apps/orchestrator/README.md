@@ -134,6 +134,14 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Interaction resume reads canonical answers under shared Session/run proofs,
+retains fixed failure phases and rechecks claim/lease after source waits. The
+input heartbeat and recovered run preserve their distinct safe cancellation
+causes. The existing explicit owner HTTP composition also exposes guarded
+`close-failed` acknowledgement for blocked taskless Inputs: no active worker or
+uncertain write, no replay/success/refund, original evidence kept. See the
+[communication contract](../../docs/architecture/user-communication-spec.md).
+
 Conversation loop detection attributes repeated tool results to the original
 durable Input event through existing effect/run records. Independent requests in
 one session can rediscover tools; answer resume/restart retain the same Input's

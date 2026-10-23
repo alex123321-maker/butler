@@ -260,7 +260,10 @@ func (s *Service) process(parent context.Context, r Record) {
 			resume = true
 		}
 	}
-	ctx, cancel := context.WithTimeout(WithClaim(parent, r), s.executionTimeout)
+	bounded, timeoutCancel := context.WithTimeout(WithClaim(parent, r), s.executionTimeout)
+	defer timeoutCancel()
+	ctx, cancelCause := context.WithCancelCause(bounded)
+	cancel := func() { cancelCause(context.Canceled) }
 	if doctorAdmission(r.CheckpointJSON) {
 		ctx = flow.WithOperatorDoctor(ctx)
 	}
@@ -276,7 +279,12 @@ func (s *Service) process(parent context.Context, r Record) {
 				return
 			case <-ticker.C:
 				if err := s.store.Renew(ctx, r, s.claimTTL); err != nil {
-					cancel()
+					if ctx.Err() != nil {
+						return
+					}
+					cause := &claimCancellation{lost: errors.Is(err, ErrClaimLost)}
+					s.log.Warn("input claim renewal stopped", slog.String("input_id", r.InputID), slog.String("run_id", r.RunID), slog.String("reason", cause.Error()))
+					cancelCause(cause)
 					return
 				}
 			}
@@ -299,6 +307,7 @@ func (s *Service) process(parent context.Context, r Record) {
 	} else {
 		result, err = s.executor.Execute(ctx, event)
 	}
+	err = preserveClaimCancellation(ctx, err)
 	cancel()
 	<-heartbeatDone
 	// Shutdown deliberately leaves the claim for bounded takeover. A client
@@ -324,6 +333,10 @@ func (s *Service) process(parent context.Context, r Record) {
 			return
 		}
 		code := "execution_stopped"
+		var claimCause *claimCancellation
+		if errors.As(err, &claimCause) {
+			code = claimCause.Error()
+		}
 		if doctorAdmission(r.CheckpointJSON) {
 			var diagnostic interface{ DiagnosticCode() string }
 			if errors.As(err, &diagnostic) {

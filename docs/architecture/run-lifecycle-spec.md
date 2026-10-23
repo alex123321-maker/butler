@@ -1,5 +1,18 @@
 # Butler — Run Lifecycle Specification
 
+Interaction recovery reads canonical preference DATA with shared Session/run
+proofs so a retained Web feed cannot hold it behind an unnecessary exclusive
+lock. Session ownership, exact Input claim, task authority and source guards
+remain mandatory; claim/lease expiry is rechecked after source waits. Recovery
+retains the owning watchdog cancellation cause and fixed interaction proof
+phase, not raw storage errors. Input heartbeat cancellation separately retains
+claim loss/unavailable renewal without overwriting an independent provider error.
+An authenticated owner may acknowledge a stopped taskless explicit Input as
+failed through the communication control described in the user-communication
+spec. It requires no live claim/lease or uncertain write; the Input/run failure,
+closed obligation and audit commit together. Historical errors, answers and
+spent/unknown reservations remain intact. No retry or successful result is made.
+
 Kernel-admitted mobile batch tasks use primary history from that task's runs,
 while retaining Session ownership/order and transcript revision/privacy fences.
 Current typed goals, constraints and mandates remain mandatory. See

@@ -1,5 +1,13 @@
 # Durable input
 
+Heartbeat cancellation distinguishes lost claims from unavailable renewal with
+fixed codes, keeping parent deadlines and independent Core/provider diagnoses.
+`CloseStoppedTx` joins authenticated owner failure acknowledgement for taskless
+blocked explicit Inputs. It holds current owner/session/run/input proofs, rejects
+live claims/leases and executing/UNKNOWN writes, and changes only status/time.
+The caller atomically closes the run/obligation and saves the audit. It cannot
+requeue an Input, erase a checkpoint/error or replenish any spent allowance.
+
 Dormant communication hooks use `CheckCommunicationClaimTx` for the exact private
 claim at admission, publication/correction and explicit completion. A live lease
 does not let an old caller borrow a replacement worker's current claim. Distinct

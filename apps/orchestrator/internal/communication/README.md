@@ -1,5 +1,13 @@
 # Communication kernel (dormant)
 
+Canonical answer recovery uses shared Session/run proofs alongside retained Web
+readers, with current claim/lease/source checks and post-wait expiry validation.
+`interaction_resume_*` failures expose only fixed phases/reasons. The explicit
+owner composition has a strict `close-failed` control for already blocked
+taskless Inputs, with atomic Input/run failure, closed obligation and one audit.
+It rejects live workers and uncertain writes and retains all historical DATA,
+errors and spending. It is not a model capability or a retry/UNKNOWN resolution.
+
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
 There is no Bootstrap registration, installed public route, feature flag, model
