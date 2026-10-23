@@ -172,7 +172,7 @@ func issue76Freeze(t *testing.T) issue76Frozen {
 				if err != nil {
 					t.Fatal(cs.ID, arm, err)
 				}
-				mc := acceptance.MemoryCase{ID: cs.ID, Question: cs.Question, AsOfUTC: "2026-10-23T00:00:00Z", Task: acceptance.MemoryTask{Revision: 1, Goal: cs.Goal, Instruction: cs.Constraints}}
+				mc := acceptance.MemoryCase{ID: cs.ID, Question: cs.Question, AsOfUTC: "2026-10-23T00:00:00Z", Task: acceptance.MemoryTask{Revision: 1, Goal: cs.Goal, Instruction: cs.Constraints}, Expected: acceptance.MemoryAnswer{Citations: []acceptance.CommandWitness{}}}
 				input := acceptance.MemoryInput{CaseID: acceptance.MemoryOpaqueCaseID(mc), Arm: arm, Instructions: issue76Instructions, Question: cs.Question, AsOfUTC: mc.AsOfUTC, Task: mc.Task, Memory: []acceptance.MemorySource{}, MemoryPrompt: b.Prompt, CaptureSHA256: acceptance.MemoryDigest(b)}
 				projection, err := acceptance.MemoryModelProjection(input)
 				if err != nil || len(projection) > 24000 {
