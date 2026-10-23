@@ -232,7 +232,10 @@ func buildSections(ctx Context, limit int) []Section {
 	sections := []Section{
 		buildSection("session_summary", "Session summary", strings.TrimSpace(ctx.SessionSummary), limit),
 		buildSection("working_memory", "Working memory", formatWorkingMemory(ctx.Working), limit),
-		buildSection("profile_memory", "Profile memory", formatProfileEntries(ctx.Profile), limit),
+		// Preferences can end with an exception or a scope/source qualifier.
+		// The complete-context admission removes optional records whole;
+		// character truncation here would change the meaning before admission.
+		buildSection("profile_memory", "Profile memory", memoryservice.FormatProfileEntries(ctx.Profile), 0),
 		buildSection("episodic_memory", "Relevant episodes", formatEpisodeEntries(ctx.Episodes), limit),
 		buildSection("document_chunks", "Relevant document chunks", formatChunkEntries(ctx.Chunks), limit),
 		buildSection("tool_summary", "Available tools", strings.TrimSpace(ctx.ToolSummary), limit),
@@ -266,26 +269,6 @@ func formatWorkingMemory(working memoryservice.WorkingContext) string {
 	}
 	if status := strings.TrimSpace(working.Status); status != "" && status != "idle" {
 		lines = append(lines, "- Status: "+status)
-	}
-	return strings.Join(lines, "\n")
-}
-
-func formatProfileEntries(entries []map[string]any) string {
-	if len(entries) == 0 {
-		return ""
-	}
-	lines := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		key := strings.TrimSpace(stringValue(entry["key"]))
-		summary := strings.TrimSpace(stringValue(entry["summary"]))
-		if key == "" || summary == "" {
-			continue
-		}
-		line := "- " + key + ": " + summary
-		if refs, ok := entry["source_refs"].([]string); ok && len(refs) > 0 {
-			line += " (sources " + strings.Join(refs, ", ") + "; stored evidence)"
-		}
-		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n")
 }

@@ -644,16 +644,8 @@ func FormatPrompt(working WorkingContext, profileEntries, episodes, chunks []map
 	if lines := formatWorkingMemoryLines(working); len(lines) > 0 {
 		sections = append(sections, "Working memory:\n"+strings.Join(lines, "\n"))
 	}
-	if len(profileEntries) > 0 {
-		lines := make([]string, 0, len(profileEntries))
-		for _, entry := range profileEntries {
-			line := fmt.Sprintf("- %s: %s", entry["key"], entry["summary"])
-			if refs, ok := entry["source_refs"].([]string); ok && len(refs) > 0 {
-				line += " (sources " + strings.Join(refs, ", ") + "; stored evidence)"
-			}
-			lines = append(lines, line)
-		}
-		sections = append(sections, "Profile memory:\n"+strings.Join(lines, "\n"))
+	if profile := FormatProfileEntries(profileEntries); profile != "" {
+		sections = append(sections, "Profile memory:\n"+profile)
 	}
 	if len(episodes) > 0 {
 		lines := make([]string, 0, len(episodes))

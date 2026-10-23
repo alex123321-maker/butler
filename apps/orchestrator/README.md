@@ -1,3 +1,9 @@
+Profile model sections preserve each selected preference's scope, source handles
+and complete text, including trailing exceptions. The full-context budget removes
+optional records whole; profile data never becomes owner authority. The combined
+prompt preview remains display-limited. See the
+[issue76 development screen](../../docs/testing/issue-76-profile-context.md).
+
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on

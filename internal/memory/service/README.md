@@ -42,6 +42,13 @@ Unknown document identity is not deduplicated by text. Unspent space remains ava
 `BundleBudget` is a secondary count cap, never a substitute for size accounting.
 Profile source handles and document revisions stay with selected evidence.
 
+Profile text formatting retains `scope_type`, `scope_id` and source handles for
+each selected record, including after a JSON round trip. Missing scope stays
+explicitly unknown. Scope labels are data: they neither resolve contradictory
+claims nor grant authority. The shared formatter is also used by the Orchestrator.
+Its model-facing profile section preserves complete records, including trailing
+exceptions; complete-context admission omits optional records whole when needed.
+
 Safe diagnostics expose version/estimator/allowance/counts and omission reason
 codes, never query or source text. The orchestrator additionally admits the
 complete encoded context, reserves continuation headroom and trims optional

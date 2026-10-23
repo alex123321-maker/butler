@@ -513,6 +513,17 @@ release. Profile eligibility is re-read after slow retrieval; selection never
 fills a quota using withdrawn/foreign records. See the
 [bundle service contract](../../internal/memory/service/README.md).
 
+Selected profile evidence retains its exact scope type/ID and source handles in
+both bundle text and Orchestrator model sections. Missing scope is explicitly
+unknown, not inferred from a key or its wording. Profile sections are not
+character-truncated: a trailing exception or source qualifier belongs to the
+record. Full-context admission may remove optional records whole and still
+prioritizes current owner input and typed task constraints. Descriptive scope
+metadata does not grant authority, resolve competing preferences, or promote an
+extracted candidate. The combined prompt preview may retain its display limit;
+the actual model consumes the complete admitted sections. Development evidence
+and limits: [issue76 profile context](../testing/issue-76-profile-context.md).
+
 Hybrid queries above 2048 UTF-8 bytes skip optional lookup with `query_input_limit`
 and no SQL/inference, preserving the full owner message for ordinary preparation.
 Access/Secret/configuration failures and current authority/source release checks
