@@ -41,6 +41,10 @@ proof, одним стабильным `X-Butler-Delivery-ID` и strict JSON `bi
 `binding_version`, `expected_checkpoint`, `expected_error_code`. Текущие
 owner/session и verified Web binding обязательны. Только `blocked` без claim,
 живой lease и executing write может стать `failed`; UNKNOWN по умолчанию запрещён.
+Для раннего `run_created/execution_stopped` отказа до `AdmitRun` владение
+проверяется по durable accepted Input/session и текущему Web binding. Исключение
+без admission разрешено только для совпадающих Web/Telegram source и session
+channel; admission/obligation/grant не создаются. Остальные guard сохраняются.
 Для остановки собственной неопределённой локальной публикации владелец может
 явно передать `acknowledge_unknown_effects` — точный список её effect IDs. Это
 допустимо только для уже `effect_unknown` prepare-эффектов `communication.*`;

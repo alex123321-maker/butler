@@ -131,6 +131,100 @@ func TestCommunicationCloseFailedKeepsEvidenceAndOneAuditIntegration(t *testing.
 	}
 }
 
+func TestCommunicationCloseEarlyFailureWithoutAdmissionIntegration(t *testing.T) {
+	for _, mode := range []string{"web", "telegram", "foreign_owner", "disabled_binding", "missing_binding", "stale_binding", "unsupported_source", "wrong_checkpoint", "wrong_session_channel"} {
+		t.Run(mode, func(t *testing.T) {
+			f := setup(t)
+			if err := f.s.Inputs.Finish(f.ctx, f.claim, "blocked", "execution_stopped", "memory retrieval failed: context canceled", 0); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.leases.ReleaseLease(f.ctx, f.lease.LeaseID); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(f.ctx, `DELETE FROM communication_admissions WHERE input_id=$1`, f.claim.InputID); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET checkpoint='run_created',source='web' WHERE input_id=$1`, f.claim.InputID); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(f.ctx, `UPDATE runs SET status='failed',current_state='failed' WHERE run_id=$1`, f.p.RunID); err != nil {
+				t.Fatal(err)
+			}
+			actor := owneridentity.Actor{OwnerID: f.p.OwnerID, Channel: "web", SessionKey: "web:verified", DeliveryID: "close-early"}
+			q := communication.CloseFailedRequest{BindingID: f.bindings["web"], BindingVersion: 1, ExpectedCheckpoint: "run_created", ExpectedErrorCode: "execution_stopped"}
+			switch mode {
+			case "telegram":
+				if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET source='telegram' WHERE input_id=$1`, f.claim.InputID); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := f.pool.Exec(f.ctx, `UPDATE sessions SET channel='telegram' WHERE session_key=$1`, f.p.SessionKey); err != nil {
+					t.Fatal(err)
+				}
+			case "foreign_owner":
+				actor.OwnerID = "other"
+			case "disabled_binding":
+				if _, err := f.pool.Exec(f.ctx, `UPDATE communication_bindings SET enabled=FALSE WHERE binding_id=$1`, q.BindingID); err != nil {
+					t.Fatal(err)
+				}
+			case "missing_binding":
+				q.BindingID = "missing"
+			case "stale_binding":
+				q.BindingVersion++
+			case "unsupported_source":
+				if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET source='fixture' WHERE input_id=$1`, f.claim.InputID); err != nil {
+					t.Fatal(err)
+				}
+			case "wrong_checkpoint":
+				if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET checkpoint='model_budget_reserved' WHERE input_id=$1`, f.claim.InputID); err != nil {
+					t.Fatal(err)
+				}
+				q.ExpectedCheckpoint = "model_budget_reserved"
+			case "wrong_session_channel":
+				if _, err := f.pool.Exec(f.ctx, `UPDATE sessions SET channel='telegram' WHERE session_key=$1`, f.p.SessionKey); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before, err := f.s.Inputs.Get(f.ctx, f.claim.InputID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = f.s.CloseFailed(owneridentity.WithActor(context.Background(), actor), f.claim.InputID, q)
+			wantClose := mode == "web" || mode == "telegram"
+			if wantClose && err != nil {
+				t.Fatal("early stopped Input cannot be closed", err)
+			}
+			if !wantClose && err == nil {
+				t.Fatal("unproved early close admitted", mode)
+			}
+			after, err := f.s.Inputs.Get(f.ctx, f.claim.InputID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if wantClose {
+				if after.Status != "failed" || f.count(t, "communication_events") != 1 {
+					t.Fatal("missing failed close/audit")
+				}
+				before.Status = after.Status
+				before.UpdatedAt = after.UpdatedAt
+			} else if f.count(t, "communication_events") != 0 {
+				t.Fatal("denied close audited as success")
+			}
+			if !reflect.DeepEqual(before, after) {
+				t.Fatal("original Input evidence changed")
+			}
+			for _, table := range []string{"communication_admissions", "communication_publications", "communication_interactions", "execution_budget_reservations", "execution_model_attempts", "action_effects"} {
+				var count int
+				if err := f.pool.QueryRow(f.ctx, `SELECT count(*) FROM `+table).Scan(&count); err != nil {
+					t.Fatal(err)
+				}
+				if count != 0 {
+					t.Fatal("early close manufactured business state", table)
+				}
+			}
+		})
+	}
+}
+
 func TestCommunicationCloseFailedRejectsLiveAndUncertainIntegration(t *testing.T) {
 	for _, mode := range []string{"wrong_owner", "binding", "checkpoint", "claim", "lease", "task", "executing", "unknown_write"} {
 		t.Run(mode, func(t *testing.T) {

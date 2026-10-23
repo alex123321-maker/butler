@@ -7,6 +7,10 @@ owner composition has a strict `close-failed` control for already blocked
 taskless Inputs, with atomic Input/run failure, closed obligation and one audit.
 It rejects live workers and uncertain writes and retains all historical DATA,
 errors and spending. It is not a model capability or a retry/UNKNOWN resolution.
+An early `run_created/execution_stopped` Web/Telegram failure can also be closed
+before communication admission exists: current accepted-receipt/session ownership
+and verified Web binding are mandatory, with matching source/session channel.
+This creates only the failure audit; no admission or reply obligation is invented.
 
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
