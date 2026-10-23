@@ -1,0 +1,131 @@
+{
+  "at": "2026-10-23T07:50:54.202683+00:00",
+  "bot": "butler_rich_lab_20261021_bot",
+  "source": "4ec1ce01b80a6e1bbfff44b0e17095f405870609",
+  "binary_sha256": "aec2f379613322b0f4d93a1ca0c5d685a4201756aa80c54e690d1189eae00e83",
+  "flow": "user Telegram message -> ordinary agent -> scoped owner approval -> Broker Communication publication -> stored outbox -> Telegram",
+  "browser_verified": {
+    "positive_custom_emoji_ids": [
+      "5456201430635386946",
+      "5456606106748983383",
+      "5456365098954136383"
+    ],
+    "negative_custom_emoji_count": 0
+  },
+  "cases": [
+    {
+      "run_id": "run-1792741216530294987-d953009154f7e4c7",
+      "inputs": [
+        {
+          "input_id": "input-f34758bb5b037a7bd4c7bab6c6fe7941",
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": "",
+          "error_message": ""
+        }
+      ],
+      "publications": [
+        {
+          "id": "publication:0e36c53dc743bbfe02acaed5213e2471a317bf6c3064888c130ec5cac4ea7343",
+          "kind": "message",
+          "purpose": "result",
+          "payload": {
+            "text": "Привет!\nСлушаю музыку.\nСпасибо большое.",
+            "purpose": "result",
+            "schema_version": 1
+          }
+        }
+      ],
+      "deliveries": [
+        {
+          "channel": "web",
+          "status": "result_ready",
+          "ack": "",
+          "content": {
+            "schema_version": 1,
+            "purpose": "result",
+            "text": "Привет!\nСлушаю музыку.\nСпасибо большое."
+          }
+        },
+        {
+          "channel": "telegram",
+          "status": "sent",
+          "ack": "78",
+          "content": {
+            "decoration": {
+              "version": 1,
+              "policy": "kolobki-concepts-v1:30ed8b11e641d3605e0d1bcd0fe98cda44a8c7708e4115f90b31212492c6625b",
+              "source_sha256": "0fc3ca919b46336bd87d813cbe4c903b2d4edb084c6afe4e8f91607a67bf46e1",
+              "insertions": [
+                {
+                  "offset_bytes": 0,
+                  "emoji": "👌",
+                  "custom_emoji_id": "5456201430635386946"
+                },
+                {
+                  "offset_bytes": 14,
+                  "emoji": "🙂",
+                  "custom_emoji_id": "5456606106748983383"
+                },
+                {
+                  "offset_bytes": 41,
+                  "emoji": "👍",
+                  "custom_emoji_id": "5456365098954136383"
+                }
+              ]
+            },
+            "version": 1,
+            "method": "sendMessage",
+            "text": "Привет!\nСлушаю музыку.\nСпасибо большое."
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "run-1792741419812544302-8f6ebaf84a21c11d",
+      "inputs": [
+        {
+          "input_id": "input-c380f0645a422122e5d48e3ee5200e92",
+          "status": "blocked",
+          "checkpoint": "model_budget_reserved",
+          "error_code": "execution_stopped",
+          "error_message": "memory_source_check_timeout"
+        }
+      ],
+      "publications": [
+        {
+          "id": "publication:ecdae1943e4b84227671e11017516ef4146022fe15d52758bf936224df956d95",
+          "kind": "message",
+          "purpose": "result",
+          "payload": {
+            "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки.",
+            "purpose": "result",
+            "schema_version": 1
+          }
+        }
+      ],
+      "deliveries": [
+        {
+          "channel": "web",
+          "status": "result_ready",
+          "ack": "",
+          "content": {
+            "schema_version": 1,
+            "purpose": "result",
+            "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки."
+          }
+        },
+        {
+          "channel": "telegram",
+          "status": "sent",
+          "ack": "80",
+          "content": {
+            "version": 1,
+            "method": "sendMessage",
+            "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-23T08:19:02.474059+00:00",
+  "source": "9b29a94c7abe06a0256d4353a6aa2d9812907c86",
+  "run_id": "run-1792743325184264496-3aa2562fe5cbfcf1",
+  "input_id": "input-7de3b8e8c5c18fae5499ce708299cea0",
+  "input": {
+    "status": "blocked",
+    "checkpoint": "run_created",
+    "accepted_at": "2026-10-23T07:45:15.209322+00:00",
+    "updated_at": "2026-10-23T08:15:38.746922+00:00",
+    "error_code": "execution_stopped",
+    "error_message": "memory retrieval failed: context canceled"
+  },
+  "publications": 0,
+  "approvals": 0,
+  "model_attempts": 0,
+  "local_retrieval_reservation": {
+    "operation": "local:operation_119e8d6fcafa8f2fa182f0c36f2da144aaf760ba3cfb1add",
+    "created": "2026-10-23T08:15:27.007052+00:00",
+    "charge": {
+      "tokens": 4096,
+      "children": 0,
+      "cost_micros": 0,
+      "model_turns": 1,
+      "egress_bytes": 0,
+      "active_millis": 60000,
+      "external_calls": 0,
+      "provider_input_bytes": 552
+    },
+    "scopes": [
+      {
+        "kind": "auxiliary",
+        "subject": "live:run-1792743325184264496-3aa2562fe5cbfcf1"
+      }
+    ]
+  },
+  "model_attempts_scope": "Main model attempts table; local retrieval is charged in the separate existing reservation ledger."
+}

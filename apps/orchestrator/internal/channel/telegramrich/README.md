@@ -123,6 +123,8 @@ The owner-profile orchestrator accepts `-telegram-emoji-decoration` (default off
 Planner uses an embedded, reviewed Kolobkitop concept whitelist; no inference,
 network access or new dependency. Every content word must be supported; negative,
 uncertain, quoted/code/link/question, ambiguous and unknown content abstains.
+Labels containing an existing Unicode symbol/emoji also abstain, including widget
+options; the decorator does not add a conflicting second icon.
 `Part.Text` and canonical payload remain unchanged. Optional `Part.Decoration`
 pins policy hash, original text hash, at most three insertions and stable option
 icons. Sender and widget edits replay these choices, using UTF-16 entities and
