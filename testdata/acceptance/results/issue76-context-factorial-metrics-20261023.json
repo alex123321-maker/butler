@@ -1,0 +1,3370 @@
+{
+  "observed": 32,
+  "pins": {
+    "Binary": "c5b6fc692695de5454e6b9179c2400cdf1bac8dac7a89a102af8b196232b7a49",
+    "Controls": "4de305f9f2332665c064b9814ef8269ec8d41fb17882c9373bd9fc34949cd36c",
+    "Development": "",
+    "Frozen": "7164ad97e9c67fc6d4680f68407f39fc0aa67b82acd9f3181d5e935a05ca7460",
+    "Protocol": "78c63ecc8487d222d3b55760279e886be29063809e0ef96c768ef53a72cd2f10",
+    "Release": "a27ca37020a12b8af7d394992e7b8987fbbee417",
+    "Source": "e31f2a84ce03db86230d64da2284a77e0e5d8961c3b434fad133af6ca3f820bc",
+    "Image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "TrialID": "issue76-trial-factorial-20261023-v1",
+    "SourceDir": "/srv/storage/butler/agents/issue76-source-factorial-20261023-v1/snapshots/20261023-152808-689",
+    "TrialRoot": "/srv/storage/butler/agents/issue76-trial-factorial-20261023-v1"
+  },
+  "scheduled": 32,
+  "money_cost": "unmeasured",
+  "rows": [
+    {
+      "case_id": "f2c01",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-e786d4eb1abc",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c01-bg01",
+        "f2c01-bg02",
+        "f2c01-bg03",
+        "f2c01-bg04",
+        "f2c01-bg05",
+        "f2c01-bg06",
+        "f2c01-bg07",
+        "f2c01-bg08",
+        "f2c01-bg09",
+        "f2c01-bg10",
+        "f2c01-bg11"
+      ],
+      "required_sources": [
+        "f2c01-meter"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c01-meter"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c01-meter"
+      ],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 17692,
+      "generation_expenses": [
+        {
+          "id": "operation_eec78d9b1ff74ae5dd18e7cfdcb0db4f86d36c1e97ef0ea9",
+          "case_id": "memory:19fdca9716c0af5b94eb2d3dc8435f88",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "738c02cfd9b659c1ea4e9a3f856154e0980528fbe3193cf5515ad9fb52e74f00",
+          "calls": 1,
+          "input_tokens": 1895,
+          "output_tokens": 117,
+          "total_tokens": 2661,
+          "milliseconds": 17692,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4084,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "391479fd87fbf9587d1beb102a4494beeb0f0f521d928a4b98ae146ca4dd305a",
+      "context_sha256": "8916aaf203993d168f6191af04b3e50665f155586c48f5300de4b5b510d676cb",
+      "model_projection_sha256": "9b39f9fcd51c1bd5e17caea05ef23f4edf9f21e739dca3bf79602b89ec18ab6a",
+      "model_request_sha256": "c1817d43f6553ee0f7af0bc5439c2b96cd3d051441e4c32d8bfd0bd8c973e6fc",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c01",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-0ba1e4c8ffd3",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c01-bg01",
+        "f2c01-bg02",
+        "f2c01-bg03",
+        "f2c01-bg04",
+        "f2c01-bg05",
+        "f2c01-bg06",
+        "f2c01-bg07",
+        "f2c01-bg08",
+        "f2c01-bg09",
+        "f2c01-bg15",
+        "f2c01-meter"
+      ],
+      "required_sources": [
+        "f2c01-meter"
+      ],
+      "retained_required": [
+        "f2c01-meter"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c01-meter"
+      ],
+      "visible_required_attribution": [
+        "f2c01-meter"
+      ],
+      "attributed_required": [
+        "f2c01-meter"
+      ],
+      "milliseconds": 89204,
+      "generation_expenses": [
+        {
+          "id": "operation_4a9ec59df6f607d333b396e06283fae833d3fadd4e777580",
+          "case_id": "memory:19fdca9716c0af5b94eb2d3dc8435f88",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "3f647dfe938e91236d3710d291ccab82d40d71342b37b14f31cf6701ec4e1e96",
+          "calls": 1,
+          "input_tokens": 1917,
+          "output_tokens": 185,
+          "total_tokens": 12232,
+          "milliseconds": 89204,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4314,
+        "optional_allowance": 8192,
+        "optional_estimated": 3965,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "1af84f43c83df342b297e40d7d0fb139dd4f0478386bae5ee40b32d5056fe7f7",
+      "context_sha256": "83e14f734e3d5ba15870ba85719391d5e9d6640ebcbde5e966927ba1c69a1b41",
+      "model_projection_sha256": "f4d24031d5a4b66fa3acae588b12aeb3819c8c1d47411c5851298b38e5ae32b5",
+      "model_request_sha256": "ecf4cedcb9bdb525ae21a48cd26033f3c00be24eb3ddfd6464f395bec282ca81",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c01",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-9e2e8dd4995f",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c01-bg01",
+        "f2c01-bg02",
+        "f2c01-bg03",
+        "f2c01-bg04",
+        "f2c01-bg05",
+        "f2c01-bg06",
+        "f2c01-bg07",
+        "f2c01-bg08",
+        "f2c01-bg09",
+        "f2c01-bg10",
+        "f2c01-bg11"
+      ],
+      "required_sources": [
+        "f2c01-meter"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c01-meter"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c01-meter"
+      ],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 14243,
+      "generation_expenses": [
+        {
+          "id": "operation_c6405610ad144df867d7658798af45a025a7ecc38429fef2",
+          "case_id": "memory:19fdca9716c0af5b94eb2d3dc8435f88",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "6c86814bd9e20b747e98dbd6d2e9c15687305478e1f7addbd99eeb82b089c48d",
+          "calls": 1,
+          "input_tokens": 2101,
+          "output_tokens": 116,
+          "total_tokens": 3109,
+          "milliseconds": 14243,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4084,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "b8ed25350c02d56911de1e0e1541ab2972fafc9e3f0b70db39cf6b44dcfb9c42",
+      "context_sha256": "8916aaf203993d168f6191af04b3e50665f155586c48f5300de4b5b510d676cb",
+      "model_projection_sha256": "9b39f9fcd51c1bd5e17caea05ef23f4edf9f21e739dca3bf79602b89ec18ab6a",
+      "model_request_sha256": "248dc383f82012f2dbe4da73f8946fa50585d0f957f002fea040fdd368190144",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c01",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-4505b11c190c",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c01-bg01",
+        "f2c01-bg02",
+        "f2c01-bg03",
+        "f2c01-bg04",
+        "f2c01-bg05",
+        "f2c01-bg06",
+        "f2c01-bg07",
+        "f2c01-bg08",
+        "f2c01-bg09",
+        "f2c01-bg15",
+        "f2c01-meter"
+      ],
+      "required_sources": [
+        "f2c01-meter"
+      ],
+      "retained_required": [
+        "f2c01-meter"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c01-meter"
+      ],
+      "visible_required_attribution": [
+        "f2c01-meter"
+      ],
+      "attributed_required": [
+        "f2c01-meter"
+      ],
+      "milliseconds": 56691,
+      "generation_expenses": [
+        {
+          "id": "operation_f519fd074de0f8bcac975994278cbe409d4292c0a77b43fe",
+          "case_id": "memory:19fdca9716c0af5b94eb2d3dc8435f88",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "c7bd1411515c937ba13a1bfb43ea6a2c5ed7f06c76a8a558e39febcc1b8c64df",
+          "calls": 1,
+          "input_tokens": 2123,
+          "output_tokens": 172,
+          "total_tokens": 8386,
+          "milliseconds": 56691,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4314,
+        "optional_allowance": 8192,
+        "optional_estimated": 3965,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "6182a67d41fcd84f898dd9a40634fef48f0decccd070ca6b4ed57a5393b4c0c4",
+      "context_sha256": "83e14f734e3d5ba15870ba85719391d5e9d6640ebcbde5e966927ba1c69a1b41",
+      "model_projection_sha256": "f4d24031d5a4b66fa3acae588b12aeb3819c8c1d47411c5851298b38e5ae32b5",
+      "model_request_sha256": "330b0dd1974e9c3443a6aa4a54dda237403304e2b460839bf6096446d572efd6",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c02",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-73b6560a0317",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c02-bg01",
+        "f2c02-bg02",
+        "f2c02-bg03",
+        "f2c02-bg04",
+        "f2c02-bg05",
+        "f2c02-bg06",
+        "f2c02-bg09",
+        "f2c02-bg15",
+        "f2c02-bg16",
+        "f2c02-font",
+        "f2c02-route"
+      ],
+      "required_sources": [
+        "f2c02-font"
+      ],
+      "retained_required": [
+        "f2c02-font"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c02-font"
+      ],
+      "visible_required_attribution": [
+        "f2c02-font"
+      ],
+      "attributed_required": [
+        "f2c02-font"
+      ],
+      "milliseconds": 12978,
+      "generation_expenses": [
+        {
+          "id": "operation_c9070ee9d287f7394a3bbe6f76d7deaac1ea58eb4eff5c8d",
+          "case_id": "memory:b2d5a9ba2d24eb380b00b1eab34e085a",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "4c564d6c8222a239949734d4b0aff7025c248e3fda72b36d9b62e95ed650ec1c",
+          "calls": 1,
+          "input_tokens": 1898,
+          "output_tokens": 69,
+          "total_tokens": 2900,
+          "milliseconds": 12978,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4237,
+        "optional_allowance": 8192,
+        "optional_estimated": 3890,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 4
+        }
+      },
+      "output_sha256": "d66aa8666abbc5ce2731c592f50911c751a57f6dbba8cd7a857c934c2553c77e",
+      "context_sha256": "7dbe1f196754f24763ae6992f060aa06823767c0d60d39e26a5afd00a6186603",
+      "model_projection_sha256": "96eca1acc9a30e1068e9ace0eb72f3290a1975b0455cee26a3cddd8231f1131f",
+      "model_request_sha256": "b31877ff021eacb136d73426904e79daa735ad0d355b1a722a195861ea18ee88",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c02",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-0b9b994e3f20",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c02-bg01",
+        "f2c02-bg02",
+        "f2c02-bg03",
+        "f2c02-bg04",
+        "f2c02-bg05",
+        "f2c02-bg06",
+        "f2c02-bg07",
+        "f2c02-bg08",
+        "f2c02-bg09",
+        "f2c02-font",
+        "f2c02-route"
+      ],
+      "required_sources": [
+        "f2c02-font"
+      ],
+      "retained_required": [
+        "f2c02-font"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c02-font"
+      ],
+      "visible_required_attribution": [
+        "f2c02-font"
+      ],
+      "attributed_required": [
+        "f2c02-font"
+      ],
+      "milliseconds": 9193,
+      "generation_expenses": [
+        {
+          "id": "operation_5c8f5e24177c0b29842ed01a08f6d9dbffca6d90bada0854",
+          "case_id": "memory:b2d5a9ba2d24eb380b00b1eab34e085a",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "0d273c03ad948299983358a536d6aa89735c9368a0d2d5fc0510c665770eb584",
+          "calls": 1,
+          "input_tokens": 2105,
+          "output_tokens": 83,
+          "total_tokens": 2929,
+          "milliseconds": 9193,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4214,
+        "optional_allowance": 8192,
+        "optional_estimated": 3867,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 4
+        }
+      },
+      "output_sha256": "4e5ec02f348ef8460c316554ac95359ba164cedfcfdb81dbc4c517d0192cd0f2",
+      "context_sha256": "f68f8c2bd8eb5727aeae17fb069ccfb2f3d65341098c3aa94e3bd91e19dd72ac",
+      "model_projection_sha256": "f0d41a92f8f0901a3c1baeecbe9e309bad0526eb4549268f186e102e1ac45e99",
+      "model_request_sha256": "a8aa9142f18fc9558d10467be5d30a9d8f496abf01cc42e9da08f390d2f3e7d5",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c02",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-813a6826a1c6",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c02-bg01",
+        "f2c02-bg02",
+        "f2c02-bg03",
+        "f2c02-bg04",
+        "f2c02-bg05",
+        "f2c02-bg06",
+        "f2c02-bg09",
+        "f2c02-bg15",
+        "f2c02-bg16",
+        "f2c02-font",
+        "f2c02-route"
+      ],
+      "required_sources": [
+        "f2c02-font"
+      ],
+      "retained_required": [
+        "f2c02-font"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c02-font"
+      ],
+      "visible_required_attribution": [
+        "f2c02-font"
+      ],
+      "attributed_required": [
+        "f2c02-font"
+      ],
+      "milliseconds": 8273,
+      "generation_expenses": [
+        {
+          "id": "operation_18ce6864a8772eb0e74609d8da713d73e7f275da20bab36b",
+          "case_id": "memory:b2d5a9ba2d24eb380b00b1eab34e085a",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "9fdf1b1b0de887b311ca3cf54a677a189169524949473c910f521f4fdc71cae4",
+          "calls": 1,
+          "input_tokens": 2104,
+          "output_tokens": 79,
+          "total_tokens": 2884,
+          "milliseconds": 8273,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4237,
+        "optional_allowance": 8192,
+        "optional_estimated": 3890,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 4
+        }
+      },
+      "output_sha256": "75f96bf4685aae1df996574fd269b46ecdf3ac52f335b4b9d5e759721764f45e",
+      "context_sha256": "7dbe1f196754f24763ae6992f060aa06823767c0d60d39e26a5afd00a6186603",
+      "model_projection_sha256": "96eca1acc9a30e1068e9ace0eb72f3290a1975b0455cee26a3cddd8231f1131f",
+      "model_request_sha256": "b1c5db533080920c3b5a103aee045c8c5c351c3a58adc6388b2c2c775dbfad21",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c02",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-77ef319d9032",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c02-bg01",
+        "f2c02-bg02",
+        "f2c02-bg03",
+        "f2c02-bg04",
+        "f2c02-bg05",
+        "f2c02-bg06",
+        "f2c02-bg07",
+        "f2c02-bg08",
+        "f2c02-bg09",
+        "f2c02-font",
+        "f2c02-route"
+      ],
+      "required_sources": [
+        "f2c02-font"
+      ],
+      "retained_required": [
+        "f2c02-font"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [
+        "f2c02-font"
+      ],
+      "visible_required_attribution": [
+        "f2c02-font"
+      ],
+      "attributed_required": [
+        "f2c02-font"
+      ],
+      "milliseconds": 10690,
+      "generation_expenses": [
+        {
+          "id": "operation_d1771d64c884fcf782972fbb71a42aca90407b0947ba98c2",
+          "case_id": "memory:b2d5a9ba2d24eb380b00b1eab34e085a",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "93dcc9b7e21b6c733b433bcca179dba44c490f703974df715a6f5dc39d51deb1",
+          "calls": 1,
+          "input_tokens": 1899,
+          "output_tokens": 104,
+          "total_tokens": 2954,
+          "milliseconds": 10690,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4214,
+        "optional_allowance": 8192,
+        "optional_estimated": 3867,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 4
+        }
+      },
+      "output_sha256": "568216f35a52b3af94cd94b74aa90398f5ada99e1d4baaaafe0a7a61d99e3a78",
+      "context_sha256": "f68f8c2bd8eb5727aeae17fb069ccfb2f3d65341098c3aa94e3bd91e19dd72ac",
+      "model_projection_sha256": "f0d41a92f8f0901a3c1baeecbe9e309bad0526eb4549268f186e102e1ac45e99",
+      "model_request_sha256": "641c13c88e9706b7d5fd01305c5f924a8e5f9d0303be3a15f74dfafc455fb849",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c03",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-56ff18bd0bbb",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c03-general",
+        "f2c03-session"
+      ],
+      "required_sources": [
+        "f2c03-session"
+      ],
+      "retained_required": [
+        "f2c03-session"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 18480,
+      "generation_expenses": [
+        {
+          "id": "operation_96fdf11bb1e041fcf9762051b37c69ed8a564bd2a423c323",
+          "case_id": "memory:bb3c6110093034ad8881a8c23d4429f4",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "5d213caea3e35219eac64bfaaf01a504869e8acdf7ddfd3743e5198e3cf1c562",
+          "calls": 1,
+          "input_tokens": 1663,
+          "output_tokens": 207,
+          "total_tokens": 3251,
+          "milliseconds": 18480,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1306,
+        "optional_allowance": 8192,
+        "optional_estimated": 915,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 2
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "8d992223c6ac0f43ece6f9388dd83392753b59866e86679cce2d0fb28bad59c5",
+      "context_sha256": "2ad65367ab0876e5b0e5b88178ab246ce43c458d830649ab3745b4b8bd72fe9a",
+      "model_projection_sha256": "6efc4920414e5dda135affa8ce2ec2a00df63ddf2b2114ea05cdfe3fcd9aeef6",
+      "model_request_sha256": "a44977987caa17647ae12096ad6e81ce04b8b26231c400e8f548c73be77b7d8e",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c03",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-f276577a6c88",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c03-general",
+        "f2c03-session"
+      ],
+      "required_sources": [
+        "f2c03-session"
+      ],
+      "retained_required": [
+        "f2c03-session"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 15296,
+      "generation_expenses": [
+        {
+          "id": "operation_2040ceecda8e8a03fb7b81ef27d7e65c9f4077c056e7653d",
+          "case_id": "memory:bb3c6110093034ad8881a8c23d4429f4",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "5126dafbd18dcc7338fd1762918d0237d10a2697b7bd91d21cbb87e7d287d801",
+          "calls": 1,
+          "input_tokens": 1663,
+          "output_tokens": 207,
+          "total_tokens": 3323,
+          "milliseconds": 15296,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1306,
+        "optional_allowance": 8192,
+        "optional_estimated": 915,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 2
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "ebc9d58562c377e0d008a1c4d49519efa4c3cac7a7dc208ce2d6f41ca3f850ba",
+      "context_sha256": "2ad65367ab0876e5b0e5b88178ab246ce43c458d830649ab3745b4b8bd72fe9a",
+      "model_projection_sha256": "6efc4920414e5dda135affa8ce2ec2a00df63ddf2b2114ea05cdfe3fcd9aeef6",
+      "model_request_sha256": "a44977987caa17647ae12096ad6e81ce04b8b26231c400e8f548c73be77b7d8e",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c03",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-f0985cd4cf68",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c03-general",
+        "f2c03-session"
+      ],
+      "required_sources": [
+        "f2c03-session"
+      ],
+      "retained_required": [
+        "f2c03-session"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 16854,
+      "generation_expenses": [
+        {
+          "id": "operation_e03687f93b68a58ac96ae8579fef83be602ff5b86f0dde91",
+          "case_id": "memory:bb3c6110093034ad8881a8c23d4429f4",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "16a3206b1148ca262cf20322cd2ea52f83da385ff39a6289aec357b028ea6849",
+          "calls": 1,
+          "input_tokens": 1457,
+          "output_tokens": 240,
+          "total_tokens": 3129,
+          "milliseconds": 16854,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1306,
+        "optional_allowance": 8192,
+        "optional_estimated": 915,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 2
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "f63779e59da4cab59ec916d21d208d58936ac7b0e9a33ec71c1f6eb70f732252",
+      "context_sha256": "2ad65367ab0876e5b0e5b88178ab246ce43c458d830649ab3745b4b8bd72fe9a",
+      "model_projection_sha256": "6efc4920414e5dda135affa8ce2ec2a00df63ddf2b2114ea05cdfe3fcd9aeef6",
+      "model_request_sha256": "0db82315f21b276c44afcab56109b0509da7ba5c3b408088288f34de2108bfdc",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c03",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-80ad7a51e585",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c03-general",
+        "f2c03-session"
+      ],
+      "required_sources": [
+        "f2c03-session"
+      ],
+      "retained_required": [
+        "f2c03-session"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 14906,
+      "generation_expenses": [
+        {
+          "id": "operation_b7e423a1ee6cf6b0bb2a5a0da6e0706f06bf6b8e16bcfb93",
+          "case_id": "memory:bb3c6110093034ad8881a8c23d4429f4",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "8be993382f8f36c3092d296eee8e82e43db2cf270dfaacf215a3abd05cc4c915",
+          "calls": 1,
+          "input_tokens": 1457,
+          "output_tokens": 219,
+          "total_tokens": 3142,
+          "milliseconds": 14906,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1306,
+        "optional_allowance": 8192,
+        "optional_estimated": 915,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 2
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "ee9b8846bf84a167e34f527f873fc9c714bb27cea6005cf5079addaafad70d65",
+      "context_sha256": "2ad65367ab0876e5b0e5b88178ab246ce43c458d830649ab3745b4b8bd72fe9a",
+      "model_projection_sha256": "6efc4920414e5dda135affa8ce2ec2a00df63ddf2b2114ea05cdfe3fcd9aeef6",
+      "model_request_sha256": "0db82315f21b276c44afcab56109b0509da7ba5c3b408088288f34de2108bfdc",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c04",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-3a9127341fa2",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c04-system"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 10890,
+      "generation_expenses": [
+        {
+          "id": "operation_175907b5a41a23ebc63ef6c5cc471b7c6b6c4959bc3d81d0",
+          "case_id": "memory:9fe53ab9b95cb6897bdebd04c5ebd44d",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "90909ec9c80ac85d015efdcee7aac0b90895a1f17a4cd07586492b4010ccfe2a",
+          "calls": 1,
+          "input_tokens": 1586,
+          "output_tokens": 123,
+          "total_tokens": 2743,
+          "milliseconds": 10890,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 872,
+        "optional_allowance": 8192,
+        "optional_estimated": 513,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "93b1619eeb7af1f845fe51ee5e669564863656b7836d85889184fa55d3df6494",
+      "context_sha256": "bd404336c0a6614f9784293e0ab13b772922345ce754d16cd39784522123195e",
+      "model_projection_sha256": "a096ea5e97bb7e4d8880a376a57019a2611b47184b5ce3b4c42483c658c0afd7",
+      "model_request_sha256": "cd594a138c7e363ba0ccb74da2f6cab9250e7254d538faa49501c5fedacc1fd6",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c04",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-e8c1e51a96f1",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c04-system"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 11175,
+      "generation_expenses": [
+        {
+          "id": "operation_65b44b057b70614a2360d890f814a460bc66b08b0885dd2d",
+          "case_id": "memory:9fe53ab9b95cb6897bdebd04c5ebd44d",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "e8d8c19120fe53ab99bd2d9c105d1f852d2557a55ae14367fe107daa26ca4f50",
+          "calls": 1,
+          "input_tokens": 1380,
+          "output_tokens": 107,
+          "total_tokens": 2597,
+          "milliseconds": 11175,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 872,
+        "optional_allowance": 8192,
+        "optional_estimated": 513,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "e290361e55827394a33c408ff7d978972bdb673e2ab7200438914923e3ed0b74",
+      "context_sha256": "bd404336c0a6614f9784293e0ab13b772922345ce754d16cd39784522123195e",
+      "model_projection_sha256": "a096ea5e97bb7e4d8880a376a57019a2611b47184b5ce3b4c42483c658c0afd7",
+      "model_request_sha256": "800dc8aaae431cc84ae2817d91c3e2bac6802f2095312575dbd6e10dfc41a352",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c04",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-f4c1d86b47cb",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c04-system"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 12603,
+      "generation_expenses": [
+        {
+          "id": "operation_ccfea2cfc2cfe4054eca1b509e095d16c63ea6d2b0a0ea5e",
+          "case_id": "memory:9fe53ab9b95cb6897bdebd04c5ebd44d",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "3657b345abf5af376c2ee50fbe136eb0dc125adec1b2631f0e9019c80f36fea7",
+          "calls": 1,
+          "input_tokens": 1380,
+          "output_tokens": 132,
+          "total_tokens": 2592,
+          "milliseconds": 12603,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 872,
+        "optional_allowance": 8192,
+        "optional_estimated": 513,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "73a1a3b57ec05a5b6e579477e49dd176e2bcea4efe431434763f428e2585ae5d",
+      "context_sha256": "bd404336c0a6614f9784293e0ab13b772922345ce754d16cd39784522123195e",
+      "model_projection_sha256": "a096ea5e97bb7e4d8880a376a57019a2611b47184b5ce3b4c42483c658c0afd7",
+      "model_request_sha256": "800dc8aaae431cc84ae2817d91c3e2bac6802f2095312575dbd6e10dfc41a352",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c04",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-bb9027f110f1",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c04-system"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 12320,
+      "generation_expenses": [
+        {
+          "id": "operation_6942a82ed3a17eae52a1785a17a2a45bb4c5e7f9163aed4f",
+          "case_id": "memory:9fe53ab9b95cb6897bdebd04c5ebd44d",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "a124685f1462845749f501bf7ee9a0b91eec894d74b96f005101b2a9a05d2ac7",
+          "calls": 1,
+          "input_tokens": 1586,
+          "output_tokens": 122,
+          "total_tokens": 2734,
+          "milliseconds": 12320,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 872,
+        "optional_allowance": 8192,
+        "optional_estimated": 513,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "431b4b8fefdd3022428061900b5f0651e955c036b42147d958a34f1d5a31c511",
+      "context_sha256": "bd404336c0a6614f9784293e0ab13b772922345ce754d16cd39784522123195e",
+      "model_projection_sha256": "a096ea5e97bb7e4d8880a376a57019a2611b47184b5ce3b4c42483c658c0afd7",
+      "model_request_sha256": "cd594a138c7e363ba0ccb74da2f6cab9250e7254d538faa49501c5fedacc1fd6",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c05",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-f278182b1ffd",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c05-drafts"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 11969,
+      "generation_expenses": [
+        {
+          "id": "operation_717530c7b3b3e9542a8262f6a3981e31f2b95f83903f2a13",
+          "case_id": "memory:2dde0e68d3ca971d8b7e1a36260e19c9",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "55cddd4f268227325725e519279555bc7b3536de9cb3de5b94cda12e87c7cf67",
+          "calls": 1,
+          "input_tokens": 1441,
+          "output_tokens": 125,
+          "total_tokens": 2771,
+          "milliseconds": 11969,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 853,
+        "optional_allowance": 8192,
+        "optional_estimated": 485,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "b7825fed28ff49ba53a8c87adc23bf57b5699555353875b82c23a04a48f0a212",
+      "context_sha256": "ee1efbfa2af526b5f6bc303df4547af1dd8c26bf6bc0cc6f781bd1538739e0b3",
+      "model_projection_sha256": "b9b6e1d368e4d4c34480dc6a72708a847ac6324f6d91910e0df059be1b93570a",
+      "model_request_sha256": "f4d6c40bfa662a9bcc0b9d40963a8c8424e0e43d66f83c5f0b9d6b49a8474d7d",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c05",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-354d1175a5bf",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c05-drafts"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 9993,
+      "generation_expenses": [
+        {
+          "id": "operation_ac13133938a2377e54279a9a78322462d99dd7e35c478f1b",
+          "case_id": "memory:2dde0e68d3ca971d8b7e1a36260e19c9",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "4901e151ae8632d42a1a0a5b2f87843ce4232e28cf9897563750d400d58eb247",
+          "calls": 1,
+          "input_tokens": 1441,
+          "output_tokens": 122,
+          "total_tokens": 2537,
+          "milliseconds": 9993,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 853,
+        "optional_allowance": 8192,
+        "optional_estimated": 485,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "6b71368b738feddb15a01bd17615c8bb36c13592688dd83208cee82b48e0895a",
+      "context_sha256": "ee1efbfa2af526b5f6bc303df4547af1dd8c26bf6bc0cc6f781bd1538739e0b3",
+      "model_projection_sha256": "b9b6e1d368e4d4c34480dc6a72708a847ac6324f6d91910e0df059be1b93570a",
+      "model_request_sha256": "f4d6c40bfa662a9bcc0b9d40963a8c8424e0e43d66f83c5f0b9d6b49a8474d7d",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c05",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-a07c4095245e",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c05-drafts"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 13339,
+      "generation_expenses": [
+        {
+          "id": "operation_8f7f506ec43c8443233f97de4b654eaaad64c03a5c5ccfd5",
+          "case_id": "memory:2dde0e68d3ca971d8b7e1a36260e19c9",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "e83d9ecfa34990edd32c4b51dc235cc5336e1dca969ec6a3c53d3e02bf5129ca",
+          "calls": 1,
+          "input_tokens": 1647,
+          "output_tokens": 114,
+          "total_tokens": 3095,
+          "milliseconds": 13339,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 853,
+        "optional_allowance": 8192,
+        "optional_estimated": 485,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "d5408a9abf13c9e8d6e986b7ea935162698d367cacd041e30981d7fc0c81ff90",
+      "context_sha256": "ee1efbfa2af526b5f6bc303df4547af1dd8c26bf6bc0cc6f781bd1538739e0b3",
+      "model_projection_sha256": "b9b6e1d368e4d4c34480dc6a72708a847ac6324f6d91910e0df059be1b93570a",
+      "model_request_sha256": "46d76cb6f10414a52f076ed001c483afd327b86481ff8784f79d90216c163eae",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c05",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-8d51297fe65a",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c05-drafts"
+      ],
+      "required_sources": [],
+      "retained_required": [],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 13688,
+      "generation_expenses": [
+        {
+          "id": "operation_d54ea6101bc8e0566cfc2daa9c72e9ed8d7fd8045dfc7009",
+          "case_id": "memory:2dde0e68d3ca971d8b7e1a36260e19c9",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "33307f107105f47a2a7721af0388e4fbc725fdd5b52f56961d6cdf59861df734",
+          "calls": 1,
+          "input_tokens": 1647,
+          "output_tokens": 126,
+          "total_tokens": 3072,
+          "milliseconds": 13688,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 853,
+        "optional_allowance": 8192,
+        "optional_estimated": 485,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "02b68c89ed036856adbfb531442e07425f5d25bbd9d4e5bda84dddac21e029ec",
+      "context_sha256": "ee1efbfa2af526b5f6bc303df4547af1dd8c26bf6bc0cc6f781bd1538739e0b3",
+      "model_projection_sha256": "b9b6e1d368e4d4c34480dc6a72708a847ac6324f6d91910e0df059be1b93570a",
+      "model_request_sha256": "46d76cb6f10414a52f076ed001c483afd327b86481ff8784f79d90216c163eae",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c06",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-bdcb03d410ad",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c06-comparison",
+        "f2c06-layouts"
+      ],
+      "required_sources": [
+        "f2c06-comparison"
+      ],
+      "retained_required": [
+        "f2c06-comparison"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 19615,
+      "generation_expenses": [
+        {
+          "id": "operation_bc9215ca1bb87e90415c1a24dab13102f54c793c0b7f69a9",
+          "case_id": "memory:f65fdc050b467e51021e754d43d905ae",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "3bc4c5c37559db589345c8cfb18bd64b59cd977f376247db3fa261fe5ef94f51",
+          "calls": 1,
+          "input_tokens": 1525,
+          "output_tokens": 170,
+          "total_tokens": 2969,
+          "milliseconds": 19615,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "success"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1884,
+        "optional_allowance": 8192,
+        "optional_estimated": 1525,
+        "selected": {
+          "chunks": 1,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "eb801800c96e8f059bedbc189d03d708ff960b76180ddee969aa34ca43483467",
+      "context_sha256": "1619c33370ea8bd48047fdc51061e3d773e6723621483e9b59990c6e1c75a1d9",
+      "model_projection_sha256": "ab843fcad88f27d39bb6de1301ecf7c437f0a7bbdde1177c7ee527eedd4e1b7f",
+      "model_request_sha256": "9fe0bc42d3508a01a4d34175a9646e827cc6edbc67bf767c3a8787ade85b5c70",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c06",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-95fe254b091a",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c06-comparison",
+        "f2c06-layouts"
+      ],
+      "required_sources": [
+        "f2c06-comparison"
+      ],
+      "retained_required": [
+        "f2c06-comparison"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 12996,
+      "generation_expenses": [
+        {
+          "id": "operation_a626efcc1735d5fcb7e271d5ab20ab83752ca70f48f73799",
+          "case_id": "memory:f65fdc050b467e51021e754d43d905ae",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "d602053df361a8482a66b563d3c9f5c8b6ffdb71b5528b9a47b92d1f467901b2",
+          "calls": 1,
+          "input_tokens": 1731,
+          "output_tokens": 170,
+          "total_tokens": 2939,
+          "milliseconds": 12996,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "success"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1884,
+        "optional_allowance": 8192,
+        "optional_estimated": 1525,
+        "selected": {
+          "chunks": 1,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "0a928428a0523595440a15328f79bf948132ff8e72ad0e40df044ae89000306d",
+      "context_sha256": "1619c33370ea8bd48047fdc51061e3d773e6723621483e9b59990c6e1c75a1d9",
+      "model_projection_sha256": "ab843fcad88f27d39bb6de1301ecf7c437f0a7bbdde1177c7ee527eedd4e1b7f",
+      "model_request_sha256": "6ece6eb0f74fcd1a556e2a64238ae3b9ee9829ba3e2138ab153e703378d5062d",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c06",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-263cf10e2aaa",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c06-comparison",
+        "f2c06-layouts"
+      ],
+      "required_sources": [
+        "f2c06-comparison"
+      ],
+      "retained_required": [
+        "f2c06-comparison"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 15478,
+      "generation_expenses": [
+        {
+          "id": "operation_e298cd34f23737bd9a116499eaeb2014ead5af25df0185ca",
+          "case_id": "memory:f65fdc050b467e51021e754d43d905ae",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "88a0140cdc68812bf0f938c6d48b9835f853bd92da84c8ef8c3ac4093ccae839",
+          "calls": 1,
+          "input_tokens": 1731,
+          "output_tokens": 158,
+          "total_tokens": 3475,
+          "milliseconds": 15478,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "success"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1884,
+        "optional_allowance": 8192,
+        "optional_estimated": 1525,
+        "selected": {
+          "chunks": 1,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "43967960655e36ddf9e7269db9c24a332bfda7b9b0ee07da6931d68bc7ff2fd4",
+      "context_sha256": "1619c33370ea8bd48047fdc51061e3d773e6723621483e9b59990c6e1c75a1d9",
+      "model_projection_sha256": "ab843fcad88f27d39bb6de1301ecf7c437f0a7bbdde1177c7ee527eedd4e1b7f",
+      "model_request_sha256": "6ece6eb0f74fcd1a556e2a64238ae3b9ee9829ba3e2138ab153e703378d5062d",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c06",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-dcce561a9622",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c06-comparison",
+        "f2c06-layouts"
+      ],
+      "required_sources": [
+        "f2c06-comparison"
+      ],
+      "retained_required": [
+        "f2c06-comparison"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 13383,
+      "generation_expenses": [
+        {
+          "id": "operation_bd4010e96e015b47629015bf9d4696b7a46c143a4a9fee0b",
+          "case_id": "memory:f65fdc050b467e51021e754d43d905ae",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "1214099bacc1b1f9d525b6f7b4244b7d0e912bb9b929784a7ba6e326341b4911",
+          "calls": 1,
+          "input_tokens": 1525,
+          "output_tokens": 165,
+          "total_tokens": 2784,
+          "milliseconds": 13383,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "success"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 1884,
+        "optional_allowance": 8192,
+        "optional_estimated": 1525,
+        "selected": {
+          "chunks": 1,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "fb9bbad44da81dd7880f822affba82d8b3ed0cd5acad2ad3de1b0c2f774b5237",
+      "context_sha256": "1619c33370ea8bd48047fdc51061e3d773e6723621483e9b59990c6e1c75a1d9",
+      "model_projection_sha256": "ab843fcad88f27d39bb6de1301ecf7c437f0a7bbdde1177c7ee527eedd4e1b7f",
+      "model_request_sha256": "9fe0bc42d3508a01a4d34175a9646e827cc6edbc67bf767c3a8787ade85b5c70",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c07",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-b0aee1309c31",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c07-request"
+      ],
+      "required_sources": [
+        "f2c07-request"
+      ],
+      "retained_required": [
+        "f2c07-request"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 13086,
+      "generation_expenses": [
+        {
+          "id": "operation_35dafeef039409e57c89e2cb3a71a21302c7865a4e22d97d",
+          "case_id": "memory:42cc7c91362b7016a20837157e70a1ac",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "40ad673a2672179eefc919663878c5621516c4c3c67dfad2ac8e178b41e4fed5",
+          "calls": 1,
+          "input_tokens": 1624,
+          "output_tokens": 148,
+          "total_tokens": 2996,
+          "milliseconds": 13086,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 874,
+        "optional_allowance": 8192,
+        "optional_estimated": 514,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "963d4cd27e8ae3c3c4cd42ab19be5e10cabb0f4e1e37c4ab3764394277f6f7e7",
+      "context_sha256": "d8798e3d6612bc13a41ac008daa1ce2841b189ec01abdc0091dc338631da20dd",
+      "model_projection_sha256": "20113d58bfdf04d2547207d41f4959eb0255bdf7aee474db83206b737f42ebb8",
+      "model_request_sha256": "fbf8fecc0a22782eb779e489a03d553324b01ab991981550f86230e87b03bbed",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c07",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-63cc459f588b",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c07-request"
+      ],
+      "required_sources": [
+        "f2c07-request"
+      ],
+      "retained_required": [
+        "f2c07-request"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 17933,
+      "generation_expenses": [
+        {
+          "id": "operation_47bd71c29d145adc1b524aae717001bfba7ff672b06f7691",
+          "case_id": "memory:42cc7c91362b7016a20837157e70a1ac",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "e767b750c8c7576e9097021a58f004295dc83cfa6bbe3d26f74d4d0d1299422e",
+          "calls": 1,
+          "input_tokens": 1624,
+          "output_tokens": 135,
+          "total_tokens": 3584,
+          "milliseconds": 17933,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 874,
+        "optional_allowance": 8192,
+        "optional_estimated": 514,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "0049e5d0437220e1f2ff102f476956bc57efc64e65898af59978f94f1c6612d3",
+      "context_sha256": "d8798e3d6612bc13a41ac008daa1ce2841b189ec01abdc0091dc338631da20dd",
+      "model_projection_sha256": "20113d58bfdf04d2547207d41f4959eb0255bdf7aee474db83206b737f42ebb8",
+      "model_request_sha256": "fbf8fecc0a22782eb779e489a03d553324b01ab991981550f86230e87b03bbed",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c07",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-03a449f087c0",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c07-request"
+      ],
+      "required_sources": [
+        "f2c07-request"
+      ],
+      "retained_required": [
+        "f2c07-request"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 15453,
+      "generation_expenses": [
+        {
+          "id": "operation_4fca9066ebe4d8e0597b11af949d7b4bfc0b85ac3fd2e13d",
+          "case_id": "memory:42cc7c91362b7016a20837157e70a1ac",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "5dfa82897308736abd69b8faa4dea31eb8e70410d3315213ba17b1c5c19c386b",
+          "calls": 1,
+          "input_tokens": 1418,
+          "output_tokens": 121,
+          "total_tokens": 2390,
+          "milliseconds": 15453,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 874,
+        "optional_allowance": 8192,
+        "optional_estimated": 514,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "1c1d678c18caaad7dd7194dddff074fe2599903c63a97ed5218ef56a7c59b6be",
+      "context_sha256": "d8798e3d6612bc13a41ac008daa1ce2841b189ec01abdc0091dc338631da20dd",
+      "model_projection_sha256": "20113d58bfdf04d2547207d41f4959eb0255bdf7aee474db83206b737f42ebb8",
+      "model_request_sha256": "ddb3f37f9c450ee4ae848cb720576231addcdfa3b72e5b0fc6731b373f5474ce",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c07",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-ef81453a673d",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c07-request"
+      ],
+      "required_sources": [
+        "f2c07-request"
+      ],
+      "retained_required": [
+        "f2c07-request"
+      ],
+      "missing_required": [],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 18718,
+      "generation_expenses": [
+        {
+          "id": "operation_f32f30bb17c9864bd26e202f2f1beab6fb510f0c8ea1a317",
+          "case_id": "memory:42cc7c91362b7016a20837157e70a1ac",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "84f6037c4c1dc6b04ef7b05e2daca12354174b09fb1a6cb8e54b4938ace48b1a",
+          "calls": 1,
+          "input_tokens": 1418,
+          "output_tokens": 137,
+          "total_tokens": 3777,
+          "milliseconds": 18718,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 874,
+        "optional_allowance": 8192,
+        "optional_estimated": 514,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 1
+        },
+        "omitted": {
+          "profile_relevance_or_limit": 0
+        }
+      },
+      "output_sha256": "78b0420d56a7a71cd46e4d152c256d214f9e8ca8125806b291a53ce60097133f",
+      "context_sha256": "d8798e3d6612bc13a41ac008daa1ce2841b189ec01abdc0091dc338631da20dd",
+      "model_projection_sha256": "20113d58bfdf04d2547207d41f4959eb0255bdf7aee474db83206b737f42ebb8",
+      "model_request_sha256": "ddb3f37f9c450ee4ae848cb720576231addcdfa3b72e5b0fc6731b373f5474ce",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c08",
+      "split": "controls",
+      "arm": "goal_guidance",
+      "review_id": "R-01c9caad81d0",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c08-bg01",
+        "f2c08-bg02",
+        "f2c08-bg03",
+        "f2c08-bg04",
+        "f2c08-bg05",
+        "f2c08-bg06",
+        "f2c08-bg07",
+        "f2c08-bg08",
+        "f2c08-bg09",
+        "f2c08-bg10",
+        "f2c08-bg11"
+      ],
+      "required_sources": [
+        "f2c08-evidence"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c08-evidence"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 17416,
+      "generation_expenses": [
+        {
+          "id": "operation_58e35b54178d232725bd0c3c315672b8910dc9272c02beee",
+          "case_id": "memory:1d18911f49fc2a1947f451b480792490",
+          "arm": "goal_guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "5ad36ac2427fe1a8bd98c852e247e321df7103c5eb18954babeced49959773b0",
+          "calls": 1,
+          "input_tokens": 2103,
+          "output_tokens": 274,
+          "total_tokens": 3836,
+          "milliseconds": 17416,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4114,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "bfd8023a06a0cc654422500be66d09a8a382bc8e70b8450356f2b2759eb3f515",
+      "context_sha256": "30d6138d9ce5efa4bebc7b952f9b57af073c99aec0c72d005aaa7990528aae8f",
+      "model_projection_sha256": "e72fd6d1e19b6559ead5375302725207a970b642cd427f488e22b2121d978293",
+      "model_request_sha256": "5724de134582f32d53190391b77edfa20154a0c8da6b20939ed1e1ec542f8db7",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c08",
+      "split": "controls",
+      "arm": "baseline",
+      "review_id": "R-aaaf498cd9e2",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c08-bg01",
+        "f2c08-bg02",
+        "f2c08-bg03",
+        "f2c08-bg04",
+        "f2c08-bg05",
+        "f2c08-bg06",
+        "f2c08-bg07",
+        "f2c08-bg08",
+        "f2c08-bg09",
+        "f2c08-bg10",
+        "f2c08-bg11"
+      ],
+      "required_sources": [
+        "f2c08-evidence"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c08-evidence"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 21142,
+      "generation_expenses": [
+        {
+          "id": "operation_53e1eb1604547fc746a92e1182bb690bbe47849154e8a22f",
+          "case_id": "memory:1d18911f49fc2a1947f451b480792490",
+          "arm": "baseline",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "3aec7f6fee846883bf4b52783e9e1e8c0d221ca887eb93f0915eb0e59ee6c53e",
+          "calls": 1,
+          "input_tokens": 1897,
+          "output_tokens": 313,
+          "total_tokens": 4040,
+          "milliseconds": 21142,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4114,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "4e68c54f37894e976ad0cd49909f8a07186dd3074ca0b057351395e53bcae19b",
+      "context_sha256": "48fed99f622edb7ae100455aa729a4c65613235c11a44586d00c3067e8899a9c",
+      "model_projection_sha256": "b8ff19084470d66018836692f20b8373634de8e57b9a30e0f78d8cde9e3727be",
+      "model_request_sha256": "72ff3a6e3fd2f8e86ae85c3872ada782feb62f24858c4016ad5cb9e6912aaab1",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c08",
+      "split": "controls",
+      "arm": "goal",
+      "review_id": "R-48291e14017b",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c08-bg01",
+        "f2c08-bg02",
+        "f2c08-bg03",
+        "f2c08-bg04",
+        "f2c08-bg05",
+        "f2c08-bg06",
+        "f2c08-bg07",
+        "f2c08-bg08",
+        "f2c08-bg09",
+        "f2c08-bg10",
+        "f2c08-bg11"
+      ],
+      "required_sources": [
+        "f2c08-evidence"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c08-evidence"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 15903,
+      "generation_expenses": [
+        {
+          "id": "operation_fcf3122cfb67b188cfac8f6ac840f1880a524c6e62644ee8",
+          "case_id": "memory:1d18911f49fc2a1947f451b480792490",
+          "arm": "goal",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "5164984619460aad50d861b69ab656e985d8b9a2841a7973cb8b5961d8186112",
+          "calls": 1,
+          "input_tokens": 1897,
+          "output_tokens": 273,
+          "total_tokens": 3715,
+          "milliseconds": 15903,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3-task-goal-tiebreak-experiment-v1",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4114,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "b4334c1f827ef3f4d658ca4faed29a55c0aa6250409dfb350ac578553b8add2c",
+      "context_sha256": "30d6138d9ce5efa4bebc7b952f9b57af073c99aec0c72d005aaa7990528aae8f",
+      "model_projection_sha256": "e72fd6d1e19b6559ead5375302725207a970b642cd427f488e22b2121d978293",
+      "model_request_sha256": "89447698e9fe739697c4c17b38f705fb177bcccd2123e7fcc219350ce3828180",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    },
+    {
+      "case_id": "f2c08",
+      "split": "controls",
+      "arm": "guidance",
+      "review_id": "R-cadadcd6fb46",
+      "status": "completed",
+      "json_valid": true,
+      "schema_valid": true,
+      "selected_sources": [
+        "f2c08-bg01",
+        "f2c08-bg02",
+        "f2c08-bg03",
+        "f2c08-bg04",
+        "f2c08-bg05",
+        "f2c08-bg06",
+        "f2c08-bg07",
+        "f2c08-bg08",
+        "f2c08-bg09",
+        "f2c08-bg10",
+        "f2c08-bg11"
+      ],
+      "required_sources": [
+        "f2c08-evidence"
+      ],
+      "retained_required": [],
+      "missing_required": [
+        "f2c08-evidence"
+      ],
+      "source_handle_membership_valid": true,
+      "unmatched_source_handles": [],
+      "required_attribution": [],
+      "visible_required_attribution": [],
+      "attributed_required": [],
+      "milliseconds": 13938,
+      "generation_expenses": [
+        {
+          "id": "operation_90575ea6e77ad260667fc568aa7fabfdf22348982db0bb3b",
+          "case_id": "memory:1d18911f49fc2a1947f451b480792490",
+          "arm": "guidance",
+          "stage": "generation",
+          "status": "unknown",
+          "outcome": "success",
+          "evidence_sha256": "689df641730ed1d3da6fa045c8d57dab933c8e21e3b8c3945ddb623752081315",
+          "calls": 1,
+          "input_tokens": 2103,
+          "output_tokens": 259,
+          "total_tokens": 3310,
+          "milliseconds": 13938,
+          "microunits": null,
+          "storage_bytes": 0
+        }
+      ],
+      "selection": {
+        "operations": [
+          {
+            "stage": "working_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "episodic_search",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "document_search",
+            "outcome": "unknown"
+          },
+          {
+            "stage": "profile_load",
+            "outcome": "success"
+          },
+          {
+            "stage": "summary_load",
+            "outcome": "disabled"
+          },
+          {
+            "stage": "search",
+            "outcome": "success"
+          },
+          {
+            "stage": "context",
+            "outcome": "success"
+          },
+          {
+            "stage": "bundle",
+            "outcome": "success"
+          }
+        ],
+        "version": "memory-context-v3",
+        "estimator": "utf8_json_bytes_plus_item_overhead",
+        "allowance": 65536,
+        "estimated": 4114,
+        "optional_allowance": 8192,
+        "optional_estimated": 3735,
+        "selected": {
+          "chunks": 0,
+          "episodes": 0,
+          "profile": 11
+        },
+        "omitted": {
+          "item_limit": 9,
+          "profile_relevance_or_limit": 3
+        }
+      },
+      "output_sha256": "c5ab398ab0406a551a3e71fdd60274dc1c741ffd3aec3784bae79c621d47a47a",
+      "context_sha256": "48fed99f622edb7ae100455aa729a4c65613235c11a44586d00c3067e8899a9c",
+      "model_projection_sha256": "b8ff19084470d66018836692f20b8373634de8e57b9a30e0f78d8cde9e3727be",
+      "model_request_sha256": "6c38662b5772b3643fc38b2753a2a70decd3511b462977e718fcea0a22841da2",
+      "visible_input_paths": [],
+      "unresolved_references": [],
+      "source_visibility_valid": true
+    }
+  ],
+  "version": "issue76-context-mechanical-v1",
+  "semantic_review": "external_review_required"
+}

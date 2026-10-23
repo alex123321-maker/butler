@@ -136,8 +136,8 @@ type BundleRequest struct {
 	SessionKey  string
 	UserID      string
 	UserMessage string
-	// ProfileTaskGoal is an experimental ranking hint from current typed task
-	// state. Empty preserves the production policy. It never grants scope or
+	// ProfileTaskGoal is a ranking hint from validated current typed task
+	// state. Empty preserves current-message-only ranking. It never grants scope or
 	// instruction authority and is not sent to an embedding backend.
 	ProfileTaskGoal string
 	IncludeQuery    bool

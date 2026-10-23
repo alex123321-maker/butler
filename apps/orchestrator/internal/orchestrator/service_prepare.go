@@ -163,7 +163,7 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if prepared == nil {
 		return nil
 	}
-	policy, authority, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
+	policy, authority, profileGoal, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
 	if err != nil {
 		return err
 	}
@@ -171,6 +171,7 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 		SessionKey:         sessionKey,
 		UserID:             userID,
 		UserMessage:        userMessage,
+		ProfileTaskGoal:    profileGoal,
 		IncludeQuery:       policy.External, // compatibility only; QueryPolicy is authoritative
 		QueryPolicy:        &policy,
 		SkipOptionalSearch: prepared.AdaptivePlan != nil,
@@ -178,7 +179,7 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if err != nil {
 		return err
 	}
-	_, current, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
+	_, current, _, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
 	if err != nil || current != authority {
 		return fmt.Errorf("memory task authority changed during retrieval")
 	}
@@ -209,34 +210,37 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	return nil
 }
 
-func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID string, prepared *preparedRun) (memoryservice.QueryPolicy, string, error) {
+func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID string, prepared *preparedRun) (memoryservice.QueryPolicy, string, string, error) {
 	policy := memoryservice.QueryPolicy{Local: true, External: true}
 	if s.config.OwnerGoals == nil || s.config.Tasks == nil {
-		return policy, "", nil
+		return policy, "", "", nil
 	}
 	id := firstString(prepared.InputPayload, "task_id")
 	if id == "" {
-		return policy, "", nil
+		return policy, "", "", nil
 	}
 	record, err := s.config.Tasks.Get(ctx, id)
-	if err != nil || record.SessionKey != sessionKey || record.OwnerID != userID || record.Status != "active" {
-		return policy, "", fmt.Errorf("current memory task authority is required")
+	if err != nil || record.TaskID != id || record.SessionKey != sessionKey || record.OwnerID != userID || record.Status != "active" {
+		return policy, "", "", fmt.Errorf("current memory task authority is required")
 	}
 	a, m, _, err := s.config.OwnerGoals.ReadTaskAuthority(ctx, id)
 	if err != nil {
-		return policy, "", fmt.Errorf("memory data-release authority is unavailable")
+		return policy, "", "", fmt.Errorf("memory data-release authority is unavailable")
 	}
 	if a.TaskID != "" && m.Privacy != "cloud_allowed" {
 		policy.External = false
 	}
 	stamp, _ := json.Marshal(struct {
 		TaskRevision, ConstraintsRevision int64
+		Goal                              string
 		Assignment                        any
 		MandateID                         string
 		MandateRevision                   int64
 		Privacy                           string
-	}{record.Revision, record.ConstraintsRevision, a, m.ID, m.Revision, m.Privacy})
-	return policy, string(stamp), nil
+	}{record.Revision, record.ConstraintsRevision, record.Goal, a, m.ID, m.Revision, m.Privacy})
+	// Only this validated current task can guide profile ties. Never inherit a
+	// goal from payload text, retrieved documents or session working memory.
+	return policy, string(stamp), sanitize.Text(record.Goal), nil
 }
 
 func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {

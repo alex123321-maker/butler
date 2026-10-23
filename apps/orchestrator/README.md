@@ -9,13 +9,17 @@ comparison using current bundle code and the existing native budget/attempt
 collector in a fresh isolated database. Accepted profile/document candidates are
 fixtures; memory lifecycle and real external effects are not measured. Source,
 binary, schema, corpora and all32 inputs are frozen before independently reviewed
-entry. Normal Orchestrator runs do not enable its experimental goal-ranking hint.
+entry. That first run did not qualify its experimental goal-ranking hint.
 See the [prospective protocol](../../docs/testing/issue-76-context-experiment.md).
 
 The [issue76 factorial follow-up](../../docs/testing/issue-76-context-factorial-v2.md)
 uses actual default production instructions and separately tests the goal hint
-and `prompt.PreferenceApplicationProtocol`. That guidance is dormant until its
-independent comparison is complete; it does not replace Broker authorization.
+and `prompt.PreferenceApplicationProtocol`. Following the
+[independent result](../../docs/testing/issue-76-context-factorial-results-20261023.md),
+normal task preparation supplies the goal tie-breaker from the validated current
+task, with task/constraint/goal/authority revalidation after retrieval. Conversations
+and previews keep current-message-only ranking. Guidance has no demonstrated
+additional paired benefit and remains dormant; Broker authorization is unchanged.
 
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 

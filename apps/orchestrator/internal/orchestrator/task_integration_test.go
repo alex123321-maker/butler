@@ -15,10 +15,21 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/butler/butler/internal/transport"
 )
+
+type capturedTaskBundles struct {
+	MemoryBundleService
+	request memoryservice.BundleRequest
+}
+
+func (b *capturedTaskBundles) BuildBundle(ctx context.Context, request memoryservice.BundleRequest) (memoryservice.Bundle, error) {
+	b.request = request
+	return b.MemoryBundleService.BuildBundle(ctx, request)
+}
 
 func TestDurableTaskExecutionIntegration(t *testing.T) {
 	dsn := os.Getenv("BUTLER_TEST_POSTGRES_URL")
@@ -45,8 +56,14 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	runs := run.NewPostgresRepository(db.Pool())
 	provider := &mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", "test", transport.AssistantFinal{Content: "Draft ready, waiting for approval"})}}
 	legacyWorking := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{sessionKey: {SessionKey: sessionKey, Goal: "OLD FAILED GOAL A", Status: "failed", PendingStepsJSON: `["old action A"]`}}}
+	var bundles *capturedTaskBundles
 	newService := func() *Service {
-		return NewService(repo, session.NewPostgresLeaseManager(db.Pool()), run.NewService(runs, nil), transcript.NewStore(db.Pool()), provider, Config{Completion: completion.New(db.Pool()), Tasks: tasks, WorkingStore: legacyWorking, WorkingPolicy: WorkingMemoryPolicy{OnCompleted: "clear"}}, nil)
+		service := NewService(repo, session.NewPostgresLeaseManager(db.Pool()), run.NewService(runs, nil), transcript.NewStore(db.Pool()), provider, Config{Completion: completion.New(db.Pool()), Tasks: tasks, WorkingStore: legacyWorking, WorkingPolicy: WorkingMemoryPolicy{OnCompleted: "clear"}, OwnerGoals: &memoryPolicyAuthority{privacy: "cloud_allowed"}}, nil)
+		// Observe requests without bypassing the production bundle constructor
+		// or its exclusion of the obsolete session-scoped working store.
+		bundles = &capturedTaskBundles{MemoryBundleService: service.config.MemoryBundles}
+		service.config.MemoryBundles = bundles
+		return service
 	}
 	service := newService()
 	execute := func(id, text, eventID string) (*ExecutionResult, error) {
@@ -58,6 +75,9 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	}
 	if conversation.TaskID != "" {
 		t.Fatal("conversation created a task")
+	}
+	if bundles.request.ProfileTaskGoal != "" {
+		t.Fatal("conversation selected profiles using a stale session goal")
 	}
 	items, err := tasks.List(ctx, sessionKey, 50)
 	if err != nil || len(items) != 0 {
@@ -77,6 +97,9 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	}
 	if first.TaskID != a.TaskID {
 		t.Fatalf("missing task reference: %#v", first)
+	}
+	if bundles.request.ProfileTaskGoal != "TASK A" {
+		t.Fatal("durable task goal not passed to profile selection")
 	}
 	a, err = tasks.Get(ctx, a.TaskID)
 	if err != nil || a.Status != "active" || len(a.Working.Plan) != 3 || a.Working.Scratch["draft"] != "draft:1" {
@@ -106,6 +129,9 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	if _, err = execute(b.TaskID, "Start B", "b1"); err != nil {
 		t.Fatal(err)
 	}
+	if bundles.request.ProfileTaskGoal != "TASK B" {
+		t.Fatal("profile selection inherited the failed task goal")
+	}
 	var taskContext string
 	for _, input := range provider.startRequests[len(provider.startRequests)-1].InputItems {
 		if strings.Contains(input.Content, "Butler task authority") {
@@ -120,5 +146,8 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	}
 	if len(legacyWorking.clearCalls) != 0 || len(legacyWorking.saveCalls) != 0 {
 		t.Fatal("task or conversation mutated session working memory")
+	}
+	if len(legacyWorking.getCalls) != 0 {
+		t.Fatal("task or conversation loaded obsolete session working memory")
 	}
 }

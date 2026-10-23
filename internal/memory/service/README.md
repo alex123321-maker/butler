@@ -49,13 +49,18 @@ claims nor grant authority. The shared formatter is also used by the Orchestrato
 Its model-facing profile section preserves complete records, including trailing
 exceptions; complete-context admission omits optional records whole when needed.
 
-`BundleRequest.ProfileTaskGoal` is an experimental caller-supplied current typed
-task goal used only to break ties in current-message profile relevance. Empty
-keeps `memory-context-v3`; ordinary Orchestrator callers leave it empty. It does
+`BundleRequest.ProfileTaskGoal` is a caller-supplied current typed task goal used
+only to break ties in current-message profile relevance. Empty keeps
+`memory-context-v3`. The Orchestrator supplies it only for an explicit active task
+whose ID, owner, session and live authority were checked, and rechecks the task
+revision, constraints, goal and release policy after retrieval. Conversation,
+preview and callers without the authority reader keep the empty hint. It does
 not add scopes, change eligibility or send the goal to embedding/search backends.
 The nonempty diagnostic variant is `memory-context-v3-task-goal-tiebreak-experiment-v1`.
-The [paired experiment](../../../docs/testing/issue-76-context-experiment.md)
-is not production qualification or a model-derived instruction policy.
+This diagnostic name retains the experimental suffix for continuity with frozen
+observations. The [factorial comparison](../../../docs/testing/issue-76-context-factorial-results-20261023.md)
+supports a limited selection improvement; it is not universal model safety or
+deployment evidence. Preference-application prompt guidance remains dormant.
 
 Safe diagnostics expose version/estimator/allowance/counts and omission reason
 codes, never query or source text. The orchestrator additionally admits the
