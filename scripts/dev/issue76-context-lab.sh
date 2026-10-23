@@ -5,6 +5,12 @@ source_root=${1:?isolated source root}
 root=${2:?fresh trial root}
 action=${3:?prepare or execute}
 release=${4:?exact source commit}
+variant=${5:-v1}
+case "$variant" in
+ v1) freeze_pattern='^TestIssue76(Freeze|SchemaWithoutCredentials)$'; native_test=TestIssue76NativeTrial; opt_in=BUTLER_ISSUE76_NATIVE; subnet=10.254.76.0/28 ;;
+ factorial-v2) freeze_pattern='^TestIssue76Factorial(Freeze|Matrix)$'; native_test=TestIssue76FactorialNativeTrial; opt_in=BUTLER_ISSUE76_FACTORIAL_NATIVE; subnet=10.254.76.32/28 ;;
+ *) exit 2 ;;
+esac
 [[ "$source_root" =~ ^/srv/storage/butler/agents/issue76-source-[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/issue76-trial-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 umask 077
 if [[ "$action" == prepare ]]; then
@@ -21,7 +27,7 @@ if [[ "$action" == prepare ]]; then
  docker run --rm --user "$(id -u):$(id -g)" --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$src:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata" -w /src \
   -e BUTLER_ISSUE76_FREEZE_DIR=/metadata -e BUTLER_MEMORY_EVAL_RELEASE="$release" "$image" \
-  /runtime/collector.test -test.run '^TestIssue76(Freeze|SchemaWithoutCredentials)$' -test.v > "$root/freeze.log" 2>&1
+  /runtime/collector.test -test.run "$freeze_pattern" -test.v > "$root/freeze.log" 2>&1
  jq --arg image "$image" --arg trial "$(basename "$root")" --arg src "$src" --arg root "$root" \
   '.+{Image:$image,TrialID:$trial,SourceDir:$src,TrialRoot:$root}' "$root/metadata/pins.json" > "$root/metadata/pins.tmp"
  mv "$root/metadata/pins.tmp" "$root/metadata/pins.json"
@@ -42,7 +48,7 @@ image=$(jq -r .Image "$root/metadata/pins.json")
 tag=$(basename "$root")
 native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
 mkdir -m 700 "$root/entered"
-docker network create --internal --subnet 10.254.76.0/28 "$tag" > "$root/entered/network-id"
+docker network create --internal --subnet "$subnet" "$tag" > "$root/entered/network-id"
 docker run -d --name "$tag-pg" --network "$tag" --network-alias memory-eval-postgres --cpus 1 --memory 512m --pids-limit 128 \
  -v "$root/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=issue76_test \
  pgvector/pgvector:pg17 > "$root/entered/postgres-id"
@@ -60,9 +66,9 @@ docker create --name "$tag-native" --user 10001:10001 --network "$tag" --read-on
  -v "$src:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/private:/private" \
  --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" \
  -e HTTPS_PROXY=http://antigravity-proxy:18080 -e HTTP_PROXY=http://antigravity-proxy:18080 -e NO_PROXY=localhost,127.0.0.1,memory-eval-postgres \
- -w /src -e BUTLER_ISSUE76_NATIVE=1 -e BUTLER_MEMORY_EVAL_PRIVATE=/private -e BUTLER_MEMORY_EVAL_RELEASE="$release" \
+ -w /src -e "$opt_in=1" -e BUTLER_MEMORY_EVAL_PRIVATE=/private -e BUTLER_MEMORY_EVAL_RELEASE="$release" \
  -e BUTLER_MEMORY_EVAL_IMPORT_FILE=/auth/native-import.json -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@memory-eval-postgres:5432/issue76_test?sslmode=disable' \
- "$image" /runtime/collector.test -test.run '^TestIssue76NativeTrial$' -test.v -test.timeout 185m > "$root/entered/native-container-id"
+ "$image" /runtime/collector.test -test.run "^$native_test\$" -test.v -test.timeout 185m > "$root/entered/native-container-id"
 docker network connect butler-lab_backend "$tag-native"
 docker inspect "$tag-native" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,Privileged:.HostConfig.Privileged,CapDrop:.HostConfig.CapDrop,CapAdd:.HostConfig.CapAdd,SecurityOpt:.HostConfig.SecurityOpt,Tmpfs:.HostConfig.Tmpfs,ProxyConfigured:((.Config.Env|index("HTTPS_PROXY=http://antigravity-proxy:18080")!=null) and (.Config.Env|index("HTTP_PROXY=http://antigravity-proxy:18080")!=null)),LocalBypass:(.Config.Env|index("NO_PROXY=localhost,127.0.0.1,memory-eval-postgres")!=null),Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Type,Source,Destination,RW}]}' > "$root/metadata/execution.json"
 chmod 644 "$root/metadata/execution.json"

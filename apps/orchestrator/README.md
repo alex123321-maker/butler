@@ -12,6 +12,11 @@ binary, schema, corpora and all32 inputs are frozen before independently reviewe
 entry. Normal Orchestrator runs do not enable its experimental goal-ranking hint.
 See the [prospective protocol](../../docs/testing/issue-76-context-experiment.md).
 
+The [issue76 factorial follow-up](../../docs/testing/issue-76-context-factorial-v2.md)
+uses actual default production instructions and separately tests the goal hint
+and `prompt.PreferenceApplicationProtocol`. That guidance is dormant until its
+independent comparison is complete; it does not replace Broker authorization.
+
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on

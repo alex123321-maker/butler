@@ -84,11 +84,13 @@ foreach ($slot in $frozen.slots) {
   $row.context_sha256 = Hash-Text $slot.input.memory_prompt
   $inputPath = Join-Path $EvidenceRoot ('private/input-' + $slot.input.case_id.Replace('memory:', '') + '-' + $slot.input.arm + '.json')
   $row.model_projection_sha256 = $null
+  $row.model_request_sha256 = $null
   $expected = @{question=$slot.input.question;as_of_utc=$slot.input.as_of_utc;current_task=$slot.input.task;memory_data=$slot.input.memory;memory_prompt_data=$slot.input.memory_prompt}
   if (Test-Path $inputPath) {
     $sent = Read-JSON $inputPath
     if ((Canonical-JSON ($sent.Input | ConvertFrom-Json -AsHashtable)) -cne (Canonical-JSON $expected) -or $sent.Instructions -cne $slot.input.instructions -or (Canonical-JSON $sent.Schema) -cne (Canonical-JSON $frozen.schema)) { throw 'Actual model input/instructions/schema differ from frozen projection.' }
     $row.model_projection_sha256 = Hash-Text $sent.Input
+    $row.model_request_sha256 = Hash-Text (Canonical-JSON @{input=$sent.Input;instructions=$sent.Instructions;schema=$sent.Schema})
   } elseif ($status -eq 'completed' -or $raw.Length -gt 0) { throw 'Missing actual model input.' }
   # References to visible typed input fields are distinct from record handles.
   # Path existence establishes visibility only, never semantic support.

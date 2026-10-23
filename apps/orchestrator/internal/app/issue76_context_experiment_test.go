@@ -102,7 +102,11 @@ type issue76Frozen struct {
 type issue76Pins struct{ Release, Source, Binary, Frozen, Protocol, Controls, Development, Image, TrialID, SourceDir, TrialRoot string }
 
 func validateIssue76Runtime(p memorySemanticExecution, pin issue76Pins) error {
-	if !strings.HasPrefix(pin.TrialID, "issue76-trial-") || pin.TrialRoot != "/srv/storage/butler/agents/"+pin.TrialID || !strings.HasPrefix(pin.SourceDir, "/srv/storage/butler/agents/issue76-source-") || pin.Image == "" || p.Image != pin.Image || p.Path != "/runtime/collector.test" || p.User != "10001:10001" || strings.Join(p.Args, " ") != "-test.run ^TestIssue76NativeTrial$ -test.v -test.timeout 185m" || p.Memory != 1536<<20 || p.NanoCpus != 2000000000 || p.PidsLimit != 128 || !p.ReadonlyRootfs {
+	return validateIssue76RuntimeNamed(p, pin, "TestIssue76NativeTrial")
+}
+
+func validateIssue76RuntimeNamed(p memorySemanticExecution, pin issue76Pins, testName string) error {
+	if !strings.HasPrefix(pin.TrialID, "issue76-trial-") || pin.TrialRoot != "/srv/storage/butler/agents/"+pin.TrialID || !strings.HasPrefix(pin.SourceDir, "/srv/storage/butler/agents/issue76-source-") || pin.Image == "" || p.Image != pin.Image || p.Path != "/runtime/collector.test" || p.User != "10001:10001" || strings.Join(p.Args, " ") != "-test.run ^"+testName+"$ -test.v -test.timeout 185m" || p.Memory != 1536<<20 || p.NanoCpus != 2000000000 || p.PidsLimit != 128 || !p.ReadonlyRootfs {
 		return errors.New("issue76 runtime/resources differ")
 	}
 	if p.Privileged || len(p.CapAdd) != 0 || len(p.CapDrop) != 1 || p.CapDrop[0] != "ALL" || len(p.SecurityOpt) != 1 || p.SecurityOpt[0] != "no-new-privileges:true" || len(p.Tmpfs) != 1 || p.Tmpfs["/tmp"] != "rw,noexec,nosuid,size=16777216" || !p.ProxyConfigured || !p.LocalBypass {
@@ -198,6 +202,11 @@ func issue76Freeze(t *testing.T) issue76Frozen {
 
 func TestIssue76Freeze(t *testing.T) {
 	f := issue76Freeze(t)
+	writeIssue76Frozen(t, f, "testdata/acceptance/issue76-context-controls-v1.json", "testdata/acceptance/issue76-context-development-v1.json")
+}
+
+func writeIssue76Frozen(t *testing.T, f issue76Frozen, controls, development string) {
+	t.Helper()
 	if dir := os.Getenv("BUTLER_ISSUE76_FREEZE_DIR"); dir != "" {
 		raw, err := json.MarshalIndent(f, "", "  ")
 		if err != nil {
@@ -215,7 +224,7 @@ func TestIssue76Freeze(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		pins := map[string]string{"Release": os.Getenv("BUTLER_MEMORY_EVAL_RELEASE"), "Source": tree, "Binary": binary, "Frozen": hashMemoryBytes(append(raw, '\n')), "Protocol": f.ProtocolSHA, "Controls": f.Corpora["testdata/acceptance/issue76-context-controls-v1.json"], "Development": f.Corpora["testdata/acceptance/issue76-context-development-v1.json"]}
+		pins := map[string]string{"Release": os.Getenv("BUTLER_MEMORY_EVAL_RELEASE"), "Source": tree, "Binary": binary, "Frozen": hashMemoryBytes(append(raw, '\n')), "Protocol": f.ProtocolSHA, "Controls": f.Corpora[controls], "Development": f.Corpora[development]}
 		pinRaw, _ := json.MarshalIndent(pins, "", "  ")
 		if e = writeShadowV5ExactBytes(filepath.Join(dir, "pins.json"), pinRaw); e != nil {
 			t.Fatal(e)
@@ -225,7 +234,17 @@ func TestIssue76Freeze(t *testing.T) {
 }
 
 func TestIssue76NativeTrial(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE76_NATIVE") != "1" {
+	runIssue76Native(t, issue76TrialSpec{"BUTLER_ISSUE76_NATIVE", "TestIssue76NativeTrial", "issue76-context-v1", "issue76", "synthetic-profile-bundle-real-native-v1", "testdata/acceptance/issue76-context-controls-v1.json", "testdata/acceptance/issue76-context-development-v1.json", issue76Freeze})
+}
+
+type issue76TrialSpec struct {
+	OptIn, TestName, Version, WindowPrefix, Runtime, Controls, Development string
+	Freeze                                                                 func(*testing.T) issue76Frozen
+}
+
+func runIssue76Native(t *testing.T, spec issue76TrialSpec) {
+	t.Helper()
+	if os.Getenv(spec.OptIn) != "1" {
 		t.Skip("explicit fresh isolated issue76 trial required")
 	}
 	private := os.Getenv("BUTLER_MEMORY_EVAL_PRIVATE")
@@ -240,7 +259,7 @@ func TestIssue76NativeTrial(t *testing.T) {
 	}
 	var runtime memorySemanticExecution
 	raw, err = os.ReadFile("/metadata/execution.json")
-	if err != nil || json.Unmarshal(raw, &runtime) != nil || validateIssue76Runtime(runtime, pins) != nil {
+	if err != nil || json.Unmarshal(raw, &runtime) != nil || validateIssue76RuntimeNamed(runtime, pins, spec.TestName) != nil {
 		t.Fatal("runtime denied before credentials")
 	}
 	var review struct{ Status, Release, Source, Binary, Frozen, Protocol, Controls, Development string }
@@ -262,16 +281,16 @@ func TestIssue76NativeTrial(t *testing.T) {
 		t.Fatal("frozen bytes mismatch")
 	}
 	var frozen issue76Frozen
-	if json.Unmarshal(raw, &frozen) != nil || frozen.Version != "issue76-context-v1" || len(frozen.Slots) != 32 || acceptance.MemoryDigest(frozen.Schema) != acceptance.MemoryDigest(issue76Schema) {
+	if json.Unmarshal(raw, &frozen) != nil || frozen.Version != spec.Version || len(frozen.Slots) != 32 || acceptance.MemoryDigest(frozen.Schema) != acceptance.MemoryDigest(issue76Schema) {
 		t.Fatal("frozen matrix/schema mismatch")
 	}
 	// Rebuild from the pinned sources before credentials; no observed output can
 	// change selection. Expected answers/rubrics are never part of projections.
-	rebuilt := issue76Freeze(t)
+	rebuilt := spec.Freeze(t)
 	if acceptance.MemoryDigest(rebuilt) != acceptance.MemoryDigest(frozen) {
 		t.Fatal("frozen capture mismatch")
 	}
-	if pins.Protocol != frozen.ProtocolSHA || pins.Controls != frozen.Corpora["testdata/acceptance/issue76-context-controls-v1.json"] || pins.Development != frozen.Corpora["testdata/acceptance/issue76-context-development-v1.json"] {
+	if pins.Protocol != frozen.ProtocolSHA || pins.Controls != frozen.Corpora[spec.Controls] || pins.Development != frozen.Corpora[spec.Development] {
 		t.Fatal("protocol/corpus mismatch")
 	}
 	pool := memoryEvalDatabase(t)
@@ -282,7 +301,7 @@ func TestIssue76NativeTrial(t *testing.T) {
 	budgets := budget.NewController(pool, memoryEvalPolicy())
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	c := &memoryEvalCollector{pool: pool, catalog: catalog.New(pool, manifest), budgets: budgets, private: private, sourceRefs: map[string]map[string]catalog.SourceRef{}, started: time.Now().UTC(), freeAnswer: true, nativeSchema: issue76Schema, maximumCalls: 32}
-	c.plan = acceptance.MemoryPlan{CodeCommit: release, WindowID: "issue76-" + release[:12], Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: "synthetic-profile-bundle-real-native-v1", MemoryConfigSHA256: acceptance.MemoryDigest(frozen)}
+	c.plan = acceptance.MemoryPlan{CodeCommit: release, WindowID: spec.WindowPrefix + "-" + release[:12], Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: spec.Runtime, MemoryConfigSHA256: acceptance.MemoryDigest(frozen)}
 	if err = c.init(context.Background()); err != nil {
 		t.Fatal(err)
 	}
