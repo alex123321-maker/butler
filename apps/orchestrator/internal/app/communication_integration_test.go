@@ -10,10 +10,56 @@ import (
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
+
+func TestCommunicationOwningPublicationWithOneBusinessConnectionIntegration(t *testing.T) {
+	for _, method := range []string{"communication.message", "communication.widget"} {
+		t.Run(method, func(t *testing.T) {
+			f := newNamedToolControlDispatchFixture(t, nil, false, false, method, true)
+			inputs := input.NewStore(f.f.pool)
+			inputs.CommunicationEpoch = 1
+			data, _ := json.Marshal(map[string]string{"tool_call_id": f.call.ToolCallId, "action_id": f.prepared.Binding.ActionID, "effect_id": f.prepared.EffectID, "authorization_id": f.grant.ID})
+			if err := inputs.SaveCheckpoint(f.owned, f.call.RunId, "tool_dispatching", string(data)); err != nil {
+				t.Fatal(err)
+			}
+			f.claim(t)
+			core := &communication.Store{Pool: f.f.pool, Inputs: inputs, SourceGuard: f.f.sources.CheckRunSourcesTx, ChannelGuard: func(context.Context, pgx.Tx, string, communication.Binding, communicationcontrol.Args) error {
+				return nil
+			}}
+			var held []*pgxpool.Conn
+			defer func() {
+				for _, c := range held {
+					c.Release()
+				}
+			}()
+			for range f.f.pool.Config().MaxConns - 1 {
+				c, err := f.f.pool.Acquire(f.f.ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				held = append(held, c)
+			}
+			// A channel poll and another owning writer can leave only one business
+			// connection. Publication must join its fence instead of hoarding a
+			// guard connection while waiting for a second business transaction.
+			bounded, cancel := context.WithTimeout(f.f.ctx, time.Second)
+			defer cancel()
+			env := communicationcontrol.Envelope{RunID: f.call.RunId, ToolCallID: f.call.ToolCallId, EffectID: f.prepared.EffectID, Tool: f.call.ToolName, ArgsJSON: f.call.ArgsJson, ContractHash: f.prepared.Binding.ContractHash}
+			receipt, err := (&CommunicationControl{Store: core}).ExecuteDispatched(bounded, env)
+			if err != nil || receipt.PublicationRef == "" {
+				t.Fatal("publication consumed a second business connection", err)
+			}
+			var n int
+			if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM communication_publications WHERE run_id=$1`, f.call.RunId).Scan(&n); err != nil || n != 1 {
+				t.Fatal("missing or repeated publication", n, err)
+			}
+		})
+	}
+}
 
 func TestCommunicationOwningDispatchAndReceiptRecoveryIntegration(t *testing.T) {
 	for _, method := range []string{"communication.message", "communication.widget"} {
