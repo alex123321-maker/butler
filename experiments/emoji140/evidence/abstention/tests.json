@@ -1,0 +1,27 @@
+{
+  "packages": {
+    "telegramrich": {
+      "pass": 102,
+      "fail": 0,
+      "skip": 0
+    },
+    "communicationcontrol": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0
+    },
+    "communication": {
+      "pass": 288,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "mode": "Go1.27.2 race; isolated PostgreSQL; Native transport corpus excluded, actual bot checked separately",
+  "app_owner_profile_proxy": "pass",
+  "vet": "pass",
+  "integration_source": "4ec1ce01b80a6e1bbfff44b0e17095f405870609",
+  "initial_failures": [
+    "socket permission denied; rerun with private socket access",
+    "fixture attempted immutable outbox UPDATE; fixed to INSERT initial representation"
+  ]
+}
