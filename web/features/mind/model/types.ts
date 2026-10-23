@@ -16,6 +16,7 @@ export interface Task {
   legacy?: boolean
 }
 export interface Source {
+	match?: 'text' | 'semantic' | 'both'
   source_id: string
   source_kind: string
   title: string
@@ -36,7 +37,8 @@ export interface Source {
 export interface MemoryPage {
   items: Source[]
   has_more: boolean
-  mode: 'recent' | 'text' | 'semantic'
+  mode: 'recent' | 'text' | 'semantic' | 'hybrid'
+  next_offset?: number
   diagnostics: string[]
 }
 export interface Inspection {

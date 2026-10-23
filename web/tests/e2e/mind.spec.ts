@@ -111,7 +111,7 @@ test('owner connection, recent memory and server text search keep their real mea
   await expect(
     page.getByText('Найденный источник', { exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('По тексту', { exact: true })).toBeVisible()
+  await expect(page.getByText('По тексту. Enter или «Найти» добавит поиск по смыслу.', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Очистить поиск' }).click()
   await expect(page.locator('.mind-memory-title').first()).toHaveText(
     'Последняя заметка',

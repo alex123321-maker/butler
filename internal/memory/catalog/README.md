@@ -230,3 +230,9 @@ advances the working revision once. Stale experience observations still veto
 ordinary publication; they cannot prevent a later deletion after an earlier
 tool correction or privacy erasure. Any populated experience provenance refuses
 downgrade: a pending external anchor need not have a committed SQL deletion yet.
+
+Owner browse responses expose the consumed lexical `next_offset` independently
+of hybrid result count. `BrowseChunks` resolves server-derived chunk IDs and exact
+timestamps back to current owner source heads. It performs ordinary ancestry and
+access checks, locks current active fragments, deduplicates sources and returns
+masked bounded previews. It grants no inference, indexing or fact authority.

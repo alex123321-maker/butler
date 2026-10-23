@@ -36,7 +36,16 @@ async function explorerFixture(page: Page) {
     }),
   )
   await page.route('**/api/v4/memory', (r) =>
-    r.fulfill({ json: { sources: [original, derived], claims: [pending], claim_list_limit: 2000, source_list_limit: 1000, index_jobs: [], semantic_enabled: false } }),
+    r.fulfill({
+      json: {
+        sources: [original, derived],
+        claims: [pending],
+        claim_list_limit: 2000,
+        source_list_limit: 1000,
+        index_jobs: [],
+        semantic_enabled: false,
+      },
+    }),
   )
   await page.route('**/api/v4/memory/source?*', (r) => {
     const id = new URL(r.request().url()).searchParams.get('source_id')
@@ -64,12 +73,168 @@ async function explorerFixture(page: Page) {
 }
 const explorer = (page: Page) =>
   page.getByRole('dialog', { name: 'Память', exact: true })
-test('home stays limited to three records while the explorer can load more', async ({ page }) => {
+test('typing stays lexical, explicit search adds meaning and pagination keeps its text cursor', async ({
+  page,
+}) => {
+  await explorerFixture(page)
+  const requests: Record<string, unknown>[] = []
+  await page.route('**/api/v4/memory/search', (r) => {
+    const body = r.request().postDataJSON()
+    requests.push(body)
+    return r.fulfill({
+      json:
+        body.strategy === 'hybrid'
+          ? {
+              items: [
+                { ...derived, match: 'semantic' },
+                { ...original, match: 'text' },
+              ],
+              has_more: true,
+              next_offset: 1,
+              mode: 'hybrid',
+              diagnostics: ['semantic_indexed_only'],
+            }
+          : body.offset
+            ? {
+                items: [derived, source('third')],
+                has_more: false,
+                next_offset: 3,
+                mode: 'text',
+                diagnostics: [],
+              }
+            : {
+                items: [original],
+                has_more: false,
+                next_offset: 1,
+                mode: 'text',
+                diagnostics: [],
+              },
+    })
+  })
+  await open(page)
+  const dialog = explorer(page)
+  await dialog.getByRole('searchbox').fill('как ухаживать за цветком')
+  await expect(dialog.locator('.memory-list-row')).toHaveCount(1)
+  expect(requests.every((r) => !r.strategy)).toBe(true)
+  await dialog.getByRole('searchbox').press('Enter')
+  await expect(dialog.locator('.memory-list-row')).toHaveCount(2)
+  await expect(dialog.locator('.memory-search-hint')).toContainText(
+    'По тексту и смыслу',
+  )
+  await expect(dialog.locator('.memory-list-row').first()).toContainText(
+    'По смыслу',
+  )
+  await dialog.getByRole('button', { name: 'Загрузить ещё' }).click()
+  await expect(dialog.locator('.memory-list-row')).toHaveCount(3)
+  expect(requests.at(-1)).toMatchObject({ offset: 1 })
+  expect(requests.filter((r) => r.strategy === 'hybrid')).toHaveLength(1)
+  await expect(dialog.locator('.memory-search-hint')).toContainText(
+    'По тексту и смыслу',
+  )
+})
+
+test('unavailable semantic index is explained without losing text matches', async ({
+  page,
+}) => {
+  await explorerFixture(page)
+  await page.route('**/api/v4/memory/search', (r) =>
+    r.fulfill({
+      json: {
+        items: [original],
+        has_more: false,
+        mode: 'text',
+        diagnostics:
+          r.request().postDataJSON().strategy === 'hybrid'
+            ? ['semantic_index_unavailable']
+            : [],
+      },
+    }),
+  )
+  await open(page)
+  const dialog = explorer(page)
+  await dialog.getByRole('searchbox').fill('монстера')
+  await dialog.getByRole('searchbox').press('Enter')
+  await expect(dialog.locator('.memory-list-row')).toHaveCount(1)
+  await expect(dialog.locator('.memory-search-hint')).toContainText(
+    'пока нет готового индекса',
+  )
+  await expect(dialog.locator('.memory-search-hint')).not.toContainText(
+    'По тексту и смыслу',
+  )
+})
+
+test('a newer query cancels and fences a slow semantic response', async ({
+  page,
+}) => {
+  await explorerFixture(page)
+  let release!: () => void
+  const wait = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route('**/api/v4/memory/search', async (r) => {
+    const body = r.request().postDataJSON()
+    if (body.strategy === 'hybrid') {
+      await wait
+      await r
+        .fulfill({
+          json: {
+            items: [derived],
+            mode: 'hybrid',
+            has_more: false,
+            diagnostics: [],
+          },
+        })
+        .catch(() => {})
+    } else
+      await r.fulfill({
+        json: {
+          items: [original],
+          mode: 'text',
+          has_more: false,
+          diagnostics: [],
+        },
+      })
+  })
+  await open(page)
+  const dialog = explorer(page)
+  await dialog.getByRole('searchbox').fill('старый запрос')
+  const request = page.waitForRequest(
+    (r) =>
+      r.url().endsWith('/memory/search') &&
+      r.postDataJSON().strategy === 'hybrid',
+  )
+  await dialog.getByRole('searchbox').press('Enter')
+  const pending = await request
+  const aborted = page.waitForEvent('requestfailed', (r) => r === pending)
+  await dialog.getByRole('searchbox').fill('новый запрос')
+  await aborted
+  release()
+  await expect(dialog.locator('.memory-list-row')).toHaveCount(1)
+  await expect(dialog.locator('.memory-list-row').first()).toContainText(
+    original.title,
+  )
+  await expect(dialog.locator('.memory-search-hint')).not.toContainText(
+    'По тексту и смыслу',
+  )
+})
+
+test('home stays limited to three records while the explorer can load more', async ({
+  page,
+}) => {
   await explorerFixture(page)
   const records = Array.from({ length: 8 }, (_, i) => source(`record-${i}`))
-  await page.route('**/api/v4/memory/browse*', r => {
-    const offset = Number(new URL(r.request().url()).searchParams.get('offset') || 0)
-    return r.fulfill({ json: { items: records.slice(offset, offset + 6), has_more: offset + 6 < records.length, mode: 'recent', diagnostics: [] } })
+  await page.route('**/api/v4/memory/browse*', (r) => {
+    const offset = Number(
+      new URL(r.request().url()).searchParams.get('offset') || 0,
+    )
+    return r.fulfill({
+      json: {
+        items: records.slice(offset, offset + 6),
+        has_more: offset + 6 < records.length,
+        mode: 'recent',
+        diagnostics: [],
+      },
+    })
   })
   await connect(page)
   await expect(page.locator('.mind-memory-result')).toHaveCount(3)
@@ -79,7 +244,11 @@ test('home stays limited to three records while the explorer can load more', asy
   await expect(explorer(page).locator('.memory-list-row')).toHaveCount(8)
   await page.keyboard.press('Escape')
   await expect(page.locator('.mind-memory-result')).toHaveCount(3)
-  await expect(page.locator('.mind-memory').getByRole('button', { name: 'Ещё', exact: true })).toHaveCount(0)
+  await expect(
+    page
+      .locator('.mind-memory')
+      .getByRole('button', { name: 'Ещё', exact: true }),
+  ).toHaveCount(0)
 })
 async function open(page: Page) {
   await connect(page)

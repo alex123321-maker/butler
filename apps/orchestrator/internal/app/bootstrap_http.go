@@ -148,6 +148,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		parser.Pages = ingestion.NewPDFClient()
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
+	if deps.memoryIndexing != nil {
+		memoryCatalogServer.Search = deps.memoryIndexing.OwnerSearch
+	}
 	memoryCatalogServer.TemporalEnabled = temporalConfigured(deps.cfg.MemoryTemporalEnabled)
 	configureConsolidationOwnerAPI(memoryCatalogServer, deps.consolidationConfigured)
 	memoryCatalogServer.ExperiencePolicies = deps.experiencePolicies

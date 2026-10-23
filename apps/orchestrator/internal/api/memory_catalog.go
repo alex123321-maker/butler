@@ -37,6 +37,7 @@ type MemoryCatalogServer struct {
 	ConsolidationReady    bool
 	ExperiencePolicies    experience.PolicyCreator
 	Experience            *experience.Store
+	Search                OwnerMemorySearch
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {
@@ -243,18 +244,14 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 			}
 			writeJSON(w, 200, v)
 		case "/api/v4/memory/search":
-			var q struct {
-				Query  string `json:"query"`
-				Limit  int    `json:"limit"`
-				Offset int    `json:"offset"`
-			}
+			var q ownerSearchRequest
 			if !decode(&q) {
 				return
 			}
 			if q.Limit == 0 {
 				q.Limit = 6
 			}
-			v, e := s.Store.Browse(ctx, q.Query, q.Limit, q.Offset)
+			v, e := s.searchMemory(ctx, q)
 			if e != nil {
 				writeMemoryError(w, e)
 				return

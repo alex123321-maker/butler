@@ -1,5 +1,13 @@
 # Versioned local semantic retrieval
 
+`OwnerSearch` composes an authenticated Web query with the same pinned backend,
+exact configured space, versioned vector store and source guard. It is independent
+of the live-run HybridReader: one query vector, at most12 owner user/session
+generations, no cloud/reranking/indexing, and four current source previews.
+The budget controller admits one bounded owner request and enforces a durable
+minute allowance. Candidates are re-resolved through Catalog, never returned
+using untrusted citation metadata. See [owner Web search](../../../docs/architecture/versioned-memory-sources.md#owner-web-hybrid-search-2026-10-23).
+
 Policy-aware bundle reads distinguish local query use from external release.
 For local-only requests `HybridReader.SearchWithPolicy` permits PostgreSQL exact
 and full-text reads, while inference requires the backend's private pinned target

@@ -5,7 +5,7 @@
     :class="{ 'memory-reading': reading }"
     aria-label="Просмотр памяти"
   >
-    <form class="memory-search" role="search" @submit.prevent="search">
+    <form class="memory-search" role="search" @submit.prevent="search()">
       <MindIcon name="search" />
       <input
         ref="input"
@@ -13,7 +13,7 @@
         type="search"
         maxlength="500"
         aria-label="Поиск записей"
-        placeholder="Найти по словам из записи…"
+        placeholder="Что хотите вспомнить?"
         @input="queueSearch"
         @keydown.down.prevent="focusResult(0)"
       />
@@ -80,9 +80,16 @@
     </div>
     <p v-if="store.memoryError" class="mind-error" role="alert">
       {{ store.memoryError }}
-      <button class="mind-text-button" type="button" @click="search">
+      <button class="mind-text-button" type="button" @click="search()">
         Повторить
       </button>
+    </p>
+    <p
+      v-if="store.memorySearchHint"
+      class="mind-muted memory-search-hint"
+      role="status"
+    >
+      {{ store.memorySearchHint }}
     </p>
     <div class="memory-workspace">
       <div ref="results" class="memory-results" :aria-busy="store.memoryBusy">
@@ -109,7 +116,17 @@
               ><span>{{
                 readableSource(source) ? source.body : 'Закрытое содержимое'
               }}</span
-              ><small>{{ memoryOrigin(source) }}</small></span
+              ><small
+                >{{ memoryOrigin(source)
+                }}{{
+                  source.match === 'semantic'
+                    ? ' · По смыслу'
+                    : source.match === 'both'
+                      ? ' · Текст и смысл'
+                      : ''
+                }}</small
+              ></span
+            >
             >
             <time>{{
               dateLabel(source.created_at || source.extracted_at)
@@ -237,7 +254,9 @@
         >{{ store.memories.length }} записей{{
           store.memoryHasMore ? ' · есть ещё' : ''
         }}</span
-      ><span>Поиск по тексту</span>
+      ><span>{{
+        store.memoryMode === 'hybrid' ? 'Текст и смысл' : 'Поиск по тексту'
+      }}</span>
     </footer>
   </section>
 </template>
@@ -359,18 +378,19 @@ function listKey(event: KeyboardEvent) {
 }
 function queueSearch() {
   clearTimeout(timer)
+  store.cancelMemorySearch()
   store.memoryQuery = query.value
   store.memories = []
   store.memoryHasMore = false
   store.memoryBusy = true
   reading.value = false
-  timer = setTimeout(search, 240)
+  timer = setTimeout(() => search('text'), 240)
 }
-function search() {
+function search(strategy: 'text' | 'hybrid' = 'hybrid') {
   clearTimeout(timer)
   timer = undefined
   reading.value = false
-  void store.loadMemory(query.value)
+  void store.loadMemory(query.value, false, strategy)
 }
 function clear() {
   query.value = ''

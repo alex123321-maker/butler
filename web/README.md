@@ -43,9 +43,15 @@ There is no iframe, second application or additional runtime dependency.
   conversation, browser and settings usable.
 - Memory initially shows recent active source heads of all kinds. Bounded server
   Russian text search returns previews and current source references, explicitly
-  marked “По тексту”. This owner endpoint does not admit embedding inference,
-  fabricate a run lease or bypass budget policy. Semantic retrieval remains on
-  the existing admitted agent path; direct owner semantic inference is not connected.
+  marked “По тексту”. Typing runs only lexical search. Explicit Enter/search sends
+  `strategy: hybrid`: the server may add up to four semantic source previews using
+  the already configured pinned local model and active indexes. Mode/diagnostics
+  distinguish hybrid results, missing indexes, unavailable inference and exhausted
+  allowance. Search never invents an agent run or indexes data. Nonindexed messages
+  remain searchable by text. See [owner search](../docs/architecture/versioned-memory-sources.md#owner-web-hybrid-search-2026-10-23).
+  New input aborts the previous request and fences late responses. Continuation
+  uses the server's lexical `next_offset`, deduplicates sources and never repeats
+  inference. Semantic labels/diagnostics survive continuation.
 - Source correction/deletion retain revision checks. New notes derive user scope
   from the authenticated actor and retain delivery identity after an uncertain ACK.
   Previews are data, not permission grants or confirmed profile facts.

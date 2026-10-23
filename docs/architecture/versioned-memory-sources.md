@@ -276,12 +276,12 @@ it to the front. Limits are 1–20, offset 0–1000; lookahead reports `has_more
 Selected sources and dependencies pass current `AccessTx`/restore checks before
 preview publication. A stale or denied graph fails closed.
 
-`POST /api/v4/memory/search` accepts `{query,limit,offset}`. It uses PostgreSQL
+`POST /api/v4/memory/search` accepts `{query,limit,offset,strategy?}`. Omitted or
+`text` strategy uses PostgreSQL
 Russian text search/ranking on active current titles/bodies. Query size is bounded
-to 2048 UTF-8 bytes. The response explicitly reports `mode: text` and diagnostic
-`owner_semantic_inference_not_admitted`. Empty queries return recent records.
-Semantic inference retains its existing live-run/finite-budget admission; this
-owner HTTP route does not fabricate a run lease or admit inference.
+to 2048 UTF-8 bytes. The response explicitly reports `mode: text`.
+Empty queries return recent records. Optional `hybrid` strategy has independent
+owner admission described below; no run lease is fabricated.
 
 Both projections authenticate before parsing, return `Cache-Control: no-store`,
 bound title/body previews to 200/512 Unicode characters, and mask credentials
@@ -326,3 +326,51 @@ ID in the existing authenticated route. Clipboard export occurs only on an
 explicit copy action. A
 reversible pause switch is deliberately absent: source revocation currently purges
 content and must not be presented as temporary exclusion from retrieval.
+
+## Owner Web hybrid search (2026-10-23)
+
+Typing remains lexical. Enter or the search button explicitly requests
+`strategy: hybrid`, a nonempty query and offset0. Unknown strategies and hybrid
+continuation offsets are rejected before model access. Existing bearer-owner
+authentication, delivery identity, strict JSON decoding and no-store apply.
+The owner cannot supply a model, endpoint, scope, generation or run identity.
+
+When the existing owned semantic runtime is configured, one pinned local
+EmbeddingGemma2 query vector searches at most12 active user/session generations
+belonging to that owner and matching the exact configured index space. The user
+scope is preferred, followed by newest session generations. Extra scope coverage
+is explicitly reported as limited. Project/task/global sources and any sources
+without active indexed fragments remain in the lexical path. No index or job is
+created by a search, and no cloud fallback or reranker is permitted.
+
+`budget.AdmitOwnerQuery` authenticates the web actor, validates exact local
+pricing/target, then uses the existing PostgreSQL reservation ledger. Each actual
+query has at most1 turn, 2048 input bytes, 4096 conservative token units and30s.
+A fixed12-attempt UTC-minute scope is shared across tabs/processes, including when
+the optional owner/day cap is disabled. Normal owner/day reservation also applies
+when enabled. Minute scope expiry includes30s for requests admitted near its end;
+the request deadline never extends. These are conservative reservations, not
+measured model usage. No finished run, task mandate or job claim is borrowed.
+Only query text is released; restore proof is checked before and after admission
+and after inference. HTTP cancellation propagates to local RPC.
+
+Vector candidates retain exact chunk timestamps and index identities. Existing
+semantic guards reject changed/deleted/secret sources and ancestry. Catalog
+resolves candidates back to current owner source heads, checks source access and
+locks current fragments before returning masked bounded previews. At most four
+semantic fragments become source results. Text lookup runs after inference;
+reciprocal-rank fusion deduplicates sources with match=text/semantic/both.
+No numeric semantic similarity is presented as confidence or factual truth.
+
+The initial response preserves all lexical page items plus at most four semantic
+items (at most24 with limit20), mode=hybrid only when semantic items were returned,
+and content-free diagnostics. `next_offset` counts consumed lexical rows, not
+merged visible items. Later pages are lexical only; the client deduplicates them
+and retains the initial semantic mode/coverage. No query-vector/body cache is
+stored in the browser. Fresh input aborts and invalidates earlier requests.
+
+The semantic subrequest has25s inside the existing30s HTTP bound. Missing index,
+budget exhaustion or model/access failure discards semantic candidates and
+falls back to a fresh guarded text read; if that read fails, the request fails.
+Backend error strings are never serialized as diagnostics. Empty vector results
+and partial coverage are distinguishable from a fully semantic result.

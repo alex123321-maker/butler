@@ -67,6 +67,21 @@ export const useMind = defineStore('mind', () => {
     memoryDetailBusy = ref(false),
     memoryDetailError = ref(''),
     inspection = ref<Inspection | null>(null)
+  let memoryOffset = 0, memoryController = new AbortController()
+  const memorySearchStrategy = ref<'text' | 'hybrid'>('text')
+  const memorySearchHint = computed(() => {
+    if (!memoryQuery.value.trim()) return ''
+    if (memoryBusy.value) return memorySearchStrategy.value === 'hybrid' ? 'Ищу по тексту и смыслу…' : 'Ищу по тексту…'
+    const diagnostics = memoryDiagnostics.value
+    if (memoryMode.value === 'hybrid') return diagnostics.includes('semantic_scope_limit')
+      ? 'По тексту и смыслу. Смысловой поиск охватил часть индекса; остальные записи доступны по тексту.'
+      : 'По тексту и смыслу. Смысловой поиск охватывает проиндексированные записи.'
+    if (diagnostics.includes('semantic_budget_exhausted')) return 'По тексту. Лимит смыслового поиска исчерпан — попробуйте позже.'
+    if (diagnostics.includes('semantic_index_unavailable')) return 'По тексту. Для смыслового поиска пока нет готового индекса.'
+    if (diagnostics.includes('semantic_unavailable') || diagnostics.includes('embedding_unavailable')) return 'По тексту. Смысловой поиск сейчас недоступен.'
+    if (diagnostics.includes('semantic_empty')) return 'По тексту. Смысловой поиск не добавил совпадений.'
+    return 'По тексту. Enter или «Найти» добавит поиск по смыслу.'
+  })
   const panel = ref<Panel>(''),
     advanced = ref(''),
     selectedNotice = ref<Notice | null>(null),
@@ -160,6 +175,10 @@ export const useMind = defineStore('mind', () => {
   const current = (stamp: number) =>
     !disposed && stamp === epoch.value && !!token.value.trim()
   function resetPrivate() {
+    memoryController.abort()
+    memoryOffset = 0
+    memorySearchStrategy.value = 'text'
+    memoryMode.value = 'recent'
     epoch.value++
     controller.abort()
     controller = new AbortController()
@@ -221,7 +240,7 @@ export const useMind = defineStore('mind', () => {
   async function request<T>(
     path: string,
     body?: unknown,
-    options: { method?: string; delivery?: string } = {},
+    options: { method?: string; delivery?: string; signal?: AbortSignal } = {},
   ): Promise<T> {
     const stamp = epoch.value,
       proof = token.value.trim()
@@ -236,7 +255,7 @@ export const useMind = defineStore('mind', () => {
       method: options.method || (body === undefined ? 'GET' : 'POST'),
       body: body === undefined ? undefined : JSON.stringify(body),
       headers,
-      signal: controller.signal,
+      signal: options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
       cache: 'no-store',
     })
     if (!current(stamp)) throw new Error('owner_changed')
@@ -363,26 +382,36 @@ export const useMind = defineStore('mind', () => {
     if (valid() && !background) loadingTask.value = false
   }
   const refreshTask = () => loadTask(selectedId.value, selection, true)
-  async function loadMemory(query = memoryQuery.value, more = false) {
+  function cancelMemorySearch() {
+    memoryController.abort()
+    memorySearch++
+  }
+  async function loadMemory(query = memoryQuery.value, more = false, strategy: 'text' | 'hybrid' = 'text') {
+    memoryController.abort()
+    memoryController = new AbortController()
     const stamp = epoch.value,
       version = ++memorySearch
     memoryQuery.value = query
     memoryBusy.value = true
     memoryError.value = ''
     if (!more) {
+      memorySearchStrategy.value = query.trim() ? strategy : 'text'
+      memoryDiagnostics.value = []
+      memoryOffset = 0
       memories.value = []
       memoryHasMore.value = false
     }
     try {
-      const offset = more ? memories.value.length : 0
+      const offset = more ? memoryOffset : 0
       const result = query.trim()
         ? await request<MemoryPage>('/api/v4/memory/search', {
             query: query.trim(),
             limit: 6,
             offset,
-          })
+            ...(!more && strategy === 'hybrid' ? { strategy } : {}),
+          }, { signal: memoryController.signal })
         : await request<MemoryPage>(
-            `/api/v4/memory/browse?limit=6&offset=${offset}`,
+            `/api/v4/memory/browse?limit=6&offset=${offset}`, undefined, { signal: memoryController.signal },
           )
       if (
         !current(stamp) ||
@@ -390,12 +419,15 @@ export const useMind = defineStore('mind', () => {
         query !== memoryQuery.value
       )
         return
+      memoryOffset = result.next_offset ?? offset + result.items.length
       memories.value = more
-        ? [...memories.value, ...result.items]
+        ? [...memories.value, ...result.items.filter(item => !memories.value.some(old => old.source_id === item.source_id))]
         : result.items
       memoryHasMore.value = result.has_more
-      memoryMode.value = result.mode
-      memoryDiagnostics.value = result.diagnostics || []
+      if (!more) {
+        memoryMode.value = result.mode
+        memoryDiagnostics.value = result.diagnostics || []
+      }
       if (query.trim() && !more) {
         memoryRecentQueries.value = [query.trim(), ...memoryRecentQueries.value.filter(q => q !== query.trim())].slice(0, 5)
       }
@@ -717,6 +749,8 @@ export const useMind = defineStore('mind', () => {
     loadingTask,
     memories,
     memoryMode,
+    memorySearchHint,
+    cancelMemorySearch,
     memoryDiagnostics,
     memoryHasMore,
     memoryQuery,
