@@ -45,19 +45,15 @@
     <div class="mind-memory-state">
       <span role="status">{{
         store.memoryBusy
-          ? 'Ищу…'
+          ? store.memorySearchHint || 'Ищу…'
           : store.memoryError ||
-            (store.memoryQuery
-              ? store.memoryMode === 'semantic'
-                ? 'По смыслу'
-                : 'По тексту'
-              : 'Недавно добавлено')
+            (store.memoryQuery ? store.memorySearchHint : 'Недавно добавлено')
       }}</span
       ><button
         v-if="store.memoryQuery && store.memoryMode !== 'semantic'"
         class="mind-help"
         type="button"
-        title="Поиск работает по тексту. Семантический запрос доступен через агента с действующими полномочиями и бюджетом."
+        title="При вводе работает поиск по тексту; кнопка поиска добавляет смысловые совпадения из готового индекса."
         aria-label="Режим поиска"
         @click="showMode = !showMode"
       >
@@ -65,12 +61,20 @@
       </button>
     </div>
     <p v-if="showMode" class="mind-muted">
-      Здесь используется поиск по тексту. Для смыслового поиска можно попросить
-      Батлера найти нужное в памяти.
+      Поиск учитывает сообщения и другие сохранённые источники. Нажмите кнопку
+      поиска или Enter, чтобы добавить совпадения по смыслу из готового индекса.
     </p>
+    <button
+      class="mind-text-button"
+      type="button"
+      :disabled="!store.connected"
+      @click="store.panel = 'memory'"
+    >
+      Обзор памяти ↗
+    </button>
     <TransitionGroup name="mind-entry" tag="div"
       ><button
-        v-for="source in store.memories"
+        v-for="source in store.memories.slice(0, 3)"
         :key="source.source_id"
         class="mind-memory-result"
         type="button"
@@ -111,15 +115,6 @@
         store.memoryQuery ? 'Ничего похожего не найдено.' : 'Пока здесь пусто.'
       }}
     </p>
-    <button
-      v-if="store.memoryHasMore"
-      class="mind-text-button"
-      type="button"
-      :disabled="store.memoryBusy"
-      @click="store.loadMemory(store.memoryQuery, true)"
-    >
-      Ещё
-    </button>
   </section>
 </template>
 <script setup lang="ts">
@@ -135,6 +130,7 @@ function addNote() {
 }
 function queueSearch() {
   clearTimeout(timer)
+  store.cancelMemorySearch()
   store.memories = []
   if (!store.connected) return
   store.memoryBusy = true
@@ -145,7 +141,7 @@ function queueSearch() {
 }
 function searchNow() {
   clearTimeout(timer)
-  void store.loadMemory()
+  void store.loadMemory(store.memoryQuery, false, 'hybrid')
 }
 function clear() {
   clearTimeout(timer)

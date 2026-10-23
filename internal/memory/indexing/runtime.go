@@ -17,14 +17,15 @@ import (
 )
 
 type Runtime struct {
-	Catalog *catalog.Store
-	Jobs    *jobs.Store
-	Backend semantic.Backend
-	Target  budget.LocalTarget
-	Space   semantic.Space
-	Price   budget.ModelPrice
-	Reader  *semantic.HybridReader
-	Log     *slog.Logger
+	Catalog     *catalog.Store
+	Jobs        *jobs.Store
+	Backend     semantic.Backend
+	Target      budget.LocalTarget
+	Space       semantic.Space
+	Price       budget.ModelPrice
+	Reader      *semantic.HybridReader
+	OwnerSearch *semantic.OwnerSearch
+	Log         *slog.Logger
 }
 type Request struct {
 	Job       jobs.Request `json:"job"`

@@ -308,7 +308,7 @@
         </button>
       </footer>
     </main>
-    <MindDialog :open="!!store.panel" :title="panelTitle" @close="closePanel">
+    <MindDialog :open="!!store.panel" :title="panelTitle" :class="{ 'memory-explorer-dialog': store.panel === 'memory' }" @close="closePanel">
       <MindSettings v-if="store.panel === 'settings'" />
       <div v-else-if="store.panel === 'input' && store.receipt">
         <p class="mind-readable" data-testid="receipt-status">
@@ -332,9 +332,8 @@
           >Открыть попытку</NuxtLink
         >
       </div>
-      <MindMemoryEditor
-        v-else-if="store.panel === 'memory' || store.panel === 'note'"
-      />
+      <MindMemoryExplorer v-else-if="store.panel === 'memory'" :key="store.epoch" />
+      <MindMemoryEditor v-else-if="store.panel === 'note'" />
       <div v-else-if="store.panel === 'tasks'">
         <button
           v-for="task in store.tasks"
@@ -420,6 +419,7 @@ import MindEventLog from './MindEventLog.vue'
 import MindDialog from './MindDialog.vue'
 import MindMemory from './MindMemory.vue'
 import MindMemoryEditor from './MindMemoryEditor.vue'
+import MindMemoryExplorer from './MindMemoryExplorer.vue'
 import MindSettings from './MindSettings.vue'
 import MindTaskDetail from './MindTaskDetail.vue'
 import MindApprovals from './MindApprovals.vue'
@@ -477,7 +477,7 @@ const panelTitle = computed(
         tasks: 'Поручения',
         task: store.selectedTask ? taskTitle(store.selectedTask) : 'Поручение',
         journal: 'Журнал',
-        memory: store.inspection?.source.title || 'Память',
+        memory: 'Память',
         note: 'Оставить заметку',
         approvals: 'Нужно ваше решение',
         notice: store.selectedNotice?.title || 'Входящие',

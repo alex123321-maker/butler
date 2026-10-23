@@ -36,7 +36,7 @@ func TestOwnerBrowseRecentAndTextIntegration(t *testing.T) {
 		t.Fatalf("current head page: %+v %v", tail, err)
 	}
 	found, err := s.Browse(ctx, "поездка", 6, 0)
-	if err != nil || found.Mode != "text" || len(found.Diagnostics) != 1 || len(found.Items) != 2 {
+	if err != nil || found.Mode != "text" || len(found.Diagnostics) != 0 || len(found.Items) != 2 || found.NextOffset != 2 {
 		t.Fatalf("Russian text query mislabeled/lost: %+v %v", found, err)
 	}
 	foreign := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "other", Channel: "web", DeliveryID: "other"})

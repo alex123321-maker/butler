@@ -37,7 +37,8 @@ export default defineNuxtConfig({
   css: [
     '~/app/styles/tokens.css',
     '~/features/mind/garden/calendar.css',
-    '~/assets/css/mind.css'
+    '~/assets/css/mind.css',
+    '~/assets/css/memory-explorer.css'
   ],
 
   typescript: {

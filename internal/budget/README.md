@@ -144,3 +144,11 @@ transaction. It resolves current authority and immutable finite scopes, then
 checks a trusted declared next-turn quote after waits without creating scopes or
 reservations. It grants no inference right; actual provider admission still charges
 once through the existing model ledger.
+
+`AdmitOwnerQuery` is a separate authenticated Web search boundary. It admits only
+one pinned local embedding query (2048 bytes/4096 reserved token units/30s), with
+no run/task or source-body release. Each attempt reserves a fresh request scope
+and the shared fixed12-attempt UTC-minute scope through the existing auxiliary
+ledger, plus owner/day when enabled. The minute cap remains when owner/day is
+disabled. Restore proof runs before/after reservation; the HTTP context and
+earlier reservation deadline bound RPC. There is no automatic retry or refund.

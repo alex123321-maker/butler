@@ -46,5 +46,10 @@ func configureOwnedSemantic(log *slog.Logger, sources *catalog.Store, b *budget.
 	store := semantic.NewStore(sources.Pool())
 	store.Guard = guard
 	reader := &semantic.HybridReader{Store: store, Adapter: &semantic.Adapter{Backend: backend, Space: space, Admission: live}, Rerank: false, Log: log}
-	return &indexing.Runtime{Catalog: sources, Jobs: jobs.New(sources.Pool(), sources, b, &jobs.LocalTarget{Endpoint: target.Endpoint(), Identity: target.Identity()}), Backend: backend, Target: target, Space: space, Price: price, Reader: reader, Log: log.With("component", "memory-indexing")}, closeBackend
+	ownerSearch, e := semantic.NewOwnerSearch(sources, b, backend, target, space)
+	if e != nil {
+		closeBackend()
+		return fail()
+	}
+	return &indexing.Runtime{Catalog: sources, Jobs: jobs.New(sources.Pool(), sources, b, &jobs.LocalTarget{Endpoint: target.Endpoint(), Identity: target.Identity()}), Backend: backend, Target: target, Space: space, Price: price, Reader: reader, OwnerSearch: ownerSearch, Log: log.With("component", "memory-indexing")}, closeBackend
 }
