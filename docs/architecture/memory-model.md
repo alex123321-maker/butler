@@ -524,6 +524,14 @@ extracted candidate. The combined prompt preview may retain its display limit;
 the actual model consumes the complete admitted sections. Development evidence
 and limits: [issue76 profile context](../testing/issue-76-profile-context.md).
 
+The prospective [issue76 paired experiment](../testing/issue-76-context-experiment.md)
+adds an explicit `BundleRequest.ProfileTaskGoal` hint for isolated evaluation.
+Only ties in the existing current-message lexical profile score use the goal's
+lexical score; existing scope/key/text ties and quotas otherwise remain intact.
+The goal is current typed task DATA, never inferred from an old session snapshot
+or a retrieved document. It grants no access/authority. Production Orchestrator
+callers leave the hint empty; enabling it requires separate behavioral evidence.
+
 Hybrid queries above 2048 UTF-8 bytes skip optional lookup with `query_input_limit`
 and no SQL/inference, preserving the full owner message for ordinary preparation.
 Access/Secret/configuration failures and current authority/source release checks

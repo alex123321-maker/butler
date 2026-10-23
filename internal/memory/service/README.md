@@ -49,6 +49,14 @@ claims nor grant authority. The shared formatter is also used by the Orchestrato
 Its model-facing profile section preserves complete records, including trailing
 exceptions; complete-context admission omits optional records whole when needed.
 
+`BundleRequest.ProfileTaskGoal` is an experimental caller-supplied current typed
+task goal used only to break ties in current-message profile relevance. Empty
+keeps `memory-context-v3`; ordinary Orchestrator callers leave it empty. It does
+not add scopes, change eligibility or send the goal to embedding/search backends.
+The nonempty diagnostic variant is `memory-context-v3-task-goal-tiebreak-experiment-v1`.
+The [paired experiment](../../../docs/testing/issue-76-context-experiment.md)
+is not production qualification or a model-derived instruction policy.
+
 Safe diagnostics expose version/estimator/allowance/counts and omission reason
 codes, never query or source text. The orchestrator additionally admits the
 complete encoded context, reserves continuation headroom and trims optional

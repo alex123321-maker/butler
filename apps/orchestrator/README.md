@@ -4,6 +4,14 @@ optional records whole; profile data never becomes owner authority. The combined
 prompt preview remains display-limited. See the
 [issue76 development screen](../../docs/testing/issue-76-profile-context.md).
 
+The opt-in `TestIssue76NativeTrial` is a separate32-call synthetic preference
+comparison using current bundle code and the existing native budget/attempt
+collector in a fresh isolated database. Accepted profile/document candidates are
+fixtures; memory lifecycle and real external effects are not measured. Source,
+binary, schema, corpora and all32 inputs are frozen before independently reviewed
+entry. Normal Orchestrator runs do not enable its experimental goal-ranking hint.
+See the [prospective protocol](../../docs/testing/issue-76-context-experiment.md).
+
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on
