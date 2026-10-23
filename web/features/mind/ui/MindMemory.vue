@@ -68,6 +68,7 @@
       Здесь используется поиск по тексту. Для смыслового поиска можно попросить
       Батлера найти нужное в памяти.
     </p>
+    <button class="mind-text-button" type="button" :disabled="!store.connected" @click="store.panel = 'memory'">Обзор памяти ↗</button>
     <TransitionGroup name="mind-entry" tag="div"
       ><button
         v-for="source in store.memories"

@@ -30,7 +30,7 @@ export interface Source {
   scope_id: string
   author?: string
   event_time?: string | null
-  origin?: { sensitivity: string }
+  origin?: { sensitivity: string; kind?: string; source_refs?: string[]; parent_refs?: string[] }
   redacted?: boolean
 }
 export interface MemoryPage {
@@ -42,6 +42,18 @@ export interface MemoryPage {
 export interface Inspection {
   source: Source
   fragments: { chunk_id: number; title: string; text: string }[]
+  revisions?: { revision: number; title?: string; body: string; author?: string; event_time?: string; created_at?: string; origin?: Source['origin'] }[]
+  revision_limit?: number
+}
+export interface MemoryClaim {
+  claim_id: string
+  key: string
+  scope_type: string
+  scope_id: string
+  summary: string
+  status: string
+  source_id: string
+  source_revision: number
 }
 export interface Approval {
   approval_id: string

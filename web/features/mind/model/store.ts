@@ -62,6 +62,9 @@ export const useMind = defineStore('mind', () => {
     memoryQuery = ref(''),
     memoryBusy = ref(false),
     memoryError = ref(''),
+    memorySourceId = ref(''),
+    memoryDetailBusy = ref(false),
+    memoryDetailError = ref(''),
     inspection = ref<Inspection | null>(null)
   const panel = ref<Panel>(''),
     advanced = ref(''),
@@ -177,6 +180,10 @@ export const useMind = defineStore('mind', () => {
     toolCalls.value = []
     memories.value = []
     inspection.value = null
+    memorySourceId.value = ''
+    memoryDetailBusy.value = false
+    memoryDetailError.value = ''
+    memoryHasMore.value = false
     memoryQuery.value = ''
     memoryDiagnostics.value = []
     memoryError.value = ''
@@ -360,7 +367,10 @@ export const useMind = defineStore('mind', () => {
     memoryQuery.value = query
     memoryBusy.value = true
     memoryError.value = ''
-    if (!more) memories.value = []
+    if (!more) {
+      memories.value = []
+      memoryHasMore.value = false
+    }
     try {
       const offset = more ? memories.value.length : 0
       const result = query.trim()
@@ -400,13 +410,15 @@ export const useMind = defineStore('mind', () => {
         memoryBusy.value = false
     }
   }
-  async function inspectMemory(id: string) {
+  async function inspectMemory(id: string, open = true) {
     const stamp = epoch.value,
       version = ++memorySelection
     inspection.value = null
-    panel.value = 'memory'
-    memoryError.value = ''
-    if (!connected.value) return
+    memorySourceId.value = id
+    if (open) panel.value = 'memory'
+    memoryDetailError.value = ''
+    memoryDetailBusy.value = true
+    if (!connected.value) { memoryDetailBusy.value = false; return }
     try {
       const loaded = await request<Inspection>(
         `/api/v4/memory/source?source_id=${encodeURIComponent(id)}`,
@@ -419,12 +431,17 @@ export const useMind = defineStore('mind', () => {
         inspection.value = loaded
     } catch {
       if (current(stamp) && version === memorySelection)
-        memoryError.value = 'Этот источник недоступен или изменился.'
+        memoryDetailError.value = 'Этот источник недоступен или изменился.'
+    } finally {
+      if (current(stamp) && version === memorySelection) memoryDetailBusy.value = false
     }
   }
   function clearInspection() {
     memorySelection++
     inspection.value = null
+    memorySourceId.value = ''
+    memoryDetailError.value = ''
+    memoryDetailBusy.value = false
   }
   async function saveMemory(title: string, body: string) {
     if (busy.value) return
@@ -701,6 +718,9 @@ export const useMind = defineStore('mind', () => {
     memoryBusy,
     memoryError,
     inspection,
+    memorySourceId,
+    memoryDetailBusy,
+    memoryDetailError,
     draft,
     receipt,
     sending,

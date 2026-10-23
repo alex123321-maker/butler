@@ -49,6 +49,24 @@ There is no iframe, second application or additional runtime dependency.
 - Source correction/deletion retain revision checks. New notes derive user scope
   from the authenticated actor and retain delivery identity after an uncertain ACK.
   Previews are data, not permission grants or confirmed profile facts.
+- The home memory block opens a viewport-sized explorer in the same interface.
+  Text search, paginated records and a draggable provenance graph share the
+  selection. Desktop details scroll independently; small screens open the same
+  read-only details in a dialog. Source text, fragments and retained revisions
+  use the existing authenticated source inspection; Escape closes only the top
+  dialog. Ctrl/Cmd+K focuses explorer search. Counts describe loaded results,
+  not a fabricated corpus total. The graph's “Весь список” includes loaded search
+  results; additional pages remain explicit and the API offset ceiling is honored.
+- Graph edges use exact `origin.parent_refs` matches between loaded sources.
+  Other referenced sources can be opened from the detail card with a fresh owner
+  check. No semantic relationships are inferred from titles or shared scope.
+  Pins only reorder this open viewer, are cleared on close/owner change, and do
+  not change agent retrieval. Claims for the inspected source revision use the
+  existing versioned catalog decision endpoint, including the observed active
+  claim ID. Failure/409 requires refresh; it never marks a fact confirmed locally.
+  Claim catalog limits and unavailability are visible separately from source reads.
+  A reversible source-use switch is not offered: the existing revoke endpoint
+  purges content. Access controls remain in “Хранилище и политики памяти”.
 
 ## Panels and browser
 
@@ -82,6 +100,10 @@ synthetic intercepted fixtures to check layout, owner/source changes, durable
 retry, browser control and retained privileged workflows. They do not certify
 production model runs or external effects. Existing real API/browser cases are
 opt-in through their environment requirements.
+
+Targeted explorer validation: `npx playwright test memory-explorer.spec.ts mind.spec.ts`.
+These tests cover provenance, revision history, claim CAS/conflicts, delayed reads,
+search/selection, graph dragging and keyboard selection, and 320–1440px layouts.
 
 Catalog/API integration uses disposable PostgreSQL and:
 go test ./internal/memory/catalog ./apps/orchestrator/internal/api -run

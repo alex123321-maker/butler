@@ -292,3 +292,28 @@ fact verdicts, task grants or substitutes for current exact-source inspection.
 from the authenticated actor. Source identity derives from required delivery ID;
 an exact retry returns the same source. A changed body cannot overwrite its
 revision silently. Correction/deletion retain existing version-pinned endpoints.
+
+## Owner Web memory explorer (2026-10-23)
+
+The continuous home surface opens a read-only source explorer rather than making
+source selection an edit form. It reuses browse/search, source inspection and the
+catalog claim/decision APIs; no new memory store, inference admission or service
+is introduced. A source's active status means saved/accessible, not owner-confirmed.
+Only claim records with matching source ID/revision display fact decisions.
+Confirmation includes the observed `expected_active_id` for the exact scope/key;
+conflicts or unknown outcomes require a fresh read before a new decision.
+
+List and graph share the query and selected source. Graph edges represent exact
+stored `origin.parent_refs`, including historical provenance, not semantic truth
+or grants. Only loaded source endpoints are drawn; external references require
+a new authenticated inspection. Counts and graph coverage are bounded by loaded
+pages, with explicit continuation and the existing offset limit. There are no
+fabricated semantic matches, inferred links or full-corpus count claims.
+
+The source/history dialogs show supplied text and immutable revisions. Secret,
+redacted or non-active source bodies are withheld from this simplified viewer;
+historical secret-class revisions are also hidden. Owner change aborts requests,
+destroys private panels and clears selections/pins. Selection and catalog-load
+generations fence late results. Pins are temporary viewer ordering only. A
+reversible pause switch is deliberately absent: source revocation currently purges
+content and must not be presented as temporary exclusion from retrieval.
