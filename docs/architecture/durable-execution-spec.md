@@ -5,6 +5,14 @@ for normal HTTP, gRPC and Telegram ingress. PostgreSQL owns acceptance, ordering
 execution checkpoints, expiring ownership and decisions. Redis and provider
 session references do not authorize dispatch or reconstruct an unknown result.
 
+Core assigns one of its configured PostgreSQL connections to bounded lease/Task
+authority observations, with at least two remaining for business writes.
+`BUTLER_POSTGRES_MAX_CONNS` is the combined maximum (minimum three at Core
+startup); no execution budget, deadline or history changes. The observer queries
+current durable state and denies on expiry, revocation or unavailability. A long
+channel poll or retained feed cannot consume its capacity. Ordinary repository
+fixtures can still use the two-connection business pool independently.
+
 The input worker has a ten-minute default execution bound. A declared runtime
 profile may use the explicit startup constructor `NewServiceWithExecutionTimeout`
 with a positive bound no greater than forty minutes. This configures a new

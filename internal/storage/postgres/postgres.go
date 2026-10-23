@@ -19,9 +19,10 @@ import (
 const migrationsAdvisoryLockID int64 = 82640191320461121
 
 type Store struct {
-	pool   *pgxpool.Pool
-	log    *slog.Logger
-	config Config
+	pool           *pgxpool.Pool
+	authorityReads *pgxpool.Pool
+	log            *slog.Logger
+	config         Config
 }
 
 type Config struct {
@@ -98,12 +99,20 @@ func (s *Store) HealthCheck(ctx context.Context) error {
 		s.log.Error("postgres health check failed", slog.String("component", "postgres"), slog.String("error", err.Error()))
 		return fmt.Errorf("postgres health check: %w", err)
 	}
+	if s.authorityReads != nil {
+		if err := s.authorityReads.Ping(ctx); err != nil {
+			return fmt.Errorf("postgres authority reserve health check: %w", err)
+		}
+	}
 	return nil
 }
 
 func (s *Store) Close() {
 	if s == nil || s.pool == nil {
 		return
+	}
+	if s.authorityReads != nil {
+		s.authorityReads.Close()
 	}
 	counts := s.pool.Stat()
 	s.log.Info("closing postgres pool",

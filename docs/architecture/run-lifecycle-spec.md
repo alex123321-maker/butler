@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
+lease and Task authority observations. The remaining business pool has at least
+two connections: Core therefore requires a total maximum of at least three.
+The total maximum and execution budgets do not increase. Channel polls, Web
+feeds and business writes cannot acquire the reserved connection. Both readers
+still use current PostgreSQL state and their existing authority checks; an
+unavailable observer fails closed. Observer cancellation logs only fixed phase
+and classification plus elapsed time, never raw storage/source errors.
+
 Single-transaction owning writers (interaction recovery, preparation checkpoint,
 run lease refresh and final persistence) lock the live fencing row inside the
 business transaction and recheck database-clock expiry before commit. They use

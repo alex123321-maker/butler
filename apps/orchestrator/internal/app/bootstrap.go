@@ -91,7 +91,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		Level:     parseLogLevel(baseCfg.Shared.LogLevel),
 	})
 
-	postgres, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
+	postgres, err := postgresstore.OpenWithAuthorityReserve(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		return nil, err
 	}
 
-	taskStore := task.NewStore(postgres.Pool())
+	taskStore := task.NewStoreWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool())
 	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
 	budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
 	if policyErr == nil {
@@ -234,7 +234,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
-	sessionLeaseManager := session.NewPostgresLeaseManager(postgres.Pool())
+	sessionLeaseManager := session.NewPostgresLeaseManagerWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool())
 	inputStore := durableinput.NewStore(postgres.Pool())
 	approvalRepo.SetCheckpointHooks(inputStore)
 	transcriptStore := transcript.NewStore(postgres.Pool())

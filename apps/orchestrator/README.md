@@ -1,5 +1,11 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Core requires `BUTLER_POSTGRES_MAX_CONNS >= 3`: one connection from that total
+is reserved for live lease/Task authority observations, and at least two remain
+for business writes. The combined maximum is unchanged. Channel polling and Web
+history cannot exhaust watchdog capacity; current PG revocation, expiry and
+fail-closed authority rules remain mandatory. Both pools close with Core.
+
 Work on #101 adds a separate [Telegram rich adapter](internal/channel/telegramrich/README.md),
 transactional per-part media manifests and retained media/report artifacts
 (migration091), plus a durable bot/binding cursor (migration092).

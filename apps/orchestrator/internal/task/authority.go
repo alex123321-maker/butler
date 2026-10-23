@@ -25,7 +25,7 @@ func guardTaskWrite(ctx context.Context, tx pgx.Tx, id string) error {
 }
 
 func (s *Store) ValidateRunAuthority(ctx context.Context, runID string) error {
-	tx, err := s.pool.Begin(ctx)
+	tx, err := s.authorityReads.Begin(ctx)
 	if err != nil {
 		return err
 	}
