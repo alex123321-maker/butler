@@ -6,13 +6,17 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -101,6 +105,20 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 	defer stopSourceRead()
 	if err = sources.CheckRunSources(sourceRead, "capacity-run"); err != nil {
 		t.Fatal("source observer starved behind business work", err)
+	}
+	lessons, err := experience.New(sources, strings.Repeat("a", 64), experienceToolsFixture{contract: communicationcontrol.Contract("communication.message")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	composed := experienceRunSources{sources: converterSources{Store: sources, pool: db.Pool()}, catalog: sources, store: lessons}
+	if err = composed.CheckRunSources(sourceRead, "capacity-run"); err != nil {
+		t.Fatal("composed converter/experience proof starved behind business work", err)
+	}
+	compound, stopCompound := context.WithTimeout(owneridentity.WithActor(owned, owneridentity.Actor{OwnerID: "owner", Channel: "web", SessionKey: "web:capacity", DeliveryID: "compound"}), 50*time.Millisecond)
+	err = sources.CheckRunSources(compound, "capacity-run")
+	stopCompound()
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatal("compound owner context consumed the pure observer reserve", err)
 	}
 	// Current PG revocation must still deny; the reserve is no cached authority.
 	if _, err = occupied[0].Exec(ctx, `UPDATE tasks SET status='paused' WHERE task_id=$1`, job.TaskID); err != nil {

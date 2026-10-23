@@ -9,6 +9,11 @@ business mutation and rolls back. Owner/auxiliary compound contexts keep the
 business pool, and same-transaction publication/dispatch guards remain joined
 to their owning write transaction.
 
+Composed Converter lifecycle and Experience supplements share this foreground
+proof capacity. Their existing lifecycle checks, applicability pins and commit
+semantics remain intact. Broker contract reads still occur before SQL locks;
+the existing two-second foreground ceiling and all denial conditions remain.
+
 Android [notification ingress](android-companion.md) atomically publishes private
 original sources with content-free receipts. Standing owner-configured mobile
 automation activates originals without per-message review; otherwise originals

@@ -25,7 +25,11 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 	if !ok || t.RunID != id {
 		return generatedtools.ErrAccess
 	}
-	tx, e := s.pool.Begin(ctx)
+	pool := s.pool
+	if observations := s.Store.RunObservationPool(ctx); observations != s.Store.Pool() {
+		pool = observations
+	}
+	tx, e := pool.Begin(ctx)
 	if e != nil {
 		return e
 	}

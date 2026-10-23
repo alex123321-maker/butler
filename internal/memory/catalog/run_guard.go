@@ -21,11 +21,7 @@ func (s *Store) CheckRunSources(ctx context.Context, runID string) (err error) {
 	runSourcePhase(ctx, "pool_begin")
 	_, ownerActor := owneridentity.FromContext(ctx)
 	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
-	pool := s.pool
-	if !ownerActor && !auxiliary && s.runObservationPool != nil {
-		pool = s.runObservationPool
-	}
-	tx, e := pool.Begin(ctx)
+	tx, e := s.RunObservationPool(ctx).Begin(ctx)
 	if e != nil {
 		return e
 	}

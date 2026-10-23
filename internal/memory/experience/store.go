@@ -482,8 +482,9 @@ func (s *Store) CheckPinned(ctx context.Context, run string) error {
 	if s == nil || s.Sources == nil {
 		return ErrEvidence
 	}
+	pool := s.Sources.RunObservationPool(ctx)
 	var count int
-	if s.Sources.Pool().QueryRow(ctx, `SELECT count(*) FROM(SELECT source_id FROM memory_experience_pins WHERE run_id=$1 UNION SELECT p.source_id FROM memory_run_sources p JOIN memory_experience_lessons l USING(source_id) WHERE p.run_id=$1)roots`, run).Scan(&count) != nil || count > 8 {
+	if pool.QueryRow(ctx, `SELECT count(*) FROM(SELECT source_id FROM memory_experience_pins WHERE run_id=$1 UNION SELECT p.source_id FROM memory_run_sources p JOIN memory_experience_lessons l USING(source_id) WHERE p.run_id=$1)roots`, run).Scan(&count) != nil || count > 8 {
 		return ErrEvidence
 	}
 	if count == 0 {
@@ -493,7 +494,7 @@ func (s *Store) CheckPinned(ctx context.Context, run string) error {
 	if err != nil {
 		return err
 	}
-	tx, err := s.Sources.Pool().Begin(ctx)
+	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return err
 	}

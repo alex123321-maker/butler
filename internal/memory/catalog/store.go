@@ -36,6 +36,18 @@ func New(pool *pgxpool.Pool, manifest Manifest) *Store {
 func NewWithRunObservationPool(pool, observations *pgxpool.Pool, manifest Manifest) *Store {
 	return &Store{pool: pool, manifest: manifest, runObservationPool: observations}
 }
+
+// RunObservationPool selects capacity, never grants access. Foreground composed
+// source checkers still prove the exact current run and source state themselves.
+func (s *Store) RunObservationPool(ctx context.Context) *pgxpool.Pool {
+	_, token := ownership.TokenFromContext(ctx)
+	_, actor := owneridentity.FromContext(ctx)
+	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
+	if token && !actor && !auxiliary && s.runObservationPool != nil {
+		return s.runObservationPool
+	}
+	return s.pool
+}
 func (s *Store) Pool() *pgxpool.Pool { return s.pool }
 func randomID(prefix string) (string, error) {
 	var b [20]byte

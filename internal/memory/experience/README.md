@@ -1,5 +1,12 @@
 # Typed task experience inside Episodic Memory
 
+Foreground `CheckPinned` shares the Catalog's reserved source-proof capacity
+for token-only contexts. It preserves the current pin-count, Broker contract,
+lineage/applicability, feedback and dependency checks and their existing commit
+semantics; Broker RPC still precedes the transaction. Owner/auxiliary contexts
+retain the business pool. This reserves capacity without caching applicability,
+extending a deadline or granting a new action.
+
 `task-experience-v1` makes bounded, reviewable notes from the owning
 Orchestrator's actual task/final/action/effect/usage observation. It introduces
 no memory class, model, executable recipe or action authority.
