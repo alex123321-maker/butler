@@ -124,6 +124,12 @@ func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Reco
 }
 
 func (r *PostgresRepository) GetRun(ctx context.Context, runID string) (Record, error) {
+	return getRun(ctx, r.pool, runID)
+}
+
+func getRun(ctx context.Context, q interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, runID string) (Record, error) {
 	const query = `
 		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
@@ -132,7 +138,7 @@ func (r *PostgresRepository) GetRun(ctx context.Context, runID string) (Record, 
 		WHERE run_id = $1
 	`
 
-	record, err := scanRunRow(r.pool.QueryRow(ctx, query, runID))
+	record, err := scanRunRow(q.QueryRow(ctx, query, runID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return Record{}, ErrRunNotFound

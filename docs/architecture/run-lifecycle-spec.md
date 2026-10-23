@@ -1,5 +1,13 @@
 # Butler — Run Lifecycle Specification
 
+Single-transaction owning writers (interaction recovery, preparation checkpoint,
+run lease refresh and final persistence) lock the live fencing row inside the
+business transaction and recheck database-clock expiry before commit. They use
+one pooled connection, preserving capacity for the ownership watchdog even with
+two connections. Lease mutations still wait outside the pool for guarded writers;
+multi-repository writers retain their existing shared guard. The local guarded
+context must never escape its transaction or authorize a separate write.
+
 Interaction recovery reads canonical preference DATA with shared Session/run
 proofs so a retained Web feed cannot hold it behind an unnecessary exclusive
 lock. Session ownership, exact Input claim, task authority and source guards

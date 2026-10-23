@@ -206,3 +206,10 @@ before source/export guards can lock its run. This matches owning response/resum
 order; a renderer waiting for the session cannot hold the run and deadlock that
 resume. Locks are released before channel I/O. The PostgreSQL lock-wait regression
 covers both projection reads and initial send authorization.
+
+Recovery joins its live ownership fence and canonical answer read in one
+transaction, including a final claim/lease expiry check. Preparation checkpoints,
+run lease refresh and final persistence use the same single-transaction fencing
+primitive, leaving capacity for the watchdog on the supported two-connection pool.
+The guarded context stays local to that transaction; it cannot authorize a later
+independent write. Takeover serialization and all source/Task fences remain intact.

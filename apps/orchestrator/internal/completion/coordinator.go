@@ -96,12 +96,8 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 	if !ok || token.RunID != q.RunID || token.SessionKey != q.SessionKey {
 		return FinalRecord{}, ownership.ErrStale
 	}
-	guarded, release, err := ownership.Begin(ctx)
-	if err != nil {
-		return FinalRecord{}, err
-	}
-	defer release()
-	ctx = guarded
+	// Evidence is observation only. Every mutation/publication below validates
+	// current ownership, scope and sources in its own fenced transaction.
 	effects := []Effect{}
 	evidenceUnavailable := true
 	if c.Evidence != nil {
@@ -111,7 +107,7 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 			evidenceUnavailable = false
 		}
 	}
-	tx, err := c.pool.Begin(ctx)
+	ctx, tx, err := ownership.BeginTransaction(ctx, c.pool)
 	if err != nil {
 		return FinalRecord{}, err
 	}

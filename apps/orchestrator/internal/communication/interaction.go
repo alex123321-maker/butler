@@ -186,14 +186,9 @@ func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string
 	if !ok || tok.RunID != runID || s.SourceGuard == nil {
 		return "", resumeFailed(ctx, "identity", ErrDenied)
 	}
-	ctx, release, e := ownership.Begin(ctx)
+	ctx, tx, e := ownership.BeginTransaction(ctx, s.Pool)
 	if e != nil {
-		return "", resumeFailed(ctx, "ownership", e)
-	}
-	defer release()
-	tx, e := s.Pool.Begin(ctx)
-	if e != nil {
-		return "", resumeFailed(ctx, "pool", e)
+		return "", resumeFailed(ctx, "transaction", e)
 	}
 	defer tx.Rollback(context.Background())
 	var yes bool

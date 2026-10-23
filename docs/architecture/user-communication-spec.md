@@ -18,6 +18,11 @@ message/photo/report документируется отдельно; C05 не �
 Task/authority и Catalog остаются обязательными; после ожидания источников
 повторно проверяются claim и срок lease. Это чтение DATA, не разрешение действия.
 Изменения состояния, публикации и эффекты сохраняют прежние owning writers.
+Для чтения ответа, подготовки, обновления run lease и финального сохранения
+fencing входит в ту же транзакцию, что и соответствующая запись; срок lease
+проверяется снова перед commit. Это оставляет соединение для watchdog даже
+при пуле из двух соединений. Ожидание lease mutation по-прежнему происходит
+вне пула; Task, claim, source и authority проверки не ослабляются.
 Отказ продолжения хранит фиксированные phase/reason `interaction_resume_*`;
 отмена по ownership watchdog сохраняет owning cause и при recovery. Heartbeat
 различает `input_claim_lost` и `input_claim_renewal_failed`, не раскрывая SQL,
