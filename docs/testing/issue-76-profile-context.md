@@ -39,6 +39,10 @@ an independent control set in a later behavioral experiment.
 
 ## Remaining work
 
+The subsequent [paired context/preference experiment](issue-76-context-results-20261023.md)
+records native observations with this preservation fix shared by both arms. It
+does not isolate the formatting fix's effect or establish production acceptance.
+
 The selector can still omit optional preferences under count/size pressure;
 preserving text does not prove semantic applicability or correct conflict
 resolution by a model. This screen does not evaluate acceptance, revocation,
