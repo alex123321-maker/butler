@@ -47,7 +47,9 @@ func NewController(pool *pgxpool.Pool, p Policy) *Controller {
 // in-flight local-inference observations on a reserved shared pool. Result
 // acceptance still uses pool because its source callback may commit pins.
 func NewControllerWithAuthorityReads(pool, reads *pgxpool.Pool, p Policy) *Controller {
-	return &Controller{pool: pool, authorityReads: reads, Ledger: NewLedger(pool), Policy: p}
+	ledger := NewLedger(pool)
+	ledger.disableConversationModelTurns = p.DisableConversationModelTurns
+	return &Controller{pool: pool, authorityReads: reads, Ledger: ledger, Policy: p}
 }
 func NewOperationID() (string, error) {
 	var b [24]byte

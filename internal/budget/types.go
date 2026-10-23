@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -86,6 +87,13 @@ func (u Units) values() [8]int64 {
 }
 func fromValues(v [8]int64) Units { return Units{v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]} }
 func addWithin(scope Scope, charge Units, now time.Time) (Units, error) {
+	return addWithinPolicy(scope, charge, now, false)
+}
+
+// The operator may disable only the conversation model-turn comparison.
+// Original limits, every charge and monotonic spending remain durable. Other
+// dimensions/scopes, deadlines and integer overflow still fail closed.
+func addWithinPolicy(scope Scope, charge Units, now time.Time, disableConversationModelTurns bool) (Units, error) {
 	if scope.Used.validate() != nil || scope.Limits.validate() != nil || charge.validate() != nil {
 		return Units{}, ErrInvalid
 	}
@@ -95,6 +103,13 @@ func addWithin(scope Scope, charge Units, now time.Time) (Units, error) {
 	used, limits, amounts := scope.Used.values(), scope.Limits.values(), charge.values()
 	names := [8]string{"model_turns", "tokens", "cost_micros", "external_calls", "children", "active_millis", "egress_bytes", "provider_input_bytes"}
 	for i, amount := range amounts {
+		if i == 0 && scope.Kind == "conversation" && disableConversationModelTurns {
+			if amount > math.MaxInt64-used[i] {
+				return Units{}, ErrInvalid
+			}
+			used[i] += amount
+			continue
+		}
 		// Subtraction avoids integer overflow even for an untrusted large quote.
 		if used[i] > limits[i] || amount > limits[i]-used[i] {
 			return Units{}, &ExhaustedError{scope.Kind, names[i]}

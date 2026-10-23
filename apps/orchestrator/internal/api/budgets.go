@@ -8,7 +8,7 @@ import (
 
 // This read model requires the same owner proof as task mutations. A query/body
 // owner ID cannot select another owner's budget or authorize spending.
-func NewBudgetHandler(ledger *budget.Ledger, auth *OwnerControlAuth, ownerDayEnabled bool) http.Handler {
+func NewBudgetHandler(ledger *budget.Ledger, auth *OwnerControlAuth, ownerDayEnabled, conversationModelTurnsEnabled bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -26,7 +26,8 @@ func NewBudgetHandler(ledger *budget.Ledger, auth *OwnerControlAuth, ownerDayEna
 		}
 		writeJSON(w, http.StatusOK, struct {
 			budget.Snapshot
-			OwnerDayEnabled bool `json:"owner_day_enabled"`
-		}{s, ownerDayEnabled})
+			OwnerDayEnabled               bool `json:"owner_day_enabled"`
+			ConversationModelTurnsEnabled bool `json:"conversation_model_turns_enabled"`
+		}{s, ownerDayEnabled, conversationModelTurnsEnabled})
 	})
 }

@@ -49,6 +49,13 @@ if grep -q '"Action":"skip"' "$local_report"; then
  grep '"Action":"skip"' "$local_report"; exit 1
 fi
 go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript ./internal/memory/semantic
+budget_report=.cache/communication-core/budget-policy.jsonl
+if ! go test -p 1 -race -count=1 -json ./internal/budget ./apps/orchestrator/internal/api -run '^Test(ConversationModelTurn|BudgetRead)' >"$budget_report"; then
+ grep -E '"Action":"fail"|"OutputType":"error"' "$budget_report" || tail -40 "$budget_report"; exit 1
+fi
+if grep -q '"Action":"skip"' "$budget_report"; then
+ grep '"Action":"skip"' "$budget_report"; exit 1
+fi
 if [[ ${1:-} == --regression ]]; then
  regression=(./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/artifacts ./apps/tool-broker/internal/broker ./internal/actionauth ./internal/budget ./internal/memory/transcript ./internal/memory/compaction ./internal/memory/pipeline)
  if ! go test -p 1 -count=1 -json "${regression[@]}" -skip '(Native|Backup|ServerBrowser)' >.cache/communication-core/regression.jsonl; then

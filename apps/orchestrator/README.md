@@ -48,6 +48,11 @@ programmatic admission hook, independent denied export targets and complete
 PostgreSQL fault/worker-crash matrices. No route or hook is installed at startup.
 See [backend acceptance](../../docs/ai/communication-backend-full-acceptance-20261021.md).
 
+Operator `disable_conversation_model_turns:true` disables only the conversation
+session/day model-turn ceiling. Accounting continues with unchanged historical
+limits/reservations, and the owner budget API reports
+`conversation_model_turns_enabled`. Match the setting in Core and Broker.
+
 Operator budget policy `disable_owner_day:true` disables the shared daily limit
 for new foreground/background admissions while retaining task, conversation,
 mandate and job bounds and historical spending. Set the same policy on Broker.
