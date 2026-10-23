@@ -10,7 +10,7 @@ unavailable observer fails closed. Observer cancellation logs only fixed phase
 and classification plus elapsed time, never raw storage/source errors.
 
 Single-transaction owning writers (interaction recovery, preparation checkpoint,
-run lease refresh and final persistence) lock the live fencing row inside the
+run lease refresh, private communication publication and final persistence) lock the live fencing row inside the
 business transaction and recheck database-clock expiry before commit. They use
 one pooled connection, preserving capacity for the ownership watchdog even with
 two connections. Lease mutations still wait outside the pool for guarded writers;

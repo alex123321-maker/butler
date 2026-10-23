@@ -213,6 +213,10 @@ run lease refresh and final persistence use the same single-transaction fencing
 primitive, leaving capacity for the watchdog on the supported two-connection pool.
 The guarded context stays local to that transaction; it cannot authorize a later
 independent write. Takeover serialization and all source/Task fences remain intact.
+Private owning publication also joins fencing and the publication transaction,
+so concurrent dispatched messages/widgets can each use one remaining business
+connection. Broker dispatch/claim, approval, SourceGuard and final expiry checks
+remain mandatory; this cannot publish through a raw owner Actor.
 
 The owner failure control denies UNKNOWN by default. Its optional exact
 `acknowledge_unknown_effects` list can abandon a stopped local communication
