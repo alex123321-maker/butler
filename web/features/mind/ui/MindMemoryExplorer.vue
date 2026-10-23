@@ -127,7 +127,6 @@
                 }}</small
               ></span
             >
-            >
             <time>{{
               dateLabel(source.created_at || source.extracted_at)
             }}</time>
