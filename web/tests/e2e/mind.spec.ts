@@ -36,7 +36,7 @@ test('a removed source bookmark cannot show retained body or offer correction', 
   )
   await connect(page, '/memory?source_id=removed')
   await expect(
-    page.getByText('Этот источник закрыт для редактирования.', {
+    page.getByText('Содержимое этого источника недоступно для просмотра.', {
       exact: false,
     }),
   ).toBeVisible()
@@ -111,7 +111,7 @@ test('owner connection, recent memory and server text search keep their real mea
   await expect(
     page.getByText('Найденный источник', { exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('По тексту', { exact: true })).toBeVisible()
+  await expect(page.getByText('По тексту. Enter или «Найти» добавит поиск по смыслу.', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Очистить поиск' }).click()
   await expect(page.locator('.mind-memory-title').first()).toHaveText(
     'Последняя заметка',
@@ -362,11 +362,11 @@ test('a new memory selection cannot receive the old source body', async ({
     .getByRole('button')
     .filter({ has: page.getByText('Другой источник', { exact: true }) })
     .click()
-  await expect(page.getByLabel('Текст заметки')).toHaveValue(
+  await expect(page.locator('.memory-inspector .memory-body').first()).toHaveText(
     'CURRENT_SOURCE_BODY',
   )
   release()
-  await expect(page.getByLabel('Текст заметки')).toHaveValue(
+  await expect(page.locator('.memory-inspector .memory-body').first()).toHaveText(
     'CURRENT_SOURCE_BODY',
   )
   await expect(page.getByText('OLD_SOURCE_BODY')).toHaveCount(0)

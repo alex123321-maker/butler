@@ -16,17 +16,19 @@ type BrowseItem struct {
 	CreatedAt        time.Time `json:"created_at"`
 	PreviewTruncated bool      `json:"preview_truncated"`
 	Redacted         bool      `json:"redacted"`
+	Match            string    `json:"match,omitempty"`
 }
 type BrowsePage struct {
 	Items       []BrowseItem `json:"items"`
 	HasMore     bool         `json:"has_more"`
 	Mode        string       `json:"mode"`
 	Diagnostics []string     `json:"diagnostics"`
+	NextOffset  int          `json:"next_offset"`
 }
 
 // Browse does not borrow a run lease or admit inference. The independent owner
 // HTTP catalog can browse recent sources and PostgreSQL text matches. A semantic
-// query still needs its existing live-run/budget admission; never label text as it.
+// query is admitted separately through the bounded owner search budget.
 func (s *Store) Browse(ctx context.Context, query string, limit, offset int) (BrowsePage, error) {
 	out := BrowsePage{Items: []BrowseItem{}, Mode: "recent", Diagnostics: []string{}}
 	query = strings.TrimSpace(query)
@@ -51,7 +53,6 @@ func (s *Store) Browse(ctx context.Context, query string, limit, offset int) (Br
 	order := "s.created_at DESC,s.source_id DESC"
 	if query != "" {
 		out.Mode = "text"
-		out.Diagnostics = []string{"owner_semantic_inference_not_admitted"}
 		clause += ` AND to_tsvector('russian',r.title||' '||r.body) @@ websearch_to_tsquery('russian',$5)`
 		order = `ts_rank_cd(to_tsvector('russian',r.title||' '||r.body),websearch_to_tsquery('russian',$5)) DESC,` + order
 	}
@@ -128,8 +129,25 @@ func (s *Store) Browse(ctx context.Context, query string, limit, offset int) (Br
 		}
 		out.Items = append(out.Items, BrowseItem{Source: src, CreatedAt: created[src.ID], PreviewTruncated: truncated, Redacted: redacted})
 	}
+	out.NextOffset = offset + len(refs)
 	if err = tx.Commit(ctx); err != nil {
 		return BrowsePage{}, err
 	}
 	return out, nil
+}
+
+func previewSource(src Source, created time.Time) BrowseItem {
+	title, body := sanitize.MaskCredentials(src.Title), sanitize.MaskCredentials(src.Body)
+	redacted := title != src.Title || body != src.Body
+	if src.Origin.Sensitivity == content.Secret {
+		title, body, redacted = "Закрытая запись", "", true
+	}
+	src.Title = string([]rune(title)[:min(len([]rune(title)), 200)])
+	src.Body = string([]rune(body)[:min(len([]rune(body)), 512)])
+	src.ExternalKey, src.Locator = "", nil
+	src.Author = sanitize.MaskCredentials(src.Author)
+	if redacted {
+		src.Author = ""
+	}
+	return BrowseItem{Source: src, CreatedAt: created, PreviewTruncated: utf8.RuneCountInString(body) > 512, Redacted: redacted}
 }
