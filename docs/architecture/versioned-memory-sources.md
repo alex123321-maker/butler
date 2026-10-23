@@ -310,10 +310,19 @@ a new authenticated inspection. Counts and graph coverage are bounded by loaded
 pages, with explicit continuation and the existing offset limit. There are no
 fabricated semantic matches, inferred links or full-corpus count claims.
 
-The source/history dialogs show supplied text and immutable revisions. Secret,
+Inline source/history disclosures show supplied text and immutable revisions. Secret,
 redacted or non-active source bodies are withheld from this simplified viewer;
 historical secret-class revisions are also hidden. Owner change aborts requests,
-destroys private panels and clears selections/pins. Selection and catalog-load
-generations fence late results. Pins are temporary viewer ordering only. A
+destroys private panels and clears selections, recent queries and navigation.
+Selection and catalog-load generations fence late results. The last five successful
+queries stay only in the current page's owner-scoped memory; they are explicitly
+clearable and never persisted in browser storage. The bounded navigation trail
+holds source IDs, not cached source bodies, and re-inspects on every visit.
+There are no temporary pins. The mobile reader replaces the list in the same
+dialog; back restores list position, while source/history expand inline. Owner
+claim rejection uses the same existing decision CAS as confirmation; unknown
+outcomes require a fresh read. Management preserves the exact inspected source
+ID in the existing authenticated route. Clipboard export occurs only on an
+explicit copy action. A
 reversible pause switch is deliberately absent: source revocation currently purges
 content and must not be presented as temporary exclusion from retrieval.

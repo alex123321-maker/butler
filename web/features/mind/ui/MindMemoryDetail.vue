@@ -1,36 +1,65 @@
 <template>
-  <article v-if="source" class="memory-detail">
-    <div class="memory-detail-top">
-      <span class="mind-source-caption">{{ memoryOrigin(source) }}</span
-      ><button class="mind-text-button" type="button" @click="emit('history')">
-        История
-      </button>
-    </div>
-    <h3>{{ source.title || 'Без названия' }}</h3>
-    <span class="memory-status">{{ sourceStatus(source) }}</span>
+  <article class="memory-detail">
+    <p class="mind-source-caption">
+      {{ memoryOrigin(source) }} ·
+      {{ dateLabel(source.event_time || source.extracted_at) }}
+    </p>
+    <h3 tabindex="-1">{{ source.title || 'Без названия' }}</h3>
     <template v-if="readableSource(source)">
       <p class="memory-body">{{ source.body || 'В источнике нет текста.' }}</p>
-      <section class="memory-detail-section">
-        <h4>Источник</h4>
-        <p class="mind-muted">
-          {{ memoryOrigin(source) }} ·
-          {{ dateLabel(source.event_time || source.extracted_at) }} · версия
-          {{ source.revision }}
-        </p>
-        <button class="mind-text-button" type="button" @click="emit('source')">
-          Открыть источник ↗
+      <div class="memory-reading-actions">
+        <button class="mind-text-button" type="button" @click="copy">
+          Копировать текст
         </button>
-      </section>
-      <section class="memory-detail-section">
-        <div class="memory-detail-top">
-          <h4>Связанные записи · {{ related.length }}</h4>
+        <span v-if="copyStatus" role="status">{{ copyStatus }}</span>
+      </div>
+      <section
+        v-if="claims.length || claimsError"
+        class="memory-detail-section"
+        aria-label="Факты из источника"
+      >
+        <h4>Факты из этой записи</h4>
+        <p v-if="claimsError" class="mind-error" role="alert">
+          {{ claimsError }}
           <button
-            v-if="related.length"
             class="mind-text-button"
             type="button"
-            @click="emit('relations')"
+            @click="emit('refresh')"
           >
-            Почему связаны?
+            Проверить состояние
+          </button>
+        </p>
+        <div v-for="claim in claims" :key="claim.claim_id" class="memory-claim">
+          <p>{{ claim.summary }}</p>
+          <small>{{ claimStatus(claim.status) }}</small>
+          <div
+            v-if="claim.status === 'candidate'"
+            class="memory-reading-actions"
+          >
+            <button
+              class="mind-button"
+              type="button"
+              :disabled="deciding"
+              @click="emit('decide', claim, false)"
+            >
+              Подтвердить факт
+            </button>
+            <button
+              class="mind-text-button"
+              type="button"
+              :disabled="deciding"
+              @click="emit('decide', claim, true)"
+            >
+              Отклонить факт
+            </button>
+          </div>
+        </div>
+      </section>
+      <section v-if="related.length" class="memory-detail-section">
+        <div class="memory-detail-top">
+          <h4>Связанные записи · {{ related.length }}</h4>
+          <button class="mind-text-button" type="button" @click="emit('graph')">
+            Показать на схеме
           </button>
         </div>
         <button
@@ -43,50 +72,90 @@
           <span>{{ item.title }}</span
           ><small>{{ item.reason }}</small>
         </button>
-        <p v-if="!related.length" class="mind-muted">
-          В загруженных данных нет ссылок на другие записи.
-        </p>
       </section>
-      <section class="memory-detail-section">
-        <h4>Факты из источника</h4>
-        <p v-if="claimsBusy" class="mind-muted">Проверяю подтверждения…</p>
-        <p v-else-if="claimsError" class="mind-muted">{{ claimsError }}</p>
-        <p v-else-if="!claims.length" class="mind-muted">
-          В загруженной части каталога нет фактов для этой версии. Сохранение
-          источника не подтверждает его содержание.
+      <details class="memory-provenance">
+        <summary>Источник и история</summary>
+        <p class="mind-muted">
+          {{ sourceStatus(source) }} · версия {{ source.revision }}. Сохранение
+          записи не означает подтверждение её содержания.
         </p>
-        <div v-for="claim in claims" :key="claim.claim_id" class="memory-claim">
-          <p>{{ claim.summary }}</p>
-          <small>{{ claimStatus(claim.status) }}</small>
-          <button
-            v-if="claim.status === 'candidate'"
-            class="mind-button"
-            type="button"
-            :disabled="deciding"
-            @click="emit('confirm', claim)"
+        <p v-if="claimsBusy" class="mind-muted">Проверяю факты…</p>
+        <p v-else-if="!claims.length && !claimsError" class="mind-muted">
+          Для этой версии в доступной части каталога нет отдельных фактов.
+        </p>
+        <p class="mind-muted">
+          Добавлено {{ dateLabel(source.extracted_at) }}. Связи показывают
+          сохранённое происхождение; ещё не загруженные записи могут дополнять
+          этот список.
+        </p>
+        <p class="memory-source-id">{{ source.source_id }}</p>
+        <details v-if="inspection.fragments?.length">
+          <summary>
+            Фрагменты источника · {{ inspection.fragments.length }}
+          </summary>
+          <div
+            v-for="fragment in inspection.fragments"
+            :key="fragment.chunk_id"
           >
-            Подтвердить факт
-          </button>
-        </div>
-      </section>
-      <p class="mind-muted">
-        Использование в ответах зависит от доступа и текущих правил памяти.
-      </p>
-      <button class="mind-text-button" type="button" @click="emit('manage')">
-        Хранилище и политики памяти ↗
-      </button>
+            <h4>{{ fragment.title }}</h4>
+            <blockquote class="memory-body">{{ fragment.text }}</blockquote>
+          </div>
+        </details>
+        <details>
+          <summary>
+            История версий · {{ inspection.revisions?.length || 0 }}
+          </summary>
+          <details
+            v-for="revision in inspection.revisions || []"
+            :key="revision.revision"
+            class="memory-revision"
+          >
+            <summary>
+              Версия {{ revision.revision }} ·
+              {{ dateLabel(revision.event_time || revision.created_at) }}
+            </summary>
+            <p class="memory-body">
+              {{
+                revision.origin?.sensitivity === 'secret'
+                  ? 'Закрытое содержимое'
+                  : revision.body
+              }}
+            </p>
+          </details>
+          <p v-if="!inspection.revisions?.length" class="mind-muted">
+            История версий пока недоступна.
+          </p>
+          <p
+            v-if="
+              inspection.revision_limit &&
+              (inspection.revisions?.length || 0) >= inspection.revision_limit
+            "
+            class="mind-muted"
+          >
+            Показаны последние {{ inspection.revision_limit }} версий.
+          </p>
+        </details>
+        <button
+          class="mind-text-button memory-manage"
+          type="button"
+          @click="emit('manage')"
+        >
+          Управлять этой записью ↗
+        </button>
+      </details>
     </template>
     <p v-else class="mind-muted">
-      Содержимое этого источника недоступно для просмотра.
+      {{ sourceStatus(source) }}. Содержимое этого источника недоступно для
+      просмотра.
     </p>
   </article>
 </template>
 <script setup lang="ts">
-import type { MemoryClaim, Source } from '../model/types'
+import type { Inspection, MemoryClaim } from '../model/types'
 import { readableSource, sourceStatus } from '../model/memory-explorer'
 import { dateLabel, memoryOrigin } from '../model/presentation'
-defineProps<{
-  source: Source
+const props = defineProps<{
+  inspection: Inspection
   related: { id: string; title: string; reason: string }[]
   claims: MemoryClaim[]
   claimsBusy: boolean
@@ -94,13 +163,28 @@ defineProps<{
   deciding: boolean
 }>()
 const emit = defineEmits<{
-  history: []
-  source: []
-  relations: []
   select: [id: string]
-  confirm: [claim: MemoryClaim]
+  decide: [claim: MemoryClaim, reject: boolean]
   manage: []
+  graph: []
+  refresh: []
 }>()
+const source = computed(() => props.inspection.source)
+const copyStatus = ref('')
+let alive = true
+async function copy() {
+  copyStatus.value = ''
+  try {
+    await navigator.clipboard.writeText(source.value.body)
+    if (alive) copyStatus.value = 'Текст скопирован'
+  } catch {
+    if (alive)
+      copyStatus.value = 'Не удалось скопировать. Выделите нужный текст.'
+  }
+}
+onBeforeUnmount(() => {
+  alive = false
+})
 const claimStatus = (status: string) =>
   (
     ({

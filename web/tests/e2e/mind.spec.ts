@@ -362,11 +362,11 @@ test('a new memory selection cannot receive the old source body', async ({
     .getByRole('button')
     .filter({ has: page.getByText('Другой источник', { exact: true }) })
     .click()
-  await expect(page.locator('.memory-desktop-detail .memory-body').first()).toHaveText(
+  await expect(page.locator('.memory-inspector .memory-body').first()).toHaveText(
     'CURRENT_SOURCE_BODY',
   )
   release()
-  await expect(page.locator('.memory-desktop-detail .memory-body').first()).toHaveText(
+  await expect(page.locator('.memory-inspector .memory-body').first()).toHaveText(
     'CURRENT_SOURCE_BODY',
   )
   await expect(page.getByText('OLD_SOURCE_BODY')).toHaveCount(0)

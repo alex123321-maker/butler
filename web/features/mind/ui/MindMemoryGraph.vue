@@ -13,9 +13,7 @@
         Вписать
       </button>
     </div>
-    <p class="mind-muted">
-      Линии — сохранённые ссылки происхождения. Узлы можно перемещать.
-    </p>
+    <p class="mind-muted">Стрелка ведёт к источнику. Узлы можно перемещать.</p>
     <div class="memory-graph-canvas">
       <svg
         v-if="nodes.length"
@@ -27,12 +25,28 @@
         @pointerup="end"
         @pointercancel="cancel"
       >
+        <defs>
+          <marker
+            :id="arrowId"
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" class="memory-arrow" />
+          </marker>
+        </defs>
         <g
           v-for="edge in edges"
           :key="`${edge.from}:${edge.to}`"
           class="memory-edge"
         >
-          <path :d="edgePath(edge.from, edge.to)" />
+          <path
+            :d="edgePath(edge.from, edge.to)"
+            :marker-end="`url(#${arrowId})`"
+          />
           <text
             :x="(point(edge.from).x + point(edge.to).x) / 2 + 103"
             :y="Math.min(point(edge.from).y, point(edge.to).y) - 30"
@@ -75,8 +89,7 @@
       </p>
     </div>
     <p class="mind-muted">
-      {{ nodes.length }} узлов из {{ sources.length }} загруженных записей.
-      Связи с ещё не загруженными источниками доступны в карточке.
+      На схеме {{ nodes.length }} из {{ sources.length }} загруженных записей.
     </p>
   </div>
 </template>
@@ -86,12 +99,17 @@ import { memoryEdges } from '../model/memory-explorer'
 import { memoryOrigin } from '../model/presentation'
 const props = defineProps<{ sources: Source[]; selected: string }>()
 const emit = defineEmits<{ select: [id: string] }>()
+const arrowId = useId()
 const overview = ref(false),
   svg = ref<SVGSVGElement | null>(null)
 const positions = ref<Record<string, { x: number; y: number }>>({})
 const allEdges = computed(() => memoryEdges(props.sources))
 const nodes = computed(() => {
-  if (overview.value || !props.selected) return props.sources
+  if (
+    overview.value ||
+    !props.sources.some((s) => s.source_id === props.selected)
+  )
+    return props.sources
   const ids = new Set([props.selected])
   for (const edge of allEdges.value) {
     if (edge.from === props.selected) ids.add(edge.to)

@@ -51,22 +51,28 @@ There is no iframe, second application or additional runtime dependency.
   Previews are data, not permission grants or confirmed profile facts.
 - The home memory block opens a viewport-sized explorer in the same interface.
   Text search, paginated records and a draggable provenance graph share the
-  selection. Desktop details scroll independently; small screens open the same
-  read-only details in a dialog. Source text, fragments and retained revisions
-  use the existing authenticated source inspection; Escape closes only the top
-  dialog. Ctrl/Cmd+K focuses explorer search. Counts describe loaded results,
+  selection. Desktop gives reading more width; on small screens a single tap
+  opens the reader in the same dialog. Back/Escape restores the list, its scroll
+  and selected-row focus. Source information, fragments and revisions expand
+  inline rather than opening nested dialogs. Ctrl/Cmd+K focuses search;
+  Down enters results, arrows/Home/End move focus, Enter opens a record.
+  Counts describe loaded results,
   not a fabricated corpus total. The graph's “Весь список” includes loaded search
   results; additional pages remain explicit and the API offset ceiling is honored.
 - Graph edges use exact `origin.parent_refs` matches between loaded sources.
   Other referenced sources can be opened from the detail card with a fresh owner
   check. No semantic relationships are inferred from titles or shared scope.
-  Pins only reorder this open viewer, are cleared on close/owner change, and do
-  not change agent retrieval. Claims for the inspected source revision use the
+  The last five successful search terms stay in page memory until cleared or the
+  owner changes. A bounded back/forward trail contains only IDs and re-inspects
+  each source. Viewer-only pins were removed. Claims for the inspected revision use the
   existing versioned catalog decision endpoint, including the observed active
-  claim ID. Failure/409 requires refresh; it never marks a fact confirmed locally.
+  claim ID for both confirmation and rejection. Failure/409 offers a fresh read;
+  it never marks a decision locally or automatically retries a mutation.
   Claim catalog limits and unavailability are visible separately from source reads.
   A reversible source-use switch is not offered: the existing revoke endpoint
-  purges content. Access controls remain in “Хранилище и политики памяти”.
+  purges content. “Управлять этой записью” opens the existing management panel
+  with the exact source ID. Copy explicitly writes inspected text to the clipboard.
+  See [workflow alternatives and rationale](../docs/design/memory-explorer-usability.md).
 
 ## Panels and browser
 
@@ -102,8 +108,9 @@ production model runs or external effects. Existing real API/browser cases are
 opt-in through their environment requirements.
 
 Targeted explorer validation: `npx playwright test memory-explorer.spec.ts mind.spec.ts`.
-These tests cover provenance, revision history, claim CAS/conflicts, delayed reads,
-search/selection, graph dragging and keyboard selection, and 320–1440px layouts.
+These tests cover inline provenance/history, claim confirmation/rejection and CAS
+conflicts, delayed reads, recent searches, reading navigation, clipboard and exact
+management links, graph dragging, keyboard access, and 320–1440px layouts.
 
 Catalog/API integration uses disposable PostgreSQL and:
 go test ./internal/memory/catalog ./apps/orchestrator/internal/api -run

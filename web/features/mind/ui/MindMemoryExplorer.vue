@@ -1,5 +1,10 @@
 <template>
-  <section class="memory-explorer" aria-label="Просмотр памяти">
+  <section
+    ref="root"
+    class="memory-explorer"
+    :class="{ 'memory-reading': reading }"
+    aria-label="Просмотр памяти"
+  >
     <form class="memory-search" role="search" @submit.prevent="search">
       <MindIcon name="search" />
       <input
@@ -8,8 +13,9 @@
         type="search"
         maxlength="500"
         aria-label="Поиск записей"
-        placeholder="Что вспомнить?"
+        placeholder="Найти по словам из записи…"
         @input="queueSearch"
+        @keydown.down.prevent="focusResult(0)"
       />
       <button
         v-if="query"
@@ -22,32 +28,46 @@
       </button>
       <kbd>Ctrl K</kbd><button class="mind-button" type="submit">Найти</button>
     </form>
+    <div
+      v-if="!query && store.memoryRecentQueries.length"
+      class="memory-recent"
+      aria-label="Недавние запросы"
+    >
+      <span>Недавно искали</span
+      ><button
+        v-for="recent in store.memoryRecentQueries"
+        :key="recent"
+        class="mind-text-button"
+        type="button"
+        @click="repeatSearch(recent)"
+      >
+        {{ recent }}
+      </button>
+      <button
+        class="mind-icon-button"
+        type="button"
+        aria-label="Очистить недавние запросы"
+        @click="store.memoryRecentQueries = []"
+      >
+        <MindIcon name="close" />
+      </button>
+    </div>
     <div class="memory-explorer-bar">
-      <div class="memory-views" role="group" aria-label="Представление памяти">
-        <button
-          class="mind-text-button"
-          type="button"
-          :aria-pressed="view === 'list'"
-          @click="view = 'list'"
-        >
-          Записи
-        </button>
-        <button
-          class="mind-text-button"
-          type="button"
-          :aria-pressed="view === 'graph'"
-          @click="view = 'graph'"
-        >
-          Граф
-        </button>
-      </div>
       <span role="status">{{
         store.memoryBusy
           ? 'Ищу…'
-          : store.memoryQuery.trim()
-            ? `Найдено: ${store.memories.length}${store.memoryHasMore ? '+' : ''} · По тексту`
-            : `Загружено: ${store.memories.length}`
+          : query.trim()
+            ? `Найдено: ${store.memories.length}${store.memoryHasMore ? '+' : ''}`
+            : 'Недавние записи'
       }}</span>
+      <button
+        class="mind-text-button memory-view-toggle"
+        type="button"
+        :aria-pressed="graph"
+        @click="graph = !graph"
+      >
+        {{ graph ? 'Вернуться к списку' : 'Схема связей' }}
+      </button>
       <button
         class="mind-icon-button"
         type="button"
@@ -65,20 +85,21 @@
       </button>
     </p>
     <div class="memory-workspace">
-      <div class="memory-results" :aria-busy="store.memoryBusy">
+      <div ref="results" class="memory-results" :aria-busy="store.memoryBusy">
         <div
-          v-if="view === 'list'"
+          v-if="!graph"
           class="memory-list"
           aria-label="Записи памяти"
+          @keydown="listKey"
         >
           <button
-            v-for="source in orderedSources"
+            v-for="source in store.memories"
             :key="source.source_id"
             class="memory-list-row"
             :class="{ selected: source.source_id === store.memorySourceId }"
             type="button"
             :aria-pressed="source.source_id === store.memorySourceId"
-            @click="select(source.source_id)"
+            @click="select(source.source_id, true)"
           >
             <span class="mind-source-icon sage"
               ><MindIcon :name="memoryIcon(source)"
@@ -88,14 +109,7 @@
               ><span>{{
                 readableSource(source) ? source.body : 'Закрытое содержимое'
               }}</span
-              ><small
-                >{{ memoryOrigin(source)
-                }}{{
-                  pins.includes(source.source_id)
-                    ? ' · Закреплено в просмотре'
-                    : ''
-                }}</small
-              ></span
+              ><small>{{ memoryOrigin(source) }}</small></span
             >
             <time>{{
               dateLabel(source.created_at || source.extracted_at)
@@ -106,20 +120,30 @@
           v-else
           :sources="store.memories"
           :selected="store.memorySourceId"
-          @select="select"
+          @select="select($event, true)"
         />
-        <p
+        <div
           v-if="
             !store.memoryBusy && !store.memoryError && !store.memories.length
           "
           class="memory-empty"
         >
-          {{
-            query.trim()
-              ? 'Ничего не найдено. Попробуйте другие слова.'
-              : 'Память пока пуста.'
-          }}
-        </p>
+          <p>
+            {{
+              query.trim()
+                ? 'По этим словам ничего не нашлось.'
+                : 'Здесь появятся сохранённые записи.'
+            }}
+          </p>
+          <template v-if="query.trim()"
+            ><p>
+              Попробуйте одно-два характерных слова из сообщения или документа.
+            </p>
+            <button class="mind-button" type="button" @click="clear">
+              Показать недавние записи
+            </button></template
+          >
+        </div>
         <button
           v-if="store.memoryHasMore && store.memories.length <= 1000"
           class="mind-text-button memory-more"
@@ -133,14 +157,50 @@
           v-if="store.memoryHasMore && store.memories.length > 1000"
           class="mind-muted"
         >
-          Достигнут предел просмотра. Уточните поисковый запрос.
+          Уточните запрос, чтобы найти более ранние записи.
         </p>
       </div>
       <aside
+        ref="inspector"
         class="memory-inspector"
         aria-label="Выбранная запись"
         :aria-busy="store.memoryDetailBusy"
       >
+        <nav class="memory-reader-nav" aria-label="Навигация по записям">
+          <button
+            class="mind-text-button memory-back-list"
+            type="button"
+            @click="backToList"
+          >
+            ← К списку
+          </button>
+          <button
+            class="mind-icon-button"
+            type="button"
+            aria-label="Предыдущая просмотренная запись"
+            :disabled="historyIndex <= 0"
+            @click="travel(-1)"
+          >
+            <MindIcon name="previous" />
+          </button>
+          <button
+            class="mind-icon-button"
+            type="button"
+            aria-label="Следующая просмотренная запись"
+            :disabled="historyIndex >= history.length - 1"
+            @click="travel(1)"
+          >
+            <MindIcon name="next" />
+          </button>
+          <span
+            v-if="
+              store.inspection &&
+              !store.memories.some((s) => s.source_id === store.memorySourceId)
+            "
+            class="memory-outside"
+            >Вне текущего списка</span
+          >
+        </nav>
         <p v-if="store.memoryDetailBusy" class="memory-empty" role="status">
           Открываю запись…
         </p>
@@ -150,207 +210,76 @@
           role="alert"
         >
           {{ store.memoryDetailError }}
-          <button
-            class="mind-text-button"
-            type="button"
-            @click="select(store.memorySourceId)"
-          >
+          <button class="mind-text-button" type="button" @click="reloadSource">
             Повторить
           </button>
         </p>
-        <template v-else-if="store.inspection">
-          <div class="memory-selection-tools">
-            <button
-              class="mind-text-button"
-              type="button"
-              :aria-pressed="pins.includes(store.memorySourceId)"
-              title="Закрепление действует до закрытия просмотра и не меняет память агента"
-              @click="pin"
-            >
-              {{
-                pins.includes(store.memorySourceId)
-                  ? 'Открепить'
-                  : 'Закрепить в просмотре'
-              }}
-            </button>
-          </div>
-          <div class="memory-desktop-detail">
-            <MindMemoryDetail v-bind="detailProps" v-on="detailEvents" />
-          </div>
-          <div class="memory-mobile-summary">
-            <strong>{{
-              store.inspection.source.title || 'Без названия'
-            }}</strong
-            ><small>{{ sourceStatus(store.inspection.source) }}</small
-            ><button
-              class="mind-button"
-              type="button"
-              @click="overlay = 'detail'"
-            >
-              Открыть запись
-            </button>
-          </div>
-        </template>
-        <p v-else class="memory-empty">
-          Выберите запись, чтобы прочитать её и узнать, откуда она появилась.
-        </p>
+        <MindMemoryDetail
+          v-else-if="store.inspection"
+          :key="`${store.memorySourceId}:${store.inspection.source.revision}`"
+          :inspection="store.inspection"
+          :related="related"
+          :claims="claims"
+          :claims-busy="claimsBusy"
+          :claims-error="claimsError"
+          :deciding="deciding || claimsBusy || !!claimsError"
+          @select="select($event, true)"
+          @decide="decide"
+          @manage="manage"
+          @refresh="reloadSource"
+          @graph="showGraph"
+        />
+        <p v-else class="memory-empty">Выберите запись, чтобы прочитать её.</p>
       </aside>
     </div>
     <footer class="memory-explorer-footer">
       <span
-        >Данные памяти Butler · {{ store.memories.length }} записей{{
+        >{{ store.memories.length }} записей{{
           store.memoryHasMore ? ' · есть ещё' : ''
         }}</span
-      ><span>Поиск по тексту · смысловой поиск через Батлера</span>
+      ><span>Поиск по тексту</span>
     </footer>
-    <MindDialog :open="!!overlay" :title="overlayTitle" @close="overlay = ''">
-      <template v-if="overlay === 'detail' && store.inspection"
-        ><button
-          class="mind-text-button"
-          type="button"
-          :aria-pressed="pins.includes(store.memorySourceId)"
-          @click="pin"
-        >
-          {{
-            pins.includes(store.memorySourceId)
-              ? 'Открепить'
-              : 'Закрепить в просмотре'
-          }}</button
-        ><MindMemoryDetail v-bind="detailProps" v-on="detailEvents"
-      /></template>
-      <template v-else-if="overlay === 'history' && store.inspection">
-        <p class="mind-muted">
-          Сохранённые версии источника. История не является подтверждением
-          фактов.
-        </p>
-        <template v-if="readableSource(store.inspection.source)">
-          <details
-            v-for="revision in store.inspection.revisions || []"
-            :key="revision.revision"
-            class="memory-revision"
-          >
-            <summary>
-              Версия {{ revision.revision }} ·
-              {{ dateLabel(revision.event_time || revision.created_at) }}
-            </summary>
-            <p class="memory-body">
-              {{
-                revision.origin?.sensitivity === 'secret'
-                  ? 'Закрытое содержимое'
-                  : revision.body
-              }}
-            </p>
-          </details>
-          <p v-if="!store.inspection.revisions?.length" class="mind-muted">
-            История версий пока недоступна.
-          </p>
-          <p
-            v-if="
-              store.inspection.revision_limit &&
-              (store.inspection.revisions?.length || 0) >=
-                store.inspection.revision_limit
-            "
-            class="mind-muted"
-          >
-            Показаны последние {{ store.inspection.revision_limit }} версий.
-          </p>
-        </template>
-        <p v-else class="mind-muted">История содержимого недоступна.</p>
-      </template>
-      <template
-        v-else-if="
-          overlay === 'source' &&
-          store.inspection &&
-          readableSource(store.inspection.source)
-        "
-      >
-        <p class="mind-source-caption">
-          {{ memoryOrigin(store.inspection.source) }} · версия
-          {{ store.inspection.source.revision }}
-        </p>
-        <p class="memory-body">{{ store.inspection.source.body }}</p>
-        <details v-if="store.inspection.fragments?.length">
-          <summary>Фрагменты · {{ store.inspection.fragments.length }}</summary>
-          <div
-            v-for="fragment in store.inspection.fragments"
-            :key="fragment.chunk_id"
-          >
-            <h3>{{ fragment.title }}</h3>
-            <blockquote class="memory-body">{{ fragment.text }}</blockquote>
-          </div>
-        </details>
-        <p class="memory-source-id">{{ store.inspection.source.source_id }}</p>
-        <p class="mind-muted">
-          {{
-            sourceParents(store.inspection.source).length
-              ? 'Исходные записи доступны в связях.'
-              : 'Это сохранённый источник. Отдельная исходная цитата в данных не указана.'
-          }}
-        </p>
-      </template>
-      <template v-else-if="overlay === 'relations'">
-        <p class="mind-muted">
-          Связи взяты из происхождения записей. Они не означают, что содержимое
-          подтверждено или что источники совпадают по смыслу.
-        </p>
-        <button
-          v-for="item in related"
-          :key="item.id"
-          class="memory-related"
-          type="button"
-          @click="select(item.id)"
-        >
-          <strong>{{ item.title }}</strong
-          ><small>{{ item.reason }}</small>
-        </button>
-      </template>
-    </MindDialog>
   </section>
 </template>
 <script setup lang="ts">
 import { useMind } from '../model/store'
-import type { MemoryClaim } from '../model/types'
-import {
-  readableSource,
-  sourceParents,
-  sourceStatus,
-} from '../model/memory-explorer'
+import { useMemoryClaims } from '../model/useMemoryClaims'
+import { readableSource, sourceParents } from '../model/memory-explorer'
 import { dateLabel, memoryOrigin, memoryIcon } from '../model/presentation'
 import MindIcon from './MindIcon.vue'
-import MindDialog from './MindDialog.vue'
 import MindMemoryDetail from './MindMemoryDetail.vue'
 import MindMemoryGraph from './MindMemoryGraph.vue'
-const store = useMind()
+const store = useMind(),
+  router = useRouter()
 const query = ref(store.memoryQuery),
-  view = ref<'list' | 'graph'>('list'),
-  pins = ref<string[]>([])
-const overlay = ref(''),
-  input = ref<HTMLInputElement | null>(null)
-const claims = ref<MemoryClaim[]>([]),
-  claimsBusy = ref(false),
-  claimsError = ref(''),
-  deciding = ref(false)
+  graph = ref(false),
+  reading = ref(!!store.memorySourceId)
+const input = ref<HTMLInputElement | null>(null),
+  root = ref<HTMLElement | null>(null),
+  results = ref<HTMLElement | null>(null),
+  inspector = ref<HTMLElement | null>(null)
+const history = ref(store.memorySourceId ? [store.memorySourceId] : []),
+  historyIndex = ref(history.value.length - 1)
+const {
+  claims,
+  busy: claimsBusy,
+  error: claimsError,
+  deciding,
+  decide,
+} = useMemoryClaims()
 let timer: ReturnType<typeof setTimeout> | undefined,
-  claimVersion = 0,
   alive = true
-const orderedSources = computed(() =>
-  [...store.memories].sort(
-    (a, b) =>
-      Number(pins.value.includes(b.source_id)) -
-      Number(pins.value.includes(a.source_id)),
-  ),
-)
 const related = computed(() => {
   const source = store.inspection?.source
   if (!source || !readableSource(source)) return []
-  const result = sourceParents(source).map((id) => ({
+  const result = sourceParents(source).map((id, i) => ({
     id,
     title:
       store.memories.find((s) => s.source_id === id)?.title ||
-      'Источник вне списка',
-    reason: 'Сохранённая ссылка происхождения',
+      `Исходная запись ${i + 1}`,
+    reason: 'Источник этой записи',
   }))
-  for (const s of store.memories) {
+  for (const s of store.memories)
     if (
       sourceParents(s).includes(source.source_id) &&
       !result.some((r) => r.id === s.source_id)
@@ -358,70 +287,89 @@ const related = computed(() => {
       result.push({
         id: s.source_id,
         title: s.title || 'Без названия',
-        reason: 'Эта запись ссылается на выбранный источник',
+        reason: 'Создано на основе этой записи',
       })
-  }
   return result
 })
-const detailProps = computed(() => ({
-  source: store.inspection!.source,
-  related: related.value,
-  claims: claims.value.filter(
-    (c) =>
-      c.source_id === store.memorySourceId &&
-      c.source_revision === store.inspection?.source.revision,
-  ),
-  claimsBusy: claimsBusy.value,
-  claimsError: claimsError.value,
-  deciding: deciding.value || claimsBusy.value || !!claimsError.value,
-}))
-const detailEvents = {
-  history: () => {
-    overlay.value = 'history'
-  },
-  source: () => {
-    overlay.value = 'source'
-  },
-  relations: () => {
-    overlay.value = 'relations'
-  },
-  select,
-  confirm,
-  manage,
-}
-const overlayTitle = computed(
-  () =>
-    (
-      ({
-        history: 'История записи',
-        source: 'Сохранённый источник',
-        relations: 'Почему связаны?',
-        detail: 'Запись памяти',
-      }) as Record<string, string>
-    )[overlay.value] || 'Память',
-)
-async function select(id: string) {
-  overlay.value = ''
+const narrow = () => window.matchMedia('(max-width: 700px)').matches
+async function select(id: string, open = false, remember = true) {
+  if (remember && history.value[historyIndex.value] !== id) {
+    history.value = [
+      ...history.value.slice(0, historyIndex.value + 1),
+      id,
+    ].slice(-30)
+    historyIndex.value = history.value.length - 1
+  }
+  if (open) reading.value = true
   await store.inspectMemory(id, false)
+  if (!alive || store.memorySourceId !== id) return
+  await nextTick()
+  if (inspector.value) inspector.value.scrollTop = 0
+  if (open && narrow())
+    inspector.value?.querySelector<HTMLElement>('h3')?.focus()
 }
-function pin() {
-  const id = store.memorySourceId
-  pins.value = pins.value.includes(id)
-    ? pins.value.filter((p) => p !== id)
-    : [...pins.value, id]
+function travel(step: number) {
+  const next = historyIndex.value + step
+  if (next < 0 || next >= history.value.length) return
+  historyIndex.value = next
+  void select(history.value[next]!, true, false)
+}
+function backToList() {
+  reading.value = false
+  nextTick(() => {
+    const selected = root.value?.querySelector<HTMLButtonElement>(
+      '.memory-list-row.selected',
+    )
+    if (selected) selected.focus({ preventScroll: true })
+    else input.value?.focus()
+  })
+}
+function showGraph() {
+  graph.value = true
+  reading.value = false
+}
+function focusResult(index: number) {
+  const rows =
+    root.value?.querySelectorAll<HTMLButtonElement>('.memory-list-row')
+  if (!rows?.length) return
+  const bounded = Math.max(0, Math.min(rows.length - 1, index))
+  rows[bounded]?.focus()
+}
+function listKey(event: KeyboardEvent) {
+  const rows = Array.from(
+    root.value?.querySelectorAll<HTMLButtonElement>('.memory-list-row') || [],
+  )
+  const index = rows.indexOf(event.target as HTMLButtonElement)
+  if (index < 0) return
+  if (
+    event.key === 'ArrowDown' ||
+    event.key === 'ArrowUp' ||
+    event.key === 'Home' ||
+    event.key === 'End'
+  ) {
+    event.preventDefault()
+    focusResult(
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? rows.length - 1
+          : index + (event.key === 'ArrowDown' ? 1 : -1),
+    )
+  }
 }
 function queueSearch() {
   clearTimeout(timer)
-  // Fence in-flight responses immediately, before the debounce expires.
   store.memoryQuery = query.value
   store.memories = []
   store.memoryHasMore = false
   store.memoryBusy = true
+  reading.value = false
   timer = setTimeout(search, 240)
 }
 function search() {
   clearTimeout(timer)
   timer = undefined
+  reading.value = false
   void store.loadMemory(query.value)
 }
 function clear() {
@@ -429,121 +377,58 @@ function clear() {
   search()
   input.value?.focus()
 }
+function repeatSearch(value: string) {
+  query.value = value
+  search()
+}
 function more() {
   clearTimeout(timer)
   timer = undefined
   void store.loadMemory(query.value, true)
 }
+function reloadSource() {
+  if (store.memorySourceId) void select(store.memorySourceId, false, false)
+}
 function refresh() {
   search()
-  if (store.memorySourceId) void select(store.memorySourceId)
+  reloadSource()
 }
-function manage() {
-  overlay.value = ''
+async function manage() {
+  const id = store.memorySourceId,
+    epoch = store.epoch
+  await router.push({ path: '/memory/manage', query: { source_id: id } })
+  if (epoch !== store.epoch || !store.connected) return
   store.clearInspection()
   store.advanced = 'memory'
   store.panel = 'advanced'
 }
-async function loadClaims() {
-  const version = ++claimVersion,
-    epoch = store.epoch
-  claims.value = []
-  claimsError.value = ''
-  claimsBusy.value = true
-  try {
-    const result = await store.request<{
-      claims: MemoryClaim[]
-      claim_list_limit: number
-    }>('/api/v4/memory')
-    if (!alive || epoch !== store.epoch || version !== claimVersion) return
-    claims.value = result.claims || []
-    if (claims.value.length >= result.claim_list_limit)
-      claimsError.value =
-        'Показана ограниченная часть каталога фактов. Полная история доступна в хранилище.'
-  } catch {
-    if (alive && epoch === store.epoch && version === claimVersion)
-      claimsError.value =
-        'Подтверждения сейчас недоступны. Обновите запись, чтобы повторить.'
-  } finally {
-    if (alive && epoch === store.epoch && version === claimVersion)
-      claimsBusy.value = false
-  }
-}
-async function confirm(claim: MemoryClaim) {
-  if (
-    deciding.value ||
-    claimsBusy.value ||
-    claimsError.value ||
-    claim.source_revision !== store.inspection?.source.revision
-  )
-    return
-  const epoch = store.epoch,
-    id = store.memorySourceId,
-    version = claimVersion
-  const active = claims.value.find(
-    (c) =>
-      c.status === 'confirmed' &&
-      c.key === claim.key &&
-      c.scope_id === claim.scope_id &&
-      c.scope_type === claim.scope_type,
-  )
-  deciding.value = true
-  try {
-    await store.request('/api/v4/memory/decisions', {
-      claim_id: claim.claim_id,
-      expected_active_id: active?.claim_id || '',
-      reject: false,
-    })
-    if (
-      alive &&
-      epoch === store.epoch &&
-      version === claimVersion &&
-      id === store.memorySourceId
-    )
-      await loadClaims()
-  } catch {
-    if (alive && epoch === store.epoch && version === claimVersion)
-      claimsError.value =
-        'Решение не подтверждено. Обновите запись перед повтором.'
-  } finally {
-    if (alive && epoch === store.epoch) deciding.value = false
-  }
-}
 function shortcut(event: KeyboardEvent) {
-  if (
-    (event.ctrlKey || event.metaKey) &&
-    event.key.toLowerCase() === 'k' &&
-    !overlay.value
-  ) {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault()
-    input.value?.focus()
+    reading.value = false
+    nextTick(() => input.value?.focus())
   }
 }
-watch(
-  () => store.memorySourceId,
-  () => {
-    claims.value = []
-    claimsError.value = ''
-    claimVersion++
-  },
-)
-watch(
-  () => store.inspection,
-  (inspection) => {
-    if (inspection && readableSource(inspection.source)) void loadClaims()
-  },
-  { immediate: true },
-)
+function cancel(event: Event) {
+  if (reading.value && narrow()) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    backToList()
+  }
+}
+let dialog: HTMLDialogElement | null = null
 onMounted(() => {
   document.addEventListener('keydown', shortcut)
+  dialog = root.value?.closest('dialog') || null
+  dialog?.addEventListener('cancel', cancel, true)
   if (!store.memorySourceId && store.memories[0])
     void select(store.memories[0].source_id)
 })
 onBeforeUnmount(() => {
   alive = false
-  claimVersion++
   clearTimeout(timer)
   if (timer !== undefined && store.connected) void store.loadMemory(query.value)
   document.removeEventListener('keydown', shortcut)
+  dialog?.removeEventListener('cancel', cancel, true)
 })
 </script>

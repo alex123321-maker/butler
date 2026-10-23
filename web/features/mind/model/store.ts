@@ -60,6 +60,7 @@ export const useMind = defineStore('mind', () => {
     memoryDiagnostics = ref<string[]>([]),
     memoryHasMore = ref(false),
     memoryQuery = ref(''),
+    memoryRecentQueries = ref<string[]>([]),
     memoryBusy = ref(false),
     memoryError = ref(''),
     memorySourceId = ref(''),
@@ -185,6 +186,7 @@ export const useMind = defineStore('mind', () => {
     memoryDetailError.value = ''
     memoryHasMore.value = false
     memoryQuery.value = ''
+    memoryRecentQueries.value = []
     memoryDiagnostics.value = []
     memoryError.value = ''
     memoryBusy.value = false
@@ -394,6 +396,9 @@ export const useMind = defineStore('mind', () => {
       memoryHasMore.value = result.has_more
       memoryMode.value = result.mode
       memoryDiagnostics.value = result.diagnostics || []
+      if (query.trim() && !more) {
+        memoryRecentQueries.value = [query.trim(), ...memoryRecentQueries.value.filter(q => q !== query.trim())].slice(0, 5)
+      }
     } catch {
       if (
         current(stamp) &&
@@ -715,6 +720,7 @@ export const useMind = defineStore('mind', () => {
     memoryDiagnostics,
     memoryHasMore,
     memoryQuery,
+    memoryRecentQueries,
     memoryBusy,
     memoryError,
     inspection,
