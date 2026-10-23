@@ -11,12 +11,12 @@ if [[ "$action" == prepare ]]; then
  [[ ! -e "$root" ]] || { echo 'Trial already exists'; exit 2; }
  src=$(readlink -f "$source_root/current")
  [[ "$src" == "$source_root/snapshots/"* ]] || exit 2
- mkdir -p "$root/build" "$root/metadata" "$root/private" "$root/postgres"
+ mkdir -p "$root/build" "$root/metadata" "$root/private" "$root/postgres" "$root/cache/go-build" "$root/cache/go-tmp"
  image=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
- cache=/srv/storage/butler/agents/memory-eval-78-20261014/.cache
+ cache="$root/cache"
  docker run --rm --network none --cpus 2 --memory 1536m --pids-limit 128 \
   -v "$src:/src:ro" -v "$cache:/cache" -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$root/build:/build" -w /src \
-  -e GOCACHE=/cache/go-timeout -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod "$image" \
+  -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod "$image" \
   go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app > "$root/build.log" 2> "$root/build-diagnostics.log"
  docker run --rm --user "$(id -u):$(id -g)" --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$src:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata" -w /src \
