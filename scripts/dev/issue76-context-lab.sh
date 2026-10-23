@@ -42,7 +42,7 @@ image=$(jq -r .Image "$root/metadata/pins.json")
 tag=$(basename "$root")
 native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
 mkdir -m 700 "$root/entered"
-docker network create --internal "$tag" > "$root/entered/network-id"
+docker network create --internal --subnet 10.254.76.0/28 "$tag" > "$root/entered/network-id"
 docker run -d --name "$tag-pg" --network "$tag" --network-alias memory-eval-postgres --cpus 1 --memory 512m --pids-limit 128 \
  -v "$root/postgres:/var/lib/postgresql/data" -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=issue76_test \
  pgvector/pgvector:pg17 > "$root/entered/postgres-id"
