@@ -13,7 +13,7 @@ message/photo/report документируется отдельно; C05 не �
 ### Граница текущей реализации
 
 Core резервирует одно из `BUTLER_POSTGRES_MAX_CONNS` соединений для текущих
-проверок lease/Task authority, оставляя минимум два для бизнес-операций.
+проверок lease/Task authority и token-only Catalog currentness, оставляя минимум два для бизнес-операций.
 Минимум Core при запуске — три соединения; суммарный максимум, execution budgets
 и сроки не увеличиваются. Долгий Telegram poll или Web feed не занимают этот
 резерв. Проверки читают PostgreSQL и продолжают запрещать работу при отзыве,

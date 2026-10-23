@@ -1,5 +1,14 @@
 # Versioned memory sources and privacy
 
+Core's token-only foreground `CheckRunSources` observes current PostgreSQL
+restore/lease/Task/source-pin/temporal state through the connection reserved
+inside its configured total. Channel polls and business writes cannot consume
+this capacity. It retains every source proof and the existing bounded deadline;
+no stale cache or timeout fallback releases DATA. The observation performs no
+business mutation and rolls back. Owner/auxiliary compound contexts keep the
+business pool, and same-transaction publication/dispatch guards remain joined
+to their owning write transaction.
+
 Android [notification ingress](android-companion.md) atomically publishes private
 original sources with content-free receipts. Standing owner-configured mobile
 automation activates originals without per-message review; otherwise originals

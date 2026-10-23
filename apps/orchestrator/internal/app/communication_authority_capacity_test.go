@@ -5,12 +5,15 @@ import (
 	"errors"
 	"net/url"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/ownership"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -60,6 +63,13 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 		t.Fatal(err)
 	}
 	var occupied []*pgxpool.Conn
+	manifestPath := filepath.Join(t.TempDir(), "deletions")
+	manifest := catalog.NewFileManifest(manifestPath)
+	if err = manifest.Initialize(); err != nil {
+		t.Fatal(err)
+	}
+	sources := catalog.NewWithRunObservationPool(db.Pool(), db.AuthorityReadPool(), manifest)
+	owned := ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: live.SessionKey, RunID: live.RunID, LeaseID: live.LeaseID, FenceEpoch: live.FenceEpoch})
 	defer func() {
 		for _, c := range occupied {
 			c.Release()
@@ -87,6 +97,11 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 	if err = tasks.ValidateRunAuthority(read, "capacity-run"); err != nil {
 		t.Fatal(err)
 	}
+	sourceRead, stopSourceRead := context.WithTimeout(owned, 2*time.Second)
+	defer stopSourceRead()
+	if err = sources.CheckRunSources(sourceRead, "capacity-run"); err != nil {
+		t.Fatal("source observer starved behind business work", err)
+	}
 	// Current PG revocation must still deny; the reserve is no cached authority.
 	if _, err = occupied[0].Exec(ctx, `UPDATE tasks SET status='paused' WHERE task_id=$1`, job.TaskID); err != nil {
 		t.Fatal(err)
@@ -99,6 +114,15 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 	}
 	if _, err = leases.GetLease(read, live.LeaseID); !errors.Is(err, session.ErrLeaseNotFound) {
 		t.Fatal("expired lease retained authority", err)
+	}
+	if err = sources.CheckRunSources(sourceRead, "capacity-run"); err == nil {
+		t.Fatal("source observer released expired ownership")
+	}
+	if err = os.Remove(manifestPath); err != nil {
+		t.Fatal(err)
+	}
+	if err = sources.CheckRunSources(sourceRead, "capacity-run"); !errors.Is(err, catalog.ErrRestore) {
+		t.Fatal("source observer bypassed missing deletion anchor", err)
 	}
 }
 

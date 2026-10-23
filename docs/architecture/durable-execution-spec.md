@@ -6,7 +6,7 @@ execution checkpoints, expiring ownership and decisions. Redis and provider
 session references do not authorize dispatch or reconstruct an unknown result.
 
 Core assigns one of its configured PostgreSQL connections to bounded lease/Task
-authority observations, with at least two remaining for business writes.
+authority and token-only source-currentness observations, with at least two remaining for business writes.
 `BUTLER_POSTGRES_MAX_CONNS` is the combined maximum (minimum three at Core
 startup); no execution budget, deadline or history changes. The observer queries
 current durable state and denies on expiry, revocation or unavailability. A long

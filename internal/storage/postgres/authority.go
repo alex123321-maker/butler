@@ -9,7 +9,7 @@ import (
 )
 
 // OpenWithAuthorityReserve reserves one of the configured connections for
-// bounded lease/Task authority observations. Long channel polls, retained feeds
+// bounded lease/Task authority and token-only source observations. Long channel polls, retained feeds
 // and fenced business writes cannot consume it. The total configured maximum
 // is unchanged; ordinary writes still need at least two connections.
 func OpenWithAuthorityReserve(ctx context.Context, cfg Config, log *slog.Logger) (*Store, error) {

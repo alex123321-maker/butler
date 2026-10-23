@@ -22,12 +22,21 @@ import (
 )
 
 type Store struct {
-	pool     *pgxpool.Pool
-	manifest Manifest
+	pool               *pgxpool.Pool
+	manifest           Manifest
+	runObservationPool *pgxpool.Pool
 }
 
-func New(pool *pgxpool.Pool, manifest Manifest) *Store { return &Store{pool, manifest} }
-func (s *Store) Pool() *pgxpool.Pool                   { return s.pool }
+func New(pool *pgxpool.Pool, manifest Manifest) *Store {
+	return NewWithRunObservationPool(pool, pool, manifest)
+}
+
+// Only token-only CheckRunSources observations use the reserve. Source writes,
+// selected-ref access and trusted compound/owner contexts keep the business pool.
+func NewWithRunObservationPool(pool, observations *pgxpool.Pool, manifest Manifest) *Store {
+	return &Store{pool: pool, manifest: manifest, runObservationPool: observations}
+}
+func (s *Store) Pool() *pgxpool.Pool { return s.pool }
 func randomID(prefix string) (string, error) {
 	var b [20]byte
 	_, e := rand.Read(b[:])

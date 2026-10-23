@@ -19,7 +19,13 @@ func (s *Store) CheckRunSources(ctx context.Context, runID string) (err error) {
 		return ErrDenied
 	}
 	runSourcePhase(ctx, "pool_begin")
-	tx, e := s.pool.Begin(ctx)
+	_, ownerActor := owneridentity.FromContext(ctx)
+	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
+	pool := s.pool
+	if !ownerActor && !auxiliary && s.runObservationPool != nil {
+		pool = s.runObservationPool
+	}
+	tx, e := pool.Begin(ctx)
 	if e != nil {
 		return e
 	}
@@ -36,8 +42,6 @@ func (s *Store) CheckRunSources(ctx context.Context, runID string) (err error) {
 	// to make durable. Bounded rollback releases the same locks without adding
 	// an observer COMMIT/WAL-sync requirement. HTTP dispatch and publication
 	// callers of CheckRunSourcesTx retain their owning transaction commits.
-	_, ownerActor := owneridentity.FromContext(ctx)
-	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
 	if !ownerActor && !auxiliary {
 		runSourcePhase(ctx, "observer_rollback")
 		return tx.Rollback(ctx)
