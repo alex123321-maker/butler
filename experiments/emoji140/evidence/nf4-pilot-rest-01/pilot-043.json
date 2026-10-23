@@ -1,0 +1,98 @@
+{
+  "id": "pilot-043",
+  "source_sha256": "31058b1ca9abe03ab1ecf7b02e0e8230ce8d22f49fbf00568270f2e84bab804f",
+  "ordinal": 6,
+  "status": "completed",
+  "frame_sha256": [
+    "49ba96105b01ee74f6ccc8454ba5c493f85052e73b89d784108b457dd92dfa63",
+    "74cf7a849a29f79ef758fb7c0cf3bd6f948eeb64ea74a80a83e40957eada29cd",
+    "721906c8e980a64a8fd0587f6eabe516fcb8e9256d8d0b19e753ca58a0c80f73",
+    "fddde07a30e57c1db0cca51a20c615a7327d145e51b322ede194e2fe949b8273",
+    "870b78ddc4ef3f0c53b75f7f7e720297c5c3db7f775edc6ed1132ff58c867d8b",
+    "4d7d51904aff0515d2d7a20b08cff8a81c9ef4bb106a9e6e90a9e0d5f339895a",
+    "1be2b1f7d93906415c80ef323761d2c8c787bccfa35e7640e34bbc381f7408c8",
+    "0dda73e564783b1dbbaecabf4bb8f394df13bf72ae797359650711d12dd74904"
+  ],
+  "image_count": 8,
+  "started_at": 1792734525.483771,
+  "first_token_seconds": 0.5425415049999174,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue rectangular shape\"\n    ],\n    \"actions\": [\n      \"waving\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"rectangular shape\",\n      \"wavy shape\",\n      \"wavy shape\",\n      \"wavy shape\",\n      \"wavy shape\",\n      \"wavy shape\",\n      \"rectangular shape\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 135,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue rectangular shape"
+      ],
+      "actions": [
+        "waving"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "rectangular shape",
+        "wavy shape",
+        "wavy shape",
+        "wavy shape",
+        "wavy shape",
+        "wavy shape",
+        "rectangular shape"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.271003584000027,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

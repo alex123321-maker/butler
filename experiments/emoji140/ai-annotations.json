@@ -1,0 +1,1740 @@
+{
+  "version": "ai-annotations-v2",
+  "rater": "Codex primary assistant; AI, not a human rater",
+  "evidence": "Six numbered contact sheets, eight ordered frames per item; pack and Unicode not shown in sheets; original continuous playback not reviewed",
+  "scope": "development-only; not independent test ground truth",
+  "model_outputs_seen": false,
+  "entries": [
+    {
+      "id": "pilot-001",
+      "observed": {
+        "subjects": [
+          "мужчина в очках с усами",
+          "книга",
+          "доска"
+        ],
+        "actions": [
+          "поднимает и опускает очки; меняет взгляд"
+        ],
+        "expression": "сдержанное",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "поднимает и опускает очки; меняет взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "учитель",
+          "объяснение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "8cd5d87e4130d63dd75bb6bdbc09414b743453203b479ad594f7fde77e098e57",
+      "custom_emoji_id": "5170580663727817398"
+    },
+    {
+      "id": "pilot-002",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "термометр во рту"
+        ],
+        "actions": [
+          "качает головой; меняет направление взгляда"
+        ],
+        "expression": "недомогание",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "качает головой; меняет направление взгляда"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "болезнь",
+          "температура"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "a61adbb10867ff6e0ac70c5e999f9dce42d2ad76a4999ded38b155cbb13be721",
+      "custom_emoji_id": "5170390830468301304"
+    },
+    {
+      "id": "pilot-003",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с закрытыми глазами"
+        ],
+        "actions": [
+          "опускает голову; открывает и закрывает рот"
+        ],
+        "expression": "усталое или печальное",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "опускает голову; открывает и закрывает рот"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "усталость",
+          "грусть",
+          "вздох"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "e2ad75e685bc7b93dc2872502d112c35f088f3f77ca9feea636ef93c6f4440c2",
+      "custom_emoji_id": "5168219024420504223"
+    },
+    {
+      "id": "pilot-004",
+      "observed": {
+        "subjects": [
+          "ухо",
+          "слуховой аппарат",
+          "линии звука"
+        ],
+        "actions": [
+          "наклоняется; появляются линии звука"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "наклоняется; появляются линии звука"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "слух",
+          "слышать",
+          "слуховой аппарат"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "20cf3356b0a13600c52fb8b27c4e1759b3798f6d18eeb9121a94f6c9d9aaae5b",
+      "custom_emoji_id": "5174781597009838736"
+    },
+    {
+      "id": "pilot-005",
+      "observed": {
+        "subjects": [
+          "синий кит",
+          "фонтан воды"
+        ],
+        "actions": [
+          "поворачивается; открывает рот; выпускает воду"
+        ],
+        "expression": "улыбка",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "поворачивается; открывает рот; выпускает воду"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "кит",
+          "радость"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "6794691aaa410196c21f85b99ab95e4b3ceee4e248ab3031e0c6904cc4ef662d",
+      "custom_emoji_id": "5174963905486652112"
+    },
+    {
+      "id": "pilot-006",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с опущенными уголками рта"
+        ],
+        "actions": [
+          "поворачивается; закрывает глаза"
+        ],
+        "expression": "грустное",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "поворачивается; закрывает глаза"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "грусть",
+          "разочарование"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "f2f4e0319f09e0803ab84d2fbe62cc310b125a6e0e7de1597fe10685db8df7af",
+      "custom_emoji_id": "5172917297735533194"
+    },
+    {
+      "id": "pilot-007",
+      "observed": {
+        "subjects": [
+          "коричневая кучка с глазами",
+          "маленькие мухи"
+        ],
+        "actions": [
+          "глаза перемещаются; мухи кружат"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "глаза перемещаются; мухи кружат"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "какашка",
+          "неприятность",
+          "шутка"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "27df99b85a9c554c565ebe29fa5d2453771fc2278183a16eec822f6af8b6955f",
+      "custom_emoji_id": "5172492765988127557"
+    },
+    {
+      "id": "pilot-008",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с длинным носом"
+        ],
+        "actions": [
+          "нос удлиняется; лицо меняет выражение"
+        ],
+        "expression": "меняется",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "нос удлиняется; лицо меняет выражение"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "ложь",
+          "Пиноккио"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "fd4f14fa03a6939906631710f96c58ecbf9a99323c4fac592a08a17d4294c282",
+      "custom_emoji_id": "5172648862279533203"
+    },
+    {
+      "id": "pilot-009",
+      "observed": {
+        "subjects": [
+          "жёлтая кошачья мордочка"
+        ],
+        "actions": [
+          "улыбается; открывает рот; подмигивает"
+        ],
+        "expression": "весёлое",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "улыбается; открывает рот; подмигивает"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "кот",
+          "веселье"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "967ebb08e6966ff09752017afc849bbaa6cb3897a45d3e0a315a01c248589e0e",
+      "custom_emoji_id": "5170642700235440624"
+    },
+    {
+      "id": "pilot-010",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо без рта"
+        ],
+        "actions": [
+          "наклоняется; закрывает и открывает глаза"
+        ],
+        "expression": "нейтральное",
+        "text": null,
+        "style": "глянцевый цветной мультфильм",
+        "temporal_sequence": [
+          "наклоняется; закрывает и открывает глаза"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "молчание",
+          "нечего сказать"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "21379561e2abf1a0021d32dab94025fd605f2986af77d6e7f3d2346c528a2d33",
+      "custom_emoji_id": "5174715067966424124"
+    },
+    {
+      "id": "pilot-011",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "облачка у носа"
+        ],
+        "actions": [
+          "хмурится; выдыхает облачка"
+        ],
+        "expression": "сердитое",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "хмурится; выдыхает облачка"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "злость",
+          "возмущение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "64e94f96a1fbfcff89cbd758a18095c1470a1362718c7ed0d61df8c67cbbf03d",
+      "custom_emoji_id": "5452056954698475544"
+    },
+    {
+      "id": "pilot-012",
+      "observed": {
+        "subjects": [
+          "оранжевая тыква с вырезанным лицом"
+        ],
+        "actions": [
+          "растягивается и сжимается; наклоняется"
+        ],
+        "expression": "улыбка",
+        "text": null,
+        "style": "штриховка цветными мелками",
+        "temporal_sequence": [
+          "растягивается и сжимается; наклоняется"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "Хэллоуин",
+          "тыква"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "8471f2945bc3c0f32e5957dd94c17f69645b05421f73f13aab2d319f91019958",
+      "custom_emoji_id": "5427336991253479512"
+    },
+    {
+      "id": "pilot-013",
+      "observed": {
+        "subjects": [
+          "две ладони",
+          "фиолетовые манжеты"
+        ],
+        "actions": [
+          "ладони расходятся и соединяются; появляются лучи"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "штриховка цветными мелками",
+        "temporal_sequence": [
+          "ладони расходятся и соединяются; появляются лучи"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "пожалуйста",
+          "спасибо",
+          "молитва",
+          "дай пять"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "b51447abb90a7d909729fd130d63f0dc132a8d864ecb95845b0f4ddb9d153108",
+      "custom_emoji_id": "5285070644864628879"
+    },
+    {
+      "id": "pilot-014",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо"
+        ],
+        "actions": [
+          "моргает; изменяет наклон и форму рта"
+        ],
+        "expression": "недовольное",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "моргает; изменяет наклон и форму рта"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "недовольство",
+          "скепсис"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "a6c51ff78fda83e2826caf7430b7caa6c7bc36980f1b94e5ee26898d93621776",
+      "custom_emoji_id": "5357398894856648601"
+    },
+    {
+      "id": "pilot-015",
+      "observed": {
+        "subjects": [
+          "розовая голова единорога",
+          "фиолетовая шляпа",
+          "цветная грива",
+          "искры"
+        ],
+        "actions": [
+          "поворачивает голову; искры появляются"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "рисунок цветными мелками",
+        "temporal_sequence": [
+          "поворачивает голову; искры появляются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "единорог",
+          "волшебство"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "5db084a83d32f52766012081d6bd86d10f6632e938759aeb862460e709728223",
+      "custom_emoji_id": "5208945510638957569"
+    },
+    {
+      "id": "pilot-016",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "синяя капля у рта"
+        ],
+        "actions": [
+          "закрывает глаза; открывает рот; капля перемещается"
+        ],
+        "expression": "довольное",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "закрывает глаза; открывает рот; капля перемещается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "слюнки",
+          "аппетит",
+          "удовольствие"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "1d23895c48a27ee7a35270b4c466548501096c12687190992262b7c6970c2303",
+      "custom_emoji_id": "5467690433792453590"
+    },
+    {
+      "id": "pilot-017",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с маленькими глазами"
+        ],
+        "actions": [
+          "моргает; сжимается и растягивается"
+        ],
+        "expression": "нейтральное",
+        "text": null,
+        "style": "штриховка цветными мелками",
+        "temporal_sequence": [
+          "моргает; сжимается и растягивается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "молчание",
+          "нейтральность"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "df3edbd94bbbbe1f61c40795138c4e0ef79a92cc33408c25c7d70ef09adc2187",
+      "custom_emoji_id": "5429556385538915363"
+    },
+    {
+      "id": "pilot-018",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо"
+        ],
+        "actions": [
+          "поворачивается; меняет брови и взгляд"
+        ],
+        "expression": "от сомнения к недовольству",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "поворачивается; меняет брови и взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "сомнение",
+          "непонимание"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "2240f1cc5885db9613d89c44427d41ae786f463ba80fbaaf1e72eeafbcccfce2",
+      "custom_emoji_id": "5256200063679478041"
+    },
+    {
+      "id": "pilot-019",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с прищуром"
+        ],
+        "actions": [
+          "улыбается; наклоняется"
+        ],
+        "expression": "лукавое",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "улыбается; наклоняется"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "ухмылка",
+          "ирония",
+          "самодовольство"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "a4d91f6dc67563f3c48f30e1846a2d23da584da646da6498b34057ee2d322d8d",
+      "custom_emoji_id": "5253819273112989073"
+    },
+    {
+      "id": "pilot-020",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "линии движения"
+        ],
+        "actions": [
+          "наклоняется в разные стороны; рот открывается и закрывается"
+        ],
+        "expression": "меняется",
+        "text": null,
+        "style": "штриховка цветными мелками; спирали на щеках",
+        "temporal_sequence": [
+          "наклоняется в разные стороны; рот открывается и закрывается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "головокружение",
+          "потрясение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "ba386342627d45124d9afc0bc67e49f87bb49bbf5c0de053ddff0337a76f0ec5",
+      "custom_emoji_id": "5375132879246340203"
+    },
+    {
+      "id": "pilot-021",
+      "observed": {
+        "subjects": [
+          "зелёное лицо"
+        ],
+        "actions": [
+          "меняет наклон; зажмуривается; щёки раздуваются"
+        ],
+        "expression": "страдальческое",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "меняет наклон; зажмуривается; щёки раздуваются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "тошнота",
+          "недомогание"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "31b1f329c55d7a9c1c13124827f9c673ed3466a319fd06ecb7ee6f1500057786",
+      "custom_emoji_id": "5454173029250636981"
+    },
+    {
+      "id": "pilot-022",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "телефонная трубка"
+        ],
+        "actions": [
+          "подносит трубку к уху; хмурится"
+        ],
+        "expression": "от внимательного к сердитому",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "подносит трубку к уху; хмурится"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "звонок",
+          "разговор по телефону"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "04bad24cfd16ea0f1e575cc5f494dfd71e2a69a8ad255371fd45b9442467170d",
+      "custom_emoji_id": "5226772700113935347"
+    },
+    {
+      "id": "pilot-023",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо в белых повязках с красными пятнами"
+        ],
+        "actions": [
+          "наклоняется; меняет взгляд"
+        ],
+        "expression": "страдальческое",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "наклоняется; меняет взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "травма",
+          "боль",
+          "заживление"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "58fb49eeb528251b9805ca9a72762da2e0a39a9d93ffe653e756af536a724272",
+      "custom_emoji_id": "5445397461877136201"
+    },
+    {
+      "id": "pilot-024",
+      "observed": {
+        "subjects": [
+          "персонаж в шлеме",
+          "гоночная машина"
+        ],
+        "actions": [
+          "наклоняется в машине; меняет взгляд"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "наклоняется в машине; меняет взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "гонка",
+          "водитель",
+          "скорость"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "1040a7a0857b475c0b454f48cae5aa9657f072cf4b99b9e1d1bbb4f960829655",
+      "custom_emoji_id": "5249030062455398728"
+    },
+    {
+      "id": "pilot-025",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо с большими глазами"
+        ],
+        "actions": [
+          "изменяет размер; моргает; меняет взгляд"
+        ],
+        "expression": "удивлённое или нейтральное",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "изменяет размер; моргает; меняет взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "удивление",
+          "внимание"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "d37322bedfa2b13033831f3d09be46ced945880757086426b72ddffd46eb45b0",
+      "custom_emoji_id": "5375131899993792435"
+    },
+    {
+      "id": "pilot-026",
+      "observed": {
+        "subjects": [
+          "круглое лицо",
+          "пунктирный контур"
+        ],
+        "actions": [
+          "лицо исчезает и появляется; становится серым"
+        ],
+        "expression": "нейтральное",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "лицо исчезает и появляется; становится серым"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "исчезновение",
+          "невидимость",
+          "неловкость"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "6ce8857f5db5ad698bc6ebd7b0d328410ec345f8db47fef7f62dbc4a3e58d9bc",
+      "custom_emoji_id": "5246885387716011812"
+    },
+    {
+      "id": "pilot-027",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "зелёная бутылка",
+          "синяя слеза"
+        ],
+        "actions": [
+          "поднимает бутылку к лицу; затем появляются большие глаза и слеза"
+        ],
+        "expression": "слезливое",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "поднимает бутылку к лицу; затем появляются большие глаза и слеза"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "пить",
+          "опьянение",
+          "печаль"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "ad1b668fad2591dae6e5bc7e7d3317f256e7eabaab2032fe719d6708e34be0c4",
+      "custom_emoji_id": "5371006802949315307"
+    },
+    {
+      "id": "pilot-028",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "рука у подбородка",
+          "слеза"
+        ],
+        "actions": [
+          "держит руку у подбородка; трогает голову; меняет взгляд"
+        ],
+        "expression": "озадаченное",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "держит руку у подбородка; трогает голову; меняет взгляд"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "размышление",
+          "сомнение",
+          "затруднение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "b2bd2ae50f52446e19bea4aef1c99320f274e477034999f5307193f17b9d01f5",
+      "custom_emoji_id": "5368809197032971971"
+    },
+    {
+      "id": "pilot-029",
+      "observed": {
+        "subjects": [
+          "красное сердитое лицо",
+          "чёрная полоса с символами у рта"
+        ],
+        "actions": [
+          "открывает рот; символы на полосе меняются"
+        ],
+        "expression": "злость",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "открывает рот; символы на полосе меняются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "ругательство",
+          "ярость"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "Надписи меняются; точная транскрипция не подтверждена по контактному листу.",
+      "sha256": "9dee9313b2d5cc4e7eb27e3e76cded65b1d47aa306575f746e348fe027af2cfe",
+      "custom_emoji_id": "5372914270939913780"
+    },
+    {
+      "id": "pilot-030",
+      "observed": {
+        "subjects": [
+          "жёлтое лицо",
+          "серый механизм с жёлтым винтом"
+        ],
+        "actions": [
+          "серый механизм находится поверх головы; лицо сжимается"
+        ],
+        "expression": "напряжённое",
+        "text": null,
+        "style": "цветной мультфильм с контуром",
+        "temporal_sequence": [
+          "серый механизм находится поверх головы; лицо сжимается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "тяжесть",
+          "напряжение",
+          "давление"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "Точный вид механизма по контактному листу не подтверждён.",
+      "sha256": "ff7205262f10be15ec6ed8c00808fcf7bdfcf6ab930d5dc9c6bd56119485e9a9",
+      "custom_emoji_id": "5204204867471547076"
+    },
+    {
+      "id": "pilot-031",
+      "observed": {
+        "subjects": [
+          "голубой кот",
+          "сердца в глазах",
+          "высунутый язык"
+        ],
+        "actions": [
+          "язык высовывается; обычные глаза сменяются сердцами"
+        ],
+        "expression": "восторг",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "язык высовывается; обычные глаза сменяются сердцами"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "влюблённость",
+          "восхищение"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "a7718e48cb0bc70ac7210b115f6789baa5e020eaaf32a6b1130202f9de586cc6",
+      "custom_emoji_id": "5400130177319580649"
+    },
+    {
+      "id": "pilot-032",
+      "observed": {
+        "subjects": [
+          "голубой кот",
+          "красные сердца"
+        ],
+        "actions": [
+          "поворачивается; вытягивает губы; сердца поднимаются"
+        ],
+        "expression": "нежное",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "поворачивается; вытягивает губы; сердца поднимаются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "поцелуй",
+          "любовь"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "1417c2530a98edd78d7d14540cabd632462bbc04b7691842a067e7030702818d",
+      "custom_emoji_id": "5370856758266837169"
+    },
+    {
+      "id": "pilot-033",
+      "observed": {
+        "subjects": [
+          "золотистая медаль",
+          "отпечаток лапы",
+          "ленты"
+        ],
+        "actions": [
+          "медаль поворачивается; видна обратная сторона"
+        ],
+        "expression": null,
+        "text": "CAT LOVER",
+        "style": "цветной мультфильм",
+        "temporal_sequence": [
+          "медаль поворачивается; видна обратная сторона"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "любитель кошек",
+          "награда"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "80658f5570adfc9be34ba565eb14495b008f69f5cf2a5d74181ba0bd0c2cc7ac",
+      "custom_emoji_id": "5291919983830382928"
+    },
+    {
+      "id": "pilot-034",
+      "observed": {
+        "subjects": [
+          "голубой кот",
+          "круглая платформа"
+        ],
+        "actions": [
+          "кот и платформа поворачиваются; видна спина"
+        ],
+        "expression": "улыбка",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "кот и платформа поворачиваются; видна спина"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "кот",
+          "вращение"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "8a95b1d3b80c1d4bb12455ff205432f6760b37becbf96c0df47f888f248eec5f",
+      "custom_emoji_id": "5393182152890268152"
+    },
+    {
+      "id": "pilot-035",
+      "observed": {
+        "subjects": [
+          "рыжий кот",
+          "слёзы"
+        ],
+        "actions": [
+          "раскрывает рот; глаза увеличиваются; слёзы вылетают"
+        ],
+        "expression": "от смеха к сильному крику",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "раскрывает рот; глаза увеличиваются; слёзы вылетают"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "смех до слёз",
+          "крик"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "9c684d9edfa0a9d961ff43f88ced0847ffa08f3fd3d9febaf781c73a5157c46c",
+      "custom_emoji_id": "5467899285167157308"
+    },
+    {
+      "id": "pilot-036",
+      "observed": {
+        "subjects": [
+          "фиолетовый кот",
+          "радужные полосы изо рта"
+        ],
+        "actions": [
+          "раздувает щёки; выпускает радугу"
+        ],
+        "expression": "меняется",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "раздувает щёки; выпускает радугу"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "радужная рвота",
+          "восторг",
+          "перебор"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "cba4f0625e928771d0070a3a8e0428f22acc1fdf54a5ecbf73424faea1b9efb5",
+      "custom_emoji_id": "5463411211846560614"
+    },
+    {
+      "id": "pilot-037",
+      "observed": {
+        "subjects": [
+          "бежевый кот",
+          "красная табличка"
+        ],
+        "actions": [
+          "держит и поворачивает табличку"
+        ],
+        "expression": "недовольное",
+        "text": "NO",
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "держит и поворачивает табличку"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "нет",
+          "отказ"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "4d685f00f24e7eeaed5279d26bcdd3cd62215fbcb3815063e87185310a69cccf",
+      "custom_emoji_id": "5305381957524272531"
+    },
+    {
+      "id": "pilot-038",
+      "observed": {
+        "subjects": [
+          "голубой кот с зубастой улыбкой"
+        ],
+        "actions": [
+          "растягивает рот и щёки"
+        ],
+        "expression": "напряжённая улыбка",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "растягивает рот и щёки"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "неловкость",
+          "натянутая улыбка"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "edacfdbcdcfeee0a15857cd7816e40fd24416d61f7e36fd99571eab16c57ca3e",
+      "custom_emoji_id": "5379924842977963225"
+    },
+    {
+      "id": "pilot-039",
+      "observed": {
+        "subjects": [
+          "бежевая кошачья мордочка",
+          "большие блестящие глаза"
+        ],
+        "actions": [
+          "моргает; глаза увеличиваются"
+        ],
+        "expression": "умоляющее",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "моргает; глаза увеличиваются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "просьба",
+          "умиление"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "1dcccc0f7a210500df7c27f6718d718935402f5ac1a488c236075ec3e09e22ab",
+      "custom_emoji_id": "5251416878861006232"
+    },
+    {
+      "id": "pilot-040",
+      "observed": {
+        "subjects": [
+          "розовый кот",
+          "красные сердца"
+        ],
+        "actions": [
+          "поворачивается; закрывает глаза; сердца меняют положение"
+        ],
+        "expression": "нежное",
+        "text": null,
+        "style": "округлый цветной мультфильм",
+        "temporal_sequence": [
+          "поворачивается; закрывает глаза; сердца меняют положение"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "любовь",
+          "умиление"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "ae00d56cf574c0728348eb0405993190a1c9648fdb96fc9e023b913ffa125532",
+      "custom_emoji_id": "5228944201219062824"
+    },
+    {
+      "id": "pilot-041",
+      "observed": {
+        "subjects": [
+          "синяя латинская буква W"
+        ],
+        "actions": [
+          "слегка сжимается и растягивается"
+        ],
+        "expression": null,
+        "text": "W",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "слегка сжимается и растягивается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "буква W"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "9b9398493424ea56f7f7ae141d62ea9375005db28196689484614397f82db9ea",
+      "custom_emoji_id": "5332308237079288987"
+    },
+    {
+      "id": "pilot-042",
+      "observed": {
+        "subjects": [
+          "синяя решётка"
+        ],
+        "actions": [
+          "слегка изменяет форму"
+        ],
+        "expression": null,
+        "text": "#",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "слегка изменяет форму"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "решётка",
+          "хештег"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "a6eb8a893648cd79f303b3dbe9382cd7c3bfd2cf8907d587aab13894a1074542",
+      "custom_emoji_id": "5390854796011906616"
+    },
+    {
+      "id": "pilot-043",
+      "observed": {
+        "subjects": [
+          "синяя горизонтальная черта внизу"
+        ],
+        "actions": [
+          "изгибается волной"
+        ],
+        "expression": null,
+        "text": "_",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "изгибается волной"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "подчёркивание"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "31058b1ca9abe03ab1ecf7b02e0e8230ce8d22f49fbf00568270f2e84bab804f",
+      "custom_emoji_id": "5404702371869631372"
+    },
+    {
+      "id": "pilot-044",
+      "observed": {
+        "subjects": [
+          "синий овальный знак с диагональной чертой"
+        ],
+        "actions": [
+          "сжимается и растягивается"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "сжимается и растягивается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "перечёркнутый ноль",
+          "Ø"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "Ноль с чертой и буква Ø визуально неоднозначны.",
+      "sha256": "34322ac24c14999e72be6ac4484ae353173ad0eab224ade3fd0147d513ebe0ed",
+      "custom_emoji_id": "5393480373944459905"
+    },
+    {
+      "id": "pilot-045",
+      "observed": {
+        "subjects": [
+          "синяя короткая горизонтальная черта"
+        ],
+        "actions": [
+          "слегка изменяет толщину"
+        ],
+        "expression": null,
+        "text": "-",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "слегка изменяет толщину"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "минус",
+          "дефис"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "dc43143a0724169dec448e701ce5a23551051bf750486aa2d21b0a5509c494f9",
+      "custom_emoji_id": "5382261056078881010"
+    },
+    {
+      "id": "pilot-046",
+      "observed": {
+        "subjects": [
+          "три синие точки"
+        ],
+        "actions": [
+          "точки поднимаются и опускаются"
+        ],
+        "expression": null,
+        "text": "...",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "точки поднимаются и опускаются"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "многоточие",
+          "ожидание"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "ea6d37020a453e988933a7679d727a036708e6a70bdb61860640e87f40e050f6",
+      "custom_emoji_id": "5391111785380062638"
+    },
+    {
+      "id": "pilot-047",
+      "observed": {
+        "subjects": [
+          "синяя латинская буква Y"
+        ],
+        "actions": [
+          "сжимается и растягивается"
+        ],
+        "expression": null,
+        "text": "Y",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "сжимается и растягивается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "буква Y"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "eb7c4669e2e233be3ee9a1896ddea34da410d344c92f111d12a5e7cfdd05687d",
+      "custom_emoji_id": "5332648110726323166"
+    },
+    {
+      "id": "pilot-048",
+      "observed": {
+        "subjects": [
+          "две синие горизонтальные черты"
+        ],
+        "actions": [
+          "изменяют наклон и расстояние"
+        ],
+        "expression": null,
+        "text": "=",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "изменяют наклон и расстояние"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "равно"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "dc61a9be785e1940ee9ffbdca49d438c8eaf06123608b91f501dbfb19cac86bd",
+      "custom_emoji_id": "5393303305327746695"
+    },
+    {
+      "id": "pilot-049",
+      "observed": {
+        "subjects": [
+          "синяя цифра один"
+        ],
+        "actions": [
+          "слегка качается"
+        ],
+        "expression": null,
+        "text": "1",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "слегка качается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "один",
+          "номер один"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "69d2e75a8570135393f3c84178057e85e9236062173f700e40cf17c98b758429",
+      "custom_emoji_id": "5382322671679708881"
+    },
+    {
+      "id": "pilot-050",
+      "observed": {
+        "subjects": [
+          "синий восклицательный знак"
+        ],
+        "actions": [
+          "слегка качается"
+        ],
+        "expression": null,
+        "text": "!",
+        "style": "синий знак с тёмным контуром",
+        "temporal_sequence": [
+          "слегка качается"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "восклицание",
+          "внимание"
+        ],
+        "intensity": null,
+        "ambiguity": false
+      },
+      "review_notes": "",
+      "sha256": "6a7eb1c8e2fae5fcce71dedd07985e6e6e969221083fd25ff81ac31b7e27778b",
+      "custom_emoji_id": "5382259076098957171"
+    },
+    {
+      "id": "pilot-051",
+      "observed": {
+        "subjects": [
+          "гаечный ключ",
+          "треугольник воспроизведения"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная контурная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "выполнить инструмент",
+          "запуск"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "97fbd32936f3830be6c05750d039cf2900a774839410bc5b477d48a28ae53463",
+      "custom_emoji_id": "5537560399123054610"
+    },
+    {
+      "id": "pilot-052",
+      "observed": {
+        "subjects": [
+          "мозг"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "мышление",
+          "мозг"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "0ec7399a6ca5d5f7628daa04fa1f473a6250aa4fc0d49c610dc8b1d9846e7079",
+      "custom_emoji_id": "5537346136089559052"
+    },
+    {
+      "id": "pilot-053",
+      "observed": {
+        "subjects": [
+          "картина с горой и круглым светилом",
+          "кисть"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная контурная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "редактировать изображение",
+          "рисовать"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "ede5843082761d13f917353301d6d40febf872871a0506d5c04b50c372a3b7ca",
+      "custom_emoji_id": "5535333750637854737"
+    },
+    {
+      "id": "pilot-054",
+      "observed": {
+        "subjects": [
+          "две шестерёнки"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "настройки",
+          "обработка"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "2810271172939ecea0602895189e1f07f837515047e4d549144420b9dd30259a",
+      "custom_emoji_id": "5535458420653555733"
+    },
+    {
+      "id": "pilot-055",
+      "observed": {
+        "subjects": [
+          "губы",
+          "три горизонтальные линии"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "речь",
+          "говорить"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "7ea5b17755770df4c13c08f82a0b1c5ad3612ca8c3143e82cb03f4b3a54eaf53",
+      "custom_emoji_id": "5535161213211639862"
+    },
+    {
+      "id": "pilot-056",
+      "observed": {
+        "subjects": [
+          "картина с горой и круглым светилом",
+          "кисть"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "редактировать изображение",
+          "рисовать"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "be2e5409c7ac9ffb6c94cf190569e61c9c05b2068eb55ce0157539e278f2981d",
+      "custom_emoji_id": "5537550061136773132"
+    },
+    {
+      "id": "pilot-057",
+      "observed": {
+        "subjects": [
+          "лист документа с загнутым углом",
+          "строки",
+          "искра"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "создать документ"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "d8030b6774a76c39059170413e85dee8e9eb152e0ac80b3a7b37721737f3b2ca",
+      "custom_emoji_id": "5537514855289847815"
+    },
+    {
+      "id": "pilot-058",
+      "observed": {
+        "subjects": [
+          "губы",
+          "искра"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "создать речь"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "abca77347fd312015d7cc5ee70ef2e8544bbf606ec4b53055a0497f3eb3b7eb1",
+      "custom_emoji_id": "5535219096485888134"
+    },
+    {
+      "id": "pilot-059",
+      "observed": {
+        "subjects": [
+          "картина с горой и круглым светилом",
+          "глаз"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная контурная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "посмотреть изображение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "254cb8be262cbb61e6447b2c136e99a0b0ce8f6e4fe3dd6c8d78007ded1f9071",
+      "custom_emoji_id": "5537651753077440526"
+    },
+    {
+      "id": "pilot-060",
+      "observed": {
+        "subjects": [
+          "лист документа",
+          "строки",
+          "лупа"
+        ],
+        "actions": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ],
+        "expression": null,
+        "text": null,
+        "style": "чёрная силуэтная пиктограмма",
+        "temporal_sequence": [
+          "заметное движение в восьми кадрах не обнаружено"
+        ]
+      },
+      "inferred": {
+        "possible_meanings": [
+          "поиск в документе"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "review_notes": "",
+      "sha256": "b6c3109a722c62bfea6c8fd0f149c4d9c1d8f071a857adbc83a7cbc6a350ec18",
+      "custom_emoji_id": "5534951812081123354"
+    }
+  ],
+  "revision_notes": "Before model outputs: replaced inferred thinking with visible hand pose in028, and uncertain dumbbell identification with a generic visible mechanism in030. Prior v1 remains in PostgreSQL."
+}

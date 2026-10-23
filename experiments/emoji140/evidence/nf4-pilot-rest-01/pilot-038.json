@@ -1,0 +1,103 @@
+{
+  "id": "pilot-038",
+  "source_sha256": "edacfdbcdcfeee0a15857cd7816e40fd24416d61f7e36fd99571eab16c57ca3e",
+  "ordinal": 39,
+  "status": "completed",
+  "frame_sha256": [
+    "aa3cdf11416d86b2d394e953617485509308160237ab994b37cfa1279f1d9b5e",
+    "e36e1419a4ffdb7e1965b88a29bd4aa0ae555b5fbc9044bf247d147dc8ecb87c",
+    "8b753567a4ba6b29ec5a85d509bfed6b47e1cb353cbc85c8483e59301713317a",
+    "21436559654afbcfe79a6347a69aed6586e988c74f1489291d201233b733fd83",
+    "08080aba09728627d13c109f1884aa8526970c840110b669290c7a547057f569",
+    "89c4d7c40e762befb27d200afba6c70f3d7f7d193591c115e9066be85b821a5c",
+    "54664b83aac08560fb191cf81f6e27f63b18046941a2074e78f7e0533a2f30ce",
+    "fbdff6adfaa2455e1be2d0b3eaad071f0c5144cc7d47ef8ba878716b6700d895"
+  ],
+  "image_count": 8,
+  "started_at": 1792734765.4892895,
+  "first_token_seconds": 0.5446782359999816,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue cat\"\n    ],\n    \"actions\": [\n      \"grinning\",\n      \"teeth showing\",\n      \"eyes widening\",\n      \"ears drooping\",\n      \"tears appearing\",\n      \"tears dripping\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat with wide eyes and gritted teeth\",\n      \"cat with wide eyes and showing teeth\",\n      \"cat with wide eyes and showing teeth, ears drooping\",\n      \"cat with wide eyes, showing teeth, ears drooping, tears appearing\",\n      \"cat with wide eyes, showing teeth, ears drooping, tears dripping\",\n      \"cat with wide eyes, showing teeth, ears drooping, tears dripping\",\n      \"cat with wide eyes, showing teeth, ears drooping, no tears\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 224,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue cat"
+      ],
+      "actions": [
+        "grinning",
+        "teeth showing",
+        "eyes widening",
+        "ears drooping",
+        "tears appearing",
+        "tears dripping"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "cat with wide eyes and gritted teeth",
+        "cat with wide eyes and showing teeth",
+        "cat with wide eyes and showing teeth, ears drooping",
+        "cat with wide eyes, showing teeth, ears drooping, tears appearing",
+        "cat with wide eyes, showing teeth, ears drooping, tears dripping",
+        "cat with wide eyes, showing teeth, ears drooping, tears dripping",
+        "cat with wide eyes, showing teeth, ears drooping, no tears"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.224979656999949,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

@@ -1,0 +1,94 @@
+{
+  "id": "pilot-013",
+  "source_sha256": "b51447abb90a7d909729fd130d63f0dc132a8d864ecb95845b0f4ddb9d153108",
+  "ordinal": 10,
+  "status": "completed",
+  "frame_sha256": [
+    "14acfbf55d2202a164a281400d764e80330c777a86eb95a7ebf18ed4104a6107",
+    "c40ae58a16bebd12ddd4fdb3e569f8c49d088e3ee36ca08ae8d0208398f4382f",
+    "77d059ca5de3d5819b405fc72f0085fdb9f8bf4e81a9def364b4ef99733b8fc0",
+    "4e05bfad9c531c24c0497ef9c5605b180a939ce87368e1521a5f39b5a3a86681",
+    "b98744bc96eb1d6915a89faa1208062d79f01dc4a9b623d394f587ddaf71cad2",
+    "ea55809fc6f5f7df3a0cadf632bb529eab9730f128c9144681bd3ceac46b1391",
+    "cac44e68763c2e743d3bfa655e0f6e87202525f2d37eaf73212c8b715d71ff13",
+    "f381307408dbd50dd47aee1b57c1c526288ab8dd085f88a4d1fe94bca074442f"
+  ],
+  "image_count": 8,
+  "started_at": 1792734552.4489205,
+  "first_token_seconds": 0.5412778620002427,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"two hands\"\n    ],\n    \"actions\": [\n      \"clapping\",\n      \"retracting\",\n      \"reappearing\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"hands together, then separate, then together again, then separate, then together again\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 123,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "two hands"
+      ],
+      "actions": [
+        "clapping",
+        "retracting",
+        "reappearing"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "hands together, then separate, then together again, then separate, then together again"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 5.788056522000261,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

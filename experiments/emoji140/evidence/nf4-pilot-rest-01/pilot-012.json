@@ -1,0 +1,90 @@
+{
+  "id": "pilot-012",
+  "source_sha256": "8471f2945bc3c0f32e5957dd94c17f69645b05421f73f13aab2d319f91019958",
+  "ordinal": 4,
+  "status": "completed",
+  "frame_sha256": [
+    "75f40d6e78797068c986c466120c526fb7b03dac70c5880b01a07b49bc7921d2",
+    "39829569f489a34eacd4e47a81014f8f65964246e8cf08de3e794d5d425180c1",
+    "19e4a295a8e0070598a1edaa4924a39ee94cd926d711d75c5f365e324d20d185",
+    "c0100985a1471dacb47a4f34240738b1356c412029b9b93c22eb9760fd795202",
+    "476aae8ad37d6dc61cc4c9bbf0f47e26be1703a9171c66958cdaecf94241a7e3",
+    "3b7f89bf3711cc785da0740a3913d76a4601bf197d24a5541f25b69a6bda2c23",
+    "ded63f0bca8fcefe6148380950447e8ae8913004e881853de1500c5f3af0e1a2",
+    "591a33f76e74dcfe0ccd11caa349e6aeb3d447cdfc9022ebfa316e25d54d9bb5"
+  ],
+  "image_count": 8,
+  "started_at": 1792734511.3071985,
+  "first_token_seconds": 0.549354405000031,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"помидор\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"помидор с зеленым верхом и оранжевым телом, с улыбкой и глазами, с зелеными вихрями по бокам\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 134,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "помидор"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "помидор с зеленым верхом и оранжевым телом, с улыбкой и глазами, с зелеными вихрями по бокам"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.558615156000087,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

@@ -1,0 +1,24 @@
+{
+  "method": "64-bit horizontal dHash on alpha-cropped middle frame, white background; distance<=4",
+  "limitations": "Candidates require visual review; phase/style can cause misses and false positives. No study split is frozen.",
+  "pairs": [
+    {
+      "a": "d3ad13e89ea4247b96a0e41746bc86d442e65833c23af598b9e7e37a992e5a6d",
+      "b": "a4991d2a455df0e71cf77fe2f6f42c8e3748af43894ea3ab38d6d6d0302d428e",
+      "distance": 0,
+      "review": "unreviewed_candidate"
+    },
+    {
+      "a": "a549c722c2ef89af2bfa55388f7ee8bd10bd73352ce23d51c1687e464fb02c71",
+      "b": "e07a7331d721ebe94256d32769eeb6e51b3b07a9b3a88435c6f2339c2a2d336e",
+      "distance": 2,
+      "review": "unreviewed_candidate"
+    },
+    {
+      "a": "c8490d12643fcf424fcc8b8a44284570f09b0b59c8bff10435750a109f0e7208",
+      "b": "a046298e0fbff9fc90446e4c7111c294cb80ca90f5f18e0aa55cbd1a45c00fa5",
+      "distance": 2,
+      "review": "unreviewed_candidate"
+    }
+  ]
+}

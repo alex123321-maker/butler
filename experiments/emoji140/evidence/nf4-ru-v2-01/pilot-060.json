@@ -1,0 +1,71 @@
+{
+  "id": "pilot-060",
+  "source_sha256": "b6c3109a722c62bfea6c8fd0f149c4d9c1d8f071a857adbc83a7cbc6a350ec18",
+  "ordinal": 1,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734883.055309,
+  "first_token_seconds": 0.6470414599998549,
+  "input_tokens": 1102,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"контурная пиктограмма\",\"temporal_sequence\":[],\"inferred\":{\"possible_meanings\":[],\"intensity\":null,\"ambiguity\":true}}",
+  "output_tokens": 55,
+  "truncated": false,
+  "schema_valid": false,
+  "total_seconds": 2.913609517999703,
+  "peak_gpu_allocated_bytes": 3243728384,
+  "peak_gpu_reserved_bytes": 3311403008,
+  "rss_peak_kib": 9230912
+}

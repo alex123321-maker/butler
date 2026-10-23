@@ -1,0 +1,102 @@
+{
+  "id": "pilot-011",
+  "source_sha256": "64e94f96a1fbfcff89cbd758a18095c1470a1362718c7ed0d61df8c67cbbf03d",
+  "ordinal": 10,
+  "status": "completed",
+  "frame_sha256": [
+    "5f7e464ce1f6fa0b68e4cfbe03126906a819af8ef1b19618ad2cdff259c30166",
+    "5ca3a02793f7aac1b0a6163068a4a20cfa3485a3872cd6e6935c0a4d49ac2f72",
+    "2337967dffb44ee6f4e1fca380898b32aaa6684023ba32f13906ca6106717b13",
+    "927c7d8b354042374aa471e13ade6365c902143b0df16e625f5cb677be8868eb",
+    "9b1cedd110c29e20bbcda7e227124b0dd9241ceb3fad979bdb421da81e2bb44b",
+    "be39556a9a5f8ec9814e29b49bdec83d42a42f91a973a20273b1dc317c016b48",
+    "6a3d3b34af05e5b45ca0105fb09d94adda7e5b61ea374a9051c2db7e83495d91",
+    "624d0c63b37f0c2f7455c008bf5b8e5629eb85ee15a784a450966cfca66252d4"
+  ],
+  "image_count": 8,
+  "started_at": 1792734394.378343,
+  "first_token_seconds": 0.5457654479996563,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with scribbled background\"\n    ],\n    \"actions\": [\n      \"eyes closing\",\n      \"eyes opening\",\n      \"mouth forming a grimace\",\n      \"blowing blue steam from cheeks\",\n      \"steam disappearing\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes closed, steam blowing, mouth grimacing\",\n      \"eyes opening, steam disappearing, mouth grimacing\",\n      \"eyes open, mouth grimacing\",\n      \"eyes open, mouth grimacing\",\n      \"eyes open, mouth grimacing\",\n      \"eyes closed, steam blowing, mouth grimacing\",\n      \"eyes closed, steam blowing, mouth grimacing\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 199,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with scribbled background"
+      ],
+      "actions": [
+        "eyes closing",
+        "eyes opening",
+        "mouth forming a grimace",
+        "blowing blue steam from cheeks",
+        "steam disappearing"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes closed, steam blowing, mouth grimacing",
+        "eyes opening, steam disappearing, mouth grimacing",
+        "eyes open, mouth grimacing",
+        "eyes open, mouth grimacing",
+        "eyes open, mouth grimacing",
+        "eyes closed, steam blowing, mouth grimacing",
+        "eyes closed, steam blowing, mouth grimacing"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.218632860999605,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

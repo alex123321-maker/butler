@@ -1,0 +1,92 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observed",
+    "inferred"
+  ],
+  "properties": {
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subjects",
+        "actions",
+        "expression",
+        "text",
+        "style",
+        "temporal_sequence"
+      ],
+      "properties": {
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expression": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "temporal_sequence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "inferred": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "possible_meanings",
+        "intensity",
+        "ambiguity"
+      ],
+      "properties": {
+        "possible_meanings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "intensity": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            null
+          ]
+        },
+        "ambiguity": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

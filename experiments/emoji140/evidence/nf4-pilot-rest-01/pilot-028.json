@@ -1,0 +1,102 @@
+{
+  "id": "pilot-028",
+  "source_sha256": "b2bd2ae50f52446e19bea4aef1c99320f274e477034999f5307193f17b9d01f5",
+  "ordinal": 41,
+  "status": "completed",
+  "frame_sha256": [
+    "d252d4ce61a793e561b5ed84b9e55257510d382adb74a316c6dd5267746f4f73",
+    "165ecb5daf0c9e3b6ffecd61280af2b29ec7e7e665d977b9d23ca0fd17e50347",
+    "1db5f13bad200e5aa47c619c091bc1dbed36b0248f398e74e90fb1905a5ad569",
+    "ec6befff849c832732a796486738370fb2efa758924489eb74dc332fd728992f",
+    "9069f5df709db4ce35b7aefb4bf18e625760a9d840207cd22ecda6fd19614e29",
+    "a2d245aa74d4922b27edddebafc6041ecef18e6406dd50fc438182360989681a",
+    "bc312df3d88a4099a2f59f2e1e71e412db33538ba21836b7474d014385a59508",
+    "ec49bb4be2e7b1f50fddc5a7be1e068fc319c2c5f569b569e45adb9f4a4c72c2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734785.4035249,
+  "first_token_seconds": 0.5457794270000704,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow emoji face\"\n    ],\n    \"actions\": [\n      \"pointing finger to mouth\",\n      \"tears\",\n      \"sweating\",\n      \"winking\",\n      \"closing eyes\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"pointing finger to mouth, angry eyes\",\n      \"tears, pointing finger to mouth, angry eyes\",\n      \"tears, pointing finger to mouth, angry eyes\",\n      \"sweating, winking, pointing finger to mouth\",\n      \"sweating, winking, pointing finger to mouth\",\n      \"pointing finger to mouth, angry eyes\",\n      \"pointing finger to mouth, angry eyes\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 204,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow emoji face"
+      ],
+      "actions": [
+        "pointing finger to mouth",
+        "tears",
+        "sweating",
+        "winking",
+        "closing eyes"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "pointing finger to mouth, angry eyes",
+        "tears, pointing finger to mouth, angry eyes",
+        "tears, pointing finger to mouth, angry eyes",
+        "sweating, winking, pointing finger to mouth",
+        "sweating, winking, pointing finger to mouth",
+        "pointing finger to mouth, angry eyes",
+        "pointing finger to mouth, angry eyes"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.348872257000039,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

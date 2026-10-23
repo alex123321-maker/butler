@@ -1,0 +1,101 @@
+{
+  "id": "pilot-008",
+  "source_sha256": "fd4f14fa03a6939906631710f96c58ecbf9a99323c4fac592a08a17d4294c282",
+  "ordinal": 38,
+  "status": "completed",
+  "frame_sha256": [
+    "0de9800a493fc6945265443b573af98331b94aedc93e9919045c4d2dc7af525e",
+    "2b4b0553f27e44d2ac480d6886f138489efc6f9aa0a8e57d742168343c5fb674",
+    "edc5dc1d283bdd5127c2dbc978b5347ffa437f184d7a69e2ccee2533a703434e",
+    "65536b253c234bc7c91fd2a4f508c837a5f625a11764bfd36077f3d08cd2cf9a",
+    "82d6d279d267bc8aef521c02fdd2c23c05798008976a66511ff3feb6e0de4178",
+    "cebe95053a00985892986ed9123386b19e3ac8450fbea3980ff5f56383430aca",
+    "688512f926d368092bc66a95f4a0efa00c9b28ca91f206f2cce3575ebe959737",
+    "b6f428826ec9222465d5cf41d387f51243d95d7bc537ee4edf2b88cdb8b1d2d8"
+  ],
+  "image_count": 8,
+  "started_at": 1792734755.4944406,
+  "first_token_seconds": 0.543823305999922,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow emoji face with long nose\"\n    ],\n    \"actions\": [\n      \"nose moves from center to left side of face\",\n      \"eyes close and open\",\n      \"mouth opens and closes\",\n      \"nose returns to center position\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"nose at center, eyes open, mouth downturned\",\n      \"nose at left, eyes closed, mouth open\",\n      \"nose at left, eyes closed, mouth open\",\n      \"nose at center, eyes open, mouth downturned\",\n      \"nose at left, eyes closed, mouth open\",\n      \"nose at center, eyes open, mouth downturned\",\n      \"nose at left, eyes closed, mouth open\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 221,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow emoji face with long nose"
+      ],
+      "actions": [
+        "nose moves from center to left side of face",
+        "eyes close and open",
+        "mouth opens and closes",
+        "nose returns to center position"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "nose at center, eyes open, mouth downturned",
+        "nose at left, eyes closed, mouth open",
+        "nose at left, eyes closed, mouth open",
+        "nose at center, eyes open, mouth downturned",
+        "nose at left, eyes closed, mouth open",
+        "nose at center, eyes open, mouth downturned",
+        "nose at left, eyes closed, mouth open"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.987127234999662,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

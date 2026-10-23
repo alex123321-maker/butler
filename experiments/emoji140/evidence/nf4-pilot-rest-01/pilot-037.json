@@ -1,0 +1,102 @@
+{
+  "id": "pilot-037",
+  "source_sha256": "4d685f00f24e7eeaed5279d26bcdd3cd62215fbcb3815063e87185310a69cccf",
+  "ordinal": 33,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "2ac3274d749577a5ea0e041742443c930a2c7740e2ce88d0ce1e3f6f3370d8a7",
+    "cdffb2a4866971bf0ff6f078484f895fe4f14883339ba0e59c88de3337962301",
+    "154db0bae9b66b789d44b80980db0c262af0453fe33b4658af29c519b7c418ee",
+    "64184c7641bae35cdf99274301e5c9e0e78ab692d4de07940f95da77323e5eb2",
+    "bb7eb6dbb1abb92cc4f4c3dec89b94a3150970e585c7ebda5877ddec40de9d1c",
+    "8e71edcee4d730751f5a346ac78e60b630720967e000d1dd08f9b7f19ce66706",
+    "871891dc51e06de1fcba8994990301dee6330594d776fc461c7fc41914606c41",
+    "a12dbfe8cd3c8283143efcf0de6ae9ec603f2a28c304426574ce729cb13d7252"
+  ],
+  "image_count": 8,
+  "started_at": 1792734722.8215883,
+  "first_token_seconds": 0.5447095240001545,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"cat\",\n      \"sign\"\n    ],\n    \"actions\": [\n      \"holding sign\",\n      \"tilting sign\"\n    ],\n    \"expression\": null,\n    \"text\": [\n      \"NO\"\n    ],\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\",\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\",\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\",\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\",\n      \"red circular sign with white 'O' and 'O' shapes, cat paws at top and bottom\",\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\",\n      \"cat holding red sign with text 'NO', eyes narrowed, ears perked\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 238,
+  "truncated": false,
+  "schema_valid": false,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "cat",
+        "sign"
+      ],
+      "actions": [
+        "holding sign",
+        "tilting sign"
+      ],
+      "expression": null,
+      "text": [
+        "NO"
+      ],
+      "style": null,
+      "temporal_sequence": [
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked",
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked",
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked",
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked",
+        "red circular sign with white 'O' and 'O' shapes, cat paws at top and bottom",
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked",
+        "cat holding red sign with text 'NO', eyes narrowed, ears perked"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.777598314999977,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

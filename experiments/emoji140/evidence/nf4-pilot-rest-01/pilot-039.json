@@ -1,0 +1,100 @@
+{
+  "id": "pilot-039",
+  "source_sha256": "1dcccc0f7a210500df7c27f6718d718935402f5ac1a488c236075ec3e09e22ab",
+  "ordinal": 45,
+  "status": "completed",
+  "frame_sha256": [
+    "81f0ed91c78ba918afd311f9d646482a39f2ce277a41823d4b6090500bdb878c",
+    "c80b6ef4717067255ff1c03a7627fd09d2abd4509d2f5ae009792f04d1d7a7e3",
+    "2c6da02790ccd25d2f2e9b18268cfa9d7663035041430b807b16d78dcce8ccfc",
+    "7d17c0caf9018282fa321105c851ab3dd9056cb5376c3ef312eecf57d5e48d0c",
+    "03179ce4b0cb468594e92183bc22228d1d7fa619bf032963187c1a6f860e73d1",
+    "56142fb1ea1f18a261e15eac00bcf79ae5dfa8f9d5dfa909b6662c57d4520701",
+    "628250ffaf59d4976313e6d0859243133dd15cdfa6be1a1c7e631cb6de63080b",
+    "ed34b26c09ad45c1a8c5e9face1d8c27077d11b00333c435963867bb3b90a722"
+  ],
+  "image_count": 8,
+  "started_at": 1792734809.6975856,
+  "first_token_seconds": 0.5452943779996531,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"песец\",\n      \"кот\"\n    ],\n    \"actions\": [\n      \"носить солнцезащитные очки\",\n      \"закрыть глаза\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"песец с солнцезащитными очками\",\n      \"песец с солнцезащитными очками\",\n      \"кот с закрытыми глазами\",\n      \"песец с солнцезащитными очками\",\n      \"песец с солнцезащитными очками\",\n      \"песец с солнцезащитными очками\",\n      \"песец с солнцезащитными очками\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 224,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "песец",
+        "кот"
+      ],
+      "actions": [
+        "носить солнцезащитные очки",
+        "закрыть глаза"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "песец с солнцезащитными очками",
+        "песец с солнцезащитными очками",
+        "кот с закрытыми глазами",
+        "песец с солнцезащитными очками",
+        "песец с солнцезащитными очками",
+        "песец с солнцезащитными очками",
+        "песец с солнцезащитными очками"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.329446648999692,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

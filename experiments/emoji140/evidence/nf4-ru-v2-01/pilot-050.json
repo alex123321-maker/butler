@@ -1,0 +1,71 @@
+{
+  "id": "pilot-050",
+  "source_sha256": "6a7eb1c8e2fae5fcce71dedd07985e6e6e969221083fd25ff81ac31b7e27778b",
+  "ordinal": 0,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "e88722d4485db6ddbc03a6ccea69ea497dfc00c1ddd7af61a5d392d5f2f027f3",
+    "6c2c549e2800fa417d834e7478d32d09b4cb9e899c13c0b6e8a6c759da8824a5",
+    "73c29e01d825f5bd3dd49131f47996e3c212707bee0714850ce4c905df6620c9",
+    "9606f2fc1eef67918c041c317eadb0690b93c30bba0acb2659764a5ee5d8c7ac",
+    "f5975e09a5f8131fe9283533e81c3f82f213c626869711c6584c4d620a1c0d36",
+    "83fa06177da922f76c240f5d0404fcc00dbb9816a321f5341a250a2fd15c32bd",
+    "f52ccf2f67c77cd960b7c27cdef727d576516b8c53b78391412a323520a9132a",
+    "e6dca904101e4839f8b125e952b2b98a4e7fb4c3cee6dedf157d1fb9b0da6d96"
+  ],
+  "image_count": 8,
+  "started_at": 1792734876.4934921,
+  "first_token_seconds": 1.6010399659999166,
+  "input_tokens": 1102,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[],\"actions\":[\"Синий восклицательный знак появляется и оставляет следы в виде тени, затем возвращается к исходному состоянию\"],\"expression\":null,\"text\":null,\"style\":\"цветной мультфильм\",\"temporal_sequence\":[],\"inferred\":{\"possible_meanings\":[\"внимание\",\"предупреждение\",\"внимательно\",\"предупреждение\",\"внимание\"],\"intensity\":\"medium\",\"ambiguity\":true}}",
+  "output_tokens": 116,
+  "truncated": false,
+  "schema_valid": false,
+  "total_seconds": 6.558556210000006,
+  "peak_gpu_allocated_bytes": 3245172224,
+  "peak_gpu_reserved_bytes": 3311403008,
+  "rss_peak_kib": 9230912
+}

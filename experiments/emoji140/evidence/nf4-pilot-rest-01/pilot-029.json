@@ -1,0 +1,99 @@
+{
+  "id": "pilot-029",
+  "source_sha256": "9dee9313b2d5cc4e7eb27e3e76cded65b1d47aa306575f746e348fe027af2cfe",
+  "ordinal": 47,
+  "status": "completed",
+  "frame_sha256": [
+    "85c9948832e5faae6686414dbc87d707424f1cf744d0348be198fc7b3c9fcf96",
+    "00f12badb18378bd32004ec0ddf1636decb9dc9d5bf7d9aac1f4ddccb8d12153",
+    "4e2eb5a1937eb7f68103c0de30e3cfc4a82d1efa13ab5aa2ff51a98ca03b2024",
+    "90fd8f3e83dca6b5df021fe62334eb2c7f8b7006d59dfded36b1144001984486",
+    "347a8593aa791fdffb436a4d1587dd7ac559a93cd21214cbd43cf3a70d588267",
+    "c49609d3571fc6def2d77d1c93c8112f97c4ce2b7e0e6f44e3fda32a7b0626bf",
+    "2977eecd3e0146b33b874dbce8acaea7e9272ec6473e3e37014b991e0bc81e77",
+    "ebced5cf2d3931283a5250fc08e097c1088f7223ef9a0366263b09a1e0801401"
+  ],
+  "image_count": 8,
+  "started_at": 1792734828.0288215,
+  "first_token_seconds": 0.5459295860000566,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"red circular emoji with angry expression\"\n    ],\n    \"actions\": [\n      \"mouth covers changing from black bar with symbols to empty space, then back to black bar with symbols\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"red circular emoji with angry expression, black bar with symbols &$!#% over mouth\",\n      \"red circular emoji with angry expression, black bar with symbols &$!#% over mouth, symbols partially visible\",\n      \"red circular emoji with angry expression, eyes wide, mouth open, no black bar\",\n      \"red circular emoji with angry expression, black bar with symbols &$!#% over mouth\",\n      \"red circular emoji with angry expression, black bar with symbols !%$&# over mouth\",\n      \"red circular emoji with angry expression, black bar with symbols $HIT!! over mouth\",\n      \"red circular emoji with angry expression, black bar with symbols %&$# over mouth\",\n      \"red circular emoji with angry expression, black bar with symbols &$!#% over mouth\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 281,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "red circular emoji with angry expression"
+      ],
+      "actions": [
+        "mouth covers changing from black bar with symbols to empty space, then back to black bar with symbols"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "red circular emoji with angry expression, black bar with symbols &$!#% over mouth",
+        "red circular emoji with angry expression, black bar with symbols &$!#% over mouth, symbols partially visible",
+        "red circular emoji with angry expression, eyes wide, mouth open, no black bar",
+        "red circular emoji with angry expression, black bar with symbols &$!#% over mouth",
+        "red circular emoji with angry expression, black bar with symbols !%$&# over mouth",
+        "red circular emoji with angry expression, black bar with symbols $HIT!! over mouth",
+        "red circular emoji with angry expression, black bar with symbols %&$# over mouth",
+        "red circular emoji with angry expression, black bar with symbols &$!#% over mouth"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 12.736247750000075,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

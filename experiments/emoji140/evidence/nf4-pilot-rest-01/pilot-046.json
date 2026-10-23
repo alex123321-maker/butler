@@ -1,0 +1,99 @@
+{
+  "id": "pilot-046",
+  "source_sha256": "ea6d37020a453e988933a7679d727a036708e6a70bdb61860640e87f40e050f6",
+  "ordinal": 24,
+  "status": "completed",
+  "frame_sha256": [
+    "74aad7543c08d7d9eeb7b79f9b2fa6fd822b5e32d5fd90cfa50b5d743287e601",
+    "5f9fc2fd147535a194d2abf2958aeabb5ac06a3e39d4402a66ac69d07c24e6d7",
+    "aadadc869114d838e8dc841eb2dea4bfe3db70d66508a6d9ebb8ef1fe0b33c71",
+    "ccb66c3d2d6afe7851e35ee404561e5db90c23dbbeca862f42a54bd61e7290c9",
+    "ea85d1cd52a47128012d68f0fc5283d03810dfd5952562b91d138c0ef06fa877",
+    "30a025e499d27448aa94ec6f7dad9faea05486e693888460c667029a88e293de",
+    "a92405c5978f23115c215adb0ab6554552615fa98060efc5eb756ebfd71881e5",
+    "de9fcb7993f4b557110bda2c3484bef1ed32bae53558e1d90750285b662ab847"
+  ],
+  "image_count": 8,
+  "started_at": 1792734659.947455,
+  "first_token_seconds": 0.548449747000177,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue circle\",\n      \"blue circle\",\n      \"blue circle\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"three blue circles stationary\",\n      \"three blue circles stationary\",\n      \"three blue circles stationary\",\n      \"left blue circle moves left, middle and right remain stationary\",\n      \"three blue circles stationary\",\n      \"three blue circles stationary\",\n      \"left blue circle moves left, middle and right remain stationary\",\n      \"three blue circles stationary\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 165,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue circle",
+        "blue circle",
+        "blue circle"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "three blue circles stationary",
+        "three blue circles stationary",
+        "three blue circles stationary",
+        "left blue circle moves left, middle and right remain stationary",
+        "three blue circles stationary",
+        "three blue circles stationary",
+        "left blue circle moves left, middle and right remain stationary",
+        "three blue circles stationary"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.611627915000099,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

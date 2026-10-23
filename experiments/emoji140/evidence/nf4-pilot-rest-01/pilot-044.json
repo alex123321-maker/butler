@@ -1,0 +1,86 @@
+{
+  "id": "pilot-044",
+  "source_sha256": "34322ac24c14999e72be6ac4484ae353173ad0eab224ade3fd0147d513ebe0ed",
+  "ordinal": 12,
+  "status": "completed",
+  "frame_sha256": [
+    "c97841aaa02237181b407a48c96444157bdc3af8bde1b6f8ea97cb85d97048ee",
+    "7e2240f1e59a6f3bc5065f5a8f5bf8d3f21383c0caea83c82dc5ba390673ac19",
+    "12390071def0974607b397476a2bcc41539c300247cde32bf37b50ac851da3d4",
+    "cef1ba1b97dca067e39f7b5ab902e51698169765acd4d4ca1e47a2ea6ab969b8",
+    "4dae87df88cf5df0c09bd224b45da93d7c469d67db519918aeda95ef6b304f37",
+    "1516c3404a75f2d26714e8038371d05a6aa39a757d20145441d1b7af64089ce0",
+    "87355c5239e992a606e769b5f9fd7d78d3527eb752d4ca6e6fa8e89709667234",
+    "3e6c97eaaa5c2e02439a7a5484f2c7ed111ec4225ac9d85725a8c2affe04c68b"
+  ],
+  "image_count": 8,
+  "started_at": 1792734567.0735495,
+  "first_token_seconds": 0.5435145370001919,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": []\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 76,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": []
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 3.79055620500003,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

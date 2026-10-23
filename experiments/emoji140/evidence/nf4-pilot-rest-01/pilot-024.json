@@ -1,0 +1,99 @@
+{
+  "id": "pilot-024",
+  "source_sha256": "1040a7a0857b475c0b454f48cae5aa9657f072cf4b99b9e1d1bbb4f960829655",
+  "ordinal": 17,
+  "status": "completed",
+  "frame_sha256": [
+    "19d8b98d158d4361ed0262a6d2b8f459c11b717581586f83363e2ff77989782f",
+    "b714d1733d07739a170a0ee60426a244c0dc5fd840a25224f1d416beb50edde1",
+    "12354ac727211e754cb3b419c9fa21d2e13cb0c736361188245fe9c2540f5245",
+    "ed9c36d12ba48bfa5a1df78668d2253923ad4b5b567bc66d2d6c85c937a9983f",
+    "c92f02f07a2eb2c19226a76fb2427f75f63ba7164dfe413a1f09711211032f05",
+    "e1a9fcdadca0f319e29ee9ea10db1010fa33817d187966ed9f167e4217873c77",
+    "3a5281969ac2346bd24093917d5af6c1b66a41bc1792d7de65135dc707cb5686",
+    "c169e390061230da861d2156ded9a284a1656ee02966059fad1847c9c2abf451"
+  ],
+  "image_count": 8,
+  "started_at": 1792734595.9167137,
+  "first_token_seconds": 0.5424421200000324,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"character in astronaut helmet driving a purple car with glowing yellow headlights\"\n    ],\n    \"actions\": [\n      \"driving\",\n      \"holding steering wheel\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\",\n      \"character driving with hands on steering wheel\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 178,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "character in astronaut helmet driving a purple car with glowing yellow headlights"
+      ],
+      "actions": [
+        "driving",
+        "holding steering wheel"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel",
+        "character driving with hands on steering wheel"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 8.135549111999808,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

@@ -1,0 +1,89 @@
+{
+  "id": "pilot-054",
+  "source_sha256": "2810271172939ecea0602895189e1f07f837515047e4d549144420b9dd30259a",
+  "ordinal": 13,
+  "status": "completed",
+  "frame_sha256": [
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2",
+    "5226746459477e00ee5b0a9ddc4969c56d18240f58efb6b1cb7cbd40e47873a2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734570.8716915,
+  "first_token_seconds": 0.5400517939997371,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"gear\",\n      \"gear\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": []\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 86,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "gear",
+        "gear"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": []
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.158175081000081,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

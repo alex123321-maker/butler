@@ -1,0 +1,104 @@
+{
+  "id": "pilot-035",
+  "source_sha256": "9c684d9edfa0a9d961ff43f88ced0847ffa08f3fd3d9febaf781c73a5157c46c",
+  "ordinal": 21,
+  "status": "completed",
+  "frame_sha256": [
+    "60e0d5a6826977a862efbaffc2a0cc1fd94c38b17934cf720db2312b681cc983",
+    "d18a26213f2d45f7cd6850092574f8bd7081e062b52ac6a00ad6a42adc7a986e",
+    "3737ca11349b2b8852ad1a0143fb1c7ee4e22b628df8929a00cb2d645a89cbb7",
+    "84bbccffeb3bfaa6420a6e8c6398fe62ad3d00a1ec3387aff4dc7ea81a636c29",
+    "cfa48710873535d4e94f653750dcd662adab5f03579339705ed63e9530d625bb",
+    "bbea7ba8df8b9c521add6a15d736854ba0028084370dc11ad7dac612945f386f",
+    "87d527822bd3e94627754076d72b5bf501f99cd2ce3ced77e8933d94efc4fab0",
+    "442f386a1c2bcceba3f21c68b1e3fcc243ed0329e69f6c7e1d566c0e61e406d8"
+  ],
+  "image_count": 8,
+  "started_at": 1792734635.3568382,
+  "first_token_seconds": 0.5446391240002413,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"cat\"\n    ],\n    \"actions\": [\n      \"closing eyes\",\n      \"opening mouth\",\n      \"winking\",\n      \"eye enlarging\",\n      \"tears appearing\",\n      \"tears falling\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat with closed eyes and open mouth\",\n      \"cat winking with open mouth\",\n      \"cat with enlarged eye and blue dot\",\n      \"cat with wide open mouth and large eyes\",\n      \"cat with wide open mouth, large eyes, and blue tears\",\n      \"cat with wide open mouth, large eyes, and blue tear\",\n      \"cat with wide open mouth, large eyes, and blue tears\",\n      \"cat with wide open mouth, large eyes, and blue tears\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 219,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "cat"
+      ],
+      "actions": [
+        "closing eyes",
+        "opening mouth",
+        "winking",
+        "eye enlarging",
+        "tears appearing",
+        "tears falling"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "cat with closed eyes and open mouth",
+        "cat winking with open mouth",
+        "cat with enlarged eye and blue dot",
+        "cat with wide open mouth and large eyes",
+        "cat with wide open mouth, large eyes, and blue tears",
+        "cat with wide open mouth, large eyes, and blue tear",
+        "cat with wide open mouth, large eyes, and blue tears",
+        "cat with wide open mouth, large eyes, and blue tears"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.982186157000342,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

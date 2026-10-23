@@ -1,0 +1,102 @@
+{
+  "id": "pilot-015",
+  "source_sha256": "5db084a83d32f52766012081d6bd86d10f6632e938759aeb862460e709728223",
+  "ordinal": 22,
+  "status": "completed",
+  "frame_sha256": [
+    "95e038d561549419ebcd4009e0416a09d1cd959cb0cce909a25c337cd32ff055",
+    "b34fda7a3995b48b3e57cce3c5c0543a71895006ada64545c96db74dbd40d7ca",
+    "8b45e0ba93821878800314879ad3bad7afa4c5fc52eeaf1515d3c4306a7e7d15",
+    "df6d22c7064f4051d243f555f320146cda56e14863ae5392ee6a25c5fc750462",
+    "943aa924d494a64535e7202c9f56622cc10785aae3265ee68ddcb998ed4bb393",
+    "4b8768ed17e42d2c1e2d12ae65f33686f4dd5d0fe31c33c38b96566f10113389",
+    "89e65aa5ce02d29759651da566f7aa4e15f1bc7da70a4b4cae009275d4f74c1b",
+    "c1e7cf3e946be6e681a62e2e5bf67a052656ae83f84fd72ac9c15db02a1dc4b1"
+  ],
+  "image_count": 8,
+  "started_at": 1792734645.3434644,
+  "first_token_seconds": 0.5441148939999039,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"unicorn\"\n    ],\n    \"actions\": [\n      \"closing eyes\",\n      \"opening eyes\",\n      \"moving head\",\n      \"appearing sparkles\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"static\",\n      \"closing eyes\",\n      \"opening eyes\",\n      \"sparkles appear\",\n      \"sparkles disappear\",\n      \"head moves\",\n      \"eyes open\",\n      \"sparkles appear\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 150,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "unicorn"
+      ],
+      "actions": [
+        "closing eyes",
+        "opening eyes",
+        "moving head",
+        "appearing sparkles"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "static",
+        "closing eyes",
+        "opening eyes",
+        "sparkles appear",
+        "sparkles disappear",
+        "head moves",
+        "eyes open",
+        "sparkles appear"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.976023562999671,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

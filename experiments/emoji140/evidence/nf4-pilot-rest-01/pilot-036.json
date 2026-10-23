@@ -1,0 +1,99 @@
+{
+  "id": "pilot-036",
+  "source_sha256": "cba4f0625e928771d0070a3a8e0428f22acc1fdf54a5ecbf73424faea1b9efb5",
+  "ordinal": 27,
+  "status": "completed",
+  "frame_sha256": [
+    "e588b7bc7f6868055d29545deebf1c3d44ee60bdab6a2b1a969b75df332d2a02",
+    "de2002e146f4b2fcbf97ad645721ff61e94e766d7954d1036cb4bca7b4f94bec",
+    "4b6268d8723a48792080f6b7078f2520f8dfb181ccef60c0d83c552187ba5efe",
+    "2373f51b70c2687d20a495808266cb439d663d27b72e0026078a5e0e0a84f7d9",
+    "953d63c2f61cc502b1f527832e4a66a74a7f0ca1e730889ff61f4ceb8ef49bc8",
+    "14a6d5618be94ebebd06222549d1e8d8fe1ade5d1e21569a0eeca14b5ef84188",
+    "c7605b845ebd8136d7e5cd2a7929128651821c0e31a2469fd285472cabd4940d",
+    "c3d352364851b243ff17e1bccd2309a1e305154f222de0d12c4d417d72613f53"
+  ],
+  "image_count": 8,
+  "started_at": 1792734677.202691,
+  "first_token_seconds": 0.5434175259997573,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"purple cat-like creature\"\n    ],\n    \"actions\": [\n      \"puffing out cheeks\",\n      \"spewing rainbow-colored liquid\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat with closed eyes and puffed cheeks\",\n      \"cat with wide eyes and rainbow liquid spewing from mouth\",\n      \"cat with wide eyes and rainbow liquid spewing from mouth\",\n      \"cat with wide eyes and rainbow liquid spewing from mouth\",\n      \"cat with wide eyes and rainbow liquid spewing from mouth\",\n      \"cat with wide eyes and rainbow liquid spewing from mouth\",\n      \"cat with closed eyes and puffed cheeks\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 197,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "purple cat-like creature"
+      ],
+      "actions": [
+        "puffing out cheeks",
+        "spewing rainbow-colored liquid"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "cat with closed eyes and puffed cheeks",
+        "cat with wide eyes and rainbow liquid spewing from mouth",
+        "cat with wide eyes and rainbow liquid spewing from mouth",
+        "cat with wide eyes and rainbow liquid spewing from mouth",
+        "cat with wide eyes and rainbow liquid spewing from mouth",
+        "cat with wide eyes and rainbow liquid spewing from mouth",
+        "cat with closed eyes and puffed cheeks"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.048322053999982,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

@@ -1,0 +1,96 @@
+{
+  "id": "pilot-023",
+  "source_sha256": "58fb49eeb528251b9805ca9a72762da2e0a39a9d93ffe653e756af536a724272",
+  "ordinal": 11,
+  "status": "completed",
+  "frame_sha256": [
+    "1f73eadc33a2c671ca52aad05cb6326414506a93f35be0a5a12d486715a01e01",
+    "34f488c2f0fa0d1d5faf13958d120ff93c072dd224faafda6f271867c0c51350",
+    "91aadd51f6de0bdc068b8e94dadaa25305df78d0cd73a3b14e897baab9d5344e",
+    "dc0a4b1f2ab0f6301d20f66880ed03cec782a81990dd4af40e2aa0c3a2e54d96",
+    "8c3a2f0adb5b24ab24d53d7a98d2f03d499be0f918862aa16b303475714d9142",
+    "41c61a940bc5fc56d4bfe4c20ded77cfc1223f3106d450254900b7c6bd95fc26",
+    "34e772af421470d1494d66c6d10ecd05b0846ed08f71dcbbf1944b75bb5af92b",
+    "991f5fb154cb0d5e02f21bcf051d02e8c33c24b823c85c49e61de7c0c4af4b4b"
+  ],
+  "image_count": 8,
+  "started_at": 1792734558.244165,
+  "first_token_seconds": 0.5435294119997707,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"маскированный объект\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\",\n      \"объект с неподвижным выражением\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 195,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "маскированный объект"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением",
+        "объект с неподвижным выражением"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 8.825839514000108,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

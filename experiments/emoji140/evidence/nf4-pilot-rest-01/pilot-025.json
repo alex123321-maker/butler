@@ -1,0 +1,101 @@
+{
+  "id": "pilot-025",
+  "source_sha256": "d37322bedfa2b13033831f3d09be46ced945880757086426b72ddffd46eb45b0",
+  "ordinal": 23,
+  "status": "completed",
+  "frame_sha256": [
+    "2c691fddfe07bbfdb19fcc1d4c8c7e8505aeb1e9dc8cbad90d59fd8035344e4f",
+    "c3e54f508374f631721f0364baf23140d11c93f61b9bd30cd0590983e7e87b4f",
+    "3d23a11c688b0a93804199244e3b10f59b85834375d020857ca7629b47c59657",
+    "f065f1833e87d22cbe9ba0742ebecdb2035d7bc49fca2e30535857763a16ca2e",
+    "14a8b7e3bbb815a5de102d83ec2749c548577290290bc2b5d5c794532248e973",
+    "6d5379437f3752c5f2be954a19d72d9c8ef0763c81747d5d4a26bc62f8ff23b2",
+    "0ec42f9980359315662682eb7678a69fcb55bf73d74c73c2de82173478a3238f",
+    "dc33a512da6abf0c3ba496c4d444efb8024e862da4d66fb578b60cba5aa96441"
+  ],
+  "image_count": 8,
+  "started_at": 1792734652.3266926,
+  "first_token_seconds": 0.544735854999999,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow circular face\"\n    ],\n    \"actions\": [\n      \"eyes widen\",\n      \"eyes narrow\",\n      \"mouth changes shape\",\n      \"eyes return to wide\",\n      \"eyes close\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"wide eyes, smiling mouth\",\n      \"narrow eyes, neutral mouth\",\n      \"wide eyes, neutral mouth\",\n      \"wide eyes, neutral mouth\",\n      \"eyes closed, smiling mouth\",\n      \"wide eyes, smiling mouth\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 165,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow circular face"
+      ],
+      "actions": [
+        "eyes widen",
+        "eyes narrow",
+        "mouth changes shape",
+        "eyes return to wide",
+        "eyes close"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "wide eyes, smiling mouth",
+        "narrow eyes, neutral mouth",
+        "wide eyes, neutral mouth",
+        "wide eyes, neutral mouth",
+        "eyes closed, smiling mouth",
+        "wide eyes, smiling mouth"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.617334037999626,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

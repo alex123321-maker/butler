@@ -1,0 +1,53 @@
+{
+  "id": "pilot-020",
+  "source_sha256": "ba386342627d45124d9afc0bc67e49f87bb49bbf5c0de053ddff0337a76f0ec5",
+  "ordinal": 4,
+  "status": "completed",
+  "frame_sha256": [
+    "82d4e622b69b68aac2726d75fda98757ecabb771fd2f30ba0710257defe47508"
+  ],
+  "image_count": 1,
+  "started_at": 1792735360.9885285,
+  "first_token_seconds": 0.24912709400041422,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"эмодзи\"],\"actions\":[],\"expression\":\"смущённое, счастливое выражение лица\",\"text\":null,\"style\":\"жёлтый круг с рисунком, напоминающим карандашную линию, розовые щечки, закрытые глаза, розовый рот\",\"temporal_sequence\":[ \"эмодзи с закрытыми глазами и розовыми щечками, выражение лица указывает на счастливое или смущённое состояние\" ]},\"inferred\":{\"possible_meanings\":[\"счастливое настроение\", \"смущение\", \"радость\", \"неловкость\"], \"intensity\":\"medium\", \"ambiguity\":true}}",
+  "output_tokens": 171,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "эмодзи"
+      ],
+      "actions": [],
+      "expression": "смущённое, счастливое выражение лица",
+      "text": null,
+      "style": "жёлтый круг с рисунком, напоминающим карандашную линию, розовые щечки, закрытые глаза, розовый рот",
+      "temporal_sequence": [
+        "эмодзи с закрытыми глазами и розовыми щечками, выражение лица указывает на счастливое или смущённое состояние"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "счастливое настроение",
+        "смущение",
+        "радость",
+        "неловкость"
+      ],
+      "intensity": "medium",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.646345391000068,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3145728000,
+  "rss_peak_kib": 9665792
+}

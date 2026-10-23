@@ -1,0 +1,145 @@
+{
+  "nf4_v1_multi": {
+    "planned": 60,
+    "attempt_records": 60,
+    "missing_planned": 0,
+    "schema_valid": 57,
+    "truncated": 1,
+    "failed": 0,
+    "empty_observed_among_parsed": 13,
+    "not_parsed": 1,
+    "with_style": 1,
+    "with_text": 2,
+    "with_meanings": 1,
+    "contains_cyrillic_proxy_not_language_grade": 5,
+    "latency_seconds": {
+      "p50": 7.365428034500155,
+      "p95": 11.621751246699997,
+      "mean": 7.4829119327333125,
+      "denominator": 60
+    },
+    "first_token_seconds": {
+      "p50": 0.5446586800001114,
+      "p95": 0.5501049456999454,
+      "denominator": 60
+    },
+    "input_tokens": 48000,
+    "output_tokens": 9528,
+    "peak_gpu_allocated_mib": 3049.90625,
+    "peak_gpu_reserved_mib": 3110.0,
+    "peak_process_rss_mib": 7891.0625,
+    "load_seconds": [
+      11.539615868000055,
+      15.14675750599963
+    ],
+    "quality_grade": "not independently evaluated"
+  },
+  "nf4_ru_v2_multi": {
+    "planned": 12,
+    "attempt_records": 12,
+    "missing_planned": 0,
+    "schema_valid": 1,
+    "truncated": 1,
+    "failed": 0,
+    "empty_observed_among_parsed": 0,
+    "not_parsed": 7,
+    "with_style": 5,
+    "with_text": 0,
+    "with_meanings": 4,
+    "contains_cyrillic_proxy_not_language_grade": 3,
+    "latency_seconds": {
+      "p50": 6.621185510999794,
+      "p95": 17.823806142000073,
+      "mean": 8.762950208333299,
+      "denominator": 12
+    },
+    "first_token_seconds": {
+      "p50": 0.6513952065001831,
+      "p95": 1.0798165731998772,
+      "denominator": 12
+    },
+    "input_tokens": 13224,
+    "output_tokens": 2267,
+    "peak_gpu_allocated_mib": 3094.83740234375,
+    "peak_gpu_reserved_mib": 3158.0,
+    "peak_process_rss_mib": 9014.5625,
+    "load_seconds": [
+      6.518593170999793
+    ],
+    "quality_grade": "not independently evaluated"
+  },
+  "nf4_ru_v3_multi": {
+    "planned": 12,
+    "attempt_records": 12,
+    "missing_planned": 0,
+    "schema_valid": 9,
+    "truncated": 2,
+    "failed": 0,
+    "empty_observed_among_parsed": 0,
+    "not_parsed": 3,
+    "with_style": 9,
+    "with_text": 1,
+    "with_meanings": 9,
+    "contains_cyrillic_proxy_not_language_grade": 9,
+    "latency_seconds": {
+      "p50": 9.671508739499814,
+      "p95": 22.156358276000173,
+      "mean": 10.937547171000006,
+      "denominator": 12
+    },
+    "first_token_seconds": {
+      "p50": 0.6144211749999613,
+      "p95": 1.0505523605000682,
+      "denominator": 12
+    },
+    "input_tokens": 11532,
+    "output_tokens": 2923,
+    "peak_gpu_allocated_mib": 3084.42041015625,
+    "peak_gpu_reserved_mib": 3158.0,
+    "peak_process_rss_mib": 9406.80859375,
+    "load_seconds": [
+      3.933323810999809
+    ],
+    "quality_grade": "not independently evaluated"
+  },
+  "nf4_ru_v3_single": {
+    "planned": 6,
+    "attempt_records": 6,
+    "missing_planned": 0,
+    "schema_valid": 5,
+    "truncated": 0,
+    "failed": 0,
+    "empty_observed_among_parsed": 0,
+    "not_parsed": 0,
+    "with_style": 6,
+    "with_text": 0,
+    "with_meanings": 6,
+    "contains_cyrillic_proxy_not_language_grade": 6,
+    "latency_seconds": {
+      "p50": 4.7378245815000355,
+      "p95": 7.584814274250107,
+      "mean": 5.488090307500063,
+      "denominator": 6
+    },
+    "first_token_seconds": {
+      "p50": 0.24765218049992654,
+      "p95": 0.983008442000255,
+      "denominator": 6
+    },
+    "input_tokens": 2280,
+    "output_tokens": 702,
+    "peak_gpu_allocated_mib": 2916.376953125,
+    "peak_gpu_reserved_mib": 3000.0,
+    "peak_process_rss_mib": 9439.25,
+    "load_seconds": [
+      3.9187497670000084
+    ],
+    "quality_grade": "not independently evaluated"
+  },
+  "notes": [
+    "Language/style/text/meaning counts measure populated fields, not correctness.",
+    "Cyrillic presence does not prove Russian language compliance.",
+    "All examples are development; v2 was revised after examining v1.",
+    "No captioner, embedder or precision equivalence is established."
+  ]
+}

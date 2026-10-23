@@ -1,0 +1,106 @@
+{
+  "id": "pilot-016",
+  "source_sha256": "1d23895c48a27ee7a35270b4c466548501096c12687190992262b7c6970c2303",
+  "ordinal": 28,
+  "status": "completed",
+  "frame_sha256": [
+    "809ebe5702e84416338c2c4e193632165cb7f8dedf68999b71f7b428d9368fd2",
+    "b752fdb78ed5e013e0f112caf82681402fcb5f3fe45b61bef947d182c9c6575d",
+    "531b3cdf71445b46f962d52b1ef43b266d502a241300ef07ca8bf2804b62ad1c",
+    "1e566888c276351c54dd9d56736a344280e86d5f6ee697082bac1894ae29d9cf",
+    "441c9b5f403346fe2c12119630397ed3f8176912a7b8d54970ff40a9221d793f",
+    "6ced74436bbbec3b7659a11337573fe2c6d5dd7d3d6d6360418a77ab84c77672",
+    "697386a671bf73b51fe35f04f1cb91c11e9c24b4df364d2e39889650184c1853",
+    "cd0640484caac4c2cb81e3cd84486e295a2236c6400f442402e4deae63534ce1"
+  ],
+  "image_count": 8,
+  "started_at": 1792734686.2555015,
+  "first_token_seconds": 0.54899143800003,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with scribbled outline\"\n    ],\n    \"actions\": [\n      \"blinking\",\n      \"smiling\",\n      \"drooling\",\n      \"blinking again\",\n      \"drooling again\",\n      \"drooling stops\",\n      \"smiling again\",\n      \"drooling again\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"drooling with closed eyes\",\n      \"drooling with open eyes\",\n      \"drooling with closed eyes\",\n      \"drooling with open eyes\",\n      \"drooling with closed eyes\",\n      \"drooling with open eyes\",\n      \"drooling with closed eyes\",\n      \"drooling with open eyes\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 201,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with scribbled outline"
+      ],
+      "actions": [
+        "blinking",
+        "smiling",
+        "drooling",
+        "blinking again",
+        "drooling again",
+        "drooling stops",
+        "smiling again",
+        "drooling again"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "drooling with closed eyes",
+        "drooling with open eyes",
+        "drooling with closed eyes",
+        "drooling with open eyes",
+        "drooling with closed eyes",
+        "drooling with open eyes",
+        "drooling with closed eyes",
+        "drooling with open eyes"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.253144954000163,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

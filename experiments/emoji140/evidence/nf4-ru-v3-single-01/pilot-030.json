@@ -1,0 +1,50 @@
+{
+  "id": "pilot-030",
+  "source_sha256": "ff7205262f10be15ec6ed8c00808fcf7bdfcf6ab930d5dc9c6bd56119485e9a9",
+  "ordinal": 5,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "6be879f99942eb0abbf4a91d4e21c064bc4429b5638a163cf0bf62538722a0d0"
+  ],
+  "image_count": 1,
+  "started_at": 1792735368.6391501,
+  "first_token_seconds": 0.24517029100024956,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"эмодзи\"],\"actions\":[],\"expression\":\"злой, уставший, с напряжением\",\"text\":null,\"style\":\"круглый, мультяшный, с анимацией\",\"temporal_sequence\":[1.5]},\"inferred\":{\"possible_meanings\":[\"представление о физической нагрузке, усталости, или раздражении\"],\"intensity\":\"high\",\"ambiguity\":true}}",
+  "output_tokens": 101,
+  "truncated": false,
+  "schema_valid": false,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "эмодзи"
+      ],
+      "actions": [],
+      "expression": "злой, уставший, с напряжением",
+      "text": null,
+      "style": "круглый, мультяшный, с анимацией",
+      "temporal_sequence": [
+        1.5
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "представление о физической нагрузке, усталости, или раздражении"
+      ],
+      "intensity": "high",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.67371982099985,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3145728000,
+  "rss_peak_kib": 9665792
+}

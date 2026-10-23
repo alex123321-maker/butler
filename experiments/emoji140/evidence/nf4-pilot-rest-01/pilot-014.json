@@ -1,0 +1,99 @@
+{
+  "id": "pilot-014",
+  "source_sha256": "a6c51ff78fda83e2826caf7430b7caa6c7bc36980f1b94e5ee26898d93621776",
+  "ordinal": 16,
+  "status": "completed",
+  "frame_sha256": [
+    "696c4a1ea122acd4ccec1f94bd08fb2070b390edf5af49845f507218f6e7e851",
+    "c82244b2f4697856a9e6cd587b1a00253f1330042938da79f2dc3b2a69bc1325",
+    "b3fe4b01f5436793f73fd857f488084b0589d18029dd99b3bf06d0c71ce5cac9",
+    "4128d5c0412a4e507e745700a01f8bad2c81326737607f2852039770406150d5",
+    "234dbad928ba29af4a0d4e98c1c5b1fd5903a5e53faf907980508f3b0be2761e",
+    "2403c50df363b831d3a4f76ba517814a1712481f65f48084bee809f5ed34a0d9",
+    "062f06a5833e67a1a4f5d035455d90b49420c506124c3ef1bd5ee0cdb564b225",
+    "73fb173823ef96f7ec4cec69a7a0a35f788b2c9bad3109765848323875f36f6e"
+  ],
+  "image_count": 8,
+  "started_at": 1792734588.535589,
+  "first_token_seconds": 0.5427939119999792,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"face\"\n    ],\n    \"actions\": [\n      \"eyes close\",\n      \"mouth change\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes closed, mouth downturned\",\n      \"eyes closed, mouth downturned\",\n      \"eyes closed, mouth downturned\",\n      \"eyes closed, mouth downturned\",\n      \"eyes open, mouth downturned\",\n      \"eyes open, mouth downturned\",\n      \"eyes open, mouth downturned\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 159,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "face"
+      ],
+      "actions": [
+        "eyes close",
+        "mouth change"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes closed, mouth downturned",
+        "eyes closed, mouth downturned",
+        "eyes closed, mouth downturned",
+        "eyes closed, mouth downturned",
+        "eyes open, mouth downturned",
+        "eyes open, mouth downturned",
+        "eyes open, mouth downturned"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.374198244000127,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

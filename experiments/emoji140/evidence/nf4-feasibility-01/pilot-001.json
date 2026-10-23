@@ -1,0 +1,90 @@
+{
+  "id": "pilot-001",
+  "source_sha256": "8cd5d87e4130d63dd75bb6bdbc09414b743453203b479ad594f7fde77e098e57",
+  "ordinal": 8,
+  "status": "completed",
+  "frame_sha256": [
+    "4d03464bfa032ba9e154ee295d0133988254613fb26728daefbb9769f2a209ef",
+    "4f5062edfffe247f33d5ea676052a12492f611d3302e963370e06bd254b688b5",
+    "ddc1af6f6e90e5bc51352706bc97336ff2f17f421ee5a4bcef34eff1e9a34b70",
+    "71dc25747221af066f79b1cdbfcf6297ecab85b0d35e39f146621f78bfdc8bac",
+    "b68ad4ac33c1ffcf4ef83536134273837c127d11d943f820daacc9755add6e29",
+    "97ff1b39efd48f8548043f3b1a194e8b3d3ee2f0303cc3c34cda7a24d9ee2aa7",
+    "26168ad4570a0a4db148cb4dc9c1c7054d61bd05d52631109013ef6d36c0ce09",
+    "45974b9ff6790de1f62f9aebde5725f3d39dabd19a99210b357720175b30f4ea"
+  ],
+  "image_count": 8,
+  "started_at": 1792734379.1899533,
+  "first_token_seconds": 0.5500713169999472,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"man\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"man with glasses and mustache holding a book, standing in front of a green chalkboard\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 105,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "man"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "man with glasses and mustache holding a book, standing in front of a green chalkboard"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 5.136626605999936,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

@@ -108,3 +108,10 @@ buttons. Projection edits target a known message ID, serialize per ACK and recor
 sent/failed/UNKNOWN separately. Interrupted edits never resend a publication.
 A stale client is always fenced by current backend state. Mapping checked against
 [Bot API](https://core.telegram.org/bots/api#inlinekeyboardbutton), 2026-10-22.
+
+## Public emoji research reads
+
+The operator-only GetCustomEmojiSet and DownloadCustomEmoji helpers retain the
+fixed host/proxy/secret boundaries for bounded public catalog imports. They are
+not registered as tools and do not poll or send messages. See
+[research protocol](../../../../../docs/architecture/telegram-emoji-research.md).

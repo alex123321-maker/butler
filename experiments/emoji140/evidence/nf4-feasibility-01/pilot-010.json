@@ -1,0 +1,99 @@
+{
+  "id": "pilot-010",
+  "source_sha256": "21379561e2abf1a0021d32dab94025fd605f2986af77d6e7f3d2346c528a2d33",
+  "ordinal": 2,
+  "status": "completed",
+  "frame_sha256": [
+    "2f180db7d8eea98f2d83a33c3f51115c637a13c25771dc3d3690c21a2ae12e57",
+    "28d67d27ef3b6bd2158eb0399aa8d138d156dc3703dea9b8e28c8711896b8973",
+    "fe82286208875c3c1d34abe52bde3a0b9cf7cde96c67c3772fd0b00ba284a757",
+    "9732080bbad0a138a2228d5d1f9f3be38477c9f2bfdf7ee23d8e3d22bdf7632b",
+    "a0984b789c06031654027cbd71f202d3d1dcbeea0e64838d2a897ddcf28440ad",
+    "08e22e696f07e11cfc183065ce0773999cd8ab7629db0b67cac1549787f5db23",
+    "720711cf7fc2be17353219bbbc786a39e09600e279cbea1d3d6731846ae763e2",
+    "0956b6e8701d6d49fc323a7d5f0a368a830d70dd080b27c9dbe2246319556046"
+  ],
+  "image_count": 8,
+  "started_at": 1792734329.2569492,
+  "first_token_seconds": 0.5459659630000715,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow circular face with brown eyes\"\n    ],\n    \"actions\": [\n      \"eyes close\",\n      \"eyes open\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes open\",\n      \"eyes close\",\n      \"eyes open\",\n      \"eyes open\",\n      \"eyes open\",\n      \"eyes close\",\n      \"eyes close\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 136,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow circular face with brown eyes"
+      ],
+      "actions": [
+        "eyes close",
+        "eyes open"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes open",
+        "eyes close",
+        "eyes open",
+        "eyes open",
+        "eyes open",
+        "eyes close",
+        "eyes close"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.457813946999977,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

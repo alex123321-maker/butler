@@ -1,0 +1,66 @@
+{
+  "scope": "post-annotation demonstration, not locked test or retrieval quality metric",
+  "examples": [
+    {
+      "abstention": "not_calibrated",
+      "method": "AI-annotated lexical demo; not R1 model-caption benchmark",
+      "query": "отказ",
+      "results": [
+        {
+          "id": "pilot-037",
+          "score": 1,
+          "subjects": [
+            "бежевый кот",
+            "красная табличка"
+          ],
+          "evidence": "AI visual annotation; exact token overlap; uncalibrated"
+        }
+      ]
+    },
+    {
+      "abstention": "not_calibrated",
+      "method": "AI-annotated lexical demo; not R1 model-caption benchmark",
+      "query": "бант",
+      "results": [
+        {
+          "id": "food-057",
+          "score": 1,
+          "subjects": [
+            "светлый бант с мелким цветочным рисунком"
+          ],
+          "evidence": "AI visual annotation; exact token overlap; uncalibrated"
+        }
+      ]
+    },
+    {
+      "abstention": "not_calibrated",
+      "method": "AI-annotated lexical demo; not R1 model-caption benchmark",
+      "query": "настройки",
+      "results": [
+        {
+          "id": "pilot-054",
+          "score": 1,
+          "subjects": [
+            "две шестерёнки"
+          ],
+          "evidence": "AI visual annotation; exact token overlap; uncalibrated"
+        }
+      ]
+    },
+    {
+      "abstention": "not_calibrated",
+      "method": "AI-annotated lexical demo; not R1 model-caption benchmark",
+      "query": "одна целая ягода",
+      "results": [
+        {
+          "id": "food-012",
+          "score": 1,
+          "subjects": [
+            "одна целая ягода клубники"
+          ],
+          "evidence": "AI visual annotation; exact token overlap; uncalibrated"
+        }
+      ]
+    }
+  ]
+}

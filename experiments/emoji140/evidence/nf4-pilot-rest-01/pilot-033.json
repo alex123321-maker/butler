@@ -1,0 +1,112 @@
+{
+  "id": "pilot-033",
+  "source_sha256": "80658f5570adfc9be34ba565eb14495b008f69f5cf2a5d74181ba0bd0c2cc7ac",
+  "ordinal": 9,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "fa8abc5c418e221a51b60eddb46252cc91de903e4810a79362c82d925cb5ec13",
+    "36c3b6c56b10972e8ee4a2d6ad8f5621c2e5dcdacec22d93b0fc08a361f4256b",
+    "cf2ac2432d74b456d83d04eb3b85a100070d19ca3a46bb7ca0167999a2ce3731",
+    "72a85a89818edc455c3aee1f9589737f879cd36268997ec4cdd98bdcbcd4a8b0",
+    "7d4fa4ca2474409b4d655ff07b67a2ed8f4b1592f042f7fe796eec8a75d8f433",
+    "f41dc57b0a670b17a43e189713f302e932f969259aba2a1ac99b96fe245723e7",
+    "a4421ca2e713fda07ff7d0e480843b8a518e019bbbc97b9dc0cf103a20ab1c78",
+    "4ee1ae0f87f3b9a797048b6bf277dbb745d6905b3e4ea5c085797be14c3bfb33"
+  ],
+  "image_count": 8,
+  "started_at": 1792734540.8400047,
+  "first_token_seconds": 0.5435303899998871,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"medal\",\n      \"ribbon\"\n    ],\n    \"actions\": [\n      \"change shape\",\n      \"change content\",\n      \"sparkle\"\n    ],\n    \"expression\": null,\n    \"text\": [\n      \"CAT LOVER\"\n    ],\n    \"style\": [\n      \"cartoon\",\n      \"round\",\n      \"gold\",\n      \"ribbon\"\n    ],\n    \"temporal_sequence\": [\n      \"medal with text 'CAT LOVER' and red-blue ribbon\",\n      \"medal with text 'CAT LOVER' and red-blue ribbon\",\n      \"medal with text 'CAT LOVER' and red-blue ribbon\",\n      \"medal changes to show paw print\",\n      \"medal with text 'CAT LOVER' and red-blue ribbon\",\n      \"medal with text 'CAT LOVER' and red-blue ribbon\",\n      \"medal with text 'CAT LOVER' and red-blue ribbon\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [\n      \"cat lover badge\",\n      \"cat lover award\",\n      \"cat lover theme\"\n    ],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 257,
+  "truncated": false,
+  "schema_valid": false,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "medal",
+        "ribbon"
+      ],
+      "actions": [
+        "change shape",
+        "change content",
+        "sparkle"
+      ],
+      "expression": null,
+      "text": [
+        "CAT LOVER"
+      ],
+      "style": [
+        "cartoon",
+        "round",
+        "gold",
+        "ribbon"
+      ],
+      "temporal_sequence": [
+        "medal with text 'CAT LOVER' and red-blue ribbon",
+        "medal with text 'CAT LOVER' and red-blue ribbon",
+        "medal with text 'CAT LOVER' and red-blue ribbon",
+        "medal changes to show paw print",
+        "medal with text 'CAT LOVER' and red-blue ribbon",
+        "medal with text 'CAT LOVER' and red-blue ribbon",
+        "medal with text 'CAT LOVER' and red-blue ribbon"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "cat lover badge",
+        "cat lover award",
+        "cat lover theme"
+      ],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 11.563093535999997,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

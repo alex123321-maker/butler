@@ -1,0 +1,46 @@
+{
+  "id": "pilot-050",
+  "source_sha256": "6a7eb1c8e2fae5fcce71dedd07985e6e6e969221083fd25ff81ac31b7e27778b",
+  "ordinal": 0,
+  "status": "completed",
+  "frame_sha256": [
+    "f5975e09a5f8131fe9283533e81c3f82f213c626869711c6584c4d620a1c0d36"
+  ],
+  "image_count": 1,
+  "started_at": 1792735340.3679276,
+  "first_token_seconds": 1.2276355580002019,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"синий кадр с выделенным восклицательным знаком на светлом фоне\",\"temporal_sequence\":[]},\"inferred\":{\"possible_meanings\":[\"восклицательный знак как символ внимания или важности\"],\"intensity\":\"high\",\"ambiguity\":true}}",
+  "output_tokens": 82,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": "синий кадр с выделенным восклицательным знаком на светлом фоне",
+      "temporal_sequence": []
+    },
+    "inferred": {
+      "possible_meanings": [
+        "восклицательный знак как символ внимания или важности"
+      ],
+      "intensity": "high",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.801929342000221,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3099590656,
+  "rss_peak_kib": 9665792
+}

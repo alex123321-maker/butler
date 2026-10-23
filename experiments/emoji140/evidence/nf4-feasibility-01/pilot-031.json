@@ -1,0 +1,102 @@
+{
+  "id": "pilot-031",
+  "source_sha256": "a7718e48cb0bc70ac7210b115f6789baa5e020eaaf32a6b1130202f9de586cc6",
+  "ordinal": 9,
+  "status": "completed",
+  "frame_sha256": [
+    "8120676f64e02062763c282d4761c9f04140b0ae7534f17f13e5de0062b90e76",
+    "c5139c670e91dfa3b4c82d77d56aa77a087853a4520e2b6e89140753f3dd9f95",
+    "53cb0151676b6033f472578a2aaed15abb1a2c17e11c53c7d16c027bc36f5ea9",
+    "cdaea08b52c14ae0ce3f8561315a60e20a885a7bb8b4631607ba66d49758887e",
+    "b7a37245d89edda70b24af25fcbcad86331f9eec63a29d3ef5f73a9e93670fa5",
+    "b7ee99a1b8628cb50ff17ccbbac068b5acf026dbab38c2eff574b9aaf379998c",
+    "6d4910cb3cbc867812bc0509c6877bb0ed848f688b7c8572b53bbd160fbabe43",
+    "f2ed2e4569cb0a1cc25cf27107ee88bc1a6d83685aeec7457f82eb6c35dc99b5"
+  ],
+  "image_count": 8,
+  "started_at": 1792734384.3313246,
+  "first_token_seconds": 0.543979600000057,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue cat\"\n    ],\n    \"actions\": [\n      \"sticking out tongue\",\n      \"closing eyes\",\n      \"opening eyes\",\n      \"raising paws\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat with red heart-shaped eyes and tongue out, paws raised\",\n      \"cat with red heart-shaped eyes and tongue out, paws raised\",\n      \"cat with closed eyes and smiling expression, paw raised\",\n      \"cat with wide eyes and tongue out\",\n      \"cat with wide eyes and tongue out\",\n      \"cat with wide eyes and tongue out\",\n      \"cat with red heart-shaped eyes and tongue out, paws raised\",\n      \"cat with red heart-shaped eyes and tongue out, paws raised\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 217,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue cat"
+      ],
+      "actions": [
+        "sticking out tongue",
+        "closing eyes",
+        "opening eyes",
+        "raising paws"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "cat with red heart-shaped eyes and tongue out, paws raised",
+        "cat with red heart-shaped eyes and tongue out, paws raised",
+        "cat with closed eyes and smiling expression, paw raised",
+        "cat with wide eyes and tongue out",
+        "cat with wide eyes and tongue out",
+        "cat with wide eyes and tongue out",
+        "cat with red heart-shaped eyes and tongue out, paws raised",
+        "cat with red heart-shaped eyes and tongue out, paws raised"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.043146847000116,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

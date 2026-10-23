@@ -1,0 +1,2049 @@
+{
+  "version": "ai-food-inventory-v1",
+  "rater": "Codex primary assistant; AI, not independent human ground truth",
+  "evidence": "Numbered 83-image static inventory contact sheet; machine captions not viewed",
+  "scope": "Static pack visual inventory. No retrieval thresholds or model prompts tuned on these labels. Includes non-food negatives; no claim of ingredient diversity.",
+  "entries": [
+    {
+      "id": "food-001",
+      "observed": {
+        "subjects": [
+          "кусок клубничного пирога со сливками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "73841e3f4bd2c1e2a13947ffea9002933777d020b72f56e0874ec3448812c883",
+      "custom_emoji_id": "5436088098788237059"
+    },
+    {
+      "id": "food-002",
+      "observed": {
+        "subjects": [
+          "вафля с клубникой и сливками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "d3ad13e89ea4247b96a0e41746bc86d442e65833c23af598b9e7e37a992e5a6d",
+      "custom_emoji_id": "5438408149927224396"
+    },
+    {
+      "id": "food-003",
+      "observed": {
+        "subjects": [
+          "кусок открытого клубничного пирога"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "f923a310cb938fbad917924fa2412464eacd7bdead07c9d8a3beb051c158745e",
+      "custom_emoji_id": "5438477552303760765"
+    },
+    {
+      "id": "food-004",
+      "observed": {
+        "subjects": [
+          "круглый клубничный торт со сливками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "7b2debfd5bdddf85160abf9cf299128535291765fc88068cf0044c27105b39df",
+      "custom_emoji_id": "5438509279227173754"
+    },
+    {
+      "id": "food-005",
+      "observed": {
+        "subjects": [
+          "высокий розовый десерт с клубникой и сердечками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "74ea1440fc29c166063904cb5106403032b49394cb2d1d4dc5d30a8087983d0f",
+      "custom_emoji_id": "5435939832222212270"
+    },
+    {
+      "id": "food-006",
+      "observed": {
+        "subjects": [
+          "картонная упаковка клубничного напитка с японскими надписями"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "На упаковке есть текст; точная транскрипция по этому масштабу не подтверждена.",
+      "sha256": "2bdbbe6e50074d6b5280c0f5c5c6f4818728369d8b3f9cc210d17a13dd0b9be5",
+      "custom_emoji_id": "5438109752779365988"
+    },
+    {
+      "id": "food-007",
+      "observed": {
+        "subjects": [
+          "стакан клубничного десерта со сливками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "be3318f0ad8535e9b0dd6cdd16ab065d73db9436154f26e946e87b37ba7a3433",
+      "custom_emoji_id": "5435923623015638099"
+    },
+    {
+      "id": "food-008",
+      "observed": {
+        "subjects": [
+          "квадратный кусок слоёного торта с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "f770fbf597fa99fdf539055461811a8cfb0e3079fb910de9520cbd8b9fd099cc",
+      "custom_emoji_id": "5438432270463556845"
+    },
+    {
+      "id": "food-009",
+      "observed": {
+        "subjects": [
+          "маленький круглый торт с клубникой и белым шоколадом"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a549c722c2ef89af2bfa55388f7ee8bd10bd73352ce23d51c1687e464fb02c71",
+      "custom_emoji_id": "5438538180062110279"
+    },
+    {
+      "id": "food-010",
+      "observed": {
+        "subjects": [
+          "печенье в форме цветка с красной начинкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "d461777ee6106b53fcc8950fe83b65af631b58d54f5ec8c1935f995fd626cad4",
+      "custom_emoji_id": "5438243803003641893"
+    },
+    {
+      "id": "food-011",
+      "observed": {
+        "subjects": [
+          "красный десерт в форме клубники с кремом"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "7fde8ff7f1b9787eeb820f07f1d5ff09bac80c8ef42e7f6f65693ae93d3ef905",
+      "custom_emoji_id": "5436104054591741427"
+    },
+    {
+      "id": "food-012",
+      "observed": {
+        "subjects": [
+          "одна целая ягода клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "d5917ddb5f1c34ff2728afa9ab292397e9d63b15ffc448da376833c4991631e9",
+      "custom_emoji_id": "5435991371829764311"
+    },
+    {
+      "id": "food-013",
+      "observed": {
+        "subjects": [
+          "два печенья с шоколадной крошкой и кремом между ними"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "8ba5ed6b964847498dddacb8dfb7d33a6a0b9c14da5e73838101bd7e15d7ed90",
+      "custom_emoji_id": "5438411869368902220"
+    },
+    {
+      "id": "food-014",
+      "observed": {
+        "subjects": [
+          "маленький десерт с тремя ягодами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "566afec54c57bba5a06918e4e2a844e320882506d699359ca11624a3de7ef396",
+      "custom_emoji_id": "5435919916458860173"
+    },
+    {
+      "id": "food-015",
+      "observed": {
+        "subjects": [
+          "круглый белый торт с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "c8490d12643fcf424fcc8b8a44284570f09b0b59c8bff10435750a109f0e7208",
+      "custom_emoji_id": "5438497223253976568"
+    },
+    {
+      "id": "food-016",
+      "observed": {
+        "subjects": [
+          "кусок хлеба с кремом и узором из клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "817e0328faa27b1b4d875313abbe5284756dc10359eb7ab8f1e9e851048e2327",
+      "custom_emoji_id": "5438190747272635351"
+    },
+    {
+      "id": "food-017",
+      "observed": {
+        "subjects": [
+          "круглая булочка в глазури с клубникой и кремом"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "ec0f7e517459a3bde2db875bef5fe4409c45b4081fe1c68cb45d4d0a0e2390fd",
+      "custom_emoji_id": "5438543557361163152"
+    },
+    {
+      "id": "food-018",
+      "observed": {
+        "subjects": [
+          "кусок клубничного тарта с зелёной крошкой по краю"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "e700c6a4badce4cde075296520d320dd77dba8fdc8758b18532ca1a5e4c843d3",
+      "custom_emoji_id": "5438604365508141145"
+    },
+    {
+      "id": "food-019",
+      "observed": {
+        "subjects": [
+          "треугольная выпечка с шоколадными полосами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a6087a7a2036bc46d821b59cb8730ca38a740eeb75e332bdab69bb000b6f2f49",
+      "custom_emoji_id": "5438507642844635023"
+    },
+    {
+      "id": "food-020",
+      "observed": {
+        "subjects": [
+          "круглый розовый десерт с клубникой и сливками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9553b7a5c7c8548e7890abf025ca23d4fc05513df85d8a173d24988d2741546f",
+      "custom_emoji_id": "5436356572898942809"
+    },
+    {
+      "id": "food-021",
+      "observed": {
+        "subjects": [
+          "розовый клубничный торт с рифлёной кромкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "0366618a722517f5bd77e335fb99ac4af31a925b67f3d24e34f94bdffd9bf637",
+      "custom_emoji_id": "5438266450366193934"
+    },
+    {
+      "id": "food-022",
+      "observed": {
+        "subjects": [
+          "половинка клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "d8899bd1baf157afc274a81471ccb261a0b62258e671d63314465ed26c6f12bb",
+      "custom_emoji_id": "5436024636351471819"
+    },
+    {
+      "id": "food-023",
+      "observed": {
+        "subjects": [
+          "треугольный бутерброд с кремом и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "b318b1bb907e558e2ccd6b2fb7414ae4c595fadc035d22a380d90dcd48fc7690",
+      "custom_emoji_id": "5438412152836744872"
+    },
+    {
+      "id": "food-024",
+      "observed": {
+        "subjects": [
+          "круглый клубничный пирог с маленькими белыми цветками"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a14221574f600698419fc798dc30333f1d4fb179d987ba712d319734b92877ce",
+      "custom_emoji_id": "5438385055888072707"
+    },
+    {
+      "id": "food-025",
+      "observed": {
+        "subjects": [
+          "два ломтика хлеба с кремом и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a52b18c5fa82011d9863e9b5d2e34d34bdd150853cc7c55d090309667c293e7c",
+      "custom_emoji_id": "5438553186677843757"
+    },
+    {
+      "id": "food-026",
+      "observed": {
+        "subjects": [
+          "три части клубники, сложенные башенкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "c8fd695a40cabefb466a939477c1ad46b850102204fbd0ac4a46c8aa632c1ed7",
+      "custom_emoji_id": "5438562596951187534"
+    },
+    {
+      "id": "food-027",
+      "observed": {
+        "subjects": [
+          "красный леденец в форме сердца на палочке"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "214e50a7f1461b7f51190e50c46ac45eb8831853b0e5a8fffb6e4fc1e17061f9",
+      "custom_emoji_id": "5438385687248265959"
+    },
+    {
+      "id": "food-028",
+      "observed": {
+        "subjects": [
+          "круглый светлый торт с красными сердцами и вырезанным куском"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "3772f20a3c0b89e0ce65aabc0fed0dde30e157765db03110d69e715ddc7da962",
+      "custom_emoji_id": "5438439722231816770"
+    },
+    {
+      "id": "food-029",
+      "observed": {
+        "subjects": [
+          "два печенья в форме сердца с красной начинкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "ea34d0fc5bee6aa6c0ef40073dfb065f700071d654e19352544aaf6c58fd6cdb",
+      "custom_emoji_id": "5438290635327040049"
+    },
+    {
+      "id": "food-030",
+      "observed": {
+        "subjects": [
+          "розовые пирожные макарон в форме сердец"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "6db1ecfbcd8193cdebf10e4362fb3528467c22bb99fd8e66e706e315b6727c05",
+      "custom_emoji_id": "5436228758967181011"
+    },
+    {
+      "id": "food-031",
+      "observed": {
+        "subjects": [
+          "два круглых печенья с красным вареньем"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "b12f386798a24b0a20351e93e2f88c474f256f62731f7d86ed4cc9816c7e83b8",
+      "custom_emoji_id": "5438132206868389780"
+    },
+    {
+      "id": "food-032",
+      "observed": {
+        "subjects": [
+          "кусок розового торта с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "8abf19a7dc0893a8a8b538e8c7a223f07155551f8e1c688ac479bc7baffee7bd",
+      "custom_emoji_id": "5438521399624883991"
+    },
+    {
+      "id": "food-033",
+      "observed": {
+        "subjects": [
+          "маленький кремовый торт с ягодами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a046298e0fbff9fc90446e4c7111c294cb80ca90f5f18e0aa55cbd1a45c00fa5",
+      "custom_emoji_id": "5438650965903303745"
+    },
+    {
+      "id": "food-034",
+      "observed": {
+        "subjects": [
+          "кусок красно-белого слоёного торта с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "7cc5db30b6d4909804d3bac3b96f2fdf44a56f5a1673f95390e45c6429a5e3c9",
+      "custom_emoji_id": "5438206067420981814"
+    },
+    {
+      "id": "food-035",
+      "observed": {
+        "subjects": [
+          "треугольный кусок тёмно-красного слоёного торта с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "24fe09770b38b29ca40d74450fc4faeb5c77860a811f3b10be4073ad14626db5",
+      "custom_emoji_id": "5438418827215923767"
+    },
+    {
+      "id": "food-036",
+      "observed": {
+        "subjects": [
+          "светлый кусок слоёного торта с клубникой и кремом"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "229ac98feff07faa9c40d6fc696093622e3aebbccb789107b8c7ca44fce8ce6f",
+      "custom_emoji_id": "5438483960394965357"
+    },
+    {
+      "id": "food-037",
+      "observed": {
+        "subjects": [
+          "кусок пирога с красной ягодной начинкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "e846ce8f1cccef6660bac2dad14f73cc909665db6e7dd47644f8b0284b01799b",
+      "custom_emoji_id": "5436284030901313931"
+    },
+    {
+      "id": "food-038",
+      "observed": {
+        "subjects": [
+          "десерт в стеклянной креманке с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "72de2fd9a340a053e38bec761073c3f1f8b235aa5ee5e1779d481edfeed7358e",
+      "custom_emoji_id": "5438654174243874046"
+    },
+    {
+      "id": "food-039",
+      "observed": {
+        "subjects": [
+          "миска с кусками клубники и шоколадом"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "8d7e5715e0d491ebc5409d0b79bc897017539ad90de9107bd2ae4c5d3cc76e0b",
+      "custom_emoji_id": "5438323199769075483"
+    },
+    {
+      "id": "food-040",
+      "observed": {
+        "subjects": [
+          "вафля с кремом и ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "104908a85baa80b8267ae12434b46a72a82372d3d3df0d36589abface3fc3c82",
+      "custom_emoji_id": "5438649153427104692"
+    },
+    {
+      "id": "food-041",
+      "observed": {
+        "subjects": [
+          "треугольный кусок торта с клубникой по краю"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "f273234a326ea3eb4d7dc820b21ac732819e7a320dc944ced011092a228ad616",
+      "custom_emoji_id": "5436316904580996025"
+    },
+    {
+      "id": "food-042",
+      "observed": {
+        "subjects": [
+          "кусок клубничного пирога с шоколадной основой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "c59acd40e787c297418eaff0ce0060d05a467c1a73612da0e1af83535819b9c6",
+      "custom_emoji_id": "5438551571770140749"
+    },
+    {
+      "id": "food-043",
+      "observed": {
+        "subjects": [
+          "чашка с розовым десертом и ягодами на блюдце"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "31830f996661d78203040bb5ddf78dbd4821c4e7470bf21408be4b2cfd8dda6a",
+      "custom_emoji_id": "5438622992781303791"
+    },
+    {
+      "id": "food-044",
+      "observed": {
+        "subjects": [
+          "чашка с десертом, кремом и вафлей на блюдце"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9319559798e88e05a92d337b11bba78cc43b054825e8f9d33068abdd03a2b4df",
+      "custom_emoji_id": "5436239689658949754"
+    },
+    {
+      "id": "food-045",
+      "observed": {
+        "subjects": [
+          "прямоугольный кусок шоколадного десерта с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "1acce650ba3296be4c49a4d792cfcb62cbc1a1e3acb49163d8a53dd4827d31ad",
+      "custom_emoji_id": "5436181823564571429"
+    },
+    {
+      "id": "food-046",
+      "observed": {
+        "subjects": [
+          "куча клубники на тарелке рядом с бутылкой и бокалом розового напитка"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "1146a946a55145f554aed3bde85e9ab00b3c51f8866a071054830fa8c5ce91d1",
+      "custom_emoji_id": "5438177175175978358"
+    },
+    {
+      "id": "food-047",
+      "observed": {
+        "subjects": [
+          "нарезанный шоколадный рулет с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "0792095be8749050f2a375e4eebcb12e9c58c8030a7c7b220d284b6f67617e49",
+      "custom_emoji_id": "5438227379048702212"
+    },
+    {
+      "id": "food-048",
+      "observed": {
+        "subjects": [
+          "круглый шоколадный пирог с клубникой и вынутым куском"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9630e5c93aeb47a51c7fa643e5028d172c337fd7695984013acbe4d6b9cb4a66",
+      "custom_emoji_id": "5438535263779315214"
+    },
+    {
+      "id": "food-049",
+      "observed": {
+        "subjects": [
+          "розовый торт со сливочным узором и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "3afa394836ceaa9d0cc151510a2d2f3586b5fbe5918a8460e47373a0a968e832",
+      "custom_emoji_id": "5438487435023507939"
+    },
+    {
+      "id": "food-050",
+      "observed": {
+        "subjects": [
+          "открытый пирог в форме сердца с ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "ef3a17b7a26d9b0946ced5c4948423491b2135f6a7cf189f43737e47a61438c4",
+      "custom_emoji_id": "5438600504332540301"
+    },
+    {
+      "id": "food-051",
+      "observed": {
+        "subjects": [
+          "круглый торт со сливками, ягодами и зелёными листьями"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "fded7d3f13e2e637e2149a72cb62480afaaba348be0a33b320e208f9a220d81e",
+      "custom_emoji_id": "5438504602007788643"
+    },
+    {
+      "id": "food-052",
+      "observed": {
+        "subjects": [
+          "светлый треугольный кусок торта с кремом и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9ae270a05a970471f9d60442b0e6f7e620ef0205b57af8ae25ce442ce1cb0c9e",
+      "custom_emoji_id": "5438647628713713107"
+    },
+    {
+      "id": "food-053",
+      "observed": {
+        "subjects": [
+          "круглая тарталетка с кремом и одной клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "243bb18fbdee72c777b9d97d5ca0d646f8f8968c0c44c82ff8a920977a4494fd",
+      "custom_emoji_id": "5435990130584214623"
+    },
+    {
+      "id": "food-054",
+      "observed": {
+        "subjects": [
+          "розовый десерт в форме сердца с ягодой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "eb0b6869343625a1150d29d65274839bf504f0ebabcbd35262211c5b8b4f10b2",
+      "custom_emoji_id": "5438472840724637582"
+    },
+    {
+      "id": "food-055",
+      "observed": {
+        "subjects": [
+          "квадратный пирог с ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "5ce8a5ec4e203bbe12e08e6f3baa13b04cf1e989815a8120ef9fcaedda288bd6",
+      "custom_emoji_id": "5436277880508145631"
+    },
+    {
+      "id": "food-056",
+      "observed": {
+        "subjects": [
+          "продолговатый тост с кремом и целыми ягодами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "5bbaec4fa81c39698496fb2b23fa853e411002a22eac0a150438df30d37e0a1f",
+      "custom_emoji_id": "5438450777477636289"
+    },
+    {
+      "id": "food-057",
+      "observed": {
+        "subjects": [
+          "светлый бант с мелким цветочным рисунком"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "бант",
+          "украшение"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "Видимый трудный отрицательный пример: это бант, а не еда.",
+      "sha256": "9dabe06246926a6b6d92c5b3dcba0b0fea6e6a70f0a4474e6637fdb6f43131e2",
+      "custom_emoji_id": "5438191503186877961"
+    },
+    {
+      "id": "food-058",
+      "observed": {
+        "subjects": [
+          "чашка тёмного напитка на клетчатом блюдце, рядом клубника"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "7318f4ff49bd527e3d4390ec7a5b76ce3a89d8693fc5f3f4705f0d81c1c21b5e",
+      "custom_emoji_id": "5438208339458679410"
+    },
+    {
+      "id": "food-059",
+      "observed": {
+        "subjects": [
+          "высокий розовый торт с кремовыми завитками и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "aff956c510d1d7c865f763fdf7ca5fe1ec8d1a3bdc5b87c854a3232ee3c24d61",
+      "custom_emoji_id": "5438096816337885355"
+    },
+    {
+      "id": "food-060",
+      "observed": {
+        "subjects": [
+          "тёмные коржи с кремом и ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "11fdd0a161d98ab638d1b880604d686c7e1e8b2cee086786a9bd500b60384c33",
+      "custom_emoji_id": "5438637325087170471"
+    },
+    {
+      "id": "food-061",
+      "observed": {
+        "subjects": [
+          "вафля со сливками и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "a4991d2a455df0e71cf77fe2f6f42c8e3748af43894ea3ab38d6d6d0302d428e",
+      "custom_emoji_id": "5438330204860736882"
+    },
+    {
+      "id": "food-062",
+      "observed": {
+        "subjects": [
+          "квадратный тост с кремом и ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "872da93d9120978efcc9b5787352b693264c771e68528dd6181d4cab9faf4166",
+      "custom_emoji_id": "5436124077729275992"
+    },
+    {
+      "id": "food-063",
+      "observed": {
+        "subjects": [
+          "круглый десерт с клубникой и другими ягодами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9b7fe5a50b65bbc73530fd4f35487283f4a6bd531ee14e7a0ddfeb2006ced062",
+      "custom_emoji_id": "5438248149510545577"
+    },
+    {
+      "id": "food-064",
+      "observed": {
+        "subjects": [
+          "стакан слоёного клубничного десерта"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "3f09c7dd33529d3ecf7faa07dd818376328bc354fe840cd220580b8dd6767fce",
+      "custom_emoji_id": "5436137276163775754"
+    },
+    {
+      "id": "food-065",
+      "observed": {
+        "subjects": [
+          "прозрачная упаковка с целыми ягодами и белой этикеткой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "На упаковке есть текст; точная транскрипция по этому масштабу не подтверждена.",
+      "sha256": "323d2f0e8d5fed1c64b3cb5ce9880ae7c53ba1da9fd8747da9ef223d2d90adcd",
+      "custom_emoji_id": "5438270715268717901"
+    },
+    {
+      "id": "food-066",
+      "observed": {
+        "subjects": [
+          "круглый торт с клубникой, светлым кремом и шоколадным декором"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "e07a7331d721ebe94256d32769eeb6e51b3b07a9b3a88435c6f2339c2a2d336e",
+      "custom_emoji_id": "5435940506532078646"
+    },
+    {
+      "id": "food-067",
+      "observed": {
+        "subjects": [
+          "стеклянная банка с клубникой в красной жидкости и тканевой крышкой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "9f77f28c4b0fcced81f93145a6041549033e7de1d511fb8186064d2023bfb6cf",
+      "custom_emoji_id": "5438650124089711265"
+    },
+    {
+      "id": "food-068",
+      "observed": {
+        "subjects": [
+          "прямоугольная упаковка клубничного молока"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": "STRAWBERRY MILK",
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "abe094a35f46f5d6527ad1c14dbf6a77ae992aa824d0a46a83134f5eb6164dab",
+      "custom_emoji_id": "5436200893219364159"
+    },
+    {
+      "id": "food-069",
+      "observed": {
+        "subjects": [
+          "хлеб с кремом и красным вареньем"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "1ac533ab8aa90b1501d057e702e7da14f389485dbb9fb64e152b97a58a1345f2",
+      "custom_emoji_id": "5436334045795476685"
+    },
+    {
+      "id": "food-070",
+      "observed": {
+        "subjects": [
+          "розовое печенье-сердце с белой надписью"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": "Love",
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "01a87d7bfebf75c4160d19261289351c58e5888bfb12f940f9d5bcd945cde553",
+      "custom_emoji_id": "5438320347910792073"
+    },
+    {
+      "id": "food-071",
+      "observed": {
+        "subjects": [
+          "креманка с клубникой и высокой горкой сливок"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "468b5ef2590c104a3f98ea88cf475fd138dadf4bb8f59001983e1760e7714871",
+      "custom_emoji_id": "5438617748626235602"
+    },
+    {
+      "id": "food-072",
+      "observed": {
+        "subjects": [
+          "горка целых ягод клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "12622818e883f039b109585920558e7e5fd7adb82d2c20a8746930c8d14aad1d",
+      "custom_emoji_id": "5438538149997338630"
+    },
+    {
+      "id": "food-073",
+      "observed": {
+        "subjects": [
+          "бутерброды с кремом и ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "5fd1e9d7499b794e460b16eeeb2f53a58628b0f2a0a09b407e97c568c42f897b",
+      "custom_emoji_id": "5436362834961260961"
+    },
+    {
+      "id": "food-074",
+      "observed": {
+        "subjects": [
+          "банка с кусочками клубники в розовой жидкости"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "d4d109e4c40f78fb76dd87f47111a5ccdeb28546295fb1121e17c4cf712088d5",
+      "custom_emoji_id": "5436232534243436407"
+    },
+    {
+      "id": "food-075",
+      "observed": {
+        "subjects": [
+          "десерт в форме сердца с ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "c8bbaa13c91461c3391bb4f0a22f7a56e97f92ead23c6ff2ff1792b1e27b8ef6",
+      "custom_emoji_id": "5438552125820919680"
+    },
+    {
+      "id": "food-076",
+      "observed": {
+        "subjects": [
+          "круглый светлый десерт с одной ягодой в центре"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "f195747465b75ee976f223262173986bafc36b4bf4acd27f1cfa5be2db6fc03d",
+      "custom_emoji_id": "5436355683840716196"
+    },
+    {
+      "id": "food-077",
+      "observed": {
+        "subjects": [
+          "два треугольных бутерброда с кремом и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "fc136f3a9b6c5d46852e29d57093c5fa86a7800329eb8a08af9a573464d1c1f3",
+      "custom_emoji_id": "5436010183786520221"
+    },
+    {
+      "id": "food-078",
+      "observed": {
+        "subjects": [
+          "круглый шоколадный десерт с ломтиками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "0afbf8390bbdff86c2da2d3f16192c50bfd7866807c279b2851289261a9812e6",
+      "custom_emoji_id": "5436380779334625989"
+    },
+    {
+      "id": "food-079",
+      "observed": {
+        "subjects": [
+          "кусок тёмного слоёного десерта с кремом и ягодами"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "57dff6ada673951e007cef4c3fcbebb151d58adbade1f418bda53441f9c8daa3",
+      "custom_emoji_id": "5436285920686924060"
+    },
+    {
+      "id": "food-080",
+      "observed": {
+        "subjects": [
+          "прямоугольный тост с кремом и половинками клубники"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "074f859e31901deefc00be84bf408a5cb7a48d31aa8535bb8e81549217ae8086",
+      "custom_emoji_id": "5438348557255992806"
+    },
+    {
+      "id": "food-081",
+      "observed": {
+        "subjects": [
+          "три небольших сэндвича из вафель с кремом и клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "54fcc660cee79a84d9caa3e4e0ce2c89377bfa38a2b6960bbadbfc8b21a895d3",
+      "custom_emoji_id": "5435972654362287988"
+    },
+    {
+      "id": "food-082",
+      "observed": {
+        "subjects": [
+          "круглый светлый десерт с кремом, ягодами и кусочками шоколада"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "c56af7ac196c81f63541b27c78f2eb6856a6f09f9cd357994ff0b765239fed0c",
+      "custom_emoji_id": "5436360781966894073"
+    },
+    {
+      "id": "food-083",
+      "observed": {
+        "subjects": [
+          "две круглые вафли с клубникой"
+        ],
+        "actions": [],
+        "expression": null,
+        "text": null,
+        "style": "фотографический вырезанный объект",
+        "temporal_sequence": []
+      },
+      "inferred": {
+        "possible_meanings": [
+          "еда",
+          "десерт",
+          "клубника"
+        ],
+        "intensity": null,
+        "ambiguity": true
+      },
+      "notes": "",
+      "sha256": "83237cc136e69283d2b7d0a19386aa46b8813401eaca58dfdb4922367159c938",
+      "custom_emoji_id": "5438654689639949211"
+    }
+  ]
+}

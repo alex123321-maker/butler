@@ -1,0 +1,99 @@
+{
+  "id": "pilot-018",
+  "source_sha256": "2240f1cc5885db9613d89c44427d41ae786f463ba80fbaaf1e72eeafbcccfce2",
+  "ordinal": 40,
+  "status": "completed",
+  "frame_sha256": [
+    "ed7afac1e33e20c165e8b1a539ee8f4971e5d2a1fe26cdd37860572a29d5cb5f",
+    "1299d3207121ea00c752610b60e2ce8c59fbe65bdbe3e332ce6f013221073a75",
+    "f477f6ce9ec17876e247bcfdfe8f4b1ca846c07774c8bdc2d2932b7e84904b1a",
+    "aeef65b9624797da67d0f44e18aaff2aa31e97f489116faca040c652454e42ca",
+    "a18c336bb5f45405b5d2a7e925f0997c4917aee739c5580152891c3a21a05964",
+    "e1a0e09c103b43073ce527ab1112d252555513a17784823129809aaabd0cee42",
+    "cd8be2bcfa297ffab21805985b1399d4da0adba191a0c79b10d4a0a2fbcbd856",
+    "97054bfd1069d4185f6290c456de82c89cdbc42707a25a74a80ef4ca38683fe1"
+  ],
+  "image_count": 8,
+  "started_at": 1792734775.7229428,
+  "first_token_seconds": 0.5459974020000118,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with brown eyes and pink spiral cheeks\"\n    ],\n    \"actions\": [\n      \"eyes move, eyebrows change position, mouth remains fixed\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes wide, eyebrows raised, cheeks swirled\",\n      \"eyes narrow, eyebrows lowered, cheeks swirled\",\n      \"eyes wide, eyebrows raised, cheeks swirled\",\n      \"eyes narrow, eyebrows lowered, cheeks swirled\",\n      \"eyes wide, eyebrows raised, cheeks swirled\",\n      \"eyes narrow, eyebrows lowered, cheeks swirled\",\n      \"eyes wide, eyebrows raised, cheeks swirled\",\n      \"eyes narrow, eyebrows lowered, cheeks swirled\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 211,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with brown eyes and pink spiral cheeks"
+      ],
+      "actions": [
+        "eyes move, eyebrows change position, mouth remains fixed"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes wide, eyebrows raised, cheeks swirled",
+        "eyes narrow, eyebrows lowered, cheeks swirled",
+        "eyes wide, eyebrows raised, cheeks swirled",
+        "eyes narrow, eyebrows lowered, cheeks swirled",
+        "eyes wide, eyebrows raised, cheeks swirled",
+        "eyes narrow, eyebrows lowered, cheeks swirled",
+        "eyes wide, eyebrows raised, cheeks swirled",
+        "eyes narrow, eyebrows lowered, cheeks swirled"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.676556310000251,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

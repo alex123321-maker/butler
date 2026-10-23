@@ -1,0 +1,71 @@
+{
+  "id": "pilot-041",
+  "source_sha256": "9b9398493424ea56f7f7ae141d62ea9375005db28196689484614397f82db9ea",
+  "ordinal": 6,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "d30cc765be0cea7ff93955ef6fb57c8ac29107af700759974f86c94858efc9c9",
+    "08035d6573b69a88b8af0cfe3f7faaa8a6aceabae4088ae3726969c8888137be",
+    "a1d9fdb1b72be669d0c2d6922ac7a4e544f9383b9e524dad5f2e7200071b42fe",
+    "860b97a2326c6cbd69ef40cf0a97ab7969b64a9349cb063b808c9ff32908926e",
+    "ba220afea82f54c8020e9c5b2f1d5fd27d46c996f1b8b56e90c531d70a95f036",
+    "46dc6d01fd2614117683de550278b655dcd78bfccd6fff735b321a5e5d5d75fb",
+    "2bb75689c168d546b258efb4640fea51ad0dfd54b2299f3bb4f27ff41b792a60",
+    "7c4639594d26deb2d8bdba03cfcb861dfda9780cb637c54830afef5ac2f928a2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734923.037952,
+  "first_token_seconds": 0.6503606780001974,
+  "input_tokens": 1102,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"цветной рисунок мелками\",\"temporal_sequence\":[],\"inferred\":{\"possible_meanings\":[],\"intensity\":null,\"ambiguity\":true}}",
+  "output_tokens": 56,
+  "truncated": false,
+  "schema_valid": false,
+  "total_seconds": 3.014944676000141,
+  "peak_gpu_allocated_bytes": 3243728384,
+  "peak_gpu_reserved_bytes": 3311403008,
+  "rss_peak_kib": 9230912
+}

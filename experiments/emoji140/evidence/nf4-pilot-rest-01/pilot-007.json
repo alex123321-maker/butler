@@ -1,0 +1,106 @@
+{
+  "id": "pilot-007",
+  "source_sha256": "27df99b85a9c554c565ebe29fa5d2453771fc2278183a16eec822f6af8b6955f",
+  "ordinal": 32,
+  "status": "completed",
+  "frame_sha256": [
+    "281e3adc84d51b50322a901e4d3feabfc1f3f2934f112335846cbcb2e7399e68",
+    "ee306f2547b47a3abf0ca0f1e62280bf8f01fb873e1a883c4a136e485ca6934e",
+    "1abeca24aa1a820a842ee10eacb80e56bb0fb5905b795bf60ba30364d6fd3654",
+    "c67103b95fa9b01be9dbdcf0c348eb4d7e6096fdadebb5272eca429b3f815875",
+    "fbc2954a54976dba30c2640bba00987ac464943ae6d07babaff64551ef1c70f5",
+    "c06186fbd6b347402888b5eac9d6f6d60f2020dca4980a3ed04f18717104bc5a",
+    "ce06cae88e545f1f900150e8a746eb6984a9c30efe49b07c444aa8acadda8ec7",
+    "67ec01409ee7cab4670e0ff8fce7551719ebdb701378e46fa320701fd15d0019"
+  ],
+  "image_count": 8,
+  "started_at": 1792734713.2433236,
+  "first_token_seconds": 0.544116989000031,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"poop emoji\",\n      \"fly\"\n    ],\n    \"actions\": [\n      \"fly appears\",\n      \"fly moves\",\n      \"fly disappears\",\n      \"fly reappears\",\n      \"fly moves to poop emoji's eye\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"poop emoji with smiling face\",\n      \"fly appears to left of poop emoji\",\n      \"fly moves toward poop emoji's eye\",\n      \"fly disappears\",\n      \"fly reappears to left of poop emoji\",\n      \"fly moves toward poop emoji's eye\",\n      \"fly disappears\",\n      \"fly reappears to left of poop emoji\",\n      \"fly moves toward poop emoji's eye\",\n      \"fly disappears\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 212,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "poop emoji",
+        "fly"
+      ],
+      "actions": [
+        "fly appears",
+        "fly moves",
+        "fly disappears",
+        "fly reappears",
+        "fly moves to poop emoji's eye"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "poop emoji with smiling face",
+        "fly appears to left of poop emoji",
+        "fly moves toward poop emoji's eye",
+        "fly disappears",
+        "fly reappears to left of poop emoji",
+        "fly moves toward poop emoji's eye",
+        "fly disappears",
+        "fly reappears to left of poop emoji",
+        "fly moves toward poop emoji's eye",
+        "fly disappears"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.573228643999755,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

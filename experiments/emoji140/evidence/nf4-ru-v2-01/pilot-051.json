@@ -1,0 +1,86 @@
+{
+  "id": "pilot-051",
+  "source_sha256": "97fbd32936f3830be6c05750d039cf2900a774839410bc5b477d48a28ae53463",
+  "ordinal": 7,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f"
+  ],
+  "image_count": 8,
+  "started_at": 1792734926.056223,
+  "first_token_seconds": 0.6499372299999777,
+  "input_tokens": 1102,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"контурная пиктограмма\",\"temporal_sequence\":[],\"inferred\":{\"possible_meanings\":[],\"intensity\":null,\"ambiguity\":true}}}",
+  "output_tokens": 55,
+  "truncated": false,
+  "schema_valid": false,
+  "parsed": {
+    "observed": {
+      "subjects": [],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": "контурная пиктограмма",
+      "temporal_sequence": [],
+      "inferred": {
+        "possible_meanings": [],
+        "intensity": null,
+        "ambiguity": true
+      }
+    }
+  },
+  "total_seconds": 2.9496385239999654,
+  "peak_gpu_allocated_bytes": 3243728384,
+  "peak_gpu_reserved_bytes": 3311403008,
+  "rss_peak_kib": 9230912
+}
