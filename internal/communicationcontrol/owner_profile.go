@@ -12,6 +12,9 @@ import (
 // OwnerProfile is immutable operator configuration, never a model argument or
 // mutable database setting. Credential values are referenced by private files.
 type OwnerProfile struct {
+	// Process-local Telegram presentation opt-in. JSON profiles cannot set it;
+	// the orchestrator CLI flag leaves the shared Broker profile unchanged.
+	EmojiDecoration                            bool `json:"-"`
 	Version                                    int
 	Database, OwnerID, BindingID, WebBindingID string
 	BindingVersion, WebBindingVersion          int64

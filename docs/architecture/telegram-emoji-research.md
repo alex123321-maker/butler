@@ -1,7 +1,11 @@
 # Telegram custom emoji research (#140)
 
-Status: isolated operator experiment, started 2026-10-23. No product feature,
-model catalog choice, memory behavior or communication-tool change is enabled.
+Status: experiment plus explicitly requested, bounded Telegram rollout (2026-10-23).
+The owner subsequently requested self-annotation/evaluation on the available
+hardware and actual enriched bot text. This supersedes the original research-only
+restriction for this narrow renderer. It does not establish completion of the
+unavailable BF16 captioner matrix. The experimental boundaries below describe
+the corpus/ML stage; the runtime delta is specified separately below.
 
 ## Boundaries
 
@@ -111,3 +115,45 @@ claimed. Calibration chooses abstention only on the30 original calibration
 queries; transfer to Kolobki is reported separately with uncertainty. No threshold
 is retuned after test results. Production and issue completion remain gated by
 the missing original criteria recorded in the follow-up report.
+
+## Reviewed runtime alternative, 2026-10-23
+
+See `experiments/emoji140/abstention-rollout.md` for evidence and limitations.
+Dense score alone is not approved to select emoji for live messages. The available
+6 GiB GPU remains sufficient for the measured embedding experiment; runtime
+decoration needs no GPU, model request, vector database query or new dependency.
+An embedded, single-AI-reviewed Kolobkitop catalog enables 27 of 52 concepts.
+The remaining entries abstain. Prefix/word rules are a closed vocabulary, not
+a general semantic verifier. A trigger alone is insufficient: every content term
+must be supported, ambiguous matches reject, and negatives/uncertainty reject.
+Quotes, code, links, questions, existing symbols and oversized output abstain.
+The whole message's failure/negation vocabulary suppresses sentence decoration.
+
+The operator explicitly enables `-telegram-emoji-decoration` together with
+`-communication-profile`. Default is off. The switch is process-local; shared
+Broker profile JSON, credentials and existing model/Telegram proxy are unchanged.
+No tool argument, main-agent prompt, catalog, recipient, capability or authority
+is added. Existing Communication admission, Broker calls, current source guards
+and the existing outbox still own publication and delivery.
+
+`Planner.Plan` runs only bounded Go selection, then persists a versioned private
+decoration manifest in each existing outbox Part: catalog/policy digest, original
+text SHA-256, at most three byte-offset insertions with pinned emoji IDs and
+Unicode fallbacks, and option IDs mapped to pinned button icons. Canonical
+publication payload and `Part.Text` are retained exactly. No inference or network
+access occurs inside the publication transaction. Oversize enrichment falls back
+to the original representation before persistence. No choice falls back to text.
+
+`Sender` renders only frozen choices into `sendMessage.entities` with UTF-16
+offsets. Retries, restart and widget state edits do not select again. Invalid
+stored manifests reject before sending; selection failure never changes text.
+Widget option icons use stable option IDs and `icon_custom_emoji_id`; label,
+order, callbacks, drafts, terminal state and question identity remain unchanged.
+Photos and rich report blocks remain outside this first decoration version.
+An explicit Bot API rejection and a transport-unknown outcome retain their
+existing outbox meanings; this feature adds no alternate send/retry loop.
+
+Disabling the flag stops decoration of new publications. A compatible binary
+still renders already frozen Parts. Rolling back to an older binary that lacks
+the field requires draining those Parts first; do not rewrite or resend UNKNOWN.
+Catalog history needed by persisted choices must remain readable in later versions.

@@ -62,20 +62,22 @@ type RichMessage struct {
 
 // Part is a private immutable outbox manifest. No file bytes, URLs or secrets.
 type Part struct {
-	Version int          `json:"version"`
-	Method  string       `json:"method"`
-	Text    string       `json:"text,omitempty"`
-	Photo   string       `json:"photo,omitempty"`
-	Caption string       `json:"caption,omitempty"`
-	Rich    *RichMessage `json:"rich_message,omitempty"`
-	Files   []File       `json:"files,omitempty"`
-	Widget  bool         `json:"widget,omitempty"`
+	Decoration *FrozenDecoration `json:"decoration,omitempty"`
+	Version    int               `json:"version"`
+	Method     string            `json:"method"`
+	Text       string            `json:"text,omitempty"`
+	Photo      string            `json:"photo,omitempty"`
+	Caption    string            `json:"caption,omitempty"`
+	Rich       *RichMessage      `json:"rich_message,omitempty"`
+	Files      []File            `json:"files,omitempty"`
+	Widget     bool              `json:"widget,omitempty"`
 }
 
 type MediaResolver func(context.Context, pgx.Tx, string, communication.Binding, string) (artifacts.Media, error)
 type Planner struct {
-	Resolve MediaResolver
-	Profile Capabilities
+	Decorator *Decorator
+	Resolve   MediaResolver
+	Profile   Capabilities
 }
 
 // Capabilities are trusted adapter readiness, never a model enable flag.
@@ -279,7 +281,28 @@ func (p Planner) Plan(ctx context.Context, tx pgx.Tx, run string, binding commun
 	}
 	out := make([]string, 0, len(parts))
 	for _, part := range parts {
+		if part.Method == "sendMessage" && p.Decorator != nil {
+			labels := map[string]string{}
+			if part.Widget && args.Input != nil {
+				for _, o := range args.Input.Options {
+					// A label cannot override contradictory descriptive context.
+					if o.ImageRef != "" {
+						continue
+					}
+					label := o.Label
+					if o.Description != "" {
+						label += " " + o.Description
+					}
+					labels[o.ID] = label
+				}
+			}
+			part.Decoration = p.Decorator.Freeze(part.Text, labels)
+		}
 		raw, err := json.Marshal(part)
+		if len(raw) > maxPartBytes && part.Decoration != nil {
+			part.Decoration = nil
+			raw, err = json.Marshal(part)
+		}
 		if err != nil || len(raw) > maxPartBytes {
 			return nil, ErrUnavailable
 		}

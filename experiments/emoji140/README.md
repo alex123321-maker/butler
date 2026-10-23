@@ -163,3 +163,8 @@ evaluation remain separate work. The follow-up measures dense/direct retrieval,
 abstention and intervals only under the explicit AI-evaluation limitations.
 A preview, a decoded file or a valid JSON
 caption proves none of these. Gemma is gated; no access terms were accepted.
+
+
+The later owner-authorized runtime alternative and stronger abstention evaluation
+are in [abstention-rollout.md](abstention-rollout.md). Earlier reports remain dated
+research snapshots; their "not deployed" statements describe those stages.

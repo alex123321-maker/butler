@@ -1,0 +1,26 @@
+[
+  {
+    "split": "calibration",
+    "positive_total": 6,
+    "accepted": 6,
+    "accepted_correct": 6,
+    "negative_total": 12,
+    "false_accepts": 0
+  },
+  {
+    "split": "test",
+    "positive_total": 36,
+    "accepted": 31,
+    "accepted_correct": 31,
+    "negative_total": 48,
+    "false_accepts": 0
+  },
+  {
+    "split": "original-kolobki",
+    "positive_total": 20,
+    "accepted": 15,
+    "accepted_correct": 15,
+    "negative_total": 5,
+    "false_accepts": 0
+  }
+]

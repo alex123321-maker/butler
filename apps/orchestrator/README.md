@@ -1275,3 +1275,12 @@ explicit submit; answers bypass the suspended FIFO through the existing owning
 interaction service. Widgets grant preferences only, never payment approval.
 Native widget lab is the explicit `BUTLER_COMMUNICATION_WIDGET_LAB=1` variant of
 the existing application lab; it uses bounded synthetic policy and real Broker.
+
+
+The explicit owner communication profile can opt into reviewed Telegram emoji
+decoration with `-telegram-emoji-decoration`. It defaults off, requires
+`-communication-profile`, and changes only Telegram presentation. It preserves
+the existing proxy/profile, model tools and canonical text; frozen outbox choices
+are reused on delivery and widget edits. This bounded Kolobkitop vocabulary needs
+no runtime GPU. See `docs/architecture/telegram-emoji-research.md` for limits,
+evaluation and compatible-reader rollback requirements.

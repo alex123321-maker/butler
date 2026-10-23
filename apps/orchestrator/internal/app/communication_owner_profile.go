@@ -25,7 +25,7 @@ func NewForOwnerCommunication(ctx context.Context, p communicationcontrol.OwnerP
 		ChatID: p.ChatID, BindingVersion: p.BindingVersion,
 		WebBindingID: p.WebBindingID, WebBindingVersion: p.WebBindingVersion,
 		DrainOnly: p.Mode == "drain", AllowPrivate: p.AllowPrivate,
-		Widgets:       p.Widgets,
+		Widgets: p.Widgets, EmojiDecoration: p.EmojiDecoration,
 		ownerDatabase: p.Database, expectedBotID: p.BotID, initialUpdateID: p.InitialUpdateID,
 	})
 }

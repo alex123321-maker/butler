@@ -186,12 +186,22 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 	// client. protect_content would contradict the report attachment contract;
 	// privacy is enforced before export, not by a client-side copy restriction.
 	fields := map[string]any{"chat_id": chat}
+	if part.Decoration != nil && part.Method != "sendMessage" {
+		return absent
+	}
 	switch part.Method {
 	case "sendMessage":
 		if part.Text == "" || len(deliveryoutbox.Split(part.Text, 4096)) != 1 || part.Rich != nil || part.Photo != "" || len(part.Files) > 0 {
 			return absent
 		}
-		fields["text"] = part.Text
+		decorated, entities, valid := renderDecoration(part.Text, part.Decoration)
+		if !valid || utf16Len(decorated) > 4096 {
+			return absent
+		}
+		fields["text"] = decorated
+		if len(entities) > 0 {
+			fields["entities"] = entities
+		}
 	case "sendPhoto":
 		if len(part.Files) != 1 || part.Photo != "attach://"+part.Files[0].Field || part.Rich != nil || len(deliveryoutbox.Split(part.Caption, 1024)) > 1 {
 			return absent
@@ -278,7 +288,7 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 		if e != nil {
 			return absent
 		}
-		fields["text"], fields["reply_markup"] = renderWidget(view, part.Text)
+		fields["text"], fields["reply_markup"] = renderWidgetWithIcons(view, fields["text"].(string), optionIcons(part.Decoration))
 		body, err = json.Marshal(fields)
 		if err != nil {
 			return absent

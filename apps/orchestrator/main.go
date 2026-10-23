@@ -13,7 +13,12 @@ import (
 
 func main() {
 	profile := flag.String("communication-profile", "", "private immutable owner communication profile")
+	emojiDecoration := flag.Bool("telegram-emoji-decoration", false, "enable reviewed Telegram emoji decoration for the owner communication profile")
 	flag.Parse()
+	if *emojiDecoration && *profile == "" {
+		slog.Error("emoji decoration requires communication-profile")
+		os.Exit(1)
+	}
 	log := logger.New(logger.Options{Service: "orchestrator", Component: "main", Level: slog.LevelInfo, Writer: os.Stdout})
 	var application *app.App
 	var err error
@@ -23,6 +28,7 @@ func main() {
 		var p communicationcontrol.OwnerProfile
 		p, err = communicationcontrol.LoadOwnerProfile(*profile)
 		if err == nil {
+			p.EmojiDecoration = *emojiDecoration
 			application, err = app.NewForOwnerCommunication(context.Background(), p)
 		}
 	}

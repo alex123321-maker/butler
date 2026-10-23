@@ -1,0 +1,25 @@
+{"id": "k01", "split": "original-kolobki", "expected": "kolobki-037", "decision": {"id": "kolobki-037", "custom_emoji_id": "5456424794704583026", "unicode": "🤦‍♀️", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k02", "split": "original-kolobki", "expected": "kolobki-026", "decision": {"id": "kolobki-026", "custom_emoji_id": "5456606106748983383", "unicode": "🙂", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k03", "split": "original-kolobki", "expected": "kolobki-031", "decision": {"id": "kolobki-031", "custom_emoji_id": "5456589442275876340", "unicode": "🙄", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k04", "split": "original-kolobki", "expected": "kolobki-006", "decision": {"id": "kolobki-024", "custom_emoji_id": "5456336421457503091", "unicode": "😋", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k05", "split": "original-kolobki", "expected": "kolobki-036", "decision": {"reason": "unsupported_detail"}, "correct": false, "accepted_grade": 0}
+{"id": "k06", "split": "original-kolobki", "expected": "kolobki-009", "decision": {"id": "kolobki-009", "custom_emoji_id": "5390917850426797933", "unicode": "❤️", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k07", "split": "original-kolobki", "expected": "kolobki-038", "decision": {"id": "kolobki-038", "custom_emoji_id": "5453908682603503941", "unicode": "🍻", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k08", "split": "original-kolobki", "expected": "kolobki-042", "decision": {"id": "kolobki-042", "custom_emoji_id": "5458569525278547985", "unicode": "⌨️", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k09", "split": "original-kolobki", "expected": "kolobki-050", "decision": {"id": "kolobki-050", "custom_emoji_id": "5456188330985135774", "unicode": "🪓", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k10", "split": "original-kolobki", "expected": "kolobki-045", "decision": {"id": "kolobki-045", "custom_emoji_id": "5456119186306639584", "unicode": "🙁", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k11", "split": "original-kolobki", "expected": "kolobki-019", "decision": {"id": "kolobki-019", "custom_emoji_id": "5456181450447527779", "unicode": "🌞", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k12", "split": "original-kolobki", "expected": "kolobki-040", "decision": {"id": "kolobki-040", "custom_emoji_id": "5454115704322137570", "unicode": "😎", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k13", "split": "original-kolobki", "expected": "kolobki-043", "decision": {"id": "kolobki-043", "custom_emoji_id": "5321381990602124565", "unicode": "😍", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k14", "split": "original-kolobki", "expected": "kolobki-034", "decision": {"id": "kolobki-034", "custom_emoji_id": "5456471369329940872", "unicode": "😘", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k15", "split": "original-kolobki", "expected": "kolobki-015", "decision": {"id": "kolobki-015", "custom_emoji_id": "5456642029855447100", "unicode": "🤢", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k16", "split": "original-kolobki", "expected": "kolobki-008", "decision": {"id": "kolobki-008", "custom_emoji_id": "5456626761246710338", "unicode": "🆘", "reason": "reviewed_concept"}, "correct": true, "accepted_grade": 3}
+{"id": "k17", "split": "original-kolobki", "expected": "kolobki-001", "decision": {"reason": "unsupported_detail"}, "correct": false, "accepted_grade": 0}
+{"id": "k18", "split": "original-kolobki", "expected": "kolobki-027", "decision": {"reason": "no_reviewed_concept"}, "correct": false, "accepted_grade": 0}
+{"id": "k19", "split": "original-kolobki", "expected": "kolobki-032", "decision": {"reason": "no_reviewed_concept"}, "correct": false, "accepted_grade": 0}
+{"id": "k20", "split": "original-kolobki", "expected": "kolobki-030", "decision": {"reason": "no_reviewed_concept"}, "correct": false, "accepted_grade": 0}
+{"id": "k21", "split": "original-kolobki", "expected": "", "decision": {"reason": "no_reviewed_concept"}, "correct": true, "accepted_grade": 0}
+{"id": "k22", "split": "original-kolobki", "expected": "", "decision": {"reason": "no_reviewed_concept"}, "correct": true, "accepted_grade": 0}
+{"id": "k23", "split": "original-kolobki", "expected": "", "decision": {"reason": "no_reviewed_concept"}, "correct": true, "accepted_grade": 0}
+{"id": "k24", "split": "original-kolobki", "expected": "", "decision": {"reason": "no_reviewed_concept"}, "correct": true, "accepted_grade": 0}
+{"id": "k25", "split": "original-kolobki", "expected": "", "decision": {"reason": "no_reviewed_concept"}, "correct": true, "accepted_grade": 0}

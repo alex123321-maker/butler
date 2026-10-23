@@ -1,0 +1,84 @@
+{"id": "test-019", "split": "test", "text": "Колобок рыдает.", "expected": "kolobki-001", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-020", "split": "test", "text": "Смеюсь!", "expected": "kolobki-005", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-021", "split": "test", "text": "Здравствуйте.", "expected": "kolobki-007", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-022", "split": "test", "text": "Машет рукой.", "expected": "kolobki-007", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-023", "split": "test", "text": "SOS", "expected": "kolobki-008", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-024", "split": "test", "text": "Красное пульсирующее сердце.", "expected": "kolobki-009", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-025", "split": "test", "text": "Колобок с длинным носом.", "expected": "kolobki-014", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-026", "split": "test", "text": "Зеленое лицо с надутыми щеками.", "expected": "kolobki-015", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-027", "split": "test", "text": "Солнце в черных очках.", "expected": "kolobki-019", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-028", "split": "test", "text": "Колобок смущается.", "expected": "kolobki-020", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-029", "split": "test", "text": "Косые глаза и высунутый язык.", "expected": "kolobki-024", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-030", "split": "test", "text": "Устал.", "expected": "kolobki-025", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-031", "split": "test", "text": "В серых наушниках.", "expected": "kolobki-026", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-032", "split": "test", "text": "Я слушаю музыку.", "expected": "kolobki-026", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-033", "split": "test", "text": "Зевает, прикрывая рот рукой.", "expected": "kolobki-028", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-034", "split": "test", "text": "Недовольный колобок.", "expected": "kolobki-031", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-035", "split": "test", "text": "Два колобка целуются.", "expected": "kolobki-034", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-036", "split": "test", "text": "Кричит с открытым ртом.", "expected": "kolobki-035", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-037", "split": "test", "text": "Готово.", "expected": "kolobki-036", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-038", "split": "test", "text": "Все готово!", "expected": "kolobki-036", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-039", "split": "test", "text": "Головой об стену.", "expected": "kolobki-037", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-040", "split": "test", "text": "Двое чокаются пивными кружками.", "expected": "kolobki-038", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-041", "split": "test", "text": "Два розовых банта.", "expected": "kolobki-039", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-042", "split": "test", "text": "Надуваю пузырь из жвачки.", "expected": "kolobki-040", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-043", "split": "test", "text": "Колобок с нимбом.", "expected": "kolobki-041", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-044", "split": "test", "text": "Пишу код.", "expected": "kolobki-042", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-045", "split": "test", "text": "Печатаю на клавиатуре.", "expected": "kolobki-042", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-046", "split": "test", "text": "Снимает черную шляпу.", "expected": "kolobki-043", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-047", "split": "test", "text": "Пою в микрофон.", "expected": "kolobki-045", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-048", "split": "test", "text": "Скептический взгляд.", "expected": "kolobki-049", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-049", "split": "test", "text": "Викинг со щитом и топором.", "expected": "kolobki-050", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-050", "split": "test", "text": "Благодарю!", "expected": "kolobki-036", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-051", "split": "test", "text": "Рад тебя видеть!", "expected": "kolobki-007", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-052", "split": "test", "text": "Наслаждаюсь любимой мелодией.", "expected": "kolobki-026", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-053", "split": "test", "text": "Задача успешно выполнена.", "expected": "kolobki-036", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-054", "split": "test", "text": "Разрабатываю программу.", "expected": "kolobki-042", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-055", "split": "test", "text": "Не готово.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-056", "split": "test", "text": "Все еще не готово.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-057", "split": "test", "text": "Без наушников.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-058", "split": "test", "text": "Это не плач, а смех.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-059", "split": "test", "text": "Наверное, готово.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-060", "split": "test", "text": "Если все готово.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-061", "split": "test", "text": "Готово или нет?", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-062", "split": "test", "text": "Головой об подушку.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-063", "split": "test", "text": "В красных наушниках.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-064", "split": "test", "text": "Синий пузырь жвачки.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-065", "split": "test", "text": "Наушники в форме сердца.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-066", "split": "test", "text": "Кошка слушает музыку.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-067", "split": "test", "text": "Собака с микрофоном.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-068", "split": "test", "text": "Пожар и красное сердце.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-069", "split": "test", "text": "Тошнит от музыки.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-070", "split": "test", "text": "Веселый викинг в розовых очках.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-071", "split": "test", "text": "Привет из суда.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-072", "split": "test", "text": "Смеюсь от страха.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-073", "split": "test", "text": "Готово: платеж отклонен.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-074", "split": "test", "text": "Ошибка. Готово.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-075", "split": "test", "text": "«Спасибо»", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-076", "split": "test", "text": "`готово`", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-077", "split": "test", "text": "https://example.org/готово", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-078", "split": "test", "text": "user@спасибо.ru", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-079", "split": "test", "text": "Что означает микрофон?", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-080", "split": "test", "text": "Солнце без очков.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-081", "split": "test", "text": "Желтое сердце.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-082", "split": "test", "text": "Груша с бантом.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-083", "split": "test", "text": "Нимб и топор.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-084", "split": "test", "text": "Шляпа вместо микрофона.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-085", "split": "test", "text": "Он никогда не смеется.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-086", "split": "test", "text": "Смешение цветов.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-087", "split": "test", "text": "Смещение.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-088", "split": "test", "text": "Смертельный.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-089", "split": "test", "text": "Слезоточивый газ.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-090", "split": "test", "text": "Ложная благодарность.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-091", "split": "test", "text": "Запрет программирования.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-092", "split": "test", "text": "Отмена праздника.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-093", "split": "test", "text": "Отлично, сервер упал.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-094", "split": "test", "text": "Математика 2+2=4.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-095", "split": "test", "text": "Квитанция готова.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-096", "split": "test", "text": "Плачу по счетам.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-097", "split": "test", "text": "Война.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-098", "split": "test", "text": "Серьезная болезнь.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-099", "split": "test", "text": "Смеюсь и плачу.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-100", "split": "test", "text": "Длинный красный нос и черная борода.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-101", "split": "test", "text": "Зевающий робот.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
+{"id": "test-102", "split": "test", "text": "Красный колобок с наушниками.", "expected": "", "rater": "single AI; constructed after concept rules; not independent human gold"}
