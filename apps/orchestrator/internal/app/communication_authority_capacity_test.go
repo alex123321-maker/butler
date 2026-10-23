@@ -47,7 +47,7 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 		t.Fatal(err)
 	}
 	tasks := task.NewStoreWithAuthorityReads(db.Pool(), db.AuthorityReadPool())
-	job, err := tasks.Create(ctx, task.CreateRequest{SessionKey: "web:capacity", OwnerID: "owner", Goal: "capacity proof"})
+	job, err := tasks.Create(ctx, task.CreateRequest{SessionKey: "web:capacity", OwnerID: "owner", Goal: "capacity proof", CompletionCriteria: []string{"current authority remains observable under saturated business capacity"}})
 	if err != nil {
 		t.Fatal(err)
 	}
