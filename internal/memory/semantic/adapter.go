@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	pb "github.com/butler/butler/internal/gen/localmodels/v1"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/security/content"
@@ -156,7 +157,7 @@ func (a *Adapter) Embeddings(ctx context.Context, scope Scope, texts []*pb.TextI
 	}
 	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.Space.ProfileID, CallerId: "memory-" + kind, TimeoutMs: 60000, Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Texts: texts, Task: task, Dimensions: uint32(a.Space.Dimensions)}}})
 	if callCtx.Err() != nil {
-		return nil, Stats{}, callCtx.Err()
+		return nil, Stats{}, budget.LocalCallError(callCtx)
 	}
 	if checker, ok := a.Admission.(interface {
 		CheckResult(context.Context, Operation) error
@@ -256,7 +257,7 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 	}
 	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.RerankerID, CallerId: "memory-rerank", TimeoutMs: 60000, Input: &pb.InferRequest_Rerank{Rerank: &pb.RerankInput{Query: query, Candidates: items}}})
 	if callCtx.Err() != nil {
-		return nil, Stats{}, callCtx.Err()
+		return nil, Stats{}, budget.LocalCallError(callCtx)
 	}
 	if checker, ok := a.Admission.(interface {
 		CheckResult(context.Context, Operation) error

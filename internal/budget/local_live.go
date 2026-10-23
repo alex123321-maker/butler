@@ -2,6 +2,7 @@ package budget
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -130,7 +131,7 @@ func (c *Controller) AdmitLocalModel(ctx context.Context, runID string, target L
 	if e != nil {
 		return nil, nil, e
 	}
-	if access == nil || o.Kind == "index" {
+	if access == nil || c.authorityReads == nil || o.Kind == "index" {
 		return nil, nil, ErrConflict
 	}
 	op, e := NewOperationID()
@@ -194,7 +195,8 @@ func (c *Controller) AdmitLocalModel(ctx context.Context, runID string, target L
 	if e = tx.Commit(ctx); e != nil {
 		return nil, nil, e
 	}
-	callCtx, cancel := context.WithDeadline(ctx, deadline)
+	deadlineCtx, stopDeadline := context.WithDeadline(ctx, deadline)
+	callCtx, cancel := context.WithCancelCause(deadlineCtx)
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -206,21 +208,55 @@ func (c *Controller) AdmitLocalModel(ctx context.Context, runID string, target L
 				return
 			case <-ticker.C:
 				checkCtx, stop := context.WithTimeout(callCtx, 200*time.Millisecond)
-				checkTx, err := c.pool.Begin(checkCtx)
+				phase := "pool"
+				checkTx, err := c.authorityReads.Begin(checkCtx)
 				if err == nil {
+					phase = "authority"
 					_, _, _, err = c.localAuthorityTx(checkCtx, checkTx, runID)
 					if err == nil {
+						phase = "source"
 						err = access(checkCtx, checkTx)
 					}
-					_ = checkTx.Rollback(checkCtx)
+					if rollbackErr := checkTx.Rollback(checkCtx); err == nil && rollbackErr != nil {
+						phase, err = "rollback", rollbackErr
+					}
+				}
+				if err != nil && checkCtx.Err() == context.DeadlineExceeded {
+					err = context.DeadlineExceeded
 				}
 				stop()
 				if err != nil {
-					cancel()
+					cancel(localAuthorityFailure(phase, err))
 					return
 				}
 			}
 		}
 	}()
-	return callCtx, func() { cancel(); <-done }, nil
+	return callCtx, func() { cancel(nil); stopDeadline(); <-done }, nil
+}
+
+// This error retains only a fixed observer phase/class, never database/source
+// text. Parent cancellation/deadline wins if it cancelled the context first.
+type localAuthorityError struct{ phase, class string }
+
+func (e *localAuthorityError) Error() string { return "local_authority_" + e.phase + "_" + e.class }
+func (e *localAuthorityError) Unwrap() error { return context.Canceled }
+
+func localAuthorityFailure(phase string, err error) error {
+	class := "unavailable"
+	if errors.Is(err, context.DeadlineExceeded) {
+		class = "timeout"
+	} else if errors.Is(err, ErrConflict) {
+		class = "denied"
+	}
+	return &localAuthorityError{phase: phase, class: class}
+}
+
+// LocalCallError retains only our trusted typed observer cause. Arbitrary
+// inherited cancellation causes cannot expose raw private errors via retrieval.
+func LocalCallError(ctx context.Context) error {
+	if cause, ok := context.Cause(ctx).(*localAuthorityError); ok {
+		return cause
+	}
+	return ctx.Err()
 }

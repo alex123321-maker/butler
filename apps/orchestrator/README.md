@@ -4,7 +4,10 @@ Core requires `BUTLER_POSTGRES_MAX_CONNS >= 3`: one connection from that total
 is reserved for live lease/Task authority and token-only source observations, and at least two remain
 for business writes. The combined maximum is unchanged. Channel polling and Web
 history cannot exhaust watchdog capacity; current PG revocation, expiry and
-fail-closed authority rules remain mandatory. Both pools close with Core.
+fail-closed authority rules remain mandatory. The live local-model watchdog also
+uses this reserve at the unchanged250ms/200ms bounds, with rollback-only source
+observations and safe cancellation causes. Admission/result acceptance retain
+business transactions and immutable budget history. Both pools close with Core.
 
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on
 page0 when the existing owned semantic runtime is configured. It uses a separate

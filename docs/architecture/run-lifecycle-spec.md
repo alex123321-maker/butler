@@ -6,7 +6,13 @@ two connections: Core therefore requires a total maximum of at least three.
 The total maximum and execution budgets do not increase. Channel polls, Web
 feeds and business writes cannot acquire the reserved connection. Both readers
 still use current PostgreSQL state and their existing authority checks; an
-unavailable observer fails closed. Observer cancellation logs only fixed phase
+unavailable observer fails closed. The foreground local-model admission watchdog
+uses this same reserve, with its unchanged250ms interval and200ms proof deadline.
+It rolls back source observations; admission, allowance reservation and returned
+result acceptance remain business transactions with their existing commit/pin
+semantics. Local-model cancellation retains only a fixed phase/class diagnostic,
+and independent parent cancellation/deadlines remain authoritative.
+Observer cancellation logs only fixed phase
 and classification plus elapsed time, never raw storage/source errors.
 
 Single-transaction owning writers (interaction recovery, preparation checkpoint,

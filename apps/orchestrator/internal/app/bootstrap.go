@@ -185,7 +185,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		postgres.Close()
 		return nil, policyErr
 	}
-	budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
+	budgetController := budget.NewControllerWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool(), budgetPolicy)
 	budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	taskStore.SetBudgets(budgetController, cfg.ActionMandateID)
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
