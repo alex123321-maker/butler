@@ -38,3 +38,15 @@ func BenchmarkDecorationFreeze(b *testing.B) {
 		d.Freeze("Привет!\nСлушаю музыку.\nСпасибо большое.", nil)
 	}
 }
+
+func TestCommunicationDecorationExistingEmojiOptionAbstains(t *testing.T) {
+	d := NewDecorator()
+	for _, label := range []string{"Слушаю музыку 😢", "😢 Слушаю музыку", "Пишу код 🔥"} {
+		if got := d.Select(label); got.ID != "" || got.Reason != "existing_symbol" {
+			t.Fatalf("%q: %+v", label, got)
+		}
+		if got := d.Freeze("Что выбрать?", map[string]string{"option": label}); got != nil {
+			t.Fatalf("decorated existing emoji option: %+v", got)
+		}
+	}
+}

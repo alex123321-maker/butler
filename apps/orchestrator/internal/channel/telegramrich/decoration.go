@@ -76,6 +76,11 @@ func (d *Decorator) Select(text string) EmojiDecision {
 	if strings.ContainsAny(text, "?`\"«»<>/\\@=") {
 		return reject("quoted_code_question_or_link")
 	}
+	for _, r := range text {
+		if unicode.IsSymbol(r) {
+			return reject("existing_symbol")
+		}
+	}
 	terms := words(text)
 	if len(terms) == 0 || len(terms) > 40 {
 		return reject("empty_or_long")
