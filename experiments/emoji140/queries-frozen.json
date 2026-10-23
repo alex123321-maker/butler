@@ -1,0 +1,1446 @@
+{
+  "version": "exploratory-query-seeds-v1",
+  "independent_human_gold": false,
+  "pool_judgments_complete": false,
+  "scope": "same AI saw source sheets and wrote queries; seed positives are incomplete; Kolobki requests measured separately",
+  "entries": [
+    {
+      "id": "c01",
+      "split": "calibration",
+      "category": "object",
+      "text": "Светящаяся тыква для Хэллоуина",
+      "seed_relevance": {
+        "rest-007": 3,
+        "pilot-012": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c02",
+      "split": "calibration",
+      "category": "object",
+      "text": "Рыжий кот в чёрных солнцезащитных очках",
+      "seed_relevance": {
+        "rest-008": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c03",
+      "split": "calibration",
+      "category": "object",
+      "text": "Синий символ электронной почты собака",
+      "seed_relevance": {
+        "rest-012": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c04",
+      "split": "calibration",
+      "category": "object",
+      "text": "Значок микрофона с полосками текста",
+      "seed_relevance": {
+        "rest-042": 3,
+        "rest-277": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c05",
+      "split": "calibration",
+      "category": "object",
+      "text": "Студент в выпускной шапочке с книгой",
+      "seed_relevance": {
+        "rest-074": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c06",
+      "split": "calibration",
+      "category": "object",
+      "text": "Синий вопросительный знак",
+      "seed_relevance": {
+        "rest-082": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c07",
+      "split": "calibration",
+      "category": "object",
+      "text": "Череп со скрещёнными костями",
+      "seed_relevance": {
+        "rest-128": 3,
+        "rest-097": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c08",
+      "split": "calibration",
+      "category": "object",
+      "text": "Синий знак доллара",
+      "seed_relevance": {
+        "rest-152": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c09",
+      "split": "calibration",
+      "category": "object",
+      "text": "Персик",
+      "seed_relevance": {
+        "rest-176": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c10",
+      "split": "calibration",
+      "category": "object",
+      "text": "Голова игрушечного робота",
+      "seed_relevance": {
+        "rest-292": 3,
+        "rest-303": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c11",
+      "split": "calibration",
+      "category": "action",
+      "text": "Нарисованный карандашом смайлик празднует с дудочкой",
+      "seed_relevance": {
+        "rest-028": 3,
+        "rest-083": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c12",
+      "split": "calibration",
+      "category": "action",
+      "text": "Испуганное лицо с синим лбом и каплей пота",
+      "seed_relevance": {
+        "rest-070": 3,
+        "rest-053": 2,
+        "rest-217": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c13",
+      "split": "calibration",
+      "category": "action",
+      "text": "Улыбающийся смайлик предлагает объятия",
+      "seed_relevance": {
+        "rest-099": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c14",
+      "split": "calibration",
+      "category": "action",
+      "text": "Кот широко зевает от усталости",
+      "seed_relevance": {
+        "rest-182": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c15",
+      "split": "calibration",
+      "category": "action",
+      "text": "Скрестить пальцы на удачу",
+      "seed_relevance": {
+        "rest-216": 3,
+        "rest-225": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c16",
+      "split": "calibration",
+      "category": "style",
+      "text": "Контурные чёрные искорки на прозрачном фоне",
+      "seed_relevance": {
+        "rest-093": 3,
+        "rest-144": 3,
+        "rest-248": 2,
+        "rest-304": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c17",
+      "split": "calibration",
+      "category": "style",
+      "text": "Чёрное окно терминала с верхней полосой",
+      "seed_relevance": {
+        "rest-056": 3,
+        "rest-098": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c18",
+      "split": "calibration",
+      "category": "style",
+      "text": "Контурное облако мысли",
+      "seed_relevance": {
+        "rest-263": 3,
+        "rest-278": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c19",
+      "split": "calibration",
+      "category": "composition",
+      "text": "Смайлик покрывается льдом без снежинок вокруг",
+      "seed_relevance": {
+        "rest-125": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "c20",
+      "split": "calibration",
+      "category": "composition",
+      "text": "Большой палец вверх у фиолетового кота",
+      "seed_relevance": {
+        "rest-283": 3,
+        "rest-162": 2,
+        "rest-186": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "c21",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Один целый помидор без лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c22",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Жёлтый кусок сыра с дырками",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c23",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Кухонный таймер с циферблатом",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c24",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Красная пожарная машина",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c25",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Половинка авокадо с косточкой",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c26",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Зелёный кактус в горшке",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c27",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Скрипка со смычком",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c28",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Синяя снежинка без лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c29",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Иконка календаря с датой",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "c30",
+      "split": "calibration",
+      "category": "no_match",
+      "text": "Улитка с раковиной",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t01",
+      "split": "test",
+      "category": "object",
+      "text": "Целая ягода клубники без посуды",
+      "seed_relevance": {
+        "food-012": 3,
+        "food-072": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t02",
+      "split": "test",
+      "category": "object",
+      "text": "Разрезанная пополам клубника",
+      "seed_relevance": {
+        "food-022": 3,
+        "food-026": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t03",
+      "split": "test",
+      "category": "object",
+      "text": "Клубничное молоко в коробке",
+      "seed_relevance": {
+        "food-068": 3,
+        "food-006": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t04",
+      "split": "test",
+      "category": "object",
+      "text": "Красный леденец сердечком на палочке",
+      "seed_relevance": {
+        "food-027": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t05",
+      "split": "test",
+      "category": "object",
+      "text": "Макароны пирожные в форме сердца",
+      "seed_relevance": {
+        "food-030": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t06",
+      "split": "test",
+      "category": "object",
+      "text": "Бант с мелкими цветочками",
+      "seed_relevance": {
+        "food-057": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t07",
+      "split": "test",
+      "category": "object",
+      "text": "Банка клубничного варенья с тканевой крышкой",
+      "seed_relevance": {
+        "food-067": 3,
+        "food-074": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t08",
+      "split": "test",
+      "category": "object",
+      "text": "Треугольные сэндвичи с клубникой и сливками",
+      "seed_relevance": {
+        "food-023": 3,
+        "food-077": 3,
+        "food-073": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t09",
+      "split": "test",
+      "category": "object",
+      "text": "Вафля со сливками и клубникой",
+      "seed_relevance": {
+        "food-002": 3,
+        "food-040": 3,
+        "food-061": 3,
+        "food-081": 2,
+        "food-083": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t10",
+      "split": "test",
+      "category": "object",
+      "text": "Шоколадный рулет с клубникой",
+      "seed_relevance": {
+        "food-047": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t11",
+      "split": "test",
+      "category": "object",
+      "text": "Тарталетка с одной ягодой клубники",
+      "seed_relevance": {
+        "food-053": 3,
+        "food-076": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t12",
+      "split": "test",
+      "category": "object",
+      "text": "Пирог сердечком с ломтиками клубники",
+      "seed_relevance": {
+        "food-050": 3,
+        "food-075": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t13",
+      "split": "test",
+      "category": "object",
+      "text": "Чашка тёмного напитка на блюдце",
+      "seed_relevance": {
+        "food-058": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t14",
+      "split": "test",
+      "category": "object",
+      "text": "Розовый кекс с вишенкой",
+      "seed_relevance": {
+        "rest-120": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t15",
+      "split": "test",
+      "category": "object",
+      "text": "Нос без лица",
+      "seed_relevance": {
+        "rest-004": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t16",
+      "split": "test",
+      "category": "object",
+      "text": "Зелёное лиственное дерево",
+      "seed_relevance": {
+        "rest-044": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t17",
+      "split": "test",
+      "category": "object",
+      "text": "Самолёт с глазами",
+      "seed_relevance": {
+        "rest-054": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t18",
+      "split": "test",
+      "category": "object",
+      "text": "Голубь с веточкой в клюве",
+      "seed_relevance": {
+        "rest-067": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t19",
+      "split": "test",
+      "category": "object",
+      "text": "Домик с глазами",
+      "seed_relevance": {
+        "rest-078": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t20",
+      "split": "test",
+      "category": "object",
+      "text": "Кот в костюме банана",
+      "seed_relevance": {
+        "rest-101": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t21",
+      "split": "test",
+      "category": "object",
+      "text": "Конверт с сердцами",
+      "seed_relevance": {
+        "rest-096": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t22",
+      "split": "test",
+      "category": "object",
+      "text": "Розовый кошелёк с монетами",
+      "seed_relevance": {
+        "rest-238": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t23",
+      "split": "test",
+      "category": "object",
+      "text": "Жёлтый цыплёнок",
+      "seed_relevance": {
+        "rest-305": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t24",
+      "split": "test",
+      "category": "object",
+      "text": "Врач в белом халате со стетоскопом",
+      "seed_relevance": {
+        "rest-261": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t25",
+      "split": "test",
+      "category": "object",
+      "text": "Женщина учитель с книгой у доски",
+      "seed_relevance": {
+        "rest-037": 3,
+        "pilot-001": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t26",
+      "split": "test",
+      "category": "action",
+      "text": "Кот держит табличку YES",
+      "seed_relevance": {
+        "rest-025": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t27",
+      "split": "test",
+      "category": "action",
+      "text": "Грустное лицо руками растягивает рот в улыбку",
+      "seed_relevance": {
+        "rest-187": 3,
+        "rest-218": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t28",
+      "split": "test",
+      "category": "action",
+      "text": "Руки складываются в сердечко",
+      "seed_relevance": {
+        "rest-175": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t29",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик просит соблюдать тишину пальцем у губ",
+      "seed_relevance": {
+        "rest-147": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t30",
+      "split": "test",
+      "category": "action",
+      "text": "Обезьяна закрывает глаза ладонями",
+      "seed_relevance": {
+        "rest-034": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t31",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик испуганно держится за щёки",
+      "seed_relevance": {
+        "rest-211": 3,
+        "rest-293": 3,
+        "rest-057": 2,
+        "rest-296": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t32",
+      "split": "test",
+      "category": "action",
+      "text": "Розовый и голубой коты обнимаются",
+      "seed_relevance": {
+        "rest-118": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t33",
+      "split": "test",
+      "category": "action",
+      "text": "Лицо громко плачет потоком слёз",
+      "seed_relevance": {
+        "rest-192": 3,
+        "rest-215": 2,
+        "pilot-035": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t34",
+      "split": "test",
+      "category": "action",
+      "text": "Человек пожимает плечами не знает ответа",
+      "seed_relevance": {
+        "rest-274": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t35",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик поёт в душе за занавеской",
+      "seed_relevance": {
+        "rest-137": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t36",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик приглядывается через монокль",
+      "seed_relevance": {
+        "rest-179": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t37",
+      "split": "test",
+      "category": "action",
+      "text": "Жёлтое лицо зевает прикрыв рот ладонью",
+      "seed_relevance": {
+        "rest-171": 3,
+        "rest-207": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t38",
+      "split": "test",
+      "category": "action",
+      "text": "Мозг взрывается от удивления",
+      "seed_relevance": {
+        "rest-241": 3,
+        "rest-178": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t39",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик чихает в носовой платок",
+      "seed_relevance": {
+        "rest-198": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t40",
+      "split": "test",
+      "category": "action",
+      "text": "Кот подмигивает одним глазом",
+      "seed_relevance": {
+        "rest-183": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t41",
+      "split": "test",
+      "category": "action",
+      "text": "Руки хлопают в ладоши",
+      "seed_relevance": {
+        "rest-160": 3,
+        "rest-220": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t42",
+      "split": "test",
+      "category": "action",
+      "text": "Надеяться на удачу со скрещёнными пальцами",
+      "seed_relevance": {
+        "rest-225": 3,
+        "rest-216": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t43",
+      "split": "test",
+      "category": "action",
+      "text": "Смайлик показывает табличку помощи SOS",
+      "seed_relevance": {
+        "rest-260": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t44",
+      "split": "test",
+      "category": "action",
+      "text": "Лицо заклеивает рот чтобы молчать",
+      "seed_relevance": {
+        "rest-212": 3,
+        "rest-257": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t45",
+      "split": "test",
+      "category": "action",
+      "text": "Красное лицо сердится и хмурится",
+      "seed_relevance": {
+        "rest-295": 3,
+        "rest-233": 3,
+        "rest-240": 2,
+        "pilot-029": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t46",
+      "split": "test",
+      "category": "style",
+      "text": "Синий объёмный знак процента",
+      "seed_relevance": {
+        "rest-258": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t47",
+      "split": "test",
+      "category": "style",
+      "text": "Синяя глянцевая цифра восемь",
+      "seed_relevance": {
+        "rest-065": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t48",
+      "split": "test",
+      "category": "style",
+      "text": "Синяя заглавная буква A",
+      "seed_relevance": {
+        "rest-046": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t49",
+      "split": "test",
+      "category": "style",
+      "text": "Контурная лупа без документа",
+      "seed_relevance": {
+        "rest-269": 3,
+        "rest-020": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t50",
+      "split": "test",
+      "category": "style",
+      "text": "Чёрно-белый значок глобуса",
+      "seed_relevance": {
+        "rest-148": 3,
+        "rest-291": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t51",
+      "split": "test",
+      "category": "style",
+      "text": "Плоский значок кинокамеры со звёздочкой",
+      "seed_relevance": {
+        "rest-032": 3,
+        "rest-262": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t52",
+      "split": "test",
+      "category": "style",
+      "text": "Нарисованное штрихами красное пламя",
+      "seed_relevance": {
+        "rest-286": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t53",
+      "split": "test",
+      "category": "style",
+      "text": "Карандашный смайлик с нимбом",
+      "seed_relevance": {
+        "rest-050": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t54",
+      "split": "test",
+      "category": "style",
+      "text": "Глянцевое оранжевое сердце",
+      "seed_relevance": {
+        "rest-190": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t55",
+      "split": "test",
+      "category": "style",
+      "text": "Рисованный кот с надписью MEOW в облачке",
+      "seed_relevance": {
+        "rest-143": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t56",
+      "split": "test",
+      "category": "style",
+      "text": "Розовый мультяшный кот с нимбом",
+      "seed_relevance": {
+        "rest-196": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t57",
+      "split": "test",
+      "category": "style",
+      "text": "Карандашная рука с розовым маникюром",
+      "seed_relevance": {
+        "rest-157": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t58",
+      "split": "test",
+      "category": "style",
+      "text": "Фотографический клубничный тост",
+      "seed_relevance": {
+        "food-016": 3,
+        "food-025": 3,
+        "food-056": 3,
+        "food-062": 3,
+        "food-080": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t59",
+      "split": "test",
+      "category": "style",
+      "text": "Карандашное лицо со слезами от смеха",
+      "seed_relevance": {
+        "rest-107": 3,
+        "rest-073": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t60",
+      "split": "test",
+      "category": "style",
+      "text": "Чёрный динамик со звуковыми волнами и искрой",
+      "seed_relevance": {
+        "rest-129": 3,
+        "rest-013": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t61",
+      "split": "test",
+      "category": "composition",
+      "text": "Сердце без лица и без рук оранжевого цвета",
+      "seed_relevance": {
+        "rest-190": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t62",
+      "split": "test",
+      "category": "composition",
+      "text": "Клубника без крема без торта без лица одна целая ягода",
+      "seed_relevance": {
+        "food-012": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t63",
+      "split": "test",
+      "category": "composition",
+      "text": "Кот в ломтике хлеба",
+      "seed_relevance": {
+        "rest-234": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t64",
+      "split": "test",
+      "category": "composition",
+      "text": "Летящий кот оставляет радужный след",
+      "seed_relevance": {
+        "rest-145": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t65",
+      "split": "test",
+      "category": "composition",
+      "text": "Знак одобрения ладонью без лица",
+      "seed_relevance": {
+        "rest-162": 3,
+        "rest-283": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "t66",
+      "split": "test",
+      "category": "composition",
+      "text": "Череп с зелёными червями без скрещённых костей",
+      "seed_relevance": {
+        "rest-097": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t67",
+      "split": "test",
+      "category": "composition",
+      "text": "Лицо с наушниками фиолетового кота",
+      "seed_relevance": {
+        "rest-109": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t68",
+      "split": "test",
+      "category": "composition",
+      "text": "Спящий кот на коробке из которой смотрят глаза",
+      "seed_relevance": {
+        "rest-194": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t69",
+      "split": "test",
+      "category": "composition",
+      "text": "Лицо с солнцезащитными очками и коктейлем в круге фламинго",
+      "seed_relevance": {
+        "rest-154": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t70",
+      "split": "test",
+      "category": "composition",
+      "text": "Киборг с металлической половиной лица",
+      "seed_relevance": {
+        "rest-303": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "t71",
+      "split": "test",
+      "category": "no_match",
+      "text": "Очищенная морковь без лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t72",
+      "split": "test",
+      "category": "no_match",
+      "text": "Репчатый лук целой луковицей",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t73",
+      "split": "test",
+      "category": "no_match",
+      "text": "Целое куриное яйцо без рисунка лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t74",
+      "split": "test",
+      "category": "no_match",
+      "text": "Кусок сливочного масла на тарелке",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t75",
+      "split": "test",
+      "category": "no_match",
+      "text": "Пакет пшеничной муки",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t76",
+      "split": "test",
+      "category": "no_match",
+      "text": "Огурец без лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t77",
+      "split": "test",
+      "category": "no_match",
+      "text": "Красный сладкий перец",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t78",
+      "split": "test",
+      "category": "no_match",
+      "text": "Гроздь винограда",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t79",
+      "split": "test",
+      "category": "no_match",
+      "text": "Кухонный нож без персонажей",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t80",
+      "split": "test",
+      "category": "no_match",
+      "text": "Кастрюля с супом",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t81",
+      "split": "test",
+      "category": "no_match",
+      "text": "Песочные часы",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t82",
+      "split": "test",
+      "category": "no_match",
+      "text": "Чёрно-белый значок замка без двери и решётки",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t83",
+      "split": "test",
+      "category": "no_match",
+      "text": "Зелёная галочка подтверждения",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t84",
+      "split": "test",
+      "category": "no_match",
+      "text": "Красный зонтик под дождём",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t85",
+      "split": "test",
+      "category": "no_match",
+      "text": "Пингвин на льдине",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t86",
+      "split": "test",
+      "category": "no_match",
+      "text": "Коричневая собака без котов",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t87",
+      "split": "test",
+      "category": "no_match",
+      "text": "Книга без человека и без лица",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t88",
+      "split": "test",
+      "category": "no_match",
+      "text": "Розовый цветок розы с зелёным стеблем",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t89",
+      "split": "test",
+      "category": "no_match",
+      "text": "Значок батарейки с зарядом",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "t90",
+      "split": "test",
+      "category": "no_match",
+      "text": "Шестерёнка синего цвета без других предметов",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "k01",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Колобок бьётся головой о кирпичную стену",
+      "seed_relevance": {
+        "kolobki-037": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k02",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Жёлтый колобок в серых наушниках",
+      "seed_relevance": {
+        "kolobki-026": 3,
+        "kolobki-008": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "k03",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Сердитый пиксельный смайлик хмурит брови",
+      "seed_relevance": {
+        "kolobki-031": 3,
+        "kolobki-049": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "k04",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Смайлик косит глаза и высовывает язык",
+      "seed_relevance": {
+        "kolobki-006": 3,
+        "kolobki-024": 3,
+        "kolobki-033": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "k05",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Колобок показывает большие пальцы вверх",
+      "seed_relevance": {
+        "kolobki-036": 3,
+        "kolobki-004": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "k06",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Красное пиксельное сердце",
+      "seed_relevance": {
+        "kolobki-009": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k07",
+      "split": "kolobki",
+      "category": "composition",
+      "text": "Два смайлика чокаются пивными кружками",
+      "seed_relevance": {
+        "kolobki-038": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k08",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Колобок печатает на клавиатуре",
+      "seed_relevance": {
+        "kolobki-042": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k09",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Пиксельный викинг с топором и щитом",
+      "seed_relevance": {
+        "kolobki-050": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k10",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Смайлик поёт в микрофон на стойке",
+      "seed_relevance": {
+        "kolobki-045": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k11",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Солнце с лучами и солнцезащитными очками",
+      "seed_relevance": {
+        "kolobki-019": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k12",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Лицо надувает зелёную жвачку",
+      "seed_relevance": {
+        "kolobki-040": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k13",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Колобок кланяется и снимает шляпу",
+      "seed_relevance": {
+        "kolobki-043": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k14",
+      "split": "kolobki",
+      "category": "composition",
+      "text": "Пара жёлтых колобков целуется",
+      "seed_relevance": {
+        "kolobki-034": 3,
+        "kolobki-003": 2
+      },
+      "no_match": false
+    },
+    {
+      "id": "k15",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Зелёный смайлик с тошнотой",
+      "seed_relevance": {
+        "kolobki-015": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k16",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Наушники и бегущая строка HELP SOS",
+      "seed_relevance": {
+        "kolobki-008": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k17",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Колобок плачет ручьями слёз",
+      "seed_relevance": {
+        "kolobki-001": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k18",
+      "split": "kolobki",
+      "category": "object",
+      "text": "Красный чёртик с вилами",
+      "seed_relevance": {
+        "kolobki-027": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k19",
+      "split": "kolobki",
+      "category": "action",
+      "text": "Смайлик поднимает средний палец",
+      "seed_relevance": {
+        "kolobki-032": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k20",
+      "split": "kolobki",
+      "category": "composition",
+      "text": "Колобок в шапке рядом с бутылкой и магнитофоном",
+      "seed_relevance": {
+        "kolobki-030": 3
+      },
+      "no_match": false
+    },
+    {
+      "id": "k21",
+      "split": "kolobki",
+      "category": "no_match",
+      "text": "Пиксельный колобок ведёт красный автомобиль",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "k22",
+      "split": "kolobki",
+      "category": "no_match",
+      "text": "Колобок держит чашку кофе с надписью COFFEE",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "k23",
+      "split": "kolobki",
+      "category": "no_match",
+      "text": "Пиксельный смайлик запускает ракету",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "k24",
+      "split": "kolobki",
+      "category": "no_match",
+      "text": "Синий колобок с зонтиком под дождём",
+      "seed_relevance": {},
+      "no_match": true
+    },
+    {
+      "id": "k25",
+      "split": "kolobki",
+      "category": "no_match",
+      "text": "Жёлтый смайлик гладит чёрного кота",
+      "seed_relevance": {},
+      "no_match": true
+    }
+  ]
+}

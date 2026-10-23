@@ -45,10 +45,11 @@ wheels, models and caches remain in this worktree's ignored `.cache`.
    The proposed V1/V2/V3 BF16 comparison remains not-run; no equivalence is claimed.
    Do not silently replace 8B/Gemma, accept gated terms, rent GPUs or spend API
    money. One GPU process at a time; refuse competing GPU work.
-5. Self-annotation is an AI-rater development layer, not independent human ground
+5. Self-annotation is an AI-rater exploratory layer, not independent human ground
    truth or the two-rater assessment in the issue. Observe original frames before
    caption outputs; retain provenance and ambiguities. No evaluation score is
-   established by agreement between captions and these annotations.
+   established by agreement between captions and these annotations. Retrieval
+   diagnostics on AI labels must identify the shared rater/query-author bias.
 6. Full study requires final corpus/quota approval, near-duplicate grouping,
    frozen splits, independent queries/qrels and abstention calibration. The
    research issue stays open until its actual criteria are evidenced.
@@ -81,3 +82,32 @@ Russian-v2 still violated JSON structure. Development-only v3 uses a short
 Russian instruction with explicit field types after the ordered images and
 Russian timestamp labels, matching the official image-then-instruction pattern.
 This changes prompt and placement together; it does not isolate a causal factor.
+
+## Authorized self-annotation and additional Kolobki cohort
+
+The user clarified the intended installed pack with a pixel-art screenshot.
+Its visible Telegram tab document ID was resolved by read-only
+`getCustomEmojiStickers` to the public set `Kolobkitop`. The existing operator
+importer ingests all52 items into a separate run. Original450 membership and all
+previous evidence are preserved. Browser UI inspection reads only the intended
+pack/test bot; account sessions, cookies and chat contents are not research data.
+
+All502 entries have explicit single-AI visual annotations. The original450 split
+is73/90/287 after conservative grouping of related icons; this is not the planned
+60/90/300 human study. Query/input hashes freeze before ranking. The52-item pack
+is a separate exploratory cohort; it is not used to tune original thresholds.
+
+Offline exact search compares metadata lexical, AI-label lexical, AI-label dense,
+fixed RRF and direct frame embeddings using the existing pinned EmbeddingGemma2
+BF16768d model. Original450 and additional52 rank separately. Direct image
+vectors average normalized frame embeddings and normalize again, losing temporal
+order. Light/dark variants are separate. This does not install a renderer,
+change the model catalog, create a Butler tool, or qualify automatic captioners.
+
+Original450 relevance seeds are incomplete, so their metrics are seed-hit
+diagnostics, not full recall/pooled nDCG. Separate Kolobki qrels explicitly grade
+all52 candidates per25 queries, still by the same AI. Human independence is not
+claimed. Calibration chooses abstention only on the30 original calibration
+queries; transfer to Kolobki is reported separately with uncertainty. No threshold
+is retuned after test results. Production and issue completion remain gated by
+the missing original criteria recorded in the follow-up report.

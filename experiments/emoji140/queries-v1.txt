@@ -1,0 +1,120 @@
+c01|calibration|object|Светящаяся тыква для Хэллоуина|rest-007,pilot-012|
+c02|calibration|object|Рыжий кот в чёрных солнцезащитных очках|rest-008|
+c03|calibration|object|Синий символ электронной почты собака|rest-012|
+c04|calibration|object|Значок микрофона с полосками текста|rest-042,rest-277|
+c05|calibration|object|Студент в выпускной шапочке с книгой|rest-074|
+c06|calibration|object|Синий вопросительный знак|rest-082|
+c07|calibration|object|Череп со скрещёнными костями|rest-128|rest-097
+c08|calibration|object|Синий знак доллара|rest-152|
+c09|calibration|object|Персик|rest-176|
+c10|calibration|object|Голова игрушечного робота|rest-292|rest-303
+c11|calibration|action|Нарисованный карандашом смайлик празднует с дудочкой|rest-028|rest-083
+c12|calibration|action|Испуганное лицо с синим лбом и каплей пота|rest-070|rest-053,rest-217
+c13|calibration|action|Улыбающийся смайлик предлагает объятия|rest-099|
+c14|calibration|action|Кот широко зевает от усталости|rest-182|
+c15|calibration|action|Скрестить пальцы на удачу|rest-216,rest-225|
+c16|calibration|style|Контурные чёрные искорки на прозрачном фоне|rest-093,rest-144|rest-248,rest-304
+c17|calibration|style|Чёрное окно терминала с верхней полосой|rest-056|rest-098
+c18|calibration|style|Контурное облако мысли|rest-263|rest-278
+c19|calibration|composition|Смайлик покрывается льдом без снежинок вокруг|rest-125|rest-088
+c20|calibration|composition|Большой палец вверх у фиолетового кота|rest-283|rest-162,rest-186
+c21|calibration|no_match|Один целый помидор без лица||
+c22|calibration|no_match|Жёлтый кусок сыра с дырками||
+c23|calibration|no_match|Кухонный таймер с циферблатом||
+c24|calibration|no_match|Красная пожарная машина||
+c25|calibration|no_match|Половинка авокадо с косточкой||
+c26|calibration|no_match|Зелёный кактус в горшке||
+c27|calibration|no_match|Скрипка со смычком||
+c28|calibration|no_match|Синяя снежинка без лица||
+c29|calibration|no_match|Иконка календаря с датой||
+c30|calibration|no_match|Улитка с раковиной||
+t01|test|object|Целая ягода клубники без посуды|food-012|food-072
+t02|test|object|Разрезанная пополам клубника|food-022|food-026
+t03|test|object|Клубничное молоко в коробке|food-068|food-006
+t04|test|object|Красный леденец сердечком на палочке|food-027|
+t05|test|object|Макароны пирожные в форме сердца|food-030|
+t06|test|object|Бант с мелкими цветочками|food-057|
+t07|test|object|Банка клубничного варенья с тканевой крышкой|food-067|food-074
+t08|test|object|Треугольные сэндвичи с клубникой и сливками|food-023,food-077|food-073
+t09|test|object|Вафля со сливками и клубникой|food-002,food-040,food-061|food-081,food-083
+t10|test|object|Шоколадный рулет с клубникой|food-047|
+t11|test|object|Тарталетка с одной ягодой клубники|food-053|food-076
+t12|test|object|Пирог сердечком с ломтиками клубники|food-050|food-075
+t13|test|object|Чашка тёмного напитка на блюдце|food-058|
+t14|test|object|Розовый кекс с вишенкой|rest-120|
+t15|test|object|Нос без лица|rest-004|
+t16|test|object|Зелёное лиственное дерево|rest-044|
+t17|test|object|Самолёт с глазами|rest-054|
+t18|test|object|Голубь с веточкой в клюве|rest-067|
+t19|test|object|Домик с глазами|rest-078|
+t20|test|object|Кот в костюме банана|rest-101|
+t21|test|object|Конверт с сердцами|rest-096|
+t22|test|object|Розовый кошелёк с монетами|rest-238|
+t23|test|object|Жёлтый цыплёнок|rest-305|
+t24|test|object|Врач в белом халате со стетоскопом|rest-261|
+t25|test|object|Женщина учитель с книгой у доски|rest-037|pilot-001
+t26|test|action|Кот держит табличку YES|rest-025|
+t27|test|action|Грустное лицо руками растягивает рот в улыбку|rest-187|rest-218
+t28|test|action|Руки складываются в сердечко|rest-175|
+t29|test|action|Смайлик просит соблюдать тишину пальцем у губ|rest-147|
+t30|test|action|Обезьяна закрывает глаза ладонями|rest-034|
+t31|test|action|Смайлик испуганно держится за щёки|rest-211,rest-293|rest-057,rest-296
+t32|test|action|Розовый и голубой коты обнимаются|rest-118|
+t33|test|action|Лицо громко плачет потоком слёз|rest-192|rest-215,pilot-035
+t34|test|action|Человек пожимает плечами не знает ответа|rest-274|
+t35|test|action|Смайлик поёт в душе за занавеской|rest-137|
+t36|test|action|Смайлик приглядывается через монокль|rest-179|
+t37|test|action|Жёлтое лицо зевает прикрыв рот ладонью|rest-171,rest-207|
+t38|test|action|Мозг взрывается от удивления|rest-241,rest-178|
+t39|test|action|Смайлик чихает в носовой платок|rest-198|
+t40|test|action|Кот подмигивает одним глазом|rest-183|
+t41|test|action|Руки хлопают в ладоши|rest-160,rest-220|
+t42|test|action|Надеяться на удачу со скрещёнными пальцами|rest-225,rest-216|
+t43|test|action|Смайлик показывает табличку помощи SOS|rest-260|
+t44|test|action|Лицо заклеивает рот чтобы молчать|rest-212|rest-257
+t45|test|action|Красное лицо сердится и хмурится|rest-295,rest-233|rest-240,pilot-029
+t46|test|style|Синий объёмный знак процента|rest-258|
+t47|test|style|Синяя глянцевая цифра восемь|rest-065|
+t48|test|style|Синяя заглавная буква A|rest-046|
+t49|test|style|Контурная лупа без документа|rest-269|rest-020
+t50|test|style|Чёрно-белый значок глобуса|rest-148,rest-291|
+t51|test|style|Плоский значок кинокамеры со звёздочкой|rest-032,rest-262|
+t52|test|style|Нарисованное штрихами красное пламя|rest-286|
+t53|test|style|Карандашный смайлик с нимбом|rest-050|
+t54|test|style|Глянцевое оранжевое сердце|rest-190|
+t55|test|style|Рисованный кот с надписью MEOW в облачке|rest-143|
+t56|test|style|Розовый мультяшный кот с нимбом|rest-196|
+t57|test|style|Карандашная рука с розовым маникюром|rest-157|
+t58|test|style|Фотографический клубничный тост|food-016,food-025,food-056,food-062,food-080|
+t59|test|style|Карандашное лицо со слезами от смеха|rest-107|rest-073
+t60|test|style|Чёрный динамик со звуковыми волнами и искрой|rest-129|rest-013
+t61|test|composition|Сердце без лица и без рук оранжевого цвета|rest-190|
+t62|test|composition|Клубника без крема без торта без лица одна целая ягода|food-012|
+t63|test|composition|Кот в ломтике хлеба|rest-234|
+t64|test|composition|Летящий кот оставляет радужный след|rest-145|
+t65|test|composition|Знак одобрения ладонью без лица|rest-162|rest-283
+t66|test|composition|Череп с зелёными червями без скрещённых костей|rest-097|
+t67|test|composition|Лицо с наушниками фиолетового кота|rest-109|
+t68|test|composition|Спящий кот на коробке из которой смотрят глаза|rest-194|
+t69|test|composition|Лицо с солнцезащитными очками и коктейлем в круге фламинго|rest-154|
+t70|test|composition|Киборг с металлической половиной лица|rest-303|
+t71|test|no_match|Очищенная морковь без лица||
+t72|test|no_match|Репчатый лук целой луковицей||
+t73|test|no_match|Целое куриное яйцо без рисунка лица||
+t74|test|no_match|Кусок сливочного масла на тарелке||
+t75|test|no_match|Пакет пшеничной муки||
+t76|test|no_match|Огурец без лица||
+t77|test|no_match|Красный сладкий перец||
+t78|test|no_match|Гроздь винограда||
+t79|test|no_match|Кухонный нож без персонажей||
+t80|test|no_match|Кастрюля с супом||
+t81|test|no_match|Песочные часы||
+t82|test|no_match|Чёрно-белый значок замка без двери и решётки||
+t83|test|no_match|Зелёная галочка подтверждения||
+t84|test|no_match|Красный зонтик под дождём||
+t85|test|no_match|Пингвин на льдине||
+t86|test|no_match|Коричневая собака без котов||
+t87|test|no_match|Книга без человека и без лица||
+t88|test|no_match|Розовый цветок розы с зелёным стеблем||
+t89|test|no_match|Значок батарейки с зарядом||
+t90|test|no_match|Шестерёнка синего цвета без других предметов||

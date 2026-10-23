@@ -1,0 +1,423 @@
+{
+  "version": "kolobki52-v1",
+  "source": "Telegram visible pack tab document ID 5456424794704583026 resolved via getCustomEmojiStickers",
+  "scope": "user-requested additional cohort; original450 unchanged",
+  "entries": [
+    {
+      "id": "kolobki-001",
+      "sha256": "0632ba8938c3c9f103ecf9d466838cf405ba220306b652fa84f98d6ede7f4b52",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458518440937527616",
+      "unicode": "😭",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-002",
+      "sha256": "0cc42b98ff73cad4151ac2bc11558849b854f62f351babf1ebce206f7fb3af87",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456447669700402467",
+      "unicode": "😘",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-003",
+      "sha256": "10be3fca4f819f33776a8f4ca9b02c12137e74cac6a7771983c6294a0814e052",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456181265763933265",
+      "unicode": "🥳",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-004",
+      "sha256": "153661efac4e5eb8365dda9cadb25cb15f2647f66c615f4ea9202d9971567717",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5454228485868362976",
+      "unicode": "🤟",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-005",
+      "sha256": "1875969a0bd61eeaaa0c2b04d78916dfd6a3e5ecfd14b710f7ecfb717fc220f8",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456536919120813753",
+      "unicode": "😂",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-006",
+      "sha256": "2836b3f49815f2b2d6c0f12c9fcb26a894a0a86ebdd0759f6a5677c2f468ab19",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456620104047403101",
+      "unicode": "😍",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-007",
+      "sha256": "2973e2b217051e13b99148ba26cdf0f77727b5ff4c2eaeb5a58d9a3e338ae915",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456201430635386946",
+      "unicode": "👌",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-008",
+      "sha256": "3894369573eeb669c66aca7068557b7ca972a226e62fe65ebed2beeda8ca99b6",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456626761246710338",
+      "unicode": "🆘",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-009",
+      "sha256": "3eeddc4601b97ee1926af9aab937dea2005f2eb2baab6959c088bbdab5bc49bc",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5390917850426797933",
+      "unicode": "❤️",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-010",
+      "sha256": "42c46b998a6e497991a87c3dcc2bd86233173edb01c6a7cb2ac0252c00214a04",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5454056755896000294",
+      "unicode": "🍿",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-011",
+      "sha256": "4323ee9dc320a9524e16c50e1b68007cc03fe3c4b7844fcd49c6028dd38e807c",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5453946319401918583",
+      "unicode": "😵",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-012",
+      "sha256": "43de96222fbe68212610dc9c8351fdc28049cc4bddfb909e071f3a76d83b7ab6",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456467319175783187",
+      "unicode": "😨",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-013",
+      "sha256": "483132310647715119b51113a658542836257de1ad66f6bee2a8db223eb0624e",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5453936316423085559",
+      "unicode": "👏",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-014",
+      "sha256": "489e17f2bc8add2b06b18223fd53dd73a3eb0b6a4b33cc3fdf820e98496d65f4",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456129558652656494",
+      "unicode": "🕺",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-015",
+      "sha256": "48b7f3d82f53c943ae8b6b66ceb7a47dd0a584a75d76cfea46acda464a35be4f",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456642029855447100",
+      "unicode": "🤢",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-016",
+      "sha256": "4e0af440812b9219e526f11bd749d9cbb7e8efcfb243c635599ed652051acfe7",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456574160782238683",
+      "unicode": "😉",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-017",
+      "sha256": "59a98de522029f818627b8f8c6a63341b89bea7aa42d061d2833499a7e6b0e42",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456325555190242086",
+      "unicode": "😴",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-018",
+      "sha256": "5c4c2e9a90f9da75c00499dc0da11cf7eac9b5e6c80c9cb69b86a8ab9eff2f92",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456425361640267528",
+      "unicode": "😞",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-019",
+      "sha256": "61906127989254809fedef1ba280cc3bfbe0a32e8c883625e1184d0dab96a429",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456181450447527779",
+      "unicode": "🌞",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-020",
+      "sha256": "65c255d6487976bcfec56ae5aed7a75e414f5a6bece9b22f45edad315a88a83f",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456249688887926894",
+      "unicode": "☺️",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-021",
+      "sha256": "6762c63b54c8dc093ade4cb55118407fe124782a7376b7ffc7e653145b03cef8",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456320375459684681",
+      "unicode": "😐",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-022",
+      "sha256": "6870392a9558df27bd57483dc8684d5d7d0c415c758e45b09612e64877d59d4e",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456470574760991453",
+      "unicode": "👈",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-023",
+      "sha256": "69c4309d81a0e70de6660faacb05292b1c5c2ad52a1672009524c0e3aebe2155",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456431688127094003",
+      "unicode": "🤪",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-024",
+      "sha256": "738a51f2542e61d5b998f0e1032b33b1e377fef662df1865efa91f45ff56795a",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456336421457503091",
+      "unicode": "😋",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-025",
+      "sha256": "76b7079816a9aaf6e26727517a8c41180d34622d0c4e2fd57dba947e574625ef",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456625184993713682",
+      "unicode": "🥴",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-026",
+      "sha256": "78423cbc85aa9920529882c13581e631f61bca7701b72ef2a70c16091aa0515b",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456606106748983383",
+      "unicode": "🙂",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-027",
+      "sha256": "7c230e68608142e358ffa2ca617598fdfc1d813fe707319e0499e6aa0bc13000",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458459763094330738",
+      "unicode": "👿",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-028",
+      "sha256": "7d034900ea6931f3abf6d2e22911166fe88f8e98212413cd76e6cd743a369aa4",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456302074604035284",
+      "unicode": "🙏",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-029",
+      "sha256": "8799ced575a927d2ef6b499858e43a742e7445d9171077f6465207861a6daf07",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5454222734907153672",
+      "unicode": "😎",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-030",
+      "sha256": "8c20cf03557d31d1a0ffdc28a07f7d6c6a0ed3b4c595a0c755fa144037f1708d",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456356788192418368",
+      "unicode": "🍾",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-031",
+      "sha256": "947ab9848860dc4b8749488fc0326b0cfb84963838a636991d46505cfacb5cfc",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456589442275876340",
+      "unicode": "🙄",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-032",
+      "sha256": "976ac168e69a006b71cc2df3ca6df9d651444e1a0a4218d6e9882a98d754f6f4",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456266782857764689",
+      "unicode": "😈",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-033",
+      "sha256": "9ea6ba91171e29677c0e23e9734bd187c104445bf9ef1a29a158e98f2862686e",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458852628047862330",
+      "unicode": "😝",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-034",
+      "sha256": "aeb6d745df1f392e7f70c342404ed74c290c080a3d8f5eca83218442caf55e2d",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456471369329940872",
+      "unicode": "😘",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-035",
+      "sha256": "afc545b31a4f0bd3aa14a70a0e7313088203bccec0c1491d3d743516e07e86c5",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458748028414336147",
+      "unicode": "😮",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-036",
+      "sha256": "b152cda3fec5a6904caf0a060f25b4425ad1f7662a05df7c84eb513e9e7ad248",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456365098954136383",
+      "unicode": "👍",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-037",
+      "sha256": "b27b64afa7f7435216c37dfb7a6b4f70f5e78b4185bb98e6331d035988196f96",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456424794704583026",
+      "unicode": "🤦‍♀️",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-038",
+      "sha256": "b38e0656a61be83a3ad3411dd03b2059ffbeea4e6ea1d937ccae2388f7625964",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5453908682603503941",
+      "unicode": "🍻",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-039",
+      "sha256": "bd7e824b8635ff547bc6824c449fbf025a85c0be2eac400b23b6b25595a0ba32",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5453940783189073257",
+      "unicode": "😍",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-040",
+      "sha256": "bd8b59cbb45ec6daffd04acb23ea86f19b9be5d9377ebd7b5aaa9dc01956fb23",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5454115704322137570",
+      "unicode": "😎",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-041",
+      "sha256": "c03116bf27136c880a90bf3b188a98ef150744921b1e126c469ed52c8d1dd900",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5454205043936861987",
+      "unicode": "🔍",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-042",
+      "sha256": "c8113c252f26e954e2f7c0bd8bed09e2f6fb05b203cb05a60f6167e5ca183891",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458569525278547985",
+      "unicode": "⌨️",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-043",
+      "sha256": "d0d8bbb289d1213881550f827141caf695390697cf6542f42d98860ef117b446",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5321381990602124565",
+      "unicode": "😍",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-044",
+      "sha256": "d51ad11342b7e89a66424caf9268bf01aa3771e247d6cde23eb93532fa25778e",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456299961480125545",
+      "unicode": "🔫",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-045",
+      "sha256": "d5a124a6d5b72f7f34682357f50b6638e6883f1292a7d993dfe667f14e2bbaf5",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456119186306639584",
+      "unicode": "🙁",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-046",
+      "sha256": "d7dc97c4a1889ad2313f3a96381c2b3caacf880ca8ba4c2f1608ec7ccda43180",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456641222401597854",
+      "unicode": "✌️",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-047",
+      "sha256": "d7e0c317d29cc4183aa3bd28fce38fe32b198eb5852252487a7729c0eff5d5a7",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456215311969690398",
+      "unicode": "😅",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-048",
+      "sha256": "dba526619285338982565d42b11fe2f56a4e15c19047265206c2d86895e2fe33",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5458759315588389209",
+      "unicode": "👈",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-049",
+      "sha256": "dd199630406ca3878a77c4bc31f2cdd84c4a35a4f9ccca375f21db39277fd7f0",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456226272726228987",
+      "unicode": "🙄",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-050",
+      "sha256": "e301737e0b75611a3125fa390329a75adaf7e4f1125aa906a975166d2824d810",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456188330985135774",
+      "unicode": "🪓",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-051",
+      "sha256": "edf1f9e151de41e36cdb16c948590ba75f28c15d7ab9f2f9907098c762c42cbd",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456315277333502450",
+      "unicode": "👸",
+      "mime": "application/x-tgsticker"
+    },
+    {
+      "id": "kolobki-052",
+      "sha256": "ef5e203e6fe7122f05735ab34b7ab29066f9881040a79484fde71ac20cd5ac68",
+      "pack": "Kolobkitop",
+      "custom_emoji_id": "5456523939729645585",
+      "unicode": "👊",
+      "mime": "application/x-tgsticker"
+    }
+  ]
+}

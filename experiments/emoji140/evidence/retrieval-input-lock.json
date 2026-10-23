@@ -1,0 +1,11 @@
+{
+  "version": "input-lock-v1",
+  "files": {
+    "ai-all-annotations.json": "ff82b4d3f01014b6dc7cd3239f5f7dec091c7b14f5576adda3e49d1dde235c87",
+    "ai-kolobki-annotations.json": "9fee0bcdf1478ef0507bad51950684d65e2e5bf53e53c1ffadb6fab8a571f589",
+    "queries-frozen.json": "c54282ed627e6d263cf171b2d834cf496c303187f62654417b37ba7ab68ed6f0",
+    "evidence/corpus-450.json": "7771268899c9eb0eea66ad5086e31ab4f143f88bef403b0f0dcf285fe8bc8336",
+    "evidence/corpus-kolobki.json": "36f5157fb39f491ad889ea19d0bd7e93be76bc0cc39ac4bd714e3a056051f80d",
+    "evidence/split-v2.json": "3d03ac53699f23004f9ec4888d82641d6cdd48ae86583a0dad6069095986ee31"
+  }
+}

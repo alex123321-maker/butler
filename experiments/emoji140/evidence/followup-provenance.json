@@ -1,0 +1,67 @@
+{
+  "version": "followup-provenance-v1",
+  "run": "retrieval-01",
+  "recorded_at": "2026-10-23T06:54:07.711403+00:00",
+  "files": {
+    "prepare_followup.py": "452477c59a32b8d616dfad5ead7e7456efe3a39e769255fdd1ba4111bb8a2c36",
+    "freeze_followup.py": "611fc0f29b70234f5960d5f1b3449a161c1733ebdb91f3d7ed55501b351f3339",
+    "prepare_kolobki.py": "95025deacf660307fbcc80373c09a647fac2fca98248fbf036e29bfd5ed00ca2",
+    "freeze_retrieval.py": "be2832a5096cb76e02830c8aa0c47995203b7ea4c114b582b7218292d9dbd14c",
+    "grade_kolobki.py": "10f9ab067441ac6f28ebecaada6bb7009c0e80dd6f1ada4a23d230bcdca7eff6",
+    "retrieve.py": "04548a50203ee376386c8add6adf79b1a646457f509272a7a9527e85a09b64d9",
+    "score_retrieval.py": "9314ba767ba6a45fcefe0f88338d7e3d3872e63a05d0a21750e8987645ef768f",
+    "summarize_retrieval.py": "fd58432f850267b76f539a1bed107428b5e8c753fb1673f0a5463a3b5a51b450",
+    "build_review_pool.py": "aad0d2a4e99d07447f9fe39aa2640910cb8b14718690249e2982e38f2cccb69c",
+    "ai-rest-labels.txt": "ebe0ad6efa6219d5c2f4ae8fee9be1764aeebb5f9d51ed7febd04fa959b633ea",
+    "ai-kolobki-labels.txt": "d44ab38e7a3004c20dcb3c3747359f77fca03468dd0f4457e0442052e4b86f8e",
+    "queries-v1.txt": "544d192177f9cf272d16b5218f20541a39fe1e84623a22d6a00964b854f1bd4d",
+    "queries-kolobki-v1.txt": "905e67dda181fd8a5186aeeb1e49b91b3f7657fb707ea6fdb122b33e8a9c4699",
+    "kolobki-qrels.json": "8e1a5b635cbc263a645f1632d988a231f80be097bcdbb492019edbfff8d6e193"
+  },
+  "private_derived_artifacts": {
+    "text-vectors.npz": {
+      "sha256": "d36a9985ffc20538a6c2380d173a79f72f9c7378c17f7ecd5a100c8b9f4c8a9d",
+      "bytes": 1988102
+    },
+    "progress.json": {
+      "sha256": "7dceb25f4f8f45d9e66816462bbdedacaa1840d85ff6cee6495de6b5cd4ef719",
+      "bytes": 56
+    },
+    "rankings.json": {
+      "sha256": "da2e9be33ea8fed5ed0510302f5da1160e2fee5acd5b1ea45fd581cedba7dd6e",
+      "bytes": 14833823
+    },
+    "image-light.npy": {
+      "sha256": "b3c7eceeaa61150ff320a2fa43df27b32a8c20449a632fa72d749820a2bf2547",
+      "bytes": 1542272
+    },
+    "image-dark-partial.npy": {
+      "sha256": "8b5c500db8a882b56cdd04965321fff11e9cdb22bf69decae92b5873178cff8a",
+      "bytes": 1536128
+    },
+    "image-light-partial.npy": {
+      "sha256": "5acf4ed4b757fa39409c70ee65d313c22ffe20f2b0b1ee3b7a0891c9c36086cc",
+      "bytes": 1536128
+    },
+    "config.json": {
+      "sha256": "4399e421fd7692f29f39a8ecc2220949f180b9eede8e2f183ed5630123a8d23c",
+      "bytes": 1041
+    },
+    "image-dark.npy": {
+      "sha256": "43be38784e9a324d83967cc42afc7cde9ff0052947476c7258097f13f8c8bff0",
+      "bytes": 1542272
+    },
+    "timing.json": {
+      "sha256": "a249b8c87610bfb287387b7562196262ca749bb6cd40ded6fb251758161c7d59",
+      "bytes": 302895
+    }
+  },
+  "packages": {
+    "torch": "2.10.0+cu128",
+    "transformers": "5.19.0",
+    "sentence-transformers": "6.1.0",
+    "Pillow": "12.3.0",
+    "numpy": "2.5.3"
+  },
+  "runtime_image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502"
+}

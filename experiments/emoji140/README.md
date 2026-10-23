@@ -1,13 +1,18 @@
 # Emoji research on laba
 
-This directory contains the first isolated corpus/feasibility stage of issue #140.
+This directory contains isolated corpus, feasibility and retrieval stages of #140.
 It does not close the research issue or enable Telegram styling in Butler.
+
+The first-stage report is historical. See [follow-up](followup-report.md) for
+the repaired browser, exact52-item Kolobkitop import,502 AI annotations and
+the bounded EmbeddingGemma2 retrieval experiment. AI annotations/qrels are not
+independent human ground truth. Original450 and additional52 rank separately.
 
 ## Artifacts
 
 - `pins.json`: exact source revisions and additional wheel versions.
-- `evidence/inventory.json`: PostgreSQL export of all 642 public metadata entries
-  and the 450 downloaded IDs, with content hashes and explicit unselected rows.
+- `evidence/inventory.json`: PostgreSQL export of all642 public metadata entries
+  and the450 downloaded IDs, with content hashes and explicit unselected rows.
 - `evidence/preprocessing.json`: compact derived decode/frame evidence; the full
   private artifact hash is retained.
 - `evidence/pilot.json`:60 development candidates, not a final study split.
@@ -15,18 +20,20 @@ It does not close the research issue or enable Telegram styling in Butler.
   real custom emoji IDs and media hashes. They are not human ground truth.
 - `evidence/near-duplicates-reviewed.json`:three visually confirmed candidate
   pairs. Candidate recall is unknown; exhaustive deduplication is not claimed.
-- `caption.schema.json`, `prompt.txt`, `prompt-ru-v2.txt`, `prompt-ru-v3.txt`: versioned feasibility contracts. The Russian revision responds to observed v1 omissions/language failures; outputs remain separate.
+- `caption.schema.json`, `prompt.txt`: frozen feasibility output contract.
 
 Media, rendered frames, model weights, caches, private DB URL and PostgreSQL data
 stay below ignored `.cache`. Do not publish pack media or credential material.
-There are no sends, polling calls, owner-message reads, paid API calls or training.
+There are no sends, polling calls, paid API calls or training. Authorized browser
+inspection covered the requested pack and existing test-bot responses; private
+chat contents and account screenshots are not retained in this repository.
 
 ## Runtime
 
 Worktree: `/srv/storage/butler/agents/issue-140-emoji-research`.
 Base source: `46bd354e`; separate branch `codex/issue-140-emoji-research`.
 Go builder:1.27.2. The existing ML image is mounted with its existing venv read-only:
-torch 2.10.0+cu128, Transformers 5.19.0, accelerate 1.15.0, Pillow 12.3.0.
+torch2.10.0+cu128, Transformers5.19.0, accelerate1.15.0, Pillow12.3.0.
 Additional dependencies are in `.cache/python`; no shared venv is modified.
 
 Python is restricted to this experimental tensor/decoder/evaluation runner.
@@ -72,39 +79,31 @@ Do not use this setting for a networked/product database.
 ML commands use `/data/venv/bin/python`, `PYTHONPATH=/work/.cache/python`, read-only
 `/data/venv`, and the worktree at `/work`. Only preparation mounts the explicit
 current proxy reference. `prepare.py` installs pinned wheels in the worktree and
-downloads the 4B revision; it does not download 8B or gated Gemma. The bounded
+downloads the4B revision; it does not download8B or gated Gemma. The bounded
 `fetch_weights.py` alternative can reuse a stopped standard download's partial
 prefix, performs six ranged reads, and verifies the complete pinned LFS SHA256.
 A failed range attempt is not a valid model and is not automatically retried.
 
 ```sh
 python /work/experiments/emoji140/prepare.py
-# Offline, with 2 CPUs/2GiB container memory; each decode child has CPU/AS/time limits:
+# Offline, with2 CPUs/2GiB container memory; each decode child has CPU/AS/time limits:
 python /work/experiments/emoji140/preprocess.py --inventory /work/.cache/research/inventory-01
 python /work/experiments/emoji140/select_pilot.py
 python /work/experiments/emoji140/duplicates.py
 # Offline GPU container; own output name must be new:
 python /work/experiments/emoji140/infer.py --limit 12 --name nf4-feasibility-01
-python /work/experiments/emoji140/infer.py --offset 12 --limit 48 --name nf4-pilot-rest-01
-# Separate prompt revision, never merged into v1 metrics:
-python /work/experiments/emoji140/infer.py --limit 12 --name nf4-ru-v2-01 --prompt-version ru-v2
-python /work/experiments/emoji140/infer.py --limit 12 --name nf4-ru-v3-01 --prompt-version ru-v3
-python /work/experiments/emoji140/infer.py --limit 6 --name nf4-ru-v3-single-01 --prompt-version ru-v3 --single-frame
+python /work/experiments/emoji140/infer.py --limit 6 --name nf4-single-frame-01 --single-frame
 ```
 
-The completed local budget is 90 calls: 60 v1,12 ru-v2,12 ru-v3 and6 ru-v3 single-frame.
-V3 changes both wording and instruction placement; this is not a causal ablation
-of either change. See [observed results](report.md) and `evidence/caption-metrics.json`.
-
-The inference runner refuses an occupied GPU, caps its torch allocator at 82% of
-the 6 GiB device and stops if another compute process appears. This is cooperative
+The inference runner refuses an occupied GPU, caps its torch allocator at82% of
+the6GiB device and stops if another compute process appears. This is cooperative
 contention detection, not a shared-host scheduler or a hard limit on another
-agent. Batch 1,512 output tokens, per-attempt 120 s alarm, no repair/retry. Use an
+agent. Batch1,512 output tokens, per-attempt120s alarm, no repair/retry. Use an
 8GiB container memory bound; stop the experiment container on a stuck CUDA call.
 A process killed during a started attempt leaves that attempt incomplete.
 
 The single-frame run is an explicitly labelled feasibility ablation with the
-same ordered pilot subset. It is not the 180-call three-model ablation in the issue.
+same ordered pilot subset. It is not the180-call three-model ablation in the issue.
 `infer.py` logs actual grids/visual tokens, raw output, strict schema result,
 truncation, first/total latency, load time, peak allocated/reserved GPU memory,
 process RSS and missing planned attempts. Model/processor identities are pinned.
@@ -124,14 +123,43 @@ go run ./experiments/emoji140/search.go \
 
 This is exact Russian token overlap, without stemming, negation understanding,
 dense embeddings or a calibrated no-match decision. It is an interactive
-demonstration over the 143 AI-labelled entries, not R1/model-caption evaluation.
+demonstration over the143 AI-labelled entries, not R1/model-caption evaluation.
 Queries written after annotations cannot be relabelled as independent locked tests.
+
+## Follow-up commands
+
+`prepare_followup.py` numbers the remaining307 original items; the corresponding
+AI visual labels are compiled by `freeze_followup.py`. `prepare_kolobki.py`
+exports the separately imported52 items and five private contact sheets.
+`freeze_retrieval.py` freezes all502 annotations and145 queries before ranking;
+`grade_kolobki.py` records1300 explicit single-AI grades before viewing rankings.
+The52-item cohort is never added silently to the original450 search space.
+
+```sh
+# Credentials/proxy are the same explicit private references as the first import.
+emoji-research -token-file /private/bot-token -proxy-file /private/telegram.proxy \
+  -database-file /work/.cache/private/database.url -packs Kolobkitop \
+  -max-downloads 52 -out /work/.cache/research/kolobki-NEW -source-commit <full-SHA>
+# After decoding and one-time annotation/input freeze:
+sh experiments/emoji140/run_retrieval.sh retrieval-NEW
+python3 experiments/emoji140/score_retrieval.py .cache/research/retrieval-NEW
+python3 -m unittest discover -s experiments/emoji140 -p 'test_*.py' -v
+go run ./experiments/emoji140/search.go \
+  -annotations experiments/emoji140/ai-kolobki-annotations.json -query "наушники"
+```
+
+The preparers are fixed to the recorded `inventory-01`/`kolobki-01` provenance;
+use a new experiment directory when recreating them. Freeze/result writers reject
+existing files. Exact vectors remain private; config, query locks, top10 and
+metrics are public evidence. `R1_AI/R2_AI/R3_AI` use hand-written AI annotations,
+not machine captions. R4 averages frames and cannot establish temporal reasoning.
 
 ## Outstanding study gates
 
 No WEBM is present in the downloaded pool. BF16 V1/V2/V3, independent human
-ratings, frozen 60/90/300 splits, exhaustive near duplicates,120 independent
-queries, pooled qrels, dense retrieval/EmbeddingGemma2, abstention calibration,
-bootstrap intervals, repeat stability, dark-background scoring and widget
-evaluation remain separate work. A preview, a decoded file or a valid JSON
+ratings, the planned60/90/300 splits, exhaustive near duplicates,120 independent
+human queries, complete original450 pooled qrels and independent widget
+evaluation remain separate work. The follow-up measures dense/direct retrieval,
+abstention and intervals only under the explicit AI-evaluation limitations.
+A preview, a decoded file or a valid JSON
 caption proves none of these. Gemma is gated; no access terms were accepted.
