@@ -171,3 +171,60 @@ func TestCommunicationCloseFailedRejectsLiveAndUncertainIntegration(t *testing.T
 		})
 	}
 }
+
+func TestCommunicationCloseFailedExplicitlyRetainsUncertainEffectIntegration(t *testing.T) {
+	for _, mode := range []string{"acknowledged", "missing", "wrong", "duplicate", "executing", "external_unknown"} {
+		t.Run(mode, func(t *testing.T) {
+			f, q := stopResumeFixture(t, fixtureOptions{}, false, false)
+			state := "effect_unknown"
+			if mode == "executing" {
+				state = "executing"
+			}
+			toolName := "communication.message"
+			if mode == "external_unknown" {
+				toolName = "http.request"
+			}
+			if _, err := f.pool.Exec(f.ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) VALUES('uncertain-local-publication','fixture',jsonb_build_object('run_id',$1::text,'effect','prepare','tool_name',$3::text),'{}',$2)`, f.p.RunID, state, toolName); err != nil {
+				t.Fatal(err)
+			}
+			q.AcknowledgeUnknownEffects = []string{"uncertain-local-publication"}
+			if mode == "missing" {
+				q.AcknowledgeUnknownEffects = nil
+			}
+			if mode == "wrong" {
+				q.AcknowledgeUnknownEffects = []string{"other"}
+			}
+			if mode == "duplicate" {
+				q.AcknowledgeUnknownEffects = append(q.AcknowledgeUnknownEffects, q.AcknowledgeUnknownEffects[0])
+			}
+			var before string
+			if err := f.pool.QueryRow(f.ctx, `SELECT to_jsonb(x)::text FROM action_effects x WHERE action_id='uncertain-local-publication'`).Scan(&before); err != nil {
+				t.Fatal(err)
+			}
+			actor := owneridentity.Actor{OwnerID: f.p.OwnerID, Channel: "web", SessionKey: "web:verified", DeliveryID: "owner-stop-retain-unknown"}
+			err := f.s.CloseFailed(owneridentity.WithActor(context.Background(), actor), f.claim.InputID, q)
+			if mode == "acknowledged" {
+				if err != nil {
+					t.Fatal(err)
+				}
+				var inputStatus, audit string
+				if err = f.pool.QueryRow(f.ctx, `SELECT status FROM accepted_inputs WHERE input_id=$1`, f.claim.InputID).Scan(&inputStatus); err != nil || inputStatus != "failed" {
+					t.Fatal("stopped input claimed success", inputStatus, err)
+				}
+				if err = f.pool.QueryRow(f.ctx, `SELECT metadata_json->'unknown_effect_ids'->>0 FROM run_state_transitions WHERE run_id=$1 AND triggered_by='owner' AND to_state='failed'`, f.p.RunID).Scan(&audit); err != nil || audit != "uncertain-local-publication" {
+					t.Fatal("missing exact uncertainty acknowledgement audit", audit, err)
+				}
+				var events int
+				if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM communication_events WHERE aggregate_id='uncertain-local-publication' AND event_type='effect.uncertainty_retained'`).Scan(&events); err != nil || events != 1 {
+					t.Fatal("missing retained effect audit", events, err)
+				}
+			} else if err == nil {
+				t.Fatal("unsafe or mismatched uncertainty acknowledgement admitted", mode)
+			}
+			var after string
+			if err = f.pool.QueryRow(f.ctx, `SELECT to_jsonb(x)::text FROM action_effects x WHERE action_id='uncertain-local-publication'`).Scan(&after); err != nil || before != after {
+				t.Fatal("owner stop rewrote unknown journal or evidence", err)
+			}
+		})
+	}
+}

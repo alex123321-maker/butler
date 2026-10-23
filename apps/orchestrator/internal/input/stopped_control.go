@@ -3,7 +3,9 @@ package input
 import (
 	"context"
 	"errors"
+	"slices"
 
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 )
@@ -13,7 +15,7 @@ var ErrControlConflict = errors.New("stopped input control conflict")
 // CloseStoppedTx is a terminal acknowledgement of failure, never a retry. The
 // original checkpoint, errors, spending, model attempts and unknowns are kept.
 // Communication owns the audit event in the caller's same transaction.
-func (s *Store) CloseStoppedTx(ctx context.Context, tx pgx.Tx, id, checkpoint, code string) (Record, bool, error) {
+func (s *Store) CloseStoppedTx(ctx context.Context, tx pgx.Tx, id, checkpoint, code string, acknowledged []string) (Record, bool, error) {
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok || a.OwnerID == "" || a.DeliveryID == "" {
 		return Record{}, false, ErrNotFound
@@ -53,17 +55,28 @@ func (s *Store) CloseStoppedTx(ctx context.Context, tx pgx.Tx, id, checkpoint, c
 	if r.SessionKey != key || r.RunID != runID || r.TaskID != "" || r.Checkpoint != checkpoint || code == "" || r.ErrorCode != code || r.ClaimID != "" || r.ClaimExpiresAt != nil || (r.Status != "blocked" && r.Status != "failed") {
 		return r, false, ErrControlConflict
 	}
-	rows, err := tx.Query(ctx, `SELECT state,COALESCE(initial_binding->>'effect','') FROM action_effects WHERE initial_binding->>'run_id'=$1 ORDER BY action_id FOR SHARE`, r.RunID)
+	if len(acknowledged) > 64 {
+		return r, false, ErrControlConflict
+	}
+	rows, err := tx.Query(ctx, `SELECT action_id,state,COALESCE(initial_binding->>'effect',''),COALESCE(initial_binding->>'tool_name','') FROM action_effects WHERE initial_binding->>'run_id'=$1 ORDER BY action_id FOR SHARE`, r.RunID)
 	if err != nil {
 		return r, false, err
 	}
-	uncertain := false
+	var uncertain []string
+	executing := false
+	unsupportedUnknown := false
 	for rows.Next() {
-		var state, effect string
-		if err = rows.Scan(&state, &effect); err != nil {
+		var actionID, state, effect, toolName string
+		if err = rows.Scan(&actionID, &state, &effect, &toolName); err != nil {
 			break
 		}
-		uncertain = uncertain || ((state == "executing" || state == "effect_unknown") && effect != "read")
+		if effect != "read" {
+			executing = executing || state == "executing"
+			if state == "effect_unknown" {
+				uncertain = append(uncertain, actionID)
+				unsupportedUnknown = unsupportedUnknown || effect != "prepare" || !communicationcontrol.IsTool(toolName)
+			}
+		}
 	}
 	if err == nil {
 		err = rows.Err()
@@ -72,7 +85,12 @@ func (s *Store) CloseStoppedTx(ctx context.Context, tx pgx.Tx, id, checkpoint, c
 	if err != nil {
 		return r, false, err
 	}
-	if uncertain {
+	// Abandoning this Input is not effect reconciliation. Explicit owner IDs
+	// acknowledge exactly the retained unknown set; executing writes still deny.
+	// No grant, journal state, receipt, observation or reservation is changed.
+	wanted := slices.Clone(acknowledged)
+	slices.Sort(wanted)
+	if executing || unsupportedUnknown || !slices.Equal(wanted, uncertain) {
 		return r, false, ErrControlConflict
 	}
 	if r.Status == "failed" {

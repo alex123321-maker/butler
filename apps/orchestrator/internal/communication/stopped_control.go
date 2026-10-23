@@ -10,10 +10,11 @@ import (
 )
 
 type CloseFailedRequest struct {
-	BindingID          string `json:"binding_id"`
-	BindingVersion     int64  `json:"binding_version"`
-	ExpectedCheckpoint string `json:"expected_checkpoint"`
-	ExpectedErrorCode  string `json:"expected_error_code"`
+	BindingID                 string   `json:"binding_id"`
+	BindingVersion            int64    `json:"binding_version"`
+	ExpectedCheckpoint        string   `json:"expected_checkpoint"`
+	ExpectedErrorCode         string   `json:"expected_error_code"`
+	AcknowledgeUnknownEffects []string `json:"acknowledge_unknown_effects,omitempty"`
 }
 
 // CloseFailed requires a current owner binding. It cannot resume work, grant an
@@ -28,7 +29,7 @@ func (s *Store) CloseFailed(ctx context.Context, id string, q CloseFailedRequest
 		return err
 	}
 	defer tx.Rollback(context.Background())
-	r, changed, err := s.Inputs.CloseStoppedTx(ctx, tx, id, q.ExpectedCheckpoint, q.ExpectedErrorCode)
+	r, changed, err := s.Inputs.CloseStoppedTx(ctx, tx, id, q.ExpectedCheckpoint, q.ExpectedErrorCode, q.AcknowledgeUnknownEffects)
 	if errors.Is(err, input.ErrControlConflict) {
 		return ErrConflict
 	}
@@ -45,7 +46,7 @@ func (s *Store) CloseFailed(ctx context.Context, id string, q CloseFailedRequest
 		}
 		return tx.Commit(ctx)
 	}
-	if err = run.FailStoppedInputTx(ctx, tx, r.RunID, id); err != nil {
+	if err = run.FailStoppedInputTx(ctx, tx, r.RunID, id, q.AcknowledgeUnknownEffects); err != nil {
 		return err
 	}
 	if _, err = tx.Exec(ctx, `UPDATE communication_admissions SET obligation_state='closed_with_failure' WHERE input_id=$1 AND obligation_state IN ('open','waiting_for_user')`, id); err != nil {
@@ -53,6 +54,16 @@ func (s *Store) CloseFailed(ctx context.Context, id string, q CloseFailedRequest
 	}
 	if err = s.eventTx(ctx, tx, a.OwnerID, r.SessionKey, id, "input.closed_failed"); err != nil {
 		return err
+	}
+	if len(q.AcknowledgeUnknownEffects) > 0 {
+		if err = s.eventTx(ctx, tx, a.OwnerID, r.SessionKey, id, "input.uncertainty_retained"); err != nil {
+			return err
+		}
+		for _, effectID := range q.AcknowledgeUnknownEffects {
+			if err = s.eventTx(ctx, tx, a.OwnerID, r.SessionKey, effectID, "effect.uncertainty_retained"); err != nil {
+				return err
+			}
+		}
 	}
 	return tx.Commit(ctx)
 }

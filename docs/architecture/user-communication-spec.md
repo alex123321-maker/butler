@@ -40,9 +40,18 @@ credential/body или заменяя независимую ошибку provid
 proof, одним стабильным `X-Butler-Delivery-ID` и strict JSON `binding_id`,
 `binding_version`, `expected_checkpoint`, `expected_error_code`. Текущие
 owner/session и verified Web binding обязательны. Только `blocked` без claim,
-живой lease и executing/UNKNOWN write может стать `failed`; Task закрывается
+живой lease и executing write может стать `failed`; UNKNOWN по умолчанию запрещён.
+Для остановки собственной неопределённой локальной публикации владелец может
+явно передать `acknowledge_unknown_effects` — точный список её effect IDs. Это
+допустимо только для уже `effect_unknown` prepare-эффектов `communication.*`;
+executing и другие UNKNOWN (HTTP/browser/commit) остаются запрещены. UNKNOWN,
+grants, evidence, reservations и доставка не меняются, эффект не признаётся
+ABSENT/confirmed и не запускается повторно. Запрос прекращается с ошибкой,
+а отдельная сверка эффекта остаётся обязательной перед новой попыткой этого
+же эффекта. Точные IDs записываются в owner transition и события
+`input.uncertainty_retained` / `effect.uncertainty_retained`. Task закрывается
 прежним Task controller. Переход run в failed и `input.closed_failed` audit
-атомарны. Обязательство получает `closed_with_failure`; question/answer,
+атомарны с этими событиями. Обязательство получает `closed_with_failure`; question/answer,
 checkpoints/errors, publications, reservations, observations и NULL usage
 сохраняются. Повтор принятого close возвращает failed без второго audit;
 содержимое body не может выбрать completed, retry, grant или новые allowances.

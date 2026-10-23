@@ -4,7 +4,10 @@ Heartbeat cancellation distinguishes lost claims from unavailable renewal with
 fixed codes, keeping parent deadlines and independent Core/provider diagnoses.
 `CloseStoppedTx` joins authenticated owner failure acknowledgement for taskless
 blocked explicit Inputs. It holds current owner/session/run/input proofs, rejects
-live claims/leases and executing/UNKNOWN writes, and changes only status/time.
+live claims/leases and executing writes, and changes only status/time. UNKNOWN
+denies by default; exact owner acknowledgement can abandon only stopped local
+communication preparation while retaining its UNKNOWN journal/grants/evidence.
+This never verifies or retries that effect; other uncertain writes still deny.
 The caller atomically closes the run/obligation and saves the audit. It cannot
 requeue an Input, erase a checkpoint/error or replenish any spent allowance.
 

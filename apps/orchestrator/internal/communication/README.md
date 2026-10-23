@@ -213,3 +213,10 @@ run lease refresh and final persistence use the same single-transaction fencing
 primitive, leaving capacity for the watchdog on the supported two-connection pool.
 The guarded context stays local to that transaction; it cannot authorize a later
 independent write. Takeover serialization and all source/Task fences remain intact.
+
+The owner failure control denies UNKNOWN by default. Its optional exact
+`acknowledge_unknown_effects` list can abandon a stopped local communication
+prepare Input with the effect still UNKNOWN. It audits the exact IDs and never
+updates the Broker journal/grants/evidence, refunds, retries or claims success.
+Executing and non-communication uncertain effects always deny. This is an Input
+failure acknowledgement, not independent effect verification.

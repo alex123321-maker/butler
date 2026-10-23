@@ -145,7 +145,10 @@ retains fixed failure phases and rechecks claim/lease after source waits. The
 input heartbeat and recovered run preserve their distinct safe cancellation
 causes. The existing explicit owner HTTP composition also exposes guarded
 `close-failed` acknowledgement for blocked taskless Inputs: no active worker or
-uncertain write, no replay/success/refund, original evidence kept. See the
+executing write, no replay/success/refund, original evidence kept. UNKNOWN denies
+by default. Exact explicit owner acknowledgement can abandon a stopped local
+communication publication while retaining its UNKNOWN journal/grant/evidence;
+this cannot reconcile or retry it. Other uncertain writes remain ineligible. See the
 [communication contract](../../docs/architecture/user-communication-spec.md).
 
 Conversation loop detection attributes repeated tool results to the original

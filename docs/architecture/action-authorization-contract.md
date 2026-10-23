@@ -187,6 +187,12 @@ verified external effect. Timeout, runtime failure, missing result or outcome
 write failure leaves a non-reusable grant and returns `effect_unknown`.
 Orchestrator records this result then stops before model continuation with
 `ErrActionOutcomeUnknown`. Owner verification is required before a new attempt.
+An owner can abandon a stopped taskless communication Input through its typed
+failure control while explicitly acknowledging the exact retained UNKNOWN local
+publication IDs. This changes only Input/run failure and its audit: the effect,
+grant, evidence, reservations and delivery remain unchanged. It neither verifies
+the effect nor permits its retry. Executing and non-communication uncertain writes
+are ineligible. Ordinary unknown-effect guards and Broker mediation remain intact.
 Dispatch/result checkpoints preserve this boundary during recovery. Migration
 035 adds the [external effect journal](external-effect-journal.md), permanent
 trusted intent slots, declared recipient protocols and independent evidence.

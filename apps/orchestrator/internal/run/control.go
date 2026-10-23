@@ -2,6 +2,7 @@ package run
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 
@@ -10,12 +11,16 @@ import (
 
 // FailStoppedInputTx joins the authenticated Input failure-close transaction.
 // It produces a failed transition, with no final result or success/effect claim.
-func FailStoppedInputTx(ctx context.Context, tx pgx.Tx, id, inputID string) error {
+func FailStoppedInputTx(ctx context.Context, tx pgx.Tx, id, inputID string, unknownEffects []string) error {
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok || a.OwnerID == "" || a.DeliveryID == "" {
 		return ownership.ErrStale
 	}
-	_, err := tx.Exec(ctx, `WITH previous AS(SELECT r.run_id,r.current_state FROM runs r JOIN accepted_inputs i ON i.run_id=r.run_id WHERE r.run_id=$1 AND i.input_id=$2 AND i.owner_id=$3 AND i.task_id IS NULL AND i.status='failed' AND r.current_state NOT IN ('completed','failed','cancelled','timed_out') FOR UPDATE OF r), changed AS(UPDATE runs r SET status='failed',current_state='failed',finished_at=clock_timestamp(),updated_at=clock_timestamp() FROM previous p WHERE r.run_id=p.run_id RETURNING r.run_id,p.current_state) INSERT INTO run_state_transitions(run_id,from_state,to_state,triggered_by,metadata_json,transitioned_at) SELECT run_id,current_state,'failed','owner',jsonb_build_object('kind','close_stopped_input','input_id',$2::text,'control_id',$4::text),clock_timestamp() FROM changed`, id, inputID, a.OwnerID, a.DeliveryID)
+	acknowledged, err := json.Marshal(unknownEffects)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `WITH previous AS(SELECT r.run_id,r.current_state FROM runs r JOIN accepted_inputs i ON i.run_id=r.run_id WHERE r.run_id=$1 AND i.input_id=$2 AND i.owner_id=$3 AND i.task_id IS NULL AND i.status='failed' AND r.current_state NOT IN ('completed','failed','cancelled','timed_out') FOR UPDATE OF r), changed AS(UPDATE runs r SET status='failed',current_state='failed',finished_at=clock_timestamp(),updated_at=clock_timestamp() FROM previous p WHERE r.run_id=p.run_id RETURNING r.run_id,p.current_state) INSERT INTO run_state_transitions(run_id,from_state,to_state,triggered_by,metadata_json,transitioned_at) SELECT run_id,current_state,'failed','owner',jsonb_build_object('kind','close_stopped_input','input_id',$2::text,'control_id',$4::text,'unknown_effect_ids',$5::jsonb,'effect_reconciled',false),clock_timestamp() FROM changed`, id, inputID, a.OwnerID, a.DeliveryID, string(acknowledged))
 	return err
 }
 

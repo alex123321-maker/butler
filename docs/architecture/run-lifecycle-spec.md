@@ -26,7 +26,10 @@ phase, not raw storage errors. Input heartbeat cancellation separately retains
 claim loss/unavailable renewal without overwriting an independent provider error.
 An authenticated owner may acknowledge a stopped taskless explicit Input as
 failed through the communication control described in the user-communication
-spec. It requires no live claim/lease or uncertain write; the Input/run failure,
+spec. It requires no live claim/lease or executing write. UNKNOWN denies by
+default; an owner may explicitly acknowledge the exact retained unknown IDs of
+local communication preparation only. This abandons the Input, never reconciles
+or replays the effect; external/other uncertain writes still deny. The Input/run failure,
 closed obligation and audit commit together. Historical errors, answers and
 spent/unknown reservations remain intact. No retry or successful result is made.
 
