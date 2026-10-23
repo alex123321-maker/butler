@@ -71,7 +71,7 @@
     <button class="mind-text-button" type="button" :disabled="!store.connected" @click="store.panel = 'memory'">Обзор памяти ↗</button>
     <TransitionGroup name="mind-entry" tag="div"
       ><button
-        v-for="source in store.memories"
+        v-for="source in store.memories.slice(0, 3)"
         :key="source.source_id"
         class="mind-memory-result"
         type="button"
@@ -112,15 +112,6 @@
         store.memoryQuery ? 'Ничего похожего не найдено.' : 'Пока здесь пусто.'
       }}
     </p>
-    <button
-      v-if="store.memoryHasMore"
-      class="mind-text-button"
-      type="button"
-      :disabled="store.memoryBusy"
-      @click="store.loadMemory(store.memoryQuery, true)"
-    >
-      Ещё
-    </button>
   </section>
 </template>
 <script setup lang="ts">

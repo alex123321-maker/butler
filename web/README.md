@@ -49,7 +49,9 @@ There is no iframe, second application or additional runtime dependency.
 - Source correction/deletion retain revision checks. New notes derive user scope
   from the authenticated actor and retain delivery identity after an uncertain ACK.
   Previews are data, not permission grants or confirmed profile facts.
-- The home memory block opens a viewport-sized explorer in the same interface.
+- The home memory block shows at most three records, including search results.
+  “Обзор памяти” opens a viewport-sized explorer with all loaded records and
+  pagination in the same interface; loading more there keeps home capped at three.
   Text search, paginated records and a draggable provenance graph share the
   selection. Desktop gives reading more width; on small screens a single tap
   opens the reader in the same dialog. Back/Escape restores the list, its scroll

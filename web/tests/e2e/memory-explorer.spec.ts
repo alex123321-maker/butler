@@ -64,6 +64,23 @@ async function explorerFixture(page: Page) {
 }
 const explorer = (page: Page) =>
   page.getByRole('dialog', { name: 'Память', exact: true })
+test('home stays limited to three records while the explorer can load more', async ({ page }) => {
+  await explorerFixture(page)
+  const records = Array.from({ length: 8 }, (_, i) => source(`record-${i}`))
+  await page.route('**/api/v4/memory/browse*', r => {
+    const offset = Number(new URL(r.request().url()).searchParams.get('offset') || 0)
+    return r.fulfill({ json: { items: records.slice(offset, offset + 6), has_more: offset + 6 < records.length, mode: 'recent', diagnostics: [] } })
+  })
+  await connect(page)
+  await expect(page.locator('.mind-memory-result')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Обзор памяти ↗' }).click()
+  await expect(explorer(page).locator('.memory-list-row')).toHaveCount(6)
+  await explorer(page).getByRole('button', { name: 'Загрузить ещё' }).click()
+  await expect(explorer(page).locator('.memory-list-row')).toHaveCount(8)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.mind-memory-result')).toHaveCount(3)
+  await expect(page.locator('.mind-memory').getByRole('button', { name: 'Ещё', exact: true })).toHaveCount(0)
+})
 async function open(page: Page) {
   await connect(page)
   await page.getByRole('button', { name: 'Обзор памяти ↗' }).click()
