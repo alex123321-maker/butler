@@ -43,12 +43,44 @@ There is no iframe, second application or additional runtime dependency.
   conversation, browser and settings usable.
 - Memory initially shows recent active source heads of all kinds. Bounded server
   Russian text search returns previews and current source references, explicitly
-  marked “По тексту”. This owner endpoint does not admit embedding inference,
-  fabricate a run lease or bypass budget policy. Semantic retrieval remains on
-  the existing admitted agent path; direct owner semantic inference is not connected.
+  marked “По тексту”. Typing runs only lexical search. Explicit Enter/search sends
+  `strategy: hybrid`: the server may add up to four semantic source previews using
+  the already configured pinned local model and active indexes. Mode/diagnostics
+  distinguish hybrid results, missing indexes, unavailable inference and exhausted
+  allowance. Search never invents an agent run or indexes data. Nonindexed messages
+  remain searchable by text. See [owner search](../docs/architecture/versioned-memory-sources.md#owner-web-hybrid-search-2026-10-23).
+  New input aborts the previous request and fences late responses. Continuation
+  uses the server's lexical `next_offset`, deduplicates sources and never repeats
+  inference. Semantic labels/diagnostics survive continuation.
 - Source correction/deletion retain revision checks. New notes derive user scope
   from the authenticated actor and retain delivery identity after an uncertain ACK.
   Previews are data, not permission grants or confirmed profile facts.
+- The home memory block shows at most three records, including search results.
+  “Обзор памяти” opens a viewport-sized explorer with all loaded records and
+  pagination in the same interface; loading more there keeps home capped at three.
+  Text search, paginated records and a draggable provenance graph share the
+  selection. Desktop gives reading more width; on small screens a single tap
+  opens the reader in the same dialog. Back/Escape restores the list, its scroll
+  and selected-row focus. Source information, fragments and revisions expand
+  inline rather than opening nested dialogs. Ctrl/Cmd+K focuses search;
+  Down enters results, arrows/Home/End move focus, Enter opens a record.
+  Counts describe loaded results,
+  not a fabricated corpus total. The graph's “Весь список” includes loaded search
+  results; additional pages remain explicit and the API offset ceiling is honored.
+- Graph edges use exact `origin.parent_refs` matches between loaded sources.
+  Other referenced sources can be opened from the detail card with a fresh owner
+  check. No semantic relationships are inferred from titles or shared scope.
+  The last five successful search terms stay in page memory until cleared or the
+  owner changes. A bounded back/forward trail contains only IDs and re-inspects
+  each source. Viewer-only pins were removed. Claims for the inspected revision use the
+  existing versioned catalog decision endpoint, including the observed active
+  claim ID for both confirmation and rejection. Failure/409 offers a fresh read;
+  it never marks a decision locally or automatically retries a mutation.
+  Claim catalog limits and unavailability are visible separately from source reads.
+  A reversible source-use switch is not offered: the existing revoke endpoint
+  purges content. “Управлять этой записью” opens the existing management panel
+  with the exact source ID. Copy explicitly writes inspected text to the clipboard.
+  See [workflow alternatives and rationale](../docs/design/memory-explorer-usability.md).
 
 ## Panels and browser
 
@@ -82,6 +114,11 @@ synthetic intercepted fixtures to check layout, owner/source changes, durable
 retry, browser control and retained privileged workflows. They do not certify
 production model runs or external effects. Existing real API/browser cases are
 opt-in through their environment requirements.
+
+Targeted explorer validation: `npx playwright test memory-explorer.spec.ts mind.spec.ts`.
+These tests cover inline provenance/history, claim confirmation/rejection and CAS
+conflicts, delayed reads, recent searches, reading navigation, clipboard and exact
+management links, graph dragging, keyboard access, and 320–1440px layouts.
 
 Catalog/API integration uses disposable PostgreSQL and:
 go test ./internal/memory/catalog ./apps/orchestrator/internal/api -run

@@ -1,5 +1,12 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on
+page0 when the existing owned semantic runtime is configured. It uses a separate
+bounded owner query admission, the pinned local model and current indexed sources;
+no task/run or background indexing is created. Unavailable semantic retrieval
+falls back to fresh text search with an explicit diagnostic. Later pages remain
+lexical and use `next_offset`. See [the contract](../../docs/architecture/versioned-memory-sources.md#owner-web-hybrid-search-2026-10-23).
+
 Work on #101 adds a separate [Telegram rich adapter](internal/channel/telegramrich/README.md),
 transactional per-part media manifests and retained media/report artifacts
 (migration091), plus a durable bot/binding cursor (migration092).
