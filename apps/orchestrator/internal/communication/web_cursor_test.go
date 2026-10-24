@@ -3,14 +3,18 @@ package communication_test
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/api"
+	"github.com/butler/butler/apps/orchestrator/internal/communication"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 )
@@ -67,6 +71,70 @@ func TestCommunicationWebSSEDoesNotRetainTranscriptLocksIntegration(t *testing.T
 		t.Fatal("SSE exposed retained data")
 	}
 	cancel()
+}
+
+func TestCommunicationWebCursorPageDoesNotWaitForLaterHistoryIntegration(t *testing.T) {
+	f, w, _, _ := webFixture(t)
+	wanted := map[string]bool{}
+	for i, text := range []string{"first bounded publication", "slow later publication", "last bounded publication"} {
+		raw, _ := json.Marshal(communicationcontrol.Args{SchemaVersion: 1, Purpose: "result", Text: text})
+		r, err := f.publish(t, "bounded-page-"+strconv.Itoa(i), "communication.message", string(raw))
+		if err != nil {
+			t.Fatal(err)
+		}
+		wanted[r.PublicationRef] = true
+	}
+	var firstPage atomic.Bool
+	firstPage.Store(true)
+	guard := f.s.ChannelGuard
+	f.s.ChannelGuard = func(ctx context.Context, tx pgx.Tx, run string, b communication.Binding, a communicationcontrol.Args) error {
+		if firstPage.Load() && a.Text == "slow later publication" {
+			<-ctx.Done()
+			return ctx.Err()
+		}
+		return guard(ctx, tx, run, b, a)
+	}
+	token := strings.Repeat("s", 40)
+	handler := api.CommunicationWeb(api.NewOwnerControlAuth(token, f.p.OwnerID), w, nil, nil)
+	after := int64(0)
+	seen := map[string]bool{}
+	for n := range 3 {
+		ctx, cancel := context.WithTimeout(f.ctx, time.Second)
+		request := httptest.NewRequest("GET", "/api/v3/communications?cursor="+strconv.FormatInt(after, 10), nil).WithContext(ctx)
+		request.Header.Set("Authorization", "Bearer "+token)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		cancel()
+		if response.Code != 200 {
+			t.Fatal("a later history proof blocked the first cursor page", response.Code)
+		}
+		firstPage.Store(false)
+		var page communication.WebPage
+		if err := json.Unmarshal(response.Body.Bytes(), &page); err != nil || len(page.Items) != 1 || page.Cursor <= after || page.HasMore != (n < 2) {
+			t.Fatal("bounded cursor lost history or progress", n, page, err)
+		}
+		p := page.Items[0]
+		if !wanted[p.Ref] || seen[p.Ref] || !p.Available || p.Payload == nil {
+			t.Fatal("missing, repeated or unavailable publication", p.Ref)
+		}
+		seen[p.Ref] = true
+		after = page.Cursor
+		// Returned pages must release their complete proof; a later request
+		// cannot keep this session's owning writer behind historical locks.
+		ctx, cancel = context.WithTimeout(f.ctx, time.Second)
+		tx, err := f.pool.Begin(ctx)
+		if err == nil {
+			_, err = tx.Exec(ctx, `SELECT 1 FROM sessions WHERE session_key=$1 FOR UPDATE`, f.p.SessionKey)
+			_ = tx.Rollback(context.Background())
+		}
+		cancel()
+		if err != nil {
+			t.Fatal("history page retained the owning writer lock", err)
+		}
+	}
+	if len(seen) != len(wanted) {
+		t.Fatal("history truncated by server page size")
+	}
 }
 
 func TestCommunicationWebRefreshCursorScopeAndRevocationIntegration(t *testing.T) {

@@ -112,14 +112,21 @@ export function useCommunicationFeed(
       const items: Publication[] = []
       const messages: PublicationInput[] = []
       let after = 0, hasMore = false
-      for (let page = 0; page < pages; page++) {
+      const targetItems = pages * 50
+      // Server cursor pages are opaque and can contain one fully checked
+      // publication. Preserve the previous visible history batch independently
+      // of that transaction size, without retaining locks across HTTP calls.
+      for (let page = 0; page < targetItems; page++) {
         const response = await read(`/api/v3/communications?cursor=${after}`)
         if (!response.ok) throw new Error('unavailable')
         const data = await response.json() as Page
         if (stamp !== epoch.value) return
+        if (!Number.isSafeInteger(data.cursor) || data.cursor < after
+          || (data.cursor === after && (data.has_more || data.items.length > 0))
+          || (data.has_more && data.items.length === 0)) throw new Error('invalid_cursor')
         items.push(...data.items); after = data.cursor; hasMore = data.has_more
         messages.push(...data.messages || [])
-        if (!hasMore) break
+        if (!hasMore || items.length >= targetItems) break
       }
       publications.value = [...new Map(items.map(p => [p.publication_ref, p])).values()]
       publicationInputs.value = [...new Map(messages.map(m => [m.message_id, m])).values()]

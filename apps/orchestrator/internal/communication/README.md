@@ -182,6 +182,9 @@ Catalog/export proof, including revocation after the pulse.
 Feed/detail/download recheck current Catalog/export and retained media; an
 unavailable entry carries no copied payload or manifests. Artifact reads are
 limited to the selected publication's required refs and validate digest/size.
+The HTTP feed uses one-publication cursor pages, keeping the complete proof for
+each returned page through commit. Client-visible history batches are independent
+of server transaction size; successive pages retain ordering and omit no history.
 `Store.WebAvailable` is a trusted composition capability, default false. New
 targets use existing result_ready storage and available API state without send
 ACK or human read. Pending history is never upgraded or resent by enabling a

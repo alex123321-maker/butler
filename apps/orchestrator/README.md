@@ -28,6 +28,9 @@ do not reread historical source graphs or retain transcript locks. REST keeps
 the complete transactional export proof. Catalog access checks ancestor revisions
 together after locking the sorted closure and rechecks the graph after waits;
 no permission is cached and publication deadlines/budgets are unchanged.
+REST cursor pages retain one publication's complete export proof per transaction;
+the Web client assembles the same visible history batches across cursor pages.
+This bounds reader locks without dropping history or weakening publication proof.
 
 Core requires `BUTLER_POSTGRES_MAX_CONNS >= 3`: one connection from that total
 is reserved for live lease/Task authority and token-only source observations, and at least two remain

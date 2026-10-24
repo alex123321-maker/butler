@@ -112,7 +112,10 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 			}
 			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": reader.Binding.Capabilities, "drain_only": len(draining) > 0 && draining[0]})
 		case "/api/v3/communications":
-			page, err := reader.Feed(ctx, after, 50)
+			// Keep each complete export proof bounded to one publication. A page
+			// of retained history must not hold Session/transcript locks through
+			// dozens of later publications while an owning writer has a 5s RPC.
+			page, err := reader.Feed(ctx, after, 1)
 			if err != nil {
 				deny()
 				return

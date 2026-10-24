@@ -211,6 +211,13 @@ SSE читает только монотонный cursor публикаций �
 источников и не удерживает Session/transcript locks старой истории. Он не
 разрешает содержимое: REST feed/detail/media сохраняют полную актуальную проверку
 Catalog/export и блокировки до сборки ответа, включая отзыв между pulse и REST.
+Одна REST cursor-страница содержит не более одной canonical publication и её
+полный export proof в одной транзакции. Блокировки не переносятся на следующие
+HTTP-страницы: чтение долгой истории не удерживает owning publication за всей
+лентой. Web добирает прежние порции по 50 публикаций через opaque cursor,
+проверяет продвижение и перечитывает весь загруженный объём после invalidation.
+История не обрезается; изменение размера HTTP-страницы не меняет budgets, сроки
+publication RPC, canonical ordering или privacy/export проверки.
 Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof
 останавливает stream, запросы, очищает publications/receipts/drafts и media URLs.
 HTTP instrumentation сохраняет Flusher; это проверяется настоящим HTTP stream.
