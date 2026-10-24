@@ -1,5 +1,12 @@
 # Exact action authority
 
+Trusted Broker startup can opt into standing public URL/query release consent
+using `SetPublicWebReads` (`BUTLER_PUBLIC_WEB_READS_ENABLED`, default false).
+Prepare, authorize and verify apply it only to the fixed public page-reading
+methods without credential refs or custom HTTP payloads. Independent current
+authority, explicit denials, autonomy, contract approval and runtime network
+checks stay authoritative; writes/extensions receive no exception.
+
 Canonical local credential request/search controls can ask for owner input
 without granting any credential capability. An owner-approved vault request can
 authorize only its exact local browser preparation, with original Input claim,

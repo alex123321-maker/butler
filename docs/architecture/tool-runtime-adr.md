@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+Broker's optional `BUTLER_PUBLIC_WEB_READS_ENABLED=true` permits autonomous
+public page URLs/queries without per-page release approval for fixed web
+readers, HTTP GET/HEAD and revision3 browser navigation. It defaults false;
+mode1/contract approval and credential/custom payload/write decisions remain
+separate. Runtime public-network checks and operator destination caps still
+apply. See [standing URL consent](action-authorization-contract.md).
+
 The optional credential vault installs canonical Broker-owned `credentials.*`
 controls only when its mounted operator key is available. Registry JSON cannot
 replace them. Core owns durable owner interaction waits; Broker owns search,

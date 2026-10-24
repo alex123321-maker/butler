@@ -50,18 +50,22 @@ type CapabilityGuard interface {
 	BindAction(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract, ActionBinding, ContextSnapshot) (ActionBinding, error)
 }
 type Service struct {
-	store        Store
-	contexts     ContextReader
-	credentials  CredentialInspector
-	capabilities CapabilityGuard
-	now          func() time.Time
+	store          Store
+	contexts       ContextReader
+	credentials    CredentialInspector
+	capabilities   CapabilityGuard
+	publicWebReads bool
+	now            func() time.Time
 }
 
 func NewService(store Store, contexts ContextReader, credentials CredentialInspector) *Service {
 	return &Service{store: store, contexts: contexts, credentials: credentials, now: func() time.Time { return time.Now().UTC() }}
 }
 func (s *Service) SetCapabilities(guard CapabilityGuard) { s.capabilities = guard }
-func StableActionID(runID, callID string) string         { return "action_" + digest(runID+"\x00"+callID) }
+
+// SetPublicWebReads is trusted startup policy, never a model-selected argument.
+func (s *Service) SetPublicWebReads(enabled bool) { s.publicWebReads = enabled }
+func StableActionID(runID, callID string) string  { return "action_" + digest(runID+"\x00"+callID) }
 func (s *Service) liveContext(ctx context.Context, call *toolbrokerv1.ToolCall) (ContextSnapshot, error) {
 	if s == nil || s.store == nil || s.contexts == nil || call == nil {
 		return ContextSnapshot{}, fmt.Errorf("action authorization is not configured")
@@ -190,7 +194,7 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
 		return PreparedAction{}, fmt.Errorf("mode_0 permits only actions with verified read effects without credentials")
 	}
-	release, err := NetworkReleaseRequired(call, contract)
+	release, err := s.networkReleaseRequired(call, contract)
 	if err != nil {
 		return PreparedAction{}, err
 	}
@@ -256,7 +260,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
 		return Grant{}, fmt.Errorf("current mode_0 policy forbids this action")
 	}
-	release, err := NetworkReleaseRequired(call, contract)
+	release, err := s.networkReleaseRequired(call, contract)
 	if err != nil {
 		return Grant{}, err
 	}
@@ -370,7 +374,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 			return Grant{}, err
 		}
 	}
-	release, err := NetworkReleaseRequired(call, contract)
+	release, err := s.networkReleaseRequired(call, contract)
 	if err != nil {
 		return Grant{}, err
 	}

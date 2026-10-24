@@ -1,5 +1,13 @@
 # Tool Broker
 
+Set the startup-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` after owner consent
+to allow fixed public web readers, HTTP GET/HEAD and revision3 browser
+navigation to release page URLs/search queries without per-page confirmation.
+Default is false. This controls URL release only; mode1, explicit contract
+approval, credentials, custom HTTP headers/bodies, writes, private-network
+denials, destination caps, current authority and budgets remain enforced.
+Disabling it prevents verification of unapproved URL-release grants.
+
 The optional migration096 credential vault installs canonical `credentials.*`
 search/access/create/OTP controls and resolves owner-approved request refs to
 independent encrypted fields. `BUTLER_CREDENTIAL_KEY_FILE` must reference the

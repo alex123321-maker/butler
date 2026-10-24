@@ -1,5 +1,18 @@
 # Exact action authorization
 
+Operator-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` grants standing consent to
+release public page URLs and search queries through the fixed web readers,
+HTTP GET/HEAD and revision3 browser reads/navigation. It defaults false and
+cannot be changed through model arguments or stored settings. Prepare,
+authorize and pre-dispatch verification all apply the same policy; disabling
+it invalidates an unapproved URL release at verification. Explicit mode1 and
+contract approval, credentials, custom HTTP headers/bodies, extensions, writes,
+owner denials, task authority, destination caps, public DNS/redirect guards and
+finite budgets retain their independent checks. An empty registry domain list
+still grants no release consent unless this operator option applies. Broad
+URL/query release consent includes model-selected queries, so this setting is
+an explicit owner choice for autonomous public research.
+
 The migration096 credential vault adds fixed local `credentials.*` controls.
 Their canonical schema/hash, owning Input claim, live context and explicit
 denials remain mandatory. Asking for a protected owner interaction grants no
