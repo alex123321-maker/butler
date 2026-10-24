@@ -50,6 +50,11 @@ Missing metadata is an error and cannot become execution permission.
 
 ## Web result correctness
 
+Provider-chain construction skips absent optional providers even when their
+constructor's nil pointer is held in a Provider interface. An unconfigured
+self-hosted primary must not panic the runtime before the configured fallback
+can read a page. No-provider configuration returns the ordinary bounded failure.
+
 Implemented reader fixes retain the current runtime/Broker/credential boundaries.
 HTML text extraction skips script/style subtrees. Network readers accept UTF-8
 text and JSON/XML media types; missing MIME is sniffed. Binary media, invalid UTF-8

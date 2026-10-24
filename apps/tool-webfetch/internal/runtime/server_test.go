@@ -45,6 +45,39 @@ func TestProviderChainFallsBackToNextProvider(t *testing.T) {
 	}
 }
 
+func TestProviderChainSkipsUnconfiguredProviders(t *testing.T) {
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte("fallback page"))
+	}))
+	defer site.Close()
+	// Match ordinary App startup with both optional URL settings empty.
+	chain := NewProviderChainWithPolicy(egress.Policy{Resolver: egresstest.Resolver{}},
+		NewSelfHostedProvider("", site.Client()),
+		NewJinaReaderProvider("", "", site.Client()),
+		nil,
+		NewPlainHTTPProvider(egresstest.Client(site), true),
+	)
+	response, err := NewServer(chain, nil).Execute(context.Background(), &runtimev1.ExecuteRequest{
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "disabled-primary", RunId: "run", ToolName: "web.fetch", ArgsJson: `{"url":"` + egresstest.Origin + `"}`},
+	})
+	if err != nil || response.GetResult().GetStatus() != "completed" {
+		t.Fatalf("unconfigured providers prevented fallback: response=%v err=%v", response, err)
+	}
+	var result FetchResult
+	if err := json.Unmarshal([]byte(response.GetResult().GetResultJson()), &result); err != nil || result.ContentText != "fallback page" || result.Provider != "plain_http_fallback" {
+		t.Fatalf("incorrect fallback result: %+v, error=%v", result, err)
+	}
+}
+
+func TestProviderChainWithOnlyUnconfiguredProvidersReturnsFailure(t *testing.T) {
+	chain := NewProviderChainWithPolicy(egress.Policy{Resolver: egresstest.Resolver{}},
+		NewSelfHostedProvider("", nil), NewJinaReaderProvider("", "", nil), nil)
+	if _, err := chain.Fetch(context.Background(), egresstest.Origin, false); err == nil {
+		t.Fatal("empty provider chain returned success")
+	}
+}
+
 func TestExecuteWebFetchReturnsNormalizedPayload(t *testing.T) {
 	t.Parallel()
 

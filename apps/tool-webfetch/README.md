@@ -10,6 +10,8 @@ Current state:
   - Jina reader fallback
   - plain HTTP fallback
 - keeps provider selection inside the runtime so Tool Broker can route one stable tool family
+- omits unconfigured providers, including typed nil constructor results; a
+  disabled primary cannot panic the process before reaching a healthy fallback
 - does not expose credential refs in public tool contracts
 - accepts UTF-8 text, JSON and XML MIME types (sniffs a missing MIME); PDF,
   binary/invalid UTF-8 and NUL-containing input fail with a bounded validation

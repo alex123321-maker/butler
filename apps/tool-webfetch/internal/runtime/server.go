@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 
@@ -57,9 +58,16 @@ func NewProviderChainWithPolicy(policy egress.Policy, providers ...Provider) *Pr
 func NewProviderChain(providers ...Provider) *ProviderChain {
 	filtered := make([]Provider, 0, len(providers))
 	for _, provider := range providers {
-		if provider != nil {
-			filtered = append(filtered, provider)
+		if provider == nil {
+			continue
 		}
+		// Optional constructors return typed nil pointers. Converting one to
+		// Provider keeps a non-nil interface and must not install it as fallback.
+		value := reflect.ValueOf(provider)
+		if value.Kind() == reflect.Pointer && value.IsNil() {
+			continue
+		}
+		filtered = append(filtered, provider)
 	}
 	return &ProviderChain{providers: filtered}
 }
