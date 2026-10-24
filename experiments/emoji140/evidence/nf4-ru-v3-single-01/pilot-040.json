@@ -1,0 +1,51 @@
+{
+  "id": "pilot-040",
+  "source_sha256": "ae00d56cf574c0728348eb0405993190a1c9648fdb96fc9e023b913ffa125532",
+  "ordinal": 3,
+  "status": "completed",
+  "frame_sha256": [
+    "d5f855172c7eeeb32219f0a8b1bab0012eb114cdf73eb96f33f2d04387d0db6e"
+  ],
+  "image_count": 1,
+  "started_at": 1792735353.5838335,
+  "first_token_seconds": 0.24583134100021198,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"котик\"],\"actions\":[],\"expression\":\"закрытые глаза, улыбка, розовые щеки, мордочка в виде капли, розовые линии, звездочки вокруг\",\"text\":null,\"style\":\"иллюстрация в стиле кawaii с градиентом и тонкими контурами\",\"temporal_sequence\":[\"котик в состоянии покоя или сна с выражением удовольствия\"]},\"inferred\":{\"possible_meanings\":[\"символ умиротворения, сна или удовольствия\",\"возможно, эмодзи для выражения приятного состояния\"],\"intensity\":\"medium\",\"ambiguity\":true}}",
+  "output_tokens": 166,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "котик"
+      ],
+      "actions": [],
+      "expression": "закрытые глаза, улыбка, розовые щеки, мордочка в виде капли, розовые линии, звездочки вокруг",
+      "text": null,
+      "style": "иллюстрация в стиле кawaii с градиентом и тонкими контурами",
+      "temporal_sequence": [
+        "котик в состоянии покоя или сна с выражением удовольствия"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "символ умиротворения, сна или удовольствия",
+        "возможно, эмодзи для выражения приятного состояния"
+      ],
+      "intensity": "medium",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.400220924000223,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3124756480,
+  "rss_peak_kib": 9665792
+}

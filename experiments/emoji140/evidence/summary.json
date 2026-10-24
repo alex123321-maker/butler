@@ -1,0 +1,108 @@
+{
+  "stage": "corpus_AI_annotation_and_bounded_NF4_feasibility; research issue open",
+  "base_commit": "46bd354e1a0a358115dc81306545b05781027fd3",
+  "inventory_run": "20261023T051208.462283062Z",
+  "catalog_entries": 642,
+  "downloaded": 450,
+  "download_failures": 0,
+  "unselected": 192,
+  "formats": {
+    "application/x-tgsticker": 367,
+    "image/webp": 83
+  },
+  "media_bytes": 5045029,
+  "inventory_wall_seconds": 239.447974,
+  "download_latency_ms": {
+    "p50": 339.0,
+    "p95": 857.0999999999999,
+    "denominator": 450
+  },
+  "decode_successes": 450,
+  "decode_failures": 0,
+  "decode_seconds_sum": 100.08989405632019,
+  "AI_annotations": 143,
+  "human_raters": 0,
+  "near_duplicate_pairs_reviewed": 3,
+  "near_duplicate_recall": "unknown",
+  "static_pack_nonfood_items_observed": 1,
+  "blind_human_evaluation": "not_run",
+  "locked_test": "not_frozen",
+  "BF16_matrix": "not_run",
+  "dense_retrieval": "not_run",
+  "model_inference": "completed: 90 NF4 development calls",
+  "paid_API_calls": 0,
+  "direct_incremental_API_cost": 0,
+  "electricity_cost": "unmeasured",
+  "production_changed": false,
+  "butler-issue140-import": {
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:12:08.32732521Z",
+    "finished": "2026-10-23T05:16:07.949258529Z",
+    "memory_limit": 536870912,
+    "nano_cpus": 1000000000
+  },
+  "butler-issue140-decode": {
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:18:12.023767315Z",
+    "finished": "2026-10-23T05:20:16.689164944Z",
+    "memory_limit": 2147483648,
+    "nano_cpus": 2000000000
+  },
+  "vision_calls": 90,
+  "inference_exceptions": 0,
+  "inference_OOM": 0,
+  "decision": "resource_go; current_prompt_quality_no_go; retrieval_need_more_data",
+  "model_metrics": "caption-metrics.json",
+  "butler-issue140-infer": {
+    "image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502",
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:44:37.682292337Z",
+    "finished": "2026-10-23T05:46:54.195575013Z",
+    "memory_limit": 8589934592,
+    "nano_cpus": 2000000000,
+    "network_mode": "none"
+  },
+  "butler-issue140-infer-rest": {
+    "image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502",
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:47:32.116757122Z",
+    "finished": "2026-10-23T05:54:03.178737553Z",
+    "memory_limit": 8589934592,
+    "nano_cpus": 2000000000,
+    "network_mode": "none"
+  },
+  "butler-issue140-infer-v2": {
+    "image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502",
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:54:21.900559372Z",
+    "finished": "2026-10-23T05:56:22.797910024Z",
+    "memory_limit": 8589934592,
+    "nano_cpus": 2000000000,
+    "network_mode": "none"
+  },
+  "butler-issue140-infer-v3": {
+    "image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502",
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T05:58:06.095733468Z",
+    "finished": "2026-10-23T06:00:28.534153537Z",
+    "memory_limit": 8589934592,
+    "nano_cpus": 2000000000,
+    "network_mode": "none"
+  },
+  "butler-issue140-infer-single": {
+    "image": "sha256:1f8334477430a5d885a9defcbe79ac21367591dbe85f8f9ede4d4b50e45ff502",
+    "exit_code": 0,
+    "OOMKilled": false,
+    "started": "2026-10-23T06:02:11.098210051Z",
+    "finished": "2026-10-23T06:02:54.428544498Z",
+    "memory_limit": 8589934592,
+    "nano_cpus": 2000000000,
+    "network_mode": "none"
+  }
+}

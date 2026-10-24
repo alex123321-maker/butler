@@ -1,0 +1,100 @@
+{
+  "id": "pilot-034",
+  "source_sha256": "8a95b1d3b80c1d4bb12455ff205432f6760b37becbf96c0df47f888f248eec5f",
+  "ordinal": 15,
+  "status": "completed",
+  "frame_sha256": [
+    "e9fd82b68addb757506a29e599bdc98921c5607e050a6ea4fb029d948d802b93",
+    "2728d2963a0179663a73d7d4a7acab92d04b15b6b7a6d03fa9d3337c15f8ddf4",
+    "2308fcccc2c2f08856fc03a8dedee7c871cca09e606281f1338936e344a52ff3",
+    "e0789c8e14f13ef4bab9e203a62a4602870afb7b883aa46faecca64c44c6e393",
+    "8fe74153321b286f6727fc998f5a652a0cab128b9fd93d2b69010d597812c79d",
+    "8f499431ddd1837f5c82e6d6b373e938909a7da8ff8f58ef59b3fa46176b3a51",
+    "cafd3d87a5a312d46dac7940bd9964d59beb7f5a0e01ec950dee7a5d569be925",
+    "1b17d8354e7bc2c22eb775e1f3e63131ec36ca83c16ee2cb9d005c862e84ef37"
+  ],
+  "image_count": 8,
+  "started_at": 1792734581.2097342,
+  "first_token_seconds": 0.5452480730000389,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue cat\",\n      \"round platform\"\n    ],\n    \"actions\": [\n      \"sitting\",\n      \"turning head\",\n      \"turning body\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"cat sitting with open mouth\",\n      \"cat turning head to side\",\n      \"cat turning body to side\",\n      \"cat turning back to front\",\n      \"cat sitting with open mouth\",\n      \"cat turning body to side\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 157,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue cat",
+        "round platform"
+      ],
+      "actions": [
+        "sitting",
+        "turning head",
+        "turning body"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "cat sitting with open mouth",
+        "cat turning head to side",
+        "cat turning body to side",
+        "cat turning back to front",
+        "cat sitting with open mouth",
+        "cat turning body to side"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.318005992000053,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

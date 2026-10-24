@@ -1,0 +1,98 @@
+{
+  "id": "pilot-006",
+  "source_sha256": "f2f4e0319f09e0803ab84d2fbe62cc310b125a6e0e7de1597fe10685db8df7af",
+  "ordinal": 26,
+  "status": "completed",
+  "frame_sha256": [
+    "53d5d9504d943c33e8d3bc9be2398c388700f5f455d93b1c67dfcdf24c1c60e2",
+    "011f69db2bcacb3e583c832f772f5cefbd9ed131085ee9fda654d49991cffb5a",
+    "e370a3c8ae878061f237cd2ef48ebd68903de28a0878f0af20c08ac389fbd20e",
+    "18f2055813a470402b882ee65df91ea80665fef3a50555f05a9def6a84e9f0ae",
+    "1fc7bd9b835e1f531224916e5606cd881d7bcfd727f7346e4a5b5f2670b69776",
+    "189d314cdaf139bbf800769ff46bfc078aecbb492038c487f40630b4b40e1a91",
+    "356354e36c2e6bf23798239840d1f35378cb0d5364b442d70cd8345b52c3f015",
+    "e8bdf889a482917c4f45eadd23779067bcf8711176d8635b1bfac21d87657488"
+  ],
+  "image_count": 8,
+  "started_at": 1792734671.4400873,
+  "first_token_seconds": 0.5441971669997656,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"emoji\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\",\n      \"static\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 120,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "emoji"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "static",
+        "static",
+        "static",
+        "static",
+        "static",
+        "static",
+        "static",
+        "static",
+        "static"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 5.755465324999932,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

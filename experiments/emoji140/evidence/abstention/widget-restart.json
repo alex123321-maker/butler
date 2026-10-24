@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-23T09:10:27.198654+00:00",
+  "source": "da0ba4c08b2242d37ce4d09222324d8576bc9a0a",
+  "input_id": "input-d7c1f68a6359fff7f1436b098cf557c7",
+  "run_id": "run-1792746536533863933-51eaf86816067147",
+  "question": {
+    "id": "interaction:8db390eb28b512f0b2e55e98f28fa992b82079bb2d43060e9292b8626b501495",
+    "state": "open",
+    "question": {
+      "input": {
+        "type": "single_choice",
+        "options": [
+          {
+            "id": "music",
+            "label": "Слушаю музыку"
+          },
+          {
+            "id": "code",
+            "label": "Пишу код"
+          },
+          {
+            "id": "receipt",
+            "label": "Квитанция"
+          }
+        ]
+      },
+      "question": "Какое занятие показать?",
+      "schema_version": 1,
+      "wait_for_response": true
+    }
+  },
+  "manifests": [
+    {
+      "channel": "telegram",
+      "ack": "83",
+      "content": "{\"decoration\":{\"version\":1,\"policy\":\"kolobki-concepts-v1:30ed8b11e641d3605e0d1bcd0fe98cda44a8c7708e4115f90b31212492c6625b\",\"source_sha256\":\"3360b64c5ef1ac386b88c9e594e1d2337c606de4b8419779f83ca277b2cb1c04\",\"insertions\":[{\"offset_bytes\":3,\"emoji\":\"🙂\",\"custom_emoji_id\":\"5456606106748983383\"},{\"offset_bytes\":32,\"emoji\":\"⌨️\",\"custom_emoji_id\":\"5458569525278547985\"}]},\"version\":1,\"method\":\"sendMessage\",\"text\":\"1. Слушаю музыку\\n2. Пишу код\\n3. Квитанция\\n\"}"
+    },
+    {
+      "channel": "telegram",
+      "ack": "84",
+      "content": "{\"decoration\":{\"version\":1,\"policy\":\"kolobki-concepts-v1:30ed8b11e641d3605e0d1bcd0fe98cda44a8c7708e4115f90b31212492c6625b\",\"source_sha256\":\"156d727ccb56f85e6900e4161d92af1105af27c696229e5a8c6385f8c8c9ecd7\",\"option_icons\":{\"code\":\"5458569525278547985\",\"music\":\"5456606106748983383\"}},\"version\":1,\"method\":\"sendMessage\",\"text\":\"Какое занятие показать?\",\"widget\":true}"
+    },
+    {
+      "channel": "web",
+      "ack": "",
+      "content": "{\"schema_version\":1,\"question\":\"Какое занятие показать?\",\"input\":{\"type\":\"single_choice\",\"options\":[{\"id\":\"music\",\"label\":\"Слушаю музыку\"},{\"id\":\"code\",\"label\":\"Пишу код\"},{\"id\":\"receipt\",\"label\":\"Квитанция\"}]},\"wait_for_response\":true}"
+    }
+  ],
+  "stored_choices_and_ACKs_unchanged": true,
+  "previous_started_at": "2026-10-23T09:08:30.482238527Z",
+  "started_at": "2026-10-23T09:10:26.909205869Z",
+  "post_restart_response": "completed",
+  "selected_option_ids": [
+    "music"
+  ],
+  "closed_edit_browser_verified": true,
+  "result_ack": "85",
+  "result_custom_emoji_ids": [
+    "5456365098954136383"
+  ]
+}

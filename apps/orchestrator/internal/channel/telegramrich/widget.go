@@ -13,6 +13,9 @@ import (
 )
 
 func renderWidget(v communication.WidgetView, base string) (string, any) {
+	return renderWidgetWithIcons(v, base, nil)
+}
+func renderWidgetWithIcons(v communication.WidgetView, base string, icons map[string]string) (string, any) {
 	empty := map[string]any{"inline_keyboard": [][]any{}}
 	// A nonempty Bot API10.3 inline keyboard keeps forced-reply messages
 	// editable. An empty keyboard is treated as standalone ForceReply and
@@ -56,7 +59,11 @@ func renderWidget(v communication.WidgetView, base string) (string, any) {
 				check = "☑ "
 			}
 		}
-		rows = append(rows, []map[string]string{{"text": fmt.Sprintf("%s%d. %s", check, index+1, string(label)), "callback_data": prefix + op + strconv.Itoa(index)}})
+		button := map[string]string{"text": fmt.Sprintf("%s%d. %s", check, index+1, string(label)), "callback_data": prefix + op + strconv.Itoa(index)}
+		if id := icons[o.ID]; emojiID.MatchString(id) {
+			button["icon_custom_emoji_id"] = id
+		}
+		rows = append(rows, []map[string]string{button})
 	}
 	if q.Type == "multi_choice" {
 		rows = append(rows, []map[string]string{{"text": "Отправить ответ", "callback_data": prefix + "s"}})
@@ -152,6 +159,10 @@ func (p *Poller) refreshWidget(ctx context.Context, in *Ingress, client *Client,
 	if communicationJSON(it.m.Content, &part) != nil || !part.Widget {
 		return nil
 	}
+	baseText, entities, valid := renderDecoration(part.Text, part.Decoration)
+	if !valid {
+		return ErrUnavailable
+	}
 	view, e := in.Store.DeliveryWidget(ctx, it.m)
 	if e != nil {
 		return nil
@@ -167,8 +178,12 @@ func (p *Poller) refreshWidget(ctx context.Context, in *Ingress, client *Client,
 	status := "failed"
 	current, e := in.Store.DeliveryWidget(ctx, it.m)
 	if e == nil && widgetRevision(current) == revision {
-		text, markup := renderWidget(current, part.Text)
-		body, _ := json.Marshal(map[string]any{"chat_id": b.ChatID, "message_id": it.ack, "text": text, "reply_markup": markup})
+		text, markup := renderWidgetWithIcons(current, baseText, optionIcons(part.Decoration))
+		fields := map[string]any{"chat_id": b.ChatID, "message_id": it.ack, "text": text, "reply_markup": markup}
+		if len(entities) > 0 {
+			fields["entities"] = entities
+		}
+		body, _ := json.Marshal(fields)
 		response, httpStatus, callErr := client.call(ctx, "editMessageText", body, "application/json")
 		status = "delivery_unknown"
 		if callErr == nil {

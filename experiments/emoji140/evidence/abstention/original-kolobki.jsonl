@@ -1,0 +1,25 @@
+{"id": "k01", "split": "original-kolobki", "text": "Колобок бьётся головой о кирпичную стену", "expected": "kolobki-037"}
+{"id": "k02", "split": "original-kolobki", "text": "Жёлтый колобок в серых наушниках", "expected": "kolobki-026"}
+{"id": "k03", "split": "original-kolobki", "text": "Сердитый пиксельный смайлик хмурит брови", "expected": "kolobki-031"}
+{"id": "k04", "split": "original-kolobki", "text": "Смайлик косит глаза и высовывает язык", "expected": "kolobki-006"}
+{"id": "k05", "split": "original-kolobki", "text": "Колобок показывает большие пальцы вверх", "expected": "kolobki-036"}
+{"id": "k06", "split": "original-kolobki", "text": "Красное пиксельное сердце", "expected": "kolobki-009"}
+{"id": "k07", "split": "original-kolobki", "text": "Два смайлика чокаются пивными кружками", "expected": "kolobki-038"}
+{"id": "k08", "split": "original-kolobki", "text": "Колобок печатает на клавиатуре", "expected": "kolobki-042"}
+{"id": "k09", "split": "original-kolobki", "text": "Пиксельный викинг с топором и щитом", "expected": "kolobki-050"}
+{"id": "k10", "split": "original-kolobki", "text": "Смайлик поёт в микрофон на стойке", "expected": "kolobki-045"}
+{"id": "k11", "split": "original-kolobki", "text": "Солнце с лучами и солнцезащитными очками", "expected": "kolobki-019"}
+{"id": "k12", "split": "original-kolobki", "text": "Лицо надувает зелёную жвачку", "expected": "kolobki-040"}
+{"id": "k13", "split": "original-kolobki", "text": "Колобок кланяется и снимает шляпу", "expected": "kolobki-043"}
+{"id": "k14", "split": "original-kolobki", "text": "Пара жёлтых колобков целуется", "expected": "kolobki-034"}
+{"id": "k15", "split": "original-kolobki", "text": "Зелёный смайлик с тошнотой", "expected": "kolobki-015"}
+{"id": "k16", "split": "original-kolobki", "text": "Наушники и бегущая строка HELP SOS", "expected": "kolobki-008"}
+{"id": "k17", "split": "original-kolobki", "text": "Колобок плачет ручьями слёз", "expected": "kolobki-001"}
+{"id": "k18", "split": "original-kolobki", "text": "Красный чёртик с вилами", "expected": "kolobki-027"}
+{"id": "k19", "split": "original-kolobki", "text": "Смайлик поднимает средний палец", "expected": "kolobki-032"}
+{"id": "k20", "split": "original-kolobki", "text": "Колобок в шапке рядом с бутылкой и магнитофоном", "expected": "kolobki-030"}
+{"id": "k21", "split": "original-kolobki", "text": "Пиксельный колобок ведёт красный автомобиль", "expected": ""}
+{"id": "k22", "split": "original-kolobki", "text": "Колобок держит чашку кофе с надписью COFFEE", "expected": ""}
+{"id": "k23", "split": "original-kolobki", "text": "Пиксельный смайлик запускает ракету", "expected": ""}
+{"id": "k24", "split": "original-kolobki", "text": "Синий колобок с зонтиком под дождём", "expected": ""}
+{"id": "k25", "split": "original-kolobki", "text": "Жёлтый смайлик гладит чёрного кота", "expected": ""}

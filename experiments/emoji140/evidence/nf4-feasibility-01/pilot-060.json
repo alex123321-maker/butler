@@ -1,0 +1,89 @@
+{
+  "id": "pilot-060",
+  "source_sha256": "b6c3109a722c62bfea6c8fd0f149c4d9c1d8f071a857adbc83a7cbc6a350ec18",
+  "ordinal": 1,
+  "status": "completed",
+  "frame_sha256": [
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2",
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734324.8048327,
+  "first_token_seconds": 0.5411714819997542,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"document\",\n      \"magnifying glass\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": []\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 89,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "document",
+        "magnifying glass"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": []
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.448534967999876,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

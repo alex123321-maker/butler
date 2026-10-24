@@ -1,0 +1,25 @@
+k01|kolobki|action|Колобок бьётся головой о кирпичную стену|kolobki-037|
+k02|kolobki|object|Жёлтый колобок в серых наушниках|kolobki-026|kolobki-008
+k03|kolobki|action|Сердитый пиксельный смайлик хмурит брови|kolobki-031|kolobki-049
+k04|kolobki|action|Смайлик косит глаза и высовывает язык|kolobki-006,kolobki-024|kolobki-033
+k05|kolobki|action|Колобок показывает большие пальцы вверх|kolobki-036|kolobki-004
+k06|kolobki|object|Красное пиксельное сердце|kolobki-009|
+k07|kolobki|composition|Два смайлика чокаются пивными кружками|kolobki-038|
+k08|kolobki|action|Колобок печатает на клавиатуре|kolobki-042|
+k09|kolobki|object|Пиксельный викинг с топором и щитом|kolobki-050|
+k10|kolobki|action|Смайлик поёт в микрофон на стойке|kolobki-045|
+k11|kolobki|object|Солнце с лучами и солнцезащитными очками|kolobki-019|
+k12|kolobki|action|Лицо надувает зелёную жвачку|kolobki-040|
+k13|kolobki|action|Колобок кланяется и снимает шляпу|kolobki-043|
+k14|kolobki|composition|Пара жёлтых колобков целуется|kolobki-034|kolobki-003
+k15|kolobki|action|Зелёный смайлик с тошнотой|kolobki-015|
+k16|kolobki|object|Наушники и бегущая строка HELP SOS|kolobki-008|
+k17|kolobki|action|Колобок плачет ручьями слёз|kolobki-001|
+k18|kolobki|object|Красный чёртик с вилами|kolobki-027|
+k19|kolobki|action|Смайлик поднимает средний палец|kolobki-032|
+k20|kolobki|composition|Колобок в шапке рядом с бутылкой и магнитофоном|kolobki-030|
+k21|kolobki|no_match|Пиксельный колобок ведёт красный автомобиль||
+k22|kolobki|no_match|Колобок держит чашку кофе с надписью COFFEE||
+k23|kolobki|no_match|Пиксельный смайлик запускает ракету||
+k24|kolobki|no_match|Синий колобок с зонтиком под дождём||
+k25|kolobki|no_match|Жёлтый смайлик гладит чёрного кота||

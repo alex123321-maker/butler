@@ -1,0 +1,110 @@
+{
+  "id": "pilot-026",
+  "source_sha256": "6ce8857f5db5ad698bc6ebd7b0d328410ec345f8db47fef7f62dbc4a3e58d9bc",
+  "ordinal": 29,
+  "status": "completed",
+  "frame_sha256": [
+    "87f27bc3ed80e49a577c87762c045ae114031e93ccd407a370d8b5778ae0a10d",
+    "ccaa9bd2627ef099499e6b79b7269dd9b25eb36fced8fd4125fb824c5d4f8452",
+    "c6c1aa93682ef4cdf29e798fda36e5d63e909be88806bce4fffdf293f1f4beed",
+    "f836b8f310b3b9673c51d8c283349e6d1c595fd6c4825ef2a8a13045c943ca38",
+    "0be98473c212cf082e68b8163815a4097e80a51e83a4f8baa05381a97828a3ff",
+    "f6abcd46becbaf962f2fd37aca4dfcedffa0881b94ad50de71440db137ed1711",
+    "06012969bfe5fbec1b61e49e89a6a29e3585a682ce13d6c5d6554133189319a3",
+    "33b2fe354d16ec285f6520565602fa7568168c43ac118388850299df25fefd66"
+  ],
+  "image_count": 8,
+  "started_at": 1792734695.5726645,
+  "first_token_seconds": 0.5463556889999381,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"face\",\n      \"face\",\n      \"face\",\n      \"face\",\n      \"face\",\n      \"face\",\n      \"face\"\n    ],\n    \"actions\": [\n      \"eyes wide\",\n      \"eyebrows raise\",\n      \"eyebrows lower\",\n      \"eyes narrow\",\n      \"eyes widen\",\n      \"eyes narrow\",\n      \"eyes widen\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"face with wide eyes and dashed border\",\n      \"face with wide eyes and no border\",\n      \"face with narrowed eyes and no border\",\n      \"face with narrowed eyes and solid yellow border\",\n      \"face with narrowed eyes and solid yellow border\",\n      \"face with wide eyes and solid yellow border\",\n      \"face with wide eyes and dashed border\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 222,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "face",
+        "face",
+        "face",
+        "face",
+        "face",
+        "face",
+        "face"
+      ],
+      "actions": [
+        "eyes wide",
+        "eyebrows raise",
+        "eyebrows lower",
+        "eyes narrow",
+        "eyes widen",
+        "eyes narrow",
+        "eyes widen"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "face with wide eyes and dashed border",
+        "face with wide eyes and no border",
+        "face with narrowed eyes and no border",
+        "face with narrowed eyes and solid yellow border",
+        "face with narrowed eyes and solid yellow border",
+        "face with wide eyes and solid yellow border",
+        "face with wide eyes and dashed border"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.096642999999858,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

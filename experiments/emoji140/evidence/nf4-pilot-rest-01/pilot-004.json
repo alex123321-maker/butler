@@ -1,0 +1,94 @@
+{
+  "id": "pilot-004",
+  "source_sha256": "20cf3356b0a13600c52fb8b27c4e1759b3798f6d18eeb9121a94f6c9d9aaae5b",
+  "ordinal": 14,
+  "status": "completed",
+  "frame_sha256": [
+    "2bf2730a29da67163bc69789e8a693a77676d00682b69f01c611f73f0a17f9b8",
+    "523365708dccb8ffb4b653a244614e0c759da293b0643caf6e65e3c8c4c9dee8",
+    "df01ba4268f90e7c20b4b2db9414892e08f5438549b1026111fa55851642244c",
+    "cc3349a3f22c0e7c8283c7f5d5f478c2f19040932ece0a57efb6d3a4a6c1e05c",
+    "88a286b1c80430482ddf65927c93b5cc9fceb08b23d92035a093a4b4e06a5111",
+    "07e799f6afe08aae9d69051ea6a0921f104aa86670fae114eafb530ef03f42c4",
+    "26e6a95c40db6ca313b61e6e29220ea32ed43a70a5587884898506557df5ec24",
+    "dbe0fda7ebacad7abdee8f4623a385425bb53437a3335fae3bae9caffe75d8d2"
+  ],
+  "image_count": 8,
+  "started_at": 1792734575.0384467,
+  "first_token_seconds": 0.542630411999653,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"ear with hearing aid\"\n    ],\n    \"actions\": [\n      \"hearing aid emits sound waves\",\n      \"hearing aid cable changes color to green\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"hearing aid emits sound waves\",\n      \"hearing aid cable changes color to green\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 129,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "ear with hearing aid"
+      ],
+      "actions": [
+        "hearing aid emits sound waves",
+        "hearing aid cable changes color to green"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "hearing aid emits sound waves",
+        "hearing aid cable changes color to green"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.163273246999779,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

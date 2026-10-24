@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-23T09:08:30.696251+00:00",
+  "source_commit": "da0ba4c08b2242d37ce4d09222324d8576bc9a0a",
+  "pull_request_heads": {
+    "143": "d3d32c96e9c9242df0788c6953647061676a8044",
+    "144": "cd1d0c3c86967adfa4b9221aa7ab4338743b33d9"
+  },
+  "binary_sha256": "46a5e68f61d1ee7fc08a6a1e557625e020ce45e5afc18172e4a4987d032e1a91",
+  "backup_sha256": "9d97211cc97f76256b90434fd374144861433f2fa06d28394abd0350fa09691d",
+  "previous_candidate": "/srv/storage/butler/main/releases/emoji140-resume142-20261023-faf188b3/bin",
+  "release": "/srv/storage/butler/main/releases/emoji140-resume142-20261023-da0ba4c0",
+  "profile_proxy_broker_budgets_unchanged": true,
+  "main_source_pointers_unchanged": true,
+  "verdict": "emoji140_native_acceptance_passed",
+  "build": {
+    "go": "1.27.2",
+    "image_digest": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "CGO_ENABLED": "0",
+    "workdir": "/src",
+    "command": "go build -buildvcs=false -o .cache/bin/orchestrator-da0ba4c0 ./apps/orchestrator",
+    "trimpath": false,
+    "ldflags": null,
+    "source_clean": true
+  },
+  "actual_process_sha256": "46a5e68f61d1ee7fc08a6a1e557625e020ce45e5afc18172e4a4987d032e1a91",
+  "healthy_verified": true,
+  "validation_basis": "Full faf188 integration regression plus d3d32c96 close-control delta:31 PG/race tests,0fail,0skip and vet.",
+  "acceptance_scope": [
+    "real enriched Telegram text",
+    "reviewed widget icons with receipt abstention",
+    "same-binary restart and frozen choices",
+    "actual UI selection and closed projection",
+    "post-restart enriched final result",
+    "negative plain text and durable completed run"
+  ],
+  "other_thread_142_native_acceptance": "separate coordinated acceptance"
+}

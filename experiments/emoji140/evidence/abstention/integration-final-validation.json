@@ -1,0 +1,26 @@
+{
+  "source": "faf188b396811c879aed7dca271db7fb15caca47",
+  "exit_code": 0,
+  "reports": {
+    "targeted.jsonl": {
+      "pass": 591,
+      "fail": 0,
+      "skip": 0
+    },
+    "control-regression.jsonl": {
+      "pass": 23,
+      "fail": 0,
+      "skip": 0
+    },
+    "regression.jsonl": {
+      "pass": 1032,
+      "fail": 0,
+      "skip": 8
+    },
+    "local-authority.jsonl": {
+      "pass": 12,
+      "fail": 0,
+      "skip": 0
+    }
+  }
+}

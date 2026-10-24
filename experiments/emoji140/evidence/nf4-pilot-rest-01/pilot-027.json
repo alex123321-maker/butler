@@ -1,0 +1,100 @@
+{
+  "id": "pilot-027",
+  "source_sha256": "ad1b668fad2591dae6e5bc7e7d3317f256e7eabaab2032fe719d6708e34be0c4",
+  "ordinal": 35,
+  "status": "completed",
+  "frame_sha256": [
+    "7d0f4eb18f3a6e270fa2d3e38994c7f78b1028b3864961b6fd90be6d480f60f5",
+    "f896ecfdfd8b1a29465d244e8f5a2b56133360af0bc358723343eed3fc874fe1",
+    "9b493ee5286b776b610e0937fee674041f3798b284e0e5908d0361f34f462708",
+    "025e1bf15e812c8b3e81a439a9327bb3855030adcedf83e134c445b78aea09bb",
+    "7961cd6292ef98561ee7b883f2b81168aecab23c1e37f6c51c034cdc81d02f88",
+    "7c72fd2329e0fa230d35b04f6e1d56b329193da18326def374e83dcd07746999",
+    "c1d923e66b693409579a0c8af55187e7bf809bfc334e4296b9c4d6a41d8b3e35",
+    "756a7d9024613eb66a350f1116c71496b401c08309f121b02776f07f4af491ba"
+  ],
+  "image_count": 8,
+  "started_at": 1792734739.892119,
+  "first_token_seconds": 0.5457727219995832,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow emoji face\",\n      \"green bottle with gold cap\"\n    ],\n    \"actions\": [\n      \"emoji holds bottle\",\n      \"emoji pours from bottle\",\n      \"emoji stops pouring\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"emoji with bottle and tear drop\",\n      \"emoji pouring from bottle\",\n      \"emoji pouring from bottle\",\n      \"emoji holding bottle and tear drop\",\n      \"emoji holding bottle and tear drop\",\n      \"emoji holding bottle and tear drop\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 165,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow emoji face",
+        "green bottle with gold cap"
+      ],
+      "actions": [
+        "emoji holds bottle",
+        "emoji pours from bottle",
+        "emoji stops pouring"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "emoji with bottle and tear drop",
+        "emoji pouring from bottle",
+        "emoji pouring from bottle",
+        "emoji holding bottle and tear drop",
+        "emoji holding bottle and tear drop",
+        "emoji holding bottle and tear drop"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.679110260000016,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

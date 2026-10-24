@@ -1,0 +1,103 @@
+{
+  "id": "pilot-030",
+  "source_sha256": "ff7205262f10be15ec6ed8c00808fcf7bdfcf6ab930d5dc9c6bd56119485e9a9",
+  "ordinal": 5,
+  "status": "completed",
+  "frame_sha256": [
+    "05ecddbd2c451a867c2744f6e1fdbd9d1b38bcd75126c0ccf1eaa440858f6a9a",
+    "d386e23e6c9c149a9ec93c38d64979f75bdfd11913f6814cc52bf1783a0f5237",
+    "a3768d46aa29f59c9a13ea47f7516f840d87126656ab56d4103b9dc4c5b22283",
+    "a1ccd5f882bd99c56ff43b5824d8940a86b4ebf6bd4bb9d77dfdb303f3eb10e9",
+    "6be879f99942eb0abbf4a91d4e21c064bc4429b5638a163cf0bf62538722a0d0",
+    "dcaccb207077d54e0b2cf5b459c40fdf60419980016aa8350b3dda40a4058ef9",
+    "b299e7618bb75ef97da0dbac918c9a099e3090c2761355529b99339e63e9ae0a",
+    "7d5d84201f24cd716ed14d2ff9c2d8cd53f058d2c6cf571a19e447860e4c938c"
+  ],
+  "image_count": 8,
+  "started_at": 1792734361.4166343,
+  "first_token_seconds": 0.5494389020000199,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with a dumbbell on its head\"\n    ],\n    \"actions\": [\n      \"closing eyes\",\n      \"opening eyes\",\n      \"squeezing mouth\",\n      \"squeezing cheeks\",\n      \"squeezing eyes\",\n      \"squeezing cheeks with eyes closed\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"face with closed eyes and dumbbell on head\",\n      \"face with wide eyes and open mouth\",\n      \"face with closed eyes and open mouth\",\n      \"face with wide eyes and open mouth\",\n      \"face with closed eyes and dumbbell on head\",\n      \"face with wide eyes and open mouth\",\n      \"face with closed eyes and dumbbell on head\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 215,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with a dumbbell on its head"
+      ],
+      "actions": [
+        "closing eyes",
+        "opening eyes",
+        "squeezing mouth",
+        "squeezing cheeks",
+        "squeezing eyes",
+        "squeezing cheeks with eyes closed"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "face with closed eyes and dumbbell on head",
+        "face with wide eyes and open mouth",
+        "face with closed eyes and open mouth",
+        "face with wide eyes and open mouth",
+        "face with closed eyes and dumbbell on head",
+        "face with wide eyes and open mouth",
+        "face with closed eyes and dumbbell on head"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 9.980523309000091,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

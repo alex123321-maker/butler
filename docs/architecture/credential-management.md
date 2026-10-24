@@ -1,5 +1,10 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The operator-only [emoji research importer](telegram-emoji-research.md) reuses
+the Telegram client's private token/proxy references for bounded public catalog
+and fixed-host file reads. It registers no model tool or product capability,
+reads no owner messages, and never exposes credential URLs in exported evidence.
+
 The explicit owner rollout accepts a private strict operator profile containing
 only credential file references and pinned database/owner/bot/binding metadata.
 Core resolves the Telegram token and explicit CONNECT proxy from those files;

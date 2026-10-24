@@ -1,0 +1,104 @@
+{
+  "id": "pilot-020",
+  "source_sha256": "ba386342627d45124d9afc0bc67e49f87bb49bbf5c0de053ddff0337a76f0ec5",
+  "ordinal": 4,
+  "status": "completed",
+  "frame_sha256": [
+    "03be6d81172547b81133c18f8953e5678c74b54d57ce682ef07573a05f80875a",
+    "1ef5f84d4e5135e7912de48c115b1f96ba310eb9903ee0ff9d4358fb7d113643",
+    "8aa391ae8798a1154199c025217f8f5b001626304d655e5c649bc43b0fb2e8c7",
+    "0d8fd75cf01fae775880cca57ba5929aa9a1e49ef9f0bbd67ffad704f5b92a98",
+    "82d4e622b69b68aac2726d75fda98757ecabb771fd2f30ba0710257defe47508",
+    "2f9545dd002cfee4abf8651b09c38b1a27fd4d210c2530e623bd3b0017494818",
+    "66b62d65ab0a64dfc63c1755f178bc2f5925f7ce5f2f64058320eee1d36b03d2",
+    "8e9fce8587b4022a0efd221655cac7777ce3686b340860a15265380b6408fba5"
+  ],
+  "image_count": 8,
+  "started_at": 1792734351.3823497,
+  "first_token_seconds": 0.550743890999911,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with brown eyes and pink spiral cheeks\"\n    ],\n    \"actions\": [\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\",\n      \"eyes close, mouth closed\",\n      \"eyes open wide, mouth open\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 214,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with brown eyes and pink spiral cheeks"
+      ],
+      "actions": [
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open",
+        "eyes close, mouth closed",
+        "eyes open wide, mouth open"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 10.02964906599982,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 6757212
+}

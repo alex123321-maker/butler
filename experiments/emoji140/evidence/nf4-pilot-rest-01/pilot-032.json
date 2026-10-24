@@ -1,0 +1,102 @@
+{
+  "id": "pilot-032",
+  "source_sha256": "1417c2530a98edd78d7d14540cabd632462bbc04b7691842a067e7030702818d",
+  "ordinal": 3,
+  "status": "completed",
+  "frame_sha256": [
+    "293bf7239756dea4fb7647836279960cd668ceb14b134a382bf1d418a397c1ac",
+    "19d117f4ec424ceb7a1ba0cef5db637b26ec25e7054cf479d92cea8fb6b1784a",
+    "aef836c2da12a7fbdc127a1c4817e54548a5d392999fabc10d85646dcfb2717e",
+    "47e9033ab25ff929580ef2f4ea01f51f009a61324ebcb92524bc8d408bb67543",
+    "13e171e1071bc423e91f112febe110a2cc31ea3a897af1becca8cf2109f1639a",
+    "6cc4e5801c7baf81bee20312bd1d4e9043c15e080e8f5e42725442a21d5b87c3",
+    "7c0d40dca2927cfa3ffbaddebc8b1aa801744d9305212b0510529e13229c875c",
+    "fcd227f814a18d72c65e86425f639afa9621002e84d3a781690d1d05f009b62d"
+  ],
+  "image_count": 8,
+  "started_at": 1792734502.5486608,
+  "first_token_seconds": 0.5461572689996501,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue cat\"\n    ],\n    \"actions\": [\n      \"kissing\",\n      \"blinking\",\n      \"closing eyes\",\n      \"smiling\",\n      \"moving head\",\n      \"changing expression\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"kissing with one red heart\",\n      \"two red hearts on head\",\n      \"head tilted with closed eyes and blush\",\n      \"head tilted with open eyes and hearts above\",\n      \"head tilted with open eyes and one heart above\",\n      \"head tilted with open eyes and no hearts\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 178,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "blue cat"
+      ],
+      "actions": [
+        "kissing",
+        "blinking",
+        "closing eyes",
+        "smiling",
+        "moving head",
+        "changing expression"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "kissing with one red heart",
+        "two red hearts on head",
+        "head tilted with closed eyes and blush",
+        "head tilted with open eyes and hearts above",
+        "head tilted with open eyes and one heart above",
+        "head tilted with open eyes and no hearts"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 8.754173173999789,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

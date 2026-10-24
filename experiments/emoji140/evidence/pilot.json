@@ -1,0 +1,367 @@
+{
+  "version": "feasibility-pilot-v1",
+  "scope": "development only; no locked test",
+  "excluded_pack": "Strawberry_hot_by_fStikBot",
+  "entries": [
+    {
+      "id": "pilot-001",
+      "sha256": "8cd5d87e4130d63dd75bb6bdbc09414b743453203b479ad594f7fde77e098e57",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5170580663727817398"
+    },
+    {
+      "id": "pilot-002",
+      "sha256": "a61adbb10867ff6e0ac70c5e999f9dce42d2ad76a4999ded38b155cbb13be721",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5170390830468301304"
+    },
+    {
+      "id": "pilot-003",
+      "sha256": "e2ad75e685bc7b93dc2872502d112c35f088f3f77ca9feea636ef93c6f4440c2",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5168219024420504223"
+    },
+    {
+      "id": "pilot-004",
+      "sha256": "20cf3356b0a13600c52fb8b27c4e1759b3798f6d18eeb9121a94f6c9d9aaae5b",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5174781597009838736"
+    },
+    {
+      "id": "pilot-005",
+      "sha256": "6794691aaa410196c21f85b99ab95e4b3ceee4e248ab3031e0c6904cc4ef662d",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5174963905486652112"
+    },
+    {
+      "id": "pilot-006",
+      "sha256": "f2f4e0319f09e0803ab84d2fbe62cc310b125a6e0e7de1597fe10685db8df7af",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5172917297735533194"
+    },
+    {
+      "id": "pilot-007",
+      "sha256": "27df99b85a9c554c565ebe29fa5d2453771fc2278183a16eec822f6af8b6955f",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5172492765988127557"
+    },
+    {
+      "id": "pilot-008",
+      "sha256": "fd4f14fa03a6939906631710f96c58ecbf9a99323c4fac592a08a17d4294c282",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5172648862279533203"
+    },
+    {
+      "id": "pilot-009",
+      "sha256": "967ebb08e6966ff09752017afc849bbaa6cb3897a45d3e0a315a01c248589e0e",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5170642700235440624"
+    },
+    {
+      "id": "pilot-010",
+      "sha256": "21379561e2abf1a0021d32dab94025fd605f2986af77d6e7f3d2346c528a2d33",
+      "pack": "AnimatedEmoji",
+      "custom_emoji_id": "5174715067966424124"
+    },
+    {
+      "id": "pilot-011",
+      "sha256": "64e94f96a1fbfcff89cbd758a18095c1470a1362718c7ed0d61df8c67cbbf03d",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5452056954698475544"
+    },
+    {
+      "id": "pilot-012",
+      "sha256": "8471f2945bc3c0f32e5957dd94c17f69645b05421f73f13aab2d319f91019958",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5427336991253479512"
+    },
+    {
+      "id": "pilot-013",
+      "sha256": "b51447abb90a7d909729fd130d63f0dc132a8d864ecb95845b0f4ddb9d153108",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5285070644864628879"
+    },
+    {
+      "id": "pilot-014",
+      "sha256": "a6c51ff78fda83e2826caf7430b7caa6c7bc36980f1b94e5ee26898d93621776",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5357398894856648601"
+    },
+    {
+      "id": "pilot-015",
+      "sha256": "5db084a83d32f52766012081d6bd86d10f6632e938759aeb862460e709728223",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5208945510638957569"
+    },
+    {
+      "id": "pilot-016",
+      "sha256": "1d23895c48a27ee7a35270b4c466548501096c12687190992262b7c6970c2303",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5467690433792453590"
+    },
+    {
+      "id": "pilot-017",
+      "sha256": "df3edbd94bbbbe1f61c40795138c4e0ef79a92cc33408c25c7d70ef09adc2187",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5429556385538915363"
+    },
+    {
+      "id": "pilot-018",
+      "sha256": "2240f1cc5885db9613d89c44427d41ae786f463ba80fbaaf1e72eeafbcccfce2",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5256200063679478041"
+    },
+    {
+      "id": "pilot-019",
+      "sha256": "a4d91f6dc67563f3c48f30e1846a2d23da584da646da6498b34057ee2d322d8d",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5253819273112989073"
+    },
+    {
+      "id": "pilot-020",
+      "sha256": "ba386342627d45124d9afc0bc67e49f87bb49bbf5c0de053ddff0337a76f0ec5",
+      "pack": "CrayonsEmoji",
+      "custom_emoji_id": "5375132879246340203"
+    },
+    {
+      "id": "pilot-021",
+      "sha256": "31b1f329c55d7a9c1c13124827f9c673ed3466a319fd06ecb7ee6f1500057786",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5454173029250636981"
+    },
+    {
+      "id": "pilot-022",
+      "sha256": "04bad24cfd16ea0f1e575cc5f494dfd71e2a69a8ad255371fd45b9442467170d",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5226772700113935347"
+    },
+    {
+      "id": "pilot-023",
+      "sha256": "58fb49eeb528251b9805ca9a72762da2e0a39a9d93ffe653e756af536a724272",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5445397461877136201"
+    },
+    {
+      "id": "pilot-024",
+      "sha256": "1040a7a0857b475c0b454f48cae5aa9657f072cf4b99b9e1d1bbb4f960829655",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5249030062455398728"
+    },
+    {
+      "id": "pilot-025",
+      "sha256": "d37322bedfa2b13033831f3d09be46ced945880757086426b72ddffd46eb45b0",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5375131899993792435"
+    },
+    {
+      "id": "pilot-026",
+      "sha256": "6ce8857f5db5ad698bc6ebd7b0d328410ec345f8db47fef7f62dbc4a3e58d9bc",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5246885387716011812"
+    },
+    {
+      "id": "pilot-027",
+      "sha256": "ad1b668fad2591dae6e5bc7e7d3317f256e7eabaab2032fe719d6708e34be0c4",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5371006802949315307"
+    },
+    {
+      "id": "pilot-028",
+      "sha256": "b2bd2ae50f52446e19bea4aef1c99320f274e477034999f5307193f17b9d01f5",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5368809197032971971"
+    },
+    {
+      "id": "pilot-029",
+      "sha256": "9dee9313b2d5cc4e7eb27e3e76cded65b1d47aa306575f746e348fe027af2cfe",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5372914270939913780"
+    },
+    {
+      "id": "pilot-030",
+      "sha256": "ff7205262f10be15ec6ed8c00808fcf7bdfcf6ab930d5dc9c6bd56119485e9a9",
+      "pack": "FaceEmoji",
+      "custom_emoji_id": "5204204867471547076"
+    },
+    {
+      "id": "pilot-031",
+      "sha256": "a7718e48cb0bc70ac7210b115f6789baa5e020eaaf32a6b1130202f9de586cc6",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5400130177319580649"
+    },
+    {
+      "id": "pilot-032",
+      "sha256": "1417c2530a98edd78d7d14540cabd632462bbc04b7691842a067e7030702818d",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5370856758266837169"
+    },
+    {
+      "id": "pilot-033",
+      "sha256": "80658f5570adfc9be34ba565eb14495b008f69f5cf2a5d74181ba0bd0c2cc7ac",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5291919983830382928"
+    },
+    {
+      "id": "pilot-034",
+      "sha256": "8a95b1d3b80c1d4bb12455ff205432f6760b37becbf96c0df47f888f248eec5f",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5393182152890268152"
+    },
+    {
+      "id": "pilot-035",
+      "sha256": "9c684d9edfa0a9d961ff43f88ced0847ffa08f3fd3d9febaf781c73a5157c46c",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5467899285167157308"
+    },
+    {
+      "id": "pilot-036",
+      "sha256": "cba4f0625e928771d0070a3a8e0428f22acc1fdf54a5ecbf73424faea1b9efb5",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5463411211846560614"
+    },
+    {
+      "id": "pilot-037",
+      "sha256": "4d685f00f24e7eeaed5279d26bcdd3cd62215fbcb3815063e87185310a69cccf",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5305381957524272531"
+    },
+    {
+      "id": "pilot-038",
+      "sha256": "edacfdbcdcfeee0a15857cd7816e40fd24416d61f7e36fd99571eab16c57ca3e",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5379924842977963225"
+    },
+    {
+      "id": "pilot-039",
+      "sha256": "1dcccc0f7a210500df7c27f6718d718935402f5ac1a488c236075ec3e09e22ab",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5251416878861006232"
+    },
+    {
+      "id": "pilot-040",
+      "sha256": "ae00d56cf574c0728348eb0405993190a1c9648fdb96fc9e023b913ffa125532",
+      "pack": "Catz5Emoji",
+      "custom_emoji_id": "5228944201219062824"
+    },
+    {
+      "id": "pilot-041",
+      "sha256": "9b9398493424ea56f7f7ae141d62ea9375005db28196689484614397f82db9ea",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5332308237079288987"
+    },
+    {
+      "id": "pilot-042",
+      "sha256": "a6eb8a893648cd79f303b3dbe9382cd7c3bfd2cf8907d587aab13894a1074542",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5390854796011906616"
+    },
+    {
+      "id": "pilot-043",
+      "sha256": "31058b1ca9abe03ab1ecf7b02e0e8230ce8d22f49fbf00568270f2e84bab804f",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5404702371869631372"
+    },
+    {
+      "id": "pilot-044",
+      "sha256": "34322ac24c14999e72be6ac4484ae353173ad0eab224ade3fd0147d513ebe0ed",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5393480373944459905"
+    },
+    {
+      "id": "pilot-045",
+      "sha256": "dc43143a0724169dec448e701ce5a23551051bf750486aa2d21b0a5509c494f9",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5382261056078881010"
+    },
+    {
+      "id": "pilot-046",
+      "sha256": "ea6d37020a453e988933a7679d727a036708e6a70bdb61860640e87f40e050f6",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5391111785380062638"
+    },
+    {
+      "id": "pilot-047",
+      "sha256": "eb7c4669e2e233be3ee9a1896ddea34da410d344c92f111d12a5e7cfdd05687d",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5332648110726323166"
+    },
+    {
+      "id": "pilot-048",
+      "sha256": "dc61a9be785e1940ee9ffbdca49d438c8eaf06123608b91f501dbfb19cac86bd",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5393303305327746695"
+    },
+    {
+      "id": "pilot-049",
+      "sha256": "69d2e75a8570135393f3c84178057e85e9236062173f700e40cf17c98b758429",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5382322671679708881"
+    },
+    {
+      "id": "pilot-050",
+      "sha256": "6a7eb1c8e2fae5fcce71dedd07985e6e6e969221083fd25ff81ac31b7e27778b",
+      "pack": "ABCEmoji",
+      "custom_emoji_id": "5382259076098957171"
+    },
+    {
+      "id": "pilot-051",
+      "sha256": "97fbd32936f3830be6c05750d039cf2900a774839410bc5b477d48a28ae53463",
+      "pack": "AIActions",
+      "custom_emoji_id": "5537560399123054610"
+    },
+    {
+      "id": "pilot-052",
+      "sha256": "0ec7399a6ca5d5f7628daa04fa1f473a6250aa4fc0d49c610dc8b1d9846e7079",
+      "pack": "AIActions",
+      "custom_emoji_id": "5537346136089559052"
+    },
+    {
+      "id": "pilot-053",
+      "sha256": "ede5843082761d13f917353301d6d40febf872871a0506d5c04b50c372a3b7ca",
+      "pack": "AIActions",
+      "custom_emoji_id": "5535333750637854737"
+    },
+    {
+      "id": "pilot-054",
+      "sha256": "2810271172939ecea0602895189e1f07f837515047e4d549144420b9dd30259a",
+      "pack": "AIActions",
+      "custom_emoji_id": "5535458420653555733"
+    },
+    {
+      "id": "pilot-055",
+      "sha256": "7ea5b17755770df4c13c08f82a0b1c5ad3612ca8c3143e82cb03f4b3a54eaf53",
+      "pack": "AIActions",
+      "custom_emoji_id": "5535161213211639862"
+    },
+    {
+      "id": "pilot-056",
+      "sha256": "be2e5409c7ac9ffb6c94cf190569e61c9c05b2068eb55ce0157539e278f2981d",
+      "pack": "AIActions",
+      "custom_emoji_id": "5537550061136773132"
+    },
+    {
+      "id": "pilot-057",
+      "sha256": "d8030b6774a76c39059170413e85dee8e9eb152e0ac80b3a7b37721737f3b2ca",
+      "pack": "AIActions",
+      "custom_emoji_id": "5537514855289847815"
+    },
+    {
+      "id": "pilot-058",
+      "sha256": "abca77347fd312015d7cc5ee70ef2e8544bbf606ec4b53055a0497f3eb3b7eb1",
+      "pack": "AIActions",
+      "custom_emoji_id": "5535219096485888134"
+    },
+    {
+      "id": "pilot-059",
+      "sha256": "254cb8be262cbb61e6447b2c136e99a0b0ce8f6e4fe3dd6c8d78007ded1f9071",
+      "pack": "AIActions",
+      "custom_emoji_id": "5537651753077440526"
+    },
+    {
+      "id": "pilot-060",
+      "sha256": "b6c3109a722c62bfea6c8fd0f149c4d9c1d8f071a857adbc83a7cbc6a350ec18",
+      "pack": "AIActions",
+      "custom_emoji_id": "5534951812081123354"
+    }
+  ]
+}

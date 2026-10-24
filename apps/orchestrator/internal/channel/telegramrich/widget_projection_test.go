@@ -21,7 +21,7 @@ import (
 
 // These are channel-edit fixtures, not publication/authority acceptance. Owning
 // publication, source revocation and resume are separately tested through Store.
-func widgetProjectionFixture(t *testing.T, c *Client) (*Poller, *communication.Store) {
+func widgetProjectionFixture(t *testing.T, c *Client, initial ...Part) (*Poller, *communication.Store) {
 	t.Helper()
 	pool := memorytest.Database(t)
 	ctx := context.Background()
@@ -47,7 +47,11 @@ func widgetProjectionFixture(t *testing.T, c *Client) (*Poller, *communication.S
 	exec(`INSERT INTO communication_publications(publication_id,effect_id,tool_call_id,input_id,owner_id,session_key,run_id,task_revision,constraints_revision,kind,purpose,payload,payload_hash,source_refs,receipt_json) VALUES('publication:projection','projection','projection','projection-input',$1,$2,$3,0,0,'widget','question',$4,'synthetic','[]','{}')`, owner, key, run, question)
 	exec(`INSERT INTO communication_interactions(interaction_id,publication_id,input_id,owner_id,session_key,run_id,task_revision,constraints_revision,question_json,state,version) VALUES('interaction:projection','publication:projection','projection-input',$1,$2,$3,0,0,$4,'resolved',2)`, owner, key, run, question)
 	exec(`INSERT INTO communication_widget_views(interaction_id,callback_token) VALUES('interaction:projection','aaaaaaaaaaaaaaaaaaaaaaaa')`)
-	part, _ := json.Marshal(Part{Version: 1, Method: "sendMessage", Text: "Какую пиццу?", Widget: true})
+	storedPart := Part{Version: 1, Method: "sendMessage", Text: "Какую пиццу?", Widget: true}
+	if len(initial) > 0 {
+		storedPart = initial[0]
+	}
+	part, _ := json.Marshal(storedPart)
 	exec(`INSERT INTO delivery_outbox(notification_id,run_id,session_key,channel,chunk_index,content,status,deadline_at,publication_id,binding_id,binding_version,recipient_snapshot,representation_json,channel_ack) VALUES('projection-notification',$1,$2,'telegram',0,$3,'sent',clock_timestamp()+INTERVAL '1 day','publication:projection','projection-binding',1,'telegram:42',$4,'7')`, run, key, string(part), question)
 	core := &communication.Store{Pool: pool, Inputs: durableinput.NewStore(pool), WidgetProjections: true, SourceGuard: func(context.Context, pgx.Tx, string) error { return nil }, ChannelGuard: func(context.Context, pgx.Tx, string, communication.Binding, communicationcontrol.Args) error {
 		return nil

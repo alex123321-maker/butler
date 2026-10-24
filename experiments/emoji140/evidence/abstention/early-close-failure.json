@@ -1,0 +1,15 @@
+{
+  "input_id": "input-7de3b8e8c5c18fae5499ce708299cea0",
+  "source": "faf188b396811c879aed7dca271db7fb15caca47",
+  "owner_close_http": 403,
+  "closed": false,
+  "read_only_findings": {
+    "input_owner_matches_session": true,
+    "communication_admission_exists": false,
+    "run_task_null": true,
+    "run_current_state": "failed",
+    "claim_empty": true,
+    "claim_expiry_null": true
+  },
+  "resolution": "Corrected owning control deployed in da0ba4c0; same scoped request then returned HTTP200, preserving original error and ledger. See widget-failure-close.json."
+}

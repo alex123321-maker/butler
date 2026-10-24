@@ -1,0 +1,7 @@
+goos: linux
+goarch: amd64
+pkg: github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich
+cpu: AMD Ryzen 5 5600H with Radeon Graphics         
+BenchmarkDecorationFreeze-2   	    1000	    525629 ns/op	  116009 B/op	    1541 allocs/op
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich	0.538s

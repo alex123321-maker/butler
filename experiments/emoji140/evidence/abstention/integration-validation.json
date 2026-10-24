@@ -1,0 +1,45 @@
+{
+  "source": "9b29a94c7abe06a0256d4353a6aa2d9812907c86",
+  "reports": {
+    "app.jsonl": {
+      "pass": 82,
+      "fail": 0,
+      "skip": 0,
+      "skipped_tests": [],
+      "sha256": "9d8b297b2bd3c14d1fa8b373c796718d3449d07282fbee6e58d48ae5aa3f3ac7"
+    },
+    "telegram.jsonl": {
+      "pass": 104,
+      "fail": 0,
+      "skip": 0,
+      "skipped_tests": [],
+      "sha256": "af9f4e99f17d01f36359ecd05a307e426d78b95c897e47039cb5ff3bf3e5e682"
+    },
+    "source-observer.jsonl": {
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "skipped_tests": [],
+      "sha256": "68ab1c762f74c21424ec4684c476cb60f714f86404bfd7b7987c286f4dbdf61b"
+    },
+    "ownership.jsonl": {
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "skipped_tests": [],
+      "sha256": "4e93c229a7c102baa1defb2b6c08715adb7f9ed72854a24e37f598dcc3c77288"
+    },
+    "experience.jsonl": {
+      "pass": 81,
+      "fail": 0,
+      "skip": 1,
+      "skipped_tests": [
+        "TestActualPostgresExperienceDumpRestoreDeletionIntegration"
+      ],
+      "sha256": "93546ddff2be7b98b52ed61a717c8d2069338b90efbb71c2a62db33a5ddd34af"
+    }
+  },
+  "vet": "passed",
+  "native_egress": false,
+  "scope": "Final integration delta, not a repeat of previous full matrix. External pg_dump/restore experience acceptance is gated and not claimed."
+}

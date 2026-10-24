@@ -1,0 +1,100 @@
+{
+  "id": "pilot-019",
+  "source_sha256": "a4d91f6dc67563f3c48f30e1846a2d23da584da646da6498b34057ee2d322d8d",
+  "ordinal": 46,
+  "status": "completed",
+  "frame_sha256": [
+    "5d3bc6ff599ff9148c9c87344f309b4ebd016d60216025446daacb14aeae73d6",
+    "9534f70a401c8b639d335ce7b3a0d31a7a503a46868c2f6e52ac721bafd0fc29",
+    "537cbb6a24466b8ab54b807c04c615aa295406dd598b4d8da019ceda0ad094e4",
+    "328fadfbdcb1e58c1335d14b85aa0dbbc3d68e856e7e8342f943c1a66fc899ab",
+    "6fd83abcb938115682815d83ea6402832bc3103f92331c0f656d09860ab3d64e",
+    "e6964593f9ae974b083c1d7c43b305a52c3c9336787a16fbc4d0bad3191c7c60",
+    "158864b6cf875da4e3b4311aac6a8c3731a282328c0f6254ed92ce0078d8e870",
+    "6331547aa8d4af6344e343a97845a760a29f717a3ddcf72ada9eedb94db64866"
+  ],
+  "image_count": 8,
+  "started_at": 1792734820.0312645,
+  "first_token_seconds": 0.5455942769999638,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow face with scribbled outline\"\n    ],\n    \"actions\": [\n      \"eyes close slightly\",\n      \"mouth opens and closes\",\n      \"eyes open and close\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes closed, mouth slightly open\",\n      \"eyes closed, mouth open wider\",\n      \"eyes closed, mouth open wider\",\n      \"eyes open, mouth open\",\n      \"eyes open, mouth open\",\n      \"eyes closed, mouth slightly open\",\n      \"eyes closed, mouth slightly open\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 173,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow face with scribbled outline"
+      ],
+      "actions": [
+        "eyes close slightly",
+        "mouth opens and closes",
+        "eyes open and close"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes closed, mouth slightly open",
+        "eyes closed, mouth open wider",
+        "eyes closed, mouth open wider",
+        "eyes open, mouth open",
+        "eyes open, mouth open",
+        "eyes closed, mouth slightly open",
+        "eyes closed, mouth slightly open"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.990289225000197,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

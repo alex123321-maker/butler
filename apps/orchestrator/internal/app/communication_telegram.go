@@ -47,8 +47,9 @@ type TelegramCommunicationOptions struct {
 	ProviderAuthStore providerauth.SecretStore `json:"-"`
 	// Export of private owner material to this precise private bot binding is
 	// an explicit operator decision. Public-only is the zero/default policy.
-	AllowPrivate bool
-	Widgets      bool
+	AllowPrivate    bool
+	Widgets         bool
+	EmojiDecoration bool
 	// Set only by the separate trusted production constructor; JSON cannot
 	// remove the disposable-database restriction of the lab constructor.
 	ownerDatabase   string
@@ -161,7 +162,11 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets, Sources: sources}
 	policy := telegramExportPolicy{owner: o.OwnerID, binding: b, allowPrivate: o.AllowPrivate, catalog: sources, sourceGuard: guard}
 	core.ChannelGuard = policy.check
-	core.PlanDelivery = (telegramrich.Planner{Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true, Widget: o.Widgets}, Resolve: policy.media}).Plan
+	var decorator *telegramrich.Decorator
+	if o.EmojiDecoration {
+		decorator = telegramrich.NewDecorator()
+	}
+	core.PlanDelivery = (telegramrich.Planner{Decorator: decorator, Profile: telegramrich.Capabilities{Message: true, Photo: true, Rich: true, Document: true, Widget: o.Widgets}, Resolve: policy.media}).Plan
 	var owner, channel, recipient string
 	var version int64
 	var enabled, verified bool

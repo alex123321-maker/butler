@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-23T08:56:59.496180+00:00",
+  "source_commit": "faf188b396811c879aed7dca271db7fb15caca47",
+  "pull_request_heads": {
+    "143": "adb833ea28480745a402f0f9d2bbf9f2fae50ec3",
+    "144": "cd1d0c3c86967adfa4b9221aa7ab4338743b33d9"
+  },
+  "binary_sha256": "76f8a77e8d77e95d7ea771e8775e83f915ffd775bdfe49ff620dcbe214eb3678",
+  "backup_sha256": "e383e8e5aefb8fb8feacfa7487b6b6d5fe620c892648aa3b244e16175e222e7b",
+  "previous_candidate": "/srv/storage/butler/main/releases/emoji140-resume142-20261023-9b29a94c/bin",
+  "release": "/srv/storage/butler/main/releases/emoji140-resume142-20261023-faf188b3",
+  "profile_proxy_broker_budgets_unchanged": true,
+  "main_source_pointers_unchanged": true,
+  "verdict": "pending_native_acceptance",
+  "build": {
+    "go": "1.27.2",
+    "image_digest": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "CGO_ENABLED": "0",
+    "workdir": "/src",
+    "command": "go build -buildvcs=false -o .cache/bin/orchestrator-faf188b3 ./apps/orchestrator",
+    "trimpath": false,
+    "ldflags": null,
+    "source_clean": true,
+    "other_validation_build_path": "/workspace",
+    "different_hash_reason": "Absolute build paths are retained without trimpath; validation build uses archive at /workspace."
+  },
+  "actual_process_sha256": "76f8a77e8d77e95d7ea771e8775e83f915ffd775bdfe49ff620dcbe214eb3678",
+  "healthy_verified": true
+}

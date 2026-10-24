@@ -1,0 +1,92 @@
+{
+  "id": "pilot-002",
+  "source_sha256": "a61adbb10867ff6e0ac70c5e999f9dce42d2ad76a4999ded38b155cbb13be721",
+  "ordinal": 2,
+  "status": "completed",
+  "frame_sha256": [
+    "d8b7ad9e2371ce28c2872f89263a9ac76729ca8566265b6a380a3cff012a12a2",
+    "8fa6b0b88cf1cb1be2b8ab00668e9fa8e5322f516caec1ae5b7a4769c9cf3bac",
+    "bae596e99c4eba3bb3598a51d86405e0d48b6fcc355fbb295248473af842a382",
+    "262c8e6f66c8b1eaf38456f1e2bfd73ff6482a260ce9b76dad918cf3e2ac7323",
+    "883d9ea26eeb7cd11634cd9ace40da5a271337e24173a31a5615692c31160f3a",
+    "9315a40e5e9def4fc69bde0b036b5c4c2018c8854c63752ce17e2db9ca127709",
+    "669858358099ffc54ec8911eda0c666774e7531c359c69580006e518b7889916",
+    "8a967c5db0863058b848b278565b164531e1322327baac18c5955487b766af01"
+  ],
+  "image_count": 8,
+  "started_at": 1792734497.3385193,
+  "first_token_seconds": 0.5487760470000467,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"face\",\n      \"thermometer\"\n    ],\n    \"actions\": [],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"thermometer remains stationary\",\n      \"face shows no movement\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 105,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "face",
+        "thermometer"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "thermometer remains stationary",
+        "face shows no movement"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 5.20577533200003,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

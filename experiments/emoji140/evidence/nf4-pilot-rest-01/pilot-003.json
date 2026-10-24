@@ -1,0 +1,94 @@
+{
+  "id": "pilot-003",
+  "source_sha256": "e2ad75e685bc7b93dc2872502d112c35f088f3f77ca9feea636ef93c6f4440c2",
+  "ordinal": 8,
+  "status": "completed",
+  "frame_sha256": [
+    "099fb04ead42e56241e09a5c9f0895e6bdd3d20e1eeabdbdb07e06c724dac504",
+    "757874b7058bbc6cb6ee33cec50b24de41d0483e156ec3e4c529895402b07aab",
+    "e7afbadc5809eeda04e17fd1c75f9d87b99bef738c1aa0dfb0eb311ba12bbc7b",
+    "490d26e921168274559d64d434f770471751ea017040225d06299976b1cd6536",
+    "56c06a620c15c628080d332aa391526919768f89f78d6ff3848d12e81fd2e8bb",
+    "d0fc0a9f77598196436ab3b50516b97302c96c491c8b61b448488f211b78e18d",
+    "390176188103924c36fedff51b740332e8bb942e77c6f0c770be3d8fb2d18a65",
+    "e1abe60d5f1ae735b52727cd244282d11f1ee141e29445c335c935a9dc671cec"
+  ],
+  "image_count": 8,
+  "started_at": 1792734535.5662634,
+  "first_token_seconds": 0.5407652950002557,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"face\"\n    ],\n    \"actions\": [\n      \"mouth opens slightly\",\n      \"mouth closes\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"mouth opens slightly\",\n      \"mouth closes\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 108,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "face"
+      ],
+      "actions": [
+        "mouth opens slightly",
+        "mouth closes"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "mouth opens slightly",
+        "mouth closes"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 5.265826398000172,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

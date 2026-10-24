@@ -1,0 +1,98 @@
+{
+  "id": "pilot-017",
+  "source_sha256": "df3edbd94bbbbe1f61c40795138c4e0ef79a92cc33408c25c7d70ef09adc2187",
+  "ordinal": 34,
+  "status": "completed",
+  "frame_sha256": [
+    "c060737005d596d672c648e7080cb302fc050bae043b09ac7b4fa1b47e205d78",
+    "07ddfc3444f638beb49aa71014c323b6e4a06d621b995372386e23e51688480e",
+    "de25068baf31c3999b12f6f54a3e1d608c4429453cff0762c4583938d943e168",
+    "62ecd8e874ffefa7d8d21c87f03cccc47462c139cbe7365a13b0b1b92e93a395",
+    "e3840242894d749af7bc07723bec0f51d22f9508d08664b92f9c45409ba2b480",
+    "9f5e540b90050d05dda9dddb31052ad4008964b0cdbea2e2147601d642230f02",
+    "65ec43d2ec39ce7d8269fa08940e7aa52f817d0a5fe248562eb8553000b46429",
+    "446ded1d24e3d72dfc8fee8965d2d54582a2485e13b733af6e281c2e1a06b3b5"
+  ],
+  "image_count": 8,
+  "started_at": 1792734733.6039917,
+  "first_token_seconds": 0.5435742509998818,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow circular face with brown eyes and red outline\"\n    ],\n    \"actions\": [\n      \"eyes blink\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"eyes open\",\n      \"eyes closed\",\n      \"eyes open\",\n      \"eyes closed\",\n      \"eyes open\",\n      \"eyes closed\",\n      \"eyes open\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 134,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow circular face with brown eyes and red outline"
+      ],
+      "actions": [
+        "eyes blink"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "eyes open",
+        "eyes closed",
+        "eyes open",
+        "eyes closed",
+        "eyes open",
+        "eyes closed",
+        "eyes open"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 6.28355627000019,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

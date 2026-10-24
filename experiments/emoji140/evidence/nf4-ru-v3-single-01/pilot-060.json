@@ -1,0 +1,51 @@
+{
+  "id": "pilot-060",
+  "source_sha256": "b6c3109a722c62bfea6c8fd0f149c4d9c1d8f071a857adbc83a7cbc6a350ec18",
+  "ordinal": 1,
+  "status": "completed",
+  "frame_sha256": [
+    "9f046325add6bfef69c5c93518679cabc9f288416178f42a367ed35bdc5123e2"
+  ],
+  "image_count": 1,
+  "started_at": 1792735345.171231,
+  "first_token_seconds": 0.24881441400020776,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"иконка\"],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"черно-белая иконка с геометрическими элементами\",\"temporal_sequence\":[\"статичный кадр\"]},\"inferred\":{\"possible_meanings\":[\"поиск информации в документах\",\"проверка или анализ текста\"],\"intensity\":\"medium\",\"ambiguity\":true}}",
+  "output_tokens": 90,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "иконка"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": "черно-белая иконка с геометрическими элементами",
+      "temporal_sequence": [
+        "статичный кадр"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "поиск информации в документах",
+        "проверка или анализ текста"
+      ],
+      "intensity": "medium",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.172131398000147,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3099590656,
+  "rss_peak_kib": 9665792
+}

@@ -1,0 +1,14 @@
+{
+  "items": 52,
+  "downloaded": 52,
+  "failed": 0,
+  "bytes": 1429739,
+  "import_seconds": 20.521688,
+  "download_p50_ms": 259.0,
+  "download_p95_ms": 399,
+  "decode_success": 52,
+  "decode_child_seconds": 21.226874351501465,
+  "frames": 416,
+  "frame_protocol": "8 ordered224px frames; no continuous playback judgment",
+  "rater": "single AI"
+}

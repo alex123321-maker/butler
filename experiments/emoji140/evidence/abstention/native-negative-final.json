@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-23T09:16:46.690371+00:00",
+  "source": "da0ba4c08b2242d37ce4d09222324d8576bc9a0a",
+  "input_id": "input-07879c1b37a6dc5888bbbbaa4038522c",
+  "run_id": "run-1792746828683917068-9c33281ccd887a2d",
+  "input": {
+    "status": "completed",
+    "checkpoint": "finalizing",
+    "error": ""
+  },
+  "publications": [
+    {
+      "id": "publication:d52a23cff77b09d3d923ff7e43bfb2b4b7a69da7f2ecc6861c85deb46d77daf7",
+      "kind": "message",
+      "purpose": "result",
+      "payload": {
+        "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки.",
+        "purpose": "result",
+        "schema_version": 1
+      }
+    }
+  ],
+  "deliveries": [
+    {
+      "channel": "telegram",
+      "status": "sent",
+      "ack": "87",
+      "content": {
+        "version": 1,
+        "method": "sendMessage",
+        "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки."
+      }
+    },
+    {
+      "channel": "web",
+      "status": "result_ready",
+      "ack": "",
+      "content": {
+        "schema_version": 1,
+        "purpose": "result",
+        "text": "Не готово.\nВ красных наушниках.\nСиний пузырь жвачки."
+      }
+    }
+  ],
+  "browser_verified_custom_emoji_count": 0,
+  "durable_terminal": {
+    "input_status": "completed",
+    "run_state": "completed",
+    "run_status": "completed",
+    "finished": "2026-10-23T09:16:04.066184+00:00",
+    "final_result_count": 1
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "pilot-010",
+  "source_sha256": "21379561e2abf1a0021d32dab94025fd605f2986af77d6e7f3d2346c528a2d33",
+  "ordinal": 2,
+  "status": "completed",
+  "frame_sha256": [
+    "a0984b789c06031654027cbd71f202d3d1dcbeea0e64838d2a897ddcf28440ad"
+  ],
+  "image_count": 1,
+  "started_at": 1792735349.347671,
+  "first_token_seconds": 0.24648994699964533,
+  "input_tokens": 380,
+  "visual_tokens": 64,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"эмодзи\"],\"actions\":[],\"expression\":\"смешное выражение\",\"text\":null,\"style\":\"яркий круглый эмодзи с овальными глазами\",\"temporal_sequence\":[\"статичный кадр\"]},\"inferred\":{\"possible_meanings\":[\"выражение удивления или нейтрального удивления\"],\"intensity\":\"medium\",\"ambiguity\":true}}",
+  "output_tokens": 92,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "эмодзи"
+      ],
+      "actions": [],
+      "expression": "смешное выражение",
+      "text": null,
+      "style": "яркий круглый эмодзи с овальными глазами",
+      "temporal_sequence": [
+        "статичный кадр"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [
+        "выражение удивления или нейтрального удивления"
+      ],
+      "intensity": "medium",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.234194968999873,
+  "peak_gpu_allocated_bytes": 3058042880,
+  "peak_gpu_reserved_bytes": 3099590656,
+  "rss_peak_kib": 9665792
+}

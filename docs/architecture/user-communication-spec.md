@@ -1068,3 +1068,24 @@ acceptance не нужны: разрешённый fixture проверяет о
 голосовые ответы, пользовательский HTML runtime, автоматическая публичная
 публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
 напоминания. Новые каналы подключаются через тот же versioned adapter contract.
+
+## Исследование custom emoji
+
+[Изолированный эксперимент #140](telegram-emoji-research.md) импортирует публичные
+паки и проверяет визуальные описания. Каталог, оформление и дополнительные поля
+communication tools в основной агент не добавляются; production rollout не включён.
+
+
+### Telegram reviewed emoji decoration (implemented opt-in, 2026-10-23)
+
+The owner's subsequent #140 implementation request adds a bounded channel-local
+presentation stage to message/widget planning. `-telegram-emoji-decoration`
+requires the explicit owner communication profile and defaults off. It performs
+no inference and adds no model-facing fields or catalog. Versioned choices are
+frozen in existing outbox Parts, while canonical publication text remains exact.
+Text insertions use Telegram UTF-16 custom emoji entities; widget icons bind to
+stable option IDs. Send/retry/edit uses frozen choices, with current authority
+checks intact. Unsupported/ambiguous content remains undecorated. Photo captions
+and native rich reports are not decorated in v1. Detailed limits, rollback and
+single-AI evaluation are in `telegram-emoji-research.md` and
+`../../experiments/emoji140/abstention-rollout.md`.

@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-23T08:15:05.265858+00:00",
+  "source_commit": "9b29a94c7abe06a0256d4353a6aa2d9812907c86",
+  "pull_request_heads": {
+    "143": "70bccfec97c8b909e0effa6a730c9bbd314f4910",
+    "144": "cd1d0c3c86967adfa4b9221aa7ab4338743b33d9"
+  },
+  "binary_sha256": "bea57284c2e1648d5b114dc82097a21921977160093d60692200abff4f670cb9",
+  "backup_sha256": "171bc961083f5a24d87fc22fbbd105f529848884d65d2df0f7c532cebc7b2a30",
+  "previous_candidate": "/srv/storage/butler/main/releases/emoji140-20261023-4ec1ce01-static/bin",
+  "release": "/srv/storage/butler/main/releases/emoji140-resume142-20261023-9b29a94c",
+  "profile_proxy_broker_budgets_unchanged": true,
+  "main_source_pointers_unchanged": true,
+  "verdict": "pending_native_acceptance",
+  "verified_process_binary_sha256": "bea57284c2e1648d5b114dc82097a21921977160093d60692200abff4f670cb9",
+  "verified_health": "healthy",
+  "verified_at": "2026-10-23T08:15:49.036257+00:00",
+  "github_ci": {
+    "head": "cd1d0c3c86967adfa4b9221aa7ab4338743b33d9",
+    "communication_acceptance": {
+      "run_id": 39921235825,
+      "conclusion": "success"
+    },
+    "tool_discovery": {
+      "run_id": 39921235741,
+      "conclusion": "success"
+    }
+  }
+}

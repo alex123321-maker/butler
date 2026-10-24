@@ -1,0 +1,101 @@
+{
+  "id": "pilot-009",
+  "source_sha256": "967ebb08e6966ff09752017afc849bbaa6cb3897a45d3e0a315a01c248589e0e",
+  "ordinal": 44,
+  "status": "completed",
+  "frame_sha256": [
+    "ca65d1517e805644507443cd31b44afce5550aea9c1d985bafbdee18e1407108",
+    "1ad553218dd5c6c60164c7103923346928f6e7c1a01c631fcdd069452aa9a74b",
+    "20829002d1fb4423764cd668bdc5e193420445a0eda09f5e1aa6551878208a7b",
+    "2896fd2e97df6913b770d3787965682f48d63698871be0feefdeb6ef7ce84a48",
+    "a7d7457c0f257c916c94ec995d81126631880bdb72c4ef2f633677998fdcf8a8",
+    "afe27bfa3cc8c8c36566ea48ba1da07f1205c7d878e71097f39b814cf2870b3d",
+    "cd1fcc3a905279b2ecff6c4f75091d9eda891d84c13a8d39634d8bf1429b08f2",
+    "c1ac8add3fd0ab490198035e440564029e048904907330d6d9bd9b29dce4a4cf"
+  ],
+  "image_count": 8,
+  "started_at": 1792734802.334032,
+  "first_token_seconds": 0.5441369640002449,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow cat face\"\n    ],\n    \"actions\": [\n      \"smiling\",\n      \"raising eyebrows\",\n      \"closing one eye\",\n      \"opening mouth wide\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"initially angry smile\",\n      \"raised eyebrows\",\n      \"smiling with open mouth\",\n      \"angry expression\",\n      \"surprised expression\",\n      \"smiling with closed eye\",\n      \"angry expression\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 157,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow cat face"
+      ],
+      "actions": [
+        "smiling",
+        "raising eyebrows",
+        "closing one eye",
+        "opening mouth wide"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "initially angry smile",
+        "raised eyebrows",
+        "smiling with open mouth",
+        "angry expression",
+        "surprised expression",
+        "smiling with closed eye",
+        "angry expression"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.356657825000184,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

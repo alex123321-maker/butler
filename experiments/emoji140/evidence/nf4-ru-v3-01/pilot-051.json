@@ -1,0 +1,90 @@
+{
+  "id": "pilot-051",
+  "source_sha256": "97fbd32936f3830be6c05750d039cf2900a774839410bc5b477d48a28ae53463",
+  "ordinal": 7,
+  "status": "completed",
+  "frame_sha256": [
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f",
+    "f9768b767bcb65d33e5aac81c5f48024ae37c667d3b00982a8651d20d511fa5f"
+  ],
+  "image_count": 8,
+  "started_at": 1792735150.174314,
+  "first_token_seconds": 0.613804928999798,
+  "input_tokens": 961,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\"observed\":{\"subjects\":[\"иконка гаечного ключа и треугольника\"],\"actions\":[],\"expression\":null,\"text\":null,\"style\":\"черно-белая линейная иконка на светлом фоне\",\"temporal_sequence\":[]},\"inferred\":{\"possible_meanings\":[\"иконка для настройки или технического обслуживания\"],\"intensity\":\"low\",\"ambiguity\":true}}",
+  "output_tokens": 93,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "иконка гаечного ключа и треугольника"
+      ],
+      "actions": [],
+      "expression": null,
+      "text": null,
+      "style": "черно-белая линейная иконка на светлом фоне",
+      "temporal_sequence": []
+    },
+    "inferred": {
+      "possible_meanings": [
+        "иконка для настройки или технического обслуживания"
+      ],
+      "intensity": "low",
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 4.494085065000036,
+  "peak_gpu_allocated_bytes": 3234249216,
+  "peak_gpu_reserved_bytes": 3311403008,
+  "rss_peak_kib": 9632572
+}

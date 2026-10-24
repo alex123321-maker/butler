@@ -1,0 +1,6443 @@
+{
+  "version": "retrieval-diagnostics-v1",
+  "limitations": [
+    "single AI rater and same query/annotation author",
+    "original450 qrels are known-positive seeds, not a judged top10 pool",
+    "original metrics are seed-hit lower bounds, not complete relevance or recall",
+    "Kolobki all52 qrels are AI contact-sheet judgments, not independent human gold",
+    "bootstrap assumes query independence despite shared visual families; intervals are exploratory"
+  ],
+  "cohorts": {
+    "calibration": {
+      "R0": {
+        "success_at5": {
+          "numerator": 0,
+          "denominator": 20,
+          "rate": 0.0,
+          "wilson_95": [
+            0,
+            0.16112515805281938
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.0,
+          "query_bootstrap_95": [
+            0.0,
+            0.0
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.43448246478317476
+            ]
+          },
+          "composition": {
+            "numerator": 0,
+            "denominator": 2,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.6576197724933469
+            ]
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 10,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.2775327998628892
+            ]
+          },
+          "style": {
+            "numerator": 0,
+            "denominator": 3,
+            "rate": 0.0,
+            "wilson_95": [
+              5.551115123125783e-17,
+              0.5614970317550454
+            ]
+          }
+        }
+      },
+      "R1_AI": {
+        "success_at5": {
+          "numerator": 14,
+          "denominator": 20,
+          "rate": 0.7,
+          "wilson_95": [
+            0.4810271816464765,
+            0.8545227551323956
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.66875,
+          "query_bootstrap_95": [
+            0.4625,
+            0.8625
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 3,
+            "denominator": 5,
+            "rate": 0.6,
+            "wilson_95": [
+              0.2307242812760128,
+              0.882379225767352
+            ]
+          },
+          "composition": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1.0,
+            "wilson_95": [
+              0.34238022750665303,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 7,
+            "denominator": 10,
+            "rate": 0.7,
+            "wilson_95": [
+              0.39677814746114537,
+              0.8922087325936989
+            ]
+          },
+          "style": {
+            "numerator": 2,
+            "denominator": 3,
+            "rate": 0.6666666666666666,
+            "wilson_95": [
+              0.2076596008020477,
+              0.9385080552796037
+            ]
+          }
+        }
+      },
+      "R2_AI": {
+        "success_at5": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8388748419471806,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.975,
+          "query_bootstrap_95": [
+            0.925,
+            1.0
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0,
+            "wilson_95": [
+              0.5655175352168251,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1.0,
+            "wilson_95": [
+              0.34238022750665303,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          }
+        }
+      },
+      "R3_AI": {
+        "success_at5": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8388748419471806,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.8558333333333333,
+          "query_bootstrap_95": [
+            0.7141666666666666,
+            0.9666666666666666
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0,
+            "wilson_95": [
+              0.5655175352168251,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1.0,
+            "wilson_95": [
+              0.34238022750665303,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          }
+        }
+      },
+      "R4_light": {
+        "success_at5": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8388748419471806,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.95,
+          "query_bootstrap_95": [
+            0.875,
+            1.0
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0,
+            "wilson_95": [
+              0.5655175352168251,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1.0,
+            "wilson_95": [
+              0.34238022750665303,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          }
+        }
+      },
+      "R4_dark": {
+        "success_at5": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8388748419471806,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.9416666666666667,
+          "query_bootstrap_95": [
+            0.85,
+            1.0
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 5,
+            "denominator": 5,
+            "rate": 1.0,
+            "wilson_95": [
+              0.5655175352168251,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1.0,
+            "wilson_95": [
+              0.34238022750665303,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "test": {
+      "R0": {
+        "success_at5": {
+          "numerator": 1,
+          "denominator": 70,
+          "rate": 0.014285714285714285,
+          "wilson_95": [
+            0.002526246457890312,
+            0.07658187131208327
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.009523809523809523,
+          "query_bootstrap_95": [
+            0.0,
+            0.02857142857142857
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 0,
+            "denominator": 20,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.16112515805281938
+            ]
+          },
+          "composition": {
+            "numerator": 0,
+            "denominator": 10,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.2775327998628892
+            ]
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 25,
+            "rate": 0.04,
+            "wilson_95": [
+              0.007096233501987265,
+              0.19544063736193734
+            ]
+          },
+          "style": {
+            "numerator": 0,
+            "denominator": 15,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.20388330103584862
+            ]
+          }
+        }
+      },
+      "R1_AI": {
+        "success_at5": {
+          "numerator": 44,
+          "denominator": 70,
+          "rate": 0.6285714285714286,
+          "wilson_95": [
+            0.5114720115842711,
+            0.7322934866530887
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.5448129251700681,
+          "query_bootstrap_95": [
+            0.43741496598639457,
+            0.6484693877551021
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 16,
+            "denominator": 20,
+            "rate": 0.8,
+            "wilson_95": [
+              0.5839825677481064,
+              0.919342337420202
+            ]
+          },
+          "composition": {
+            "numerator": 4,
+            "denominator": 10,
+            "rate": 0.4,
+            "wilson_95": [
+              0.16818032970623614,
+              0.6873262302663417
+            ]
+          },
+          "object": {
+            "numerator": 16,
+            "denominator": 25,
+            "rate": 0.64,
+            "wilson_95": [
+              0.44518497748164865,
+              0.7975211922554178
+            ]
+          },
+          "style": {
+            "numerator": 8,
+            "denominator": 15,
+            "rate": 0.5333333333333333,
+            "wilson_95": [
+              0.30116980025498397,
+              0.7519046463426261
+            ]
+          }
+        }
+      },
+      "R2_AI": {
+        "success_at5": {
+          "numerator": 70,
+          "denominator": 70,
+          "rate": 1.0,
+          "wilson_95": [
+            0.9479769375897331,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.9814285714285714,
+          "query_bootstrap_95": [
+            0.9514285714285714,
+            1.0
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 20,
+            "denominator": 20,
+            "rate": 1.0,
+            "wilson_95": [
+              0.8388748419471806,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "object": {
+            "numerator": 25,
+            "denominator": 25,
+            "rate": 1.0,
+            "wilson_95": [
+              0.8668077490609515,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 15,
+            "denominator": 15,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7961166989641515,
+              1
+            ]
+          }
+        }
+      },
+      "R3_AI": {
+        "success_at5": {
+          "numerator": 63,
+          "denominator": 70,
+          "rate": 0.9,
+          "wilson_95": [
+            0.807670851514326,
+            0.9507106985574605
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.7808049886621315,
+          "query_bootstrap_95": [
+            0.6990816326530612,
+            0.8589795918367347
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 19,
+            "denominator": 20,
+            "rate": 0.95,
+            "wilson_95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          },
+          "composition": {
+            "numerator": 7,
+            "denominator": 10,
+            "rate": 0.7,
+            "wilson_95": [
+              0.39677814746114537,
+              0.8922087325936989
+            ]
+          },
+          "object": {
+            "numerator": 23,
+            "denominator": 25,
+            "rate": 0.92,
+            "wilson_95": [
+              0.7503389104960468,
+              0.9777795987151524
+            ]
+          },
+          "style": {
+            "numerator": 14,
+            "denominator": 15,
+            "rate": 0.9333333333333333,
+            "wilson_95": [
+              0.7018347012621998,
+              0.9881331045067315
+            ]
+          }
+        }
+      },
+      "R4_light": {
+        "success_at5": {
+          "numerator": 69,
+          "denominator": 70,
+          "rate": 0.9857142857142858,
+          "wilson_95": [
+            0.9234181286879168,
+            0.9974737535421097
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.9171428571428571,
+          "query_bootstrap_95": [
+            0.861904761904762,
+            0.9642857142857143
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 20,
+            "denominator": 20,
+            "rate": 1.0,
+            "wilson_95": [
+              0.8388748419471806,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 10,
+            "denominator": 10,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "object": {
+            "numerator": 24,
+            "denominator": 25,
+            "rate": 0.96,
+            "wilson_95": [
+              0.8045593626380625,
+              0.9929037664980127
+            ]
+          },
+          "style": {
+            "numerator": 15,
+            "denominator": 15,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7961166989641515,
+              1
+            ]
+          }
+        }
+      },
+      "R4_dark": {
+        "success_at5": {
+          "numerator": 68,
+          "denominator": 70,
+          "rate": 0.9714285714285714,
+          "wilson_95": [
+            0.9016774388157609,
+            0.9921293880545587
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.9133730158730159,
+          "query_bootstrap_95": [
+            0.8551190476190477,
+            0.9642857142857143
+          ],
+          "n": 70,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 19,
+            "denominator": 20,
+            "rate": 0.95,
+            "wilson_95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          },
+          "composition": {
+            "numerator": 9,
+            "denominator": 10,
+            "rate": 0.9,
+            "wilson_95": [
+              0.5958499732047615,
+              0.9821237869049271
+            ]
+          },
+          "object": {
+            "numerator": 25,
+            "denominator": 25,
+            "rate": 1.0,
+            "wilson_95": [
+              0.8668077490609515,
+              0.9999999999999999
+            ]
+          },
+          "style": {
+            "numerator": 15,
+            "denominator": 15,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7961166989641515,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "kolobki": {
+      "R0": {
+        "success_at5": {
+          "numerator": 3,
+          "denominator": 20,
+          "rate": 0.15,
+          "wilson_95": [
+            0.052368745896216595,
+            0.36041886474075696
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.10555555555555556,
+          "query_bootstrap_95": [
+            0.029166666666666664,
+            0.21458333333333335
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.11327177824471281,
+          "query_bootstrap_95": [
+            0.0336019571202265,
+            0.22291284899245628
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 2,
+            "denominator": 11,
+            "rate": 0.18181818181818182,
+            "wilson_95": [
+              0.05136768974608513,
+              0.4769805619608442
+            ]
+          },
+          "composition": {
+            "numerator": 1,
+            "denominator": 3,
+            "rate": 0.3333333333333333,
+            "wilson_95": [
+              0.06149194472039621,
+              0.7923403991979522
+            ]
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 6,
+            "rate": 0.0,
+            "wilson_95": [
+              2.7755575615628914e-17,
+              0.3903342879021653
+            ]
+          }
+        }
+      },
+      "R1_AI": {
+        "success_at5": {
+          "numerator": 18,
+          "denominator": 20,
+          "rate": 0.9,
+          "wilson_95": [
+            0.6989663547715128,
+            0.9721335187862319
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.8166666666666667,
+          "query_bootstrap_95": [
+            0.65,
+            0.95
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.7687512331265263,
+          "query_bootstrap_95": [
+            0.615025175586881,
+            0.8933812393518537
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 10,
+            "denominator": 11,
+            "rate": 0.9090909090909091,
+            "wilson_95": [
+              0.6226415635484043,
+              0.9837678271141151
+            ]
+          },
+          "composition": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 5,
+            "denominator": 6,
+            "rate": 0.8333333333333334,
+            "wilson_95": [
+              0.43649717781352987,
+              0.9699466302516935
+            ]
+          }
+        }
+      },
+      "R2_AI": {
+        "success_at5": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8388748419471806,
+            1
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.975,
+          "query_bootstrap_95": [
+            0.925,
+            1.0
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.9516335797014143,
+          "query_bootstrap_95": [
+            0.9122224476555078,
+            0.9814253637632511
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 11,
+            "denominator": 11,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7411670330319684,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 6,
+            "denominator": 6,
+            "rate": 1.0,
+            "wilson_95": [
+              0.6096657120978346,
+              1
+            ]
+          }
+        }
+      },
+      "R3_AI": {
+        "success_at5": {
+          "numerator": 19,
+          "denominator": 20,
+          "rate": 0.95,
+          "wilson_95": [
+            0.763868806553258,
+            0.9911185511992047
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.875,
+          "query_bootstrap_95": [
+            0.75,
+            0.975
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.8403117668337601,
+          "query_bootstrap_95": [
+            0.7241875133870485,
+            0.9263380977279636
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 11,
+            "denominator": 11,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7411670330319684,
+              1
+            ]
+          },
+          "composition": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 5,
+            "denominator": 6,
+            "rate": 0.8333333333333334,
+            "wilson_95": [
+              0.43649717781352987,
+              0.9699466302516935
+            ]
+          }
+        }
+      },
+      "R4_light": {
+        "success_at5": {
+          "numerator": 19,
+          "denominator": 20,
+          "rate": 0.95,
+          "wilson_95": [
+            0.763868806553258,
+            0.9911185511992047
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.7166666666666667,
+          "query_bootstrap_95": [
+            0.575,
+            0.8583333333333334
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.747713394738221,
+          "query_bootstrap_95": [
+            0.6314790451409484,
+            0.8573893581700289
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 10,
+            "denominator": 11,
+            "rate": 0.9090909090909091,
+            "wilson_95": [
+              0.6226415635484043,
+              0.9837678271141151
+            ]
+          },
+          "composition": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 6,
+            "denominator": 6,
+            "rate": 1.0,
+            "wilson_95": [
+              0.6096657120978346,
+              1
+            ]
+          }
+        }
+      },
+      "R4_dark": {
+        "success_at5": {
+          "numerator": 18,
+          "denominator": 20,
+          "rate": 0.9,
+          "wilson_95": [
+            0.6989663547715128,
+            0.9721335187862319
+          ]
+        },
+        "mrr_at10": {
+          "mean": 0.7375,
+          "query_bootstrap_95": [
+            0.5833333333333333,
+            0.8916666666666666
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "ndcg_at10": {
+          "mean": 0.7363274578515794,
+          "query_bootstrap_95": [
+            0.5980086867196475,
+            0.8659414261641027
+          ],
+          "n": 20,
+          "resamples": 2000
+        },
+        "categories": {
+          "action": {
+            "numerator": 9,
+            "denominator": 11,
+            "rate": 0.8181818181818182,
+            "wilson_95": [
+              0.523019438039156,
+              0.9486323102539149
+            ]
+          },
+          "composition": {
+            "numerator": 3,
+            "denominator": 3,
+            "rate": 1.0,
+            "wilson_95": [
+              0.4385029682449546,
+              1
+            ]
+          },
+          "object": {
+            "numerator": 6,
+            "denominator": 6,
+            "rate": 1.0,
+            "wilson_95": [
+              0.6096657120978346,
+              1
+            ]
+          }
+        }
+      }
+    }
+  },
+  "paired_seed_success_delta_to_R0": {
+    "test/R0": {
+      "mean": 0,
+      "query_bootstrap_95": [
+        0.0,
+        0.0
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "test/R1_AI": {
+      "mean": 0.6142857142857143,
+      "query_bootstrap_95": [
+        0.4857142857142857,
+        0.7285714285714285
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "test/R2_AI": {
+      "mean": 0.9857142857142858,
+      "query_bootstrap_95": [
+        0.9571428571428572,
+        1.0
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "test/R3_AI": {
+      "mean": 0.8857142857142857,
+      "query_bootstrap_95": [
+        0.8,
+        0.9571428571428572
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "test/R4_light": {
+      "mean": 0.9714285714285714,
+      "query_bootstrap_95": [
+        0.9285714285714286,
+        1.0
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "test/R4_dark": {
+      "mean": 0.9571428571428572,
+      "query_bootstrap_95": [
+        0.9,
+        1.0
+      ],
+      "n": 70,
+      "resamples": 2000
+    },
+    "kolobki/R0": {
+      "mean": 0,
+      "query_bootstrap_95": [
+        0.0,
+        0.0
+      ],
+      "n": 20,
+      "resamples": 2000
+    },
+    "kolobki/R1_AI": {
+      "mean": 0.75,
+      "query_bootstrap_95": [
+        0.55,
+        0.9
+      ],
+      "n": 20,
+      "resamples": 2000
+    },
+    "kolobki/R2_AI": {
+      "mean": 0.85,
+      "query_bootstrap_95": [
+        0.7,
+        1.0
+      ],
+      "n": 20,
+      "resamples": 2000
+    },
+    "kolobki/R3_AI": {
+      "mean": 0.8,
+      "query_bootstrap_95": [
+        0.6,
+        0.95
+      ],
+      "n": 20,
+      "resamples": 2000
+    },
+    "kolobki/R4_light": {
+      "mean": 0.8,
+      "query_bootstrap_95": [
+        0.6,
+        0.95
+      ],
+      "n": 20,
+      "resamples": 2000
+    },
+    "kolobki/R4_dark": {
+      "mean": 0.75,
+      "query_bootstrap_95": [
+        0.55,
+        0.9
+      ],
+      "n": 20,
+      "resamples": 2000
+    }
+  },
+  "abstention": {
+    "R0": {
+      "threshold": 5e-324,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 10,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.2775327998628892
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 0,
+            "denominator": 20,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.16112515805281938
+            ]
+          },
+          "accepted_top1_known_correct": null
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 20,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.16112515805281938
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 0,
+            "denominator": 70,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.05202306241026692
+            ]
+          },
+          "accepted_top1_known_correct": null
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 5,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.43448246478317476
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 0,
+            "denominator": 20,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.16112515805281938
+            ]
+          },
+          "accepted_top1_known_correct": null
+        }
+      }
+    },
+    "R1_AI": {
+      "threshold": 0.375,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 1,
+            "denominator": 10,
+            "rate": 0.1,
+            "wilson_95": [
+              0.017876213095072896,
+              0.4041500267952385
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 11,
+            "denominator": 20,
+            "rate": 0.55,
+            "wilson_95": [
+              0.34208534245034233,
+              0.7418021417443759
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 9,
+            "denominator": 11,
+            "rate": 0.8181818181818182,
+            "wilson_95": [
+              0.523019438039156,
+              0.9486323102539149
+            ]
+          }
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 4,
+            "denominator": 20,
+            "rate": 0.2,
+            "wilson_95": [
+              0.08065766257979806,
+              0.41601743225189364
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 54,
+            "denominator": 70,
+            "rate": 0.7714285714285715,
+            "wilson_95": [
+              0.6604966840601509,
+              0.8541193677742756
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 30,
+            "denominator": 54,
+            "rate": 0.5555555555555556,
+            "wilson_95": [
+              0.42375646526775257,
+              0.6799753582777035
+            ]
+          }
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 2,
+            "denominator": 5,
+            "rate": 0.4,
+            "wilson_95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 16,
+            "denominator": 20,
+            "rate": 0.8,
+            "wilson_95": [
+              0.5839825677481064,
+              0.919342337420202
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 14,
+            "denominator": 16,
+            "rate": 0.875,
+            "wilson_95": [
+              0.639771727342413,
+              0.9650225122567595
+            ]
+          }
+        }
+      }
+    },
+    "R2_AI": {
+      "threshold": 0.7485781908035278,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 1,
+            "denominator": 10,
+            "rate": 0.1,
+            "wilson_95": [
+              0.017876213095072896,
+              0.4041500267952385
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 19,
+            "denominator": 20,
+            "rate": 0.95,
+            "wilson_95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 18,
+            "denominator": 19,
+            "rate": 0.9473684210526315,
+            "wilson_95": [
+              0.753612688331012,
+              0.9906480059376995
+            ]
+          }
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 2,
+            "denominator": 20,
+            "rate": 0.1,
+            "wilson_95": [
+              0.027866481213768224,
+              0.3010336452284873
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 70,
+            "denominator": 70,
+            "rate": 1.0,
+            "wilson_95": [
+              0.9479769375897331,
+              1
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 68,
+            "denominator": 70,
+            "rate": 0.9714285714285714,
+            "wilson_95": [
+              0.9016774388157609,
+              0.9921293880545587
+            ]
+          }
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 1,
+            "denominator": 5,
+            "rate": 0.2,
+            "wilson_95": [
+              0.03622410863243014,
+              0.6244653702374747
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 18,
+            "denominator": 20,
+            "rate": 0.9,
+            "wilson_95": [
+              0.6989663547715128,
+              0.9721335187862319
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 17,
+            "denominator": 18,
+            "rate": 0.9444444444444444,
+            "wilson_95": [
+              0.7424269921812741,
+              0.990124809021697
+            ]
+          }
+        }
+      }
+    },
+    "R3_AI": {
+      "threshold": 0.032018442622950824,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 10,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.2775327998628892
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 14,
+            "denominator": 20,
+            "rate": 0.7,
+            "wilson_95": [
+              0.4810271816464765,
+              0.8545227551323956
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 14,
+            "denominator": 14,
+            "rate": 1.0,
+            "wilson_95": [
+              0.7846891972623643,
+              1
+            ]
+          }
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 5,
+            "denominator": 20,
+            "rate": 0.25,
+            "wilson_95": [
+              0.11186170140766569,
+              0.468700877618744
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 45,
+            "denominator": 70,
+            "rate": 0.6428571428571429,
+            "wilson_95": [
+              0.5258839463134151,
+              0.7449666072836516
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 40,
+            "denominator": 45,
+            "rate": 0.8888888888888888,
+            "wilson_95": [
+              0.7650090300423141,
+              0.9515952820543282
+            ]
+          }
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 2,
+            "denominator": 5,
+            "rate": 0.4,
+            "wilson_95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 18,
+            "denominator": 20,
+            "rate": 0.9,
+            "wilson_95": [
+              0.6989663547715128,
+              0.9721335187862319
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 16,
+            "denominator": 18,
+            "rate": 0.8888888888888888,
+            "wilson_95": [
+              0.672002348698212,
+              0.9689804773543876
+            ]
+          }
+        }
+      },
+      "transfer_warning": "RRF score distribution depends on candidate count; threshold transfer450 to52 is not qualified"
+    },
+    "R4_light": {
+      "threshold": 0.6932311654090881,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 10,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.2775327998628892
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 19,
+            "denominator": 20,
+            "rate": 0.95,
+            "wilson_95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 17,
+            "denominator": 19,
+            "rate": 0.8947368421052632,
+            "wilson_95": [
+              0.6860591728889099,
+              0.9706414397011299
+            ]
+          }
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 0,
+            "denominator": 20,
+            "rate": 0.0,
+            "wilson_95": [
+              0,
+              0.16112515805281938
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 62,
+            "denominator": 70,
+            "rate": 0.8857142857142857,
+            "wilson_95": [
+              0.7903577841784561,
+              0.9409387105336235
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 55,
+            "denominator": 62,
+            "rate": 0.8870967741935484,
+            "wilson_95": [
+              0.7848025794735822,
+              0.9442213647060003
+            ]
+          }
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 1,
+            "denominator": 5,
+            "rate": 0.2,
+            "wilson_95": [
+              0.03622410863243014,
+              0.6244653702374747
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 12,
+            "denominator": 20,
+            "rate": 0.6,
+            "wilson_95": [
+              0.3865815007622531,
+              0.781193467627183
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 8,
+            "denominator": 12,
+            "rate": 0.6666666666666666,
+            "wilson_95": [
+              0.39062208887279953,
+              0.8618799089087867
+            ]
+          }
+        }
+      }
+    },
+    "R4_dark": {
+      "threshold": 0.6671530604362488,
+      "selection": "calibration only; <=1/10 false acceptance, maximal positive coverage, fewer false accepts, higher threshold; no margin tuning",
+      "cohorts": {
+        "calibration": {
+          "false_accept": {
+            "numerator": 1,
+            "denominator": 10,
+            "rate": 0.1,
+            "wilson_95": [
+              0.017876213095072896,
+              0.4041500267952385
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 20,
+            "denominator": 20,
+            "rate": 1.0,
+            "wilson_95": [
+              0.8388748419471806,
+              1
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 18,
+            "denominator": 20,
+            "rate": 0.9,
+            "wilson_95": [
+              0.6989663547715128,
+              0.9721335187862319
+            ]
+          }
+        },
+        "test": {
+          "false_accept": {
+            "numerator": 4,
+            "denominator": 20,
+            "rate": 0.2,
+            "wilson_95": [
+              0.08065766257979806,
+              0.41601743225189364
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 67,
+            "denominator": 70,
+            "rate": 0.9571428571428572,
+            "wilson_95": [
+              0.8814033125147246,
+              0.9853184589958887
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 58,
+            "denominator": 67,
+            "rate": 0.8656716417910447,
+            "wilson_95": [
+              0.7639962773866296,
+              0.927689083357045
+            ]
+          }
+        },
+        "kolobki": {
+          "false_accept": {
+            "numerator": 2,
+            "denominator": 5,
+            "rate": 0.4,
+            "wilson_95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "positive_coverage": {
+            "numerator": 15,
+            "denominator": 20,
+            "rate": 0.75,
+            "wilson_95": [
+              0.531299122381256,
+              0.8881382985923343
+            ]
+          },
+          "accepted_top1_known_correct": {
+            "numerator": 10,
+            "denominator": 15,
+            "rate": 0.6666666666666666,
+            "wilson_95": [
+              0.41713547738519774,
+              0.8482367556028526
+            ]
+          }
+        }
+      }
+    }
+  },
+  "errors": {
+    "calibration/R0": [
+      {
+        "query_id": "c01",
+        "query": "Светящаяся тыква для Хэллоуина",
+        "expected_seed": {
+          "rest-007": 3,
+          "pilot-012": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c02",
+        "query": "Рыжий кот в чёрных солнцезащитных очках",
+        "expected_seed": {
+          "rest-008": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c03",
+        "query": "Синий символ электронной почты собака",
+        "expected_seed": {
+          "rest-012": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c04",
+        "query": "Значок микрофона с полосками текста",
+        "expected_seed": {
+          "rest-042": 3,
+          "rest-277": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c05",
+        "query": "Студент в выпускной шапочке с книгой",
+        "expected_seed": {
+          "rest-074": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c06",
+        "query": "Синий вопросительный знак",
+        "expected_seed": {
+          "rest-082": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c07",
+        "query": "Череп со скрещёнными костями",
+        "expected_seed": {
+          "rest-128": 3,
+          "rest-097": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c08",
+        "query": "Синий знак доллара",
+        "expected_seed": {
+          "rest-152": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c09",
+        "query": "Персик",
+        "expected_seed": {
+          "rest-176": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c10",
+        "query": "Голова игрушечного робота",
+        "expected_seed": {
+          "rest-292": 3,
+          "rest-303": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c11",
+        "query": "Нарисованный карандашом смайлик празднует с дудочкой",
+        "expected_seed": {
+          "rest-028": 3,
+          "rest-083": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c12",
+        "query": "Испуганное лицо с синим лбом и каплей пота",
+        "expected_seed": {
+          "rest-070": 3,
+          "rest-053": 2,
+          "rest-217": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c13",
+        "query": "Улыбающийся смайлик предлагает объятия",
+        "expected_seed": {
+          "rest-099": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c14",
+        "query": "Кот широко зевает от усталости",
+        "expected_seed": {
+          "rest-182": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c15",
+        "query": "Скрестить пальцы на удачу",
+        "expected_seed": {
+          "rest-216": 3,
+          "rest-225": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c16",
+        "query": "Контурные чёрные искорки на прозрачном фоне",
+        "expected_seed": {
+          "rest-093": 3,
+          "rest-144": 3,
+          "rest-248": 2,
+          "rest-304": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c17",
+        "query": "Чёрное окно терминала с верхней полосой",
+        "expected_seed": {
+          "rest-056": 3,
+          "rest-098": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c18",
+        "query": "Контурное облако мысли",
+        "expected_seed": {
+          "rest-263": 3,
+          "rest-278": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c19",
+        "query": "Смайлик покрывается льдом без снежинок вокруг",
+        "expected_seed": {
+          "rest-125": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "c20",
+        "query": "Большой палец вверх у фиолетового кота",
+        "expected_seed": {
+          "rest-283": 3,
+          "rest-162": 2,
+          "rest-186": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      }
+    ],
+    "calibration/R1_AI": [
+      {
+        "query_id": "c04",
+        "query": "Значок микрофона с полосками текста",
+        "expected_seed": {
+          "rest-042": 3,
+          "rest-277": 3
+        },
+        "top5": [
+          {
+            "id": "rest-102",
+            "score": 0.4
+          },
+          {
+            "id": "rest-201",
+            "score": 0.4
+          },
+          {
+            "id": "food-002",
+            "score": 0.2
+          },
+          {
+            "id": "food-005",
+            "score": 0.2
+          },
+          {
+            "id": "food-006",
+            "score": 0.2
+          }
+        ]
+      },
+      {
+        "query_id": "c05",
+        "query": "Студент в выпускной шапочке с книгой",
+        "expected_seed": {
+          "rest-074": 3
+        },
+        "top5": [
+          {
+            "id": "food-010",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-011",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-017",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-029",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-038",
+            "score": 0.3333333333333333
+          }
+        ]
+      },
+      {
+        "query_id": "c07",
+        "query": "Череп со скрещёнными костями",
+        "expected_seed": {
+          "rest-128": 3,
+          "rest-097": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.25
+          },
+          {
+            "id": "food-004",
+            "score": 0.25
+          },
+          {
+            "id": "food-007",
+            "score": 0.25
+          },
+          {
+            "id": "food-049",
+            "score": 0.25
+          },
+          {
+            "id": "food-051",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "c11",
+        "query": "Нарисованный карандашом смайлик празднует с дудочкой",
+        "expected_seed": {
+          "rest-028": 3,
+          "rest-083": 2
+        },
+        "top5": [
+          {
+            "id": "food-002",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-005",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-006",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-008",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-009",
+            "score": 0.16666666666666666
+          }
+        ]
+      },
+      {
+        "query_id": "c12",
+        "query": "Испуганное лицо с синим лбом и каплей пота",
+        "expected_seed": {
+          "rest-070": 3,
+          "rest-053": 2,
+          "rest-217": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-003",
+            "score": 0.375
+          },
+          {
+            "id": "pilot-017",
+            "score": 0.375
+          },
+          {
+            "id": "pilot-026",
+            "score": 0.375
+          },
+          {
+            "id": "pilot-027",
+            "score": 0.375
+          },
+          {
+            "id": "rest-021",
+            "score": 0.375
+          }
+        ]
+      },
+      {
+        "query_id": "c16",
+        "query": "Контурные чёрные искорки на прозрачном фоне",
+        "expected_seed": {
+          "rest-093": 3,
+          "rest-144": 3,
+          "rest-248": 2,
+          "rest-304": 2
+        },
+        "top5": [
+          {
+            "id": "food-027",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-043",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-044",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-046",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-058",
+            "score": 0.16666666666666666
+          }
+        ]
+      }
+    ],
+    "calibration/R2_AI": [],
+    "calibration/R3_AI": [],
+    "calibration/R4_light": [],
+    "calibration/R4_dark": [],
+    "test/R0": [
+      {
+        "query_id": "t01",
+        "query": "Целая ягода клубники без посуды",
+        "expected_seed": {
+          "food-012": 3,
+          "food-072": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t02",
+        "query": "Разрезанная пополам клубника",
+        "expected_seed": {
+          "food-022": 3,
+          "food-026": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t03",
+        "query": "Клубничное молоко в коробке",
+        "expected_seed": {
+          "food-068": 3,
+          "food-006": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t04",
+        "query": "Красный леденец сердечком на палочке",
+        "expected_seed": {
+          "food-027": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t05",
+        "query": "Макароны пирожные в форме сердца",
+        "expected_seed": {
+          "food-030": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t06",
+        "query": "Бант с мелкими цветочками",
+        "expected_seed": {
+          "food-057": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t07",
+        "query": "Банка клубничного варенья с тканевой крышкой",
+        "expected_seed": {
+          "food-067": 3,
+          "food-074": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t08",
+        "query": "Треугольные сэндвичи с клубникой и сливками",
+        "expected_seed": {
+          "food-023": 3,
+          "food-077": 3,
+          "food-073": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t10",
+        "query": "Шоколадный рулет с клубникой",
+        "expected_seed": {
+          "food-047": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t11",
+        "query": "Тарталетка с одной ягодой клубники",
+        "expected_seed": {
+          "food-053": 3,
+          "food-076": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t12",
+        "query": "Пирог сердечком с ломтиками клубники",
+        "expected_seed": {
+          "food-050": 3,
+          "food-075": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t13",
+        "query": "Чашка тёмного напитка на блюдце",
+        "expected_seed": {
+          "food-058": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t14",
+        "query": "Розовый кекс с вишенкой",
+        "expected_seed": {
+          "rest-120": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t15",
+        "query": "Нос без лица",
+        "expected_seed": {
+          "rest-004": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t16",
+        "query": "Зелёное лиственное дерево",
+        "expected_seed": {
+          "rest-044": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t17",
+        "query": "Самолёт с глазами",
+        "expected_seed": {
+          "rest-054": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t18",
+        "query": "Голубь с веточкой в клюве",
+        "expected_seed": {
+          "rest-067": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t19",
+        "query": "Домик с глазами",
+        "expected_seed": {
+          "rest-078": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t20",
+        "query": "Кот в костюме банана",
+        "expected_seed": {
+          "rest-101": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t21",
+        "query": "Конверт с сердцами",
+        "expected_seed": {
+          "rest-096": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t22",
+        "query": "Розовый кошелёк с монетами",
+        "expected_seed": {
+          "rest-238": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t23",
+        "query": "Жёлтый цыплёнок",
+        "expected_seed": {
+          "rest-305": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t24",
+        "query": "Врач в белом халате со стетоскопом",
+        "expected_seed": {
+          "rest-261": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t25",
+        "query": "Женщина учитель с книгой у доски",
+        "expected_seed": {
+          "rest-037": 3,
+          "pilot-001": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t26",
+        "query": "Кот держит табличку YES",
+        "expected_seed": {
+          "rest-025": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t27",
+        "query": "Грустное лицо руками растягивает рот в улыбку",
+        "expected_seed": {
+          "rest-187": 3,
+          "rest-218": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t28",
+        "query": "Руки складываются в сердечко",
+        "expected_seed": {
+          "rest-175": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t29",
+        "query": "Смайлик просит соблюдать тишину пальцем у губ",
+        "expected_seed": {
+          "rest-147": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t30",
+        "query": "Обезьяна закрывает глаза ладонями",
+        "expected_seed": {
+          "rest-034": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t31",
+        "query": "Смайлик испуганно держится за щёки",
+        "expected_seed": {
+          "rest-211": 3,
+          "rest-293": 3,
+          "rest-057": 2,
+          "rest-296": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t32",
+        "query": "Розовый и голубой коты обнимаются",
+        "expected_seed": {
+          "rest-118": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t33",
+        "query": "Лицо громко плачет потоком слёз",
+        "expected_seed": {
+          "rest-192": 3,
+          "rest-215": 2,
+          "pilot-035": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t34",
+        "query": "Человек пожимает плечами не знает ответа",
+        "expected_seed": {
+          "rest-274": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t35",
+        "query": "Смайлик поёт в душе за занавеской",
+        "expected_seed": {
+          "rest-137": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t36",
+        "query": "Смайлик приглядывается через монокль",
+        "expected_seed": {
+          "rest-179": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t37",
+        "query": "Жёлтое лицо зевает прикрыв рот ладонью",
+        "expected_seed": {
+          "rest-171": 3,
+          "rest-207": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t38",
+        "query": "Мозг взрывается от удивления",
+        "expected_seed": {
+          "rest-241": 3,
+          "rest-178": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t39",
+        "query": "Смайлик чихает в носовой платок",
+        "expected_seed": {
+          "rest-198": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t40",
+        "query": "Кот подмигивает одним глазом",
+        "expected_seed": {
+          "rest-183": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t41",
+        "query": "Руки хлопают в ладоши",
+        "expected_seed": {
+          "rest-160": 3,
+          "rest-220": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t42",
+        "query": "Надеяться на удачу со скрещёнными пальцами",
+        "expected_seed": {
+          "rest-225": 3,
+          "rest-216": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t43",
+        "query": "Смайлик показывает табличку помощи SOS",
+        "expected_seed": {
+          "rest-260": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t44",
+        "query": "Лицо заклеивает рот чтобы молчать",
+        "expected_seed": {
+          "rest-212": 3,
+          "rest-257": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t45",
+        "query": "Красное лицо сердится и хмурится",
+        "expected_seed": {
+          "rest-295": 3,
+          "rest-233": 3,
+          "rest-240": 2,
+          "pilot-029": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t46",
+        "query": "Синий объёмный знак процента",
+        "expected_seed": {
+          "rest-258": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t47",
+        "query": "Синяя глянцевая цифра восемь",
+        "expected_seed": {
+          "rest-065": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t48",
+        "query": "Синяя заглавная буква A",
+        "expected_seed": {
+          "rest-046": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t49",
+        "query": "Контурная лупа без документа",
+        "expected_seed": {
+          "rest-269": 3,
+          "rest-020": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t50",
+        "query": "Чёрно-белый значок глобуса",
+        "expected_seed": {
+          "rest-148": 3,
+          "rest-291": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t51",
+        "query": "Плоский значок кинокамеры со звёздочкой",
+        "expected_seed": {
+          "rest-032": 3,
+          "rest-262": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t52",
+        "query": "Нарисованное штрихами красное пламя",
+        "expected_seed": {
+          "rest-286": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t53",
+        "query": "Карандашный смайлик с нимбом",
+        "expected_seed": {
+          "rest-050": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t54",
+        "query": "Глянцевое оранжевое сердце",
+        "expected_seed": {
+          "rest-190": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t55",
+        "query": "Рисованный кот с надписью MEOW в облачке",
+        "expected_seed": {
+          "rest-143": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t56",
+        "query": "Розовый мультяшный кот с нимбом",
+        "expected_seed": {
+          "rest-196": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t57",
+        "query": "Карандашная рука с розовым маникюром",
+        "expected_seed": {
+          "rest-157": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t58",
+        "query": "Фотографический клубничный тост",
+        "expected_seed": {
+          "food-016": 3,
+          "food-025": 3,
+          "food-056": 3,
+          "food-062": 3,
+          "food-080": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t59",
+        "query": "Карандашное лицо со слезами от смеха",
+        "expected_seed": {
+          "rest-107": 3,
+          "rest-073": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t60",
+        "query": "Чёрный динамик со звуковыми волнами и искрой",
+        "expected_seed": {
+          "rest-129": 3,
+          "rest-013": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t61",
+        "query": "Сердце без лица и без рук оранжевого цвета",
+        "expected_seed": {
+          "rest-190": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t62",
+        "query": "Клубника без крема без торта без лица одна целая ягода",
+        "expected_seed": {
+          "food-012": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t63",
+        "query": "Кот в ломтике хлеба",
+        "expected_seed": {
+          "rest-234": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t64",
+        "query": "Летящий кот оставляет радужный след",
+        "expected_seed": {
+          "rest-145": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t65",
+        "query": "Знак одобрения ладонью без лица",
+        "expected_seed": {
+          "rest-162": 3,
+          "rest-283": 2
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t66",
+        "query": "Череп с зелёными червями без скрещённых костей",
+        "expected_seed": {
+          "rest-097": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t67",
+        "query": "Лицо с наушниками фиолетового кота",
+        "expected_seed": {
+          "rest-109": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t68",
+        "query": "Спящий кот на коробке из которой смотрят глаза",
+        "expected_seed": {
+          "rest-194": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t69",
+        "query": "Лицо с солнцезащитными очками и коктейлем в круге фламинго",
+        "expected_seed": {
+          "rest-154": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "t70",
+        "query": "Киборг с металлической половиной лица",
+        "expected_seed": {
+          "rest-303": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.0
+          },
+          {
+            "id": "food-002",
+            "score": 0.0
+          },
+          {
+            "id": "food-003",
+            "score": 0.0
+          },
+          {
+            "id": "food-004",
+            "score": 0.0
+          },
+          {
+            "id": "food-005",
+            "score": 0.0
+          }
+        ]
+      }
+    ],
+    "test/R1_AI": [
+      {
+        "query_id": "t02",
+        "query": "Разрезанная пополам клубника",
+        "expected_seed": {
+          "food-022": 3,
+          "food-026": 2
+        },
+        "top5": [
+          {
+            "id": "food-002",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-005",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-008",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-009",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-011",
+            "score": 0.3333333333333333
+          }
+        ]
+      },
+      {
+        "query_id": "t03",
+        "query": "Клубничное молоко в коробке",
+        "expected_seed": {
+          "food-068": 3,
+          "food-006": 2
+        },
+        "top5": [
+          {
+            "id": "rest-194",
+            "score": 0.5
+          },
+          {
+            "id": "food-010",
+            "score": 0.25
+          },
+          {
+            "id": "food-011",
+            "score": 0.25
+          },
+          {
+            "id": "food-017",
+            "score": 0.25
+          },
+          {
+            "id": "food-027",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "t08",
+        "query": "Треугольные сэндвичи с клубникой и сливками",
+        "expected_seed": {
+          "food-023": 3,
+          "food-077": 3,
+          "food-073": 2
+        },
+        "top5": [
+          {
+            "id": "food-002",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "food-020",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "food-005",
+            "score": 0.5
+          },
+          {
+            "id": "food-009",
+            "score": 0.5
+          },
+          {
+            "id": "food-017",
+            "score": 0.5
+          }
+        ]
+      },
+      {
+        "query_id": "t14",
+        "query": "Розовый кекс с вишенкой",
+        "expected_seed": {
+          "rest-120": 3
+        },
+        "top5": [
+          {
+            "id": "food-005",
+            "score": 0.5
+          },
+          {
+            "id": "food-020",
+            "score": 0.5
+          },
+          {
+            "id": "food-021",
+            "score": 0.5
+          },
+          {
+            "id": "food-054",
+            "score": 0.5
+          },
+          {
+            "id": "food-059",
+            "score": 0.5
+          }
+        ]
+      },
+      {
+        "query_id": "t18",
+        "query": "Голубь с веточкой в клюве",
+        "expected_seed": {
+          "rest-067": 3
+        },
+        "top5": [
+          {
+            "id": "food-010",
+            "score": 0.4
+          },
+          {
+            "id": "food-011",
+            "score": 0.4
+          },
+          {
+            "id": "food-017",
+            "score": 0.4
+          },
+          {
+            "id": "food-029",
+            "score": 0.4
+          },
+          {
+            "id": "food-038",
+            "score": 0.4
+          }
+        ]
+      },
+      {
+        "query_id": "t19",
+        "query": "Домик с глазами",
+        "expected_seed": {
+          "rest-078": 3
+        },
+        "top5": [
+          {
+            "id": "pilot-003",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "pilot-007",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "pilot-017",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "pilot-025",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "rest-054",
+            "score": 0.6666666666666666
+          }
+        ]
+      },
+      {
+        "query_id": "t21",
+        "query": "Конверт с сердцами",
+        "expected_seed": {
+          "rest-096": 3
+        },
+        "top5": [
+          {
+            "id": "food-028",
+            "score": 0.6666666666666666
+          },
+          {
+            "id": "food-002",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-005",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-006",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-008",
+            "score": 0.3333333333333333
+          }
+        ]
+      },
+      {
+        "query_id": "t22",
+        "query": "Розовый кошелёк с монетами",
+        "expected_seed": {
+          "rest-238": 3
+        },
+        "top5": [
+          {
+            "id": "food-005",
+            "score": 0.5
+          },
+          {
+            "id": "food-020",
+            "score": 0.5
+          },
+          {
+            "id": "food-021",
+            "score": 0.5
+          },
+          {
+            "id": "food-054",
+            "score": 0.5
+          },
+          {
+            "id": "food-059",
+            "score": 0.5
+          }
+        ]
+      },
+      {
+        "query_id": "t24",
+        "query": "Врач в белом халате со стетоскопом",
+        "expected_seed": {
+          "rest-261": 3
+        },
+        "top5": [
+          {
+            "id": "food-001",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-004",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-007",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-010",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-011",
+            "score": 0.16666666666666666
+          }
+        ]
+      },
+      {
+        "query_id": "t35",
+        "query": "Смайлик поёт в душе за занавеской",
+        "expected_seed": {
+          "rest-137": 3
+        },
+        "top5": [
+          {
+            "id": "food-010",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-011",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-017",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-027",
+            "score": 0.16666666666666666
+          },
+          {
+            "id": "food-029",
+            "score": 0.16666666666666666
+          }
+        ]
+      },
+      {
+        "query_id": "t38",
+        "query": "Мозг взрывается от удивления",
+        "expected_seed": {
+          "rest-241": 3,
+          "rest-178": 3
+        },
+        "top5": [
+          {
+            "id": "pilot-018",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-022",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-035",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-052",
+            "score": 0.25
+          },
+          {
+            "id": "rest-009",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "t41",
+        "query": "Руки хлопают в ладоши",
+        "expected_seed": {
+          "rest-160": 3,
+          "rest-220": 3
+        },
+        "top5": [
+          {
+            "id": "rest-175",
+            "score": 0.5
+          },
+          {
+            "id": "food-010",
+            "score": 0.25
+          },
+          {
+            "id": "food-011",
+            "score": 0.25
+          },
+          {
+            "id": "food-017",
+            "score": 0.25
+          },
+          {
+            "id": "food-027",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "t44",
+        "query": "Лицо заклеивает рот чтобы молчать",
+        "expected_seed": {
+          "rest-212": 3,
+          "rest-257": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-003",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-016",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-020",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-029",
+            "score": 0.4
+          },
+          {
+            "id": "rest-021",
+            "score": 0.4
+          }
+        ]
+      },
+      {
+        "query_id": "t49",
+        "query": "Контурная лупа без документа",
+        "expected_seed": {
+          "rest-269": 3,
+          "rest-020": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-060",
+            "score": 0.5
+          },
+          {
+            "id": "pilot-010",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-051",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-053",
+            "score": 0.25
+          },
+          {
+            "id": "pilot-057",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "t50",
+        "query": "Чёрно-белый значок глобуса",
+        "expected_seed": {
+          "rest-148": 3,
+          "rest-291": 3
+        },
+        "top5": [
+          {
+            "id": "rest-009",
+            "score": 0.75
+          },
+          {
+            "id": "rest-013",
+            "score": 0.75
+          },
+          {
+            "id": "rest-020",
+            "score": 0.75
+          },
+          {
+            "id": "rest-032",
+            "score": 0.75
+          },
+          {
+            "id": "rest-033",
+            "score": 0.75
+          }
+        ]
+      },
+      {
+        "query_id": "t53",
+        "query": "Карандашный смайлик с нимбом",
+        "expected_seed": {
+          "rest-050": 3
+        },
+        "top5": [
+          {
+            "id": "food-002",
+            "score": 0.25
+          },
+          {
+            "id": "food-005",
+            "score": 0.25
+          },
+          {
+            "id": "food-006",
+            "score": 0.25
+          },
+          {
+            "id": "food-008",
+            "score": 0.25
+          },
+          {
+            "id": "food-009",
+            "score": 0.25
+          }
+        ]
+      },
+      {
+        "query_id": "t56",
+        "query": "Розовый мультяшный кот с нимбом",
+        "expected_seed": {
+          "rest-196": 3
+        },
+        "top5": [
+          {
+            "id": "rest-118",
+            "score": 0.8
+          },
+          {
+            "id": "rest-008",
+            "score": 0.6
+          },
+          {
+            "id": "rest-010",
+            "score": 0.6
+          },
+          {
+            "id": "rest-021",
+            "score": 0.6
+          },
+          {
+            "id": "rest-024",
+            "score": 0.6
+          }
+        ]
+      },
+      {
+        "query_id": "t57",
+        "query": "Карандашная рука с розовым маникюром",
+        "expected_seed": {
+          "rest-157": 3
+        },
+        "top5": [
+          {
+            "id": "food-043",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-028",
+            "score": 0.4
+          },
+          {
+            "id": "food-002",
+            "score": 0.2
+          },
+          {
+            "id": "food-005",
+            "score": 0.2
+          },
+          {
+            "id": "food-006",
+            "score": 0.2
+          }
+        ]
+      },
+      {
+        "query_id": "t59",
+        "query": "Карандашное лицо со слезами от смеха",
+        "expected_seed": {
+          "rest-107": 3,
+          "rest-073": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-018",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "pilot-022",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "pilot-035",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "rest-079",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "rest-117",
+            "score": 0.3333333333333333
+          }
+        ]
+      },
+      {
+        "query_id": "t60",
+        "query": "Чёрный динамик со звуковыми волнами и искрой",
+        "expected_seed": {
+          "rest-129": 3,
+          "rest-013": 2
+        },
+        "top5": [
+          {
+            "id": "food-049",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "food-051",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "food-061",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "food-001",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-002",
+            "score": 0.14285714285714285
+          }
+        ]
+      },
+      {
+        "query_id": "t61",
+        "query": "Сердце без лица и без рук оранжевого цвета",
+        "expected_seed": {
+          "rest-190": 3
+        },
+        "top5": [
+          {
+            "id": "pilot-010",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "rest-110",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "food-002",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-005",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-009",
+            "score": 0.14285714285714285
+          }
+        ]
+      },
+      {
+        "query_id": "t65",
+        "query": "Знак одобрения ладонью без лица",
+        "expected_seed": {
+          "rest-162": 3,
+          "rest-283": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-010",
+            "score": 0.2
+          },
+          {
+            "id": "pilot-041",
+            "score": 0.2
+          },
+          {
+            "id": "pilot-042",
+            "score": 0.2
+          },
+          {
+            "id": "pilot-043",
+            "score": 0.2
+          },
+          {
+            "id": "pilot-044",
+            "score": 0.2
+          }
+        ]
+      },
+      {
+        "query_id": "t66",
+        "query": "Череп с зелёными червями без скрещённых костей",
+        "expected_seed": {
+          "rest-097": 3
+        },
+        "top5": [
+          {
+            "id": "rest-135",
+            "score": 0.2857142857142857
+          },
+          {
+            "id": "food-002",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-005",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-006",
+            "score": 0.14285714285714285
+          },
+          {
+            "id": "food-008",
+            "score": 0.14285714285714285
+          }
+        ]
+      },
+      {
+        "query_id": "t67",
+        "query": "Лицо с наушниками фиолетового кота",
+        "expected_seed": {
+          "rest-109": 3
+        },
+        "top5": [
+          {
+            "id": "pilot-003",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-006",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-008",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-017",
+            "score": 0.4
+          },
+          {
+            "id": "pilot-019",
+            "score": 0.4
+          }
+        ]
+      },
+      {
+        "query_id": "t69",
+        "query": "Лицо с солнцезащитными очками и коктейлем в круге фламинго",
+        "expected_seed": {
+          "rest-154": 3
+        },
+        "top5": [
+          {
+            "id": "food-017",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "food-067",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "pilot-001",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "pilot-003",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "pilot-017",
+            "score": 0.3333333333333333
+          }
+        ]
+      },
+      {
+        "query_id": "t70",
+        "query": "Киборг с металлической половиной лица",
+        "expected_seed": {
+          "rest-303": 3
+        },
+        "top5": [
+          {
+            "id": "food-002",
+            "score": 0.2
+          },
+          {
+            "id": "food-005",
+            "score": 0.2
+          },
+          {
+            "id": "food-006",
+            "score": 0.2
+          },
+          {
+            "id": "food-008",
+            "score": 0.2
+          },
+          {
+            "id": "food-009",
+            "score": 0.2
+          }
+        ]
+      }
+    ],
+    "test/R2_AI": [],
+    "test/R3_AI": [
+      {
+        "query_id": "t03",
+        "query": "Клубничное молоко в коробке",
+        "expected_seed": {
+          "food-068": 3,
+          "food-006": 2
+        },
+        "top5": [
+          {
+            "id": "food-074",
+            "score": 0.02976190476190476
+          },
+          {
+            "id": "food-067",
+            "score": 0.029709507042253523
+          },
+          {
+            "id": "food-011",
+            "score": 0.027108970929195647
+          },
+          {
+            "id": "rest-194",
+            "score": 0.02681010928961749
+          },
+          {
+            "id": "food-038",
+            "score": 0.026470588235294117
+          }
+        ]
+      },
+      {
+        "query_id": "t21",
+        "query": "Конверт с сердцами",
+        "expected_seed": {
+          "rest-096": 3
+        },
+        "top5": [
+          {
+            "id": "food-005",
+            "score": 0.028531243721117136
+          },
+          {
+            "id": "food-028",
+            "score": 0.02844163539403516
+          },
+          {
+            "id": "food-006",
+            "score": 0.027119252873563218
+          },
+          {
+            "id": "food-029",
+            "score": 0.025503573749187783
+          },
+          {
+            "id": "food-070",
+            "score": 0.02318840579710145
+          }
+        ]
+      },
+      {
+        "query_id": "t44",
+        "query": "Лицо заклеивает рот чтобы молчать",
+        "expected_seed": {
+          "rest-212": 3,
+          "rest-257": 2
+        },
+        "top5": [
+          {
+            "id": "pilot-003",
+            "score": 0.029551337359792925
+          },
+          {
+            "id": "rest-059",
+            "score": 0.029437229437229435
+          },
+          {
+            "id": "rest-057",
+            "score": 0.028381642512077296
+          },
+          {
+            "id": "pilot-029",
+            "score": 0.028283227848101264
+          },
+          {
+            "id": "rest-094",
+            "score": 0.02819138376017471
+          }
+        ]
+      },
+      {
+        "query_id": "t59",
+        "query": "Карандашное лицо со слезами от смеха",
+        "expected_seed": {
+          "rest-107": 3,
+          "rest-073": 2
+        },
+        "top5": [
+          {
+            "id": "rest-079",
+            "score": 0.03125
+          },
+          {
+            "id": "pilot-035",
+            "score": 0.027777777777777776
+          },
+          {
+            "id": "rest-015",
+            "score": 0.026182294223531334
+          },
+          {
+            "id": "rest-003",
+            "score": 0.0250384024577573
+          },
+          {
+            "id": "rest-022",
+            "score": 0.024705882352941175
+          }
+        ]
+      },
+      {
+        "query_id": "t65",
+        "query": "Знак одобрения ладонью без лица",
+        "expected_seed": {
+          "rest-162": 3,
+          "rest-283": 2
+        },
+        "top5": [
+          {
+            "id": "rest-005",
+            "score": 0.03028233151183971
+          },
+          {
+            "id": "rest-281",
+            "score": 0.024390243902439025
+          },
+          {
+            "id": "rest-180",
+            "score": 0.02431476569407604
+          },
+          {
+            "id": "rest-136",
+            "score": 0.02379619260918253
+          },
+          {
+            "id": "pilot-045",
+            "score": 0.0236985236985237
+          }
+        ]
+      },
+      {
+        "query_id": "t67",
+        "query": "Лицо с наушниками фиолетового кота",
+        "expected_seed": {
+          "rest-109": 3
+        },
+        "top5": [
+          {
+            "id": "rest-043",
+            "score": 0.028531243721117136
+          },
+          {
+            "id": "rest-038",
+            "score": 0.02844551282051282
+          },
+          {
+            "id": "rest-010",
+            "score": 0.02803921568627451
+          },
+          {
+            "id": "pilot-022",
+            "score": 0.027912386121341344
+          },
+          {
+            "id": "rest-183",
+            "score": 0.027623285131627734
+          }
+        ]
+      },
+      {
+        "query_id": "t69",
+        "query": "Лицо с солнцезащитными очками и коктейлем в круге фламинго",
+        "expected_seed": {
+          "rest-154": 3
+        },
+        "top5": [
+          {
+            "id": "pilot-001",
+            "score": 0.029957522915269395
+          },
+          {
+            "id": "pilot-026",
+            "score": 0.028594771241830064
+          },
+          {
+            "id": "pilot-027",
+            "score": 0.027313266443701224
+          },
+          {
+            "id": "pilot-020",
+            "score": 0.026779422128259338
+          },
+          {
+            "id": "rest-196",
+            "score": 0.025679012345679014
+          }
+        ]
+      }
+    ],
+    "test/R4_light": [
+      {
+        "query_id": "t12",
+        "query": "Пирог сердечком с ломтиками клубники",
+        "expected_seed": {
+          "food-050": 3,
+          "food-075": 2
+        },
+        "top5": [
+          {
+            "id": "food-078",
+            "score": 0.7364554405212402
+          },
+          {
+            "id": "food-073",
+            "score": 0.7345669269561768
+          },
+          {
+            "id": "food-054",
+            "score": 0.7306404113769531
+          },
+          {
+            "id": "food-021",
+            "score": 0.7208129167556763
+          },
+          {
+            "id": "food-028",
+            "score": 0.7204814553260803
+          }
+        ]
+      }
+    ],
+    "test/R4_dark": [
+      {
+        "query_id": "t31",
+        "query": "Смайлик испуганно держится за щёки",
+        "expected_seed": {
+          "rest-211": 3,
+          "rest-293": 3,
+          "rest-057": 2,
+          "rest-296": 2
+        },
+        "top5": [
+          {
+            "id": "rest-141",
+            "score": 0.7663314342498779
+          },
+          {
+            "id": "rest-116",
+            "score": 0.7638655304908752
+          },
+          {
+            "id": "rest-230",
+            "score": 0.7599939107894897
+          },
+          {
+            "id": "rest-271",
+            "score": 0.7598904371261597
+          },
+          {
+            "id": "pilot-022",
+            "score": 0.7539875507354736
+          }
+        ]
+      },
+      {
+        "query_id": "t62",
+        "query": "Клубника без крема без торта без лица одна целая ягода",
+        "expected_seed": {
+          "food-012": 3
+        },
+        "top5": [
+          {
+            "id": "food-053",
+            "score": 0.6797065734863281
+          },
+          {
+            "id": "food-065",
+            "score": 0.6783268451690674
+          },
+          {
+            "id": "food-066",
+            "score": 0.6745774745941162
+          },
+          {
+            "id": "food-015",
+            "score": 0.6743330955505371
+          },
+          {
+            "id": "food-026",
+            "score": 0.6733694076538086
+          }
+        ]
+      }
+    ],
+    "kolobki/R0": [
+      {
+        "query_id": "k01",
+        "query": "Колобок бьётся головой о кирпичную стену",
+        "expected_seed": {
+          "kolobki-037": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k02",
+        "query": "Жёлтый колобок в серых наушниках",
+        "expected_seed": {
+          "kolobki-026": 3,
+          "kolobki-008": 2
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k03",
+        "query": "Сердитый пиксельный смайлик хмурит брови",
+        "expected_seed": {
+          "kolobki-031": 3,
+          "kolobki-049": 2
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k04",
+        "query": "Смайлик косит глаза и высовывает язык",
+        "expected_seed": {
+          "kolobki-006": 3,
+          "kolobki-024": 3,
+          "kolobki-033": 2
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k06",
+        "query": "Красное пиксельное сердце",
+        "expected_seed": {
+          "kolobki-009": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k07",
+        "query": "Два смайлика чокаются пивными кружками",
+        "expected_seed": {
+          "kolobki-038": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k08",
+        "query": "Колобок печатает на клавиатуре",
+        "expected_seed": {
+          "kolobki-042": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k09",
+        "query": "Пиксельный викинг с топором и щитом",
+        "expected_seed": {
+          "kolobki-050": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k10",
+        "query": "Смайлик поёт в микрофон на стойке",
+        "expected_seed": {
+          "kolobki-045": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k11",
+        "query": "Солнце с лучами и солнцезащитными очками",
+        "expected_seed": {
+          "kolobki-019": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k12",
+        "query": "Лицо надувает зелёную жвачку",
+        "expected_seed": {
+          "kolobki-040": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k13",
+        "query": "Колобок кланяется и снимает шляпу",
+        "expected_seed": {
+          "kolobki-043": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k15",
+        "query": "Зелёный смайлик с тошнотой",
+        "expected_seed": {
+          "kolobki-015": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k16",
+        "query": "Наушники и бегущая строка HELP SOS",
+        "expected_seed": {
+          "kolobki-008": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k18",
+        "query": "Красный чёртик с вилами",
+        "expected_seed": {
+          "kolobki-027": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k19",
+        "query": "Смайлик поднимает средний палец",
+        "expected_seed": {
+          "kolobki-032": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      },
+      {
+        "query_id": "k20",
+        "query": "Колобок в шапке рядом с бутылкой и магнитофоном",
+        "expected_seed": {
+          "kolobki-030": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-001",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.0
+          },
+          {
+            "id": "kolobki-005",
+            "score": 0.0
+          }
+        ]
+      }
+    ],
+    "kolobki/R1_AI": [
+      {
+        "query_id": "k09",
+        "query": "Пиксельный викинг с топором и щитом",
+        "expected_seed": {
+          "kolobki-050": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-014",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "kolobki-030",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "kolobki-033",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "kolobki-040",
+            "score": 0.3333333333333333
+          },
+          {
+            "id": "kolobki-001",
+            "score": 0.16666666666666666
+          }
+        ]
+      },
+      {
+        "query_id": "k15",
+        "query": "Зелёный смайлик с тошнотой",
+        "expected_seed": {
+          "kolobki-015": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-040",
+            "score": 0.5
+          },
+          {
+            "id": "kolobki-001",
+            "score": 0.25
+          },
+          {
+            "id": "kolobki-002",
+            "score": 0.25
+          },
+          {
+            "id": "kolobki-003",
+            "score": 0.25
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.25
+          }
+        ]
+      }
+    ],
+    "kolobki/R2_AI": [],
+    "kolobki/R3_AI": [
+      {
+        "query_id": "k09",
+        "query": "Пиксельный викинг с топором и щитом",
+        "expected_seed": {
+          "kolobki-050": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-040",
+            "score": 0.030330882352941176
+          },
+          {
+            "id": "kolobki-007",
+            "score": 0.028370221327967807
+          },
+          {
+            "id": "kolobki-004",
+            "score": 0.02803921568627451
+          },
+          {
+            "id": "kolobki-017",
+            "score": 0.027651515151515153
+          },
+          {
+            "id": "kolobki-014",
+            "score": 0.027263007840342125
+          }
+        ]
+      }
+    ],
+    "kolobki/R4_light": [
+      {
+        "query_id": "k12",
+        "query": "Лицо надувает зелёную жвачку",
+        "expected_seed": {
+          "kolobki-040": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-015",
+            "score": 0.6917446851730347
+          },
+          {
+            "id": "kolobki-048",
+            "score": 0.6546944379806519
+          },
+          {
+            "id": "kolobki-033",
+            "score": 0.6473850011825562
+          },
+          {
+            "id": "kolobki-006",
+            "score": 0.6464084982872009
+          },
+          {
+            "id": "kolobki-047",
+            "score": 0.6439692378044128
+          }
+        ]
+      }
+    ],
+    "kolobki/R4_dark": [
+      {
+        "query_id": "k04",
+        "query": "Смайлик косит глаза и высовывает язык",
+        "expected_seed": {
+          "kolobki-006": 3,
+          "kolobki-024": 3,
+          "kolobki-033": 2
+        },
+        "top5": [
+          {
+            "id": "kolobki-047",
+            "score": 0.708554744720459
+          },
+          {
+            "id": "kolobki-048",
+            "score": 0.7079434394836426
+          },
+          {
+            "id": "kolobki-007",
+            "score": 0.7060753703117371
+          },
+          {
+            "id": "kolobki-041",
+            "score": 0.70196533203125
+          },
+          {
+            "id": "kolobki-020",
+            "score": 0.6976463198661804
+          }
+        ]
+      },
+      {
+        "query_id": "k12",
+        "query": "Лицо надувает зелёную жвачку",
+        "expected_seed": {
+          "kolobki-040": 3
+        },
+        "top5": [
+          {
+            "id": "kolobki-015",
+            "score": 0.6888192296028137
+          },
+          {
+            "id": "kolobki-025",
+            "score": 0.6422868967056274
+          },
+          {
+            "id": "kolobki-048",
+            "score": 0.640465497970581
+          },
+          {
+            "id": "kolobki-033",
+            "score": 0.6370749473571777
+          },
+          {
+            "id": "kolobki-047",
+            "score": 0.635445773601532
+          }
+        ]
+      }
+    ]
+  },
+  "paired_comparisons": {
+    "test/R2_AI-R1_AI": {
+      "success_at5_difference": {
+        "mean": 0.37142857142857144,
+        "query_bootstrap_95": [
+          0.2571428571428571,
+          0.4857142857142857
+        ],
+        "n": 70,
+        "resamples": 2000
+      }
+    },
+    "test/R3_AI-R2_AI": {
+      "success_at5_difference": {
+        "mean": -0.1,
+        "query_bootstrap_95": [
+          -0.17142857142857143,
+          -0.02857142857142857
+        ],
+        "n": 70,
+        "resamples": 2000
+      }
+    },
+    "test/R4_light-R2_AI": {
+      "success_at5_difference": {
+        "mean": -0.014285714285714285,
+        "query_bootstrap_95": [
+          -0.04285714285714286,
+          0.0
+        ],
+        "n": 70,
+        "resamples": 2000
+      }
+    },
+    "test/R4_dark-R4_light": {
+      "success_at5_difference": {
+        "mean": -0.014285714285714285,
+        "query_bootstrap_95": [
+          -0.05714285714285714,
+          0.02857142857142857
+        ],
+        "n": 70,
+        "resamples": 2000
+      }
+    },
+    "kolobki/R2_AI-R1_AI": {
+      "success_at5_difference": {
+        "mean": 0.1,
+        "query_bootstrap_95": [
+          0.0,
+          0.25
+        ],
+        "n": 20,
+        "resamples": 2000
+      },
+      "ndcg_at10_difference": {
+        "mean": 0.18288234657488808,
+        "query_bootstrap_95": [
+          0.0566105633949087,
+          0.34163637488861787
+        ],
+        "n": 20,
+        "resamples": 2000
+      }
+    },
+    "kolobki/R3_AI-R2_AI": {
+      "success_at5_difference": {
+        "mean": -0.05,
+        "query_bootstrap_95": [
+          -0.15,
+          0.0
+        ],
+        "n": 20,
+        "resamples": 2000
+      },
+      "ndcg_at10_difference": {
+        "mean": -0.11132181286765418,
+        "query_bootstrap_95": [
+          -0.229519713077861,
+          -0.027373993068769344
+        ],
+        "n": 20,
+        "resamples": 2000
+      }
+    },
+    "kolobki/R4_light-R2_AI": {
+      "success_at5_difference": {
+        "mean": -0.05,
+        "query_bootstrap_95": [
+          -0.15,
+          0.0
+        ],
+        "n": 20,
+        "resamples": 2000
+      },
+      "ndcg_at10_difference": {
+        "mean": -0.20392018496319336,
+        "query_bootstrap_95": [
+          -0.29905514826868995,
+          -0.10905255999021346
+        ],
+        "n": 20,
+        "resamples": 2000
+      }
+    },
+    "kolobki/R4_dark-R4_light": {
+      "success_at5_difference": {
+        "mean": -0.05,
+        "query_bootstrap_95": [
+          -0.15,
+          0.0
+        ],
+        "n": 20,
+        "resamples": 2000
+      },
+      "ndcg_at10_difference": {
+        "mean": -0.011385936886641562,
+        "query_bootstrap_95": [
+          -0.07607522814159849,
+          0.05738156369001605
+        ],
+        "n": 20,
+        "resamples": 2000
+      }
+    }
+  },
+  "runtime": {
+    "load_seconds": 2.8463526980003735,
+    "text_repeat_max_abs_delta": 0.0009765625,
+    "total_seconds": 977.9443881130001,
+    "gpu_peak_allocated_bytes": 1212694016,
+    "gpu_peak_reserved_bytes": 1434451968,
+    "rss_peak_kib": 2147436,
+    "status": "complete",
+    "image_calls": 1004,
+    "encoded_frames": 6870,
+    "encode_batches": 2006,
+    "text_input_counts": {
+      "SearchQuery": 146,
+      "Document": 502
+    },
+    "light": {
+      "items": 502,
+      "p50_seconds": 1.0955316114996094,
+      "p95_seconds": 1.1246125500001654,
+      "total_seconds": 475.7619836900094
+    },
+    "dark": {
+      "items": 502,
+      "p50_seconds": 1.1061797584998203,
+      "p95_seconds": 1.128287741999884,
+      "total_seconds": 482.98453008799606
+    }
+  }
+}

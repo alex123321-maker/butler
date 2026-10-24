@@ -1,0 +1,71 @@
+{
+  "id": "pilot-005",
+  "source_sha256": "6794691aaa410196c21f85b99ab95e4b3ceee4e248ab3031e0c6904cc4ef662d",
+  "ordinal": 20,
+  "status": "invalid_first_pass",
+  "frame_sha256": [
+    "8c462bbe0d19f80b14b9c8160371d2cad59565828b82d89be34526f0c8fee1b8",
+    "402aabb6324d914bfcf830417ed6b47ebd02e8eceb35bf5a75aa76e55fd0b229",
+    "dd1ea9d938e761e0c0fd4f2519b35a1e8eb7b45ba7f90a3c27f0d05182758fec",
+    "fca8e774e5ce19055a38734faade9faba61738ee840bc824c055fc30ddeebc8e",
+    "7ea095ba54b603777fff47f257035455c761561656d94c1420d01a10a75128d3",
+    "1c498ce739b9d774cb80084bbffb0d8d3848f4f12d773f5f32c449d2304055ce",
+    "8dd8d7cd2645f070ea1d35b2140abe4d3db08cf379df6ef3781980ec397ecc8c",
+    "73b3e11173eca07084341aca5281fffdde3a27f4c229f4c283f5fae9b8d24288"
+  ],
+  "image_count": 8,
+  "started_at": 1792734612.6251435,
+  "first_token_seconds": 0.5436485619998166,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"blue whale\"\n    ],\n    \"actions\": [\n      \"spouts water\",\n      \"opens mouth\",\n      \"winks\",\n      \"moves tail\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head\",\n      \"tucks tail\",\n      \"tucks head",
+  "output_tokens": 512,
+  "truncated": true,
+  "schema_valid": false,
+  "total_seconds": 22.723253529999965,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}

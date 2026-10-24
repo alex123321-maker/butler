@@ -108,3 +108,27 @@ buttons. Projection edits target a known message ID, serialize per ACK and recor
 sent/failed/UNKNOWN separately. Interrupted edits never resend a publication.
 A stale client is always fenced by current backend state. Mapping checked against
 [Bot API](https://core.telegram.org/bots/api#inlinekeyboardbutton), 2026-10-22.
+
+## Public emoji research reads
+
+The operator-only GetCustomEmojiSet and DownloadCustomEmoji helpers retain the
+fixed host/proxy/secret boundaries for bounded public catalog imports. They are
+not registered as tools and do not poll or send messages. See
+[research protocol](../../../../../docs/architecture/telegram-emoji-research.md).
+
+
+## Optional reviewed emoji decoration
+
+The owner-profile orchestrator accepts `-telegram-emoji-decoration` (default off).
+Planner uses an embedded, reviewed Kolobkitop concept whitelist; no inference,
+network access or new dependency. Every content word must be supported; negative,
+uncertain, quoted/code/link/question, ambiguous and unknown content abstains.
+Labels containing an existing Unicode symbol/emoji also abstain, including widget
+options; the decorator does not add a conflicting second icon.
+`Part.Text` and canonical payload remain unchanged. Optional `Part.Decoration`
+pins policy hash, original text hash, at most three insertions and stable option
+icons. Sender and widget edits replay these choices, using UTF-16 entities and
+`icon_custom_emoji_id`; callbacks and authorization are unchanged. Photos/reports
+are outside v1. Stored invalid choices reject, oversized decoration falls back
+before persistence. Keep a compatible reader until decorated outbox Parts drain.
+See `experiments/emoji140/abstention-rollout.md` for measured limits.

@@ -1,0 +1,32 @@
+{
+  "version": "exact-ai-retrieval-v1",
+  "model": "google/embeddinggemma-2",
+  "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+  "weight_sha256": "197a32965d4b1105faf060417baa899e193fb73cd401f42ec9295234d5553d79",
+  "precision": "BF16",
+  "dimension": 768,
+  "max_seq_length": 2048,
+  "batch": 4,
+  "query_prompt": "SearchQuery",
+  "document_prompt": "Document",
+  "image_prompt": null,
+  "image_aggregation": "mean normalized individual frame vectors, then L2 normalization; temporal order lost",
+  "backgrounds": [
+    "light",
+    "dark"
+  ],
+  "rrf_k": 60,
+  "corpus_scope": "original450 and additional52 ranked separately",
+  "systems": {
+    "R0": "metadata lexical",
+    "R1_AI": "AI annotation lexical",
+    "R2_AI": "AI annotation dense",
+    "R3_AI": "fixed RRF lexical+dense",
+    "R4_light": "direct image mean light",
+    "R4_dark": "direct image mean dark"
+  },
+  "queries": 145,
+  "documents": 502,
+  "input_lock_sha256": "2ccbca4f3d689b5716da808a3930214b05746732c0d7a19b06b33b9bfc0358d4",
+  "torch": "2.10.0+cu128"
+}

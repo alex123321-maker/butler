@@ -1,0 +1,100 @@
+{
+  "id": "pilot-022",
+  "source_sha256": "04bad24cfd16ea0f1e575cc5f494dfd71e2a69a8ad255371fd45b9442467170d",
+  "ordinal": 5,
+  "status": "completed",
+  "frame_sha256": [
+    "c265f13c78cb1d95fdf919edb86172ec7ae98ab2066934067f929e50a9442e17",
+    "a64f3310b461431fcd8577809131d18fdb3643c12f14425503f851ad3523c27b",
+    "a6a49e1d87e21aa9e0dbd1b69ed880bb110dd5f3bf47a34bbe9e3d89189db1b8",
+    "5a405a49942012ea13f5d27f93746f01822e2142f537715bcb7545ed52ae9575",
+    "a08e0b2c6d9a26fc6f8fa9dd1f9d690684cd37301a711b5964e17786f7fa8580",
+    "2f73ecb45ef75df953ccfb17f592d048dcc6b9ceda90ade309beed2fdde833d4",
+    "4c228e094356c90c31aface59e9c466b09773297ffc9a30a22ce34408172e2b0",
+    "a15a3ed452d4d8e88a325ea6ec5248027f118151d400be5df15740a2503e36a1"
+  ],
+  "image_count": 8,
+  "started_at": 1792734517.870614,
+  "first_token_seconds": 0.5488745239999844,
+  "input_tokens": 800,
+  "visual_tokens": 512,
+  "image_grid_thw": [
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ],
+    [
+      1,
+      16,
+      16
+    ]
+  ],
+  "raw_response": "{\n  \"observed\": {\n    \"subjects\": [\n      \"yellow emoji face\",\n      \"telephone receiver\",\n      \"smartphone\"\n    ],\n    \"actions\": [\n      \"holding telephone receiver\",\n      \"changing expression\",\n      \"switching to holding smartphone\"\n    ],\n    \"expression\": null,\n    \"text\": null,\n    \"style\": null,\n    \"temporal_sequence\": [\n      \"holding telephone receiver with surprised expression\",\n      \"holding telephone receiver with surprised expression\",\n      \"holding telephone receiver with neutral expression\",\n      \"holding telephone receiver with angry expression\",\n      \"holding smartphone with angry expression\"\n    ]\n  },\n  \"inferred\": {\n    \"possible_meanings\": [],\n    \"intensity\": null,\n    \"ambiguity\": true\n  }\n}",
+  "output_tokens": 161,
+  "truncated": false,
+  "schema_valid": true,
+  "parsed": {
+    "observed": {
+      "subjects": [
+        "yellow emoji face",
+        "telephone receiver",
+        "smartphone"
+      ],
+      "actions": [
+        "holding telephone receiver",
+        "changing expression",
+        "switching to holding smartphone"
+      ],
+      "expression": null,
+      "text": null,
+      "style": null,
+      "temporal_sequence": [
+        "holding telephone receiver with surprised expression",
+        "holding telephone receiver with surprised expression",
+        "holding telephone receiver with neutral expression",
+        "holding telephone receiver with angry expression",
+        "holding smartphone with angry expression"
+      ]
+    },
+    "inferred": {
+      "possible_meanings": [],
+      "intensity": null,
+      "ambiguity": true
+    }
+  },
+  "total_seconds": 7.607494415000019,
+  "peak_gpu_allocated_bytes": 3195404288,
+  "peak_gpu_reserved_bytes": 3261071360,
+  "rss_peak_kib": 8080448
+}
