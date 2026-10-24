@@ -208,6 +208,9 @@ func (s *Service) guardModelRetryProposal(ctx context.Context, current *sessionv
 		if call.RunID != current.GetRunId() {
 			continue
 		}
+		if call.Status == "validation_rejected" {
+			continue
+		} // Known local non-dispatch.
 		if call.FinishedAt == nil || call.Status == "effect_unknown" {
 			return ErrActionOutcomeUnknown
 		}

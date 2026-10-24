@@ -1228,3 +1228,13 @@ restores agent mode, but a fresh observation is required before another guarded
 browser action. Lost release ACK keeps the durable fence closed; no timer other
 than the actual finite context expiry grants a resumed browser. See the
 [browser contract](browser-session-contract.md#owner-viewing-and-manual-control).
+
+## Research draft validation
+
+A rejected research draft follows the existing tool_pending → tool_running →
+awaiting_model_resume → model_running lifecycle as local validation. It records
+a correlated `validation_rejected` observation and known tool-result checkpoint;
+no Broker action is prepared or dispatched. Recovery replays that known DATA.
+At most four corrections are allowed, with ordinary model budgets retained.
+Such a known non-dispatch is not an equivalent committed write during model
+retry recovery. See [research and checked monitors](research-followups.md).

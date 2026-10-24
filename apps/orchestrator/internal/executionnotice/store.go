@@ -77,6 +77,7 @@ const snapshotsSQL = `SELECT i.input_id,COALESCE(i.run_id,''),i.session_key,i.st
  JOIN communication_bindings origin ON origin.binding_id=i.communication_ingress_json->>'BindingID' AND origin.version::text=i.communication_ingress_json->>'BindingVersion' AND origin.owner_id=i.owner_id AND origin.enabled AND origin.verified
  WHERE n.binding_id=$1 AND n.binding_version=$2 AND n.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified
  AND i.communication_ingress_epoch=1 AND i.communication_ingress_json->>'OwnerID'=i.owner_id AND i.accepted_at>=n.activated_at
+ AND (COALESCE(i.communication_ingress_json->>'Kind','')<>'scheduled_occurrence' OR i.status IN ('blocked','failed','expired','waiting_for_user'))
  AND origin.binding_id=ANY($6::text[]) AND ($7='' OR i.input_id=$7)
  ORDER BY i.accepted_at DESC LIMIT 100`
 

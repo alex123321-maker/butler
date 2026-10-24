@@ -55,6 +55,14 @@ func (s *Store) BeforeFinal(ctx context.Context, runID, body string) (string, er
 	if tx.QueryRow(ctx, `SELECT obligation_state,correction_count,quiet FROM communication_admissions WHERE input_id=$1 FOR UPDATE`, p.InputID).Scan(&state, &corrections, &quiet) != nil {
 		return "", ErrDenied
 	}
+	var missingObservation bool
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_occurrences o JOIN scheduled_jobs j USING(schedule_id) WHERE o.input_id=$1 AND COALESCE((j.spec_json->>'monitor')::boolean,FALSE) AND NOT EXISTS(SELECT 1 FROM schedule_observations n WHERE n.occurrence_id=o.occurrence_id))`, p.InputID).Scan(&missingObservation); e != nil {
+		return "", e
+	}
+	if missingObservation && state != "closed_with_failure" {
+		state = "open"
+		quiet = false
+	}
 	if state == "response_committed" {
 		return "ready", tx.Commit(ctx)
 	}

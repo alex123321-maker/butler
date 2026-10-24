@@ -21,7 +21,8 @@ func (s *Store) LookupTx(ctx context.Context, tx pgx.Tx, p Principal, e communic
 	}
 	raw, _ := json.Marshal(a)
 	var receipt []byte
-	if tx.QueryRow(ctx, `SELECT receipt_json FROM communication_publications WHERE NOT privacy_redacted AND effect_id=$1 AND run_id=$2 AND owner_id=$3 AND input_id=$4 AND tool_call_id=$5 AND payload_hash=$6`, e.EffectID, p.RunID, p.OwnerID, p.InputID, e.ToolCallID, hash(string(raw))).Scan(&receipt) != nil {
+	if tx.QueryRow(ctx, `SELECT receipt_json FROM communication_publications WHERE NOT privacy_redacted AND effect_id=$1 AND run_id=$2 AND owner_id=$3 AND input_id=$4 AND tool_call_id=$5 AND payload_hash=$6
+ UNION ALL SELECT receipt_json FROM schedule_observations WHERE NOT notified AND effect_id=$1 AND run_id=$2 AND owner_id=$3 AND input_id=$4 AND tool_call_id=$5 AND payload_hash=$6`, e.EffectID, p.RunID, p.OwnerID, p.InputID, e.ToolCallID, hash(string(raw))).Scan(&receipt) != nil {
 		return out, ErrDenied
 	}
 	err = json.Unmarshal(receipt, &out)

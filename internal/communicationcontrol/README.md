@@ -1,6 +1,9 @@
 # Communication control
 
 Fixed credential-free message/photo/report/widget schemas and strict decoding.
+Contract revision 2 adds quoted research evidence and checked scheduled
+observations. `unchanged` receipts have no publication or delivery parts. Source
+attribution is DATA; exact Broker authority and owning publication checks remain.
 Recipients, owner, task identity, admission mode and grants are kernel-owned.
 V1 widgets always block; false wait is rejected before persistence. An accepted
 receipt proves a durable publication only. This package registers nothing and

@@ -2,6 +2,7 @@ package executionnotice_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -28,6 +29,56 @@ type fixture struct {
 	core     *communication.Store
 	input    input.Record
 	bindings []executionnotice.Binding
+}
+
+func TestExecutionNoticeScheduledChecksAreQuietButFailuresVisibleIntegration(t *testing.T) {
+	f := setup(t)
+	e := ingress.InputEvent{SessionKey: f.input.SessionKey, Source: "schedule", EventID: "scheduled-check", IdempotencyKey: "scheduled-check", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_SCHEDULED_INTERNAL_EVENT, PayloadJSON: `{"text":"check"}`, CreatedAt: time.Now()}
+	r, _, err := input.NewStore(f.pool).Accept(f.ctx, e, "owner", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, _ := actionauth.ArgumentsHash(e.PayloadJSON)
+	proof, _ := json.Marshal(input.CommunicationIngress{OwnerID: "owner", BindingID: "web", BindingVersion: 1, DeliveryID: e.EventID, PayloadHash: hash, Kind: "scheduled_occurrence", ActorChannel: "schedule", ActorDeliveryID: e.EventID})
+	// This test seeds only the already-qualified receipt projection. The owning
+	// schedule/admission tests prove its creation and reject forged public inputs.
+	if _, err = f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET communication_ingress_epoch=1,communication_ingress_json=$2 WHERE input_id=$1`, r.InputID, proof); err != nil {
+		t.Fatal(err)
+	}
+	for _, state := range []string{"queued", "running", "completed"} {
+		if _, err = f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET status=$2 WHERE input_id=$1`, r.InputID, state); err != nil {
+			t.Fatal(err)
+		}
+		if err = f.store.Sweep(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		items, err := f.store.List(f.actor("owner"), "web")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, n := range items {
+			if n.InputID == r.InputID {
+				t.Fatal("quiet check produced lifecycle spam", n)
+			}
+		}
+	}
+	if _, err = f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET status='blocked',error_code='provider_unavailable' WHERE input_id=$1`, r.InputID); err != nil {
+		t.Fatal(err)
+	}
+	if err = f.store.Sweep(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	items, err := f.store.List(f.actor("owner"), "web")
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, n := range items {
+		found = found || n.InputID == r.InputID && n.Reason == "model_unavailable"
+	}
+	if !found {
+		t.Fatal("scheduled outage vanished")
+	}
 }
 
 func setup(t *testing.T) *fixture {

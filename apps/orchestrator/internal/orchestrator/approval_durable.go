@@ -154,7 +154,11 @@ func recoveredActionResultItem(toolCallID, toolName, argsJSON, resultJSON string
 	// Observations are data, not system instructions or native functionResponse
 	// parts. The matching provider functionCall/signature is intentionally absent
 	// after a restart; only live continuation may use those private transport parts.
-	return content.Data(map[string]any{"already_executed": true, "tool_call_id": toolCallID, "tool_name": toolName, "args": json.RawMessage(normalizeJSON(argsJSON, "{}")), "result": json.RawMessage(normalizeJSON(resultJSON, "{}"))}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{"tool_call:" + toolCallID}, Sensitivity: content.Private})
+	var observation struct {
+		Status string `json:"status"`
+	}
+	_ = json.Unmarshal([]byte(resultJSON), &observation)
+	return content.Data(map[string]any{"already_executed": observation.Status != "validation_rejected", "tool_call_id": toolCallID, "tool_name": toolName, "args": json.RawMessage(normalizeJSON(argsJSON, "{}")), "result": json.RawMessage(normalizeJSON(resultJSON, "{}"))}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{"tool_call:" + toolCallID}, Sensitivity: content.Private})
 }
 
 // Used by the ingress worker for denials/expiry: business-blocked does not mark

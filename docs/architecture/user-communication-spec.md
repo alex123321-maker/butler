@@ -1142,3 +1142,16 @@ checks intact. Unsupported/ambiguous content remains undecorated. Photo captions
 and native rich reports are not decorated in v1. Detailed limits, rollback and
 single-AI evaluation are in `telegram-emoji-research.md` and
 `../../experiments/emoji140/abstention-rollout.md`.
+
+## Research evidence and checked observations (communication revision 2)
+
+Non-widget publication contracts accept bounded `evidence` entries with URL,
+exact short quote and model primary/secondary attribution. This does not grant
+source authority or certify officiality. Current researched result drafts get
+bounded preflight feedback before dispatch. Checked scheduled messages carry an
+`observation`; unchanged/pending receipts have status `unchanged`, an empty
+publication reference and no delivery parts. They prove a recorded observation,
+not a delivered message. Canonical source/export/claim/target guards remain.
+See [the research contract](research-followups.md). Contract hash/revision checks
+continue to fence old loaded schemas and pending approvals rather than upgrading
+their authority silently.

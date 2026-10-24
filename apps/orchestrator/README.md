@@ -1387,3 +1387,11 @@ the existing proxy/profile, model tools and canonical text; frozen outbox choice
 are reused on delivery and widget edits. This bounded Kolobkitop vocabulary needs
 no runtime GPU. See `docs/architecture/telegram-emoji-research.md` for limits,
 evaluation and compatible-reader rollback requirements.
+
+Research replies use current-run page evidence and bounded local correction
+before publication; concise answers and one useful consent-based follow-up are
+the default. Schedule revision 2 checked monitors use owning explicit ingress,
+quiet observations and atomic changes-only publication. Migration 100 is required.
+Repeated work can suggest a reusable procedure; formal skill validation and
+activation retain their existing evidence requirements. See
+[research contract](../../docs/architecture/research-followups.md).

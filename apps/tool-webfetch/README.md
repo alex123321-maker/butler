@@ -45,3 +45,10 @@ Related docs:
 - `docs/planning/butler_single_tab_browser_webfetch_backlog.md`
 
 Requested resources pass public-IP/DNS checks before delegation; checked clients deny redirects and share a private 4 MiB counter across batch/fallback requests. The fixed operator self-hosted service is a network exception and must enforce equivalent DNS policy itself. Private query/path disclosure needs Broker release authority; public DNS alone grants none. Reflected Jina tokens and unsafe error bodies are excluded. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+
+`web.fetch` revision 2 and fetch-batch items include `observed_at` and bounded
+`links` (URL/text). Plain HTTP extracts links even without returning HTML. They
+help reach primary references, but do not establish officiality or event state.
+`web.search` uses a fixed public DuckDuckGo Lite reader; a challenge or unfamiliar
+result page is an explicit failure, not a successful empty search. No API key is
+required. Every subsequent page read keeps the existing Broker and egress checks.

@@ -174,3 +174,16 @@ call or production credential/deployment is used. The full-path test injects a
 scripted provider and independently checks ordinary Input/Core final persistence,
 unverified verdict and Web result delivery. This is component/integration evidence,
 not a claim of live model quality or human Telegram delivery.
+
+## Checked monitoring and explicit communication (revision 2)
+
+The optional `job.monitor=true` is valid only for `agent_task`. Migration 100
+and its immutable observation trigger are required for schedule readiness.
+A verified explicit owner source pins a kernel `scheduled_occurrence` ingress
+receipt; it is not a new human instruction. Current source binding/version,
+job revision, authority and expiry fence admission and delivery. Monitor
+occurrences use quiet communication with a required actual observation.
+See [research and follow-ups](research-followups.md) for evidence, notification
+deduplication, unavailable-source behavior and bounded provider-outage retries.
+Existing jobs omit monitor and retain their policy; no stored timer is upgraded.
+An offer of monitoring is separate from consent and an actual schedule receipt.

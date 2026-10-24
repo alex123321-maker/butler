@@ -231,6 +231,11 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	if e.Lookup {
 		return out, ErrDenied
 	}
+	if observation, err := s.monitorTx(ctx, tx, p, e, a, digest, systemFailure); err != nil {
+		return out, err
+	} else if observation != nil {
+		return *observation, nil
+	}
 	var methods []byte
 	var count int
 	if tx.QueryRow(ctx, `SELECT methods,publication_count FROM communication_admissions WHERE input_id=$1 AND schema_epoch=1 FOR UPDATE`, p.InputID).Scan(&methods, &count) != nil {

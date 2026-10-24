@@ -35,6 +35,8 @@ type Provider interface {
 }
 
 type FetchResult struct {
+	ObservedAt   string         `json:"observed_at"`
+	Links        []DocumentLink `json:"links,omitempty"`
 	Provider     string         `json:"provider"`
 	RequestedURL string         `json:"requested_url"`
 	FinalURL     string         `json:"final_url"`
@@ -90,6 +92,10 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 			}
 			if result.Provider == "" {
 				result.Provider = provider.Name()
+			}
+			result.ObservedAt = time.Now().UTC().Format(time.RFC3339)
+			if result.ContentHTML != "" {
+				result.Links = documentLinks(result.ContentHTML, result.FinalURL)
 			}
 			return sanitizeFetchResult(result), nil
 		}
@@ -196,6 +202,8 @@ func (s *Server) executeFetchBatch(ctx context.Context, req *runtimev1.ExecuteRe
 			continue
 		}
 		items = append(items, map[string]any{
+			"observed_at":   result.ObservedAt,
+			"links":         result.Links,
 			"provider":      result.Provider,
 			"requested_url": result.RequestedURL,
 			"final_url":     result.FinalURL,
@@ -442,6 +450,7 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 		MIMEType:     mimeType,
 		ContentText:  text,
 		ContentHTML:  mapHTML(includeHTML, htmlContent),
+		Links:        documentLinks(htmlContent, firstNonEmpty(resp.Request.URL.String(), rawURL)),
 		Metadata:     map[string]any{"truncated": truncated},
 	}, nil
 }

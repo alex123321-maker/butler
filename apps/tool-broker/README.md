@@ -409,3 +409,8 @@ the three accepted methods. Isolated communication-lab accepts `-widgets`; its
 existing disposable database guard remains mandatory. Registration is not grant
 authority: current immutable admission, target hash, exact prepare authorization,
 source policy and finite budgets still govern dispatch.
+
+Communication and schedule fixed contracts are revision 2 for research evidence
+and checked monitoring. Their exact hashes, current Input/claim/lease/source
+authority, destination snapshots and owner approval rules remain authoritative.
+A proposed follow-up or saved observation grants no future tool capabilities.

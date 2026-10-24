@@ -1104,3 +1104,11 @@ current ownership and routes frames/input with durable control fences, and the
 runtime serializes the actual page. This protocol is excluded from model tool
 schemas and transcripts. Legacy `single_tab.*` contracts are disabled in the
 standard catalog. See [browser owner control](browser-session-contract.md#owner-viewing-and-manual-control).
+
+## Retrieval observations (WebFetch revision 2)
+
+`web.fetch` and batch items return bounded readable anchor links and the runtime
+observation timestamp. Links are untrusted discovery DATA and still require a
+separate ordinary Broker read. They are not primary-source certification, an
+event confirmation or permission to navigate. See
+[research and follow-ups](research-followups.md).
