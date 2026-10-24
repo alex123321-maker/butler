@@ -37,3 +37,8 @@ Set `BUTLER_TEST_VAULT_POSTGRES_URL` to the printed local test database endpoint
 `scripts/dev/test-go.ps1 -Packages ./internal/credentials -Run TestVault -Count1`.
 Fixtures create and drop their own schemas and contain synthetic secrets only.
 Stop with `credential-vault-lab.ps1 -Action Stop`.
+
+Linux CI runs `scripts/dev/credential-vault-tests.sh` with pgvector/PostgreSQL
+and Chromium. Required migration, vault, policy, API, wait/resume and browser
+tests must execute without skips. Parent consent pins task/constraint versions;
+SMS source revocation also invalidates metadata at the final dispatch check.

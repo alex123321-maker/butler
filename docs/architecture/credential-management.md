@@ -59,7 +59,10 @@ login-code candidates travel in a private, bounded in-memory path, never Room
 or notification memory. The server requires exactly one active OTP challenge
 under an approved password-access request; task/browser/origin/account versions
 remain pinned. Ambiguity, stale/hidden notifications and payment/reset messages
-fall back to manual entry. Route/device revocation blocks code release. Ordinary
+fall back to manual entry. Route/device revocation blocks code release.
+OTP creation must match the parent password consent's session, task and constraint
+versions. SMS source validity is checked again through credential metadata at
+the final Broker dispatch check, including separately approved actions. Ordinary
 SMS copies are masked before queue persistence when relay is enabled. No SMS
 reading permission or Android redaction bypass is added. Physical-device SMS
 acceptance is separate from local server/extractor tests.

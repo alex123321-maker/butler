@@ -82,7 +82,7 @@ func (v *Vault) CreateRequest(ctx context.Context, p Principal, callID, kind, re
 		return AccessRequest{}, ErrVault
 	}
 	if parentID != "" {
-		if kind != "otp" || tx.QueryRow(ctx, `SELECT p.record_id,p.record_revision FROM credential_vault_requests p JOIN credential_vault c ON c.id=p.record_id AND c.owner_id=p.owner_id WHERE p.id=$1 AND p.owner_id=$2 AND p.run_id=$3 AND p.browser_session_id=$4 AND p.target_origin=$5 AND p.state='approved' AND p.kind IN ('access','create') AND p.fields ? 'password' AND p.expires_at>now() AND c.status='active' AND c.revision=p.record_revision FOR SHARE OF p,c`, parentID, p.OwnerID, p.RunID, browser, origin).Scan(&recordID, &rev) != nil {
+		if kind != "otp" || tx.QueryRow(ctx, `SELECT p.record_id,p.record_revision FROM credential_vault_requests p JOIN credential_vault c ON c.id=p.record_id AND c.owner_id=p.owner_id WHERE p.id=$1 AND p.owner_id=$2 AND p.run_id=$3 AND p.browser_session_id=$4 AND p.target_origin=$5 AND p.session_key=$6 AND p.task_id=$7 AND p.task_revision=$8 AND p.constraints_revision=$9 AND p.state='approved' AND p.kind IN ('access','create') AND p.fields ? 'password' AND p.expires_at>now() AND c.status='active' AND c.revision=p.record_revision FOR SHARE OF p,c`, parentID, p.OwnerID, p.RunID, browser, origin, p.SessionKey, p.TaskID, p.TaskRevision, p.ConstraintsRevision).Scan(&recordID, &rev) != nil {
 			return AccessRequest{}, ErrVault
 		}
 	}
@@ -203,6 +203,12 @@ func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
 	var target, kind string
 	var rev int64
 	if v.Pool.QueryRow(ctx, `SELECT q.id,q.target_origin,q.kind,q.record_revision FROM credential_vault_requests q LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.id=$1 AND q.state='approved' AND q.expires_at>now() AND (q.kind='otp' OR (c.status='active' AND c.revision=q.record_revision))`, alias).Scan(&r.Alias, &target, &kind, &rev) != nil {
+		return Record{}, ErrVault
+	}
+	// Metadata is re-read immediately before dispatch, after private resolution.
+	// A revoked SMS route/device or expired OTP must invalidate that check even
+	// when a separate action approval exists and account metadata is unchanged.
+	if kind == "otp" && !otpSourceCurrent(ctx, v.Pool, alias) {
 		return Record{}, ErrVault
 	}
 	u, err := url.Parse(target)

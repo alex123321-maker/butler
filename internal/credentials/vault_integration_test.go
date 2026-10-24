@@ -169,6 +169,17 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 	if v.Respond(ctx, "owner", parent.ID, second.ID, true, "") != nil {
 		t.Fatal("SMS parent approval")
 	}
+	t.Run("parent_consent_pins_task_versions", func(t *testing.T) {
+		if _, e := pool.Exec(ctx, `UPDATE tasks SET constraints_revision=2 WHERE task_id='task'`); e != nil {
+			t.Fatal(e)
+		}
+		defer pool.Exec(ctx, `UPDATE tasks SET constraints_revision=1 WHERE task_id='task'`)
+		changed := p
+		changed.ConstraintsRevision = 2
+		if _, e := v.CreateRequest(ctx, changed, "stale-parent", "otp", "", "https://different.example/otp", "browser", "Finish sign in", []string{"otp"}, parent.ID); e == nil {
+			t.Fatal("old password consent authorized an OTP under changed constraints")
+		}
+	})
 	sms, err := v.CreateRequest(ctx, p, "sms-challenge", "otp", "", "https://different.example/otp", "browser", "Finish sign in", []string{"otp"}, parent.ID)
 	if err != nil {
 		t.Fatal("SMS challenge")
@@ -218,6 +229,11 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 	if _, err = v.ResolveField(ctx, call, smsMeta, "otp"); err == nil {
 		t.Fatal("disabled source released SMS code")
 	}
+	t.Run("revoked_sms_source_invalidates_metadata", func(t *testing.T) {
+		if _, e := v.GetByAlias(ctx, sms.ID); e == nil {
+			t.Fatal("final dispatch metadata survived SMS route revocation")
+		}
+	})
 	route.Enabled = true
 	if v.SaveSMSRoute(ctx, "owner", route) != nil {
 		t.Fatal("enable source")
@@ -241,4 +257,16 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 	if v.Lock(ctx, "owner", token) != nil || v.CheckUnlock(ctx, "owner", token) == nil {
 		t.Fatal("lock")
 	}
+	t.Run("migration_rollback_and_reapply", func(t *testing.T) {
+		down, e := os.ReadFile(filepath.Join("..", "..", "migrations", "096_credential_vault.down.sql"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(down)); e != nil {
+			t.Fatal("vault rollback", e)
+		}
+		if _, e = pool.Exec(ctx, string(migration)); e != nil {
+			t.Fatal("vault reapply", e)
+		}
+	})
 }

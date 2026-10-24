@@ -135,3 +135,20 @@ full-schema native run remains separate.
 Android may hide OTP content. The relay never bypasses that protection and does
 not read old SMS from the message database. Arbitrary website login success and
 external side effects still require the existing separate evidence/authority.
+
+
+## Review before merging the local implementation
+
+The review reproduced and fixed three defects: an OTP could inherit password
+consent across changed task constraints; SMS route revocation left metadata
+usable by a final dispatch check; cross-origin Web requests could not send the
+vault unlock header. Regression cases now cover all three and migration 096
+rollback/reapply. The new Credential vault acceptance workflow requires the
+complete ordered migration chain on pgvector/PostgreSQL, vault/policy/API/kernel
+cases, and Broker/runtime Chromium E2E without skipped required tests.
+
+Fresh local review checks passed PostgreSQL vault/policy/Broker/API and kernel
+wait/resume tests, Orchestrator/Input/Telegram/mobile/workspace/browser-control
+regressions and Go vet. Web typecheck/lint and all three credential-vault browser
+scenarios passed. Physical SMS and native Telegram acceptance remain the separate
+limitations described above. Prototype HTML files are excluded from this merge.
