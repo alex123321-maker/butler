@@ -151,3 +151,58 @@ silently approved. Closing the local publication uncertainty explicitly retained
 `action_56a8dba2404859ee5e7350e77f5eeb52519c1a0d4ddd822a0d48614789fc5d1e`
 as effect_unknown and kept its spending/evidence. No journal entry was cleared or
 relabelled as success, and no pending result was resent.
+
+## Successful autonomous original-query acceptance
+
+Final Core release: `research-delivery-final-20261024-7f301231` on laba,
+SHA256 `d9447d4f988a97bae7b28e9c4b95f3a3ddf8bce58c174181ba8d9dd5fe8f0a09`.
+Broker remains the owner-reply build, SHA256
+`593f3e46ed75649afde99b68450068460b591b50680343cdccab2f0dcf7cac41`;
+WebFetch SHA256
+`6fbccbe1f4fbb3c5a303203a88756a2d7acc1385861602e3b053757e1f3d6785`.
+Web remains the tested execution-notices build. Migration099 applied through the
+owning migrator; only Core was recreated for this final deployment.
+
+The exact original Russian phrase was submitted with delivery ID
+`research-full-acceptance-20261024`, without season/date/source hints:
+
+- Input `input-7dfe97c2bbeecf12c1996e43eaa6c8bb`;
+- run `run-1792859508689893734-29808f2b74b24937`;
+- both Input and run completed, no error, at `2026-10-24T16:33:26Z`;
+- **zero approvals** for this entire run, no operator intervention after ingress;
+- canonical purpose=result message
+  `publication:5dd52d4f86e2c03c53649dd3c63a7c8a17e471b3bd00ac762a7a2a4f783c5804`;
+- Telegram sent with real ACK148; Web result_ready and protected direct result GET
+  HTTP200 returned that canonical publication and the current-season answer;
+- Web finished notice is available; Telegram finished is intentionally superseded
+  by the actual result, without an extra generic completion message;
+- prepared context contains a kernel UTC clock and three initial schemas,
+  including the canonical reply method; reference history stays bounded;
+- ten tool calls: catalog search/load, four internet searches (one failed), three
+  page reads and one completed communication.message. The failed search did not
+  become evidence or block reading other sources. The unknown read journal stays;
+- eleven provider model attempts have known prompt/candidate observations:
+  166751 prompt-input tokens, 1266 visible candidate-output tokens. These are not
+  an invoice or a reconstruction of High thinking/total-cost dimensions;
+- finite Input conversation scope used 12 charged turns (including local work)
+  and 92274815 reserved provider-byte allowance units. Old session/day scopes and
+  previous failed attempt spending were not reset or edited.
+
+The response correctly identifies the current third season, its premiere,
+weekly Japanese broadcast slot with an explicit Moscow conversion, and the next
+cour's month. The key broadcast claims match the independently checked official
+On Air/news pages linked above. Autonomous publication, run completion, Web
+availability and Telegram ACK are each observed separately. This qualifies the
+requested bounded example, not universal model research quality.
+
+Remaining quality limits: the first query still assumed season2 before updating
+from live results; the final text cited Wikipedia rather than the preferred
+first-party schedule and included unrequested prior-season/film background. One
+DuckDuckGo query failed. The result is useful and reached both channels, but it
+is not evidence that source choice, brevity or arbitrary future search-provider
+availability are solved. No title-specific answer/date/routing logic was added.
+
+Operational limit: laba's root filesystem was almost full during validation.
+Bounded tmpfs isolated our tests/builds; unrelated Docker data was not pruned.
+That server capacity issue remains separate from these code fixes. The PR stays
+draft and unmerged; the explicit laba deployment is ahead of repository main.
