@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/executionnotice"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
@@ -29,8 +30,9 @@ var ErrResolved = errors.New("interaction already resolved")
 var ErrDraining = errors.New("communication admission is draining")
 
 type Store struct {
-	Pool   *pgxpool.Pool
-	Inputs *durableinput.Store
+	ExecutionNotices *executionnotice.Store
+	Pool             *pgxpool.Pool
+	Inputs           *durableinput.Store
 	// Only a composed Web reader/planner can promise availability. Dormant
 	// foundation and previously pending history retain their original epoch.
 	WebAvailable bool

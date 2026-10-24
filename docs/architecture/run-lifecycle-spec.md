@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+The explicit owner composition reconciles saved Input lifecycle into fixed
+execution notices (migration097) independently of model continuation and
+publication obligations. A timeout, budget stop, failed source/authority read
+or UNKNOWN action can therefore produce a safe owner-visible failure without
+new inference. Notice state, action outcome, attempt result, task completion
+and channel receipt remain separate. Only actual Telegram ACK means sent;
+Web availability is not proof of a client read. Kernel notice delivery never
+retries a model or action. See [communication](user-communication-spec.md).
+
 Credential vault requests use the existing durable interaction checkpoint with
 kind `credential_interaction`, distinct from preference questions and action
 approvals. Core joins task wait, Input suspension and coarse run wait under the

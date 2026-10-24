@@ -41,6 +41,33 @@ async function communications(page: Page, current: () => Publication[] = () => [
   })
 }
 
+test('kernel states explain failures without a model publication and open owner approvals', async ({ page }) => {
+  await communications(page, () => [])
+  let state = { notice_ref: 'execution:budget', input_ref: 'input:research', code: 'blocked', reason: 'budget', text: 'Обработка остановлена: не хватает доступного бюджета выполнения. Готовый ответ не получен.', delivery_state: 'available', created_at: '2026-10-24T12:00:00Z', approval_ref: '' }
+  await page.route('**/api/v3/communications/states', route => {
+    expect(route.request().headers().authorization).toBe(`Bearer ${ownerToken}`)
+    return route.fulfill({ json: { ready: true, items: [state] } })
+  })
+  await connect(page)
+  await expect(page.getByRole('alert').filter({ hasText: 'не хватает доступного бюджета' })).toBeVisible()
+  await page.locator('[data-execution-notice="input:research"]').screenshot({ path: test.info().outputPath('kernel-budget-notice.png') })
+  await expect(page.locator('[data-publication]')).toHaveCount(0)
+  state = { ...state, notice_ref: 'execution:approval', code: 'approval_required', reason: '', text: 'Для продолжения требуется ваше подтверждение.', approval_ref: 'approval:research' }
+  await expect(page.getByRole('button', { name: 'Открыть подтверждения', exact: true })).toBeVisible()
+  await expect(page.locator('[data-execution-notice="input:research"]')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Открыть подтверждения', exact: true }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+})
+
+test('a status-read outage leaves independently checked publications available', async ({ page }) => {
+  await communications(page)
+  await page.route('**/api/v3/communications/states', route => route.fulfill({ status: 503, json: { error: 'unavailable' } }))
+  await connect(page)
+  await expect(page.getByRole('heading', { name: 'Полный отчёт 🧪', exact: true })).toBeVisible()
+  await expect(page.getByText('Состояние выполнения временно недоступно.', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Сообщение Батлеру', { exact: true })).toBeEnabled()
+})
+
 test('small cursor pages retain the complete visible history without duplicates', async ({ page }) => {
   await communications(page)
   const texts = ['Первая сохранённая публикация', 'Вторая сохранённая публикация', 'Последняя сохранённая публикация']

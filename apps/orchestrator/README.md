@@ -1,3 +1,11 @@
+Explicit owner profiles with migration097 also deliver fixed kernel execution
+states through `internal/executionnotice`: queued/working, waiting, errors,
+budget stops and missing replies remain visible without inference. Web reads
+`/api/v3/communications/states`; Telegram uses durable claims/ACKs and never
+replays unknown sends. New binding versions do not adopt old backlog. Logging
+observations are not channel deliveries. This does not publish model finals or
+change action authority, task completion or budgets.
+
 Credential vault support adds a protected owner endpoint, six-digit PIN/session
 controls and durable `credential_interaction` waits. Secret form bodies bypass
 ordinary ingress/transcripts. Core resumes safe request metadata under the live

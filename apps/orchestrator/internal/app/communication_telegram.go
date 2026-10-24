@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
+	"github.com/butler/butler/apps/orchestrator/internal/executionnotice"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -195,6 +196,15 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly, widgets: o.Widgets}
 	c.installInputHooks()
 	if err = c.installWeb(ctx, o, guard); err != nil {
+		return nil, err
+	}
+	targets := []executionnotice.Binding{{ID: b.ID, Version: b.Version, OwnerID: o.OwnerID, Channel: b.Channel, Recipient: b.Recipient}}
+	if c.web != nil {
+		w := c.web.binding
+		targets = append(targets, executionnotice.Binding{ID: w.ID, Version: w.Version, OwnerID: o.OwnerID, Channel: w.Channel, Recipient: w.Recipient})
+	}
+	core.ExecutionNotices, err = executionnotice.New(ctx, pool, targets)
+	if err != nil {
 		return nil, err
 	}
 	return c, nil

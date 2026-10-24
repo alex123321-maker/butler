@@ -72,6 +72,17 @@ export interface Publication {
 interface Profile { ready: boolean; binding_id: string; binding_version: number; drain_only?: boolean }
 export interface PublicationInput { message_id: string; session_ref: string; content: string; created_at: string }
 interface Page { items: Publication[]; messages?: PublicationInput[]; cursor: number; has_more: boolean }
+export interface ExecutionNotice {
+  notice_ref: string
+  input_ref: string
+  run_ref?: string
+  code: string
+  reason?: string
+  text: string
+  approval_ref?: string
+  delivery_state: string
+  created_at: string
+}
 
 // The stream carries invalidation only. Every reconnect replaces the loaded
 // pages from durable REST, including redacted entries and delivery outcomes.
@@ -82,6 +93,8 @@ export function useCommunicationFeed(
   const communicationProfile = ref<Profile | null>(null)
   const publications = ref<Publication[]>([])
   const publicationInputs = ref<PublicationInput[]>([])
+  const executionNotices = ref<ExecutionNotice[]>([])
+  const executionNoticeError = ref('')
   const publicationMore = ref(false)
   const communicationError = ref('')
   const replyPublication = ref<Publication | null>(null)
@@ -95,6 +108,8 @@ export function useCommunicationFeed(
     communicationProfile.value = null
     publications.value = []
     publicationInputs.value = []
+    executionNotices.value = []
+    executionNoticeError.value = ''
     replyPublication.value = null
     communicationError.value = ''
     communicationBlocked.value = false
@@ -111,6 +126,18 @@ export function useCommunicationFeed(
     try {
       const items: Publication[] = []
       const messages: PublicationInput[] = []
+      let states: ExecutionNotice[] = []
+      let stateError = ''
+      try {
+        const statesResponse = await read('/api/v3/communications/states')
+        if (statesResponse.ok) {
+          const data = await statesResponse.json() as { ready?: boolean; items?: ExecutionNotice[] }
+          if (data.ready === true && Array.isArray(data.items)) states = data.items
+        } else if (statesResponse.status !== 404) throw new Error('states_unavailable')
+      } catch {
+        stateError = 'Состояние выполнения временно недоступно.'
+      }
+      if (stamp !== epoch.value) return
       let after = 0, hasMore = false
       const targetItems = pages * 50
       // Server cursor pages are opaque and can contain one fully checked
@@ -130,6 +157,8 @@ export function useCommunicationFeed(
       }
       publications.value = [...new Map(items.map(p => [p.publication_ref, p])).values()]
       publicationInputs.value = [...new Map(messages.map(m => [m.message_id, m])).values()]
+      executionNotices.value = states
+      executionNoticeError.value = stateError
       publicationMore.value = hasMore
       if (replyPublication.value) {
         const latest = publications.value.find(p => p.publication_ref === replyPublication.value?.publication_ref)
@@ -141,6 +170,7 @@ export function useCommunicationFeed(
       if (stamp === epoch.value) {
         // Old private content cannot stay visible after an uncertain recheck.
         publications.value = []; publicationInputs.value = []; replyPublication.value = null
+        executionNotices.value = []
         communicationError.value = 'Публикации сейчас недоступны. Доступ проверяется заново.'
         communicationBlocked.value = true
       }
@@ -173,6 +203,7 @@ export function useCommunicationFeed(
             const frame = buffer.slice(0, end); buffer = buffer.slice(end + 2)
             if (frame.includes('event: reset')) {
               publications.value = []; publicationInputs.value = []; replyPublication.value = null
+              executionNotices.value = []
               communicationBlocked.value = true
               throw new Error('stream_reset')
             }
@@ -211,6 +242,6 @@ export function useCommunicationFeed(
       }
     }
   }
-  return { communicationProfile, publications, publicationInputs, publicationMore, communicationError,
+  return { communicationProfile, publications, publicationInputs, executionNotices, executionNoticeError, publicationMore, communicationError,
     communicationBlocked, communicationDraining, replyPublication, connectCommunications, loadPublications, clearCommunications }
 }

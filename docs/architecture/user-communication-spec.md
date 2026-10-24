@@ -1,5 +1,18 @@
 # Butler — общение агента с пользователем
 
+Migration097 adds kernel execution notices to the explicit owner composition.
+They are finite, source-free Input lifecycle facts, separate from publications,
+attempt finals and Task completion. A dedicated owning store reconciles durable
+queued/running/waiting/failed/budget/unknown states without inference or a model
+communication call. Web `/api/v3/communications/states` exposes latest current
+owner notices; Telegram sends the same fixed meanings with durable per-binding
+claims and actual ACKs. A binding/version activation watermark survives restart
+and prevents adoption of old backlog. Revoked targets and obsolete pending
+states cannot send; lost ACK remains UNKNOWN without automatic resend. Model
+error text, URLs, source snippets and user input never become notice text.
+Approval notices link to the existing protected owner approval UI and grant
+no action. Logging-only observations do not create channel sent receipts.
+
 Credential vault control cards are a separate secret-input capability. Existing
 text widget responses must not carry PIN/password/OTP. The two account cards are
 access-existing and create-account, plus a short-lived OTP challenge. Web opens

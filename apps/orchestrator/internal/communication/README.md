@@ -1,5 +1,11 @@
 # Communication kernel (dormant)
 
+Optional explicit owner composition attaches `executionnotice.Store` for
+source-free lifecycle facts. These are separate from model publications and
+their source/export proof. The protected `communications/states` endpoint can
+explain a denied/failed/budget-stopped input without model inference or exposing
+its context. Each binding has its own activation and actual delivery receipts.
+
 Canonical answer recovery uses shared Session/run proofs alongside retained Web
 readers, with current claim/lease/source checks and post-wait expiry validation.
 `interaction_resume_*` failures expose only fixed phases/reasons. The explicit
