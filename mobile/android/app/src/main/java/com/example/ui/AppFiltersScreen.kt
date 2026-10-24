@@ -82,6 +82,7 @@ fun AppFiltersScreen(
     onChangeFilterMode: (AppFilterMode) -> Unit,
     onToggleContentTransmission: (Boolean) -> Unit,
     onToggleMaskOtp: (Boolean) -> Unit,
+    onToggleLoginOtp: (Boolean) -> Unit = {},
     onTogglePackageEnabled: (String, Boolean) -> Unit,
     onAddCustomPackage: (String, String) -> Unit,
     modifier: Modifier = Modifier
@@ -264,6 +265,24 @@ fun AppFiltersScreen(
                                 modifier = Modifier.testTag("mask_otp_switch")
                             )
                         }
+                    )
+                    IosDivider()
+                    IosSettingsRow(
+                        title = "Передавать SMS-коды входа",
+                        icon = Icons.Default.Lock,
+                        iconBackgroundColor = IosGreen,
+                        trailing = {
+                            IosSwitch(
+                                checked = deviceConfig.allowLoginOtpRelay,
+                                onCheckedChange = onToggleLoginOtp,
+                                modifier = Modifier.testTag("login_otp_relay_switch")
+                            )
+                        }
+                    )
+                    Text(
+                        text = "Только для активного входа и разрешённого в хранилище отправителя. Коды не попадают в историю уведомлений. Скрытые Android коды недоступны.",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }

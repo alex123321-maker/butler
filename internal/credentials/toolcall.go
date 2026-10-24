@@ -26,6 +26,18 @@ func NewToolCallBroker(authorizer *Broker, resolver SecretResolver) *ToolCallBro
 	return &ToolCallBroker{authorizer: authorizer, resolver: resolver}
 }
 
+// ApprovedLocalUse checks an owner-issued vault grant without resolving a value.
+// It can authorize local preparation only; submission retains ordinary authority.
+func (b *ToolCallBroker) ApprovedLocalUse(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
+	if b == nil || call == nil || len(call.GetCredentialRefs()) == 0 {
+		return false
+	}
+	checker, ok := b.resolver.(interface {
+		CheckGrantedCall(context.Context, *toolbrokerv1.ToolCall) bool
+	})
+	return ok && checker.CheckGrantedCall(ctx, call)
+}
+
 func (b *ToolCallBroker) ResolveToolCall(ctx context.Context, call *toolbrokerv1.ToolCall) ([]ResolvedSecret, error) {
 	return b.resolve(ctx, call, nil)
 }
@@ -114,7 +126,7 @@ func (b *ToolCallBroker) resolve(ctx context.Context, call *toolbrokerv1.ToolCal
 		if err != nil {
 			return nil, err
 		}
-		if decision.RequiresApproval && (proof == nil || !proof.Approved) {
+		if decision.RequiresApproval && (proof == nil || !proof.Approved) && !(proof != nil && b.ApprovedLocalUse(ctx, call)) {
 			return nil, fmt.Errorf("credential alias %q requires approval: %s", decision.Record.Alias, decision.ApprovalReason)
 		}
 		if proof != nil {
@@ -122,7 +134,14 @@ func (b *ToolCallBroker) resolve(ctx context.Context, call *toolbrokerv1.ToolCal
 				return nil, fmt.Errorf("action authority changed before secret release")
 			}
 		}
-		value, err := b.resolver.ResolveSecretRef(ctx, decision.Record.SecretRef)
+		var value string
+		if scoped, ok := b.resolver.(interface {
+			ResolveField(context.Context, *toolbrokerv1.ToolCall, Record, string) (string, error)
+		}); ok {
+			value, err = scoped.ResolveField(ctx, call, decision.Record, ref.GetField())
+		} else {
+			value, err = b.resolver.ResolveSecretRef(ctx, decision.Record.SecretRef)
+		}
 		if err != nil {
 			return nil, secretResolutionError{cause: err}
 		}

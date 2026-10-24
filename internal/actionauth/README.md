@@ -1,5 +1,11 @@
 # Exact action authority
 
+Canonical local credential request/search controls can ask for owner input
+without granting any credential capability. An owner-approved vault request can
+authorize only its exact local browser preparation, with original Input claim,
+current origin/account/task versions and existing deny/autonomy checks. External
+submission remains under ordinary action and unknown-effect policy.
+
 Fixed `tools.search`/`tools.load` contracts are credential-free local catalog reads. Only exact owning contract hashes/resources qualify as standard catalog operations for ordinary/delegated work. Current input claims, authority, mode policy and explicit denials remain required; search results and loading never grant execution permission.
 
 

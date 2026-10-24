@@ -1,3 +1,11 @@
+Credential vault support adds a protected owner endpoint, six-digit PIN/session
+controls and durable `credential_interaction` waits. Secret form bodies bypass
+ordinary ingress/transcripts. Core resumes safe request metadata under the live
+lease/task revisions. Optional Telegram cards use an operator HTTPS
+`BUTLER_PUBLIC_WEB_URL`, durable send/edit claims and current channel checks.
+`BUTLER_CREDENTIAL_KEY_FILE` enables the vault; use migration096 and
+`deploy/docker-compose.credentials.yml`. See `internal/credentials/README.md`.
+
 Profile model sections preserve each selected preference's scope, source handles
 and complete text, including trailing exceptions. The full-context budget removes
 optional records whole; profile data never becomes owner authority. The combined

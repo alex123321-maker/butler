@@ -5,6 +5,9 @@ import com.example.data.local.ButlerDao
 import com.example.data.local.DiagnosticLogEntity
 import com.example.data.local.QueuedNotificationEntity
 import com.example.data.remote.ButlerMobileApiService
+import com.example.data.remote.LoginOtpApiService
+import com.example.data.remote.LoginOtpRequest
+import com.example.domain.LoginOtpExtractor
 import com.example.data.remote.LoopbackContractInspector
 import com.example.data.remote.LoopbackHttpOutcome
 import com.example.domain.NormalizationOutcome
@@ -30,6 +33,12 @@ import com.example.security.TransportPolicyValidator
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
@@ -71,10 +80,13 @@ class ButlerSyncRepository(
     private val normalizer: NotificationEventNormalizer = NotificationEventNormalizer(),
     val loopbackInspector: LoopbackContractInspector = LoopbackContractInspector(),
     private val apiServiceOverride: ButlerMobileApiService? = null,
+    private val defaultSmsPackage: () -> String? = { null },
     private val notificationAccessGranted: () -> Boolean = { true }
 ) {
     private val syncMutex = Mutex()
     private val captureMutex = Mutex()
+    private val otpScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val otpSlots = java.util.concurrent.Semaphore(4)
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
@@ -267,6 +279,36 @@ class ButlerSyncRepository(
         }
 
         val latestForKey = dao.getLatestActiveEventForKey(snapshot.notificationKey)
+        val smsPackage = snapshot.packageName
+        if (!isInitialSnapshot && !snapshot.isGroupSummary && snapshot.messages.size <= 1 && !bypassPauseForManualTest && config.allowLoginOtpRelay && config.isContentTransmissionEnabled &&
+            smsPackage == defaultSmsPackage() && otpSlots.tryAcquire()) {
+            val message = snapshot.messages.singleOrNull()
+            val candidate = LoginOtpExtractor.extract(snapshot.notificationKey, message?.sender?.takeIf { it.isNotBlank() } ?: snapshot.title,
+                listOfNotNull(snapshot.text, snapshot.bigText, message?.text).joinToString(" "), snapshot.postedAtEpochMs,
+                System.currentTimeMillis(), snapshot.platformRedactedOtp || snapshot.visibility == com.example.model.NotificationVisibilityLevel.SECRET)
+            if (candidate == null) otpSlots.release() else otpScope.launch {
+                try {
+                    for (wait in listOf(0L, 3_000L, 5_000L, 10_000L, 10_000L, 10_000L)) {
+                        delay(wait)
+                        val live = credentialStore.state.value
+                        if (!live.allowLoginOtpRelay || !live.isContentTransmissionEnabled || !live.isPaired || live.isTokenRevoked || live.isSyncPaused ||
+                            !notificationAccessGranted() || defaultSmsPackage() != smsPackage) break
+                        val route = TransportPolicyValidator.validate(live.serverUrl, live.allowCleartextLocalHttp)
+                        if (!route.isValid || route.classification == RouteClassification.LOOPBACK_SANDBOX) break
+                        val deviceToken = credentialStore.getDecryptedDeviceToken() ?: break
+                        val accepted = withTimeoutOrNull(3_000) {
+                            try {
+                                val api = buildRetrofit(route.normalizedBaseUrl).create(LoginOtpApiService::class.java)
+                                val response = api.submit("Bearer $deviceToken", live.deviceId,
+                                    LoginOtpRequest(candidate.eventId, smsPackage, candidate.sender, candidate.code, candidate.postedAt))
+                                response.isSuccessful && response.body()?.accepted == true
+                            } catch (_: Exception) { false }
+                        }
+                        if (accepted == true) break
+                    }
+                } finally { otpSlots.release() }
+            }
+        }
         val priorState = latestForKey?.takeIf { it.changeType != "REMOVED" }?.let {
             PriorNotificationTrackingState(
                 lastDeviceEventId = it.deviceEventId,
@@ -279,7 +321,7 @@ class ButlerSyncRepository(
             isInitialSnapshot = isInitialSnapshot,
             priorState = priorState,
             isContentTransmissionEnabled = config.isContentTransmissionEnabled,
-            maskOtpAndBankCodes = config.maskOtpAndBankCodes,
+            maskOtpAndBankCodes = config.maskOtpAndBankCodes || (config.allowLoginOtpRelay && snapshot.packageName == defaultSmsPackage()),
             deterministicEventId = deterministicEventId
         )
 
@@ -1108,7 +1150,9 @@ class ButlerSyncRepository(
         }
     }
 
-    private fun buildRetrofitApi(normalizedBaseUrl: String): ButlerMobileApiService {
+    private fun buildRetrofitApi(normalizedBaseUrl: String): ButlerMobileApiService = buildRetrofit(normalizedBaseUrl).create(ButlerMobileApiService::class.java)
+
+    private fun buildRetrofit(normalizedBaseUrl: String): Retrofit {
         val okHttp = OkHttpClient.Builder()
             .connectTimeout(8, TimeUnit.SECONDS)
             .readTimeout(12, TimeUnit.SECONDS)
@@ -1123,7 +1167,6 @@ class ButlerSyncRepository(
             .client(okHttp)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-            .create(ButlerMobileApiService::class.java)
     }
 
     companion object {

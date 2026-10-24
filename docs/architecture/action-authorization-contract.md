@@ -1,5 +1,22 @@
 # Exact action authorization
 
+The migration096 credential vault adds fixed local `credentials.*` controls.
+Their canonical schema/hash, owning Input claim, live context and explicit
+denials remain mandatory. Asking for a protected owner interaction grants no
+credential use. A current owner-approved vault request can authorize only exact
+`browser.prepare_fill/prepare_type` local preparation after scope/version checks;
+external submission retains ordinary approval/mandate and unknown-effect gates.
+The request is not a broad mandate, and a site hint is not a static allowlist.
+
+A standing owner-goal mandate cannot enumerate future random request IDs.
+After Broker pins current credential metadata, finite `creq_<64hex>` field
+references may satisfy its credential-locator scope for revision2 local browser
+preparation. This grants no secret access by itself: Vault independently checks
+the live consent, owner/run/browser/origin/field/account/task versions at release.
+Standing tool, resource, effect, time, privacy and explicit-denial boundaries
+remain mandatory, including at the PostgreSQL dispatch commit. Static aliases,
+token fields and external submission do not receive this exception.
+
 The dormant communication foundation binds exact method/args/contract and a
 digest of enabled verified destination snapshots to the current Input claim.
 Only message/widget can become ready through explicit kernel composition;

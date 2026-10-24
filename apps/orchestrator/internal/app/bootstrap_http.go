@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/credentials"
 	"log/slog"
 	"net/http"
 	"os"
@@ -239,6 +240,11 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		browserController = browserClient
 	}
 	mux.Handle("/api/v4/server-browser", apiservice.ServerBrowser(deps.ownerAuth, browserController))
+	var credentialVault *credentials.Vault
+	if interactions := credentialInteractions(deps.postgres.Pool()); interactions != nil {
+		credentialVault = interactions.Vault
+	}
+	mux.Handle("/api/v4/credentials", apiservice.CredentialVault(deps.ownerAuth, credentialVault))
 	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth, !deps.budgetPolicy.DisableOwnerDay, !deps.budgetPolicy.DisableConversationModelTurns))
 	var extensionClient *extensions.ControlClient
@@ -306,6 +312,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v4/memory", memoryCatalogServer.Handle())
 	mobileStore := &mobile.Store{Pool: deps.postgres.Pool(), Catalog: deps.sourceCatalog}
 	mobileServer := &apiservice.MobileServer{Store: mobileStore, Auth: deps.ownerAuth}
+	if credentialVault != nil {
+		mobileStore.OTPRelay = credentialVault
+	}
 	mux.Handle("/api/v1/mobile/", mobileServer.DeviceHandler())
 	mux.Handle("/api/v1/mobile-owner/", mobileServer.OwnerHandler())
 	mux.Handle("/api/v4/memory/", memoryCatalogServer.Handle())

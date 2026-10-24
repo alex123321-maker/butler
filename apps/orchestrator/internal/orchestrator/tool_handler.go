@@ -338,6 +338,24 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
+	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp"
+	if credentialRequest && (err != nil || result == nil || result.GetStatus() != "failed") {
+		if s.config.Credentials == nil {
+			return nil, current, ErrActionOutcomeUnknown
+		}
+		_ = s.discardProviderContext(ctx, current.GetRunId())
+		_, suspendErr := s.config.Credentials.SuspendRequest(ctx, current.GetRunId(), toolCallID)
+		if suspendErr != nil {
+			// A lost local checkpoint ACK must not poison an already durable wait.
+			return nil, current, ErrCommunicationStatePending
+		}
+		// The protected card is delivered by the durable credential notifier.
+		stored, loadErr := s.runs.GetRun(ctx, current.GetRunId())
+		if loadErr != nil {
+			return nil, current, ErrCommunicationStatePending
+		}
+		return nil, stored, ErrApprovalSuspended
+	}
 	if requested.ToolName == "communication.widget" && s.config.Communication != nil {
 		pendingID, pendingErr := s.config.Communication.PendingInteraction(ctx, current.GetRunId())
 		if pendingErr != nil || pendingID != "" || (err == nil && result.GetStatus() == "completed") {

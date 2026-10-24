@@ -1,5 +1,93 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+## Current credential vault contract (migration 096)
+
+This section supersedes the historical V1 alias/env/domain-list design below.
+The production Broker no longer installs the metadata-only Store or an env
+resolver. Old records are not imported and no compatibility fallback exists.
+Provider control-plane authentication remains separate from user account records.
+
+`credential_vault` stores owner-scoped alias/title/account/site-hint metadata,
+independent AES-GCM encrypted username/password fields and a monotonic revision.
+AEAD associated data binds owner, record and field. Exact login lookup uses an
+owner-scoped keyed index; model projections and ordinary owner lists contain no
+stored login/password values. Identical logins can have different passwords in
+different records. Site hints organize records, never restrict destinations.
+
+The operator mounts a random key file (32+ characters) referenced by
+`BUTLER_CREDENTIAL_KEY_FILE` in Core and Broker. There is no plaintext fallback.
+The Web bookmark is fixed at the right-center edge. First access sets/repeats a
+six-cell PIN; later access unlocks the sidebar. PIN is secondary owner control,
+not the encryption key. A server-keyed verifier, durable attempt backoff and a
+five-minute sliding unlock capability enforce it. PIN changes revoke unlocks.
+Closing/locking clears private form state. Owner-authenticated
+`/api/v4/credentials` accepts secret input outside Input/transcript/communication
+answer ingestion. Secret request bodies and raw errors must never be logged.
+
+Fixed Broker-owned `credentials.search`, `request_access`, `request_create`,
+`request_otp` and `request_status` return safe metadata only. Search and request
+creation release no values. Existing-record and create-record cards are distinct.
+Creation alone grants no use; “save and allow” performs both owner operations.
+Browser target metadata comes from the owning server-browser observation. A
+request pins owner/session/run/task and constraint revisions, browser session,
+origin, fields, record revision and expiry. Changing site requires renewed
+consent; this is an exact-use constraint, not a static account domain allowlist.
+
+Credential requests suspend the owning Input with `credential_interaction` and
+reuse the coarse waiting run state. They create no generic approval record.
+Protected responses atomically ready that same Input; Core resumes with request
+state/field references only. Early responses survive the old worker's finish.
+Live lease/fence, task authority, record version and origin remain checked.
+Record edits/revocation invalidate grants. Maintenance expires requests and OTPs
+and wakes eligible waits; cancelled or paused tasks cannot revive old workers.
+
+Broker sends resolved values separately to the runtime. Approved request IDs
+are `credential_ref.alias`; fields select independent values. Owner consent can
+authorize only the pinned local preparation contract. Submission retains normal
+action, privacy, budget and unknown-effect guards. Runtime `credential_verified`
+confirms equality at the moment of private field comparison, exposing no value,
+hash or length. It proves neither remote acceptance nor successful login.
+Reflected values remain masked in observations.
+
+Manual OTP uses the protected form, two-minute encrypted transient material in
+PostgreSQL and reservation to one exact tool call. Reservation permits live
+Broker revalidation, not replay of a dispatch. Maintenance deletes expired OTP
+ciphertext; ordinary backups may retain encrypted bytes. The optional Android
+SMS relay has its own owner opt-in on the phone and a protected per-account
+route (paired device, default SMS application package, exact sender). Fresh
+login-code candidates travel in a private, bounded in-memory path, never Room
+or notification memory. The server requires exactly one active OTP challenge
+under an approved password-access request; task/browser/origin/account versions
+remain pinned. Ambiguity, stale/hidden notifications and payment/reset/password-change messages
+fall back to manual entry. Route/device revocation blocks code release.
+OTP creation must match the parent password consent's session, task and constraint
+versions. SMS source validity is checked again through credential metadata at
+the final Broker dispatch check, including separately approved actions. Ordinary
+SMS copies are masked before queue persistence when relay is enabled. No SMS
+reading permission or Android redaction bypass is added. Physical-device SMS
+acceptance is separate from local server/extractor tests.
+
+Web polls metadata-only cards. Telegram delivers protected control cards under
+a durable claim with an operator HTTPS `BUTLER_PUBLIC_WEB_URL` link to the
+owner-authenticated Web form. The fragment is a locator, never authority. No
+secret passes through chat/callback/`sendData`. Verified bot/binding and export
+checks remain required; ambiguous sends/edits are never automatically replayed.
+This baseline uses Web owner authentication rather than Telegram Mini App auth.
+
+Current account-vault grants support browser preparation fields only. Historical
+HTTP/extension `env://` token aliases are unavailable and fail closed; an account
+grant must never implicitly authorize HTTP headers or extension token access.
+
+See [implementation/acceptance](../planning/credential-vault-implementation.md),
+[operations](../../internal/credentials/README.md), and the optional
+[Compose overlay](../../deploy/docker-compose.credentials.yml).
+
+## Historical V1 design and adjacent provider contracts
+
+The V1 `/cred` commands, static alias domain policies and `env://` bootstrap
+below are historical design, not the current vault API. Provider/operator
+boundaries continue to apply independently.
+
 The operator-only [emoji research importer](telegram-emoji-research.md) reuses
 the Telegram client's private token/proxy references for bounded public catalog
 and fixed-host file reads. It registers no model tool or product capability,

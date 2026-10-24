@@ -1,5 +1,12 @@
 # Butler Web
 
+The credential vault bookmark is fixed at the right-center edge after owner
+connection. It opens a six-cell PIN setup/unlock and a sidebar for account CRUD,
+access/create requests, protected manual OTP and per-account SMS routing.
+Unlocks/forms remain in page memory; locking clears private state. Protected
+requests use a separate endpoint rather than ordinary chat/widget responses.
+Credential-entry Playwright tests explicitly disable screenshots/traces/video.
+
 Nuxt 3, Vue 3, TypeScript and Pinia. One continuous owner page contains the
 calendar, observed work, conversation, recent memory and incoming decisions.
 features/mind replaces the former dashboard, sidebar, layout and route pages.

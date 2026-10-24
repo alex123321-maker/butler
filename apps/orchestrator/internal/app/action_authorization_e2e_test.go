@@ -196,8 +196,20 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	authority := httptest.NewServer(actionauth.NewContextHandler(token, reader))
 	defer authority.Close()
 	secret := "private-browser-password-7"
-	_, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: "browser-account", SecretType: "password", TargetType: "browser", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.prepare_fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_BROWSER_TEST_SECRET", MetadataJSON: "{}"})
+	vaultKey := strings.Repeat("synthetic-vault-key-", 3)
+	keyPath := filepath.Join(t.TempDir(), "vault-key")
+	if err = os.WriteFile(keyPath, []byte(vaultKey), 0600); err != nil {
+		t.Fatal(err)
+	}
+	vault, err := credentials.NewVault(pool, vaultKey)
 	if err != nil {
+		t.Fatal(err)
+	}
+	entry, err := vault.Save(ctx, "owner", credentials.EntryInput{Alias: "browser-account", Title: "Browser fixture", Username: "fixture-login", Password: secret})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,task_id,run_id,status,claim_id,claim_expires_at) VALUES('fixture-input',$1,'fixture-input','fixture-input','web','owner','{}',$2,$3,'running','fixture-claim',now()+interval '5 minutes')`, sessionKey, record.TaskID, run.GetRunId()); err != nil {
 		t.Fatal(err)
 	}
 	var submits atomic.Int32
@@ -243,7 +255,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal("private token fixture unavailable")
 	}
 	brokerAddress := freeAddress(t)
-	childService(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH="+catalogPath, "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_BROWSER_TEST_SECRET="+secret, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
+	childService(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH="+catalogPath, "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_CREDENTIAL_KEY_FILE="+keyPath, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
 	client, err := tools.DialWithTokenFile(brokerAddress, tokenPath)
 	if err != nil {
 		t.Fatal(err)
@@ -331,19 +343,24 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		return map[string]any{"browser_session_id": observation["browser_session_id"], "expected_url": observation["final_url"], "observation_version": observation["observation_version"], "selector": selector}
 	}
 	dispatch(newCall("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
-	password := args("#password")
-	password["value"] = map[string]string{"type": "credential_ref", "alias": "browser-account", "field": "password"}
-	ref := &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-account", Field: "password"}
-	denied := newCall("browser.prepare_fill", password, ref)
-	prepared, err := client.PrepareAction(ctx, denied)
-	if err != nil || !prepared.RequiresApproval {
-		t.Fatal("credential preparation did not require approval")
+	request, err := vault.CreateRequest(ctx, credentials.Principal{OwnerID: "owner", SessionKey: sessionKey, RunID: run.GetRunId(), TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision}, "fixture-vault-request", "access", entry.ID, observation["final_url"].(string), observation["browser_session_id"].(string), "Sign in to the disposable fixture", []string{"password"})
+	if err != nil {
+		t.Fatal(err)
 	}
-	if _, err := client.AuthorizeAction(ctx, denied, prepared.Binding.ActionID, "", ""); err == nil {
-		t.Fatal("unapproved credential action allowed")
+	password := args("#password")
+	password["value"] = map[string]string{"type": "credential_ref", "alias": request.ID, "field": "password"}
+	ref := &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: request.ID, Field: "password"}
+	denied := newCall("browser.prepare_fill", password, ref)
+	if _, err := client.PrepareAction(ctx, denied); err == nil {
+		t.Fatal("pending vault request granted credential access")
+	}
+	if err = vault.Respond(ctx, "owner", request.ID, entry.ID, true, ""); err != nil {
+		t.Fatal(err)
 	}
 	passwordCall := newCall("browser.prepare_fill", password, ref)
-	dispatch(passwordCall)
+	if result := dispatch(passwordCall); !strings.Contains(result.ResultJson, `"credential_verified":true`) {
+		t.Fatal("runtime did not privately verify the credential field")
+	}
 	for _, field := range []struct{ id, value string }{{"a", "one"}, {"b", "two"}} {
 		request := args("#" + field.id)
 		request["value"] = field.value
@@ -356,11 +373,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	}
 	approvalID := approve(buy, p)
 	// An exact approved password action is not reusable for the submit action.
-	var priorApproval string
-	if err := pool.QueryRow(ctx, `SELECT approval_id FROM approval_actions WHERE action_id=$1`, actionauth.StableActionID(run.GetRunId(), passwordCall.GetToolCallId())).Scan(&priorApproval); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := client.AuthorizeAction(ctx, buy, p.Binding.ActionID, priorApproval, ""); err == nil {
+	if _, err := client.AuthorizeAction(ctx, buy, p.Binding.ActionID, request.ID, ""); err == nil {
 		t.Fatal("credential preparation approval authorized submit")
 	}
 	grant, err := client.AuthorizeAction(ctx, buy, p.Binding.ActionID, approvalID, "")

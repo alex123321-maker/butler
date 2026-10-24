@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+The optional credential vault installs canonical Broker-owned `credentials.*`
+controls only when its mounted operator key is available. Registry JSON cannot
+replace them. Core owns durable owner interaction waits; Broker owns search,
+request admission and scoped field release. Browser runtime compares a resolved
+field privately and returns `credential_verified`, never values/hash/length.
+This does not prove remote login or weaken submission/unknown-effect policy.
+
 Fixed memory read/process controls apply their strict typed argument decoder
 during Broker validation, before effect preparation and dispatch. Numeric bounds
 and cross-field rules therefore cannot first fail after a dispatch is journalled.

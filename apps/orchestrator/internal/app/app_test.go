@@ -102,11 +102,26 @@ func TestCORSMiddlewareHandlesSettingsPreflight(t *testing.T) {
 	if got := RR.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, PUT, DELETE, OPTIONS" {
 		t.Fatalf("unexpected allowed methods header: %q", got)
 	}
-	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization, X-Butler-Delivery-ID, Last-Event-ID" {
+	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization, X-Butler-Delivery-ID, Last-Event-ID, X-Butler-Vault" {
 		t.Fatalf("unexpected allowed headers: %q", got)
 	}
 	if got := RR.Header().Get("Access-Control-Allow-Origin"); got != "*" {
 		t.Fatalf("unexpected allowed origin: %q", got)
+	}
+}
+
+func TestCredentialVaultCrossOriginPreflight(t *testing.T) {
+	handler := corsMiddleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("preflight reached protected endpoint")
+	}))
+	req := httptest.NewRequest(http.MethodOptions, "/api/v4/credentials", nil)
+	req.Header.Set("Origin", "https://butler-web.example")
+	req.Header.Set("Access-Control-Request-Method", http.MethodPost)
+	req.Header.Set("Access-Control-Request-Headers", "authorization,content-type,x-butler-vault")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent || !contains(rr.Header().Get("Access-Control-Allow-Headers"), "X-Butler-Vault") {
+		t.Fatal("browser cannot send vault unlock capability to a separate Core origin")
 	}
 }
 

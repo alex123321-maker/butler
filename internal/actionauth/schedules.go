@@ -2,6 +2,7 @@ package actionauth
 
 import "github.com/butler/butler/internal/schedulecontrol"
 import "github.com/butler/butler/internal/toolcatalog"
+import "github.com/butler/butler/internal/credentialcontrol"
 
 // EffectiveMandateTools includes fixed kernel schedule controls for owner-goal
 // work. These controls manage work in the current conversation; they do not add
@@ -16,6 +17,11 @@ func EffectiveMandateTools(m Mandate) []string {
 		}
 	}
 	if m.ScopeKind == "owner_goal" {
+		for _, c := range credentialcontrol.Contracts() {
+			if !contains(tools, c.ToolName) {
+				tools = append(tools, c.ToolName)
+			}
+		}
 		for _, contract := range schedulecontrol.Contracts() {
 			if !contains(tools, contract.ToolName) {
 				tools = append(tools, contract.ToolName)

@@ -1,5 +1,13 @@
 # Butler — Memory Model Specification
 
+Credential vault form bodies, PINs, decrypted account fields and OTP candidates
+never enter Transcript, Working, Episodic, Profile or vector memory. Protected
+owner/device endpoints bypass ordinary event/message ingestion. The approved
+request reference and field/status metadata may resume a task. Explicit SMS
+relay sends a transient login candidate through a private device endpoint before
+ordinary notification normalization; the ordinary queue retains its masked
+version. Ciphertext and content-free receipts are vault state, not memory sources.
+
 The [mobile memory/search contract](mobile-memory-search.md) adds task-scoped
 notification context, atomically searchable notes and explicit local automatic
 index maintenance. Vector publication remains separate from fact acceptance.

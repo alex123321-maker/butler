@@ -32,7 +32,8 @@ data class DeviceConfigurationState(
     val lastErrorCategory: String?,
     val loopbackSimulationMode: LoopbackSimulationMode,
     val pendingPairingSessionId: String?,
-    val pendingVerificationCode: String?
+    val pendingVerificationCode: String?,
+    val allowLoginOtpRelay: Boolean = false
 )
 
 /**
@@ -165,6 +166,12 @@ class DeviceCredentialStore(
     }
 
     @Synchronized
+    fun setLoginOtpRelay(enabled: Boolean) {
+        prefs.edit().putBoolean("allow_login_otp_relay", enabled).apply()
+        refreshState()
+    }
+
+    @Synchronized
     fun setAppFilterMode(mode: AppFilterMode) {
         prefs.edit().putString(KEY_APP_FILTER_MODE, mode.name).apply()
         refreshState()
@@ -272,7 +279,8 @@ class DeviceCredentialStore(
             lastErrorCategory = prefs.getString(KEY_LAST_ERROR_CATEGORY, null),
             loopbackSimulationMode = simMode,
             pendingPairingSessionId = prefs.getString(KEY_PENDING_PAIRING_SESSION_ID, null)?.let { runCatching { cryptoManager.decryptText(it) }.getOrNull() },
-            pendingVerificationCode = prefs.getString(KEY_PENDING_VERIFICATION_CODE, null)
+            pendingVerificationCode = prefs.getString(KEY_PENDING_VERIFICATION_CODE, null),
+            allowLoginOtpRelay = prefs.getBoolean("allow_login_otp_relay", false)
         )
     }
 

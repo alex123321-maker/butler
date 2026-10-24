@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/mobile"
 	"github.com/butler/butler/internal/owneridentity"
 )
@@ -148,6 +149,18 @@ func (s *MobileServer) DeviceHandler() http.Handler {
 			return
 		}
 		switch path {
+		case "otp/login":
+			var candidate credentials.SMSCandidate
+			if mobileDecode(w, r, &candidate) != nil {
+				mobileError(w, mobile.ErrInvalid)
+				return
+			}
+			accepted, err := s.Store.RelayLoginSMS(r.Context(), device, token, candidate)
+			if err != nil {
+				mobileError(w, err)
+				return
+			}
+			mobileJSON(w, 200, map[string]bool{"accepted": accepted})
 		case "notifications/batch":
 			if r.Header.Get("X-Butler-Schema-Version") != "1" {
 				mobileError(w, mobile.ErrInvalid)

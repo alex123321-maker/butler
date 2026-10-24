@@ -47,3 +47,11 @@ Run `go test ./internal/mobile` on Linux with
 fixture uses a fresh schema, all migrations, MaxConns2 and a real deletion anchor.
 Without that variable integration cases explicitly skip, which is not acceptance.
 See [protocol and operations](../../docs/architecture/android-companion.md).
+
+Optional SMS login relay uses a separate `/api/v1/mobile/otp/login` endpoint.
+It authenticates and locks the paired device, applies a device rate limit, then
+delegates matching/encryption to the credential subsystem in the same transaction.
+It never creates a catalog source, accepted Input or model message. Account
+route permissions plus an unambiguous approved login challenge are required;
+device authentication alone is insufficient. The endpoint returns only accepted
+or declined, never the code or matched account. See the credential vault spec.

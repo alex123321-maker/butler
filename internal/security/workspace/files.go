@@ -16,7 +16,7 @@ var ErrDenied = errors.New("workspace file access denied")
 // symlink races. Only normalized relative paths and bounded regular files are
 // admitted. Butler builders require a currently patched Go release.
 func ReadRegular(rootPath, name string, limit int64) ([]byte, error) {
-	if name == "" || filepath.IsAbs(name) || !filepath.IsLocal(name) || strings.HasSuffix(name, "/") || strings.HasSuffix(name, "\\") || strings.Contains(name, "\\") || filepath.Clean(name) != name || strings.ContainsRune(name, 0) || limit <= 0 {
+	if name == "" || filepath.IsAbs(name) || !filepath.IsLocal(name) || strings.HasSuffix(name, "/") || strings.HasSuffix(name, "\\") || strings.Contains(name, "\\") || filepath.ToSlash(filepath.Clean(name)) != name || strings.ContainsRune(name, 0) || limit <= 0 {
 		return nil, ErrDenied
 	}
 	for _, part := range strings.Split(name, "/") {

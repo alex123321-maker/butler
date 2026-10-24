@@ -330,6 +330,9 @@ func normalizeRefs(refs []CredentialRef) []CredentialRef {
 	return result
 }
 func actionResource(tool string, args map[string]any) (string, error) {
+	if strings.HasPrefix(tool, "credentials.") {
+		return "tool:" + tool, nil
+	}
 	if tool == "workspace.read" || tool == "workspace.write" {
 		id, _ := args["workspace_id"].(string)
 		decoded, err := hex.DecodeString(id)
@@ -366,9 +369,9 @@ func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
 	case "tools.search", "tools.load", "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox":
 		return EffectRead
-	case "schedule.list", "schedule.get":
+	case "schedule.list", "schedule.get", "credentials.search", "credentials.request_status":
 		return EffectRead
-	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel":
+	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp":
 		return EffectPrepare
 	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare

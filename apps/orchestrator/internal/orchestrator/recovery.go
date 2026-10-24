@@ -65,8 +65,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	}
 	var continuation approvalContinuation
 	var decision approvals.Record
-	interactionWait := checkpoint.Interaction.Kind == "communication_interaction" && (stage == "awaiting_interaction" || stage == "interaction_ready")
-	if interactionWait && (s.config.Communication == nil || checkpoint.Interaction.Version != 1 || checkpoint.Interaction.ID == "") {
+	credentialWait := checkpoint.Interaction.Kind == "credential_interaction"
+	interactionWait := (checkpoint.Interaction.Kind == "communication_interaction" || credentialWait) && (stage == "awaiting_interaction" || stage == "interaction_ready")
+	if interactionWait && ((!credentialWait && s.config.Communication == nil) || (credentialWait && s.config.Credentials == nil) || checkpoint.Interaction.Version != 1 || checkpoint.Interaction.ID == "") {
 		return blockedApprovalResult(current, "interaction_not_resumable"), nil
 	}
 	if interactionWait && stage == "awaiting_interaction" {
@@ -169,7 +170,13 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		if stage != "interaction_ready" {
 			return blockedApprovalResult(current, "interaction_not_ready"), nil
 		}
-		answer, resumeErr := s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+		var answer string
+		var resumeErr error
+		if credentialWait {
+			answer, resumeErr = s.config.Credentials.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+		} else {
+			answer, resumeErr = s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+		}
 		if resumeErr != nil {
 			if errors.Is(resumeErr, context.Canceled) || errors.Is(resumeErr, context.DeadlineExceeded) {
 				return nil, resumeErr

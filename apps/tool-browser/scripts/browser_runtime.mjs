@@ -179,6 +179,7 @@ async function execute(request) {
   if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
+  let credentialVerified
   session.allowWriteRequests = ['browser.click', 'browser.fill', 'browser.type'].includes(tool)
   // The Go proxy opens a bounded click window, but page traffic remains frozen
   // until the exact live observation and URL guards above succeed.
@@ -197,8 +198,16 @@ async function execute(request) {
         const locator = session.page.locator(request.selector)
         const password = await locator.evaluate(element => element instanceof HTMLInputElement && element.type === 'password', null, { timeout })
         if (password && !request.secret_values?.length) return errorResult('credential_required', 'password inputs require a broker-resolved credential_ref')
+        const typedPrefix = request.secret_values?.length && (tool === 'browser.type' || tool === 'browser.prepare_type') ? await locator.inputValue({ timeout }) : ''
         if (tool === 'browser.fill' || tool === 'browser.prepare_fill') await locator.fill(request.value || '', { timeout })
         else await locator.pressSequentially(request.text || '', { timeout })
+        if (request.secret_values?.length) {
+          // Compare only the exact value privately delivered for this operation.
+          // Never return a value, digest, length or per-character feedback.
+          const expected = (tool === 'browser.fill' || tool === 'browser.prepare_fill') ? request.value : typedPrefix + request.text
+          credentialVerified = await locator.evaluate((element, value) => 'value' in element && element.value === value, expected, { timeout })
+          if (!credentialVerified) return errorResult('credential_mismatch', 'page did not retain the authorized credential value')
+        }
         break
       }
       case 'browser.wait_for':
@@ -227,7 +236,7 @@ async function execute(request) {
     // A new observation is returned after effects, so fill A -> fill B -> click
     // can use each returned version without silently reloading the page.
     if (tool === 'browser.click') session.networkFrozen = true
-    return { ...await observe(session), ...(localPreparation ? { local_preparation: true } : {}) }
+    return { ...await observe(session), ...(localPreparation ? { local_preparation: true } : {}), ...(credentialVerified === undefined ? {} : { credential_verified: credentialVerified }) }
   } catch (err) {
     session.version++
     session.dirty = true

@@ -132,7 +132,7 @@ func TestSchedulesStandardCapabilityPreservesAuthorityBounds(t *testing.T) {
 	}
 	m := testOwnerMandate(now)
 	before := len(m.Tools)
-	if len(EffectiveMandateTools(m)) != before+7 || len(m.Tools) != before {
+	if len(EffectiveMandateTools(m)) != before+12 || len(m.Tools) != before {
 		t.Fatal("effective kernel tools mutated stored mandate")
 	}
 	m.ScopeKind = ""

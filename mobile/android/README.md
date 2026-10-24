@@ -58,3 +58,20 @@ mobile data without a route. HTTP is a deliberate local debug option, off by
 default. Red TLS errors must be fixed at the server/certificate, never bypassed.
 See [protocol/retention/threat boundaries](../../docs/architecture/android-companion.md)
 and [executed test report](../../docs/testing/issue-57-android.md).
+
+Optional SMS login codes: enable the separate switch in App filters, with text
+transmission and notification access enabled, then configure the account's
+phone, actual default SMS package and exact sender in the unlocked Web vault.
+Only new, fresh, non-summary SMS notifications with one login code are relayed.
+The candidate stays in memory for bounded retries and is never written to Room
+or diagnostics. SMS queue copies stay masked while relay is enabled. Payment,
+transfer/reset messages and multiple candidates are refused. Pause, permission
+withdrawal and disconnect stop new relay attempts. No READ_SMS/RECEIVE_SMS or
+redaction bypass is used; Android-hidden codes and process death require manual
+entry. Local extractor/wire tests and APK compilation do not prove real phone
+delivery; see [vault acceptance](../../docs/testing/credential-vault-2026-10-24.md).
+
+
+Login-code relay rejects password reset, change/update and recovery notifications
+in addition to payment context, including generic verification/security wording.
+These messages remain on the protected manual path.

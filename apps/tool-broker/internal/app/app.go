@@ -21,6 +21,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/config"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
@@ -91,6 +92,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		return nil, err
 	}
 	for _, c := range registryStore.List("", true) {
+		if strings.HasPrefix(c.GetToolName(), "credentials.") {
+			return nil, fmt.Errorf("credential contracts require canonical private composition")
+		}
 		if strings.HasPrefix(c.GetToolName(), "communication.") {
 			return nil, fmt.Errorf("communication contracts require canonical private composition")
 		}
@@ -100,15 +104,16 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 	}
 	var postgres *postgresstore.Store
 	var credentialResolver *credentials.ToolCallBroker
+	var credentialVault *credentials.Vault
 	if cfg.Postgres.URL != "" {
 		postgres, err = postgresstore.Open(ctx, postgresstore.ConfigFromShared(cfg.Postgres), log)
 		if err != nil {
 			return nil, err
 		}
-		credentialResolver = credentials.NewToolCallBroker(
-			credentials.NewBroker(credentials.NewStore(postgres.Pool()), credentials.NewAuditStore(postgres.Pool())),
-			credentials.EnvSecretResolver{},
-		)
+		credentialVault, _ = credentials.VaultFromEnvironment(postgres.Pool())
+		if credentialVault != nil {
+			credentialResolver = credentials.NewToolCallBroker(credentials.NewBroker(credentialVault, credentials.NewAuditStore(postgres.Pool())), credentialVault)
+		}
 	}
 	if cfg.DelegationEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.DelegationControlURL == "") {
 		if postgres != nil {
@@ -454,6 +459,14 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 				return nil, err
 			}
 			executor = &broker.ScheduleExecutor{Schedules: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
+		if credentialVault != nil {
+			if err = registryStore.RegisterOwned(credentialcontrol.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.CredentialExecutor{Vault: credentialVault, Contexts: reader, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if communicationEndpoint != "" {
