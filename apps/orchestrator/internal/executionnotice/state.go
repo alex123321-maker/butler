@@ -46,6 +46,8 @@ func classify(s snapshot) (code, reason string) {
 		reason = "budget"
 	case strings.Contains(s.ErrorCode, "timeout"), strings.Contains(s.ErrorCode, "deadline"), s.Status == "expired":
 		reason = "timeout"
+	case s.ErrorCode == "provider_unavailable" || s.ErrorCode == "transport_connection_error" || s.ErrorCode == "rate_limited" || s.ErrorCode == "model_capacity_unavailable":
+		reason = "model_unavailable"
 	case s.ErrorCode == "effect_unknown":
 		reason = "uncertain_action"
 	case strings.HasPrefix(s.ErrorCode, "memory_source_"):
@@ -82,6 +84,8 @@ func Text(code, reason string) string {
 			return "Обработка остановлена: превышено время ожидания."
 		case "uncertain_action":
 			return "Обработка остановлена: результат последнего действия не подтверждён. Перед продолжением нужна проверка его состояния."
+		case "model_unavailable":
+			return "Обработка остановлена: сервис модели сейчас недоступен. Можно повторить запрос позже."
 		case "source_unavailable":
 			return "Обработка остановлена: не удалось подтвердить доступ к использованным данным."
 		default:

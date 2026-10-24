@@ -1,5 +1,11 @@
 # Exact action authorization
 
+The receiving Core dispatch verifier recognizes the same canonical mode2/3
+owner reply rule as Broker. It still requires permanently claimed exact action/
+grant/effect identity and then live admission/Input/destination/source guards.
+Other prepare controls continue to require their original approval or mandate.
+
+
 Canonical communication replies to the current owner's operator-pinned
 channels are standard capabilities in mode2/3. They require the explicit owning
 admission, exact fixed contract, current Input claim, destination hash and source/

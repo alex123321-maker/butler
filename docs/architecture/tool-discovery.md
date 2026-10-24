@@ -1,5 +1,12 @@
 # Tool discovery and deferred schemas
 
+An admitted explicit owner request receives the already permitted canonical
+communication.message schema immediately, avoiding catalog turns just to reply.
+Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts
+are not inserted. Schema byte limits remain unchanged; the fixed reply schema
+has one separate count slot alongside the two catalog controls.
+
+
 Discovery explicitly distinguishes tools.search (tool catalog) from web.search
 (internet). Internet search uses ordinary exact schema selection, Broker policy
 and runtime execution; loading does not grant search authority.

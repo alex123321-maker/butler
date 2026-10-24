@@ -1,5 +1,11 @@
 # Durable input
 
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
 Heartbeat cancellation distinguishes lost claims from unavailable renewal with
 fixed codes, keeping parent deadlines and independent Core/provider diagnoses.
 `CloseStoppedTx` joins authenticated owner failure acknowledgement for taskless

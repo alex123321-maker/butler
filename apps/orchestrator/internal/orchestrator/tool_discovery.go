@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
+	"github.com/butler/butler/internal/communicationcontrol"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/security/content"
@@ -80,10 +81,35 @@ func (s *Service) selectToolContracts(ctx context.Context, runID string, contrac
 	if len(result) != 2 {
 		return nil, nil, fmt.Errorf("tool discovery requires matching Broker catalog controls")
 	}
+	// The current explicit owner always needs a way to receive a response.
+	// Selection uses only the already permitted canonical contract, never
+	// inventing channel readiness or bypassing Broker authorization.
+	if s.config.Communication != nil {
+		explicit, err := s.config.Communication.Explicit(ctx, runID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if explicit {
+			for _, c := range contracts {
+				if c.ToolName == "communication.message" && proto.Equal(c, communicationcontrol.Contract(c.ToolName)) {
+					result = append(result, c)
+				}
+			}
+		}
+	}
+	seen := map[string]bool{}
+	for _, c := range result {
+		seen[c.ToolName] = true
+	}
 	stale := []string{}
 	for _, ref := range refs {
 		if resolved, ok := toolcatalog.Resolve(contracts, []string{ref}); ok {
-			result = append(result, resolved...)
+			for _, c := range resolved {
+				if !seen[c.ToolName] {
+					result = append(result, c)
+					seen[c.ToolName] = true
+				}
+			}
 		} else {
 			stale = append(stale, ref)
 		}
@@ -96,7 +122,14 @@ func (s *Service) selectToolContracts(ctx context.Context, runID string, contrac
 }
 
 func selectionFits(contracts []*toolbrokerv1.ToolContract) bool {
-	if len(contracts) > toolcatalog.MaxLoaded+2 {
+	maxCount := toolcatalog.MaxLoaded + 2
+	for _, c := range contracts {
+		if c.ToolName == "communication.message" && proto.Equal(c, communicationcontrol.Contract(c.ToolName)) {
+			maxCount++
+			break
+		}
+	}
+	if len(contracts) > maxCount {
 		return false
 	}
 	defs := toolDefinitionsFromContracts(contracts)

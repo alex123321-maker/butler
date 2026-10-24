@@ -1,5 +1,17 @@
 # Butler — общение агента с пользователем
 
+The receiving Core dispatch verifier recognizes the same canonical mode2/3
+owner reply rule as Broker. It still requires permanently claimed exact action/
+grant/effect identity and then live admission/Input/destination/source guards.
+Other prepare controls continue to require their original approval or mandate.
+
+
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
 Canonical communication replies to the current owner's operator-pinned
 channels are standard capabilities in mode2/3. They require the explicit owning
 admission, exact fixed contract, current Input claim, destination hash and source/

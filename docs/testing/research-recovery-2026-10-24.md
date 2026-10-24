@@ -105,3 +105,49 @@ The repair makes only the existing exact owner reply family a standard mode2/3
 capability under its pinned explicit admission. Mode1/0, source/export guards,
 recipient/claim/revision checks, budgets and uncertain effects remain in force.
 The narrow blocked/question unknown-effect exception is not widened for results.
+
+### Subsequent native failures and receiving-boundary repair
+
+After a66ac871, Input `input-3e59636b66999b3c014399efa5396bb3`
+(run `run-1792858533180442951-5c7b111d441957e4`) stopped after catalog search/load:
+provider_unavailable. Protected provider status still reported connected with a
+future expiry, so this is not evidence of missing owner credentials. The saved
+Input had only execution_stopped, exposing a lost transport diagnosis. Migration099
+and the worker now retain the safe finite subtype and render a model-unavailable
+notice without provider/private details. No automatic provider replay was added.
+
+Input `input-31fe278ea1aff89a1fa77f686120b39f`
+(run `run-1792858744428758619-30e1bbb74852d7c4`) completed two internet searches
+and a page read, then proposed a normal result without approval. Broker allowed
+it; receiving Core's shared dispatched-control verifier still required approval
+for every prepare. No result publication was saved. The effect stayed unknown,
+while the communication kernel saved/delivered its fixed blocked notice
+(publication `publication:624fe9a5f965abdaa39f5ef534dd2f9944aefa1420e0d91d95f80bf3a3bb874f`,
+Telegram ACK144, Web result_ready). Neither that notice nor model completion is a
+successful answer. The private HTTP layer intentionally returned only a bounded
+denial, making native end-to-end acceptance necessary despite separate unit passes.
+
+The receiving verifier now recognizes only the exact fixed owner reply family
+with mode2/3, a pinned claim/destination and actual permanent dispatch proof.
+Its publication transaction still checks current admission, sources/exports and
+binding. Other prepare controls retain approval/mandate checks. New PostgreSQL
+matrix covers mode2 success, mode1 denial, missing claim and revoked destination;
+related receipt/one-connection/expiry/revocation regressions passed: 13 cases/
+subcases, no skips. Migration099 notice/worker cause checks passed: 20 cases/
+subcases, no skips; race/vet passed. Windows full Orchestrator unit suite passed.
+
+The explicitly admitted canonical communication.message schema is now available
+from the first turn, avoiding two catalog turns merely to reply; absent/legacy
+or unpermitted methods are not inserted, duplicate loads do not duplicate schemas.
+The research instruction prefers first-party pages and marks unsupported secondary
+claims unverified, separates versions/time zones/DST and omits unrequested history.
+An independent primary-source oracle was checked without feeding title-specific
+facts into Butler: https://kusuriyanohitorigoto.jp/season3//onair/ and
+https://kusuriyanohitorigoto.jp/news/2623/ .
+
+Each failed diagnostic Input was closed via protected owner API with exact
+checkpoint/error/binding preconditions. The obsolete approval was rejected, never
+silently approved. Closing the local publication uncertainty explicitly retained
+`action_56a8dba2404859ee5e7350e77f5eeb52519c1a0d4ddd822a0d48614789fc5d1e`
+as effect_unknown and kept its spending/evidence. No journal entry was cleared or
+relabelled as success, and no pending result was resent.

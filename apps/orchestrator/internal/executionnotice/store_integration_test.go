@@ -234,3 +234,15 @@ func TestExecutionNoticeOwnerHTTPReadWithoutPublicationIntegration(t *testing.T)
 		}
 	}
 }
+
+func TestExecutionNoticeModelFailureIsSpecificAndSourceFreeIntegration(t *testing.T) {
+	f := setup(t)
+	f.state(t, "blocked", "provider_unavailable")
+	if err := f.store.Sweep(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	items, err := f.store.List(f.actor("owner"), "web")
+	if err != nil || len(items) != 1 || items[0].Reason != "model_unavailable" || !strings.Contains(items[0].Text, "сервис модели") || strings.Contains(items[0].Text, "synthetic-private") {
+		t.Fatal(items, err)
+	}
+}

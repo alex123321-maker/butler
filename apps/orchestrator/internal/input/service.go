@@ -332,7 +332,7 @@ func (s *Service) process(parent context.Context, r Record) {
 			s.finish(parent, r, "queued", "result_persistence_pending", "saved final answer awaits durable persistence", time.Duration(1<<min(r.Attempts, 6))*time.Second)
 			return
 		}
-		code := "execution_stopped"
+		code, message := executionFailure(err)
 		var claimCause *claimCancellation
 		if errors.As(err, &claimCause) {
 			code = claimCause.Error()
@@ -349,7 +349,6 @@ func (s *Service) process(parent context.Context, r Record) {
 		if errors.Is(err, context.DeadlineExceeded) {
 			code = "execution_deadline_exceeded"
 		}
-		message := err.Error()
 		if doctorAdmission(r.CheckpointJSON) {
 			message = "diagnostic execution stopped; inspect bounded error code"
 		}

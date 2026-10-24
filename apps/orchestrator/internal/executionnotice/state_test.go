@@ -16,6 +16,7 @@ func TestExecutionNoticeClassification(t *testing.T) {
 		{"waiting_for_user", "awaiting_approval", "", "approval:1", false, "approval_required", ""},
 		{"waiting_for_user", "awaiting_interaction", "", "", false, "waiting_for_user", ""},
 		{"blocked", "execution_stopped", "budget_provider_input_bytes_conversation", "", false, "blocked", "budget"},
+		{"blocked", "model_budget_reserved", "provider_unavailable", "", false, "blocked", "model_unavailable"},
 		{"blocked", "tool_dispatching", "effect_unknown", "", false, "blocked", "uncertain_action"},
 		{"failed", "model_budget_reserved", "execution_deadline_exceeded", "", false, "failed", "timeout"},
 		{"failed", "prepared", "arbitrary-password-query-raw-provider-error", "", false, "failed", "execution_failed"},

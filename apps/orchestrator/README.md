@@ -1,5 +1,18 @@
 Explicit owner profiles with migration097 also deliver fixed kernel execution
 
+An admitted explicit owner request receives the already permitted canonical
+communication.message schema immediately, avoiding catalog turns just to reply.
+Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts
+are not inserted. Schema byte limits remain unchanged; the fixed reply schema
+has one separate count slot alongside the two catalog controls.
+
+
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
 Migration098 gives new verified explicit taskless Inputs finite per-input
 conversation allowance while preserving Session ordering. Retries/resume reuse
 it; old work retains session/day. Context includes two completed published

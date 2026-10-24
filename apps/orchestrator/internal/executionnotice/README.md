@@ -1,5 +1,11 @@
 # Execution notices
 
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
 Kernel-owned, fixed Russian lifecycle notifications for the explicit owner
 communication profile (migration097). PostgreSQL Input/approval/publication
 facts determine queued, working, waiting, blocked, failed and missing-response
