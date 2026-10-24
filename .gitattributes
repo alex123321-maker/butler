@@ -14,3 +14,6 @@
 # Reviewed memory fixtures retain exact signed bytes across host checkouts.
 /testdata/acceptance/ru-memory-v*.json -text
 /testdata/acceptance/reviews/ru-memory-v*-rejected-proposal*.json -text
+/testdata/acceptance/issue76-context-*.json -text whitespace=cr-at-eol
+/testdata/acceptance/results/issue76-context-*.json -text whitespace=cr-at-eol
+/scripts/dev/issue76-analyze.ps1 -text

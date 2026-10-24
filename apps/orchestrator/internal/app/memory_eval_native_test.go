@@ -47,6 +47,9 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if c.freeAnswer {
 		schema = acceptance.MemorySemanticSchema()
 	}
+	if len(c.nativeSchema) > 0 {
+		schema = c.nativeSchema
+	}
 	o = acceptance.MemoryObservation{CaseID: i.CaseID, Arm: i.Arm, Model: c.plan.Model, ModelVersion: "", Runtime: c.plan.Runtime, InputSHA256: acceptance.MemoryInputDigest(i), Status: "failed", Reason: "not_admitted", Output: json.RawMessage("null"), Outcome: acceptance.MemoryOutcome{EvidenceSHA256: acceptance.MemoryDigest([]string{i.CaseID, i.Arm, "no_external_tool_definitions"}), PermissionViolation: &falseValue, PrivacyViolation: &falseValue, StopViolation: &falseValue, DeletionViolation: &falseValue}}
 	if i.SkipReason != "" {
 		o.Status = "skipped"
