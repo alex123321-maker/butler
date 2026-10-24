@@ -206,6 +206,11 @@ SSE `/events?cursor=...` принимает также `Last-Event-ID` и пер
 invalidation, без текста/refs. REST остаётся источником истины. Клиент после
 reconnect и каждого pulse перечитывает загруженные страницы, включая delivery
 changes/privacy, удаляет недоступные bytes/object URLs и не дублирует transcript.
+SSE читает только монотонный cursor публикаций текущего owner/binding/version
+под блокировкой verified binding. Pulse не перечитывает payload, media и графы
+источников и не удерживает Session/transcript locks старой истории. Он не
+разрешает содержимое: REST feed/detail/media сохраняют полную актуальную проверку
+Catalog/export и блокировки до сборки ответа, включая отзыв между pulse и REST.
 Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof
 останавливает stream, запросы, очищает publications/receipts/drafts и media URLs.
 HTTP instrumentation сохраняет Flusher; это проверяется настоящим HTTP stream.

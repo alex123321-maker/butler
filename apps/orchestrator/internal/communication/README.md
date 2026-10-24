@@ -174,6 +174,11 @@ are in [verification](../../../../docs/ai/communication-backend-full-acceptance-
 # Authorized Web projection
 
 `WebReader` reads only publications pinned to its current owner Web binding.
+`RefreshCursor` checks that binding and reads its monotonic owner-scoped sequence
+without loading historical payloads, media or source graphs. SSE invalidation
+therefore cannot retain transcript locks behind an answer publication. A pulse
+grants no content access; subsequent REST reads still perform the full current
+Catalog/export proof, including revocation after the pulse.
 Feed/detail/download recheck current Catalog/export and retained media; an
 unavailable entry carries no copied payload or manifests. Artifact reads are
 limited to the selected publication's required refs and validate digest/size.
