@@ -25,6 +25,13 @@ func TestFunctionCandidatePassesOrdinaryBrokerSchemaOnly(t *testing.T) {
 			}
 			continue
 		}
+		if call.Name == "read_webpage" {
+			// The frozen local catalog mastered v1, not bounded reader v3.
+			if contract.ContractRevision != "3" || !errors.Is(e, functionproposal.ErrDenied) {
+				t.Fatal("changed reader contract implicitly mastered", e)
+			}
+			continue
+		}
 		if e != nil {
 			t.Fatal(e)
 		}

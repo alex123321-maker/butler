@@ -22,6 +22,10 @@ self-created tools. It only normalizes a proposal; current owner input, run/task
 revision, scope, permission and budget checks remain in ordinary orchestration
 and Broker Prepare/Authorize/Claim. Shadow DATA cannot establish those proofs.
 
+The frozen v1 `read_webpage` proposal intentionally refuses the current
+`web.fetch` revision 3 window contract, as `check_system` refuses Doctor v2.
+This research change does not retrain or automatically requalify the local model.
+
 All model calls remain disabled in the normal catalog and no core route is wired.
 Unknown command/schema, ambiguous parameters, unsupported duration/chaining,
 invalid model output or disabled experiment retain the ordinary controller route.

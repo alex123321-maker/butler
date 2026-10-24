@@ -26,6 +26,7 @@ func documentLinks(body, finalURL string) []DocumentLink {
 	}
 	var external, local []DocumentLink
 	seen := map[string]bool{}
+	linkBytes := 0
 	var visit func(*html.Node)
 	visit = func(n *html.Node) {
 		if n.Type == html.ElementNode && (n.Data == "script" || n.Data == "style" || n.Data == "nav" || n.Data == "header" || n.Data == "footer") {
@@ -49,12 +50,17 @@ func documentLinks(body, finalURL string) []DocumentLink {
 					}
 					seen[u.String()] = true
 					link := DocumentLink{URL: u.String(), Text: text}
+					if linkBytes+len(link.URL)+len(link.Text) > 12*1024 {
+						break
+					}
 					if strings.EqualFold(u.Hostname(), base.Hostname()) {
 						if len(local) < 12 {
 							local = append(local, link)
+							linkBytes += len(link.URL) + len(link.Text)
 						}
 					} else if len(external) < 40 {
 						external = append(external, link)
+						linkBytes += len(link.URL) + len(link.Text)
 					}
 					break
 				}

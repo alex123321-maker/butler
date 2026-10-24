@@ -1105,7 +1105,7 @@ runtime serializes the actual page. This protocol is excluded from model tool
 schemas and transcripts. Legacy `single_tab.*` contracts are disabled in the
 standard catalog. See [browser owner control](browser-session-contract.md#owner-viewing-and-manual-control).
 
-## Retrieval observations (WebFetch revision 2)
+## Retrieval observations (WebFetch revision 3)
 
 `web.fetch` and batch items return bounded readable anchor links and the runtime
 observation timestamp. Links are untrusted discovery DATA and still require a

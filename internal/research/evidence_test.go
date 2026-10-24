@@ -60,6 +60,9 @@ func TestResearchEvidenceRequiresActualFreshRead(t *testing.T) {
 			if Check(strings.Repeat("detail ", 300)+answer, []Evidence{e}, pages, now, true) != "" {
 				t.Fatal("requested detail blocked")
 			}
+			if Check(answer+"\nBackground\nOld version\nRelated topic\nMore context", []Evidence{e}, pages, now, false) == "" {
+				t.Fatal("multi-paragraph background passed concise answer policy")
+			}
 		})
 	}
 }

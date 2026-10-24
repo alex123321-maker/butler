@@ -12,7 +12,7 @@ follow primary references from overview pages, and check publisher, announcement
 date, current edition, region and platform. Search rank and a word “official” do
 not establish authority. Documents remain untrusted DATA.
 
-`web.fetch` revision 2 returns a server observation timestamp and bounded public
+`web.fetch` revision 3 returns a server observation timestamp and bounded public
 links (up to 40 external and 12 same-host), including when plain HTTP extraction
 omits HTML. This is discovery metadata, never an official-source label. Fetch
 batches retain partial failures and carry the same metadata per successful item.
@@ -27,7 +27,7 @@ failed reads, old runs and reads older than 24 hours cannot qualify. Observation
 time does not establish the age of the announcement or the occurrence of an event.
 Semantic correctness and source choice still require evaluation across subjects.
 
-The default researched message is at most 1800 characters. Explicit requests
+The default researched message is at most four nonempty lines and 1800 characters. Explicit requests
 for detailed work can be longer. Default answers lead with the requested fact,
 include direct links and material uncertainty, and omit unrelated history and
 research narration. A known failed research attempt may instead publish a concise
@@ -86,3 +86,26 @@ existing overlap/intervention behavior. Source and binding guards run again.
 No product title, publisher, date or domain-specific answer is in runtime policy.
 Integration evidence and native planning quality are reported separately in the
 testing report; passing scripted checks does not prove general model reliability.
+
+## Bounded model text windows (reader revision 3)
+
+WebFetch's 2 MiB upstream body bound is separate from model context. Fetch returns
+12000 Unicode code points by default; `max_characters` allows 256–24000.
+`content_window` reports the returned/available characters, next offset and full
+available-text hash. Continue with `text_offset` and `expected_text_hash`; a changed
+page is a known validation failure rather than silently stitched evidence. The
+available length describes the IO-bounded body, not an assertion of the entire
+remote document. `metadata.upstream_truncated` preserves that distinction.
+
+Batch reads share 24000 returned text characters across their pages; URL/inline
+extraction returns at most 12000. HTML output is also bounded. Discovery links
+share a 12 KiB aggregate byte budget. Existing UTF-8/MIME, DNS, 2 MiB body and
+3 MiB serialized-wire guards remain. A truncated window cannot establish facts
+in omitted material: read the needed section or another primary page.
+
+Native research exposed an archive-context regression and an overlong answer:
+the initial Go check used 1664871 observed prompt tokens over six attempts and
+included unrequested supported-version background. That history remains charged.
+Reader windows and the four-nonempty-line default address those general failure
+classes; subsequent measurements are recorded separately, not reset or combined
+with a claim about invoice cost. Explicit detailed requests retain their scope.

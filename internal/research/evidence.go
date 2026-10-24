@@ -194,6 +194,17 @@ var links = regexp.MustCompile(`https?://[^\s<>"\x60\]\)]+`)
 // Check returns finite actionable feedback. Primary attribution still needs
 // semantic evaluation: an opened page or a word "official" cannot prove it.
 func Check(text string, evidence []Evidence, pages []Page, now time.Time, detailed bool) string {
+	if !detailed {
+		lines := 0
+		for _, line := range strings.Split(text, "\n") {
+			if strings.TrimSpace(line) != "" {
+				lines++
+			}
+		}
+		if lines > 4 {
+			return "Use at most four nonempty lines: the requested fact in one or two sentences, supporting links on one line, and at most one useful follow-up question. Remove related versions/events, history and other facts the owner did not ask for; omit a separate Sources heading."
+		}
+	}
 	if !detailed && utf8.RuneCountInString(text) > 1800 {
 		return "Keep the research answer within 1800 characters: requested facts, material uncertainty, source links and at most one useful follow-up. Omit background and the research process. Use a report only when the owner asked for detail."
 	}

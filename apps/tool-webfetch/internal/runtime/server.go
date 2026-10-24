@@ -36,6 +36,7 @@ type Provider interface {
 
 type FetchResult struct {
 	ObservedAt   string         `json:"observed_at"`
+	Window       *TextWindow    `json:"content_window,omitempty"`
 	Links        []DocumentLink `json:"links,omitempty"`
 	Provider     string         `json:"provider"`
 	RequestedURL string         `json:"requested_url"`
@@ -119,8 +120,11 @@ type Server struct {
 }
 
 type fetchArgs struct {
-	URL         string `json:"url"`
-	IncludeHTML bool   `json:"include_html,omitempty"`
+	URL              string `json:"url"`
+	IncludeHTML      bool   `json:"include_html,omitempty"`
+	TextOffset       int    `json:"text_offset,omitempty"`
+	MaxCharacters    int    `json:"max_characters,omitempty"`
+	ExpectedTextHash string `json:"expected_text_hash,omitempty"`
 }
 
 type fetchBatchArgs struct {
@@ -177,10 +181,17 @@ func (s *Server) executeFetch(ctx context.Context, req *runtimev1.ExecuteRequest
 	if strings.TrimSpace(args.URL) == "" {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "url is required")}, nil
 	}
+	if !validWindow(args.TextOffset, args.MaxCharacters, args.ExpectedTextHash) {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+	}
 
 	result, err := s.fetcher.Fetch(ctx, args.URL, args.IncludeHTML)
 	if err != nil {
 		return &runtimev1.ExecuteResponse{Result: fetchFailedResult(req, err)}, nil
+	}
+	result, err = windowFetch(result, args.TextOffset, args.MaxCharacters, args.ExpectedTextHash)
+	if err != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
 	}
 	return &runtimev1.ExecuteResponse{Result: completedResult(req, mustJSON(result))}, nil
 }
@@ -201,17 +212,22 @@ func (s *Server) executeFetchBatch(ctx context.Context, req *runtimev1.ExecuteRe
 			items = append(items, map[string]any{"error": "web resource unavailable or denied"})
 			continue
 		}
+		result, err = windowFetch(result, 0, min(defaultTextCharacters, maxTextCharacters/len(args.URLs)), "")
+		if err != nil {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+		}
 		items = append(items, map[string]any{
-			"observed_at":   result.ObservedAt,
-			"links":         result.Links,
-			"provider":      result.Provider,
-			"requested_url": result.RequestedURL,
-			"final_url":     result.FinalURL,
-			"status_code":   result.StatusCode,
-			"mime_type":     result.MIMEType,
-			"content_text":  result.ContentText,
-			"content_html":  result.ContentHTML,
-			"metadata":      result.Metadata,
+			"observed_at":    result.ObservedAt,
+			"content_window": result.Window,
+			"links":          result.Links,
+			"provider":       result.Provider,
+			"requested_url":  result.RequestedURL,
+			"final_url":      result.FinalURL,
+			"status_code":    result.StatusCode,
+			"mime_type":      result.MIMEType,
+			"content_text":   result.ContentText,
+			"content_html":   result.ContentHTML,
+			"metadata":       result.Metadata,
 		})
 	}
 
@@ -252,20 +268,29 @@ func (s *Server) executeExtract(ctx context.Context, req *runtimev1.ExecuteReque
 	if text == "" && htmlContent != "" {
 		text = extractReadableText(htmlContent)
 	}
+	metadata := map[string]any{}
+	if fetched != nil {
+		metadata = fetched.Metadata
+	}
+	bounded, err := windowFetch(FetchResult{ContentText: text, ContentHTML: htmlContent, Metadata: metadata}, 0, defaultTextCharacters, "")
+	if err != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+	}
 
 	payload := map[string]any{
-		"url":          sourceURL,
-		"content_text": text,
+		"url":            sourceURL,
+		"content_text":   bounded.ContentText,
+		"content_window": bounded.Window,
+		"metadata":       bounded.Metadata,
 	}
 	if fetched != nil {
 		payload["status_code"] = fetched.StatusCode
 		payload["final_url"] = fetched.FinalURL
 		payload["mime_type"] = fetched.MIMEType
 		payload["provider"] = fetched.Provider
-		payload["metadata"] = fetched.Metadata
 	}
 	if args.IncludeHTML {
-		payload["content_html"] = htmlContent
+		payload["content_html"] = bounded.ContentHTML
 	}
 	return &runtimev1.ExecuteResponse{Result: completedResult(req, mustJSON(payload))}, nil
 }
