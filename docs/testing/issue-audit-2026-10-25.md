@@ -7,6 +7,11 @@ new provider inference, phone changes, GPU rental or deferred model experiment.
 Another active agent owns the research-recovery worktree/PR150; its changes and
 the primary checkout's untracked `prototypes/` were preserved.
 
+Final outcome: issue106 closed after PR151 merged as
+`c8e08bfc17bc37905341f92e93bbd9271c05e7af`;14 issues remain open. Validation was
+local-only:35 top-level Go/race tests and14 Chromium cases passed, plus scoped
+vet, typecheck and lint. GitHub Actions and production rollout were not run.
+
 | Issue | Result of review / remaining completion gate |
 | --- | --- |
 | [2](https://github.com/alex123321-maker/butler/issues/2) | Umbrella plan; several listed capabilities still lack complete acceptance. Child closures do not establish the cross-cutting product scenario. Keep open. |
@@ -19,7 +24,7 @@ the primary checkout's untracked `prototypes/` were preserved.
 | [76](https://github.com/alex123321-maker/butler/issues/76) | Task-aware preference selection is a bounded implemented slice. The complete behavioral pilot, retained failure catalog and paired outcome/cost evaluation remain broader than that slice. Keep open. |
 | [97](https://github.com/alex123321-maker/butler/issues/97) | Requires prospectively pinned comparable Low/High native profiles and the A/B/C/D matrix, including old/unknown spending and independent semantic assessment. No such completed local experiment was found. Keep open. |
 | [98](https://github.com/alex123321-maker/butler/issues/98) | Communication umbrella; C09/full AC01–AC22 and current native behavior are not established by C08 diagnostics. Keep open. |
-| [106](https://github.com/alex123321-maker/butler/issues/106) | Implement metadata diagnostics, real Broker schema observation, bounded owner questions, metrics, additive legacy migration proof and compatible drain runbook; validate locally. Evidence is tracked in the C08 acceptance report. |
+| [106](https://github.com/alex123321-maker/butler/issues/106) | **Closed, implemented and merged in [PR151](https://github.com/alex123321-maker/butler/pull/151).** Metadata diagnostics, real Broker schema observation, durable bounded owner questions, metrics, additive legacy migration proof and compatible drain runbook passed local C08 acceptance. See [the report](communication-diagnostics-2026-10-25.md). |
 | [107](https://github.com/alex123321-maker/butler/issues/107) | Requires full native release acceptance, real Web/Telegram/owner bindings and staged enable preparation. Local synthetic PostgreSQL/Chromium checks do not replace it. Production enable remains a separately authorized operation. Keep open. |
 | [115](https://github.com/alex123321-maker/butler/issues/115) | Requires preserved native predecessor/UNKNOWN accounting, selected experience/coherent composition windows and eventual owner-reviewed operational tasks. Historical negative and incomplete windows cannot be reset or replaced by a new empty local fixture. Keep open. |
 | [140](https://github.com/alex123321-maker/butler/issues/140) | Real-pack multi-model experiment still needs immutable splits, blind descriptions/qrels, resource/cost evidence and independent assessment. No dataset import or inference was performed in this sweep. Keep open. |

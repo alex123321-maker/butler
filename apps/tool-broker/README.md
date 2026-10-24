@@ -1,5 +1,12 @@
 # Tool Broker
 
+The shared private communication owner profile accepts `MaxOpenInteractions`
+(zero/default16, or1..64). Orchestrator startup stores this versioned ceiling in
+PostgreSQL; migration100 also enforces it for earlier SQL writers. Broker keeps
+its exact contract/approval/claim checks and gains no owner quota mutation tool.
+Use the matching profile reader and the
+[communication diagnostic/drain runbook](../../docs/operations/communication-diagnostics.md).
+
 The optional migration096 credential vault installs canonical `credentials.*`
 search/access/create/OTP controls and resolves owner-approved request refs to
 independent encrypted fields. `BUTLER_CREDENTIAL_KEY_FILE` must reference the
