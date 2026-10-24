@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestCommunicationRequiresPinnedCompositionAndExactConsent(t *testing.T) {
+func TestCommunicationRequiresPinnedCompositionAndCurrentOwnerClaim(t *testing.T) {
 	for _, scenario := range []string{"allowed", "disabled", "legacy", "missing_claim", "delegated"} {
 		t.Run(scenario, func(t *testing.T) {
 			s, _, c, _, call, _ := fixture(t)
@@ -37,13 +37,24 @@ func TestCommunicationRequiresPinnedCompositionAndExactConsent(t *testing.T) {
 				}
 				return
 			}
-			if e != nil || p.Binding.Effect != EffectPrepare || !p.RequiresApproval {
-				t.Fatal("publication bypassed authorization", e)
+			if e != nil || p.Binding.Effect != EffectPrepare || p.RequiresApproval {
+				t.Fatal("ordinary reply requires separate approval", e)
 			}
-			g := prepareApproved(t, s, c, call, contract)
+			g, err := s.Authorize(context.Background(), call, contract, p.Binding.ActionID, "", "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = s.Verify(context.Background(), call, contract, g.ID); err != nil {
+				t.Fatal(err)
+			}
 			if g.InputClaimHash != c.current.InputClaimHash {
 				t.Fatal("input claim not pinned")
 			}
+			c.current.InputClaimHash = InputClaimHash("input", "another-claim")
+			if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
+				t.Fatal("changed reply claim retained grant")
+			}
+
 		})
 	}
 }

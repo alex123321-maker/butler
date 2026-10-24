@@ -1,5 +1,16 @@
 # Communication kernel (dormant)
 
+Canonical communication replies to the current owner's operator-pinned
+channels are standard capabilities in mode2/3. They require the explicit owning
+admission, exact fixed contract, current Input claim, destination hash and source/
+export guards; they do not ask permission to answer or ask an owner question.
+Mode0 restrictions and mode1 exact approval stay. Delegation, custom recipients,
+credentials, changed contracts and explicit denials are not authorized. Ordinary
+result publication does not acquire the separate unknown-effect budget exception
+for a blocked notice/question. Current grant verification also checks the exact
+owning communication Input claim. Saved publication/dispatch/delivery remain distinct.
+
+
 Optional explicit owner composition attaches `executionnotice.Store` for
 source-free lifecycle facts. These are separate from model publications and
 their source/export proof. The protected `communications/states` endpoint can

@@ -104,7 +104,7 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if credentialcontrol.IsTool(call.GetToolName()) && (!standardCredentialControl(b) || c.Delegation != nil || len(c.InputClaimHash) != 64 || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil) {
 		return b, false, credentialcontrol.ErrVault
 	}
-	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil) {
+	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil) {
 		return b, false, communicationcontrol.ErrDenied
 	}
 	if strings.HasPrefix(call.GetToolName(), "schedule.") && (!c.SchedulesReady || c.Delegation != nil) {
@@ -199,6 +199,9 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 		return PreparedAction{}, err
 	}
 	requires := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
+	if standardOwnerReply(b, c) {
+		requires = false
+	}
 	if s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil {
 		requires = false
 	}
@@ -265,6 +268,10 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, err
 	}
 	requiresApproval := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
+	ownerReply := standardOwnerReply(b, c)
+	if ownerReply {
+		requiresApproval = false
+	}
 	ownerCredentialPreparation := s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil
 	if ownerCredentialPreparation && len(c.InputClaimHash) != 64 {
 		return Grant{}, fmt.Errorf("current owning Input is required for credential preparation")
@@ -287,7 +294,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if credentialcontrol.IsTool(call.GetToolName()) {
 		g.InputClaimHash = c.InputClaimHash
 	}
-	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil) {
+	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil) {
 		return Grant{}, communicationcontrol.ErrDenied
 	}
 	if communicationcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || strings.HasPrefix(call.GetToolName(), "workspace.") {
@@ -314,7 +321,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		if approval.ExpiresAt.Before(g.ExpiresAt) {
 			g.ExpiresAt = approval.ExpiresAt
 		}
-	} else if mandateID != "" && !localCredentialRequest && !ownerCredentialPreparation {
+	} else if mandateID != "" && !localCredentialRequest && !ownerCredentialPreparation && !ownerReply {
 		if mandateID != c.MandateID {
 			return Grant{}, fmt.Errorf("mandate is not assigned by trusted run policy")
 		}
@@ -363,7 +370,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil || g.State != "authorized" || !g.ExpiresAt.After(s.now()) || g.Binding.ActionHash != b.ActionHash || g.LeaseID != c.LeaseID || g.LeaseEpoch != c.LeaseEpoch || g.AutonomyMode != c.AutonomyMode {
 		return Grant{}, fmt.Errorf("dispatch grant is stale, changed, revoked or already dispatched")
 	}
-	if (credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (communicationcontrol.IsTool(call.GetToolName()) || credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original owning input claim is no longer current")
 	}
 	if s.approvedCredentialPreparation(ctx, call, contract) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {

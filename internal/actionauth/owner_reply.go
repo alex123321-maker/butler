@@ -1,0 +1,19 @@
+package actionauth
+
+import "github.com/butler/butler/internal/communicationcontrol"
+
+// Publishing a response to the current owner's operator-pinned channels is a
+// normal mode2/3 capability. It does not authorize external recipients or bypass
+// source/export checks. OwnerCommunication remains the narrower unknown-effect
+// budget exception; ordinary result publication does not acquire that exception.
+func standardOwnerReply(b ActionBinding, c ContextSnapshot) bool {
+	if c.AutonomyMode < 3 || c.Delegation != nil || !c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, b.ToolName) || len(c.InputClaimHash) != 64 || len(b.CommunicationDestinationsHash) != 64 || len(b.CredentialRefs) != 0 || b.Effect != EffectPrepare || b.Resource != "tool:"+b.ToolName || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil {
+		return false
+	}
+	contract := communicationcontrol.Contract(b.ToolName)
+	if contract == nil {
+		return false
+	}
+	hash, err := ContractHash(contract)
+	return err == nil && hash == b.ContractHash
+}

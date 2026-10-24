@@ -85,3 +85,23 @@ mount avoids changing/pruning other agents' Docker state. Reports remain under
 `/srv/storage/butler/agents/research-recovery-20261024/reports/`.
 
 Native search/result acceptance follows below.
+
+### First full replay exposed reply approval
+
+Commitb37c2eb7 was deployed after owning migration098. Core/Broker/WebFetch were
+healthy. The original phrase, unmodified, was submitted with delivery ID
+`research-final-search-context-20261024`:
+Input `input-54fb5bdc192a40093c2dfc4968e0ed0f`,
+run `run-1792858110784445823-30669c9ea0990755`.
+It discovered/loaded web.search on its first catalog search, searched without
+assuming season2, fetched the relevant TV-series page with HTTP200, searched
+current season3 broadcast details, and loaded communication.message.
+It then stopped at an approval for publishing its own result:
+`approval-1792858189348030924-26c972eb6a99`.
+No result had been published at that point. This is another real UX defect, not
+a passed full acceptance. Working status had real Telegram ACK133 and Web state.
+
+The repair makes only the existing exact owner reply family a standard mode2/3
+capability under its pinned explicit admission. Mode1/0, source/export guards,
+recipient/claim/revision checks, budgets and uncertain effects remain in force.
+The narrow blocked/question unknown-effect exception is not widened for results.
