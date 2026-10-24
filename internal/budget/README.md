@@ -44,6 +44,13 @@ catalog read; retries, answer resumes and replacement runs for the same event
 retain its loop limit. Existing observations are read in place, with conservative
 fallback for missing provenance. Task-tree loops, session-wide uncertain writes,
 finite conversation/day budgets and all retained spending stay unchanged.
+An independent taskless owner may ask for a canonical protected credential
+interaction after an acknowledged failed local communication prepare. The
+Broker-derived canonical-contract flag additionally requires an exact live
+Input/intent and the complete old uncertainty acknowledgement audit. This cannot
+authorize secret release or browser preparation. External/executing uncertainty,
+missing provenance and finite allowance exhaustion still deny; old evidence and
+spending are neither cleared nor reclassified.
 An owning AuthorityResolver checks current assignments on the same transaction
 and returns immutable mandate limits/deadline. Model arguments cannot supply
 scope, owner, quote, reservation ID, monetary rates or authority.

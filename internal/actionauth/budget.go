@@ -10,7 +10,7 @@ import (
 
 func toolBudgetIdentity(g Grant, effectID string) budget.ToolIdentity {
 	b := g.Binding
-	return budget.ToolIdentity{RunID: b.RunID, MandateID: g.MandateID, EffectID: effectID, ToolName: b.ToolName, OwnerCommunication: b.OwnerCommunication, ArgsHash: b.ArgsHash, ContractHash: b.ContractHash, Effect: string(b.Effect), TaskRevision: b.TaskRevision, ConstraintsRevision: b.ConstraintsRevision}
+	return budget.ToolIdentity{RunID: b.RunID, MandateID: g.MandateID, EffectID: effectID, ToolName: b.ToolName, OwnerCommunication: b.OwnerCommunication, OwnerCredentialInteraction: standardCredentialControl(b) && b.Effect == EffectPrepare && len(g.InputClaimHash) == 64, ArgsHash: b.ArgsHash, ContractHash: b.ContractHash, Effect: string(b.Effect), TaskRevision: b.TaskRevision, ConstraintsRevision: b.ConstraintsRevision}
 }
 
 // ResolveBudgetAuthority retains the current assignment locks on the caller's

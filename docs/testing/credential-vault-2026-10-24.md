@@ -171,3 +171,33 @@ line breaks. These messages require the protected manual path. A new extractor
 regression covers this independently from the existing payment/reset cases.
 
 After this fix Android debug build, all 19 unit tests and lint passed again.
+
+## Working lab rollout and remaining acceptance
+
+Merged main `2eebf4414bb6867c2e3811ce8ea46e974feff192` was deployed to
+Core, Broker, Web and browser runtime. Migration 096 and the protected shared key
+were enabled. Before/after cutover comparison preserved all 25 measured history
+and budget domains exactly, with unchanged proxy/profile and budget policy.
+The owner configured a personal PIN directly in Web. Native Web creation/edit
+and Telegram metadata search/result delivery passed; fixture fields were absent
+from ordinary transcripts, tool results, model attempts, publication records and
+service logs, and were encrypted at rest.
+
+The protected-consent trial then stopped before creating a request: one retained,
+owner-acknowledged failed local communication prepare triggered the uncertainty
+gate. Core also replaced the definite budget stop with a missing-request wait.
+The follow-up change admits only a canonical local consent question under the
+existing strict acknowledged-communication proof, and preserves explicit stop
+reasons. PostgreSQL regressions cover allowed requests, exact identity, active
+claim, missing acknowledgement, real/executing unknown effects, secret refs,
+browser preparation and finite budget exhaustion.
+
+The owner requested the lab back during this work. No further lab checks or
+deployment of the follow-up fix were performed. At release there were no active
+Inputs, live execution leases or temporary build containers. Full consent/resume
+acceptance remains pending. The synthetic acceptance record is distinguishable
+by alias `vault-acceptance-148-20261024`.
+
+The owner chose to proceed without a domain: no HTTPS protected-form link was
+enabled in Telegram. Web remains the protected response surface. Physical SMS
+and the HTTPS Telegram button remain separate acceptance work.

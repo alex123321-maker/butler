@@ -7,6 +7,11 @@ credential use. A current owner-approved vault request can authorize only exact
 `browser.prepare_fill/prepare_type` local preparation after scope/version checks;
 external submission retains ordinary approval/mandate and unknown-effect gates.
 The request is not a broad mandate, and a site hint is not a static allowlist.
+For the independent-Input loop exception, Action Service derives the protected
+request flag from the canonical contract hash, prepare effect, empty credential
+refs and current Input claim. Budget admission additionally proves the exact
+live intent/Input and acknowledged failed local communication history. This
+flag never authorizes secret use, browser preparation or external effects.
 
 A standing owner-goal mandate cannot enumerate future random request IDs.
 After Broker pins current credential metadata, finite `creq_<64hex>` field
