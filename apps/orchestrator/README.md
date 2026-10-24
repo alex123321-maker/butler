@@ -23,6 +23,12 @@ additional paired benefit and remains dormant; Broker authorization is unchanged
 
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Communication SSE reads only the current owner binding's sequence, so refreshes
+do not reread historical source graphs or retain transcript locks. REST keeps
+the complete transactional export proof. Catalog access checks ancestor revisions
+together after locking the sorted closure and rechecks the graph after waits;
+no permission is cached and publication deadlines/budgets are unchanged.
+
 Core requires `BUTLER_POSTGRES_MAX_CONNS >= 3`: one connection from that total
 is reserved for live lease/Task authority and token-only source observations, and at least two remain
 for business writes. The combined maximum is unchanged. Channel polling and Web

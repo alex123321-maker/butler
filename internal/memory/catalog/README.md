@@ -1,5 +1,11 @@
 # Memory source catalog
 
+`AccessTx` expands and locks the complete sorted source closure, then checks
+inherited parent revisions in one recursive query over all original roots. The
+closure is expanded again after lock waits; source ownership, status, hash,
+revision, inherited permission, time-sensitive proofs and rollback semantics
+remain mandatory. No authorization is cached between calls or transactions.
+
 Core can compose `NewWithRunObservationPool` using its existing reserved
 authority connection. Only token-only `CheckRunSources` observations use it;
 the same restore, lease, Task, source-pin and temporal checks still run, and the

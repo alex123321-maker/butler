@@ -1,5 +1,11 @@
 # Versioned memory sources and privacy
 
+Catalog access locks the complete sorted ancestor closure and checks inherited
+parent revisions together over all original roots. It re-expands the closure
+after lock waits, retaining every current ownership/status/revision/hash,
+permission and temporal proof. This avoids repeatedly traversing the same
+historical graph per node without caching a permission or weakening a fence.
+
 Core's token-only foreground `CheckRunSources` observes current PostgreSQL
 restore/lease/Task/source-pin/temporal state through the connection reserved
 inside its configured total. Channel polls and business writes cannot consume
