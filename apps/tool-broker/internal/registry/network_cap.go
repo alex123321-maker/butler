@@ -6,10 +6,15 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/websearch"
 )
 
 func (r *Registry) validateNetworkCap(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract) *toolbrokerv1.ToolError {
-	classDomains, configured := r.classAllowedDomains[contract.GetToolClass()]
+	class := contract.GetToolClass()
+	if class == "webfetch" {
+		class = "web"
+	}
+	classDomains, configured := r.classAllowedDomains[class]
 	if !configured {
 		return nil
 	}
@@ -18,6 +23,14 @@ func (r *Registry) validateNetworkCap(call *toolbrokerv1.ToolCall, contract *too
 		return validationError("invalid network arguments")
 	}
 	var urls []string
+	if call.GetToolName() == "web.search" {
+		query, _ := args["query"].(string)
+		resource, err := websearch.URL(query)
+		if err != nil {
+			return validationError("invalid search query")
+		}
+		urls = append(urls, resource)
+	}
 	for _, key := range []string{"url", "expected_url"} {
 		if value, ok := args[key].(string); ok && value != "" {
 			urls = append(urls, value)

@@ -61,6 +61,7 @@ func controllerDB(t *testing.T) *pgxpool.Pool {
 	_, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT NOT NULL);
 CREATE TABLE tasks(task_id TEXT PRIMARY KEY,parent_task_id TEXT,owner_id TEXT NOT NULL,session_key TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),revision BIGINT NOT NULL DEFAULT 1,constraints_revision BIGINT NOT NULL DEFAULT 1,status TEXT NOT NULL DEFAULT 'active');
 CREATE TABLE runs(run_id TEXT PRIMARY KEY,session_key TEXT NOT NULL,task_id TEXT,task_revision BIGINT,current_state TEXT DEFAULT 'model_running');
+CREATE TABLE accepted_inputs(input_id text PRIMARY KEY,run_id text,owner_id text,session_key text,communication_ingress_epoch int NOT NULL DEFAULT 0,context_epoch int NOT NULL DEFAULT 0,accepted_at timestamptz NOT NULL DEFAULT clock_timestamp());
 CREATE TABLE session_ownership(session_key TEXT PRIMARY KEY,run_id TEXT NOT NULL,lease_id TEXT NOT NULL,fence_epoch BIGINT NOT NULL,expires_at TIMESTAMPTZ NOT NULL);
 INSERT INTO sessions VALUES('session','owner');INSERT INTO tasks(task_id,owner_id,session_key) VALUES('root','owner','session');
 INSERT INTO tasks(task_id,parent_task_id,owner_id,session_key) VALUES('child','root','owner','session');

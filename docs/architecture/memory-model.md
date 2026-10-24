@@ -1,5 +1,19 @@
 # Butler — Memory Model Specification
 
+New epoch1 explicit taskless requests use two recent completed published
+exchanges as historical reference plus all current-run observations. Unfinished
+old requests/internal finals/old tool results are excluded without deleting
+transcript. Current input stays verbatim; typed tasks retain full history and
+constraints. Exact interaction continuation remains owned by Communication.
+Complete transcript is pinned/privacy checked before selecting context. Old
+epoch0 inputs retain replay policy. A kernel UTC clock and current-request rule
+prevent notification timestamps and unfinished history from defining the goal.
+Automatic document context requires lexical term/prefix overlap with the current
+query using the existing heuristic. This favors precision and can omit
+paraphrases; explicit semantic search retains recall. Omissions are diagnosed.
+Profile preferences and source/privacy guards are unchanged.
+
+
 Credential vault form bodies, PINs, decrypted account fields and OTP candidates
 never enter Transcript, Working, Episodic, Profile or vector memory. Protected
 owner/device endpoints bypass ordinary event/message ingestion. The approved

@@ -23,6 +23,7 @@ import (
 )
 
 var supportedWebFetchTools = map[string]bool{
+	"web.search":      true,
 	"web.fetch":       true,
 	"web.fetch_batch": true,
 	"web.extract":     true,
@@ -106,8 +107,9 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 type Server struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
 
-	fetcher *ProviderChain
-	log     *slog.Logger
+	searchClient *http.Client
+	fetcher      *ProviderChain
+	log          *slog.Logger
 }
 
 type fetchArgs struct {
@@ -134,7 +136,7 @@ func NewServer(fetcher *ProviderChain, log *slog.Logger) *Server {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Server{fetcher: fetcher, log: logger.WithComponent(log, "tool-webfetch-runtime")}
+	return &Server{searchClient: egress.NewClient(fetcher.policy, 20*time.Second), fetcher: fetcher, log: logger.WithComponent(log, "tool-webfetch-runtime")}
 }
 
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
@@ -148,6 +150,8 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 
 	switch call.GetToolName() {
+	case "web.search":
+		return s.executeSearch(ctx, req)
 	case "web.fetch":
 		return s.executeFetch(ctx, req)
 	case "web.fetch_batch":
@@ -403,6 +407,7 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 	if err != nil {
 		return FetchResult{}, err
 	}
+	httpReq.Header.Set("User-Agent", "Butler/1.0 (public web research)")
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
 		return FetchResult{}, err

@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+For epoch1 explicit taskless requests, Input identity defines the finite
+research/budget boundary while Session Service retains ordering/ownership.
+Only two recent completed published exchanges and current-run history enter
+context, with kernel UTC time/current-request priority. Old Inputs and typed
+tasks retain their policies; see memory and budget contracts.
+
+
 The explicit owner composition reconciles saved Input lifecycle into fixed
 execution notices (migration097) independently of model continuation and
 publication obligations. A timeout, budget stop, failed source/authority read

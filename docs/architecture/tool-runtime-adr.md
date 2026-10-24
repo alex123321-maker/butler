@@ -1,5 +1,17 @@
 # Butler — Tooling and Execution Specification
 
+`web.search` revision1 uses the existing WebFetch runtime and a fixed
+credential-free DuckDuckGo Lite GET endpoint. It returns bounded title/URL/snippet
+observations and UTC time. Snippets are discovery evidence; current claims need
+primary-page verification. Challenges/non-200/unknown markup/oversize fail
+explicitly; recognized no-results returns []. Strict decoding runs before Broker
+dispatch and in runtime. Public DNS/redirect/egress guards stay active. The fixed
+provider URL participates in web caps and query release, including operator
+public-web standing consent. No key/service/dependency was added. Plain HTTP
+reads send an identifying User-Agent. The registry maps runtime class webfetch
+to the existing operator network class web for caps on all its readers.
+
+
 Broker's optional `BUTLER_PUBLIC_WEB_READS_ENABLED=true` permits autonomous
 public page URLs/queries without per-page release approval for fixed web
 readers, HTTP GET/HEAD and revision3 browser navigation. It defaults false;

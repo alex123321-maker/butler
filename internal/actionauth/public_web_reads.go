@@ -27,7 +27,7 @@ func (s *Service) networkReleaseRequired(call *toolbrokerv1.ToolCall, contract *
 		}
 	}
 	switch call.GetToolName() {
-	case "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
+	case "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return false, nil
 	case "browser.read", "browser.open", "browser.navigate":
 		// Revision 3 runtime navigation enforces the read-only network boundary.

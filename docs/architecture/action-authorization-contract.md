@@ -1,5 +1,11 @@
 # Exact action authorization
 
+`web.search` includes its code-owned provider URL in destination caps and
+network release even though arguments contain a query. Queries require release
+consent unless operator public-web standing consent is enabled. Exact argument
+hashes include the query. No custom endpoint/header/credential is accepted.
+
+
 Operator-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` grants standing consent to
 release public page URLs and search queries through the fixed web readers,
 HTTP GET/HEAD and revision3 browser reads/navigation. It defaults false and

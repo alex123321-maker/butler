@@ -61,7 +61,7 @@ if grep -q '"Action":"skip"' "$catalog_report"; then
 fi
 go vet ./internal/memory/catalog
 budget_report=.cache/communication-core/budget-policy.jsonl
-if ! go test -p 1 -race -count=1 -json ./internal/budget ./apps/orchestrator/internal/api -run '^Test(ConversationModelTurn|BudgetRead)' >"$budget_report"; then
+if ! go test -p 1 -race -count=1 -json ./internal/budget ./apps/orchestrator/internal/api -run '^Test(ConversationModelTurn|ConversationInput|BudgetRead)' >"$budget_report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$budget_report" || tail -40 "$budget_report"; exit 1
 fi
 if grep -q '"Action":"skip"' "$budget_report"; then

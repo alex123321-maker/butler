@@ -103,7 +103,16 @@ func (c *Controller) scopeSpecsTx(ctx context.Context, tx pgx.Tx, runID, taskID,
 		if owner == "" {
 			return "", nil, ErrInvalid
 		}
-		specs = append(specs, ScopeSpec{Kind: "conversation", OwnerID: owner, SubjectID: session + ":" + day.Format("2006-01-02"), Limits: c.Policy.Conversation, Deadline: day.Add(24 * time.Hour)})
+		subject, deadline := session+":"+day.Format("2006-01-02"), day.Add(24*time.Hour)
+		var inputID string
+		var accepted time.Time
+		err := tx.QueryRow(ctx, `SELECT input_id,accepted_at FROM accepted_inputs WHERE run_id=$1 AND owner_id=$2 AND session_key=$3 AND communication_ingress_epoch=1 AND context_epoch=1`, runID, owner, session).Scan(&inputID, &accepted)
+		if err == nil {
+			subject, deadline = "input:"+inputID, accepted.Add(24*time.Hour)
+		} else if err != pgx.ErrNoRows {
+			return "", nil, err
+		}
+		specs = append(specs, ScopeSpec{Kind: "conversation", OwnerID: owner, SubjectID: subject, Limits: c.Policy.Conversation, Deadline: deadline})
 	}
 	if mandateID != "" {
 		if assigned.ID != "" {

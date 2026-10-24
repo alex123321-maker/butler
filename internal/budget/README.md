@@ -1,5 +1,11 @@
 # Durable execution budgets
 
+Migration098 keeps existing Inputs at context_epoch0. New verified explicit
+taskless Inputs use input:<InputID> as conversation subject with acceptance+24h
+deadline. Rerun/restart/approval resume reuse spending; independent owner requests
+have independent finite allowance. Root/owner-day/mandate/delegation guards stay.
+
+
 Operator `disable_conversation_model_turns:true` removes only the session/day
 model-turn ceiling. Charges continue accumulating against the unchanged scope;
 re-enabling enforces its original limit and total spending. Local and provider

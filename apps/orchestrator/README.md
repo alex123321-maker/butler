@@ -1,4 +1,12 @@
 Explicit owner profiles with migration097 also deliver fixed kernel execution
+
+Migration098 gives new verified explicit taskless Inputs finite per-input
+conversation allowance while preserving Session ordering. Retries/resume reuse
+it; old work retains session/day. Context includes two completed published
+exchanges, current-run history, kernel UTC clock and current-request priority.
+Automatic document context omits unrelated lexical nonmatches; explicit semantic
+memory search retains recall. Profile preferences and typed tasks are unchanged.
+
 states through `internal/executionnotice`: queued/working, waiting, errors,
 budget stops and missing replies remain visible without inference. Web reads
 `/api/v3/communications/states`; Telegram uses durable claims/ACKs and never

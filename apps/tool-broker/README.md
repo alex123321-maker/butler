@@ -1,5 +1,12 @@
 # Tool Broker
 
+`web.search` uses WebFetch with strict pre-dispatch decoding. Its fixed
+DuckDuckGo Lite URL participates in query release and operator web network caps;
+runtime class webfetch maps to web for all its readers. Public-web standing
+consent covers search queries. Current authority/credential/approval checks
+remain in force. The shared budget controller derives migration098 Input scopes.
+
+
 Set the startup-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` after owner consent
 to allow fixed public web readers, HTTP GET/HEAD and revision3 browser
 navigation to release page URLs/search queries without per-page confirmation.

@@ -1,5 +1,13 @@
 # Tool WebFetch
 
+`web.search` uses a fixed public DuckDuckGo Lite GET endpoint, no key or new
+container. It returns up to eight bounded titles/URLs/snippets and UTC observation
+time. Fetch primary sources to verify claims. Challenges/non-200/unknown markup
+fail explicitly, making provider layout changes visible. Broker validates
+bounds/provider destination/release before dispatch; runtime repeats decoding
+and public network guards. Plain HTTP page reads send an identifying User-Agent.
+
+
 WebFetch runtime service for Butler retrieval-style web tools.
 
 Current state:

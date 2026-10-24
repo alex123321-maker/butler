@@ -1,5 +1,13 @@
 # Butler — общение агента с пользователем
 
+Migration098 versions new taskless explicit request context independently of
+canonical channel/session identity. Two recent completed published exchanges
+provide follow-up reference, alongside current-run observations and kernel UTC
+time. Unfinished requests/internal finals are excluded without deleting history.
+Each verified new Input has finite conversation allowance; retries/resumes reuse
+it. Typed task/owner budgets and existing epoch0 work retain their policies.
+
+
 Migration097 adds kernel execution notices to the explicit owner composition.
 They are finite, source-free Input lifecycle facts, separate from publications,
 attempt finals and Task completion. A dedicated owning store reconciles durable

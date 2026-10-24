@@ -1,5 +1,14 @@
 # Execution budget contract
 
+Migration098 pins context epoch1 on new Inputs; existing rows remain epoch0.
+For verified explicit taskless communication at epoch1, conversation allowance
+is keyed by immutable accepted Input ID and expires at acceptance+24h. Separate
+owner requests have separate finite allowance; restart/approval/resume/rerun of
+the same Input retain spending. Core/Broker derive identity from durable joins,
+never model args. Old session/day reservations, unknown usage and limits remain
+unchanged. Task/mandate/delegation and enabled owner/day scopes still apply.
+
+
 The budgeted transport emits one structured numeric `model turn usage observed`
 log record for each complete observation, including native total tokens. This
 preserves High's thinking consumption for retained operator comparison logs;

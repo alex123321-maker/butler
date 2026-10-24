@@ -45,6 +45,7 @@ func TestPublicWebReadConsentPreservesOtherBoundaries(t *testing.T) {
 		contractApproval        bool
 		wantApproval, wantError bool
 	}{
+		{"search", "web.search", `{"query":"current release date"}`, 3, false, false, false},
 		{"fetch", "web.fetch", `{"url":"https://example.com/page?q=hello"}`, 3, false, false, false},
 		{"batch", "web.fetch_batch", `{"urls":["https://example.com/a","https://another.example/b"]}`, 3, false, false, false},
 		{"browser", "browser.open", `{"url":"https://example.com/"}`, 3, false, false, false},
