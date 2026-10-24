@@ -21,4 +21,14 @@ class LoginOtpExtractorTest {
         assertNull(LoginOtpExtractor.extract("notification", "Example", "Login code 739284", now, now, true))
         assertNull(LoginOtpExtractor.extract("notification", "Example", "Login code 739284", now - 91_000, now, false))
     }
+    @Test fun refusesPasswordChangeCodesDespiteGenericVerificationWording() {
+        for (text in listOf(
+            "Your verification code to change your password: 739284",
+            "Security code 739284 for password change",
+            "Verification code to update your password: 739284",
+            "Код для входа и изменения пароля: 739284"
+        )) {
+            assertNull(text, LoginOtpExtractor.extract("notification", "Example", text, now, now, false))
+        }
+    }
 }

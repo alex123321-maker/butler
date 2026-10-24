@@ -70,3 +70,8 @@ withdrawal and disconnect stop new relay attempts. No READ_SMS/RECEIVE_SMS or
 redaction bypass is used; Android-hidden codes and process death require manual
 entry. Local extractor/wire tests and APK compilation do not prove real phone
 delivery; see [vault acceptance](../../docs/testing/credential-vault-2026-10-24.md).
+
+
+Login-code relay rejects password reset, change/update and recovery notifications
+in addition to payment context, including generic verification/security wording.
+These messages remain on the protected manual path.

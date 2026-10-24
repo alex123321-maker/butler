@@ -58,7 +58,7 @@ route (paired device, default SMS application package, exact sender). Fresh
 login-code candidates travel in a private, bounded in-memory path, never Room
 or notification memory. The server requires exactly one active OTP challenge
 under an approved password-access request; task/browser/origin/account versions
-remain pinned. Ambiguity, stale/hidden notifications and payment/reset messages
+remain pinned. Ambiguity, stale/hidden notifications and payment/reset/password-change messages
 fall back to manual entry. Route/device revocation blocks code release.
 OTP creation must match the parent password consent's session, task and constraint
 versions. SMS source validity is checked again through credential metadata at

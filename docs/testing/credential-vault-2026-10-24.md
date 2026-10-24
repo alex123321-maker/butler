@@ -162,3 +162,12 @@ PostgreSQL migration test and vault cases, then rejected Go's package-level
 skip for the contract-only package (which has no tests). That package remains
 covered by vet; the required test list now contains test-bearing packages only.
 The no-skipped-tests guard is unchanged.
+
+
+A further SMS-filter regression reproduced generic verification/security code
+wording allowing password-change codes. The exclusion now rejects reset/change/
+update and Russian password-change/recovery contexts in either order, including
+line breaks. These messages require the protected manual path. A new extractor
+regression covers this independently from the existing payment/reset cases.
+
+After this fix Android debug build, all 19 unit tests and lint passed again.

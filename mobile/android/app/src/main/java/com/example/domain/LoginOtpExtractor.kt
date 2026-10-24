@@ -9,7 +9,7 @@ class LoginOtpCandidate(val eventId: String, val sender: String, val code: Strin
 
 object LoginOtpExtractor {
     private val login = Regex("(?iu)(код.{0,24}(вход|авторизац)|вход.{0,24}код|login|sign.?in|verification code|security code)")
-    private val excluded = Regex("(?iu)(плат[её]ж|оплат|перевод|списан|покупк|операци|смен[аы].{0,15}парол|сброс.{0,15}парол|payment|purchase|transfer|transaction|withdraw|password.{0,15}reset|reset.{0,15}password)")
+    private val excluded = Regex("(?isu)(плат[её]ж|оплат|перевод|списан|покупк|операци|(смен[аы]|изменени[ея]|сброс|восстановлени[ея]).{0,32}парол|парол.{0,32}(смен[аы]|изменени[ея]|сброс|восстановлени[ея])|payment|purchase|transfer|transaction|withdraw|password.{0,32}(reset|chang|updat)|(reset|chang|updat).{0,32}password)")
     private val digits = Regex("(?<![0-9])(?:[0-9]{4,8}|[0-9]{3}-[0-9]{3})(?![0-9])")
 
     fun extract(key: String, sender: String?, text: String, postedAt: Long, now: Long, platformRedacted: Boolean): LoginOtpCandidate? {

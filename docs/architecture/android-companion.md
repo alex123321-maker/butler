@@ -7,7 +7,7 @@ an exact sender. New fresh login notifications may provide one numeric code to
 no transcript/catalog source and returns only acceptance. Credential management
 requires exactly one live challenge under a previously owner-approved password
 request, with current task, browser, origin and account revisions. Ambiguity,
-payment/reset context, stale or Android-hidden codes require manual entry.
+payment/reset/password-change context, stale or Android-hidden codes require manual entry.
 Candidates never enter Room or diagnostics; ordinary SMS queue copies remain
 masked while relay is enabled. Current permission/device/route status is checked
 before forwarding and release. No READ_SMS/RECEIVE_SMS permission is introduced.
