@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -191,6 +192,13 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 			return err
 		}
 	}
+	// Retain the Input row lock acquired by guardDispatch and recheck time after
+	// budget contention. A fresh claim cannot borrow an unused old permission.
+	if credentialcontrol.IsTool(g.Binding.ToolName) {
+		if err = checkCredentialInputTx(ctx, tx, g); err != nil {
+			return err
+		}
+	}
 	tag, err := tx.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
  WHERE authorization_id=$1 AND state='authorized' AND expires_at>clock_timestamp()
  AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>clock_timestamp()))`, id)
@@ -276,6 +284,26 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 		if err = s.contractGuard.CheckActionTx(ctx, tx, g.Binding); err != nil {
 			return err
 		}
+	}
+	if credentialcontrol.IsTool(g.Binding.ToolName) {
+		return checkCredentialInputTx(ctx, tx, g)
+	}
+	return nil
+}
+
+func checkCredentialInputTx(ctx context.Context, tx pgx.Tx, g Grant) error {
+	var input, claim string
+	var claimExpiry, expiry, at time.Time
+	err := tx.QueryRow(ctx, `SELECT n.input_id,n.claim_id,n.claim_expires_at,n.expires_at
+FROM accepted_inputs n JOIN runs r ON r.run_id=n.run_id AND r.session_key=n.session_key
+JOIN sessions s ON s.session_key=n.session_key AND s.user_id=n.owner_id
+WHERE n.run_id=$1 AND n.owner_id=$2 AND COALESCE(n.task_id,'')=$3
+AND COALESCE(r.task_id,'')=$3 AND n.status='running' FOR SHARE OF n`, g.Binding.RunID, g.Binding.OwnerID, g.Binding.TaskID).Scan(&input, &claim, &claimExpiry, &expiry)
+	if err != nil || len(g.InputClaimHash) != 64 || InputClaimHash(input, claim) != g.InputClaimHash {
+		return fmt.Errorf("credential request owning Input claim changed before dispatch commit")
+	}
+	if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at) != nil || !claimExpiry.After(at) || !expiry.After(at) {
+		return fmt.Errorf("credential request owning Input claim expired before dispatch commit")
 	}
 	return nil
 }

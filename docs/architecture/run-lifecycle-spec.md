@@ -10,7 +10,9 @@ is stored in prepared/model context, and permission is rechecked at Broker use.
 Explicit failed/stopped Broker results do not suspend a credential interaction.
 A budget stop retains its reason and the existing execution-stopped checkpoint.
 Only a completed request or uncertain dispatch acknowledgement enters the private
-request suspension path.
+request suspension path, including Broker's `effect_unknown` receipt after a
+durable request commit. The exact run/call's stored request remains the proof;
+an ambiguous receipt alone cannot create a wait or authorize replay.
 
 Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
 lease, Task authority and token-only source-currentness observations. The remaining business pool has at least

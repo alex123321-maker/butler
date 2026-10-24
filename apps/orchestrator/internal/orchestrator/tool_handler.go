@@ -339,7 +339,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
 	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp"
-	if credentialRequest && (err != nil || result == nil || result.GetStatus() == "completed") {
+	if credentialRequest && (err != nil || result == nil || result.GetStatus() == "completed" || result.GetStatus() == "effect_unknown") {
 		if s.config.Credentials == nil {
 			return nil, current, ErrActionOutcomeUnknown
 		}

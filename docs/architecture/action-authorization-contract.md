@@ -12,6 +12,10 @@ request flag from the canonical contract hash, prepare effect, empty credential
 refs and current Input claim. Budget admission additionally proves the exact
 live intent/Input and acknowledged failed local communication history. This
 flag never authorizes secret use, browser preparation or external effects.
+Credential controls also lock and verify the exact owning Input claim inside
+the PostgreSQL dispatch transaction. They recheck database-clock claim/Input
+expiry after budget and admission waits; a replacement claim requires fresh
+authorization and a denial spends neither permission nor budget.
 
 A standing owner-goal mandate cannot enumerate future random request IDs.
 After Broker pins current credential metadata, finite `creq_<64hex>` field

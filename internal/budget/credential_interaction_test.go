@@ -24,7 +24,7 @@ INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) V
 		t.Fatal(err)
 	}
 	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
-		for _, scenario := range []string{"allowed", "flag_only", "wrong_args", "wrong_contract", "foreign_owner", "expired_claim", "missing_audit", "unclosed_input", "executing", "external_unknown", "secret_refs", "browser_prepare", "finite_budget"} {
+		for _, scenario := range []string{"allowed", "flag_only", "missing_flag", "wrong_args", "wrong_contract", "foreign_owner", "expired_claim", "expired_input", "missing_audit", "unclosed_input", "same_input", "executing", "external_unknown", "other_local_prepare", "secret_refs", "browser_prepare", "finite_budget"} {
 			t.Run(tool+"/"+scenario, func(t *testing.T) {
 				tx, e := pool.Begin(ctx)
 				if e != nil {
@@ -37,6 +37,8 @@ INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) V
 				switch scenario {
 				case "flag_only":
 					i.EffectID = "missing-intent"
+				case "missing_flag":
+					i.OwnerCredentialInteraction = false
 				case "wrong_args":
 					i.ArgsHash = "changed"
 				case "wrong_contract":
@@ -45,18 +47,25 @@ INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) V
 					b["owner_id"] = "foreign"
 				case "expired_claim":
 					change = `UPDATE accepted_inputs SET claim_expires_at=now()-interval '1 second' WHERE input_id='new'`
+				case "expired_input":
+					change = `UPDATE accepted_inputs SET expires_at=now()-interval '1 second' WHERE input_id='new'`
 				case "missing_audit":
 					change = `DELETE FROM communication_events WHERE event_type='effect.uncertainty_retained'`
 				case "unclosed_input":
 					change = `UPDATE accepted_inputs SET status='blocked' WHERE input_id='old'`
+				case "same_input":
+					change = `UPDATE runs SET input_event_id='owner-input-b' WHERE run_id='conversation-a';UPDATE accepted_inputs SET event_id='owner-input-b' WHERE input_id='old'`
 				case "executing":
 					change = `UPDATE action_effects SET state='executing' WHERE action_id='uncertain'`
 				case "external_unknown":
 					change = `UPDATE action_effects SET initial_binding=initial_binding||'{"effect":"commit","tool_name":"http.request"}' WHERE action_id='uncertain'`
+				case "other_local_prepare":
+					change = `UPDATE action_effects SET initial_binding=initial_binding||'{"tool_name":"browser.prepare_fill","resource":"tool:browser.prepare_fill"}' WHERE action_id='uncertain'`
 				case "secret_refs":
 					b["credential_refs"] = []any{map[string]string{"alias": "account", "field": "password"}}
 				case "browser_prepare":
 					i.ToolName = "browser.prepare_fill"
+					b["tool_name"], b["resource"] = i.ToolName, "tool:"+i.ToolName
 				}
 				if change != "" {
 					if _, e = tx.Exec(ctx, change); e != nil {

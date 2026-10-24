@@ -43,6 +43,14 @@ func TestCredentialRequestBudgetStopKeepsItsReason(t *testing.T) {
 
 type credentialWaitFlow struct{ communicationWaitFlow }
 
+func (f *credentialWaitFlow) ExecuteAuthorizedToolCall(ctx context.Context, c *toolbrokerv1.ToolCall, grant string) (*toolbrokerv1.ToolResult, error) {
+	r, err := f.communicationWaitFlow.ExecuteAuthorizedToolCall(ctx, c, grant)
+	if f.scenario == "unknown_ack" && r != nil {
+		r.Status = "effect_unknown"
+	}
+	return r, err
+}
+
 func (f *credentialWaitFlow) SuspendRequest(context.Context, string, string) (string, error) {
 	if f.scenario == "read_failure" || f.scenario == "missing_checkpoint" {
 		return "", errors.New("fixture checkpoint unavailable")
@@ -56,7 +64,7 @@ func (*credentialWaitFlow) ResumeInteraction(context.Context, string, string) (s
 
 func TestCredentialRequestsPreservePrivateWaitAcrossLostAcknowledgement(t *testing.T) {
 	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
-		for _, scenario := range []string{"ack", "lost_ack", "read_failure", "missing_checkpoint"} {
+		for _, scenario := range []string{"ack", "lost_ack", "unknown_ack", "read_failure", "missing_checkpoint"} {
 			t.Run(tool+"/"+scenario, func(t *testing.T) {
 				runs := newMemoryRunManager()
 				flow := &credentialWaitFlow{communicationWaitFlow{runs: runs, scenario: scenario}}

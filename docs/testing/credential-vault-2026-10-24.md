@@ -201,3 +201,24 @@ by alias `vault-acceptance-148-20261024`.
 The owner chose to proceed without a domain: no HTTPS protected-form link was
 enabled in Telegram. Web remains the protected response surface. Physical SMS
 and the HTTPS Telegram button remain separate acceptance work.
+
+## Local review of PR 149
+
+The review reproduced two defects with failing regressions before correction:
+Broker's `effect_unknown` receipt stopped an already-created protected request
+instead of preserving its wait; a replacement Input claim after the final
+verification could consume an old grant at PostgreSQL dispatch commit.
+
+Ambiguous receipts now retain exact-request verification and suspension, while
+explicit failures/budget stops keep their known reason. Canonical credential
+controls lock and verify the owning Input in the actual dispatch transaction
+and recheck database-clock expiry after budget/admission waits. PostgreSQL tests
+run Service preparation/authorization/verification through the production claim
+store for all three protected requests, including replacement and an actual
+post-budget expiry wait. Denials roll back permission and budget writes.
+
+The uncertainty matrix additionally covers a missing canonical flag, expired
+Input, reuse of the old Input and unrelated local browser preparation. The CI
+driver supplies the isolated action-authorization database so the production
+claim tests cannot silently skip. No lab calls or deployment occur in this
+local review; native consent/resume acceptance remains pending.

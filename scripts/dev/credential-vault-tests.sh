@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 : "${BUTLER_TEST_VAULT_POSTGRES_URL:?Disposable *_test PostgreSQL database required}"
 export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
+export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
 export GOTOOLCHAIN=local
 mkdir -p .cache/credential-vault-ci
 
