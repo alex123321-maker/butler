@@ -10,12 +10,19 @@ import (
 // SuspendInteractionTx joins the publication transaction. The claim may remain
 // running until its worker exits; ready is a monotonic later checkpoint.
 func (s *Store) SuspendInteractionTx(ctx context.Context, tx pgx.Tx, runID, id string) error {
+	return s.SuspendPrivateInteractionTx(ctx, tx, runID, id, "communication_interaction")
+}
+
+func (s *Store) SuspendPrivateInteractionTx(ctx context.Context, tx pgx.Tx, runID, id, kind string) error {
+	if kind != "communication_interaction" && kind != "credential_interaction" {
+		return ErrClaimLost
+	}
 	r, ok := ctx.Value(claimKey{}).(Record)
 	tok, owned := ownership.TokenFromContext(ctx)
 	if !ok || !owned || tok.RunID != runID || r.RunID != "" && r.RunID != runID {
 		return ErrClaimLost
 	}
-	marker, _ := json.Marshal(map[string]any{"version": 1, "kind": "communication_interaction", "interaction_id": id})
+	marker, _ := json.Marshal(map[string]any{"version": 1, "kind": kind, "interaction_id": id})
 	tag, e := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint='awaiting_interaction',checkpoint_json=checkpoint_json||jsonb_build_object('interaction',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND status='running' AND checkpoint='tool_dispatching' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, marker)
 	if e == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost

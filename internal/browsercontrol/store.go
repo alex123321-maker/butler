@@ -65,6 +65,7 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	}
 	if call.GetToolName() == "browser.open" {
 		var output struct {
+			URL     string    `json:"final_url"`
 			ID      string    `json:"browser_session_id"`
 			Expires time.Time `json:"expires_at"`
 			OK      bool      `json:"ok"`
@@ -72,7 +73,7 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 		if json.Unmarshal([]byte(result.GetResultJson()), &output) != nil || !output.OK || !validID(output.ID) || !output.Expires.After(time.Now()) || output.Expires.After(time.Now().Add(16*time.Minute)) {
 			return ErrDenied
 		}
-		_, err := s.Pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,expires_at) VALUES($1,$2,$3,$4,$5)`, output.ID, call.GetRunId(), grant.Binding.OwnerID, grant.Binding.TaskID, output.Expires)
+		_, err := s.Pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,expires_at,observed_url) VALUES($1,$2,$3,$4,$5,$6)`, output.ID, call.GetRunId(), grant.Binding.OwnerID, grant.Binding.TaskID, output.Expires, output.URL)
 		return err
 	}
 	if call.GetToolName() == "browser.close" {
@@ -92,7 +93,22 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 			ID string `json:"browser_session_id"`
 		}
 		_ = json.Unmarshal([]byte(call.GetArgsJson()), &args)
-		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET fresh_needed=false WHERE browser_session_id=$1 AND run_id=$2 AND mode='agent' AND epoch=$3`, args.ID, call.GetRunId(), epoch)
+		var observed struct {
+			URL string `json:"final_url"`
+		}
+		if json.Unmarshal([]byte(result.GetResultJson()), &observed) != nil || observed.URL == "" {
+			return ErrDenied
+		}
+		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET fresh_needed=false,observed_url=$4 WHERE browser_session_id=$1 AND run_id=$2 AND mode='agent' AND epoch=$3`, args.ID, call.GetRunId(), epoch, observed.URL)
+		return err
+	}
+	var observation struct {
+		ID  string `json:"browser_session_id"`
+		URL string `json:"final_url"`
+		OK  bool   `json:"ok"`
+	}
+	if json.Unmarshal([]byte(result.GetResultJson()), &observation) == nil && observation.OK && observation.ID != "" && observation.URL != "" {
+		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET observed_url=$3 WHERE browser_session_id=$1 AND run_id=$2 AND mode='agent'`, observation.ID, call.GetRunId(), observation.URL)
 		return err
 	}
 	return nil

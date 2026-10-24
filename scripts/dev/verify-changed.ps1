@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/(credentials|credentialcontrol)/|internal/actionauth/credential_control|apps/orchestrator/internal/(api/credential|app/credential)|apps/orchestrator/internal/channel/(telegram|telegramrich)/credential_notice|apps/tool-broker/internal/broker/credential_vault|web/(features/mind/ui/CredentialVault[.]vue|tests/e2e/credential-vault)|migrations/096_|scripts/dev/credential-vault-|deploy/docker-compose[.]credentials)" {
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/android-companion.md")
+      [void]$tests.Add("This PC: scripts/dev/credential-vault-lab.ps1 Setup/Start; set BUTLER_TEST_VAULT_POSTGRES_URL; test-go.ps1 for credentials/actionauth/Broker/API and TestCredential kernel; Chromium vault UI/runtime; mobile-build.ps1 -Test. See docs/testing/credential-vault-2026-10-24.md for commands and physical-SMS limits.")
+      continue
+    }
     "^([.]github/workflows/communication-core|internal/communicationcontrol/|internal/(actionauth|budget)/communication|apps/orchestrator/(cmd/telegram-(rich|agent)-lab/|internal/(channel/(telegramrich/|telegram/(explicit|outbox|adapter))|artifacts/(media|report)|communication/|api/communication|app/communication|input/(interaction|communication)|run/interaction|task/interaction|orchestrator/communication))|apps/tool-broker/(internal/(broker/communication|app/app[.]go)|cmd/communication-lab/)|migrations/(089|090|091|092|093|094|095)_|scripts/dev/communication-(core-|agent-native-lab[.]sh))" {
       [void]$specs.Add("docs/architecture/user-communication-spec.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

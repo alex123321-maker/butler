@@ -172,6 +172,9 @@ new WebSocket('ws://external.test/escape');
 		args["selector"] = "#password"
 		args["value"] = map[string]string{"type": "credential_ref", "alias": "login", "field": "password"}
 		obs = invoke("browser.prepare_fill", args, &runtimev1.ResolvedCredential{Alias: "login", Field: "password", Value: "private-password-fixture"})
+		if obs.CredentialVerified == nil || !*obs.CredentialVerified {
+			t.Fatal("private credential comparison was not confirmed")
+		}
 		if !strings.Contains(obs.Text, "[REDACTED]") {
 			t.Fatal("prepared secret reflection was not masked")
 		}
@@ -253,6 +256,9 @@ new WebSocket('ws://external.test/escape');
 		args["selector"] = "#password"
 		args["value"] = map[string]string{"type": "credential_ref", "alias": "login", "field": "password"}
 		obs = invoke("browser.fill", args, &runtimev1.ResolvedCredential{Alias: "login", Field: "password", Value: "private-password-fixture"})
+		if obs.CredentialVerified == nil || !*obs.CredentialVerified {
+			t.Fatal("private credential comparison was not confirmed")
+		}
 		args = actionArgs(obs)
 		delete(args, "selector")
 		args["cookie"] = map[string]string{"type": "credential_ref", "alias": "login", "field": "cookie"}

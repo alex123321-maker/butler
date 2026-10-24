@@ -1,5 +1,11 @@
 # Explicit browser execution sessions
 
+Credential-aware fill/type now return optional `credential_verified`: a private
+runtime equality check against the exact value resolved by Broker for that
+operation. No value, hash, length or character feedback is returned. A failed
+comparison returns `credential_mismatch`. This is momentary local field evidence;
+remote submission and successful authentication remain separate outcomes.
+
 Implemented contract for `browser.*` after issue #8. This describes live execution
 state, not durable Butler session identity or arbitrary browser crash recovery.
 Session Service owns the durable Butler identity, run ordering and execution lease.

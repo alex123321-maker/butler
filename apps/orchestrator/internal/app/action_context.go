@@ -94,11 +94,11 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	if r.lessons != nil {
 		c.ExperienceEnvironmentHash = r.lessons.EnvironmentHash
 	}
-	if r.communicationReady || r.toolDiscoveryReady || r.schedulesReady || r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
-		var inputID, claimID string
-		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
-			c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)
-		}
+	// Credential controls and preparation always pin the current owning Input,
+	// independently of optional communication or discovery composition.
+	var inputID, claimID string
+	if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
+		c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)
 	}
 	c.ConverterDelegationReady = r.converterDelegationReady
 	// This projection stays inside orchestrator; it is a read of Run Service's

@@ -152,6 +152,10 @@ type CommunicationKernel interface {
 }
 
 type Config struct {
+	Credentials interface {
+		SuspendRequest(context.Context, string, string) (string, error)
+		ResumeInteraction(context.Context, string, string) (string, error)
+	}
 	Communication CommunicationKernel
 	// Optional trusted composition only, after source/task preparation and before
 	// catalog loading. Startup supplies no hook and exposes no enabling flag.

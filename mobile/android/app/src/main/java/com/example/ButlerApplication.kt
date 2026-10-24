@@ -43,7 +43,8 @@ class ButlerApplication : Application() {
             dao = database.butlerDao(),
             credentialStore = credentialStore,
             cryptoManager = cryptoManager,
-            notificationAccessGranted = { ButlerNotificationListenerService.isNotificationAccessGranted(this) }
+            notificationAccessGranted = { ButlerNotificationListenerService.isNotificationAccessGranted(this) },
+            defaultSmsPackage = { android.provider.Telephony.Sms.getDefaultSmsPackage(this) }
         )
         networkMonitor = NetworkConnectivityMonitor(
             context = this,

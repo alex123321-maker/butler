@@ -1,5 +1,20 @@
 # Android notification companion, protocol v1
 
+Optional credential SMS relay (migration096): a separate phone opt-in and
+protected Web account route authorize a paired device, the default SMS app and
+an exact sender. New fresh login notifications may provide one numeric code to
+`POST /api/v1/mobile/otp/login` in a bounded in-memory path. This endpoint creates
+no transcript/catalog source and returns only acceptance. Credential management
+requires exactly one live challenge under a previously owner-approved password
+request, with current task, browser, origin and account revisions. Ambiguity,
+payment/reset context, stale or Android-hidden codes require manual entry.
+Candidates never enter Room or diagnostics; ordinary SMS queue copies remain
+masked while relay is enabled. Current permission/device/route status is checked
+before forwarding and release. No READ_SMS/RECEIVE_SMS permission is introduced.
+This is private credential mediation, not authority inferred from notifications.
+See [credential contract](credential-management.md) and
+[local validation](../testing/credential-vault-2026-10-24.md).
+
 [Task-scoped context and automatic local note search](mobile-memory-search.md)
 define the implemented bounded processing context, atomic note fragments and
 explicit owner-authorized index maintenance policy.
@@ -8,7 +23,7 @@ This implementation adds Android ingress and owner controls to the existing Go
 Orchestrator, plus a Kotlin application under `mobile/android`. It preserves
 Session, Run, Broker and provider boundaries. Notifications are external DATA,
 never owner messages, instructions, approvals, mandates or tool calls. Root,
-Accessibility, SMS, contacts, location and notification-action execution are
+Accessibility, direct SMS/contacts access, location and notification-action execution are
 absent. Android's own masking remains authoritative. NotificationListenerService
 does not provide historical app messages or guaranteed full notification text.
 

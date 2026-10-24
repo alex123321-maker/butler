@@ -17,13 +17,15 @@ import (
 )
 
 type authFixture struct {
-	mu           sync.Mutex
-	intents      map[string]actionauth.Intent
-	grants       map[string]actionauth.Grant
-	approvals    map[string]actionauth.ApprovalSnapshot
-	effects      map[string]actionauth.EffectRecord
-	evidence     map[string]actionauth.EffectEvidence
-	contextError error
+	mu             sync.Mutex
+	intents        map[string]actionauth.Intent
+	grants         map[string]actionauth.Grant
+	approvals      map[string]actionauth.ApprovalSnapshot
+	effects        map[string]actionauth.EffectRecord
+	evidence       map[string]actionauth.EffectEvidence
+	contextError   error
+	inputClaimHash string
+	ownerMandate   *actionauth.Mandate
 }
 
 func newAuthFixture() *authFixture {
@@ -139,11 +141,18 @@ func (f *authFixture) FinishGrant(_ context.Context, id, state string) error {
 	f.grants[id] = g
 	return nil
 }
-func (f *authFixture) GetMandate(context.Context, string) (actionauth.Mandate, error) {
+func (f *authFixture) GetMandate(_ context.Context, id string) (actionauth.Mandate, error) {
+	if f.ownerMandate != nil && f.ownerMandate.ID == id {
+		return *f.ownerMandate, nil
+	}
 	return actionauth.Mandate{}, fmt.Errorf("no mandate")
 }
 func (f *authFixture) GetActionContext(_ context.Context, runID string) (actionauth.ContextSnapshot, error) {
-	return actionauth.ContextSnapshot{RunID: runID, RunState: "tool_pending", SessionKey: "web:owner", OwnerID: "owner", TaskID: "task", TaskRevision: 1, PinnedTaskRevision: 1, ConstraintsRevision: 1, TaskStatus: "active", AutonomyMode: 3, LeaseID: "fixture-lease", LeaseEpoch: 1, LeaseExpiresAt: time.Now().Add(time.Hour)}, f.contextError
+	c := actionauth.ContextSnapshot{RunID: runID, RunState: "tool_pending", SessionKey: "web:owner", OwnerID: "owner", TaskID: "task", TaskRevision: 1, PinnedTaskRevision: 1, ConstraintsRevision: 1, TaskStatus: "active", AutonomyMode: 3, LeaseID: "fixture-lease", LeaseEpoch: 1, LeaseExpiresAt: time.Now().Add(time.Hour), InputClaimHash: f.inputClaimHash}
+	if m := f.ownerMandate; m != nil {
+		c.Authority = &actionauth.Assignment{TaskID: c.TaskID, OwnerID: c.OwnerID, GoalID: m.GoalID, GoalRevision: m.GoalRevision, MandateID: m.ID, MandateRevision: m.Revision, Purpose: m.Purpose}
+	}
+	return c, f.contextError
 }
 func (f *authFixture) VerifyActionApproval(_ context.Context, req actionauth.ApprovalRequest) (actionauth.ApprovalSnapshot, error) {
 	f.mu.Lock()

@@ -1,5 +1,11 @@
 # Tool Browser
 
+Secret fill/type additionally return `credential_verified` after comparing the
+actual field with the private Broker-resolved value. Mismatch fails without
+exporting input values, lengths or hashes. Preparation retains its frozen-network
+contract; this check is not proof of remote login. The workspace path canonicalizer
+also admits normalized slash paths on Windows for the same checked helper bytes.
+
 Browser runtime service for Butler browser automation tools.
 
 Current state:

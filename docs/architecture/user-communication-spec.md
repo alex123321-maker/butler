@@ -1,5 +1,14 @@
 # Butler — общение агента с пользователем
 
+Credential vault control cards are a separate secret-input capability. Existing
+text widget responses must not carry PIN/password/OTP. The two account cards are
+access-existing and create-account, plus a short-lived OTP challenge. Web opens
+the six-cell PIN/sidebar; Telegram opens an operator-configured protected HTTPS
+Web form. Stored communication/notification metadata contains no secret values.
+Both channels observe the same durable request. An ambiguous control-card send
+is retained as unknown and is never replayed automatically. See migration096 and
+[credential management](credential-management.md).
+
 Версия 0.12, 2026-10-23. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**

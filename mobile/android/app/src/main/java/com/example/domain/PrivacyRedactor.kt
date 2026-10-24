@@ -20,7 +20,7 @@ data class RedactionResult(
 object PrivacyRedactor {
 
     private val OTP_CONTEXT_KEYWORDS = Regex(
-        pattern = "(?i)(код|пароль|подтвержд|одноразов|проверочн|вход|списан|карт|банк|otp|code|verification|passcode|pin|2fa|auth|token|cvv|cvc)"
+        pattern = "(?iu)(код|пароль|подтвержд|одноразов|проверочн|вход|списан|карт|банк|otp|code|verification|passcode|pin|2fa|auth|login|sign.?in|token|cvv|cvc)"
     )
 
     // Matches 4 to 8 digit standalone numeric codes or hyphenated 3-3 codes (e.g., 482-910)

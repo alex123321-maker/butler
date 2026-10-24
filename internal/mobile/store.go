@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
@@ -16,8 +17,41 @@ import (
 )
 
 type Store struct {
-	Pool    *pgxpool.Pool
-	Catalog *catalog.Store
+	Pool     *pgxpool.Pool
+	Catalog  *catalog.Store
+	OTPRelay interface {
+		RelaySMS(context.Context, pgx.Tx, string, string, credentials.SMSCandidate) (bool, error)
+	}
+}
+
+func (s *Store) RelayLoginSMS(ctx context.Context, id, token string, c credentials.SMSCandidate) (bool, error) {
+	if s.OTPRelay == nil {
+		return false, ErrDenied
+	}
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return false, ErrDenied
+	}
+	defer tx.Rollback(ctx)
+	owner, status, err := deviceTx(ctx, tx, id, token)
+	if err != nil || status != "ACTIVE" {
+		return false, ErrDenied
+	}
+	var count int
+	if tx.QueryRow(ctx, `INSERT INTO mobile_request_limits(key_hash) VALUES($1) ON CONFLICT(key_hash) DO UPDATE SET request_count=CASE WHEN mobile_request_limits.window_start<now()-interval '1 minute' THEN 1 ELSE mobile_request_limits.request_count+1 END,window_start=CASE WHEN mobile_request_limits.window_start<now()-interval '1 minute' THEN now() ELSE mobile_request_limits.window_start END RETURNING request_count`, digest([]byte("otp-relay:"+id))).Scan(&count) != nil {
+		return false, ErrDenied
+	}
+	if count > 60 {
+		return false, ErrLimit
+	}
+	accepted, err := s.OTPRelay.RelaySMS(ctx, tx, owner, id, c)
+	if err != nil {
+		return false, ErrInvalid
+	}
+	if tx.Commit(ctx) != nil {
+		return false, ErrDenied
+	}
+	return accepted, nil
 }
 
 func random() (string, error) {

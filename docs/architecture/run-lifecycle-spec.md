@@ -1,5 +1,13 @@
 # Butler — Run Lifecycle Specification
 
+Credential vault requests use the existing durable interaction checkpoint with
+kind `credential_interaction`, distinct from preference questions and action
+approvals. Core joins task wait, Input suspension and coarse run wait under the
+live session lease. Protected owner response atomically marks that same Input
+ready; recovery reads canonical request status and safe field references only.
+Early responses, expiry and revocation preserve the checkpoint. No secret value
+is stored in prepared/model context, and permission is rechecked at Broker use.
+
 Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
 lease, Task authority and token-only source-currentness observations. The remaining business pool has at least
 two connections: Core therefore requires a total maximum of at least three.

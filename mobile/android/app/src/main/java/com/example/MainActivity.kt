@@ -312,6 +312,7 @@ fun ButlerCompanionApp(
                         onChangeFilterMode = viewModel::setAppFilterMode,
                         onToggleContentTransmission = viewModel::setContentTransmissionEnabled,
                         onToggleMaskOtp = viewModel::setMaskOtpAndBankCodes,
+                        onToggleLoginOtp = viewModel::setLoginOtpRelay,
                         onTogglePackageEnabled = viewModel::togglePackageFilter,
                         onAddCustomPackage = viewModel::addCustomPackageRule
                     )

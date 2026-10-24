@@ -1,5 +1,13 @@
 # Tool Broker
 
+The optional migration096 credential vault installs canonical `credentials.*`
+search/access/create/OTP controls and resolves owner-approved request refs to
+independent encrypted fields. `BUTLER_CREDENTIAL_KEY_FILE` must reference the
+same mounted key as Core. There is no env-secret compatibility resolver. Account
+site hints do not restrict destinations; the approved request binds the actual
+browser origin/session, fields, task versions and record revision. These local
+controls grant no submission authority. See [vault operations](../../internal/credentials/README.md).
+
 Conversation repetition is scoped to the original Input event using existing
 permanent effect/run provenance; a new owner request may repeat a catalog read.
 This does not reset conversation/day spending, task-tree loops or session-wide

@@ -115,8 +115,7 @@ func TestToolCallBrokerWritesAuditLog(t *testing.T) {
 	if _, err := NewStore(store.Pool()).Create(ctx, Record{Alias: alias, SecretType: "api_token", TargetType: "http", AllowedDomains: []string{"api.github.com"}, AllowedTools: []string{"http.request"}, ApprovalPolicy: ApprovalPolicyAutoReadOnly, SecretRef: "env://BUTLER_TEST_CREDENTIAL_SECRET", Status: StatusActive}); err != nil {
 		t.Fatalf("Create returned error: %v", err)
 	}
-	t.Setenv("BUTLER_TEST_CREDENTIAL_SECRET", "secret-token")
-	broker := NewToolCallBroker(NewBroker(NewStore(store.Pool()), NewAuditStore(store.Pool())), EnvSecretResolver{})
+	broker := NewToolCallBroker(NewBroker(NewStore(store.Pool()), NewAuditStore(store.Pool())), stubSecretResolver{value: "secret-token"})
 	resolved, err := broker.ResolveToolCall(ctx, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://api.github.com/repos"}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: alias, Field: "token"}}, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2})
 	if err != nil {
 		t.Fatalf("ResolveToolCall returned error: %v", err)

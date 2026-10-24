@@ -176,6 +176,10 @@ class ButlerViewModel(
         credentialStore.setMaskOtpAndBankCodes(enabled)
     }
 
+    fun setLoginOtpRelay(enabled: Boolean) {
+        credentialStore.setLoginOtpRelay(enabled)
+    }
+
     fun setAppFilterMode(mode: AppFilterMode) {
         credentialStore.setAppFilterMode(mode)
     }

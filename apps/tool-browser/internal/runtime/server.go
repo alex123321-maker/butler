@@ -105,6 +105,7 @@ type Result struct {
 	PageStatus         string                `json:"page_status,omitempty"`
 	LocalPreparation   bool                  `json:"local_preparation,omitempty"`
 	NetworkState       string                `json:"network_state,omitempty"`
+	CredentialVerified *bool                 `json:"credential_verified,omitempty"`
 	Error              *ResultError          `json:"error,omitempty"`
 	OwnerFrame         *browsercontrol.Frame `json:"owner_frame,omitempty"`
 }

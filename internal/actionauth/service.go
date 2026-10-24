@@ -2,6 +2,7 @@ package actionauth
 
 import (
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/toolcatalog"
 
 	"context"
@@ -96,6 +97,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
 	}
+	if credentialcontrol.IsTool(call.GetToolName()) && (!standardCredentialControl(b) || c.Delegation != nil || len(c.InputClaimHash) != 64 || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil) {
+		return b, false, credentialcontrol.ErrVault
+	}
 	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil) {
 		return b, false, communicationcontrol.ErrDenied
 	}
@@ -147,15 +151,6 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if _, err := NetworkReleaseRequired(call, contract); err != nil {
 		return b, false, err
 	}
-	if c.Authority != nil {
-		m, err := s.store.GetMandate(ctx, c.Authority.MandateID)
-		if err != nil || CheckAssignedAction(m, b, s.now()) != nil {
-			return b, false, ErrOwnerAuthority
-		}
-		if err = CheckDenyOverrides(b, c.DenyTools, c.DenyResources); err != nil {
-			return b, false, err
-		}
-	}
 	requires := false
 	if len(b.CredentialRefs) > 0 {
 		if s.credentials == nil {
@@ -167,6 +162,15 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 		}
 		b = BindCredentialMetadata(b, hash)
 		requires = approval
+	}
+	if c.Authority != nil {
+		m, err := s.store.GetMandate(ctx, c.Authority.MandateID)
+		if err != nil || CheckAssignedAction(m, b, s.now()) != nil {
+			return b, false, ErrOwnerAuthority
+		}
+		if err = CheckDenyOverrides(b, c.DenyTools, c.DenyResources); err != nil {
+			return b, false, err
+		}
 	}
 	return b, requires, nil
 }
@@ -191,6 +195,12 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 		return PreparedAction{}, err
 	}
 	requires := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
+	if s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil {
+		requires = false
+	}
+	if standardCredentialControl(b) && c.Delegation == nil && CheckDenyOverrides(b, c.DenyTools, c.DenyResources) == nil {
+		requires = false
+	}
 	if c.MandateID != "" && c.AutonomyMode >= 3 && !contract.GetRequiresApproval() && !credentialApproval {
 		m, err := s.store.GetMandate(ctx, c.MandateID)
 		if err != nil {
@@ -251,11 +261,28 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, err
 	}
 	requiresApproval := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
+	ownerCredentialPreparation := s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil
+	if ownerCredentialPreparation && len(c.InputClaimHash) != 64 {
+		return Grant{}, fmt.Errorf("current owning Input is required for credential preparation")
+	}
+	if ownerCredentialPreparation {
+		requiresApproval = false
+	}
+	localCredentialRequest := standardCredentialControl(b) && c.Delegation == nil && CheckDenyOverrides(b, c.DenyTools, c.DenyResources) == nil
+	if localCredentialRequest {
+		requiresApproval = false
+	}
 	i, err := s.store.GetIntent(ctx, actionID)
 	if err != nil || b.ActionID != actionID || i.Binding.ActionHash != b.ActionHash || !i.ExpiresAt.After(s.now()) {
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
 	}
 	g := Grant{ID: randomID(), Binding: b, LeaseID: c.LeaseID, LeaseEpoch: c.LeaseEpoch, AutonomyMode: c.AutonomyMode, ExpiresAt: s.now().Add(time.Minute), State: "authorized"}
+	if ownerCredentialPreparation {
+		g.InputClaimHash = c.InputClaimHash
+	}
+	if credentialcontrol.IsTool(call.GetToolName()) {
+		g.InputClaimHash = c.InputClaimHash
+	}
 	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil) {
 		return Grant{}, communicationcontrol.ErrDenied
 	}
@@ -283,7 +310,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		if approval.ExpiresAt.Before(g.ExpiresAt) {
 			g.ExpiresAt = approval.ExpiresAt
 		}
-	} else if mandateID != "" {
+	} else if mandateID != "" && !localCredentialRequest && !ownerCredentialPreparation {
 		if mandateID != c.MandateID {
 			return Grant{}, fmt.Errorf("mandate is not assigned by trusted run policy")
 		}
@@ -332,8 +359,11 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil || g.State != "authorized" || !g.ExpiresAt.After(s.now()) || g.Binding.ActionHash != b.ActionHash || g.LeaseID != c.LeaseID || g.LeaseEpoch != c.LeaseEpoch || g.AutonomyMode != c.AutonomyMode {
 		return Grant{}, fmt.Errorf("dispatch grant is stale, changed, revoked or already dispatched")
 	}
-	if (strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original owning input claim is no longer current")
+	}
+	if s.approvedCredentialPreparation(ctx, call, contract) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+		return Grant{}, fmt.Errorf("credential preparation Input claim changed")
 	}
 	if g.ApprovalID != "" {
 		if _, err := s.verifiedApproval(ctx, b, g.ApprovalID); err != nil {
@@ -344,7 +374,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil {
 		return Grant{}, err
 	}
-	if release && g.ApprovalID == "" && g.MandateID == "" {
+	if release && g.ApprovalID == "" && g.MandateID == "" && !s.approvedCredentialPreparation(ctx, call, contract) {
 		return Grant{}, fmt.Errorf("current data-release authorization is required")
 	}
 	if g.MandateID != "" {

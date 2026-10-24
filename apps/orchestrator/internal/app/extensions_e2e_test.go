@@ -25,7 +25,6 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
-	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/extensions"
 	"github.com/butler/butler/internal/extensions/projectfixture"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
@@ -168,7 +167,7 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	if _, err = runtimev1.NewToolRuntimeServiceClient(unauthorized).ProbeExtension(ctx, &runtimev1.ProbeExtensionRequest{ProbeId: "forged"}); err == nil {
 		t.Fatal("external executor accepted unauthenticated RPC")
 	}
-	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner", "BUTLER_EXTENSION_TEST_SECRET="+fixtureSecret, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
+	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner", "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
 	controlServer := httptest.NewServer(api.ReviewedExtensions(api.NewOwnerControlAuth(ownerToken, "owner"), extensions.NewControlClient("http://"+brokerHTTP+"/internal/extensions", coreToken)))
 	defer controlServer.Close()
 	control := func(req extensions.ControlRequest) extensions.ControlResponse {
@@ -347,9 +346,6 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	}
 	control(extensions.ControlRequest{Operation: "review", ExtensionID: "project", ManifestHash: versionTwo.Digest})
 	credential := actionauth.CredentialRef{Alias: "extension-account", Field: "token"}
-	if _, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: credential.Alias, SecretType: "api_token", TargetType: "http", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"extension.project.inspect"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_EXTENSION_TEST_SECRET", MetadataJSON: "{}"}); err != nil {
-		t.Fatal(err)
-	}
 	state = control(extensions.ControlRequest{Operation: "configure", ExtensionID: "project", ManifestHash: versionTwo.Digest, Generation: state.Generation, Configuration: map[string]string{"origin": egresstest.Origin}, CredentialRefs: map[string]actionauth.CredentialRef{"authorization": credential}, Tools: selected}).Item.Record
 	if state.Available || state.Status != "disabled" || state.Health == "healthy" {
 		t.Fatal("updated manifest inherited readiness/enablement")
@@ -397,17 +393,11 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	privateCall := call("extension.project.inspect", "/project/private", nil)
 	privateCall.ArgsJson = `{"url":"` + egresstest.Origin + `/project/private","authorization":{"type":"credential_ref","alias":"extension-account","field":"token"}}`
 	privateCall.CredentialRefs = []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: credential.Alias, Field: credential.Field}}
-	privatePrepared, err := client.PrepareAction(ctx, privateCall)
 	beforePrivate := contacted.Load()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = client.AuthorizeAction(ctx, privateCall, privatePrepared.Binding.ActionID, "", ""); err == nil || contacted.Load() != beforePrivate {
-		t.Fatal("unapproved extension credential reached recipient")
-	}
-	privateObservation := dispatch(privateCall)
-	if privateObservation["reflected_token"] == fixtureSecret || privateObservation["checks_passed"] != false {
-		t.Fatal("approved deferred extension credential was exposed or not used")
+	// V2 account grants are scoped to browser preparation. Historical env token
+	// aliases cannot be made usable by configuring or approving an extension.
+	if _, err = client.PrepareAction(ctx, privateCall); err == nil || contacted.Load() != beforePrivate {
+		t.Fatal("removed legacy extension credential reached recipient")
 	}
 	state = control(extensions.ControlRequest{Operation: "rollback", ExtensionID: "project", ManifestHash: p.Digest, Generation: state.Generation, Configuration: map[string]string{"origin": egresstest.Origin}, Tools: selected}).Item.Record
 	if state.ManifestHash != p.Digest || state.Available || state.Health == "healthy" {
