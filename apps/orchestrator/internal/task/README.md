@@ -1,5 +1,11 @@
 # Persistent task and bounded delegation ownership
 
+Core composes this store with a separately reserved authority observation pool.
+Only `ValidateRunAuthority` uses it; all owning writes still use the business
+pool. The observation preserves current Task/revision/goal/mandate checks and
+does not cache permissions. One connection is reserved from Core's existing
+configured total, leaving at least two for ordinary fenced writes.
+
 `mobile_verification.go` is the fixed `mobile_batch_v1` processing verifier for
 actual initiative-admitted Android batches. It requires the completed owning
 input/run/final result, current goal/mandate and source revision, a finished batch

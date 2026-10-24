@@ -41,6 +41,38 @@ async function communications(page: Page, current: () => Publication[] = () => [
   })
 }
 
+test('small cursor pages retain the complete visible history without duplicates', async ({ page }) => {
+  await communications(page)
+  const texts = ['Первая сохранённая публикация', 'Вторая сохранённая публикация', 'Последняя сохранённая публикация']
+  await page.route('**/api/v3/communications?*', route => {
+    const after = Number(new URL(route.request().url()).searchParams.get('cursor') || 0)
+    const index = Math.min(after, texts.length)
+    const items: Publication[] = index < texts.length ? [{
+      publication_ref: `publication:small-${index + 1}`, sequence: index + 1,
+      session_ref: report.session_ref, created_at: report.created_at, kind: 'message', available: true,
+      payload: { purpose: 'result', text: texts[index] }, files: [], parts: [],
+    }] : []
+    return route.fulfill({ json: { items, messages: [], cursor: index + items.length, has_more: index + items.length < texts.length } })
+  })
+  await connect(page)
+  for (const text of texts) await expect(page.getByText(text, { exact: true })).toHaveCount(1)
+})
+
+for (const broken of ['stationary', 'empty-more'] as const) {
+  test(`a ${broken} cursor page fails closed without looping`, async ({ page }) => {
+    await communications(page)
+    let reads = 0
+    await page.route('**/api/v3/communications?*', route => {
+      reads++
+      return route.fulfill({ json: { items: broken === 'stationary' ? [report] : [], messages: [], cursor: broken === 'stationary' ? 0 : 1, has_more: true } })
+    })
+    await connect(page)
+    await expect(page.getByText('Публикации сейчас недоступны. Доступ проверяется заново.', { exact: true })).toBeVisible()
+    await expect(page.locator('[data-publication]')).toHaveCount(0)
+    expect(reads).toBeLessThan(10)
+  })
+}
+
 test('a communication profile never selects the most recently active task as a conversation target', async ({ page }) => {
   await communications(page, () => [report], false, true)
   await connect(page)

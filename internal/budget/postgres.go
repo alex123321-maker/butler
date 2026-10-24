@@ -10,7 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Ledger struct{ pool *pgxpool.Pool }
+type Ledger struct {
+	pool *pgxpool.Pool
+	// Set only by trusted controller construction, never a reservation argument.
+	disableConversationModelTurns bool
+}
 
 func NewLedger(pool *pgxpool.Pool) *Ledger { return &Ledger{pool: pool} }
 
@@ -155,7 +159,7 @@ func (l *Ledger) reserve(ctx context.Context, tx pgx.Tx, req Request) (Reservati
 		if s.OwnerID != req.OwnerID {
 			return Reservation{}, false, ErrConflict
 		}
-		next, err := addWithin(s, req.Charge, now)
+		next, err := addWithinPolicy(s, req.Charge, now, l.disableConversationModelTurns)
 		if err != nil {
 			return Reservation{}, false, err
 		}

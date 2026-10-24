@@ -1,5 +1,19 @@
 # Memory source catalog
 
+`AccessTx` expands and locks the complete sorted source closure, then checks
+inherited parent revisions in one recursive query over all original roots. The
+closure is expanded again after lock waits; source ownership, status, hash,
+revision, inherited permission, time-sensitive proofs and rollback semantics
+remain mandatory. No authorization is cached between calls or transactions.
+
+Core can compose `NewWithRunObservationPool` using its existing reserved
+authority connection. Only token-only `CheckRunSources` observations use it;
+the same restore, lease, Task, source-pin and temporal checks still run, and the
+read transaction rolls back without a business mutation. Owner/auxiliary
+compound contexts and source writes retain the business pool. Explicit
+`CheckRunSourcesTx` callers keep their own owning transaction. No timeout,
+privacy, source revision or DATA-release condition is relaxed.
+
 `PublishFragmentsTx` is the same guarded projection as ordinary fragment
 publication inside an owning transaction. Mobile processing uses it to commit
 the source-backed note, stable fragment and terminal message decision atomically.

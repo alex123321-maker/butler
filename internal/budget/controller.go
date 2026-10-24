@@ -17,6 +17,7 @@ import (
 
 type Controller struct {
 	pool             *pgxpool.Pool
+	authorityReads   *pgxpool.Pool
 	Ledger           *Ledger
 	Policy           Policy
 	resolveAuthority AuthorityResolver
@@ -39,7 +40,16 @@ type AuthorityResolver func(context.Context, pgx.Tx, string, string) (MandateSco
 func (c *Controller) SetAuthorityResolver(resolve AuthorityResolver) { c.resolveAuthority = resolve }
 
 func NewController(pool *pgxpool.Pool, p Policy) *Controller {
-	return &Controller{pool: pool, Ledger: NewLedger(pool), Policy: p}
+	return NewControllerWithAuthorityReads(pool, pool, p)
+}
+
+// NewControllerWithAuthorityReads keeps admission/ledger writes on pool and
+// in-flight local-inference observations on a reserved shared pool. Result
+// acceptance still uses pool because its source callback may commit pins.
+func NewControllerWithAuthorityReads(pool, reads *pgxpool.Pool, p Policy) *Controller {
+	ledger := NewLedger(pool)
+	ledger.disableConversationModelTurns = p.DisableConversationModelTurns
+	return &Controller{pool: pool, authorityReads: reads, Ledger: ledger, Policy: p}
 }
 func NewOperationID() (string, error) {
 	var b [24]byte

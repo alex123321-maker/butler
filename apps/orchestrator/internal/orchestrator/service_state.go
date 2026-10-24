@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -62,6 +63,8 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 					checkCtx, checkCancel := context.WithTimeout(runCtx, 750*time.Millisecond)
 					var current session.LeaseRecord
 					var checkErr error
+					checkPhase := "lease"
+					checkStarted := time.Now()
 					if reader, ok := s.leases.(interface {
 						GetLease(context.Context, string) (session.LeaseRecord, error)
 					}); ok {
@@ -73,6 +76,7 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 						if guard, ok := s.config.Tasks.(interface {
 							ValidateRunAuthority(context.Context, string) error
 						}); ok {
+							checkPhase = "task_authority"
 							checkErr = guard.ValidateRunAuthority(checkCtx, lease.RunID)
 						}
 					}
@@ -85,6 +89,16 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 						if checkErr != nil {
 							reason = "execution_authority_check_failed"
 						}
+						classification := "changed"
+						if checkErr != nil {
+							classification = "unavailable"
+							if errors.Is(checkErr, context.DeadlineExceeded) {
+								classification = "deadline"
+							} else if errors.Is(checkErr, session.ErrLeaseNotFound) || errors.Is(checkErr, ownership.ErrStale) {
+								classification = "stale"
+							}
+						}
+						runLog.Warn("execution authority observation stopped", slog.String("phase", checkPhase), slog.String("classification", classification), slog.Int64("elapsed_ms", time.Since(checkStarted).Milliseconds()))
 						cause := &ownedCancellation{reason: reason, failure: ownership.ErrStale}
 						select {
 						case errCh <- cause:

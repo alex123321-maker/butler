@@ -1,6 +1,6 @@
 # Butler — общение агента с пользователем
 
-Версия 0.11, 2026-10-22. **Статус: согласованный продуктовый контракт;
+Версия 0.12, 2026-10-23. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -11,6 +11,67 @@
 message/photo/report документируется отдельно; C05 не обновляет его автоматически.
 
 ### Граница текущей реализации
+
+Core резервирует одно из `BUTLER_POSTGRES_MAX_CONNS` соединений для текущих
+проверок lease/Task authority и token-only Catalog currentness, оставляя минимум два для бизнес-операций.
+Минимум Core при запуске — три соединения; суммарный максимум, execution budgets
+и сроки не увеличиваются. Долгий Telegram poll или Web feed не занимают этот
+резерв. Проверки читают PostgreSQL и продолжают запрещать работу при отзыве,
+истечении или недоступности authority. Кэш разрешений не вводится.
+
+Продолжение после ответа (#142) читает канонический ответ под совместными
+блокировками Session/run. Длительное чтение старой Web-ленты не требует
+исключительного доступа к этим же строкам. Текущие lease/fence, Input claim,
+Task/authority и Catalog остаются обязательными; после ожидания источников
+повторно проверяются claim и срок lease. Это чтение DATA, не разрешение действия.
+Изменения состояния, публикации и эффекты сохраняют прежние owning writers.
+Для чтения ответа, подготовки, обновления run lease и финального сохранения
+fencing входит в ту же транзакцию, что и соответствующая запись; срок lease
+проверяется снова перед commit. Это оставляет соединение для watchdog даже
+при пуле из двух соединений. Ожидание lease mutation по-прежнему происходит
+вне пула; Task, claim, source и authority проверки не ослабляются.
+Отказ продолжения хранит фиксированные phase/reason `interaction_resume_*`;
+отмена по ownership watchdog сохраняет owning cause и при recovery. Heartbeat
+различает `input_claim_lost` и `input_claim_renewal_failed`, не раскрывая SQL,
+credential/body или заменяя независимую ошибку provider/истёкший deadline.
+
+Для остановленного taskless explicit Input доступен узкий owner control:
+`POST /api/v3/communications/inputs/{input_id}/close-failed` с прежним Bearer
+proof, одним стабильным `X-Butler-Delivery-ID` и strict JSON `binding_id`,
+`binding_version`, `expected_checkpoint`, `expected_error_code`. Текущие
+owner/session и verified Web binding обязательны. Только `blocked` без claim,
+живой lease и executing write может стать `failed`; UNKNOWN по умолчанию запрещён.
+Для раннего `run_created/execution_stopped` отказа до `AdmitRun` владение
+проверяется по durable accepted Input/session и текущему Web binding. Исключение
+без admission разрешено только для совпадающих Web/Telegram source и session
+channel; admission/obligation/grant не создаются. Остальные guard сохраняются.
+Для остановки собственной неопределённой локальной публикации владелец может
+явно передать `acknowledge_unknown_effects` — точный список её effect IDs. Это
+допустимо только для уже `effect_unknown` prepare-эффектов `communication.*`;
+executing и другие UNKNOWN (HTTP/browser/commit) остаются запрещены. UNKNOWN,
+grants, evidence, reservations и доставка не меняются, эффект не признаётся
+ABSENT/confirmed и не запускается повторно. Запрос прекращается с ошибкой,
+а отдельная сверка эффекта остаётся обязательной перед новой попыткой этого
+же эффекта. Точные IDs записываются в owner transition и события
+`input.uncertainty_retained` / `effect.uncertainty_retained`. Task закрывается
+прежним Task controller. Переход run в failed и `input.closed_failed` audit
+атомарны с этими событиями. Обязательство получает `closed_with_failure`; question/answer,
+checkpoints/errors, publications, reservations, observations и NULL usage
+сохраняются. Повтор принятого close возвращает failed без второго audit;
+содержимое body не может выбрать completed, retry, grant или новые allowances.
+
+Независимый следующий taskless owner Input может опубликовать обычный
+`communication.message`, если все мешающие UNKNOWN — локальные message/widget
+prepare из других failed Input/run с `closed_with_failure` obligation и точными
+`input.closed_failed`, `input.uncertainty_retained`, `effect.uncertainty_retained`
+audit. Текущие intent/args/contract, исходное событие Input, owner/session, live
+claim, destination digest, admission method/quota проверяются заново. Это только
+loop gate: старые UNKNOWN/grants не меняются; тот же Input, внешние эффекты,
+executing, Task и отсутствие любого доказательства сохраняют блокировку.
+Broker, approval, SourceGuard и лимиты текущего действия остаются обязательными.
+Этот control не является модельным инструментом, не воспроизводит эффект и
+не означает успешную доставку/выполнение. Рабочая приёмка и rollout требуют
+отдельных доказательств; наличие кода не переводит полный V1 в ready.
 
 C07 (#105) добавляет к принятому ответу фиксированную kernel-инструкцию о фазе
 продолжения исходного запроса. Она не содержит question/answer bytes: эти поля,
@@ -145,6 +206,18 @@ SSE `/events?cursor=...` принимает также `Last-Event-ID` и пер
 invalidation, без текста/refs. REST остаётся источником истины. Клиент после
 reconnect и каждого pulse перечитывает загруженные страницы, включая delivery
 changes/privacy, удаляет недоступные bytes/object URLs и не дублирует transcript.
+SSE читает только монотонный cursor публикаций текущего owner/binding/version
+под блокировкой verified binding. Pulse не перечитывает payload, media и графы
+источников и не удерживает Session/transcript locks старой истории. Он не
+разрешает содержимое: REST feed/detail/media сохраняют полную актуальную проверку
+Catalog/export и блокировки до сборки ответа, включая отзыв между pulse и REST.
+Одна REST cursor-страница содержит не более одной canonical publication и её
+полный export proof в одной транзакции. Блокировки не переносятся на следующие
+HTTP-страницы: чтение долгой истории не удерживает owning publication за всей
+лентой. Web добирает прежние порции по 50 публикаций через opaque cursor,
+проверяет продвижение и перечитывает весь загруженный объём после invalidation.
+История не обрезается; изменение размера HTTP-страницы не меняет budgets, сроки
+publication RPC, canonical ordering или privacy/export проверки.
 Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof
 останавливает stream, запросы, очищает publications/receipts/drafts и media URLs.
 HTTP instrumentation сохраняет Flusher; это проверяется настоящим HTTP stream.

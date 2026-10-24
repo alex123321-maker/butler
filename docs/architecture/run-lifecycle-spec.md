@@ -1,5 +1,44 @@
 # Butler — Run Lifecycle Specification
 
+Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
+lease, Task authority and token-only source-currentness observations. The remaining business pool has at least
+two connections: Core therefore requires a total maximum of at least three.
+The total maximum and execution budgets do not increase. Channel polls, Web
+feeds and business writes cannot acquire the reserved connection. Both readers
+still use current PostgreSQL state and their existing authority checks; an
+unavailable observer fails closed. The foreground local-model admission watchdog
+uses this same reserve, with its unchanged250ms interval and200ms proof deadline.
+It rolls back source observations; admission, allowance reservation and returned
+result acceptance remain business transactions with their existing commit/pin
+semantics. Local-model cancellation retains only a fixed phase/class diagnostic,
+and independent parent cancellation/deadlines remain authoritative.
+Observer cancellation logs only fixed phase
+and classification plus elapsed time, never raw storage/source errors.
+
+Single-transaction owning writers (interaction recovery, preparation checkpoint,
+run lease refresh, private communication publication and final persistence) lock the live fencing row inside the
+business transaction and recheck database-clock expiry before commit. They use
+one pooled connection, preserving capacity for the ownership watchdog even with
+two connections. Lease mutations still wait outside the pool for guarded writers;
+multi-repository writers retain their existing shared guard. The local guarded
+context must never escape its transaction or authorize a separate write.
+
+Interaction recovery reads canonical preference DATA with shared Session/run
+proofs so a retained Web feed cannot hold it behind an unnecessary exclusive
+lock. Session ownership, exact Input claim, task authority and source guards
+remain mandatory; claim/lease expiry is rechecked after source waits. Recovery
+retains the owning watchdog cancellation cause and fixed interaction proof
+phase, not raw storage errors. Input heartbeat cancellation separately retains
+claim loss/unavailable renewal without overwriting an independent provider error.
+An authenticated owner may acknowledge a stopped taskless explicit Input as
+failed through the communication control described in the user-communication
+spec. It requires no live claim/lease or executing write. UNKNOWN denies by
+default; an owner may explicitly acknowledge the exact retained unknown IDs of
+local communication preparation only. This abandons the Input, never reconciles
+or replays the effect; external/other uncertain writes still deny. The Input/run failure,
+closed obligation and audit commit together. Historical errors, answers and
+spent/unknown reservations remain intact. No retry or successful result is made.
+
 Kernel-admitted mobile batch tasks use primary history from that task's runs,
 while retaining Session ownership/order and transcript revision/privacy fences.
 Current typed goals, constraints and mandates remain mandatory. See

@@ -61,6 +61,19 @@ uncertain, spent intent. A repeated Broker RPC returns the same uncertain effect
 metadata and never calls the runtime again. Recovery may mark an interrupted
 `executing` record unknown; this never renews its grant.
 
+An audited abandonment of a failed taskless local communication prepare does not
+reconcile that journal entry. It can qualify an independent later owner Input's
+fixed credential-free `communication.message` publication through the loop gate:
+all conflicting unknowns must be failed local message/widget preparations with
+matching original Input/owner/session and explicit per-effect acknowledgement.
+The old revision1 contract must declare `local_runtime_ack`; an observed runtime
+acknowledgement or an absent/confirmed effect is not inferred from that policy.
+The old Input/run must be failed, its obligation closed with failure and its
+failure/uncertainty audits present. Same-Input retries, executing records,
+external effects and incomplete provenance remain blocked. This read-only
+qualification changes no journal, grant, reservation, delivery or verification
+state; ordinary exact approval/current source/destination checks still apply.
+
 ## Declared recipient contracts
 
 Tool contracts declare `contract_revision` and `effect_contract`. Defaults are

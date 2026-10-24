@@ -1,5 +1,17 @@
 # Communication kernel (dormant)
 
+Canonical answer recovery uses shared Session/run proofs alongside retained Web
+readers, with current claim/lease/source checks and post-wait expiry validation.
+`interaction_resume_*` failures expose only fixed phases/reasons. The explicit
+owner composition has a strict `close-failed` control for already blocked
+taskless Inputs, with atomic Input/run failure, closed obligation and one audit.
+It rejects live workers and uncertain writes and retains all historical DATA,
+errors and spending. It is not a model capability or a retry/UNKNOWN resolution.
+An early `run_created/execution_stopped` Web/Telegram failure can also be closed
+before communication admission exists: current accepted-receipt/session ownership
+and verified Web binding are mandatory, with matching source/session channel.
+This creates only the failure audit; no admission or reply obligation is invented.
+
 Implements the backend slice of #99–#100 followed by #103. The product contract
 is [user communication](../../../../docs/architecture/user-communication-spec.md).
 There is no Bootstrap registration, installed public route, feature flag, model
@@ -162,9 +174,17 @@ are in [verification](../../../../docs/ai/communication-backend-full-acceptance-
 # Authorized Web projection
 
 `WebReader` reads only publications pinned to its current owner Web binding.
+`RefreshCursor` checks that binding and reads its monotonic owner-scoped sequence
+without loading historical payloads, media or source graphs. SSE invalidation
+therefore cannot retain transcript locks behind an answer publication. A pulse
+grants no content access; subsequent REST reads still perform the full current
+Catalog/export proof, including revocation after the pulse.
 Feed/detail/download recheck current Catalog/export and retained media; an
 unavailable entry carries no copied payload or manifests. Artifact reads are
 limited to the selected publication's required refs and validate digest/size.
+The HTTP feed uses one-publication cursor pages, keeping the complete proof for
+each returned page through commit. Client-visible history batches are independent
+of server transaction size; successive pages retain ordering and omit no history.
 `Store.WebAvailable` is a trusted composition capability, default false. New
 targets use existing result_ready storage and available API state without send
 ACK or human read. Pending history is never upgraded or resent by enabling a
@@ -198,3 +218,21 @@ before source/export guards can lock its run. This matches owning response/resum
 order; a renderer waiting for the session cannot hold the run and deadlock that
 resume. Locks are released before channel I/O. The PostgreSQL lock-wait regression
 covers both projection reads and initial send authorization.
+
+Recovery joins its live ownership fence and canonical answer read in one
+transaction, including a final claim/lease expiry check. Preparation checkpoints,
+run lease refresh and final persistence use the same single-transaction fencing
+primitive, leaving capacity for the watchdog on the supported two-connection pool.
+The guarded context stays local to that transaction; it cannot authorize a later
+independent write. Takeover serialization and all source/Task fences remain intact.
+Private owning publication also joins fencing and the publication transaction,
+so concurrent dispatched messages/widgets can each use one remaining business
+connection. Broker dispatch/claim, approval, SourceGuard and final expiry checks
+remain mandatory; this cannot publish through a raw owner Actor.
+
+The owner failure control denies UNKNOWN by default. Its optional exact
+`acknowledge_unknown_effects` list can abandon a stopped local communication
+prepare Input with the effect still UNKNOWN. It audits the exact IDs and never
+updates the Broker journal/grants/evidence, refunds, retries or claims success.
+Executing and non-communication uncertain effects always deny. This is an Input
+failure acknowledgement, not independent effect verification.

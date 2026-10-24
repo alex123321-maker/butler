@@ -1,12 +1,33 @@
 package budget
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/internal/security/content"
 )
+
+func TestLocalCallErrorRetainsOnlyTrustedObserverCause(t *testing.T) {
+	for _, phase := range []string{"pool", "authority", "source", "rollback"} {
+		ctx, cancel := context.WithCancelCause(context.Background())
+		cancel(localAuthorityFailure(phase, errors.New("private SQL/source material")))
+		if got := LocalCallError(ctx); got.Error() != "local_authority_"+phase+"_unavailable" || !errors.Is(got, context.Canceled) {
+			t.Fatal("unsafe or missing observer diagnostic", got)
+		}
+	}
+	parent, stop := context.WithCancelCause(context.Background())
+	stop(errors.New("private inherited failure"))
+	if got := LocalCallError(parent); got != context.Canceled {
+		t.Fatal("untrusted inherited cause exposed", got)
+	}
+	deadline, done := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+	defer done()
+	if got := LocalCallError(deadline); got != context.DeadlineExceeded {
+		t.Fatal("original deadline replaced", got)
+	}
+}
 
 func TestLocalTargetIsIndependentOfDeclaredZeroPrice(t *testing.T) {
 	for _, endpoint := range []string{"", "https://example.invalid", "local-models.example:9090", "local-models:8093"} {

@@ -240,7 +240,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	mux.Handle("/api/v4/server-browser", apiservice.ServerBrowser(deps.ownerAuth, browserController))
 	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
-	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth, !deps.budgetPolicy.DisableOwnerDay))
+	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth, !deps.budgetPolicy.DisableOwnerDay, !deps.budgetPolicy.DisableConversationModelTurns))
 	var extensionClient *extensions.ControlClient
 	if deps.cfg.ExtensionControlURL != "" {
 		token, tokenErr := actionauth.ReadServiceToken(deps.cfg.ActionAuthorityTokenFile)

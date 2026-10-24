@@ -43,7 +43,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 		}
 		a.SessionKey = reader.Binding.Recipient
 		ctx := owneridentity.WithActor(r.Context(), a)
-		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" || strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") {
+		if r.URL.Path == "/api/v3/communications/replies" || r.URL.Path == "/api/v3/channel-bindings" || strings.HasPrefix(r.URL.Path, "/api/v3/interactions/") || strings.HasPrefix(r.URL.Path, "/api/v3/communications/inputs/") {
 			owner.ServeHTTP(w, r)
 			return
 		}
@@ -112,7 +112,10 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 			}
 			writeJSON(w, 200, map[string]any{"ready": true, "binding_id": reader.Binding.ID, "binding_version": reader.Binding.Version, "methods": reader.Binding.Capabilities, "drain_only": len(draining) > 0 && draining[0]})
 		case "/api/v3/communications":
-			page, err := reader.Feed(ctx, after, 50)
+			// Keep each complete export proof bounded to one publication. A page
+			// of retained history must not hold Session/transcript locks through
+			// dozens of later publications while an owning writer has a 5s RPC.
+			page, err := reader.Feed(ctx, after, 1)
 			if err != nil {
 				deny()
 				return
@@ -129,7 +132,7 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 					return
 				}
 			}
-			if _, err = reader.Feed(ctx, after, 1); err != nil {
+			if _, err = reader.RefreshCursor(ctx, after); err != nil {
 				deny()
 				return
 			}
@@ -145,13 +148,13 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 			deadline := time.NewTimer(24 * time.Second)
 			defer deadline.Stop()
 			for {
-				page, err := reader.Feed(ctx, after, 50)
+				cursor, err := reader.RefreshCursor(ctx, after)
 				if err != nil {
 					_, _ = io.WriteString(w, "event: reset\ndata: {}\n\n")
 					flush.Flush()
 					return
 				}
-				after = page.Cursor
+				after = cursor
 				data, _ := json.Marshal(map[string]int64{"cursor": after})
 				if _, err = fmt.Fprintf(w, "id: %d\nevent: refresh\ndata: %s\n\n", after, data); err != nil {
 					return

@@ -15,7 +15,8 @@ type ownedCancellation struct {
 	failure error
 }
 
-func (e *ownedCancellation) Error() string { return e.reason }
+func (e *ownedCancellation) Error() string          { return e.reason }
+func (e *ownedCancellation) DiagnosticCode() string { return e.reason }
 func (e *ownedCancellation) Unwrap() []error {
 	return []error{context.Canceled, e.failure}
 }

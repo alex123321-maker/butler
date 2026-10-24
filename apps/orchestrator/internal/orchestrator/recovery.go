@@ -44,7 +44,7 @@ type storedCheckpoint struct {
 // Resume reclaims the same Butler run from a durable checkpoint. Unknown
 // external outcomes are never replayed, and provider sessions are never used
 // as evidence of execution or permission.
-func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputEvent) (*ExecutionResult, error) {
+func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputEvent) (result *ExecutionResult, returnedErr error) {
 	current, err := s.runs.GetRun(ctx, runID)
 	if err != nil {
 		return nil, err
@@ -115,6 +115,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	runLog := logger.WithRunID(s.log, runID)
 	ctx, stop, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
 	defer stop()
+	defer func() { returnedErr = preserveOwnedCancellation(ctx, returnedErr) }()
 	refresher, ok := s.runs.(interface {
 		RefreshExecutionLease(context.Context, string, string) (*sessionv1.RunRecord, error)
 	})
@@ -170,7 +171,15 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 		answer, resumeErr := s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
 		if resumeErr != nil {
-			return blockedApprovalResult(current, "interaction_invalidated"), nil
+			if errors.Is(resumeErr, context.Canceled) || errors.Is(resumeErr, context.DeadlineExceeded) {
+				return nil, resumeErr
+			}
+			code := "interaction_invalidated"
+			var diagnostic interface{ InteractionResumeCode() string }
+			if errors.As(resumeErr, &diagnostic) {
+				code = diagnostic.InteractionResumeCode()
+			}
+			return blockedApprovalResult(current, code), nil
 		}
 		refreshed, e := s.refreshRecoveredToolContext(ctx, runID, checkpoint.Prepared.InputItems, checkpoint.Prepared.ToolDefs)
 		if e != nil {

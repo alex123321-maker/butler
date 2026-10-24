@@ -31,6 +31,7 @@ export BUTLER_GUARDED_REQUEST_BROKER_BINARY="$PWD/.cache/communication-core/brok
 export BUTLER_DELEGATION_BROKER_BINARY="$BUTLER_GUARDED_REQUEST_BROKER_BINARY"
 report=.cache/communication-core/targeted.jsonl
 packages=(./internal/acceptance ./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/artifacts ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
+packages+=(./internal/ownership ./internal/storage/postgres ./apps/orchestrator/internal/session)
 if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^TestCommunication' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1
@@ -39,7 +40,32 @@ if grep -q '"Action":"skip"' "$report"; then
  grep '"Action":"skip"' "$report"
  exit 1
 fi
-go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript
+local_report=.cache/communication-core/local-authority.jsonl
+if ! go test -p 1 -race -count=1 -json ./internal/budget ./internal/memory/semantic -run '^Test(LocalLiveAuthority|LocalCallError|CurrentLocalOnlyAuthorityAndImmediateRevocation|LocalOnlyBundle)' >"$local_report"; then
+ grep -E '"Action":"fail"|"OutputType":"error"' "$local_report" || tail -40 "$local_report"
+ exit 1
+fi
+if grep -q '"Action":"skip"' "$local_report"; then
+ grep '"Action":"skip"' "$local_report"; exit 1
+fi
+go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript ./internal/memory/semantic
+catalog_report=.cache/communication-core/catalog-source.jsonl
+# External pg_dump/restore and physical-full-anchor procedures have dedicated
+# drivers. Ordinary currentness/privacy/graph/expiry cases here are required.
+if ! go test -p 1 -race -count=1 -json ./internal/memory/catalog -skip '^TestActual(PostgresDumpRestoreDeletion|PostgresTemporalDumpRestoreDeletion|FullAnchorDiskFailsBoundedlyWithoutClaimingDeletion)Integration$' >"$catalog_report"; then
+ grep -E '"Action":"fail"|"OutputType":"error"' "$catalog_report" || tail -40 "$catalog_report"; exit 1
+fi
+if grep -q '"Action":"skip"' "$catalog_report"; then
+ grep '"Action":"skip"' "$catalog_report"; exit 1
+fi
+go vet ./internal/memory/catalog
+budget_report=.cache/communication-core/budget-policy.jsonl
+if ! go test -p 1 -race -count=1 -json ./internal/budget ./apps/orchestrator/internal/api -run '^Test(ConversationModelTurn|BudgetRead)' >"$budget_report"; then
+ grep -E '"Action":"fail"|"OutputType":"error"' "$budget_report" || tail -40 "$budget_report"; exit 1
+fi
+if grep -q '"Action":"skip"' "$budget_report"; then
+ grep '"Action":"skip"' "$budget_report"; exit 1
+fi
 if [[ ${1:-} == --regression ]]; then
  regression=(./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/artifacts ./apps/tool-broker/internal/broker ./internal/actionauth ./internal/budget ./internal/memory/transcript ./internal/memory/compaction ./internal/memory/pipeline)
  if ! go test -p 1 -count=1 -json "${regression[@]}" -skip '(Native|Backup|ServerBrowser)' >.cache/communication-core/regression.jsonl; then

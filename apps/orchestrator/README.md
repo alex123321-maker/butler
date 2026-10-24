@@ -23,6 +23,31 @@ additional paired benefit and remains dormant; Broker authorization is unchanged
 
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Communication SSE reads only the current owner binding's sequence, so refreshes
+do not reread historical source graphs or retain transcript locks. REST keeps
+the complete transactional export proof. Catalog access checks ancestor revisions
+together after locking the sorted closure and rechecks the graph after waits;
+no permission is cached and publication deadlines/budgets are unchanged.
+REST cursor pages retain one publication's complete export proof per transaction;
+the Web client assembles the same visible history batches across cursor pages.
+This bounds reader locks without dropping history or weakening publication proof.
+
+Core requires `BUTLER_POSTGRES_MAX_CONNS >= 3`: one connection from that total
+is reserved for live lease/Task authority and token-only source observations, and at least two remain
+for business writes. The combined maximum is unchanged. Channel polling and Web
+history cannot exhaust watchdog capacity; current PG revocation, expiry and
+fail-closed authority rules remain mandatory. The live local-model watchdog also
+uses this reserve at the unchanged250ms/200ms bounds, with rollback-only source
+observations and safe cancellation causes. Admission/result acceptance retain
+business transactions and immutable budget history. Both pools close with Core.
+
+An independent taskless owner result may cross the loop gate after an older
+local message/widget uncertainty was explicitly abandoned through failure
+control. Exact current intent/admission/claim and every old failure/per-effect
+audit must match. The old effect remains UNKNOWN; Task/external/executing or
+unacknowledged effects and same-Input retries still block. Broker, approval,
+source/destination checks and finite allowances remain mandatory.
+
 Owner Web `POST /api/v4/memory/search` supports explicit `strategy: hybrid` on
 page0 when the existing owned semantic runtime is configured. It uses a separate
 bounded owner query admission, the pinned local model and current indexed sources;
@@ -54,6 +79,11 @@ The follow-up adds dormant owner handlers and verified reply routing, a trusted
 programmatic admission hook, independent denied export targets and complete
 PostgreSQL fault/worker-crash matrices. No route or hook is installed at startup.
 See [backend acceptance](../../docs/ai/communication-backend-full-acceptance-20261021.md).
+
+Operator `disable_conversation_model_turns:true` disables only the conversation
+session/day model-turn ceiling. Accounting continues with unchanged historical
+limits/reservations, and the owner budget API reports
+`conversation_model_turns_enabled`. Match the setting in Core and Broker.
 
 Operator budget policy `disable_owner_day:true` disables the shared daily limit
 for new foreground/background admissions while retaining task, conversation,
@@ -163,6 +193,17 @@ resume the remaining original task; they do not establish semantic verification
 or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
+
+Interaction resume reads canonical answers under shared Session/run proofs,
+retains fixed failure phases and rechecks claim/lease after source waits. The
+input heartbeat and recovered run preserve their distinct safe cancellation
+causes. The existing explicit owner HTTP composition also exposes guarded
+`close-failed` acknowledgement for blocked taskless Inputs: no active worker or
+executing write, no replay/success/refund, original evidence kept. UNKNOWN denies
+by default. Exact explicit owner acknowledgement can abandon a stopped local
+communication publication while retaining its UNKNOWN journal/grant/evidence;
+this cannot reconcile or retry it. Other uncertain writes remain ineligible. See the
+[communication contract](../../docs/architecture/user-communication-spec.md).
 
 Conversation loop detection attributes repeated tool results to the original
 durable Input event through existing effect/run records. Independent requests in

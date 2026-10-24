@@ -26,6 +26,16 @@ the guard again reuses the same immutable daily allowance and spending. No large
 sentinel limit or ledger reset represents the opt-out. The authenticated budget
 read model includes `owner_day_enabled` so historical scopes do not imply current
 enforcement. This operator setting cannot be supplied through model arguments.
+The separate operator flag `disable_conversation_model_turns:true` disables only
+the model-turn comparison on session/day conversation scopes. Core and Broker
+must agree. Existing scope policies/deadlines remain immutable and all new local
+and provider calls still reserve their full charge, including model turns; NULL
+observations and old reservations are retained. No sentinel, refund, new scope or
+reset implements this opt-out. Tokens, cost, bytes, time, external calls, all
+other scope kinds and overflow checks remain mandatory. Re-enabling immediately
+enforces the original stored limit against all accumulated spending. The owner
+read model reports `conversation_model_turns_enabled` independently of historical
+limits. This flag is deployment policy, never a model/reservation argument.
 Restart, worker/run ID change, delegation and amendments do not reset root or
 mandate spending. Enabled daily counters change at midnight UTC; root/mandate counters
 continue. Migration057 delegation contracts add exact immutable child scopes to

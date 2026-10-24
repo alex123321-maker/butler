@@ -279,6 +279,30 @@ func (w *WebReader) Feed(ctx context.Context, after int64, limit int) (WebPage, 
 	return out, tx.Commit(ctx)
 }
 
+// RefreshCursor releases no publication data or source/artifact identity. SSE
+// only invalidates REST pages, whose full current export proof remains mandatory.
+// Avoid replaying every historical source graph and retaining transcript locks
+// while an owning writer is publishing the answer that triggers that refresh.
+func (w *WebReader) RefreshCursor(ctx context.Context, after int64) (int64, error) {
+	if w == nil || w.Core == nil || w.Core.Pool == nil || after < 0 {
+		return 0, ErrDenied
+	}
+	tx, err := w.Core.Pool.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(context.Background())
+	if err = w.bindingTx(ctx, tx); err != nil {
+		return 0, err
+	}
+	a, _ := owneridentity.FromContext(ctx)
+	var cursor int64
+	if err = tx.QueryRow(ctx, `SELECT COALESCE(max(p.publication_sequence),$4) FROM communication_publications p JOIN delivery_outbox d USING(publication_id) WHERE p.owner_id=$1 AND d.binding_id=$2 AND d.binding_version=$3 AND p.publication_sequence>$4`, a.OwnerID, w.Binding.ID, w.Binding.Version, after).Scan(&cursor); err != nil {
+		return 0, err
+	}
+	return cursor, tx.Commit(ctx)
+}
+
 func (w *WebReader) Detail(ctx context.Context, id string) (WebPublication, error) {
 	if w == nil || w.Core == nil || w.Core.Pool == nil || len(id) > 128 {
 		return WebPublication{}, ErrDenied

@@ -16,19 +16,20 @@ type ModelPrice struct {
 	OutputMicrosPerToken int64  `json:"output_micros_per_token"`
 }
 type Policy struct {
-	DisableOwnerDay    bool                  `json:"disable_owner_day,omitempty"`
-	Task               Units                 `json:"task"`
-	Mandate            Units                 `json:"mandate"`
-	Day                Units                 `json:"day"`
-	Conversation       Units                 `json:"conversation"`
-	TaskLifetimeMillis int64                 `json:"task_lifetime_millis"`
-	ModelMillis        int64                 `json:"model_millis"`
-	ToolMillis         int64                 `json:"tool_millis"`
-	OutputTokens       int64                 `json:"output_tokens"`
-	Models             map[string]ModelPrice `json:"models"`
-	RepeatLimit        int64                 `json:"repeat_limit"`
-	ToolEgressBytes    int64                 `json:"tool_egress_bytes"`
-	ModelInputBytes    int64                 `json:"model_input_bytes"`
+	DisableOwnerDay               bool                  `json:"disable_owner_day,omitempty"`
+	DisableConversationModelTurns bool                  `json:"disable_conversation_model_turns,omitempty"`
+	Task                          Units                 `json:"task"`
+	Mandate                       Units                 `json:"mandate"`
+	Day                           Units                 `json:"day"`
+	Conversation                  Units                 `json:"conversation"`
+	TaskLifetimeMillis            int64                 `json:"task_lifetime_millis"`
+	ModelMillis                   int64                 `json:"model_millis"`
+	ToolMillis                    int64                 `json:"tool_millis"`
+	OutputTokens                  int64                 `json:"output_tokens"`
+	Models                        map[string]ModelPrice `json:"models"`
+	RepeatLimit                   int64                 `json:"repeat_limit"`
+	ToolEgressBytes               int64                 `json:"tool_egress_bytes"`
+	ModelInputBytes               int64                 `json:"model_input_bytes"`
 }
 
 func DefaultPolicy() Policy {

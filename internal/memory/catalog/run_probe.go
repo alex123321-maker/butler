@@ -54,7 +54,7 @@ func (p *runSourceProbeState) finish(err error) {
 	if p.phase == "" {
 		return
 	}
-	stat := p.store.pool.Stat()
+	stat := p.store.RunObservationPool(p.ctx).Stat()
 	o := RunSourceProbe{Phase: p.phase, Millis: time.Since(p.started).Milliseconds(), PoolAcquired: stat.AcquiredConns(), PoolIdle: stat.IdleConns(), PoolTotal: stat.TotalConns()}
 	if err != nil {
 		o.ErrorKind = "denied_or_storage_error"

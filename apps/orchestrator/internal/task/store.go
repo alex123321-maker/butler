@@ -20,6 +20,7 @@ import (
 
 type Store struct {
 	pool                      *pgxpool.Pool
+	authorityReads            *pgxpool.Pool
 	budgets                   *budget.Controller
 	budgetMandate             string
 	verifiedResultSourceGuard func(context.Context, pgx.Tx, string) error
@@ -36,7 +37,11 @@ func (s *Store) SetBudgets(c *budget.Controller, mandateID string) {
 	s.budgetMandate = mandateID
 }
 
-func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
+func NewStore(pool *pgxpool.Pool) *Store { return NewStoreWithAuthorityReads(pool, pool) }
+
+func NewStoreWithAuthorityReads(pool, reads *pgxpool.Pool) *Store {
+	return &Store{pool: pool, authorityReads: reads}
+}
 
 const columns = `task_id, session_key, owner_id, COALESCE(parent_task_id,''), goal, source_json,
  status, revision, constraints_revision, execution_policy, constraints_json, completion_criteria_json, working_json,

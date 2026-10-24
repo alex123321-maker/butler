@@ -22,12 +22,33 @@ import (
 )
 
 type Store struct {
-	pool     *pgxpool.Pool
-	manifest Manifest
+	pool               *pgxpool.Pool
+	manifest           Manifest
+	runObservationPool *pgxpool.Pool
 }
 
-func New(pool *pgxpool.Pool, manifest Manifest) *Store { return &Store{pool, manifest} }
-func (s *Store) Pool() *pgxpool.Pool                   { return s.pool }
+func New(pool *pgxpool.Pool, manifest Manifest) *Store {
+	return NewWithRunObservationPool(pool, pool, manifest)
+}
+
+// Only token-only CheckRunSources observations use the reserve. Source writes,
+// selected-ref access and trusted compound/owner contexts keep the business pool.
+func NewWithRunObservationPool(pool, observations *pgxpool.Pool, manifest Manifest) *Store {
+	return &Store{pool: pool, manifest: manifest, runObservationPool: observations}
+}
+
+// RunObservationPool selects capacity, never grants access. Foreground composed
+// source checkers still prove the exact current run and source state themselves.
+func (s *Store) RunObservationPool(ctx context.Context) *pgxpool.Pool {
+	_, token := ownership.TokenFromContext(ctx)
+	_, actor := owneridentity.FromContext(ctx)
+	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
+	if token && !actor && !auxiliary && s.runObservationPool != nil {
+		return s.runObservationPool
+	}
+	return s.pool
+}
+func (s *Store) Pool() *pgxpool.Pool { return s.pool }
 func randomID(prefix string) (string, error) {
 	var b [20]byte
 	_, e := rand.Read(b[:])
@@ -428,14 +449,6 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 				return nil, ErrDenied
 			}
 		}
-		// A source derived from a stale/deleted parent is not current evidence.
-		var stale bool
-		if e = tx.QueryRow(ctx, `WITH RECURSIVE parents AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=$1 UNION SELECT d.parent_source_id,d.parent_revision FROM memory_source_dependencies d JOIN parents p ON d.child_source_id=p.parent_source_id) SELECT EXISTS(SELECT 1 FROM parents p JOIN memory_sources s ON s.source_id=p.parent_source_id WHERE s.status<>'active' OR s.head_revision<>p.parent_revision)`, src.ID).Scan(&stale); e != nil {
-			return nil, e
-		}
-		if stale {
-			return nil, ErrStale
-		}
 		if src.Origin.Sensitivity == content.Secret {
 			return nil, ErrDenied
 		}
@@ -454,6 +467,22 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 				break
 			}
 		}
+	}
+	// The sorted closure above has locked and checked every source. Check all
+	// inherited revisions together, rather than recursively walking the same
+	// ancestors again for each node. Keep the subsequent closure recheck: an
+	// edge added during a lock wait must still invalidate this access.
+	rootIDs := make([]string, 0, len(graphRoots))
+	for _, r := range graphRoots {
+		rootIDs = append(rootIDs, r.ID)
+	}
+	runSourcePhase(ctx, "access_parent_revisions")
+	var stale bool
+	if e := tx.QueryRow(ctx, `WITH RECURSIVE parents AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=ANY($1::text[]) UNION SELECT d.parent_source_id,d.parent_revision FROM memory_source_dependencies d JOIN parents p ON d.child_source_id=p.parent_source_id) SELECT EXISTS(SELECT 1 FROM parents p JOIN memory_sources s ON s.source_id=p.parent_source_id WHERE s.status<>'active' OR s.head_revision<>p.parent_revision)`, rootIDs).Scan(&stale); e != nil {
+		return nil, e
+	}
+	if stale {
+		return nil, ErrStale
 	}
 	runSourcePhase(ctx, "access_graph_recheck")
 	currentGraph, e := s.CanonicalSourcesTx(ctx, tx, graphRoots)

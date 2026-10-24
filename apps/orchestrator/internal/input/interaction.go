@@ -54,14 +54,17 @@ func (s *Store) SaveInteractionPreparation(ctx context.Context, runID, id, paylo
 	if !ok || !owned || tok.RunID != runID {
 		return ErrClaimLost
 	}
-	ctx, release, err := ownership.Begin(ctx)
+	ctx, tx, err := ownership.BeginTransaction(ctx, s.pool)
 	if err != nil {
 		return err
 	}
-	defer release()
-	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET checkpoint_json=jsonb_set(checkpoint_json,'{prepared}',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND checkpoint='interaction_ready' AND checkpoint_json->'interaction'->>'interaction_id'=$5 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, payload, id)
+	defer tx.Rollback(context.Background())
+	tag, err := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint_json=jsonb_set(checkpoint_json,'{prepared}',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND checkpoint='interaction_ready' AND checkpoint_json->'interaction'->>'interaction_id'=$5 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, payload, id)
 	if err == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

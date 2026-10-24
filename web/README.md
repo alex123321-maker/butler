@@ -7,6 +7,10 @@ There is no iframe, second application or additional runtime dependency.
 
 ## Data and interaction
 
+- Communication history follows opaque server cursors until the requested batch
+  of 50 publications is assembled. The server can release each publication's
+  complete access proof in a separate HTTP transaction; small server pages do
+  not truncate visible history. Invalid or non-progressing cursors fail closed.
 - Calendar dates use the browser's local time zone. Tasks use observed started_at
   or updated_at; schedules use actual next_at. No demonstration tasks, invented
   future dates or simulated action timers are shipped. The approved vine geometry

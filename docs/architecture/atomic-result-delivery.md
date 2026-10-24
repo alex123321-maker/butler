@@ -4,6 +4,12 @@ This contract separates an external effect, a durable attempt result, task
 verification, and channel delivery. A provider final event or a runtime
 `completed` status proves none of the other three. PostgreSQL is authoritative.
 
+Final persistence joins its ownership fence to the same PostgreSQL transaction
+as the result and outbox. The coordinator reads effect evidence as observation,
+then validates current lease/fence, Input claim, source and Task authority in the
+write transaction. It rechecks lease expiry before commit. This preserves a pool
+connection for watchdog reads without weakening completion or publication proof.
+
 ## Planned explicit-publication profile
 
 The Telegram follow-up freezes deterministic media/report parts in the same

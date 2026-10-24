@@ -91,7 +91,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		Level:     parseLogLevel(baseCfg.Shared.LogLevel),
 	})
 
-	postgres, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
+	postgres, err := postgresstore.OpenWithAuthorityReserve(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		return nil, err
 	}
 
-	taskStore := task.NewStore(postgres.Pool())
+	taskStore := task.NewStoreWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool())
 	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
 	budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
 	if policyErr == nil {
@@ -185,7 +185,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		postgres.Close()
 		return nil, policyErr
 	}
-	budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
+	budgetController := budget.NewControllerWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool(), budgetPolicy)
 	budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	taskStore.SetBudgets(budgetController, cfg.ActionMandateID)
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
@@ -234,7 +234,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
-	sessionLeaseManager := session.NewPostgresLeaseManager(postgres.Pool())
+	sessionLeaseManager := session.NewPostgresLeaseManagerWithAuthorityReads(postgres.Pool(), postgres.AuthorityReadPool())
 	inputStore := durableinput.NewStore(postgres.Pool())
 	approvalRepo.SetCheckpointHooks(inputStore)
 	transcriptStore := transcript.NewStore(postgres.Pool())
@@ -244,7 +244,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	profileStore := profile.NewStore(postgres.Pool())
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
-	sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
+	sourceCatalog := catalog.NewWithRunObservationPool(postgres.Pool(), postgres.AuthorityReadPool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
 	taskStore.SetVerifiedResultSourceGuard(sourceCatalog.CheckRunSourcesTx)
 	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
 		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")

@@ -40,7 +40,10 @@ type fixture struct {
 	bindings map[string]string
 }
 
-type fixtureOptions struct{ Task, Quiet, VerifiedTask, Authority bool }
+type fixtureOptions struct {
+	Task, Quiet, VerifiedTask, Authority bool
+	PoolConns                            int32
+}
 
 func setup(t *testing.T, options ...fixtureOptions) *fixture {
 	t.Helper()
@@ -56,6 +59,16 @@ func setup(t *testing.T, options ...fixtureOptions) *fixture {
 	t.Cleanup(cancel)
 	t.Setenv("BUTLER_TEST_MEMORY_POSTGRES_URL", dsn)
 	pool := memorytest.Database(t)
+	if opt.PoolConns > 0 {
+		cfg := pool.Config()
+		cfg.MaxConns = opt.PoolConns
+		var err error
+		pool, err = pgxpool.NewWithConfig(ctx, cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(pool.Close)
+	}
 	var e error
 	id := fmt.Sprintf("comm:%d", time.Now().UnixNano())
 	key := "web:" + id

@@ -357,6 +357,14 @@ metadata checks do not replace #22 contradiction, acceptance or backup tombstone
 semantics. Fixed Russian/code fixture quality is measured separately from
 production acceptance; reranking is optional and default-off.
 
+The live local query/rank watchdog shares Core's reserved authority connection;
+business-pool occupancy cannot consume its200ms proof window. The250ms observer
+still checks current lease, task/mandate and exact source stamps and rolls back.
+Allowance admission and returned-result acceptance keep their original business
+transactions, committed applicability pins and immutable reservations. A failed
+observation cancels inference with a fixed phase/class cause; raw source/SQL
+errors are excluded and original parent deadlines are not extended.
+
 The two local-index in-flight source/chunk observations keep their complete
 catalog graph, current job claim, source-body and exact chunk proof at the
 unchanged250ms interval and200ms proof deadline. Their private job checker cannot

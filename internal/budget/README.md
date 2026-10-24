@@ -1,5 +1,13 @@
 # Durable execution budgets
 
+Operator `disable_conversation_model_turns:true` removes only the session/day
+model-turn ceiling. Charges continue accumulating against the unchanged scope;
+re-enabling enforces its original limit and total spending. Local and provider
+inference use the same setting. Other dimensions, all other scope kinds, absolute
+deadlines and overflow checks remain enforced. Core/Broker configuration must
+match; the owner API exposes `conversation_model_turns_enabled`. No ledger reset,
+refund or large substitute limit is used.
+
 Explicit operator `disable_owner_day:true` in the shared budget policy disables
 the aggregate owner/day scope for new admissions, including preflight and local
 auxiliary calls. Default behavior keeps the guard enabled. Existing daily history

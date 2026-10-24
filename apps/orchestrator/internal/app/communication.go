@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-// CommunicationControl is deliberately not installed by Bootstrap. A future
-// channel rollout must explicitly compose it and pin kernel admissions first.
+// CommunicationControl requires explicit owner-profile composition and pinned
+// kernel admissions. Ordinary startup does not enable communication dispatch.
 type CommunicationControl struct{ Store *communication.Store }
 
 func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communicationcontrol.Envelope) (communicationcontrol.Receipt, error) {
@@ -60,14 +60,9 @@ func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communic
 	forward := context.AfterFunc(ctx, stop)
 	defer forward()
 	owned := ownership.WithToken(durableinput.WithClaim(base, claim), leases.Authority(), ownership.Token{SessionKey: key, RunID: e.RunID, LeaseID: grant.LeaseID, FenceEpoch: grant.LeaseEpoch})
-	owned, release, err := ownership.Begin(owned)
+	owned, tx, err := ownership.BeginTransaction(owned, s.Store.Pool)
 	if err != nil {
 		return out, communication.ErrDenied
-	}
-	defer release()
-	tx, err := s.Store.Pool.Begin(owned)
-	if err != nil {
-		return out, err
 	}
 	defer tx.Rollback(context.Background())
 	var owner string

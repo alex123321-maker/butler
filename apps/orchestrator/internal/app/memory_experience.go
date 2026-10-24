@@ -398,7 +398,7 @@ func (s experienceRunSources) CheckRunSources(ctx context.Context, run string) e
 		return err
 	}
 	if s.store == nil {
-		tx, err := s.catalog.Pool().Begin(ctx)
+		tx, err := s.catalog.RunObservationPool(ctx).Begin(ctx)
 		if err != nil {
 			return err
 		}

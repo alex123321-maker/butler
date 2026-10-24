@@ -15,7 +15,7 @@ import (
 func TestBudgetReadCannotSelectOwnerWithoutProof(t *testing.T) {
 	r := httptest.NewRequest("GET", "/api/v3/execution-budgets?owner_id=owner", nil)
 	w := httptest.NewRecorder()
-	NewBudgetHandler(nil, NewOwnerControlAuth("", "owner"), true).ServeHTTP(w, r)
+	NewBudgetHandler(nil, NewOwnerControlAuth("", "owner"), true, true).ServeHTTP(w, r)
 	if w.Code != 401 {
 		t.Fatal("budget owner accepted from query", w.Code)
 	}
@@ -33,12 +33,13 @@ func TestBudgetReadReportsCurrentOwnerDayPolicyWithHistoricalScopesIntegration(t
 		r := httptest.NewRequest("GET", "/api/v3/execution-budgets", nil)
 		r.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
-		NewBudgetHandler(ledger, NewOwnerControlAuth(token, "owner"), enabled).ServeHTTP(w, r)
+		NewBudgetHandler(ledger, NewOwnerControlAuth(token, "owner"), enabled, !enabled).ServeHTTP(w, r)
 		var got struct {
 			budget.Snapshot
-			Enabled *bool `json:"owner_day_enabled"`
+			Enabled                       *bool `json:"owner_day_enabled"`
+			ConversationModelTurnsEnabled *bool `json:"conversation_model_turns_enabled"`
 		}
-		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &got) != nil || got.Enabled == nil || *got.Enabled != enabled || len(got.Scopes) != 1 || got.Scopes[0].Kind != "owner_day" {
+		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &got) != nil || got.Enabled == nil || *got.Enabled != enabled || got.ConversationModelTurnsEnabled == nil || *got.ConversationModelTurnsEnabled == enabled || len(got.Scopes) != 1 || got.Scopes[0].Kind != "owner_day" {
 			t.Fatal("current enforcement confused with retained history", w.Code, w.Body.String())
 		}
 	}

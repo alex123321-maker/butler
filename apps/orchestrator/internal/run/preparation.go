@@ -81,20 +81,23 @@ func (s *Service) RefreshExecutionLease(ctx context.Context, runID, leaseID stri
 	if !ok || token.RunID != runID || token.LeaseID != leaseID {
 		return nil, ownership.ErrStale
 	}
-	ctx, release, err := ownership.Begin(ctx)
+	ctx, tx, err := ownership.BeginTransaction(ctx, repo.pool)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
-	tag, err := repo.pool.Exec(ctx, `UPDATE runs SET lease_id=$2,updated_at=clock_timestamp() WHERE run_id=$1 AND current_state NOT IN ('completed','failed','cancelled','timed_out')`, runID, leaseID)
+	defer tx.Rollback(context.Background())
+	tag, err := tx.Exec(ctx, `UPDATE runs SET lease_id=$2,updated_at=clock_timestamp() WHERE run_id=$1 AND current_state NOT IN ('completed','failed','cancelled','timed_out')`, runID, leaseID)
 	if err != nil {
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
 		return nil, ErrRunNotFound
 	}
-	r, err := repo.GetRun(ctx, runID)
+	r, err := getRun(ctx, tx, runID)
 	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return recordToProto(r), nil

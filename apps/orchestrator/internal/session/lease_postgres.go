@@ -14,12 +14,17 @@ import (
 )
 
 type PostgresLeaseManager struct {
-	pool      *pgxpool.Pool
-	authority *ownership.Authority
+	pool           *pgxpool.Pool
+	authorityReads *pgxpool.Pool
+	authority      *ownership.Authority
 }
 
 func NewPostgresLeaseManager(pool *pgxpool.Pool) *PostgresLeaseManager {
-	return &PostgresLeaseManager{pool: pool, authority: ownership.NewAuthority(pool)}
+	return NewPostgresLeaseManagerWithAuthorityReads(pool, pool)
+}
+
+func NewPostgresLeaseManagerWithAuthorityReads(pool, reads *pgxpool.Pool) *PostgresLeaseManager {
+	return &PostgresLeaseManager{pool: pool, authorityReads: reads, authority: ownership.NewAuthority(pool)}
 }
 func (m *PostgresLeaseManager) Authority() *ownership.Authority { return m.authority }
 
@@ -76,7 +81,7 @@ func (m *PostgresLeaseManager) ReleaseLease(ctx context.Context, id string) (boo
 	return tag.RowsAffected() == 1, err
 }
 func (m *PostgresLeaseManager) GetLease(ctx context.Context, id string) (LeaseRecord, error) {
-	r, err := scanDurableLease(m.pool.QueryRow(ctx, `SELECT lease_id,session_key,run_id,owner_id,fence_epoch,acquired_at,expires_at FROM session_ownership WHERE lease_id=$1 AND expires_at>clock_timestamp()`, id))
+	r, err := scanDurableLease(m.authorityReads.QueryRow(ctx, `SELECT lease_id,session_key,run_id,owner_id,fence_epoch,acquired_at,expires_at FROM session_ownership WHERE lease_id=$1 AND expires_at>clock_timestamp()`, id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return LeaseRecord{}, ErrLeaseNotFound
 	}

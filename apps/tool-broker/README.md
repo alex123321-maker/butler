@@ -13,6 +13,10 @@ register the family in Bootstrap; no current provider receives these schemas.
 Exact approval/authority/budget checks remain mandatory. See
 [the kernel boundary](../orchestrator/internal/communication/README.md).
 
+Operator `disable_conversation_model_turns:true` disables only the conversation
+session/day model-turn comparison while preserving every charge and all other
+bounds. Match the Core setting; existing scope limits/history are not rewritten.
+
 Operator budget policy `disable_owner_day:true` omits the aggregate owner/day
 scope for new reservations. It must match Orchestrator. Task/mandate/delegation
 limits, authority and existing spending remain enforced; see
