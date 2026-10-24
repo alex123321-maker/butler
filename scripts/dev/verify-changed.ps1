@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/(communication/(diagnostic|metrics|limits)|api/communication_diagnostic|app/communication_diagnostic)|migrations/100_communication_owner_limits[.]|scripts/dev/communication-diagnostics-tests[.]sh$|web/(features/mind/ui/MindCommunicationDiagnostics[.]vue|tests/e2e/communication-diagnostics[.]spec[.]ts)$)" {
+      [void]$specs.Add("docs/architecture/user-communication-spec.md")
+      [void]$specs.Add("docs/operations/communication-diagnostics.md")
+      [void]$tests.Add("This PC only: disposable PostgreSQL with pgvector + Linux Go1.27.2; scripts/dev/communication-diagnostics-tests.sh (mandatory no-skip race/vet gates). Web: typecheck/lint + communication-diagnostics and communication-feed Chromium specs. No inference or production changes.")
+      continue
+    }
     "^(internal/(credentials|credentialcontrol)/|internal/actionauth/credential_control|apps/orchestrator/internal/(api/credential|app/credential)|apps/orchestrator/internal/channel/(telegram|telegramrich)/credential_notice|apps/tool-broker/internal/broker/credential_vault|web/(features/mind/ui/CredentialVault[.]vue|tests/e2e/credential-vault)|migrations/096_|scripts/dev/credential-vault-|deploy/docker-compose[.]credentials)" {
       [void]$specs.Add("docs/architecture/credential-management.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

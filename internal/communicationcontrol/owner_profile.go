@@ -24,12 +24,16 @@ type OwnerProfile struct {
 	Mode                                       string
 	AllowPrivate                               bool
 	Widgets                                    bool
+	MaxOpenInteractions                        int
 	// Applied only when the pinned bot cursor is first created. Restarts never
 	// overwrite its durable offset. The operator retains the cutover backlog.
 	InitialUpdateID int64
 }
 
 func (p OwnerProfile) Validate() error {
+	if p.MaxOpenInteractions < 0 || p.MaxOpenInteractions > 64 {
+		return ErrDenied
+	}
 	if p.Version != 1 || !validProfileID(p.Database) || p.Database == "postgres" || p.Database == "template0" || p.Database == "template1" || !validProfileID(p.OwnerID) || !validProfileID(p.BindingID) || !validProfileID(p.WebBindingID) || p.BindingID == p.WebBindingID || p.BindingVersion < 1 || p.WebBindingVersion < 1 || !validProfileID(p.ExpectedBot) || p.BotID <= 0 || p.ChatID <= 0 || !filepath.IsAbs(p.TokenFile) || !filepath.IsAbs(p.BotAPIProxyFile) || p.InitialUpdateID < 0 || p.InitialUpdateID == math.MaxInt64 || p.Mode != "active" && p.Mode != "drain" {
 		return ErrDenied
 	}

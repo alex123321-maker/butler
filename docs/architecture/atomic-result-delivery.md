@@ -1,5 +1,14 @@
 # Atomic result persistence and notification delivery
 
+The owner communication diagnostic projects legacy result deliveries separately
+from explicit publications and per-channel part states. It never migrates an
+old result into a new publication, sends a notification, or equates Web
+availability, channel ACK, owner read, action effect and task verification.
+Additive up/down/up migration tests retain the original legacy result/outbox
+IDs/content/attempts. Accepted explicit history continues to require compatible
+drain rather than destructive down; see the
+[operator sequence](../operations/communication-diagnostics.md).
+
 This contract separates an external effect, a durable attempt result, task
 verification, and channel delivery. A provider final event or a runtime
 `completed` status proves none of the other three. PostgreSQL is authoritative.

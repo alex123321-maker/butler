@@ -9,7 +9,7 @@ Both channels observe the same durable request. An ambiguous control-card send
 is retained as unknown and is never replayed automatically. See migration096 and
 [credential management](credential-management.md).
 
-Версия 0.12, 2026-10-23. **Статус: согласованный продуктовый контракт;
+Версия 0.13, 2026-10-25. **Статус: согласованный продуктовый контракт;
 #127/#128/#132 в main; message/photo/report приняты в обоих каналах.
 Ограниченный owner rollout требует отдельного operator profile.**
 Полный контракт ниже остаётся целевым; доступность каждого метода определяется
@@ -981,6 +981,20 @@ HTTP 202 publication acceptance не означает delivery ACK. Invalid sche
 bounded quota — 429. Дубли идентичного запроса возвращают сохранённый receipt.
 
 ## 13. Лимиты и наблюдаемость
+
+C08 реализует owner-scoped metadata-only диагностику в Web и Doctor,
+независимые durable метрики и безопасный active/drain порядок. Проверка готовности
+сопоставляет реальные фиксированные Broker contracts с kernel hash; отсутствующее
+наблюдение не становится ready. Full V1 остаётся отдельной приёмкой C09.
+Операторский `MaxOpenInteractions` задаёт 1..64; отсутствующий/нулевой параметр
+означает 16 открытых вопросов на владельца. Проверка сериализована между сессиями
+в той же publication transaction. Уже принятые вопросы сохраняются при уменьшении
+лимита. См. [контракт диагностики и отката](../operations/communication-diagnostics.md).
+
+Миграция100 сохраняет owner ceiling и его версию в PostgreSQL. Триггер с
+блокировкой строки owner policy ограничивает также прежние epoch-1 SQL writers;
+совпадение epoch само по себе не обходится отсутствующим Go check. Настройка
+доступна только проверенному operator startup, без model/owner HTTP capability.
 
 Owner config задаёт конечные лимиты публикаций, байтов, media и open interactions.
 Разумные стартовые V1 defaults для fixtures: message 4 000 Unicode characters;

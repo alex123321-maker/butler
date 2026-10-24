@@ -125,7 +125,19 @@ func (s *Store) lockInteractionTx(ctx context.Context, tx pgx.Tx, id, bindingID 
 	return v, paused, nil
 }
 
-func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (communicationcontrol.Answer, error) {
+func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, bindingVersion, expectedVersion int64, answer communicationcontrol.Answer) (out communicationcontrol.Answer, returnErr error) {
+	defer func() {
+		if s.Metrics == nil {
+			return
+		}
+		outcome := "denied"
+		if returnErr == nil {
+			outcome = "validated"
+		} else if errors.Is(returnErr, ErrConflict) || errors.Is(returnErr, ErrResolved) || errors.Is(returnErr, ErrWidgetStale) {
+			outcome = "conflict"
+		}
+		_ = s.Metrics.IncrCounter("butler_communication_response_attempts_total", map[string]string{"outcome": outcome})
+	}()
 	actor, _ := owneridentity.FromContext(ctx)
 	v, paused, e := s.lockInteractionTx(ctx, tx, id, bindingID, bindingVersion)
 	if e != nil {
@@ -181,7 +193,18 @@ func (s *Store) RespondTx(ctx context.Context, tx pgx.Tx, id, bindingID string, 
 
 // ResumeInteraction runs only after the old lease/claim has been replaced by a
 // fresh worker. Preferences do not create approval and never execute a tool.
-func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (string, error) {
+func (s *Store) ResumeInteraction(ctx context.Context, runID, id string) (out string, returnErr error) {
+	started := time.Now()
+	defer func() {
+		if s.Metrics == nil {
+			return
+		}
+		outcome := "denied"
+		if returnErr == nil {
+			outcome = "verified"
+		}
+		_ = s.Metrics.ObserveHistogram("butler_communication_resume_duration_seconds", time.Since(started).Seconds(), map[string]string{"outcome": outcome})
+	}()
 	tok, ok := ownership.TokenFromContext(ctx)
 	if !ok || tok.RunID != runID || s.SourceGuard == nil {
 		return "", resumeFailed(ctx, "identity", ErrDenied)

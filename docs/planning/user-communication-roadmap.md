@@ -1,6 +1,6 @@
 # План реализации общения Butler с пользователем
 
-Дата ревизии: 2026-10-22. Основание:
+Дата ревизии: 2026-10-25. Основание:
 [подробная спецификация](../architecture/user-communication-spec.md).
 
 C01/C02 (#99–#100), backend C04 (#103), C03/C06 (#101/#102) и обязательные
@@ -19,10 +19,14 @@ Widget capability остаётся opt-in: существующие bindings, ad
 в изолированном test owner/боте с реальными App/Core/Broker/model и обоими каналами.
 Включение widgets для рабочего owner требует отдельного operator cutover.
 
-Следующий порядок: **C07 (#105) → C08 (#106) → C09 (#107)**. C07 проверяет
-obligations и поведение модели для всех четырёх функций; C08 добавляет диагностику,
-миграцию и безопасное включение; C09 завершает полную AC01–AC22 приёмку.
-Успех C05 не закрывает эти этапы и не доказывает весь production profile.
+C07 (#105) имеет [отдельную приёмку obligations и поведения](../ai/communication-obligations-acceptance-20261022.md).
+C08 (#106) добавляет metadata-only диагностику Web/Doctor, проверку реальных Broker
+contracts, конечный owner limit и [безопасный drain/rollback](../operations/communication-diagnostics.md).
+Его [локальная приёмка](../testing/communication-diagnostics-2026-10-25.md) отделяет
+PostgreSQL/Chromium checks от native channels/model qualification.
+Следующий этап — **C09 (#107)**: полная AC01–AC22 приёмка и подготовка
+отдельно разрешаемого operator enable. Компонентные проверки не доказывают
+весь production profile.
 
 Историческая приёмка ядра:
 [backend acceptance и матрицы сбоев](../ai/communication-backend-full-acceptance-20261021.md).

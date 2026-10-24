@@ -35,15 +35,18 @@ type MemoryDoctorReporter interface {
 
 // DoctorServer serves REST endpoints for doctor reports.
 type DoctorServer struct {
-	ownerAuth *OwnerControlAuth
-	pool      *pgxpool.Pool
-	checker   DoctorChecker
-	memory    MemoryDoctorReporter
-	artifacts *artifacts.Service
-	log       *slog.Logger
+	ownerAuth     *OwnerControlAuth
+	pool          *pgxpool.Pool
+	checker       DoctorChecker
+	memory        MemoryDoctorReporter
+	communication CommunicationDoctorReporter
+	artifacts     *artifacts.Service
+	log           *slog.Logger
 }
 
 func (d *DoctorServer) SetOwnerControlAuth(auth *OwnerControlAuth) { d.ownerAuth = auth }
+
+func (d *DoctorServer) SetCommunicationReporter(r CommunicationDoctorReporter) { d.communication = r }
 
 // NewDoctorServer creates a new DoctorServer.
 func NewDoctorServer(pool *pgxpool.Pool, checker DoctorChecker, memory MemoryDoctorReporter, artifactsService *artifacts.Service, log *slog.Logger) *DoctorServer {
@@ -125,6 +128,18 @@ func (d *DoctorServer) HandleRunCheck() http.Handler {
 		} else {
 			combined["memory"] = map[string]any{"status": "unknown", "reason": "not_observed"}
 			status = combineDoctorStatus(status, "unknown")
+		}
+		if d.communication != nil {
+			observation, observationErr := d.communication.CommunicationReport(ctx)
+			if observationErr != nil {
+				combined["communication"] = map[string]string{"status": "unknown", "reason": "observation_unavailable"}
+				status = combineDoctorStatus(status, "unknown")
+			} else {
+				combined["communication"] = observation
+				status = combineDoctorStatus(status, observation.Status)
+			}
+		} else {
+			combined["communication"] = map[string]string{"status": "disabled", "reason": "not_composed"}
 		}
 		combined["status"] = status
 		combined["owner_id"] = actor.OwnerID

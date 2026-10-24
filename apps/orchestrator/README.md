@@ -204,6 +204,13 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+The explicit owner profile installs metadata-only communication diagnostics in
+Web and Doctor, probes pinned Broker schemas and exposes durable channel/obligation/
+question metrics without content or private recipients. `MaxOpenInteractions`
+defaults to16 and accepts1..64; owner-wide publication checks are atomic.
+It does not qualify full V1 or enable a deployment. See the
+[diagnostic/drain runbook](../../docs/operations/communication-diagnostics.md).
+
 Interaction resume reads canonical answers under shared Session/run proofs,
 retains fixed failure phases and rechecks claim/lease after source waits. The
 input heartbeat and recovered run preserve their distinct safe cancellation

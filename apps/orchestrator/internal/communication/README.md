@@ -1,5 +1,15 @@
 # Communication kernel (dormant)
 
+C08 adds bounded read-only owner metadata diagnostics and fixed-label durable
+metrics. Neither reads payloads/answers/recipients nor executes recovery/delivery.
+The owning composition additionally probes fixed Broker contracts; absent
+observations remain unknown and never qualify full V1. Web exposes channel
+failure independently of Web availability. An operator open-question ceiling
+defaults to16 and accepts1..64, serialized across owner sessions within the
+publication transaction. Existing questions, immutable admissions, receipts,
+UNKNOWN and spent budgets survive drain/restart. See the
+[operator contract](../../../../docs/operations/communication-diagnostics.md).
+
 Canonical answer recovery uses shared Session/run proofs alongside retained Web
 readers, with current claim/lease/source checks and post-wait expiry validation.
 `interaction_resume_*` failures expose only fixed phases/reasons. The explicit

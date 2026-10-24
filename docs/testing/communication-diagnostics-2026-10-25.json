@@ -1,0 +1,302 @@
+{
+  "status": "PASS_LOCAL_C08",
+  "date": "2026-10-25",
+  "base_commit": "fdc573f245e54693d38ea1d2652b61c39413aae2",
+  "environment": {
+    "execution": "This Windows PC only, isolated WSL user-space runtime",
+    "go": "1.27.2",
+    "postgresql": "17.11",
+    "pgvector": "0.6.2",
+    "database": "communication_diagnostics_test",
+    "port": 55446
+  },
+  "gates": {
+    "targeted": {
+      "passed_top_level": 14,
+      "failures": 0,
+      "skips": 0,
+      "race": true,
+      "count": 1,
+      "jsonl_sha256": "90cc3a7fecab0836a914b5e576f5adb5f86b3835e9a7217980112c781da37c0a",
+      "tests": [
+        {
+          "package": "github.com/butler/butler/internal/communicationcontrol",
+          "test": "TestCommunicationOwnerProfileRequiresExplicitPrivateScope"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticMigrationPreservesLegacyDeliveryIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticsIndependentDeliveryAndPrivacyIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticsWaitingAndFailureRemainDistinctIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticsMissingSchemaIsNotHealthyIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationOwnerQuestionLimitIsAtomicIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticReadinessNeedsBrokerObservationIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDiagnosticHTTPUsesDurableOwnerMetadataIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationOwnerQuestionLimitAcrossSessionsIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationOwnerQuestionLimitFencesOlderSQLWritersIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/api",
+          "test": "TestCommunicationDiagnosticOwnerAPI"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/api",
+          "test": "TestCommunicationDiagnosticDoctorCannotHideDeliveryFailure"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+          "test": "TestCommunicationDiagnosticChecksActualBrokerContract"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+          "test": "TestCommunicationOwnerProfileDoesNotWeakenLabDatabaseGuard"
+        }
+      ]
+    },
+    "regression": {
+      "passed_top_level": 21,
+      "failures": 0,
+      "skips": 0,
+      "race": true,
+      "count": 1,
+      "jsonl_sha256": "f5d6ad06b3b1df14de589df5ca060a93b634f0b403c140081edfeae1d0b5377b",
+      "tests": [
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationNewOrReboundBindingNeverReplaysBacklogIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationTaskPauseResponseAndFreshResumeIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationTaskAmendAndStopCloseQuestionIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationStopAmendAfterResponseCancelsObligationIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationDeniedExportTargetDoesNotBlockPermittedTargetIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationActualACKPersistenceFailureNeverResendsIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationEpochAndExpiredWaitIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationFastResponseFinishAndResumeIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationNoExpiryAndInvalidSubmitIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationUnknownDeliveryNeverReplaysIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationCorrectionIsBoundedIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationMediaPolicyAndIntegrityIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationMediaMigrationRetainsHistoryIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationOrderedMigrationRollbackIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationRollbackRefusesAcceptedHistoryIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationWidgetMigrationRollbackIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationSourceDeletionErasesCopiesIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationAncestorDeletionErasesQuestionAndResponseIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/communication",
+          "test": "TestCommunicationActualCoreFreshContextResumeIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+          "test": "TestCommunicationDrainRetainsAcceptedIngressAndRejectsNewInputsIntegration"
+        },
+        {
+          "package": "github.com/butler/butler/apps/orchestrator/internal/input",
+          "test": "TestCommunicationInputClaimCancellationIntegration"
+        }
+      ]
+    }
+  },
+  "scoped_vet": "passed",
+  "web": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "chromium_passed": 14,
+    "failures": 0,
+    "api_data": "synthetic fixtures",
+    "specs": [
+      "communication-diagnostics.spec.ts",
+      "communication-feed.spec.ts"
+    ]
+  },
+  "native_model_calls": 0,
+  "real_channel_sends": 0,
+  "production_changed": false,
+  "full_v1_qualified": false,
+  "github_actions": "not run: local-only validation",
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/api/communication_diagnostics_test.go",
+      "sha256": "50f5c911f35e0cfcd8bfb5f9609b65bbcb9995fe5344f3343ddf08b8f23872f5"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/communication_diagnostics.go",
+      "sha256": "3770d146b5a3d5bcad335745d5c902bd457cf6cd6f8205807f1c5d7bf0c5db04"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/doctor.go",
+      "sha256": "6048c147c7ea481d83e6faa5e5dd5b184dfc176b9eb000393e1524cee792eec4"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/bootstrap_http.go",
+      "sha256": "1701198d5b64ad1fddcf7ef56d103d1b1520b8d3538360ea4ec3513fc734ab4e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/bootstrap.go",
+      "sha256": "bae4dfb17d4ecd1c9c6e57f1ef6aaf7a508941412a210e2b1b8271740dfdfd9f"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/communication_diagnostics_test.go",
+      "sha256": "28ebf95b4e40724d34ba21bec5a311c80e5833348574285929b01f1b95e24c0f"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/communication_diagnostics.go",
+      "sha256": "51c3f71811142e1f78ffab8c16c2f1c6375c9d69e410fcedfb5ba12ab51b353e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/communication_owner_profile.go",
+      "sha256": "d3c121e0e40120e6dd8ac4add194063cf081758fbd4528dc21ce26bcf0f41fd6"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/communication_telegram.go",
+      "sha256": "8aee1105a0584f70b7e6fb373702553f64a9a54fb99eaa5cefd17a6aaa8ef453"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/diagnostic_migrations_test.go",
+      "sha256": "1574cc450c06a5f131ff4053247e0d1d39c6e52ecb4a502db9cd56f4acb4be48"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/diagnostics_test.go",
+      "sha256": "14217ae2c014b65fc1cb982688e5edbfb329e417bc7fd8b456335ade620cf4af"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/diagnostics.go",
+      "sha256": "11f9f543175ad0198c1660fa415c3f7786eceb5332967af5422c0f0e0f525d75"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/interaction.go",
+      "sha256": "4222cf4ee2bbbe32f90cbf6b7e1c41eced9f1b325dd7f98f1190c0ab5d622843"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/limits.go",
+      "sha256": "b9b03e76f623a8d80968be412cbdbffd6acd97158fa9eb2beac33a61de101e38"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/metrics.go",
+      "sha256": "c0ab7c6f3f475c6b78e12469e07902696adb35a368a659fecdedb708ddb54c7b"
+    },
+    {
+      "path": "apps/orchestrator/internal/communication/store.go",
+      "sha256": "251dd24b29e2d529d931e69b7a3f1970ad28c620d1ef2c314d76177bde80abc8"
+    },
+    {
+      "path": "internal/communicationcontrol/owner_profile_test.go",
+      "sha256": "59d4337051284e52322b526b4396971259fff44d25ac6131552482d67f7f1c68"
+    },
+    {
+      "path": "internal/communicationcontrol/owner_profile.go",
+      "sha256": "e9e3fbd9a98b2642f87264452f60de6f21a42b546dca610278ffc4eaad2293f6"
+    },
+    {
+      "path": "migrations/100_communication_owner_limits.down.sql",
+      "sha256": "8a4352974cc79e7f2674eb6e2b88c85c81f661625c5ebe0db8bf0c7dd5853482"
+    },
+    {
+      "path": "migrations/100_communication_owner_limits.up.sql",
+      "sha256": "ec40776504d10660b3f3fa620bd298a2bfcab519e03486964f6dd70c7e6e44e1"
+    },
+    {
+      "path": "scripts/dev/communication-diagnostics-tests.sh",
+      "sha256": "a7fce699cabd6642ebd790f5846c7bdddfebf026370177cf866388d568d92f2e"
+    },
+    {
+      "path": "scripts/dev/verify-changed.ps1",
+      "sha256": "3592e3ef61866c3ed0b00366fc188a529fe7101b7dfc3669a5b4d070a4ff2a82"
+    },
+    {
+      "path": "web/features/mind/ui/MindCommunicationDiagnostics.vue",
+      "sha256": "b35946791216247751eb621f8e3a4793e22336be051aa65e494c6efa74e9a5a4"
+    },
+    {
+      "path": "web/features/mind/ui/MindCommunicationFeed.vue",
+      "sha256": "a35482f35803fdf89651e50104922a95406525437c2a4bd91b748cfe40f1b04b"
+    },
+    {
+      "path": "web/features/mind/ui/MindPublication.vue",
+      "sha256": "c60d5dcdc02bb1c5a63187003e1871f807bdaba9c668a976632e7c0dde8ab53e"
+    },
+    {
+      "path": "web/tests/e2e/communication-diagnostics.spec.ts",
+      "sha256": "77489be53a01a8d957ca224e0a77bd1fa016a5865a736fb7309653520254ccb2"
+    },
+    {
+      "path": "web/tests/e2e/communication-feed.spec.ts",
+      "sha256": "c8e8a29cc207e9b9fe9be3c7c6e39c0b12329fb789607e9374eeb52923e3bd11"
+    }
+  ]
+}
