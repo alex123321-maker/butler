@@ -1,5 +1,10 @@
 # Communication control
 
+The private immutable owner profile also bounds outstanding owner questions:
+`MaxOpenInteractions` is zero/default16 or1..64. It is not a model argument,
+content permission or mutable UI setting. Invalid bounds reject the profile;
+the owning publication transaction enforces the ceiling across sessions.
+
 Fixed credential-free message/photo/report/widget schemas and strict decoding.
 Recipients, owner, task identity, admission mode and grants are kernel-owned.
 V1 widgets always block; false wait is rejected before persistence. An accepted

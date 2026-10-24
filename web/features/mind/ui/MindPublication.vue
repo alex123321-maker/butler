@@ -31,6 +31,8 @@
         <p v-else class="mind-muted">Вложение недоступно.</p>
       </template>
       <small class="mind-muted">Доступно в Butler · {{ dateLabel(publication.created_at) }}</small>
+      <p v-if="publication.parts.some(part => part.channel === 'telegram' && part.state === 'delivery_unknown')" class="mind-error">Telegram: результат доставки неизвестен.</p>
+      <p v-else-if="publication.parts.some(part => part.channel === 'telegram' && part.state === 'failed')" class="mind-error">Telegram: доставка не подтверждена.</p>
       <button v-if="publication.task_ref" class="mind-text-button" type="button" @click="store.selectTask(publication.task_ref!, true)">{{ store.tasks.find(task => task.task_id === publication.task_ref)?.goal || 'Открыть исходное поручение' }}</button>
       <button v-if="publication.kind !== 'widget'" class="mind-text-button" type="button" :disabled="store.communicationDraining" @click="reply">Ответить на публикацию</button>
       <details class="mind-publication-delivery"><summary>Доставка и части</summary>

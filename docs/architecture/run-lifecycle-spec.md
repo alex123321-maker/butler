@@ -1,5 +1,13 @@
 # Butler — Run Lifecycle Specification
 
+Communication diagnostics observe durable metadata without acquiring an
+execution lease, resuming an Input or reading model/content/secret state. The
+operator's bounded open-question ceiling is enforced atomically across owner
+sessions at publication; quota denial creates no partial publication or wait.
+Exact receipt replay and existing no-expiry waits retain their identities and
+spent budgets. Readiness and active/drain operation are documented in
+[communication diagnostics](../operations/communication-diagnostics.md).
+
 Credential vault requests use the existing durable interaction checkpoint with
 kind `credential_interaction`, distinct from preference questions and action
 approvals. Core joins task wait, Input suspension and coarse run wait under the

@@ -2,6 +2,12 @@
 
 Doctor runtime service for Butler diagnostics and self-inspection.
 
+The owner Doctor API composes communication metadata/readiness from the owning
+Orchestrator, separately from this runtime's system checks. Channel failure or
+an unavailable observation cannot be hidden by healthy database checks. This
+runtime gains no communication database, content, channel client or execution
+rights. See [communication diagnostics](../../docs/operations/communication-diagnostics.md).
+
 Operator launches now use Orchestrator's authenticated durable input and exact
 Broker authorization path; the runtime receives a real run context. Its
 `doctor.check_system` registry contract is a read-only observation with
