@@ -49,6 +49,16 @@ if grep -q '"Action":"skip"' "$local_report"; then
  grep '"Action":"skip"' "$local_report"; exit 1
 fi
 go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript ./internal/memory/semantic
+catalog_report=.cache/communication-core/catalog-source.jsonl
+# External pg_dump/restore and physical-full-anchor procedures have dedicated
+# drivers. Ordinary currentness/privacy/graph/expiry cases here are required.
+if ! go test -p 1 -race -count=1 -json ./internal/memory/catalog -skip '^TestActual(PostgresDumpRestoreDeletion|PostgresTemporalDumpRestoreDeletion|FullAnchorDiskFailsBoundedlyWithoutClaimingDeletion)Integration$' >"$catalog_report"; then
+ grep -E '"Action":"fail"|"OutputType":"error"' "$catalog_report" || tail -40 "$catalog_report"; exit 1
+fi
+if grep -q '"Action":"skip"' "$catalog_report"; then
+ grep '"Action":"skip"' "$catalog_report"; exit 1
+fi
+go vet ./internal/memory/catalog
 budget_report=.cache/communication-core/budget-policy.jsonl
 if ! go test -p 1 -race -count=1 -json ./internal/budget ./apps/orchestrator/internal/api -run '^Test(ConversationModelTurn|BudgetRead)' >"$budget_report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$budget_report" || tail -40 "$budget_report"; exit 1
