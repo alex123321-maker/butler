@@ -45,8 +45,17 @@ any policy-required schedule approval remains distinct from page-read permission
 Existing timezone, expiry, frequency and occurrence bounds apply. Only an actual
 receipt can justify claiming that a schedule exists, with its actual `next_at`.
 
-Recent source-checked completed published exchanges provide examples for
-recognizing a repeated procedure on different inputs. The model should suggest
+Recent source-checked completed published exchanges provide a bounded
+`recent_workflow_examples` DATA index: at most two distinct owner requests,
+publication references and at most twelve successful operation names per trace.
+Consecutive repeated reads collapse; raw arguments/results, credentials and
+internal catalog/memory/communication calls are omitted. HTTP methods remain
+distinct. Identical retried requests do not create two examples. Each trace is
+explicitly `published_unverified`, under the already checked transcript selection
+and inherited publication origins. The model compares these examples with current
+actual steps and can suggest an abstraction at the second distinct request.
+This index grants no capabilities, verified outcome or formal skill evidence.
+The model should suggest
 shared steps and parameters rather than a domain-specific feature. This is an
 opportunity prompt, not an automatic skill builder. Existing `skills.propose`
 still requires actual independently verified task evidence; taskless publication

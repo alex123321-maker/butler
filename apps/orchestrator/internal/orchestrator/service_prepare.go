@@ -401,6 +401,9 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 			prepared.InputItems = append(prepared.InputItems,
 				content.Instruction(researchInstruction, content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:current-request-v2"}, Sensitivity: content.Public}),
 				content.Instruction("Runtime clock: "+time.Now().UTC().Format(time.RFC3339)+" (UTC).", content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:runtime-clock-v1"}, Sensitivity: content.Public}))
+			if examples, origin := publishedWorkflowExamples(full, ids); len(examples) > 0 {
+				prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"recent_workflow_examples": examples, "verified_skill_evidence": false}, origin))
+			}
 			messages, recorded := conversationMessages(full.Messages, prepared.CurrentRunID, ids)
 			prepared.InputAlreadyRecorded = recorded
 			delete(prepared.MemoryBundle, "session_summary")
