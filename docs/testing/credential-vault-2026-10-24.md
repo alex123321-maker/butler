@@ -152,3 +152,13 @@ wait/resume tests, Orchestrator/Input/Telegram/mobile/workspace/browser-control
 regressions and Go vet. Web typecheck/lint and all three credential-vault browser
 scenarios passed. Physical SMS and native Telegram acceptance remain the separate
 limitations described above. Prototype HTML files are excluded from this merge.
+
+
+The review also ran both actual Chromium suites successfully:
+`TestBrokerBrowserSequenceE2E` and `TestBrowserSessionE2E`. Android debug APK,
+all 18 unit tests and lint passed on this PC. All `apps/...`, `internal/...` and
+`cmd/...` Go packages compiled. The first new CI run passed the full ordered
+PostgreSQL migration test and vault cases, then rejected Go's package-level
+skip for the contract-only package (which has no tests). That package remains
+covered by vet; the required test list now contains test-bearing packages only.
+The no-skipped-tests guard is unchanged.
