@@ -6,15 +6,19 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// independentOwnerMessageTx qualifies only a different taskless owner Input's
-// fixed, credential-free local publication. Every uncertain effect must be an
+// independentOwnerInteractionTx qualifies only a different taskless owner Input's
+// fixed, credential-free local publication or canonical protected credential
+// request. The trusted credential flag comes from actionauth's canonical contract
+// check; it is insufficient without the exact live Input/intent proof below.
+// Every uncertain effect must be an
 // explicitly acknowledged local communication prepare on a failed old Input.
 // The old journal/grant/observation is neither reconciled nor made replayable.
 // External effects, executing work, missing provenance or audit still deny.
 // This is only the loop gate; Broker, claim, destinations, sources and allowance
 // checks remain mandatory at their ordinary authorization/publication boundaries.
-func independentOwnerMessageTx(ctx context.Context, tx pgx.Tx, i ToolIdentity, owner, session, event string) (bool, error) {
+func independentOwnerInteractionTx(ctx context.Context, tx pgx.Tx, i ToolIdentity, owner, session, event string) (bool, error) {
 	var allowed bool
+	credentialRequest := i.OwnerCredentialInteraction && (i.ToolName == "credentials.request_access" || i.ToolName == "credentials.request_create" || i.ToolName == "credentials.request_otp")
 	err := tx.QueryRow(ctx, `
 WITH RECURSIVE tree AS (
  SELECT task_id FROM tasks WHERE task_id=$7
@@ -31,11 +35,14 @@ SELECT EXISTS(
  AND a.binding->>'owner_id'=$6 AND a.binding->>'task_id'=''
  AND a.binding->>'resource'='tool:'||$3
  AND jsonb_array_length(a.binding->'credential_refs')=0
- AND length(a.binding->>'communication_destinations_hash')=64
+ AND (($9 AND a.binding->>'contract_revision'='1'
+       AND COALESCE(a.binding->>'credential_metadata_hash','')='')
+      OR (NOT $9 AND length(a.binding->>'communication_destinations_hash')=64))
  AND n.owner_id=$6 AND n.session_key=$7 AND n.event_id=$8
  AND n.task_id IS NULL AND r.task_id IS NULL AND n.status='running'
  AND n.claim_id<>'' AND n.claim_expires_at>clock_timestamp() AND n.expires_at>clock_timestamp()
- AND c.schema_epoch=1 AND c.publication_count<20 AND c.methods ? $3
+ AND c.schema_epoch=1 AND c.publication_count<20
+ AND c.methods ? CASE WHEN $9 THEN 'communication.message' ELSE $3 END
  AND c.obligation_state IN ('open','waiting_for_user')
 )
 AND NOT EXISTS(
@@ -71,6 +78,6 @@ AND NOT EXISTS(
    AND EXISTS(SELECT 1 FROM communication_events v WHERE v.owner_id=$6 AND v.session_key=$7 AND v.aggregate_id=e.action_id AND v.event_type='effect.uncertainty_retained')
   )
  ) IS NOT TRUE
-)`, i.EffectID, i.RunID, i.ToolName, i.ArgsHash, i.ContractHash, owner, session, event).Scan(&allowed)
+)`, i.EffectID, i.RunID, i.ToolName, i.ArgsHash, i.ContractHash, owner, session, event, credentialRequest).Scan(&allowed)
 	return allowed, err
 }

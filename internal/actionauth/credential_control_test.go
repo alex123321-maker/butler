@@ -11,6 +11,40 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
 
+func TestCredentialInteractionBudgetIdentityRequiresCanonicalGrant(t *testing.T) {
+	for _, name := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+		c := credentialcontrol.Contract(name)
+		hash, err := ContractHash(c)
+		if err != nil {
+			t.Fatal(err)
+		}
+		g := Grant{InputClaimHash: strings.Repeat("a", 64), Binding: ActionBinding{ToolName: name, Resource: "tool:" + name, ContractHash: hash, Effect: EffectPrepare}}
+		if !toolBudgetIdentity(g, "effect").OwnerCredentialInteraction {
+			t.Fatal("canonical protected request not qualified")
+		}
+		for _, scenario := range []string{"contract", "refs", "claim", "read", "browser"} {
+			t.Run(name+"/"+scenario, func(t *testing.T) {
+				changed := g
+				switch scenario {
+				case "contract":
+					changed.Binding.ContractHash = "forged"
+				case "refs":
+					changed.Binding.CredentialRefs = []CredentialRef{{Alias: "record", Field: "password"}}
+				case "claim":
+					changed.InputClaimHash = ""
+				case "read":
+					changed.Binding.Effect = EffectRead
+				case "browser":
+					changed.Binding.ToolName = "browser.prepare_fill"
+				}
+				if toolBudgetIdentity(changed, "effect").OwnerCredentialInteraction {
+					t.Fatal("unqualified grant widened unknown-effect exception")
+				}
+			})
+		}
+	}
+}
+
 func TestCredentialRequestDoesNotRequireApprovalToAsk(t *testing.T) {
 	s, _, reader, _, call, _ := fixture(t)
 	reader.current.InputClaimHash = strings.Repeat("a", 64)

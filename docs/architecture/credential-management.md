@@ -28,6 +28,11 @@ Fixed Broker-owned `credentials.search`, `request_access`, `request_create`,
 `request_otp` and `request_status` return safe metadata only. Search and request
 creation release no values. Existing-record and create-record cards are distinct.
 Creation alone grants no use; “save and allow” performs both owner operations.
+An independent taskless owner's canonical protected request may pass the loop
+gate after an acknowledged failed local communication prepare. The exact current
+Input/intent and all retained uncertainty audit records must qualify. This is
+limited to asking for consent: credential release, browser preparation, external
+writes, executing effects, unrelated uncertainty and finite budgets stay guarded.
 Browser target metadata comes from the owning server-browser observation. A
 request pins owner/session/run/task and constraint revisions, browser session,
 origin, fields, record revision and expiry. Changing site requires renewed
@@ -37,6 +42,8 @@ Credential requests suspend the owning Input with `credential_interaction` and
 reuse the coarse waiting run state. They create no generic approval record.
 Protected responses atomically ready that same Input; Core resumes with request
 state/field references only. Early responses survive the old worker's finish.
+An explicit Broker budget stop is persisted with its original reason; it never
+becomes a wait for a credential request that was not dispatched.
 Live lease/fence, task authority, record version and origin remain checked.
 Record edits/revocation invalidate grants. Maintenance expires requests and OTPs
 and wakes eligible waits; cancelled or paused tasks cannot revive old workers.

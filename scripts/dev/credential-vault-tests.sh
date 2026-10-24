@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 : "${BUTLER_TEST_VAULT_POSTGRES_URL:?Disposable *_test PostgreSQL database required}"
 export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
+export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
 export GOTOOLCHAIN=local
 mkdir -p .cache/credential-vault-ci
 
@@ -23,11 +24,11 @@ required() {
 
 # Full ordered production migrations, including pgvector and 096, not just fixtures.
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
-required vault ./internal/credentials ./internal/actionauth ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegramrich ./apps/tool-broker/internal/broker -run '^Test(Vault|Credential)'
+required vault ./internal/budget ./internal/credentials ./internal/actionauth ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegramrich ./apps/tool-broker/internal/broker -run '^Test(Vault|Credential)'
 go test -c -race -o .cache/credential-vault-ci/browser.test ./apps/tool-browser/internal/runtime
 export BUTLER_BROWSER_E2E=1
 export BUTLER_BROWSER_E2E_BINARY="$PWD/.cache/credential-vault-ci/browser.test"
 export BUTLER_BROWSER_E2E_SCRIPT="$PWD/apps/tool-browser/scripts/browser_runtime.mjs"
 required broker-chromium ./apps/tool-broker/internal/broker -run '^TestBrokerBrowserSequenceE2E$'
 required runtime-chromium ./apps/tool-browser/internal/runtime -run '^TestBrowserSessionE2E$'
-go vet ./internal/credentials ./internal/credentialcontrol ./internal/actionauth ./internal/mobile ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-browser/internal/runtime
+go vet ./internal/budget ./internal/credentials ./internal/credentialcontrol ./internal/actionauth ./internal/mobile ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-browser/internal/runtime

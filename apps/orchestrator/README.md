@@ -5,6 +5,8 @@ lease/task revisions. Optional Telegram cards use an operator HTTPS
 `BUTLER_PUBLIC_WEB_URL`, durable send/edit claims and current channel checks.
 `BUTLER_CREDENTIAL_KEY_FILE` enables the vault; use migration096 and
 `deploy/docker-compose.credentials.yml`. See `internal/credentials/README.md`.
+Credential request budget stops retain their original reason and recorded tool
+result; they do not create an unproved wait or replace it with `effect_unknown`.
 
 Profile model sections preserve each selected preference's scope, source handles
 and complete text, including trailing exceptions. The full-context budget removes
