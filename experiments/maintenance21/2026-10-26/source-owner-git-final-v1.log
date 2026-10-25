@@ -1,0 +1,8 @@
+=== RUN   TestSourceSnapshotUsesWholeCommitInsteadOfDirtyCheckoutOrExportFilters
+--- PASS: TestSourceSnapshotUsesWholeCommitInsteadOfDirtyCheckoutOrExportFilters (0.90s)
+=== RUN   TestSourceSnapshotRefusesSymlinkBeforePrivateCopy
+--- PASS: TestSourceSnapshotRefusesSymlinkBeforePrivateCopy (0.77s)
+=== RUN   TestSourceSnapshotCleanupCannotRemoveAnUnownedDirectory
+--- PASS: TestSourceSnapshotCleanupCannotRemoveAnUnownedDirectory (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/maintenance	3.145s

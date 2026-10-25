@@ -27,7 +27,31 @@ once. Stop cancels pending work without refund, retaining already dispatched
 uncertainty. Deadline expiry is terminal UNKNOWN; late signed measurements are
 retained without rewriting it. Outcome storage never clears newer owner stops,
 restores PostgreSQL or replays an action. These owning APIs are components only;
-actual independent processes and current state compatibility remain unimplemented.
+independent checker/node processes and current state compatibility remain unimplemented.
+
+The separate optional `maintenance-controller` now has a local-only owner control
+entrypoint, default disabled. It requires an already installed canonical operator
+profile, matching private signing seed, separate private owner credential and
+database reference files. It binds only a configured loopback address, performs
+no migration/profile installation, and exposes no node deployment or arbitrary
+signing operation. Its bounded authenticated private HTTP endpoint follows the
+existing owner control-plane pattern, independently of Core/channel ingress;
+it is not the normal service/tool execution transport. A separate owner-process
+test with Core absent proves authenticated stop of an enabled synthetic target
+and preservation of that stop across process restart. Node/checker execution
+and deployment remain pending.
+
+Unknown reconciliation requires a new current signed node observation under the
+node's exclusive effect fence, with the exact settled attempt and measured base
+or candidate identity. Identity of a merely running process is insufficient.
+Reconciliation retains terminal UNKNOWN, spent permission and newer owner stops;
+the physical executor/inspection implementation still requires acceptance.
+
+Source preparation reads complete immutable commit blobs from a fixed operator
+repository, not export filters or dirty author checkout files. Snapshots live
+outside the author tree, retain full hashes/Git modes, and reject links,
+submodules, aliases and non-commit identities. Preparing source neither executes
+it nor proves its built artifact: the independent sandbox build remains required.
 
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated

@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/maintenance/|migrations/105_independent_maintenance[.]|docs/architecture/maintenance-contract[.])" {
+    "^(internal/maintenance/|apps/maintenance-controller/|migrations/105_independent_maintenance[.]|docs/architecture/maintenance-contract[.])" {
       [void]$specs.Add("docs/architecture/maintenance-contract.md")
       [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
       [void]$specs.Add("docs/testing/issue21-local-progress.md")

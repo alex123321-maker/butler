@@ -36,6 +36,19 @@ SHA256 `579a96915817b09a38256935908fb18b3f591b49ae6b8949b0e384a44670165f`.
 
 ## Required remaining evidence
 
+The next local run passed the maintenance package54.344s and separate controller
+package4.785s, with vet exit0 and no skipped tests. A final source-only refinement
+also rejects tree objects masquerading as commits; its targeted Git tests
+passed3.145s and vet passed. Exact logs are retained in
+`experiments/maintenance21/2026-10-26/` under `source-owner-*`.
+Actual separate owner service requests stop an enabled synthetic target with
+Core absent, deny unauthenticated/ambiguous input and retain stop epoch3 across
+service restart. The node observation used to bootstrap that synthetic target
+is signed in-process; this does not prove a physical inspector or deployment.
+Git tests cover complete committed bytes/mode despite dirty checkout and export
+filters, denial of links/moving refs/tree objects, and owned cleanup confinement.
+Settled signed reconciliation preserves original UNKNOWN and newer owner stops.
+
 An additive component run on2026-10-26 passed50.468s, with vet exit0 and no
 skipped tests: [permission/claim/outcome checks](../../experiments/maintenance21/2026-10-26/permission-claim-outcome-v1.log).
 It covers concurrent exact permission registration and claim reservation,

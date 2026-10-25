@@ -23,6 +23,7 @@ type NodeObservation struct {
 	ArtifactSHA256 string    `json:"artifact_sha256"`
 	RuntimeSHA256  string    `json:"runtime_sha256"`
 	LastAttemptID  string    `json:"last_attempt_id"`
+	EffectSettled  bool      `json:"effect_settled"`
 	ObservedAt     time.Time `json:"observed_at"`
 }
 
@@ -67,6 +68,9 @@ func InspectNodeObservation(raw, signature []byte, profile Profile, profileDiges
 		return NodeObservation{}, ErrState
 	}
 	if observation.LastAttemptID != "" && (len(observation.LastAttemptID) != len("mdeploy_")+64 || observation.LastAttemptID[:len("mdeploy_")] != "mdeploy_" || !validDigest(observation.LastAttemptID[len("mdeploy_"):])) {
+		return NodeObservation{}, ErrState
+	}
+	if observation.EffectSettled && observation.LastAttemptID == "" {
 		return NodeObservation{}, ErrState
 	}
 	return observation, nil

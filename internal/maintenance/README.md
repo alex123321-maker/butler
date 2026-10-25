@@ -57,5 +57,24 @@ UNKNOWN without replay; a late signed measurement is retained separately and
 cannot rewrite that terminal attempt or clear uncertainty without reconciliation.
 Signed node outcomes preserve newer owner stops and map only the exact known
 base or independently reviewed candidate. These are storage/admission components;
-there is no controller endpoint, actual node executor or live compatibility gate
-yet, and no enabled deployment profile.
+there is no deployment endpoint, actual node executor or live compatibility gate
+yet, and no enabled deployment profile. The separate optional local
+`apps/maintenance-controller` exposes only private independent owner controls;
+its separate owner process is exercised with Core absent: wrong/ambiguous
+requests are denied, an enabled synthetic target is stopped, and its newer stop
+epoch survives a controller process restart. This is not node/deployment proof.
+
+`ReconcileUnknown` requires a new current signed node observation, the exact
+settled effect identity and independently measured known base/candidate artifact.
+The node must hold its effect fence and join workers before asserting settlement.
+A process merely being alive cannot clear uncertainty. Reconciliation preserves
+the original terminal UNKNOWN, consumed allowance and newer stop epoch. Actual
+node settlement/inspection and deployment acceptance are still pending.
+
+The private `SourceSnapshotter` materializes all blobs of an exact existing Git
+commit, including tests/configuration and export-ignored files, into a separate
+checker workspace outside the author repository. It preserves content/mode
+inventory, excludes dirty/untracked checkout data, rejects moving refs/tree-only
+objects/links/submodules/case aliases, and executes no submitted source. Owned
+snapshot cleanup verifies the resolved target before recursive removal. This
+prepares source only; the independent sandbox build/checker is still pending.
