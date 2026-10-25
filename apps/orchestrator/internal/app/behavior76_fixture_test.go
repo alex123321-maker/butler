@@ -64,6 +64,7 @@ type behavior76Fixture struct {
 	recipient         *behavior76Runtime
 	authorityTrace    *behavior76AuthorityTrace
 	researchStop      *atomic.Bool
+	streamQuiescent   bool
 }
 
 func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76Fixture {
@@ -72,7 +73,7 @@ func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76F
 	if len(parents) > 0 {
 		parent = parents[0]
 	}
-	return newBehavior76FixtureConfigured(t, parent, nil)
+	return newBehavior76FixtureConfigured(t, parent, nil, false)
 }
 
 func newBehavior76LocalFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
@@ -80,10 +81,18 @@ func newBehavior76LocalFixture(t *testing.T, parent context.Context, global *ato
 	if global == nil {
 		t.Fatal("explicit research-wide stop required")
 	}
-	return newBehavior76FixtureConfigured(t, parent, global, bindings...)
+	return newBehavior76FixtureConfigured(t, parent, global, false, bindings...)
 }
 
-func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+func newBehavior76StreamFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	t.Helper()
+	if global == nil {
+		t.Fatal("explicit research-wide stop required")
+	}
+	return newBehavior76FixtureConfigured(t, parent, global, true, bindings...)
+}
+
+func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, streaming bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -159,7 +168,11 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 		}
 		f.scope = newBehavior76FixtureScope(pool, global)
 		f.scope.authorityTrace = authorityTrace
-		body, e := os.ReadFile("/src20/docs/testing/issue76-fixture-local-protocol.md")
+		protocolPath := "/src20/docs/testing/issue76-fixture-local-protocol.md"
+		if streaming {
+			protocolPath = "/src20/docs/testing/issue76-fixture-stream-protocol.md"
+		}
+		body, e := os.ReadFile(protocolPath)
 		if e != nil {
 			t.Fatal("prospective public stop protocol unavailable")
 		}

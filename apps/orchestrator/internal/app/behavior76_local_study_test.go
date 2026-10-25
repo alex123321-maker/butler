@@ -11,6 +11,15 @@ import (
 // These cannot name any closed corpus, and currently prevent native admission.
 const behavior76LocalStimuliSHA = "878f220f31c4e615a56b81cace7be96639a4f4e6dcffee3159b095675ef5d109"
 const behavior76LocalExpectationsSHA = "464cb37c9d8bec967baba27fe6b401b6fc41d3d5d855f3ecf5955c04312f4ee0"
+const behavior76StreamStimuliSHA = "UNBOUND"
+const behavior76StreamExpectationsSHA = "UNBOUND"
+
+func TestBehavior76NativeFixtureStream(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "fixture-stream-synthetic-only" {
+		t.Skip("separate prospective streaming admission required")
+	}
+	behavior76CollectFreshMode(t, true, true)
+}
 
 func TestBehavior76NativeFixtureLocal(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "fixture-local-synthetic-only" {
@@ -22,7 +31,11 @@ func TestBehavior76NativeFixtureLocal(t *testing.T) {
 func (f *behavior76Fixture) sealFixtureEvidence(dir string) {
 	f.t.Helper()
 	if f.authorityTrace != nil {
-		behavior76Write(f.t, filepath.Join(dir, "authority-trace.json"), f.authorityTrace.snapshot())
+		trace := f.authorityTrace.snapshot()
+		if f.authorityTrace.stream != nil && f.streamQuiescent {
+			trace = f.authorityTrace.sealStream()
+		}
+		behavior76Write(f.t, filepath.Join(dir, "authority-trace.json"), trace)
 	}
 	anchor, err := os.ReadFile(f.manifestPath)
 	if err != nil {
@@ -69,4 +82,11 @@ func (f *behavior76Fixture) sealFixtureEvidence(dir string) {
 		f.t.Fatal("exact fixture export inventory unavailable", err)
 	}
 	behavior76Write(f.t, filepath.Join(dir, "sealed-files.json"), map[string]any{"version": "behavior76-quiescent-fixture-files-v1", "files": items})
+	if f.authorityTrace != nil && f.authorityTrace.stream != nil {
+		trace := f.authorityTrace.snapshot()
+		if !f.streamQuiescent || trace.stream == nil || !trace.stream.Sealed || trace.Failed || trace.Dropped != 0 || trace.OpenSpans != 0 || f.researchStop.Load() {
+			f.researchStop.Store(true)
+			f.t.Error("stream evidence retained but observer/quiescence seal failed globally")
+		}
+	}
 }

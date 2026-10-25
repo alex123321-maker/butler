@@ -30,6 +30,7 @@ type behavior76AuthorityTrace struct {
 	dropped           uint64
 	operationFailures uint64
 	observerFailed    bool
+	stream            *behavior76AuthorityStream
 }
 
 type behavior76AuthorityTracePoolStats struct {
@@ -65,6 +66,7 @@ type behavior76AuthorityTraceSnapshot struct {
 	Dropped           uint64                          `json:"dropped_events"`
 	OperationFailures uint64                          `json:"operation_failures"`
 	Failed            bool                            `json:"observer_failed"`
+	stream            *behavior76AuthorityStreamSnapshot
 }
 
 type behavior76AuthorityTraceSpan struct {
@@ -144,6 +146,10 @@ func behavior76AuthorityTraceDeadline(ctx context.Context) (*time.Time, *int64) 
 func (o *behavior76AuthorityTrace) appendLocked(event behavior76AuthorityTraceEvent) {
 	o.sequence++
 	event.Sequence = o.sequence
+	if o.stream != nil {
+		o.appendStreamLocked(event)
+		return
+	}
 	if len(o.events) >= behavior76AuthorityTraceLimit {
 		o.dropped++
 		o.observerFailed = true
@@ -221,7 +227,11 @@ func (o *behavior76AuthorityTrace) snapshot() behavior76AuthorityTraceSnapshot {
 			events[i].TimeLeft = &value
 		}
 	}
-	return behavior76AuthorityTraceSnapshot{"behavior76-authority-pg-trace-v1", behavior76AuthorityTraceLimit, events, o.openSpans, o.dropped, o.operationFailures, o.observerFailed}
+	result := behavior76AuthorityTraceSnapshot{Version: "behavior76-authority-pg-trace-v1", MaximumEvents: behavior76AuthorityTraceLimit, Events: events, OpenSpans: o.openSpans, Dropped: o.dropped, OperationFailures: o.operationFailures, Failed: o.observerFailed}
+	if o.stream != nil {
+		result.stream = o.streamSnapshotLocked(events)
+	}
+	return result
 }
 
 // failed means this observer lost metadata/correlation, including cap overflow.

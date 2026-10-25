@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -40,6 +41,17 @@ func TestBehavior76LocalCorpusCompositionPreflight(t *testing.T) {
 }
 
 func behavior76CompositionPreflightConfigured(t *testing.T, expectedSHA string, local bool) {
+	behavior76CompositionPreflightMode(t, expectedSHA, local, false)
+}
+
+func TestBehavior76StreamCorpusCompositionPreflight(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "stream-composition-only" {
+		t.Skip("explicit stream zero-native composition required")
+	}
+	behavior76CompositionPreflightMode(t, behavior76StreamStimuliSHA, true, true)
+}
+
+func behavior76CompositionPreflightMode(t *testing.T, expectedSHA string, local, streaming bool) {
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
 	if err != nil || behavior76Hash(raw) != expectedSHA {
 		t.Fatal("frozen independent stimulus commitment unavailable")
@@ -60,10 +72,19 @@ func behavior76CompositionPreflightConfigured(t *testing.T, expectedSHA string, 
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
 				var global atomic.Bool
-				if local {
+				if streaming {
+					f = newBehavior76StreamFixture(t, context.Background(), &global)
+				} else if local {
 					f = newBehavior76LocalFixture(t, context.Background(), &global)
 				} else {
 					f = newBehavior76Fixture(t)
+				}
+				streamDir := ""
+				if streaming {
+					streamDir = t.TempDir()
+					if err := f.authorityTrace.enableStream(streamDir, f.scope.binding, &global); err != nil {
+						t.Fatal(err)
+					}
 				}
 				f.seed(e)
 				provider := &behavior76SetupProvider{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, fixture: f}
@@ -95,6 +116,16 @@ func behavior76CompositionPreflightConfigured(t *testing.T, expectedSHA string, 
 				if local {
 					if _, err := f.quiesce(f.ctx); err != nil || global.Load() {
 						t.Fatal("local composition quiescence unavailable", err)
+					}
+					if streaming {
+						f.streamQuiescent = true
+						f.sealFixtureEvidence(streamDir)
+						if global.Load() || !f.authorityTrace.snapshot().stream.Sealed {
+							t.Fatal("stream composition seal unavailable")
+						}
+						if _, err := os.Stat(filepath.Join(streamDir, "sealed-files.json")); err != nil {
+							t.Fatal(err)
+						}
 					}
 				}
 				arms++
