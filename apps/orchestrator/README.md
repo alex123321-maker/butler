@@ -50,6 +50,14 @@ fail-closed authority rules remain mandatory. The live local-model watchdog also
 uses this reserve at the unchanged250ms/200ms bounds, with rollback-only source
 observations and safe cancellation causes. Admission/result acceptance retain
 business transactions and immutable budget history. Both pools close with Core.
+Composed converter source checks use business capacity: returned-package access
+can bind selected source pins and repeat lifecycle checks. They cannot borrow
+the one-connection ownership reserve; current authority and source proofs remain
+mandatory. `TestConverterCompoundSourceProofDoesNotBorrowAuthorityReserveIntegration`
+checks this with the reserve occupied. The explicitly enabled
+`TestConverterDeveloperBoundedLocalContainerE2E` gives the local scripted process
+fixture a finite three-minute lifetime and90-second worker wait, without changing
+production proof deadlines or execution budgets.
 
 An independent taskless owner result may cross the loop gate after an older
 local message/widget uncertainty was explicitly abandoned through failure

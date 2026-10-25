@@ -463,6 +463,12 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if f.initialInputID != "" {
 		waitTimeout = 60 * time.Second
 	}
+	if f.workerWaitTimeout != 0 {
+		if f.workerWaitTimeout < 0 || f.workerWaitTimeout > 5*time.Minute {
+			t.Fatal("bounded local worker wait required")
+		}
+		waitTimeout = f.workerWaitTimeout
+	}
 	if f.modelConfig != nil {
 		modelProvider, err = f.modelConfig.Factory(f.f.ctx, f.f.pool, f.f.parent.TaskID)
 		if err != nil || modelProvider == nil || modelProvider.Name() != f.modelConfig.Provider {
@@ -484,7 +490,11 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		}
 	}
 	wait := func(check func() bool, label string) { waitConverterWorkerFor(t, waitTimeout, check, label) }
-	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	var logWriter io.Writer = io.Discard
+	if os.Getenv("BUTLER_CONVERTER_LOCAL_DIAGNOSTICS") == "1" {
+		logWriter = converterLocalDiagnosticWriter{t}
+	}
+	log := slog.New(slog.NewTextHandler(logWriter, nil))
 	sessions := session.NewPostgresRepository(f.f.pool)
 	runs := run.NewService(run.NewPostgresRepository(f.f.pool), log)
 	inputs := durableinput.NewStore(f.f.pool)
@@ -669,7 +679,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if automatic {
 		automaticStarted := time.Now()
 		automaticTimeout := 30 * time.Second
-		if f.modelConfig != nil {
+		if f.modelConfig != nil || f.workerWaitTimeout != 0 {
 			automaticTimeout = waitTimeout
 		}
 		waitConverterWorkerFor(t, automaticTimeout, func() bool {
@@ -679,7 +689,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 			if sweepError != nil {
 				t.Fatal("automatic fresh catalog admission", sweepError)
 			}
-			if f.modelConfig == nil && time.Since(automaticStarted) > 25*time.Second {
+			if f.modelConfig == nil && f.workerWaitTimeout == 0 && time.Since(automaticStarted) > 25*time.Second {
 				if diagnostic, e := converterWorkerStructuralState(f.f.ctx, f.f.pool, f.f.parent.TaskID, f.f.budgets.Policy); e == nil {
 					t.Logf("bounded_automatic_structural_diagnostic=%s", diagnostic)
 				} else {

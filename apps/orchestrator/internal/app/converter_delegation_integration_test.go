@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -83,6 +84,7 @@ func (developerEnvironment) Discover(context.Context, string, generatedtools.Nee
 }
 
 type developerFixture struct {
+	workerWaitTimeout              time.Duration
 	f                              *delegationGuardFixture
 	goals                          *goal.Manager
 	goal                           actionauth.GoalPolicy
@@ -112,9 +114,18 @@ func newDeveloperFixture(t *testing.T) *developerFixture {
 // The ordinary-worker proof declares a separate finite fixture model quote;
 // production quotas and model/provider credentials are unchanged.
 func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool) *developerFixture {
+	return newDeveloperWorkerFixtureWithLifetime(t, profile, manifestPath, modelWorkflow, time.Minute)
+}
+
+func newDeveloperWorkerFixtureWithLifetime(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool, lifetime time.Duration) *developerFixture {
 	t.Helper()
 	var f *delegationGuardFixture
-	if manifestPath == "" {
+	if modelWorkflow {
+		if manifestPath == "" {
+			manifestPath = filepath.Join(t.TempDir(), "deletions.log")
+		}
+		f = newDelegationGuardFixtureWithRuntime(t, manifestPath, true, lifetime)
+	} else if manifestPath == "" {
 		f = newDelegationGuardFixture(t)
 	} else {
 		f = newDelegationGuardFixtureWithManifest(t, manifestPath)

@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -25,6 +27,7 @@ import (
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/content"
+	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -70,23 +73,52 @@ func newDelegationGuardFixture(t *testing.T) *delegationGuardFixture {
 }
 
 func newDelegationGuardFixtureWithManifest(t *testing.T, path string) *delegationGuardFixture {
+	return newDelegationGuardFixtureWithRuntime(t, path, false, time.Minute)
+}
+
+// Ordinary worker proofs mirror App.New's current bounded authority reserve.
+// Two-connection low-level guard fixtures retain their historical construction.
+func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve bool, lifetime time.Duration) *delegationGuardFixture {
 	t.Helper()
 	pool := memorytest.Database(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	reads := pool
+	if lifetime <= 0 || lifetime > 40*time.Minute {
+		t.Fatal("bounded fixture lifetime required")
+	}
+	if reserve {
+		u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		q := u.Query()
+		q.Set("search_path", pool.Config().ConnConfig.RuntimeParams["search_path"])
+		u.RawQuery = q.Encode()
+		db, err := postgresstore.OpenWithAuthorityReserve(context.Background(), postgresstore.Config{URL: u.String(), MaxConns: 10}, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(db.Close)
+		pool.Close()
+		pool, reads = db.Pool(), db.AuthorityReadPool()
+		if pool.Config().MaxConns != 9 || reads.Config().MaxConns != 1 || pool == reads {
+			t.Fatal("fixture reserve differs from ten-connection bootstrap")
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), lifetime)
 	t.Cleanup(cancel)
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "guard-owner", Channel: "web", DeliveryID: "guard-fixture"})
 	manifest := catalog.NewFileManifest(path)
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
 	}
-	sources := catalog.New(pool, manifest)
+	sources := catalog.NewWithRunObservationPool(pool, reads, manifest)
 	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('guard-root','guard-owner','web'); CREATE TABLE fixture_parent_capabilities(task_id text PRIMARY KEY,snapshot jsonb)`); err != nil {
 		t.Fatal(err)
 	}
 	policy := budget.DefaultPolicy()
-	bc := budget.NewController(pool, policy)
+	bc := budget.NewControllerWithAuthorityReads(pool, reads, policy)
 	bc.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
-	store := task.NewStore(pool)
+	store := task.NewStoreWithAuthorityReads(pool, reads)
 	store.SetBudgets(bc, "")
 	parent, err := store.Create(ctx, task.CreateRequest{SessionKey: "guard-root", OwnerID: "guard-owner", Goal: "bounded objective", CompletionCriteria: []string{"independent evidence"}})
 	if err != nil {
@@ -103,7 +135,7 @@ func newDelegationGuardFixtureWithManifest(t *testing.T, path string) *delegatio
 	if err != nil {
 		t.Fatal(err)
 	}
-	f := &delegationGuardFixture{ctx, owner, pool, sources, store, manager, guard, parent, caps, session.NewPostgresLeaseManager(pool), bc}
+	f := &delegationGuardFixture{ctx, owner, pool, sources, store, manager, guard, parent, caps, session.NewPostgresLeaseManagerWithAuthorityReads(pool, reads), bc}
 	f.saveCaps(t)
 	return f
 }

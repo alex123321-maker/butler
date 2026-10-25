@@ -25,11 +25,10 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 	if !ok || t.RunID != id {
 		return generatedtools.ErrAccess
 	}
-	pool := s.pool
-	if observations := s.Store.RunObservationPool(ctx); observations != s.Store.Pool() {
-		pool = observations
-	}
-	tx, e := pool.Begin(ctx)
+	// Returned-package validation can bind selected source pins and repeat full
+	// converter/continuation guards. This compound foreground proof must not hold
+	// the single connection reserved for bounded lease/authority observations.
+	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return e
 	}
