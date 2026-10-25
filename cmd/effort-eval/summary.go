@@ -209,6 +209,12 @@ func summarize(dir string) error {
 				c = x
 			}
 		}
+		if m.Protocol == "issue97-controlled-evidence-v1" {
+			parts := strings.Split(o.Slot, "/")
+			if len(parts) == 4 && parts[2] != "shared_draft" {
+				c, _ = evidenceReview(c, parts[2] == "review_fresh")
+			}
+		}
 		reviews = append(reviews, blindReview{ID: id, Case: c, ObservedSources: o.Outcome.State.Sources, Candidate: o.Outcome.State.Candidate, Status: o.Outcome.Status})
 	}
 	var summary []armSummary

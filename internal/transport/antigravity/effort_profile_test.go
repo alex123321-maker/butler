@@ -74,6 +74,9 @@ func TestThinkingUsageIsOptionalExactAndConsistent(t *testing.T) {
 func intPtr(v int) *int { return &v }
 
 func TestExplicitThinkingLevelCannotBeOverriddenByRequest(t *testing.T) {
+	if _, err := NewProvider(Config{Model: FlashLowModel, MaximumOutputTokens: 32768, AuthSource: authSource{}}); err == nil {
+		t.Fatal("unqualified Low output allowance accepted")
+	}
 	for _, cfg := range []Config{{Model: FlashLowModel, ThinkingLevel: "HIGH"}, {Model: FlashHighModel, ThinkingLevel: "LOW"}, {Model: DefaultModel, ThinkingLevel: "LOW"}} {
 		cfg.AuthSource = authSource{}
 		if _, e := NewProvider(cfg); e == nil {

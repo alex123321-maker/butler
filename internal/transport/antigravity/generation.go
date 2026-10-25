@@ -19,7 +19,7 @@ func validateGenerationConfig(cfg *Config) error {
 	}
 	structured := len(cfg.JSONResponseSchema) > 0 || len(cfg.GoogleResponseSchema) > 0
 	if cfg.MaximumOutputTokens < 1 || cfg.MaximumOutputTokens > 32768 ||
-		(cfg.MaximumOutputTokens > maxOutputTokens || structured) && !cloudProfile {
+		cfg.MaximumOutputTokens > maxOutputTokens && cfg.Model != FlashHighModel || structured && !cloudProfile {
 		return protocolError("unsupported configured generation allowance")
 	}
 	if len(cfg.JSONResponseSchema) > 0 && len(cfg.GoogleResponseSchema) > 0 {

@@ -110,6 +110,8 @@ func execute(ctx context.Context, o options) error {
 		return json.NewEncoder(os.Stdout).Encode(x)
 	case "run", "preflight":
 		return runTrial(ctx, pool, m, o)
+	case "evidence":
+		return runEvidenceTrial(ctx, pool, m, o)
 	case "export":
 		return exportTrial(ctx, pool, o)
 	default:

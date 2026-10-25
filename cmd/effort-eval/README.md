@@ -1,5 +1,13 @@
 # Local synthetic effort research
 
+The separate [18-call source-availability supplement](../../docs/testing/effort-evidence-protocol-2026-10-25.md)
+shares an actual draft between reviews with/without a new T1 fixture observation.
+It leaves the96-slot v2 corpus/producer unchanged and reports useful current
+completion separately from correct acknowledgement of missing information.
+Invoke it with `scripts/dev/effort-research.ps1 -Action Evidence -EnableNative`
+after v2 ends, using new trial/output names. The same private auth store permits
+only one refresh-capable process at a time.
+
 This opt-in operator command studies #97 outside the working Butler deployment.
 It uses the native Go Antigravity transport and an isolated loopback PostgreSQL
 database named `effort97_test`. It has no real mail connector, external tool
