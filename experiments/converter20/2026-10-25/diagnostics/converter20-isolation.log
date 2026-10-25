@@ -1,0 +1,12 @@
+{"image":"sha256:fc9593c5cf6ee0a9e6d0a0e2b0d6dfec6a23a703b1fe93de90fac6514518ec2e","pid":9903,"user":"butler","network":"none","readonly":true,"cap_drop":["ALL"],"security":["no-new-privileges:true"],"memory":134217728,"pids":64,"tmpfs":{"/tmp":"rw,noexec,nosuid,nodev,size=4m,uid=10001,gid=10001,mode=0700"}}
+Uid:	10001	10001	10001	10001
+Gid:	10001	10001	10001	10001
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	2
+e94a0e72a32454e7b55eb03c643176b62ed3eecfd5e590e0e76a21bb80cd3274  /proc/9903/exe
+Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       
+Actual runtime init root: no source tree, Docker socket, PG socket or private auth; temporary workcopy root empty.

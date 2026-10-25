@@ -2,6 +2,7 @@ package goal_test
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,10 +10,19 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
+	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func TestGeneratedConverterMigrationRollbackGuardsIntegration(t *testing.T) {
-	f := setup(t)
+	dsn := os.Getenv("BUTLER_TEST_GOALS_POSTGRES_URL")
+	if dsn == "" {
+		t.Skip("isolated goals PostgreSQL required")
+	}
+	t.Setenv("BUTLER_TEST_MEMORY_POSTGRES_URL", dsn)
+	// An empty v52 downgrade must start at v52, before later migrations add
+	// dependent objects. Retained-history denial below uses the current schema.
+	pool := memorytest.DatabaseAtVersion(t, 52)
 	load := func(name string) string {
 		t.Helper()
 		b, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name))
@@ -21,20 +31,25 @@ func TestGeneratedConverterMigrationRollbackGuardsIntegration(t *testing.T) {
 		}
 		return string(b)
 	}
-	if _, e := f.pool.Exec(f.ctx, load("052_generated_converters.down.sql")); e != nil {
+	if _, e := pool.Exec(t.Context(), load("052_generated_converters.down.sql")); e != nil {
 		t.Fatal("empty converter rollback", e)
 	}
-	if _, e := f.pool.Exec(f.ctx, load("052_generated_converters.up.sql")); e != nil {
+	if _, e := pool.Exec(t.Context(), load("052_generated_converters.up.sql")); e != nil {
 		t.Fatal("empty converter reapply", e)
 	}
 	var count int
-	if f.pool.QueryRow(f.ctx, `SELECT count(*) FROM converter_catalog`).Scan(&count) != nil || count != 0 {
+	if pool.QueryRow(t.Context(), `SELECT count(*) FROM converter_catalog`).Scan(&count) != nil || count != 0 {
 		t.Fatal("converter schema did not reapply empty")
 	}
 	flow := setupConverter(t)
 	flow.candidate(t, "1.0.0")
 	if _, e := flow.f.pool.Exec(flow.f.ctx, load("052_generated_converters.down.sql")); e == nil {
 		t.Fatal("rollback discarded retained need/version/source/effect audit")
+	} else {
+		var denied *pgconn.PgError
+		if !errors.As(e, &denied) || denied.Code != "P0001" {
+			t.Fatal("rollback did not enforce retained-history fence", e)
+		}
 	}
 	if flow.f.pool.QueryRow(flow.f.ctx, `SELECT count(*) FROM converter_versions`).Scan(&count) != nil || count != 1 {
 		t.Fatal("rejected rollback lost durable converter history")

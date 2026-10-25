@@ -1,0 +1,49 @@
+{
+  "window": "issue20-converter-local-native-20261025e",
+  "actual_native_calls": 4,
+  "known_input_tokens": 27156.0,
+  "known_output_tokens": 904.0,
+  "known_thinking_tokens": 6107.0,
+  "known_total_tokens": 34167.0,
+  "missing_total_tokens": 0,
+  "missing_thinking_tokens": 0,
+  "kernel_admissions": 4,
+  "kernel_unobserved_attempts": 0,
+  "cumulative_native_calls": 50,
+  "cumulative_known_total_tokens": 539577.0,
+  "tool_calls": 2,
+  "confirmed_effects": 2,
+  "original_conversion_count": 0,
+  "authoritative_finals": 1,
+  "unverified_finals": 1,
+  "exact_original_output_sources": [],
+  "tool_names": [
+    "converters.discover",
+    "task.delegate_converter"
+  ],
+  "starts": [
+    {
+      "n": 1,
+      "tools": [
+        "converters.activate",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 4,
+      "tools": [
+        "converters.develop",
+        "converters.discover",
+        "converters.test"
+      ],
+      "original_body": false
+    }
+  ],
+  "currency_and_subscription_quota_cost": "unknown"
+}

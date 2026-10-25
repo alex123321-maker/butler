@@ -1,0 +1,4 @@
+{"purpose": "memory_read", "task_id": "task_f8bbf8fe8f353f41a1f81d2490de5953", "owner_id": "guard-owner", "source_id": "source_5b64f49628775a369d0443df14b90a3d6efedc36df5f18a9eebc1606faf4d343", "task_revision": 1, "access_revision": 1}
+{"purpose": "memory_read", "task_id": "task_f8bbf8fe8f353f41a1f81d2490de5953", "owner_id": "guard-owner", "source_id": "source_e92786fcfcc319510f2e6a005cf53e06a26e3997b294b12d07ed72cc4da6e85b", "task_revision": 1, "access_revision": 1}
+{"purpose": "memory_read", "task_id": "task_f8bbf8fe8f353f41a1f81d2490de5953", "owner_id": "guard-owner", "source_id": "source_f435f278f1632bd846d9e5970de51fe6620491c28cc86fcfaeaddd5e045c8ab1", "task_revision": 1, "access_revision": 1}
+{"purpose": "memory_read", "task_id": "task_4ba2b0c2dbf98879af65ba465acf6f4c", "owner_id": "guard-owner", "source_id": "source_a9f4c572fd83a938e251df23a041f515445bb117", "task_revision": 1, "access_revision": 1}

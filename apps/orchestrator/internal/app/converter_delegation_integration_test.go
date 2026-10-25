@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -112,9 +113,28 @@ func newDeveloperFixture(t *testing.T) *developerFixture {
 // The ordinary-worker proof declares a separate finite fixture model quote;
 // production quotas and model/provider credentials are unchanged.
 func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool) *developerFixture {
+	return newDeveloperWorkerFixtureWithLifetime(t, profile, manifestPath, modelWorkflow, time.Minute)
+}
+
+func newDeveloperWorkerFixtureWithLifetime(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool, lifetime time.Duration) *developerFixture {
+	return newDeveloperWorkerFixtureWithModel(t, profile, manifestPath, modelWorkflow, lifetime, nil)
+}
+
+const converterOwnerAcceptanceGoal = "Convert the selected original inventory CSV to JSON. First discover an existing compatible tool or skill; if missing, delegate bounded development from the selected synthetic Need and contract only. Independently check and trial the returned converter, activate only within the original mandate, then convert the original document and report its checked output and applied rights. Do not claim semantic verification from a model final."
+
+func newDeveloperWorkerFixtureWithModel(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool, lifetime time.Duration, modelConfig *releaseChainModelConfig) *developerFixture {
 	t.Helper()
 	var f *delegationGuardFixture
-	if manifestPath == "" {
+	if modelWorkflow {
+		if manifestPath == "" {
+			manifestPath = filepath.Join(t.TempDir(), "deletions.log")
+		}
+		var observers []*releaseChainSourceObserver
+		if modelConfig != nil && modelConfig.SourceObserver != nil {
+			observers = append(observers, modelConfig.SourceObserver)
+		}
+		f = newDelegationGuardFixtureWithRuntime(t, manifestPath, true, lifetime, observers...)
+	} else if manifestPath == "" {
 		f = newDelegationGuardFixture(t)
 	} else {
 		f = newDelegationGuardFixtureWithManifest(t, manifestPath)
@@ -126,6 +146,12 @@ func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, man
 		f.budgets.Policy.ModelMillis = 5000
 		f.budgets.Policy.ModelInputBytes = 128 << 10
 		f.budgets.Policy.Models["ollama:converter-worker-fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
+	}
+	if modelConfig != nil {
+		if !modelWorkflow || modelConfig.Factory == nil || modelConfig.Policy.Validate() != nil {
+			t.Fatal("finite declared model fixture required")
+		}
+		f.budgets.Policy = modelConfig.Policy
 	}
 	n := generatedtools.Need{ID: "developer-need", ConverterID: "developer-inventory", Class: generatedtools.Class, Input: generatedtools.InputSchema{MediaType: "text/csv", Delimiter: ",", Header: true, Columns: []string{"name", "count"}}, Output: generatedtools.OutputSchema{MediaType: "application/json", Fields: []generatedtools.OutputField{{Name: "label", Type: "string", SourceIndex: 0}, {Name: "quantity", Type: "integer", SourceIndex: 1}}}, Limits: generatedtools.Limits{InputBytes: 8192, OutputBytes: 32768, Rows: 128, FieldBytes: 1024, Millis: 1000}}
 	gm := goal.New(f.pool, f.store, nil)
@@ -149,11 +175,19 @@ func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, man
 		// itself performs no network IO. Production local_only stays enforced.
 		m.Privacy = "cloud_allowed"
 	}
+	if modelConfig != nil {
+		b := modelConfig.Policy.Mandate
+		m.Budget.ModelTurns, m.Budget.Tokens, m.Budget.ActiveMillis = b.ModelTurns, b.Tokens, b.ActiveMillis
+	}
 	mr, e := gm.PutMandate(owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", DeliveryID: "developer-mandate"}), goal.MandateRequest{Mandate: m})
 	if e != nil {
 		t.Fatal(e)
 	}
-	f.parent, e = gm.CreateOwnerTask(owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", DeliveryID: "developer-owner-task"}), goal.TaskRequest{SessionKey: f.parent.SessionKey, GoalID: g.ID, MandateID: mr.SubjectID, Purpose: g.Purpose, Goal: "Develop from selected synthetic contract only", CompletionCriteria: []string{"Independent owner output verification"}, ObservationRef: "owner:selected-need", InitiativeReason: "explicit owner task"})
+	ownerGoal := "Develop from selected synthetic contract only"
+	if modelConfig != nil {
+		ownerGoal = converterOwnerAcceptanceGoal
+	}
+	f.parent, e = gm.CreateOwnerTask(owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", DeliveryID: "developer-owner-task"}), goal.TaskRequest{SessionKey: f.parent.SessionKey, GoalID: g.ID, MandateID: mr.SubjectID, Purpose: g.Purpose, Goal: ownerGoal, CompletionCriteria: []string{"Independent owner output verification"}, ObservationRef: "owner:selected-need", InitiativeReason: "explicit owner task"})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -187,7 +221,14 @@ func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, man
 	journal.SetContractGuard(converters)
 	auth := actionauth.NewService(journal, env, nil)
 	auth.SetCapabilities(converters)
-	return &developerFixture{f: f, goals: gm, goal: g, profile: profile, need: n, needRef: needRef, specRef: specRef, document: document, service: s, env: env, converters: converters, auth: auth, journal: journal, parentRun: "converter-parent-run"}
+	fixture := &developerFixture{f: f, goals: gm, goal: g, profile: profile, need: n, needRef: needRef, specRef: specRef, document: document, service: s, env: env, converters: converters, auth: auth, journal: journal, parentRun: "converter-parent-run", modelConfig: modelConfig}
+	if modelConfig != nil {
+		refs, _ := json.Marshal(map[string]catalog.SourceRef{"need_source": needRef, "contract_source": specRef, "input_ref": document})
+		allowance, _ := json.Marshal(modelConfig.ChildBudget)
+		deadline, _ := f.ctx.Deadline()
+		fixture.admissionInput = ownerGoal + " Selected current typed DATA refs: " + string(refs) + ". Owner-selected finite child budget DATA: " + string(allowance) + ". Use a child deadline no later than " + deadline.UTC().Format(time.RFC3339Nano) + ". This allowance does not replace current Broker authority."
+	}
+	return fixture
 }
 func (f *developerFixture) dispatch(t *testing.T, runID, name string, args any) (*toolbrokerv1.ToolResult, actionauth.PreparedAction, actionauth.Grant) {
 	t.Helper()
@@ -298,6 +339,26 @@ func TestConverterDeveloperExactChildIsolationIntegration(t *testing.T) {
 	}
 	if _, e = combined.MarkExecuting(worker, child.TaskID); e != nil {
 		t.Fatal("accepted lifecycle", e)
+	}
+	selected, e := (delegatedContextReader{sources: f.f.sources}).LoadDelegatedContext(worker, "converter-child-run")
+	if e != nil || selected == nil || len(selected.Items) != 2 || len(selected.SourceRefs) != 2 {
+		t.Fatal("selected converter reference roles unavailable", e)
+	}
+	roles := map[string]string{}
+	for _, item := range selected.Items {
+		var frame struct {
+			Data struct {
+				ID   string `json:"source_id"`
+				Role string `json:"reference_role"`
+			} `json:"data"`
+		}
+		if json.Unmarshal([]byte(item.Content), &frame) != nil {
+			t.Fatal("invalid DATA frame")
+		}
+		roles[frame.Data.ID] = frame.Data.Role
+	}
+	if roles[f.needRef.ID] != "selected_input" || roles[f.specRef.ID] != "delegation_contract" {
+		t.Fatal("same-titled Need and contract lost their accepted reference roles", roles)
 	}
 	tx, e := f.f.pool.Begin(worker)
 	if e != nil {

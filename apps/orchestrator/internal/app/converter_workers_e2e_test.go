@@ -62,6 +62,7 @@ type converterWorkerProvider struct {
 	childGate      <-chan struct{}
 	onAdmission    func() error
 	prepareProject bool
+	repeatTrial    bool
 }
 
 type converterWorkerState struct {
@@ -256,6 +257,10 @@ func (p *converterWorkerProvider) next(runID string, s *converterWorkerState) (t
 			name, args = "converters.trial", map[string]any{"digest": s.candidate.Digest, "input_ref": p.document}
 		case 3:
 			name, args = "converters.activate", map[string]any{"digest": s.candidate.Digest, "generation": s.candidate.Generation}
+		case 4:
+			if p.repeatTrial {
+				name, args = "converters.trial", map[string]any{"digest": s.candidate.Digest, "input_ref": p.document}
+			}
 		}
 	case "convert":
 		if s.step == 0 {
@@ -401,7 +406,12 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		params.Set("search_path", f.f.pool.Config().ConnConfig.RuntimeParams["search_path"])
 		dsn.RawQuery = params.Encode()
 		broker := exec.Command(os.Getenv("BUTLER_CONVERTER_BROKER_BINARY"))
+		policyJSON, err := json.Marshal(f.f.budgets.Policy)
+		if err != nil {
+			t.Fatal("finite owning Broker policy unavailable")
+		}
 		broker.Env = []string{"PATH=" + os.Getenv("PATH"), "BUTLER_ENVIRONMENT=test", "BUTLER_GRPC_ADDR=" + grpcAddress, "BUTLER_HTTP_ADDR=" + httpAddress,
+			"BUTLER_EXECUTION_BUDGET_POLICY_JSON=" + string(policyJSON),
 			"BUTLER_POSTGRES_URL=" + dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_TOOL_REGISTRY_PATH=/src/configs/tools.json", "BUTLER_ACTION_CONTEXT_URL=" + core.URL + "/internal/action-context",
 			"BUTLER_ACTION_AUTHORITY_TOKEN_FILE=" + coreFile, "BUTLER_OWNER_CONTROL_OWNER_ID=" + f.f.parent.OwnerID, "BUTLER_SKILLS_ENABLED=true", "BUTLER_CONVERTERS_ENABLED=true",
 			"BUTLER_DELEGATION_ENABLED=true", "BUTLER_DELEGATION_CONTROL_URL=" + core.URL + "/internal/delegation", "BUTLER_CONVERTER_DELEGATION_ENABLED=true", "BUTLER_CONVERTER_DELEGATION_CONTROL_URL=" + core.URL + "/internal/converter-delegation",
@@ -484,7 +494,11 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		}
 	}
 	wait := func(check func() bool, label string) { waitConverterWorkerFor(t, waitTimeout, check, label) }
-	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	var logWriter io.Writer = io.Discard
+	if os.Getenv("BUTLER_CONVERTER_LOCAL_DIAGNOSTICS") == "1" {
+		logWriter = converterLocalDiagnosticWriter{t}
+	}
+	log := slog.New(slog.NewTextHandler(logWriter, nil))
 	sessions := session.NewPostgresRepository(f.f.pool)
 	runs := run.NewService(run.NewPostgresRepository(f.f.pool), log)
 	inputs := durableinput.NewStore(f.f.pool)
@@ -535,7 +549,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		Tasks: tracedTasks, Checkpoints: inputs, Budgets: f.f.budgets, OwnerGoals: f.goals, Completion: finalizer, Tools: client, ActionAuthorizer: client, ToolCatalog: client,
 		MemorySources: memorySources, DelegationContexts: delegatedContextReader{f.f.sources, manager}, ConverterContinuations: continuations,
 		InputSourcePreparation: func(ctx context.Context, event ingress.InputEvent) (ingress.InputEvent, error) {
-			if f.initialInputID == "" {
+			if f.initialInputID == "" && f.modelConfig == nil {
 				return event, nil
 			}
 			token, ok := ownership.TokenFromContext(ctx)
@@ -605,7 +619,11 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		t.Helper()
 		id := "converter-owner-" + phase
 		actor := owneridentity.WithActor(f.f.ctx, owneridentity.Actor{OwnerID: f.f.parent.OwnerID, SessionKey: f.f.parent.SessionKey, Channel: "web", DeliveryID: id})
-		event, e := ingress.NormalizeEvent(ingress.NormalizeRequest{EventID: id, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: f.f.parent.SessionKey, Source: "web", DeliveryID: id, Payload: map[string]any{"text": "converter-worker:" + phase, "task_id": f.f.parent.TaskID}})
+		text := "converter-worker:" + phase
+		if phase == "admit" && f.admissionInput != "" {
+			text = f.admissionInput
+		}
+		event, e := ingress.NormalizeEvent(ingress.NormalizeRequest{EventID: id, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: f.f.parent.SessionKey, Source: "web", DeliveryID: id, Payload: map[string]any{"text": text, "task_id": f.f.parent.TaskID}})
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -753,6 +771,8 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		if err := releaseChainV12CheckInventory(f.f.ctx, f, childID); err != nil {
 			t.Fatal("real Broker journal lacks exact effects and budgeted project reads")
 		}
+	} else if hooks != nil && hooks.verifyActions != nil {
+		hooks.verifyActions(t, f, childID)
 	} else {
 		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2)) AND e.state='effect_confirmed'`, f.f.parent.TaskID, childID).Scan(&confirmed) != nil || confirmed != expectedActions {
 			t.Fatal("real Broker journal lost ordinary exact actions", confirmed)
@@ -780,7 +800,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM execution_model_attempts WHERE run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2))`, f.f.parent.TaskID, childID).Scan(&modelAttempts) != nil || (f.modelConfig == nil && modelAttempts != expectedTurns) || modelAttempts <= 0 {
 			t.Fatal("automatic model admission lost/duplicated bounded turns", modelAttempts)
 		}
-		t.Logf("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary workers/two055 internal continuations; initial_source=%s model_admissions=%d scripted=%t semantic_auto_verification=false", initialSource, modelAttempts, f.modelConfig == nil)
+		t.Logf("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary workers/two055 internal continuations; initial_source=%s model_admissions=%d generic_factory=%t semantic_auto_verification=false", initialSource, modelAttempts, f.modelConfig != nil)
 	} else {
 		t.Log("PASS: actual production Broker and network-none converter, ordinary parent/child workers, exact three child tools, immutable final/report/054, parent collect/check/trial/activation and original conversion; explicit owner continuations, native calls 0, both semantic tasks unverified")
 	}

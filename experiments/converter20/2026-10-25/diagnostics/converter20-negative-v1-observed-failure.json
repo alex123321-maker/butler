@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "native_calls": 0,
+  "test": "TestGeneratedConverterMigrationRollbackGuardsIntegration",
+  "elapsed_seconds": 1.93,
+  "observed_message": "empty converter rollback ERROR: cannot drop desired object(s) because other objects depend on them (SQLSTATE 2BP01)",
+  "package_elapsed_seconds": 81.778,
+  "other_top_level_tests_passed": 10,
+  "provenance": "Exact failure fields retained from the operator tool read of the first JSON report. This is a diagnostic excerpt, not the original complete report. The offline helper reused that report path in the corrected run, so the first full JSON is unavailable.",
+  "helper_limitation": "The first shell helper lacked fail-fast inside its child shell and printed a misleading final pass line. The JSON failure was detected before any native inference. The child shell was corrected to set -eu; no failed test is counted as passed.",
+  "fix": "The empty v52 down/up check now starts at DatabaseAtVersion(52); current-schema retained-history denial separately requires SQLSTATE P0001 and unchanged version history."
+}

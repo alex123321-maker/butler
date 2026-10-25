@@ -1,0 +1,92 @@
+{
+  "window": "issue20-converter-local-native-20261025f",
+  "actual_native_calls": 15,
+  "known_input_tokens": 159774.0,
+  "known_output_tokens": 4151.0,
+  "known_thinking_tokens": 29713.0,
+  "known_total_tokens": 193638.0,
+  "missing_total_tokens": 0,
+  "missing_thinking_tokens": 0,
+  "kernel_admissions": 15,
+  "kernel_unobserved_attempts": 0,
+  "cumulative_native_calls": 65,
+  "cumulative_known_total_tokens": 733215.0,
+  "tool_calls": 11,
+  "confirmed_effects": 11,
+  "original_conversion_count": 1,
+  "authoritative_finals": 4,
+  "unverified_finals": 4,
+  "exact_original_output_sources": [
+    {
+      "source_id": "source_f5835493817fdb2e495f1e8b0e6c855d0dca7791",
+      "revision": 1,
+      "content_hash": "59b79fd6a54c613372e6514f146c8131807f087fa506bb7798c7691b86d59d3f"
+    }
+  ],
+  "tool_names": [
+    "converters.discover",
+    "task.delegate_converter",
+    "converters.discover",
+    "converters.develop",
+    "converters.test",
+    "converters.test",
+    "converters.collect",
+    "converters.trial",
+    "converters.activate",
+    "converter.developer-inventory.convert",
+    "converters.trial"
+  ],
+  "starts": [
+    {
+      "n": 1,
+      "tools": [
+        "converters.activate",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 4,
+      "tools": [
+        "converters.develop",
+        "converters.discover",
+        "converters.test"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 8,
+      "tools": [
+        "converters.activate",
+        "converters.collect",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 14,
+      "tools": [
+        "converter.developer-inventory.convert",
+        "converters.activate",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    }
+  ],
+  "currency_and_subscription_quota_cost": "unknown"
+}

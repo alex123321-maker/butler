@@ -1,5 +1,11 @@
 # Butler — Memory Model Specification
 
+Migration 103 changes only the query plan of summary currentness checks. A STABLE
+PL/pgSQL function checks empty summary metadata in the current statement snapshot;
+otherwise it evaluates the original recursive roots, transcript heads, dependency
+sets and original-source metadata. No accepted fact or authority result is cached,
+and correction, deletion, privacy and revision fences remain authoritative.
+
 New epoch1 explicit taskless requests use two recent completed published
 exchanges as historical reference plus all current-run observations. Unfinished
 old requests/internal finals/old tool results are excluded without deleting

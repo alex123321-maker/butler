@@ -1,0 +1,131 @@
+# Local converter acceptance evidence
+
+This directory contains only synthetic task data and fixed safe diagnostics.
+Credentials, encrypted settings, keys and full private database dumps are excluded.
+The evidence does not qualify a working deployment, real channel delivery, issue33
+release-chain windows or general autonomous code generation. The implemented class
+is the bounded declarative `delimited_json_v1` converter.
+
+`native-a/` is the original failed actual-provider run, not a passing reference:
+producer `ab9a1844450a9057ca11b15dfc8c2918bb07d062`, app binary
+`cce8246dc56dbf00440ba0caf72ae8aa3e4afd4073f4288413eb2d8752b86313`.
+Eight native calls used82953 known tokens:68587 input,1342 output,13024 thinking.
+All eight reached the response stream; all usage is known. A ninth kernel model
+attempt stopped before native admission at `memory_source_check_timeout`; its
+UNKNOWN and reservation remain in `execution_model_attempts.jsonl` and budget
+exports. Do not treat it as a ninth HTTP call or assign it zero expense.
+
+The task created, independently tested and collected a child converter, then
+stopped before trial, activation or original conversion. The stop was around119
+seconds after execution began; `run.log` includes315.72 seconds of total test
+lifetime because the operator retained and exported the failed schema afterwards.
+Only the cleanup DROP was cancelled; no execution/source/authority query changed.
+`converter_local_native_windows.jsonl` records A closed; it cannot be replayed.
+
+The16 additional product tables were initially exported with psql COPY text
+escaping. Those exact original bytes remain in `native-a/extra-copyraw/*.copy`;
+they are not JSONL. Their adjacent `.jsonl` files were re-exported with unaligned
+tuple-only SELECT from the retained original failed schema. No product facts were
+changed. All exported JSONL rows parse successfully; COPY escape sequences are never
+treated as literal source bodies.
+
+`diagnostics/` contains the selected deterministic actual-process, PG policy,
+runtime isolation and copied-data query benchmark evidence. Race-test JSON records
+distinguish top-level/subtests, failures and skips. The first negative policy run
+found an invalid rollback test against later dependent schemas; the repaired test
+starts at migration052 and separately preserves current-schema history denial.
+Its complete first failed JSON was overwritten by the rerun. The observed error
+excerpt explicitly records this limitation; only the fresh v2 full JSON is complete.
+
+The query benchmark uses a separate seven-table projection of actual A data and
+12 explicit semantic variants. Its100 varying-array calls measured587.214ms for
+the original predicate and0.766ms for the candidate. These are query execution
+times on copied data, not end-to-end task timings or universal speedup claims.
+The full original recursive predicate is retained for nonempty summary metadata.
+
+`native-b/` is another failed actual-provider run:11 calls/116694 known tokens,
+all11 kernel admissions observed. The summary/source timeout did not recur.
+Parent collection, fixed tests, finite trial and activation succeeded; original
+conversion did not. Eleven model plus nine tool reservations exhausted the exact
+2400000ms task/mandate/day allowance. The budget stop is correct; elapsed time
+is197.79s, not2400s. The matching JSON in a trial output is not original conversion.
+B's complete private schema dump was captured before normal cleanup.
+
+The prospective C protocol separately covers both conservative model and tool
+quotes. A real-PG regression reproduces B's stop and prohibits changing an old
+budget before admitting the full14-model/10-tool inventory under a new scope.
+C requires both closed ledgers:19 actual calls/199647 known tokens plus A's one
+separate kernel UNKNOWN. No history or spent allowance is reset. Monetary and
+subscription quota cost is unavailable.
+
+`native-c/` failed after activation during a long concluding native stream:
+12 HTTP entries, at least119510 known tokens from11 entries, one cancelled stream
+with unavailable usage and one unobserved kernel attempt. It has9 effects and no
+original converter usage. Total A+B+C:31 actual calls, at least319157 known
+tokens, one unavailable native usage plus A's separate pre-native kernel UNKNOWN.
+No success or zero expense is inferred. The source timeout recurring after
+migration103 means that optimization alone is insufficient. A complete private
+schema dump was saved before normal cleanup; the original negative evidence is
+preserved while a zero-inference streaming reproduction is investigated.
+
+The exact cancelled C statement is retained in
+`diagnostics/native-c-cancelled-query.log`. The temporal query benchmark reads A's
+unchanged sources from a separate namespace:100 run checks,542.142ms original
+versus8.095ms candidate; no end-to-end speedup is inferred. Migration104 has14
+actual-PG/race temporal passes,0 skips/failures, including old/new predicate
+equivalence, invalid JSON rejection, metadata correction and down/up.
+
+`streaming-a.log` is a failed fixture:200 blocking delta sends overran the120s
+model deadline,163.42s total. It is not a reproduced two-second source timeout.
+`streaming-b.log` is its corrected60-second wall-timer baseline on migration103:
+125.39s total,30 deltas,95 source checks totaling75507ms/max1251ms, exact original
+JSON and full workflow passed. A1ms authority observer cancellation during final
+worker teardown remains in the raw diagnostics; source failures were0. These are
+zero-inference actual-process tests, separate from native acceptance.
+
+`streaming-c-integrated.log` is the migration104 + current-main/PR155 gate:
+126.40s,29 delivered deltas,95 source proofs totaling76268ms/max1379ms and no
+failed diagnostic checks. There is no measured end-to-end improvement over B.
+The temporal run predicate itself fell to100.092ms across935 calls. The fresh
+occupied/saturated pool and conservative-budget checks are retained separately.
+Broker was rebuilt from the integrated source; its hash is in the build log.
+The prospective D protocol retains all31 old entries/at least319157 known tokens
+and all unknown usage; no previous task/window budget or result is changed.
+
+`native-d/` retains the original Go FAIL at the deterministic10-effect assertion:
+actual11 effects include two allowed trial slots. The original application and
+all four unverified finals existed, with one owner input/two continuations.
+All15 native/kernel admissions were observed:186253 total tokens
+(154094 input,3923 output,28236 thinking). Source-check diagnostics report778
+checks,305481ms total/max1282ms and no failed checks. Its exact original JSON's
+raw UTF-8 SHA256 isaaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade.
+The original failed test remains failed; no final text grants owner verification.
+
+The corrected prospective E oracle validates the mandatory role/action inventory,
+one original application and the actual immutable trial allowance, rather than a
+total that accidentally required one trial. The two-trial actual-process regression
+passed57.86s with0 native calls; denied-slot/duplicate/role negatives are retained.
+All46 prior calls/at least505410 known tokens plus old unknowns carry to E.
+
+`native-e/` failed before child discovery dispatch: the native proposal used the
+developer-contract reference instead of the Need reference. Exact preparation
+denied; no child effect/package/trial/activation/original conversion occurred.
+All4 entries have usage:34167 tokens (27156 input,904 output,6107 thinking).
+Source diagnostics:244 checks,9596ms total/max103ms, no failed source checks.
+The prospective F adds only immutable-selection DATA role labels for these two
+same-titled references. The exact-child-isolation PG/race regression passed6.02s;
+both selected roots and the original-document denial remain. All50 prior calls/
+at least539577 known tokens and both kinds of unknown remain in the ledger.
+
+`native-f/` is the complete prospective PASS (498.30s), produced by
+`faea6c5763a7e5f432fe995f5578f983959efa23`. All15 actual native/kernel entries
+have usage:193638 tokens (159774 input,4151 output,29713 thinking). Its11
+confirmed effects include2/2 permitted trials and exactly one ordinary original
+application. Four authoritative finals remain unverified, with parent/child
+semantic tasks active, one owner input and two automatic continuations.
+The independent original-output SHA256 is
+`aaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade`.
+Source diagnostics:1031 checks,338916ms total/max1144ms, no failed checks.
+All A..F retain65 actual calls/at least733215 known tokens; C native usage and
+the two old kernel observations remain unavailable. No cash cost is inferred.
+See [final report](../../../../docs/testing/converter20-local-results-2026-10-25.md).

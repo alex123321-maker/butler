@@ -8,6 +8,12 @@ repeat a completed installation sequence. Activation readiness does not verify
 the original task and grants no permission beyond the current Broker policy.
 # Bounded generated converter tools
 
+The child context labels the already selected Need as `reference_role:
+selected_input` and its developer contract as `reference_role:
+delegation_contract`. Labels derive from the current immutable contract refs,
+not source title/body or model claims. Both remain DATA; no new source, body or
+tool permission is selected. Tool contracts/hashes and role authority are unchanged.
+
 This specification defines the first self-development class for issue 20:
 `delimited_json_v1`. Its Go developer produces an immutable declarative program
 that converts strict CSV, TSV, semicolon or pipe-delimited records into typed JSON

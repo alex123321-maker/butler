@@ -27,6 +27,7 @@ type converterWorkerFaultHooks struct {
 	after         func(*testing.T, *developerFixture, *converterWorkerProvider)
 	providerSetup func(*testing.T, *developerFixture, *converterWorkerProvider)
 	terminal      func(*testing.T, *developerFixture, *converterWorkerProvider, func())
+	verifyActions func(*testing.T, *developerFixture, string)
 }
 
 // This is the actual converter workflow's result/delivery tail, not the complete

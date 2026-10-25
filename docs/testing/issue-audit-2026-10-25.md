@@ -7,7 +7,7 @@ new provider inference, phone changes, GPU rental or deferred model experiment.
 Another active agent owns the research-recovery worktree/PR150; its changes and
 the primary checkout's untracked `prototypes/` were preserved.
 
-Final outcome: issue106 closed after PR151 merged as
+Initial audit outcome: issue106 closed after PR151 merged as
 `c8e08bfc17bc37905341f92e93bbd9271c05e7af`;14 issues remain open. Validation was
 local-only:35 top-level Go/race tests and14 Chromium cases passed, plus scoped
 vet, typecheck and lint. GitHub Actions and production rollout were not run.
@@ -39,3 +39,31 @@ Owning sources used for the narrow decisions include
 `docs/architecture/russian-voice.md`,
 `docs/testing/issue-57-android.md`, `docs/testing/issue-57-attention.md`,
 the communication roadmap, the issue bodies/comments and the actual current code.
+
+## Authorized local follow-up
+
+The owner authorized continued local implementation, unrestricted subscription
+inference and a new local Gemini login. This supersedes the initial no-new-
+inference boundary above; the lab/working deployment remains untouched.
+
+- Issue140 closed through PR152 (`f3e87cec0ccfd9b824563d6f594e8268efbca5ea`)
+  within the separately approved current-hardware/self-labelled scope. See
+  [the closure report](emoji140-closure-2026-10-25.md); no original BF16 or
+  independent blind/OCR qualification is inferred.
+- Issue97 closed through PR153 (`7b113de8f19ce4ddc95e34fc457e3dbab232cb07`).
+  The [local research report](effort-research-results-2026-10-25.md) retains
+  all spending/unknowns and the synthetic Low/High and freshness results.
+  The working High default remains unchanged.
+- Issue20's bounded converter acceptance now passed on the actual local High
+  provider/process path. [Final evidence](converter20-local-results-2026-10-25.md)
+  maps every issue criterion; PR154 contains the fixes and raw A..F windows.
+  This qualifies declarative converters, not arbitrary executable generation,
+  kernel self-update, semantic owner verification or production rollout.
+- The owner explicitly reconfirmed that issues27/28 remain deferred.
+- Issue147/PR150/PR155 belongs to the other agent. Its work is integrated where
+  needed but is not claimed as this audit's completion.
+
+The original table is the initial snapshot, not the final current issue state.
+All remaining gates retain their distinctions: device observations, native
+release/owner bindings, protected release authority and independent quality
+acceptance cannot be inferred from the bounded synthetic results above.

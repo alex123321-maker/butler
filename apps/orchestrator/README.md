@@ -37,6 +37,11 @@ replays unknown sends. New binding versions do not adopt old backlog. Logging
 observations are not channel deliveries. This does not publish model finals or
 change action authority, task completion or budgets.
 
+Delegated DATA frames retain a `reference_role` from the current immutable
+selection: `delegation_contract` versus `selected_input`. This distinguishes
+same-titled converter contract and Need references while preserving their exact
+private bodies, roots, permissions and DATA status; it adds no authority.
+
 Credential vault support adds a protected owner endpoint, six-digit PIN/session
 controls and durable `credential_interaction` waits. Secret form bodies bypass
 ordinary ingress/transcripts. Core resumes safe request metadata under the live
@@ -89,6 +94,18 @@ fail-closed authority rules remain mandatory. The live local-model watchdog also
 uses this reserve at the unchanged250ms/200ms bounds, with rollback-only source
 observations and safe cancellation causes. Admission/result acceptance retain
 business transactions and immutable budget history. Both pools close with Core.
+Converter-participating source checks use business capacity: returned-package access
+can bind selected source pins and repeat lifecycle checks. They cannot borrow
+the one-connection ownership reserve; current authority and source proofs remain
+mandatory. Unrelated token-only checks retain the reserve when business capacity
+is saturated; current PG classification selects capacity, never authority.
+`TestConverterCompoundSourceProofDoesNotBorrowAuthorityReserveIntegration`
+checks this with the reserve occupied. The explicitly enabled
+`TestConverterDeveloperGenericFactoryLocalContainerE2E` gives the local scripted
+process fixture a finite three-minute lifetime with20-second model quotes,
+without changing production proof deadlines or execution budgets. It checks the
+same generic factory and current source/lineage entry path as the native fixture;
+its planner is scripted and performs no native inference.
 
 An independent taskless owner result may cross the loop gate after an older
 local message/widget uncertainty was explicitly abandoned through failure

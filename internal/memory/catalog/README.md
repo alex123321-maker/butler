@@ -1,5 +1,16 @@
 # Memory source catalog
 
+Migration 103 keeps the summary currentness predicate in a STABLE PL/pgSQL
+function so PostgreSQL can retain its query plan. An empty summary metadata
+table makes the original four NOT EXISTS clauses true in the current statement
+snapshot; otherwise the complete recursive predicate runs unchanged. This caches
+no source, grant, revision or authority decision between calls.
+
+Migration104 applies the same plan-retention approach to temporal pin/source/run
+predicates, with exact empty/null pin handling and the complete nonempty clauses.
+Accepted-head, correction/deletion, knowledge-time and freshness fences still use
+current state. Invalid JSON recordsets retain their original error.
+
 `AccessTx` expands and locks the complete sorted source closure, then checks
 inherited parent revisions in one recursive query over all original roots. The
 closure is expanded again after lock waits; source ownership, status, hash,

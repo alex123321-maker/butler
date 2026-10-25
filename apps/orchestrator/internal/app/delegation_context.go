@@ -50,7 +50,13 @@ func (a delegatedContextReader) LoadDelegatedContext(ctx context.Context, runID 
 			kind = content.SubagentOutput
 		}
 		d.SourceRefs = append(d.SourceRefs, src.ID)
-		d.Items = append(d.Items, content.Data(map[string]any{"source_id": src.ID, "revision": src.Revision, "access_revision": src.AccessRevision, "content_hash": src.Hash, "title": src.Title, "body": src.Body}, content.Origin{Kind: kind, Sensitivity: content.Private, SourceRefs: []string{src.ID}, ParentRefs: parents}))
+		role := "selected_input"
+		if sourceReference(src) == selected.Contract.ContractSource {
+			role = "delegation_contract"
+		}
+		// Role describes the immutable selected reference, not body/title prose.
+		// It changes neither the selected roots nor any tool/source permission.
+		d.Items = append(d.Items, content.Data(map[string]any{"source_id": src.ID, "reference_role": role, "revision": src.Revision, "access_revision": src.AccessRevision, "content_hash": src.Hash, "title": src.Title, "body": src.Body}, content.Origin{Kind: kind, Sensitivity: content.Private, SourceRefs: []string{src.ID}, ParentRefs: parents}))
 	}
 	return d, nil
 }

@@ -21,9 +21,10 @@ import (
 // Test-only, failure-only, context-local observations. None of these values is
 // authority, a recovered source proof, or permission to retry a failed check.
 type releaseChainSourceObserver struct {
-	mu      sync.Mutex
-	failed  []releaseChainSourceFailure
-	dropped int
+	mu         sync.Mutex
+	failed     []releaseChainSourceFailure
+	dropped    int
+	onComplete func(string, time.Duration)
 }
 
 type releaseChainSourcePoolStats struct {
@@ -118,6 +119,9 @@ func (o *releaseChainSourceObserver) observe(ctx context.Context, pool *pgxpool.
 		span.r.TimeLeft = &n
 	}
 	err := call(context.WithValue(ctx, releaseChainSourceSpanKey{}, span))
+	if o.onComplete != nil {
+		o.onComplete(role, time.Since(span.r.Started))
+	}
 	if err == nil {
 		return nil
 	}
@@ -186,7 +190,7 @@ func (o *releaseChainSourceObserver) TraceAcquireEnd(ctx context.Context, _ *pgx
 func releaseChainSourceQueryFamily(sql string) string {
 	// SQL and Args never enter the record. Only known public template families
 	// receive a digest; arbitrary statements are represented as other_query.
-	for _, name := range []string{"memory_restore_state", "memory_deletions", "session_ownership", "butler_memory_check_run_sources", "memory_run_sources", "memory_sources", "task_authority_bindings", "action_mandates", "owner_goals", "owner_purpose_policies", "converter_", "task_delegations", "transcript_", "tasks", "runs"} {
+	for _, name := range []string{"memory_restore_state", "memory_deletions", "session_ownership", "butler_memory_check_run_sources", "butler_memory_temporal_", "butler_memory_summary_", "memory_run_sources", "memory_sources", "task_authority_bindings", "action_mandates", "owner_goals", "owner_purpose_policies", "converter_", "task_delegations", "transcript_", "tasks", "runs"} {
 		if strings.Contains(sql, name) {
 			return name
 		}

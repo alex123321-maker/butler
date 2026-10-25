@@ -1,0 +1,70 @@
+{
+  "window": "issue20-converter-local-native-20261025b",
+  "actual_native_calls": 11,
+  "known_input_tokens": 98503.0,
+  "known_output_tokens": 1814.0,
+  "known_thinking_tokens": 16377.0,
+  "known_total_tokens": 116694.0,
+  "missing_total_tokens": 0,
+  "missing_thinking_tokens": 0,
+  "kernel_admissions": 11,
+  "kernel_unobserved_attempts": 0,
+  "cumulative_native_calls": 19,
+  "cumulative_known_total_tokens": 199647.0,
+  "tool_calls": 9,
+  "confirmed_effects": 9,
+  "authoritative_finals": 2,
+  "unverified_finals": 2,
+  "tool_names": [
+    "converters.discover",
+    "task.delegate_converter",
+    "converters.discover",
+    "converters.develop",
+    "converters.test",
+    "converters.test",
+    "converters.collect",
+    "converters.trial",
+    "converters.activate"
+  ],
+  "starts": [
+    {
+      "n": 1,
+      "tools": [
+        "converters.activate",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 4,
+      "tools": [
+        "converters.develop",
+        "converters.discover",
+        "converters.test"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 8,
+      "tools": [
+        "converters.activate",
+        "converters.collect",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    }
+  ],
+  "currency_and_subscription_quota_cost": "unknown",
+  "matching_trial_output_is_not_original_conversion": true,
+  "original_conversion_count": 0
+}
