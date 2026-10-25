@@ -1,3 +1,12 @@
+Ordinary owner requests carry model-visible `current_request` DATA with the
+owning run/event refs and question phase. Historical messages retain their full
+sanitized text and provenance in envelopes identifying the originating run and
+message kind. A canonical answer changes only the owning question phase after
+the existing interaction checks; payload fields and old answers cannot select it.
+Recovery retains the original owner request, fresh tool contracts and normal
+authority/budget checks. This extends PR150's existing exchange selection without
+clearing history or changing its epoch policy. See issue147's native report.
+
 Explicit owner profiles with migration097 also deliver fixed kernel execution
 
 An admitted explicit owner request receives the already permitted canonical

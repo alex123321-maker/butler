@@ -168,6 +168,11 @@ func TestDelegationBrokerHarness(t *testing.T) {
 		t.Fatal(err)
 	}
 	if os.Getenv("BUTLER_COMMUNICATION_HARNESS") == "1" {
+		if os.Getenv("BUTLER_CURRENT_REQUEST_NATIVE_LAB") == "1" {
+			if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.widget")}); err != nil {
+				t.Fatal(err)
+			}
+		}
 		if os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
 			if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{communicationcontrol.Contract("communication.photo"), communicationcontrol.Contract("communication.report")}); err != nil {
 				t.Fatal(err)

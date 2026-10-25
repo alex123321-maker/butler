@@ -271,11 +271,12 @@ type DeliveryEvent struct {
 var errLeaseRenewalFailed = errors.New("lease renewal failed")
 
 type preparedRun struct {
-	AdaptivePlan         *adaptive.Plan      `json:"adaptive_plan,omitempty"`
-	SourceInputEvent     *ingress.InputEvent `json:"source_input_event,omitempty"`
-	SourceDataRefs       []string            `json:"source_data_refs,omitempty"`
-	AttemptSourceRefs    []string            `json:"attempt_source_refs,omitempty"`
-	DelegatedTaskID      string              `json:"delegated_task_id,omitempty"`
+	CurrentRequest       *currentRequestContext `json:"current_request,omitempty"`
+	AdaptivePlan         *adaptive.Plan         `json:"adaptive_plan,omitempty"`
+	SourceInputEvent     *ingress.InputEvent    `json:"source_input_event,omitempty"`
+	SourceDataRefs       []string               `json:"source_data_refs,omitempty"`
+	AttemptSourceRefs    []string               `json:"attempt_source_refs,omitempty"`
+	DelegatedTaskID      string                 `json:"delegated_task_id,omitempty"`
 	CurrentRunID         string
 	InputAlreadyRecorded bool
 	Task                 *task.Record

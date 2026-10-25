@@ -6,6 +6,20 @@ inactive blocked Input/run attempts with failure, retains unknown effects and
 all charges, and lets new requests proceed under receiving isolation guards.
 It does not replay actions, complete Tasks or replace legitimate owner waits.
 
+Ordinary admitted owner preparation records a `current_request` context marker
+with the owning run and input-event refs. The initial phase is `owner_request`;
+equal historical wording is not proof that a new question stage is complete.
+After validated canonical communication response/continuation, phase becomes
+`answered_question` with that exact interaction ref. Question and answer bytes
+remain DATA, not instructions or action permission. Durable preparation preserves
+this marker across provider reconstruction. Credential waits and scheduled or
+delegated source work do not acquire a preference-answer phase from this marker.
+Historical transcript presentation now includes original run/message-kind refs
+inside model-visible DATA because provider adapters need not serialize arbitrary
+InputItem metadata. Text, provenance, source guards, summary coverage, selected
+exchange policy, budgets and durable transcript rows remain unchanged. The extra
+context is charged by the existing complete-context allowance.
+
 For epoch1 explicit taskless requests, Input identity defines the finite
 research/budget boundary while Session Service retains ordering/ownership.
 Only two recent completed published exchanges and current-run history enter
