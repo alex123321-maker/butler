@@ -84,7 +84,6 @@ func (developerEnvironment) Discover(context.Context, string, generatedtools.Nee
 }
 
 type developerFixture struct {
-	workerWaitTimeout              time.Duration
 	f                              *delegationGuardFixture
 	goals                          *goal.Manager
 	goal                           actionauth.GoalPolicy

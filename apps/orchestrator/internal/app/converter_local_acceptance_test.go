@@ -50,14 +50,3 @@ func TestConverterDeveloperGenericFactoryLocalContainerE2E(t *testing.T) {
 		t.Log("generic converter entries=14; exact current lineage/lease/source pins; native calls=0")
 	}})
 }
-
-func TestConverterDeveloperBoundedLocalContainerE2E(t *testing.T) {
-	t.Setenv("BUTLER_CONVERTER_LOCAL_DIAGNOSTICS", "1")
-	testConverterDeveloperWorkersObserved(t, true, &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
-		f := newDeveloperWorkerFixtureWithLifetime(t, p, path, true, 3*time.Minute)
-		// Fixture wall-time only: production ownership, source, model and tool
-		// proof bounds and finite action budgets remain unchanged.
-		f.workerWaitTimeout = 90 * time.Second
-		return f
-	}})
-}

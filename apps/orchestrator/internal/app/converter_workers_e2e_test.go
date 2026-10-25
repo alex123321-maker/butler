@@ -468,12 +468,6 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if f.initialInputID != "" {
 		waitTimeout = 60 * time.Second
 	}
-	if f.workerWaitTimeout != 0 {
-		if f.workerWaitTimeout < 0 || f.workerWaitTimeout > 5*time.Minute {
-			t.Fatal("bounded local worker wait required")
-		}
-		waitTimeout = f.workerWaitTimeout
-	}
 	if f.modelConfig != nil {
 		modelProvider, err = f.modelConfig.Factory(f.f.ctx, f.f.pool, f.f.parent.TaskID)
 		if err != nil || modelProvider == nil || modelProvider.Name() != f.modelConfig.Provider {
@@ -688,7 +682,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if automatic {
 		automaticStarted := time.Now()
 		automaticTimeout := 30 * time.Second
-		if f.modelConfig != nil || f.workerWaitTimeout != 0 {
+		if f.modelConfig != nil {
 			automaticTimeout = waitTimeout
 		}
 		waitConverterWorkerFor(t, automaticTimeout, func() bool {
@@ -698,7 +692,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 			if sweepError != nil {
 				t.Fatal("automatic fresh catalog admission", sweepError)
 			}
-			if f.modelConfig == nil && f.workerWaitTimeout == 0 && time.Since(automaticStarted) > 25*time.Second {
+			if f.modelConfig == nil && time.Since(automaticStarted) > 25*time.Second {
 				if diagnostic, e := converterWorkerStructuralState(f.f.ctx, f.f.pool, f.f.parent.TaskID, f.f.budgets.Policy); e == nil {
 					t.Logf("bounded_automatic_structural_diagnostic=%s", diagnostic)
 				} else {
@@ -799,7 +793,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM execution_model_attempts WHERE run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2))`, f.f.parent.TaskID, childID).Scan(&modelAttempts) != nil || (f.modelConfig == nil && modelAttempts != expectedTurns) || modelAttempts <= 0 {
 			t.Fatal("automatic model admission lost/duplicated bounded turns", modelAttempts)
 		}
-		t.Logf("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary workers/two055 internal continuations; initial_source=%s model_admissions=%d scripted=%t semantic_auto_verification=false", initialSource, modelAttempts, f.modelConfig == nil)
+		t.Logf("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary workers/two055 internal continuations; initial_source=%s model_admissions=%d generic_factory=%t semantic_auto_verification=false", initialSource, modelAttempts, f.modelConfig != nil)
 	} else {
 		t.Log("PASS: actual production Broker and network-none converter, ordinary parent/child workers, exact three child tools, immutable final/report/054, parent collect/check/trial/activation and original conversion; explicit owner continuations, native calls 0, both semantic tasks unverified")
 	}

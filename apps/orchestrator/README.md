@@ -57,9 +57,11 @@ mandatory. Unrelated token-only checks retain the reserve when business capacity
 is saturated; current PG classification selects capacity, never authority.
 `TestConverterCompoundSourceProofDoesNotBorrowAuthorityReserveIntegration`
 checks this with the reserve occupied. The explicitly enabled
-`TestConverterDeveloperBoundedLocalContainerE2E` gives the local scripted process
-fixture a finite three-minute lifetime and90-second worker wait, without changing
-production proof deadlines or execution budgets.
+`TestConverterDeveloperGenericFactoryLocalContainerE2E` gives the local scripted
+process fixture a finite three-minute lifetime with20-second model quotes,
+without changing production proof deadlines or execution budgets. It checks the
+same generic factory and current source/lineage entry path as the native fixture;
+its planner is scripted and performs no native inference.
 
 An independent taskless owner result may cross the loop gate after an older
 local message/widget uncertainty was explicitly abandoned through failure

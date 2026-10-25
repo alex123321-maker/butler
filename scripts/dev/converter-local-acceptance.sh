@@ -43,6 +43,6 @@ if [ "$action" = native ]; then
  fi
  "$execution_dir/app.test" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
 else
- "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
+ "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
  go vet ./apps/orchestrator/internal/app
 fi

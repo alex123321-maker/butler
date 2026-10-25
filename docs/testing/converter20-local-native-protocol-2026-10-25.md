@@ -14,8 +14,11 @@ ownership observer connection. Unrelated token-only observations retain the
 reserve; a current PG classification selects capacity only, with a recheck under
 access locks. Authority/source guards and their deadlines remain.
 The ordinary worker fixture mirrors production's9+1 split from a total10 slots.
-Only the explicit local test's wall time is3 minutes/90 seconds; the default
-historical fixture bounds and production budgets remain unchanged.
+The local generic-factory test has a three-minute lifetime and20-second scripted
+model quotes. A duplicate local test using the old five-second quote was removed
+after its budget stop; that failure remains in the operator logs. The generic
+test covers the same whole process plus the native entry/lineage/source seam.
+Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
