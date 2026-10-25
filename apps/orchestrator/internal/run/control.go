@@ -9,6 +9,21 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// FailStoppedKernelTx only consumes the owning finalizer's durable failure proof.
+// It never resolves effects or changes Task verification.
+func FailStoppedKernelTx(ctx context.Context, tx pgx.Tx, inputID string) error {
+	_, err := tx.Exec(ctx, `WITH previous AS(
+ SELECT r.run_id,r.current_state,f.classification FROM runs r JOIN accepted_inputs i ON i.run_id=r.run_id
+ JOIN input_stopped_attempts f ON f.input_id=i.input_id AND f.run_id=r.run_id AND f.owner_id=i.owner_id AND f.session_key=r.session_key
+ WHERE i.input_id=$1 AND i.status='failed' AND i.claim_id='' AND i.claim_expires_at IS NULL
+ AND r.current_state NOT IN ('completed','failed','cancelled','timed_out') FOR UPDATE OF r
+ ), changed AS(UPDATE runs r SET status='failed',current_state='failed',finished_at=clock_timestamp(),updated_at=clock_timestamp()
+ FROM previous p WHERE r.run_id=p.run_id RETURNING r.run_id,p.current_state,p.classification)
+ INSERT INTO run_state_transitions(run_id,from_state,to_state,triggered_by,metadata_json,transitioned_at)
+ SELECT run_id,current_state,'failed','kernel',jsonb_build_object('kind','stopped_attempt_finalized','input_id',$1::text,'classification',classification,'effect_reconciled',false),clock_timestamp() FROM changed`, inputID)
+	return err
+}
+
 // FailStoppedInputTx joins the authenticated Input failure-close transaction.
 // It produces a failed transition, with no final result or success/effect claim.
 func FailStoppedInputTx(ctx context.Context, tx pgx.Tx, id, inputID string, unknownEffects []string) error {

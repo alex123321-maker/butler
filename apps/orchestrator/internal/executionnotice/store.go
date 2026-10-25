@@ -68,14 +68,17 @@ func New(ctx context.Context, pool *pgxpool.Pool, bindings []Binding) (*Store, e
 // Read only the verified owner ingress of this composition. Durable activation
 // survives restart; installing a new binding/version never adopts old backlog.
 const snapshotsSQL = `SELECT i.input_id,COALESCE(i.run_id,''),i.session_key,i.status,i.checkpoint,
- CASE WHEN i.error_code<>'' THEN i.error_code ELSE COALESCE(i.checkpoint_json->'checkpoint_data'->>'reason','') END,
+ CASE WHEN stopped.classification='uncertain' THEN 'stopped_attempt_uncertain'
+ WHEN stopped.classification='known' AND i.error_code IN ('effect_unknown','external_effect_unknown','stopped_attempt_uncertain') THEN 'execution_stopped'
+ WHEN i.error_code<>'' THEN i.error_code ELSE COALESCE(i.checkpoint_json->'checkpoint_data'->>'reason','') END,
  COALESCE((SELECT a.approval_id FROM approvals a WHERE a.run_id=i.run_id AND a.status='pending' AND a.expires_at>clock_timestamp() ORDER BY a.requested_at DESC LIMIT 1),''),
  EXISTS(SELECT 1 FROM communication_publications p WHERE p.input_id=i.input_id AND p.purpose='result' AND NOT p.privacy_redacted),
- GREATEST(i.updated_at,CASE WHEN predecessor.status IN ('blocked','waiting_for_user') THEN predecessor.updated_at ELSE i.updated_at END),COALESCE(predecessor.status,'')
+ GREATEST(i.updated_at,stopped.checked_at,CASE WHEN predecessor.status IN ('blocked','waiting_for_user') THEN predecessor.updated_at ELSE i.updated_at END),COALESCE(predecessor.status,'')
  FROM accepted_inputs i JOIN sessions ss ON ss.session_key=i.session_key AND ss.user_id=i.owner_id
  JOIN execution_notice_bindings n ON n.owner_id=i.owner_id
  JOIN communication_bindings b ON b.binding_id=n.binding_id AND b.version=n.binding_version AND b.owner_id=n.owner_id
  JOIN communication_bindings origin ON origin.binding_id=i.communication_ingress_json->>'BindingID' AND origin.version::text=i.communication_ingress_json->>'BindingVersion' AND origin.owner_id=i.owner_id AND origin.enabled AND origin.verified
+ LEFT JOIN input_stopped_attempts stopped ON stopped.input_id=i.input_id AND stopped.run_id=i.run_id AND stopped.owner_id=i.owner_id AND stopped.session_key=i.session_key
  LEFT JOIN LATERAL(SELECT h.status,h.updated_at FROM accepted_inputs h WHERE i.status='queued' AND h.session_key=i.session_key AND h.owner_id=i.owner_id AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled') ORDER BY h.session_sequence LIMIT 1) predecessor ON TRUE
  WHERE n.binding_id=$1 AND n.binding_version=$2 AND n.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified
  AND i.communication_ingress_epoch=1 AND i.communication_ingress_json->>'OwnerID'=i.owner_id AND i.accepted_at>=n.activated_at
@@ -137,7 +140,7 @@ func (s *Store) Sweep(ctx context.Context) error {
 				status = "superseded"
 			}
 			_, err = tx.Exec(ctx, `INSERT INTO execution_notices(notice_id,input_id,owner_id,session_key,run_id,binding_id,binding_version,channel,recipient_snapshot,code,reason,approval_ref,status,source_updated_at)
- SELECT $1,$2,$3,$4,NULLIF($5,''),$6,$7,$8,$9,$10,$11,$12,$13,$14 WHERE NOT EXISTS(SELECT 1 FROM (SELECT code,reason,approval_ref FROM execution_notices WHERE input_id=$2 AND binding_id=$6 AND binding_version=$7 ORDER BY sequence DESC LIMIT 1) latest WHERE latest.code=$10 AND latest.reason=$11 AND latest.approval_ref=$12) ON CONFLICT DO NOTHING`, noticeID(x.InputID, b, code, reason, approval, x.UpdatedAt), x.InputID, b.OwnerID, x.SessionKey, x.RunID, b.ID, b.Version, b.Channel, b.Recipient, code, reason, approval, status, x.UpdatedAt)
+ SELECT $1,$2,$3,$4,NULLIF($5,''),$6,$7,$8,$9,$10,$11,$12,$13,$14 WHERE NOT EXISTS(SELECT 1 FROM (SELECT code,reason,approval_ref,status FROM execution_notices WHERE input_id=$2 AND binding_id=$6 AND binding_version=$7 ORDER BY sequence DESC LIMIT 1) latest WHERE (latest.code=$10 OR ($8='telegram' AND latest.status='sent' AND latest.code IN ('blocked','failed') AND $10 IN ('blocked','failed'))) AND latest.reason=$11 AND latest.approval_ref=$12) ON CONFLICT DO NOTHING`, noticeID(x.InputID, b, code, reason, approval, x.UpdatedAt), x.InputID, b.OwnerID, x.SessionKey, x.RunID, b.ID, b.Version, b.Channel, b.Recipient, code, reason, approval, status, x.UpdatedAt)
 			if err != nil {
 				break
 			}

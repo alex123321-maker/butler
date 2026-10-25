@@ -122,6 +122,13 @@ deadline after fresh authority/source/claim proofs. The cancelled attempt stays
 spent; its original worker deadline caps recovery. A second timeout of either
 kind cannot claim a separate retry. See the retry policy for the exact boundary.
 
+Migration102's [stopped-attempt isolation](stopped-input-finalization.md) retains
+uncertainty and spending when a failed attempt releases the session queue. Both
+Core and Broker constrain new writes across the same session/task tree. Only a
+fresh canonical text reply with exact current Input/intent/admission and complete
+isolation proof can use the additional bounded reply exception. Changing Task
+or replaying an equivalent unknown message does not qualify.
+
 Loops normalize root, pinned task/constraints revisions, exact tool/contract and
 canonical arguments across restart. Equivalent numbers/object order compare
 without floating point loss. Typed error categories ignore messages; success

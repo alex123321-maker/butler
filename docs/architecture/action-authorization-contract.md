@@ -1,5 +1,13 @@
 # Exact action authorization
 
+Migration102 [isolates stopped attempts](stopped-input-finalization.md) without
+reconciling effects or acknowledging them for the owner. Both Core and Broker
+deny arbitrary writes across retained session/task uncertainty, including a new
+Task. A fresh canonical text reply needs the exact live Input/intent/admission
+and complete scoped isolation proof; equivalent unknown replies and untracked
+uncertainty deny it. The older owner-acknowledged local-prepare exception remains
+separate and is not minted by kernel finalization.
+
 The receiving Core dispatch verifier recognizes the same canonical mode2/3
 owner reply rule as Broker. It still requires permanently claimed exact action/
 grant/effect identity and then live admission/Input/destination/source guards.

@@ -45,6 +45,7 @@ type Record struct {
 type Store struct {
 	pool               *pgxpool.Pool
 	CommunicationEpoch int
+	StoppedFinalizer   StoppedFinalizer
 }
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }

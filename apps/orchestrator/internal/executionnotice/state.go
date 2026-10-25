@@ -55,7 +55,7 @@ func classify(s snapshot) (code, reason string) {
 		reason = "timeout"
 	case s.ErrorCode == "provider_unavailable" || s.ErrorCode == "transport_connection_error" || s.ErrorCode == "rate_limited" || s.ErrorCode == "model_capacity_unavailable":
 		reason = "model_unavailable"
-	case s.ErrorCode == "effect_unknown":
+	case s.ErrorCode == "effect_unknown", s.ErrorCode == "external_effect_unknown", s.ErrorCode == "stopped_attempt_uncertain":
 		reason = "uncertain_action"
 	case strings.HasPrefix(s.ErrorCode, "memory_source_"):
 		reason = "source_unavailable"

@@ -53,6 +53,13 @@ does not close, skip or retry it. A running predecessor remains ordinary queued
 state. Send authorization recomputes the dependency; unchanged notices deduplicate
 and a cleared/changed blocker invalidates pending warnings.
 
+Migration102 adds [stopped-attempt finalization](stopped-input-finalization.md).
+Inactive attempts end with failure under exact kernel proof while their unknown
+effects remain isolated. New independent questions and proven fresh owner text
+replies can proceed without replaying those actions or minting owner consent.
+Notices expose fixed retained-uncertainty facts, and an already acknowledged
+identical failure is not sent again solely because blocked became failed.
+
 Credential vault control cards are a separate secret-input capability. Existing
 text widget responses must not carry PIN/password/OTP. The two account cards are
 access-existing and create-account, plus a short-lived OTP challenge. Web opens

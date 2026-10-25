@@ -171,6 +171,13 @@ the Catalog. Maintenance verifies durable processing and can resume incomplete
 completed attempts at most three times under the same task budget. See the
 [Android contract](../../docs/architecture/android-companion.md).
 
+The explicit owner composition installs migration102 stopped-attempt cleanup.
+Inactive blocked attempts end with failure under ownership/claim and pending-wait
+checks; unknown effects and charges stay retained under dispatch isolation. New
+questions can proceed without replaying old work. Only exact fresh canonical text
+replies receive the bounded exception; arbitrary writes remain constrained across
+the same session/task tree. See [the contract](../../docs/architecture/stopped-input-finalization.md).
+
 Execution notices explain when a current queued message is held behind an older
 blocked or waiting Input in the same owner's session, including a head accepted
 before notice activation. Only fixed dependency facts are exposed; old content,

@@ -544,6 +544,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		notices := telegramFlow.store.ExecutionNotices
 		executionNoticeWorker = &deliveryoutbox.Worker{Store: notices, Sender: &telegramrich.ExecutionSender{Client: telegramFlow.client, Binding: telegramFlow.binding, Authorize: notices.AuthorizeSend}}
 		inputStore.CommunicationEpoch = 1
+		inputStore.StoppedFinalizer = telegramFlow.store
 	}
 	credentialKernel := credentialInteractions(postgres.Pool())
 	credentialKernel.configureTelegram(telegramFlow)

@@ -1,5 +1,10 @@
 # Execution notices
 
+Migration102 projects retained stopped-attempt uncertainty as a fixed failure
+reason while preserving the Input's original error. A known later verdict never
+claims request success. Telegram suppresses an identical acknowledged failure
+when blocked becomes failed; Web retains the current terminal state.
+
 Migration099 preserves finite transport error codes at the Input worker
 boundary and adds a source-free model-unavailable notice. Provider/private error
 messages never enter that notice. Temporary provider refusal is distinct from

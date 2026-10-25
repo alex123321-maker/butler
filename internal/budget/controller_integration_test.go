@@ -70,6 +70,13 @@ INSERT INTO session_ownership VALUES('session','run','lease',1,clock_timestamp()
 	if err != nil {
 		t.Fatal(err)
 	}
+	stopSchema, err := os.ReadFile(filepath.Join("..", "..", "migrations", "102_stopped_input_finalization.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(stopSchema)); err != nil {
+		t.Fatal(err)
+	}
 	data, err := os.ReadFile(filepath.Join("..", "..", "migrations", "038_owner_goals_mandates.up.sql"))
 	if err != nil {
 		t.Fatal(err)

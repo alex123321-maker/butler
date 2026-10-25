@@ -305,6 +305,29 @@ func TestExecutionNoticeDurableFailureAndRestartIntegration(t *testing.T) {
 	}
 }
 
+func TestExecutionNoticeAutomaticFailureDoesNotRepeatSentFailureIntegration(t *testing.T) {
+	f := setup(t)
+	f.state(t, "blocked", "provider_unavailable")
+	m, err := f.store.Claim(f.ctx, time.Minute)
+	if err != nil || m == nil {
+		t.Fatal(m, err)
+	}
+	if err = f.store.AuthorizeSend(f.ctx, *m); err != nil {
+		t.Fatal(err)
+	}
+	if err = f.store.Finish(f.ctx, *m, deliveryoutbox.Outcome{Status: "sent", ACK: "11"}); err != nil {
+		t.Fatal(err)
+	}
+	f.state(t, "failed", "provider_unavailable")
+	if m, err = f.store.Claim(f.ctx, time.Minute); err != nil || m != nil {
+		t.Fatal("terminalization resent identical failure text", m, err)
+	}
+	items, err := f.store.List(f.actor("owner"), "web")
+	if err != nil || len(items) != 1 || items[0].Code != "failed" {
+		t.Fatal("Web lost current terminal state", items, err)
+	}
+}
+
 func TestExecutionNoticeUnknownAndStaleStateCannotResendIntegration(t *testing.T) {
 	f := setup(t)
 	m, err := f.store.Claim(f.ctx, time.Minute)

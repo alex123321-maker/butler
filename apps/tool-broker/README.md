@@ -1,5 +1,13 @@
 # Tool Broker
 
+Migration102's stopped-attempt isolation is enforced at permanent grant claim
+through the budget controller. Queue release grants no repeat dispatch: new
+writes in the same session/task tree remain denied while uncertainty survives.
+Only separately proved fresh owner text replies can use the bounded exception;
+current claim, sources, targets, contract and all policy checks still apply.
+Deploy Core and Broker together with the schema; see
+[the contract](../../docs/architecture/stopped-input-finalization.md).
+
 Canonical communication replies to the current owner's operator-pinned
 channels are standard capabilities in mode2/3. They require the explicit owning
 admission, exact fixed contract, current Input claim, destination hash and source/

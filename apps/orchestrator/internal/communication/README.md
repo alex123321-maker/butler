@@ -1,5 +1,11 @@
 # Communication kernel (dormant)
 
+The explicit owner composition uses the migration102 stopped-attempt transaction
+collaborator to close an inactive attempt's publication obligation with failure
+and join the owning Run transition. Its audit is kernel failure, never owner
+acknowledgement, effect reconciliation or a delivered model result. Exact proof
+and rollback requirements are in [the contract](../../../../docs/architecture/stopped-input-finalization.md).
+
 Canonical communication replies to the current owner's operator-pinned
 channels are standard capabilities in mode2/3. They require the explicit owning
 admission, exact fixed contract, current Input claim, destination hash and source/

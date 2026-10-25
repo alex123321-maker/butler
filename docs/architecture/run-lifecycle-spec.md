@@ -1,5 +1,11 @@
 # Butler — Run Lifecycle Specification
 
+The explicit owner composition installs migration102's bounded
+[stopped-attempt finalizer](stopped-input-finalization.md). It atomically ends
+inactive blocked Input/run attempts with failure, retains unknown effects and
+all charges, and lets new requests proceed under receiving isolation guards.
+It does not replay actions, complete Tasks or replace legitimate owner waits.
+
 For epoch1 explicit taskless requests, Input identity defines the finite
 research/budget boundary while Session Service retains ordering/ownership.
 Only two recent completed published exchanges and current-run history enter

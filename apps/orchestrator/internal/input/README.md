@@ -1,5 +1,13 @@
 # Durable input
 
+The explicit epoch1 composition installs migration102's kernel-only stopped
+attempt finalizer. A bounded background sweep locks inactive ownership and the
+matching Input/run, preserves legitimate owner waits, then atomically ends a
+stopped attempt with failure through the owning Run/Communication collaborators.
+Unknown effects, receipts and charges remain intact under dispatch isolation;
+cleanup never calls a model/tool or replays the old Input. See
+[the contract](../../../../docs/architecture/stopped-input-finalization.md).
+
 Migration099 preserves finite transport error codes at the Input worker
 boundary and adds a source-free model-unavailable notice. Provider/private error
 messages never enter that notice. Temporary provider refusal is distinct from

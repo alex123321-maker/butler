@@ -8,6 +8,30 @@ import (
 	"testing"
 )
 
+func TestStoppedOwnerReplyCandidateNeedsCanonicalGrant(t *testing.T) {
+	hash, _ := ContractHash(communicationcontrol.Contract("communication.message"))
+	for _, mode := range []string{"valid", "claim_missing", "destination_missing", "changed_contract", "credential", "wrong_tool"} {
+		t.Run(mode, func(t *testing.T) {
+			g := Grant{InputClaimHash: strings.Repeat("a", 64), Binding: ActionBinding{ToolName: "communication.message", Effect: EffectPrepare, Resource: "tool:communication.message", ContractHash: hash, CommunicationDestinationsHash: strings.Repeat("b", 64)}}
+			switch mode {
+			case "claim_missing":
+				g.InputClaimHash = ""
+			case "destination_missing":
+				g.Binding.CommunicationDestinationsHash = ""
+			case "changed_contract":
+				g.Binding.ContractHash = "different"
+			case "credential":
+				g.Binding.CredentialRefs = []CredentialRef{{}}
+			case "wrong_tool":
+				g.Binding.ToolName = "http.request"
+			}
+			if toolBudgetIdentity(g, "effect").OwnerReply != (mode == "valid") {
+				t.Fatal("unsafe reply candidate")
+			}
+		})
+	}
+}
+
 func TestOwnerReplyPreservesApprovalModesDestinationsAndDenyOverrides(t *testing.T) {
 	for _, scenario := range []string{"mode1", "mode2", "mode3", "denied", "new_destination", "changed_contract"} {
 		t.Run(scenario, func(t *testing.T) {

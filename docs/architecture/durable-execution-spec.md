@@ -55,8 +55,12 @@ The durable identity is `(session_key, source, idempotency_key or event_id)`.
 Repeating it with different payload, event type, owner or task is rejected.
 Session-row admission serialization precedes assigning `session_sequence`, so
 an uncommitted earlier input cannot surface behind an already claimed later one.
-Only the oldest unfinished input per session can execute. Waiting or blocked
-heads block later inputs. Across sessions the oldest ready head wins, with
+Only the oldest unfinished input per session can execute. Legitimate waits
+block later inputs. The explicit epoch1 composition uses
+[stopped-attempt finalization](stopped-input-finalization.md) to end inactive
+blocked attempts with failure and retain action uncertainty under dispatch
+guards, freeing the conversation without replay. Legacy blocked heads retain
+their previous policy. Across sessions the oldest ready head wins, with
 `SKIP LOCKED` allowing independent execution. A busy session remains queued and
 does not consume the recovery retry allowance. Queued deadlines remain visible
 even behind a blocked head.
@@ -76,7 +80,8 @@ allowed, including the initial attempt and crash recovery. An owner decision
 queued for continuation does not consume this allowance; a crash after that
 continuation is claimed does. Repeated crashes cannot renew the allowance.
 Receipts expose attempts, deadline, checkpoint and error code. Automatic retries
-never replay an uncertain external action; blocked work requires owner review.
+never replay an uncertain external action; retained unknown effects require
+separate reconciliation, while attempt failure no longer freezes the chat.
 
 Independent claims acquired or renewed at different times also expire at different
 times. Available worker width permits simultaneous eligible sessions but does not

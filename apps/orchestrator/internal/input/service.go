@@ -180,6 +180,27 @@ func firstString(m map[string]any, keys ...string) string {
 
 func (s *Service) Run(ctx context.Context) error {
 	var wg sync.WaitGroup
+	if s.store.StoppedFinalizer != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			ticker := time.NewTicker(time.Second)
+			defer ticker.Stop()
+			for {
+				check, cancel := context.WithTimeout(ctx, 5*time.Second)
+				err := s.store.SweepStopped(check)
+				cancel()
+				if err != nil && ctx.Err() == nil {
+					s.log.Warn("stopped attempt review unavailable")
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+				}
+			}
+		}()
+	}
 	if s.maintenance != nil {
 		wg.Add(1)
 		go func() {
