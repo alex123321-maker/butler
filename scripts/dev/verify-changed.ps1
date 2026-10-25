@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/maintenance/|migrations/105_independent_maintenance[.]|docs/architecture/maintenance-contract[.])" {
+      [void]$specs.Add("docs/architecture/maintenance-contract.md")
+      [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
+      [void]$specs.Add("docs/testing/issue21-local-progress.md")
+      [void]$tests.Add("This PC: test-go.ps1 -Packages ./internal/maintenance with BUTLER_TEST_MEMORY_POSTGRES_URL pointing to a separate maintenance *_test database; go vet ./internal/maintenance. Component signatures and PG guards do not qualify deployment. Require actual independent checker/controller/node, owner permission, compatibility and physical trial/rollback evidence before issue21 closure. No production update.")
+      continue
+    }
     "^(migrations/104_temporal_currentness_plans[.]|internal/memory/catalog/temporal_plan_integration_test[.]go$)" {
       [void]$specs.Add("docs/architecture/memory-temporal.md")
       [void]$tests.Add("This PC: isolated PostgreSQL/race catalog TestTemporal.*Integration, including original-predicate equivalence after empty/nonempty state, metadata change and down/up; then converter-local-acceptance.ps1 -Action Streaming with actual Broker/runtime. No inference; no accepted fact, source or authority cache.")

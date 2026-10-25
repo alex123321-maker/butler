@@ -1,5 +1,12 @@
 # Migrations
 
+`105_independent_maintenance` adds default-stopped maintenance targets and an
+independent immutable profile/source/review/observation/action history. Owner stop
+epochs, one-use attempts and monotonic permission consumption cannot be lowered
+or replayed. It grants no model tool, running profile or deployment access.
+Down refuses nonempty history; executable rollback must preserve newer stops,
+approvals, work and effect records rather than restore an old database.
+
 `104_temporal_currentness_plans` retains query plans for temporal run/source/pin
 proofs. Current-statement empty metadata avoids unnecessary full joins; all
 nonempty predicates are unchanged. Down restores the original functions without
