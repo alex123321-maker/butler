@@ -37,6 +37,11 @@ replays unknown sends. New binding versions do not adopt old backlog. Logging
 observations are not channel deliveries. This does not publish model finals or
 change action authority, task completion or budgets.
 
+Delegated DATA frames retain a `reference_role` from the current immutable
+selection: `delegation_contract` versus `selected_input`. This distinguishes
+same-titled converter contract and Need references while preserving their exact
+private bodies, roots, permissions and DATA status; it adds no authority.
+
 Credential vault support adds a protected owner endpoint, six-digit PIN/session
 controls and durable `credential_interaction` waits. Secret form bodies bypass
 ordinary ingress/transcripts. Core resumes safe request metadata under the live

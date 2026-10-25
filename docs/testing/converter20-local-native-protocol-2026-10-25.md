@@ -22,7 +22,7 @@ Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
-export its manifest. Window `issue20-converter-local-native-20261025e` permits
+export its manifest. Window `issue20-converter-local-native-20261025f` permits
 at most40 admitted provider entries,20 minutes total,120 seconds per call,
 131072 serialized input bytes and8192 generated tokens including thinking.
 The tested native profile is the existing automatic High configuration, without
@@ -153,6 +153,23 @@ relabelled D. It carries46 prior actual calls and at least505410 known tokens,
 C's unavailable native usage, and both unobserved kernel attempts. D must remain
 closed with its original15 entries/186253 tokens. E's40 new entries give an86-entry
 cumulative ceiling. No model/tool/runtime/profile, budget or deadline changes.
+
+E failed54.72s at the child's first discovery proposal: source_ref selected the
+developer contract rather than the Need. Core stopped at exact Broker preparation
+with broker_transport; child dispatch/package/trial/activation/original usage0.
+All4 native/kernel entries have usage:27156 input,904 output,6107 thinking =34167
+tokens. Its244 source checks totaled9596ms/max103ms, with no failed source checks.
+This is not a source-proof, quota or native transport failure. Original task and
+negative records remain. A..E carry50 actual calls/at least539577 known tokens,
+plus the same native/kernel unknowns; no old task/window is replayed.
+
+F prospectively adds only DATA reference-role labels from the immutable selected
+contract: delegation_contract versus selected_input. E's same-titled two sources
+had no such label. No body, source set, permission, tool contract/hash or authority
+changes. The actual-PG/race child isolation test passed6.02s: exactly two labelled
+refs, and original-document access still denies. Targeted vet passed. F must
+retain E closed with4 entries/34167 tokens; its40 new entries give a90-entry
+cumulative ceiling. A single future pass cannot establish general model reliability.
 
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives

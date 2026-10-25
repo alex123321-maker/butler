@@ -340,6 +340,26 @@ func TestConverterDeveloperExactChildIsolationIntegration(t *testing.T) {
 	if _, e = combined.MarkExecuting(worker, child.TaskID); e != nil {
 		t.Fatal("accepted lifecycle", e)
 	}
+	selected, e := (delegatedContextReader{sources: f.f.sources}).LoadDelegatedContext(worker, "converter-child-run")
+	if e != nil || selected == nil || len(selected.Items) != 2 || len(selected.SourceRefs) != 2 {
+		t.Fatal("selected converter reference roles unavailable", e)
+	}
+	roles := map[string]string{}
+	for _, item := range selected.Items {
+		var frame struct {
+			Data struct {
+				ID   string `json:"source_id"`
+				Role string `json:"reference_role"`
+			} `json:"data"`
+		}
+		if json.Unmarshal([]byte(item.Content), &frame) != nil {
+			t.Fatal("invalid DATA frame")
+		}
+		roles[frame.Data.ID] = frame.Data.Role
+	}
+	if roles[f.needRef.ID] != "selected_input" || roles[f.specRef.ID] != "delegation_contract" {
+		t.Fatal("same-titled Need and contract lost their accepted reference roles", roles)
+	}
 	tx, e := f.f.pool.Begin(worker)
 	if e != nil {
 		t.Fatal(e)

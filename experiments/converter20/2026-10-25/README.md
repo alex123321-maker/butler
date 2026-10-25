@@ -106,3 +106,13 @@ one original application and the actual immutable trial allowance, rather than a
 total that accidentally required one trial. The two-trial actual-process regression
 passed57.86s with0 native calls; denied-slot/duplicate/role negatives are retained.
 All46 prior calls/at least505410 known tokens plus old unknowns carry to E.
+
+`native-e/` failed before child discovery dispatch: the native proposal used the
+developer-contract reference instead of the Need reference. Exact preparation
+denied; no child effect/package/trial/activation/original conversion occurred.
+All4 entries have usage:34167 tokens (27156 input,904 output,6107 thinking).
+Source diagnostics:244 checks,9596ms total/max103ms, no failed source checks.
+The prospective F adds only immutable-selection DATA role labels for these two
+same-titled references. The exact-child-isolation PG/race regression passed6.02s;
+both selected roots and the original-document denial remain. All50 prior calls/
+at least539577 known tokens and both kinds of unknown remain in the ledger.
