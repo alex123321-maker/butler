@@ -3,6 +3,9 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -291,8 +294,12 @@ func (f *behavior76Fixture) quiesce(ctx context.Context) (receipt behavior76Quie
 	receipt.FixtureLocallyStopped = f.scope.localStopped()
 	if f.authorityTrace != nil {
 		trace := f.authorityTrace.snapshot()
+		if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") == "disabled" && os.Getenv("BUTLER_BEHAVIOR76_PUBLIC_AUTHORITY_TRACE") == "composition-once-v1" {
+			f.writeAuthorityQuiescenceDiagnostic(trace, "decision")
+			f.t.Cleanup(func() { f.writeAuthorityQuiescenceDiagnostic(f.authorityTrace.snapshot(), "cleanup") })
+		}
 		if trace.Failed || trace.OpenSpans != 0 {
-			return fail(errors.New("authority trace unavailable or not quiescent"))
+			return fail(fmt.Errorf("authority trace unavailable or not quiescent: observer_failed=%t open_spans=%d dropped_events=%d operation_failures=%d events=%d", trace.Failed, trace.OpenSpans, trace.Dropped, trace.OperationFailures, len(trace.Events)))
 		}
 	}
 	receipt.ObservedAt = time.Now().UTC()
@@ -300,4 +307,11 @@ func (f *behavior76Fixture) quiesce(ctx context.Context) (receipt behavior76Quie
 		return fail(errBehavior76Native)
 	}
 	return receipt, nil
+}
+
+func (f *behavior76Fixture) writeAuthorityQuiescenceDiagnostic(trace behavior76AuthorityTraceSnapshot, point string) {
+	f.scope.mu.Lock()
+	scope := map[string]any{"active": f.scope.active, "evaluations": f.scope.evaluations, "closed": f.scope.closed, "stopped": f.scope.stopped, "global": f.scope.global.Load()}
+	f.scope.mu.Unlock()
+	behavior76Write(f.t, filepath.Join("/src20/.cache/issue76-independent/composition-diag-v1", point+"-"+behavior76Hash([]byte(f.t.Name()))+".json"), map[string]any{"version": "behavior76-quiescence-diagnostic-v1", "trace": trace, "scope": scope, "read_pool": behavior76AuthorityTraceStats(f.reads)})
 }
