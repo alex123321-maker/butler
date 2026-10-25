@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -41,7 +42,7 @@ func TestSummaryCannotHideRecentOwnerCorrection(t *testing.T) {
 				}
 				count := 0
 				for _, item := range request.InputItems {
-					if item.Role == "user" && item.Content == correction {
+					if item.Role == "user" && historicalText(t, item) == correction {
 						count++
 					}
 					if !utf8.ValidString(item.Content) {
@@ -120,15 +121,15 @@ func TestCoveredSummaryReplaysOnlyCompleteUncompressedTail(t *testing.T) {
 					if !utf8.ValidString(item.Content) {
 						t.Fatal("invalid UTF-8")
 					}
-					if item.Content == correction {
+					if historicalText(t, item) == correction {
 						corrections++
 					}
 					if item.Role == "assistant" {
 						historyCount++
-						if item.Content == strings.TrimSpace(strings.Repeat("Ответ. ", 220)) {
+						if historicalText(t, item) == strings.TrimSpace(strings.Repeat("Ответ. ", 220)) {
 							continue
 						}
-						if item.Content != messages[0].Content {
+						if historicalText(t, item) != messages[0].Content {
 							t.Fatal("tail assistant text was compressed")
 						}
 					}
@@ -252,7 +253,21 @@ func TestHistoryReadFailureBlocksModel(t *testing.T) {
 func TestTranscriptReplayPreservesCompleteUnicodeTail(t *testing.T) {
 	value := strings.Repeat("Привет🦉", 300)
 	items := transcriptInputItems([]transcript.Message{{Role: "assistant", Content: value}})
-	if len(items) != 1 || !utf8.ValidString(items[0].Content) || items[0].Content != value {
+	if len(items) != 1 || !utf8.ValidString(items[0].Content) || historicalText(t, items[0]) != value {
 		t.Fatal("unsummarized assistant message was abbreviated or corrupted")
 	}
+}
+
+func historicalText(t *testing.T, item transport.InputItem) string {
+	t.Helper()
+	var envelope struct {
+		Data struct {
+			Kind    string `json:"kind"`
+			Content string `json:"content"`
+		} `json:"data"`
+	}
+	if item.ContentType == "application/json" && json.Unmarshal([]byte(item.Content), &envelope) == nil && envelope.Data.Kind == "historical_message" {
+		return envelope.Data.Content
+	}
+	return item.Content
 }

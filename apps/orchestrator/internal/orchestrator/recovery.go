@@ -209,6 +209,14 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			return nil, e
 		}
 		checkpoint.Prepared = interactionResponsePreparation(checkpoint.Prepared, refreshed, checkpoint.Interaction.ID, answer)
+		if !credentialWait {
+			// ResumeInteraction has verified the canonical owning run/Input and
+			// interaction. Upgrade legacy checkpoints without accepting payload refs.
+			if checkpoint.Prepared.CurrentRequest == nil && isCurrentOwnerRequest(event, checkpoint.Prepared) {
+				checkpoint.Prepared.CurrentRequest = &currentRequestContext{RunRef: runID, InputEventRef: "input:" + event.EventID}
+			}
+			attachCurrentRequestContext(&checkpoint.Prepared, checkpoint.Interaction.ID)
+		}
 		retainer, ok := s.config.Checkpoints.(interface {
 			SaveInteractionPreparation(context.Context, string, string, string) error
 		})

@@ -58,6 +58,9 @@ func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Hand
 	processTimeout := "-test.timeout=50s"
 	if harness == "BUTLER_COMMUNICATION_HARNESS=1" && os.Getenv("BUTLER_COMMUNICATION_NATIVE_HARNESS") == "1" {
 		processTimeout = "-test.timeout=7m"
+		if os.Getenv("BUTLER_CURRENT_REQUEST_NATIVE_LAB") == "1" {
+			processTimeout = "-test.timeout=13m"
+		}
 	}
 	cmd := exec.Command(binary, "-test.run=^TestDelegationBrokerHarness$", processTimeout)
 	cmd.Env = append(os.Environ(), "BUTLER_DELEGATION_BROKER_HARNESS=1", harness, "BUTLER_DELEGATION_POSTGRES_URL="+dsn.String(), "BUTLER_DELEGATION_TOKEN_FILE="+tokenPath, "BUTLER_DELEGATION_CONTEXT_URL="+control.URL+"/context", "BUTLER_DELEGATION_ADMISSION_URL="+control.URL+path, "BUTLER_DELEGATION_GRPC_ADDRESS="+address, "BUTLER_DELEGATION_MANIFEST_FILE="+f.manifestPath)

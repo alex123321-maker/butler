@@ -9,8 +9,14 @@ import (
 )
 
 func historicalMessageItem(message transcript.Message, role, text string) transport.InputItem {
-	item := content.HistoricalMessage(role, text, "transcript:"+message.MessageID)
-	item.Metadata["butler_provenance"] = historicalMessageOrigin(message)
+	// Provenance metadata is not serialized by every provider. Keep the owning
+	// run and message kind in model-visible DATA, including canonical answers.
+	item := content.Data(map[string]any{
+		"kind": "historical_message", "run_ref": message.RunID,
+		"message_kind":  transcript.MessageKind(message.MetadataJSON),
+		"original_role": role, "content": text,
+	}, historicalMessageOrigin(message))
+	item.Role = role
 	return item
 }
 
