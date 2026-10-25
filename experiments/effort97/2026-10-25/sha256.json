@@ -1,0 +1,174 @@
+[
+  {
+    "file": "expense-journal.json",
+    "sha256": "9cf8473b55a1bb656fe0b7b671f11cf016eece7df741b2a6650708a25c2a3adf"
+  },
+  {
+    "file": "README.md",
+    "sha256": "5eac9e3939ef9eded5ebbc03618b31ff0e800705e03ba0cb87075587e9232b5e"
+  },
+  {
+    "file": "controlled-evidence-20261025a/attempts.jsonl",
+    "sha256": "d354336b41a55b3afe6c0673b5d4558c22b2fb41b66f4be5ab3b65fbf08a583d"
+  },
+  {
+    "file": "controlled-evidence-20261025a/manifest.json",
+    "sha256": "794fcb1a5594df27909335bf3fa3bf46af004c89d1a34b2d5bdc1919771b864c"
+  },
+  {
+    "file": "controlled-evidence-20261025a/outcomes.jsonl",
+    "sha256": "86203faefeeb1be6fcccda6a3e720bfad6a89a15a4c48f1d906124af793bf95c"
+  },
+  {
+    "file": "controlled-evidence-20261025a/per-case.csv",
+    "sha256": "1de4cdf6cba29540c50b6dba9847cfebe5f136fbbac622ca966f6c0494b5abb2"
+  },
+  {
+    "file": "controlled-evidence-20261025a/review-blinded.json",
+    "sha256": "f5d8f2569a20f08848d1a3e601dcd089cc8ca3f438484e330d1c253a7277b661"
+  },
+  {
+    "file": "controlled-evidence-20261025a/review-mapping.json",
+    "sha256": "5d8cf41643ae23c088e50da44effabf2579450a17fb11b977fa037e01addb107"
+  },
+  {
+    "file": "controlled-evidence-20261025a/semantic-review.json",
+    "sha256": "eaae6ebfd22ea7c31ead6201c4cf18f6f897d4de0de11081aafc66f225adb662"
+  },
+  {
+    "file": "controlled-evidence-20261025a/states.jsonl",
+    "sha256": "81d4a62e8f695c5984ac8bdc101da1f56fa3006cf1b8afa1caea81a508759c5f"
+  },
+  {
+    "file": "controlled-evidence-20261025a/summary.json",
+    "sha256": "3bba8d49fb26b4dd17a0a89783a39d01e28a283b9c5a91aea8bd9ad074ff609b"
+  },
+  {
+    "file": "controlled-evidence-20261025a/window.jsonl",
+    "sha256": "9da82edf5123dee6d5966564df62f4743349028ea65e72667b2b4ca6b1b972aa"
+  },
+  {
+    "file": "preflight-20261025a/attempts.jsonl",
+    "sha256": "e1bdbff97c56f0200f12eac4c3e3d26195654f49d432733342710454612e2004"
+  },
+  {
+    "file": "preflight-20261025a/manifest.json",
+    "sha256": "76eba4aaa6a24f45ba083865116c0148b3f2f479feb2a839837d60f44cf414d7"
+  },
+  {
+    "file": "preflight-20261025a/outcomes.jsonl",
+    "sha256": "c24458471d284ce9e44d0af638f4eb82ebebfd4333636a4df7327aa00bca5ad8"
+  },
+  {
+    "file": "preflight-20261025a/states.jsonl",
+    "sha256": "a4add0670c9c8e56ccb794972d15e089064066af071b73ba48d5e9824c47f44a"
+  },
+  {
+    "file": "preflight-20261025a/window.jsonl",
+    "sha256": "b71b6f8c75f2e30854336abce920391a94cb1824b7060b7fc1b4d76422bde4f3"
+  },
+  {
+    "file": "preflight-20261025b/attempts.jsonl",
+    "sha256": "b8cd30fc6a5f487003b5abaa48e3f6d63be21b3008befeeaa5aed167ef7fb5e3"
+  },
+  {
+    "file": "preflight-20261025b/manifest.json",
+    "sha256": "171156e88769ff53a119ef0cd0497253d2449aaa69e05d731cc50513a5ad57c3"
+  },
+  {
+    "file": "preflight-20261025b/outcomes.jsonl",
+    "sha256": "86f31ea01999afb3691ffd0df41e3fa3967288a8cc9806e0a3d221adda56a076"
+  },
+  {
+    "file": "preflight-20261025b/states.jsonl",
+    "sha256": "13f75277c4997ff37cef670dab9235f3938e552be18ae8d28a62cfc8ebf737c2"
+  },
+  {
+    "file": "preflight-20261025b/window.jsonl",
+    "sha256": "4d3abcc84ca139225b63b3e17fb48e2bd8ade590ad671dd332f151caec81b7b5"
+  },
+  {
+    "file": "preflight-20261025c/attempts.jsonl",
+    "sha256": "160af04ea9264ef5101a55e82dfa55d7f9bad113724e9ea0b28a5c9191150934"
+  },
+  {
+    "file": "preflight-20261025c/manifest.json",
+    "sha256": "eb9e3c9bdd4ecaba165b0362a237db61e68701a681da5d875658ec12d0db2c89"
+  },
+  {
+    "file": "preflight-20261025c/outcomes.jsonl",
+    "sha256": "be365d9a0cd9cbf4f5422bf5234e204a5ea6c55d769afcc9e35a78678e100f78"
+  },
+  {
+    "file": "preflight-20261025c/states.jsonl",
+    "sha256": "999c4e6cea4b1e659f950f3266d6d83f0f280040060a555943083046ea0ba2fa"
+  },
+  {
+    "file": "preflight-20261025c/window.jsonl",
+    "sha256": "e8ea07093a5c3fbad4350234ea9267236de52223e84a1e576181296490eb2b95"
+  },
+  {
+    "file": "quality-v2-20261025a/attempts.jsonl",
+    "sha256": "c65dc8797474b5ae825728e55c6853c9ef10e2bca2ad8bb54677020e66cc20db"
+  },
+  {
+    "file": "quality-v2-20261025a/manifest.json",
+    "sha256": "c17362a3e3403d445b5584a12c02faeeb5022e4e1a9b2f829937101fc39fac10"
+  },
+  {
+    "file": "quality-v2-20261025a/outcomes.jsonl",
+    "sha256": "2471d3d3ad78e10c8d9b037657143a0bc0e35ddbe8379edd1caa3b2eaffe6828"
+  },
+  {
+    "file": "quality-v2-20261025a/per-case.csv",
+    "sha256": "415d260a4bcf461822c45ffb84e22b2cf281fd0354ac5f9150d320aba3eb608f"
+  },
+  {
+    "file": "quality-v2-20261025a/review-blinded.json",
+    "sha256": "e00d66a5824c081d5658fc224b977cab6b2a408a6ef24c4bdb2ecc2efaf2ba1d"
+  },
+  {
+    "file": "quality-v2-20261025a/review-mapping.json",
+    "sha256": "f3c6e14a7dce379c0d4869926823bee9072a0fb2c39c7e63774a1f200f4cb661"
+  },
+  {
+    "file": "quality-v2-20261025a/semantic-review.json",
+    "sha256": "13f561fa299750ca2db1cc1ae2372af93120737dda5ada4404b58191d9c2fc8b"
+  },
+  {
+    "file": "quality-v2-20261025a/states.jsonl",
+    "sha256": "d90110264ebcf6973b6d792430fcaa2bb295a62eb6e3df54d802a76269a4fb64"
+  },
+  {
+    "file": "quality-v2-20261025a/summary.json",
+    "sha256": "0ebb9d7471e8538a9b3868eb882d57aa985aba77b6e0007e19023ed1f887a7b4"
+  },
+  {
+    "file": "quality-v2-20261025a/window.jsonl",
+    "sha256": "01302ba1ff84c0e0887e341c7d617cda09917777b5c67ae45756d9d0e4a7c816"
+  },
+  {
+    "file": "validation/compile-all.log",
+    "sha256": "eb05e7a2411542ed0ef793b6da0dbc60a5f9e73aeb9f407b05ca66e85a1b93a7"
+  },
+  {
+    "file": "validation/evidence-offline-linux.jsonl",
+    "sha256": "7a145743866b278a37eaa8819b1a6c5158ef2f744144a1132293d9374a70d8de"
+  },
+  {
+    "file": "validation/native-adapter-pg.jsonl",
+    "sha256": "c9c0f063dcb7d6c649eb53382205fe2822c3ba4203e5ad5c64655b7c027c6034"
+  },
+  {
+    "file": "validation/offline-linux-race.jsonl",
+    "sha256": "0067f459750d54d3babc2e63f446e796d0eee8ee0a59196c05f68856f3585a65"
+  },
+  {
+    "file": "validation/offline-windows.jsonl",
+    "sha256": "cc0e053d4a9c4144ef0857bb4faa9efbefe3bdb6144d0a5590cfec19053bd208"
+  },
+  {
+    "file": "validation/verify-changed.log",
+    "sha256": "6ee849fa17a01cb8cde773871b502de8e4d55a25a2e232d30f7d86f33b270604"
+  }
+]

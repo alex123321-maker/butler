@@ -1,0 +1,681 @@
+{
+  "rater": "Codex agent, distinct from tested Gemini; fixture author, not independent human",
+  "method": "Read all candidate answers/claims against original observations and current goal/version before opening profile mapping; fixed-facet grading remains separate",
+  "human_raters": 0,
+  "profile_blinded": true,
+  "review_file_sha256": "e00d66a5824c081d5658fc224b977cab6b2a408a6ef24c4bdb2ecc2efaf2ba1d",
+  "judgments": [
+    {
+      "candidate_id": "0860d845e4f97c96",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "0abd7cfa04ddc9f0",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "10337e4abbf0ed2e",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "124eb1cf79dd0eb7",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "1a239f1f052b55b3",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "1d31cef8e2b99625",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "22768b674ddd9e17",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "256202233ff7e738",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "256a474cac006eaa",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2709d02115efde54",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2763aaa679e66e6b",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "27a1ff99e4bfaf24",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "28a816ee569a44c6",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2919ef009694be58",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2a012966ecd05452",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2bb166be4ca96619",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "2c396d6586a3d47f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "349639745c965545",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "360a9195177d67fd",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "3870f3bb19efb346",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "38b976998401e195",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "3ee9825296abe257",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "40a16e9e695ce2ba",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "40d06350c76180c4",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "41f15e0000f6d41f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4248b9f3c78a89b5",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4256618afa04a598",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "437b74647fa662c4",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "46a7f4547f1ff0b6",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4c927d0a8209170f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4cded9054143762b",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4d3a5452a9a053c3",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4e9cae05c2865d73",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "53896f1505c2bc83",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "54c239d35c730684",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "5aeadc4336c1b804",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "5c52e5ff794bed4f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": "Timeout limitation is current-attempt scoped; phrasing could more explicitly say now."
+    },
+    {
+      "candidate_id": "5d79b21997b0a482",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "5d82686e0aaefcc4",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "60bad7b0c058c14e",
+      "semantic_review": "no_terminal_candidate",
+      "unsupported_factual_assertion": null,
+      "unnecessary_question": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "6449c594836c63a6",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "64ad5bb53d132a7b",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "64edb1c4b312bbc7",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "669b03643d4d55c3",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "68329faf4c5efb36",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": "Timeout limitation is current-attempt scoped; phrasing could more explicitly say now."
+    },
+    {
+      "candidate_id": "6c023cee9747c098",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "6cd01d3cf8786aff",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "754a035906d09008",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "79e4270ec3297d4a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "7e064cf5d11677b4",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "7f1e1997401d92c5",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "8275581921979683",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "853b14e1c6891dd8",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "855522c20d9f3a9f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "8664bac8300723f8",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "8b76a5878aecd201",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "92d727d46eab444f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "93b6d6ef0e12cd07",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "9471adad42714a20",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "954bcfcd42dfea62",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "97123e2832a14f21",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "977f5727ae996f23",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "97abaebee6128b9f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "995d5b8bce335431",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "99acbefe2c4c6855",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "9e78c406e7671b2a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "9f99be95c4ca5f9f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "aca4f2e290c10bdd",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "adcb4de2c6a6197e",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ae5acb8913d69fef",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "b20efd93d0874e5b",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "b4118db46ac471e9",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "b638b2131b242051",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ba4d019d258dc42c",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "bd03a0fc2fa86646",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "bdf4c00c6d804b3a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "be2421503b19f249",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "be2f515382ddec32",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "c20519491c6b7323",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "c2495ce2cee356b1",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ce0d31ab35ea3a37",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "d5bcea323379ea0a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "d7c27ea234552f63",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "d9a237f363534759",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "dead003b4db2a0c0",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "e765220a91194aec",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "e9750c3b284ddaea",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ea15c49d00e8769d",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ec70a97774e9d466",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "f1897aff49f53a5c",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "f543c5aec1e7db9a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "f67ee80ab48e072d",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "fab54ec942e900ad",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "fb2f5c63a7ebf06f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ff1c189c4593fdeb",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ff9e5c94e758c084",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    }
+  ]
+}

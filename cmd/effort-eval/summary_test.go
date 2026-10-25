@@ -41,4 +41,23 @@ func TestSummaryIncludesFailedSpendAndUnknownDenominators(t *testing.T) {
 	if s.Planned != 2 || s.Correct != 1 || s.Total != 150 || s.UnknownTotal != 1 || s.UnknownThinking != 2 || s.Attempts != 3 || s.HTTPStages != 3 || s.NativeFinals != 1 || s.P50 != 100 || s.P95 != 900 || s.KnownTokensPerCorrect == nil || *s.KnownTokensPerCorrect != 150 {
 		t.Fatalf("%+v", s)
 	}
+	// Reviewers receive the current amended goal, not only the original fixture.
+	rows = `{"slot":"c1/profile/baseline/0","outcome":{"status":"completed","state":{"goal":"amended goal","goal_version":2}}}` + "\n"
+	if e = os.WriteFile(filepath.Join(dir, "outcomes.jsonl"), []byte(rows), 0600); e != nil {
+		t.Fatal(e)
+	}
+	if e = summarize(dir); e != nil {
+		t.Fatal(e)
+	}
+	raw, e = os.ReadFile(filepath.Join(dir, "review-blinded.json"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	var reviews []blindReview
+	if e = json.Unmarshal(raw, &reviews); e != nil {
+		t.Fatal(e)
+	}
+	if len(reviews) != 1 || reviews[0].CurrentGoal != "amended goal" || reviews[0].GoalVersion != 2 {
+		t.Fatal("amended goal omitted from blind review")
+	}
 }

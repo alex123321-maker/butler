@@ -1,5 +1,8 @@
 # Local synthetic effort research
 
+The completed [native pilot report](../../docs/testing/effort-research-results-2026-10-25.md)
+retains all230 actual calls, failed attempts, unknown usage and source evidence.
+
 The separate [18-call source-availability supplement](../../docs/testing/effort-evidence-protocol-2026-10-25.md)
 shares an actual draft between reviews with/without a new T1 fixture observation.
 It leaves the96-slot v2 corpus/producer unchanged and reports useful current

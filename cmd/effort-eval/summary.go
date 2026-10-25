@@ -61,6 +61,8 @@ type armSummary struct {
 }
 type blindReview struct {
 	ID              string          `json:"candidate_id"`
+	CurrentGoal     string          `json:"current_goal"`
+	GoalVersion     int             `json:"goal_version"`
 	Case            effort.Case     `json:"fixture"`
 	ObservedSources []effort.Source `json:"observed_sources"`
 	Candidate       *effort.Reply   `json:"candidate"`
@@ -215,7 +217,7 @@ func summarize(dir string) error {
 				c, _ = evidenceReview(c, parts[2] == "review_fresh")
 			}
 		}
-		reviews = append(reviews, blindReview{ID: id, Case: c, ObservedSources: o.Outcome.State.Sources, Candidate: o.Outcome.State.Candidate, Status: o.Outcome.Status})
+		reviews = append(reviews, blindReview{ID: id, CurrentGoal: o.Outcome.State.Goal, GoalVersion: o.Outcome.State.GoalVersion, Case: c, ObservedSources: o.Outcome.State.Sources, Candidate: o.Outcome.State.Candidate, Status: o.Outcome.Status})
 	}
 	var summary []armSummary
 	for _, s := range arms {
