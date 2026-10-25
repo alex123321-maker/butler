@@ -78,7 +78,7 @@ func newDelegationGuardFixtureWithManifest(t *testing.T, path string) *delegatio
 
 // Ordinary worker proofs mirror App.New's current bounded authority reserve.
 // Two-connection low-level guard fixtures retain their historical construction.
-func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve bool, lifetime time.Duration) *delegationGuardFixture {
+func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve bool, lifetime time.Duration, observers ...*releaseChainSourceObserver) *delegationGuardFixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	reads := pool
@@ -100,6 +100,23 @@ func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve boo
 		t.Cleanup(db.Close)
 		pool.Close()
 		pool, reads = db.Pool(), db.AuthorityReadPool()
+		if len(observers) == 1 && observers[0] != nil {
+			// Copy the production9+1 configurations before replacing only these
+			// test pools with traced equivalents. No pool/capacity/guard changes.
+			businessConfig, readConfig := pool.Config().Copy(), reads.Config().Copy()
+			businessConfig.ConnConfig.Tracer, readConfig.ConnConfig.Tracer = observers[0], observers[0]
+			db.Close()
+			pool, err = pgxpool.NewWithConfig(context.Background(), businessConfig)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(pool.Close)
+			reads, err = pgxpool.NewWithConfig(context.Background(), readConfig)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(reads.Close)
+		}
 		if pool.Config().MaxConns != 9 || reads.Config().MaxConns != 1 || pool == reads {
 			t.Fatal("fixture reserve differs from ten-connection bootstrap")
 		}

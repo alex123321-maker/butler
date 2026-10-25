@@ -85,6 +85,27 @@ UNKNOWN. No more inference until a local streaming/source-proof regression and
 the actual blocking query are investigated. Migration103 is a measured query
 optimization, not a sufficient complete remedy for these timeouts.
 
+The original PG server error identifies the cancelled C statement exactly as
+`SELECT butler_memory_temporal_run_current($1)` at05:00:28.891 UTC; no credential
+query or values are exported. A separate namespace benchmark reads unchanged A
+data:100 varying run-ID calls measured542.142ms with the original temporal
+predicates and8.095ms with retained plans/current-snapshot empty metadata paths.
+This is query-only evidence. Migration104 preserves every nonempty clause and
+invalid-recordset error;14 real-PG/race temporal tests passed without skips,
+including current/old-predicate equivalence, metadata invalidation and down/up.
+
+The first offline streaming test incorrectly made200 blocking delta sends its
+duration; backpressure stretched it to the120s model deadline (163.42s total).
+That failure is retained and is not a reproduction of C's two-second timeout.
+The corrected fixture has a60-second wall timer even under backpressure. Its
+migration103 baseline passed125.39s, delivered30 deltas, independently checked
+the original JSON and retained95 source proofs (75507ms total,1251ms maximum).
+The only diagnostic failure was a1ms task-authority read cancelled during worker
+teardown, after completion; no source proof failed. No native inference occurred.
+The new `-Action Streaming` mode repeats this whole actual-process gate.
+Integrated-head streaming with migration104 must pass before another native
+window; all A/B/C negative and unknown spending remains unchanged.
+
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives
 only selected synthetic Need/contract through the existing delegated context,

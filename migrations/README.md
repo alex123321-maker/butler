@@ -1,5 +1,10 @@
 # Migrations
 
+`104_temporal_currentness_plans` retains query plans for temporal run/source/pin
+proofs. Current-statement empty metadata avoids unnecessary full joins; all
+nonempty predicates are unchanged. Down restores the original functions without
+rewriting accepted facts, temporal metadata, run pins or source history.
+
 `103_summary_currentness_plan` changes only the summary-currentness function.
 Its current-statement empty-metadata fast path and retained PL/pgSQL plan avoid
 repeated recursive SQL planning during compound source proofs. Nonempty metadata

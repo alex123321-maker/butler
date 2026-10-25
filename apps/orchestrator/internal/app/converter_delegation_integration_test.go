@@ -129,7 +129,11 @@ func newDeveloperWorkerFixtureWithModel(t *testing.T, profile generatedtools.Pro
 		if manifestPath == "" {
 			manifestPath = filepath.Join(t.TempDir(), "deletions.log")
 		}
-		f = newDelegationGuardFixtureWithRuntime(t, manifestPath, true, lifetime)
+		var observers []*releaseChainSourceObserver
+		if modelConfig != nil && modelConfig.SourceObserver != nil {
+			observers = append(observers, modelConfig.SourceObserver)
+		}
+		f = newDelegationGuardFixtureWithRuntime(t, manifestPath, true, lifetime, observers...)
 	} else if manifestPath == "" {
 		f = newDelegationGuardFixture(t)
 	} else {

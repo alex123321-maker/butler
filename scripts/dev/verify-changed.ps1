@@ -26,6 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(migrations/104_temporal_currentness_plans[.]|internal/memory/catalog/temporal_plan_integration_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/memory-temporal.md")
+      [void]$tests.Add("This PC: isolated PostgreSQL/race catalog TestTemporal.*Integration, including original-predicate equivalence after empty/nonempty state, metadata change and down/up; then converter-local-acceptance.ps1 -Action Streaming with actual Broker/runtime. No inference; no accepted fact, source or authority cache.")
+      continue
+    }
     "^(migrations/103_summary_currentness_plan[.]|internal/memory/compaction/summary_plan_integration_test[.]go$)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/testing/converter20-local-native-protocol-2026-10-25.md")

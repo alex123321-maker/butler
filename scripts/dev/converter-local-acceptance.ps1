@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
- [ValidateSet('Offline','Native')][string]$Action='Offline',
+ [ValidateSet('Offline','Streaming','Native')][string]$Action='Offline',
  [string]$LinuxRoot='/mnt/host/wsl/butler-effort97',
  [switch]$EnableNative
 )
@@ -19,15 +19,16 @@ root='__ROOT__'
 profile=$(cat "$root/src/.cache/effort97/issue20/profile.json")
 chroot "$root" /usr/bin/env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOROOT=/usr/local/go GOMODCACHE=/module-cache GOCACHE=/src/.cache/go-build-linux BUTLER_CONVERTER_BROKER_BINARY=/src/.cache/effort97/issue20/tool-broker "BUTLER_CONVERTER_PROFILE_JSON=$profile" BUTLER_CONVERTER_RUNTIME_TOKEN_FILE=/src/.cache/effort97/issue20/runtime.token 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://postgres@127.0.0.1:55449/converters20_test?sslmode=disable' /bin/sh -c '__RUN__'
 '@
- if($Action -eq 'Offline'){
-  $run='cd /src20; sh scripts/dev/converter-local-acceptance.sh offline'
+ if($Action -ne 'Native'){
+  $mode=$Action.ToLowerInvariant()
+  $run='cd /src20; sh scripts/dev/converter-local-acceptance.sh '+$mode
  }else{
   $run='cd /src20; mkdir -p .cache/converter20; GOMAXPROCS=4 GOFLAGS=-buildvcs=false GOTOOLCHAIN=local go test -race -c -o .cache/converter20/orchestrator-app.test ./apps/orchestrator/internal/app'
  }
  $build=$command.Replace('__ROOT__',$LinuxRoot).Replace('__RUN__',$run)
  & wsl -d docker-desktop --exec /bin/sh -c $build
  if($LASTEXITCODE -ne 0){throw 'Local converter build/proof failed'}
- if($Action -eq 'Offline'){return}
+ if($Action -ne 'Native'){return}
  # Windows Git verifies this exact managed worktree after the Linux build.
  # Linux Git must not reinterpret the Windows .git worktree path or normalize
  # it into a different checkout/index. No foreign checkout is inspected.

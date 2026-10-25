@@ -21,9 +21,10 @@ import (
 // Test-only, failure-only, context-local observations. None of these values is
 // authority, a recovered source proof, or permission to retry a failed check.
 type releaseChainSourceObserver struct {
-	mu      sync.Mutex
-	failed  []releaseChainSourceFailure
-	dropped int
+	mu         sync.Mutex
+	failed     []releaseChainSourceFailure
+	dropped    int
+	onComplete func(string, time.Duration)
 }
 
 type releaseChainSourcePoolStats struct {
@@ -118,6 +119,9 @@ func (o *releaseChainSourceObserver) observe(ctx context.Context, pool *pgxpool.
 		span.r.TimeLeft = &n
 	}
 	err := call(context.WithValue(ctx, releaseChainSourceSpanKey{}, span))
+	if o.onComplete != nil {
+		o.onComplete(role, time.Since(span.r.Started))
+	}
 	if err == nil {
 		return nil
 	}

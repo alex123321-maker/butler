@@ -67,3 +67,18 @@ No success or zero expense is inferred. The source timeout recurring after
 migration103 means that optimization alone is insufficient. A complete private
 schema dump was saved before normal cleanup; the original negative evidence is
 preserved while a zero-inference streaming reproduction is investigated.
+
+The exact cancelled C statement is retained in
+`diagnostics/native-c-cancelled-query.log`. The temporal query benchmark reads A's
+unchanged sources from a separate namespace:100 run checks,542.142ms original
+versus8.095ms candidate; no end-to-end speedup is inferred. Migration104 has14
+actual-PG/race temporal passes,0 skips/failures, including old/new predicate
+equivalence, invalid JSON rejection, metadata correction and down/up.
+
+`streaming-a.log` is a failed fixture:200 blocking delta sends overran the120s
+model deadline,163.42s total. It is not a reproduced two-second source timeout.
+`streaming-b.log` is its corrected60-second wall-timer baseline on migration103:
+125.39s total,30 deltas,95 source checks totaling75507ms/max1251ms, exact original
+JSON and full workflow passed. A1ms authority observer cancellation during final
+worker teardown remains in the raw diagnostics; source failures were0. These are
+zero-inference actual-process tests, separate from native acceptance.

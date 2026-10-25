@@ -4,7 +4,7 @@
 set -eu
 cd "$(dirname "$0")/../.."
 action=${1:-offline}
-case "$action" in offline|native) ;; *) echo 'Use offline or native' >&2; exit 2;; esac
+case "$action" in offline|streaming|native) ;; *) echo 'Use offline, streaming or native' >&2; exit 2;; esac
 : "${BUTLER_CONVERTER_BROKER_BINARY:?actual local production Broker binary required}"
 : "${BUTLER_CONVERTER_PROFILE_JSON:?pinned actual runtime profile required}"
 : "${BUTLER_CONVERTER_RUNTIME_TOKEN_FILE:?isolated synthetic token file required}"
@@ -43,6 +43,9 @@ if [ "$action" = native ]; then
   export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$commit;binary-sha256:$digest"
  fi
  "$execution_dir/app.test" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
+elif [ "$action" = streaming ]; then
+ "$execution_dir/app.test" -test.v -test.timeout=6m -test.run '^TestConverterDeveloperStreamingLocalContainerE2E$'
+ go vet ./apps/orchestrator/internal/app
 else
  "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperGenericFactoryLocalContainerE2E|LocalNativeReservationsCoverModelAndToolQuotesIntegration)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
  go vet ./apps/orchestrator/internal/app

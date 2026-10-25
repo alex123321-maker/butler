@@ -1,5 +1,13 @@
 # Memory validity, observation and freshness (#88)
 
+Migration104 preserves the original run/source/pin currentness predicates in
+STABLE PL/pgSQL functions. Empty/null pins and a current-statement empty source-pin
+table satisfy the same original NOT EXISTS clauses without planning their full
+joins. Nonempty metadata evaluates every original revision, source, privacy,
+validity, knowledge-time and freshness condition. Only query plans are retained;
+an empty state, accepted fact or authorization is never cached between calls.
+Down restores the original SQL functions and changes no history.
+
 This document fixes the implementation contract for issue88. The temporal runtime
 is under implementation and remains default-off/unqualified until its acceptance
 gates pass. PostgreSQL, existing catalog sources/claims and owner fact heads remain
