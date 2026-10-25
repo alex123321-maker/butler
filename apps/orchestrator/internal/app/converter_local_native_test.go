@@ -114,7 +114,7 @@ func (p *converterLocalNativeProvider) invoke(ctx context.Context, kind, run str
 		} // UNKNOWN stays spent; no further admission.
 	}
 	if err != nil {
-		finish("entry_failed", nil, nil, "")
+		finish("entry_failed", []map[string]any{{"type": "entry_failed", "error_code": transport.DiagnosticCode(err), "safe_reason": transport.DiagnosticReason(err), "http_status": transport.DiagnosticHTTPStatus(err)}}, nil, "")
 		return nil, errConverterLocalNative
 	}
 	output := make(chan transport.TransportEvent)
@@ -152,8 +152,8 @@ func (p *converterLocalNativeProvider) invoke(ctx context.Context, kind, run str
 			if event.TransportError != nil {
 				safe["error_code"] = transport.DiagnosticCode(event.TransportError)
 				safe["safe_reason"] = transport.DiagnosticReason(event.TransportError)
-				if event.TransportError.HTTPStatus > 0 {
-					safe["http_status"] = event.TransportError.HTTPStatus
+				if status := transport.DiagnosticHTTPStatus(event.TransportError); status > 0 {
+					safe["http_status"] = status
 				}
 				status = "transport_error"
 			}
