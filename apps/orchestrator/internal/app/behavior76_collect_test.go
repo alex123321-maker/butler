@@ -112,14 +112,8 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	if key != "" {
 		taskID = f.lookup("task", key)
 		sessionKey = f.lookup("session", key)
-		current, e := f.tasks.Get(f.ctx, taskID)
-		if e != nil {
+		if _, e := f.tasks.Get(f.ctx, taskID); e != nil {
 			return outcome, e
-		}
-		if current.Status == "active" {
-			if err := f.enrichWorking(key); err != nil {
-				return outcome, err
-			}
 		}
 	} else {
 		sessionKey = "behavior76:conversation"

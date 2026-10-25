@@ -218,3 +218,38 @@ The frozen mechanical checker is unchanged. A separate coverage adapter must
 retain partial coverage if C fails; it cannot fabricate48 arms/96 answers.
 B171 remains a failed/unavailable quality slot even if all planned opportunities
 are ultimately executed. Coverage alone is not a promotion or closure verdict.
+
+## Closed C and separate fixture repair
+
+C `issue76-local-20261025T123250` used producer `99bc7bc8d91ea43cf7d3d2b390f28a36f70902cc`
+and ELF `5900ce2905b415ac855f78fffe8446c2735754b871017769b7e67eb4d5796dc4`.
+It stopped after52.25s with two measured native admissions/12,424 provider-total
+tokens. The first suffix arm's first owner turn produced an actual run/final and
+one recorded tool/effect/receipt. These counts establish no semantic PASS.
+Two intervening typed events were applied. Its second owner opportunity failed
+in fixture preparation before accepted input/run/native admission; before/after
+snapshots are byte-identical. The11 never-started arms remain unexecuted.
+
+All50 C files are immutable/read-only. Manifest SHA256
+`c464f701c7dad25cfc27519692af2b12a7e89e23e4824eb9b9e280cfee802d52`;
+index SHA256 `b2c81605b5a6d1d70c10cb1544fb42121fabf9c6a76b0a532629ca068696102f`;
+exact all-file inventory SHA256
+`0fce72bbfdf54299890e527a261e599ba0dbc36ad5b783b3eb177f5d293f99c2`.
+The private full C database backup is separate from public evidence.
+
+Independent derived B/C coverage found37/48 arms,74/96 recorded opportunity
+outcomes and10/12 families, with73 actual owner input/run correlations and173
+B/C window-scoped entry/run/outcome joins. All174 A/B/C admissions are retained:
+172 measured with1,274,988 known tokens and two unavailable usage observations.
+The failed windows stay incomplete; no further suffix replay is authorized.
+
+A separate zero-native diagnostic clone reproduced Task.Get success followed by
+old pre-input enrichWorking/SaveWorking SQLSTATE40001. The fixture wrote before
+the fresh Core attached its run, so the existing memory publication fence
+correctly rejected the old source context. A TEST-only repair moves enrichment
+after guarded ordinary AttachRun with the same execution token/context and a
+once-per-Core cache. All source/privacy/authority triggers remain intact.
+Public lifecycle/restart, duplicate-attachment, token/revision denial and full
+48-arm/96-turn real preparation gates use scripted providers, not native grading.
+The [separate fresh protocol](issue76-fresh-protocol-2026-10-25.md) declares the
+conditions for a new independent experiment; it does not complete A/B/C.

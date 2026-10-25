@@ -9,7 +9,8 @@ fi
 export BUTLER_BEHAVIOR76_NATIVE_ENABLE=disabled
 export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=0
 case "$mode" in
- boundary) selected='^TestBehavior76ContinuationBoundary$' ;;
+ composition) selected='^TestBehavior76CorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=composition-only ;;
+ boundary) selected='^TestBehavior76(ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration)$' ;;
  offline) selected='^TestBehavior76(StimulusBoundary|InstructionIntegrity|QueuedTaskMandatesIntegration|CoreBrokerPrepareOfflineIntegration|CoreBrokerPrepareOnlyDeniesCommitIntegration|CoreBrokerCommitRecipientIntegration)$' ;;
  preflight) selected='^TestBehavior76CorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=1 ;;
  native) selected='^TestBehavior76NativeLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=synthetic-local-only ;;

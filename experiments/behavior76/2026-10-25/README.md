@@ -1,14 +1,20 @@
 # Independent local behavioral pilot (#76)
 
-Current status: native window B closed at a response-stream protocol error with
-36/48 episode-arm exports,171 admissions,170 measured responses and known
-provider-total subtotal1,262,564 tokens. The final partial stream has unavailable
-usage and no final/tool proposal. Independent coverage/boundary review is pending;
-there is no completed comparison, behavioral verdict or issue76 closure.
+Current status: A/B/C closed and incomplete. Independent derived B/C coverage is
+37/48 episode-arms,74/96 recorded opportunity outcomes,10/12 families. Complete
+history:174 admissions,172 measured responses,1,274,988 known provider-total tokens
+and two unavailable usage observations. C failed in pre-input preparation after
+two actual native entries. There is no completed comparison or issue76 closure.
 
 The earlier authentication-only window A remains closed after one admission,
 before model HTTP. Its usage remains unavailable, not zero expense. Both failed
 windows and all original observations are retained; no failed slot is resampled.
+
+A separate diagnostic clone reproduced C's stale-context working-write refusal.
+The fixture-only AttachRun repair, public zero-native preparation gates and a
+[prospective fresh independent experiment](../../../../docs/testing/issue76-fresh-protocol-2026-10-25.md)
+are distinct from A/B/C native quality. New controls must be independently authored
+after the fixture/interface/failure-policy freeze; previous cases are not renamed.
 
 [Protocol](../../../../docs/testing/issue76-local-protocol-2026-10-25.md) pins one
 dormant instruction candidate against current main/default instructions. The

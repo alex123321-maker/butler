@@ -44,18 +44,24 @@ func behavior76CheckRawFiles(root, manifestPath, expectedHash string, expectedCo
 		return errors.New("original predecessor file manifest changed")
 	}
 	var files []struct {
-		Path string `json:"path"`
-		SHA string `json:"sha256"`
-		Bytes int64 `json:"bytes"`
+		Path  string `json:"path"`
+		SHA   string `json:"sha256"`
+		Bytes int64  `json:"bytes"`
 	}
 	if json.Unmarshal(raw, &files) != nil || len(files) != expectedCount {
 		return errors.New("original predecessor inventory unavailable")
 	}
 	actualCount := 0
 	if err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil { return walkErr }
-		if entry.Type()&os.ModeSymlink != 0 { return errors.New("predecessor evidence cannot contain symlinks") }
-		if !entry.IsDir() { actualCount++ }
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			return errors.New("predecessor evidence cannot contain symlinks")
+		}
+		if !entry.IsDir() {
+			actualCount++
+		}
 		return nil
 	}); err != nil || actualCount != expectedCount {
 		return errors.New("original predecessor file set changed")
@@ -76,31 +82,54 @@ func behavior76CheckRawFiles(root, manifestPath, expectedHash string, expectedCo
 }
 
 func TestBehavior76ContinuationBoundary(t *testing.T) {
-	episodes := []behavior76Episode{{ID:"public-a", Steps:[]behavior76Step{{ID:"first"},{ID:"second"}}},{ID:"public-b", Steps:[]behavior76Step{{ID:"first"},{ID:"second"}}},{ID:"never-started", Steps:[]behavior76Step{{ID:"first"},{ID:"second"}}}}
-	index := behavior76Index{Episodes:[]behavior76IndexEpisode{
-		{EpisodeID:"public-a",MaskedArmID:"m1",Steps:[]behavior76IndexStep{{StepID:"first"},{StepID:"second"}}},
-		{EpisodeID:"public-a",MaskedArmID:"m2",Steps:[]behavior76IndexStep{{StepID:"first"},{StepID:"second"}}},
-		{EpisodeID:"public-b",MaskedArmID:"m2",Steps:[]behavior76IndexStep{{StepID:"first"},{StepID:"second"}}},
-		{EpisodeID:"public-b",MaskedArmID:"m1",Steps:[]behavior76IndexStep{{StepID:"first"},{StepID:"second"}}},
+	episodes := []behavior76Episode{{ID: "public-a", Steps: []behavior76Step{{ID: "first"}, {ID: "second"}}}, {ID: "public-b", Steps: []behavior76Step{{ID: "first"}, {ID: "second"}}}, {ID: "never-started", Steps: []behavior76Step{{ID: "first"}, {ID: "second"}}}}
+	index := behavior76Index{Episodes: []behavior76IndexEpisode{
+		{EpisodeID: "public-a", MaskedArmID: "m1", Steps: []behavior76IndexStep{{StepID: "first"}, {StepID: "second"}}},
+		{EpisodeID: "public-a", MaskedArmID: "m2", Steps: []behavior76IndexStep{{StepID: "first"}, {StepID: "second"}}},
+		{EpisodeID: "public-b", MaskedArmID: "m2", Steps: []behavior76IndexStep{{StepID: "first"}, {StepID: "second"}}},
+		{EpisodeID: "public-b", MaskedArmID: "m1", Steps: []behavior76IndexStep{{StepID: "first"}, {StepID: "second"}}},
 	}}
-	if err := behavior76CheckPrefix(index,episodes,[]string{"m1","m2"},4); err != nil {t.Fatal(err)}
-	for _, kind := range []string{"missing-step","wrong-arm","wrong-episode","extra-slot"} {
-		t.Run(kind,func(t *testing.T){
-			raw,_:=json.Marshal(index);var bad behavior76Index;_ =json.Unmarshal(raw,&bad)
+	if err := behavior76CheckPrefix(index, episodes, []string{"m1", "m2"}, 4); err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"missing-step", "wrong-arm", "wrong-episode", "extra-slot"} {
+		t.Run(kind, func(t *testing.T) {
+			raw, _ := json.Marshal(index)
+			var bad behavior76Index
+			_ = json.Unmarshal(raw, &bad)
 			switch kind {
-			case "missing-step":bad.Episodes[3].Steps=bad.Episodes[3].Steps[:1]
-			case "wrong-arm":bad.Episodes[3].MaskedArmID="m2"
-			case "wrong-episode":bad.Episodes[3].EpisodeID="never-started"
-			case "extra-slot":bad.Episodes=append(bad.Episodes,bad.Episodes[0])
+			case "missing-step":
+				bad.Episodes[3].Steps = bad.Episodes[3].Steps[:1]
+			case "wrong-arm":
+				bad.Episodes[3].MaskedArmID = "m2"
+			case "wrong-episode":
+				bad.Episodes[3].EpisodeID = "never-started"
+			case "extra-slot":
+				bad.Episodes = append(bad.Episodes, bad.Episodes[0])
 			}
-			if behavior76CheckPrefix(bad,episodes,[]string{"m1","m2"},4)==nil {t.Fatal("invalid continuation accepted")}
+			if behavior76CheckPrefix(bad, episodes, []string{"m1", "m2"}, 4) == nil {
+				t.Fatal("invalid continuation accepted")
+			}
 		})
 	}
-	root:=t.TempDir();body:=[]byte("original public evidence\n");path:=filepath.Join(root,"original.json")
-	if err:=os.WriteFile(path,body,0600);err!=nil {t.Fatal(err)}
-	raw,_:=json.Marshal([]map[string]any{{"path":"original.json","sha256":behavior76Hash(body),"bytes":len(body)}})
-	manifest:=filepath.Join(t.TempDir(),"inventory.json");if err:=os.WriteFile(manifest,raw,0600);err!=nil {t.Fatal(err)}
-	if err:=behavior76CheckRawFiles(root,manifest,behavior76Hash(raw),1);err!=nil {t.Fatal(err)}
-	if err:=os.WriteFile(path,[]byte("replacement"),0600);err!=nil {t.Fatal(err)}
-	if behavior76CheckRawFiles(root,manifest,behavior76Hash(raw),1)==nil {t.Fatal("changed predecessor bytes accepted")}
+	root := t.TempDir()
+	body := []byte("original public evidence\n")
+	path := filepath.Join(root, "original.json")
+	if err := os.WriteFile(path, body, 0600); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal([]map[string]any{{"path": "original.json", "sha256": behavior76Hash(body), "bytes": len(body)}})
+	manifest := filepath.Join(t.TempDir(), "inventory.json")
+	if err := os.WriteFile(manifest, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := behavior76CheckRawFiles(root, manifest, behavior76Hash(raw), 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("replacement"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if behavior76CheckRawFiles(root, manifest, behavior76Hash(raw), 1) == nil {
+		t.Fatal("changed predecessor bytes accepted")
+	}
 }

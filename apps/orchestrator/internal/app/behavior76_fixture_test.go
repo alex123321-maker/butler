@@ -217,7 +217,7 @@ func (f *behavior76Fixture) makeCoreWithAssembler(provider transport.ModelProvid
 	results.DataGuard = f.sources.CheckRunSourcesTx
 	return flow.NewService(session.NewPostgresRepository(f.pool), f.leases, run.NewService(run.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), provider, flow.Config{
 		ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel, OwnerID: "behavior76-worker", LeaseTTL: 60,
-		AutonomyMode: 3, ActionMandateID: mandate, Tasks: f.tasks, Checkpoints: input.NewStore(f.pool), Budgets: f.budgets, Completion: results,
+		AutonomyMode: 3, ActionMandateID: mandate, Tasks: newBehavior76PreparedTasks(f), Checkpoints: input.NewStore(f.pool), Budgets: f.budgets, Completion: results,
 		MemorySources: f.sources, Tools: f.broker, ToolCatalog: f.broker, ActionAuthorizer: discoveryBrokerDiagnostics{BrokerClient: f.broker, t: f.t},
 		ProfileStore: profileStoreAdapter{store: f.profiles, sources: f.sources}, PromptManager: prompt.NewStaticManager(), PromptAssembler: assembler,
 		SemanticSearchEnabled: true, SemanticMemory: behavior76Documents{f: f},
@@ -324,7 +324,11 @@ func (f *behavior76Fixture) mandate(taskKey string) string {
 	// The existing task mandate API accepts origins, not arbitrary URL paths.
 	// The test recipient additionally enforces exact object→task ownership/CAS.
 	resources := []string{"tool:doctor.generate_report", "https://fixture.invalid"}
-	m := actionauth.Mandate{ID: id, OwnerID: behavior76Owner, TaskID: r.TaskID, TaskRevision: r.Revision, ConstraintsRevision: r.ConstraintsRevision, Revision: 1, Tools: []string{"http.request", "doctor.generate_report"}, Resources: resources, Effects: []actionauth.Effect{actionauth.EffectRead, actionauth.EffectPrepare, actionauth.EffectCommit}, ExpiresAt: time.Now().Add(20 * time.Minute)}
+	expires := time.Now().Add(20 * time.Minute)
+	if deadline, ok := f.ctx.Deadline(); ok && deadline.Before(expires) {
+		expires = deadline
+	}
+	m := actionauth.Mandate{ID: id, OwnerID: behavior76Owner, TaskID: r.TaskID, TaskRevision: r.Revision, ConstraintsRevision: r.ConstraintsRevision, Revision: 1, Tools: []string{"http.request", "doctor.generate_report"}, Resources: resources, Effects: []actionauth.Effect{actionauth.EffectRead, actionauth.EffectPrepare, actionauth.EffectCommit}, ExpiresAt: expires}
 	if err = actionauth.NewPostgresStore(f.pool).PutMandate(f.actor("fixed-test-policy"), m); err != nil {
 		f.t.Fatal(err)
 	}

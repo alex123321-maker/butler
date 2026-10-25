@@ -1458,3 +1458,8 @@ profile, source, effect or semantic completion authority.
 continuation integrity guards without provider inference. A stopped native window
 remains closed; an independently reviewed strict-suffix continuation preserves
 the original absolute deadline, failed attempts and exact control/mapping bytes.
+The [separate fresh experiment](../../docs/testing/issue76-fresh-protocol-2026-10-25.md)
+uses a fixture-only post-AttachRun metadata hook with the actual execution token;
+it preserves stale-source fences and redaction. `-Action Composition` exercises
+every control/event through real Input/Core preparation with a scripted provider,
+without native inference or auth. It is infrastructure evidence, not model quality.

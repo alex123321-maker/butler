@@ -227,7 +227,10 @@ func (p *behavior76QueuedReads) StartRun(ctx context.Context, q transport.StartR
 	if err := p.f.pool.QueryRow(ctx, `SELECT key FROM behavior76_objects WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`, q.Context.RunID).Scan(&key); err != nil {
 		return nil, err
 	}
-	return p.proposal(q.Context.RunID, "queued-read", "http.request", map[string]any{"method": "GET", "url": "https://fixture.invalid/objects/" + key}), nil
+	// Native tool references are unique per owned provider/run. Reusing one
+	// literal across concurrent scripted runs collides with tool_calls' PK and
+	// tests an invalid provider identity rather than task/mandate isolation.
+	return p.proposal(q.Context.RunID, "queued-read-"+q.Context.RunID, "http.request", map[string]any{"method": "GET", "url": "https://fixture.invalid/objects/" + key}), nil
 }
 func (p *behavior76QueuedReads) SubmitToolResult(_ context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
 	return initiativeProjectStream(transport.NewAssistantFinalEvent(q.RunID, p.Name(), transport.AssistantFinal{Content: `{"answer":"Тестовый объект прочитан.","task_key":null,"next_action":{"kind":"answer","resource_key":null,"expected_version":null,"body":null,"reason":"read only"},"needs_clarification":false,"used_source_refs":[],"proposed_profile_update":{"kind":"none","source_refs":[],"summary":""},"completion_claim":"technical_result"}`, Usage: &transport.Usage{InputTokens: 1, OutputTokens: 1, TotalTokens: 2}})), nil
@@ -262,5 +265,9 @@ func TestBehavior76QueuedTaskMandatesIntegration(t *testing.T) {
 	}
 	if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM behavior76_object_events WHERE kind='read'`).Scan(&confirmed); err != nil || tasks != 2 || confirmed != 2 {
 		t.Fatal("both actual task/mandate receipts required", tasks, confirmed, err)
+	}
+	var joined int
+	if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM action_intents a JOIN tool_calls t ON t.tool_call_id=a.binding->>'tool_call_id' AND t.run_id=a.binding->>'run_id' JOIN action_effects e ON e.action_id=a.effect_id WHERE e.state='effect_confirmed' AND t.status='completed'`).Scan(&joined); err != nil || joined != 2 {
+		t.Fatal("both original tool-call/run identities must remain independently joinable", joined, err)
 	}
 }
