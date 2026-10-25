@@ -9,8 +9,8 @@ import (
 
 // Filled only after public semantics freeze and independent fresh authorship.
 // These cannot name any closed corpus, and currently prevent native admission.
-const behavior76LocalStimuliSHA = "UNBOUND"
-const behavior76LocalExpectationsSHA = "UNBOUND"
+const behavior76LocalStimuliSHA = "981c8898dddf80b8973003107dd93c7e0476f561c5271d6db13c448f7347345d"
+const behavior76LocalExpectationsSHA = "464cb37c9d8bec967baba27fe6b401b6fc41d3d5d855f3ecf5955c04312f4ee0"
 
 func TestBehavior76NativeFixtureLocal(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "fixture-local-synthetic-only" {
