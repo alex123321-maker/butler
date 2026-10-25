@@ -1,5 +1,17 @@
 # Antigravity native transport
 
+The isolated [issue97 research command](../../../cmd/effort-eval/README.md)
+qualifies explicit Flash Low/High on the same paid discovered Cloud Code route.
+Trusted `ThinkingLevel=LOW/HIGH` is paired with its exact configured profile;
+request model substitution/options cannot override it. Empty retains automatic
+thinkingBudget=-1, and no default/profile selection changes. Both profiles can
+use the bounded native response schema. Logical usage optionally retains exact
+complete thoughtsTokenCount; absent is null, zero is explicit zero, and malformed,
+negative, aliased, conflicting or over-total counts reject the stream. Thinking
+is already included in total and does not authorize additional generation.
+Only a new operator command enables the synthetic pilot; production promotion
+and actual Broker/mail acceptance are separate.
+
 A successful provider text final retains its private context for at most one
 minute so the owning Core can issue its bounded missing-response correction via
 ContinueRun. The model answer remains in native conversation history; system

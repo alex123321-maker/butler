@@ -1,5 +1,10 @@
 # Lab acceptance evidence
 
+The [issue97 effort pilot](../../cmd/effort-eval/README.md) is opt-in synthetic
+research with frozen off-model facets and no external effects. Its plain JSON
+decision/read baseline is not ordinary Core/Broker/mail acceptance. Results,
+unavailable costs and prior failed preflights remain separately labelled.
+
 Semantic memory replay checks the complete corpus-derived matrix and requires
 one original-bound review check per model citation. Citation errors and unknown
 syntax are reported separately from answer correctness. See the current

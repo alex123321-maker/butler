@@ -1,0 +1,49 @@
+Changed files:
+- cmd/effort-eval/login_test.go
+- cmd/effort-eval/login.go
+- cmd/effort-eval/main.go
+- cmd/effort-eval/manifest_test.go
+- cmd/effort-eval/README.md
+- cmd/effort-eval/store_test.go
+- cmd/effort-eval/summary_test.go
+- cmd/effort-eval/summary.go
+- docs/architecture/credential-management.md
+- docs/architecture/memory-model.md
+- docs/architecture/model-transport-contract.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/tool-runtime-adr.md
+- docs/testing/effort-research-protocol-2026-10-25.md
+- internal/acceptance/effort/cases.go
+- internal/acceptance/effort/schema.go
+- internal/acceptance/effort/state_test.go
+- internal/acceptance/effort/state.go
+- internal/acceptance/README.md
+- internal/transport/antigravity/effort_profile_test.go
+- internal/transport/antigravity/generation.go
+- internal/transport/antigravity/protocol.go
+- internal/transport/antigravity/provider.go
+- internal/transport/antigravity/README.md
+- internal/transport/events.go
+- internal/transport/README.md
+- scripts/dev/effort-research-tests.sh
+- scripts/dev/effort-research.ps1
+- scripts/dev/verify-changed.ps1
+
+Relevant specs:
+- docs/testing/effort-research-protocol-2026-10-25.md
+- docs/architecture/model-transport-contract.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/tool-runtime-adr.md
+- docs/architecture/credential-management.md
+- docs/architecture/observation-evaluation-contract.md
+- docs/architecture/execution-budget-contract.md
+
+Suggested verification:
+- This PC only: scripts/dev/effort-research.ps1 -Action Validate with disposable loopback effort97_test PG. Linux race/vet: scripts/dev/effort-research-tests.sh. Zero inference; native research needs explicit EnableNative and frozen source.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance/...
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/cloud-observe/...
+- SSH laba: fresh current protocol root offline EXACT_COMMIT (zero inference); V1–V4 roots are sealed and must never be synced or executed again
+- ssh laba: scripts/dev/antigravity-wire-lab.sh in a new isolated agent root after Sync; tests, default, and aicode modes use --network none, synthetic credentials and no operator profile (zero inference)
+- ssh laba: scripts/dev/tool-turn-usage-lab.sh <isolated-agent-root> all after Sync. Synthetic Tiered/High SSE and actual PG per-request usage, duplicate/conflict/cancel/source guards, race/vet; zero inference or historical backfill.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/transport/...

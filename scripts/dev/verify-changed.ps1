@@ -26,6 +26,16 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(cmd/effort-eval/|internal/acceptance/effort/|internal/transport/antigravity/effort_profile_test[.]go$|scripts/dev/effort-research)" {
+      [void]$specs.Add("docs/testing/effort-research-protocol-2026-10-25.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("This PC only: scripts/dev/effort-research.ps1 -Action Validate with disposable loopback effort97_test PG. Linux race/vet: scripts/dev/effort-research-tests.sh. Zero inference; native research needs explicit EnableNative and frozen source.")
+      continue
+    }
     "^(apps/orchestrator/internal/(communication/(diagnostic|metrics|limits)|api/communication_diagnostic|app/communication_diagnostic)|migrations/100_communication_owner_limits[.]|scripts/dev/communication-diagnostics-tests[.]sh$|web/(features/mind/ui/MindCommunicationDiagnostics[.]vue|tests/e2e/communication-diagnostics[.]spec[.]ts)$)" {
       [void]$specs.Add("docs/architecture/user-communication-spec.md")
       [void]$specs.Add("docs/operations/communication-diagnostics.md")

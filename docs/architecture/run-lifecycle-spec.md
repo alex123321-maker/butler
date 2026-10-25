@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+The opt-in [issue97 research driver](../../cmd/effort-eval/README.md) owns bounded
+synthetic solve/review phases outside production construction. It commits its
+fixture working state before another model pass, versions owner amendments and
+keeps candidates/hypotheses separate from primary observations. Review snapshots
+are labelled harness data, not new owner commands. This does not change Input,
+task/run/session leases, production completion, approval or delivery semantics.
+
 Communication diagnostics observe durable metadata without acquiring an
 execution lease, resuming an Input or reading model/content/secret state. The
 operator's bounded open-question ceiling is enforced atomically across owner

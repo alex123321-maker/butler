@@ -1,0 +1,8 @@
+{"Time":"2026-10-25T02:53:16.278876009Z","Action":"start","Package":"github.com/butler/butler/internal/transport/antigravity"}
+{"Time":"2026-10-25T02:53:16.294856662Z","Action":"run","Package":"github.com/butler/butler/internal/transport/antigravity","Test":"TestMemoryJobActualNativeAdapterHTTPIntegration"}
+{"Time":"2026-10-25T02:53:16.294929615Z","Action":"output","Package":"github.com/butler/butler/internal/transport/antigravity","Test":"TestMemoryJobActualNativeAdapterHTTPIntegration","Output":"=== RUN   TestMemoryJobActualNativeAdapterHTTPIntegration\n","OutputType":"frame"}
+{"Time":"2026-10-25T02:53:19.004555768Z","Action":"output","Package":"github.com/butler/butler/internal/transport/antigravity","Test":"TestMemoryJobActualNativeAdapterHTTPIntegration","Output":"--- PASS: TestMemoryJobActualNativeAdapterHTTPIntegration (2.71s)\n","OutputType":"frame"}
+{"Time":"2026-10-25T02:53:19.004601274Z","Action":"pass","Package":"github.com/butler/butler/internal/transport/antigravity","Test":"TestMemoryJobActualNativeAdapterHTTPIntegration","Elapsed":2.71}
+{"Time":"2026-10-25T02:53:19.004627727Z","Action":"output","Package":"github.com/butler/butler/internal/transport/antigravity","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-25T02:53:20.009916771Z","Action":"output","Package":"github.com/butler/butler/internal/transport/antigravity","Output":"ok  \tgithub.com/butler/butler/internal/transport/antigravity\t3.731s\n"}
+{"Time":"2026-10-25T02:53:20.009983177Z","Action":"pass","Package":"github.com/butler/butler/internal/transport/antigravity","Elapsed":3.731}
