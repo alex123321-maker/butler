@@ -116,3 +116,16 @@ The prospective F adds only immutable-selection DATA role labels for these two
 same-titled references. The exact-child-isolation PG/race regression passed6.02s;
 both selected roots and the original-document denial remain. All50 prior calls/
 at least539577 known tokens and both kinds of unknown remain in the ledger.
+
+`native-f/` is the complete prospective PASS (498.30s), produced by
+`faea6c5763a7e5f432fe995f5578f983959efa23`. All15 actual native/kernel entries
+have usage:193638 tokens (159774 input,4151 output,29713 thinking). Its11
+confirmed effects include2/2 permitted trials and exactly one ordinary original
+application. Four authoritative finals remain unverified, with parent/child
+semantic tasks active, one owner input and two automatic continuations.
+The independent original-output SHA256 is
+`aaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade`.
+Source diagnostics:1031 checks,338916ms total/max1144ms, no failed checks.
+All A..F retain65 actual calls/at least733215 known tokens; C native usage and
+the two old kernel observations remain unavailable. No cash cost is inferred.
+See [final report](../../../../docs/testing/converter20-local-results-2026-10-25.md).

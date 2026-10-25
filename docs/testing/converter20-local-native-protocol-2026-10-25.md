@@ -142,9 +142,10 @@ immutable admitted limit (2 here), every slot must actually pass against the
 selected original input, and extra operations or unmatched/foreign effects deny.
 The fixed runtime checker, permissions, budgets and all other completion/source
 checks remain unchanged. Historical scripted/release-chain exact counters remain.
-Seven race subcases reject an unapproved second/third trial, duplicate original,
-child activation, foreign task or missing discovery, while accepting1/2 admitted
-slots. The actual-process two-trial regression passed57.86s:11 exact role-bound
+Seven race subcases cover accepted one/two admitted slots and rejection of an
+unapproved second/third trial, duplicate original, child activation or foreign
+task. A separate missing-discovery assertion also rejects. The actual-process
+two-trial regression passed57.86s:11 exact role-bound
 effects, one original application, four unverified finals and two automatic
 continuations; native calls0. Targeted vet passed.
 
@@ -206,3 +207,19 @@ final becomes a semantic owner verdict. Further owner verification or UI/channel
 proof must be reported explicitly; none is inferred from native call completion.
 The prior scripted negative/runtime/version/rollback proof remains separately
 identified; this one native task is not a quality equivalence or reliability study.
+
+## Final F observation
+
+The prospectively frozen producer `faea6c5763a7e5f432fe995f5578f983959efa23`
+passed the complete gate in498.30s. F used15 actual native/kernel entries with
+all usage observed:159774 input +4151 output +29713 thinking =193638 tokens.
+Its11 confirmed effects include2/2 permitted trials and exactly one original
+application. There are four authoritative unverified finals, one fixture owner
+input and two automatic continuations. Parent/child semantic tasks remain active.
+The independently read original output has raw SHA256
+`aaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade`.
+All1031 source checks passed; maximum1144ms under the unchanged two-second bound.
+A..F retain65 actual calls/at least733215 known tokens, C's unavailable native
+usage and the same two unobserved kernel attempts. No monetary cost is inferred.
+See [final local results](converter20-local-results-2026-10-25.md) for identities,
+criteria, retained failures, local validation and explicit deployment limits.

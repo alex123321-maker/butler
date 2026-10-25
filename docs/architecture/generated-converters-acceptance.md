@@ -1,5 +1,16 @@
 # Generated converter acceptance
 
+## Current local acceptance, 2026-10-25
+
+The bounded `delimited_json_v1` path has a complete actual native High
+parent/child → fixed checks → finite trial → activation → original-application
+pass on this PC. See [issue20 local results](../testing/converter20-local-results-2026-10-25.md)
+for exact source/binary identity, retained failures, unknown spending and criteria.
+Model finals remain unverified; arbitrary code, issue33, production deployment
+and real channel/owner acceptance are outside this qualification.
+
+## Historical lab evidence
+
 All checks run on the isolated SSH lab root `/srv/storage/butler/agents/browser-sessions`.
 No shared Compose pointer, main database, native credentials or external recipient
 was changed. Every snapshot was explicitly synchronized before execution.
