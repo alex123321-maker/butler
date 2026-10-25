@@ -44,6 +44,15 @@ error text, URLs, source snippets and user input never become notice text.
 Approval notices link to the existing protected owner approval UI and grant
 no action. Logging-only observations do not create channel sent receipts.
 
+Migration101 extends the finite notice vocabulary. For a current admitted queued Input, a blocked/waiting earliest unfinished
+predecessor in the same owner's session produces the fixed `queue_blocked`
+notice (`previous_stopped` or `previous_waiting`). Only dependency status and
+timestamp are read, even when the predecessor predates notice activation. This
+does not adopt its historical notices, source content or private errors, and
+does not close, skip or retry it. A running predecessor remains ordinary queued
+state. Send authorization recomputes the dependency; unchanged notices deduplicate
+and a cleared/changed blocker invalidates pending warnings.
+
 Credential vault control cards are a separate secret-input capability. Existing
 text widget responses must not carry PIN/password/OTP. The two account cards are
 access-existing and create-account, plus a short-lived OTP challenge. Web opens

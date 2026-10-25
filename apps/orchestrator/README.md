@@ -171,6 +171,12 @@ the Catalog. Maintenance verifies durable processing and can resume incomplete
 completed attempts at most three times under the same task budget. See the
 [Android contract](../../docs/architecture/android-companion.md).
 
+Execution notices explain when a current queued message is held behind an older
+blocked or waiting Input in the same owner's session, including a head accepted
+before notice activation. Only fixed dependency facts are exposed; old content,
+history adoption, session ordering and action permissions are unchanged. Stale
+warnings are denied at delivery. See the executionnotice module README.
+
 Lease-supervisor cancellation retains a fixed Core reason when current authority
 cannot be checked, the exact ownership token changes, or renewal fails. A stream
 cancellation no longer discards that owning cause. Private storage details stay

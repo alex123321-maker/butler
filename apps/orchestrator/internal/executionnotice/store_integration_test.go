@@ -3,6 +3,7 @@ package executionnotice_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -29,6 +30,139 @@ type fixture struct {
 	core     *communication.Store
 	input    input.Record
 	bindings []executionnotice.Binding
+}
+
+func (f *fixture) telegramInput(t *testing.T, eventID string) input.Record {
+	t.Helper()
+	const key = "telegram-explicit:77:42"
+	if _, _, err := session.NewPostgresRepository(f.pool).CreateSession(f.ctx, session.CreateSessionParams{SessionKey: key, UserID: "owner", Channel: "telegram", MetadataJSON: `{}`}); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := f.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(f.ctx)
+	e := ingress.InputEvent{SessionKey: key, Source: "telegram", EventID: eventID, IdempotencyKey: eventID, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"private-test-content"}`, CreatedAt: time.Now()}
+	s := input.NewStore(f.pool)
+	r, _, err := s.AcceptTx(f.ctx, tx, e, "owner", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: "owner", Channel: "telegram", SessionKey: "telegram:42", DeliveryID: eventID})
+	hash, _ := actionauth.ArgumentsHash(e.PayloadJSON)
+	if err = s.MarkCommunicationTx(a, tx, r, input.CommunicationIngress{OwnerID: "owner", BindingID: "telegram", BindingVersion: 1, BotID: 77, DeliveryID: eventID, PayloadHash: hash, Kind: "telegram_message", ActorChannel: "telegram", ActorDeliveryID: eventID}); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+func TestExecutionNoticeTelegramQueueBehindOldHeadIntegration(t *testing.T) {
+	for _, state := range []string{"blocked", "waiting_for_user", "running"} {
+		t.Run(state, func(t *testing.T) {
+			f := setup(t)
+			f.state(t, "completed", "")
+			head := f.telegramInput(t, "old-head")
+			next := f.telegramInput(t, "new-question")
+			// The old head predates notice activation. Its source text and old
+			// notices must stay excluded while its actual queue dependency is visible.
+			if _, err := f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET status=$2,error_code='private-error',accepted_at=(SELECT min(activated_at) FROM execution_notice_bindings)-interval '1 minute',updated_at=clock_timestamp() WHERE input_id=$1`, head.InputID, state); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.store.Sweep(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			items, err := f.store.List(f.actor("owner"), "web")
+			if err != nil {
+				t.Fatal(err)
+			}
+			found := false
+			for _, n := range items {
+				if n.InputID == head.InputID {
+					t.Fatal("adopted historical notice")
+				}
+				if n.InputID != next.InputID {
+					continue
+				}
+				found = true
+				want, reason := "queue_blocked", "previous_stopped"
+				if state == "waiting_for_user" {
+					reason = "previous_waiting"
+				}
+				if state == "running" {
+					want, reason = "queued", ""
+				}
+				if n.Code != want || n.Reason != reason || strings.Contains(n.Text, "private-") {
+					t.Fatal("new question hid its dependency or exposed old content", n)
+				}
+			}
+			if !found {
+				t.Fatal("current Telegram request has no notice")
+			}
+			if err = f.store.Sweep(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			var count int
+			if err = f.pool.QueryRow(f.ctx, `SELECT count(*) FROM execution_notices WHERE input_id=$1 AND channel='telegram'`, next.InputID).Scan(&count); err != nil || count != 1 {
+				t.Fatal("repeated sweep duplicated queue notice", count, err)
+			}
+			in := input.NewStore(f.pool)
+			in.CommunicationEpoch = 1
+			if state != "running" {
+				if _, err = in.Claim(f.ctx, time.Minute); !errors.Is(err, input.ErrNotFound) {
+					t.Fatal("notice bypassed blocked/waiting session ordering", err)
+				}
+			}
+			if state == "running" {
+				return
+			}
+			var pending *deliveryoutbox.Message
+			for i := 0; i < 4; i++ {
+				m, e := f.store.Claim(f.ctx, time.Minute)
+				if e != nil || m == nil {
+					t.Fatal("queue notice not deliverable", e)
+				}
+				if e = f.store.AuthorizeSend(f.ctx, *m); e != nil {
+					t.Fatal(e)
+				}
+				if m.SessionKey == next.SessionKey {
+					pending = m
+					break
+				}
+				if e = f.store.Finish(f.ctx, *m, deliveryoutbox.Outcome{Status: "sent", ACK: "1"}); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if pending == nil {
+				t.Fatal("missing Telegram queue notice")
+			}
+			if _, err = f.pool.Exec(f.ctx, `UPDATE accepted_inputs SET status='failed',updated_at=clock_timestamp() WHERE input_id=$1`, head.InputID); err != nil {
+				t.Fatal(err)
+			}
+			if err = f.store.AuthorizeSend(f.ctx, *pending); err == nil {
+				t.Fatal("stale blocker warning remained sendable")
+			}
+			claim, err := in.Claim(f.ctx, time.Minute)
+			if err != nil || claim.InputID != next.InputID || claim.Attempts != 1 {
+				t.Fatal("closing head did not release original request", claim.InputID, err)
+			}
+			if err = f.store.Sweep(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			items, err = f.store.List(f.actor("owner"), "web")
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, n := range items {
+				if n.InputID == next.InputID && n.Code != "working" {
+					t.Fatal("released request kept stale queue warning", n)
+				}
+			}
+		})
+	}
 }
 
 func TestExecutionNoticeScheduledChecksAreQuietButFailuresVisibleIntegration(t *testing.T) {

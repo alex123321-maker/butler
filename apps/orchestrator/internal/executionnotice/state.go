@@ -11,11 +11,18 @@ type snapshot struct {
 	InputID, RunID, SessionKey, Status, Checkpoint, ErrorCode, ApprovalRef string
 	HasResult                                                              bool
 	UpdatedAt                                                              time.Time
+	PredecessorState                                                       string
 }
 
 func classify(s snapshot) (code, reason string) {
 	switch s.Status {
 	case "queued":
+		if s.PredecessorState == "blocked" {
+			return "queue_blocked", "previous_stopped"
+		}
+		if s.PredecessorState == "waiting_for_user" {
+			return "queue_blocked", "previous_waiting"
+		}
 		code = "queued"
 	case "running":
 		code = "working"
@@ -64,6 +71,14 @@ func Text(code, reason string) string {
 	switch code {
 	case "queued":
 		return "Запрос принят и ожидает обработки."
+	case "queue_blocked":
+		if reason == "previous_waiting" {
+			return "Запрос принят, но ждёт вашего ответа на более ранний запрос в этом чате."
+		}
+		if reason == "previous_stopped" {
+			return "Запрос принят, но его запуск блокирует более ранний остановленный запрос в этом чате. Требуется разобраться с предыдущим сбоем."
+		}
+		return ""
 	case "working":
 		return "Обрабатываю запрос."
 	case "waiting_for_user":

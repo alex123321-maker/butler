@@ -61,6 +61,13 @@ heads block later inputs. Across sessions the oldest ready head wins, with
 does not consume the recovery retry allowance. Queued deadlines remain visible
 even behind a blocked head.
 
+Kernel notices distinguish a current queued request held behind the owner's
+earliest blocked/waiting predecessor from ordinary queueing. That dependency
+fact is visible even if the predecessor predates notice activation; its old
+message/errors/notices stay excluded. This projection cannot claim work, close
+the predecessor or bypass ordering. An authenticated owner failure-close may
+release the original queued request under the existing exact-state guards.
+
 The app starts two independent workers, polls every 250 ms, claims for 60 seconds
 and renews at one third of that duration. The worker context belongs to the app,
 not to an HTTP connection or Telegram update. Execution is bounded to ten

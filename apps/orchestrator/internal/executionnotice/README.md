@@ -26,3 +26,11 @@ The optional owner Web endpoint is `/api/v3/communications/states`. Notices have
 no public write endpoint or model schema. Delivery is independent of Input
 worker cancellation, inference allowance and publication source access, so a
 safe fixed failure notice can explain a denied or failed model attempt.
+
+Migration101 permits a fixed `queue_blocked` notice when a current queued Input's
+earliest unfinished predecessor in that owner's session is blocked or waiting for an
+owner response. A running predecessor remains ordinary queueing. The dependency
+may predate notice activation; only its status/timestamp are read, never its
+message, error details or old notices. Session ordering and owner controls are
+unchanged. Delivery rechecks the dependency, suppresses stale warnings after it
+clears and deduplicates unchanged states.

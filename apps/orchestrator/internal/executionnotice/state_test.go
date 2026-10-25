@@ -38,3 +38,20 @@ func TestExecutionNoticeClassification(t *testing.T) {
 		t.Fatal("unknown notice accepted")
 	}
 }
+
+func TestExecutionNoticeQueuePredecessor(t *testing.T) {
+	for _, state := range []string{"blocked", "waiting_for_user", "running", "queued", "", "private-error-text"} {
+		code, reason := classify(snapshot{Status: "queued", PredecessorState: state})
+		blocked := state == "blocked" || state == "waiting_for_user"
+		if (code == "queue_blocked") != blocked || Text(code, reason) == "" {
+			t.Fatal("queue dependency classification lost", state, code, reason)
+		}
+		code, _ = classify(snapshot{Status: "running", PredecessorState: state})
+		if code != "working" {
+			t.Fatal("old dependency replaced current execution")
+		}
+	}
+	if Text("queue_blocked", "private-error-text") != "" {
+		t.Fatal("arbitrary queue reason accepted")
+	}
+}

@@ -70,11 +70,13 @@ func New(ctx context.Context, pool *pgxpool.Pool, bindings []Binding) (*Store, e
 const snapshotsSQL = `SELECT i.input_id,COALESCE(i.run_id,''),i.session_key,i.status,i.checkpoint,
  CASE WHEN i.error_code<>'' THEN i.error_code ELSE COALESCE(i.checkpoint_json->'checkpoint_data'->>'reason','') END,
  COALESCE((SELECT a.approval_id FROM approvals a WHERE a.run_id=i.run_id AND a.status='pending' AND a.expires_at>clock_timestamp() ORDER BY a.requested_at DESC LIMIT 1),''),
- EXISTS(SELECT 1 FROM communication_publications p WHERE p.input_id=i.input_id AND p.purpose='result' AND NOT p.privacy_redacted),i.updated_at
+ EXISTS(SELECT 1 FROM communication_publications p WHERE p.input_id=i.input_id AND p.purpose='result' AND NOT p.privacy_redacted),
+ GREATEST(i.updated_at,CASE WHEN predecessor.status IN ('blocked','waiting_for_user') THEN predecessor.updated_at ELSE i.updated_at END),COALESCE(predecessor.status,'')
  FROM accepted_inputs i JOIN sessions ss ON ss.session_key=i.session_key AND ss.user_id=i.owner_id
  JOIN execution_notice_bindings n ON n.owner_id=i.owner_id
  JOIN communication_bindings b ON b.binding_id=n.binding_id AND b.version=n.binding_version AND b.owner_id=n.owner_id
  JOIN communication_bindings origin ON origin.binding_id=i.communication_ingress_json->>'BindingID' AND origin.version::text=i.communication_ingress_json->>'BindingVersion' AND origin.owner_id=i.owner_id AND origin.enabled AND origin.verified
+ LEFT JOIN LATERAL(SELECT h.status,h.updated_at FROM accepted_inputs h WHERE i.status='queued' AND h.session_key=i.session_key AND h.owner_id=i.owner_id AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled') ORDER BY h.session_sequence LIMIT 1) predecessor ON TRUE
  WHERE n.binding_id=$1 AND n.binding_version=$2 AND n.owner_id=$3 AND b.channel=$4 AND b.recipient=$5 AND b.enabled AND b.verified
  AND i.communication_ingress_epoch=1 AND i.communication_ingress_json->>'OwnerID'=i.owner_id AND i.accepted_at>=n.activated_at
  AND (COALESCE(i.communication_ingress_json->>'Kind','')<>'scheduled_occurrence' OR i.status IN ('blocked','failed','expired','waiting_for_user'))
@@ -96,7 +98,7 @@ func (s *Store) snapshots(ctx context.Context, tx pgx.Tx, b Binding, id string) 
 	var out []snapshot
 	for rows.Next() {
 		var x snapshot
-		if err = rows.Scan(&x.InputID, &x.RunID, &x.SessionKey, &x.Status, &x.Checkpoint, &x.ErrorCode, &x.ApprovalRef, &x.HasResult, &x.UpdatedAt); err != nil {
+		if err = rows.Scan(&x.InputID, &x.RunID, &x.SessionKey, &x.Status, &x.Checkpoint, &x.ErrorCode, &x.ApprovalRef, &x.HasResult, &x.UpdatedAt, &x.PredecessorState); err != nil {
 			return nil, err
 		}
 		out = append(out, x)
