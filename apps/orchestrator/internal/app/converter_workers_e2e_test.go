@@ -401,7 +401,12 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		params.Set("search_path", f.f.pool.Config().ConnConfig.RuntimeParams["search_path"])
 		dsn.RawQuery = params.Encode()
 		broker := exec.Command(os.Getenv("BUTLER_CONVERTER_BROKER_BINARY"))
+		policyJSON, err := json.Marshal(f.f.budgets.Policy)
+		if err != nil {
+			t.Fatal("finite owning Broker policy unavailable")
+		}
 		broker.Env = []string{"PATH=" + os.Getenv("PATH"), "BUTLER_ENVIRONMENT=test", "BUTLER_GRPC_ADDR=" + grpcAddress, "BUTLER_HTTP_ADDR=" + httpAddress,
+			"BUTLER_EXECUTION_BUDGET_POLICY_JSON=" + string(policyJSON),
 			"BUTLER_POSTGRES_URL=" + dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_TOOL_REGISTRY_PATH=/src/configs/tools.json", "BUTLER_ACTION_CONTEXT_URL=" + core.URL + "/internal/action-context",
 			"BUTLER_ACTION_AUTHORITY_TOKEN_FILE=" + coreFile, "BUTLER_OWNER_CONTROL_OWNER_ID=" + f.f.parent.OwnerID, "BUTLER_SKILLS_ENABLED=true", "BUTLER_CONVERTERS_ENABLED=true",
 			"BUTLER_DELEGATION_ENABLED=true", "BUTLER_DELEGATION_CONTROL_URL=" + core.URL + "/internal/delegation", "BUTLER_CONVERTER_DELEGATION_ENABLED=true", "BUTLER_CONVERTER_DELEGATION_CONTROL_URL=" + core.URL + "/internal/converter-delegation",
