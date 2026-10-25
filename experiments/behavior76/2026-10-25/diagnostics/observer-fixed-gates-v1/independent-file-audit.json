@@ -1,0 +1,25 @@
+{
+  "version": "issue76-independent-pgx-build-file-audit-v1",
+  "result": "PASS",
+  "producer": "f5c23451791abcc880e81b414fbdaba3c65b879c",
+  "files_original": 312,
+  "files_copy": 312,
+  "changed_files": [
+    "conn.go"
+  ],
+  "extra_files": 0,
+  "independent_exact_callback_derivation": true,
+  "callback_added_lines": 3,
+  "root_mod_sum_unchanged": true,
+  "research_mod_only_one_local_replace": true,
+  "research_sum_byteexact": true,
+  "original_sha256": "076f1d636cd6e2a1b8cadaea24ac60375cd98f1d63034ff796427f49a4408684",
+  "derived_sha256": "9fdbb58e77cebad5ff489cec5481b1aac2d5e111e44157605b796f7a7d8078fc",
+  "pins_sha256": "037012b0589c7eb2a749315d18ef12986b188251702fc2e0fb9a839ca25544a8",
+  "module_inventory_sha256": "7c7a00ec60a1f07f50cf8aa946240ad1e7dcb21173f81d0e4013b1edd046f7ac",
+  "research_mod_sha256": "b02cebb072429acbf980947f81e3b03238b9a7afb82a4e242800b8479e98cc0d",
+  "checks": "File-only: no Go build, PostgreSQL query, test or provider invocation",
+  "frozen_parser_observer_build_compatibility": "Accepted additive manifest metadata: parser pins entire manifest and checks required keys without rejecting unknown extra fields; no criterion branch change",
+  "candidate_protocol_controls_goldens_scoring_unchanged": true,
+  "native_admission": false
+}
