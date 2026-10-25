@@ -19,14 +19,30 @@ export GOMODCACHE="${GOMODCACHE:-$PWD/.cache/go-mod}"
 mkdir -p .cache/converter20
 binary="$PWD/.cache/converter20/orchestrator-app.test"
 go test -race -c -o "$binary" ./apps/orchestrator/internal/app
+# Keep canonical binaries/caches in the repository, but execute identical bytes
+# on the local Linux filesystem. Windows-backed ELF page faults are outside the
+# provider/authority proof and must not consume its unchanged two-second bound.
+execution_dir=$(mktemp -d /tmp/butler-converter20.XXXXXX)
+trap 'rm -f "$execution_dir/app.test" "$execution_dir/tool-broker"; rmdir "$execution_dir"' EXIT
+cp "$binary" "$execution_dir/app.test"
+cp "$BUTLER_CONVERTER_BROKER_BINARY" "$execution_dir/tool-broker"
+cmp "$binary" "$execution_dir/app.test"
+cmp "$BUTLER_CONVERTER_BROKER_BINARY" "$execution_dir/tool-broker"
+export BUTLER_CONVERTER_BROKER_BINARY="$execution_dir/tool-broker"
 if [ "$action" = native ]; then
  test "${BUTLER_CONVERTER_LOCAL_NATIVE:-}" = synthetic-local-only
- changes=$(git status --porcelain) || exit 1
- test -z "$changes" || { echo 'Commit prospective native source first' >&2; exit 1; }
- commit=$(git rev-parse --verify HEAD) || exit 1
- export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$commit;binary-sha256:$(sha256sum "$binary" | cut -d' ' -f1)"
- "$binary" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
+ digest=$(sha256sum "$binary" | cut -d' ' -f1)
+ if [ -n "${BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE:-}" ]; then
+  # The Windows wrapper verified the exact managed checkout after building.
+  test "${BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE##*;binary-sha256:}" = "$digest"
+ else
+  changes=$(git status --porcelain) || exit 1
+  test -z "$changes" || { echo 'Commit prospective native source first' >&2; exit 1; }
+  commit=$(git rev-parse --verify HEAD) || exit 1
+  export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$commit;binary-sha256:$digest"
+ fi
+ "$execution_dir/app.test" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
 else
- "$binary" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
+ "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
  go vet ./apps/orchestrator/internal/app
 fi
