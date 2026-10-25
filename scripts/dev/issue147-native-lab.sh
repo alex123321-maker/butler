@@ -12,8 +12,8 @@ flock -n 9 || { echo 'This issue147 lab is already in use'; exit 1; }
 network=$(docker inspect butler-main-postgres-1 | jq -r '.[0].NetworkSettings.Networks|keys[0]')
 if [[ "$mode" == setup ]]; then
   docker inspect butler-issue147-postgres >/dev/null 2>&1 && { echo 'Owned container already exists'; exit 1; }
-  docker run -d --name butler-issue147-postgres --network "$network" --tmpfs /var/lib/postgresql/data:rw,size=768m --shm-size=128m \
-    -e POSTGRES_USER=issue147 -e POSTGRES_PASSWORD=synthetic-issue147 -e POSTGRES_DB=issue147_test pgvector/pgvector:pg17 >/dev/null
+  docker run -d --name butler-issue147-postgres --network "$network" --tmpfs /var/lib/postgresql/data:rw,size=2048m --shm-size=128m \
+    -e POSTGRES_USER=issue147 -e POSTGRES_PASSWORD=synthetic-issue147 -e POSTGRES_DB=issue147_test pgvector/pgvector:pg17 postgres -c max_wal_size=256MB -c min_wal_size=80MB >/dev/null
   for n in $(seq 1 30); do docker exec butler-issue147-postgres pg_isready -U issue147 -d issue147_test >/dev/null && break; sleep 1; done
   docker exec butler-issue147-postgres pg_isready -U issue147 -d issue147_test >/dev/null
   echo 'Isolated PostgreSQL ready; no shared schema changed.'
@@ -27,8 +27,9 @@ if [[ "$mode" == plumbing ]]; then
     -e BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://issue147:synthetic-issue147@butler-issue147-postgres:5432/issue147_test?sslmode=disable \
     -e BUTLER_CURRENT_REQUEST_REPORT_DIR="/reports/$window" -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/runbin/broker.test \
     -v "$base/bin:/bin-output:ro" -v "$base/reports:/reports" -v "$base/migrations:/work/github.com/butler/butler/migrations:ro" -w /work \
-    golang:1.27.2 bash -eu -c 'cp /bin-output/*.test /runbin/; exec /runbin/candidate-app.test -test.v -test.timeout=3m -test.run "^TestCurrentRequestScopeCoreBrokerIntegration$"' \
+    golang:1.27.2 bash -eu -c 'cp /bin-output/candidate-app.test /bin-output/broker.test /runbin/; chmod u+x /runbin/*.test; exec /runbin/candidate-app.test -test.v -test.timeout=3m -test.run "^TestCurrentRequestScopeCoreBrokerIntegration$"' \
     > "$base/reports/$window/test.log" 2>&1
+  grep -q '^--- PASS: TestCurrentRequestScopeCoreBrokerIntegration' "$base/reports/$window/test.log"
   echo 'Zero-inference integration window finished.'
   exit 0
 fi
@@ -48,6 +49,7 @@ docker run --rm --name "butler-issue147-$mode" --user "$(id -u):$(id -g)" --netw
   -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/runbin/broker.test \
   -v "$base/bin:/bin-output:ro" -v "$base/reports:/reports" \
   -v "$base/migrations:/work/github.com/butler/butler/migrations:ro" -w /work \
-  golang:1.27.2 bash -eu -c 'cp /bin-output/*.test /runbin/; exec "/runbin/$1-app.test" -test.v -test.timeout=14m -test.run "^TestNativeCurrentRequestScopeLab$"' _ "$mode" \
+  golang:1.27.2 bash -eu -c 'cp "/bin-output/$1-app.test" /bin-output/broker.test /runbin/; chmod u+x /runbin/*.test; exec "/runbin/$1-app.test" -test.v -test.timeout=14m -test.run "^TestNativeCurrentRequestScopeLab$"' _ "$mode" \
   > "$base/reports/$window/test.log" 2>&1
+grep -q '^--- PASS: TestNativeCurrentRequestScopeLab' "$base/reports/$window/test.log"
 echo "$mode native window finished; evidence retained."

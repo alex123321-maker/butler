@@ -5,7 +5,8 @@ message kind. A canonical answer changes only the owning question phase after
 the existing interaction checks; payload fields and old answers cannot select it.
 Recovery retains the original owner request, fresh tool contracts and normal
 authority/budget checks. This extends PR150's existing exchange selection without
-clearing history or changing its epoch policy. See issue147's native report.
+clearing history or changing its epoch policy. See the
+[issue147 acceptance report](../../docs/testing/issue147-current-request-2026-10-25.md).
 
 Explicit owner profiles with migration097 also deliver fixed kernel execution
 

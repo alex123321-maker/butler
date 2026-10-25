@@ -31,7 +31,7 @@ func TestCurrentRequestAndHistoricalAnswerIdentityReachNativeWire(t *testing.T) 
 			q.InputItems = append(q.InputItems,
 				securitycontent.Data(map[string]any{"kind": "historical_message", "run_ref": "old-run", "message_kind": "interaction_response", "content": "старый ответ"}, securitycontent.Origin{Kind: securitycontent.MemoryDerived, SourceRefs: []string{"transcript:old"}, Sensitivity: securitycontent.Private}),
 				securitycontent.CurrentOwnerMessage("Спроси заново", "input:current-event"),
-				securitycontent.Data(map[string]any{"kind": "current_request", "run_ref": "current-run", "input_event_ref": "input:current-event", "phase": phase}, securitycontent.Origin{Kind: securitycontent.MemoryDerived, SourceRefs: []string{"input:current-event"}, Sensitivity: securitycontent.Private}))
+				securitycontent.Data(map[string]any{"kind": "current_request", "current_request": map[string]any{"run_ref": "current-run", "input_event_ref": "input:current-event", "phase": phase}}, securitycontent.Origin{Kind: securitycontent.MemoryDerived, SourceRefs: []string{"input:current-event"}, Sensitivity: securitycontent.Private}))
 			stream, err := p.StartRun(context.Background(), q)
 			if err != nil {
 				t.Fatal(err)
