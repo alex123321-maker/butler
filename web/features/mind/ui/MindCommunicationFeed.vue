@@ -11,11 +11,13 @@
   <p v-if="store.communicationError" class="mind-error" role="alert">{{ store.communicationError }}</p>
   <p v-if="store.executionNoticeError" class="mind-error" role="status">{{ store.executionNoticeError }}</p>
   <button v-if="store.publicationMore" class="mind-text-button" type="button" @click="store.loadPublications(true)">Загрузить продолжение разговора</button>
+  <MindCommunicationDiagnostics />
 </template>
 <script setup lang="ts">
 import { useMind } from '../model/store'
 import type { Publication, PublicationInput, ExecutionNotice } from '../model/communications'
 import MindPublication from './MindPublication.vue'
+import MindCommunicationDiagnostics from './MindCommunicationDiagnostics.vue'
 const store = useMind()
 const entries = computed(() => {
   const rows: { id: string; at: string; input?: PublicationInput; publication?: Publication; notice?: ExecutionNotice }[] = [

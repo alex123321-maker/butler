@@ -21,6 +21,20 @@ new inference. Notice state, action outcome, attempt result, task completion
 and channel receipt remain separate. Only actual Telegram ACK means sent;
 Web availability is not proof of a client read. Kernel notice delivery never
 retries a model or action. See [communication](user-communication-spec.md).
+The opt-in [issue97 research driver](../../cmd/effort-eval/README.md) owns bounded
+synthetic solve/review phases outside production construction. It commits its
+fixture working state before another model pass, versions owner amendments and
+keeps candidates/hypotheses separate from primary observations. Review snapshots
+are labelled harness data, not new owner commands. This does not change Input,
+task/run/session leases, production completion, approval or delivery semantics.
+
+Communication diagnostics observe durable metadata without acquiring an
+execution lease, resuming an Input or reading model/content/secret state. The
+operator's bounded open-question ceiling is enforced atomically across owner
+sessions at publication; quota denial creates no partial publication or wait.
+Exact receipt replay and existing no-expiry waits retain their identities and
+spent budgets. Readiness and active/drain operation are documented in
+[communication diagnostics](../operations/communication-diagnostics.md).
 
 Credential vault requests use the existing durable interaction checkpoint with
 kind `credential_interaction`, distinct from preference questions and action

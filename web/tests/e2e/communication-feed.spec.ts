@@ -133,6 +133,7 @@ test('canonical report renders all typed blocks safely and downloads exact retai
   await communications(page)
   await connect(page)
   const article = page.locator('[data-publication="publication:canonical-report"]')
+  await expect(article.getByText('Telegram: результат доставки неизвестен.', { exact: true })).toBeVisible()
   await expect(article.getByRole('heading', { name: 'Полный отчёт 🧪' })).toBeVisible()
   await expect(article.getByRole('cell', { name: 'Проверен', exact: true })).toBeVisible()
   await expect(article.getByAltText('Проверочное изображение')).toBeVisible()

@@ -31,6 +31,11 @@ func (s *Store) SweepStopped(ctx context.Context) error {
  JOIN runs r ON r.run_id=i.run_id AND r.session_key=i.session_key AND r.task_id IS NOT DISTINCT FROM i.task_id
  LEFT JOIN input_stopped_attempts f ON f.input_id=i.input_id
  WHERE (i.communication_ingress_epoch=1 OR EXISTS(SELECT 1 FROM communication_admissions c WHERE c.input_id=i.input_id AND c.owner_id=i.owner_id AND c.session_key=i.session_key AND c.schema_epoch=1)) AND i.error_code<>''
+ AND r.current_state<>'completed'
+ AND (i.status<>'blocked' OR NOT (
+ EXISTS(SELECT 1 FROM approvals WHERE run_id=i.run_id AND status='pending' AND expires_at>clock_timestamp())
+ OR EXISTS(SELECT 1 FROM communication_interactions WHERE run_id=i.run_id AND state='open' AND (expires_at IS NULL OR expires_at>clock_timestamp()))
+ OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=i.run_id AND state IN ('pending','approved') AND expires_at>clock_timestamp())))
  AND (i.status='blocked' OR (i.status='failed' AND (f.input_id IS NULL OR f.classification='uncertain')))
  AND COALESCE(f.checked_at,i.updated_at)<clock_timestamp()-interval '5 seconds'
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())

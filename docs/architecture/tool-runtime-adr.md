@@ -18,6 +18,11 @@ readers, HTTP GET/HEAD and revision3 browser navigation. It defaults false;
 mode1/contract approval and credential/custom payload/write decisions remain
 separate. Runtime public-network checks and operator destination caps still
 apply. See [standing URL consent](action-authorization-contract.md).
+The opt-in [issue97 research command](../../cmd/effort-eval/README.md) can reveal
+only frozen, synthetic fixture observations. These are simulated reads, not
+runtime calls or Broker acceptance. It has no external-effect executor and cannot
+grant tool, credential or delivery authority. Production Core/Broker/tool-runtime
+contracts and native function-call/signature handling are unchanged.
 
 The optional credential vault installs canonical Broker-owned `credentials.*`
 controls only when its mounted operator key is available. Registry JSON cannot

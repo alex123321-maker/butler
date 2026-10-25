@@ -21,6 +21,9 @@ orphaned waits on an already failed attempt gain no continuation authority.
 Blocked candidates take priority over historical backfill and uncertainty
 reviews. A failed row transaction does not prevent independent candidates from
 being reviewed in the same bounded batch.
+Completed runs and actual pending owner waits are excluded before the batch limit
+as well as under the final transaction locks, so retained ineligible history
+cannot repeatedly consume all review slots.
 
 The finalizer locks journal entries without reading arguments or secrets.
 Prepared/allowed entries prove non-dispatch; confirmed/absent entries retain

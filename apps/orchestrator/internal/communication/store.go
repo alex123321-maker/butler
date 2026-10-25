@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/metrics"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -33,6 +34,10 @@ type Store struct {
 	ExecutionNotices *executionnotice.Store
 	Pool             *pgxpool.Pool
 	Inputs           *durableinput.Store
+	// Trusted operator ceiling for outstanding owner questions. Zero uses 16;
+	// values outside 1..64 fail closed. Existing questions are never discarded.
+	MaxOpenInteractions int
+	Metrics             *metrics.Registry
 	// Only a composed Web reader/planner can promise availability. Dormant
 	// foundation and previously pending history retain their original epoch.
 	WebAvailable bool
@@ -353,6 +358,34 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	}
 	if permitted == 0 {
 		return out, ErrDenied
+	}
+	if kind == "widget" {
+		limit := s.MaxOpenInteractions
+		if limit == 0 {
+			limit = 16
+		}
+		if limit < 1 || limit > 64 {
+			return out, ErrDenied
+		}
+		var isolation string
+		if err = tx.QueryRow(ctx, `SHOW transaction_isolation`).Scan(&isolation); err != nil {
+			return out, err
+		}
+		if isolation != "read committed" {
+			return out, ErrDenied
+		}
+		// Serialize only question admissions for this owner across sessions. The
+		// count and new question share the publication's rollback transaction.
+		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('communication.open:'||$1,0))`, p.OwnerID); err != nil {
+			return out, err
+		}
+		var open int
+		if err = tx.QueryRow(ctx, `SELECT count(*) FROM communication_interactions WHERE owner_id=$1 AND state='open'`, p.OwnerID).Scan(&open); err != nil {
+			return out, err
+		}
+		if open >= limit {
+			return out, ErrDenied
+		}
 	}
 	// Binding/export checks may wait for locks or policy. Recheck live deadlines
 	// and the exact private claim after those waits, before any publication write.

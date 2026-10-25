@@ -13,6 +13,11 @@ query using the existing heuristic. This favors precision and can omit
 paraphrases; explicit semantic search retains recall. Omissions are diagnosed.
 Profile preferences and source/privacy guards are unchanged.
 
+The disabled-by-default [issue97 synthetic research driver](../../cmd/effort-eval/README.md)
+uses an independent local PostgreSQL fixture journal. Primary source observations,
+model claims/hypotheses and current goal versions remain distinct; quoted claims
+are not promoted into source facts. It adds no product memory class, profile
+entry, compaction/retrieval consumer or production working-memory policy.
 
 Credential vault form bodies, PINs, decrypted account fields and OTP candidates
 never enter Transcript, Working, Episodic, Profile or vector memory. Protected

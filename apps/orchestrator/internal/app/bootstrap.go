@@ -17,6 +17,7 @@ import (
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
+	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
@@ -545,6 +546,13 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		executionNoticeWorker = &deliveryoutbox.Worker{Store: notices, Sender: &telegramrich.ExecutionSender{Client: telegramFlow.client, Binding: telegramFlow.binding, Authorize: notices.AuthorizeSend}}
 		inputStore.CommunicationEpoch = 1
 		inputStore.StoppedFinalizer = telegramFlow.store
+		telegramFlow.store.Metrics = m
+		telegramFlow.toolProbe = communicationToolProbe(toolBrokerClient)
+		if err = communication.RegisterMetrics(m, postgres.Pool()); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
 	}
 	credentialKernel := credentialInteractions(postgres.Pool())
 	credentialKernel.configureTelegram(telegramFlow)
@@ -862,6 +870,8 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		inputStore:                 inputStore,
 		ownerAuth:                  ownerAuth,
 		communicationWebHandler:    telegramFlow.webHandler(ownerAuth),
+		communicationDiagnostic:    telegramFlow.diagnosticHandler(ownerAuth),
+		communicationDoctor:        telegramFlow.doctorReporter(),
 		sessionRepo:                sessionRepo,
 		runRepo:                    runRepo,
 		taskStore:                  taskStore,

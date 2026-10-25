@@ -1,0 +1,135 @@
+{
+  "rater": "Codex agent, distinct from tested Gemini; fixture author, not independent human",
+  "method": "Read all candidate answers/claims against original observations and current goal/version before opening profile mapping; fixed-facet grading remains separate",
+  "human_raters": 0,
+  "profile_blinded": true,
+  "review_file_sha256": "f5d8f2569a20f08848d1a3e601dcd089cc8ca3f438484e330d1c253a7277b661",
+  "judgments": [
+    {
+      "candidate_id": "00aaf5321589eb46",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "08d5c2c01121c3a7",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "0ac0338534c6c0c6",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "3653732637ccd909",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "36f94d5f3983dce9",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "4c23799bf483e4d3",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "677fd19bf4f21265",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "81a795447fdcfa3d",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "92b8e9e5262662fa",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "991244a54eeba901",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "ad164ce873bd12f4",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "bc494eba71789f2a",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "bea2fcac9b9d0530",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "d1a838b06854448f",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "d5b28f1ddb701ceb",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "e6c2537284a36c06",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "e7bd001c3bcd84a8",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    },
+    {
+      "candidate_id": "e9a07d6973f24d1d",
+      "semantic_review": "source_consistent",
+      "unsupported_factual_assertion": false,
+      "unnecessary_question": false,
+      "note": ""
+    }
+  ]
+}

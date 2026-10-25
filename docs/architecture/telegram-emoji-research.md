@@ -1,6 +1,9 @@
 # Telegram custom emoji research (#140)
 
 Status: experiment plus explicitly requested, bounded Telegram rollout (2026-10-23).
+The [2026-10-25 closure review](../testing/emoji140-closure-2026-10-25.md)
+reconciles the completed owner-selected scope with the original research
+checklist, reproduces local checks, and retains each unperformed benchmark.
 The owner subsequently requested self-annotation/evaluation on the available
 hardware and actual enriched bot text. This supersedes the original research-only
 restriction for this narrow renderer. It does not establish completion of the

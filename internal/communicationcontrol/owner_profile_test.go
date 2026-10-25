@@ -21,6 +21,8 @@ func TestCommunicationOwnerProfileRequiresExplicitPrivateScope(t *testing.T) {
 		"untrusted_endpoint": func(p *OwnerProfile) { p.ControlURL = "http://other/internal/communication" },
 		"mode":               func(p *OwnerProfile) { p.Mode = "legacy" },
 		"negative_cursor":    func(p *OwnerProfile) { p.InitialUpdateID = -1 },
+		"negative_questions": func(p *OwnerProfile) { p.MaxOpenInteractions = -1 },
+		"open_limit":         func(p *OwnerProfile) { p.MaxOpenInteractions = 65 },
 	} {
 		t.Run(name, func(t *testing.T) {
 			q := p

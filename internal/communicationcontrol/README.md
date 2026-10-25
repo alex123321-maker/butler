@@ -1,5 +1,10 @@
 # Communication control
 
+The private immutable owner profile also bounds outstanding owner questions:
+`MaxOpenInteractions` is zero/default16 or1..64. It is not a model argument,
+content permission or mutable UI setting. Invalid bounds reject the profile;
+the owning publication transaction enforces the ceiling across sessions.
+
 Fixed credential-free message/photo/report/widget schemas and strict decoding.
 Contract revision 2 adds quoted research evidence and checked scheduled
 observations. `unchanged` receipts have no publication or delivery parts. Source

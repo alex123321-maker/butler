@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"testing"
@@ -300,6 +301,37 @@ func TestStoppedAttemptFinalizationReleasesQueueWithoutReplayingIntegration(t *t
 				t.Fatal("known failure blocked new work", err)
 			}
 		})
+	}
+}
+
+func TestStoppedAttemptIneligibleHistoryCannotStarveBatchIntegration(t *testing.T) {
+	f := stoppedKernelFixture(t, false, false)
+	ctx := context.Background()
+	// Eight older inconsistent attempts must remain untouched, but must not
+	// occupy every slot in each bounded maintenance batch forever.
+	for n := range 8 {
+		id := fmt.Sprintf("completed-history-%d", n)
+		if _, err := f.pool.Exec(ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES($1,$2,$1,'completed','mode_2','completed','fixture',clock_timestamp(),clock_timestamp())`, id, f.p.SessionKey); err != nil {
+			t.Fatal(err)
+		}
+		old, _, err := f.s.Inputs.Accept(ctx, ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: f.p.SessionKey, Source: "fixture", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"retained history"}`, CreatedAt: time.Now()}, f.p.OwnerID, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = f.pool.Exec(ctx, `UPDATE accepted_inputs SET run_id=$2,status='blocked',error_code='execution_stopped',communication_ingress_epoch=1,updated_at=clock_timestamp()-interval '1 hour' WHERE input_id=$1`, old.InputID, id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := f.s.Inputs.SweepStopped(ctx); err != nil {
+		t.Fatal(err)
+	}
+	current, err := f.s.Inputs.Get(ctx, f.claim.InputID)
+	if err != nil || current.Status != "failed" {
+		t.Fatal("ineligible history blocked independent cleanup", current.Status, err)
+	}
+	var retained int
+	if err = f.pool.QueryRow(ctx, `SELECT count(*) FROM accepted_inputs WHERE event_id LIKE 'completed-history-%' AND status='blocked'`).Scan(&retained); err != nil || retained != 8 {
+		t.Fatal("ineligible history was rewritten", retained, err)
 	}
 }
 

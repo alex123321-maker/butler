@@ -48,9 +48,10 @@ type TelegramCommunicationOptions struct {
 	ProviderAuthStore providerauth.SecretStore `json:"-"`
 	// Export of private owner material to this precise private bot binding is
 	// an explicit operator decision. Public-only is the zero/default policy.
-	AllowPrivate    bool
-	Widgets         bool
-	EmojiDecoration bool
+	AllowPrivate        bool
+	Widgets             bool
+	MaxOpenInteractions int
+	EmojiDecoration     bool
 	// Set only by the separate trusted production constructor; JSON cannot
 	// remove the disposable-database restriction of the lab constructor.
 	ownerDatabase   string
@@ -59,14 +60,15 @@ type TelegramCommunicationOptions struct {
 }
 
 type telegramCommunication struct {
-	store    *communication.Store
-	client   *telegramrich.Client
-	binding  telegramrich.OwnerBinding
-	policy   telegramExportPolicy
-	controls *task.Controller
-	web      *webCommunication
-	draining bool
-	widgets  bool
+	toolProbe func(context.Context) (map[string]bool, error)
+	store     *communication.Store
+	client    *telegramrich.Client
+	binding   telegramrich.OwnerBinding
+	policy    telegramExportPolicy
+	controls  *task.Controller
+	web       *webCommunication
+	draining  bool
+	widgets   bool
 }
 
 type telegramExportPolicy struct {
@@ -139,6 +141,9 @@ func (p telegramExportPolicy) media(ctx context.Context, tx pgx.Tx, run string, 
 }
 
 func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *catalog.Store, inputs *durableinput.Store, guard func(context.Context, pgx.Tx, string) error, o TelegramCommunicationOptions) (*telegramCommunication, error) {
+	if o.MaxOpenInteractions < 0 || o.MaxOpenInteractions > 64 {
+		return nil, telegram.ErrExplicitUnsupported
+	}
 	if pool == nil || sources == nil || inputs == nil || guard == nil || !o.databaseAllowed(pool.Config().ConnConfig.Database) || o.OwnerID == "" || o.BindingID == "" || len(o.BindingID) > 128 || o.ChatID <= 0 || o.ExpectedBot == "" {
 		return nil, telegram.ErrExplicitUnsupported
 	}
@@ -160,7 +165,7 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if o.Widgets {
 		b.Capabilities = append(b.Capabilities, "widget")
 	}
-	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets, Sources: sources}
+	core := &communication.Store{Pool: pool, Inputs: inputs, SourceGuard: guard, WidgetProjections: o.Widgets, Sources: sources, MaxOpenInteractions: o.MaxOpenInteractions}
 	policy := telegramExportPolicy{owner: o.OwnerID, binding: b, allowPrivate: o.AllowPrivate, catalog: sources, sourceGuard: guard}
 	core.ChannelGuard = policy.check
 	var decorator *telegramrich.Decorator
@@ -205,6 +210,9 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	}
 	core.ExecutionNotices, err = executionnotice.New(ctx, pool, targets)
 	if err != nil {
+		return nil, err
+	}
+	if err = core.ConfigureQuestionLimit(ctx, o.OwnerID, o.MaxOpenInteractions); err != nil {
 		return nil, err
 	}
 	return c, nil

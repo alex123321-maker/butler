@@ -1,5 +1,17 @@
 # Butler — Model Transport Contract
 
+Issue97's [native research profiles](../../cmd/effort-eval/README.md) explicitly
+select paid Flash Low/High on the same discovered Cloud Code route. Trusted
+construction-time `ThinkingLevel=LOW/HIGH` must match the configured model and
+cannot be replaced through a request's model or transport options. Empty keeps
+the existing High automatic thinkingBudget=-1 contract. Defaults, fallback and
+production profile selection are unchanged. Bounded native response schema is
+available for these explicit profiles; semantic acceptance stays caller-owned.
+Optional logical `Usage.ThinkingTokens` retains an exact complete native
+`thoughtsTokenCount`; absent stays unavailable. Negative, aliased, conflicting or
+over-total counts reject the stream. It grants no additional budget and is not
+added to TotalTokens again. Undisclosed weights/internal allocation remain unknown.
+
 The single bounded missing-response correction is a user-role continuation
 reminder under the existing authority and freshly selected tool set. It does not
 replace system instructions, create another owner input or grant permissions.
