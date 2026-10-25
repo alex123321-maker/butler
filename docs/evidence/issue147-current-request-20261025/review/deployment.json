@@ -1,0 +1,9 @@
+{
+  "commit": "47f9429cc3a712060eaf01d329e371552cd58bcf",
+  "release": "/srv/storage/butler/main/releases/current-request-20261025-47f9429c",
+  "sha256": "10aecd518d3ca819c737ccfb154138cd0817a8174274bfde31ca08b144f8316e",
+  "health": 200,
+  "broker_and_other_services_changed": false,
+  "schema_max": "102_stopped_input_finalization.up.sql",
+  "owner_limits": "communication_owner_limits"
+}

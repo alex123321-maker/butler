@@ -1,5 +1,10 @@
 # Issue #147: current request and historical answers
 
+Subsequent PR review, working-profile Web/Telegram acceptance and the retained
+post-publication provider failure are recorded in
+[PR #155 review](pr155-review-native-2026-10-25.md). The isolated evidence below
+retains its original scope and revisions.
+
 The change adds an explicit model-visible boundary between an admitted current
 owner request, an accepted answer to its exact question, and historical messages.
 It extends PR #150; it does not replace its recent-exchange selection, recovery,
