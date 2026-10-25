@@ -65,3 +65,35 @@ removed. Old task-owned source exports and rebuildable Go object archives were
 pruned after a candidate build hit storage capacity; deployed releases, source
 Git history, database state and evidence reports were retained, and both binaries
 were rebuilt successfully afterward.
+
+## Scoped deployment and native reply
+
+Core and Broker code `619b99d7b1773d88959bcf6189733157182d2a95` was deployed on
+`laba` to `/srv/storage/butler/main/releases/stopped-inputs-20261025-619b99d7`.
+Migration102 applied before the new Broker/Core composition started. Other
+runtimes, operator policies, profiles and budget settings were retained; the
+Compose backup is private. Health returned 200. Running `/proc/1/exe` digests
+matched the built binaries:
+
+* Core: `102577271332c7706b687c6426c08d48adc958fb613b1d3a7f8a85caec0a892f`
+* Broker: `6c1315b865cc0522b93c29352060aa10e5a8838b21ddde1fd4417b188deb6d85`
+
+The sweep registered 24 known and five uncertain historical attempt failures,
+with the latter retaining their action uncertainty. A new Web owner request,
+Input `input-7132319dd490573fb3fa16cd15586b69`, run
+`run-1792900505580556062-74583aa8fc2ca9ba`, then published the ordinary result
+“Я на связи.” through `communication.message`. Four uncertain stopped attempts
+remained in that same session. The old
+`action_56a8dba2404859ee5e7350e77f5eeb52519c1a0d4ddd822a0d48614789fc5d1e`
+still had state `effect_unknown`; it was not replayed or reconciled. The fresh
+reply's effect was confirmed and did not use the older blocked-notice flag.
+
+Protected Web read returned 200; Telegram acknowledged message 175. Two model
+attempts retained 24,283 measured input and 38 output tokens, with zero unknown
+usage pairs. This native smoke used Web ingress and actual Telegram delivery;
+the dedicated owning-Telegram ingress/restart tests above used synthetic updates
+against real PostgreSQL, without injecting a failure into the working service.
+
+Additional private reports: `reports/stopped-input-deployment.json` and
+`reports/stopped-input-native.json`. The release remains on draft PR #150;
+main was not merged.
