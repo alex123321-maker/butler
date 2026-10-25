@@ -22,7 +22,7 @@ Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
-export its manifest. Window `issue20-converter-local-native-20261025c` permits
+export its manifest. Window `issue20-converter-local-native-20261025d` permits
 at most40 admitted provider entries,20 minutes total,120 seconds per call,
 131072 serialized input bytes and8192 generated tokens including thinking.
 The tested native profile is the existing automatic High configuration, without
@@ -105,6 +105,27 @@ teardown, after completion; no source proof failed. No native inference occurred
 The new `-Action Streaming` mode repeats this whole actual-process gate.
 Integrated-head streaming with migration104 must pass before another native
 window; all A/B/C negative and unknown spending remains unchanged.
+
+That integrated gate passed on98f71cff89cba2837cbd883b12c998d0a1731994 after merging
+main/PR155. Rebuilt Broker SHA256 is
+dc228503701bfe579b7a4b1fc2eeeab3e5fa3d980384dcf00c88f4a5ec62cd56.
+The complete workflow with60-second wall-bounded final passed126.40s,29 delivered
+deltas,95 source checks totaling76268ms/max1379ms and0 failed diagnostic checks.
+This does not show an end-to-end speedup over the125.39s baseline. The temporal
+run predicate's measured cumulative work fell to100.092ms/935 calls, while the
+complete proof still has substantial other costs. Fresh occupied/saturated pool
+and conservative-budget regressions also passed on this integrated binary.
+
+D is a new prospective native window, not a replay or reclassification of C.
+Its preflight requires all A/B/C journals closed with31 entries and at least319157
+known tokens, including exactly one cancelled native stream with NULL usage and
+two unobserved kernel attempts (A before native entry; C corresponding to that
+native stream). These unknowns remain in cumulative accounting. D admits at most
+40 new entries, giving a71-entry cumulative ceiling; goal/model/tool/runtime
+profile and C's finite budgets/deadlines are unchanged. The diagnostic-only
+tracer uses the same production9+1 pool settings and stores fixed SQL families,
+template hashes, storage timings and failed-check categories without SQL args or
+auth. Disable local PG statement/function profiling before any native auth/HTTP.
 
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives

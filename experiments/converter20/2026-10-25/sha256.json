@@ -60,6 +60,16 @@
     "sha256": "e6a2f8dfc165d0f9e8c83b0d8a65d38795cad08e095c6dfae1d2c2d7b267dc5b"
   },
   {
+    "path": "diagnostics/integrated-broker-build.log",
+    "bytes": 386,
+    "sha256": "e687d3142c91125514ae16844785b1fe35ce3b082ca59abb3ec34b218d5c7beb"
+  },
+  {
+    "path": "diagnostics/integrated-reserve-budget.log",
+    "bytes": 1799,
+    "sha256": "0e71dd2e5df4ddd9b15b302e961eb868b026211a0e6a6d7020a98a2583d541b9"
+  },
+  {
     "path": "diagnostics/native-c-cancelled-query.log",
     "bytes": 180,
     "sha256": "20cb081a000e30465665dc43cb93611dad84dd7e8ff1e0f60c95cf8763a563e8"
@@ -73,6 +83,11 @@
     "path": "diagnostics/streaming-b.log",
     "bytes": 4292,
     "sha256": "11c669c2eef8d3b822f6b6dada54741a71f340da795f343428450f8e0602e85c"
+  },
+  {
+    "path": "diagnostics/streaming-c-integrated.log",
+    "bytes": 3506,
+    "sha256": "c0008eaf14cacd573545b5feda81ceecf397919884d243c9afc3a46957c1e933"
   },
   {
     "path": "diagnostics/summary-benchmark-a.log",
@@ -786,7 +801,7 @@
   },
   {
     "path": "README.md",
-    "bytes": 5599,
-    "sha256": "d8b313a4fef1794dc491dd159d5eba76d69d20b09dde16819fe772471cc2340e"
+    "bytes": 6224,
+    "sha256": "5949589a45f8d3d51253309292bb141c7db6ce0cedf4810a0fea8be4642a089c"
   }
 ]

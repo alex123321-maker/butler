@@ -82,3 +82,12 @@ model deadline,163.42s total. It is not a reproduced two-second source timeout.
 JSON and full workflow passed. A1ms authority observer cancellation during final
 worker teardown remains in the raw diagnostics; source failures were0. These are
 zero-inference actual-process tests, separate from native acceptance.
+
+`streaming-c-integrated.log` is the migration104 + current-main/PR155 gate:
+126.40s,29 delivered deltas,95 source proofs totaling76268ms/max1379ms and no
+failed diagnostic checks. There is no measured end-to-end improvement over B.
+The temporal run predicate itself fell to100.092ms across935 calls. The fresh
+occupied/saturated pool and conservative-budget checks are retained separately.
+Broker was rebuilt from the integrated source; its hash is in the build log.
+The prospective D protocol retains all31 old entries/at least319157 known tokens
+and all unknown usage; no previous task/window budget or result is changed.
