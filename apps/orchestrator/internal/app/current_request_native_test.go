@@ -11,6 +11,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unicode"
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
@@ -391,22 +392,39 @@ func currentRequestScopeLab(t *testing.T, native bool) {
 
 // This finite gate grades the frozen synthetic answers, not arbitrary prose.
 func requestScopeResultMatches(name, text string) bool {
-	text = strings.ReplaceAll(strings.ToLower(text), "ё", "е")
-	has := func(parts ...string) bool {
-		for _, part := range parts {
-			if !strings.Contains(text, part) {
-				return false
-			}
-		}
-		return true
-	}
+	// Accept presentation punctuation/case, but never unrelated appended facts.
+	text = strings.Join(strings.FieldsFunc(strings.ReplaceAll(strings.ToLower(text), "ё", "е"), func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsNumber(r) }), " ")
 	switch name {
 	case "first_question":
-		return has("яблок", "слив") && !has("груш")
+		return text == "яблоки сливы" || text == "яблоки и сливы" || text == "сливы яблоки" || text == "сливы и яблоки"
 	case "identical_new_question":
-		return has("груш") && !has("яблок") && !has("слив")
+		return text == "груши"
+	case "new_topic", "explicit_followup":
+		return text == "белую льняную скатерть с зеленой каймой"
 	default:
-		return has("бел", "льнян", "зелен", "кайм") && !has("яблок") && !has("слив") && !has("груш")
+		return false
+	}
+}
+
+func TestCurrentRequestResultRejectsUnrelatedHistoricalFacts(t *testing.T) {
+	for _, tc := range []struct {
+		name, text string
+		want       bool
+	}{
+		{"first_question", "Яблоки, сливы.", true},
+		{"first_question", "Сливы и яблоки", true},
+		{"identical_new_question", "**Груши.**", true},
+		{"new_topic", "Белую льняную скатерть с зелёной каймой.", true},
+		{"explicit_followup", "Белую льняную скатерть с зеленой каймой.", true},
+		{"new_topic", "Белую льняную скатерть с зелёной каймой. Ещё синюю ленту, а новый сезон аниме выйдет осенью.", false},
+		{"first_question", "Яблоки и сливы. Скатерть будет белая.", false},
+		{"identical_new_question", "Груши. Лента синяя.", false},
+		{"identical_new_question", "Яблоки и сливы", false},
+		{"unknown_case", "Белую льняную скатерть с зелёной каймой.", false},
+	} {
+		if got := requestScopeResultMatches(tc.name, tc.text); got != tc.want {
+			t.Errorf("%s: %q: got %t, want %t", tc.name, tc.text, got, tc.want)
+		}
 	}
 }
 
