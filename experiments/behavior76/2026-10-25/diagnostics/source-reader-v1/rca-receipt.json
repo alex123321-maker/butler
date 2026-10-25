@@ -1,0 +1,129 @@
+{
+  "version": "issue76-independent-public-strict-handoff-rca-v1",
+  "replays": 1,
+  "retries": 0,
+  "test": "TestBehavior76GlobalStopAllowsCorrelatedHandoffIntegration",
+  "test_status": "PASS",
+  "test_seconds": 4.46,
+  "race": true,
+  "test_exit_code": 0,
+  "observer_exit_code": 0,
+  "binary_sha256": "2a22d410d763da284bd51201f28b2c1fb65aa8fb7ad408a58161df6fdfbb10e2",
+  "native_calls": 0,
+  "auth_reads": 0,
+  "original_failure": {
+    "elapsed_ms": 750,
+    "log_sha256": "d65c23878a534181e1ae8b769fea54f02080ca60aafbce07dabd6ef686bb4167",
+    "phase": "lease",
+    "root_cause": "unresolved; current one-shot replay did not reproduce",
+    "classification": "deadline",
+    "retained": true
+  },
+  "authority": {
+    "queries": 343,
+    "max_pool_acquire_us": 2080,
+    "traced_replacement_same_warmup": true,
+    "lease_queries": 26,
+    "observer_failed": false,
+    "reserved_connections": 1,
+    "business_connections": 9,
+    "max_lease_query_us": 1085,
+    "max_those_elapsed_us": 644,
+    "original_pool_warmed_by_OpenWithAuthorityReserve": true,
+    "operations_with_original_remaining_deadline_le_750ms": 22,
+    "pool_acquisitions": 22,
+    "operation_failures": 0,
+    "max_query_us": 5817,
+    "original_timeout_ms": 750,
+    "events": 730,
+    "dropped_events": 0,
+    "open_spans": 0,
+    "timeout_changed": false
+  },
+  "pg_sampler": {
+    "max_active_query_age_ms": 772,
+    "blocking_samples": 0,
+    "hard_process_bound_seconds": 25,
+    "interval_ms": 100,
+    "sql_text_or_args_selected": false,
+    "observer_statement_bound_ms": 500,
+    "separate_readonly_connections": 1,
+    "samples": 200,
+    "causal_link_to_original_deadline": "not_established",
+    "observed_wal_sync_samples": 8
+  },
+  "history_after_replay": {
+    "all_original_376_rows_equal": true,
+    "known_tokens": 2867576,
+    "closed_windows": 4,
+    "measured": 372,
+    "unknown_usage": 4
+  },
+  "private_controls_or_mappings_read": false,
+  "new_hidden_controls_exist": false,
+  "fresh_authorship_admission": false,
+  "native_admission": false,
+  "source_pins": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "96928a7a0a5957b5d707ee5477ac79be803377963270554746460fb811e12e79"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_events_test.go",
+      "sha256": "2ec01e200204934f0c2d8d780b6abed6330300dc84dd159cc4c6887c30456f6e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "sha256": "0e659872c428ae12bc34388d017fb214952484c9b175c7e8aa22c0dd87f3df79"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_source_rows_test.go",
+      "sha256": "794c485ea01693400d68507b1655487fbf970859a7931883326b530eb669a321"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_trace_test.go",
+      "sha256": "2b2cf3f7ba651d1b92990a074c0585800979f25527748fb6a825a84e862cd689"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/task_continuity.go",
+      "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb"
+    }
+  ],
+  "files": [
+    {
+      "sha256": "0bdc5b6c01c725e02bbf21dd0ce57ba63a13cd5f49573a432cf9cc7accd12b5a",
+      "bytes": 435843,
+      "path": "authority-trace.json"
+    },
+    {
+      "sha256": "2ac92ce50c9290e1871ac127504173ef98b5a5f5809cd5c745d35a3a9a8f05a1",
+      "bytes": 143,
+      "path": "binary-sha256.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "build.log"
+    },
+    {
+      "sha256": "a34591e0f0a1810ac522963461dd2efadac935229a21517efc92cd6be4468461",
+      "bytes": 152,
+      "path": "exit.json"
+    },
+    {
+      "sha256": "dedd390462475d26578a66b8a2e59e058107f424314df7839f48bb8c8ec386d1",
+      "bytes": 2956,
+      "path": "once-test.log"
+    },
+    {
+      "sha256": "32873859e6a00f42c43d5b38a0d8dc2fbbebd812fc6be916dd15389994319cce",
+      "bytes": 615,
+      "path": "original-history-after.log"
+    },
+    {
+      "sha256": "f1f93873946680e08e1e69908146516660a35d4e549b6acdfac9c24e25fa4f44",
+      "bytes": 82437,
+      "path": "pg-wait-metadata.log"
+    }
+  ]
+}

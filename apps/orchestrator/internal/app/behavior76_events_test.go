@@ -104,7 +104,12 @@ func (f *behavior76Fixture) apply(step behavior76Step) (any, error) {
 
 type behavior76Documents struct{ f *behavior76Fixture }
 
-func (d behavior76Documents) Search(ctx context.Context, _ []memoryservice.Scope, _ string, limit int) ([]memoryservice.SemanticHit, error) {
+func (d behavior76Documents) Search(ctx context.Context, _ []memoryservice.Scope, _ string, limit int) (hits []memoryservice.SemanticHit, err error) {
+	defer func() {
+		if err != nil && d.f.researchStop != nil {
+			d.f.researchStop.Store(true)
+		}
+	}()
 	// Explicit fixture-selected documents, not an embedding-quality claim. The
 	// ordinary bundle/formatter still accounts bytes, provenance and exclusions.
 	rows, err := d.f.pool.Query(ctx, `SELECT value FROM behavior76_aliases WHERE kind='document' ORDER BY key`)
@@ -121,6 +126,9 @@ func (d behavior76Documents) Search(ctx context.Context, _ []memoryservice.Scope
 		ids = append(ids, id)
 	}
 	rows.Close()
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	var out []memoryservice.SemanticHit
 	for _, id := range ids {
 		if len(out) == limit {
@@ -135,7 +143,12 @@ func (d behavior76Documents) Search(ctx context.Context, _ []memoryservice.Scope
 	return out, nil
 }
 
-func (f *behavior76Fixture) enrichWorking(key string) error {
+func (f *behavior76Fixture) enrichWorking(key string) (err error) {
+	defer func() {
+		if err != nil && f.researchStop != nil {
+			f.researchStop.Store(true)
+		}
+	}()
 	record, err := f.tasks.Get(f.ctx, f.lookup("task", key))
 	if err != nil {
 		return err
@@ -166,6 +179,9 @@ func (f *behavior76Fixture) enrichWorking(key string) error {
 			*query.target = append(*query.target, json.RawMessage(raw))
 		}
 		rows.Close()
+		if e = rows.Err(); e != nil {
+			return e
+		}
 	}
 	working.Scratch["synthetic_fixture_task_inventory"] = inventory
 	working.Scratch["synthetic_fixture_observations"] = observations

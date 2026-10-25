@@ -1,0 +1,21 @@
+=== RUN   TestBehavior76GlobalStopAllowsCorrelatedHandoffIntegration
+2026/10/25 20:14:49 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/25 20:14:49 INFO postgres connected component=postgres
+2026/10/25 20:14:49 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/25 20:14:50 INFO run created component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c session_key=behavior76:public-development:A state=created
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=created to_state=queued
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=queued to_state=acquired
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=acquired to_state=preparing
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=preparing to_state=model_running
+2026/10/25 20:14:50 INFO model turn usage observed component=orchestrator-run run_id=run-1792959290414613388-f2f8042b3a6c3e7c operation_id=operation_b5dbf9dcfd43953a016f938f05df4513a3fd2c0140f26c64 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=model_running to_state=tool_pending
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=tool_pending to_state=tool_running
+2026/10/25 20:14:50 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=tool_running to_state=awaiting_model_resume
+2026/10/25 20:14:51 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=awaiting_model_resume to_state=model_running
+2026/10/25 20:14:51 INFO model turn usage observed component=orchestrator-run run_id=run-1792959290414613388-f2f8042b3a6c3e7c operation_id=operation_4ed82af7259797dbe9150170c25fd483b60586e9b3cfd554 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/25 20:14:51 INFO run transitioned component=run run_id=run-1792959290414613388-f2f8042b3a6c3e7c from_state=model_running to_state=finalizing
+2026/10/25 20:14:51 INFO run completed component=orchestrator-run run_id=run-1792959290414613388-f2f8042b3a6c3e7c session_key=behavior76:public-development:A
+    behavior76_safety_test.go:324: real Core/Broker GET and wrapped normalized handoff -> exactly one correlated SubmitToolResult -> final-only completion; native/auth=0
+2026/10/25 20:14:51 INFO closing postgres pool component=postgres total_conns=3
+--- PASS: TestBehavior76GlobalStopAllowsCorrelatedHandoffIntegration (4.46s)
+PASS

@@ -366,6 +366,10 @@ func behavior76CoreWithAssembler(f *behavior76Fixture, p transport.ModelProvider
 
 func behavior76NativeFactory(t *testing.T, journal *pgxpool.Pool, f *behavior76Fixture, window, slot string, sealed *atomic.Bool) transport.ModelProvider {
 	t.Helper()
+	if f.researchStop != nil && f.researchStop != sealed {
+		t.Fatal("one shared research stop required")
+	}
+	f.researchStop = sealed
 	if f.scope != nil && (f.scope.binding.Window != window || f.scope.binding.Producer != os.Getenv("BUTLER_BEHAVIOR76_SOURCE") || f.scope.localStopped() || sealed.Load()) {
 		t.Fatal("exact live prospective native fixture binding required before private auth construction")
 	}

@@ -63,6 +63,7 @@ type behavior76Fixture struct {
 	brokerObserved    bool
 	recipient         *behavior76Runtime
 	authorityTrace    *behavior76AuthorityTrace
+	researchStop      *atomic.Bool
 }
 
 func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76Fixture {
@@ -100,7 +101,8 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 	pool = db.Pool()
 	reads := db.AuthorityReadPool()
 	var authorityTrace *behavior76AuthorityTrace
-	if global != nil {
+	publicTrace := os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") == "disabled" && os.Getenv("BUTLER_BEHAVIOR76_PUBLIC_AUTHORITY_TRACE") == "strict-handoff-once-v1"
+	if global != nil || publicTrace {
 		// Replace, never add to, the existing one-connection authority reserve.
 		// All owning stores are constructed below with this exact replacement.
 		readConfig := reads.Config().Copy()
@@ -146,7 +148,7 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	tasks := task.NewStoreWithAuthorityReads(pool, reads)
 	tasks.SetBudgets(budgets, "")
-	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: reads, sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path, authorityTrace: authorityTrace}
+	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: reads, sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path, authorityTrace: authorityTrace, researchStop: global}
 	f.reconstruct()
 	if _, err = pool.Exec(ctx, behavior76ObjectsSQL+`CREATE TABLE behavior76_aliases(kind text NOT NULL,key text NOT NULL,value text NOT NULL,PRIMARY KEY(kind,key)); CREATE TABLE behavior76_observations(n bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,observation jsonb NOT NULL);`); err != nil {
 		t.Fatal(err)
@@ -178,6 +180,11 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 		f.scope.binding = binding
 	}
 	f.broker = f.startBroker()
+	if publicTrace {
+		t.Cleanup(func() {
+			behavior76Write(t, "/src20/.cache/issue76-independent/strict-handoff-diag-v1/authority-trace.json", f.authorityTrace.snapshot())
+		})
+	}
 	return f
 }
 func (f *behavior76Fixture) reconstruct() {
