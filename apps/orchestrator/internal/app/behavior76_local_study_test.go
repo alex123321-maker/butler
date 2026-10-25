@@ -1,0 +1,72 @@
+package app
+
+import (
+	"io/fs"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+// Filled only after public semantics freeze and independent fresh authorship.
+// These cannot name any closed corpus, and currently prevent native admission.
+const behavior76LocalStimuliSHA = "UNBOUND"
+const behavior76LocalExpectationsSHA = "UNBOUND"
+
+func TestBehavior76NativeFixtureLocal(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "fixture-local-synthetic-only" {
+		t.Skip("separate prospective fixture-local admission required")
+	}
+	behavior76CollectFreshConfigured(t, true)
+}
+
+func (f *behavior76Fixture) sealFixtureEvidence(dir string) {
+	f.t.Helper()
+	if f.authorityTrace != nil {
+		behavior76Write(f.t, filepath.Join(dir, "authority-trace.json"), f.authorityTrace.snapshot())
+	}
+	anchor, err := os.ReadFile(f.manifestPath)
+	if err != nil {
+		f.t.Fatal("exact deletion anchor unavailable")
+	}
+	file, err := os.OpenFile(filepath.Join(dir, "deletions.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	_, writeErr := file.Write(anchor)
+	syncErr := file.Sync()
+	closeErr := file.Close()
+	if writeErr != nil || syncErr != nil || closeErr != nil {
+		f.t.Fatal("exact exported deletion anchor unavailable")
+	}
+	type item struct {
+		Path   string `json:"path"`
+		Bytes  int64  `json:"bytes"`
+		SHA256 string `json:"sha256"`
+	}
+	items := []item{}
+	err = filepath.WalkDir(dir, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if !entry.Type().IsRegular() {
+			return fs.ErrInvalid
+		}
+		rel, err := filepath.Rel(dir, path)
+		if err != nil {
+			return err
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		items = append(items, item{Path: filepath.ToSlash(rel), Bytes: int64(len(raw)), SHA256: behavior76Hash(raw)})
+		return nil
+	})
+	if err != nil {
+		f.t.Fatal("exact fixture export inventory unavailable", err)
+	}
+	behavior76Write(f.t, filepath.Join(dir, "sealed-files.json"), map[string]any{"version": "behavior76-quiescent-fixture-files-v1", "files": items})
+}

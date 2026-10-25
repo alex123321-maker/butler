@@ -156,12 +156,14 @@ type behavior76Outcome struct {
 	State           string   `json:"state"`
 	OwnerInputID    string   `json:"owner_input_id"`
 	OwnerRunID      string   `json:"owner_run_id"`
+	BlockingInputID string   `json:"blocking_input_id,omitempty"`
 	RunIDs          []string `json:"run_ids"`
 	AutomaticRunIDs []string `json:"automatic_run_ids"`
 	NativeEntryIDs  []int    `json:"native_entry_ids"`
 	ErrorCode       string   `json:"safe_error_category,omitempty"`
 	FailurePhase    string   `json:"failure_phase,omitempty"`
 	EventReceipt    any      `json:"event_receipt"`
+	FixtureStopRef  string   `json:"fixture_stop_ref,omitempty"`
 }
 type behavior76Index struct {
 	Version       string                   `json:"version"`
@@ -298,6 +300,9 @@ func (f *behavior76Fixture) export(dir string) {
 		"memory_temporal_run_pins", "memory_temporal_source_pins", "memory_claim_temporal_heads",
 		"memory_claim_temporal_revisions", "memory_fact_decision_history", "task_authority_bindings", "owner_goals",
 	})
+	if f.scope != nil {
+		converterLocalNativeExport(f.t, f.pool, dir, schema, []string{"behavior76_fixture_stops", "behavior76_recipient_diagnostics"})
+	}
 }
 func (f *behavior76Fixture) aliases() map[string]any {
 	copy := *f

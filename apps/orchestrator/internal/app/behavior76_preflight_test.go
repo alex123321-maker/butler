@@ -23,6 +23,13 @@ func TestBehavior76FreshCorpusSetupPreflight(t *testing.T) {
 	behavior76SetupPreflight(t, behavior76FreshStimuliSHA)
 }
 
+func TestBehavior76LocalCorpusSetupPreflight(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "local-setup-only" {
+		t.Skip("explicit local zero-native setup required")
+	}
+	behavior76SetupPreflight(t, behavior76LocalStimuliSHA)
+}
+
 func behavior76SetupPreflight(t *testing.T, expectedSHA string) {
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
 	if err != nil || behavior76Hash(raw) != expectedSHA {

@@ -26,13 +26,17 @@ const behavior76FreshExpectationsSHA = "7479b3d977b413a96fa7d37fb8dc1a899b428cca
 const behavior76FreshMaxEntries = 768
 
 func behavior76HistoricalRowsEqual(ctx context.Context, tx pgx.Tx, body []byte) (bool, error) {
+	return behavior76HistoricalRowsEqualCount(ctx, tx, body, 174)
+}
+
+func behavior76HistoricalRowsEqualCount(ctx context.Context, tx pgx.Tx, body []byte, expected int) (bool, error) {
 	lines := strings.Split(strings.TrimSpace(string(body)), "\n")
 	array := "[" + strings.Join(lines, ",") + "]"
-	if len(lines) != 174 || !json.Valid([]byte(array)) {
+	if len(lines) != expected || !json.Valid([]byte(array)) {
 		return false, fmt.Errorf("sealed complete attempt inventory unavailable")
 	}
 	var exact bool
-	err := tx.QueryRow(ctx, `SELECT count(*)=174 AND bool_and(j.value IS NOT NULL AND a.window_id IS NOT NULL AND j.value=to_jsonb(a)) FROM jsonb_array_elements($1::jsonb) AS j(value) FULL JOIN public.behavior76_attempts a ON a.window_id=j.value->>'window_id' AND a.n=(j.value->>'n')::integer`, array).Scan(&exact)
+	err := tx.QueryRow(ctx, `SELECT count(*)=$2 AND bool_and(j.value IS NOT NULL AND a.window_id IS NOT NULL AND j.value=to_jsonb(a)) FROM jsonb_array_elements($1::jsonb) AS j(value) FULL JOIN public.behavior76_attempts a ON a.window_id=j.value->>'window_id' AND a.n=(j.value->>'n')::integer`, array, expected).Scan(&exact)
 	return exact, err
 }
 
@@ -56,11 +60,20 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback(context.Background())
-	body, err := os.ReadFile("/src20/.cache/behavior76/native-20261025c/behavior76_attempts.jsonl")
+	expected := 174
+	historyPath := "/src20/.cache/behavior76/native-20261025c/behavior76_attempts.jsonl"
+	if _, e := os.Stat("/src20/.cache/behavior76/native-fresh-v3/behavior76_attempts.jsonl"); e == nil {
+		historyPath = "/src20/.cache/behavior76/native-fresh-v3/behavior76_attempts.jsonl"
+		expected = 376
+		if e = behavior76CheckRawFiles("/src20/.cache/behavior76/native-fresh-v3", "/src20/.cache/behavior76/native-fresh-v3-raw-sha256.json", "24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105", 2465); e != nil {
+			t.Fatal(e)
+		}
+	}
+	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
 	}
-	if same, e := behavior76HistoricalRowsEqual(ctx, tx, body); e != nil || !same {
+	if same, e := behavior76HistoricalRowsEqualCount(ctx, tx, body, expected); e != nil || !same {
 		t.Fatal("original history equality failed", e)
 	}
 	lines := strings.Split(strings.TrimSpace(string(body)), "\n")
@@ -71,10 +84,10 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 	first["stage"] = json.RawMessage(`"tampered-public-test-stage"`)
 	changed, _ := json.Marshal(first)
 	lines[0] = string(changed)
-	if same, e := behavior76HistoricalRowsEqual(ctx, tx, []byte(strings.Join(lines, "\n"))); e != nil || same {
+	if same, e := behavior76HistoricalRowsEqualCount(ctx, tx, []byte(strings.Join(lines, "\n")), expected); e != nil || same {
 		t.Fatal("changed row with unchanged count/token subtotal was accepted", e)
 	}
-	if same, e := behavior76HistoricalRowsEqual(ctx, tx, []byte(strings.Join(lines[1:], "\n"))); e == nil || same {
+	if same, e := behavior76HistoricalRowsEqualCount(ctx, tx, []byte(strings.Join(lines[1:], "\n")), expected); e == nil || same {
 		t.Fatal("truncated historical inventory accepted")
 	}
 }
@@ -90,8 +103,28 @@ func TestBehavior76NativeFreshLocal(t *testing.T) {
 }
 
 func behavior76CollectFresh(t *testing.T) {
+	behavior76CollectFreshConfigured(t, false)
+}
+
+func behavior76CollectFreshConfigured(t *testing.T, local bool) {
+	stimuliSHA, expectationsSHA := behavior76FreshStimuliSHA, behavior76FreshExpectationsSHA
+	priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown := 3, 174, 172, 1274988, 2
+	priorDirectory := "native-20261025c"
+	version, prefix := "behavior76-fresh-independent-v3", "issue76-fresh-"
+	if local {
+		stimuliSHA, expectationsSHA = behavior76LocalStimuliSHA, behavior76LocalExpectationsSHA
+		priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 4, 376, 372, 2867576, 4
+		priorDirectory = "native-fresh-v3"
+		version, prefix = "behavior76-fixture-local-v4", "issue76-fixture-local-"
+		if len(stimuliSHA) != 64 || len(expectationsSHA) != 64 {
+			t.Fatal("new independent controls are not yet bound; no native admission")
+		}
+		if stimuliSHA == behavior76FreshStimuliSHA || stimuliSHA == behavior76StimuliSHA || expectationsSHA == behavior76FreshExpectationsSHA || expectationsSHA == behavior76ExpectationsSHA {
+			t.Fatal("closed controls cannot become a new independent study")
+		}
+	}
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
-	if err != nil || behavior76Hash(raw) != behavior76FreshStimuliSHA {
+	if err != nil || behavior76Hash(raw) != stimuliSHA {
 		t.Fatal("fresh independent stimulus commitment unavailable")
 	}
 	episodes, err := behavior76ReadEpisodes(strings.NewReader(string(raw)))
@@ -126,7 +159,11 @@ func behavior76CollectFresh(t *testing.T) {
 	if err = os.Mkdir(dir, 0700); err != nil {
 		t.Fatal("new fresh evidence directory required", err)
 	}
-	index := behavior76Index{Version: "behavior76-checker-index-v1", StimuliSHA256: behavior76FreshStimuliSHA, Episodes: []behavior76IndexEpisode{}}
+	indexVersion := "behavior76-checker-index-v1"
+	if local {
+		indexVersion = "behavior76-checker-index-v2-local-tail"
+	}
+	index := behavior76Index{Version: indexVersion, StimuliSHA256: stimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
 	root := filepath.Dir(dir)
 	for _, old := range []struct {
@@ -137,6 +174,11 @@ func behavior76CollectFresh(t *testing.T) {
 		{"native-20261025c", "native-c-raw-sha256.json", "0fce72bbfdf54299890e527a261e599ba0dbc36ad5b783b3eb177f5d293f99c2", 50},
 	} {
 		if err = behavior76CheckRawFiles(filepath.Join(root, old.directory), filepath.Join(root, old.inventory), old.hash, old.count); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if local {
+		if err = behavior76CheckRawFiles(filepath.Join(root, "native-fresh-v3"), filepath.Join(root, "native-fresh-v3-raw-sha256.json"), "24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105", 2465); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -154,6 +196,13 @@ func behavior76CollectFresh(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer journal.Close()
+	var localResources map[string]any
+	if local {
+		localResources, err = behavior76LocalResources(ctx, journal)
+		if err != nil {
+			t.Fatal("prospective resource observation failed before native window", behavior76SafeError(err))
+		}
+	}
 	var settingsKey bool
 	if err = journal.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.system_settings'::regclass AND contype='p' AND conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid='public.system_settings'::regclass AND attname='key')]::smallint[])`).Scan(&settingsKey); err != nil || !settingsKey {
 		t.Fatal("original encrypted settings primary key required")
@@ -185,15 +234,26 @@ func behavior76CollectFresh(t *testing.T) {
 		}
 		prior = append(prior, map[string]any{"id": old.id, "admitted": old.admitted, "manifest_sha256": old.hash, "closed": true})
 	}
+	if local {
+		body, e := os.ReadFile(filepath.Join(root, "native-fresh-v3", "manifest.json"))
+		if e != nil || behavior76Hash(body) != "a5788ca6c47cc8c89fc930e6622136b1acb52444ac9d08b59b38dea50c69543a" {
+			t.Fatal("closed fresh-v3 manifest changed")
+		}
+		var exact bool
+		if e = transaction.QueryRow(ctx, `SELECT closed AND admitted=202 AND manifest=$1::jsonb AND (SELECT count(*)=202 FROM public.behavior76_attempts WHERE window_id='issue76-fresh-20261025T145320') FROM public.behavior76_windows WHERE id='issue76-fresh-20261025T145320'`, string(body)).Scan(&exact); e != nil || !exact {
+			t.Fatal("closed fresh-v3 history changed", e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fresh-20261025T145320", "admitted": 202, "closed": true, "manifest_sha256": behavior76Hash(body)})
+	}
 	var history bool
-	if err = transaction.QueryRow(ctx, `SELECT (SELECT count(*)=3 AND bool_and(closed) AND sum(admitted)=174 FROM public.behavior76_windows) AND (SELECT count(*)=174 AND count(total_tokens)=172 AND sum(total_tokens)=1274988 AND count(*) FILTER(WHERE total_tokens IS NULL)=2 FROM public.behavior76_attempts)`).Scan(&history); err != nil || !history {
+	if err = transaction.QueryRow(ctx, `SELECT (SELECT count(*)=$1 AND bool_and(closed) AND sum(admitted)=$2 FROM public.behavior76_windows) AND (SELECT count(*)=$2 AND count(total_tokens)=$3 AND sum(total_tokens)=$4 AND count(*) FILTER(WHERE total_tokens IS NULL)=$5 FROM public.behavior76_attempts)`, priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown).Scan(&history); err != nil || !history {
 		t.Fatal("fresh-only admission requires exactly closed A/B/C and all spent/unknown usage")
 	}
-	oldAttempts, err := os.ReadFile(filepath.Join(root, "native-20261025c", "behavior76_attempts.jsonl"))
+	oldAttempts, err := os.ReadFile(filepath.Join(root, priorDirectory, "behavior76_attempts.jsonl"))
 	if err != nil {
 		t.Fatal("sealed historical attempts unavailable")
 	}
-	if exactRows, e := behavior76HistoricalRowsEqual(ctx, transaction, oldAttempts); e != nil || !exactRows {
+	if exactRows, e := behavior76HistoricalRowsEqualCount(ctx, transaction, oldAttempts, priorAdmissions); e != nil || !exactRows {
 		t.Fatal("each historical attempt must exactly equal its sealed original JSONB row")
 	}
 	var entropy [33]byte
@@ -207,8 +267,22 @@ func behavior76CollectFresh(t *testing.T) {
 	for n, e := range episodes {
 		schedule = append(schedule, map[string]any{"episode_id": e.ID, "arm_order": []string{arms[n%2], arms[(n+1)%2]}})
 	}
-	window := "issue76-fresh-" + started.Format("20060102T150405")
-	manifest := map[string]any{"version": "behavior76-fresh-independent-v3", "window": window, "source": source, "stimuli_sha256": behavior76FreshStimuliSHA, "expectations_sha256": behavior76FreshExpectationsSHA, "mapping_sha256": behavior76Hash([]byte(behavior76JSON(mapping))), "schedule": schedule, "max_native_entries": behavior76FreshMaxEntries, "max_per_turn": 8, "max_per_run": 4, "wall_millis": (4 * time.Hour).Milliseconds(), "started_at": started.Format(time.RFC3339Nano), "absolute_deadline": deadline.Format(time.RFC3339Nano), "native": true, "model": antigravity.FlashHighModel, "baseline_prompt": prompt.DefaultBasePrompt, "candidate_addition": prompt.TaskContinuityProtocol, "output_contract": behavior76OutputContract, "prior_history": prior, "prior_admissions": 174, "prior_measured": 172, "prior_known_tokens": 1274988, "prior_unavailable_usage": 2, "cumulative_admission_ceiling": 942, "separate_new_experiment": true, "prior_experiment_complete": false, "global_stop_unchanged": true}
+	window := prefix + started.Format("20060102T150405")
+	manifest := map[string]any{"version": version, "window": window, "source": source, "stimuli_sha256": stimuliSHA, "expectations_sha256": expectationsSHA, "mapping_sha256": behavior76Hash([]byte(behavior76JSON(mapping))), "schedule": schedule, "max_native_entries": behavior76FreshMaxEntries, "max_per_turn": 8, "max_per_run": 4, "wall_millis": (4 * time.Hour).Milliseconds(), "started_at": started.Format(time.RFC3339Nano), "absolute_deadline": deadline.Format(time.RFC3339Nano), "native": true, "model": antigravity.FlashHighModel, "baseline_prompt": prompt.DefaultBasePrompt, "candidate_addition": prompt.TaskContinuityProtocol, "output_contract": behavior76OutputContract, "prior_history": prior, "prior_admissions": priorAdmissions, "prior_measured": priorMeasured, "prior_known_tokens": priorTokens, "prior_unavailable_usage": priorUnknown, "cumulative_admission_ceiling": priorAdmissions + behavior76FreshMaxEntries, "separate_new_experiment": true, "prior_experiment_complete": false, "global_stop_unchanged": !local}
+	if local {
+		manifest["local_unknown_mode"] = "whole_fixture_after_exact_classified_effect_unknown"
+		manifest["local_resource_profile"] = localResources
+		protocol, e := os.ReadFile("/src20/docs/testing/issue76-fixture-local-protocol.md")
+		if e != nil {
+			t.Fatal("prospective public protocol unavailable")
+		}
+		manifest["protocol_sha256"] = behavior76Hash(protocol)
+		manifest["global_priority"] = true
+		manifest["planned_arms"] = 48
+		manifest["planned_owner_opportunities"] = 96
+		manifest["planned_families"] = 12
+		manifest["protocol"] = "docs/testing/issue76-fixture-local-protocol.md"
+	}
 	behavior76Write(t, filepath.Join(dir, "manifest.json"), manifest)
 	if _, err = transaction.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,$3)`, window, behavior76JSON(manifest), deadline); err != nil {
 		t.Fatal("fresh window cannot reopen", err)
@@ -237,7 +311,12 @@ func behavior76CollectFresh(t *testing.T) {
 				}
 				t.Setenv(prompt.SettingKeyBasePrompt, base)
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
-				f := newBehavior76Fixture(t, ctx)
+				var f *behavior76Fixture
+				if local {
+					f = newBehavior76LocalFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
+				} else {
+					f = newBehavior76Fixture(t, ctx)
+				}
 				f.seed(e)
 				relative := fmt.Sprintf("slot-%02d/%s", n+1, arm)
 				caseDir := filepath.Join(dir, filepath.FromSlash(relative))
@@ -247,11 +326,24 @@ func behavior76CollectFresh(t *testing.T) {
 				item := behavior76IndexEpisode{EpisodeID: e.ID, MaskedArmID: arm, AliasesPath: relative + "/aliases.json", TablesDir: relative + "/tables", Steps: []behavior76IndexStep{}}
 				defer func() {
 					defer f.retainOnEvidenceFailure()
+					if local {
+						cleanup, stop := context.WithTimeout(context.Background(), 30*time.Second)
+						receipt, e := f.quiesce(cleanup)
+						stop()
+						if e != nil {
+							sealed.Store(true)
+							t.Error("fixture quiescence failed", behavior76SafeError(e))
+						}
+						behavior76Write(t, filepath.Join(caseDir, "quiescence.json"), receipt)
+					}
 					if !f.backupPrivate(fmt.Sprintf("%s-slot-%02d-%s", window, n+1, arm)) {
 						sealed.Store(true)
 					}
 					f.export(filepath.Join(caseDir, "tables"))
 					behavior76Write(t, filepath.Join(caseDir, "aliases.json"), f.aliases())
+					if local {
+						f.sealFixtureEvidence(caseDir)
+					}
 					index.Episodes = append(index.Episodes, item)
 				}()
 				for j, step := range e.Steps {
@@ -260,6 +352,12 @@ func behavior76CollectFresh(t *testing.T) {
 					}
 					stepDir := filepath.Join(caseDir, fmt.Sprintf("step-%02d", j+1))
 					stepRel := relative + fmt.Sprintf("/step-%02d", j+1)
+					if local && f.scope.localStopped() {
+						outcome := behavior76Outcome{State: "not_executed_after_fixture_local_unknown", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, FailurePhase: "fixture_local_stop", FixtureStopRef: relative + "/tables/behavior76_fixture_stops.jsonl"}
+						behavior76Write(t, filepath.Join(stepDir, "outcome.json"), outcome)
+						item.Steps = append(item.Steps, behavior76IndexStep{StepID: step.ID, Outcome: stepRel + "/outcome.json"})
+						continue
+					}
 					behavior76Write(t, filepath.Join(stepDir, "before.json"), f.snapshot())
 					receipt, eventErr := f.apply(step)
 					outcome := behavior76Outcome{State: "not_evaluated", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, EventReceipt: receipt}

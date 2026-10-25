@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"os"
 	"sync/atomic"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -34,6 +34,7 @@ type behavior76NativeProvider struct {
 	window, slot string
 	sealed       *atomic.Bool
 	entryLimit   int // Trusted experiment admission metadata, never a model input.
+	scope        *behavior76FixtureScope
 }
 
 func (p *behavior76NativeProvider) InferenceLimits() (int64, int64) { return 1048576, 8192 }
@@ -41,6 +42,13 @@ func (p *behavior76NativeProvider) InferenceTimeout() time.Duration { return 120
 
 func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string, input any, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
 	if p.sealed.Load() {
+		return nil, errBehavior76Native
+	}
+	if p.scope != nil {
+		if err := p.scope.observe(); err != nil {
+			return nil, err
+		}
+	} else if p.stopOnUnknownEffect() {
 		return nil, errBehavior76Native
 	}
 	token, ok := ownership.TokenFromContext(ctx)
@@ -77,12 +85,6 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 		p.sealed.Store(true)
 		return nil, errBehavior76Native
 	}
-	tx, err := p.journal.Begin(ctx)
-	if err != nil {
-		p.sealed.Store(true)
-		return nil, errBehavior76Native
-	}
-	defer tx.Rollback(ctx)
 	limit := p.entryLimit
 	if limit == 0 {
 		limit = behavior76CEntryLimit
@@ -92,19 +94,41 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 		return nil, errBehavior76Native
 	}
 	var n int
-	err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<$4 AND (manifest->>'max_native_entries')::integer=$4
+	reserve := func() error {
+		tx, err := p.journal.Begin(ctx)
+		if err != nil {
+			p.sealed.Store(true)
+			return errBehavior76Native
+		}
+		defer tx.Rollback(ctx)
+		err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<$4 AND (manifest->>'max_native_entries')::integer=$4
  AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.slot=$2)<8
 	 AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.run_id=$3)<4 RETURNING admitted`, p.window, p.slot, run, limit).Scan(&n)
-	if err != nil {
-		return nil, errBehavior76Native
+		if err != nil {
+			p.sealed.Store(true)
+			return errBehavior76Native
+		}
+		if _, err = tx.Exec(ctx, `INSERT INTO public.behavior76_attempts(window_id,n,slot,run_id,kind,input) VALUES($1,$2,$3,$4,$5,$6)`, p.window, n, p.slot, run, kind, raw); err != nil {
+			p.sealed.Store(true)
+			return errBehavior76Native
+		}
+		if err = tx.Commit(ctx); err != nil {
+			p.sealed.Store(true)
+			return errBehavior76Native
+		}
+		return nil
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO public.behavior76_attempts(window_id,n,slot,run_id,kind,input) VALUES($1,$2,$3,$4,$5,$6)`, p.window, n, p.slot, run, kind, raw); err != nil {
-		p.sealed.Store(true)
-		return nil, errBehavior76Native
+	release := func() {}
+	if p.scope != nil {
+		release, err = p.scope.begin(ctx, reserve)
+	} else {
+		err = reserve()
 	}
-	if err = tx.Commit(ctx); err != nil {
-		p.sealed.Store(true)
-		return nil, errBehavior76Native
+	if err != nil && n == 0 {
+		return nil, err
+	}
+	if release == nil {
+		release = func() {}
 	}
 	// The UNKNOWN reservation is committed before any native auth or HTTP. Opaque
 	// native continuity stays inside the adapter, never in the research journal.
@@ -112,8 +136,8 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 	stage.Store("")
 	observed := transport.WithProviderStageObserver(ctx, func(s transport.ProviderStage) { stage.Store(string(s)) })
 	start := time.Now()
-	stream, err := call(observed)
 	finish := func(status string, events []map[string]any, usage *transport.Usage, version string) {
+		defer release()
 		done, stop := context.WithTimeout(context.Background(), 5*time.Second)
 		defer stop()
 		var in, out, total, thinking any
@@ -130,18 +154,35 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 			p.sealed.Store(true)
 		}
 	}
+	if err != nil || p.sealed.Load() {
+		finish("not_entered_global_stop", nil, nil, "")
+		return nil, errBehavior76Native
+	}
+	stream, err := call(observed)
 	if err != nil {
 		finish("entry_failed", []map[string]any{{"type": "entry_failed", "error_code": transport.DiagnosticCode(err), "safe_reason": transport.DiagnosticReason(err), "http_status": transport.DiagnosticHTTPStatus(err)}}, nil, "")
 		p.sealed.Store(true)
 		return nil, errBehavior76Native
 	}
+	return p.observeStream(ctx, stream, finish), nil
+}
+
+// A clean channel close is not a completed provider operation. In particular,
+// Core's owning watchdog can cancel HTTP before any event arrives. Preserve
+// its NULL usage and close the whole experiment before a later admission.
+func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream transport.EventStream, finish func(string, []map[string]any, *transport.Usage, string)) transport.EventStream {
 	output := make(chan transport.TransportEvent)
 	go func() {
 		defer close(output)
 		status, version := "stream_closed", ""
 		var events []map[string]any
 		var usage *transport.Usage
-		defer func() { finish(status, events, usage, version) }()
+		defer func() {
+			if status == "stream_closed" || status == "cancelled" || behavior76AuthorityFailure(context.Cause(ctx)) {
+				p.sealed.Store(true)
+			}
+			finish(status, events, usage, version)
+		}()
 		for event := range stream {
 			if event.Usage != nil {
 				v := *event.Usage
@@ -165,6 +206,9 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 			}
 			if event.AssistantFinal != nil {
 				safe["final"] = event.AssistantFinal
+				if status != "transport_error" {
+					status = "completed"
+				}
 			}
 			if event.Usage != nil {
 				safe["usage"] = event.Usage
@@ -176,8 +220,25 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 				status = "transport_error"
 				p.sealed.Store(true)
 			}
-			if event.EventType == transport.EventTypeRunCompleted && status != "transport_error" {
-				status = "completed"
+			if event.EventType == transport.EventTypeToolCallBatchRequested || (event.EventType == transport.EventTypeToolCallRequested && (event.ToolCall == nil || event.ToolCall.ToolCallRef == "" || event.ToolCall.ToolName == "" || !json.Valid([]byte(event.ToolCall.ArgsJSON)))) {
+				// This composition explicitly does not support batch calls. A
+				// malformed/unsupported proposal cannot become a valid handoff.
+				status = "transport_error"
+				p.sealed.Store(true)
+			}
+			if status != "transport_error" && event.EventType == transport.EventTypeToolCallRequested && event.ToolCall != nil {
+				// A complete normalized function proposal is a logical provider
+				// handoff, not a text-final or task-completion claim.
+				status = "tool_handoff"
+			}
+			if event.EventType == transport.EventTypeRunCancelled || event.EventType == transport.EventTypeRunTimedOut {
+				status = "cancelled"
+				p.sealed.Store(true)
+			}
+			if event.EventType == transport.EventTypeRunCompleted && status != "transport_error" && status != "completed" && status != "tool_handoff" {
+				status = "transport_error"
+				safe["invalid_terminal_without_final_or_handoff"] = true
+				p.sealed.Store(true)
 			}
 			events = append(events, safe)
 			select {
@@ -188,7 +249,7 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 			}
 		}
 	}()
-	return output, nil
+	return output
 }
 func (p *behavior76NativeProvider) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
 	want := (prompt.Assembly{EffectiveBasePrompt: os.Getenv(prompt.SettingKeyBasePrompt) + "\n\n" + behavior76OutputContract}).TrustedInstructions()

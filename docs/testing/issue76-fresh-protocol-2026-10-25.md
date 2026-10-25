@@ -1,6 +1,7 @@
 # Issue76 prospective fresh independent experiment
 
-Status: fresh controls frozen; zero-native gates passed; no fresh native window admitted.
+Status: CLOSED NO_GO; incomplete coverage and global-stop deviations. This is
+descriptive evidence, not a completed qualifying comparison or issue76 closure.
 This is a separate experiment after a diagnosed TEST-fixture repair. It cannot
 replace, complete, reopen or extend the closed A/B/C experiment.
 
@@ -181,3 +182,56 @@ deletion watermark/hash continuity, exact private deletion-anchor bytes and a
 fully readable private PG archive. This calls the same export/backup branches
 as native collection and makes no native/auth calls. Its source changes only
 the public test and runner selector after the independent composition gates.
+
+## Closed fresh-v3 result
+
+Window `issue76-fresh-20261025T145320`, producer9c83730d5858cf3f932fea78ba3e070458d288f5,
+collector ELF2d379e542f7ad18e70b029d20a5c7444c860bb43afa5026f96d66199084f1f44.
+The process failed after6998.77s. Independent integrity checked all2465 original
+files/12,070,994 bytes, their exact set, lengths, SHA256 and read-only flags.
+
+Coverage is43/48 started arms,86/96 recorded outcomes and11/12 represented
+families. There are84 actual owner inputs,83 owner runs and6 automatic runs.
+Ten planned opportunities never started. These denominators are not reduced.
+All96 masked owner judgments,48 arm dispositions and6 automatic findings were
+sealed before either mapping was opened. Missing/denied rows acquire no invented
+language or semantic pass.
+
+Fresh accounting:202 wrapper admissions,200 measured responses,1,592,588 known
+provider-total tokens and2 unavailable-usage observations. Inclusive A/B/C+fresh:
+376 admissions,2,867,576 known tokens and4 unavailable-usage observations. Kernel
+reservation records are correlated rather than added as extra paid model calls;
+one fifth per-run kernel operation did not reach wrapper/provider admission.
+Invoice/quota charge remains unavailable.
+
+The earliest identified mandatory stop was an actual Broker `effect_unknown`
+after entries63/64. A failed GET used an object whose task binding differed from
+the current task; exact runtime RPC failure details were not retained. The
+collector treated ordinary blocked state as nonfatal and admitted65..202. The
+UNKNOWN remains UNKNOWN; later observations are descriptive, not confirmatory.
+Authority observer failures at178 and202 also failed to raise the shared native
+seal. Their watchdog task_authority deadlines cancelled model HTTP, preserving
+NULL usage. The underlying latency cause remains unknown: a reserve already
+existed; readonly clone predicates did not reproduce it and JIT was unavailable.
+
+Last-slot metadata refutes `waiting_for_user` as its cause. Input1 was blocked
+at model_budget_reserved with execution_stopped; its run remained model_running,
+the task active/r1 and lease released. Input2 was queued, attempts0, runNULL,
+behind that blocked FIFO head until the original fixture deadline. Canonical
+approval/interaction rows were absent. Nothing was approved, resumed or cleared.
+
+The full private control backup and exact per-fixture dump/deletion-anchor copies
+are retained. The all-file inventory SHA256 is
+24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105;
+index SHA256ea6b5a6e5d0486f82fe566fcefb074f5e5ed226b2563ce4edc833dff34b7bc00.
+The fixed-marker publication scan found0 matches; this is not a universal proof
+of absence of every possible secret. Auth/settings/keys/full dumps stay private.
+
+Later public-only test repairs propagate owning cancellation, incomplete streams
+and actual uncertain effects into the research-wide stop. Waiting and fenced
+queued successors are recorded promptly without rewriting ordinary state or
+renewing deadlines. Actual PG/Core/Broker rejection and owning waiting/FIFO
+admission regressions pass with native/auth0. These repairs do not retroactively
+change the closed producer, raw observations, old protocols or NO_GO verdict.
+No next native window is admitted by this document. Any subsequent study needs
+its own prospective public protocol, independent controls/gates and producer pin.

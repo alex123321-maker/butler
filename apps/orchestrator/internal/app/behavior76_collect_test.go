@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -38,7 +39,24 @@ type behavior76TaskExecutor struct {
 	provider transport.ModelProvider
 }
 
-func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
+func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.InputEvent) (result *flow.ExecutionResult, executionErr error) {
+	defer func() {
+		if observer, ok := e.provider.(interface {
+			observeCoreOutcome(*flow.ExecutionResult, error)
+		}); ok {
+			observer.observeCoreOutcome(result, executionErr)
+		}
+		if e.f.scope != nil {
+			if executionErr != nil && !(errors.Is(executionErr, errBehavior76FixtureStopped) && e.f.scope.localStopped()) {
+				e.f.scope.global.Store(true)
+			}
+			if result != nil && (result.ErrorCode == "effect_unknown" || result.ErrorCode == "external_effect_unknown") {
+				if e.f.scope.observe() != errBehavior76FixtureStopped {
+					e.f.scope.global.Store(true)
+				}
+			}
+		}
+	}()
 	var payload struct {
 		TaskID string `json:"task_id"`
 	}
@@ -67,6 +85,22 @@ func (a behavior76Assembler) Assemble(state prompt.ConfigState, ctx prompt.Conte
 
 func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step behavior76Step) (outcome behavior76Outcome, err error) {
 	outcome = behavior76Outcome{State: "completed", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}}
+	defer func() {
+		if f.scope != nil && err != nil {
+			f.scope.global.Store(true)
+		}
+	}()
+	if f.scope != nil {
+		leave, e := f.scope.enterEvaluation(f.ctx)
+		if e != nil {
+			if e == errBehavior76FixtureStopped {
+				outcome.State = "not_executed_after_fixture_local_unknown"
+				return outcome, nil
+			}
+			return outcome, e
+		}
+		defer leave()
+	}
 	oldRuns := map[string]bool{}
 	rows, e := f.pool.Query(f.ctx, `SELECT run_id FROM runs`)
 	if e != nil {
@@ -154,6 +188,12 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	inputs := input.NewStore(f.pool)
 	sessions := session.NewPostgresRepository(f.pool)
 	worker := input.NewService(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil)
+	if f.scope != nil {
+		worker, err = input.NewServiceWithClaimAdmission(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil, f.scope.claimAdmission)
+		if err != nil {
+			return outcome, err
+		}
+	}
 	payload := map[string]any{"text": step.Event.Text, "user_id": behavior76Owner}
 	if taskID != "" {
 		payload["task_id"] = taskID
@@ -171,6 +211,18 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		outcome.State = "admission_denied"
 		outcome.ErrorCode = behavior76SafeError(err)
 		outcome.FailurePhase = "input_admission"
+		if f.scope != nil {
+			expected := false
+			if taskID != "" && errors.Is(err, input.ErrNotFound) {
+				var proof bool
+				proofErr := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND status<>'active') AND NOT EXISTS(SELECT 1 FROM accepted_inputs WHERE session_key=$3 AND source='web' AND dedup_key=$4)`, taskID, behavior76Owner, sessionKey, "behavior76:"+step.ID).Scan(&proof)
+				expected = proofErr == nil && proof
+			}
+			if !expected {
+				return outcome, err
+			}
+			err = nil
+		}
 	} else {
 		outcome.OwnerInputID = accepted.InputID
 	}
@@ -199,8 +251,9 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		return outcome, nil
 	}
 	live, stop := context.WithCancel(f.ctx)
-	done := make(chan error, 1)
-	go func() { done <- worker.Run(live) }()
+	done := make(chan struct{})
+	var workerErr error
+	go func() { workerErr = worker.Run(live); close(done) }()
 	defer func() { stop(); <-done }()
 	for {
 		terminal := outcome.OwnerInputID == ""
@@ -213,11 +266,31 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 			switch record.Status {
 			case "completed":
 				terminal = true
+				outcome.State, outcome.ErrorCode, outcome.FailurePhase, outcome.BlockingInputID = "completed", "", "", ""
 			case "failed", "blocked", "expired", "cancelled":
 				terminal = true
 				outcome.State = "failed"
 				outcome.ErrorCode = record.ErrorCode
 				outcome.FailurePhase = "ordinary_worker"
+				outcome.BlockingInputID = ""
+			case "waiting_for_user":
+				terminal = true
+				outcome.State = "waiting_for_user"
+				outcome.ErrorCode = record.ErrorCode
+				outcome.FailurePhase = "ordinary_wait"
+				outcome.BlockingInputID = ""
+			case "queued":
+				var blocker string
+				err := f.pool.QueryRow(f.ctx, `SELECT h.input_id FROM accepted_inputs h JOIN accepted_inputs i ON i.session_key=h.session_key WHERE i.input_id=$1 AND h.session_sequence<i.session_sequence AND h.status IN ('blocked','waiting_for_user') ORDER BY h.session_sequence LIMIT 1`, record.InputID).Scan(&blocker)
+				if err != nil && err != pgx.ErrNoRows {
+					return outcome, err
+				}
+				if err == nil {
+					terminal = true
+					outcome.State = "queued_after_stopped_input"
+					outcome.BlockingInputID = blocker
+					outcome.FailurePhase = "ordinary_queue"
+				}
 			}
 		}
 		if native, ok := provider.(*behavior76NativeProvider); ok && native.sealed.Load() {
@@ -228,9 +301,33 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 			}
 			return outcome, nil
 		}
+		if f.scope != nil {
+			if e := f.scope.observe(); e != nil {
+				if e != errBehavior76FixtureStopped {
+					return outcome, e
+				}
+				cleanup, cancel := context.WithTimeout(f.ctx, 125*time.Second)
+				defer cancel()
+				if e = f.scope.drain(cleanup); e != nil {
+					return outcome, e
+				}
+				if e = worker.WaitClaimWorkers(cleanup); e != nil {
+					f.scope.global.Store(true)
+					return outcome, e
+				}
+				if e = f.waitOwningWorkers(cleanup); e != nil {
+					return outcome, e
+				}
+				// Actual owner/automatic records and UNKNOWN remain untouched.
+				// The local stop is an arm disposition, never task completion.
+				outcome.State = "fixture_local_unknown"
+				outcome.FailurePhase = "fixture_local_stop"
+				return outcome, nil
+			}
+		}
 		if terminal {
 			var pending bool
-			if err := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE input_id=ANY($1::text[]) AND status IN ('queued','running'))`, cohort).Scan(&pending); err != nil {
+			if err := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs i WHERE i.input_id=ANY($1::text[]) AND (i.status='running' OR (i.status='queued' AND NOT EXISTS(SELECT 1 FROM accepted_inputs h WHERE h.session_key=i.session_key AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled')))))`, cohort).Scan(&pending); err != nil {
 				return outcome, err
 			}
 			if !pending {
@@ -238,6 +335,22 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 			}
 		}
 		select {
+		case <-worker.ClaimAdmissionFailed():
+			f.scope.global.Store(true)
+			return outcome, worker.ClaimAdmissionError()
+		case <-worker.ClaimWorkersDone():
+			if f.scope != nil && f.scope.localStopped() {
+				continue
+			}
+			if f.scope != nil {
+				f.scope.global.Store(true)
+			}
+			return outcome, fmt.Errorf("claim workers ended before ordinary cohort observation")
+		case <-done:
+			if workerErr != nil {
+				return outcome, workerErr
+			}
+			return outcome, fmt.Errorf("ordinary worker ended before cohort observation")
 		case <-f.ctx.Done():
 			return outcome, f.ctx.Err()
 		case <-time.After(50 * time.Millisecond):
@@ -253,6 +366,9 @@ func behavior76CoreWithAssembler(f *behavior76Fixture, p transport.ModelProvider
 
 func behavior76NativeFactory(t *testing.T, journal *pgxpool.Pool, f *behavior76Fixture, window, slot string, sealed *atomic.Bool) transport.ModelProvider {
 	t.Helper()
+	if f.scope != nil && (f.scope.binding.Window != window || f.scope.binding.Producer != os.Getenv("BUTLER_BEHAVIOR76_SOURCE") || f.scope.localStopped() || sealed.Load()) {
+		t.Fatal("exact live prospective native fixture binding required before private auth construction")
+	}
 	keyFile, err := privateNativeFixtureFile("/private/behavior76/settings.key", 128)
 	if err != nil {
 		t.Fatal("private local key reference unavailable")
@@ -267,7 +383,7 @@ func behavior76NativeFactory(t *testing.T, journal *pgxpool.Pool, f *behavior76F
 	if err != nil {
 		t.Fatal("native local constructor unavailable")
 	}
-	return &behavior76NativeProvider{ModelProvider: native, fixture: f, journal: journal, window: window, slot: slot, sealed: sealed}
+	return &behavior76NativeProvider{ModelProvider: native, fixture: f, journal: journal, window: window, slot: slot, sealed: sealed, scope: f.scope}
 }
 
 func TestBehavior76NativeLocal(t *testing.T) {

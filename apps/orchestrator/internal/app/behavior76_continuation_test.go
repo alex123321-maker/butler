@@ -43,12 +43,23 @@ func behavior76CheckRawFiles(root, manifestPath, expectedHash string, expectedCo
 	if err != nil || behavior76Hash(raw) != expectedHash {
 		return errors.New("original predecessor file manifest changed")
 	}
-	var files []struct {
+	type rawFile struct {
 		Path  string `json:"path"`
 		SHA   string `json:"sha256"`
 		Bytes int64  `json:"bytes"`
 	}
-	if json.Unmarshal(raw, &files) != nil || len(files) != expectedCount {
+	var files []rawFile
+	if err = json.Unmarshal(raw, &files); err != nil {
+		var envelope struct {
+			Version string    `json:"version"`
+			Files   []rawFile `json:"files"`
+		}
+		if json.Unmarshal(raw, &envelope) != nil || envelope.Version != "behavior76-fresh-raw-inventory-v1" {
+			return errors.New("original predecessor inventory unavailable")
+		}
+		files = envelope.Files
+	}
+	if len(files) != expectedCount {
 		return errors.New("original predecessor inventory unavailable")
 	}
 	actualCount := 0

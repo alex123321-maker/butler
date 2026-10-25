@@ -1,0 +1,7 @@
+{
+  "coverage": "fixed OAuth/private-key/raw credential-field markers only; not universal absence proof",
+  "original_raw_bytes_unchanged": true,
+  "findings": 0,
+  "version": "behavior76-closed-archives-fixed-marker-scan-v1",
+  "files": 4007
+}

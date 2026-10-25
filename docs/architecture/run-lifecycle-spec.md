@@ -1,5 +1,18 @@
 # Butler — Run Lifecycle Specification
 
+An explicit startup-only `input.NewServiceWithClaimAdmission` constructor
+supports an immutable trusted denial fence around queue expiry and durable
+claim acquisition. Successful admission releases its fence before executing
+Core. `ErrClaimAdmissionClosed` ends new claim loops without cancelling already
+claimed executions; `WaitClaimWorkers` joins their actual owning process/finish
+goroutines before cancelling the enclosing Run/maintenance context. Missing
+release functions and unclassified fence failures fail closed and remain
+visible to that caller. This callback grants no task, tool or model authority,
+cannot be changed through input/model/environment data and is absent from
+ordinary construction. The prospective issue76 synthetic fixture uses it to
+preserve queued work after a research-local stop; ordinary Input/task/run/effect
+statuses and deadlines are never rewritten to manufacture quiescence.
+
 The explicit owner composition installs migration102's bounded
 [stopped-attempt finalizer](stopped-input-finalization.md). It atomically ends
 inactive blocked Input/run attempts with failure, retains unknown effects and

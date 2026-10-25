@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/butler/butler/internal/actionauth"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
@@ -21,7 +23,10 @@ import (
 // independent SQL reads, rather than its RPC acknowledgment, establish bytes.
 type behavior76Runtime struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
-	pool *pgxpool.Pool
+	pool             *pgxpool.Pool
+	scope            *behavior76FixtureScope
+	loseNextWriteAck atomic.Bool                         // Trusted public fault test only; no corpus/model selector.
+	beforeCommit     func(context.Context, string) error // Fixed public race-test hook, configured before serving work.
 }
 type behavior76Object struct {
 	Key           string  `json:"key"`
@@ -69,7 +74,41 @@ func behavior76ObjectQuery(ctx context.Context, q interface {
 	return o, err
 }
 
-func (r *behavior76Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
+func (r *behavior76Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (response *runtimev1.ExecuteResponse, resultErr error) {
+	if r.scope != nil {
+		done, err := r.scope.begin(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+		defer done()
+		defer func() {
+			if resultErr == nil {
+				return
+			}
+			category := "unclassified"
+			switch resultErr.Error() {
+			case "synthetic resource belongs to another task":
+				category = "foreign_task"
+			case "synthetic resource CAS denied":
+				category = "cas_rejected"
+			case "synthetic ACK deliberately lost":
+				category = "lost_ack"
+			}
+			if category == "unclassified" {
+				r.scope.global.Store(true)
+			}
+			cleanup, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			if req.GetContext().GetActionId() == "" || req.GetToolCall() == nil {
+				r.scope.global.Store(true)
+				return
+			}
+			_, err := r.pool.Exec(cleanup, `INSERT INTO behavior76_recipient_diagnostics(action_id,run_id,tool_call_id,category) VALUES($1,$2,$3,$4)`, req.Context.ActionId, req.ToolCall.RunId, req.ToolCall.ToolCallId, category)
+			if err != nil {
+				r.scope.global.Store(true)
+			}
+		}()
+	}
 	if req.GetToolCall() == nil || req.GetContext().GetActionId() == "" || len(req.GetResolvedCredentials()) != 0 {
 		return nil, errors.New("synthetic recipient requires exact authorized action")
 	}
@@ -189,8 +228,16 @@ func (r *behavior76Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteR
 	if _, err = tx.Exec(ctx, `INSERT INTO behavior76_recipient_receipts(action_id,receipt) VALUES($1,$2)`, req.Context.ActionId, raw); err != nil {
 		return nil, err
 	}
+	if r.beforeCommit != nil {
+		if err = r.beforeCommit(ctx, kind); err != nil {
+			return nil, err
+		}
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+	if r.scope != nil && kind != "read" && r.loseNextWriteAck.CompareAndSwap(true, false) {
+		return nil, errors.New("synthetic ACK deliberately lost")
 	}
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "completed", ResultJson: raw}}, nil
 }

@@ -1,9 +1,11 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/butler/butler/apps/orchestrator/internal/prompt"
@@ -27,6 +29,17 @@ func TestBehavior76FreshCorpusCompositionPreflight(t *testing.T) {
 }
 
 func behavior76CompositionPreflight(t *testing.T, expectedSHA string) {
+	behavior76CompositionPreflightConfigured(t, expectedSHA, false)
+}
+
+func TestBehavior76LocalCorpusCompositionPreflight(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "local-composition-only" {
+		t.Skip("explicit local zero-native composition required")
+	}
+	behavior76CompositionPreflightConfigured(t, behavior76LocalStimuliSHA, true)
+}
+
+func behavior76CompositionPreflightConfigured(t *testing.T, expectedSHA string, local bool) {
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
 	if err != nil || behavior76Hash(raw) != expectedSHA {
 		t.Fatal("frozen independent stimulus commitment unavailable")
@@ -45,7 +58,13 @@ func behavior76CompositionPreflight(t *testing.T, expectedSHA string) {
 				}
 				t.Setenv(prompt.SettingKeyBasePrompt, base)
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
-				f := newBehavior76Fixture(t)
+				var f *behavior76Fixture
+				var global atomic.Bool
+				if local {
+					f = newBehavior76LocalFixture(t, context.Background(), &global)
+				} else {
+					f = newBehavior76Fixture(t)
+				}
 				f.seed(e)
 				provider := &behavior76SetupProvider{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, fixture: f}
 				for _, step := range e.Steps {
@@ -72,6 +91,11 @@ func behavior76CompositionPreflight(t *testing.T, expectedSHA string) {
 						t.Fatalf("unexpected preparation outcome state=%s phase=%s category=%s", outcome.State, outcome.FailurePhase, outcome.ErrorCode)
 					}
 					turns++
+				}
+				if local {
+					if _, err := f.quiesce(f.ctx); err != nil || global.Load() {
+						t.Fatal("local composition quiescence unavailable", err)
+					}
 				}
 				arms++
 			})

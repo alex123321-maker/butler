@@ -1,0 +1,7 @@
+{
+  "version": "behavior76-fixed-marker-scan-v1",
+  "scope": "closed native-fresh-v3 raw files",
+  "files": 2465,
+  "findings": 0,
+  "coverage": "fixed markers only; not a universal secret absence proof"
+}

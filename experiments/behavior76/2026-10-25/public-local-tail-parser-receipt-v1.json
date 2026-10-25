@@ -1,0 +1,43 @@
+{
+  "version": "issue76-public-local-tail-parser-receipt-v1",
+  "scope": "Public parser and lifecycle evidence only",
+  "parser_tests_passed": 32,
+  "parser_tests_failed": 0,
+  "native_calls": 0,
+  "hidden_controls_read": false,
+  "mapping_read": false,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "planned_arms": 48,
+  "planned_owner_opportunities": 96,
+  "planned_families": 12,
+  "ordinary_executed_steps": "Original evidence references preserved; criterion functions are not reimplemented or invoked by this parser",
+  "unexecuted_local_tail": "Unavailable, never expected-denial/pass; empty snapshot references are not opened",
+  "existing_scorers": {
+    "fresh_v3": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+    "v2": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869"
+  },
+  "files": [
+    {
+      "path": "local-tail-adapter-v1.ps1",
+      "bytes": 17222,
+      "sha256": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf"
+    },
+    {
+      "path": "test-local-tail-adapter-v1.ps1",
+      "bytes": 13169,
+      "sha256": "d5c375d04a4b802864e8550187e878998aca2f3e59025a9ff19f0706f6281802"
+    },
+    {
+      "path": "local-tail-adapter-selftest-v3.log",
+      "bytes": 1164,
+      "sha256": "69afb4de9920d5d15997ba7abc7ea9d443bc7c2684ac9d982ea763ef4ed63945"
+    },
+    {
+      "path": "input-claim-admission-race-v3.log",
+      "bytes": 3236,
+      "sha256": "6c82f0a5914e9dfce8635fc7224196d655550d78ca14f0f0c8173a3e5805458a"
+    }
+  ],
+  "decision": "Parser semantics ready for prospective freeze; no new controls or native admission"
+}

@@ -10,6 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -42,21 +44,45 @@ import (
 const behavior76Owner = "behavior76-synthetic-owner"
 
 type behavior76Fixture struct {
-	t            *testing.T
-	ctx          context.Context
-	pool         *pgxpool.Pool
-	reads        *pgxpool.Pool
-	sources      *catalog.Store
-	tasks        *task.Store
-	profiles     *profile.Store
-	leases       *session.PostgresLeaseManager
-	budgets      *budget.Controller
-	controls     *task.Controller
-	broker       *tools.BrokerClient
-	manifestPath string
+	t                 *testing.T
+	ctx               context.Context
+	pool              *pgxpool.Pool
+	reads             *pgxpool.Pool
+	sources           *catalog.Store
+	tasks             *task.Store
+	profiles          *profile.Store
+	leases            *session.PostgresLeaseManager
+	budgets           *budget.Controller
+	controls          *task.Controller
+	broker            *tools.BrokerClient
+	manifestPath      string
+	scope             *behavior76FixtureScope
+	stopBroker        func(context.Context) error
+	stopRuntime       func(context.Context) error
+	brokerApplication string
+	brokerObserved    bool
+	recipient         *behavior76Runtime
+	authorityTrace    *behavior76AuthorityTrace
 }
 
 func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76Fixture {
+	t.Helper()
+	parent := context.Background()
+	if len(parents) > 0 {
+		parent = parents[0]
+	}
+	return newBehavior76FixtureConfigured(t, parent, nil)
+}
+
+func newBehavior76LocalFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	t.Helper()
+	if global == nil {
+		t.Fatal("explicit research-wide stop required")
+	}
+	return newBehavior76FixtureConfigured(t, parent, global, bindings...)
+}
+
+func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -72,9 +98,26 @@ func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76F
 	}
 	t.Cleanup(db.Close)
 	pool = db.Pool()
-	parent := context.Background()
-	if len(parents) > 0 {
-		parent = parents[0]
+	reads := db.AuthorityReadPool()
+	var authorityTrace *behavior76AuthorityTrace
+	if global != nil {
+		// Replace, never add to, the existing one-connection authority reserve.
+		// All owning stores are constructed below with this exact replacement.
+		readConfig := reads.Config().Copy()
+		reads.Close()
+		authorityTrace = newBehavior76AuthorityTrace()
+		readConfig.ConnConfig.Tracer = authorityTrace
+		reads, err = pgxpool.NewWithConfig(parent, readConfig)
+		if err != nil {
+			t.Fatal("traced original authority reserve unavailable")
+		}
+		t.Cleanup(reads.Close)
+		startup, stop := context.WithTimeout(parent, 5*time.Second)
+		pingErr := reads.Ping(startup)
+		stop()
+		if pingErr != nil {
+			t.Fatal("replacement authority reserve initialization unavailable")
+		}
 	}
 	ctx, cancel := context.WithTimeout(parent, 20*time.Minute)
 	t.Cleanup(cancel)
@@ -83,8 +126,8 @@ func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76F
 	if err = manifest.Initialize(); err != nil {
 		t.Fatal(err)
 	}
-	sources := catalog.NewWithRunObservationPool(pool, db.AuthorityReadPool(), manifest)
-	leases := session.NewPostgresLeaseManagerWithAuthorityReads(pool, db.AuthorityReadPool())
+	sources := catalog.NewWithRunObservationPool(pool, reads, manifest)
+	leases := session.NewPostgresLeaseManagerWithAuthorityReads(pool, reads)
 	policy := budget.DefaultPolicy()
 	policy.Models[antigravity.Name+":"+antigravity.FlashHighModel] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	quote := int64(1048576 + 8192)
@@ -99,14 +142,40 @@ func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76F
 	policy.Mandate = policy.Task
 	policy.Conversation = policy.Task
 	policy.Day = policy.Task
-	budgets := budget.NewControllerWithAuthorityReads(pool, db.AuthorityReadPool(), policy)
+	budgets := budget.NewControllerWithAuthorityReads(pool, reads, policy)
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
-	tasks := task.NewStoreWithAuthorityReads(pool, db.AuthorityReadPool())
+	tasks := task.NewStoreWithAuthorityReads(pool, reads)
 	tasks.SetBudgets(budgets, "")
-	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: db.AuthorityReadPool(), sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path}
+	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: reads, sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path, authorityTrace: authorityTrace}
 	f.reconstruct()
 	if _, err = pool.Exec(ctx, behavior76ObjectsSQL+`CREATE TABLE behavior76_aliases(kind text NOT NULL,key text NOT NULL,value text NOT NULL,PRIMARY KEY(kind,key)); CREATE TABLE behavior76_observations(n bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,observation jsonb NOT NULL);`); err != nil {
 		t.Fatal(err)
+	}
+	if global != nil {
+		if _, err = pool.Exec(ctx, behavior76ScopeDDL); err != nil {
+			t.Fatal(err)
+		}
+		f.scope = newBehavior76FixtureScope(pool, global)
+		f.scope.authorityTrace = authorityTrace
+		body, e := os.ReadFile("/src20/docs/testing/issue76-fixture-local-protocol.md")
+		if e != nil {
+			t.Fatal("prospective public stop protocol unavailable")
+		}
+		binding := behavior76ScopeBinding{Window: "public-no-native", Arm: t.Name(), ProtocolSHA256: behavior76Hash(body), Producer: "public-scripted"}
+		if len(bindings) > 1 {
+			t.Fatal("one immutable fixture binding required")
+		}
+		if len(bindings) == 1 {
+			binding = bindings[0]
+		}
+		if binding.Window == "" || binding.Arm == "" || binding.Producer == "" || binding.ProtocolSHA256 != behavior76Hash(body) {
+			t.Fatal("fixture stop protocol/producer binding mismatch")
+		}
+		if e = pool.QueryRow(ctx, `SELECT current_schema()`).Scan(&binding.Schema); e != nil {
+			t.Fatal(e)
+		}
+		binding.Mode = "fixture-local-v4"
+		f.scope.binding = binding
 	}
 	f.broker = f.startBroker()
 	return f
@@ -150,9 +219,22 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 		t.Fatal(err)
 	}
 	server := grpc.NewServer()
-	runtimev1.RegisterToolRuntimeServiceServer(server, &behavior76Runtime{pool: f.pool})
+	f.recipient = &behavior76Runtime{pool: f.pool, scope: f.scope}
+	runtimev1.RegisterToolRuntimeServiceServer(server, f.recipient)
 	go server.Serve(listener)
 	t.Cleanup(server.Stop)
+	var runtimeOnce sync.Once
+	runtimeDone := make(chan struct{})
+	f.stopRuntime = func(ctx context.Context) error {
+		runtimeOnce.Do(func() { go func() { server.GracefulStop(); close(runtimeDone) }() })
+		select {
+		case <-runtimeDone:
+			return nil
+		case <-ctx.Done():
+			server.Stop()
+			return ctx.Err()
+		}
+	}
 	registry := map[string]any{"tools": []any{
 		map[string]any{"tool_name": "http.request", "tool_class": "http", "description": "Declared synthetic test object recipient. GET https://fixture.invalid/objects/KEY observes actual body/version/sha256/prepared_body/committed_body/commit_count. POST same URL commits with body containing JSON {expected_version,expected_sha256,body}. CAS is mandatory. No real network recipient.", "status": "active", "runtime_target": listener.Addr().String(), "contract_revision": "behavior76-test-v1", "input_schema_json": `{"type":"object","additionalProperties":false,"required":["method","url"],"properties":{"method":{"type":"string","enum":["GET","POST"]},"url":{"type":"string"},"body":{"type":"string"}}}`, "output_schema_json": `{"type":"object"}`, "effect_contract": map[string]any{"retry_safety": "external_idempotency", "verification_method": "external_receipt_v1", "idempotency_header": "Idempotency-Key", "scope_origin": "https://fixture.invalid"}},
 		map[string]any{"tool_name": "doctor.generate_report", "tool_class": "doctor", "description": "Declared synthetic local artifact preparation only: record prepared_body on the owned test object, preserving actual body/committed_body/count. Input is current resource_key, expected_version, expected_sha256 and desired body. No publish/send/network. Genuine Broker prepare-class authorization is required.", "status": "active", "runtime_target": listener.Addr().String(), "contract_revision": "behavior76-test-v1", "input_schema_json": `{"type":"object","additionalProperties":false,"required":["resource_key","expected_version","expected_sha256","body"],"properties":{"resource_key":{"type":"string"},"expected_version":{"type":"integer"},"expected_sha256":{"type":"string"},"body":{"type":"string"}}}`, "output_schema_json": `{"type":"object"}`, "effect_contract": map[string]any{"retry_safety": "unsafe", "verification_method": "local_runtime_ack"}},
@@ -180,6 +262,10 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 	}
 	query := dsn.Query()
 	query.Set("search_path", f.pool.Config().ConnConfig.RuntimeParams["search_path"])
+	if f.scope != nil {
+		f.brokerApplication = "b76-" + behavior76Hash([]byte(f.pool.Config().ConnConfig.RuntimeParams["search_path"]))[:32]
+		query.Set("application_name", f.brokerApplication)
+	}
 	dsn.RawQuery = query.Encode()
 	address := freeAddress(t)
 	cmd := exec.Command(binary)
@@ -193,7 +279,40 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 	if err = cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait(); _ = log.Close() })
+	var brokerOnce sync.Once
+	var brokerStopErr error
+	brokerStopped := make(chan struct{})
+	f.stopBroker = func(ctx context.Context) error {
+		brokerOnce.Do(func() {
+			go func() {
+				defer close(brokerStopped)
+				if err := cmd.Process.Kill(); err != nil {
+					brokerStopErr = err
+				}
+				waitErr := cmd.Wait()
+				if cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
+					// On Unix a signalled process is Waited but Exited reports false.
+					if _, ok := waitErr.(*exec.ExitError); !ok {
+						brokerStopErr = fmt.Errorf("broker exit not observed")
+					}
+				}
+				if err := log.Close(); err != nil {
+					brokerStopErr = err
+				}
+			}()
+		})
+		select {
+		case <-brokerStopped:
+			return brokerStopErr
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = f.stopBroker(ctx)
+	})
 	client, err := tools.DialWithTokenFile(address, tokenPath)
 	if err != nil {
 		t.Fatal(err)
@@ -201,6 +320,12 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 	t.Cleanup(func() { _ = client.Close() })
 	for deadline := time.Now().Add(15 * time.Second); time.Now().Before(deadline); {
 		if _, err = client.ListTools(f.ctx); err == nil {
+			if f.scope != nil {
+				if err = f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND datname=current_database())`, f.brokerApplication).Scan(&f.brokerObserved); err != nil || !f.brokerObserved {
+					time.Sleep(25 * time.Millisecond)
+					continue
+				}
+			}
 			return client
 		}
 		time.Sleep(100 * time.Millisecond)

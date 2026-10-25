@@ -1,3 +1,12 @@
+The explicit research constructor `input.NewServiceWithClaimAdmission` can
+install an immutable denial fence around queue expiry and claim acquisition.
+Closing that fence stops new claim loops while previously claimed executions
+finish under their original context and authority. `WaitClaimWorkers` joins
+those actual process goroutines before the caller cancels Run/maintenance.
+The fence grants no authority and has no model, input, environment or HTTP
+configuration. Ordinary `NewService` remains unfenced. See the prospective
+[issue76 local-stop protocol](../../docs/testing/issue76-fixture-local-protocol.md).
+
 Ordinary owner requests carry model-visible `current_request` DATA with the
 owning run/event refs and question phase. Historical messages retain their full
 sanitized text and provenance in envelopes identifying the originating run and

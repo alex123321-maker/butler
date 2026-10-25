@@ -1,0 +1,139 @@
+{
+  "version": "issue76-independent-fresh-operational-forensics-v1",
+  "mapping_read": false,
+  "hidden_contents_or_quality_disclosed": false,
+  "source": "9c83730d5858cf3f932fea78ba3e070458d288f5",
+  "collector_elf_sha256": "2d379e542f7ad18e70b029d20a5c7444c860bb43afa5026f96d66199084f1f44",
+  "identities": {
+    "manifest_sha256": "a5788ca6c47cc8c89fc930e6622136b1acb52444ac9d08b59b38dea50c69543a",
+    "index_sha256": "ea6b5a6e5d0486f82fe566fcefb074f5e5ed226b2563ce4edc833dff34b7bc00",
+    "raw_inventory_sha256": "24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105",
+    "console_sha256": "a5d5e90198d72990e426d66de82cf38349d33ae44b2e6c3c376346fe4d861585"
+  },
+  "integrity": {
+    "raw_receipt_sha256": "5aa9d868dd6f078d1405772089e8d5ff3bcbcfa3e734dd3c424c46a23e6a095a",
+    "raw_files": 2465,
+    "all_file_hashes_sizes_readonly_exact_set_verified": true,
+    "raw_bytes": 12070994
+  },
+  "coverage": {
+    "unstarted_arms": 5,
+    "automatic_runs": 6,
+    "recorded_outcomes": 86,
+    "actual_owner_inputs": 84,
+    "planned_families": 12,
+    "planned_opportunities": 96,
+    "started_indexed_arms": 43,
+    "actual_owner_runs": 83,
+    "represented_families": 11,
+    "planned_arms": 48,
+    "unstarted_opportunities": 10,
+    "complete": false
+  },
+  "accounting": {
+    "all_history_admissions": 376,
+    "wrapper_and_kernel_counts_not_added": true,
+    "prior_known_tokens": 1274988,
+    "fresh_measured": 372,
+    "fresh_unknown_usage": 4,
+    "invoice": "unavailable",
+    "fresh_known_tokens": 2867576.0,
+    "prior_unknown_usage": 2,
+    "all_history_unknown_usage": 4,
+    "all_history_known_tokens": 2867576,
+    "prior_admissions": 174,
+    "fresh_admissions": 376
+  },
+  "earliest_observed_global_stop_condition": {
+    "contract": "public fresh v3: ambiguous effects seal globally",
+    "classification": "operational protocol deviation; retain all observations/costs as descriptive, do not relabel complete/confirmatory",
+    "actual_collector": "ordinary blocked outcome treated as nonfatal; shared native seal not raised",
+    "actual_condition": "Broker effect_unknown; ordinary input/task blocked",
+    "native_entries": [
+      63,
+      64
+    ],
+    "later_entry_range": "65..202",
+    "later_admissions": 138
+  },
+  "authority_observation_failures": [
+    {
+      "events": [
+        "run_started"
+      ],
+      "entry": 178,
+      "stage": "http_round_trip",
+      "elapsed_ms": 2074,
+      "model_version": null,
+      "run_id": "run-1792945078951612586-d9cbd25d43646277",
+      "classification": "deadline",
+      "usage": null,
+      "phase": "task_authority"
+    },
+    {
+      "events": [
+        "run_started"
+      ],
+      "entry": 202,
+      "stage": "http_round_trip",
+      "elapsed_ms": 2727,
+      "model_version": null,
+      "run_id": "run-1792945793016016569-334360df9482e55b",
+      "classification": "deadline",
+      "usage": null,
+      "phase": "task_authority"
+    }
+  ],
+  "last_slot_actual": {
+    "second_state": "queued",
+    "mandate_expires_utc": "2026-10-25T16:49:51.883872Z",
+    "first_checkpoint": "model_budget_reserved",
+    "queued_tail_reason": "blocked older same-session input is not claimable; observer polls until original fixture deadline",
+    "second_input_id": "input-8dad0b6f23c909abf0865eb6315ab2f2",
+    "execution_notice_rows": 0,
+    "first_input_id": "input-94b7232c380dca6cf23d7ee4958b9c4d",
+    "first_error": "execution_stopped",
+    "model_reservation_deadline_utc": "2026-10-25T16:32:01.464005Z",
+    "second_run_id": null,
+    "agent_commits": 0,
+    "active_lease": false,
+    "waiting_for_user_hypothesis": "refuted by actual accepted_input/checkpoint/claim/run/approval metadata",
+    "second_attempts": 0,
+    "task_revision": 1,
+    "canonical_approval_rows": 0,
+    "confirmed_read_effects": 1,
+    "task_status": "active",
+    "second_checkpoint": "accepted",
+    "first_input_state": "blocked",
+    "canonical_communication_rows": 0,
+    "run_finished_at": null,
+    "claim_id_empty": true,
+    "input_stopped_attempts": 0,
+    "upstream_observer_deadline_cause": "not established",
+    "first_run_status": "model_running"
+  },
+  "diagnostic": {
+    "exact_anchor_sha256": "d7cd040b0cd518e54fd0dc76a4065ea13d7da79109b97e66ba3f7fe4032dd43e",
+    "full_control_or_auth_backup_read": false,
+    "snapshot_anchor_matches": true,
+    "restore_watermark": 0,
+    "deletion_rows": 0,
+    "core_native_replay_calls": 0,
+    "default_transaction_read_only": true,
+    "new_isolated_database": "behavior76_checker_diag_20261025_01",
+    "metadata_logs": [
+      "fresh-lastslot-restored-metadata-v1.log",
+      "fresh-lastslot-extra-metadata-v1.log"
+    ],
+    "opaque_continuity_selected_or_exported": false,
+    "source_original_unchanged": true,
+    "only_single_fixture_archive_restored": true,
+    "archive_sha256": "f8d080df50b569862036e94f50c5f7c1c3a877676bd6d9af604392c01c263d6d"
+  },
+  "limitations": [
+    "Zero transport_error events is not proof of successful provider completion: kernel task-authority observer cancellation produced run_started-only streams with NULL usage.",
+    "No proof that authority actually changed or was revoked; task was active. Deadline cause remains unknown.",
+    "Expected inactive-task denial, cap exhaustion, failed tool/currentness and absent output remain separate.",
+    "No further native window/retry/reopen is authorized; original frozen criteria and failed evidence unchanged."
+  ]
+}
