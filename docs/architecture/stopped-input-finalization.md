@@ -65,4 +65,5 @@ Execution notices expose fixed failure facts without old content. A known later
 verdict cannot turn the request into a success. Telegram does not repeat an
 identical acknowledged failure when blocked becomes failed; Web still shows
 the terminal state. Migration102 and both Core/Broker binaries are required.
-Rollback refuses to drop nonempty stop records and their guards.
+Schema rollback refuses to drop nonempty stop records. Any binary rollback must
+retain compatible isolation guards; an older Broker cannot replace them.
