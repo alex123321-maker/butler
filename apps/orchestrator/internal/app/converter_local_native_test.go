@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync/atomic"
@@ -149,7 +150,11 @@ func (p *converterLocalNativeProvider) invoke(ctx context.Context, kind, run str
 				safe["usage"] = event.Usage
 			}
 			if event.TransportError != nil {
-				safe["error_code"] = event.TransportError.Code
+				safe["error_code"] = transport.DiagnosticCode(event.TransportError)
+				safe["safe_reason"] = transport.DiagnosticReason(event.TransportError)
+				if event.TransportError.HTTPStatus > 0 {
+					safe["http_status"] = event.TransportError.HTTPStatus
+				}
 				status = "transport_error"
 			}
 			if event.EventType == transport.EventTypeRunCompleted && status != "transport_error" {
@@ -226,7 +231,12 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 22*time.Minute)
 	defer cancel()
-	journal, err := pgxpool.New(ctx, "postgres://postgres@127.0.0.1:55449/converters20_test?sslmode=disable")
+	journalConfig, err := pgxpool.ParseConfig("postgres://postgres@127.0.0.1:55449/converters20_test?sslmode=disable")
+	if err != nil {
+		t.Fatal("local journal config invalid")
+	}
+	journalConfig.MaxConns = 2
+	journal, err := pgxpool.NewWithConfig(ctx, journalConfig)
 	if err != nil {
 		t.Fatal("isolated native journal unavailable")
 	}
@@ -237,7 +247,7 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 	}
 	cfg := converterLocalNativeConfig()
 	source := os.Getenv("BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE")
-	if !strings.HasPrefix(source, "git:") || !strings.Contains(source, ";binary-sha256:") {
+	if !regexp.MustCompile(`^git:[a-f0-9]{40};binary-sha256:[a-f0-9]{64}$`).MatchString(source) {
 		t.Fatal("committed producer and binary identity required")
 	}
 	manifest, err := json.Marshal(map[string]any{"window": converterLocalNativeWindow, "source": source, "runtime": runtime.Version() + "/" + runtime.GOOS + "/" + runtime.GOARCH, "goal": converterOwnerAcceptanceGoal, "provider": cfg.Provider, "model": cfg.Model, "input_token_allowance": cfg.InputTokens, "output_token_allowance": cfg.OutputTokens, "policy": cfg.Policy, "child_budget": cfg.ChildBudget, "fixture_millis": cfg.FixtureTimeout.Milliseconds(), "profile": json.RawMessage(os.Getenv("BUTLER_CONVERTER_PROFILE_JSON")), "cap": converterLocalNativeCap, "scope": "single synthetic converter-only task, native planning, real Broker/runtime; no issue33 qualification, no working deployment or real owner delivery"})

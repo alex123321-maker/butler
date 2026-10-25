@@ -20,8 +20,10 @@ binary="$PWD/.cache/converter20/orchestrator-app.test"
 go test -race -c -o "$binary" ./apps/orchestrator/internal/app
 if [ "$action" = native ]; then
  test "${BUTLER_CONVERTER_LOCAL_NATIVE:-}" = synthetic-local-only
- test -z "$(git status --porcelain)" || { echo 'Commit prospective native source first' >&2; exit 1; }
- export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$(git rev-parse HEAD);binary-sha256:$(sha256sum "$binary" | cut -d' ' -f1)"
+ changes=$(git status --porcelain) || exit 1
+ test -z "$changes" || { echo 'Commit prospective native source first' >&2; exit 1; }
+ commit=$(git rev-parse --verify HEAD) || exit 1
+ export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$commit;binary-sha256:$(sha256sum "$binary" | cut -d' ' -f1)"
  "$binary" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
 else
  "$binary" -test.v -test.timeout=8m -test.run '^TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)$'
