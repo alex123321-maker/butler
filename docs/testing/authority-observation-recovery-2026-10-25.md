@@ -56,3 +56,26 @@ The new cases cover:
 Raw reports: `reports/authority-retry-race.jsonl` and
 `reports/authority-retry-vet.log` in the task-owned workspace. No old reservations,
 unknown effects, deadlines or acceptance records were reset for these checks.
+
+## Scoped deployment and native delivery smoke
+
+Core commit `359ef27b2816a30a009ad742d5bea970b427b7a8` was deployed on `laba` to
+`/srv/storage/butler/main/releases/authority-recovery-20261025-359ef27b`.
+Only the Core candidate mount/container changed; no migrations or configuration
+relaxation were required. The previous Compose snapshot remains private (0600).
+Health returned 200 and the live `/proc/1/exe` matched the built Core SHA-256:
+`c7c79186a3cdd042c32f0a15353d31347386a879a0526bfd9f040c2d8d12197c`.
+This remains a deployment from draft PR #150, not a merge into main.
+
+One native taskless owner request checked the current Git release on its official
+site after the restart. Input `input-80c8d65eb8c5e98266a183b5ca35a904`, run
+`run-1792895742390752633-f81a60b808b47a86`, completed with a concise two-line
+answer and a current-run primary page quote. No approval was requested. The
+protected Web publication read returned 200 and Telegram acknowledged message
+167. Five actual model attempts retained measured usage (28,514 input and 300
+output tokens), with zero unknown usage pairs. This smoke validates ordinary
+execution/publication/delivery on the deployed binary; the watchdog fault itself
+was exercised by the isolated recovery tests above, not forced into production.
+
+Additional private reports: `reports/authority-retry-deployment.json` and
+`reports/authority-retry-native.json` in the task-owned workspace.
