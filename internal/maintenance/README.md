@@ -78,3 +78,15 @@ inventory, excludes dirty/untracked checkout data, rejects moving refs/tree-only
 objects/links/submodules/case aliases, and executes no submitted source. Owned
 snapshot cleanup verifies the resolved target before recursive removal. This
 prepares source only; the independent sandbox build/checker is still pending.
+
+The read-only `DockerInspector` pins one private local Unix socket and literal
+container target. It reads Docker's actual immutable image ID, full Config
+(except the separately measured image reference), HostConfig, mounts and actual
+network membership. Only opaque configuration identity and physical state leave
+the inspector; raw environment/configuration and daemon errors never do. Tags,
+labels and health text do not establish artifact identity or functional success.
+Missing targets are explicit; ambiguous JSON/state, redirect, cancellation and
+unavailable daemon observations fail closed. It performs no writes, signing,
+effect settlement or UNKNOWN reconciliation. Public tests use a real local Unix
+HTTP listener with synthetic Docker responses; actual Docker inspection/node
+process and deployment acceptance remain pending.

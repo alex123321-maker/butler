@@ -53,6 +53,21 @@ outside the author tree, retain full hashes/Git modes, and reject links,
 submodules, aliases and non-commit identities. Preparing source neither executes
 it nor proves its built artifact: the independent sandbox build remains required.
 
+Read-only Docker inspection is now a local node component. Its private startup
+configuration fixes a local Unix socket and exact literal container name; no
+model request selects a target, daemon or URL. Artifact identity is Docker's
+actual sha256 image ID, not a tag, label or health result. Runtime identity
+canonically hashes the entire measured Config except its separately bound Image,
+the entire HostConfig, mounts and network name-to-ID membership. Operator-owned
+targets must keep deployment configuration such as hostname stable; a changed
+configuration is a different runtime, never silently accepted as compatible.
+Raw configuration/environment and daemon error bodies remain private to the node.
+Missing state is explicit; ambiguous/oversized JSON, partial state, transient
+Docker lifecycle, redirects, unavailable socket or cancellation cannot produce a
+qualified observation. This component neither signs arbitrary data nor asserts
+effect settlement. Its public tests use synthetic responses over an actual local
+Unix HTTP listener; real daemon/node/process acceptance still remains pending.
+
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated
 module capsules; no existing monolithic service is reclassified as ordinary by a
