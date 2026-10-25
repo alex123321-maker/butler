@@ -1,5 +1,12 @@
 # Migrations
 
+`103_summary_currentness_plan` changes only the summary-currentness function.
+Its current-statement empty-metadata fast path and retained PL/pgSQL plan avoid
+repeated recursive SQL planning during compound source proofs. Nonempty metadata
+uses the original complete predicate. Down restores that SQL function without
+dropping or changing any history. Apply before deploying binaries measured with
+the new plan; no model or summary policy is enabled by this migration.
+
 087 adds explicit owner local index maintenance policies and job-policy revision
 projections. It does not enable a policy, accept a fact or publish an index.
 Deploy new binaries after this additive migration.

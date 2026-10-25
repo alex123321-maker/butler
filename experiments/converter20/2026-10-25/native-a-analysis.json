@@ -1,0 +1,14 @@
+{
+  "window": "issue20-converter-local-native-20261025a",
+  "result": "failed_before_trial_activation_original_conversion",
+  "actual_native_calls": 8,
+  "known_input_tokens": 68587.0,
+  "known_output_tokens": 1342.0,
+  "known_total_tokens": 82953.0,
+  "known_thinking_tokens": 13024.0,
+  "native_missing_total": 0,
+  "kernel_admissions": 9,
+  "semantic_owner_verdict": "unverified",
+  "currency_and_subscription_quota_cost": "unknown",
+  "kernel_unobserved_attempts": 1
+}

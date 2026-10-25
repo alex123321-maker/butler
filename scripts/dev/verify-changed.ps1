@@ -26,6 +26,19 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(migrations/103_summary_currentness_plan[.]|internal/memory/compaction/summary_plan_integration_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/testing/converter20-local-native-protocol-2026-10-25.md")
+      [void]$tests.Add("This PC: isolated PostgreSQL/race compaction publication, all lifecycle attacks, correction/deletion/privacy/recovery and TestSummaryCurrentnessPlanNeverCachesAcceptedFactsIntegration; TestOrdinaryTaskContinuationAcrossRepeatedCompactionIntegration in app. No inference, no skips; current predicate must match the original after publication, correction and down/up.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/converter_(local_|sources)|scripts/dev/converter-local-acceptance[.])" {
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/testing/converter20-local-native-protocol-2026-10-25.md")
+      [void]$tests.Add("This PC: pwsh -NoProfile -File scripts/dev/converter-local-acceptance.ps1 -Action Offline with isolated PostgreSQL, actual Broker and network-none converter. Native requires committed source, a new one-use window, prior spent ledger and explicit EnableNative; never resume a sealed ID.")
+      continue
+    }
     "^(cmd/effort-eval/|internal/acceptance/effort/|internal/transport/antigravity/effort_profile_test[.]go$|scripts/dev/effort-research)" {
       [void]$specs.Add("docs/testing/effort-research-protocol-2026-10-25.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

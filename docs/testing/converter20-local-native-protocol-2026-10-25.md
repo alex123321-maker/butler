@@ -22,12 +22,33 @@ Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
-export its manifest. Window `issue20-converter-local-native-20261025a` permits
+export its manifest. Window `issue20-converter-local-native-20261025b` permits
 at most40 admitted provider entries,20 minutes total,120 seconds per call,
 131072 serialized input bytes and8192 generated tokens including thinking.
 The tested native profile is the existing automatic High configuration, without
 fallback, account rotation or hidden retry. The task/child/mandate have finite
 current kernel budgets with full native context allowance reserved.
+
+Window A (`issue20-converter-local-native-20261025a`) is closed and failed:
+producer `ab9a1844450a9057ca11b15dfc8c2918bb07d062`, binary
+`cce8246dc56dbf00440ba0caf72ae8aa3e4afd4073f4288413eb2d8752b86313`,
+8 actual native calls and82953 known tokens (68587 input,1342 output,13024
+thinking). All native usage is present. The kernel admitted9 attempts: one
+additional UNKNOWN stopped at a two-second source proof before native admission.
+It remains spent/unknown in the original kernel journal. Parent collection
+succeeded; trial, activation and original conversion did not occur. This is a
+failed acceptance, not a provider or quota failure. Full synthetic records are
+retained under `experiments/converter20/2026-10-25/native-a/`.
+
+Before B, migration103 must pass comparison with the original predicate and
+actual summary publication/correction/deletion/privacy/recovery checks. It retains
+the recursive predicate and uses a STABLE current-snapshot empty-table fast path
+and retained query plan; it never caches source facts or changes deadlines.
+The isolated copied-data benchmark is query-only evidence, not task throughput.
+B preserves the same goal, model, tool/runtime profile, budgets and deadlines.
+Its preflight requires A to remain closed with exactly8 admissions and82953
+known tokens. A's8 calls plus B's40 give a cumulative48-entry ceiling; A's
+kernel UNKNOWN is recorded separately. No old window or allowance is reopened.
 
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives
@@ -48,7 +69,11 @@ A persistence failure stops new entries. Reopening the same window is forbidden.
 The control journal outlives the disposable product schema. Before normal fixture
 cleanup, export actual product runs/tasks/inputs/tool calls/effects/model budgets,
 sources, converter catalog, reports and continuations. Preserve errors and failed
-attempts, even when acceptance fails. Process loss leaves its original UNKNOWN
+attempts. B also writes a complete private schema dump before fixture cleanup,
+without an external audit lock or interference with DROP. A was retained after
+its failed execution by cancelling only the fixture's cleanup DROP; no execution
+query was cancelled or altered. Its full schema dump remains private.
+Process loss leaves its original UNKNOWN
 admission and isolated schema; never refund or infer zero expense. Currency and
 subscription quota cost remain unknown. No working profile or server changes.
 

@@ -1,0 +1,3 @@
+ALTER DATABASE
+ALTER DATABASE
+Independent converter rules, actual PG trial/rollback/revocation checks and vet passed.

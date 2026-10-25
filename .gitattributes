@@ -17,3 +17,7 @@
 /testdata/acceptance/issue76-context-*.json -text whitespace=cr-at-eol
 /testdata/acceptance/results/issue76-context-*.json -text whitespace=cr-at-eol
 /scripts/dev/issue76-analyze.ps1 -text
+
+# Exact synthetic acceptance evidence retains the producer's original bytes.
+/experiments/converter20/** -text whitespace=cr-at-eol
+/experiments/converter20/**/*.log -whitespace

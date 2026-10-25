@@ -36,7 +36,7 @@ chroot "$root" /usr/bin/env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin 
  $digest=(Get-FileHash (Join-Path $state.RepoRoot '.cache/converter20/orchestrator-app.test') -Algorithm SHA256).Hash.ToLowerInvariant()
  $source="git:$before;binary-sha256:$digest"
  if($source -notmatch '^git:[a-f0-9]{40};binary-sha256:[a-f0-9]{64}$'){throw 'Producer identity invalid'}
- $run='cd /src20; BUTLER_CONVERTER_LOCAL_NATIVE=synthetic-local-only BUTLER_CONVERTER_LOCAL_NATIVE_EVIDENCE=/src20/.cache/converter20/native-20261025a BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE=__SOURCE__ sh scripts/dev/converter-local-acceptance.sh native'
+ $run='cd /src20; BUTLER_CONVERTER_LOCAL_NATIVE=synthetic-local-only BUTLER_CONVERTER_LOCAL_NATIVE_EVIDENCE=/src20/.cache/converter20/native-20261025b BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE=__SOURCE__ sh scripts/dev/converter-local-acceptance.sh native'
  # Quote the semicolon-containing trusted identity inside the inner shell.
  $native=$command.Replace('__ROOT__',$LinuxRoot).Replace('__RUN__',$run)
  $native=$native.Replace('__SOURCE__','"'+$source+'"')

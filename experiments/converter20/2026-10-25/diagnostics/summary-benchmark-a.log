@@ -1,0 +1,91 @@
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 0
+INSERT 0 13
+INSERT 0 5
+INSERT 0 2
+INSERT 0 0
+INSERT 0 10
+INSERT 0 10
+CREATE FUNCTION
+CREATE FUNCTION
+ summary_rows 
+--------------
+            0
+(1 row)
+
+                                               QUERY PLAN                                               
+--------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=44.75..44.76 rows=1 width=8) (actual rows=1 loops=1)
+   InitPlan 1
+     ->  Seq Scan on memory_sources  (cost=0.00..17.50 rows=750 width=32) (actual rows=10 loops=1)
+   ->  Function Scan on generate_series i  (cost=0.00..1.00 rows=100 width=4) (actual rows=100 loops=1)
+ Planning Time: 0.403 ms
+ Execution Time: 587.214 ms
+(6 rows)
+
+                                               QUERY PLAN                                               
+--------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=44.75..44.76 rows=1 width=8) (actual rows=1 loops=1)
+   InitPlan 1
+     ->  Seq Scan on memory_sources  (cost=0.00..17.50 rows=750 width=32) (actual rows=10 loops=1)
+   ->  Function Scan on generate_series i  (cost=0.00..1.00 rows=100 width=4) (actual rows=100 loops=1)
+ Planning Time: 0.105 ms
+ Execution Time: 0.766 ms
+(6 rows)
+
+TRUNCATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+INSERT 0 1
+UPDATE 1
+DELETE 1
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+       label        | original | candidate | expected 
+--------------------+----------+-----------+----------
+ current            | t        | t         | t
+ derived            | t        | t         | t
+ unrelated          | t        | t         | t
+ empty              | t        | t         | t
+ null               | t        | t         | t
+ changed transcript | f        | f         | f
+ changed hash       | f        | f         | f
+ secret             | f        | f         | f
+ changed access     | f        | f         | f
+ deleted source     | f        | f         | f
+ missing dependency | f        | f         | f
+ extra dependency   | f        | f         | f
+(12 rows)
+
+DO

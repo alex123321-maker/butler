@@ -1,0 +1,8 @@
+{"Time":"2026-10-25T04:18:01.547989287Z","Action":"start","Package":"github.com/butler/butler/apps/orchestrator/internal/goal"}
+{"Time":"2026-10-25T04:18:01.600877352Z","Action":"run","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Test":"TestGeneratedConverterMigrationRollbackGuardsIntegration"}
+{"Time":"2026-10-25T04:18:01.601482613Z","Action":"output","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Test":"TestGeneratedConverterMigrationRollbackGuardsIntegration","Output":"=== RUN   TestGeneratedConverterMigrationRollbackGuardsIntegration\n","OutputType":"frame"}
+{"Time":"2026-10-25T04:18:09.097036068Z","Action":"output","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Test":"TestGeneratedConverterMigrationRollbackGuardsIntegration","Output":"--- PASS: TestGeneratedConverterMigrationRollbackGuardsIntegration (7.50s)\n","OutputType":"frame"}
+{"Time":"2026-10-25T04:18:09.097357499Z","Action":"pass","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Test":"TestGeneratedConverterMigrationRollbackGuardsIntegration","Elapsed":7.5}
+{"Time":"2026-10-25T04:18:09.097572189Z","Action":"output","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-25T04:18:10.11373579Z","Action":"output","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Output":"ok  \tgithub.com/butler/butler/apps/orchestrator/internal/goal\t8.565s\n"}
+{"Time":"2026-10-25T04:18:10.114542806Z","Action":"pass","Package":"github.com/butler/butler/apps/orchestrator/internal/goal","Elapsed":8.567}
