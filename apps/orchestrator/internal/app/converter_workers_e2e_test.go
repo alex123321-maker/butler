@@ -545,7 +545,7 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		Tasks: tracedTasks, Checkpoints: inputs, Budgets: f.f.budgets, OwnerGoals: f.goals, Completion: finalizer, Tools: client, ActionAuthorizer: client, ToolCatalog: client,
 		MemorySources: memorySources, DelegationContexts: delegatedContextReader{f.f.sources, manager}, ConverterContinuations: continuations,
 		InputSourcePreparation: func(ctx context.Context, event ingress.InputEvent) (ingress.InputEvent, error) {
-			if f.initialInputID == "" {
+			if f.initialInputID == "" && f.modelConfig == nil {
 				return event, nil
 			}
 			token, ok := ownership.TokenFromContext(ctx)
@@ -615,7 +615,11 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		t.Helper()
 		id := "converter-owner-" + phase
 		actor := owneridentity.WithActor(f.f.ctx, owneridentity.Actor{OwnerID: f.f.parent.OwnerID, SessionKey: f.f.parent.SessionKey, Channel: "web", DeliveryID: id})
-		event, e := ingress.NormalizeEvent(ingress.NormalizeRequest{EventID: id, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: f.f.parent.SessionKey, Source: "web", DeliveryID: id, Payload: map[string]any{"text": "converter-worker:" + phase, "task_id": f.f.parent.TaskID}})
+		text := "converter-worker:" + phase
+		if phase == "admit" && f.admissionInput != "" {
+			text = f.admissionInput
+		}
+		event, e := ingress.NormalizeEvent(ingress.NormalizeRequest{EventID: id, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: f.f.parent.SessionKey, Source: "web", DeliveryID: id, Payload: map[string]any{"text": text, "task_id": f.f.parent.TaskID}})
 		if e != nil {
 			t.Fatal(e)
 		}
