@@ -119,8 +119,10 @@ export function useCommunicationFeed(
   watch(epoch, clearCommunications, { flush: 'sync' })
   async function loadPublications(more = false) {
     if (!communicationProfile.value) return
-    if (loading) { refreshAgain = true; return }
+    // Retain an explicit history expansion even while a background read owns
+    // the request. The queued refresh must use the enlarged visible window.
     if (more) pages++
+    if (loading) { refreshAgain = true; return }
     const stamp = epoch.value
     loading = true
     try {
