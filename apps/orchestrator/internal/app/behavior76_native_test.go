@@ -33,6 +33,7 @@ type behavior76NativeProvider struct {
 	journal      *pgxpool.Pool
 	window, slot string
 	sealed       *atomic.Bool
+	entryLimit   int // Trusted experiment admission metadata, never a model input.
 }
 
 func (p *behavior76NativeProvider) InferenceLimits() (int64, int64) { return 1048576, 8192 }
@@ -82,10 +83,18 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 		return nil, errBehavior76Native
 	}
 	defer tx.Rollback(ctx)
+	limit := p.entryLimit
+	if limit == 0 {
+		limit = behavior76CEntryLimit
+	}
+	if limit < 1 || limit > 768 {
+		p.sealed.Store(true)
+		return nil, errBehavior76Native
+	}
 	var n int
-	err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<$4
+	err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<$4 AND (manifest->>'max_native_entries')::integer=$4
  AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.slot=$2)<8
-	 AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.run_id=$3)<4 RETURNING admitted`, p.window, p.slot, run, behavior76CEntryLimit).Scan(&n)
+	 AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.run_id=$3)<4 RETURNING admitted`, p.window, p.slot, run, limit).Scan(&n)
 	if err != nil {
 		return nil, errBehavior76Native
 	}

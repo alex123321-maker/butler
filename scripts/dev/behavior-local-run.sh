@@ -9,11 +9,15 @@ fi
 export BUTLER_BEHAVIOR76_NATIVE_ENABLE=disabled
 export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=0
 case "$mode" in
+ evidence) selected='^TestBehavior76EvidenceExportIntegration$' ;;
+ queued) selected='^TestBehavior76Queued(TaskMandates|FailedOwner)Integration$' ;;
  composition) selected='^TestBehavior76CorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=composition-only ;;
- boundary) selected='^TestBehavior76(ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration)$' ;;
+ freshpreflight) selected='^TestBehavior76FreshCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=fresh-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
+ freshcomposition) selected='^TestBehavior76FreshCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=fresh-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
+ boundary) selected='^TestBehavior76(ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration)$' ;;
  offline) selected='^TestBehavior76(StimulusBoundary|InstructionIntegrity|QueuedTaskMandatesIntegration|CoreBrokerPrepareOfflineIntegration|CoreBrokerPrepareOnlyDeniesCommitIntegration|CoreBrokerCommitRecipientIntegration)$' ;;
  preflight) selected='^TestBehavior76CorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=1 ;;
- native) selected='^TestBehavior76NativeLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=synthetic-local-only ;;
+ native) selected='^TestBehavior76NativeFreshLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fresh-synthetic-local-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
  *) echo 'Unknown bounded local mode' >&2;exit 2 ;;
 esac
 tmp=$(mktemp -d /tmp/behavior76-test.XXXXXX)

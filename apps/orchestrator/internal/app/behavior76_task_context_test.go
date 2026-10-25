@@ -78,8 +78,9 @@ func (s *behavior76PreparedTasks) AttachRun(ctx context.Context, id string, revi
 
 type behavior76SetupProvider struct {
 	*initiativeProjectScriptedProvider
-	requests []transport.StartRunRequest
-	fixture  *behavior76Fixture
+	requests   []transport.StartRunRequest
+	fixture    *behavior76Fixture
+	requestsMu sync.Mutex
 }
 
 func (p *behavior76SetupProvider) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
@@ -116,7 +117,9 @@ func (p *behavior76SetupProvider) StartRun(ctx context.Context, q transport.Star
 			return nil, fmt.Errorf("actual task working model input missing")
 		}
 	}
+	p.requestsMu.Lock()
 	p.requests = append(p.requests, q)
+	p.requestsMu.Unlock()
 	return initiativeProjectStream(
 		transport.NewAssistantFinalEvent(q.Context.RunID, p.Name(), transport.AssistantFinal{Content: `{"answer":"Public setup-only response","task_key":"A","next_action":{"kind":"answer","resource_key":null,"expected_version":null,"body":null,"reason":"No tool effects"},"needs_clarification":false,"used_source_refs":[],"proposed_profile_update":{"kind":"none","source_refs":[],"summary":""},"completion_claim":"not_complete"}`, Usage: &transport.Usage{InputTokens: 1, OutputTokens: 1, TotalTokens: 2}}),
 		transport.NewTerminalEvent(q.Context.RunID, transport.EventTypeRunCompleted, p.Name())), nil
@@ -158,8 +161,15 @@ func TestBehavior76LifecyclePreparationIntegration(t *testing.T) {
 			if second.OwnerRunID == "" || second.OwnerRunID == oldRun {
 				t.Fatal("fresh run identity missing")
 			}
-			if f.sources.CheckRunSources(f.ctx, oldRun) == nil {
-				t.Fatal("old source context became current")
+			sourceTx, sourceErr := f.pool.Begin(f.ctx)
+			if sourceErr != nil {
+				t.Fatal(sourceErr)
+			}
+			stale := f.sources.CheckRunSourcesTx(f.ctx, sourceTx, oldRun)
+			_ = sourceTx.Rollback(f.ctx)
+			var stalePG *pgconn.PgError
+			if !errors.As(stale, &stalePG) || stalePG.Code != "40001" {
+				t.Fatal("actual old source pins became current", stale)
 			}
 			var input strings.Builder
 			for _, item := range provider.requests[1].InputItems {

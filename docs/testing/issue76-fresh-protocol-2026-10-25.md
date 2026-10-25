@@ -1,6 +1,6 @@
 # Issue76 prospective fresh independent experiment
 
-Status: prospective protocol; no fresh control or new native window admitted.
+Status: fresh controls frozen; zero-native gates passed; no fresh native window admitted.
 This is a separate experiment after a diagnosed TEST-fixture repair. It cannot
 replace, complete, reopen or extend the closed A/B/C experiment.
 
@@ -123,3 +123,61 @@ is a valid decision; missing required evidence keeps #76 open. Check each actual
 issue criterion independently, without claiming general superiority from a small
 pilot. Production defaults, lab deployment, real-owner/device acceptance and #21
 remain separate from this experiment.
+
+## Pre-native observer/evidence amendment
+
+The fresh corpus and scorer were frozen against semantic source22e834fb; their
+original commitment is retained. Before any fresh native entry, a public
+delayed-A/fast-B regression exposed a generic observer race: returning after the
+owner B input completed cancelled an already admitted automatic A continuation.
+The before-fix test retained one final; the repaired observation retains both.
+This finding used public scripted cases, not hidden content or model judgments.
+
+The explicit amended observer snapshots actual admitted input IDs before the
+worker starts. Owner admission denial and nonfatal completed/failed/blocked/
+expired/cancelled outcomes keep their real status while that same cohort drains
+queued/running execution. Blocked/waiting inputs are never rewritten, resumed or
+declared completed. The native shared safety seal, unavailable source/ownership,
+corrupt journal and original deadlines still abort immediately, preserving partial
+automatic outcomes. This is not a protocol-error advance or inference retry.
+
+A separate public regression forces owner B's actual policy-denied write while
+automatic A remains authorized; B stays unsuccessful and A obtains its actual
+final. Controller audit inputs are counted separately from the two model runs.
+Both tool/run identities and actual effect/receipt joins remain independently
+observable. Scripted request capture uses a mutex; it changes no reply content.
+
+History admission now checks every original174 A/B/C attempt JSONB row against
+the sealed C final export, not only counts and token subtotals. A read-only
+positive/stage-tamper/truncation test demonstrates the guard. Closure cleanup is
+bounded20s and requires one affected row; partial native/run/mandate iterations
+propagate rows.Err and cannot silently create complete evidence.
+
+Additional raw exports include transcript/deletion/restore, summary/temporal
+consumer pins and owner-authority tables, including genuinely empty tables.
+Snapshots record the actual deletion anchor's SHA256 and PG watermark. Exact
+current anchor bytes accompany private PG schema backups before cleanup; no
+anchor is initialized or restored to resume an old case. Old-run lifecycle tests
+require actual CheckRunSourcesTx SQLSTATE40001 after fresh preparation, rather
+than a generic missing-token denial.
+
+The independent prospective amendment explicitly retains the exact fresh hidden
+bytes/rubric at fresh-native0 and requires a linked final producer freeze plus
+new setup/full-composition receipts. The22e authorship commitment is not replaced.
+Candidate, provider/options, eligibility, policy, runtime contracts, thresholds
+and all old A/B/C observations remain unchanged.
+
+## Final pre-entry evidence
+
+The independent fresh setup passed24/24 and full composition passed48 arms,
+96 opportunities and136 original steps under the race detector with no native
+or auth calls. The exact174-row historical guard also passed independently.
+The pinned receipt is `fresh-v3-independent-preentry-gates-v1.json` under the
+experiment evidence directory; the two original log files accompany it.
+
+The separate public `TestBehavior76EvidenceExportIntegration` passed5.10s:
+actual source deletion and restart,48 existing JSONL table exports, actual
+deletion watermark/hash continuity, exact private deletion-anchor bytes and a
+fully readable private PG archive. This calls the same export/backup branches
+as native collection and makes no native/auth calls. Its source changes only
+the public test and runner selector after the independent composition gates.

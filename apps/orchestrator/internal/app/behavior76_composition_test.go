@@ -16,8 +16,19 @@ func TestBehavior76CorpusCompositionPreflight(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "composition-only" {
 		t.Skip("explicit zero-native composition gate required")
 	}
+	behavior76CompositionPreflight(t, behavior76StimuliSHA)
+}
+
+func TestBehavior76FreshCorpusCompositionPreflight(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "fresh-composition-only" {
+		t.Skip("explicit fresh zero-native composition required")
+	}
+	behavior76CompositionPreflight(t, behavior76FreshStimuliSHA)
+}
+
+func behavior76CompositionPreflight(t *testing.T, expectedSHA string) {
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
-	if err != nil || behavior76Hash(raw) != behavior76StimuliSHA {
+	if err != nil || behavior76Hash(raw) != expectedSHA {
 		t.Fatal("frozen independent stimulus commitment unavailable")
 	}
 	episodes, err := behavior76ReadEpisodes(strings.NewReader(string(raw)))

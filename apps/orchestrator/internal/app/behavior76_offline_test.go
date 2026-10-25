@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/transport"
 )
@@ -217,7 +218,8 @@ func TestBehavior76CoreBrokerPrepareOnlyDeniesCommitIntegration(t *testing.T) {
 
 type behavior76QueuedReads struct {
 	*initiativeProjectScriptedProvider
-	f *behavior76Fixture
+	f     *behavior76Fixture
+	failB bool
 }
 
 func (p *behavior76QueuedReads) InferenceLimits() (int64, int64) { return 1048576, 8192 }
@@ -227,13 +229,79 @@ func (p *behavior76QueuedReads) StartRun(ctx context.Context, q transport.StartR
 	if err := p.f.pool.QueryRow(ctx, `SELECT key FROM behavior76_objects WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`, q.Context.RunID).Scan(&key); err != nil {
 		return nil, err
 	}
+	if p.failB && key == "second" {
+		return p.proposal(q.Context.RunID, "queued-denied-"+q.Context.RunID, "http.request", map[string]any{"method": "POST", "url": "https://fixture.invalid/objects/second", "body": behavior76JSON(behavior76Patch{ExpectedVersion: 1, ExpectedSHA256: behavior76Hash([]byte("second original")), Body: "must not commit"})}), nil
+	}
 	// Native tool references are unique per owned provider/run. Reusing one
 	// literal across concurrent scripted runs collides with tool_calls' PK and
 	// tests an invalid provider identity rather than task/mandate isolation.
 	return p.proposal(q.Context.RunID, "queued-read-"+q.Context.RunID, "http.request", map[string]any{"method": "GET", "url": "https://fixture.invalid/objects/" + key}), nil
 }
-func (p *behavior76QueuedReads) SubmitToolResult(_ context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
+func (p *behavior76QueuedReads) SubmitToolResult(ctx context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	// Force the automatic A continuation to finish after the explicit B input.
+	// Ending observation at B alone must not cancel an already admitted A.
+	var taskID string
+	if err := p.f.pool.QueryRow(ctx, `SELECT task_id FROM runs WHERE run_id=$1`, q.RunID).Scan(&taskID); err != nil {
+		return nil, err
+	}
+	if taskID == p.f.lookup("task", "A") {
+		for {
+			var finished bool
+			if err := p.f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=$1 AND status IN ('completed','failed','blocked','expired','cancelled'))`, p.f.lookup("task", "B")).Scan(&finished); err != nil {
+				return nil, err
+			}
+			if finished {
+				break
+			}
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(10 * time.Millisecond):
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(300 * time.Millisecond):
+		}
+	}
 	return initiativeProjectStream(transport.NewAssistantFinalEvent(q.RunID, p.Name(), transport.AssistantFinal{Content: `{"answer":"Тестовый объект прочитан.","task_key":null,"next_action":{"kind":"answer","resource_key":null,"expected_version":null,"body":null,"reason":"read only"},"needs_clarification":false,"used_source_refs":[],"proposed_profile_update":{"kind":"none","source_refs":[],"summary":""},"completion_claim":"technical_result"}`, Usage: &transport.Usage{InputTokens: 1, OutputTokens: 1, TotalTokens: 2}})), nil
+}
+
+func TestBehavior76QueuedFailedOwnerIntegration(t *testing.T) {
+	f := newBehavior76Fixture(t)
+	e := behavior76DevelopmentEpisode()
+	e.Initial.Tasks[0].ExecutionPolicy = "normal"
+	other := e.Initial.Tasks[0]
+	other.Key = "B"
+	other.ExecutionPolicy = "prepare_only"
+	e.Initial.Tasks = append(e.Initial.Tasks, other)
+	e.Initial.Resources = append(e.Initial.Resources, behavior76Resource{Key: "second", TaskKey: "B", Body: "second original", Version: 1})
+	f.seed(e)
+	if _, err := f.apply(behavior76Step{ID: "public-amend-failed-owner", Event: behavior76Event{Type: "owner_control", Kind: "amend", TaskKey: "A", Instruction: "Continue the authorized original read"}}); err != nil {
+		t.Fatal(err)
+	}
+	step := e.Steps[0]
+	key := "B"
+	step.RunTaskKey = &key
+	step.Event.TargetTaskKey = &key
+	p := &behavior76QueuedReads{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, f: f, failB: true}
+	outcome, err := f.evaluate(p, step)
+	if err != nil || outcome.State != "failed" || len(outcome.RunIDs) != 2 || len(outcome.AutomaticRunIDs) != 1 {
+		t.Fatal("nonfatal owner failure lost actual cohort", outcome, err)
+	}
+	var ownerStatus string
+	if err = f.pool.QueryRow(f.ctx, `SELECT status FROM accepted_inputs WHERE input_id=$1`, outcome.OwnerInputID).Scan(&ownerStatus); err != nil || ownerStatus == "completed" || ownerStatus == "queued" || ownerStatus == "running" {
+		t.Fatal("failed owner input was rewritten or left executing", ownerStatus, err)
+	}
+	var completeAuto, finalAuto int
+	if err = f.pool.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM accepted_inputs WHERE run_id=ANY($1::text[]) AND status='completed'),(SELECT count(*) FROM run_final_results WHERE run_id=ANY($1::text[]))`, outcome.AutomaticRunIDs).Scan(&completeAuto, &finalAuto); err != nil || completeAuto != 1 || finalAuto != 1 {
+		t.Fatal("failed owner reply cancelled automatic continuation", completeAuto, finalAuto, err)
+	}
+	object, err := behavior76ObjectQuery(f.ctx, f.pool, "second", "")
+	if err != nil || object.Body != "second original" || object.CommitCount != 0 {
+		t.Fatal("denied owner commit changed actual object", err)
+	}
 }
 func TestBehavior76QueuedTaskMandatesIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL") == "" || os.Getenv("BUTLER_BEHAVIOR76_BROKER_BINARY") == "" {
@@ -258,6 +326,10 @@ func TestBehavior76QueuedTaskMandatesIntegration(t *testing.T) {
 	outcome, err := f.evaluate(p, step)
 	if err != nil || outcome.State != "completed" || len(outcome.AutomaticRunIDs) != 1 || len(outcome.RunIDs) != 2 {
 		t.Fatal("actual queued task isolation failed", outcome, err)
+	}
+	var completeInputs, finals int
+	if err = f.pool.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM accepted_inputs WHERE status='completed' AND run_id=ANY($1::text[])),(SELECT count(*) FROM run_final_results WHERE run_id=ANY($1::text[]))`, outcome.RunIDs).Scan(&completeInputs, &finals); err != nil || completeInputs != 2 || finals != 2 {
+		t.Fatal("observer stopped an admitted automatic continuation after the owner reply", completeInputs, finals, err)
 	}
 	var tasks, confirmed int
 	if err = f.pool.QueryRow(f.ctx, `SELECT count(DISTINCT initial_binding->>'task_id') FROM action_effects WHERE state='effect_confirmed'`).Scan(&tasks); err != nil {

@@ -80,7 +80,11 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		}
 		oldRuns[id] = true
 	}
+	e = rows.Err()
 	rows.Close()
+	if e != nil {
+		return outcome, e
+	}
 	defer func() {
 		cleanup, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
@@ -102,6 +106,9 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 					outcome.AutomaticRunIDs = append(outcome.AutomaticRunIDs, id)
 				}
 			}
+		}
+		if e = rows.Err(); e != nil {
+			err = e
 		}
 	}()
 	key := ""
@@ -136,7 +143,11 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		}
 		activeKeys = append(activeKeys, k)
 	}
+	e = activeRows.Err()
 	activeRows.Close()
+	if e != nil {
+		return outcome, e
+	}
 	for _, k := range activeKeys {
 		f.mandate(k)
 	}
@@ -160,27 +171,71 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		outcome.State = "admission_denied"
 		outcome.ErrorCode = behavior76SafeError(err)
 		outcome.FailurePhase = "input_admission"
+	} else {
+		outcome.OwnerInputID = accepted.InputID
+	}
+	// Observe the actual already-admitted cohort, including Controller inputs in
+	// other sessions. A fast owner reply cannot justify cancelling a slower
+	// automatic continuation. Blocked/waiting rows are never rewritten/resumed.
+	cohortRows, e := f.pool.Query(f.ctx, `SELECT input_id FROM accepted_inputs WHERE input_id=$1 OR status IN ('queued','running')`, outcome.OwnerInputID)
+	if e != nil {
+		return outcome, e
+	}
+	var cohort []string
+	for cohortRows.Next() {
+		var id string
+		if e = cohortRows.Scan(&id); e != nil {
+			cohortRows.Close()
+			return outcome, e
+		}
+		cohort = append(cohort, id)
+	}
+	e = cohortRows.Err()
+	cohortRows.Close()
+	if e != nil {
+		return outcome, e
+	}
+	if len(cohort) == 0 {
 		return outcome, nil
 	}
-	outcome.OwnerInputID = accepted.InputID
 	live, stop := context.WithCancel(f.ctx)
 	done := make(chan error, 1)
 	go func() { done <- worker.Run(live) }()
 	defer func() { stop(); <-done }()
 	for {
-		record, err := inputs.Get(f.ctx, accepted.InputID)
-		if err != nil {
-			return outcome, err
+		terminal := outcome.OwnerInputID == ""
+		if outcome.OwnerInputID != "" {
+			record, err := inputs.Get(f.ctx, outcome.OwnerInputID)
+			if err != nil {
+				return outcome, err
+			}
+			outcome.OwnerRunID = record.RunID
+			switch record.Status {
+			case "completed":
+				terminal = true
+			case "failed", "blocked", "expired", "cancelled":
+				terminal = true
+				outcome.State = "failed"
+				outcome.ErrorCode = record.ErrorCode
+				outcome.FailurePhase = "ordinary_worker"
+			}
 		}
-		outcome.OwnerRunID = record.RunID
-		switch record.Status {
-		case "completed":
+		if native, ok := provider.(*behavior76NativeProvider); ok && native.sealed.Load() {
+			if !terminal {
+				outcome.State = "failed"
+				outcome.ErrorCode = "native_boundary_sealed"
+				outcome.FailurePhase = "observer_safety_stop"
+			}
 			return outcome, nil
-		case "failed", "blocked", "expired", "cancelled":
-			outcome.State = "failed"
-			outcome.ErrorCode = record.ErrorCode
-			outcome.FailurePhase = "ordinary_worker"
-			return outcome, nil
+		}
+		if terminal {
+			var pending bool
+			if err := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE input_id=ANY($1::text[]) AND status IN ('queued','running'))`, cohort).Scan(&pending); err != nil {
+				return outcome, err
+			}
+			if !pending {
+				return outcome, nil
+			}
 		}
 		select {
 		case <-f.ctx.Done():

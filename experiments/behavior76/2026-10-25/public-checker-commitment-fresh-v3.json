@@ -1,0 +1,16 @@
+{
+  "version": "issue76-independent-fresh-checker-v3",
+  "scorer_path": "score-mechanical-fresh-v3.ps1",
+  "scorer_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "old_scorer_sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869",
+  "only_change": "One literal public commitment filename binding; no criteria/logic/threshold modifications",
+  "byte_equal_after_binding_reversal": true,
+  "selftest_native_calls": 0,
+  "selftest_passed": 5,
+  "selftest_failed": 0,
+  "selftest_summary_sha256": "51e4e708ba0744503751dc52a4a2c8aa40d0587d63de407fb9e6a1de1b8c6824",
+  "controls_public_commitment_sha256": "7ee821c57116d9a2abcaf71fefb2f444c7517f99023877650604021bd3eb3381",
+  "hidden_goldens_disclosed": false,
+  "arm_mapping_read": false,
+  "native_entry_approved": false
+}

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,12 +15,79 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 )
 
+func TestBehavior76EvidenceExportIntegration(t *testing.T) {
+	f := newBehavior76Fixture(t)
+	episode := behavior76DevelopmentEpisode()
+	episode.Initial.Tasks[0].ExecutionPolicy = "normal"
+	f.seed(episode)
+	provider := &behavior76SetupProvider{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, fixture: f}
+	if outcome, err := f.evaluate(provider, episode.Steps[0]); err != nil || outcome.State != "completed" {
+		t.Fatal("public initial evaluation failed", err)
+	}
+	if _, err := f.apply(behavior76Step{ID: "public-export-delete", Event: behavior76Event{Type: "profile_change", SourceKey: "public-pref", Operation: "delete"}}); err != nil {
+		t.Fatal(err)
+	}
+	before := f.snapshot()
+	if before.DeletionWatermark <= 0 {
+		t.Fatal("actual deletion watermark absent")
+	}
+	if _, err := f.apply(behavior76Step{ID: "public-export-restart", Event: behavior76Event{Type: "service_restart"}}); err != nil {
+		t.Fatal(err)
+	}
+	if outcome, err := f.evaluate(provider, episode.Steps[1]); err != nil || outcome.State != "completed" {
+		t.Fatal("public post-deletion evaluation failed", err)
+	}
+	after := f.snapshot()
+	anchor, err := os.ReadFile(f.manifestPath)
+	if err != nil || after.DeletionManifestSHA256 != behavior76Hash(anchor) || before.DeletionManifestSHA256 != after.DeletionManifestSHA256 || before.DeletionWatermark != after.DeletionWatermark {
+		t.Fatal("actual deletion anchor changed across restart", err)
+	}
+	dir := t.TempDir()
+	f.export(dir)
+	tables := []string{"tasks", "task_results", "task_control_events", "task_control_targets", "run_final_results", "accepted_inputs", "runs", "action_intents", "action_authorizations", "action_mandates", "action_effects", "action_effect_dispatches", "action_effect_evidence", "tool_calls", "execution_model_attempts", "execution_budget_scopes", "execution_budget_reservations", "behavior76_objects", "behavior76_object_events", "behavior76_recipient_receipts", "behavior76_aliases", "behavior76_observations", "behavior76_task_mandates", "memory_profile", "memory_claims", "memory_sources", "memory_source_revisions", "memory_source_dependencies", "memory_run_sources", "memory_scope_grants", "memory_fact_heads", "session_ownership", "sessions", "messages", "memory_run_transcripts", "transcript_heads", "memory_restore_state", "memory_deletions", "memory_summary_sources", "memory_summary_dependencies", "session_summaries", "memory_temporal_run_pins", "memory_temporal_source_pins", "memory_claim_temporal_heads", "memory_claim_temporal_revisions", "memory_fact_decision_history", "task_authority_bindings", "owner_goals"}
+	for _, table := range tables {
+		raw, err := os.ReadFile(filepath.Join(dir, table+".jsonl"))
+		if err != nil {
+			t.Fatal("required actual table export missing", table, err)
+		}
+		scanner := bufio.NewScanner(bytes.NewReader(raw))
+		scanner.Buffer(make([]byte, 4096), 4<<20)
+		for scanner.Scan() {
+			if !json.Valid(scanner.Bytes()) {
+				t.Fatal("invalid exported JSON row", table)
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var schema string
+	if err := f.pool.QueryRow(f.ctx, `SELECT current_schema()`).Scan(&schema); err != nil {
+		t.Fatal(err)
+	}
+	name := "public-evidence-" + schema
+	if !f.backupPrivate(name) {
+		t.Fatal("public private-backup smoke failed")
+	}
+	backupAnchor, err := os.ReadFile(filepath.Join("/private/behavior76/backups", name+".deletions.log"))
+	if err != nil || !bytes.Equal(anchor, backupAnchor) || behavior76Hash(backupAnchor) != after.DeletionManifestSHA256 {
+		t.Fatal("private anchor backup is not exact", err)
+	}
+	cmd := exec.CommandContext(f.ctx, "/usr/bin/pg_restore", "--file=/dev/null", filepath.Join("/private/behavior76/backups", name+".dump"))
+	if err := cmd.Run(); err != nil {
+		t.Fatal("private PG archive unreadable", err)
+	}
+	t.Logf("public evidence smoke: %d actual tables; exact deletion anchor and readable PG archive; native/auth=0", len(tables))
+}
+
 type behavior76Snapshot struct {
-	Tasks    []task.Record      `json:"tasks"`
-	Objects  []behavior76Object `json:"objects"`
-	Profiles []json.RawMessage  `json:"profiles"`
-	Claims   []json.RawMessage  `json:"claims"`
-	Sources  []json.RawMessage  `json:"sources"`
+	Tasks                  []task.Record      `json:"tasks"`
+	Objects                []behavior76Object `json:"objects"`
+	Profiles               []json.RawMessage  `json:"profiles"`
+	Claims                 []json.RawMessage  `json:"claims"`
+	Sources                []json.RawMessage  `json:"sources"`
+	DeletionManifestSHA256 string             `json:"deletion_manifest_sha256"`
+	DeletionWatermark      int64              `json:"deletion_watermark"`
 }
 
 func (f *behavior76Fixture) backupPrivate(name string) bool {
@@ -43,6 +112,23 @@ func (f *behavior76Fixture) backupPrivate(name string) bool {
 	closeErr := file.Close()
 	if err != nil || syncErr != nil || closeErr != nil {
 		f.t.Error("private schema backup unavailable")
+		return false
+	}
+	anchor, err := os.ReadFile(f.manifestPath)
+	if err != nil {
+		f.t.Error("original deletion anchor unavailable for private backup")
+		return false
+	}
+	anchorFile, err := os.OpenFile(filepath.Join("/private/behavior76/backups", name+".deletions.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		f.t.Error("private deletion anchor cannot overwrite earlier bytes")
+		return false
+	}
+	_, writeErr := anchorFile.Write(anchor)
+	syncErr = anchorFile.Sync()
+	closeErr = anchorFile.Close()
+	if writeErr != nil || syncErr != nil || closeErr != nil {
+		f.t.Error("private exact deletion anchor backup unavailable")
 		return false
 	}
 	return true
@@ -127,6 +213,14 @@ func (f *behavior76Fixture) snapshot() behavior76Snapshot {
 	t := f.t
 	t.Helper()
 	s := behavior76Snapshot{Tasks: []task.Record{}, Objects: []behavior76Object{}, Profiles: []json.RawMessage{}}
+	anchor, err := os.ReadFile(f.manifestPath)
+	if err != nil {
+		t.Fatal("actual deletion anchor unavailable for snapshot")
+	}
+	s.DeletionManifestSHA256 = behavior76Hash(anchor)
+	if err = f.pool.QueryRow(f.ctx, `SELECT watermark FROM memory_restore_state WHERE singleton`).Scan(&s.DeletionWatermark); err != nil {
+		t.Fatal("actual deletion watermark unavailable")
+	}
 	rows, err := f.pool.Query(f.ctx, `SELECT value FROM behavior76_aliases WHERE kind='task' ORDER BY key`)
 	if err != nil {
 		t.Fatal(err)
@@ -196,6 +290,14 @@ func (f *behavior76Fixture) export(dir string) {
 		f.t.Fatal(err)
 	}
 	converterLocalNativeExport(f.t, f.pool, dir, schema, []string{"tasks", "task_results", "task_control_events", "task_control_targets", "run_final_results", "accepted_inputs", "runs", "action_intents", "action_authorizations", "action_mandates", "action_effects", "action_effect_dispatches", "action_effect_evidence", "tool_calls", "execution_model_attempts", "execution_budget_scopes", "execution_budget_reservations", "behavior76_objects", "behavior76_object_events", "behavior76_recipient_receipts", "behavior76_aliases", "behavior76_observations", "behavior76_task_mandates", "memory_profile", "memory_claims", "memory_sources", "memory_source_revisions", "memory_source_dependencies", "memory_run_sources", "memory_scope_grants", "memory_fact_heads", "session_ownership", "sessions"})
+	// Actual source-check consumers and empty feature tables are evidence too.
+	// No credentials/settings or opaque native continuation payload is exported.
+	converterLocalNativeExport(f.t, f.pool, dir, schema, []string{
+		"messages", "memory_run_transcripts", "transcript_heads", "memory_restore_state", "memory_deletions",
+		"memory_summary_sources", "memory_summary_dependencies", "session_summaries",
+		"memory_temporal_run_pins", "memory_temporal_source_pins", "memory_claim_temporal_heads",
+		"memory_claim_temporal_revisions", "memory_fact_decision_history", "task_authority_bindings", "owner_goals",
+	})
 }
 func (f *behavior76Fixture) aliases() map[string]any {
 	copy := *f
