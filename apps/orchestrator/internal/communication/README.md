@@ -1,5 +1,8 @@
 # Communication kernel (dormant)
 
+Diagnostics checks migration readiness in the connection's current schema;
+same-named tables later in the search path cannot satisfy missing migrations.
+
 The explicit owner composition uses the migration102 stopped-attempt transaction
 collaborator to close an inactive attempt's publication obligation with failure
 and join the owning Run transition. Its audit is kernel failure, never owner
