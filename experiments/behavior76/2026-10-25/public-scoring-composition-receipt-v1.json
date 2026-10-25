@@ -1,0 +1,51 @@
+{
+  "version": "issue76-public-scoring-composition-receipt-v1",
+  "result": "PASS",
+  "integration_selftests": 12,
+  "parser_selftests": 32,
+  "criteria_source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "exact_imported_statements": 27,
+  "exact_imported_functions": 12,
+  "ordinary_full_original_program_result_parity": true,
+  "negative_original_criterion_result_parity": true,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "planned_arms": 48,
+  "planned_owner_opportunities": 96,
+  "planned_families": 12,
+  "semantic_opportunity_rows": 96,
+  "provider_calls": 0,
+  "old_private_commitments_read": false,
+  "hidden_controls_read": false,
+  "mapping_read": false,
+  "fresh_authorship_admission": false,
+  "native_admission": false,
+  "entrypoint": "Invoke-Issue76LocalScoringFiles",
+  "files": [
+    {
+      "bytes": 13145,
+      "sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+      "path": "local-scoring-composition-v1.ps1"
+    },
+    {
+      "bytes": 13141,
+      "sha256": "d56a20367848b1e39ab035b7e5647c8c4e460542ec5087f10b4b7dd06f209ae9",
+      "path": "test-local-scoring-composition-v1.ps1"
+    },
+    {
+      "bytes": 869,
+      "sha256": "1967060303782bcebc2fec187df040bcbbeaab6f1de437fd8960ee7eb44b2504",
+      "path": "local-scoring-composition-selftest-v5.log"
+    },
+    {
+      "bytes": 4511,
+      "sha256": "259b0349401a71792e4e5d72f907b9d491eb21c441dfbff4720d31032604684b",
+      "path": "public-scoring-composition-v1.md"
+    },
+    {
+      "bytes": 7936,
+      "sha256": "39732b35b2aeb79a6d4217c2aa88e82545482ccdaf83e3400d9886a6ce0d4581",
+      "path": "public-frozen-criterion-extents-v1.json"
+    }
+  ]
+}

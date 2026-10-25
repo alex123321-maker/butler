@@ -64,3 +64,14 @@ public-stop-admission-matrix-v1.md -text
 public-strict-safety-source-review-v1.md -text
 public-gates-receipt-v1.json -text
 git-artifact-byte-proof-v1.json -text
+checker/local-scoring-composition-v1.ps1 -text
+checker/test-local-scoring-composition-v1.ps1 -text
+diagnostics/local-scoring-composition-selftest-v1.log -text
+diagnostics/local-scoring-composition-selftest-v2.log -text
+diagnostics/local-scoring-composition-selftest-v3.log -text
+diagnostics/local-scoring-composition-selftest-v4.log -text
+diagnostics/local-scoring-composition-selftest-v5.log -text
+git-artifact-byte-proof-v2.json -text
+public-frozen-criterion-extents-v1.json -text
+public-scoring-composition-receipt-v1.json -text
+public-scoring-composition-v1.md -text
