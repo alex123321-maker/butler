@@ -11,10 +11,23 @@ updates are established by this local implementation/acceptance task.
 
 Implemented so far: conservative inventory comparison, separate signed-review
 integrity/qualification, immutable PostgreSQL evidence, profile/stage storage,
-owner stop epochs and signed node-observation storage. These are component
-boundaries only. Independent build/checker and controller/node processes,
-effect admission, physical trial/promotion/rollback and active-state preservation
+owner stop epochs, signed node-observation storage and owner-permission
+registration/revocation with immutable request nonces, finite allowances and
+no refund or resurrection; transactional claim reservation, one-use live dispatch
+admission and immutable signed node-outcome storage.
+Reverse-stage rollback permission is separate from the original forward report.
+These are component boundaries only. Independent build/checker and
+controller/node processes,
+physical effect execution, trial/promotion/rollback and active-state preservation
 acceptance remain pending. No deployment profile is enabled.
+
+The local Store consumes allowance and advances the fence with its pending
+claim. Dispatch admission rechecks the current authority and admits that claim
+once. Stop cancels pending work without refund, retaining already dispatched
+uncertainty. Deadline expiry is terminal UNKNOWN; late signed measurements are
+retained without rewriting it. Outcome storage never clears newer owner stops,
+restores PostgreSQL or replays an action. These owning APIs are components only;
+actual independent processes and current state compatibility remain unimplemented.
 
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated

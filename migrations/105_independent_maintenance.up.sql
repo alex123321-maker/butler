@@ -53,6 +53,9 @@ CREATE TABLE maintenance_permissions (
  target_id TEXT NOT NULL,
  profile_sha256 TEXT NOT NULL,
  kind TEXT NOT NULL CHECK(kind IN ('ordinary_mandate','exact_protected','exact_rollback')),
+ epoch BIGINT NOT NULL CHECK(epoch>0),
+ nonce TEXT NOT NULL CHECK(nonce ~ '^[a-f0-9]{64}$'),
+ request_sha256 TEXT NOT NULL CHECK(request_sha256 ~ '^[a-f0-9]{64}$'),
  raw BYTEA NOT NULL CHECK(octet_length(raw) BETWEEN 1 AND 65536),
  signature BYTEA NOT NULL CHECK(octet_length(signature)=64),
  limit_claims INTEGER NOT NULL CHECK(limit_claims BETWEEN 1 AND 10),
@@ -62,8 +65,18 @@ CREATE TABLE maintenance_permissions (
  created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
  FOREIGN KEY(profile_sha256,owner_id,target_id) REFERENCES maintenance_profiles(profile_sha256,owner_id,target_id),
  CHECK('mpermit_'||encode(sha256(raw),'hex')=permission_id),
+ CHECK(((convert_from(raw,'UTF8')::jsonb->>'epoch')::bigint) IS NOT DISTINCT FROM epoch),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'nonce') IS NOT DISTINCT FROM nonce),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'request_sha256') IS NOT DISTINCT FROM request_sha256),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'kind') IS NOT DISTINCT FROM kind),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'owner_id') IS NOT DISTINCT FROM owner_id),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'target_id') IS NOT DISTINCT FROM target_id),
+ CHECK((convert_from(raw,'UTF8')::jsonb->>'profile_sha256') IS NOT DISTINCT FROM profile_sha256),
+ CHECK(((convert_from(raw,'UTF8')::jsonb->>'max_claims')::bigint) IS NOT DISTINCT FROM limit_claims),
+ CHECK(((convert_from(raw,'UTF8')::jsonb->>'expires_at')::timestamptz) IS NOT DISTINCT FROM expires_at),
  CHECK(expires_at>created_at AND expires_at<=created_at+INTERVAL '24 hours'),
- UNIQUE(permission_id,owner_id,target_id,profile_sha256)
+ UNIQUE(permission_id,owner_id,target_id,profile_sha256),
+ UNIQUE(owner_id,target_id,nonce)
 );
 CREATE TABLE maintenance_attempts (
  attempt_id TEXT PRIMARY KEY CHECK(attempt_id ~ '^mdeploy_[a-f0-9]{64}$'),
@@ -96,6 +109,14 @@ CREATE TABLE maintenance_attempts (
 );
 ALTER TABLE maintenance_targets ADD CONSTRAINT maintenance_unresolved_attempt
  FOREIGN KEY(unresolved_attempt,owner_id,target_id,profile_sha256) REFERENCES maintenance_attempts(attempt_id,owner_id,target_id,profile_sha256);
+CREATE TABLE maintenance_outcomes (
+ attempt_id TEXT PRIMARY KEY REFERENCES maintenance_attempts(attempt_id),
+ outcome_sha256 TEXT NOT NULL CHECK(outcome_sha256 ~ '^[a-f0-9]{64}$'),
+ raw BYTEA NOT NULL CHECK(octet_length(raw) BETWEEN 1 AND 16384),
+ signature BYTEA NOT NULL CHECK(octet_length(signature)=64),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+ CHECK(encode(sha256(raw),'hex')=outcome_sha256)
+);
 CREATE UNIQUE INDEX maintenance_one_unended_attempt ON maintenance_attempts(owner_id,target_id)
  WHERE state IN ('pending','dispatching');
 CREATE TABLE maintenance_observations (
@@ -142,10 +163,13 @@ CREATE TRIGGER maintenance_events_immutable BEFORE UPDATE OR DELETE ON maintenan
  FOR EACH ROW EXECUTE FUNCTION butler_maintenance_append_only();
 CREATE TRIGGER maintenance_observations_immutable BEFORE UPDATE OR DELETE ON maintenance_observations
  FOR EACH ROW EXECUTE FUNCTION butler_maintenance_append_only();
+CREATE TRIGGER maintenance_outcomes_immutable BEFORE UPDATE OR DELETE ON maintenance_outcomes
+ FOR EACH ROW EXECUTE FUNCTION butler_maintenance_append_only();
 CREATE FUNCTION butler_maintenance_permission_transition() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
  IF TG_OP='DELETE' OR (to_jsonb(NEW)-'used_claims'-'revoked') IS DISTINCT FROM (to_jsonb(OLD)-'used_claims'-'revoked')
- OR NEW.used_claims<OLD.used_claims OR NEW.used_claims>OLD.used_claims+1 OR (OLD.revoked AND NOT NEW.revoked) THEN
+ OR NEW.used_claims<OLD.used_claims OR NEW.used_claims>OLD.used_claims+1 OR (OLD.revoked AND NOT NEW.revoked)
+ OR (OLD.revoked AND NEW.used_claims<>OLD.used_claims) THEN
   RAISE EXCEPTION 'invalid maintenance permission mutation' USING ERRCODE='55000';
  END IF;
  RETURN NEW;

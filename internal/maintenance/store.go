@@ -273,6 +273,23 @@ func (store Store) Stop(ctx context.Context, owner, targetID string) (Target, er
 	if err != nil {
 		return Target{}, ErrState
 	}
+	// Only a pending claim is known not to have been dispatched. Cancellation
+	// retains its consumed allowance; an admitted/unknown effect stays unresolved.
+	if target.UnresolvedAttempt != "" {
+		cancelled, err := tx.Exec(ctx, `UPDATE maintenance_attempts SET state='stopped',ended_at=clock_timestamp() WHERE attempt_id=$1 AND state='pending'`, target.UnresolvedAttempt)
+		if err != nil {
+			return Target{}, err
+		}
+		if cancelled.RowsAffected() == 1 {
+			if err = maintenanceEvent(ctx, tx, target, "outcome", target.UnresolvedAttempt, ""); err != nil {
+				return Target{}, err
+			}
+			if _, err = tx.Exec(ctx, `UPDATE maintenance_targets SET unresolved_attempt=NULL WHERE owner_id=$1 AND target_id=$2`, owner, targetID); err != nil {
+				return Target{}, err
+			}
+			target.UnresolvedAttempt = ""
+		}
+	}
 	if _, err = tx.Exec(ctx, `UPDATE maintenance_targets SET stopped=true,epoch=epoch+1,observation_sha256=NULL,observed_at=NULL WHERE owner_id=$1 AND target_id=$2`, owner, targetID); err != nil {
 		return Target{}, err
 	}

@@ -2,7 +2,7 @@
 
 Work in progress for issue21. This package compares complete submitted source
 inventories and conservatively classifies changes against fixed operator
-module boundaries. It deploys nothing, creates no maintenance grant and accepts
+module boundaries. It deploys nothing and accepts
 no author's passing verdict as authority. Unknown paths, protected boundaries,
 links and submodules require protected-kernel treatment. Digest ordering is
 canonical; case aliases and unsafe/ambiguous inventories are rejected.
@@ -34,3 +34,28 @@ The [maintenance contract](../../docs/architecture/maintenance-contract.md) rema
 proposed. Controller service, independent checker, node execution, effect admission,
 state compatibility and actual process/rollback acceptance are still required.
 No production profile is enabled by this package.
+
+The private controller can register canonical separately signed owner permission
+and revoke it independently of Core. A nonce is unique across the target's whole
+history; exact retry retains its original allowance and revocation. Registration
+does not consume a claim or dispatch. Stop epochs, current profile, independent
+checks, physical identity and finite consumption must still be verified at each
+future action. Protected scopes require an existing exact qualifying review.
+A rollback requires its own measured reverse stage/report and fresh explicit
+permission; an old forward report is insufficient. Actual retained-artifact,
+compatibility and rollback execution gates remain pending.
+
+The controller-side Store can reserve a signed exact pending effect claim while
+atomically consuming permission and advancing the target fence. Identical retries
+return the original receipt. A different operation cannot bypass an unresolved
+effect. The node's separate one-use `AdmitDispatch` rechecks current profile,
+epoch, base/observation, review validity and owner revocation before returning;
+signed bytes alone are insufficient. No transaction spans a physical operation.
+Owner stop cancels only pending claims, without refund. Already dispatched work
+remains unresolved until measured evidence arrives. Deadline expiry records
+UNKNOWN without replay; a late signed measurement is retained separately and
+cannot rewrite that terminal attempt or clear uncertainty without reconciliation.
+Signed node outcomes preserve newer owner stops and map only the exact known
+base or independently reviewed candidate. These are storage/admission components;
+there is no controller endpoint, actual node executor or live compatibility gate
+yet, and no enabled deployment profile.

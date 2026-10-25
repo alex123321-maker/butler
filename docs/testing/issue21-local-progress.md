@@ -36,9 +36,18 @@ SHA256 `579a96915817b09a38256935908fb18b3f591b49ae6b8949b0e384a44670165f`.
 
 ## Required remaining evidence
 
+An additive component run on2026-10-26 passed50.468s, with vet exit0 and no
+skipped tests: [permission/claim/outcome checks](../../experiments/maintenance21/2026-10-26/permission-claim-outcome-v1.log).
+It covers concurrent exact permission registration and claim reservation,
+revocation, stale/current authority, one-use dispatch, stop before/after admission,
+immutable measured outcomes, fixed-deadline UNKNOWN and retained late evidence
+without replay or refund. Signatures are synthetic in-process fixtures, not
+independent physical checker/node proof. The one-second deadline case uses the
+actual database clock; no immutable timestamp is edited to simulate expiry.
+
 Independent source/build measurement and fixed/hidden functional checks;
 separate controller/checker/node processes; authenticated exact owner permission
-and one-use effect admission; actual fixed-target trial/promotion/rollback;
+and one-use effect admission across real process boundaries; actual fixed-target trial/promotion/rollback;
 compatible active tasks/approvals and explicit incompatible-state denial;
 lost-response/stop/concurrent-version fault injection and independent benefit/
 error/cost comparison. The full contract remains the acceptance requirement.

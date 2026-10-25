@@ -2,11 +2,13 @@ package maintenance
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -58,9 +60,14 @@ func TestMaintenanceDurableGuardsIntegration(t *testing.T) {
 	// a cryptographic PASS or deployment authority; VerifyReview tests are separate.
 	signature := make([]byte, 64)
 	execute(`INSERT INTO maintenance_reviews(review_sha256,stage_id,raw,signature) VALUES($1,$2,$3,$4)`, reviewID, stageID, review, signature)
-	permission := []byte(`{"synthetic_permission":"a"}`)
+	var expires time.Time
+	if err := pool.QueryRow(ctx, `SELECT clock_timestamp()+INTERVAL '1 hour'`).Scan(&expires); err != nil {
+		t.Fatal(err)
+	}
+	permissionValue := OwnerPermission{Version: "butler.maintenance.owner-permission.v1", Kind: "ordinary_mandate", OwnerID: "owner-a", TargetID: "target-a", ProfileSHA256: profileID, Epoch: 1, Nonce: Digest([]byte("SQL-only owner nonce")), RequestSHA256: Digest([]byte("SQL-only owner request")), MaxClaims: 2, AllowedClasses: []Class{Application}, IssuedAt: expires.Add(-time.Hour), ExpiresAt: expires}
+	permission, _ := json.Marshal(permissionValue)
 	permissionID := "mpermit_" + Digest(permission)
-	execute(`INSERT INTO maintenance_permissions(permission_id,owner_id,target_id,profile_sha256,kind,raw,signature,limit_claims,expires_at) VALUES($1,'owner-a','target-a',$2,'ordinary_mandate',$3,$4,2,clock_timestamp()+INTERVAL '1 hour')`, permissionID, profileID, permission, signature)
+	execute(`INSERT INTO maintenance_permissions(permission_id,owner_id,target_id,profile_sha256,kind,epoch,nonce,request_sha256,raw,signature,limit_claims,expires_at) VALUES($1,'owner-a','target-a',$2,'ordinary_mandate',1,$3,$4,$5,$6,2,$7)`, permissionID, profileID, permissionValue.Nonce, permissionValue.RequestSHA256, permission, signature, expires)
 	attemptID := "mdeploy_" + Digest([]byte("synthetic attempt a"))
 	execute(`INSERT INTO maintenance_attempts(attempt_id,owner_id,target_id,profile_sha256,stage_id,review_sha256,permission_id,purpose,fence,epoch,base_artifact_sha256,artifact_sha256,claim,signature,expires_at) VALUES($1,'owner-a','target-a',$2,$3,$4,$5,'promote',1,1,$6,$7,'{}',$8,clock_timestamp()+INTERVAL '1 minute')`, attemptID, profileID, stageID, reviewID, permissionID, Digest([]byte("base")), Digest([]byte("candidate")), signature)
 	denied("55000", `UPDATE maintenance_attempts SET state='completed',dispatched_at=clock_timestamp(),ended_at=clock_timestamp() WHERE attempt_id=$1`, attemptID)
