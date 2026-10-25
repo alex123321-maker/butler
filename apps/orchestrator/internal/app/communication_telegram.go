@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
+	"github.com/butler/butler/apps/orchestrator/internal/executionnotice"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -202,6 +203,15 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err = c.installWeb(ctx, o, guard); err != nil {
 		return nil, err
 	}
+	targets := []executionnotice.Binding{{ID: b.ID, Version: b.Version, OwnerID: o.OwnerID, Channel: b.Channel, Recipient: b.Recipient}}
+	if c.web != nil {
+		w := c.web.binding
+		targets = append(targets, executionnotice.Binding{ID: w.ID, Version: w.Version, OwnerID: o.OwnerID, Channel: w.Channel, Recipient: w.Recipient})
+	}
+	core.ExecutionNotices, err = executionnotice.New(ctx, pool, targets)
+	if err != nil {
+		return nil, err
+	}
 	if err = core.ConfigureQuestionLimit(ctx, o.OwnerID, o.MaxOpenInteractions); err != nil {
 		return nil, err
 	}
@@ -268,8 +278,15 @@ func (c *telegramCommunication) admit(ctx context.Context, run string) error {
 	if epoch != 1 || owner != c.binding.OwnerID || json.Unmarshal(proofRaw, &proof) != nil || json.Unmarshal(eventRaw, &event) != nil || proof.OwnerID != owner || proof.DeliveryID != event.EventID || event.SessionKey != key {
 		return communication.ErrDenied
 	}
-	web := c.web != nil && proof.BindingID == c.web.binding.ID && proof.BindingVersion == c.web.binding.Version && proof.BotID == 0 && proof.ActorChannel == "web" && (proof.Kind == "web_message" || proof.Kind == "owner_control")
-	telegram := proof.BindingID == c.binding.BindingID && proof.BindingVersion == c.binding.Version && proof.BotID == c.binding.BotID && (proof.Kind == "telegram_message" || proof.Kind == "owner_control")
+	scheduled := proof.Kind == "scheduled_occurrence" && proof.ActorChannel == "schedule" && proof.ActorDeliveryID == event.EventID && event.Source == "schedule"
+	quiet := false
+	if scheduled {
+		if err := c.store.Pool.QueryRow(ctx, `SELECT COALESCE((j.spec_json->>'monitor')::boolean,FALSE) FROM scheduled_occurrences o JOIN scheduled_jobs j USING(schedule_id) JOIN accepted_inputs i ON i.input_id=o.input_id JOIN accepted_inputs src ON src.run_id=j.source_run_id WHERE i.run_id=$1 AND i.event_id=$2 AND o.occurrence_id=$2 AND i.task_id=o.task_id AND i.owner_id=j.owner_id AND i.session_key=j.session_key AND j.revision=o.schedule_revision AND j.state NOT IN ('paused','blocked','cancelled') AND j.expires_at>clock_timestamp() AND src.communication_ingress_epoch=1 AND src.communication_ingress_json->>'BindingID'=$3 AND (src.communication_ingress_json->>'BindingVersion')::bigint=$4`, run, event.EventID, proof.BindingID, proof.BindingVersion).Scan(&quiet); err != nil {
+			return communication.ErrDenied
+		}
+	}
+	web := c.web != nil && proof.BindingID == c.web.binding.ID && proof.BindingVersion == c.web.binding.Version && proof.BotID == 0 && (proof.ActorChannel == "web" && (proof.Kind == "web_message" || proof.Kind == "owner_control") || scheduled)
+	telegram := proof.BindingID == c.binding.BindingID && proof.BindingVersion == c.binding.Version && proof.BotID == c.binding.BotID && (proof.Kind == "telegram_message" || proof.Kind == "owner_control" || scheduled)
 	if !web && !telegram {
 		return communication.ErrDenied
 	}
@@ -298,7 +315,7 @@ func (c *telegramCommunication) admit(ctx context.Context, run string) error {
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return err
 	}
-	return c.store.AdmitRun(ctx, run, false, methods)
+	return c.store.AdmitRun(ctx, run, quiet, methods)
 }
 
 func (c *telegramCommunication) installInputHooks() {

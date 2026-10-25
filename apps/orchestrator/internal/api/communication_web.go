@@ -105,6 +105,21 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 			}
 		}
 		switch r.URL.Path {
+		case "/api/v3/communications/states":
+			if r.URL.RawQuery != "" {
+				w.WriteHeader(400)
+				return
+			}
+			if reader.Core.ExecutionNotices == nil {
+				writeJSON(w, 200, map[string]any{"ready": false, "items": []any{}})
+				return
+			}
+			items, err := reader.Core.ExecutionNotices.List(ctx, reader.Binding.ID)
+			if err != nil {
+				deny()
+				return
+			}
+			writeJSON(w, 200, map[string]any{"ready": true, "items": items})
 		case "/api/v3/communications/profile":
 			if _, err = reader.Feed(ctx, 0, 1); err != nil {
 				deny()

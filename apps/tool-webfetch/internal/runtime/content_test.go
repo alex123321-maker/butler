@@ -89,7 +89,12 @@ func TestTextLimitReportsTruncationAndKeepsUTF8(t *testing.T) {
 				})
 				meta, ok := p["metadata"].(map[string]any)
 				text, _ := p["content_text"].(string)
-				if r.GetStatus() != "completed" || !ok || meta["truncated"] != tc.truncated || len(text) > maxContentBytes || !utf8.ValidString(text) {
+				window, _ := p["content_window"].(map[string]any)
+				available := maxContentBytes
+				if tc.name == "split rune" {
+					available--
+				}
+				if r.GetStatus() != "completed" || !ok || meta["upstream_truncated"] != tc.truncated || meta["truncated"] != true || len(text) > defaultTextCharacters || window["available_characters"] != float64(available) || !utf8.ValidString(text) {
 					t.Fatalf("%s: invalid completeness/UTF8: status=%s metadata=%v bytes=%d", tool, r.GetStatus(), meta, len(text))
 				}
 			}
@@ -135,7 +140,12 @@ func TestExpandedOutputIsRefusedBeforeGRPCResponseLimit(t *testing.T) {
 		w.Header().Set("Content-Type", "text/plain")
 		fmt.Fprint(w, strings.Repeat("\"", maxContentBytes))
 	})
-	if r.GetStatus() != "failed" || !strings.Contains(r.GetError().GetMessage(), "output exceeds") {
-		t.Fatalf("oversized serialized output not explicitly refused: %s", r.GetStatus())
+	if r.GetStatus() != "completed" || len(r.GetResultJson()) > 100000 {
+		t.Fatalf("expanded archive reached context instead of a bounded window: %s", r.GetStatus())
+	}
+	// Keep the final wire guard independently of the earlier model window.
+	unbounded := completedResult(&runtimev1.ExecuteRequest{ToolCall: &toolbrokerv1.ToolCall{ToolName: "web.fetch"}}, mustJSON(map[string]any{"content_text": strings.Repeat("\"", maxContentBytes)}))
+	if unbounded.Status != "failed" || !strings.Contains(unbounded.GetError().GetMessage(), "output exceeds") {
+		t.Fatal("wire guard weakened", unbounded.Status)
 	}
 }

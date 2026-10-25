@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/communicationcontrol"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -309,5 +310,36 @@ func TestToolDiscoveryCountBudgetPreservesPreviouslyLoadedMethods(t *testing.T) 
 	set, err := s.toolSetForContinuation(context.Background(), "run")
 	if err != nil || len(set.Definitions) != toolcatalog.MaxLoaded+2 {
 		t.Fatal("rejected load evicted earlier selection", err)
+	}
+}
+
+func TestToolDiscoveryExplicitReplySchemaIsAvailableWithoutCatalogRoundTrips(t *testing.T) {
+	ctx := context.Background()
+	runs := newMemoryRunManager()
+	runs.records["run"] = &sessionv1.RunRecord{RunId: "run", SessionKey: "session"}
+	history := &memoryTranscriptStore{}
+	s := &Service{runs: runs, transcript: history, config: Config{Communication: &communicationKernelFixture{}}}
+	message := communicationcontrol.Contract("communication.message")
+	contracts := append(toolcatalog.Contracts(), message)
+	selected, _, err := s.selectToolContracts(ctx, "run", contracts)
+	if err != nil || len(selected) != 3 {
+		t.Fatal(selected, err)
+	}
+	now := time.Now()
+	history.toolCalls = append(history.toolCalls, transcript.ToolCall{RunID: "run", ToolName: toolcatalog.Load, Status: "completed", FinishedAt: &now, ResultJSON: mustMarshalJSON(toolcatalog.Result{Status: "ok", Loaded: []string{toolcatalog.Ref(message)}})})
+	selected, _, err = s.selectToolContracts(ctx, "run", contracts)
+	if err != nil || len(selected) != 3 {
+		t.Fatal("reply schema duplicated", selected, err)
+	}
+	s.config.Communication = nil
+	history.toolCalls = nil
+	selected, _, err = s.selectToolContracts(ctx, "run", contracts)
+	if err != nil || len(selected) != 2 {
+		t.Fatal("legacy profile acquired implicit reply", selected, err)
+	}
+	s.config.Communication = &communicationKernelFixture{}
+	selected, _, err = s.selectToolContracts(ctx, "run", toolcatalog.Contracts())
+	if err != nil || len(selected) != 2 {
+		t.Fatal("unpermitted reply invented", selected, err)
 	}
 }

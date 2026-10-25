@@ -132,6 +132,7 @@ type ToolBrokerConfig struct {
 
 	ToolDiscoveryEnabled          bool
 	NetworkAllowlists             map[string][]string
+	PublicWebReadsEnabled         bool
 	ExecutionBudgetPolicyJSON     string
 	Shared                        SharedConfig
 	Postgres                      PostgresConfig
@@ -426,6 +427,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 
 	specs = append(specs, delegationBrokerSpecs(&cfg)...)
 	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
+	specs = append(specs, publicWebReadsBrokerSpec(&cfg))
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	specs = append(specs, toolDiscoverySpec("tool-broker", &cfg.ToolDiscoveryEnabled))

@@ -60,6 +60,17 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if json.Unmarshal([]byte(payload), &checkpoint) != nil {
 		return nil, fmt.Errorf("invalid durable checkpoint")
 	}
+	if checkpoint.ModelRetry.Reason == "authority_observation_timeout" {
+		if checkpoint.ModelRetry.ExecutionDeadline.IsZero() {
+			return nil, errors.New("authority_retry_deadline_required")
+		}
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithDeadline(ctx, checkpoint.ModelRetry.ExecutionDeadline)
+		defer cancel()
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+	}
 	if checkpoint.ModelRetry.Count == 1 {
 		ctx = context.WithValue(ctx, modelRetryRecoveryKey{}, true)
 	}
@@ -114,9 +125,14 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	ctx = withAnswerState(ctx, checkpoint.Data.AnswerState)
 	ctx = adaptiveContext(ctx, checkpoint.Prepared)
 	runLog := logger.WithRunID(s.log, runID)
+	retryParent := ctx
 	ctx, stop, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
 	defer stop()
-	defer func() { returnedErr = preserveOwnedCancellation(ctx, returnedErr) }()
+	defer func() {
+		failure := preserveOwnedCancellation(ctx, returnedErr)
+		stop()
+		returnedErr = s.recoverAuthorityTimeout(retryParent, ctx, current, failure)
+	}()
 	refresher, ok := s.runs.(interface {
 		RefreshExecutionLease(context.Context, string, string) (*sessionv1.RunRecord, error)
 	})

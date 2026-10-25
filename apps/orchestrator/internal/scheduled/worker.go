@@ -49,6 +49,9 @@ func (s *Store) sourceTx(ctx context.Context, tx pgx.Tx, j job) error {
 	if s.SourceGuard == nil {
 		return ErrDenied
 	}
+	if err := s.Inputs.CheckScheduledCommunicationSourceTx(ctx, tx, j.sourceRun); err != nil {
+		return ErrDenied
+	}
 	if j.sourceTask != "" {
 		var valid bool
 		if err := tx.QueryRow(ctx, `SELECT owner_id=$2 AND session_key=$3 AND status NOT IN ('paused','waiting_for_user','cancelled') AND constraints_json=$4::jsonb AND execution_policy=$5 AND goal=$6 AND NOT COALESCE((working_json #>> '{scratch,privacy_redacted}')::boolean,FALSE) FROM tasks WHERE task_id=$1 FOR SHARE`, j.sourceTask, j.owner, j.session, mustJSON(j.constraints), j.policy, j.sourceGoal).Scan(&valid); err != nil || !valid {
@@ -184,8 +187,9 @@ func (s *Store) advance(ctx context.Context, id string) error {
 	// Nonterminal input/unknown effect prevents overlapping work. Successful
 	// attempts may remain unverified tasks and must not stop the next occurrence.
 	var busy, unknown bool
-	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_occurrences o JOIN accepted_inputs i ON i.input_id=o.input_id WHERE o.schedule_id=$1 AND i.status NOT IN ('completed','failed','cancelled','expired')),
- EXISTS(SELECT 1 FROM scheduled_occurrences o JOIN runs r ON r.task_id=o.task_id JOIN action_intents i ON i.run_id=r.run_id JOIN action_effects e ON e.action_id=i.effect_id WHERE o.schedule_id=$1 AND e.state IN ('effect_unknown','reconciling'))`, id).Scan(&busy, &unknown); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_occurrences o JOIN accepted_inputs i ON i.input_id=o.input_id WHERE o.schedule_id=$1 AND i.status NOT IN ('completed','failed','cancelled','expired')
+ AND NOT ($2 AND i.status='blocked' AND i.claim_id='' AND i.error_code IN ('provider_unavailable','provider_timeout','transport_connection_error','rate_limited','model_capacity_unavailable','stateful_session_lost') AND NOT EXISTS(SELECT 1 FROM session_ownership own WHERE own.run_id=i.run_id AND own.expires_at>clock_timestamp()))),
+ EXISTS(SELECT 1 FROM scheduled_occurrences o JOIN runs r ON r.task_id=o.task_id JOIN action_intents i ON i.run_id=r.run_id JOIN action_effects e ON e.action_id=i.effect_id WHERE o.schedule_id=$1 AND e.state IN ('effect_unknown','reconciling'))`, id, j.Monitor).Scan(&busy, &unknown); err != nil {
 		return err
 	}
 	if unknown {
@@ -240,6 +244,9 @@ func (s *Store) advance(ctx context.Context, id string) error {
 					return ErrDenied
 				}
 				if err = record("admitted", "ordinary_task_admitted", created.TaskID, input.InputID); err != nil {
+					return err
+				}
+				if err = s.Inputs.MarkScheduledCommunicationTx(ctx, tx, occurrenceID); err != nil {
 					return err
 				}
 				state = "admitted"

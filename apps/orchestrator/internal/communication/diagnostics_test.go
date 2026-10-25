@@ -21,6 +21,7 @@ import (
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func diagnosticProfile(f *fixture) communication.DiagnosticProfile {
@@ -113,10 +114,28 @@ func TestCommunicationDiagnosticsWaitingAndFailureRemainDistinctIntegration(t *t
 
 func TestCommunicationDiagnosticsMissingSchemaIsNotHealthyIntegration(t *testing.T) {
 	f := setup(t)
+	var schema string
+	if err := f.pool.QueryRow(f.ctx, `SELECT current_schema()`).Scan(&schema); err != nil {
+		t.Fatal(err)
+	}
+	shadow := pgx.Identifier{schema + "_shadow"}.Sanitize()
+	if _, err := f.pool.Exec(f.ctx, `CREATE SCHEMA `+shadow+`; CREATE TABLE `+shadow+`.communication_widget_views(id text)`); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _, _ = f.pool.Exec(context.Background(), `DROP SCHEMA `+shadow+` CASCADE`) })
+	cfg := f.pool.Config()
+	cfg.ConnConfig.RuntimeParams["search_path"] = pgx.Identifier{schema}.Sanitize() + "," + shadow + ",public"
+	pool, err := pgxpool.NewWithConfig(f.ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	core := *f.s
+	core.Pool = pool
 	if _, err := f.pool.Exec(f.ctx, `ALTER TABLE communication_widget_views RENAME TO missing_widget_views`); err != nil {
 		t.Fatal(err)
 	}
-	r, err := f.s.Diagnostics(f.actor("web", "diagnostic"), diagnosticProfile(f))
+	r, err := core.Diagnostics(f.actor("web", "diagnostic"), diagnosticProfile(f))
 	if err != nil || r.Status != "unhealthy" || len(r.Checks) != 1 || r.Checks[0].Reason != "migrations_required" {
 		t.Fatal(r, err)
 	}

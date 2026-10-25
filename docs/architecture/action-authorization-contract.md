@@ -1,5 +1,49 @@
 # Exact action authorization
 
+Migration102 [isolates stopped attempts](stopped-input-finalization.md) without
+reconciling effects or acknowledging them for the owner. Both Core and Broker
+deny arbitrary writes across retained session/task uncertainty, including a new
+Task. A fresh canonical text reply needs the exact live Input/intent/admission
+and complete scoped isolation proof; equivalent unknown replies and untracked
+uncertainty deny it. The older owner-acknowledged local-prepare exception remains
+separate and is not minted by kernel finalization.
+
+The receiving Core dispatch verifier recognizes the same canonical mode2/3
+owner reply rule as Broker. It still requires permanently claimed exact action/
+grant/effect identity and then live admission/Input/destination/source guards.
+Other prepare controls continue to require their original approval or mandate.
+
+
+Canonical communication replies to the current owner's operator-pinned
+channels are standard capabilities in mode2/3. They require the explicit owning
+admission, exact fixed contract, current Input claim, destination hash and source/
+export guards; they do not ask permission to answer or ask an owner question.
+Mode0 restrictions and mode1 exact approval stay. Delegation, custom recipients,
+credentials, changed contracts and explicit denials are not authorized. Ordinary
+result publication does not acquire the separate unknown-effect budget exception
+for a blocked notice/question. Current grant verification also checks the exact
+owning communication Input claim. Saved publication/dispatch/delivery remain distinct.
+
+
+`web.search` includes its code-owned provider URL in destination caps and
+network release even though arguments contain a query. Queries require release
+consent unless operator public-web standing consent is enabled. Exact argument
+hashes include the query. No custom endpoint/header/credential is accepted.
+
+
+Operator-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` grants standing consent to
+release public page URLs and search queries through the fixed web readers,
+HTTP GET/HEAD and revision3 browser reads/navigation. It defaults false and
+cannot be changed through model arguments or stored settings. Prepare,
+authorize and pre-dispatch verification all apply the same policy; disabling
+it invalidates an unapproved URL release at verification. Explicit mode1 and
+contract approval, credentials, custom HTTP headers/bodies, extensions, writes,
+owner denials, task authority, destination caps, public DNS/redirect guards and
+finite budgets retain their independent checks. An empty registry domain list
+still grants no release consent unless this operator option applies. Broad
+URL/query release consent includes model-selected queries, so this setting is
+an explicit owner choice for autonomous public research.
+
 The migration096 credential vault adds fixed local `credentials.*` controls.
 Their canonical schema/hash, owning Input claim, live context and explicit
 denials remain mandatory. Asking for a protected owner interaction grants no

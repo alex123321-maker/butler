@@ -176,6 +176,10 @@ type modelRetryWorkerFixture struct {
 }
 
 func newModelRetryWorkerFixture(t *testing.T, tool, duplicate bool) *modelRetryWorkerFixture {
+	return newModelRetryWorkerFixtureScope(t, tool, duplicate, false)
+}
+
+func newModelRetryWorkerFixtureScope(t *testing.T, tool, duplicate, conversation bool) *modelRetryWorkerFixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	ctx := context.Background()
@@ -185,15 +189,19 @@ func newModelRetryWorkerFixture(t *testing.T, tool, duplicate bool) *modelRetryW
 		t.Fatal(err)
 	}
 	tasks := task.NewStore(pool)
-	job, err := tasks.Create(ctx, task.CreateRequest{SessionKey: "model-retry-session", OwnerID: "owner", Goal: "one confirmed action", CompletionCriteria: []string{"one receipt"}})
-	if err != nil {
+	var taskID string
+	if !conversation {
+		job, err := tasks.Create(ctx, task.CreateRequest{SessionKey: "model-retry-session", OwnerID: "owner", Goal: "one confirmed action", CompletionCriteria: []string{"one receipt"}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		taskID = job.TaskID
+	}
+	if _, err := pool.Exec(ctx, `CREATE TABLE model_retry_test_current_source(active boolean NOT NULL);INSERT INTO model_retry_test_current_source VALUES(true)`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = pool.Exec(ctx, `CREATE TABLE model_retry_test_current_source(active boolean NOT NULL);INSERT INTO model_retry_test_current_source VALUES(true)`); err != nil {
-		t.Fatal(err)
-	}
-	event := ingress.InputEvent{EventID: "model-retry-input", IdempotencyKey: "model-retry-input", SessionKey: "model-retry-session", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"complete one action","user_id":"owner","task_id":"` + job.TaskID + `"}`, CreatedAt: time.Now().UTC()}
-	receipt, _, err := store.Accept(ctx, event, "owner", job.TaskID)
+	event := ingress.InputEvent{EventID: "model-retry-input", IdempotencyKey: "model-retry-input", SessionKey: "model-retry-session", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"complete one action","user_id":"owner","task_id":"` + taskID + `"}`, CreatedAt: time.Now().UTC()}
+	receipt, _, err := store.Accept(ctx, event, "owner", taskID)
 	if err != nil {
 		t.Fatal(err)
 	}

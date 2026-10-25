@@ -1,5 +1,38 @@
 # Tool Broker
 
+Migration102's stopped-attempt isolation is enforced at permanent grant claim
+through the budget controller. Queue release grants no repeat dispatch: new
+writes in the same session/task tree remain denied while uncertainty survives.
+Only separately proved fresh owner text replies can use the bounded exception;
+current claim, sources, targets, contract and all policy checks still apply.
+Deploy Core and Broker together with the schema; see
+[the contract](../../docs/architecture/stopped-input-finalization.md).
+
+Canonical communication replies to the current owner's operator-pinned
+channels are standard capabilities in mode2/3. They require the explicit owning
+admission, exact fixed contract, current Input claim, destination hash and source/
+export guards; they do not ask permission to answer or ask an owner question.
+Mode0 restrictions and mode1 exact approval stay. Delegation, custom recipients,
+credentials, changed contracts and explicit denials are not authorized. Ordinary
+result publication does not acquire the separate unknown-effect budget exception
+for a blocked notice/question. Current grant verification also checks the exact
+owning communication Input claim. Saved publication/dispatch/delivery remain distinct.
+
+
+`web.search` uses WebFetch with strict pre-dispatch decoding. Its fixed
+DuckDuckGo Lite URL participates in query release and operator web network caps;
+runtime class webfetch maps to web for all its readers. Public-web standing
+consent covers search queries. Current authority/credential/approval checks
+remain in force. The shared budget controller derives migration098 Input scopes.
+
+
+Set the startup-only `BUTLER_PUBLIC_WEB_READS_ENABLED=true` after owner consent
+to allow fixed public web readers, HTTP GET/HEAD and revision3 browser
+navigation to release page URLs/search queries without per-page confirmation.
+Default is false. This controls URL release only; mode1, explicit contract
+approval, credentials, custom HTTP headers/bodies, writes, private-network
+denials, destination caps, current authority and budgets remain enforced.
+Disabling it prevents verification of unapproved URL-release grants.
 The shared private communication owner profile accepts `MaxOpenInteractions`
 (zero/default16, or1..64). Orchestrator startup stores this versioned ceiling in
 PostgreSQL; migration100 also enforces it for earlier SQL writers. Broker keeps
@@ -390,3 +423,8 @@ the three accepted methods. Isolated communication-lab accepts `-widgets`; its
 existing disposable database guard remains mandatory. Registration is not grant
 authority: current immutable admission, target hash, exact prepare authorization,
 source policy and finite budgets still govern dispatch.
+
+Communication and schedule fixed contracts are revision 2 for research evidence
+and checked monitoring. Their exact hashes, current Input/claim/lease/source
+authority, destination snapshots and owner approval rules remain authoritative.
+A proposed follow-up or saved observation grants no future tool capabilities.

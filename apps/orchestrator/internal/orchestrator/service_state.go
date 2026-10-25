@@ -100,6 +100,10 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 						}
 						runLog.Warn("execution authority observation stopped", slog.String("phase", checkPhase), slog.String("classification", classification), slog.Int64("elapsed_ms", time.Since(checkStarted).Milliseconds()))
 						cause := &ownedCancellation{reason: reason, failure: ownership.ErrStale}
+						if checkPhase == "lease" && classification == "deadline" {
+							cause.reason = "execution_authority_observation_timeout"
+							cause.observationTimeout = true
+						}
 						select {
 						case errCh <- cause:
 						default:

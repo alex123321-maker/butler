@@ -180,6 +180,27 @@ func firstString(m map[string]any, keys ...string) string {
 
 func (s *Service) Run(ctx context.Context) error {
 	var wg sync.WaitGroup
+	if s.store.StoppedFinalizer != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			ticker := time.NewTicker(time.Second)
+			defer ticker.Stop()
+			for {
+				check, cancel := context.WithTimeout(ctx, 5*time.Second)
+				err := s.store.SweepStopped(check)
+				cancel()
+				if err != nil && ctx.Err() == nil {
+					s.log.Warn("stopped attempt review unavailable")
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+				}
+			}
+		}()
+	}
 	if s.maintenance != nil {
 		wg.Add(1)
 		go func() {
@@ -332,7 +353,7 @@ func (s *Service) process(parent context.Context, r Record) {
 			s.finish(parent, r, "queued", "result_persistence_pending", "saved final answer awaits durable persistence", time.Duration(1<<min(r.Attempts, 6))*time.Second)
 			return
 		}
-		code := "execution_stopped"
+		code, message := executionFailure(err)
 		var claimCause *claimCancellation
 		if errors.As(err, &claimCause) {
 			code = claimCause.Error()
@@ -349,7 +370,6 @@ func (s *Service) process(parent context.Context, r Record) {
 		if errors.Is(err, context.DeadlineExceeded) {
 			code = "execution_deadline_exceeded"
 		}
-		message := err.Error()
 		if doctorAdmission(r.CheckpointJSON) {
 			message = "diagnostic execution stopped; inspect bounded error code"
 		}

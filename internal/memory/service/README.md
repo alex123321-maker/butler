@@ -1,5 +1,11 @@
 # Memory bundle service
 
+Automatic document context requires lexical term/prefix overlap, diagnosing
+unrelated omissions. This precision choice can omit paraphrases; explicit
+semantic search retains recall. Stored documents, profile preferences and typed
+constraints are unchanged.
+
+
 The production composition passes the existing metrics registry. Additive
 operation/duration/item/limitation metrics distinguish search from selection and
 finish each started stage once, including errors and cancellation. Reasons use

@@ -6,6 +6,19 @@ otherwise it evaluates the original recursive roots, transcript heads, dependenc
 sets and original-source metadata. No accepted fact or authority result is cached,
 and correction, deletion, privacy and revision fences remain authoritative.
 
+New epoch1 explicit taskless requests use two recent completed published
+exchanges as historical reference plus all current-run observations. Unfinished
+old requests/internal finals/old tool results are excluded without deleting
+transcript. Current input stays verbatim; typed tasks retain full history and
+constraints. Exact interaction continuation remains owned by Communication.
+Complete transcript is pinned/privacy checked before selecting context. Old
+epoch0 inputs retain replay policy. A kernel UTC clock and current-request rule
+prevent notification timestamps and unfinished history from defining the goal.
+Automatic document context requires lexical term/prefix overlap with the current
+query using the existing heuristic. This favors precision and can omit
+paraphrases; explicit semantic search retains recall. Omissions are diagnosed.
+Profile preferences and source/privacy guards are unchanged.
+
 The disabled-by-default [issue97 synthetic research driver](../../cmd/effort-eval/README.md)
 uses an independent local PostgreSQL fixture journal. Primary source observations,
 model claims/hypotheses and current goal versions remain distinct; quoted claims

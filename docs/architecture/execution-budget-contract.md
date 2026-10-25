@@ -1,5 +1,14 @@
 # Execution budget contract
 
+Migration098 pins context epoch1 on new Inputs; existing rows remain epoch0.
+For verified explicit taskless communication at epoch1, conversation allowance
+is keyed by immutable accepted Input ID and expires at acceptance+24h. Separate
+owner requests have separate finite allowance; restart/approval/resume/rerun of
+the same Input retain spending. Core/Broker derive identity from durable joins,
+never model args. Old session/day reservations, unknown usage and limits remain
+unchanged. Task/mandate/delegation and enabled owner/day scopes still apply.
+
+
 The budgeted transport emits one structured numeric `model turn usage observed`
 log record for each complete observation, including native total tokens. This
 preserves High's thinking consumption for retained operator comparison logs;
@@ -108,6 +117,17 @@ The [bounded model retry](model-retry-policy.md) spends a fresh reservation and
 operation. Admission exposes the effective deadline's trusted origin so a nominal
 model-turn timeout can be distinguished from an earlier scope or authority limit.
 Earlier attempts and NULL measurements remain immutable across recovery.
+The same single allowance can instead recover an owning watchdog lease-observation
+deadline after fresh authority/source/claim proofs. The cancelled attempt stays
+spent; its original worker deadline caps recovery. A second timeout of either
+kind cannot claim a separate retry. See the retry policy for the exact boundary.
+
+Migration102's [stopped-attempt isolation](stopped-input-finalization.md) retains
+uncertainty and spending when a failed attempt releases the session queue. Both
+Core and Broker constrain new writes across the same session/task tree. Only a
+fresh canonical text reply with exact current Input/intent/admission and complete
+isolation proof can use the additional bounded reply exception. Changing Task
+or replaying an equivalent unknown message does not qualify.
 
 Loops normalize root, pinned task/constraints revisions, exact tool/contract and
 canonical arguments across restart. Equivalent numbers/object order compare

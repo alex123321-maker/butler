@@ -1,7 +1,8 @@
 # Bounded durable model retry
 
 Core may retry one failed model turn per accepted input after a nominal model
-turn timeout. The normal durable input worker queues the retry with a two-second
+turn timeout or a transient lease-observation deadline during inference. Both
+cases share the same single retry counter. The normal durable input worker queues the retry with a two-second
 pause and releases its lease. The next claim obtains fresh Session ownership,
 checks the current task and sources, reloads the authorized tool catalog and
 starts a fresh provider session for the same nonterminal Butler run.
@@ -15,18 +16,37 @@ its own committed model operation and conservative budget reservation.
 
 Budget admission records whether the effective deadline comes from the nominal
 model-turn limit or an earlier task, mandate, owner, delegated or caller deadline.
-Only the nominal model-turn timeout can claim the retry. A typed provider timeout
+For that deadline path, only the nominal model-turn timeout can claim the retry. A typed provider timeout
 is eligible only under that same trusted admission and a live parent context.
 Provider text and a provider's `retryable` field grant no authority.
 The request-local phase observer must have reached HTTP round trip or response
 stream. Missing phases and timeouts during authentication or serialization deny
 this retry. A phase remains content-free telemetry and proves no measured cost.
 
-Cancellation, owner Stop, expired authority, exhausted budgets, changed sources,
+Ordinary cancellation, owner Stop, expired authority, exhausted budgets, changed sources,
 authentication or protocol failures and uncertain external effects do not enter
 this retry path. Core checks these conditions before scheduling and again under
 the next claim. An unfinished tool call or an executing/unknown effect anywhere
 in the task tree denies recovery.
+
+The watchdog still cancels inference on a failed 750ms lease observation. Only
+its private `execution_authority_observation_timeout` cause can enter the added
+recovery path; task-authority read deadlines, lease renewal failures, stale
+ownership, generic storage failures and provider text cannot. The owning return
+path joins watchdog cancellation, then uses the still-live Input parent for a
+fresh proof bounded to five seconds. It never detaches from cancellation.
+Current task authority, source access, exact Input claim, ownership fence and
+known tool/action outcomes must all pass before the durable CAS. If PostgreSQL
+cannot establish these proofs, recovery is denied. Only the model-running or
+awaiting-model-resume state with the latest committed `model_budget_reserved`
+operation qualifies; preparation, dispatch and finalization are not replayed.
+
+For this reason the marker also saves the original worker `execution_deadline`.
+It must leave room for backoff and fall within the accepted Input expiry. Resume
+caps its context to that deadline before acquiring a new lease; a new claim
+cannot restart the worker time allowance. Budget admission still enforces any
+earlier task/mandate/owner deadline. An exhausted second observation timeout is
+reported with the finite timeout code through ordinary execution-state delivery.
 
 The input's original acceptance deadline, ordinary recovery-claim allowance,
 task/mandate/day scopes and any delegated allowance continue to apply. The

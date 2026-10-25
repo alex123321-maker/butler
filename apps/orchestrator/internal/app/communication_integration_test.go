@@ -199,3 +199,53 @@ func TestCommunicationGrantExpiryDuringExportRollsBackIntegration(t *testing.T) 
 		t.Fatal("expired grant publication partially committed", n, e)
 	}
 }
+
+func TestCommunicationStandardOwnerReplyDispatchWithoutApprovalIntegration(t *testing.T) {
+	for _, scenario := range []string{"mode2", "mode1", "missing_claim", "revoked_destination"} {
+		t.Run(scenario, func(t *testing.T) {
+			f := newNamedToolControlDispatchFixture(t, nil, false, false, "communication.message", true)
+			inputs := input.NewStore(f.f.pool)
+			inputs.CommunicationEpoch = 1
+			f.grant.ApprovalID = ""
+			f.grant.MandateID = ""
+			f.grant.AutonomyMode = 3
+			mode := "mode_2"
+			if scenario == "mode1" {
+				f.grant.AutonomyMode = 2
+				mode = "mode_1"
+			}
+			if scenario == "missing_claim" {
+				f.grant.InputClaimHash = ""
+			}
+			raw, _ := json.Marshal(f.grant)
+			if _, err := f.f.pool.Exec(f.f.ctx, `UPDATE action_authorizations SET grant_data=$2::jsonb WHERE authorization_id=$1`, f.grant.ID, raw); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.f.pool.Exec(f.f.ctx, `UPDATE runs SET autonomy_mode=$2 WHERE run_id=$1`, f.call.RunId, mode); err != nil {
+				t.Fatal(err)
+			}
+			data, _ := json.Marshal(map[string]string{"tool_call_id": f.call.ToolCallId, "action_id": f.prepared.Binding.ActionID, "effect_id": f.prepared.EffectID, "authorization_id": f.grant.ID})
+			if err := inputs.SaveCheckpoint(f.owned, f.call.RunId, "tool_dispatching", string(data)); err != nil {
+				t.Fatal(err)
+			}
+			f.claim(t)
+			if scenario == "revoked_destination" {
+				if _, err := f.f.pool.Exec(f.f.ctx, `UPDATE communication_bindings SET enabled=FALSE`); err != nil {
+					t.Fatal(err)
+				}
+			}
+			core := &communication.Store{Pool: f.f.pool, Inputs: inputs, SourceGuard: f.f.sources.CheckRunSourcesTx, ChannelGuard: func(context.Context, pgx.Tx, string, communication.Binding, communicationcontrol.Args) error {
+				return nil
+			}}
+			env := communicationcontrol.Envelope{RunID: f.call.RunId, ToolCallID: f.call.ToolCallId, EffectID: f.prepared.EffectID, Tool: f.call.ToolName, ArgsJSON: f.call.ArgsJson, ContractHash: f.prepared.Binding.ContractHash}
+			receipt, err := (&CommunicationControl{Store: core}).ExecuteDispatched(f.f.ctx, env)
+			if scenario == "mode2" {
+				if err != nil || receipt.PublicationRef == "" {
+					t.Fatal("normal owner reply failed", receipt, err)
+				}
+			} else if err == nil {
+				t.Fatal("invalid reply context published", scenario)
+			}
+		})
+	}
+}

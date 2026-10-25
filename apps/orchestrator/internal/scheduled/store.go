@@ -80,12 +80,12 @@ func (s *Store) CheckReady(ctx context.Context) error {
 	if s == nil || s.Pool == nil || s.Tasks == nil || s.Inputs == nil || s.Budgets == nil || s.SourceGuard == nil {
 		return ErrDenied
 	}
-	_, err := s.Pool.Exec(ctx, `SELECT j.schedule_id,o.occurrence_id,r.effect_id,n.notification_id FROM scheduled_jobs j,scheduled_occurrences o,schedule_control_receipts r,schedule_reminder_outbox n WHERE FALSE`)
+	_, err := s.Pool.Exec(ctx, `SELECT j.schedule_id,o.occurrence_id,r.effect_id,n.notification_id,m.state_hash FROM scheduled_jobs j,scheduled_occurrences o,schedule_control_receipts r,schedule_reminder_outbox n,schedule_observations m WHERE FALSE`)
 	if err != nil {
 		return err
 	}
 	var ready bool
-	err = s.Pool.QueryRow(ctx, `SELECT to_regprocedure('butler_task_check_schedule(text)') IS NOT NULL AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='schedule_control_receipts'::regclass AND tgname='schedule_receipt_immutable' AND tgenabled IN ('O','A')) AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='schedule_reminder_outbox'::regclass AND tgname='schedule_notice_immutable' AND tgenabled IN ('O','A'))`).Scan(&ready)
+	err = s.Pool.QueryRow(ctx, `SELECT to_regprocedure('butler_task_check_schedule(text)') IS NOT NULL AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='schedule_control_receipts'::regclass AND tgname='schedule_receipt_immutable' AND tgenabled IN ('O','A')) AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='schedule_reminder_outbox'::regclass AND tgname='schedule_notice_immutable' AND tgenabled IN ('O','A')) AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='schedule_observations'::regclass AND tgname='schedule_observation_immutable' AND tgenabled IN ('O','A'))`).Scan(&ready)
 	if err != nil {
 		return err
 	}

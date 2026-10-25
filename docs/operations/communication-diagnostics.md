@@ -19,6 +19,8 @@ retry, task completion, effect reconciliation or execution authority.
 
 Readiness distinguishes installed components, schema, epoch-1 worker, guarded
 source/export handling, Web reader, media planner and terminal widget renderer.
+Required tables must exist in the connection's current schema; a similarly named
+table later in the search path cannot hide a missing migration.
 Fixed Broker `GetToolContract` reads additionally compare all four contract hashes
 with the kernel schemas. Missing/unavailable Broker observation is unknown;
 mismatched schemas and missing adapters remain degraded. Neither the diagnostic

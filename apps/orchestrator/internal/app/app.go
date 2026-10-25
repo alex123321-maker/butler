@@ -36,6 +36,7 @@ type App struct {
 	toolBroker                 *tools.BrokerClient
 	pipelineWorker             *pipeline.Worker
 	inputWorker                *durableinput.Service
+	executionNoticeWorker      *deliveryoutbox.Worker
 	outboxWorker               *deliveryoutbox.Worker
 	initiativeDeliveryWorker   *deliveryoutbox.Worker
 	scheduleDeliveryWorker     *deliveryoutbox.Worker

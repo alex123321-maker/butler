@@ -14,6 +14,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/websearch"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -210,6 +211,11 @@ func (r *Registry) ValidateContext(ctx context.Context, call *toolbrokerv1.ToolC
 	}
 	if err := ValidateArgs(contract.GetInputSchemaJson(), call.GetArgsJson()); err != nil {
 		return false, contract, validationError(err.Error())
+	}
+	if toolName == "web.search" {
+		if _, err := websearch.Decode(call.GetArgsJson()); err != nil {
+			return false, contract, validationError(err.Error())
+		}
 	}
 	// Fixed memory contracts also have strict bounds and cross-field rules.
 	// Reject malformed requests before a permanent effect dispatch is claimed.

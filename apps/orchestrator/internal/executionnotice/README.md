@@ -1,0 +1,41 @@
+# Execution notices
+
+Migration102 projects retained stopped-attempt uncertainty as a fixed failure
+reason while preserving the Input's original error. A known later verdict never
+claims request success. Telegram suppresses an identical acknowledged failure
+when blocked becomes failed; Web retains the current terminal state.
+
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
+Kernel-owned, fixed Russian lifecycle notifications for the explicit owner
+communication profile (migration097). PostgreSQL Input/approval/publication
+facts determine queued, working, waiting, blocked, failed and missing-response
+states. No model call, source text, raw error or secret is used. These records
+do not complete a task, publish a model final or authorize an action.
+
+Each verified binding/version has a durable activation watermark. Startup and
+restart reconcile only admitted inputs accepted after that activation; a new
+binding cannot adopt old history. Web exposes the latest state per input as
+available, never read. Telegram uses the existing channel-only outbox Worker
+against this module's separately owned receipts, with current binding, owner,
+state and finite claim checks. Only actual numeric channel ACK means sent.
+Lost/malformed ACK and expired sending claims remain UNKNOWN without resend;
+only confirmed absence can retry with bounded backoff. Superseded states are
+not sent. Successful published answers do not generate another Telegram result.
+
+The optional owner Web endpoint is `/api/v3/communications/states`. Notices have
+no public write endpoint or model schema. Delivery is independent of Input
+worker cancellation, inference allowance and publication source access, so a
+safe fixed failure notice can explain a denied or failed model attempt.
+
+Migration101 permits a fixed `queue_blocked` notice when a current queued Input's
+earliest unfinished predecessor in that owner's session is blocked or waiting for an
+owner response. A running predecessor remains ordinary queueing. The dependency
+may predate notice activation; only its status/timestamp are read, never its
+message, error details or old notices. Session ordering and owner controls are
+unchanged. Delivery rechecks the dependency, suppresses stale warnings after it
+clears and deduplicates unchanged states.

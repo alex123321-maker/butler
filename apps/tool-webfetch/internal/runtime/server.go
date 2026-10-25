@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 )
 
 var supportedWebFetchTools = map[string]bool{
+	"web.search":      true,
 	"web.fetch":       true,
 	"web.fetch_batch": true,
 	"web.extract":     true,
@@ -33,6 +35,9 @@ type Provider interface {
 }
 
 type FetchResult struct {
+	ObservedAt   string         `json:"observed_at"`
+	Window       *TextWindow    `json:"content_window,omitempty"`
+	Links        []DocumentLink `json:"links,omitempty"`
 	Provider     string         `json:"provider"`
 	RequestedURL string         `json:"requested_url"`
 	FinalURL     string         `json:"final_url"`
@@ -57,9 +62,16 @@ func NewProviderChainWithPolicy(policy egress.Policy, providers ...Provider) *Pr
 func NewProviderChain(providers ...Provider) *ProviderChain {
 	filtered := make([]Provider, 0, len(providers))
 	for _, provider := range providers {
-		if provider != nil {
-			filtered = append(filtered, provider)
+		if provider == nil {
+			continue
 		}
+		// Optional constructors return typed nil pointers. Converting one to
+		// Provider keeps a non-nil interface and must not install it as fallback.
+		value := reflect.ValueOf(provider)
+		if value.Kind() == reflect.Pointer && value.IsNil() {
+			continue
+		}
+		filtered = append(filtered, provider)
 	}
 	return &ProviderChain{providers: filtered}
 }
@@ -82,6 +94,10 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 			if result.Provider == "" {
 				result.Provider = provider.Name()
 			}
+			result.ObservedAt = time.Now().UTC().Format(time.RFC3339)
+			if result.ContentHTML != "" {
+				result.Links = documentLinks(result.ContentHTML, result.FinalURL)
+			}
 			return sanitizeFetchResult(result), nil
 		}
 		if errors.Is(err, errUnsupportedContent) || errors.Is(err, errResponseLimit) {
@@ -98,13 +114,17 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 type Server struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
 
-	fetcher *ProviderChain
-	log     *slog.Logger
+	searchClient *http.Client
+	fetcher      *ProviderChain
+	log          *slog.Logger
 }
 
 type fetchArgs struct {
-	URL         string `json:"url"`
-	IncludeHTML bool   `json:"include_html,omitempty"`
+	URL              string `json:"url"`
+	IncludeHTML      bool   `json:"include_html,omitempty"`
+	TextOffset       int    `json:"text_offset,omitempty"`
+	MaxCharacters    int    `json:"max_characters,omitempty"`
+	ExpectedTextHash string `json:"expected_text_hash,omitempty"`
 }
 
 type fetchBatchArgs struct {
@@ -126,7 +146,7 @@ func NewServer(fetcher *ProviderChain, log *slog.Logger) *Server {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Server{fetcher: fetcher, log: logger.WithComponent(log, "tool-webfetch-runtime")}
+	return &Server{searchClient: egress.NewClient(fetcher.policy, 20*time.Second), fetcher: fetcher, log: logger.WithComponent(log, "tool-webfetch-runtime")}
 }
 
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
@@ -140,6 +160,8 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 
 	switch call.GetToolName() {
+	case "web.search":
+		return s.executeSearch(ctx, req)
 	case "web.fetch":
 		return s.executeFetch(ctx, req)
 	case "web.fetch_batch":
@@ -159,10 +181,17 @@ func (s *Server) executeFetch(ctx context.Context, req *runtimev1.ExecuteRequest
 	if strings.TrimSpace(args.URL) == "" {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "url is required")}, nil
 	}
+	if !validWindow(args.TextOffset, args.MaxCharacters, args.ExpectedTextHash) {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+	}
 
 	result, err := s.fetcher.Fetch(ctx, args.URL, args.IncludeHTML)
 	if err != nil {
 		return &runtimev1.ExecuteResponse{Result: fetchFailedResult(req, err)}, nil
+	}
+	result, err = windowFetch(result, args.TextOffset, args.MaxCharacters, args.ExpectedTextHash)
+	if err != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
 	}
 	return &runtimev1.ExecuteResponse{Result: completedResult(req, mustJSON(result))}, nil
 }
@@ -183,15 +212,22 @@ func (s *Server) executeFetchBatch(ctx context.Context, req *runtimev1.ExecuteRe
 			items = append(items, map[string]any{"error": "web resource unavailable or denied"})
 			continue
 		}
+		result, err = windowFetch(result, 0, min(defaultTextCharacters, maxTextCharacters/len(args.URLs)), "")
+		if err != nil {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+		}
 		items = append(items, map[string]any{
-			"provider":      result.Provider,
-			"requested_url": result.RequestedURL,
-			"final_url":     result.FinalURL,
-			"status_code":   result.StatusCode,
-			"mime_type":     result.MIMEType,
-			"content_text":  result.ContentText,
-			"content_html":  result.ContentHTML,
-			"metadata":      result.Metadata,
+			"observed_at":    result.ObservedAt,
+			"content_window": result.Window,
+			"links":          result.Links,
+			"provider":       result.Provider,
+			"requested_url":  result.RequestedURL,
+			"final_url":      result.FinalURL,
+			"status_code":    result.StatusCode,
+			"mime_type":      result.MIMEType,
+			"content_text":   result.ContentText,
+			"content_html":   result.ContentHTML,
+			"metadata":       result.Metadata,
 		})
 	}
 
@@ -232,20 +268,29 @@ func (s *Server) executeExtract(ctx context.Context, req *runtimev1.ExecuteReque
 	if text == "" && htmlContent != "" {
 		text = extractReadableText(htmlContent)
 	}
+	metadata := map[string]any{}
+	if fetched != nil {
+		metadata = fetched.Metadata
+	}
+	bounded, err := windowFetch(FetchResult{ContentText: text, ContentHTML: htmlContent, Metadata: metadata}, 0, defaultTextCharacters, "")
+	if err != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, errTextWindow.Error())}, nil
+	}
 
 	payload := map[string]any{
-		"url":          sourceURL,
-		"content_text": text,
+		"url":            sourceURL,
+		"content_text":   bounded.ContentText,
+		"content_window": bounded.Window,
+		"metadata":       bounded.Metadata,
 	}
 	if fetched != nil {
 		payload["status_code"] = fetched.StatusCode
 		payload["final_url"] = fetched.FinalURL
 		payload["mime_type"] = fetched.MIMEType
 		payload["provider"] = fetched.Provider
-		payload["metadata"] = fetched.Metadata
 	}
 	if args.IncludeHTML {
-		payload["content_html"] = htmlContent
+		payload["content_html"] = bounded.ContentHTML
 	}
 	return &runtimev1.ExecuteResponse{Result: completedResult(req, mustJSON(payload))}, nil
 }
@@ -395,6 +440,7 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 	if err != nil {
 		return FetchResult{}, err
 	}
+	httpReq.Header.Set("User-Agent", "Butler/1.0 (public web research)")
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
 		return FetchResult{}, err
@@ -429,6 +475,7 @@ func (p *PlainHTTPProvider) Fetch(ctx context.Context, rawURL string, includeHTM
 		MIMEType:     mimeType,
 		ContentText:  text,
 		ContentHTML:  mapHTML(includeHTML, htmlContent),
+		Links:        documentLinks(htmlContent, firstNonEmpty(resp.Request.URL.String(), rawURL)),
 		Metadata:     map[string]any{"truncated": truncated},
 	}, nil
 }

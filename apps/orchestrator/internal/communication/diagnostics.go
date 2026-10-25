@@ -85,7 +85,7 @@ func (s *Store) Diagnostics(ctx context.Context, p DiagnosticProfile) (Diagnosti
 	defer tx.Rollback(context.Background())
 	// Missing schema is a visible readiness failure, never a healthy empty queue.
 	var schema bool
-	if err = tx.QueryRow(ctx, `SELECT to_regclass('communication_admissions') IS NOT NULL AND to_regclass('communication_interactions') IS NOT NULL AND to_regclass('communication_widget_views') IS NOT NULL AND to_regclass('communication_owner_limits') IS NOT NULL AND EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='accepted_inputs' AND column_name='communication_ingress_epoch')`).Scan(&schema); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT (SELECT count(*)=4 FROM information_schema.tables WHERE table_schema=current_schema() AND table_name IN ('communication_admissions','communication_interactions','communication_widget_views','communication_owner_limits')) AND EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='accepted_inputs' AND column_name='communication_ingress_epoch')`).Scan(&schema); err != nil {
 		return out, errors.New("communication_observation_unavailable")
 	}
 	if !schema {

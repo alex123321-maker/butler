@@ -18,6 +18,7 @@ import (
 
 const Path = "/internal/schedules"
 const Target = "broker://schedules-v1"
+const Revision = "2"
 
 var ErrDenied = errors.New("schedule request unavailable, stale or outside policy")
 
@@ -42,6 +43,7 @@ type Spec struct {
 	ExpiresAt          time.Time `json:"expires_at"`
 	MaxOccurrences     int       `json:"max_occurrences"`
 	Paused             bool      `json:"paused"`
+	Monitor            bool      `json:"monitor,omitempty"`
 }
 type Args struct {
 	Job              *Spec  `json:"job,omitempty"`
@@ -99,9 +101,9 @@ func IsTool(name string) bool {
 func ReadOnly(name string) bool { return name == "schedule.list" || name == "schedule.get" }
 func Contracts() []*toolbrokerv1.ToolContract {
 	timing := `{"type":"object","required":["kind","time_zone","missed_policy","grace_seconds"],"properties":{"kind":{"type":"string","enum":["once","daily","interval"]},"time_zone":{"type":"string"},"at":{"type":"string"},"after_seconds":{"type":"integer"},"hour":{"type":"integer"},"minute":{"type":"integer"},"interval_seconds":{"type":"integer"},"weekdays":{"type":"array","items":{"type":"integer"}},"missed_policy":{"type":"string","enum":["skip","coalesce"]},"grace_seconds":{"type":"integer"}},"additionalProperties":false}`
-	spec := `{"type":"object","required":["title","mode","instruction","completion_criteria","timing","expires_at","max_occurrences","paused"],"properties":{"title":{"type":"string"},"mode":{"type":"string","enum":["reminder","agent_task"]},"instruction":{"type":"string"},"completion_criteria":{"type":"array","items":{"type":"string"}},"timing":` + timing + `,"expires_at":{"type":"string"},"max_occurrences":{"type":"integer"},"paused":{"type":"boolean"}},"additionalProperties":false}`
+	spec := `{"type":"object","required":["title","mode","instruction","completion_criteria","timing","expires_at","max_occurrences","paused"],"properties":{"title":{"type":"string"},"mode":{"type":"string","enum":["reminder","agent_task"]},"instruction":{"type":"string"},"completion_criteria":{"type":"array","items":{"type":"string"}},"timing":` + timing + `,"expires_at":{"type":"string"},"max_occurrences":{"type":"integer"},"paused":{"type":"boolean"},"monitor":{"type":"boolean","description":"agent_task checks fresh evidence and notifies only meaningful changes; each message must carry an observation."}},"additionalProperties":false}`
 	specs := []struct{ name, description, schema string }{
-		{"schedule.create", "Persist a bounded reminder or future agent task. Explicit timezone and expiry are required. Reminder delivers saved text without inference. Agent task uses ordinary tools and current policy. A receipt proves scheduling only; confirm its actual next_at to the owner.", `{"type":"object","required":["job"],"properties":{"job":` + spec + `},"additionalProperties":false}`},
+		{"schedule.create", "Persist a bounded reminder or future agent task. Explicit timezone and expiry are required. Reminder delivers saved text without inference. Agent task uses ordinary tools and current policy. For changing events use monitor=true, actual source checks and changes-only notification, not a timer claiming the event occurred. Create only after owner consent. A receipt proves scheduling only; confirm its actual next_at to the owner.", `{"type":"object","required":["job"],"properties":{"job":` + spec + `},"additionalProperties":false}`},
 		{"schedule.list", "List schedules in the current owner's conversation, including blocked/paused states. Use next_cursor as after_id for the next page.", `{"type":"object","properties":{"limit":{"type":"integer"},"after_id":{"type":"string"}},"additionalProperties":false}`},
 		{"schedule.get", "Inspect a schedule and recent occurrence, execution and delivery states. A completed run does not verify task success.", `{"type":"object","required":["schedule_id"],"properties":{"schedule_id":{"type":"string"}},"additionalProperties":false}`},
 		{"schedule.update", "Replace a schedule using its current expected_revision. Set job.paused to pause or resume. Existing occurrence history and allowance usage are retained. A changed plan does not authorize effects.", `{"type":"object","required":["schedule_id","expected_revision","job"],"properties":{"schedule_id":{"type":"string"},"expected_revision":{"type":"integer"},"job":` + spec + `},"additionalProperties":false}`},
@@ -109,7 +111,7 @@ func Contracts() []*toolbrokerv1.ToolContract {
 	}
 	result := make([]*toolbrokerv1.ToolContract, 0, len(specs))
 	for _, s := range specs {
-		result = append(result, &toolbrokerv1.ToolContract{ToolName: s.name, Description: s.description, ToolClass: "schedule_control", InputSchemaJson: s.schema, OutputSchemaJson: `{"type":"object","properties":{"schedule":{"type":"object"},"schedules":{"type":"array","items":{"type":"object"}},"next_cursor":{"type":"string"}},"additionalProperties":false}`, RuntimeTarget: Target, Status: "active", ContractRevision: "1", RiskLevel: "medium", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_runtime_ack"}})
+		result = append(result, &toolbrokerv1.ToolContract{ToolName: s.name, Description: s.description, ToolClass: "schedule_control", InputSchemaJson: s.schema, OutputSchemaJson: `{"type":"object","properties":{"schedule":{"type":"object"},"schedules":{"type":"array","items":{"type":"object"}},"next_cursor":{"type":"string"}},"additionalProperties":false}`, RuntimeTarget: Target, Status: "active", ContractRevision: Revision, RiskLevel: "medium", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_runtime_ack"}})
 	}
 	return result
 }
@@ -275,6 +277,9 @@ func (s Spec) Validate() error {
 		return ErrDenied
 	}
 	if s.Mode == "agent_task" && len(s.CompletionCriteria) == 0 {
+		return ErrDenied
+	}
+	if s.Monitor && s.Mode != "agent_task" {
 		return ErrDenied
 	}
 	seen := map[string]bool{}

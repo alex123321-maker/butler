@@ -43,7 +43,7 @@ func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communic
 	envelope := delegation.AdmissionEnvelope{RunID: e.RunID, ToolCallID: e.ToolCallID, EffectID: e.EffectID, ArgsJSON: e.ArgsJSON, ContractHash: e.ContractHash}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	grant, err := readOwnedDispatch(ctx, s.Store.Pool, envelope, e.Tool, hash, "1", actionauth.EffectPrepare, false, true)
+	grant, err := readOwnedDispatch(ctx, s.Store.Pool, envelope, e.Tool, hash, communicationcontrol.Revision, actionauth.EffectPrepare, false, true)
 	if err != nil {
 		return out, communication.ErrDenied
 	}
@@ -70,7 +70,7 @@ func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communic
 		return out, communication.ErrDenied
 	}
 	if !e.Lookup {
-		current, err := readOwnedDispatch(owned, tx, envelope, e.Tool, hash, "1", actionauth.EffectPrepare, true, true)
+		current, err := readOwnedDispatch(owned, tx, envelope, e.Tool, hash, communicationcontrol.Revision, actionauth.EffectPrepare, true, true)
 		if err != nil || current.ID != grant.ID {
 			return out, communication.ErrDenied
 		}
@@ -100,7 +100,7 @@ func (s *CommunicationControl) ExecuteDispatched(ctx context.Context, e communic
 		// A grant/approval deadline can pass during export-policy or storage
 		// waits even while all mutable authority rows remain locked. Expiry is
 		// checked again after Apply, on the same rollback-capable transaction.
-		current, err := readOwnedDispatch(owned, tx, envelope, e.Tool, hash, "1", actionauth.EffectPrepare, false, true)
+		current, err := readOwnedDispatch(owned, tx, envelope, e.Tool, hash, communicationcontrol.Revision, actionauth.EffectPrepare, false, true)
 		if err != nil || current.ID != grant.ID {
 			return communicationcontrol.Receipt{}, communication.ErrDenied
 		}

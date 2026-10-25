@@ -1,5 +1,17 @@
 # Tool discovery and deferred schemas
 
+An admitted explicit owner request receives the already permitted canonical
+communication.message schema immediately, avoiding catalog turns just to reply.
+Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts
+are not inserted. Schema byte limits remain unchanged; the fixed reply schema
+has one separate count slot alongside the two catalog controls.
+
+
+Discovery explicitly distinguishes tools.search (tool catalog) from web.search
+(internet). Internet search uses ordinary exact schema selection, Broker policy
+and runtime execution; loading does not grant search authority.
+
+
 The optional operator flag `BUTLER_TOOL_DISCOVERY_ENABLED=true` must be set on
 both Orchestrator and Tool Broker. It defaults to false and cannot be enabled
 through stored settings. Existing private Broker authentication is required.

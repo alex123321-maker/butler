@@ -11,8 +11,16 @@ import (
 // details. It retains the cancelled classification and the existing ownership
 // sentinel independently. Source text and transport events cannot construct it.
 type ownedCancellation struct {
-	reason  string
-	failure error
+	reason             string
+	failure            error
+	observationTimeout bool
+}
+
+// Only the owning watchdog's preserved plain cause qualifies. Joined independent
+// failures retain their own diagnosis and cannot acquire retry eligibility.
+func AuthorityObservationTimeout(err error) bool {
+	cause, ok := err.(*ownedCancellation)
+	return ok && cause.observationTimeout
 }
 
 func (e *ownedCancellation) Error() string          { return e.reason }
