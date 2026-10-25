@@ -1,4 +1,4 @@
-package transcript
+package transcript_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/ownership"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
@@ -52,12 +53,12 @@ func TestTranscriptStoreIntegration(t *testing.T) {
 		t.Fatalf("seed run: %v", err)
 	}
 
-	transcriptStore := NewStore(store.Pool())
-	msg, err := transcriptStore.AppendMessage(ctx, Message{SessionKey: sessionKey, RunID: runID, Role: "user", Content: "hello password=supersecret", MetadataJSON: `{"token":"abc"}`})
+	transcriptStore := transcript.NewStore(store.Pool())
+	msg, err := transcriptStore.AppendMessage(ctx, transcript.Message{SessionKey: sessionKey, RunID: runID, Role: "user", Content: "hello password=supersecret", MetadataJSON: `{"token":"abc"}`})
 	if err != nil {
 		t.Fatalf("AppendMessage returned error: %v", err)
 	}
-	call, err := transcriptStore.AppendToolCall(ctx, ToolCall{RunID: runID, ToolName: "browser.navigate", Status: "completed", RuntimeTarget: "browser", ArgsJSON: `{"authorization":"Bearer abc"}`, ResultJSON: `{"cookie":"session=abc123"}`, ErrorJSON: `{"connection_string":"postgres://user:pass@localhost/db"}`})
+	call, err := transcriptStore.AppendToolCall(ctx, transcript.ToolCall{RunID: runID, ToolName: "browser.navigate", Status: "completed", RuntimeTarget: "browser", ArgsJSON: `{"authorization":"Bearer abc"}`, ResultJSON: `{"cookie":"session=abc123"}`, ErrorJSON: `{"connection_string":"postgres://user:pass@localhost/db"}`})
 	if err != nil {
 		t.Fatalf("AppendToolCall returned error: %v", err)
 	}
@@ -90,22 +91,22 @@ func TestTranscriptStoreIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	fenced := ownership.WithToken(ctx, ownership.NewAuthority(store.Pool()), ownership.Token{SessionKey: sessionKey, RunID: runID, LeaseID: "transcript-lease", FenceEpoch: 1})
-	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: "foreign-run", Role: "assistant", Content: "wrong run"}); !errors.Is(err, ownership.ErrStale) {
+	if _, err := transcriptStore.AppendMessage(fenced, transcript.Message{SessionKey: sessionKey, RunID: "foreign-run", Role: "assistant", Content: "wrong run"}); !errors.Is(err, ownership.ErrStale) {
 		t.Fatalf("foreign run transcript accepted: %v", err)
 	}
-	if _, err := transcriptStore.AppendToolCall(fenced, ToolCall{RunID: "foreign-run", ToolName: "web.fetch"}); !errors.Is(err, ownership.ErrStale) {
+	if _, err := transcriptStore.AppendToolCall(fenced, transcript.ToolCall{RunID: "foreign-run", ToolName: "web.fetch"}); !errors.Is(err, ownership.ErrStale) {
 		t.Fatalf("foreign run tool accepted: %v", err)
 	}
-	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "current epoch"}); err != nil {
+	if _, err := transcriptStore.AppendMessage(fenced, transcript.Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "current epoch"}); err != nil {
 		t.Fatalf("current fenced write: %v", err)
 	}
 	if _, err := store.Pool().Exec(ctx, `UPDATE session_ownership SET fence_epoch=2,lease_id='new-transcript-lease' WHERE session_key=$1`, sessionKey); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "late stale output"}); !errors.Is(err, ownership.ErrStale) {
+	if _, err := transcriptStore.AppendMessage(fenced, transcript.Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "late stale output"}); !errors.Is(err, ownership.ErrStale) {
 		t.Fatalf("stale model output accepted: %v", err)
 	}
-	if _, err := transcriptStore.AppendToolCall(fenced, ToolCall{RunID: runID, ToolName: "web.fetch", Status: "completed"}); !errors.Is(err, ownership.ErrStale) {
+	if _, err := transcriptStore.AppendToolCall(fenced, transcript.ToolCall{RunID: runID, ToolName: "web.fetch", Status: "completed"}); !errors.Is(err, ownership.ErrStale) {
 		t.Fatalf("stale tool output accepted: %v", err)
 	}
 	final, err := transcriptStore.GetRunTranscript(ctx, runID)
