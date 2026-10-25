@@ -32,10 +32,11 @@ an ambiguous receipt alone cannot create a wait or authorize replay.
 Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
 lease, Task authority and token-only source-currentness observations. The remaining business pool has at least
 two connections: Core therefore requires a total maximum of at least three.
-The composed converter source proof uses the business pool: returned-package
+Converter-participating source proofs use business capacity: returned-package
 access can bind selected source pins and repeat continuation/lifecycle guards.
-It must not occupy the single bounded ownership-observer connection. These
-proofs keep their current locks, source checks, commits and failure deadlines.
+Unrelated token-only proofs retain the reserved reader under business saturation.
+A current PG classification selects capacity only and is repeated after access
+locks; both routes execute all authority/source guards with unchanged deadlines.
 The total maximum and execution budgets do not increase. Channel polls, Web
 feeds and business writes cannot acquire the reserved connection. Both readers
 still use current PostgreSQL state and their existing authority checks; an

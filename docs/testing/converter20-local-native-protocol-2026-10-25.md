@@ -8,9 +8,11 @@ UNKNOWN expense and NO_GO status remain unchanged; project patches, initiative,
 real channel delivery and deployment qualification are outside this scope.
 
 First pass the deterministic actual-process fixture and the occupied-reserve PG
-regression. The composed converter source proof now uses business capacity:
+regression and the existing saturated-business communication proof. Converter-participating source proof uses business capacity:
 returned-package checks may pin selected sources and cannot occupy the reserved
-ownership observer connection. Authority/source guards and their deadlines remain.
+ownership observer connection. Unrelated token-only observations retain the
+reserve; a current PG classification selects capacity only, with a recheck under
+access locks. Authority/source guards and their deadlines remain.
 The ordinary worker fixture mirrors production's9+1 split from a total10 slots.
 Only the explicit local test's wall time is3 minutes/90 seconds; the default
 historical fixture bounds and production budgets remain unchanged.

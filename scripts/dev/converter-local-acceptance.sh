@@ -10,6 +10,7 @@ case "$action" in offline|native) ;; *) echo 'Use offline or native' >&2; exit 2
 : "${BUTLER_CONVERTER_RUNTIME_TOKEN_FILE:?isolated synthetic token file required}"
 : "${BUTLER_TEST_MEMORY_POSTGRES_URL:?isolated local test database required}"
 export BUTLER_CONVERTER_DEVELOPER_E2E=1
+export BUTLER_TEST_COMMUNICATION_POSTGRES_URL="$BUTLER_TEST_MEMORY_POSTGRES_URL"
 export GOTOOLCHAIN=local
 export GOFLAGS=-buildvcs=false
 export GOMAXPROCS=4
@@ -26,6 +27,6 @@ if [ "$action" = native ]; then
  export BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE="git:$commit;binary-sha256:$(sha256sum "$binary" | cut -d' ' -f1)"
  "$binary" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
 else
- "$binary" -test.v -test.timeout=8m -test.run '^TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)$'
+ "$binary" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperBoundedLocalContainerE2E|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
  go vet ./apps/orchestrator/internal/app
 fi
