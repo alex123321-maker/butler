@@ -1,7 +1,11 @@
 # Emoji research on laba
 
 This directory contains isolated corpus, feasibility and retrieval stages of #140.
-It does not close the research issue or enable Telegram styling in Butler.
+The owner subsequently requested self-evaluation on the available hardware and
+actual bounded bot enrichment. See the [scope closure and fresh local checks](../../docs/testing/emoji140-closure-2026-10-25.md)
+and [opt-in abstention rollout](abstention-rollout.md). The original BF16/human
+benchmark remains incomplete and is not a prerequisite for the negative ML
+pipeline recommendation. These research utilities do not enable styling.
 
 The first-stage report is historical. See [follow-up](followup-report.md) for
 the repaired browser, exact52-item Kolobkitop import,502 AI annotations and
