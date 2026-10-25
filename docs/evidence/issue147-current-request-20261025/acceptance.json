@@ -64,8 +64,8 @@
       "reason": "answer Catalog composition absent; effect_unknown"
     }
   ],
-  "all_native_calls": 31,
-  "all_native_total_tokens": 257463,
+  "all_native_calls": 42,
+  "all_native_total_tokens": 332820.0,
   "arms": [
     {
       "window": "baseline-v4",
@@ -747,5 +747,474 @@
         }
       ]
     }
-  ]
+  ],
+  "final_compatibility_retest": {
+    "window": "candidate-v3",
+    "base_commit": "ecf31aa794459c483a2a8b28869cf8362a519a66",
+    "code_commit": "ef273137a061bd205c7000e279c2c18881bfcf13",
+    "raw_evidence_sha256": "586BE319D83704A80A862348EE61230C1583C99E8AD9156D6AF73A055C12A50A",
+    "owning_source_hashes_unchanged": true,
+    "binary_hashes": [
+      {
+        "name": "broker.test",
+        "sha256": "04D2B9CE1080828D35DED660F4B6FC47E440E5C633DD0BD0D0AC00B0FEEA75E5"
+      },
+      {
+        "name": "candidate-app.test",
+        "sha256": "5DE930176D59BCF4BFB140684B7000EE8409614A3298F2D492467D8F03B0DDCC"
+      }
+    ],
+    "outcomes": [
+      {
+        "Name": "first_question",
+        "RunID": "run-1792902819242508928-bd58815828f000ec",
+        "InputID": "input-9726ebd7d02063ce19a60c7e4abd6615",
+        "Status": "completed",
+        "Question": "Какие фрукты взять на пикник?",
+        "Result": "{\"text\": \"Яблоки, сливы\", \"purpose\": \"result\", \"source_refs\": [\"message:response:interaction:e0c4e9e595a4aad108092adf7c004ddb1cb55c9d6062fe9729689846e96eb26c\"], \"schema_version\": 1, \"reply_to_publication_ref\": \"publication:e0c4e9e595a4aad108092adf7c004ddb1cb55c9d6062fe9729689846e96eb26c\"}",
+        "Error": "",
+        "Asked": true
+      },
+      {
+        "Name": "identical_new_question",
+        "RunID": "run-1792902850992500203-16a9048940ae40e4",
+        "InputID": "input-5aeb97cbda897d67c471d0bb11afe3bf",
+        "Status": "completed",
+        "Question": "Какие фрукты взять на пикник?",
+        "Result": "{\"text\": \"Груши\", \"purpose\": \"result\", \"source_refs\": [\"message:response:interaction:048ffe01c9bdb2b2e69ae33038830245da9e0b39a4fc13ea22fe74d16eb2ccaa\"], \"schema_version\": 1, \"reply_to_publication_ref\": \"publication:048ffe01c9bdb2b2e69ae33038830245da9e0b39a4fc13ea22fe74d16eb2ccaa\"}",
+        "Error": "",
+        "Asked": true
+      },
+      {
+        "Name": "new_topic",
+        "RunID": "run-1792902881384434324-fb004c2a8dfd413d",
+        "InputID": "input-04259cc378b9372eb0e4d3e8c28e612b",
+        "Status": "completed",
+        "Question": "Какую скатерть взять?",
+        "Result": "{\"text\": \"Белую льняную скатерть с зелёной каймой.\", \"purpose\": \"result\", \"source_refs\": [\"message:response:interaction:fe83933b96a40e9a59cda829f81bbf0e115c85521ecf836cef3f5d69fc738676\"], \"schema_version\": 1, \"reply_to_publication_ref\": \"publication:fe83933b96a40e9a59cda829f81bbf0e115c85521ecf836cef3f5d69fc738676\"}",
+        "Error": "",
+        "Asked": true
+      },
+      {
+        "Name": "explicit_followup",
+        "RunID": "run-1792902922951030294-21591323970b5582",
+        "InputID": "input-0439952882404ac39ee9cea3880c2e48",
+        "Status": "completed",
+        "Question": "",
+        "Result": "{\"text\": \"Белую льняную скатерть с зелёной каймой.\", \"purpose\": \"result\", \"schema_version\": 1}",
+        "Error": "",
+        "Asked": false
+      }
+    ],
+    "ledger": {
+      "unknown": 0,
+      "attempts": 11,
+      "observed": 11,
+      "known_input_tokens": 61910,
+      "known_output_tokens": 858
+    },
+    "provider_total_tokens": 75357.0,
+    "calls": [
+      {
+        "Method": "start",
+        "RunRef": "run-1792902819242508928-bd58815828f000ec",
+        "Usage": {
+          "InputTokens": 3707,
+          "OutputTokens": 97,
+          "TotalTokens": 4641,
+          "ThinkingTokens": 837
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.widget"
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902819242508928-bd58815828f000ec",
+        "Usage": {
+          "InputTokens": 4282,
+          "OutputTokens": 173,
+          "TotalTokens": 6673,
+          "ThinkingTokens": 2218
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.message"
+      },
+      {
+        "Method": "tool_result",
+        "RunRef": "run-1792902819242508928-bd58815828f000ec",
+        "Usage": {
+          "InputTokens": 6777,
+          "OutputTokens": 5,
+          "TotalTokens": 7114,
+          "ThinkingTokens": 332
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": null
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902850992500203-16a9048940ae40e4",
+        "Usage": {
+          "InputTokens": 4361,
+          "OutputTokens": 97,
+          "TotalTokens": 5625,
+          "ThinkingTokens": 1167
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.widget"
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902850992500203-16a9048940ae40e4",
+        "Usage": {
+          "InputTokens": 4914,
+          "OutputTokens": 163,
+          "TotalTokens": 6359,
+          "ThinkingTokens": 1282
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.message"
+      },
+      {
+        "Method": "tool_result",
+        "RunRef": "run-1792902850992500203-16a9048940ae40e4",
+        "Usage": {
+          "InputTokens": 6464,
+          "OutputTokens": 3,
+          "TotalTokens": 7120,
+          "ThinkingTokens": 653
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": null
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902881384434324-fb004c2a8dfd413d",
+        "Usage": {
+          "InputTokens": 4983,
+          "OutputTokens": 60,
+          "TotalTokens": 5887,
+          "ThinkingTokens": 844
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.widget"
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902881384434324-fb004c2a8dfd413d",
+        "Usage": {
+          "InputTokens": 5544,
+          "OutputTokens": 185,
+          "TotalTokens": 8087,
+          "ThinkingTokens": 2358
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.message"
+      },
+      {
+        "Method": "tool_result",
+        "RunRef": "run-1792902881384434324-fb004c2a8dfd413d",
+        "Usage": {
+          "InputTokens": 8194,
+          "OutputTokens": 15,
+          "TotalTokens": 9677,
+          "ThinkingTokens": 1468
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": null
+      },
+      {
+        "Method": "start",
+        "RunRef": "run-1792902922951030294-21591323970b5582",
+        "Usage": {
+          "InputTokens": 5623,
+          "OutputTokens": 45,
+          "TotalTokens": 6957,
+          "ThinkingTokens": 1289
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": "communication.message"
+      },
+      {
+        "Method": "tool_result",
+        "RunRef": "run-1792902922951030294-21591323970b5582",
+        "Usage": {
+          "InputTokens": 7061,
+          "OutputTokens": 15,
+          "TotalTokens": 7217,
+          "ThinkingTokens": 141
+        },
+        "Version": "gemini-3.8-flash-n",
+        "tool": null
+      }
+    ],
+    "provider_context": [
+      {
+        "run_ref": "run-1792902819242508928-bd58815828f000ec",
+        "current_request": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "input_event_ref": "input:issue147:first_question",
+            "phase": "owner_request"
+          }
+        ],
+        "historical": []
+      },
+      {
+        "run_ref": "run-1792902819242508928-bd58815828f000ec",
+        "current_request": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "input_event_ref": "input:issue147:first_question",
+            "phase": "answered_question",
+            "interaction_ref": "interaction:e0c4e9e595a4aad108092adf7c004ddb1cb55c9d6062fe9729689846e96eb26c"
+          }
+        ],
+        "historical": []
+      },
+      {
+        "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+        "current_request": [
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "input_event_ref": "input:issue147:identical_new_question",
+            "phase": "owner_request"
+          }
+        ],
+        "historical": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          }
+        ]
+      },
+      {
+        "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+        "current_request": [
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "input_event_ref": "input:issue147:identical_new_question",
+            "phase": "answered_question",
+            "interaction_ref": "interaction:048ffe01c9bdb2b2e69ae33038830245da9e0b39a4fc13ea22fe74d16eb2ccaa"
+          }
+        ],
+        "historical": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          }
+        ]
+      },
+      {
+        "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+        "current_request": [
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "input_event_ref": "input:issue147:new_topic",
+            "phase": "owner_request"
+          }
+        ],
+        "historical": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          }
+        ]
+      },
+      {
+        "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+        "current_request": [
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "input_event_ref": "input:issue147:new_topic",
+            "phase": "answered_question",
+            "interaction_ref": "interaction:fe83933b96a40e9a59cda829f81bbf0e115c85521ecf836cef3f5d69fc738676"
+          }
+        ],
+        "historical": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          }
+        ]
+      },
+      {
+        "run_ref": "run-1792902922951030294-21591323970b5582",
+        "current_request": [
+          {
+            "run_ref": "run-1792902922951030294-21591323970b5582",
+            "input_event_ref": "input:issue147:explicit_followup",
+            "phase": "owner_request"
+          }
+        ],
+        "historical": [
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902819242508928-bd58815828f000ec",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902850992500203-16a9048940ae40e4",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "message_kind": "",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          },
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "message_kind": "interaction_response",
+            "original_role": "user"
+          },
+          {
+            "run_ref": "run-1792902881384434324-fb004c2a8dfd413d",
+            "message_kind": "publication",
+            "original_role": "assistant"
+          }
+        ]
+      }
+    ]
+  },
+  "raw_archive_sha256": "BE21ADC3B59BC3666531EE2D22A06CC8EEA0CBD29556D45599A41E6DD2C0FED6"
 }

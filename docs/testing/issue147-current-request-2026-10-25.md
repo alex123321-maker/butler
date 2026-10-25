@@ -7,8 +7,10 @@ publication correction or stopped-attempt handling.
 
 ## Scope and implementation
 
-- Base: PR #150 `8aa2c0450ee1d200093c691ece6a7670c2143cb5`.
-  The branch was updated from the earlier `3cd09d7e` base before final acceptance.
+- Paired acceptance base: PR #150 `8aa2c0450ee1d200093c691ece6a7670c2143cb5`.
+  The branch was updated from the earlier `3cd09d7e` base before that comparison.
+  Final integration base: `ecf31aa794459c483a2a8b28869cf8362a519a66`, which also
+  merged main's communication diagnostics/limits and transport research support.
 - `current_request` DATA identifies the owning run, original input event and
   `owner_request` / `answered_question` phase. Only canonical response validation
   attaches the exact interaction ref. Payload-supplied identity/phase is ignored.
@@ -73,6 +75,7 @@ raw-evidence digests are in
 | --- | --- | --- | --- | --- | --- |
 | PR #150 baseline | 4/4 | 13 | 81,443 / 884 | 112,260 | 0 |
 | Candidate | 4/4 | 11 | 64,525 / 855 | 81,997 | 0 |
+| Candidate after final base update | 4/4 | 11 | 61,910 / 858 | 75,357 | 0 |
 
 Both published exactly `Яблоки, сливы`, then `Груши`, then the accepted tablecloth
 answer twice. The candidate's seven initial/resumed provider requests contain
@@ -82,6 +85,13 @@ labels, with full text retained. The baseline has the same selected-history
 mechanism but no new typed envelopes. No missing history is inferred from its
 zero envelope count. Baseline needed two existing missing-publication corrections;
 candidate needed none in this sample. These counts are not a performance claim.
+
+The final base update did not change any of this PR's owning source hashes. A
+separate native compatibility window on the rebased build repeated all four
+cases successfully, with seven scope markers and the same four exact results.
+The new Core/Broker integration and unit/transport checks also passed after the
+rebase. Native evidence from the earlier paired comparison remains attributed
+to its actual base; it is not relabelled as final-head evidence.
 
 Validation passed: affected Windows unit suite (139 top-level passes, four
 infrastructure-gated skips), targeted native-wire tests, narrow `-race`, and
@@ -128,8 +138,8 @@ Unknown accounting is not converted to zero. Scripted fixture attempts have no
 provider usage events and are reported separately from measured native calls.
 Raw synthetic evidence/logs are retained under `.cache/issue147/native/`; the
 checked-in summary omits provider credentials and private working-profile data.
-Across all native windows, including excluded setup failures: 31 measured calls
-and 257,463 provider total tokens. Provider total includes additional accounting
+Across all native windows, including excluded setup failures: 42 measured calls
+and 332,820 provider total tokens. Provider total includes additional accounting
 beyond the separately reported input/output counters; they are not equated.
 
 ## Reproduction
