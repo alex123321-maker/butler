@@ -22,7 +22,7 @@ Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
-export its manifest. Window `issue20-converter-local-native-20261025d` permits
+export its manifest. Window `issue20-converter-local-native-20261025e` permits
 at most40 admitted provider entries,20 minutes total,120 seconds per call,
 131072 serialized input bytes and8192 generated tokens including thinking.
 The tested native profile is the existing automatic High configuration, without
@@ -126,6 +126,33 @@ profile and C's finite budgets/deadlines are unchanged. The diagnostic-only
 tracer uses the same production9+1 pool settings and stores fixed SQL families,
 template hashes, storage timings and failed-check categories without SQL args or
 auth. Disable local PG statement/function profiling before any native auth/HTTP.
+
+D's original Go test is retained as FAIL (427.97s): the complete original
+conversion and four unverified finals existed, but the old deterministic total
+expected10 effects while the actual immutable permission allowed2 trial slots.
+The native planner used both, yielding11 confirmed effects and one ordinary
+original application. All15 HTTP/kernel entries have complete usage:154094 input,
+3923 output,28236 thinking =186253 tokens. Its778 source checks totaled305481ms,
+maximum1282ms, with no failed diagnostic checks. No old test result is promoted
+to PASS. Owner semantic verification and real channel delivery were not performed.
+
+For E, the prospective native oracle checks the exact parent/child operation
+inventory and one ordinary original application. Trial count must be1..the
+immutable admitted limit (2 here), every slot must actually pass against the
+selected original input, and extra operations or unmatched/foreign effects deny.
+The fixed runtime checker, permissions, budgets and all other completion/source
+checks remain unchanged. Historical scripted/release-chain exact counters remain.
+Seven race subcases reject an unapproved second/third trial, duplicate original,
+child activation, foreign task or missing discovery, while accepting1/2 admitted
+slots. The actual-process two-trial regression passed57.86s:11 exact role-bound
+effects, one original application, four unverified finals and two automatic
+continuations; native calls0. Targeted vet passed.
+
+E is a separate frozen experiment after this correction, not a replay or a
+relabelled D. It carries46 prior actual calls and at least505410 known tokens,
+C's unavailable native usage, and both unobserved kernel attempts. D must remain
+closed with its original15 entries/186253 tokens. E's40 new entries give an86-entry
+cumulative ceiling. No model/tool/runtime/profile, budget or deadline changes.
 
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives

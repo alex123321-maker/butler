@@ -62,6 +62,7 @@ type converterWorkerProvider struct {
 	childGate      <-chan struct{}
 	onAdmission    func() error
 	prepareProject bool
+	repeatTrial    bool
 }
 
 type converterWorkerState struct {
@@ -256,6 +257,10 @@ func (p *converterWorkerProvider) next(runID string, s *converterWorkerState) (t
 			name, args = "converters.trial", map[string]any{"digest": s.candidate.Digest, "input_ref": p.document}
 		case 3:
 			name, args = "converters.activate", map[string]any{"digest": s.candidate.Digest, "generation": s.candidate.Generation}
+		case 4:
+			if p.repeatTrial {
+				name, args = "converters.trial", map[string]any{"digest": s.candidate.Digest, "input_ref": p.document}
+			}
 		}
 	case "convert":
 		if s.step == 0 {
@@ -766,6 +771,8 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		if err := releaseChainV12CheckInventory(f.f.ctx, f, childID); err != nil {
 			t.Fatal("real Broker journal lacks exact effects and budgeted project reads")
 		}
+	} else if hooks != nil && hooks.verifyActions != nil {
+		hooks.verifyActions(t, f, childID)
 	} else {
 		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2)) AND e.state='effect_confirmed'`, f.f.parent.TaskID, childID).Scan(&confirmed) != nil || confirmed != expectedActions {
 			t.Fatal("real Broker journal lost ordinary exact actions", confirmed)

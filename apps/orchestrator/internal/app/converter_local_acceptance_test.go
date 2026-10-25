@@ -29,6 +29,14 @@ func (w converterLocalDiagnosticWriter) Write(b []byte) (int, error) {
 // Exercise the exact generic native entry path before auth or inference, while
 // preserving ordinary Broker/runtime effects and independently checked output.
 func TestConverterDeveloperGenericFactoryLocalContainerE2E(t *testing.T) {
+	testConverterDeveloperGenericFactoryLocal(t, false)
+}
+
+func TestConverterDeveloperSecondAdmittedTrialLocalContainerE2E(t *testing.T) {
+	testConverterDeveloperGenericFactoryLocal(t, true)
+}
+
+func testConverterDeveloperGenericFactoryLocal(t *testing.T, repeatTrial bool) {
 	var f *developerFixture
 	var checker *releaseChainEntryChecker
 	cfg := scriptedReleaseChainModelConfiguration()
@@ -36,17 +44,25 @@ func TestConverterDeveloperGenericFactoryLocalContainerE2E(t *testing.T) {
 	cfg.Factory = func(ctx context.Context, pool *pgxpool.Pool, root string) (transport.ModelProvider, error) {
 		args := f.args()
 		args.Budget = cfg.ChildBudget
-		planner := &converterWorkerProvider{need: f.needRef, spec: f.specRef, document: f.document, args: args, admissionInput: f.admissionInput, states: map[string]*converterWorkerState{}}
+		planner := &converterWorkerProvider{need: f.needRef, spec: f.specRef, document: f.document, args: args, admissionInput: f.admissionInput, states: map[string]*converterWorkerState{}, repeatTrial: repeatTrial}
 		checker = &releaseChainEntryChecker{ModelProvider: planner, pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}
 		return checker, nil
 	}
-	testConverterDeveloperWorkersObserved(t, true, &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
+	hooks := &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
 		f = newDeveloperWorkerFixtureWithModel(t, p, path, true, cfg.FixtureTimeout, &cfg)
 		return f
 	}, after: func(t *testing.T, f *developerFixture, p *converterWorkerProvider) {
-		if checker == nil || checker.starts.Load() != 4 || checker.submits.Load() != 10 || checker.continues.Load() != 0 || checker.parentStarts.Load() != 3 || checker.childStarts.Load() != 1 {
+		wantSubmits := int32(10)
+		if repeatTrial {
+			wantSubmits++
+		}
+		if checker == nil || checker.starts.Load() != 4 || checker.submits.Load() != wantSubmits || checker.continues.Load() != 0 || checker.parentStarts.Load() != 3 || checker.childStarts.Load() != 1 {
 			t.Fatal("generic converter entry/current source proof incomplete")
 		}
-		t.Log("generic converter entries=14; exact current lineage/lease/source pins; native calls=0")
-	}})
+		t.Logf("generic converter entries=%d; exact current lineage/lease/source pins; native calls=0", 4+wantSubmits)
+	}}
+	if repeatTrial {
+		hooks.verifyActions = verifyConverterLocalActionInventory
+	}
+	testConverterDeveloperWorkersObserved(t, true, hooks)
 }

@@ -91,3 +91,18 @@ occupied/saturated pool and conservative-budget checks are retained separately.
 Broker was rebuilt from the integrated source; its hash is in the build log.
 The prospective D protocol retains all31 old entries/at least319157 known tokens
 and all unknown usage; no previous task/window budget or result is changed.
+
+`native-d/` retains the original Go FAIL at the deterministic10-effect assertion:
+actual11 effects include two allowed trial slots. The original application and
+all four unverified finals existed, with one owner input/two continuations.
+All15 native/kernel admissions were observed:186253 total tokens
+(154094 input,3923 output,28236 thinking). Source-check diagnostics report778
+checks,305481ms total/max1282ms and no failed checks. Its exact original JSON's
+raw UTF-8 SHA256 isaaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade.
+The original failed test remains failed; no final text grants owner verification.
+
+The corrected prospective E oracle validates the mandatory role/action inventory,
+one original application and the actual immutable trial allowance, rather than a
+total that accidentally required one trial. The two-trial actual-process regression
+passed57.86s with0 native calls; denied-slot/duplicate/role negatives are retained.
+All46 prior calls/at least505410 known tokens plus old unknowns carry to E.

@@ -27,7 +27,7 @@ import (
 
 // A new narrow converter-only acceptance scope. It cannot open, reset or qualify
 // any sealed issue33 release-chain window or its retained UNKNOWN expenses.
-const converterLocalNativeWindow = "issue20-converter-local-native-20261025d"
+const converterLocalNativeWindow = "issue20-converter-local-native-20261025e"
 const converterLocalNativeCap = 40
 const converterLocalNativePriorWindow = "issue20-converter-local-native-20261025a"
 const converterLocalNativePriorCalls = 8
@@ -38,6 +38,9 @@ const converterLocalNativePriorBTokens = 116694
 const converterLocalNativePriorCWindow = "issue20-converter-local-native-20261025c"
 const converterLocalNativePriorCCalls = 12
 const converterLocalNativePriorCTokens = 119510 // Lower bound: cancelled entry12 has NULL usage.
+const converterLocalNativePriorDWindow = "issue20-converter-local-native-20261025d"
+const converterLocalNativePriorDCalls = 15
+const converterLocalNativePriorDTokens = 186253
 
 var errConverterLocalNative = errors.New("local converter native boundary unavailable")
 
@@ -288,11 +291,11 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 		"input_token_allowance": cfg.InputTokens, "output_token_allowance": cfg.OutputTokens,
 		"policy": cfg.Policy, "child_budget": cfg.ChildBudget, "fixture_millis": cfg.FixtureTimeout.Milliseconds(),
 		"profile": json.RawMessage(os.Getenv("BUTLER_CONVERTER_PROFILE_JSON")), "cap": converterLocalNativeCap,
-		"prior_windows":                  []string{converterLocalNativePriorWindow, converterLocalNativePriorBWindow, converterLocalNativePriorCWindow},
-		"prior_actual_calls":             converterLocalNativePriorCalls + converterLocalNativePriorBCalls + converterLocalNativePriorCCalls,
-		"prior_known_tokens_lower_bound": converterLocalNativePriorTokens + converterLocalNativePriorBTokens + converterLocalNativePriorCTokens,
+		"prior_windows":                  []string{converterLocalNativePriorWindow, converterLocalNativePriorBWindow, converterLocalNativePriorCWindow, converterLocalNativePriorDWindow},
+		"prior_actual_calls":             converterLocalNativePriorCalls + converterLocalNativePriorBCalls + converterLocalNativePriorCCalls + converterLocalNativePriorDCalls,
+		"prior_known_tokens_lower_bound": converterLocalNativePriorTokens + converterLocalNativePriorBTokens + converterLocalNativePriorCTokens + converterLocalNativePriorDTokens,
 		"prior_kernel_unknown_attempts":  2, "prior_kernel_unknown_before_native": 1, "prior_native_unknown_usage": 1,
-		"cumulative_actual_call_cap": converterLocalNativePriorCalls + converterLocalNativePriorBCalls + converterLocalNativePriorCCalls + converterLocalNativeCap,
+		"cumulative_actual_call_cap": converterLocalNativePriorCalls + converterLocalNativePriorBCalls + converterLocalNativePriorCCalls + converterLocalNativePriorDCalls + converterLocalNativeCap,
 		"scope":                      "single synthetic converter-only task, native planning, real Broker/runtime; no issue33 qualification, no working deployment or real owner delivery",
 	})
 	if err != nil {
@@ -316,6 +319,9 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 	var cancelled bool
 	if err = journal.QueryRow(ctx, `SELECT status='cancelled' AND stage='response_stream' AND total_tokens IS NULL FROM public.converter_local_native_attempts WHERE window_id=$1 AND n=12`, converterLocalNativePriorCWindow).Scan(&cancelled); err != nil || !cancelled {
 		t.Fatal("prior actual cancelled HTTP stream cannot be replaced by zero usage")
+	}
+	if err = journal.QueryRow(ctx, `SELECT closed,admitted,(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT COALESCE(sum(total_tokens),0) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1 AND (total_tokens IS NULL OR status='unknown')) FROM public.converter_local_native_windows WHERE id=$1`, converterLocalNativePriorDWindow).Scan(&priorClosed, &priorAdmitted, &priorCalls, &priorTokens, &priorMissing); err != nil || !priorClosed || priorAdmitted != converterLocalNativePriorDCalls || priorCalls != converterLocalNativePriorDCalls || priorTokens != converterLocalNativePriorDTokens || priorMissing != 0 {
+		t.Fatal("prior action-count test failure must remain closed with its original ledger")
 	}
 	if _, err = journal.Exec(ctx, `INSERT INTO public.converter_local_native_windows(id,manifest,expires_at) VALUES($1,$2,clock_timestamp()+interval '20 minutes')`, converterLocalNativeWindow, manifest); err != nil {
 		t.Fatal("native window already exists or unavailable; no resume/retry")
@@ -351,7 +357,7 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 		}
 		return &converterLocalNativeProvider{ModelProvider: native, journal: journal, checker: &releaseChainEntryChecker{pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}}, nil
 	}
-	hooks := &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
+	hooks := &converterWorkerFaultHooks{verifyActions: verifyConverterLocalActionInventory, factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
 		f = newDeveloperWorkerFixtureWithModel(t, p, path, true, cfg.FixtureTimeout, &cfg)
 		var schema string
 		if f.f.pool.QueryRow(f.f.ctx, `SELECT current_schema()`).Scan(&schema) != nil {
