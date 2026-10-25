@@ -1446,3 +1446,11 @@ quiet observations and atomic changes-only publication. Migration 100 is require
 Repeated work can suggest a reusable procedure; formal skill validation and
 activation retain their existing evidence requirements. See
 [research contract](../../docs/architecture/research-followups.md).
+
+The explicitly enabled local [issue76 behavioral pilot](../../docs/testing/issue76-local-protocol-2026-10-25.md)
+compares current default instructions with one dormant TaskContinuityProtocol.
+It uses independently frozen synthetic multi-turn controls, actual PostgreSQL
+Core/Broker/source lifecycle and explicitly synthetic recipient effects. Its
+test fixtures, native journals and masked review are separate from working-owner
+deployment. Completing collection does not enable the candidate or grant task,
+profile, source, effect or semantic completion authority.

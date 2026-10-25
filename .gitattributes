@@ -21,3 +21,5 @@
 # Exact synthetic acceptance evidence retains the producer's original bytes.
 /experiments/converter20/** -text whitespace=cr-at-eol
 /experiments/converter20/**/*.log -whitespace
+/experiments/behavior76/** -text whitespace=cr-at-eol
+/experiments/behavior76/**/*.log -whitespace

@@ -1,0 +1,93 @@
+{
+  "version": "issue76-independent-hidden-v2",
+  "baseline": "7537509d38f6ef21ae7d2641fa37ca8a2f27d2e6",
+  "origin": "synthetic",
+  "episodes": 24,
+  "families": 12,
+  "evaluated_owner_turns": 48,
+  "arms": 2,
+  "stimuli_path": "hidden-v2/stimuli.jsonl",
+  "expectations_path": "hidden-v2/expectations.jsonl",
+  "stimuli_sha256": "bad4a7c39747d93baaf2bcffeb68b6fcd1b672b39909e9d34a2ec1055a9f54b0",
+  "expectations_sha256": "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a",
+  "generator_sha256": "ad80bc11f1d33d8436db91da3c63eefd79f03e8100cf6e740225d21e5fd5fcf1",
+  "previous_stimuli_sha256": "f5326bd99629d3e48353b59a588549e88fbf20d33e63743c37cf52abd163bd5b",
+  "previous_expectations_sha256": "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a",
+  "previous_status": "cancelled_before_execution",
+  "previous_native_calls": 0,
+  "revision_basis": "Public baseline API proves prepare_only means read-only, including denial of EffectPrepare. Feasible owner-authorized local preparation uses normal; true read-only boundaries retain prepare_only. No candidate, golden threshold, owner instruction, scenario/event or outcome tuning.",
+  "coverage": [
+    {
+      "family": "amendment",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "clarification",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "feedback_candidate",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "manual_change",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "new_task_coexistence",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "owner_done_report",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "preference_exception",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "preference_lifecycle",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "restart",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "scoped_stop_negation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "status_continuation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "untrusted_command",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    }
+  ]
+}
