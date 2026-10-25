@@ -57,3 +57,13 @@ budget before admitting the full14-model/10-tool inventory under a new scope.
 C requires both closed ledgers:19 actual calls/199647 known tokens plus A's one
 separate kernel UNKNOWN. No history or spent allowance is reset. Monetary and
 subscription quota cost is unavailable.
+
+`native-c/` failed after activation during a long concluding native stream:
+12 HTTP entries, at least119510 known tokens from11 entries, one cancelled stream
+with unavailable usage and one unobserved kernel attempt. It has9 effects and no
+original converter usage. Total A+B+C:31 actual calls, at least319157 known
+tokens, one unavailable native usage plus A's separate pre-native kernel UNKNOWN.
+No success or zero expense is inferred. The source timeout recurring after
+migration103 means that optimization alone is insufficient. A complete private
+schema dump was saved before normal cleanup; the original negative evidence is
+preserved while a zero-inference streaming reproduction is investigated.

@@ -71,6 +71,20 @@ scope. C preflight requires A and B closed with their original complete ledgers:
 19 actual calls/199647 known tokens plus A's one separate kernel UNKNOWN. C's
 new40-entry cap gives59 cumulative maximum; nothing is refunded or reopened.
 
+C failed after activation during the next native Submit response stream at the
+same `memory_source_check_timeout`. Producercf54a7be844b23c39735816929827e1e63cdb9b1,
+binary301f841c66a335686866eeaf72783c70ba586bb83e05c4b8c38160c09ae84bc6.
+It admitted12 actual HTTP entries;11 have usage:100655 input,1767 output,17088
+thinking =119510 known total. Entry12 was cancelled after47298ms in response_stream
+with partial assistant deltas and NULL usage; its kernel observation is also
+absent. Both are retained, never charged as zero. The test elapsed253.33s;
+one trial/activation and9 effects succeeded, but no original converter usage or
+remaining finals exist. A+B+C carry31 actual calls and at least319157 known
+tokens, plus C's unavailable native usage and A's separate pre-native kernel
+UNKNOWN. No more inference until a local streaming/source-proof regression and
+the actual blocking query are investigated. Migration103 is a measured query
+optimization, not a sufficient complete remedy for these timeouts.
+
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives
 only selected synthetic Need/contract through the existing delegated context,

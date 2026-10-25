@@ -1,0 +1,70 @@
+{
+  "window": "issue20-converter-local-native-20261025c",
+  "actual_native_calls": 12,
+  "known_input_tokens": 100655.0,
+  "known_output_tokens": 1767.0,
+  "known_thinking_tokens": 17088.0,
+  "known_total_tokens": 119510.0,
+  "missing_total_tokens": 1,
+  "missing_thinking_tokens": 1,
+  "kernel_admissions": 12,
+  "kernel_unobserved_attempts": 1,
+  "cumulative_native_calls": 31,
+  "cumulative_known_total_tokens": 319157.0,
+  "tool_calls": 9,
+  "confirmed_effects": 9,
+  "original_conversion_count": 0,
+  "authoritative_finals": 2,
+  "unverified_finals": 2,
+  "exact_original_output_sources": [],
+  "tool_names": [
+    "converters.discover",
+    "task.delegate_converter",
+    "converters.discover",
+    "converters.develop",
+    "converters.test",
+    "converters.trial",
+    "converters.collect",
+    "converters.test",
+    "converters.activate"
+  ],
+  "starts": [
+    {
+      "n": 1,
+      "tools": [
+        "converters.activate",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 4,
+      "tools": [
+        "converters.develop",
+        "converters.discover",
+        "converters.test"
+      ],
+      "original_body": false
+    },
+    {
+      "n": 8,
+      "tools": [
+        "converters.activate",
+        "converters.collect",
+        "converters.develop",
+        "converters.discover",
+        "converters.rollback",
+        "converters.test",
+        "converters.trial",
+        "task.delegate_converter"
+      ],
+      "original_body": false
+    }
+  ],
+  "currency_and_subscription_quota_cost": "unknown"
+}
