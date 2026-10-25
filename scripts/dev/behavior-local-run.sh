@@ -17,13 +17,13 @@ case "$mode" in
  composition) selected='^TestBehavior76CorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=composition-only ;;
  freshpreflight) selected='^TestBehavior76FreshCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=fresh-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
  freshcomposition) selected='^TestBehavior76FreshCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=fresh-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
- localpreflight) selected='^TestBehavior76LocalCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=local-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4/stimuli.jsonl ;;
- localcomposition) selected='^TestBehavior76LocalCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=local-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4/stimuli.jsonl ;;
+ localpreflight) selected='^TestBehavior76LocalCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=local-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4-r2/stimuli.jsonl ;;
+ localcomposition) selected='^TestBehavior76LocalCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=local-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4-r2/stimuli.jsonl ;;
  boundary) selected='^TestBehavior76(ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration)$' ;;
  offline) selected='^TestBehavior76(StimulusBoundary|InstructionIntegrity|QueuedTaskMandatesIntegration|CoreBrokerPrepareOfflineIntegration|CoreBrokerPrepareOnlyDeniesCommitIntegration|CoreBrokerCommitRecipientIntegration)$' ;;
  preflight) selected='^TestBehavior76CorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=1 ;;
  native) selected='^TestBehavior76NativeFreshLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fresh-synthetic-local-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
- localnative) selected='^TestBehavior76NativeFixtureLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-local-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4/stimuli.jsonl ;;
+ localnative) selected='^TestBehavior76NativeFixtureLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-local-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4-r2/stimuli.jsonl ;;
  *) echo 'Unknown bounded local mode' >&2;exit 2 ;;
 esac
 tmp=$(mktemp -d /tmp/behavior76-test.XXXXXX)
