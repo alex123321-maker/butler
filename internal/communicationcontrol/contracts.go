@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/butler/butler/internal/research"
 	"io"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ import (
 const Path = "/internal/communication"
 const Target = "broker://communication-v1"
 const Epoch = 1
+const Revision = "2"
 
 var ErrDenied = errors.New("communication unavailable, stale or outside policy")
 var ErrConflict = errors.New("communication identity conflicts")
@@ -52,20 +54,29 @@ type Block struct {
 	Alt         string     `json:"alt,omitempty"`
 }
 type Args struct {
-	SchemaVersion int            `json:"schema_version"`
-	Purpose       string         `json:"purpose,omitempty"`
-	Text          string         `json:"text,omitempty"`
-	Images        []Image        `json:"images,omitempty"`
-	Title         string         `json:"title,omitempty"`
-	Summary       string         `json:"summary,omitempty"`
-	Blocks        []Block        `json:"blocks,omitempty"`
-	Attachments   []string       `json:"attachments,omitempty"`
-	Question      string         `json:"question,omitempty"`
-	Input         *QuestionInput `json:"input,omitempty"`
-	Wait          *bool          `json:"wait_for_response,omitempty"`
-	ExpiresAt     *time.Time     `json:"expires_at,omitempty"`
-	ReplyTo       string         `json:"reply_to_publication_ref,omitempty"`
-	SourceRefs    []string       `json:"source_refs,omitempty"`
+	SchemaVersion int                 `json:"schema_version"`
+	Purpose       string              `json:"purpose,omitempty"`
+	Text          string              `json:"text,omitempty"`
+	Images        []Image             `json:"images,omitempty"`
+	Title         string              `json:"title,omitempty"`
+	Summary       string              `json:"summary,omitempty"`
+	Blocks        []Block             `json:"blocks,omitempty"`
+	Attachments   []string            `json:"attachments,omitempty"`
+	Question      string              `json:"question,omitempty"`
+	Input         *QuestionInput      `json:"input,omitempty"`
+	Wait          *bool               `json:"wait_for_response,omitempty"`
+	ExpiresAt     *time.Time          `json:"expires_at,omitempty"`
+	ReplyTo       string              `json:"reply_to_publication_ref,omitempty"`
+	SourceRefs    []string            `json:"source_refs,omitempty"`
+	Evidence      []research.Evidence `json:"evidence,omitempty"`
+	Observation   *Observation        `json:"observation,omitempty"`
+}
+
+// Observation belongs only to a checked scheduled occurrence, never a timer.
+type Observation struct {
+	Status     string     `json:"status"`
+	EventKey   string     `json:"event_key"`
+	ExpectedAt *time.Time `json:"expected_at,omitempty"`
 }
 type Answer struct {
 	OptionIDs []string `json:"option_ids,omitempty"`
@@ -115,6 +126,8 @@ func Contract(n string) *toolbrokerv1.ToolContract {
 	if n != "communication.widget" {
 		props["purpose"] = map[string]any{"type": "string", "enum": []string{"progress", "result", "blocked"}}
 		req = append(req, "purpose")
+		props["evidence"] = arr(obj(map[string]any{"url": str(), "quote": str(), "role": map[string]any{"type": "string", "enum": []string{"primary", "secondary"}}}, "url", "quote", "role"))
+		props["observation"] = obj(map[string]any{"status": map[string]any{"type": "string", "enum": []string{"confirmed", "postponed", "pending", "unknown"}}, "event_key": str(), "expected_at": str()}, "status", "event_key")
 	}
 	switch n {
 	case "communication.message":
@@ -138,7 +151,7 @@ func Contract(n string) *toolbrokerv1.ToolContract {
 		req = append(req, "question", "input")
 	}
 	raw, _ := json.Marshal(obj(props, req...))
-	return &toolbrokerv1.ToolContract{ToolName: n, Description: "Explicitly publish to the owning user's permitted channels. accepted means saved, not delivered or task completion. Widgets suspend this execution until one validated owner response.", ToolClass: "communication_control", RuntimeTarget: Target, Status: "active", ContractRevision: "1", RiskLevel: "medium", InputSchemaJson: string(raw), OutputSchemaJson: `{"type":"object","properties":{"status":{"type":"string"},"publication_ref":{"type":"string"},"interaction_ref":{"type":"string"},"delivery":{"type":"array","items":{"type":"object"}}},"required":["status","publication_ref","delivery"],"additionalProperties":false}`, EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_runtime_ack"}}
+	return &toolbrokerv1.ToolContract{ToolName: n, Description: "Publish a concise owner answer. For researched facts include direct source links and evidence entries: actual page URL, exact short quote, primary/secondary attribution. First-party status requires checking publisher and current version, not a page saying official. For a checked monitor include observation status and stable event_key; the kernel suppresses unchanged/pending observations. accepted means saved, not delivered or task completion. Widgets suspend execution until one validated owner response.", ToolClass: "communication_control", RuntimeTarget: Target, Status: "active", ContractRevision: Revision, RiskLevel: "medium", InputSchemaJson: string(raw), OutputSchemaJson: `{"type":"object","properties":{"status":{"type":"string"},"publication_ref":{"type":"string"},"interaction_ref":{"type":"string"},"delivery":{"type":"array","items":{"type":"object"}}},"required":["status","publication_ref","delivery"],"additionalProperties":false}`, EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_runtime_ack"}}
 }
 func Contracts() []*toolbrokerv1.ToolContract {
 	var out []*toolbrokerv1.ToolContract
@@ -232,6 +245,19 @@ func DecodeArgs(tool, raw string) (Args, error) {
 	}
 	for _, r := range a.SourceRefs {
 		if !bounded(r, 512) {
+			return a, ErrDenied
+		}
+	}
+	if len(a.Evidence) > 6 {
+		return a, ErrDenied
+	}
+	for _, e := range a.Evidence {
+		if !bounded(e.URL, 2048) || research.CanonicalURL(e.URL) == "" || !bounded(e.Quote, 600) || (e.Role != "primary" && e.Role != "secondary") {
+			return a, ErrDenied
+		}
+	}
+	if o := a.Observation; o != nil {
+		if !bounded(o.EventKey, 256) || (o.Status != "confirmed" && o.Status != "postponed" && o.Status != "pending" && o.Status != "unknown") || tool != "communication.message" {
 			return a, ErrDenied
 		}
 	}

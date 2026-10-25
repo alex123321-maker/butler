@@ -67,7 +67,7 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	return s.executeRun(ctx, runLog, runRecord, event, preparedRun{})
 }
 
-func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun) (*ExecutionResult, error) {
+func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun) (result *ExecutionResult, returnedErr error) {
 	current := runRecord
 
 	var next *sessionv1.RunRecord
@@ -95,6 +95,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	if durable, ok := s.leases.(interface{ Authority() *ownership.Authority }); ok {
 		ctx = ownership.WithToken(ctx, durable.Authority(), ownership.Token{SessionKey: lease.SessionKey, RunID: lease.RunID, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
 	}
+	retryParent := ctx
 	runCtx, stopRenewing, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
 	ctx = runCtx
 	defer func() {
@@ -104,6 +105,11 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		if _, releaseErr := s.leases.ReleaseLease(releaseCtx, lease.LeaseID); releaseErr != nil {
 			runLog.Error("release lease failed", slog.String("lease_id", lease.LeaseID), slog.String("error", releaseErr.Error()))
 		}
+	}()
+	defer func() {
+		failure := preserveOwnedCancellation(runCtx, returnedErr)
+		stopRenewing()
+		returnedErr = s.recoverAuthorityTimeout(retryParent, runCtx, current, failure)
 	}()
 	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_ACQUIRED || current.GetCurrentState() == commonv1.RunState_RUN_STATE_PREPARING {
 		recoverer, ok := s.runs.(interface {
@@ -488,6 +494,9 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 	// the stream race. Parent cancellation and independent transport failures
 	// retain their original classification. No cleanup write acquires new power.
 	err = preserveOwnedCancellation(ctx, err)
+	if AuthorityObservationTimeout(err) {
+		return err
+	} // The owning return path attempts a durable retry first.
 	// Typed provider errors may contain untrusted details even after wrapping.
 	// Persist only the fixed subtype while retaining the general run error class.
 	if code := transport.DiagnosticCode(err); code != "" {

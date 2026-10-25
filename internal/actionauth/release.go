@@ -7,6 +7,7 @@ import (
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/websearch"
 )
 
 // NetworkReleaseRequired treats every model-selected path/query/header/body as
@@ -26,6 +27,13 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
+	case "web.search":
+		query, _ := args["query"].(string)
+		resource, err := websearch.URL(query)
+		if err != nil {
+			return false, err
+		}
+		resources = append(resources, resource)
 	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.navigate":
 		if resource, ok := args["url"].(string); ok && resource != "" {
 			resources = append(resources, resource)
@@ -47,7 +55,7 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 			resources = append(resources, resource)
 		}
 	}
-	requires := false
+	requires := call.GetToolName() == "web.search"
 	for _, resource := range resources {
 		if _, err := (egress.Policy{}).ValidateURL(resource); err != nil {
 			return false, fmt.Errorf("network resource is outside public execution policy")

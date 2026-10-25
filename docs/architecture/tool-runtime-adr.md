@@ -1,5 +1,23 @@
 # Butler — Tooling and Execution Specification
 
+`web.search` revision1 uses the existing WebFetch runtime and a fixed
+credential-free DuckDuckGo Lite GET endpoint. It returns bounded title/URL/snippet
+observations and UTC time. Snippets are discovery evidence; current claims need
+primary-page verification. Challenges/non-200/unknown markup/oversize fail
+explicitly; recognized no-results returns []. Strict decoding runs before Broker
+dispatch and in runtime. Public DNS/redirect/egress guards stay active. The fixed
+provider URL participates in web caps and query release, including operator
+public-web standing consent. No key/service/dependency was added. Plain HTTP
+reads send an identifying User-Agent. The registry maps runtime class webfetch
+to the existing operator network class web for caps on all its readers.
+
+
+Broker's optional `BUTLER_PUBLIC_WEB_READS_ENABLED=true` permits autonomous
+public page URLs/queries without per-page release approval for fixed web
+readers, HTTP GET/HEAD and revision3 browser navigation. It defaults false;
+mode1/contract approval and credential/custom payload/write decisions remain
+separate. Runtime public-network checks and operator destination caps still
+apply. See [standing URL consent](action-authorization-contract.md).
 The opt-in [issue97 research command](../../cmd/effort-eval/README.md) can reveal
 only frozen, synthetic fixture observations. These are simulated reads, not
 runtime calls or Broker acceptance. It has no external-effect executor and cannot
@@ -48,6 +66,11 @@ Tool metadata reads use GetToolContract, without validating synthetic arguments.
 Missing metadata is an error and cannot become execution permission.
 
 ## Web result correctness
+
+Provider-chain construction skips absent optional providers even when their
+constructor's nil pointer is held in a Provider interface. An unconfigured
+self-hosted primary must not panic the runtime before the configured fallback
+can read a page. No-provider configuration returns the ordinary bounded failure.
 
 Implemented reader fixes retain the current runtime/Broker/credential boundaries.
 HTML text extraction skips script/style subtrees. Network readers accept UTF-8
@@ -1086,3 +1109,11 @@ current ownership and routes frames/input with durable control fences, and the
 runtime serializes the actual page. This protocol is excluded from model tool
 schemas and transcripts. Legacy `single_tab.*` contracts are disabled in the
 standard catalog. See [browser owner control](browser-session-contract.md#owner-viewing-and-manual-control).
+
+## Retrieval observations (WebFetch revision 3)
+
+`web.fetch` and batch items return bounded readable anchor links and the runtime
+observation timestamp. Links are untrusted discovery DATA and still require a
+separate ordinary Broker read. They are not primary-source certification, an
+event confirmation or permission to navigate. See
+[research and follow-ups](research-followups.md).

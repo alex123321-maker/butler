@@ -1,5 +1,65 @@
 # Butler — общение агента с пользователем
 
+The receiving Core dispatch verifier recognizes the same canonical mode2/3
+owner reply rule as Broker. It still requires permanently claimed exact action/
+grant/effect identity and then live admission/Input/destination/source guards.
+Other prepare controls continue to require their original approval or mandate.
+
+
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
+Canonical communication replies to the current owner's operator-pinned
+channels are standard capabilities in mode2/3. They require the explicit owning
+admission, exact fixed contract, current Input claim, destination hash and source/
+export guards; they do not ask permission to answer or ask an owner question.
+Mode0 restrictions and mode1 exact approval stay. Delegation, custom recipients,
+credentials, changed contracts and explicit denials are not authorized. Ordinary
+result publication does not acquire the separate unknown-effect budget exception
+for a blocked notice/question. Current grant verification also checks the exact
+owning communication Input claim. Saved publication/dispatch/delivery remain distinct.
+
+
+Migration098 versions new taskless explicit request context independently of
+canonical channel/session identity. Two recent completed published exchanges
+provide follow-up reference, alongside current-run observations and kernel UTC
+time. Unfinished requests/internal finals are excluded without deleting history.
+Each verified new Input has finite conversation allowance; retries/resumes reuse
+it. Typed task/owner budgets and existing epoch0 work retain their policies.
+
+
+Migration097 adds kernel execution notices to the explicit owner composition.
+They are finite, source-free Input lifecycle facts, separate from publications,
+attempt finals and Task completion. A dedicated owning store reconciles durable
+queued/running/waiting/failed/budget/unknown states without inference or a model
+communication call. Web `/api/v3/communications/states` exposes latest current
+owner notices; Telegram sends the same fixed meanings with durable per-binding
+claims and actual ACKs. A binding/version activation watermark survives restart
+and prevents adoption of old backlog. Revoked targets and obsolete pending
+states cannot send; lost ACK remains UNKNOWN without automatic resend. Model
+error text, URLs, source snippets and user input never become notice text.
+Approval notices link to the existing protected owner approval UI and grant
+no action. Logging-only observations do not create channel sent receipts.
+
+Migration101 extends the finite notice vocabulary. For a current admitted queued Input, a blocked/waiting earliest unfinished
+predecessor in the same owner's session produces the fixed `queue_blocked`
+notice (`previous_stopped` or `previous_waiting`). Only dependency status and
+timestamp are read, even when the predecessor predates notice activation. This
+does not adopt its historical notices, source content or private errors, and
+does not close, skip or retry it. A running predecessor remains ordinary queued
+state. Send authorization recomputes the dependency; unchanged notices deduplicate
+and a cleared/changed blocker invalidates pending warnings.
+
+Migration102 adds [stopped-attempt finalization](stopped-input-finalization.md).
+Inactive attempts end with failure under exact kernel proof while their unknown
+effects remain isolated. New independent questions and proven fresh owner text
+replies can proceed without replaying those actions or minting owner consent.
+Notices expose fixed retained-uncertainty facts, and an already acknowledged
+identical failure is not sent again solely because blocked became failed.
+
 Credential vault control cards are a separate secret-input capability. Existing
 text widget responses must not carry PIN/password/OTP. The two account cards are
 access-existing and create-account, plus a short-lived OTP challenge. Web opens
@@ -1112,3 +1172,16 @@ checks intact. Unsupported/ambiguous content remains undecorated. Photo captions
 and native rich reports are not decorated in v1. Detailed limits, rollback and
 single-AI evaluation are in `telegram-emoji-research.md` and
 `../../experiments/emoji140/abstention-rollout.md`.
+
+## Research evidence and checked observations (communication revision 2)
+
+Non-widget publication contracts accept bounded `evidence` entries with URL,
+exact short quote and model primary/secondary attribution. This does not grant
+source authority or certify officiality. Current researched result drafts get
+bounded preflight feedback before dispatch. Checked scheduled messages carry an
+`observation`; unchanged/pending receipts have status `unchanged`, an empty
+publication reference and no delivery parts. They prove a recorded observation,
+not a delivered message. Canonical source/export/claim/target guards remain.
+See [the research contract](research-followups.md). Contract hash/revision checks
+continue to fence old loaded schemas and pending approvals rather than upgrading
+their authority silently.

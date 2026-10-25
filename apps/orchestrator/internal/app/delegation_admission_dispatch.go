@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -62,9 +63,18 @@ func readOwnedDispatch(ctx context.Context, q admissionQuery, e delegation.Admis
 	if q.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil {
 		return actionauth.Grant{}, delegation.ErrDenied
 	}
+	// Only canonical replies to the pinned owner admission may be prepared
+	// without approval/mandate in mode2/3. CommunicationControl subsequently
+	// checks the live Input claim, admission, destinations and source/export
+	// guards in the same rollback-capable publication transaction.
+	ownerReply := false
+	if allowConversation && communicationcontrol.IsTool(expectedTool) && grant.AutonomyMode >= 3 && len(grant.InputClaimHash) == 64 && len(binding.CommunicationDestinationsHash) == 64 {
+		canonical, err := actionauth.ContractHash(communicationcontrol.Contract(expectedTool))
+		ownerReply = err == nil && canonical == expectedHash
+	}
 	argsHash, err := actionauth.ArgumentsHash(e.ArgsJSON)
 	_, expectedFingerprint, fpErr := actionauth.EffectIdentity(binding, "")
-	if err != nil || fpErr != nil || fingerprint != expectedFingerprint || effectFingerprint != fingerprint || state != "inflight" || effectState != string(actionauth.StateExecuting) || outcome != "executing" || effectID != e.EffectID || executionID != binding.ActionID || actionID != binding.ActionID || grant.ID != effectAuthorization || grant.ID != grantID || grantHash != actionHash || binding.ActionHash != actionHash || actionauth.BindCredentialMetadata(binding, binding.CredentialMetadataHash).ActionHash != actionHash || !reflect.DeepEqual(binding, grant.Binding) || binding.ArgsHash != argsHash || binding.ContractHash != expectedHash || e.ContractHash != expectedHash || expectedRevision == "" || binding.ContractRevision != expectedRevision || binding.ToolName != expectedTool || binding.RunID != e.RunID || binding.ToolCallID != e.ToolCallID || (!allowConversation && binding.TaskID == "") || binding.TaskID != "" && (binding.TaskRevision < 1 || binding.ConstraintsRevision < 1) || binding.TaskID == "" && (binding.TaskRevision != 0 || binding.ConstraintsRevision != 0) || binding.OwnerID == "" || binding.Effect != expectedEffect || binding.Resource != "tool:"+expectedTool || len(binding.CredentialRefs) != 0 || binding.ExtensionID != "" || grant.LeaseID == "" || grant.LeaseEpoch < 1 || expectedEffect != actionauth.EffectRead && grant.ApprovalID == "" && grant.MandateID == "" || grant.MandateID != "" && (grant.MandateID != binding.MandateID || grant.MandateRevision != binding.MandateRevision) || !grantExpires.Equal(grant.ExpiresAt.UTC().Truncate(time.Microsecond)) || !grantExpires.After(now) || !intentExpires.After(now) {
+	if err != nil || fpErr != nil || fingerprint != expectedFingerprint || effectFingerprint != fingerprint || state != "inflight" || effectState != string(actionauth.StateExecuting) || outcome != "executing" || effectID != e.EffectID || executionID != binding.ActionID || actionID != binding.ActionID || grant.ID != effectAuthorization || grant.ID != grantID || grantHash != actionHash || binding.ActionHash != actionHash || actionauth.BindCredentialMetadata(binding, binding.CredentialMetadataHash).ActionHash != actionHash || !reflect.DeepEqual(binding, grant.Binding) || binding.ArgsHash != argsHash || binding.ContractHash != expectedHash || e.ContractHash != expectedHash || expectedRevision == "" || binding.ContractRevision != expectedRevision || binding.ToolName != expectedTool || binding.RunID != e.RunID || binding.ToolCallID != e.ToolCallID || (!allowConversation && binding.TaskID == "") || binding.TaskID != "" && (binding.TaskRevision < 1 || binding.ConstraintsRevision < 1) || binding.TaskID == "" && (binding.TaskRevision != 0 || binding.ConstraintsRevision != 0) || binding.OwnerID == "" || binding.Effect != expectedEffect || binding.Resource != "tool:"+expectedTool || len(binding.CredentialRefs) != 0 || binding.ExtensionID != "" || grant.LeaseID == "" || grant.LeaseEpoch < 1 || expectedEffect != actionauth.EffectRead && grant.ApprovalID == "" && grant.MandateID == "" && !ownerReply || grant.MandateID != "" && (grant.MandateID != binding.MandateID || grant.MandateRevision != binding.MandateRevision) || !grantExpires.Equal(grant.ExpiresAt.UTC().Truncate(time.Microsecond)) || !grantExpires.After(now) || !intentExpires.After(now) {
 		return actionauth.Grant{}, delegation.ErrDenied
 	}
 	grant.State = state

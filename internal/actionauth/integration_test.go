@@ -80,6 +80,9 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 	if _, err = pool.Exec(ctx, string(data)); err != nil {
 		t.Fatal(err)
 	}
+	if _, err = pool.Exec(ctx, `CREATE TABLE input_stopped_attempts(input_id TEXT PRIMARY KEY,run_id TEXT NOT NULL,owner_id TEXT NOT NULL,session_key TEXT NOT NULL,classification TEXT NOT NULL)`); err != nil {
+		t.Fatal(err)
+	}
 	return pool
 }
 

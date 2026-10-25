@@ -1,5 +1,12 @@
 # Atomic result persistence and notification delivery
 
+Migration097 execution notices are separate kernel lifecycle facts. Their
+dedicated owning receipts reuse the channel-only Worker but cannot become a
+model publication, task result or effect confirmation. Reconciliation from
+durable Input state survives failures before model/result persistence. Fixed
+failure text has no source payload, so it can explain a source-denied attempt
+without releasing that content. Web availability and actual Telegram ACKs stay
+distinct; ambiguous sends are never replayed automatically.
 The owner communication diagnostic projects legacy result deliveries separately
 from explicit publications and per-channel part states. It never migrates an
 old result into a new publication, sends a notification, or equates Web

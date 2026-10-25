@@ -1,5 +1,19 @@
 # Durable execution budgets
 
+Migration102 retains stopped-attempt uncertainty after queue release. The same
+session/task-tree guard denies arbitrary new writes even under a different Task.
+Reads retain their normal authority. Fresh canonical owner text replies need
+exact live Input/intent/admission proof; equivalent unknown replies, missing
+provenance and untracked effects deny that exception. No spending, receipts or
+effect verdicts are reset. Core and Broker must both be updated; see
+[stopped attempts](../../docs/architecture/stopped-input-finalization.md).
+
+Migration098 keeps existing Inputs at context_epoch0. New verified explicit
+taskless Inputs use input:<InputID> as conversation subject with acceptance+24h
+deadline. Rerun/restart/approval resume reuse spending; independent owner requests
+have independent finite allowance. Root/owner-day/mandate/delegation guards stay.
+
+
 Operator `disable_conversation_model_turns:true` removes only the session/day
 model-turn ceiling. Charges continue accumulating against the unchanged scope;
 re-enabling enforces its original limit and total spending. Local and provider

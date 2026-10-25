@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/executionnotice"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/communicationcontrol"
@@ -30,8 +31,9 @@ var ErrResolved = errors.New("interaction already resolved")
 var ErrDraining = errors.New("communication admission is draining")
 
 type Store struct {
-	Pool   *pgxpool.Pool
-	Inputs *durableinput.Store
+	ExecutionNotices *executionnotice.Store
+	Pool             *pgxpool.Pool
+	Inputs           *durableinput.Store
 	// Trusted operator ceiling for outstanding owner questions. Zero uses 16;
 	// values outside 1..64 fail closed. Existing questions are never discarded.
 	MaxOpenInteractions int
@@ -233,6 +235,11 @@ func (s *Store) applyTx(ctx context.Context, tx pgx.Tx, p Principal, e communica
 	}
 	if e.Lookup {
 		return out, ErrDenied
+	}
+	if observation, err := s.monitorTx(ctx, tx, p, e, a, digest, systemFailure); err != nil {
+		return out, err
+	} else if observation != nil {
+		return *observation, nil
 	}
 	var methods []byte
 	var count int

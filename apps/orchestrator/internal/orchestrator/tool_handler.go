@@ -43,6 +43,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
+
 	if s.config.WaitBrowserOwner != nil {
 		if err := s.config.WaitBrowserOwner(ctx, current.GetRunId()); err != nil {
 			return nil, current, err
@@ -88,6 +89,15 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	if s.config.Tools == nil {
 		return nil, current, fmt.Errorf("tool executor is not configured")
+	}
+	if approvalID == "" && !operatorDoctor(ctx) {
+		feedback, err := s.researchFeedback(ctx, current, requested)
+		if err != nil {
+			return nil, current, err
+		}
+		if feedback != "" {
+			return s.rejectResearchDraft(ctx, current, leaseID, requested, feedback)
+		}
 	}
 	next := current
 	var err error

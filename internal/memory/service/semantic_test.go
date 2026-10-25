@@ -17,7 +17,7 @@ func (s *semanticFixture) Search(_ context.Context, scopes []Scope, _ string, _ 
 func TestSemanticBundleRetainsSourceAndRejectsSecretWithoutLegacyEmbeddings(t *testing.T) {
 	reader := &semanticFixture{}
 	s := New(Config{Semantic: reader})
-	b, err := s.BuildBundle(context.Background(), BundleRequest{SessionKey: "test", UserMessage: "why", IncludeQuery: true})
+	b, err := s.BuildBundle(context.Background(), BundleRequest{SessionKey: "test", UserMessage: "Current decision", IncludeQuery: true})
 	if err != nil {
 		t.Fatal(err)
 	}

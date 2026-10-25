@@ -97,17 +97,17 @@ func NewLoggingDeliverySink(log *slog.Logger) LoggingDeliverySink {
 }
 
 func (s LoggingDeliverySink) DeliverAssistantDelta(_ context.Context, event DeliveryEvent) error {
-	s.log.Info("assistant delta delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.Int("sequence_no", event.SequenceNo))
+	s.log.Info("assistant delta observed", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.Int("sequence_no", event.SequenceNo))
 	return nil
 }
 
 func (s LoggingDeliverySink) DeliverAssistantFinal(_ context.Context, event DeliveryEvent) error {
-	s.log.Info("assistant final delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey))
+	s.log.Info("assistant final observed", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey))
 	return nil
 }
 
 func (s LoggingDeliverySink) DeliverApprovalRequest(_ context.Context, req ApprovalRequest) error {
-	s.log.Info("approval request delivered",
+	s.log.Info("approval request observed",
 		slog.String("run_id", req.RunID),
 		slog.String("session_key", req.SessionKey),
 		slog.String("approval_id", req.ApprovalID),
@@ -119,12 +119,12 @@ func (s LoggingDeliverySink) DeliverApprovalRequest(_ context.Context, req Appro
 }
 
 func (s LoggingDeliverySink) DeliverToolCallEvent(_ context.Context, event ToolCallEvent) error {
-	s.log.Info("tool call event delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.String("tool_name", event.ToolName), slog.String("status", event.Status))
+	s.log.Info("tool call event observed", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.String("tool_name", event.ToolName), slog.String("status", event.Status))
 	return nil
 }
 
 func (s LoggingDeliverySink) DeliverStatusEvent(_ context.Context, event StatusEvent) error {
-	s.log.Info("status event delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.String("status", event.Status))
+	s.log.Info("status event observed", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.String("status", event.Status))
 	return nil
 }
 

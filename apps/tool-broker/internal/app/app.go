@@ -296,6 +296,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		server.SetBudgets(budgetController)
 		server.SetBudgetTimeout(time.Duration(budgetPolicy.ToolMillis) * time.Millisecond)
 		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
+		authorizer.SetPublicWebReads(cfg.PublicWebReadsEnabled)
 		authorizer.SetCapabilities(extensionStore)
 		server.SetActionAuthorizer(authorizer)
 		catalog := &broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore}

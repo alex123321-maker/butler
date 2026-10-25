@@ -16,6 +16,7 @@ import (
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
+	"github.com/butler/butler/apps/orchestrator/internal/channel/telegramrich"
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
@@ -198,7 +199,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		return nil, err
 	}
 
-	var delivery flow.DeliverySink = flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
+	var delivery flow.DeliverySink = flow.NewLoggingDeliverySink(log)
 	var telegram *telegramadapter.Adapter
 	approvalGate := flow.NewApprovalGate()
 	approvalRepo := approvals.NewPostgresRepository(postgres.Pool())
@@ -228,9 +229,8 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 			postgres.Close()
 			return nil, err
 		}
-		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
+		delivery = flow.NewCompositeDeliverySink(delivery, flow.NewObservedDeliverySink(telegram, deliveryEventsService))
 	}
-	delivery = flow.NewObservedDeliverySink(delivery, deliveryEventsService)
 	delivery = newVerifiedTaskDelivery(delivery, taskStore)
 	singleTabService.SetDeliverySink(delivery)
 
@@ -524,6 +524,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		guardedRequestAdapter = guardedRequests
 	}
 	var telegramFlow *telegramCommunication
+	var executionNoticeWorker *deliveryoutbox.Worker
 	var communicationKernel flow.CommunicationKernel
 	var communicationAdmission func(context.Context, string) error
 	if telegramOptions != nil {
@@ -541,7 +542,10 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		communicationKernel = telegramFlow.store
 		communicationAdmission = telegramFlow.admit
 		finalResults.Communication = telegramFlow.store
+		notices := telegramFlow.store.ExecutionNotices
+		executionNoticeWorker = &deliveryoutbox.Worker{Store: notices, Sender: &telegramrich.ExecutionSender{Client: telegramFlow.client, Binding: telegramFlow.binding, Authorize: notices.AuthorizeSend}}
 		inputStore.CommunicationEpoch = 1
+		inputStore.StoppedFinalizer = telegramFlow.store
 		telegramFlow.store.Metrics = m
 		telegramFlow.toolProbe = communicationToolProbe(toolBrokerClient)
 		if err = communication.RegisterMetrics(m, postgres.Pool()); err != nil {
@@ -931,6 +935,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		pipelineWorker:             pipelineWorker,
 		inputWorker:                inputWorker,
 		outboxWorker:               outboxWorker,
+		executionNoticeWorker:      executionNoticeWorker,
 		initiativeDeliveryWorker:   initiativeDeliveryWorker,
 		scheduleDeliveryWorker:     scheduleDeliveryWorker,
 		verifiedTaskDeliveryWorker: verifiedTaskDeliveryWorker,

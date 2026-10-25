@@ -1,5 +1,10 @@
 # Telegram communication adapter (isolated opt-in)
 
+`ExecutionSender` is the separate fixed kernel-notice sender. It verifies the
+numeric bot and exact current owning claim/binding before one network attempt.
+Only a valid numeric ACK for the expected chat becomes sent; wrong/missing ACK
+stays UNKNOWN. It has no publication, artifact, model or approval capability.
+
 The explicitly gated native format corpus pins the dedicated lab bot/owner and
 requires a private proxy reference. It makes one attempt per fixed synthetic
 request, including the documented text rejection boundary, with no paid broadcast,

@@ -1,3 +1,32 @@
+Explicit owner profiles with migration097 also deliver fixed kernel execution
+
+An admitted explicit owner request receives the already permitted canonical
+communication.message schema immediately, avoiding catalog turns just to reply.
+Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts
+are not inserted. Schema byte limits remain unchanged; the fixed reply schema
+has one separate count slot alongside the two catalog controls.
+
+
+Migration099 preserves finite transport error codes at the Input worker
+boundary and adds a source-free model-unavailable notice. Provider/private error
+messages never enter that notice. Temporary provider refusal is distinct from
+research completion and does not reset spending or automatically replay effects.
+
+
+Migration098 gives new verified explicit taskless Inputs finite per-input
+conversation allowance while preserving Session ordering. Retries/resume reuse
+it; old work retains session/day. Context includes two completed published
+exchanges, current-run history, kernel UTC clock and current-request priority.
+Automatic document context omits unrelated lexical nonmatches; explicit semantic
+memory search retains recall. Profile preferences and typed tasks are unchanged.
+
+states through `internal/executionnotice`: queued/working, waiting, errors,
+budget stops and missing replies remain visible without inference. Web reads
+`/api/v3/communications/states`; Telegram uses durable claims/ACKs and never
+replays unknown sends. New binding versions do not adopt old backlog. Logging
+observations are not channel deliveries. This does not publish model finals or
+change action authority, task completion or budgets.
+
 Credential vault support adds a protected owner endpoint, six-digit PIN/session
 controls and durable `credential_interaction` waits. Secret form bodies bypass
 ordinary ingress/transcripts. Core resumes safe request metadata under the live
@@ -141,6 +170,19 @@ messages. Broker controls `messages.inbox`, `messages.search` and
 the Catalog. Maintenance verifies durable processing and can resume incomplete
 completed attempts at most three times under the same task budget. See the
 [Android contract](../../docs/architecture/android-companion.md).
+
+The explicit owner composition installs migration102 stopped-attempt cleanup.
+Inactive blocked attempts end with failure under ownership/claim and pending-wait
+checks; unknown effects and charges stay retained under dispatch isolation. New
+questions can proceed without replaying old work. Only exact fresh canonical text
+replies receive the bounded exception; arbitrary writes remain constrained across
+the same session/task tree. See [the contract](../../docs/architecture/stopped-input-finalization.md).
+
+Execution notices explain when a current queued message is held behind an older
+blocked or waiting Input in the same owner's session, including a head accepted
+before notice activation. Only fixed dependency facts are exposed; old content,
+history adoption, session ordering and action permissions are unchanged. Stale
+warnings are denied at delivery. See the executionnotice module README.
 
 Lease-supervisor cancellation retains a fixed Core reason when current authority
 cannot be checked, the exact ownership token changes, or renewal fails. A stream
@@ -314,7 +356,11 @@ deduplication preserves different profile keys and document sources. See
 [fresh comparison protocol](../../docs/ai/memory-search-comparison-methodology-20261015.md).
 
 Core supports one durable model retry per accepted input after a trusted nominal
-model-turn timeout. The input worker queues a two-second pause, then obtains fresh
+model-turn timeout or a transient watchdog lease-observation deadline during
+inference. Both share one counter. The latter retains the original worker
+deadline and needs fresh task/source/claim/fence proofs after cancellation;
+revocation, renewal failures and unknown outcomes cannot qualify.
+The input worker queues a two-second pause, then obtains fresh
 ownership and a separately budgeted provider session from saved Butler input and
 known tool results. Confirmed non-read proposals cannot execute again with a new
 call ID; owner Stop, changed sources, earlier authority deadlines and unknown
@@ -1365,3 +1411,11 @@ the existing proxy/profile, model tools and canonical text; frozen outbox choice
 are reused on delivery and widget edits. This bounded Kolobkitop vocabulary needs
 no runtime GPU. See `docs/architecture/telegram-emoji-research.md` for limits,
 evaluation and compatible-reader rollback requirements.
+
+Research replies use current-run page evidence and bounded local correction
+before publication; concise answers and one useful consent-based follow-up are
+the default. Schedule revision 2 checked monitors use owning explicit ingress,
+quiet observations and atomic changes-only publication. Migration 100 is required.
+Repeated work can suggest a reusable procedure; formal skill validation and
+activation retain their existing evidence requirements. See
+[research contract](../../docs/architecture/research-followups.md).

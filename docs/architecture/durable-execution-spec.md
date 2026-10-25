@@ -55,11 +55,22 @@ The durable identity is `(session_key, source, idempotency_key or event_id)`.
 Repeating it with different payload, event type, owner or task is rejected.
 Session-row admission serialization precedes assigning `session_sequence`, so
 an uncommitted earlier input cannot surface behind an already claimed later one.
-Only the oldest unfinished input per session can execute. Waiting or blocked
-heads block later inputs. Across sessions the oldest ready head wins, with
+Only the oldest unfinished input per session can execute. Legitimate waits
+block later inputs. The explicit epoch1 composition uses
+[stopped-attempt finalization](stopped-input-finalization.md) to end inactive
+blocked attempts with failure and retain action uncertainty under dispatch
+guards, freeing the conversation without replay. Legacy blocked heads retain
+their previous policy. Across sessions the oldest ready head wins, with
 `SKIP LOCKED` allowing independent execution. A busy session remains queued and
 does not consume the recovery retry allowance. Queued deadlines remain visible
 even behind a blocked head.
+
+Kernel notices distinguish a current queued request held behind the owner's
+earliest blocked/waiting predecessor from ordinary queueing. That dependency
+fact is visible even if the predecessor predates notice activation; its old
+message/errors/notices stay excluded. This projection cannot claim work, close
+the predecessor or bypass ordering. An authenticated owner failure-close may
+release the original queued request under the existing exact-state guards.
 
 The app starts two independent workers, polls every 250 ms, claims for 60 seconds
 and renews at one third of that duration. The worker context belongs to the app,
@@ -69,7 +80,8 @@ allowed, including the initial attempt and crash recovery. An owner decision
 queued for continuation does not consume this allowance; a crash after that
 continuation is claimed does. Repeated crashes cannot renew the allowance.
 Receipts expose attempts, deadline, checkpoint and error code. Automatic retries
-never replay an uncertain external action; blocked work requires owner review.
+never replay an uncertain external action; retained unknown effects require
+separate reconciliation, while attempt failure no longer freezes the chat.
 
 Independent claims acquired or renewed at different times also expire at different
 times. Available worker width permits simultaneous eligible sessions but does not
@@ -136,7 +148,9 @@ can finish persistence without asking the provider again. Existing assistant
 transcript content is checked before appending, preventing a duplicate final row.
 Interrupted model execution with no safe boundary is conservatively blocked.
 The [bounded model retry](model-retry-policy.md) adds one durable queued recovery
-after a trusted nominal model-turn timeout. It obtains fresh ownership, sources,
+after a trusted nominal model-turn timeout or a proved transient lease-observation
+deadline during inference. These causes share one counter. The latter retains
+the original worker execution deadline across claims. It obtains fresh ownership, sources,
 catalog and model admission, preserves all spent reservations, and denies replay
 of equivalent confirmed non-read proposals. Its stored started marker prevents
 another request after a crash during the retry.

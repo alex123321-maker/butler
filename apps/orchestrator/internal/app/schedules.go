@@ -50,7 +50,7 @@ func (s *ScheduleControl) ExecuteDispatched(ctx context.Context, e schedulecontr
 		effect = actionauth.EffectRead
 	}
 	read := func(ctx context.Context, q admissionQuery, lock bool) (actionauth.Grant, error) {
-		return readOwnedDispatch(ctx, q, envelope, e.Tool, hash, "1", effect, lock, true)
+		return readOwnedDispatch(ctx, q, envelope, e.Tool, hash, schedulecontrol.Revision, effect, lock, true)
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

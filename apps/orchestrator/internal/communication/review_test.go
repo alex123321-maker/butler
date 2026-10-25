@@ -29,9 +29,11 @@ func TestCommunicationReviewDoesNotStarveExpiredQuestionsIntegration(t *testing.
 		t.Fatal(e)
 	}
 	// One hundred older valid no-expiry questions must not hide this expired
-	// one from every bounded maintenance batch. Isolated storage fixtures need
-	// no extra workers, model calls or channel sends.
-	_, e = f.pool.Exec(f.ctx, `INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,status)
+	// one from every bounded maintenance batch. These are retained pre-quota
+	// questions: suspend only the private fixture's admission trigger while
+	// seeding that legacy history, and restore it in the same transaction.
+	_, e = f.pool.Exec(f.ctx, `ALTER TABLE communication_interactions DISABLE TRIGGER communication_open_limit;
+ INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,status)
  SELECT 'older-input:'||g,session_key,'older-event:'||g,'older-key:'||g,source,owner_id,event_json,'waiting_for_user' FROM accepted_inputs CROSS JOIN generate_series(1,100) g WHERE input_id=$1;
  INSERT INTO communication_admissions(input_id,owner_id,session_key,schema_epoch,methods,obligation_state)
  SELECT 'older-input:'||g,owner_id,session_key,1,methods,'waiting_for_user' FROM communication_admissions CROSS JOIN generate_series(1,100) g WHERE input_id=$1;
@@ -39,7 +41,8 @@ func TestCommunicationReviewDoesNotStarveExpiredQuestionsIntegration(t *testing.
  SELECT 'older-publication:'||g,'older-effect:'||g,'older-call:'||g,'older-input:'||g,owner_id,session_key,run_id,0,0,kind,purpose,payload,payload_hash,source_refs,receipt_json FROM communication_publications CROSS JOIN generate_series(1,100) g WHERE publication_id=$2;
  INSERT INTO communication_interactions(interaction_id,publication_id,input_id,owner_id,session_key,run_id,task_revision,constraints_revision,question_json,state,created_at)
  SELECT 'older-interaction:'||g,'older-publication:'||g,'older-input:'||g,owner_id,session_key,run_id,0,0,question_json,'open',created_at-INTERVAL '1 day' FROM communication_interactions CROSS JOIN generate_series(1,100) g WHERE interaction_id=$3;
- UPDATE communication_interactions SET expires_at=clock_timestamp()-INTERVAL '1 second' WHERE interaction_id=$3`, pgx.QueryExecModeSimpleProtocol, f.claim.InputID, r.PublicationRef, r.InteractionRef)
+ UPDATE communication_interactions SET expires_at=clock_timestamp()-INTERVAL '1 second' WHERE interaction_id=$3;
+ ALTER TABLE communication_interactions ENABLE TRIGGER communication_open_limit`, pgx.QueryExecModeSimpleProtocol, f.claim.InputID, r.PublicationRef, r.InteractionRef)
 	if e != nil {
 		t.Fatal(e)
 	}

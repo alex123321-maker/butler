@@ -10,9 +10,9 @@ import (
 func TestCommunicationUnknownEffectExceptionIsExactAndBoundedIntegration(t *testing.T) {
 	pool := controllerDB(t)
 	ctx := context.Background()
-	_, e := pool.Exec(ctx, `CREATE TABLE accepted_inputs(input_id text PRIMARY KEY,run_id text);
+	_, e := pool.Exec(ctx, `
  CREATE TABLE communication_admissions(input_id text PRIMARY KEY,owner_id text,schema_epoch int,publication_count int,methods jsonb);
- INSERT INTO accepted_inputs VALUES('input','run');INSERT INTO communication_admissions VALUES('input','owner',1,0,'["communication.message","communication.widget"]');
+ INSERT INTO accepted_inputs(input_id,run_id) VALUES('input','run');INSERT INTO communication_admissions VALUES('input','owner',1,0,'["communication.message","communication.widget"]');
  INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,idempotency_key) VALUES('uncertain','f','{"owner_id":"owner","task_id":"root","effect":"commit"}','{}','effect_unknown','key');
  INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) VALUES('notice-effect','n','{}','{}','prepared');`)
 	if e != nil {

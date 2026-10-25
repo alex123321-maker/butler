@@ -1,5 +1,13 @@
 # Butler Configuration Layering
 
+`BUTLER_PUBLIC_WEB_READS_ENABLED` is a Broker-only startup flag, default false,
+outside the managed settings catalog. Owner opt-in grants standing release
+consent for public page URLs and search queries through the fixed read tools.
+Restart Broker to change it; prepare/authorize/verify all reapply the current
+setting. It does not modify registry contracts, existing approval decisions,
+autonomy mode, destination caps, secret or write policy. See
+[action authorization](action-authorization-contract.md).
+
 Optional `BUTLER_TOOL_DISCOVERY_ENABLED` is an operator-only, restart-required flag, default false on Orchestrator and Broker. Stored settings cannot enable it; matching private Broker authentication is required. See [tool discovery](tool-discovery.md).
 
 

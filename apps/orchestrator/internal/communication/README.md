@@ -1,5 +1,30 @@
 # Communication kernel (dormant)
 
+Diagnostics checks migration readiness in the connection's current schema;
+same-named tables later in the search path cannot satisfy missing migrations.
+
+The explicit owner composition uses the migration102 stopped-attempt transaction
+collaborator to close an inactive attempt's publication obligation with failure
+and join the owning Run transition. Its audit is kernel failure, never owner
+acknowledgement, effect reconciliation or a delivered model result. Exact proof
+and rollback requirements are in [the contract](../../../../docs/architecture/stopped-input-finalization.md).
+
+Canonical communication replies to the current owner's operator-pinned
+channels are standard capabilities in mode2/3. They require the explicit owning
+admission, exact fixed contract, current Input claim, destination hash and source/
+export guards; they do not ask permission to answer or ask an owner question.
+Mode0 restrictions and mode1 exact approval stay. Delegation, custom recipients,
+credentials, changed contracts and explicit denials are not authorized. Ordinary
+result publication does not acquire the separate unknown-effect budget exception
+for a blocked notice/question. Current grant verification also checks the exact
+owning communication Input claim. Saved publication/dispatch/delivery remain distinct.
+
+
+Optional explicit owner composition attaches `executionnotice.Store` for
+source-free lifecycle facts. These are separate from model publications and
+their source/export proof. The protected `communications/states` endpoint can
+explain a denied/failed/budget-stopped input without model inference or exposing
+its context. Each binding has its own activation and actual delivery receipts.
 C08 adds bounded read-only owner metadata diagnostics and fixed-label durable
 metrics. Neither reads payloads/answers/recipients nor executes recovery/delivery.
 The owning composition additionally probes fixed Broker contracts; absent

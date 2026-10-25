@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
@@ -64,6 +65,7 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		SessionUserID: userID,
 		Channel:       channel,
 	}
+
 	if token, ok := ownership.TokenFromContext(ctx); ok {
 		prepared.CurrentRunID = token.RunID
 	}
@@ -114,6 +116,9 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	}
 	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
+	}
+	if event.Source == "schedule" && prepared.Task != nil && prepared.Task.Source["type"] == "scheduled_job" {
+		prepared.InputItems = append(prepared.InputItems, content.Instruction(researchInstruction+"\nThis is a scheduled occurrence, not a new owner message. For a checked monitor finish by calling communication.message with observation and stable event_key. pending/unchanged returns unchanged without a notification. unknown must honestly explain inability to verify; confirmed/postponed require fresh primary evidence. Do not skip recording an observation, create another schedule, ask optional questions or send progress notices. Runtime clock: "+time.Now().UTC().Format(time.RFC3339), content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:scheduled-research-v1"}, Sensitivity: content.Public}))
 	}
 	if prepared.AdaptivePlan != nil {
 		if err := s.config.AdaptiveRetrieval.Init(ctx, *prepared.AdaptivePlan); err != nil {
@@ -383,6 +388,29 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	for _, message := range full.Messages {
 		if historicalMessageOrigin(message).Sensitivity == content.Secret {
 			return content.ErrSecret
+		}
+	}
+	if reader, ok := s.config.Communication.(interface {
+		ConversationHistory(context.Context, string) ([]string, bool, error)
+	}); ok {
+		ids, bounded, err := reader.ConversationHistory(ctx, prepared.CurrentRunID)
+		if err != nil {
+			return fmt.Errorf("load conversation context boundary: %w", err)
+		}
+		if bounded {
+			prepared.InputItems = append(prepared.InputItems,
+				content.Instruction(researchInstruction, content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:current-request-v2"}, Sensitivity: content.Public}),
+				content.Instruction("Runtime clock: "+time.Now().UTC().Format(time.RFC3339)+" (UTC).", content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:runtime-clock-v1"}, Sensitivity: content.Public}))
+			if examples, origin := publishedWorkflowExamples(full, ids); len(examples) > 0 {
+				prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"recent_workflow_examples": examples, "verified_skill_evidence": false}, origin))
+			}
+			messages, recorded := conversationMessages(full.Messages, prepared.CurrentRunID, ids)
+			prepared.InputAlreadyRecorded = recorded
+			delete(prepared.MemoryBundle, "session_summary")
+			items := transcriptInputItems(messages)
+			prepared.InputItems = append(items, prepared.InputItems...)
+			prepared.observabilityHistory = map[string]any{"replayed_message_count": len(items), "coverage_mode": "published_exchanges_v1", "source_revision": full.SourceRevision}
+			return nil
 		}
 	}
 	tail := full.Messages

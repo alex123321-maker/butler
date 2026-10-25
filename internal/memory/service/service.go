@@ -367,12 +367,20 @@ func (s *Service) loadPolicyChunks(ctx context.Context, scopes []Scope, query st
 		if err != nil {
 			return nil, nil, fmt.Errorf("memory retrieval failed: %w", err)
 		}
-		return semanticItems(result.Hits), result.Diagnostics, nil
+		items, omitted := relevantAutomaticChunks(semanticItems(result.Hits), query)
+		if omitted > 0 {
+			result.Diagnostics = append(result.Diagnostics, "unrelated_chunks_omitted")
+		}
+		return items, result.Diagnostics, nil
 	}
 	if !policy.External {
 		return nil, []string{"local_query_backend_unavailable"}, nil
 	}
 	items, err := s.loadChunks(ctx, scopes, query, true)
+	items, omitted := relevantAutomaticChunks(items, query)
+	if omitted > 0 {
+		return items, []string{"unrelated_chunks_omitted"}, err
+	}
 	return items, nil, err
 }
 
@@ -800,4 +808,19 @@ func isNilEmbeddingProvider(provider EmbeddingProvider) bool {
 	default:
 		return false
 	}
+}
+
+// Automatic context favors precision. Explicit memory search remains semantic
+// and can recover paraphrases without forcing unrelated nearest neighbors into
+// every ordinary request. This does not filter durable profile preferences.
+func relevantAutomaticChunks(items []map[string]any, query string) ([]map[string]any, int) {
+	selected := make([]map[string]any, 0, len(items))
+	for _, item := range items {
+		title, _ := item["title"].(string)
+		summary, _ := item["summary"].(string)
+		if relevance(title, summary, query) > 0 {
+			selected = append(selected, item)
+		}
+	}
+	return selected, len(items) - len(selected)
 }

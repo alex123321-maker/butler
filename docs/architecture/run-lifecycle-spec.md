@@ -1,5 +1,26 @@
 # Butler — Run Lifecycle Specification
 
+The explicit owner composition installs migration102's bounded
+[stopped-attempt finalizer](stopped-input-finalization.md). It atomically ends
+inactive blocked Input/run attempts with failure, retains unknown effects and
+all charges, and lets new requests proceed under receiving isolation guards.
+It does not replay actions, complete Tasks or replace legitimate owner waits.
+
+For epoch1 explicit taskless requests, Input identity defines the finite
+research/budget boundary while Session Service retains ordering/ownership.
+Only two recent completed published exchanges and current-run history enter
+context, with kernel UTC time/current-request priority. Old Inputs and typed
+tasks retain their policies; see memory and budget contracts.
+
+
+The explicit owner composition reconciles saved Input lifecycle into fixed
+execution notices (migration097) independently of model continuation and
+publication obligations. A timeout, budget stop, failed source/authority read
+or UNKNOWN action can therefore produce a safe owner-visible failure without
+new inference. Notice state, action outcome, attempt result, task completion
+and channel receipt remain separate. Only actual Telegram ACK means sent;
+Web availability is not proof of a client read. Kernel notice delivery never
+retries a model or action. See [communication](user-communication-spec.md).
 The opt-in [issue97 research driver](../../cmd/effort-eval/README.md) owns bounded
 synthetic solve/review phases outside production construction. It commits its
 fixture working state before another model pass, versions owner amendments and
@@ -847,7 +868,10 @@ or lease renewal fails. If stream consumption observes the resulting
 storage/provider details. The error still classifies as cancelled and retains
 the existing ownership/renewal sentinel. Ordinary parent cancellation and an
 independent transport error keep their own cause. This adds no new cleanup
-authority, lease retry, guard interval or permission to dispatch/publish. Older
+authority, guard interval or permission to dispatch/publish. A private lease-read
+deadline during inference may queue the single bounded continuation described in
+[model retry policy](model-retry-policy.md), after fresh proofs from the live
+Input parent. It does not retry the failed observation in place. Older
 generic cancellation records cannot be retroactively classified from this change.
 
 Run может быть отменён:
@@ -988,7 +1012,9 @@ Retry допускается не для всего run, а на уровне о
 
 Политики retry должны быть вынесены в отдельные subspec/contract documents.
 Production Core допускает один отложенный повтор модели на accepted input после
-номинального model-turn timeout. Новый запрос имеет отдельное списание бюджета;
+номинального model-turn timeout либо подтверждённого временного таймаута чтения
+аренды watchdog во время inference. Лимит общий, исходный срок worker сохраняется.
+Новый запрос имеет отдельное списание бюджета;
 подтверждённые действия не переисполняются. Отмена, истёкшие полномочия и
 неизвестный эффект запрещают повтор. См. [model retry policy](model-retry-policy.md).
 
@@ -1227,3 +1253,13 @@ restores agent mode, but a fresh observation is required before another guarded
 browser action. Lost release ACK keeps the durable fence closed; no timer other
 than the actual finite context expiry grants a resumed browser. See the
 [browser contract](browser-session-contract.md#owner-viewing-and-manual-control).
+
+## Research draft validation
+
+A rejected research draft follows the existing tool_pending → tool_running →
+awaiting_model_resume → model_running lifecycle as local validation. It records
+a correlated `validation_rejected` observation and known tool-result checkpoint;
+no Broker action is prepared or dispatched. Recovery replays that known DATA.
+At most four corrections are allowed, with ordinary model budgets retained.
+Such a known non-dispatch is not an equivalent committed write during model
+retry recovery. See [research and checked monitors](research-followups.md).
