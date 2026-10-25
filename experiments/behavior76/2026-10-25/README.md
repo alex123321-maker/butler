@@ -1,7 +1,8 @@
 # Independent local behavioral pilot (#76)
 
-Current status: prospective implementation/preflight. New native calls:0.
-No behavioral verdict or issue closure follows from setup checks.
+Current status: authentication-only window A closed after one admission, before
+model HTTP. Model calls/answers0; usage remains unavailable, not zero expense.
+No behavioral verdict or issue closure follows from this failure/setup checks.
 
 [Protocol](../../../../docs/testing/issue76-local-protocol-2026-10-25.md) pins one
 dormant instruction candidate against current main/default instructions. The

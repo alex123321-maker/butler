@@ -128,3 +128,27 @@ automatic continuation for A from accidentally inheriting B's later Core config.
 The same fixed owner fixture policy is issued for current active tasks before
 the worker starts; model text cannot issue or enlarge it. All actual model/tool
 reservations remain in their owning PostgreSQL scopes.
+
+## Closed authentication window and prospective infrastructure continuation
+
+Window `issue76-local-20261025T104513`, producer `4f1989fc`, closed after one
+durable wrapper admission and one corresponding unobserved kernel reservation.
+Stage authentication failed before request serialization/model HTTP. No model
+answer, tool proposal or effect exists. Usage/version remain NULL; these two
+ledger representations are one admission, not two model calls or zero expense.
+
+Auth-only diagnostics established OAuth refresh HTTP200 followed by encrypted
+refresh persistence failure. Table-filtered local pg_restore had omitted the
+original `system_settings(key)` primary key; the owning Store's ON CONFLICT
+therefore failed closed. The isolated database's one-row/one-distinct-key metadata
+was checked before restoring that original PK. Auth-only refresh, durable encrypted
+persistence and paid subscription discovery then passed. No raw auth material was
+exported and no model inference was used for this diagnosis.
+
+The independent checker approved a new infrastructure-only window. It must use
+the EXACT original private arm mapping and complete schedule, unchanged candidate,
+controls, golden bytes, thresholds and tool policy. Fresh disposable fixture/run
+IDs are allowed. A remains closed and spent; code verifies its authentication
+stage, absent proposals/finals, NULL usage and primary-key readiness before new
+admission. The new768-entry limit gives a cumulative ceiling769. No answer has
+been observed or selected again for a better semantic result.

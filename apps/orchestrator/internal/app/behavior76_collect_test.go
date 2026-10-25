@@ -2,8 +2,6 @@ package app
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -254,17 +252,35 @@ func behavior76Collect(t *testing.T, native bool) {
 	}
 	index := behavior76Index{Version: "behavior76-checker-index-v1", StimuliSHA256: behavior76StimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
-	var nonce [16]byte
-	if _, err = rand.Read(nonce[:]); err != nil {
-		t.Fatal(err)
+	// A stopped before model HTTP at encrypted auth persistence. Continue only
+	// in a new window with its EXACT private mapping/schedule and spent ledgers.
+	const priorWindow = "issue76-local-20261025T104513"
+	priorDir := filepath.Join(filepath.Dir(dir), "native-20261025a")
+	var priorManifest struct {
+		MappingSHA string `json:"mapping_sha256"`
+		Schedule   []struct {
+			EpisodeID string   `json:"episode_id"`
+			ArmOrder  []string `json:"arm_order"`
+		} `json:"schedule"`
 	}
-	mapping := map[string]bool{"arm-" + hex.EncodeToString(nonce[:8]): false, "arm-" + hex.EncodeToString(nonce[8:]): true}
-	var arms []string
-	for arm := range mapping {
-		arms = append(arms, arm)
+	priorRaw, e := os.ReadFile(filepath.Join(priorDir, "manifest.json"))
+	if e != nil || behavior76Hash(priorRaw) != "712670def12bb6ab11d7d689ed39c3a46bbd6455988594f10aaf9c421e9834ae" || json.Unmarshal(priorRaw, &priorManifest) != nil || len(priorManifest.Schedule) != 24 || len(priorManifest.Schedule[0].ArmOrder) != 2 {
+		t.Fatal("original auth-failed schedule unavailable")
 	}
+	privateRaw, e := os.ReadFile(filepath.Join(filepath.Dir(dir), "native-20261025a-private-arm-mapping.json"))
+	if e != nil {
+		t.Fatal("original private mapping unavailable")
+	}
+	var mapping map[string]bool
+	if json.Unmarshal(privateRaw, &mapping) != nil || len(mapping) != 2 || behavior76Hash([]byte(behavior76JSON(mapping))) != priorManifest.MappingSHA {
+		t.Fatal("original private mapping changed")
+	}
+	arms := priorManifest.Schedule[0].ArmOrder
 	schedule := []map[string]any{}
 	for n, e := range episodes {
+		if priorManifest.Schedule[n].EpisodeID != e.ID || len(priorManifest.Schedule[n].ArmOrder) != 2 || priorManifest.Schedule[n].ArmOrder[0] != arms[n%2] || priorManifest.Schedule[n].ArmOrder[1] != arms[(n+1)%2] {
+			t.Fatal("original schedule cannot be changed")
+		}
 		schedule = append(schedule, map[string]any{"episode_id": e.ID, "arm_order": []string{arms[n%2], arms[(n+1)%2]}})
 	}
 	// Mapping is kept separately until the reviewer seals masked judgments.
@@ -286,12 +302,37 @@ func behavior76Collect(t *testing.T, native bool) {
 	if _, err = journal.Exec(ctx, behavior76JournalDDL); err != nil {
 		t.Fatal(err)
 	}
+	var preserved, settingsKey bool
+	err = journal.QueryRow(ctx, `SELECT closed AND admitted=1 AND manifest=$2::jsonb AND (SELECT count(*)=1 AND bool_and(status='transport_error' AND stage='authentication' AND input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e?'final' OR e?'tool_call' OR e?'tool_batch')) FROM public.behavior76_attempts WHERE window_id=$1) FROM public.behavior76_windows WHERE id=$1`, priorWindow, string(priorRaw)).Scan(&preserved)
+	if err != nil || !preserved {
+		t.Fatal("original authentication failure/unknown cannot be reset")
+	}
+	if err = journal.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.system_settings'::regclass AND contype='p' AND conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid='public.system_settings'::regclass AND attname='key')]::smallint[])`).Scan(&settingsKey); err != nil || !settingsKey {
+		t.Fatal("encrypted settings persistence requires its original primary key")
+	}
 	manifest := map[string]any{"version": "behavior76-local-v1", "window": window, "source": source, "stimuli_sha256": behavior76StimuliSHA, "expectations_sha256": behavior76ExpectationsSHA, "mapping_sha256": behavior76Hash([]byte(behavior76JSON(mapping))), "max_native_entries": 768, "max_per_turn": 8, "max_per_run": 4, "wall_millis": (4 * time.Hour).Milliseconds(), "native": native, "model": antigravity.FlashHighModel, "output_contract": behavior76OutputContract, "baseline_prompt": prompt.DefaultBasePrompt, "candidate_addition": prompt.TaskContinuityProtocol}
 	manifest["version"] = "behavior76-local-v2"
 	manifest["schedule"] = schedule
+	manifest["prior_window"] = map[string]any{"id": priorWindow, "admitted": 1, "unavailable_usage": 1, "model_dispatch_reached": false, "original_manifest_sha256": behavior76Hash(priorRaw)}
+	manifest["cumulative_admission_ceiling"] = 769
 	behavior76Write(t, filepath.Join(dir, "manifest.json"), manifest)
-	if _, err = journal.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,clock_timestamp()+interval '4 hours')`, window, behavior76JSON(manifest)); err != nil {
+	admission, err := journal.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admission.Rollback(context.Background())
+	if _, err = admission.Exec(ctx, `LOCK TABLE public.behavior76_windows IN SHARE ROW EXCLUSIVE MODE`); err != nil {
+		t.Fatal(err)
+	}
+	var solePredecessor bool
+	if err = admission.QueryRow(ctx, `SELECT count(*)=1 AND bool_and(id=$1 AND closed AND admitted=1) FROM public.behavior76_windows`, priorWindow).Scan(&solePredecessor); err != nil || !solePredecessor {
+		t.Fatal("this B-only infrastructure exception cannot skip a later window")
+	}
+	if _, err = admission.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,clock_timestamp()+interval '4 hours')`, window, behavior76JSON(manifest)); err != nil {
 		t.Fatal("window cannot reopen", err)
+	}
+	if err = admission.Commit(ctx); err != nil {
+		t.Fatal("new window admission commit unavailable")
 	}
 	defer func() {
 		_, e := journal.Exec(context.Background(), `UPDATE public.behavior76_windows SET closed=true WHERE id=$1`, window)
