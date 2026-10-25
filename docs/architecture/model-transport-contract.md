@@ -12,6 +12,13 @@ Optional logical `Usage.ThinkingTokens` retains an exact complete native
 over-total counts reject the stream. It grants no additional budget and is not
 added to TotalTokens again. Undisclosed weights/internal allocation remain unknown.
 
+Current-request identity and historical message run/kind labels are carried in
+InputItem content as typed DATA, not only in adapter-local provenance metadata.
+The native wire must preserve those envelopes and the unchanged current owner
+message. Fixed scope guidance stays kernel instruction; source text, canonical
+answers and refs do not become system instructions. No provider-side session
+identity is used to decide which owner request or interaction is current.
+
 The single bounded missing-response correction is a user-role continuation
 reminder under the existing authority and freshly selected tool set. It does not
 replace system instructions, create another owner input or grant permissions.

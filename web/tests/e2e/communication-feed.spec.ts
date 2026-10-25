@@ -85,6 +85,37 @@ test('small cursor pages retain the complete visible history without duplicates'
   for (const text of texts) await expect(page.getByText(text, { exact: true })).toHaveCount(1)
 })
 
+test('history expansion during a background refresh retains the current question', async ({ page }) => {
+  await communications(page)
+  let holdRefresh = false, held = false
+  let release!: () => void
+  const released = new Promise<void>(resolve => { release = resolve })
+  const items: Publication[] = Array.from({ length: 51 }, (_, i) => ({
+    publication_ref: `publication:window-${i}`, sequence: i + 1,
+    session_ref: report.session_ref, created_at: report.created_at,
+    kind: 'message', available: true, files: [], parts: [],
+    payload: { purpose: 'result', text: i === 50 ? 'Текущий вопрос за границей истории' : `История ${i}` },
+  }))
+  await page.route('**/api/v3/communications?*', async route => {
+    const after = Number(new URL(route.request().url()).searchParams.get('cursor') || 0)
+    if (holdRefresh && after === 0 && !held) {
+      held = true
+      await released
+    }
+    const batch = items.slice(after, after + 50)
+    await route.fulfill({ json: { items: batch, messages: [], cursor: after + batch.length, has_more: after + batch.length < items.length } })
+  })
+  await connect(page)
+  await expect(page.locator('[data-publication]')).toHaveCount(50)
+  holdRefresh = true
+  await expect.poll(() => held).toBe(true)
+  try {
+    await page.getByRole('button', { name: 'Загрузить продолжение разговора', exact: true }).click()
+  } finally { release() }
+  await expect(page.getByText('Текущий вопрос за границей истории', { exact: true })).toBeVisible()
+  await expect(page.locator('[data-publication]')).toHaveCount(51)
+})
+
 for (const broken of ['stationary', 'empty-more'] as const) {
   test(`a ${broken} cursor page fails closed without looping`, async ({ page }) => {
     await communications(page)

@@ -117,6 +117,10 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
 	}
+	if isCurrentOwnerRequest(event, prepared) {
+		prepared.CurrentRequest = &currentRequestContext{RunRef: prepared.CurrentRunID, InputEventRef: "input:" + event.EventID}
+		attachCurrentRequestContext(&prepared, "")
+	}
 	if event.Source == "schedule" && prepared.Task != nil && prepared.Task.Source["type"] == "scheduled_job" {
 		prepared.InputItems = append(prepared.InputItems, content.Instruction(researchInstruction+"\nThis is a scheduled occurrence, not a new owner message. For a checked monitor finish by calling communication.message with observation and stable event_key. pending/unchanged returns unchanged without a notification. unknown must honestly explain inability to verify; confirmed/postponed require fresh primary evidence. Do not skip recording an observation, create another schedule, ask optional questions or send progress notices. Runtime clock: "+time.Now().UTC().Format(time.RFC3339), content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:scheduled-research-v1"}, Sensitivity: content.Public}))
 	}
@@ -149,6 +153,7 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 			}
 			if id != "" {
 				prepared = interactionResponsePreparation(prepared, prepared, id, answer)
+				attachCurrentRequestContext(&prepared, id)
 			}
 		}
 	}

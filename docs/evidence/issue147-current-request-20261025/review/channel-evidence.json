@@ -1,0 +1,433 @@
+[
+  {
+    "event": "telegram-rich:8891439626:448743308",
+    "input": "input-9125d4f1c323517f2ac868ae89e30e93",
+    "run": "run-1792903854377580080-85339697bae8abb9",
+    "source": "telegram",
+    "status": "completed",
+    "checkpoint": "finalizing",
+    "error": "",
+    "error_message": "",
+    "current_request": {
+      "phase": "answered_question",
+      "run_ref": "run-1792903854377580080-85339697bae8abb9",
+      "input_event_ref": "input:telegram-rich:8891439626:448743308",
+      "interaction_ref": "interaction:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2"
+    },
+    "tools": [
+      {
+        "name": "tools.search",
+        "status": "completed"
+      },
+      {
+        "name": "tools.load",
+        "status": "completed"
+      },
+      {
+        "name": "communication.message",
+        "status": "completed"
+      }
+    ],
+    "interactions": [
+      {
+        "ref": "interaction:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2",
+        "state": "resolved",
+        "response": {
+          "option_ids": [
+            "apples",
+            "plums"
+          ]
+        }
+      }
+    ],
+    "publications": [
+      {
+        "ref": "publication:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2",
+        "purpose": "question",
+        "text": null
+      },
+      {
+        "ref": "publication:49157ed486c00b5b9ac45cf272517ea17329d02d9b4bb1c4853cc7639b782c03",
+        "purpose": "result",
+        "text": "Яблоки, сливы"
+      }
+    ],
+    "usage": {
+      "attempts": 5,
+      "input_tokens": 27741,
+      "output_tokens": 376,
+      "unknown_pairs": 0
+    },
+    "deliveries": [
+      {
+        "publication": "publication:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2",
+        "purpose": "question",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "183"
+      },
+      {
+        "publication": "publication:44d8542e617946de5c8c5294e568347e9fe2c89ebbfb9cb19cdf4ce1e99107c2",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "182"
+      },
+      {
+        "publication": "publication:49157ed486c00b5b9ac45cf272517ea17329d02d9b4bb1c4853cc7639b782c03",
+        "purpose": "result",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:49157ed486c00b5b9ac45cf272517ea17329d02d9b4bb1c4853cc7639b782c03",
+        "purpose": "result",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "188"
+      }
+    ]
+  },
+  {
+    "event": "13fa4c4460cc6808a3ed3fd4cdbeb25a",
+    "input": "input-81035126493f1e80faccede5f33962da",
+    "run": "run-1792903915626579291-e1765d011dafdd27",
+    "source": "web",
+    "status": "completed",
+    "checkpoint": "finalizing",
+    "error": "",
+    "error_message": "",
+    "current_request": {
+      "phase": "answered_question",
+      "run_ref": "run-1792903915626579291-e1765d011dafdd27",
+      "input_event_ref": "input:13fa4c4460cc6808a3ed3fd4cdbeb25a",
+      "interaction_ref": "interaction:01c252e312aca26ed2e36fca2839fb4161b309ca25597aade0a6989f6e8d6a73"
+    },
+    "tools": [
+      {
+        "name": "tools.search",
+        "status": "completed"
+      },
+      {
+        "name": "tools.search",
+        "status": "completed"
+      },
+      {
+        "name": "tools.load",
+        "status": "completed"
+      },
+      {
+        "name": "communication.message",
+        "status": "completed"
+      }
+    ],
+    "interactions": [
+      {
+        "ref": "interaction:01c252e312aca26ed2e36fca2839fb4161b309ca25597aade0a6989f6e8d6a73",
+        "state": "resolved",
+        "response": {
+          "text": "Белую льняную скатерть с зелёной каймой."
+        }
+      }
+    ],
+    "publications": [
+      {
+        "ref": "publication:01c252e312aca26ed2e36fca2839fb4161b309ca25597aade0a6989f6e8d6a73",
+        "purpose": "question",
+        "text": null
+      },
+      {
+        "ref": "publication:ceb861dc961e4d0e7bb462cd4d723d459ce14ce5d650555e86fcb1f6e4593415",
+        "purpose": "result",
+        "text": "Белую льняную скатерть с зелёной каймой."
+      }
+    ],
+    "usage": {
+      "attempts": 6,
+      "input_tokens": 34750,
+      "output_tokens": 369,
+      "unknown_pairs": 0
+    },
+    "deliveries": [
+      {
+        "publication": "publication:01c252e312aca26ed2e36fca2839fb4161b309ca25597aade0a6989f6e8d6a73",
+        "purpose": "question",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:01c252e312aca26ed2e36fca2839fb4161b309ca25597aade0a6989f6e8d6a73",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "187"
+      },
+      {
+        "publication": "publication:ceb861dc961e4d0e7bb462cd4d723d459ce14ce5d650555e86fcb1f6e4593415",
+        "purpose": "result",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "190"
+      },
+      {
+        "publication": "publication:ceb861dc961e4d0e7bb462cd4d723d459ce14ce5d650555e86fcb1f6e4593415",
+        "purpose": "result",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      }
+    ]
+  },
+  {
+    "event": "telegram-rich:8891439626:448743312",
+    "input": "input-0dc76aae8efea11a43f8a58373c0a420",
+    "run": "run-1792904387091649470-42a4fb27b785dc69",
+    "source": "telegram",
+    "status": "failed",
+    "checkpoint": "model_budget_reserved",
+    "error": "provider_protocol_error",
+    "error_message": "provider_protocol_error",
+    "current_request": {
+      "phase": "answered_question",
+      "run_ref": "run-1792904387091649470-42a4fb27b785dc69",
+      "input_event_ref": "input:telegram-rich:8891439626:448743312",
+      "interaction_ref": "interaction:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c"
+    },
+    "tools": [
+      {
+        "name": "tools.search",
+        "status": "completed"
+      },
+      {
+        "name": "tools.load",
+        "status": "completed"
+      },
+      {
+        "name": "communication.message",
+        "status": "completed"
+      }
+    ],
+    "interactions": [
+      {
+        "ref": "interaction:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c",
+        "state": "resolved",
+        "response": {
+          "option_ids": [
+            "pears"
+          ]
+        }
+      }
+    ],
+    "publications": [
+      {
+        "ref": "publication:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c",
+        "purpose": "question",
+        "text": null
+      },
+      {
+        "ref": "publication:0efdbb7bb7d0236dd0df01ed9b6d5fa65222df9d82f5b4575dea2e394830a140",
+        "purpose": "result",
+        "text": "Груши"
+      }
+    ],
+    "usage": {
+      "attempts": 5,
+      "input_tokens": 20812,
+      "output_tokens": 373,
+      "unknown_pairs": 1
+    },
+    "deliveries": [
+      {
+        "publication": "publication:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "196"
+      },
+      {
+        "publication": "publication:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c",
+        "purpose": "question",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:dc4d544cf7ce9997d6c95f1e415e4b78380798b972324edb8f3bd06fd3b4b09c",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "195"
+      },
+      {
+        "publication": "publication:0efdbb7bb7d0236dd0df01ed9b6d5fa65222df9d82f5b4575dea2e394830a140",
+        "purpose": "result",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "200"
+      },
+      {
+        "publication": "publication:0efdbb7bb7d0236dd0df01ed9b6d5fa65222df9d82f5b4575dea2e394830a140",
+        "purpose": "result",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      }
+    ]
+  },
+  {
+    "event": "7ab861ca4681a33ed8c8a8c68c76a42e",
+    "input": "input-2be8a9293a3d18f4357d7c6b3c19343b",
+    "run": "run-1792904454337368964-dcad778019044607",
+    "source": "web",
+    "status": "completed",
+    "checkpoint": "finalizing",
+    "error": "",
+    "error_message": "",
+    "current_request": {
+      "phase": "owner_request",
+      "run_ref": "run-1792904454337368964-dcad778019044607",
+      "input_event_ref": "input:7ab861ca4681a33ed8c8a8c68c76a42e"
+    },
+    "tools": [
+      {
+        "name": "communication.message",
+        "status": "completed"
+      }
+    ],
+    "interactions": null,
+    "publications": [
+      {
+        "ref": "publication:74036787eb18cd0560ca7163bfd6e1c9215947e0bad004d84c8a97d28b305747",
+        "purpose": "result",
+        "text": "Белую льняную скатерть с зелёной каймой."
+      }
+    ],
+    "usage": {
+      "attempts": 2,
+      "input_tokens": 9594,
+      "output_tokens": 60,
+      "unknown_pairs": 0
+    },
+    "deliveries": [
+      {
+        "publication": "publication:74036787eb18cd0560ca7163bfd6e1c9215947e0bad004d84c8a97d28b305747",
+        "purpose": "result",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:74036787eb18cd0560ca7163bfd6e1c9215947e0bad004d84c8a97d28b305747",
+        "purpose": "result",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "198"
+      }
+    ]
+  },
+  {
+    "event": "telegram-rich:8891439626:448743315",
+    "input": "input-c3eb1cd0c34d483dc26d8115f55348e3",
+    "run": "run-1792904693588973267-c7edeff277091a82",
+    "source": "telegram",
+    "status": "completed",
+    "checkpoint": "finalizing",
+    "error": "",
+    "error_message": "",
+    "current_request": {
+      "phase": "answered_question",
+      "run_ref": "run-1792904693588973267-c7edeff277091a82",
+      "input_event_ref": "input:telegram-rich:8891439626:448743315",
+      "interaction_ref": "interaction:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb"
+    },
+    "tools": [
+      {
+        "name": "tools.search",
+        "status": "completed"
+      },
+      {
+        "name": "tools.load",
+        "status": "completed"
+      },
+      {
+        "name": "communication.message",
+        "status": "completed"
+      }
+    ],
+    "interactions": [
+      {
+        "ref": "interaction:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb",
+        "state": "resolved",
+        "response": {
+          "option_ids": [
+            "plums"
+          ]
+        }
+      }
+    ],
+    "publications": [
+      {
+        "ref": "publication:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb",
+        "purpose": "question",
+        "text": null
+      },
+      {
+        "ref": "publication:ae6cb24589746aec43e2c21a2c1d21f90234f7b7b020504a84a97b4840073ba0",
+        "purpose": "result",
+        "text": "Сливы"
+      }
+    ],
+    "usage": {
+      "attempts": 5,
+      "input_tokens": 29743,
+      "output_tokens": 380,
+      "unknown_pairs": 0
+    },
+    "deliveries": [
+      {
+        "publication": "publication:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb",
+        "purpose": "question",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "205"
+      },
+      {
+        "publication": "publication:8221fff1b344bf2c292fac11448096186ae93bedc98d27eee2092c131b3691bb",
+        "purpose": "question",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "206"
+      },
+      {
+        "publication": "publication:ae6cb24589746aec43e2c21a2c1d21f90234f7b7b020504a84a97b4840073ba0",
+        "purpose": "result",
+        "channel": "web",
+        "state": "result_ready",
+        "ack": ""
+      },
+      {
+        "publication": "publication:ae6cb24589746aec43e2c21a2c1d21f90234f7b7b020504a84a97b4840073ba0",
+        "purpose": "result",
+        "channel": "telegram",
+        "state": "sent",
+        "ack": "208"
+      }
+    ]
+  }
+]

@@ -716,7 +716,7 @@ func TestExecuteStartsFreshProviderSessionAcrossRuns(t *testing.T) {
 		t.Fatalf("replayed history must use a fresh provider session, got %+v", ref)
 	}
 	items := provider.startRequests[1].InputItems
-	if len(items) < 3 || items[len(items)-3].Content != "open site" || items[len(items)-2].Content != "first" {
+	if len(items) < 3 || historicalText(t, items[len(items)-3]) != "open site" || historicalText(t, items[len(items)-2]) != "first" {
 		t.Fatalf("fresh provider session lost Butler transcript context: %+v", items)
 	}
 }

@@ -33,7 +33,7 @@ report=.cache/communication-core/targeted.jsonl
 packages=(./internal/acceptance ./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/artifacts ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
 packages+=(./internal/ownership ./internal/storage/postgres ./apps/orchestrator/internal/session)
 packages+=(./apps/orchestrator/internal/executionnotice)
-if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^Test(Communication|ExecutionNotice|ExecutionFailure|OwnerReply|StoppedAttempt|AuthorityRetry)' >"$report"; then
+if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^Test(Communication|CurrentRequest|ExecutionNotice|ExecutionFailure|OwnerReply|StoppedAttempt|AuthorityRetry)' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1
 fi

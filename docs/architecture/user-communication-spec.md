@@ -1,5 +1,15 @@
 # Butler — общение агента с пользователем
 
+Текущий owner request и исторический ответ имеют разные model-visible refs.
+Новая явная просьба задать вопрос не считается выполненной по ответу из другого
+run, даже при одинаковом тексте. Только канонический ответ, проверенный обычным
+interaction controller, переводит контекст текущего вопроса в `answered_question`.
+Модель продолжает исходный запрос с этим ответом как preference DATA. Сведения
+старых тем используются лишь при их применимости к текущему запросу; явная
+ссылка владельца на прошлую работу сохраняет возможность продолжения. Это
+контекст для модели, а не новый программный semantic verifier или полномочие:
+публикация, действие, доставка и completion по-прежнему проверяются отдельно.
+
 The receiving Core dispatch verifier recognizes the same canonical mode2/3
 owner reply rule as Broker. It still requires permanently claimed exact action/
 grant/effect identity and then live admission/Input/destination/source guards.
@@ -285,6 +295,8 @@ Catalog/export и блокировки до сборки ответа, вклю�
 HTTP-страницы: чтение долгой истории не удерживает owning publication за всей
 лентой. Web добирает прежние порции по 50 публикаций через opaque cursor,
 проверяет продвижение и перечитывает весь загруженный объём после invalidation.
+Запрос владельца загрузить продолжение сохраняет увеличенный объём даже во время
+фонового чтения: отложенное обновление обязано загрузить эту часть истории.
 История не обрезается; изменение размера HTTP-страницы не меняет budgets, сроки
 publication RPC, canonical ordering или privacy/export проверки.
 Owner proof передаётся только через Authorization, не через URL/SSE. Смена proof

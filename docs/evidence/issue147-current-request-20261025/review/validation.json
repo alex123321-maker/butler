@@ -1,0 +1,27 @@
+{
+  "source_sha256": {
+    "apps/orchestrator/internal/orchestrator/current_request_context.go": "5cfcd1dd0f0225246cc21fc5bd5a7322e4bc64d2e0c6b2bf341096f97c8ea196",
+    "web/features/mind/model/communications.ts": "d2169be67907ade09198a1dcd1d20c29371a3f10efe866b60a79b082131c029a",
+    "apps/orchestrator/internal/orchestrator/context_provenance.go": "83d8eeb3cf72dae29587a72930ec36b356c3f3c98dc38b37b9efae57b99adce1",
+    "apps/orchestrator/internal/orchestrator/recovery.go": "7b2955e9c4d7f9e02ec276a9e373bb55584b016daacaaba19feeacb64806e234",
+    "apps/orchestrator/internal/orchestrator/service_prepare.go": "b4fa2b20e8071ca7aa28f7a4056146c8b55d365343f1e52f91a75da9f8ce4e22"
+  },
+  "go_unit_wire_vet": "passed scripts/dev/issue147-check.ps1 -Action Test",
+  "semantic_gate_unit": "passed TestCurrentRequestResultRejectsUnrelatedHistoricalFacts",
+  "web_typecheck": "passed",
+  "web_lint": "passed",
+  "web_build": "passed",
+  "chromium_feed_cases_passed": 16,
+  "pagination_red": "failed on old ordering: expected current publication absent",
+  "pagination_green": "passed after restoring fix",
+  "native_inputs": 5,
+  "native_published_results": 5,
+  "native_completed_inputs": 4,
+  "native_failed_after_delivery": 1,
+  "foreground_model_attempts": 23,
+  "measured_usage_pairs": 22,
+  "unknown_usage_pairs": 1,
+  "measured_input_tokens": 122640,
+  "measured_output_tokens": 1558,
+  "active_inputs_after_acceptance": 0
+}
