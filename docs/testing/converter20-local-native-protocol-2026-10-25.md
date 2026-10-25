@@ -22,7 +22,7 @@ Historical default fixture bounds and production budgets remain unchanged.
 
 Before inference, commit this protocol and producer, build from a clean commit,
 record commit/binary SHA256, freeze a new durable public control window and
-export its manifest. Window `issue20-converter-local-native-20261025b` permits
+export its manifest. Window `issue20-converter-local-native-20261025c` permits
 at most40 admitted provider entries,20 minutes total,120 seconds per call,
 131072 serialized input bytes and8192 generated tokens including thinking.
 The tested native profile is the existing automatic High configuration, without
@@ -49,6 +49,27 @@ B preserves the same goal, model, tool/runtime profile, budgets and deadlines.
 Its preflight requires A to remain closed with exactly8 admissions and82953
 known tokens. A's8 calls plus B's40 give a cumulative48-entry ceiling; A's
 kernel UNKNOWN is recorded separately. No old window or allowance is reopened.
+
+Window B is also closed and failed: producer2568998f0e8e1595e4d4576c1c1a888173f73121,
+binary5dc67b7f2825aabb4172dec69cf18a6cb1ff32db3dfd2e965d753c4bdbcb7690,
+11 actual calls/116694 known tokens (98503 input,1814 output,16377 thinking).
+All11 kernel attempts were observed. Parent fixed tests, one finite trial and
+activation succeeded; conversion and the remaining finals did not occur. The
+kernel correctly stopped `budget_active_millis_task`:11 model quotes plus9 tool
+quotes consumed exactly2400000 reserved milliseconds. These are monotonic worst-
+case reservations, not197.79 seconds of measured task/test elapsed time.
+The trial output must not be labelled a completed original conversion.
+
+C changes only this fixture's prospective reservation inventory: task32 model
+slots plus20 mandate tool slots =6240000ms; mandate/day40+20 =7200000ms;
+child8 model+8 tool slots =1920000ms. Every120000ms model/tool quote,20-minute
+wall deadline, per-call bounds, goal and actual tool/runtime/model profile remain.
+The existing kernel/default policies are unchanged. A real-PG zero-inference
+regression must reproduce B's exact stop, deny expanding its old scope, preserve
+all spent reservations and admit the complete14-model/10-tool workflow in a new
+scope. C preflight requires A and B closed with their original complete ledgers:
+19 actual calls/199647 known tokens plus A's one separate kernel UNKNOWN. C's
+new40-entry cap gives59 cumulative maximum; nothing is refunded or reopened.
 
 The parent receives the complete converter objective, selected typed Need/spec/
 original-document refs and a finite child budget/deadline. The child receives

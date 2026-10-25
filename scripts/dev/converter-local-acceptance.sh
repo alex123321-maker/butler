@@ -31,6 +31,7 @@ cmp "$BUTLER_CONVERTER_BROKER_BINARY" "$execution_dir/tool-broker"
 export BUTLER_CONVERTER_BROKER_BINARY="$execution_dir/tool-broker"
 if [ "$action" = native ]; then
  test "${BUTLER_CONVERTER_LOCAL_NATIVE:-}" = synthetic-local-only
+ "$execution_dir/app.test" -test.v -test.timeout=1m -test.run '^TestConverterLocalNativeReservationsCoverModelAndToolQuotesIntegration$'
  digest=$(sha256sum "$binary" | cut -d' ' -f1)
  if [ -n "${BUTLER_CONVERTER_LOCAL_NATIVE_SOURCE:-}" ]; then
   # The Windows wrapper verified the exact managed checkout after building.
@@ -43,6 +44,6 @@ if [ "$action" = native ]; then
  fi
  "$execution_dir/app.test" -test.v -test.timeout=23m -test.run '^TestConverterDeveloperActualHighLocalContainerE2E$'
 else
- "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperGenericFactoryLocalContainerE2E)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
+ "$execution_dir/app.test" -test.v -test.timeout=8m -test.run '^(TestConverter(CompoundSourceProofDoesNotBorrowAuthorityReserveIntegration|DeveloperGenericFactoryLocalContainerE2E|LocalNativeReservationsCoverModelAndToolQuotesIntegration)|TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration)$'
  go vet ./apps/orchestrator/internal/app
 fi

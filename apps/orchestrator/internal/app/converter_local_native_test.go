@@ -27,11 +27,14 @@ import (
 
 // A new narrow converter-only acceptance scope. It cannot open, reset or qualify
 // any sealed issue33 release-chain window or its retained UNKNOWN expenses.
-const converterLocalNativeWindow = "issue20-converter-local-native-20261025b"
+const converterLocalNativeWindow = "issue20-converter-local-native-20261025c"
 const converterLocalNativeCap = 40
 const converterLocalNativePriorWindow = "issue20-converter-local-native-20261025a"
 const converterLocalNativePriorCalls = 8
 const converterLocalNativePriorTokens = 82953
+const converterLocalNativePriorBWindow = "issue20-converter-local-native-20261025b"
+const converterLocalNativePriorBCalls = 11
+const converterLocalNativePriorBTokens = 116694
 
 var errConverterLocalNative = errors.New("local converter native boundary unavailable")
 
@@ -39,11 +42,14 @@ func converterLocalNativeConfig() releaseChainModelConfig {
 	p := budget.DefaultPolicy()
 	quote := int64(1048576 + 8192)
 	p.Models[antigravity.Name+":"+antigravity.FlashHighModel] = budget.ModelPrice{Basis: "subscription_no_overage"}
-	p.Task.ModelTurns, p.Task.Tokens, p.Task.ActiveMillis = 32, 32*quote, 2400000
-	p.Mandate.ModelTurns, p.Mandate.Tokens, p.Mandate.ActiveMillis = 40, 40*quote, 2400000
+	// Conservative model AND tool reservations are monotonic, not measured
+	// elapsed wall time. Cover the declared model caps plus the mandate's20
+	// finite tool slots before opening a new window; never refund old windows.
+	p.Task.ModelTurns, p.Task.Tokens, p.Task.ActiveMillis = 32, 32*quote, 32*p.ModelMillis+20*p.ToolMillis
+	p.Mandate.ModelTurns, p.Mandate.Tokens, p.Mandate.ActiveMillis = 40, 40*quote, 40*p.ModelMillis+20*p.ToolMillis
 	p.Day, p.Conversation = p.Mandate, p.Task
 	p.OutputTokens, p.ModelMillis, p.ModelInputBytes, p.TaskLifetimeMillis = 8192, 120000, 131072, 1200000
-	return releaseChainModelConfig{Provider: antigravity.Name, Model: antigravity.FlashHighModel, InputTokens: 1048576, OutputTokens: 8192, Policy: p, FixtureTimeout: 20 * time.Minute, ChildBudget: budget.Units{ModelTurns: 8, Tokens: 8 * quote, ExternalCalls: 8, ActiveMillis: 1200000, EgressBytes: 16 << 20, ProviderInputBytes: 16 << 20}, FailFastTerminalContinuation: true}
+	return releaseChainModelConfig{Provider: antigravity.Name, Model: antigravity.FlashHighModel, InputTokens: 1048576, OutputTokens: 8192, Policy: p, FixtureTimeout: 20 * time.Minute, ChildBudget: budget.Units{ModelTurns: 8, Tokens: 8 * quote, ExternalCalls: 8, ActiveMillis: 8*p.ModelMillis + 8*p.ToolMillis, EgressBytes: 16 << 20, ProviderInputBytes: 16 << 20}, FailFastTerminalContinuation: true}
 }
 
 type converterLocalNativeProvider struct {
@@ -258,7 +264,7 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 	if !regexp.MustCompile(`^git:[a-f0-9]{40};binary-sha256:[a-f0-9]{64}$`).MatchString(source) {
 		t.Fatal("committed producer and binary identity required")
 	}
-	manifest, err := json.Marshal(map[string]any{"window": converterLocalNativeWindow, "source": source, "runtime": runtime.Version() + "/" + runtime.GOOS + "/" + runtime.GOARCH, "goal": converterOwnerAcceptanceGoal, "provider": cfg.Provider, "model": cfg.Model, "input_token_allowance": cfg.InputTokens, "output_token_allowance": cfg.OutputTokens, "policy": cfg.Policy, "child_budget": cfg.ChildBudget, "fixture_millis": cfg.FixtureTimeout.Milliseconds(), "profile": json.RawMessage(os.Getenv("BUTLER_CONVERTER_PROFILE_JSON")), "cap": converterLocalNativeCap, "prior_window": converterLocalNativePriorWindow, "prior_actual_calls": converterLocalNativePriorCalls, "prior_known_tokens": converterLocalNativePriorTokens, "prior_kernel_unknown_attempts": 1, "cumulative_actual_call_cap": converterLocalNativePriorCalls + converterLocalNativeCap, "scope": "single synthetic converter-only task, native planning, real Broker/runtime; no issue33 qualification, no working deployment or real owner delivery"})
+	manifest, err := json.Marshal(map[string]any{"window": converterLocalNativeWindow, "source": source, "runtime": runtime.Version() + "/" + runtime.GOOS + "/" + runtime.GOARCH, "goal": converterOwnerAcceptanceGoal, "provider": cfg.Provider, "model": cfg.Model, "input_token_allowance": cfg.InputTokens, "output_token_allowance": cfg.OutputTokens, "policy": cfg.Policy, "child_budget": cfg.ChildBudget, "fixture_millis": cfg.FixtureTimeout.Milliseconds(), "profile": json.RawMessage(os.Getenv("BUTLER_CONVERTER_PROFILE_JSON")), "cap": converterLocalNativeCap, "prior_windows": []string{converterLocalNativePriorWindow, converterLocalNativePriorBWindow}, "prior_actual_calls": converterLocalNativePriorCalls + converterLocalNativePriorBCalls, "prior_known_tokens": converterLocalNativePriorTokens + converterLocalNativePriorBTokens, "prior_kernel_unknown_attempts": 1, "cumulative_actual_call_cap": converterLocalNativePriorCalls + converterLocalNativePriorBCalls + converterLocalNativeCap, "scope": "single synthetic converter-only task, native planning, real Broker/runtime; no issue33 qualification, no working deployment or real owner delivery"})
 	if err != nil {
 		t.Fatal("prospective manifest invalid")
 	}
@@ -270,6 +276,9 @@ func TestConverterDeveloperActualHighLocalContainerE2E(t *testing.T) {
 	var priorAdmitted, priorCalls, priorTokens, priorMissing int64
 	if err = journal.QueryRow(ctx, `SELECT closed,admitted,(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT COALESCE(sum(total_tokens),0) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1 AND (total_tokens IS NULL OR status='unknown')) FROM public.converter_local_native_windows WHERE id=$1`, converterLocalNativePriorWindow).Scan(&priorClosed, &priorAdmitted, &priorCalls, &priorTokens, &priorMissing); err != nil || !priorClosed || priorAdmitted != converterLocalNativePriorCalls || priorCalls != converterLocalNativePriorCalls || priorTokens != converterLocalNativePriorTokens || priorMissing != 0 {
 		t.Fatal("prior failed window must remain closed with its complete original spent ledger")
+	}
+	if err = journal.QueryRow(ctx, `SELECT closed,admitted,(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT COALESCE(sum(total_tokens),0) FROM public.converter_local_native_attempts WHERE window_id=$1),(SELECT count(*) FROM public.converter_local_native_attempts WHERE window_id=$1 AND (total_tokens IS NULL OR status='unknown')) FROM public.converter_local_native_windows WHERE id=$1`, converterLocalNativePriorBWindow).Scan(&priorClosed, &priorAdmitted, &priorCalls, &priorTokens, &priorMissing); err != nil || !priorClosed || priorAdmitted != converterLocalNativePriorBCalls || priorCalls != converterLocalNativePriorBCalls || priorTokens != converterLocalNativePriorBTokens || priorMissing != 0 {
+		t.Fatal("prior budget-stopped window must remain closed with its complete original spent ledger")
 	}
 	if _, err = journal.Exec(ctx, `INSERT INTO public.converter_local_native_windows(id,manifest,expires_at) VALUES($1,$2,clock_timestamp()+interval '20 minutes')`, converterLocalNativeWindow, manifest); err != nil {
 		t.Fatal("native window already exists or unavailable; no resume/retry")

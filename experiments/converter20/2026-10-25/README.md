@@ -43,7 +43,17 @@ the original predicate and0.766ms for the candidate. These are query execution
 times on copied data, not end-to-end task timings or universal speedup claims.
 The full original recursive predicate is retained for nonempty summary metadata.
 
-Window B is prospective until its actual manifest, journal, process log and
-independent exact-output checks are exported. It requires A's closed ledger and
-carries its8 calls/82953 tokens plus the separate kernel UNKNOWN. No history or
-spent allowance is reset. Monetary/subscription quota cost is unavailable.
+`native-b/` is another failed actual-provider run:11 calls/116694 known tokens,
+all11 kernel admissions observed. The summary/source timeout did not recur.
+Parent collection, fixed tests, finite trial and activation succeeded; original
+conversion did not. Eleven model plus nine tool reservations exhausted the exact
+2400000ms task/mandate/day allowance. The budget stop is correct; elapsed time
+is197.79s, not2400s. The matching JSON in a trial output is not original conversion.
+B's complete private schema dump was captured before normal cleanup.
+
+The prospective C protocol separately covers both conservative model and tool
+quotes. A real-PG regression reproduces B's stop and prohibits changing an old
+budget before admitting the full14-model/10-tool inventory under a new scope.
+C requires both closed ledgers:19 actual calls/199647 known tokens plus A's one
+separate kernel UNKNOWN. No history or spent allowance is reset. Monetary and
+subscription quota cost is unavailable.
