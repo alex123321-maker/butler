@@ -117,6 +117,10 @@ The [bounded model retry](model-retry-policy.md) spends a fresh reservation and
 operation. Admission exposes the effective deadline's trusted origin so a nominal
 model-turn timeout can be distinguished from an earlier scope or authority limit.
 Earlier attempts and NULL measurements remain immutable across recovery.
+The same single allowance can instead recover an owning watchdog lease-observation
+deadline after fresh authority/source/claim proofs. The cancelled attempt stays
+spent; its original worker deadline caps recovery. A second timeout of either
+kind cannot claim a separate retry. See the retry policy for the exact boundary.
 
 Loops normalize root, pinned task/constraints revisions, exact tool/contract and
 canonical arguments across restart. Equivalent numbers/object order compare

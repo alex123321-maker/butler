@@ -336,7 +336,11 @@ deduplication preserves different profile keys and document sources. See
 [fresh comparison protocol](../../docs/ai/memory-search-comparison-methodology-20261015.md).
 
 Core supports one durable model retry per accepted input after a trusted nominal
-model-turn timeout. The input worker queues a two-second pause, then obtains fresh
+model-turn timeout or a transient watchdog lease-observation deadline during
+inference. Both share one counter. The latter retains the original worker
+deadline and needs fresh task/source/claim/fence proofs after cancellation;
+revocation, renewal failures and unknown outcomes cannot qualify.
+The input worker queues a two-second pause, then obtains fresh
 ownership and a separately budgeted provider session from saved Butler input and
 known tool results. Confirmed non-read proposals cannot execute again with a new
 call ID; owner Stop, changed sources, earlier authority deadlines and unknown

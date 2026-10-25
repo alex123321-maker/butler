@@ -136,7 +136,9 @@ can finish persistence without asking the provider again. Existing assistant
 transcript content is checked before appending, preventing a duplicate final row.
 Interrupted model execution with no safe boundary is conservatively blocked.
 The [bounded model retry](model-retry-policy.md) adds one durable queued recovery
-after a trusted nominal model-turn timeout. It obtains fresh ownership, sources,
+after a trusted nominal model-turn timeout or a proved transient lease-observation
+deadline during inference. These causes share one counter. The latter retains
+the original worker execution deadline across claims. It obtains fresh ownership, sources,
 catalog and model admission, preserves all spent reservations, and denies replay
 of equivalent confirmed non-read proposals. Its stored started marker prevents
 another request after a crash during the retry.

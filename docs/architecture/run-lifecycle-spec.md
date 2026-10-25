@@ -848,7 +848,10 @@ or lease renewal fails. If stream consumption observes the resulting
 storage/provider details. The error still classifies as cancelled and retains
 the existing ownership/renewal sentinel. Ordinary parent cancellation and an
 independent transport error keep their own cause. This adds no new cleanup
-authority, lease retry, guard interval or permission to dispatch/publish. Older
+authority, guard interval or permission to dispatch/publish. A private lease-read
+deadline during inference may queue the single bounded continuation described in
+[model retry policy](model-retry-policy.md), after fresh proofs from the live
+Input parent. It does not retry the failed observation in place. Older
 generic cancellation records cannot be retroactively classified from this change.
 
 Run может быть отменён:
@@ -989,7 +992,9 @@ Retry допускается не для всего run, а на уровне о
 
 Политики retry должны быть вынесены в отдельные subspec/contract documents.
 Production Core допускает один отложенный повтор модели на accepted input после
-номинального model-turn timeout. Новый запрос имеет отдельное списание бюджета;
+номинального model-turn timeout либо подтверждённого временного таймаута чтения
+аренды watchdog во время inference. Лимит общий, исходный срок worker сохраняется.
+Новый запрос имеет отдельное списание бюджета;
 подтверждённые действия не переисполняются. Отмена, истёкшие полномочия и
 неизвестный эффект запрещают повтор. См. [model retry policy](model-retry-policy.md).
 

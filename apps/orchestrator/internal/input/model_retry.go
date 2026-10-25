@@ -13,12 +13,13 @@ import (
 var ErrModelRetryDenied = errors.New("durable model retry denied")
 
 type modelRetryRecord struct {
-	Count            int       `json:"count"`
-	Reason           string    `json:"reason"`
-	PriorOperationID string    `json:"prior_operation_id"`
-	State            string    `json:"state"`
-	NotBefore        time.Time `json:"not_before"`
-	ClaimedAt        time.Time `json:"claimed_at"`
+	Count             int       `json:"count"`
+	Reason            string    `json:"reason"`
+	PriorOperationID  string    `json:"prior_operation_id"`
+	State             string    `json:"state"`
+	NotBefore         time.Time `json:"not_before"`
+	ClaimedAt         time.Time `json:"claimed_at"`
+	ExecutionDeadline time.Time `json:"execution_deadline,omitempty"`
 }
 
 // The private accepted claim and live execution fence precede the durable CAS.
@@ -57,7 +58,7 @@ func (s *Store) modelRetryTx(ctx context.Context, runID string, fn func(pgx.Tx, 
 		return ErrClaimLost
 	}
 	var uncertain bool
-	const known = `WITH RECURSIVE ancestors AS(SELECT task_id,parent_task_id FROM tasks WHERE task_id=$2 UNION SELECT t.task_id,t.parent_task_id FROM tasks t JOIN ancestors a ON t.task_id=a.parent_task_id), tree AS(SELECT task_id FROM ancestors WHERE parent_task_id IS NULL UNION SELECT t.task_id FROM tasks t JOIN tree p ON t.parent_task_id=p.task_id) SELECT EXISTS(SELECT 1 FROM tool_calls c JOIN runs r ON r.run_id=c.run_id WHERE (r.run_id=$1 OR r.task_id IN(SELECT task_id FROM tree)) AND (c.finished_at IS NULL OR c.status='effect_unknown')) OR EXISTS(SELECT 1 FROM action_intents i JOIN runs r ON r.run_id=i.run_id JOIN action_effects e ON e.action_id=i.effect_id WHERE (r.run_id=$1 OR r.task_id IN(SELECT task_id FROM tree)) AND e.state IN('executing','effect_unknown'))`
+	const known = `WITH RECURSIVE ancestors AS(SELECT task_id,parent_task_id FROM tasks WHERE task_id=$2 UNION SELECT t.task_id,t.parent_task_id FROM tasks t JOIN ancestors a ON t.task_id=a.parent_task_id), tree AS(SELECT task_id FROM ancestors WHERE parent_task_id IS NULL UNION SELECT t.task_id FROM tasks t JOIN tree p ON t.parent_task_id=p.task_id) SELECT EXISTS(SELECT 1 FROM tool_calls c JOIN runs r ON r.run_id=c.run_id WHERE (r.run_id=$1 OR r.task_id IN(SELECT task_id FROM tree)) AND (c.finished_at IS NULL OR c.status='effect_unknown')) OR EXISTS(SELECT 1 FROM action_intents i JOIN runs r ON r.run_id=i.run_id JOIN action_effects e ON e.action_id=i.effect_id WHERE (r.run_id=$1 OR r.task_id IN(SELECT task_id FROM tree)) AND e.state IN('executing','effect_unknown','reconciling'))`
 	if tx.QueryRow(ctx, known, runID, taskID).Scan(&uncertain) != nil || uncertain {
 		return ErrModelRetryDenied
 	}
@@ -68,6 +69,19 @@ func (s *Store) modelRetryTx(ctx context.Context, runID string, fn func(pgx.Tx, 
 }
 
 func (s *Store) ClaimModelRetry(ctx context.Context, runID, priorOperationID string) error {
+	return s.claimModelRetry(ctx, runID, priorOperationID, "model_turn_timeout", nil)
+}
+
+// This distinct owning-kernel entry never accepts a reason from model/RPC DATA.
+// The original worker deadline is retained, not replaced by the next attempt.
+func (s *Store) ClaimAuthorityRetry(ctx context.Context, runID, priorOperationID string, deadline time.Time) error {
+	if deadline.IsZero() {
+		return ErrModelRetryDenied
+	}
+	deadline = deadline.UTC().Truncate(time.Microsecond)
+	return s.claimModelRetry(ctx, runID, priorOperationID, "authority_observation_timeout", &deadline)
+}
+func (s *Store) claimModelRetry(ctx context.Context, runID, priorOperationID, reason string, deadline *time.Time) error {
 	if priorOperationID == "" {
 		return ErrModelRetryDenied
 	}
@@ -80,11 +94,16 @@ func (s *Store) ClaimModelRetry(ctx context.Context, runID, priorOperationID str
 			return ErrModelRetryDenied
 		}
 		var valid bool
-		query := `SELECT checkpoint='model_budget_reserved' AND checkpoint_json->'checkpoint_data'->>'operation_id'=$2 AND checkpoint_json->'checkpoint_data'->>'deadline_origin'='model_turn' AND expires_at>clock_timestamp()+interval '2 seconds' AND EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations b ON b.reservation_id=a.reservation_id WHERE a.operation_id=$2 AND a.run_id=$3 AND b.owner_id=$4) AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) FROM accepted_inputs WHERE input_id=$1`
-		if tx.QueryRow(ctx, query, claim.InputID, priorOperationID, runID, claim.OwnerID).Scan(&valid) != nil || !valid {
+		query := `SELECT checkpoint='model_budget_reserved' AND checkpoint_json->'checkpoint_data'->>'operation_id'=$2
+   AND (($5='model_turn_timeout' AND checkpoint_json->'checkpoint_data'->>'deadline_origin'='model_turn') OR
+    ($5='authority_observation_timeout' AND $6::timestamptz>clock_timestamp()+interval '2 seconds' AND $6::timestamptz<=expires_at))
+   AND expires_at>clock_timestamp()+interval '2 seconds' AND attempts<max_attempts
+   AND EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations b ON b.reservation_id=a.reservation_id WHERE a.operation_id=$2 AND a.run_id=$3 AND b.owner_id=$4)
+   AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) FROM accepted_inputs WHERE input_id=$1`
+		if tx.QueryRow(ctx, query, claim.InputID, priorOperationID, runID, claim.OwnerID, reason, deadline).Scan(&valid) != nil || !valid {
 			return ErrModelRetryDenied
 		}
-		_, err := tx.Exec(ctx, `WITH stamp AS MATERIALIZED(SELECT clock_timestamp() AS at) UPDATE accepted_inputs SET checkpoint='model_retry_pending',not_before=stamp.at+interval '2 seconds',checkpoint_json=checkpoint_json||jsonb_build_object('model_retry',jsonb_build_object('count',1,'reason','model_turn_timeout','prior_operation_id',$2::text,'state','claimed','claimed_at',stamp.at,'not_before',stamp.at+interval '2 seconds')),updated_at=stamp.at FROM stamp WHERE input_id=$1`, claim.InputID, priorOperationID)
+		_, err := tx.Exec(ctx, `WITH stamp AS MATERIALIZED(SELECT clock_timestamp() AS at) UPDATE accepted_inputs SET checkpoint='model_retry_pending',not_before=stamp.at+interval '2 seconds',checkpoint_json=checkpoint_json||jsonb_build_object('model_retry',jsonb_strip_nulls(jsonb_build_object('count',1,'reason',$3::text,'prior_operation_id',$2::text,'state','claimed','claimed_at',stamp.at,'not_before',stamp.at+interval '2 seconds','execution_deadline',$4::timestamptz))),updated_at=stamp.at FROM stamp WHERE input_id=$1`, claim.InputID, priorOperationID, reason, deadline)
 		return err
 	})
 }
@@ -92,7 +111,7 @@ func (s *Store) ClaimModelRetry(ctx context.Context, runID, priorOperationID str
 func (s *Store) ValidateModelRetry(ctx context.Context, runID, priorOperationID string) error {
 	return s.modelRetryTx(ctx, runID, func(tx pgx.Tx, claim Record, payload string) error {
 		var valid bool
-		if tx.QueryRow(ctx, `SELECT checkpoint='model_retry_pending' AND checkpoint_json->'model_retry'->>'count'='1' AND checkpoint_json->'model_retry'->>'reason'='model_turn_timeout' AND checkpoint_json->'model_retry'->>'state'='claimed' AND checkpoint_json->'model_retry'->>'prior_operation_id'=$2 AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz=(checkpoint_json->'model_retry'->>'claimed_at')::timestamptz+interval '2 seconds' AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz<=clock_timestamp() AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) FROM accepted_inputs WHERE input_id=$1`, claim.InputID, priorOperationID, runID).Scan(&valid) != nil || !valid {
+		if tx.QueryRow(ctx, `SELECT checkpoint='model_retry_pending' AND checkpoint_json->'model_retry'->>'count'='1' AND checkpoint_json->'model_retry'->>'reason' IN ('model_turn_timeout','authority_observation_timeout') AND (checkpoint_json->'model_retry'->>'reason'<>'authority_observation_timeout' OR (checkpoint_json->'model_retry'->>'execution_deadline')::timestamptz>clock_timestamp()) AND checkpoint_json->'model_retry'->>'state'='claimed' AND checkpoint_json->'model_retry'->>'prior_operation_id'=$2 AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz=(checkpoint_json->'model_retry'->>'claimed_at')::timestamptz+interval '2 seconds' AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz<=clock_timestamp() AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) FROM accepted_inputs WHERE input_id=$1`, claim.InputID, priorOperationID, runID).Scan(&valid) != nil || !valid {
 			return ErrModelRetryDenied
 		}
 		return nil
@@ -116,14 +135,14 @@ func (s *Store) MarkModelRetryStarted(ctx context.Context, runID, operationID st
 		if saved.Retry == nil {
 			return ErrModelRetryDenied
 		}
-		if saved.Retry.Count != 1 || saved.Retry.Reason != "model_turn_timeout" {
+		if saved.Retry.Count != 1 || (saved.Retry.Reason != "model_turn_timeout" && saved.Retry.Reason != "authority_observation_timeout") {
 			return ErrModelRetryDenied
 		}
 		if saved.Retry.State == "started" {
 			return nil
 		}
 		var valid bool
-		if tx.QueryRow(ctx, `SELECT checkpoint='model_retry_pending' AND checkpoint_json->'model_retry'->>'state'='claimed' AND checkpoint_json->'model_retry'->>'prior_operation_id'<>$2 AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz<=clock_timestamp() AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) AND EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations b ON b.reservation_id=a.reservation_id WHERE a.operation_id=$2 AND a.run_id=$3 AND b.owner_id=$4) FROM accepted_inputs WHERE input_id=$1`, claim.InputID, operationID, runID, claim.OwnerID).Scan(&valid) != nil || !valid {
+		if tx.QueryRow(ctx, `SELECT checkpoint='model_retry_pending' AND (checkpoint_json->'model_retry'->>'reason'<>'authority_observation_timeout' OR (checkpoint_json->'model_retry'->>'execution_deadline')::timestamptz>clock_timestamp()) AND checkpoint_json->'model_retry'->>'state'='claimed' AND checkpoint_json->'model_retry'->>'prior_operation_id'<>$2 AND (checkpoint_json->'model_retry'->>'not_before')::timestamptz<=clock_timestamp() AND $2=(SELECT operation_id FROM execution_model_attempts WHERE run_id=$3 ORDER BY created_at DESC,operation_id DESC LIMIT 1) AND EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations b ON b.reservation_id=a.reservation_id WHERE a.operation_id=$2 AND a.run_id=$3 AND b.owner_id=$4) FROM accepted_inputs WHERE input_id=$1`, claim.InputID, operationID, runID, claim.OwnerID).Scan(&valid) != nil || !valid {
 			return ErrModelRetryDenied
 		}
 		_, err := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint_json=jsonb_set(checkpoint_json,'{model_retry}',checkpoint_json->'model_retry'||jsonb_build_object('state','started','retry_operation_id',$2::text,'started_at',clock_timestamp())),updated_at=clock_timestamp() WHERE input_id=$1`, claim.InputID, operationID)

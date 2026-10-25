@@ -173,3 +173,51 @@ func TestModelRetryClaimDenialMatrixIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthorityRetryStoreSharesCountAndRejectsUnsafeStateIntegration(t *testing.T) {
+	for _, name := range []string{"shared_count", "expired_deadline", "after_acceptance_deadline", "superseded_lease", "claim_exhausted", "unknown_effect", "nominal_count_spent"} {
+		t.Run(name, func(t *testing.T) {
+			f := newModelRetryStoreFixture(t)
+			deadline := time.Now().Add(30 * time.Second)
+			var query string
+			switch name {
+			case "expired_deadline":
+				deadline = time.Now().Add(-time.Second)
+			case "after_acceptance_deadline":
+				deadline = f.claim.ExpiresAt.Add(time.Hour)
+			case "superseded_lease":
+				query = `UPDATE session_ownership SET fence_epoch=fence_epoch+1`
+			case "claim_exhausted":
+				query = `UPDATE accepted_inputs SET attempts=max_attempts`
+			case "unknown_effect":
+				query = `INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at,finished_at,result,error) VALUES('uncertain','retry-run','http.request','{}','effect_unknown','fixture',clock_timestamp(),clock_timestamp(),'{}','{}')`
+			case "nominal_count_spent":
+				if err := f.store.ClaimModelRetry(f.ctx, "retry-run", f.op); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if query != "" {
+				if _, err := f.pool.Exec(context.Background(), query); err != nil {
+					t.Fatal(err)
+				}
+			}
+			err := f.store.ClaimAuthorityRetry(f.ctx, "retry-run", f.op, deadline)
+			if name != "shared_count" {
+				if err == nil {
+					t.Fatal("unsafe state admitted authority continuation")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal("live private claim denied", err)
+			}
+			if f.store.ClaimModelRetry(f.ctx, "retry-run", f.op) == nil || f.store.ClaimAuthorityRetry(f.ctx, "retry-run", f.op, deadline) == nil {
+				t.Fatal("nominal and authority retries received separate allowances")
+			}
+			var saved time.Time
+			if f.pool.QueryRow(context.Background(), `SELECT (checkpoint_json->'model_retry'->>'execution_deadline')::timestamptz FROM accepted_inputs WHERE input_id=$1`, f.claim.InputID).Scan(&saved) != nil || !saved.Equal(deadline.UTC().Truncate(time.Microsecond)) {
+				t.Fatal("original deadline not persisted")
+			}
+		})
+	}
+}

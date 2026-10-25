@@ -18,7 +18,7 @@ import (
 // A failed authority read must still cancel immediately. Its owning cause must
 // survive the stream's context.Canceled error without exposing storage details.
 func TestExecuteRetainsOwnedAuthorityCancellationCause(t *testing.T) {
-	for _, mode := range []string{"unavailable", "changed"} {
+	for _, mode := range []string{"unavailable", "changed", "deadline"} {
 		t.Run(mode, func(t *testing.T) {
 			leases := &causeControlLeases{mode: mode}
 			provider := &causeControlProvider{mockProvider: &mockProvider{}}
@@ -35,6 +35,12 @@ func TestExecuteRetainsOwnedAuthorityCancellationCause(t *testing.T) {
 			want := "execution_authority_check_failed"
 			if mode == "changed" {
 				want = "execution_ownership_changed"
+			}
+			if mode == "deadline" {
+				want = "execution_authority_observation_timeout"
+			}
+			if AuthorityObservationTimeout(err) != (mode == "deadline") {
+				t.Fatal("only owning lease observation deadline may qualify for recovery")
 			}
 			if !strings.Contains(err.Error(), want) || !errors.Is(err, context.Canceled) {
 				t.Fatal("fixed owning cause and cancelled classification required")
@@ -140,7 +146,11 @@ func (m *causeControlLeases) AcquireLease(ctx context.Context, p session.Acquire
 	m.run = r
 	return r, err
 }
-func (m *causeControlLeases) GetLease(context.Context, string) (session.LeaseRecord, error) {
+func (m *causeControlLeases) GetLease(ctx context.Context, _ string) (session.LeaseRecord, error) {
+	if m.mode == "deadline" {
+		<-ctx.Done()
+		return session.LeaseRecord{}, ctx.Err()
+	}
 	if m.mode == "unavailable" {
 		return session.LeaseRecord{}, errors.New("private storage sentinel must not become a diagnostic")
 	}

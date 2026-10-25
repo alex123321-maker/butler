@@ -962,7 +962,9 @@ provider chain, для которого пока нет durable replay boundary.
 
 The [bounded model retry policy](model-retry-policy.md) belongs to Core's durable
 execution path. It makes a fresh provider session and admission after one trusted
-nominal model-turn timeout. Transport performs one actual request per command;
+nominal model-turn timeout or a proved transient watchdog lease-observation
+deadline. These share one durable allowance and require fresh current authority,
+sources and known tool outcomes. Transport performs one actual request per command;
 it does not hide retries, reuse a paid attempt ID or fill missing usage.
 
 Transport обязан нормализовать ошибки в следующие классы:

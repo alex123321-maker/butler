@@ -33,12 +33,13 @@ type modelRetryStore interface {
 }
 
 type modelRetryCheckpoint struct {
-	Count            int       `json:"count"`
-	Reason           string    `json:"reason"`
-	PriorOperationID string    `json:"prior_operation_id"`
-	State            string    `json:"state"`
-	NotBefore        time.Time `json:"not_before"`
-	ClaimedAt        time.Time `json:"claimed_at"`
+	Count             int       `json:"count"`
+	Reason            string    `json:"reason"`
+	PriorOperationID  string    `json:"prior_operation_id"`
+	State             string    `json:"state"`
+	NotBefore         time.Time `json:"not_before"`
+	ClaimedAt         time.Time `json:"claimed_at"`
+	ExecutionDeadline time.Time `json:"execution_deadline,omitempty"`
 }
 
 func modelTurnRetryBound(ctx context.Context, a budget.ModelAdmission) bool {
@@ -156,7 +157,7 @@ func (s *Service) modelRetryRecordedInputs(ctx context.Context, current *session
 
 func (s *Service) resumeModelRetry(ctx context.Context, current *sessionv1.RunRecord, prepared preparedRun, retry modelRetryCheckpoint) (transport.EventStream, error) {
 	store, ok := s.config.Checkpoints.(modelRetryStore)
-	if !ok || s.config.Budgets == nil || s.config.MemorySources == nil || retry.Count != 1 || retry.Reason != "model_turn_timeout" || retry.State != "claimed" || retry.PriorOperationID == "" || retry.ClaimedAt.IsZero() || !retry.NotBefore.Equal(retry.ClaimedAt.Add(2*time.Second)) {
+	if !ok || s.config.Budgets == nil || s.config.MemorySources == nil || retry.Count != 1 || (retry.Reason != "model_turn_timeout" && retry.Reason != "authority_observation_timeout") || retry.State != "claimed" || retry.PriorOperationID == "" || retry.ClaimedAt.IsZero() || !retry.NotBefore.Equal(retry.ClaimedAt.Add(2*time.Second)) {
 		return nil, errors.New("model_retry_not_resumable")
 	}
 	if current.GetCurrentState() != commonv1.RunState_RUN_STATE_MODEL_RUNNING && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
