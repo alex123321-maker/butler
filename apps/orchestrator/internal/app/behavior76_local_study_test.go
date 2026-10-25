@@ -11,8 +11,8 @@ import (
 // These cannot name any closed corpus, and currently prevent native admission.
 const behavior76LocalStimuliSHA = "878f220f31c4e615a56b81cace7be96639a4f4e6dcffee3159b095675ef5d109"
 const behavior76LocalExpectationsSHA = "464cb37c9d8bec967baba27fe6b401b6fc41d3d5d855f3ecf5955c04312f4ee0"
-const behavior76StreamStimuliSHA = "UNBOUND"
-const behavior76StreamExpectationsSHA = "UNBOUND"
+const behavior76StreamStimuliSHA = "71ad44ddfadbc18d5cc5c06f5fd4edc043af66584e7f244e7d0b5dac66ddf94b"
+const behavior76StreamExpectationsSHA = "84862a7ba12647633c7665e98c9541eb374ced4ad53a2d1fe896f08e6ed494b8"
 
 func TestBehavior76NativeFixtureStream(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "fixture-stream-synthetic-only" {

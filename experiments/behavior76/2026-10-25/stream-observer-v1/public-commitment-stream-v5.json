@@ -1,0 +1,128 @@
+{
+  "paired_owner_opportunities": 96,
+  "real_owner_episodes": 0,
+  "source_freeze": "4a0a69ea349ac3fd3928ce2edd5ecf393e31029d",
+  "stimuli_path": ".cache/issue76-independent/hidden-stream-v5/stimuli.jsonl",
+  "families": 12,
+  "expectations_sha256": "84862a7ba12647633c7665e98c9541eb374ced4ad53a2d1fe896f08e6ed494b8",
+  "evaluated_owner_turns": 48,
+  "checker_receipt_sha256": "f7e965e3f1270cdd1be5b5a5d30be72497d75d4df45601cb195b6abefc8e4908",
+  "coverage": [
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "amendment",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "clarification",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "feedback_candidate",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "manual_change",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "new_task_coexistence",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "owner_done_report",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "preference_exception",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "preference_lifecycle",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "restart",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "scoped_stop_negation",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "status_continuation",
+      "positive": 1
+    },
+    {
+      "episodes": 2,
+      "paired_owner_opportunities": 8,
+      "negative": 1,
+      "evaluated_owner_turns": 4,
+      "family": "untrusted_command",
+      "positive": 1
+    }
+  ],
+  "interface": "existing Episode/Step tagged v1; checker-index-v2-local-tail; authority-stream-v2",
+  "protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+  "criteria_changed": false,
+  "steps": 63,
+  "arms": 48,
+  "quality_disclosed": false,
+  "episodes": 24,
+  "zero_native_setup_composition_required": true,
+  "thresholds_changed": false,
+  "version": "issue76-independent-hidden-stream-v5-v1",
+  "source_freeze_receipt_sha256": "0f858fd262584d20ecfa8f20e42a0ca84cb2c2adabcfa778c3bb502a061deda9",
+  "synthetic_only": true,
+  "stimuli_sha256": "71ad44ddfadbc18d5cc5c06f5fd4edc043af66584e7f244e7d0b5dac66ddf94b",
+  "native_admission": false,
+  "old_corpus_or_results_read_for_derivation": false,
+  "expectations_path": ".cache/issue76-independent/hidden-stream-v5/expectations.jsonl",
+  "scoring_wrapper_sha256": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "native_calls": 0,
+  "mapping_read": false
+}
