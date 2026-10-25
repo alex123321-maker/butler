@@ -1,0 +1,25 @@
+{
+  "version": "behavior76-stream-v5-pre-native-gates-v1",
+  "result": "PASS_ZERO_NATIVE_ONLY",
+  "producer_source": "60fbb1c3e9bc9918123b771ae3df141636d2dbaa",
+  "collector_elf_sha256": "7127dd676ce944ecca85ab2aa7605c5ea64e27e05d66ecfce11f8df53db816ab",
+  "setup": {
+    "passed_episodes": 24,
+    "sha256": "e3f45e9b8dc7c518b71d751b41d4df34378ca2c24eea3acf0636b6baec54ec8c"
+  },
+  "composition": {
+    "original_steps": 126,
+    "owner_turns": 96,
+    "passed_arms": 48,
+    "sha256": "e6b95f701ba9e5577b1a167d279fcfb7f95d23b095c5e80a33a2e9c81aa47408",
+    "race": true
+  },
+  "native_calls": 0,
+  "auth_sources_constructed": 0,
+  "new_window_opened": false,
+  "candidate_promoted": false,
+  "source_semantics_freeze": "4a0a69ea349ac3fd3928ce2edd5ecf393e31029d",
+  "literal_binding_review_sha256": "b5be9fdabc347bd0f30d96217e3094bf39db3e295706ff68334e83ca1fc6bd8b",
+  "protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+  "public_safety_receipt_sha256": "ac91ca5d93842457054fcd24ec37b1ff210e5e055a76276a1715a7e91ece8259"
+}
