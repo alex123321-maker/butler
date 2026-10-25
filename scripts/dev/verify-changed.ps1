@@ -32,7 +32,7 @@ foreach ($file in $files) {
       [void]$tests.Add("This PC: real isolated PostgreSQL, go test -race ./apps/orchestrator/internal/input; explicit claim fence delayed owning finish, queued-tail preservation, callback/expiry failures and ordinary construction. Then behavior-local-acceptance.ps1 -Action Safety/Queued for actual Core/Broker drain and global priority. No native calls in these gates.")
       continue
     }
-    "^(apps/orchestrator/internal/app/behavior76_|apps/orchestrator/internal/prompt/task_continuity[.]go$|scripts/dev/behavior-local-)" {
+    "^(apps/orchestrator/internal/app/behavior76_|apps/orchestrator/internal/prompt/task_continuity[.]go$|scripts/dev/behavior-local-|scripts/dev/behavior76-pgx-build[.]go$)" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/task-owner-controls-spec.md")

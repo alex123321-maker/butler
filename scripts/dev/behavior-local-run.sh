@@ -4,14 +4,18 @@ cd /src20
 mode=${1:?mode required}
 if [ "$mode" = build ]; then
  mkdir -p .cache/behavior76
+ test "$(go list -m -f '{{.Version}}' github.com/jackc/pgx/v5)" = v5.8.0
+ go run scripts/dev/behavior76-pgx-build.go /module-cache /src20/.cache/behavior76/pgx-observer-build-v1
+ export GOFLAGS='-buildvcs=false -modfile=/src20/.cache/behavior76/pgx-observer-build-v1/research.mod -mod=readonly'
  exec go test -race -c -o .cache/behavior76/collector.test ./apps/orchestrator/internal/app
 fi
 export BUTLER_BEHAVIOR76_NATIVE_ENABLE=disabled
+export BUTLER_BEHAVIOR76_PGX_OBSERVER_CONTRACT=callback-paired-public-only
 export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=0
 case "$mode" in
  safety) selected='^TestBehavior76(GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*)$' ;;
  resources) selected='^TestBehavior76LocalUnknownResourceProfileIntegration$' ;;
- public) selected='^TestBehavior76(StimulusBoundary|InstructionIntegrity|Queued.*Integration|CoreBroker.*Integration|EvidenceExportIntegration|ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration|GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*)$' ;;
+ public) selected='^TestBehavior76(AuthorityTraceCancelledRollbackIntegration|StimulusBoundary|InstructionIntegrity|Queued.*Integration|CoreBroker.*Integration|EvidenceExportIntegration|ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration|GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*)$' ;;
  evidence) selected='^TestBehavior76EvidenceExportIntegration$' ;;
  queued) selected='^TestBehavior76Queued(TaskMandates|FailedOwner)Integration$' ;;
  composition) selected='^TestBehavior76CorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=composition-only ;;

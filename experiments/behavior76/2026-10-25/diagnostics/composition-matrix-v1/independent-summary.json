@@ -1,0 +1,183 @@
+{
+  "open_details": [
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": true,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 339,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748413
+        }
+      ],
+      "name": "cleanup-8f0f1206bc32a63cee9a975d059f16713a4b54ee23596a6786ede60b97f59591.json",
+      "open_spans": 1
+    },
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": true,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 396,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748538
+        }
+      ],
+      "name": "cleanup-984c029fa975c7342b51c1df6827e9b085e18b8d07a68b45b576dea222a132fc.json",
+      "open_spans": 1
+    },
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 0,
+        "idle_conns": 1
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": true,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 168,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748910
+        }
+      ],
+      "name": "cleanup-c4f5cda33ab6a1e608da4c6bbf42a2cc3745fdbaedf73bcff5b79ce13842f7bb.json",
+      "open_spans": 1
+    },
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": false,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 339,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748413
+        }
+      ],
+      "name": "decision-8f0f1206bc32a63cee9a975d059f16713a4b54ee23596a6786ede60b97f59591.json",
+      "open_spans": 1
+    },
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": false,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 396,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748538
+        }
+      ],
+      "name": "decision-984c029fa975c7342b51c1df6827e9b085e18b8d07a68b45b576dea222a132fc.json",
+      "open_spans": 1
+    },
+    {
+      "read_pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 0,
+        "idle_conns": 1
+      },
+      "operation_failures": 1,
+      "scope": {
+        "active": 0,
+        "closed": true,
+        "evaluations": 0,
+        "global": false,
+        "stopped": false
+      },
+      "unclosed": [
+        {
+          "span": 168,
+          "phase": "query",
+          "query_family": "transaction_control",
+          "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+          "context_cause": "cancelled",
+          "original_context_time_left_us": 748910
+        }
+      ],
+      "name": "decision-c4f5cda33ab6a1e608da4c6bbf42a2cc3745fdbaedf73bcff5b79ce13842f7bb.json",
+      "open_spans": 1
+    }
+  ],
+  "open_snapshots": 6,
+  "decisions": 48,
+  "files": 96,
+  "cleanups": 48,
+  "failed_observers": 0
+}

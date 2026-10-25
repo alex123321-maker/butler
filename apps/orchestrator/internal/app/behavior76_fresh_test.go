@@ -197,7 +197,9 @@ func behavior76CollectFreshConfigured(t *testing.T, local bool) {
 	}
 	defer journal.Close()
 	var localResources map[string]any
+	var observerBuild map[string]any
 	if local {
+		observerBuild = behavior76PGXBuildMetadata(t)
 		localResources, err = behavior76LocalResources(ctx, journal)
 		if err != nil {
 			t.Fatal("prospective resource observation failed before native window", behavior76SafeError(err))
@@ -272,6 +274,7 @@ func behavior76CollectFreshConfigured(t *testing.T, local bool) {
 	if local {
 		manifest["local_unknown_mode"] = "whole_fixture_after_exact_classified_effect_unknown"
 		manifest["local_resource_profile"] = localResources
+		manifest["observer_build"] = observerBuild
 		protocol, e := os.ReadFile("/src20/docs/testing/issue76-fixture-local-protocol.md")
 		if e != nil {
 			t.Fatal("prospective public protocol unavailable")

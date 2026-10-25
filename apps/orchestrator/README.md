@@ -1472,3 +1472,8 @@ uses a fixture-only post-AttachRun metadata hook with the actual execution token
 it preserves stale-source fences and redaction. `-Action Composition` exercises
 every control/event through real Input/Core preparation with a scripted provider,
 without native inference or auth. It is infrastructure evidence, not model quality.
+
+The prospective fixture-local study uses the pinned, research-only
+[observer build correction](../../docs/testing/issue76-observer-build-addendum.md).
+Its isolated5.8.0 module copy adds only the upstream missing callback; ordinary
+dependencies, the shared cache, SQL errors and750ms authority bound are unchanged.
