@@ -50,7 +50,8 @@ type generationConfig struct {
 	ResponseSchema     json.RawMessage `json:"responseSchema,omitempty"`
 }
 type thinkingConfig struct {
-	ThinkingBudget int `json:"thinkingBudget"`
+	ThinkingBudget int    `json:"thinkingBudget,omitempty"`
+	ThinkingLevel  string `json:"thinkingLevel,omitempty"`
 }
 type cloudRequestEnvelope struct {
 	Model       string          `json:"model"`
@@ -90,6 +91,7 @@ var nativeModelVersion = regexp.MustCompile(`^gemini-[a-zA-Z0-9][a-zA-Z0-9._-]{0
 
 type nativeUsage struct {
 	PromptTokenCount, CandidatesTokenCount, TotalTokenCount *int
+	ThoughtsTokenCount                                      *int
 }
 
 // Count names are exact. Other provider usage dimensions may be ignored, but
@@ -102,7 +104,7 @@ func (u *nativeUsage) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &fields); err != nil || fields == nil {
 		return fmt.Errorf("invalid usage metadata")
 	}
-	counts := map[string]**int{"promptTokenCount": &u.PromptTokenCount, "candidatesTokenCount": &u.CandidatesTokenCount, "totalTokenCount": &u.TotalTokenCount}
+	counts := map[string]**int{"promptTokenCount": &u.PromptTokenCount, "candidatesTokenCount": &u.CandidatesTokenCount, "totalTokenCount": &u.TotalTokenCount, "thoughtsTokenCount": &u.ThoughtsTokenCount}
 	for key, raw := range fields {
 		if target, ok := counts[key]; ok {
 			if err := json.Unmarshal(raw, target); err != nil {
@@ -123,12 +125,12 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if err := checkInferenceAuthority(ctx); err != nil {
 		return modelAnswer{}, err
 	}
-	cloud := model == FlashHighModel
+	cloud := model == FlashHighModel || model == FlashLowModel
 	resolve := p.config.AuthSource.ResolveAntigravity
 	if cloud {
 		source, ok := p.config.AuthSource.(providerauth.AntigravityCloudCodeTokenSource)
 		if !ok {
-			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription discovery is required for Flash High")
+			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription discovery is required for the selected Flash profile")
 		}
 		resolve = source.ResolveAntigravityCloudCode
 	}
@@ -152,6 +154,9 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 		}
 		body.SessionID = sessionID
 		body.GenerationConfig.ThinkingConfig = &thinkingConfig{ThinkingBudget: -1}
+		if p.config.ThinkingLevel != "" {
+			body.GenerationConfig.ThinkingConfig = &thinkingConfig{ThinkingLevel: p.config.ThinkingLevel}
+		}
 		envelope = cloudRequestEnvelope{Model: model, Project: auth.ProjectID, Request: body, RequestID: requestID, RequestType: "agent", UserAgent: "antigravity"}
 		url, userAgent = cloudEndpoint, "antigravity/2.22.0 butler/0.1"
 	}
@@ -509,22 +514,27 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 		}
 		u := response.UsageMetadata
 		if u != nil {
-			for _, count := range []*int{u.PromptTokenCount, u.CandidatesTokenCount, u.TotalTokenCount} {
+			for _, count := range []*int{u.PromptTokenCount, u.CandidatesTokenCount, u.TotalTokenCount, u.ThoughtsTokenCount} {
 				if count != nil && *count < 0 {
 					return protocolError("invalid usage metadata")
 				}
 			}
 		}
 		if finished && u != nil && u.PromptTokenCount != nil && u.CandidatesTokenCount != nil && u.TotalTokenCount != nil {
-			usage := &transport.Usage{InputTokens: *u.PromptTokenCount, OutputTokens: *u.CandidatesTokenCount, TotalTokens: *u.TotalTokenCount}
+			usage := &transport.Usage{InputTokens: *u.PromptTokenCount, OutputTokens: *u.CandidatesTokenCount, TotalTokens: *u.TotalTokenCount, ThinkingTokens: u.ThoughtsTokenCount}
 			if usage.Validate() != nil {
 				return protocolError("invalid usage metadata")
 			}
 			if usage.TotalTokens < usage.InputTokens+usage.OutputTokens {
 				return protocolError("invalid usage metadata")
 			}
-			if answer.Usage != nil && *answer.Usage != *usage {
-				return protocolError("conflicting complete usage metadata")
+			if previous := answer.Usage; previous != nil {
+				if previous.InputTokens != usage.InputTokens || previous.OutputTokens != usage.OutputTokens || previous.TotalTokens != usage.TotalTokens || previous.ThinkingTokens != nil && usage.ThinkingTokens != nil && *previous.ThinkingTokens != *usage.ThinkingTokens {
+					return protocolError("conflicting complete usage metadata")
+				}
+				if usage.ThinkingTokens == nil {
+					usage.ThinkingTokens = previous.ThinkingTokens
+				}
 			}
 			answer.Usage = usage
 		}

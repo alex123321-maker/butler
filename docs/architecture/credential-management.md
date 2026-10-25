@@ -1,5 +1,12 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The isolated [issue97 operator research command](../../cmd/effort-eval/README.md)
+accepts private file references or a local-only state/S256-PKCE browser callback
+for a new provider login. It imports through the existing strict Manager into
+an independent encrypted PostgreSQL store. Provider auth remains a control-plane
+operation; neither the private native application reference nor OAuth material
+enters model input, fixture state, exported reports or production settings.
+
 ## Current credential vault contract (migration 096)
 
 This section supersedes the historical V1 alias/env/domain-list design below.

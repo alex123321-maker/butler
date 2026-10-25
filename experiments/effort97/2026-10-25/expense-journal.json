@@ -1,0 +1,70 @@
+{
+  "description": "Known provider token counts, including preflights/failures and repeated input. Total already includes thinking. NULL is unavailable, not zero. Two preflight-b admissions failed offline constructor before dispatch; original NULL records unchanged.",
+  "windows": [
+    {
+      "window": "preflight-20261025a",
+      "admitted_attempts": 2,
+      "actual_inference_calls": 2,
+      "known_input_tokens": 924.0,
+      "known_output_tokens": 151.0,
+      "known_total_tokens": 11749.0,
+      "known_thinking_tokens": 10674.0,
+      "total_unavailable": 0,
+      "thinking_unavailable": 0,
+      "currency_cost": null,
+      "subscription_quota_cost": null
+    },
+    {
+      "window": "preflight-20261025b",
+      "admitted_attempts": 2,
+      "actual_inference_calls": 0,
+      "known_input_tokens": null,
+      "known_output_tokens": null,
+      "known_total_tokens": null,
+      "known_thinking_tokens": null,
+      "total_unavailable": 2,
+      "thinking_unavailable": 2,
+      "currency_cost": null,
+      "subscription_quota_cost": null
+    },
+    {
+      "window": "preflight-20261025c",
+      "admitted_attempts": 2,
+      "actual_inference_calls": 2,
+      "known_input_tokens": 924.0,
+      "known_output_tokens": 90.0,
+      "known_total_tokens": 1440.0,
+      "known_thinking_tokens": 426.0,
+      "total_unavailable": 0,
+      "thinking_unavailable": 1,
+      "currency_cost": null,
+      "subscription_quota_cost": null
+    },
+    {
+      "window": "quality-v2-20261025a",
+      "admitted_attempts": 208,
+      "actual_inference_calls": 208,
+      "known_input_tokens": 137950.0,
+      "known_output_tokens": 51750.0,
+      "known_total_tokens": 291378.0,
+      "known_thinking_tokens": 101678.0,
+      "total_unavailable": 1,
+      "thinking_unavailable": 95,
+      "currency_cost": null,
+      "subscription_quota_cost": null
+    },
+    {
+      "window": "controlled-evidence-20261025a",
+      "admitted_attempts": 18,
+      "actual_inference_calls": 18,
+      "known_input_tokens": 13164.0,
+      "known_output_tokens": 4006.0,
+      "known_total_tokens": 31057.0,
+      "known_thinking_tokens": 13887.0,
+      "total_unavailable": 0,
+      "thinking_unavailable": 9,
+      "currency_cost": null,
+      "subscription_quota_cost": null
+    }
+  ]
+}
