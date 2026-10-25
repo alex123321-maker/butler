@@ -83,9 +83,9 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 	}
 	defer tx.Rollback(ctx)
 	var n int
-	err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<768
+	err = tx.QueryRow(ctx, `UPDATE public.behavior76_windows w SET admitted=admitted+1 WHERE id=$1 AND NOT closed AND expires_at>clock_timestamp() AND admitted<$4
  AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.slot=$2)<8
- AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.run_id=$3)<4 RETURNING admitted`, p.window, p.slot, run).Scan(&n)
+	 AND (SELECT count(*) FROM public.behavior76_attempts a WHERE a.window_id=w.id AND a.run_id=$3)<4 RETURNING admitted`, p.window, p.slot, run, behavior76CEntryLimit).Scan(&n)
 	if err != nil {
 		return nil, errBehavior76Native
 	}

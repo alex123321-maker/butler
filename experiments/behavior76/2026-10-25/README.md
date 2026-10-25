@@ -1,8 +1,14 @@
 # Independent local behavioral pilot (#76)
 
-Current status: authentication-only window A closed after one admission, before
-model HTTP. Model calls/answers0; usage remains unavailable, not zero expense.
-No behavioral verdict or issue closure follows from this failure/setup checks.
+Current status: native window B closed at a response-stream protocol error with
+36/48 episode-arm exports,171 admissions,170 measured responses and known
+provider-total subtotal1,262,564 tokens. The final partial stream has unavailable
+usage and no final/tool proposal. Independent coverage/boundary review is pending;
+there is no completed comparison, behavioral verdict or issue76 closure.
+
+The earlier authentication-only window A remains closed after one admission,
+before model HTTP. Its usage remains unavailable, not zero expense. Both failed
+windows and all original observations are retained; no failed slot is resampled.
 
 [Protocol](../../../../docs/testing/issue76-local-protocol-2026-10-25.md) pins one
 dormant instruction candidate against current main/default instructions. The

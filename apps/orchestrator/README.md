@@ -1454,3 +1454,7 @@ Core/Broker/source lifecycle and explicitly synthetic recipient effects. Its
 test fixtures, native journals and masked review are separate from working-owner
 deployment. Completing collection does not enable the candidate or grant task,
 profile, source, effect or semantic completion authority.
+`scripts/dev/behavior-local-acceptance.ps1 -Action Boundary` runs the public
+continuation integrity guards without provider inference. A stopped native window
+remains closed; an independently reviewed strict-suffix continuation preserves
+the original absolute deadline, failed attempts and exact control/mapping bytes.

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
- [ValidateSet('Offline','Preflight','Native')][string]$Action='Offline',
+ [ValidateSet('Offline','Preflight','Boundary','Native')][string]$Action='Offline',
  [switch]$EnableNative,
  [string]$OutputDirectory=''
 )

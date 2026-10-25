@@ -252,8 +252,8 @@ func behavior76Collect(t *testing.T, native bool) {
 	}
 	index := behavior76Index{Version: "behavior76-checker-index-v1", StimuliSHA256: behavior76StimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
-	// A stopped before model HTTP at encrypted auth persistence. Continue only
-	// in a new window with its EXACT private mapping/schedule and spent ledgers.
+	// C collects only the never-started suffix of closed B. Original partial
+	// responses, failed slots, spent ledgers and absolute wall deadline survive.
 	const priorWindow = "issue76-local-20261025T104513"
 	priorDir := filepath.Join(filepath.Dir(dir), "native-20261025a")
 	var priorManifest struct {
@@ -267,6 +267,19 @@ func behavior76Collect(t *testing.T, native bool) {
 	if e != nil || behavior76Hash(priorRaw) != "712670def12bb6ab11d7d689ed39c3a46bbd6455988594f10aaf9c421e9834ae" || json.Unmarshal(priorRaw, &priorManifest) != nil || len(priorManifest.Schedule) != 24 || len(priorManifest.Schedule[0].ArmOrder) != 2 {
 		t.Fatal("original auth-failed schedule unavailable")
 	}
+	bDir := filepath.Join(filepath.Dir(dir), "native-20261025b")
+	bRaw, e := os.ReadFile(filepath.Join(bDir, "manifest.json"))
+	if e != nil || behavior76Hash(bRaw) != behavior76BManifestSHA {
+		t.Fatal("original B manifest unavailable")
+	}
+	bIndexRaw, e := os.ReadFile(filepath.Join(bDir, "index.json"))
+	var bIndex behavior76Index
+	if e != nil || behavior76Hash(bIndexRaw) != behavior76BIndexSHA || json.Unmarshal(bIndexRaw, &bIndex) != nil || bIndex.StimuliSHA256 != behavior76StimuliSHA {
+		t.Fatal("original B index unavailable")
+	}
+	if err = behavior76CheckRawFiles(bDir, filepath.Join(filepath.Dir(dir), "native-b-raw-sha256.json"), "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848", 1492); err != nil {
+		t.Fatal(err)
+	}
 	privateRaw, e := os.ReadFile(filepath.Join(filepath.Dir(dir), "native-20261025a-private-arm-mapping.json"))
 	if e != nil {
 		t.Fatal("original private mapping unavailable")
@@ -276,6 +289,9 @@ func behavior76Collect(t *testing.T, native bool) {
 		t.Fatal("original private mapping changed")
 	}
 	arms := priorManifest.Schedule[0].ArmOrder
+	if err = behavior76CheckPrefix(bIndex, episodes, arms, 36); err != nil {
+		t.Fatal(err)
+	}
 	schedule := []map[string]any{}
 	for n, e := range episodes {
 		if priorManifest.Schedule[n].EpisodeID != e.ID || len(priorManifest.Schedule[n].ArmOrder) != 2 || priorManifest.Schedule[n].ArmOrder[0] != arms[n%2] || priorManifest.Schedule[n].ArmOrder[1] != arms[(n+1)%2] {
@@ -286,7 +302,11 @@ func behavior76Collect(t *testing.T, native bool) {
 	// Mapping is kept separately until the reviewer seals masked judgments.
 	behavior76Write(t, filepath.Join(filepath.Dir(dir), filepath.Base(dir)+"-private-arm-mapping.json"), mapping)
 	window := "issue76-local-" + time.Now().UTC().Format("20060102T150405")
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Hour)
+	deadline, err := time.Parse(time.RFC3339Nano, behavior76OriginalDeadline)
+	if err != nil || !time.Now().Before(deadline) {
+		t.Fatal("original cumulative wall deadline cannot be extended")
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	dsn := os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL")
 	parsed, err := pgxpool.ParseConfig(dsn)
@@ -307,14 +327,30 @@ func behavior76Collect(t *testing.T, native bool) {
 	if err != nil || !preserved {
 		t.Fatal("original authentication failure/unknown cannot be reset")
 	}
+	var bPreserved bool
+	err = journal.QueryRow(ctx, `SELECT closed AND admitted=171 AND manifest=$2::jsonb
+ AND (SELECT count(*)=171 AND min(n)=1 AND max(n)=171 AND count(total_tokens)=170 AND sum(total_tokens)=1262564 FROM public.behavior76_attempts WHERE window_id=$1)
+ AND EXISTS(SELECT 1 FROM public.behavior76_attempts WHERE window_id=$1 AND n=171 AND kind='start' AND status='transport_error' AND stage='response_stream' AND milliseconds=56165 AND input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL AND EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e->>'error_code'='provider_protocol_error') AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e?'final' OR e?'tool_call' OR e?'tool_batch'))
+ FROM public.behavior76_windows WHERE id=$1`, behavior76BWindow, string(bRaw)).Scan(&bPreserved)
+	if err != nil || !bPreserved {
+		t.Fatal("original B partial stream, counters and unavailable usage cannot be replaced")
+	}
 	if err = journal.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.system_settings'::regclass AND contype='p' AND conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid='public.system_settings'::regclass AND attname='key')]::smallint[])`).Scan(&settingsKey); err != nil || !settingsKey {
 		t.Fatal("encrypted settings persistence requires its original primary key")
 	}
 	manifest := map[string]any{"version": "behavior76-local-v1", "window": window, "source": source, "stimuli_sha256": behavior76StimuliSHA, "expectations_sha256": behavior76ExpectationsSHA, "mapping_sha256": behavior76Hash([]byte(behavior76JSON(mapping))), "max_native_entries": 768, "max_per_turn": 8, "max_per_run": 4, "wall_millis": (4 * time.Hour).Milliseconds(), "native": native, "model": antigravity.FlashHighModel, "output_contract": behavior76OutputContract, "baseline_prompt": prompt.DefaultBasePrompt, "candidate_addition": prompt.TaskContinuityProtocol}
-	manifest["version"] = "behavior76-local-v2"
+	manifest["version"] = "behavior76-local-v3-strict-suffix"
 	manifest["schedule"] = schedule
 	manifest["prior_window"] = map[string]any{"id": priorWindow, "admitted": 1, "unavailable_usage": 1, "model_dispatch_reached": false, "original_manifest_sha256": behavior76Hash(priorRaw)}
-	manifest["cumulative_admission_ceiling"] = 769
+	manifest["predecessor_b"] = map[string]any{"id": behavior76BWindow, "admitted": 171, "unavailable_usage": 1, "original_manifest_sha256": behavior76BManifestSHA, "original_index_sha256": behavior76BIndexSHA, "raw_inventory_sha256": "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848", "episode_arms": 36, "planned_turns": 72, "partial_stream_retained": true}
+	manifest["max_native_entries"] = behavior76CEntryLimit
+	manifest["wall_millis"] = time.Until(deadline).Milliseconds()
+	manifest["absolute_deadline"] = behavior76OriginalDeadline
+	manifest["cumulative_admission_ceiling"] = 364
+	manifest["first_episode_index"] = 18
+	manifest["planned_episode_arms"] = 12
+	manifest["planned_owner_turns"] = 24
+	manifest["operational_amendment"] = "Prospective separate window for the exact never-started suffix only; no replay, reset, candidate/provider/rubric change or extension of original deadline. B's failed/unavailable slot is retained in the combined comparison."
 	behavior76Write(t, filepath.Join(dir, "manifest.json"), manifest)
 	admission, err := journal.Begin(ctx)
 	if err != nil {
@@ -325,10 +361,10 @@ func behavior76Collect(t *testing.T, native bool) {
 		t.Fatal(err)
 	}
 	var solePredecessor bool
-	if err = admission.QueryRow(ctx, `SELECT count(*)=1 AND bool_and(id=$1 AND closed AND admitted=1) FROM public.behavior76_windows`, priorWindow).Scan(&solePredecessor); err != nil || !solePredecessor {
-		t.Fatal("this B-only infrastructure exception cannot skip a later window")
+	if err = admission.QueryRow(ctx, `SELECT count(*)=2 AND bool_and(closed AND ((id=$1 AND admitted=1) OR (id=$2 AND admitted=171))) FROM public.behavior76_windows`, priorWindow, behavior76BWindow).Scan(&solePredecessor); err != nil || !solePredecessor {
+		t.Fatal("this C-only suffix exception requires exactly its two closed predecessors")
 	}
-	if _, err = admission.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,clock_timestamp()+interval '4 hours')`, window, behavior76JSON(manifest)); err != nil {
+	if _, err = admission.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,$3)`, window, behavior76JSON(manifest), deadline); err != nil {
 		t.Fatal("window cannot reopen", err)
 	}
 	if err = admission.Commit(ctx); err != nil {
@@ -343,6 +379,9 @@ func behavior76Collect(t *testing.T, native bool) {
 	}()
 	var sealed atomic.Bool
 	for n, episode := range episodes {
+		if n < 18 {
+			continue // The entire begun prefix remains in B, including failed171.
+		}
 		if ctx.Err() != nil {
 			t.Fatal("overall collector deadline reached")
 		}
