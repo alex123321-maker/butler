@@ -56,3 +56,16 @@ Private reports in `/srv/storage/butler/agents/research-recovery-20261024`:
 `reports/telegram-queue-native-recovery.json`. Test containers/network were
 removed after verification. No queued request or failure was manufactured in
 the working service to test a warning.
+
+## Deployment
+
+Core `cae1a995b79f2a2469081ea45d068875c400a869` was deployed on `laba` to
+`/srv/storage/butler/main/releases/queue-visibility-20261025-cae1a995`.
+Migration101 applied. Only the Core candidate and migrator's source-file mount
+changed; other runtime services were retained. The Compose rollback snapshot is
+private. Health, owner execution-state read and the recovered result read returned
+200. No unfinished Inputs remained in the affected Telegram session.
+Live `/proc/1/exe` matched the built Core SHA-256:
+`26fe5bf58727f2d11d4741251fe1a505f92425a8abb89ea691174199188d059e`.
+The release remains on draft PR #150; main was not merged. Deployment proof is
+`reports/telegram-queue-deployment.json` in the same task-owned workspace.
