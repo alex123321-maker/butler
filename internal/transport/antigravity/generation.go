@@ -6,15 +6,20 @@ import (
 	"strconv"
 )
 
-// Configure only the current reviewed High profile. No fallback or mutation of
-// in-flight generation is supported. Schema validation remains application-owned.
+// Generation is trusted construction-time configuration for explicit paid Flash
+// profiles. No fallback or in-flight mutation; semantic validation stays owned
+// by the caller. Empty ThinkingLevel preserves the existing automatic contract.
 func validateGenerationConfig(cfg *Config) error {
+	cloudProfile := cfg.Model == FlashHighModel || cfg.Model == FlashLowModel
+	if cfg.ThinkingLevel != "" && !(cfg.Model == FlashLowModel && cfg.ThinkingLevel == "LOW" || cfg.Model == FlashHighModel && cfg.ThinkingLevel == "HIGH") {
+		return protocolError("unsupported explicit thinking level")
+	}
 	if cfg.MaximumOutputTokens == 0 {
 		cfg.MaximumOutputTokens = maxOutputTokens
 	}
 	structured := len(cfg.JSONResponseSchema) > 0 || len(cfg.GoogleResponseSchema) > 0
 	if cfg.MaximumOutputTokens < 1 || cfg.MaximumOutputTokens > 32768 ||
-		(cfg.MaximumOutputTokens > maxOutputTokens || structured) && cfg.Model != FlashHighModel {
+		(cfg.MaximumOutputTokens > maxOutputTokens || structured) && !cloudProfile {
 		return protocolError("unsupported configured generation allowance")
 	}
 	if len(cfg.JSONResponseSchema) > 0 && len(cfg.GoogleResponseSchema) > 0 {

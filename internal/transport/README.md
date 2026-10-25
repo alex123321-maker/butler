@@ -1,5 +1,10 @@
 # Logical model transport
 
+Optional logical `Usage.ThinkingTokens` is a separately observed subset of total
+usage, not an additional charge or allowance. Missing stays unavailable; explicit
+counts must fit the observed total after input/output. The issue97 native
+research runner retains it directly; existing protobuf boundaries are unchanged.
+
 Optional `ToolSetSnapshot` on the in-process Go ContinueRun/SubmitToolResult interface replaces the selected definitions; nil preserves them and an explicit empty set clears them. Revision validation and stable historical aliases preserve function/result correlation. Orchestrator owns selection. See [deferred schemas](../../docs/architecture/tool-discovery.md); the protobuf service is not extended by this logical Go change.
 
 

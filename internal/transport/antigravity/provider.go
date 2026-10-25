@@ -20,6 +20,7 @@ const (
 	Name            = "antigravity"
 	DefaultModel    = "gemini-3.8-flash-tiered"
 	FlashHighModel  = "gemini-3.8-flash-high"
+	FlashLowModel   = "gemini-3.8-flash-low"
 	endpoint        = "https://aicode.googleapis.com/v1"
 	cloudEndpoint   = "https://daily-cloudcode-pa.googleapis.com/v1internal"
 	maxOutputTokens = 8192
@@ -32,9 +33,12 @@ type Config struct {
 	// These are trusted construction-time settings, never model transport options.
 	// The generated-token ceiling includes thinking as well as visible output.
 	MaximumOutputTokens int
-	JSONResponseSchema  json.RawMessage
+	// Optional explicit native level for a prospectively frozen research profile.
+	// Empty preserves the reviewed automatic thinkingBudget=-1 wire contract.
+	ThinkingLevel      string
+	JSONResponseSchema json.RawMessage
 	// Explicit native OpenAPI-subset responseSchema dialect, not a fallback.
-	// Mutually exclusive with JSONResponseSchema and available only on High.
+	// Mutually exclusive with JSONResponseSchema, for paid Flash Low/High profiles.
 	GoogleResponseSchema json.RawMessage
 }
 
@@ -106,8 +110,8 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 		return nil, protocolError("Antigravity transport options are unsupported")
 	}
 	structured := len(p.config.JSONResponseSchema) > 0 || len(p.config.GoogleResponseSchema) > 0
-	if (p.config.MaximumOutputTokens > maxOutputTokens || structured) && req.Context.ModelName != FlashHighModel {
-		return nil, protocolError("configured High generation requires the selected High model")
+	if (p.config.MaximumOutputTokens > maxOutputTokens || structured || p.config.ThinkingLevel != "") && req.Context.ModelName != p.config.Model {
+		return nil, protocolError("configured native generation requires its selected model")
 	}
 	if structured && len(req.ToolDefinitions) > 0 {
 		return nil, protocolError("JSON observation cannot declare tools")
