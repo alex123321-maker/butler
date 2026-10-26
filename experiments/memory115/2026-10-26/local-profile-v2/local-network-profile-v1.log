@@ -1,0 +1,4 @@
+=== RUN   TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution
+--- PASS: TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	7.647s

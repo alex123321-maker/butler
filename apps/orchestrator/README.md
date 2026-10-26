@@ -24,6 +24,10 @@ The existing native collector consumes the derived lineage and may claim only
 its separate `127.0.0.1:55451/memory115_native_test` database. Its normal current
 day, one-use domain, source carry, preseal, corpus and finite budget checks still
 apply. Offline preparation grants no storage claim, auth or inference admission.
+For this local successor, ambient HTTP/HTTPS/ALL proxy variables must be absent;
+the existing PC default HTTPS route is used. Legacy lab execution retains its
+original exact loopback-relay requirement. No provider endpoint/model or parser
+changes are introduced by this harness-only distinction.
 
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.

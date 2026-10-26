@@ -15,6 +15,33 @@ import (
 const local115ClosedSHA = "8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f"
 const local115DiagnosticsSHA = "771675b9f7e90637b13ce5509dd72947cecc840273a48d79e412b6749c7d5ff1"
 
+// The local successor uses the same PC default HTTPS route as the existing
+// native76/97 profile. It never selects a proxy from model input or requires the
+// lab-only loopback relay. Legacy lab execution keeps its original exact guard.
+func experienceNativeNetworkProfile(local bool, getenv func(string) string) bool {
+	if !local {
+		return getenv("HTTPS_PROXY") == "http://127.0.0.1:18080"
+	}
+	for _, key := range []string{"HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"} {
+		if getenv(key) != "" {
+			return false
+		}
+	}
+	return true
+}
+
+func TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution(t *testing.T) {
+	get := func(values map[string]string) func(string) string { return func(k string) string { return values[k] } }
+	if !experienceNativeNetworkProfile(true, get(nil)) || experienceNativeNetworkProfile(false, get(nil)) || !experienceNativeNetworkProfile(false, get(map[string]string{"HTTPS_PROXY": "http://127.0.0.1:18080"})) {
+		t.Fatal("fixed PC/lab route selection differs")
+	}
+	for _, key := range []string{"HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"} {
+		if experienceNativeNetworkProfile(true, get(map[string]string{key: "http://127.0.0.1:18080"})) {
+			t.Fatal("ambient proxy replaced PC profile")
+		}
+	}
+}
+
 // Only a new prospective identity can carry the closed failed population into
 // this PC's separate owning database. The original day/deadline remain retained
 // verbatim in Historical; no caller-authored counts or quality verdict exists.

@@ -36,6 +36,13 @@ schema and one-use domain checks. It cannot select laba, a production database,
 the behavior76 journal, or another local maintenance database. Native92 keeps its
 own separate admission and is not enabled by this recipe.
 
+The local successor uses this PC's existing default HTTPS route with all six
+upper/lowercase HTTP/HTTPS/ALL proxy variables absent. It rejects ambient proxy
+substitution before creating output, storage or auth. The legacy lab-only profile
+still requires its original exact loopback relay. No provider endpoint, account,
+model, transport parser, retry or generation setting changes. Default networking
+connectivity and actual authenticated subscription readiness remain separate facts.
+
 `TestLocal115PrepareNewDayRecipe` is explicitly gated and writes a new recipe
 with O_EXCL; an existing or failed identity cannot be overwritten. It authenticates
 the whole original history without constructing provider/storage/auth. Ordinary

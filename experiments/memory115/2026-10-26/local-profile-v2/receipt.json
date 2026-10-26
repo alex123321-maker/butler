@@ -1,0 +1,39 @@
+{
+  "version": "issue115-local-profile-and-source-preparation-v2",
+  "native_admissions": 0,
+  "auth_sources_constructed": 0,
+  "storage_claims": 0,
+  "network": "PC default HTTPS; HTTP/HTTPS/ALL proxy aliases must be absent; legacy lab guard unchanged",
+  "windows_network_control": "PASS",
+  "linux_race_top_level_passed": 3,
+  "vet_exit": 0,
+  "new_app_elf_sha256": "88f674b66e6171e2457998133643ab4bcdadaa6e78acc370af69508ffb6c8fa0",
+  "unchanged_helpers": "Four artifact hashes from native-artifacts-v1; only app test entry/network guard changed",
+  "old_preparation": {
+    "result": "TIMEOUT_DURING_SOURCE_WALK_BEFORE_PRESEAL",
+    "seconds": 180,
+    "log": ".cache/memory115/native-offline-preparation-v1.log",
+    "sha256": "d2446457b275da8765561818dd96da83e4614bd5222fab257827440a307e375c",
+    "known_ignored_directories": [
+      "web/node_modules",
+      "web/.nuxt",
+      "web/.output",
+      "web/test-results"
+    ],
+    "clean_committed_snapshot_files": 4826,
+    "clean_snapshot_commit": "e83c44e21c69efa38c1e5a598878d40464fe4c2b",
+    "clean_snapshot_inventory_sha256": "0b9086a96f3d9c953659df6d087dab59c99910cd79c569b93e73853fba345588",
+    "snapshot_used_for_native": false
+  },
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/memory_experience_native_entry_test.go",
+      "sha256": "f1ee04fd51aca60622f1d3ecf2b9e4cbb4f57a56a41011df1829ce50149e5b44"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/memory115_local_successor_test.go",
+      "sha256": "e2c16708902697477bf6a5d50ffe90bd52ee90c54cda4bf8f81a66eca19f436f"
+    }
+  ],
+  "release_qualified": false
+}

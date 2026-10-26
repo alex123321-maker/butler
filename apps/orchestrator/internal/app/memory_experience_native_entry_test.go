@@ -259,8 +259,8 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" {
-		t.Fatal("native server proxy profile differs")
+	if !experienceNativeNetworkProfile(history.LocalSuccessor != nil, os.Getenv) {
+		t.Fatal("native fixed network profile differs")
 	}
 	proof := os.Getenv("BUTLER_EXPERIENCE_NATIVE_OUTPUT")
 	if !filepath.IsAbs(proof) || experienceNativePrivateParent(filepath.Dir(proof)) != nil || os.Mkdir(proof, 0700) != nil {
