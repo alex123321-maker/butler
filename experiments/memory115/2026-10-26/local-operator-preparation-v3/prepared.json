@@ -1,0 +1,12 @@
+{
+  "actual_cgroup_probe": true,
+  "auth_access": 0,
+  "cpu_max": "100000 100000",
+  "memory_max": "2147483648",
+  "native_calls": 0,
+  "pids_max": "256",
+  "plan_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "result": "ORIGINAL_PRESEAL_AND_ACTUAL_RESOURCES_RECHECKED_NO_AUTH_OR_NATIVE",
+  "swap_max": "0",
+  "whole_cgroup_empty": true
+}

@@ -497,7 +497,7 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if err = local115Exclusive(filepath.Join(root, "source-after-native.value"), []byte(final)); err != nil {
 		return err
 	}
-	if err = local115JSON(filepath.Join(root, "local-handback.json"), map[string]any{"version": "butler115-local-provider-handback.v1", "native_exit_status": exit, "collector_started": cmd.Process != nil, "cmd_wait_returned": cmd.ProcessState != nil, "whole_cgroup_empty": reaped, "forced_cleanup": forced, "opaque_source_cas": true, "source_windows_closed_checked": true, "recovery_source": source, "local_auth_resolved": true, "fresh_local_encrypted_snapshot_saved": true, "lab_main_auth_claim": false, "raw_material_printed": false, "release_qualified": false, "plan_sha256": local115PlanSHA}); err != nil {
+	if err = local115JSON(filepath.Join(root, "local-handback.json"), map[string]any{"version": "butler115-local-provider-handback.v1", "native_exit_status": exit, "collector_started": cmd.Process != nil, "cmd_wait_returned": cmd.ProcessState != nil, "whole_cgroup_empty": reaped, "forced_cleanup": forced, "native_database_backends_gone": true, "opaque_source_cas": true, "source_windows_closed_checked": true, "recovery_source": source, "local_auth_resolved": true, "fresh_local_encrypted_snapshot_saved": true, "lab_main_auth_claim": false, "raw_material_printed": false, "release_qualified": false, "plan_sha256": local115PlanSHA}); err != nil {
 		return err
 	}
 	if nativeErr != nil || forced {

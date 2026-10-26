@@ -76,9 +76,10 @@ After the collector exits, actual command Wait and the whole cgroup's empty
 state precede a bounded check that every other client backend in the credential
 database has exited. The operator closes its preflight target connection before
 collection and uses one fresh recovery connection, so its own idle pool cannot
-masquerade as a native writer. A pending backend blocks the final read; durable
-target recovery, source CAS, authenticated subscription
-readiness and a fresh encrypted local snapshot. Forced cleanup or failed native
+masquerade as a native writer. A pending backend blocks the final read. Only
+afterward may durable target
+recovery, source CAS, authenticated subscription readiness and a fresh encrypted
+local snapshot proceed. Forced cleanup or failed native
 collection remains failure even if auth handback succeeds. Ambiguous recovery
 retains private files and fails closed. This local handback cannot establish
 the legacy lab-main handback or release qualification. Original deadline and
