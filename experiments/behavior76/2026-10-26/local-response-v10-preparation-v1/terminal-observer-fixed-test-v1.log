@@ -1,0 +1,32 @@
+=== RUN   TestBehavior76GlobalStopTerminalObserverIntegration
+=== RUN   TestBehavior76GlobalStopTerminalObserverIntegration/self_failure_preserves_live_fence
+2026/10/26 15:20:15 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 15:20:15 INFO postgres connected component=postgres
+2026/10/26 15:20:15 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 15:20:16 INFO run created component=run run_id=run-1793028016481629605-86a49f32132d992b session_key=behavior76:public-development:A state=created
+2026/10/26 15:20:16 INFO run transitioned component=run run_id=run-1793028016481629605-86a49f32132d992b from_state=created to_state=queued
+2026/10/26 15:20:16 INFO run transitioned component=run run_id=run-1793028016481629605-86a49f32132d992b from_state=queued to_state=acquired
+2026/10/26 15:20:16 INFO run transitioned component=run run_id=run-1793028016481629605-86a49f32132d992b from_state=acquired to_state=preparing
+2026/10/26 15:20:16 INFO run transitioned component=run run_id=run-1793028016481629605-86a49f32132d992b from_state=preparing to_state=model_running
+2026/10/26 15:20:16 ERROR run execution failed component=orchestrator-run run_id=run-1793028016481629605-86a49f32132d992b error=transport_connection_error
+2026/10/26 15:20:16 INFO run transitioned component=run run_id=run-1793028016481629605-86a49f32132d992b from_state=model_running to_state=failed
+    behavior76_terminal_observer_integration_test.go:375: FIXED_TERMINAL own_task_conflict_demonstrated=true cleanup_context_live=true original_fence_valid=true original_transport_error_retained=true blocked_Input_failed_run=true own_CancelRun=0 native_calls=0
+2026/10/26 15:20:16 INFO closing postgres pool component=postgres total_conns=3
+=== RUN   TestBehavior76GlobalStopTerminalObserverIntegration/preterminal_real_lease_revocation
+2026/10/26 15:20:19 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 15:20:19 INFO postgres connected component=postgres
+2026/10/26 15:20:19 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 15:20:20 INFO run created component=run run_id=run-1793028020843310704-8fb1e378982319a8 session_key=behavior76:public-development:A state=created
+2026/10/26 15:20:20 INFO run transitioned component=run run_id=run-1793028020843310704-8fb1e378982319a8 from_state=created to_state=queued
+2026/10/26 15:20:20 INFO run transitioned component=run run_id=run-1793028020843310704-8fb1e378982319a8 from_state=queued to_state=acquired
+2026/10/26 15:20:20 INFO run transitioned component=run run_id=run-1793028020843310704-8fb1e378982319a8 from_state=acquired to_state=preparing
+2026/10/26 15:20:21 INFO run transitioned component=run run_id=run-1793028020843310704-8fb1e378982319a8 from_state=preparing to_state=model_running
+2026/10/26 15:20:21 WARN execution authority observation stopped component=orchestrator-run run_id=run-1793028020843310704-8fb1e378982319a8 phase=lease classification=stale elapsed_ms=0
+2026/10/26 15:20:21 ERROR run execution failed component=orchestrator-run run_id=run-1793028020843310704-8fb1e378982319a8 error=execution_authority_check_failed
+2026/10/26 15:20:21 WARN working memory finalization failed on error component=orchestrator-run run_id=run-1793028020843310704-8fb1e378982319a8 error="context canceled"
+    behavior76_terminal_observer_integration_test.go:332: REAL_REVOCATION actual_ReleaseLease=true watcher_CancelRun=true execution_error_retained=true native_calls=0
+2026/10/26 15:20:21 INFO closing postgres pool component=postgres total_conns=2
+--- PASS: TestBehavior76GlobalStopTerminalObserverIntegration (9.17s)
+    --- PASS: TestBehavior76GlobalStopTerminalObserverIntegration/self_failure_preserves_live_fence (4.74s)
+    --- PASS: TestBehavior76GlobalStopTerminalObserverIntegration/preterminal_real_lease_revocation (4.43s)
+PASS

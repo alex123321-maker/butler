@@ -1,0 +1,11 @@
+{
+  "version": "issue76-local-response-v10-vet-v1",
+  "exit_code": 0,
+  "semantic_source": "4bbc9ec2bea3e7d258500b6e4b8fcd1cfc9f521f",
+  "packages": [
+    "./apps/orchestrator/internal/app",
+    "./apps/orchestrator/internal/orchestrator"
+  ],
+  "native_calls": 0,
+  "auth_access": 0
+}

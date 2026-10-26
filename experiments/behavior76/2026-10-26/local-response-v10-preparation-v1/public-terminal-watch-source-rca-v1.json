@@ -1,0 +1,63 @@
+{
+  "version": "issue76-public-terminal-watch-source-rca-v1",
+  "created_utc": "2026-10-26T11:57:19.1838431+00:00",
+  "classification": "SOURCE_SUPPORTED_TERMINAL_TASK_MUTATION_RACE_ACTUAL_ERROR_NOT_YET_PROVEN",
+  "retained_failed_log": {
+    "sha256": "72ef712d08976b197feee8a8266538be7b3a23087d0d50a439d7d8053dde16b7",
+    "path": ".cache/behavior76/local-response-v10-public-v1.log"
+  },
+  "observed_public_metadata": {
+    "automatic": "A transport_connection_error",
+    "test": "TestBehavior76LocalHTTPAutomaticPreservesOwnerIntegration",
+    "authority_750ms_timeout_proven": false,
+    "owner": "B completed",
+    "watcher_classification": "unavailable",
+    "watcher_phase": "task_authority",
+    "global": true,
+    "actual_returned_guard_error": "UNKNOWN: not recorded in public log",
+    "watcher_elapsed_ms": 1
+  },
+  "source_pins": [
+    {
+      "sha256": "de1d0e006888739868641e15f9e8f4e223097f03c807017d1049bf2c4e73c0b6",
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go"
+    },
+    {
+      "sha256": "de20b9ba349eeea76975a5188915fde40c40a9aed7ae08a64b17f6c7fb716e30",
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go"
+    },
+    {
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05",
+      "path": "apps/orchestrator/internal/orchestrator/working_memory.go"
+    },
+    {
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "path": "apps/orchestrator/internal/task/authority.go"
+    },
+    {
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4",
+      "path": "apps/orchestrator/internal/task/store.go"
+    },
+    {
+      "sha256": "89a3df2f98bf877e775bbd013e300c6216905b1a27eca176a96da5b393abfdc5",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_integration_test.go"
+    }
+  ],
+  "causal_order": [
+    "startLeaseRenewer polls real task authority every250ms until deferred stopRenewing cancels and joins it.",
+    "failRun invokes finalizeWorkingMemory before its owning deferred stopRenewing.",
+    "finalizeWorkingMemory delegates Tasks.SaveRunOutcome(failed).",
+    "SaveRunOutcome commits active task to blocked and increments task revision.",
+    "ValidateRunAuthority requires active task with task.revision=run.task_revision; a later read of that successful own commit returns task.ErrConflict.",
+    "Watcher maps that error to generic unavailable and calls provider.CancelRun; research supervisor correctly keeps actual authority cancellation GLOBAL."
+  ],
+  "necessary_reproduction": "Embed actual *task.Store; override SaveRunOutcome to delegate the real commit, signal commit, then block return; let ordinary watcher invoke actual ValidateRunAuthority while owning failRun has not reached deferred stop; record exact error and CancelRun before releasing the held callback.",
+  "repair_contract": "Quiesce/join observation before owning terminal mutation invalidates the task binding, without cancelling the original write context, disabling currentness/lease fences, admitting more provider/tool work or forgiving external revocation. No ErrConflict whitelist and no timeout increase.",
+  "unresolved": "Source permits a concrete schedule matching observed1ms warning. Actual warning could still have another task-authority error; deterministic instrumented public reproduction is needed before calling it the observed root cause.",
+  "source_changes_by_checker": 0,
+  "Go_PG_auth_native_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "native_admission": false
+}
