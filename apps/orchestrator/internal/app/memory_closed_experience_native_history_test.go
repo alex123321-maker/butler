@@ -37,6 +37,20 @@ type closedExperienceManifest struct {
 	DiscoveryInference *bool                                           `json:"control_plane_handback_is_inference"`
 }
 
+type closedExperienceDomain struct {
+	Window   string `json:"window_id"`
+	Hash     string `json:"window_hash"`
+	Schema   string `json:"schema_name"`
+	Owner    string `json:"owner_id"`
+	History  string `json:"history_sha256"`
+	Day      string
+	Deadline time.Time
+}
+
+func (d closedExperienceDomain) matches(m closedExperienceManifest, deadline time.Time) bool {
+	return d.Window == experienceNativeWindow && d.Hash == m.Preseal && d.Schema == experienceNativeSchema && d.Owner == m.Owner && d.History == m.Previous && d.Day == m.Day && d.Deadline.Equal(deadline)
+}
+
 // Every component is checked with Lstat. A lexical path check alone would let
 // an intermediate symlink escape this retained, private evidence directory.
 func closedExperienceRead(root, name, expected string, limit int64) ([]byte, error) {
@@ -225,16 +239,8 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 	if err = closedExperienceJournal(journal, slots, window.Entries, byDatabase, m, previous, quotes); err != nil {
 		return out, err
 	}
-	var domain struct {
-		Window   string `json:"window_id"`
-		Hash     string `json:"window_hash"`
-		Schema   string `json:"schema_name"`
-		Owner    string `json:"owner_id"`
-		History  string `json:"history_sha256"`
-		Day      string
-		Deadline time.Time
-	}
-	if read("actual/domain-claim.json", &domain) != nil || domain.Window != experienceNativeWindow || domain.Hash != m.Preseal || domain.Schema != experienceNativeSchema || domain.Owner != m.Owner || domain.History != m.Previous || domain.Day != m.Day || domain.Deadline != previous.Deadline {
+	var domain closedExperienceDomain
+	if read("actual/domain-claim.json", &domain) != nil || !domain.matches(m, previous.Deadline) {
 		return out, errors.New("one-use domain receipt differs")
 	}
 	var handback closedExperienceHandback

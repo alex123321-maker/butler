@@ -10,6 +10,12 @@ clearing history or changing its epoch policy. See the
 
 Explicit owner profiles with migration097 also deliver fixed kernel execution
 
+The offline closed experience-history consumer compares the domain receipt's
+deadline by instant, so PostgreSQL's `+07:00` export and the UTC manifest can
+denote the same immutable deadline. All domain identities, source hashes, dates,
+cost joins and unknown usage checks remain mandatory. This does not reopen an
+expired window or qualify native memory acceptance.
+
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
 Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts

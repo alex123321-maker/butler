@@ -1,0 +1,6 @@
+=== RUN   TestLocal115ClosedHistoryImport
+    memory115_local_history_test.go:17: latest closed90 recursive history unavailable one-use domain receipt differs
+--- FAIL: TestLocal115ClosedHistoryImport (7.78s)
+FAIL
+FAIL	github.com/butler/butler/apps/orchestrator/internal/app	17.252s
+FAIL
