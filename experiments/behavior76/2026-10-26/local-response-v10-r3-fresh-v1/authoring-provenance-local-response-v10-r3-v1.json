@@ -1,0 +1,23 @@
+{
+  "version": "issue76-independent-local-response-v10-r3-authoring-provenance-v1",
+  "independent_author": "issue76_independent",
+  "first_private_authoring_utc": "2026-10-26T19:42:42.6783527+00:00",
+  "completed_utc": "2026-10-26T19:42:42.9300345+00:00",
+  "formal_freeze_issued_utc": "2026-10-26T19:36:46.3118006Z",
+  "formal_freeze_sha256": "ce72450ea01a836347f4203f19c0631a109230de2f466db3388287d7c011011a",
+  "freeze_preservation_commit": "262bf9175e2b4551ffa816c0e870201b1282f316",
+  "new_seed": true,
+  "seed_sha256": "e00b8c1e9811fa15a8ce3819013418ebe924ea6a28bdf3ef165f836e80e29502",
+  "authoring_script_sha256": "bd4d49874cecf728ae46a1bd404a124a57b87ddfac380d0335faf1a71d1652be",
+  "old_r2_or_other_controls_goldens_answers_maps_read_or_reused": false,
+  "substantively_new_case_content": true,
+  "all_synthetic_no_real_owner_episode": true,
+  "no_quality_results_used_for_selection_or_tuning": true,
+  "new_random_order_fixed_before_execution": true,
+  "source_runtime_candidate_thresholds_unchanged": true,
+  "hidden_expectations_released_to_parent": false,
+  "stimuli_sha256": "211f246fab476a7917c0979054b2028e68d8baea8b8ea452786ef6b4671ac648",
+  "expectations_sha256": "aa06f92a233e9717cfc751118711af6e8e315074497b9a011a6a8ccb115501d9",
+  "Go_PG_auth_native_calls": 0,
+  "native_admission": false
+}

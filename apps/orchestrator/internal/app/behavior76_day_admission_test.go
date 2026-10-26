@@ -12,8 +12,8 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = "UNBOUND_FRESH_V10_R3_STIMULI"
-const behavior76DayExpectationsSHA = "UNBOUND_FRESH_V10_R3_EXPECTATIONS"
+const behavior76DayStimuliSHA = "211f246fab476a7917c0979054b2028e68d8baea8b8ea452786ef6b4671ac648"
+const behavior76DayExpectationsSHA = "aa06f92a233e9717cfc751118711af6e8e315074497b9a011a6a8ccb115501d9"
 
 func behavior76ClosedResponseHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-local-response-v10-r2")
