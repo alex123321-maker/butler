@@ -1,0 +1,142 @@
+{
+  "version": "issue76-independent-closed-stream-v5-boundary-v1",
+  "decision": "NO_GO_INCOMPLETE_GLOBAL",
+  "window": "issue76-fixture-stream-20261025T231554",
+  "producer": "b9d9ea02f3275811513188f4701596b61562487c",
+  "raw": {
+    "independent_inventory_sha256": "60759b9a7babe55d09d8adefa10a05d41318065fe7d2d8e1f5b7b6149dd38b23",
+    "archive_sha256": "a472c9a61c38387f8372a3d2d6c11099c7db3012d1c7731ce61c0972d10d9618",
+    "raw_boundary_receipt_sha256": "093ea0c3cfc8101196ca596f2a28991096f9ccbf23f992d737a563965ee36172",
+    "verified_case_inventory_files": 1692,
+    "bytes": 44812506,
+    "parent_inventory_sha256": "0f4acd68d3998e467e95424635fd9e13c7b7a69cf077161b3d6ab8edf7c8c176",
+    "readonly": 1719,
+    "files": 1719
+  },
+  "accounting": {
+    "all_null_usage": 6,
+    "history_sql_log_sha256": "ef9a3c2544e29269ccbbf33fde6d970741cc9ee7c14f0ee18d841a82260f8dc4",
+    "current_admissions": 101,
+    "current_measured": 100,
+    "all_admissions": 506,
+    "all_measured": 500,
+    "initial_readonly_command_path_failure_retained": "closed-stream-v5-history-v1.log; direct chroot executable absent; no SQL ran; corrected shell invocation only",
+    "closed_windows": 6,
+    "all506_exact_equal_sealed_export": true,
+    "current_null_usage": 1,
+    "all_known_tokens": 3832577,
+    "current_known_tokens": 748105,
+    "original405_exact_unchanged": true,
+    "no_entry102": true
+  },
+  "coverage": {
+    "actual_owner_inputs": 44,
+    "unindexed_owner_opportunities": 51,
+    "complete": false,
+    "actual_automatic_final_rows": 2,
+    "fixture_local_unknown_owner_outcomes": 1,
+    "unstarted_arms": 25,
+    "actual_automatic_runs": 2,
+    "indexed_unexecuted_local_tail": 1,
+    "fully_paired_episode_slots": 11,
+    "planned_owner_opportunities": 96,
+    "all_original_steps_recorded_in_prefix_arms": 22,
+    "completed_owner_outcomes": 42,
+    "indexed_arms": 23,
+    "actual_owner_final_rows": 42,
+    "last_arm_second_original_turn_unexecuted": true,
+    "indexed_owner_outcomes": 45,
+    "failed_owner_outcomes": 1,
+    "planned_arms": 48,
+    "total_unexecuted_owner_opportunities": 52
+  },
+  "first_global": {
+    "milliseconds": 19851,
+    "final_events": 0,
+    "bounded_causal_conclusion": "Persisted owner_day deadline clips actual model admission to UTC midnight; it expires during submit. This is an owning budget boundary, not established upstream/provider or 750ms authority observer failure.",
+    "kind": "submit",
+    "http_status_available": false,
+    "owning_checkpoint": "execution_stopped",
+    "status": "cancelled",
+    "usage": "NULL_UNKNOWN_NOT_ZERO",
+    "continuation_stage": "model_budget_reserved",
+    "tool_proposal_events": 0,
+    "durable_reason": "execution_budget_deadline",
+    "wrapper_entry": 101,
+    "text_delta_events": 0,
+    "preceding_entry100": "measured tool_handoff; actual Broker http.request completed with effect_confirmed and dispatch_completed",
+    "stage": "http_round_trip",
+    "wrapper_diagnostic": "provider_timeout",
+    "events": [
+      "run_started",
+      "transport_error"
+    ]
+  },
+  "deadline_chain": {
+    "model_operation": "operation_118ffd60b4b8d3eabb13218fafee4edcd02ae89330e49ca2",
+    "scopes": [
+      {
+        "deadline": "2026-10-26T07:19:31.508647+07:00",
+        "kind": "mandate",
+        "scope_id": "96ea7c34ed18be9e3514eae1309fd87210103e6d7b84101e48070ff7c8d0b06f"
+      },
+      {
+        "deadline": "2026-10-26T07:00:00+07:00",
+        "kind": "owner_day",
+        "scope_id": "27cfefa2daec30fe434c88325447a9cf96ae3e3dca3edbc4ae0c8c13c089dbcd"
+      },
+      {
+        "deadline": "2026-10-26T07:19:32.59328+07:00",
+        "kind": "task",
+        "scope_id": "72b187573bf2afe7c35e73620fc8a81f4c0b2f651c8485dcf63a8b5ff430f3c6"
+      }
+    ],
+    "source_budget_sha256": "69241f3b484185bb45102406f6428c6d93a81f7233a602fac97e4035e89b1cb3",
+    "serialized_context_cause": "not separately recorded; exact persisted checkpoint reason and durable deadline chain available",
+    "source_orchestrator_budget_sha256": "8e771a98a2260b820f5a2640c604f73099e945c99d75b57c3253b6a0c01eae62",
+    "reservation": [
+      {
+        "scope_ids": [
+          "27cfefa2daec30fe434c88325447a9cf96ae3e3dca3edbc4ae0c8c13c089dbcd",
+          "72b187573bf2afe7c35e73620fc8a81f4c0b2f651c8485dcf63a8b5ff430f3c6",
+          "96ea7c34ed18be9e3514eae1309fd87210103e6d7b84101e48070ff7c8d0b06f"
+        ],
+        "reservation_id": "6d099135a25064d3dbfbdada09b7dc3f6ad335ffb9d75f250d4819af91ab607c",
+        "created_at": "2026-10-26T06:59:40.114341+07:00"
+      }
+    ]
+  },
+  "last_export_states": {
+    "selected_memory_run_sources": 0,
+    "memory_profile_rows": 0,
+    "mandate": "active not revoked; expires00:19:31.508647Z",
+    "input": "running attempts1; claim expires00:00:52.674146Z",
+    "source_authority_fault": "none observed in actual authority stream; this does not make failed quiescence PASS",
+    "quiescence": "failed before Broker/runtime reaped proof; zero/default fields are not qualified quiescence",
+    "memory_source": "one active message source",
+    "task": "active revision1 normal",
+    "run": "model_running; no final"
+  },
+  "observer": {
+    "last_operation_failures": 0,
+    "last_observer_failed": false,
+    "last_dropped_events": 0,
+    "last_forensic_receipt_sha256": "84cc8857a0e0721bf778441c1f721f10300e0f84c3791cc646bf5edb93662702",
+    "last_actual_events": 11254,
+    "sealed_qualified_streams": 22,
+    "last_sealed": false,
+    "last_schema": "only header claim; failed quiescence has no independent schema receipt",
+    "last_open_spans": 0,
+    "no_counter_capacity_fault_observed": true,
+    "last_paired_spans": 5627,
+    "last_forensic_qualification": false
+  },
+  "no_retry_no_new_window": true,
+  "no_tests_replayed": true,
+  "mapping_read": false,
+  "goldens_read": false,
+  "answers_quality_assessed": false,
+  "candidate_promotion": false,
+  "issue_closure": false,
+  "next_work": "Separate prospective day-boundary admission only after public source freeze; no deadline extension or new native authorization in this receipt"
+}
