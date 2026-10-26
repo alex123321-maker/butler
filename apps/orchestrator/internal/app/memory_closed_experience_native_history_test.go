@@ -115,7 +115,7 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 		Maximum int    `json:"maximum_entries"`
 		Slots   []experienceNativeSlot
 	}
-	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != 640 || plan.Owner != m.Owner || plan.Lineage != previous || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
+	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != 640 || plan.Owner != m.Owner || !reflect.DeepEqual(plan.Lineage, previous) || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
 		return out, errors.New("closed cohort differs from exact original preseal and parent")
 	}
 	corpus, err := experienceNativeCorpusFiles()

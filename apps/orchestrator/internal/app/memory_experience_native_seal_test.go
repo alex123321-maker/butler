@@ -24,11 +24,12 @@ import (
 // a client-authored verdict or a sum of inclusive predecessor scopes. The native
 // entry independently reloads that lineage before accepting its matching seal.
 type experienceNativeLineage struct {
-	Hash     string                 `json:"sha256"`
-	Day      string                 `json:"day"`
-	Deadline time.Time              `json:"deadline"`
-	Carry    budget.Units           `json:"inclusive_carry"`
-	Usage    temporalV5CurrentUsage `json:"inclusive_usage"`
+	Hash           string                  `json:"sha256"`
+	Day            string                  `json:"day"`
+	Deadline       time.Time               `json:"deadline"`
+	Carry          budget.Units            `json:"inclusive_carry"`
+	Usage          temporalV5CurrentUsage  `json:"inclusive_usage"`
+	LocalSuccessor *local115HistoryBinding `json:"local_successor,omitempty"`
 }
 
 type experienceNativeSeal struct {
@@ -157,6 +158,9 @@ func experienceNativeCarryPolicy(source bool, carry budget.Units) (budget.Policy
 }
 
 func validateExperienceNativeLineage(history experienceNativeLineage) error {
+	if history.LocalSuccessor != nil && validateLocal115HistoryBinding(history) != nil {
+		return errors.New("exact retained local successor lineage required")
+	}
 	u := history.Usage
 	if !experienceNativeSHA(history.Hash) || u.NativeEntries < 0 || u.NativeKnownUsage < 0 || u.NativeUnknownUsage < 0 || u.ProductObserved < 0 || u.ProductNULL < 0 || u.NativeMissingTotal < 0 || u.NativeMissingTotal > u.NativeKnownUsage || u.KnownFullTokenLowerBound < 0 || u.NativeEntries != u.NativeKnownUsage+u.NativeUnknownUsage || u.ProductAttempts != u.ProductObserved+u.ProductNULL || u.ProductWithoutNativeEntry != u.ProductAttempts-u.NativeEntries || u.ProductWithoutNativeEntry < 0 || int64(u.ProductAttempts) != history.Carry.ModelTurns {
 		return errors.New("complete current owner-day usage and charge metadata required")
@@ -337,6 +341,33 @@ func TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator(t *test
 		changed, _ := json.Marshal(short)
 		if _, err := checkExperienceNativeSeal(changed, experienceDigest(string(encoded)), now.Add(time.Second), root, c, history, binaries); err == nil {
 			t.Fatal("reviewed short scope expanded after freeze")
+		}
+	})
+	t.Run("local_successor_persisted_preseal", func(t *testing.T) {
+		prior := history
+		prior.Hash = local115ClosedSHA
+		created := time.Date(2026, 10, 26, 4, 0, 0, 0, time.UTC)
+		manifest := local115SuccessorManifest{Format: "butler.experience.local-new-day.v1", Location: "this-pc-isolated-memory115", Owner: experienceNativeOwner, Created: created, Day: "2026-10-26", Deadline: created.Truncate(24 * time.Hour).Add(24 * time.Hour), Previous: consolidationHistoryRef{SHA256: local115ClosedSHA}, Diagnostics: consolidationHistoryRef{SHA256: local115DiagnosticsSHA}}
+		successor, err := local115SuccessorLineage(manifest, strings.Repeat("d", 64), prior)
+		if err != nil {
+			t.Fatal(err)
+		}
+		localSeal, err := prepareExperienceNativeSeal(created, root, c, successor, binaries)
+		if err != nil {
+			t.Fatal(err)
+		}
+		encoded, err := json.Marshal(localSeal)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checked, err := checkExperienceNativeSeal(encoded, experienceDigest(string(encoded)), created.Add(time.Second), root, c, successor, binaries)
+		if err != nil || !reflect.DeepEqual(checked.Lineage, successor) || !reflect.DeepEqual(checked.Schedule, seal.Schedule) {
+			t.Fatal("persisted successor changed original history or cohort", err)
+		}
+		checked.Lineage.LocalSuccessor.Historical.Carry.Tokens--
+		bad, _ := json.Marshal(checked)
+		if _, err := checkExperienceNativeSeal(bad, experienceDigest(string(bad)), created.Add(time.Second), root, c, successor, binaries); err == nil {
+			t.Fatal("nested old cost mutation accepted")
 		}
 	})
 	for name, mutate := range map[string]func(*experienceNativeSeal){

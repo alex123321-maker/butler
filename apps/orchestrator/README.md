@@ -16,6 +16,15 @@ denote the same immutable deadline. All domain identities, source hashes, dates,
 cost joins and unknown usage checks remain mandatory. This does not reopen an
 expired window or qualify native memory acceptance.
 
+The opt-in local issue115 history recipe can reference that exact closed90 leaf
+from a later separately identified UTC day. The old day/deadline, all213 entries
+and UNKNOWN remain nested unchanged; no counts come from the recipe author.
+The published three operator diagnostics remain a separately pinned receipt.
+The existing native collector consumes the derived lineage and may claim only
+its separate `127.0.0.1:55451/memory115_native_test` database. Its normal current
+day, one-use domain, source carry, preseal, corpus and finite budget checks still
+apply. Offline preparation grants no storage claim, auth or inference admission.
+
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
 Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts

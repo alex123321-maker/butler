@@ -39,3 +39,25 @@ func TestLocal115ClosedHistoryImport(t *testing.T) {
 	}
 	t.Logf("original closed90 consumer imported213 admissions/212 measured/1 unknown, known full tokens1605455; no native admission or qualification")
 }
+
+func TestLocal115ConfiguredSuccessorHistory(t *testing.T) {
+	if os.Getenv("BUTLER_ISSUE115_LOCAL_IMPORT") != "copied-exact-evidence-only" {
+		t.Skip("explicit local copied-evidence validation required")
+	}
+	history := experienceNativeConfiguredHistory(t)
+	if history.LocalSuccessor == nil || history.LocalSuccessor.Historical.Hash != local115ClosedSHA || history.Usage.NativeEntries != 213 || history.Usage.NativeUnknownUsage != 1 || history.Usage.KnownFullTokenLowerBound != 1605455 {
+		t.Fatal("exact historical failed population not retained in successor")
+	}
+	output := os.Getenv("BUTLER_ISSUE115_LOCAL_SUCCESSOR_RECEIPT")
+	if !filepath.IsAbs(output) {
+		t.Fatal("absolute safe receipt path required")
+	}
+	raw, err := json.MarshalIndent(map[string]any{"result": "NEW_DAY_RECIPE_VALIDATED_NO_NATIVE_ADMISSION", "history": history, "new_native_admissions": 0, "new_storage_claims": 0, "auth_sources_constructed": 0, "release_qualified": false}, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(output, append(raw, '\n'), 0600); err != nil {
+		t.Fatal("safe successor receipt unavailable")
+	}
+	t.Log("existing experience consumer validated new-day recipe and exact recursively retained history; zero storage/auth/native construction")
+}

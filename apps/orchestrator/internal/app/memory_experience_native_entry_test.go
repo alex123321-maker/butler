@@ -39,6 +39,8 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
+	case "butler.experience.local-new-day.v1":
+		return loadLocal115Successor(path, expected)
 	case "butler.memory.closed-owner-leaf.v1", "butler.memory.closed-owner-leaf.v2":
 		history, err := loadLatestClosedOwnerHistory(path, expected)
 		if err != nil {
@@ -137,6 +139,9 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 	parsed, err := url.Parse(dsn)
 	if err != nil || parsed.Scheme != "postgres" && parsed.Scheme != "postgresql" || !strings.HasSuffix(parsed.Path, "_test") || !experienceNativeSHA(presealSHA) || validateExperienceNativeLineage(history) != nil {
 		return nil, errors.New("isolated test storage and exact current native preseal required")
+	}
+	if history.LocalSuccessor != nil && (parsed.Hostname() != "127.0.0.1" || parsed.Port() != "55451" || parsed.Path != "/memory115_native_test") {
+		return nil, errors.New("local115 successor requires its exact separate loopback database")
 	}
 	admin, err := pgxpool.New(ctx, dsn)
 	if err != nil {

@@ -1,0 +1,20 @@
+=== RUN   TestLocal115SuccessorPreservesOldDayCostsAndUnknown
+--- PASS: TestLocal115SuccessorPreservesOldDayCostsAndUnknown (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.06s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.00s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.00s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.00s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.00s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	6.757s
