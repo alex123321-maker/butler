@@ -1,0 +1,11 @@
+{
+  "added_document": {
+    "sha256": "836a5354c2288757ba7fb95715ee9d3dfbd4c9f66e5bab0ceb66479fe61836e2",
+    "path": "independent-claim-window-repair-static-review-v1.json"
+  },
+  "version": "issue76-pre-native-failure-package-static-review-addendum-v1",
+  "older_files_unchanged": true,
+  "formal_freeze_or_native_admission": false,
+  "new_test_execution_claimed": false,
+  "previous_package_receipt_sha256": "579a3b8599ed299036d6e920c1b2ad46329c4143a2a93c214dc0ec327a25ba6e"
+}

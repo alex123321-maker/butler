@@ -5,6 +5,24 @@ isolate response-format and response-finish failures. It adds to v9; all closed
 windows retain their original source, failures, denominators and expense.
 This document neither admits native inference nor authorizes deployment.
 
+The first v10 source freeze/control corpus is CLOSED before native admission:
+setup passed, composition completed 47 arms and counted 95 of 96 planned owner
+turns, then failed at fixture admission. Its original unlogged low-level cause
+remains UNKNOWN. No native request or auth construction occurred. An independent
+public empty-queue diagnostic separately reproduced cancelled idle claim workers
+poisoning the shared GLOBAL flag during normal evaluation teardown.
+
+The corrected v10-r2 preparation preserves that failure, immutable controls and
+ELF. It keeps this exact response policy/scorer but requires a separate source
+freeze followed by newly authored independent controls. A per-evaluation claim
+window closes under the existing admission mutex. After an observed terminal
+cohort, actual claim/process workers join under the original context and existing
+125-second drain cap before idle Run cancellation. Error exits still cancel
+immediately after closing admission; real in-flight failures and final current
+scope reconciliation retain GLOBAL priority. Closing one window neither closes
+the fixture nor grants a new task/model/recipient permission. Fresh owner turns
+create new windows. No cancelled-context SQL exception or retry is introduced.
+
 Before source/scorer freeze, the first public v10 gate exposed a common Core
 terminal-supervision race. An independent actual-Store diagnostic reproduced
 own task block/revision causing watcher ErrConflict and provider cancellation.

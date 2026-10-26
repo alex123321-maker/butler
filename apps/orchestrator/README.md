@@ -23,6 +23,14 @@ The fence grants no authority and has no model, input, environment or HTTP
 configuration. Ordinary `NewService` remains unfenced. See the prospective
 [issue76 local-stop protocol](../../docs/testing/issue76-fixture-local-protocol.md).
 
+Corrected issue76 v10-r2 preparation closes a separate claim window after each
+terminal evaluation and joins actual owning workers before cancelling idle Run.
+The next evaluation gets a new window; fixture stops and current authority stay
+intact. Error exits and real in-flight faults retain global failure. The first
+v10 composition failure and independently reproduced idle-cancellation defect
+remain archived; fresh source freeze/controls and actual gates are required.
+See the [v10 response protocol](../../docs/testing/issue76-local-response-protocol.md).
+
 Ordinary owner requests carry model-visible `current_request` DATA with the
 owning run/event refs and question phase. Historical messages retain their full
 sanitized text and provenance in envelopes identifying the originating run and

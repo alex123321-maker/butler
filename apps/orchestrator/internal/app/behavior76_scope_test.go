@@ -189,6 +189,33 @@ func (s *behavior76FixtureScope) claimAdmission(ctx context.Context) (func(), er
 	return s.mu.Unlock, nil
 }
 
+// Each evaluation owns one irreversible claim window. Closing an idle window
+// precedes joining its actual claim/process workers and cancelling Run. A later
+// evaluation gets a new window; the fixture's authority and stop state remain.
+type behavior76ClaimWindow struct {
+	scope  *behavior76FixtureScope
+	closed bool // Protected by scope.mu, including the actual queue claim.
+}
+
+func (w *behavior76ClaimWindow) admit(ctx context.Context) (func(), error) {
+	w.scope.mu.Lock()
+	if w.closed {
+		w.scope.mu.Unlock()
+		return nil, input.ErrClaimAdmissionClosed
+	}
+	if err := w.scope.checkLocked(ctx); err != nil {
+		w.scope.mu.Unlock()
+		return nil, input.ErrClaimAdmissionClosed
+	}
+	return w.scope.mu.Unlock, nil
+}
+
+func (w *behavior76ClaimWindow) close() {
+	w.scope.mu.Lock()
+	w.closed = true
+	w.scope.mu.Unlock()
+}
+
 func (f *behavior76Fixture) waitOwningWorkers(ctx context.Context) error {
 	for {
 		var live bool

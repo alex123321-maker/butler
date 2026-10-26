@@ -59,6 +59,18 @@ ordinary construction. The prospective issue76 synthetic fixture uses it to
 preserve queued work after a research-local stop; ordinary Input/task/run/effect
 statuses and deadlines are never rewritten to manufacture quiescence.
 
+The corrected issue76 v10-r2 fixture also closes an irreversible per-evaluation
+claim window under that same admission mutex after observing the terminal cohort.
+It joins actual claim/process workers before cancelling idle Run, with the
+original context and existing 125-second drain cap. Error exits retain immediate
+cancellation after admission closure. Each next evaluation constructs a new
+window; fixture stop/authority state remains unchanged. A closed window denies
+admission without querying with an intentionally cancelled idle context. Open
+windows and in-flight operations retain all real storage/context/source failures,
+and final current scope reconciliation still fails globally. The archived public
+baseline reproduced idle-cancellation poisoning; the closed hidden composition's
+unlogged low-level cause remains UNKNOWN, not retrospectively classified.
+
 The explicit owner composition installs migration102's bounded
 [stopped-attempt finalizer](stopped-input-finalization.md). It atomically ends
 inactive blocked Input/run attempts with failure, retains unknown effects and

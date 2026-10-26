@@ -197,8 +197,10 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	inputs := input.NewStore(f.pool)
 	sessions := session.NewPostgresRepository(f.pool)
 	worker := input.NewService(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil)
+	var claimWindow *behavior76ClaimWindow
 	if f.scope != nil {
-		worker, err = input.NewServiceWithClaimAdmission(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil, f.scope.claimAdmission)
+		claimWindow = &behavior76ClaimWindow{scope: f.scope}
+		worker, err = input.NewServiceWithClaimAdmission(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil, claimWindow.admit)
 		if err != nil {
 			return outcome, err
 		}
@@ -262,8 +264,29 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	live, stop := context.WithCancel(f.ctx)
 	done := make(chan struct{})
 	var workerErr error
+	joinBeforeCancel := false
 	go func() { workerErr = worker.Run(live); close(done) }()
-	defer func() { stop(); <-done }()
+	defer func() {
+		if claimWindow != nil {
+			claimWindow.close()
+			if joinBeforeCancel {
+				cleanup, cancel := context.WithTimeout(f.ctx, 125*time.Second)
+				err = errors.Join(err, worker.WaitClaimWorkers(cleanup))
+				cancel()
+			}
+		}
+		// Error/global exits retain immediate cancellation after closing admission.
+		// Only an observed terminal cohort or already-drained local stop joins
+		// ordinary owning work first. No execution context/deadline is extended.
+		stop()
+		<-done
+		err = errors.Join(err, workerErr)
+		if f.scope != nil {
+			if e := f.scope.check(f.ctx); e != nil && e != errBehavior76FixtureStopped {
+				err = errors.Join(err, e)
+			}
+		}
+	}()
 	for {
 		terminal := outcome.OwnerInputID == ""
 		if outcome.OwnerInputID != "" {
@@ -336,6 +359,7 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 				// The local stop is an arm disposition, never task completion.
 				outcome.State = f.scope.disposition(false)
 				outcome.FailurePhase = "fixture_local_stop"
+				joinBeforeCancel = true
 				return outcome, nil
 			}
 		}
@@ -345,6 +369,7 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 				return outcome, err
 			}
 			if !pending {
+				joinBeforeCancel = true
 				return outcome, nil
 			}
 		}

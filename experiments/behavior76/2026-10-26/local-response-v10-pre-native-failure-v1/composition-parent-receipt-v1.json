@@ -1,0 +1,15 @@
+{
+  "version": "issue76-v10-zero-native-composition-v1",
+  "exit_code": 1,
+  "top_pass": 0,
+  "arm_pass": 47,
+  "fail": 2,
+  "skip": 0,
+  "owner_opportunities": 96,
+  "paired_steps": null,
+  "native_calls": 0,
+  "auth_access": 0,
+  "log_sha256": "7a98db7add9f0821d8e4df71ccedcf2200947baf58f483bc1be4d749cf8e0a72",
+  "collector_elf_sha256": "4a82858999109d580527a67582bcc6f49ead9217a895c9286fac68f0f1fea435",
+  "producer": "c5722f29558cd6348eb242f85eb0780eedb4a34a"
+}
