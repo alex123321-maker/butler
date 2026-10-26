@@ -12,8 +12,8 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = ""
-const behavior76DayExpectationsSHA = ""
+const behavior76DayStimuliSHA = "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00"
+const behavior76DayExpectationsSHA = "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0"
 
 func behavior76ClosedEmptyHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-day-v7-r2")
