@@ -128,6 +128,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		historyPath = "/src20/.cache/behavior76/native-local-response-v10-r2/behavior76_attempts.jsonl"
 		expected = 774
 	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-local-response-v10-r3/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedR3History(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-local-response-v10-r3/behavior76_attempts.jsonl"
+		expected = 971
+	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
