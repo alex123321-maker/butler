@@ -5,6 +5,11 @@ PostgreSQL/race and browser evidence, and the three pinned local models execute
 on the lab. Independent Russian speech testing fails the frozen quality gate.
 Issue #29 remains active; this experiment is not production acceptance.
 
+A separate [local Intel Arc feasibility probe](../testing/issue29-local-arc-probe.md)
+is prepared for this PC as of2026-10-26. Its Windows tensor diagnostic is not
+executed yet, changes no service backend and does not qualify resource limits,
+Russian speech quality, the memory workload or the failed original gate.
+
 ## Boundaries and privacy
 
 Voice belongs to ingress/presentation plus catalog-owned memory. Go controls
