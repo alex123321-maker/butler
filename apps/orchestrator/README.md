@@ -1,3 +1,13 @@
+The prospective [issue76 v9 study](../../docs/testing/issue76-local-http-protocol.md)
+adds one exact adapter-owned no-response socket/EOF failure to the whole-fixture
+research stop union. All timeouts/auth/source/authority/storage failures remain
+global. It preserves unknown expense, failed/unavailable dispositions and the
+original comparison; default production behavior does not acquire an exception.
+Its research observer journals real provider EOF before exposing a tool proposal
+and reserves room for the complete ordered tail before publication. Owning
+post-handoff cancellation cannot race a blocked trailing send; earlier cancel,
+authority faults and late provider events retain the global stop.
+
 The separately admitted [issue76 v8 research study](../../docs/testing/issue76-local-model-protocol.md)
 also permits one exact completed-empty adapter response to stop its whole
 isolated fixture after durable journal/identity/source checks and actual EOF.

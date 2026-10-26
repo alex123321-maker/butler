@@ -1,5 +1,15 @@
 # Antigravity native transport
 
+`http_do_failed_without_response` is a fixed diagnostic only when the single
+HTTP client's Do call fails, returns no response object, and its owning context
+is still live and a typed socket/EOF cause is recognized. Cancellation, every
+timeout (including independent client timeouts), unknown and certificate/auth
+errors are excluded. It establishes no DNS/TLS/upstream cause, usage, finish reason or
+safe retry. Cancellation and errors with a response do not acquire this class.
+Production failure policy and one-request behavior remain unchanged. A separate
+prospective issue76 research policy may interpret this exact branch only after
+its own durable journal/identity/source/EOF barriers; old windows are unchanged.
+
 Rejected native streams now retain a fixed content-free local branch reason via
 `transport.DiagnosticReason`. Exact adapter-owned literals distinguish malformed
 JSON/envelopes, content, candidates, usage and terminal failures. This changes

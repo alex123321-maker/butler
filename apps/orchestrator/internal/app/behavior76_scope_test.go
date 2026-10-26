@@ -21,7 +21,7 @@ var errBehavior76FixtureStopped = errors.New("behavior76 fixture admission stopp
 
 const behavior76ScopeDDL = `CREATE TABLE behavior76_fixture_stops(
  singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),
- cause text NOT NULL CHECK(cause IN ('effect_unknown','model_empty_answer')),
+ cause text NOT NULL CHECK(cause IN ('effect_unknown','model_empty_answer','model_http_no_response')),
  binding jsonb NOT NULL,effects jsonb NOT NULL,native_evidence jsonb,observed_at timestamptz NOT NULL DEFAULT clock_timestamp());
  CREATE TABLE behavior76_recipient_diagnostics(
  action_id text PRIMARY KEY,run_id text NOT NULL,tool_call_id text NOT NULL,
@@ -34,6 +34,7 @@ type behavior76FixtureScope struct {
 	stopped        bool
 	stopCause      string
 	localEmpty     bool // Trusted prospective construction only; legacy remains strict.
+	localHTTP      bool // New v9 opt-in only; generic provider errors remain global.
 	closed         bool
 	active         int
 	evaluations    int
@@ -155,6 +156,9 @@ func (s *behavior76FixtureScope) disposition(tail bool) string {
 	state := "fixture_local_unknown"
 	if s.stopCause == "model_empty_answer" {
 		state = "fixture_local_model_failure"
+	}
+	if s.stopCause == "model_http_no_response" {
+		state = "fixture_local_http_failure"
 	}
 	if tail {
 		return "not_executed_after_" + state

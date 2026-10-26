@@ -1,5 +1,14 @@
 # Butler — Model Transport Contract
 
+The Antigravity adapter's content-free `http_do_failed_without_response`
+diagnostic means its single HTTP Do call returned an error without a response
+object while the owning context was live and a fixed socket/EOF cause matched.
+All timeout/cancellation and unknown/certificate/auth causes are excluded.
+It proves no network root cause,
+generation/usage or retry eligibility. Context cancellation and errors with a
+returned response retain their existing diagnostics. No automatic retry, route,
+parser or production failure-policy change follows from this metadata.
+
 Issue97's [native research profiles](../../cmd/effort-eval/README.md) explicitly
 select paid Flash Low/High on the same discovered Cloud Code route. Trusted
 construction-time `ThinkingLevel=LOW/HIGH` must match the configured model and

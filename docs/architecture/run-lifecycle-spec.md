@@ -1,5 +1,11 @@
 # Butler — Run Lifecycle Specification
 
+The prospective [issue76 v9 protocol](../testing/issue76-local-http-protocol.md)
+extends only the research-local whole-fixture stop union with an exact live-
+context, no-response, recognized socket/EOF failure. All timeouts and authority,
+auth/source/storage faults retain global priority. Production/default lifecycle,
+ordinary statuses, budgets and effect/replay guards remain unchanged.
+
 The separate research-only [issue76 v8 protocol](../testing/issue76-local-model-protocol.md)
 adds a prospective whole-fixture stop for one exact completed-empty adapter
 response, only after durable native journaling, live identity/source proof and

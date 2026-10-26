@@ -107,6 +107,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		historyPath = "/src20/.cache/behavior76/native-day-v7-r2/behavior76_attempts.jsonl"
 		expected = 643
 	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-local-model-v8/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedModelHistory(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-local-model-v8/behavior76_attempts.jsonl"
+		expected = 707
+	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
@@ -175,9 +182,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			version, prefix = "behavior76-fixture-stream-v5", "issue76-fixture-stream-"
 			if dayFit {
 				stimuliSHA, expectationsSHA = behavior76DayStimuliSHA, behavior76DayExpectationsSHA
-				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 8, 643, 635, 4910612, 8
-				priorDirectory = "native-day-v7-r2"
-				version, prefix = "behavior76-fixture-local-model-v8", "issue76-fixture-day-"
+				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 9, 707, 698, 5510826, 9
+				priorDirectory = "native-local-model-v8"
+				version, prefix = "behavior76-fixture-local-http-v9", "issue76-fixture-day-"
+				if stimuliSHA == "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00" || expectationsSHA == "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0" {
+					t.Fatal("closed v8 controls cannot be reused")
+				}
 				if stimuliSHA == "a2d7ffa28a497a72246ba608d1a18351f316c6804a581784a1f76306975ba047" || expectationsSHA == "dabe70e665b96396bb1e3e9bfdbf7503ba2d07dead08482f6ce50d1d19708cc7" {
 					t.Fatal("closed day-v7-r2 controls cannot be reused")
 				}
@@ -248,7 +258,7 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 		indexVersion = "behavior76-checker-index-v2-local-tail"
 	}
 	if dayFit {
-		indexVersion = "behavior76-checker-index-v3-local-model-tail"
+		indexVersion = "behavior76-checker-index-v4-local-http-tail"
 	}
 	index := behavior76Index{Version: indexVersion, StimuliSHA256: stimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
@@ -373,6 +383,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal(e)
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T050548", "admitted": 3, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		body, e = behavior76ClosedModelHistory(ctx, transaction, root)
+		if e != nil {
+			t.Fatal(e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T065844", "admitted": 64, "closed": true, "manifest_sha256": behavior76Hash(body)})
 		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
 			t.Fatal("owning database day unavailable")
 		}
@@ -414,8 +429,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			protocolPath = "docs/testing/issue76-fixture-stream-protocol.md"
 		}
 		if dayFit {
-			protocolPath = "docs/testing/issue76-local-model-protocol.md"
+			protocolPath = "docs/testing/issue76-local-http-protocol.md"
 			manifest["local_model_failure_mode"] = behavior76LocalModelMode
+			manifest["local_http_failure_mode"] = behavior76LocalHTTPMode
 		}
 		protocol, e := os.ReadFile(filepath.Join("/src20", protocolPath))
 		if e != nil {
@@ -469,7 +485,7 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
 				if dayFit {
-					f = newBehavior76ModelFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
+					f = newBehavior76HTTPFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
 				} else if streaming {
 					f = newBehavior76StreamFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
 				} else if local {

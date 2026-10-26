@@ -93,7 +93,7 @@ func newBehavior76StreamFixture(t *testing.T, parent context.Context, global *at
 }
 
 func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, streaming bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
-	return newBehavior76FixtureConfiguredMode(t, parent, global, streaming, false, bindings...)
+	return newBehavior76FixtureConfiguredMode(t, parent, global, streaming, false, false, bindings...)
 }
 
 func newBehavior76ModelFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
@@ -101,10 +101,18 @@ func newBehavior76ModelFixture(t *testing.T, parent context.Context, global *ato
 	if global == nil {
 		t.Fatal("explicit global stop required")
 	}
-	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, bindings...)
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, false, bindings...)
 }
 
-func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+func newBehavior76HTTPFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	t.Helper()
+	if global == nil {
+		t.Fatal("explicit global stop required")
+	}
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, true, bindings...)
+}
+
+func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty, localHTTP bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -187,6 +195,9 @@ func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, gl
 		if localEmpty {
 			protocolPath = "/src20/docs/testing/issue76-local-model-protocol.md"
 		}
+		if localHTTP {
+			protocolPath = "/src20/docs/testing/issue76-local-http-protocol.md"
+		}
 		body, e := os.ReadFile(protocolPath)
 		if e != nil {
 			t.Fatal("prospective public stop protocol unavailable")
@@ -208,7 +219,11 @@ func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, gl
 		if localEmpty {
 			binding.Mode = "fixture-local-model-v8"
 		}
+		if localHTTP {
+			binding.Mode = "fixture-local-http-v9"
+		}
 		f.scope.localEmpty = localEmpty
+		f.scope.localHTTP = localHTTP
 		f.scope.binding = binding
 	}
 	f.broker = f.startBroker()

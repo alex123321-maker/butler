@@ -12,8 +12,24 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00"
-const behavior76DayExpectationsSHA = "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0"
+const behavior76DayStimuliSHA = ""
+const behavior76DayExpectationsSHA = ""
+
+func behavior76ClosedModelHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
+	directory := filepath.Join(root, "native-local-model-v8")
+	if err := behavior76CheckRawFiles(directory, "/src20/experiments/behavior76/2026-10-26/native-local-model-v8/raw-inventory.json", "c85f02ef8e3555f1043c4698f48f1bfa0e3af6670fb269fd7a20c3d83c4f2d00", 1253); err != nil {
+		return nil, err
+	}
+	manifest, err := os.ReadFile(filepath.Join(directory, "manifest.json"))
+	if err != nil || behavior76Hash(manifest) != "74306fd83b00e36166c185415f6e28435d29a8d7ffdca1a4dd18ccba82817910" {
+		return nil, errors.New("closed v8 manifest changed")
+	}
+	var exact bool
+	if err = tx.QueryRow(ctx, `SELECT closed AND admitted=64 AND manifest=$1::jsonb AND (SELECT count(*)=64 FROM public.behavior76_attempts WHERE window_id='issue76-fixture-day-20261026T065844') FROM public.behavior76_windows WHERE id='issue76-fixture-day-20261026T065844'`, string(manifest)).Scan(&exact); err != nil || !exact {
+		return nil, errors.New("closed v8 history changed")
+	}
+	return manifest, nil
+}
 
 func behavior76ClosedEmptyHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-day-v7-r2")
@@ -124,5 +140,5 @@ func TestBehavior76DayCorpusCompositionPreflight(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "day-composition-only" {
 		t.Skip("explicit zero-native day composition required")
 	}
-	behavior76CompositionPreflightMode(t, behavior76DayStimuliSHA, true, true, true)
+	behavior76CompositionPreflightMode(t, behavior76DayStimuliSHA, true, true, true, true)
 }

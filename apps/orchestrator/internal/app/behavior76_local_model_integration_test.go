@@ -221,8 +221,9 @@ func TestBehavior76LocalModelExactStoredUsage(t *testing.T) {
 
 type behavior76PublicAutomaticEmpty struct {
 	*initiativeProjectScriptedProvider
-	f       *behavior76Fixture
-	entered chan struct{}
+	f           *behavior76Fixture
+	entered     chan struct{}
+	httpFailure bool
 }
 
 func (p *behavior76PublicAutomaticEmpty) Name() string { return "antigravity" }
@@ -247,6 +248,9 @@ func (p *behavior76PublicAutomaticEmpty) StartRun(ctx context.Context, q transpo
 			case <-time.After(10 * time.Millisecond):
 			}
 		}
+		if p.httpFailure {
+			return (&behavior76PublicHTTPFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
+		}
 		base := &behavior76PublicEmptyModel{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}
 		return base.StartRun(ctx, q)
 	}
@@ -259,12 +263,21 @@ func (p *behavior76PublicAutomaticEmpty) StartRun(ctx context.Context, q transpo
 }
 
 func TestBehavior76LocalModelAutomaticPreservesOwnerIntegration(t *testing.T) {
+	behavior76AutomaticFailurePreservesOwner(t, false)
+}
+
+func behavior76AutomaticFailurePreservesOwner(t *testing.T, httpFailure bool) {
 	t.Setenv(prompt.SettingKeyBasePrompt, prompt.DefaultBasePrompt)
 	t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
 	defer cancel()
 	var global atomic.Bool
-	f := newBehavior76ModelFixture(t, ctx, &global)
+	var f *behavior76Fixture
+	if httpFailure {
+		f = newBehavior76HTTPFixture(t, ctx, &global)
+	} else {
+		f = newBehavior76ModelFixture(t, ctx, &global)
+	}
 	e := behavior76DevelopmentEpisode()
 	e.Initial.Tasks[0].ExecutionPolicy = "normal"
 	other := e.Initial.Tasks[0]
@@ -277,14 +290,18 @@ func TestBehavior76LocalModelAutomaticPreservesOwnerIntegration(t *testing.T) {
 	step := e.Steps[0]
 	key := "B"
 	step.RunTaskKey, step.Event.TargetTaskKey = &key, &key
-	base := &behavior76PublicAutomaticEmpty{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, f: f, entered: make(chan struct{})}
+	base := &behavior76PublicAutomaticEmpty{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, f: f, entered: make(chan struct{}), httpFailure: httpFailure}
 	p := behavior76PublicWrapped(t, f, &global, base)
 	result, err := f.evaluate(p, step)
-	if err != nil || result.State != "fixture_local_model_failure" || global.Load() || len(result.AutomaticRunIDs) != 1 || result.OwnerRunID == "" {
+	want, code := "fixture_local_model_failure", "provider_protocol_error"
+	if httpFailure {
+		want, code = "fixture_local_http_failure", "transport_connection_error"
+	}
+	if err != nil || result.State != want || global.Load() || len(result.AutomaticRunIDs) != 1 || result.OwnerRunID == "" {
 		t.Fatal("automatic failure lost original identities", result, err)
 	}
 	var ownerCompleted, automaticFailed bool
-	if err = f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE input_id=$1 AND status='completed'),EXISTS(SELECT 1 FROM accepted_inputs a JOIN runs r ON r.run_id=a.run_id WHERE a.run_id=$2 AND a.status='blocked' AND a.error_code='provider_protocol_error' AND r.current_state='failed')`, result.OwnerInputID, result.AutomaticRunIDs[0]).Scan(&ownerCompleted, &automaticFailed); err != nil || !ownerCompleted || !automaticFailed {
+	if err = f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE input_id=$1 AND status='completed'),EXISTS(SELECT 1 FROM accepted_inputs a JOIN runs r ON r.run_id=a.run_id WHERE a.run_id=$2 AND a.status='blocked' AND a.error_code=$3 AND r.current_state='failed')`, result.OwnerInputID, result.AutomaticRunIDs[0], code).Scan(&ownerCompleted, &automaticFailed); err != nil || !ownerCompleted || !automaticFailed {
 		t.Fatal("automatic empty rewrote owner final or original blocked Input/failed run", ownerCompleted, automaticFailed, err)
 	}
 	var failedRun string

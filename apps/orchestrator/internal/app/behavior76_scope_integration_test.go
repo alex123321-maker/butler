@@ -106,6 +106,7 @@ type behavior76PublicConcurrent struct {
 	entered     chan struct{}
 	finished    atomic.Bool
 	runtimeRace bool
+	httpFailure bool
 }
 
 func (p *behavior76PublicConcurrent) Name() string { return "antigravity" }
@@ -120,6 +121,9 @@ func (p *behavior76PublicConcurrent) StartRun(ctx context.Context, q transport.S
 		case <-p.entered:
 		case <-ctx.Done():
 			return nil, ctx.Err()
+		}
+		if p.httpFailure {
+			return (&behavior76PublicHTTPFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
 		}
 	}
 	capabilities, err := p.Capabilities(ctx, q.Context)

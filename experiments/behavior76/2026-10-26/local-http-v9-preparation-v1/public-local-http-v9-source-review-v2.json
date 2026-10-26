@@ -1,0 +1,79 @@
+{
+  "version": "issue76-independent-local-http-v9-source-review-v2",
+  "decision": "NO_CONCRETE_SOURCE_BLOCKER_FOUND_PENDING_FINAL_EXISTING_GATES_AND_FORMAL_FREEZE",
+  "supersedes": {
+    "path": "public-local-http-v9-source-review-v1.json",
+    "sha256": "f32333e8c2503a10ae818cea2e8012f9065448897e9b51d429cc62e446cf1f49"
+  },
+  "scope": "Public source-only helper/scope/observer/Core exemption review",
+  "reviewed_files": [
+    {
+      "path": "internal/transport/antigravity/protocol.go",
+      "sha256": "90acc1691034ac387c721b863ec241f3223b4f2636c4fd0b45b44084005cc0f7"
+    },
+    {
+      "path": "internal/transport/antigravity/http_failure_diagnostic_test.go",
+      "sha256": "3aaf558954522484ef623f636f96637d9f2a74a2c0700a2a42bbc53c736d19ef"
+    },
+    {
+      "path": "internal/transport/errors.go",
+      "sha256": "ccc631e445a1b55c85bd93fb4a81480d76fd685774f7a87d76c966909b388b3f"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go",
+      "sha256": "8031596226181b03456b748116b922d94ea4cad14820faa8e07076e15348ae9e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "3ad608f93340ecfe2539d465d2bdd3cdd10091c36e00137f76ca3934dda2d37f"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "f1b59026a48d0cc2e26c5e21540c405395832231cc95102cef8b78faf19837d9"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "2849ed4e6e4a55942ca6531bf2c12a91493771079d1345b453f339b23f577bd8"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "7843c50b07716ee353e7f3ba727b3344fee7990318b2a1d886301f68f4f1dca8"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_http_integration_test.go",
+      "sha256": "54e1b7de7bf36470c56e81aa1b77a6c5661564bf62deb9fa6934d193e556df2f"
+    },
+    {
+      "path": "docs/testing/issue76-local-http-protocol.md",
+      "sha256": "046c915c975ceb93ad0e2565abe393259d50ec399a18a42fd5d6a9217fe96f50"
+    }
+  ],
+  "findings": [
+    {
+      "status": "closed_in_reviewed_source",
+      "basis": "Actual error supplied; live-context independent timeout excluded before terminal classification; public real Client.Timeout regression present",
+      "id": "HTTP-CLIENT-TIMEOUT-01"
+    },
+    {
+      "status": "closed_in_reviewed_source",
+      "basis": "Multi-Unwrap rejected; bounded single-chain examination checks every timeout/cert link; exact terminal comparison rejects custom Is/cyclic/ambiguous causes; join/certEOF/cycle negatives present",
+      "id": "HTTP-MULTICAUSE-01"
+    }
+  ],
+  "remaining_concrete_blockers": 0,
+  "limitations": [
+    "Source inspection is not a claim of completed final Public gate",
+    "Fixed safe reason is a local classification, not proof of upstream fault/no computation/no expense",
+    "No historical v8 source/cost/outcome is reinterpreted",
+    "New source/scorer formal freeze and prospective native admission have not been issued"
+  ],
+  "contract": {
+    "path": "public-local-http-tail-contract-v3-proposal-v3.md",
+    "sha256": "bbe2d541b8ddc686fda0a4ac3c1b7574a383cb24bdea59336117069644d70665"
+  },
+  "checker_runtime_changed_since166PASS": false,
+  "criteria_thresholds_candidate_budgets_changed": false,
+  "PG_Go_auth_native_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "new_hidden_authorship_native_admission": false
+}

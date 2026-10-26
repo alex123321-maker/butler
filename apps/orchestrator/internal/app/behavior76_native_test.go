@@ -180,7 +180,7 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 			p.sealed.Store(true)
 			return false
 		}
-		return p.stopCompletedEmpty(ctx, n, run, persist, events, usage, version)
+		return p.stopCompletedLocalFailure(ctx, n, run, persist, events, usage, version)
 	}), nil
 }
 
@@ -188,7 +188,9 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 // Core's owning watchdog can cancel HTTP before any event arrives. Preserve
 // its NULL usage and close the whole experiment before a later admission.
 func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream transport.EventStream, finish func(string, []map[string]any, *transport.Usage, string), localEOF ...func([]map[string]any, *transport.Usage, string, string) bool) transport.EventStream {
-	output := make(chan transport.TransportEvent)
+	// Two trailing normalized events fit after a handoff (proposal, optional
+	// run_completed). Original events remain ordered and fully journalled.
+	output := make(chan transport.TransportEvent, 2)
 	go func() {
 		defer close(output)
 		status, version := "stream_closed", ""
@@ -196,11 +198,20 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 		var usage *transport.Usage
 		var held *transport.TransportEvent
 		var observedRun string
+		var observedVersion bool
+		var handoff []transport.TransportEvent
+		recorded := false
+		record := func() {
+			if !recorded {
+				recorded = true
+				finish(status, events, usage, version)
+			}
+		}
 		defer func() {
 			if status == "stream_closed" || status == "cancelled" || behavior76AuthorityFailure(context.Cause(ctx)) {
 				p.sealed.Store(true)
 			}
-			finish(status, events, usage, version)
+			record()
 		}()
 		for {
 			var event transport.TransportEvent
@@ -218,6 +229,43 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				}
 			}
 			if !open {
+				if len(handoff) > 0 {
+					if ctx.Err() != nil {
+						status = "cancelled"
+						p.sealed.Store(true)
+						return
+					}
+					record()
+					if p.sealed.Load() {
+						return
+					}
+					if ctx.Err() != nil {
+						status = "cancelled"
+						p.sealed.Store(true)
+						return
+					}
+					// Reserve space for the complete bounded tail BEFORE exposing
+					// its proposal. Earlier prefix events may still occupy output.
+					// This is the only producer; a consumer can only increase room.
+					for cap(output)-len(output) < len(handoff) {
+						timer := time.NewTimer(time.Millisecond)
+						select {
+						case <-timer.C:
+						case <-ctx.Done():
+							timer.Stop()
+							status = "cancelled"
+							return
+						}
+					}
+					if ctx.Err() != nil || p.sealed.Load() {
+						status = "cancelled"
+						return
+					}
+					for _, terminal := range handoff {
+						output <- terminal // Reserved capacity: cannot block after proposal.
+					}
+					return
+				}
 				if held != nil {
 					if ctx.Err() != nil || len(localEOF) != 1 || !localEOF[0](events, usage, version, observedRun) {
 						p.sealed.Store(true)
@@ -235,7 +283,7 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				// sequence ineligible. Preserve it; no local reinterpretation.
 				p.sealed.Store(true)
 			}
-			if p.scope != nil && p.scope.localEmpty {
+			if p.scope != nil && (p.scope.localEmpty || p.scope.localHTTP) {
 				if observedRun == "" {
 					observedRun = event.RunID
 				}
@@ -251,6 +299,7 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				usage = &v
 			}
 			if event.ProviderModelVersion != nil {
+				observedVersion = true
 				version = *event.ProviderModelVersion
 			}
 			safe := map[string]any{"type": event.EventType}
@@ -277,7 +326,11 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				safe["safe_reason"] = transport.DiagnosticReason(event.TransportError)
 				safe["http_status"] = transport.DiagnosticHTTPStatus(event.TransportError)
 				status = "transport_error"
-				if p.scope == nil || !p.scope.localEmpty || len(localEOF) != 1 || event.TransportError.HTTPStatus != 0 || !behavior76ExactEmptyEvents(append(events, safe)) {
+				cause, _, _ := p.localFailureClass(append(events, safe), usage, version)
+				if cause == "model_http_no_response" && observedVersion {
+					cause = ""
+				}
+				if len(localEOF) != 1 || event.TransportError.HTTPStatus != 0 || cause == "" {
 					p.sealed.Store(true)
 				}
 			}
@@ -302,12 +355,30 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				p.sealed.Store(true)
 			}
 			events = append(events, safe)
+			if len(handoff) > 0 {
+				if len(handoff) == 1 && event.EventType == transport.EventTypeRunCompleted && event.AssistantDelta == nil && event.AssistantFinal == nil && event.ToolCall == nil && event.ToolCallBatch == nil && event.TransportError == nil && event.Usage == nil {
+					handoff = append(handoff, event)
+				} else {
+					status = "transport_error"
+					safe["invalid_handoff_tail"] = true
+					p.sealed.Store(true)
+				}
+				continue
+			}
 			if held != nil {
 				continue // Drain and record all late events before returning the error.
 			}
-			if event.TransportError != nil && !p.sealed.Load() && p.scope != nil && p.scope.localEmpty {
+			if event.TransportError != nil && !p.sealed.Load() && p.scope != nil && (p.scope.localEmpty || p.scope.localHTTP) {
 				copy := event
 				held = &copy
+				continue
+			}
+			if status == "tool_handoff" && event.EventType == transport.EventTypeToolCallRequested {
+				// Core's budget wrapper cancels its child context as soon as it
+				// accepts a tool proposal. Require real EOF and journal success
+				// BEFORE publication, so that ordinary cancellation cannot race
+				// the provider's final channel close. No pre-EOF cancel is waived.
+				handoff = append(handoff, event)
 				continue
 			}
 			select {

@@ -12,6 +12,28 @@ import (
 )
 
 const behavior76LocalModelMode = "whole_fixture_after_exact_empty_answer_v1"
+const behavior76LocalHTTPMode = "whole_fixture_after_exact_http_do_no_response_v1"
+
+func behavior76ExactHTTPEvents(events []map[string]any) bool {
+	if len(events) != 2 || len(events[0]) != 1 || events[0]["type"] != transport.EventTypeRunStarted || len(events[1]) != 4 {
+		return false
+	}
+	e := events[1]
+	return e["type"] == transport.EventTypeTransportError && e["error_code"] == "transport_connection_error" && e["safe_reason"] == "http_do_failed_without_response" && e["http_status"] == 0
+}
+
+func (p *behavior76NativeProvider) localFailureClass(events []map[string]any, usage *transport.Usage, version string) (cause, stage, code string) {
+	if p.scope == nil {
+		return "", "", ""
+	}
+	if p.scope.localEmpty && behavior76ExactEmptyEvents(events) {
+		return "model_empty_answer", "response_stream", "provider_protocol_error"
+	}
+	if p.scope.localHTTP && usage == nil && version == "" && behavior76ExactHTTPEvents(events) {
+		return "model_http_no_response", "http_round_trip", "transport_connection_error"
+	}
+	return "", "", ""
+}
 
 // This predicate is deliberately narrower than a diagnostic-code match. It
 // describes the entire safe event stream, not a model assertion about failure.
@@ -34,16 +56,21 @@ func behavior76ExactEmptyEvents(events []map[string]any) bool {
 // Called only after underlying channel EOF. The same lock covers native
 // reservations, ordinary Input claims, recipient admissions and this barrier.
 // Persistence failure is never retried or interpreted as a local exception.
-func (p *behavior76NativeProvider) stopCompletedEmpty(ctx context.Context, n int, run string, persist func(string, []map[string]any, *transport.Usage, string) bool, events []map[string]any, usage *transport.Usage, version string) bool {
+func (p *behavior76NativeProvider) stopCompletedLocalFailure(ctx context.Context, n int, run string, persist func(string, []map[string]any, *transport.Usage, string) bool, events []map[string]any, usage *transport.Usage, version string) bool {
 	s := p.scope
-	if s == nil || !s.localEmpty || !behavior76ExactEmptyEvents(events) {
+	cause, stage, _ := p.localFailureClass(events, usage, version)
+	if s == nil || cause == "" {
 		p.sealed.Store(true)
 		return false
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	fail := func() bool { p.sealed.Store(true); return false }
-	if s.binding.Mode != "fixture-local-model-v8" || s.binding.Window != p.window || (p.slot != s.binding.Arm && !strings.HasPrefix(p.slot, s.binding.Arm+"/")) {
+	wantMode := "fixture-local-model-v8"
+	if s.localHTTP {
+		wantMode = "fixture-local-http-v9"
+	}
+	if s.binding.Mode != wantMode || s.binding.Window != p.window || (p.slot != s.binding.Arm && !strings.HasPrefix(p.slot, s.binding.Arm+"/")) {
 		return fail()
 	}
 	if ctx.Err() != nil || s.global.Load() || (s.authorityTrace != nil && s.authorityTrace.failed()) {
@@ -81,7 +108,7 @@ func (p *behavior76NativeProvider) stopCompletedEmpty(ctx context.Context, n int
 		}
 	}
 	err = p.journal.QueryRow(proof, `SELECT (to_jsonb(a)-'input'-'started_at') || jsonb_build_object('owner_inputs',$3::jsonb,'native_admission_cutoff_n',(SELECT max(n) FROM public.behavior76_attempts WHERE window_id=a.window_id))
- FROM public.behavior76_attempts a WHERE a.window_id=$1 AND a.n=$2 AND a.status='transport_error' AND a.stage='response_stream' AND a.run_id=$4 AND a.slot=$5 AND a.kind IN ('start','continue','submit') AND a.events=$6::jsonb AND a.model_version IS NOT DISTINCT FROM NULLIF($7,'') AND a.input_tokens IS NOT DISTINCT FROM $8::bigint AND a.output_tokens IS NOT DISTINCT FROM $9::bigint AND a.total_tokens IS NOT DISTINCT FROM $10::bigint AND a.thinking_tokens IS NOT DISTINCT FROM $11::bigint AND a.milliseconds>=0`, p.window, n, owners, run, p.slot, behavior76JSON(events), version, in, out, total, thinking).Scan(&evidence)
+ FROM public.behavior76_attempts a WHERE a.window_id=$1 AND a.n=$2 AND a.status='transport_error' AND a.stage=$12 AND a.run_id=$4 AND a.slot=$5 AND a.kind IN ('start','continue','submit') AND a.events=$6::jsonb AND a.model_version IS NOT DISTINCT FROM NULLIF($7,'') AND a.input_tokens IS NOT DISTINCT FROM $8::bigint AND a.output_tokens IS NOT DISTINCT FROM $9::bigint AND a.total_tokens IS NOT DISTINCT FROM $10::bigint AND a.thinking_tokens IS NOT DISTINCT FROM $11::bigint AND a.milliseconds>=0`, p.window, n, owners, run, p.slot, behavior76JSON(events), version, in, out, total, thinking, stage).Scan(&evidence)
 	if err != nil || !json.Valid(evidence) {
 		return fail()
 	}
@@ -90,10 +117,10 @@ func (p *behavior76NativeProvider) stopCompletedEmpty(ctx context.Context, n int
 		return fail()
 	}
 	if !s.stopped {
-		if _, err = s.pool.Exec(proof, `INSERT INTO behavior76_fixture_stops(singleton,cause,binding,effects,native_evidence) VALUES(true,'model_empty_answer',$1,'[]',$2)`, behavior76JSON(s.binding), evidence); err != nil {
+		if _, err = s.pool.Exec(proof, `INSERT INTO behavior76_fixture_stops(singleton,cause,binding,effects,native_evidence) VALUES(true,$3,$1,'[]',$2)`, behavior76JSON(s.binding), evidence, cause); err != nil {
 			return fail()
 		}
-		s.stopped, s.stopCause = true, "model_empty_answer"
+		s.stopped, s.stopCause = true, cause
 		s.signalLocked()
 	}
 	return true
@@ -104,17 +131,26 @@ func (p *behavior76NativeProvider) stopCompletedEmpty(ctx context.Context, n int
 // native row. A different or wrapped cleanup/transition error stays GLOBAL.
 func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputEvent, executionErr error) bool {
 	e, ok := executionErr.(*transport.Error)
-	if !ok || e.Type != transport.ErrorTypeProviderProtocolError || e.Message != "provider_protocol_error" || e.SafeReason != "" || e.HTTPStatus != 0 || e.Retryable || e.ProviderCode != "" || e.ProviderName != "" || len(e.ProviderDetails) != 0 || p.scope == nil || !p.scope.localEmpty || p.sealed.Load() {
+	if !ok || e.SafeReason != "" || e.HTTPStatus != 0 || e.Retryable || e.ProviderCode != "" || e.ProviderName != "" || len(e.ProviderDetails) != 0 || p.scope == nil || p.sealed.Load() {
+		return false
+	}
+	code, stage := "provider_protocol_error", "response_stream"
+	if e.Type == transport.ErrorTypeTransportConnectionError && p.scope.localHTTP {
+		code, stage = "transport_connection_error", "http_round_trip"
+	} else if e.Type != transport.ErrorTypeProviderProtocolError || !p.scope.localEmpty {
+		return false
+	}
+	if e.Message != code {
 		return false
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	var run string
-	if err := p.fixture.pool.QueryRow(ctx, `SELECT r.run_id FROM accepted_inputs a JOIN runs r ON r.run_id=a.run_id AND r.session_key=a.session_key WHERE a.event_id=$1 AND a.session_key=$2 AND r.current_state='failed' AND r.error_type='transport_error' AND r.error_message='provider_protocol_error'`, event.EventID, event.SessionKey).Scan(&run); err != nil {
+	if err := p.fixture.pool.QueryRow(ctx, `SELECT r.run_id FROM accepted_inputs a JOIN runs r ON r.run_id=a.run_id AND r.session_key=a.session_key WHERE a.event_id=$1 AND a.session_key=$2 AND r.current_state='failed' AND r.error_type='transport_error' AND r.error_message=$3`, event.EventID, event.SessionKey, code).Scan(&run); err != nil {
 		return false
 	}
 	var events []byte
-	if err := p.journal.QueryRow(ctx, `SELECT events FROM public.behavior76_attempts WHERE window_id=$1 AND slot=$2 AND run_id=$3 AND status='transport_error' AND stage='response_stream' ORDER BY n DESC LIMIT 1`, p.window, p.slot, run).Scan(&events); err != nil {
+	if err := p.journal.QueryRow(ctx, `SELECT events FROM public.behavior76_attempts WHERE window_id=$1 AND slot=$2 AND run_id=$3 AND status='transport_error' AND stage=$4 AND ($5=false OR (input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL)) ORDER BY n DESC LIMIT 1`, p.window, p.slot, run, stage, code == "transport_connection_error").Scan(&events); err != nil {
 		return false
 	}
 	// Compare the strict JSON shape using typed rehydration for the optional usage.
@@ -126,6 +162,9 @@ func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputE
 	for i, item := range chain {
 		normalized[i] = map[string]any{}
 		for key, value := range item {
+			if strings.TrimSpace(string(value)) == "null" {
+				return false
+			}
 			switch key {
 			case "type":
 				var t transport.EventType
@@ -153,6 +192,9 @@ func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputE
 				normalized[i][key] = v
 			}
 		}
+	}
+	if code == "transport_connection_error" {
+		return p.scope.localStopped() && behavior76ExactHTTPEvents(normalized)
 	}
 	return p.scope.localStopped() && behavior76ExactEmptyEvents(normalized)
 }

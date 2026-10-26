@@ -1,0 +1,79 @@
+{
+  "version": "issue76-independent-local-http-v9-source-review-v1",
+  "decision": "FINDING_OPEN_PENDING_NARROW_CLASSIFIER_FIX",
+  "scope": "source-only public operational diff; not study/native/updater acceptance",
+  "reviewed_files": [
+    {
+      "sha256": "a51c02be3555f805535ee0f315e9e8b473f7507ab759addb09ca53c531abc51c",
+      "path": "internal/transport/antigravity/protocol.go"
+    },
+    {
+      "sha256": "ca20a671ba88d29c6654367b00a2cc82ab47e811e84d50a874a19d082f6d18aa",
+      "path": "internal/transport/antigravity/http_failure_diagnostic_test.go"
+    },
+    {
+      "sha256": "ccc631e445a1b55c85bd93fb4a81480d76fd685774f7a87d76c966909b388b3f",
+      "path": "internal/transport/errors.go"
+    },
+    {
+      "sha256": "8031596226181b03456b748116b922d94ea4cad14820faa8e07076e15348ae9e",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go"
+    },
+    {
+      "sha256": "3ad608f93340ecfe2539d465d2bdd3cdd10091c36e00137f76ca3934dda2d37f",
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    },
+    {
+      "sha256": "f1b59026a48d0cc2e26c5e21540c405395832231cc95102cef8b78faf19837d9",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go"
+    },
+    {
+      "sha256": "2849ed4e6e4a55942ca6531bf2c12a91493771079d1345b453f339b23f577bd8",
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go"
+    },
+    {
+      "sha256": "7843c50b07716ee353e7f3ba727b3344fee7990318b2a1d886301f68f4f1dca8",
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+    },
+    {
+      "sha256": "54e1b7de7bf36470c56e81aa1b77a6c5661564bf62deb9fa6934d193e556df2f",
+      "path": "apps/orchestrator/internal/app/behavior76_local_http_integration_test.go"
+    },
+    {
+      "sha256": "046c915c975ceb93ad0e2565abe393259d50ec399a18a42fd5d6a9217fe96f50",
+      "path": "docs/testing/issue76-local-http-protocol.md"
+    }
+  ],
+  "findings": [
+    {
+      "function": "confirmedNoResponseConnectionFailure",
+      "repro": "errors.Join(&net.OpError{Op:read,Net:tcp,Err:syscall.ECONNRESET}, synthetic net.Error whose Timeout returns true) is eligible; errors.Join(x509.UnknownAuthorityError{},io.EOF) is also eligible",
+      "severity": "P2",
+      "basis": "All timeout/certificate/ambiguous errors remain GLOBAL in prospective protocol",
+      "suggested_fix": "Reject multi-Unwrap error chains and inspect timeout predicates along each ordinary single wrapper before the typed terminal allowlist",
+      "file": "internal/transport/antigravity/protocol.go",
+      "id": "HTTP-MULTICAUSE-01",
+      "execution": "repro established from actual source and standard errors traversal; no Go/process/network/PG test executed by checker",
+      "problem": "errors.As examines first net.Error; errors.Is allows one eligible branch of a composite error despite a timeout/certificate/unknown sibling"
+    }
+  ],
+  "previous_finding": {
+    "id": "HTTP-CLIENT-TIMEOUT-01",
+    "evidence": "actual cause now supplied; cancellation/deadline and net.Error.Timeout explicitly excluded; public test includes real Client.Timeout with live parent",
+    "status": "source_fix_verified"
+  },
+  "review_observations": [
+    "Exact old/HTTP union with opt-in constructor and manifest/index version",
+    "No parser/route/retry/admission/budget/model/candidate broadening",
+    "Held-error underlying EOF and late-event/cancellation/global priority retained",
+    "Actual nullable row/events readback, ownership/source proof and same admission mutex precede local barrier",
+    "HTTP observed version pointer even empty is rejected",
+    "Original automatic input/final identity and in-flight cohort drain retained",
+    "Core sanitized error exemption checks actual durable run/Input/typed event/NULL metadata; generic connection errors alone do not qualify"
+  ],
+  "other_concrete_blockers_found": 0,
+  "tests_not_rerun_by_checker": true,
+  "native_PG_auth_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "new_source_freeze_authorship_admission": false
+}
