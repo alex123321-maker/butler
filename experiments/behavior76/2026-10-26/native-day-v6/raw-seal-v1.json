@@ -1,0 +1,13 @@
+{
+  "version": "issue76-day-v6-closed-raw-seal-v1",
+  "window": "issue76-fixture-day-20261026T012812",
+  "process_exit_code": 1,
+  "raw_files": 2569,
+  "raw_bytes": 66843767,
+  "readonly_files": 2569,
+  "archive_all_entries_byte_verified": true,
+  "archive_sha256": "92f6b511243eace416e3bad54053363d858ae4dad862303077c6f0c0650a5469",
+  "inventory_sha256": "517f7b215c956ef9b8664622380d2b9fcd7f8282bf5cc3d5f20f892868b1e7d6",
+  "quality_review": false,
+  "mapping_read": false
+}

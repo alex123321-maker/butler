@@ -1,0 +1,80 @@
+{
+  "partial_text_read": false,
+  "http_status_available": false,
+  "source_pins": [
+    {
+      "sha256": "e3fb4929b9f5e5e3bbe373117040550bba10a853698c8805684ad541b6abede5",
+      "path": "internal/transport/antigravity/protocol.go"
+    },
+    {
+      "sha256": "a6c48e9ca15d0d2028536aad3c809254b34a7da715ee0a1035670c69dcc9ac04",
+      "path": "internal/transport/antigravity/provider.go"
+    },
+    {
+      "sha256": "e838d4de91b1623ed6bbe4ba00a089e9007c28c4d72b06954a9802eea541da86",
+      "path": "internal/transport/errors.go"
+    },
+    {
+      "sha256": "fc37142d8bac7d6afa377fdcf5264ea9f55cce0c6ac5d319dabd2329d7e81c93",
+      "path": "internal/transport/events.go"
+    },
+    {
+      "sha256": "d7f7140c33e24aeb0c6aa63bda5c2ea3997b543b512d25ca1ed49d0e561b8893",
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    }
+  ],
+  "events": [
+    "run_started",
+    "assistant_delta",
+    "assistant_delta",
+    "transport_error"
+  ],
+  "pg_calls": 0,
+  "stage": "response_stream",
+  "model_answers_read": false,
+  "entry": 134,
+  "uncertainty": "Exact rejecting branch and upstream versus adapter origin remain UNKNOWN. Do not guess malformed SSE, EOF, token limit, function proposal or upstream fault. No retry or relaxation follows this gap.",
+  "native_calls": 0,
+  "result": "NORMALIZED_PROTOCOL_CATEGORY_OBSERVED_SUBTYPE_NOT_ESTABLISHED",
+  "goldens_read": false,
+  "excluded_as_explanations": [
+    "No normalized tool or batch proposal was delivered in failed134; catalog/schema function validation ordinarily uses invalid_tool_request/capability_mismatch",
+    "Initial request/auth/non-SSE rejection alone cannot account for two same-entry text deltas",
+    "No authority stream operation failure or expired budget scope is observed for this operation"
+  ],
+  "mapping_read": false,
+  "version": "issue76-day-v6-protocol-origin-metadata-v1",
+  "source_chain": [
+    "Native Antigravity valid text parts invoke onText and emit assistant_delta before completion",
+    "Later readStreamProtocol checks can fail on JSON/envelope/part/candidate/usage/terminal/bounds conditions after prior text",
+    "Post-terminal truncated function proposal can also produce the same protocol type; no subtype may be selected from the retained metadata",
+    "protocolError uses typed provider_protocol_error; NewTransportErrorEvent normalizes that typed error",
+    "Research observer retains DiagnosticCode, allowlisted DiagnosticReason and numeric status only; no fixed subtype appears in retained safe_reason"
+  ],
+  "usage": "NULL",
+  "actual": [
+    {
+      "run_id": "run-1792982100747209153-28e7d983ebea439e",
+      "current_state": "failed",
+      "table": "runs",
+      "error_code": null,
+      "checkpoint": null,
+      "fixed_public_error_message": "provider_protocol_error",
+      "error_type": "transport_error",
+      "status": "failed"
+    },
+    {
+      "run_id": "run-1792982100747209153-28e7d983ebea439e",
+      "current_state": null,
+      "table": "accepted_inputs",
+      "error_code": "provider_protocol_error",
+      "checkpoint": "model_budget_reserved",
+      "fixed_public_error_message": "provider_protocol_error",
+      "error_type": null,
+      "status": "blocked"
+    }
+  ],
+  "safe_reason": "",
+  "code": "provider_protocol_error",
+  "quality_assessed": false
+}
