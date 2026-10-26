@@ -1,0 +1,15 @@
+{
+  "version": "issue76-independent-closed-v10-r2-audit-final-crosscheck-v1",
+  "boundary_sha256": "e2039c8e3036d38c4c433a29617364fbeb25a7022269ea9a49d3b5d41bf560db",
+  "all774_root_keys_unique": true,
+  "prior723_opaque_row_hashes_unique_and_set_equal": true,
+  "producer": "5fa9d724177609c97bbb74e92253cf7c474f69d0",
+  "worktree_clean": true,
+  "collector_elf_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "Go_PG_auth_native_calls": 0,
+  "baseline_audit_v1_status": "FAILED_BEFORE_RECEIPT: compared arm leaf instead of actual slot/arm binding",
+  "additive_v2_audit_exit": 0,
+  "correction": "Uses actual full slot/arm identity, unchanged raw/criteria/source",
+  "v1_script_sha256": "db3d8a2d6359ef6765970870b2605fb1459fbe8ceaf5749533315459b0bb8e49",
+  "v2_script_sha256": "556cfe48799b5b7f89da176d58467d1c18e9988ea22a381784610336ac7c10e5"
+}
