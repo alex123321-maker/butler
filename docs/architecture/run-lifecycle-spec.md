@@ -1308,3 +1308,7 @@ no Broker action is prepared or dispatched. Recovery replays that known DATA.
 At most four corrections are allowed, with ordinary model budgets retained.
 Such a known non-dispatch is not an equivalent committed write during model
 retry recovery. See [research and checked monitors](research-followups.md).
+
+## Prospective issue76 response failure isolation
+
+The explicitly constructed research fixture may stop one original comparison arm after an exact adapter response rejection, actual provider EOF and successful journal/current-authority proof. It retains partial text, unknown expense, blocked Input, failed run and the whole planned tail. Other authority, source, deadline, limit and persistence faults remain global. This adds no product retry or task-completion authority. See [the v10 research protocol](../testing/issue76-local-response-protocol.md).

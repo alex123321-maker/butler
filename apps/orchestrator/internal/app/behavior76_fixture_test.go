@@ -93,7 +93,7 @@ func newBehavior76StreamFixture(t *testing.T, parent context.Context, global *at
 }
 
 func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, streaming bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
-	return newBehavior76FixtureConfiguredMode(t, parent, global, streaming, false, false, bindings...)
+	return newBehavior76FixtureConfiguredMode(t, parent, global, streaming, false, false, false, bindings...)
 }
 
 func newBehavior76ModelFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
@@ -101,7 +101,7 @@ func newBehavior76ModelFixture(t *testing.T, parent context.Context, global *ato
 	if global == nil {
 		t.Fatal("explicit global stop required")
 	}
-	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, false, bindings...)
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, false, false, bindings...)
 }
 
 func newBehavior76HTTPFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
@@ -109,10 +109,18 @@ func newBehavior76HTTPFixture(t *testing.T, parent context.Context, global *atom
 	if global == nil {
 		t.Fatal("explicit global stop required")
 	}
-	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, true, bindings...)
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, true, false, bindings...)
 }
 
-func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty, localHTTP bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+func newBehavior76ResponseFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	t.Helper()
+	if global == nil {
+		t.Fatal("explicit global stop required")
+	}
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, true, true, bindings...)
+}
+
+func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty, localHTTP, localResponse bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -198,6 +206,9 @@ func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, gl
 		if localHTTP {
 			protocolPath = "/src20/docs/testing/issue76-local-http-protocol.md"
 		}
+		if localResponse {
+			protocolPath = "/src20/docs/testing/issue76-local-response-protocol.md"
+		}
 		body, e := os.ReadFile(protocolPath)
 		if e != nil {
 			t.Fatal("prospective public stop protocol unavailable")
@@ -222,8 +233,12 @@ func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, gl
 		if localHTTP {
 			binding.Mode = "fixture-local-http-v9"
 		}
+		if localResponse {
+			binding.Mode = "fixture-local-response-v10"
+		}
 		f.scope.localEmpty = localEmpty
 		f.scope.localHTTP = localHTTP
+		f.scope.localResponse = localResponse
 		f.scope.binding = binding
 	}
 	f.broker = f.startBroker()

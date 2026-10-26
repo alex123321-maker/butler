@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -35,6 +36,9 @@ type behavior76NativeProvider struct {
 	sealed       *atomic.Bool
 	entryLimit   int // Trusted experiment admission metadata, never a model input.
 	scope        *behavior76FixtureScope
+	// V10 only: an additional readback witness, never a source of authority.
+	// Missing/reconstructed witnesses fail closed instead of waiving an error.
+	localFailureProofs sync.Map // Actual run ID -> immutable root tuple SHA256.
 }
 
 func (p *behavior76NativeProvider) InferenceLimits() (int64, int64) { return 1048576, 8192 }
@@ -328,6 +332,9 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				status = "transport_error"
 				cause, _, _ := p.localFailureClass(append(events, safe), usage, version)
 				if cause == "model_http_no_response" && observedVersion {
+					cause = ""
+				}
+				if p.scope != nil && p.scope.localResponse && observedVersion && version == "" {
 					cause = ""
 				}
 				if len(localEOF) != 1 || event.TransportError.HTTPStatus != 0 || cause == "" {

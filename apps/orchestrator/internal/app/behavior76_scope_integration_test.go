@@ -102,11 +102,12 @@ func TestBehavior76LocalUnknownIsolationIntegration(t *testing.T) {
 
 type behavior76PublicConcurrent struct {
 	*initiativeProjectScriptedProvider
-	f           *behavior76Fixture
-	entered     chan struct{}
-	finished    atomic.Bool
-	runtimeRace bool
-	httpFailure bool
+	f               *behavior76Fixture
+	entered         chan struct{}
+	finished        atomic.Bool
+	runtimeRace     bool
+	httpFailure     bool
+	responseFailure bool
 }
 
 func (p *behavior76PublicConcurrent) Name() string { return "antigravity" }
@@ -124,6 +125,9 @@ func (p *behavior76PublicConcurrent) StartRun(ctx context.Context, q transport.S
 		}
 		if p.httpFailure {
 			return (&behavior76PublicHTTPFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
+		}
+		if p.responseFailure {
+			return (&behavior76PublicResponseFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
 		}
 	}
 	capabilities, err := p.Capabilities(ctx, q.Context)

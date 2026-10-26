@@ -12,8 +12,24 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = "bb40fdc7ca4c22c15230364445d0c1e74384392cc9d55ab53ea8aa42a32e5686"
-const behavior76DayExpectationsSHA = "fc202c9b27a025344156273c73ba2bb86c62d1ffed593f18c928668c8abd2c15"
+const behavior76DayStimuliSHA = ""
+const behavior76DayExpectationsSHA = ""
+
+func behavior76ClosedHTTPHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
+	directory := filepath.Join(root, "native-local-http-v9")
+	if err := behavior76CheckRawFiles(directory, "/src20/experiments/behavior76/2026-10-26/native-local-http-v9/raw-inventory.json", "045adc74308ea3faf3024e2b8070cd97aa9ea1470e0bce025354d88b72dfb879", 383); err != nil {
+		return nil, err
+	}
+	manifest, err := os.ReadFile(filepath.Join(directory, "manifest.json"))
+	if err != nil || behavior76Hash(manifest) != "bd66d1587f75b32e575faf30592f7c200cb0b47e5f36a193dc08af47970e4a5e" {
+		return nil, errors.New("closed v9 manifest changed")
+	}
+	var exact bool
+	if err = tx.QueryRow(ctx, `SELECT closed AND admitted=16 AND manifest=$1::jsonb AND (SELECT count(*)=16 FROM public.behavior76_attempts WHERE window_id='issue76-fixture-day-20261026T092444') FROM public.behavior76_windows WHERE id='issue76-fixture-day-20261026T092444'`, string(manifest)).Scan(&exact); err != nil || !exact {
+		return nil, errors.New("closed v9 history changed")
+	}
+	return manifest, nil
+}
 
 func behavior76ClosedModelHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-local-model-v8")
@@ -140,5 +156,5 @@ func TestBehavior76DayCorpusCompositionPreflight(t *testing.T) {
 	if os.Getenv("BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT") != "day-composition-only" {
 		t.Skip("explicit zero-native day composition required")
 	}
-	behavior76CompositionPreflightMode(t, behavior76DayStimuliSHA, true, true, true, true)
+	behavior76CompositionPreflightMode(t, behavior76DayStimuliSHA, true, true, true, true, true)
 }

@@ -1493,3 +1493,5 @@ The prospective fixture-local study uses the pinned, research-only
 [observer build correction](../../docs/testing/issue76-observer-build-addendum.md).
 Its isolated5.8.0 module copy adds only the upstream missing callback; ordinary
 dependencies, the shared cache, SQL errors and750ms authority bound are unchanged.
+
+The prospective [issue76 response-failure study](../../docs/testing/issue76-local-response-protocol.md) adds an explicitly constructed fixture-only stop after exact adapter response rejection. Partial text and nullable expense remain evidence; product behavior and closed windows are unchanged.

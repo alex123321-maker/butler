@@ -72,7 +72,9 @@ func behavior76CompositionPreflightMode(t *testing.T, expectedSHA string, local,
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
 				var global atomic.Bool
-				if len(localModel) == 2 && localModel[0] && localModel[1] {
+				if len(localModel) == 3 && localModel[0] && localModel[1] && localModel[2] {
+					f = newBehavior76ResponseFixture(t, context.Background(), &global)
+				} else if len(localModel) == 2 && localModel[0] && localModel[1] {
 					f = newBehavior76HTTPFixture(t, context.Background(), &global)
 				} else if len(localModel) == 1 && localModel[0] {
 					f = newBehavior76ModelFixture(t, context.Background(), &global)

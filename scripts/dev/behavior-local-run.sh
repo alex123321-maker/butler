@@ -13,9 +13,9 @@ export BUTLER_BEHAVIOR76_NATIVE_ENABLE=disabled
 export BUTLER_BEHAVIOR76_PGX_OBSERVER_CONTRACT=callback-paired-public-only
 export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=0
 case "$mode" in
- safety) selected='^TestBehavior76(GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*|LocalModel.*|LocalHTTP.*)$' ;;
+ safety) selected='^TestBehavior76(GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*|LocalModel.*|LocalHTTP.*|LocalResponse.*)$' ;;
  resources) selected='^TestBehavior76LocalUnknownResourceProfileIntegration$' ;;
- public) selected='^TestBehavior76(DayWindowAdmission|AuthorityStream(FinalSealFailure|BeyondLegacyCapacity|WriteFailureAndLateEventStop|FixtureIntegration)|AuthorityTraceCancelledRollbackIntegration|StimulusBoundary|InstructionIntegrity|Queued.*Integration|CoreBroker.*Integration|EvidenceExportIntegration|ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration|GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*|LocalModel.*|LocalHTTP.*)$' ;;
+ public) selected='^TestBehavior76(DayWindowAdmission|AuthorityStream(FinalSealFailure|BeyondLegacyCapacity|WriteFailureAndLateEventStop|FixtureIntegration)|AuthorityTraceCancelledRollbackIntegration|StimulusBoundary|InstructionIntegrity|Queued.*Integration|CoreBroker.*Integration|EvidenceExportIntegration|ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration|GlobalStop.*|UnknownEffectStopsBeforeNextAdmissionIntegration|LocalUnknown.*|LocalModel.*|LocalHTTP.*|LocalResponse.*)$' ;;
  evidence) selected='^TestBehavior76EvidenceExportIntegration$' ;;
  queued) selected='^TestBehavior76Queued(TaskMandates|FailedOwner)Integration$' ;;
  composition) selected='^TestBehavior76CorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=composition-only ;;
@@ -25,8 +25,8 @@ case "$mode" in
  localcomposition) selected='^TestBehavior76LocalCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=local-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4-r2/stimuli.jsonl ;;
  streampreflight) selected='^TestBehavior76StreamCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=stream-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-stream-v5/stimuli.jsonl ;;
  streamcomposition) selected='^TestBehavior76StreamCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=stream-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-stream-v5/stimuli.jsonl ;;
- daypreflight) selected='^TestBehavior76DayCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=day-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-http-v9/stimuli.jsonl ;;
- daycomposition) selected='^TestBehavior76DayCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=day-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-http-v9/stimuli.jsonl ;;
+ daypreflight) selected='^TestBehavior76DayCorpusSetupPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=day-setup-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-response-v10/stimuli.jsonl ;;
+ daycomposition) selected='^TestBehavior76DayCorpusCompositionPreflight$';export BUTLER_BEHAVIOR76_CONTROL_PREFLIGHT=day-composition-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-response-v10/stimuli.jsonl ;;
  streampublic) selected='^TestBehavior76AuthorityStream(FixtureIntegration|BeyondLegacyCapacity|WriteFailureAndLateEventStop)$';export BUTLER_BEHAVIOR76_STREAM_FIXTURE_OUTPUT=/src20/.cache/behavior76/stream-fixture-public-v1 ;;
  boundary) selected='^TestBehavior76(ContinuationBoundary|LifecyclePreparationIntegration|PreparedTasksOnceIntegration|FreshHistoryBoundaryIntegration)$' ;;
  offline) selected='^TestBehavior76(StimulusBoundary|InstructionIntegrity|QueuedTaskMandatesIntegration|CoreBrokerPrepareOfflineIntegration|CoreBrokerPrepareOnlyDeniesCommitIntegration|CoreBrokerCommitRecipientIntegration)$' ;;
@@ -34,7 +34,7 @@ case "$mode" in
  native) selected='^TestBehavior76NativeFreshLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fresh-synthetic-local-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-fresh-v3/stimuli.jsonl ;;
  localnative) selected='^TestBehavior76NativeFixtureLocal$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-local-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-v4-r2/stimuli.jsonl ;;
  streamnative) selected='^TestBehavior76NativeFixtureStream$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-stream-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-stream-v5/stimuli.jsonl ;;
- daynative) selected='^TestBehavior76NativeDayWindow$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-day-fit-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-http-v9/stimuli.jsonl ;;
+ daynative) selected='^TestBehavior76NativeDayWindow$';export BUTLER_BEHAVIOR76_NATIVE_ENABLE=fixture-day-fit-synthetic-only;export BUTLER_BEHAVIOR76_STIMULI=/src20/.cache/issue76-independent/hidden-local-response-v10/stimuli.jsonl ;;
  *) echo 'Unknown bounded local mode' >&2;exit 2 ;;
 esac
 tmp=$(mktemp -d /tmp/behavior76-test.XXXXXX)

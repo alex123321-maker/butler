@@ -26,11 +26,14 @@ func (p *behavior76NativeProvider) localFailureClass(events []map[string]any, us
 	if p.scope == nil {
 		return "", "", ""
 	}
-	if p.scope.localEmpty && behavior76ExactEmptyEvents(events) {
+	if p.scope.localEmpty && behavior76ExactEmptyEvents(events) && (!p.scope.localResponse || behavior76ResponseMetadata("stream_empty_answer", usage, version)) {
 		return "model_empty_answer", "response_stream", "provider_protocol_error"
 	}
 	if p.scope.localHTTP && usage == nil && version == "" && behavior76ExactHTTPEvents(events) {
 		return "model_http_no_response", "http_round_trip", "transport_connection_error"
+	}
+	if p.scope.localResponse && behavior76ExactResponseEvents(events) && behavior76ResponseMetadata(events[len(events)-1]["safe_reason"].(string), usage, version) {
+		return "model_response_rejected", "response_stream", "provider_protocol_error"
 	}
 	return "", "", ""
 }
@@ -70,6 +73,9 @@ func (p *behavior76NativeProvider) stopCompletedLocalFailure(ctx context.Context
 	if s.localHTTP {
 		wantMode = "fixture-local-http-v9"
 	}
+	if s.localResponse {
+		wantMode = "fixture-local-response-v10"
+	}
 	if s.binding.Mode != wantMode || s.binding.Window != p.window || (p.slot != s.binding.Arm && !strings.HasPrefix(p.slot, s.binding.Arm+"/")) {
 		return fail()
 	}
@@ -99,7 +105,7 @@ func (p *behavior76NativeProvider) stopCompletedLocalFailure(ctx context.Context
 	if json.Unmarshal(owners, &identities) != nil || len(identities) != 1 {
 		return fail()
 	}
-	var evidence []byte
+	var evidence, root []byte
 	var in, out, total, thinking any
 	if usage != nil {
 		in, out, total = usage.InputTokens, usage.OutputTokens, usage.TotalTokens
@@ -107,8 +113,8 @@ func (p *behavior76NativeProvider) stopCompletedLocalFailure(ctx context.Context
 			thinking = *usage.ThinkingTokens
 		}
 	}
-	err = p.journal.QueryRow(proof, `SELECT (to_jsonb(a)-'input'-'started_at') || jsonb_build_object('owner_inputs',$3::jsonb,'native_admission_cutoff_n',(SELECT max(n) FROM public.behavior76_attempts WHERE window_id=a.window_id))
- FROM public.behavior76_attempts a WHERE a.window_id=$1 AND a.n=$2 AND a.status='transport_error' AND a.stage=$12 AND a.run_id=$4 AND a.slot=$5 AND a.kind IN ('start','continue','submit') AND a.events=$6::jsonb AND a.model_version IS NOT DISTINCT FROM NULLIF($7,'') AND a.input_tokens IS NOT DISTINCT FROM $8::bigint AND a.output_tokens IS NOT DISTINCT FROM $9::bigint AND a.total_tokens IS NOT DISTINCT FROM $10::bigint AND a.thinking_tokens IS NOT DISTINCT FROM $11::bigint AND a.milliseconds>=0`, p.window, n, owners, run, p.slot, behavior76JSON(events), version, in, out, total, thinking, stage).Scan(&evidence)
+	err = p.journal.QueryRow(proof, `SELECT (to_jsonb(a)-'input'-'started_at') || jsonb_build_object('owner_inputs',$3::jsonb,'native_admission_cutoff_n',(SELECT max(n) FROM public.behavior76_attempts WHERE window_id=a.window_id)),to_jsonb(a)-'input'-'started_at'
+ FROM public.behavior76_attempts a WHERE a.window_id=$1 AND a.n=$2 AND a.status='transport_error' AND a.stage=$12 AND a.run_id=$4 AND a.slot=$5 AND a.kind IN ('start','continue','submit') AND a.events=$6::jsonb AND a.model_version IS NOT DISTINCT FROM NULLIF($7,'') AND a.input_tokens IS NOT DISTINCT FROM $8::bigint AND a.output_tokens IS NOT DISTINCT FROM $9::bigint AND a.total_tokens IS NOT DISTINCT FROM $10::bigint AND a.thinking_tokens IS NOT DISTINCT FROM $11::bigint AND a.milliseconds>=0`, p.window, n, owners, run, p.slot, behavior76JSON(events), version, in, out, total, thinking, stage).Scan(&evidence, &root)
 	if err != nil || !json.Valid(evidence) {
 		return fail()
 	}
@@ -122,6 +128,12 @@ func (p *behavior76NativeProvider) stopCompletedLocalFailure(ctx context.Context
 		}
 		s.stopped, s.stopCause = true, cause
 		s.signalLocked()
+	}
+	if s.localResponse {
+		hash := behavior76Hash(root)
+		if original, loaded := p.localFailureProofs.LoadOrStore(run, hash); loaded && original != hash {
+			return fail()
+		}
 	}
 	return true
 }
@@ -149,16 +161,24 @@ func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputE
 	if err := p.fixture.pool.QueryRow(ctx, `SELECT r.run_id FROM accepted_inputs a JOIN runs r ON r.run_id=a.run_id AND r.session_key=a.session_key WHERE a.event_id=$1 AND a.session_key=$2 AND r.current_state='failed' AND r.error_type='transport_error' AND r.error_message=$3`, event.EventID, event.SessionKey, code).Scan(&run); err != nil {
 		return false
 	}
-	var events []byte
-	if err := p.journal.QueryRow(ctx, `SELECT events FROM public.behavior76_attempts WHERE window_id=$1 AND slot=$2 AND run_id=$3 AND status='transport_error' AND stage=$4 AND ($5=false OR (input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL)) ORDER BY n DESC LIMIT 1`, p.window, p.slot, run, stage, code == "transport_connection_error").Scan(&events); err != nil {
+	var events, root []byte
+	var in, out, total, thinking *int64
+	var version *string
+	if err := p.journal.QueryRow(ctx, `SELECT events,input_tokens,output_tokens,total_tokens,thinking_tokens,model_version,to_jsonb(a)-'input'-'started_at' FROM public.behavior76_attempts a WHERE window_id=$1 AND slot=$2 AND run_id=$3 AND status='transport_error' AND stage=$4 AND ($5=false OR (input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL)) AND ($6=false OR (SELECT count(*)=1 FROM public.behavior76_attempts b WHERE b.window_id=a.window_id AND b.slot=a.slot AND b.run_id=a.run_id AND b.status='transport_error')) ORDER BY n DESC LIMIT 1`, p.window, p.slot, run, stage, code == "transport_connection_error", p.scope.localResponse).Scan(&events, &in, &out, &total, &thinking, &version, &root); err != nil {
 		return false
+	}
+	if p.scope.localResponse {
+		original, ok := p.localFailureProofs.Load(run)
+		if !ok || original != behavior76Hash(root) {
+			return false
+		}
 	}
 	// Compare the strict JSON shape using typed rehydration for the optional usage.
 	var chain []map[string]json.RawMessage
-	if json.Unmarshal(events, &chain) != nil || len(chain) != 2 {
+	if json.Unmarshal(events, &chain) != nil || len(chain) < 2 || (!p.scope.localResponse && len(chain) != 2) {
 		return false
 	}
-	normalized := make([]map[string]any, 2)
+	normalized := make([]map[string]any, len(chain))
 	for i, item := range chain {
 		normalized[i] = map[string]any{}
 		for key, value := range item {
@@ -178,6 +198,12 @@ func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputE
 					return false
 				}
 				normalized[i][key] = u
+			case "text_delta":
+				d, ok := behavior76ExactStoredDelta(value)
+				if !ok {
+					return false
+				}
+				normalized[i][key] = d
 			case "http_status":
 				var status int
 				if json.Unmarshal(value, &status) != nil {
@@ -193,10 +219,24 @@ func (p *behavior76NativeProvider) localModelExecutionError(event ingress.InputE
 			}
 		}
 	}
+	if p.scope.localResponse {
+		u, _ := normalized[len(normalized)-1]["usage"].(*transport.Usage)
+		v := ""
+		if version != nil {
+			v = *version
+			if v == "" {
+				return false
+			}
+		}
+		reason, _ := normalized[len(normalized)-1]["safe_reason"].(string)
+		if !behavior76StoredMetadataMatches(u, in, out, total, thinking) || !behavior76ResponseMetadata(reason, u, v) {
+			return false
+		}
+	}
 	if code == "transport_connection_error" {
 		return p.scope.localStopped() && behavior76ExactHTTPEvents(normalized)
 	}
-	return p.scope.localStopped() && behavior76ExactEmptyEvents(normalized)
+	return p.scope.localStopped() && (behavior76ExactEmptyEvents(normalized) || (p.scope.localResponse && behavior76ExactResponseEvents(normalized)))
 }
 
 // PostgreSQL JSONB has already canonicalized duplicate keys. Struct decoding

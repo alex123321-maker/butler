@@ -221,9 +221,10 @@ func TestBehavior76LocalModelExactStoredUsage(t *testing.T) {
 
 type behavior76PublicAutomaticEmpty struct {
 	*initiativeProjectScriptedProvider
-	f           *behavior76Fixture
-	entered     chan struct{}
-	httpFailure bool
+	f               *behavior76Fixture
+	entered         chan struct{}
+	httpFailure     bool
+	responseFailure bool
 }
 
 func (p *behavior76PublicAutomaticEmpty) Name() string { return "antigravity" }
@@ -251,6 +252,9 @@ func (p *behavior76PublicAutomaticEmpty) StartRun(ctx context.Context, q transpo
 		if p.httpFailure {
 			return (&behavior76PublicHTTPFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
 		}
+		if p.responseFailure {
+			return (&behavior76PublicResponseFailure{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}).StartRun(ctx, q)
+		}
 		base := &behavior76PublicEmptyModel{initiativeProjectScriptedProvider: p.initiativeProjectScriptedProvider}
 		return base.StartRun(ctx, q)
 	}
@@ -266,14 +270,17 @@ func TestBehavior76LocalModelAutomaticPreservesOwnerIntegration(t *testing.T) {
 	behavior76AutomaticFailurePreservesOwner(t, false)
 }
 
-func behavior76AutomaticFailurePreservesOwner(t *testing.T, httpFailure bool) {
+func behavior76AutomaticFailurePreservesOwner(t *testing.T, httpFailure bool, response ...bool) {
 	t.Setenv(prompt.SettingKeyBasePrompt, prompt.DefaultBasePrompt)
 	t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
 	defer cancel()
 	var global atomic.Bool
 	var f *behavior76Fixture
-	if httpFailure {
+	responseFailure := len(response) == 1 && response[0]
+	if responseFailure {
+		f = newBehavior76ResponseFixture(t, ctx, &global)
+	} else if httpFailure {
 		f = newBehavior76HTTPFixture(t, ctx, &global)
 	} else {
 		f = newBehavior76ModelFixture(t, ctx, &global)
@@ -290,12 +297,15 @@ func behavior76AutomaticFailurePreservesOwner(t *testing.T, httpFailure bool) {
 	step := e.Steps[0]
 	key := "B"
 	step.RunTaskKey, step.Event.TargetTaskKey = &key, &key
-	base := &behavior76PublicAutomaticEmpty{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, f: f, entered: make(chan struct{}), httpFailure: httpFailure}
+	base := &behavior76PublicAutomaticEmpty{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, f: f, entered: make(chan struct{}), httpFailure: httpFailure, responseFailure: responseFailure}
 	p := behavior76PublicWrapped(t, f, &global, base)
 	result, err := f.evaluate(p, step)
 	want, code := "fixture_local_model_failure", "provider_protocol_error"
 	if httpFailure {
 		want, code = "fixture_local_http_failure", "transport_connection_error"
+	}
+	if responseFailure {
+		want = "fixture_local_response_failure"
 	}
 	if err != nil || result.State != want || global.Load() || len(result.AutomaticRunIDs) != 1 || result.OwnerRunID == "" {
 		t.Fatal("automatic failure lost original identities", result, err)
