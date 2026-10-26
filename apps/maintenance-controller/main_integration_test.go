@@ -34,6 +34,15 @@ func TestMaintenanceOwnerControlProcessHelper(t *testing.T) {
 }
 
 func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
+	maintenanceOwnerStopProcess(t, false)
+}
+
+func TestMaintenanceNodeCredentialSeparationProcessIntegration(t *testing.T) {
+	maintenanceOwnerStopProcess(t, true)
+}
+
+func maintenanceOwnerStopProcess(t *testing.T, nodeEnabled bool) {
+	t.Helper()
 	pool := memorytest.Database(t)
 	store := maintenance.Store{Pool: pool}
 	controller, key, err := ed25519.GenerateKey(rand.Reader)
@@ -89,6 +98,7 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 		return path
 	}
 	token := strings.Repeat("public-synthetic-owner-", 3)
+	nodeToken := strings.Repeat("public-synthetic-node-", 3)
 	// pgx's original ConnString does not include RuntimeParams changed by the
 	// owning memorytest helper. Preserve its actual isolated schema explicitly.
 	databaseURL, err := url.Parse(pool.Config().ConnString())
@@ -99,6 +109,9 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 	parameters.Set("search_path", pool.Config().ConnConfig.RuntimeParams["search_path"])
 	databaseURL.RawQuery = parameters.Encode()
 	config := configuration{Listen: address, DatabaseURLFile: write("database.ref", []byte(databaseURL.String())), SigningSeedFile: write("controller.seed", key.Seed()), OwnerTokenFile: write("owner.token", []byte(token)), ProfileFile: write("profile.json", profileRaw)}
+	if nodeEnabled {
+		config.NodeTokenFile = write("node.token", []byte(nodeToken))
+	}
 	configRaw, err := json.Marshal(config)
 	if err != nil {
 		t.Fatal(err)
@@ -109,8 +122,8 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	client := http.Client{Timeout: 2 * time.Second}
-	post := func(auth, body string) (int, []byte, error) {
-		request, err := http.NewRequestWithContext(t.Context(), "POST", "http://"+address+"/private/maintenance/owner", strings.NewReader(body))
+	postPath := func(path, auth, body string) (int, []byte, error) {
+		request, err := http.NewRequestWithContext(t.Context(), "POST", "http://"+address+path, strings.NewReader(body))
 		if err != nil {
 			return 0, nil, err
 		}
@@ -122,6 +135,9 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 		defer response.Body.Close()
 		raw, err := io.ReadAll(io.LimitReader(response.Body, 65537))
 		return response.StatusCode, raw, err
+	}
+	post := func(auth, body string) (int, []byte, error) {
+		return postPath("/private/maintenance/owner", auth, body)
 	}
 	start := func() func() {
 		cmd := exec.CommandContext(t.Context(), executable, "-test.run=^TestMaintenanceOwnerControlProcessHelper$")
@@ -148,6 +164,33 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 		return stop
 	}
 	stop := start()
+	if nodeEnabled {
+		if status, _, err := post(nodeToken, `{"operation":"status"}`); err != nil || status != http.StatusUnauthorized {
+			stop()
+			t.Fatal("node credential gained owner controls", status, err)
+		}
+		request := maintenance.NodeControlRequest{Operation: "dispatch", Raw: []byte(`{}`), Signature: make([]byte, ed25519.SignatureSize)}
+		body, _ := json.Marshal(request)
+		if status, _, err := postPath(maintenance.NodeControlPath, token, string(body)); err != nil || status != http.StatusUnauthorized {
+			stop()
+			t.Fatal("owner credential crossed the separate node boundary", status, err)
+		}
+		if status, _, err := postPath(maintenance.NodeControlPath, nodeToken, string(body)); err != nil || status != http.StatusConflict {
+			stop()
+			t.Fatal("actual node route failed to reject an unsigned claim", status, err)
+		}
+		request.Operation = "stop"
+		body, _ = json.Marshal(request)
+		if status, _, err := postPath(maintenance.NodeControlPath, nodeToken, string(body)); err != nil || status != http.StatusBadRequest {
+			stop()
+			t.Fatal("node route accepted owner stop", status, err)
+		}
+	} else {
+		if status, _, err := postPath(maintenance.NodeControlPath, token, `{"operation":"status"}`); err != nil || status != http.StatusMethodNotAllowed {
+			stop()
+			t.Fatal("node route was enabled without separate configuration", status, err)
+		}
+	}
 	if status, _, err := post("wrong-private-token", `{"operation":"stop"}`); err != nil || status != 401 {
 		stop()
 		t.Fatal("untrusted owner control admitted", status, err)
@@ -172,5 +215,5 @@ func TestMaintenanceOwnerStopWithoutCoreProcessIntegration(t *testing.T) {
 	if err != nil || status != 200 || json.Unmarshal(raw, &response) != nil || response.Target == nil || !response.Target.Stopped || response.Target.Epoch != 3 {
 		t.Fatal("service restart erased owner stop", status, err)
 	}
-	t.Log("actual separate owner process, Core absent, unauthenticated/ambiguous stop denied, durable stop survives process restart; no node/deployment/inference proof")
+	t.Logf("actual separate controller process, Core absent, node_route=%t, role boundaries enforced, unauthenticated/ambiguous stop denied, durable stop survives restart; no physical node/deployment/inference proof", nodeEnabled)
 }

@@ -67,3 +67,28 @@ error/cost comparison. The full contract remains the acceptance requirement.
 
 This is not authority to enable an updater or update a working process. Local
 synthetic component success does not establish the remaining criteria.
+
+## Optional private node control, 2026-10-26
+
+An optional separately authenticated `/private/maintenance/node` now carries
+only exact signed dispatch claims and node outcomes to the existing Store.
+It cannot reserve or sign a claim, grant owner permission, select targets or
+execute Docker/shell operations. The client makes one bounded request without
+retry and verifies canonical exact echoed bytes; the node must still verify the
+original controller signature. Owner and node credentials are distinct. The
+default configuration keeps the node route absent.
+
+On this PC, Go1.27.2/Windows checks passed three targeted node boundary tests,
+two actual separate controller process scenarios and vet for both packages.
+The process helper's ordinary no-op test is not additional functional evidence.
+The scenarios retain an owner stop through restart with Core absent and deny
+cross-role credentials. Signatures and signed measurements are synthetic
+in-process fixtures. No physical node, trial, promotion, rollback or deployment
+was exercised. Exact logs and source hashes are in
+`experiments/maintenance21/2026-10-26/node-control-v1/`.
+
+Two earlier launch attempts failed before compilation: local Go1.26 did not
+match the module, and automatic toolchain checksum verification was disabled.
+The successful invocation used the already cached explicit Go1.27.2 executable;
+both startup errors remain archived separately from test outcomes. No new
+dependency, provider call, authorization material or working update was used.

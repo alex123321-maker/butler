@@ -1,0 +1,8 @@
+{
+  "vet_exit": 1,
+  "native_calls": 0,
+  "live_update": false,
+  "process_exit": 1,
+  "physical_operations": 0,
+  "package_exit": 1
+}

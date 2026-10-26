@@ -248,6 +248,19 @@ disabled. Main services and author runtimes receive no additional Docker or root
 capability. The fixed node-executor exception is justified only by deployment and
 does not extend restart-helper's existing restart-only responsibility.
 
+The initial private controller implements an optional node-only POST boundary at
+`/private/maintenance/node`, enabled by a separate `node_token_file`. The node
+token must differ from the owner-control token. Owner and target remain fixed by
+the operator profile. Canonical bounded requests can only present an existing
+controller-signed claim for live one-use `AdmitDispatch`, or a node-signed measured
+`RecordOutcome`. They cannot create claims or owner permissions, sign evidence,
+select another target, stop/resume updates, invoke a shell or operate Docker.
+The existing Store repeats all current stop, review, permission, identity and
+expiry checks, with no transaction spanning a physical operation. The private
+client preserves the caller deadline, disables proxy/redirects and retries
+nothing; a successful response must echo the exact original signed record.
+This control boundary alone is neither a physical executor nor release acceptance.
+
 ## Required isolated acceptance
 
 Acceptance requires actual separate checker/controller/executor processes and

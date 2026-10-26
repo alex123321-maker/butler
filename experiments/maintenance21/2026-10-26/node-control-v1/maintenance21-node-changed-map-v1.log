@@ -1,0 +1,17 @@
+Changed files:
+- apps/maintenance-controller/main_integration_test.go
+- apps/maintenance-controller/main.go
+- apps/maintenance-controller/README.md
+- docs/architecture/maintenance-contract.md
+- docs/testing/issue21-local-progress.md
+- internal/maintenance/node_control_test.go
+- internal/maintenance/node_control.go
+- internal/maintenance/README.md
+
+Relevant specs:
+- docs/architecture/maintenance-contract.md
+- docs/architecture/persistent-assistant-spec.md
+- docs/testing/issue21-local-progress.md
+
+Suggested verification:
+- This PC: test-go.ps1 -Packages ./internal/maintenance with BUTLER_TEST_MEMORY_POSTGRES_URL pointing to a separate maintenance *_test database; go vet ./internal/maintenance. Component signatures and PG guards do not qualify deployment. Require actual independent checker/controller/node, owner permission, compatibility and physical trial/rollback evidence before issue21 closure. No production update.

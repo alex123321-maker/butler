@@ -1,0 +1,132 @@
+{
+  "physical_operations": 0,
+  "process_exit": 0,
+  "acceptance": false,
+  "version": "issue21-private-node-control-component-v1",
+  "live_update": false,
+  "package_exit": 0,
+  "actual_separate_controller_scenarios": 2,
+  "files": [
+    {
+      "sha256": "224c064c290854308ccc9d551eeabd5f5359f551581348759626ffd117d00cfb",
+      "bytes": 947,
+      "path": "maintenance21-node-changed-map-v1.log"
+    },
+    {
+      "sha256": "eb3a14d50419ec69fc245e755ffff90aa472cf59e92fd606900d6f6c66f336fe",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v1-exit.json"
+    },
+    {
+      "sha256": "719e0fb6ebee0b623481339aaf06c650087c91a6852089d2eac8d043c32ce7aa",
+      "bytes": 950,
+      "path": "maintenance21-node-check-v1.ps1"
+    },
+    {
+      "sha256": "003784e6110003ff1877172f41b67cc0e5234d6a9dab82818fa17c2fe201278c",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v2-exit.json"
+    },
+    {
+      "sha256": "730f78c43a0ee9969d9cdef9a59ee30e9746a7803dfd52a304593fdde8f23032",
+      "bytes": 987,
+      "path": "maintenance21-node-check-v2.ps1"
+    },
+    {
+      "sha256": "99aa6262c94a697e0d796cb74721850dcef524b12a29363edac1e80b44e98777",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v3-exit.json"
+    },
+    {
+      "sha256": "4b860ac19c96582fbc998a81e3cd15071dcd22607e90befc9c5ba133816749e8",
+      "bytes": 1223,
+      "path": "maintenance21-node-check-v3.ps1"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-package-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-package-v2.log"
+    },
+    {
+      "sha256": "a69e22e118176cdd5745b6206fd002bd6d71f23f871626c83e0afee7460bcbe7",
+      "bytes": 2047,
+      "path": "maintenance21-node-package-v3.log"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-process-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-process-v2.log"
+    },
+    {
+      "sha256": "eb783517f4d7ccf871a7e6fb414c0526a7f3ccb2ea96907d08ff4e97e3d3e700",
+      "bytes": 949,
+      "path": "maintenance21-node-process-v3.log"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-vet-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-vet-v2.log"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "maintenance21-node-vet-v3.log"
+    }
+  ],
+  "created_utc": "2026-10-26T19:39:51.8532707+00:00",
+  "source": [
+    {
+      "path": "internal/maintenance/node_control.go",
+      "sha256": "7af16a2741eb244e9b295cd8e3d3854dd90e2ee2fe3f2d355d3baef917b0297f"
+    },
+    {
+      "path": "internal/maintenance/node_control_test.go",
+      "sha256": "139aafefbc00e27a1f518f78390138dc7340e218006c7d68c97f5f8d8b801bf6"
+    },
+    {
+      "path": "apps/maintenance-controller/main.go",
+      "sha256": "cf55083d7dc177f58cbb03f9878a1c1a13bd1d03452b2efd186528047c75efce"
+    },
+    {
+      "path": "apps/maintenance-controller/main_integration_test.go",
+      "sha256": "103e063c7fe4a369c24c456b3c414665901ba47208686219dd635da1c9fcd466"
+    },
+    {
+      "path": "apps/maintenance-controller/README.md",
+      "sha256": "447d64f3d7fd97270692f45762349b965ae6757cae15584c18a5bb44bb77476a"
+    },
+    {
+      "path": "internal/maintenance/README.md",
+      "sha256": "aed87eb3aee5ab51edc29dacbd8a2b588ecaaa273addde0da1db047ae4282392"
+    },
+    {
+      "path": "docs/architecture/maintenance-contract.md",
+      "sha256": "caa5b7da7b797ef626667bb4ca96cea44ff00b310372861857c1911301a7b90a"
+    },
+    {
+      "path": "docs/testing/issue21-local-progress.md",
+      "sha256": "add56235d9eabdbf90af3bd14ed1ce425cfec802222c68ea0429b537daab8cf6"
+    }
+  ],
+  "vet_exit": 0,
+  "targeted_node_boundary_tests": 3,
+  "helper_noop_not_functional_evidence": true,
+  "go": "1.27.2 windows/amd64 cached explicit executable",
+  "native_calls": 0,
+  "independent_checker_not_yet_executed": true
+}

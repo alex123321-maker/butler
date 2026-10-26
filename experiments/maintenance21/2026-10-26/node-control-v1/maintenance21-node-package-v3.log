@@ -1,0 +1,26 @@
+=== RUN   TestMaintenanceNodeControlDispatchOutcomeIntegration
+--- PASS: TestMaintenanceNodeControlDispatchOutcomeIntegration (4.07s)
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/owner_credential
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/duplicate_credential
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/owner_stop
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/create_permission
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/reserve_claim
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/alias
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/duplicate_operation
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/foreign_target_field
+=== RUN   TestMaintenanceNodeControlRequestBoundariesIntegration/query
+--- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration (2.76s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/owner_credential (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/duplicate_credential (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/owner_stop (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/create_permission (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/reserve_claim (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/alias (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/duplicate_operation (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/foreign_target_field (0.00s)
+    --- PASS: TestMaintenanceNodeControlRequestBoundariesIntegration/query (0.00s)
+=== RUN   TestMaintenanceNodeControlClientUnavailableIsNotRetried
+--- PASS: TestMaintenanceNodeControlClientUnavailableIsNotRetried (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/maintenance	7.780s

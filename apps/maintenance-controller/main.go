@@ -21,8 +21,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// This initial local-only service exposes independent owner controls, never
-// an updater, model tool, general shell or Docker API. Private files are read
+// This local-only service exposes owner controls and an optional separate node
+// boundary, never an updater, model tool, general shell or Docker API. Files are read
 // at startup and their contents are never printed in errors or request logs.
 type configuration struct {
 	Listen          string `json:"listen"`
@@ -30,6 +30,7 @@ type configuration struct {
 	SigningSeedFile string `json:"signing_seed_file"`
 	OwnerTokenFile  string `json:"owner_token_file"`
 	ProfileFile     string `json:"profile_file"`
+	NodeTokenFile   string `json:"node_token_file,omitempty"`
 }
 
 func readBounded(path string, limit int64) ([]byte, error) {
@@ -113,11 +114,31 @@ func run(ctx context.Context, path string) error {
 	if err != nil || target.ProfileSHA256 != maintenance.Digest(profileRaw) {
 		return maintenance.ErrState
 	}
+	var handler http.Handler = maintenance.NewOwnerControlHandler(store, profile.OwnerID, profile.TargetID, token, key)
+	if config.NodeTokenFile != "" {
+		nodeRaw, err := readBounded(config.NodeTokenFile, 512)
+		if err != nil {
+			return maintenance.ErrState
+		}
+		nodeToken := strings.TrimSpace(string(nodeRaw))
+		if len(nodeToken) < 32 || strings.ContainsAny(nodeToken, " \t\r\n\x00") || nodeToken == token {
+			return maintenance.ErrState
+		}
+		ownerHandler := handler
+		nodeHandler := maintenance.NewNodeControlHandler(store, profile.OwnerID, profile.TargetID, nodeToken)
+		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == maintenance.NodeControlPath {
+				nodeHandler.ServeHTTP(w, r)
+				return
+			}
+			ownerHandler.ServeHTTP(w, r)
+		})
+	}
 	listener, err := net.Listen("tcp", config.Listen)
 	if err != nil {
 		return maintenance.ErrState
 	}
-	server := http.Server{Handler: maintenance.NewOwnerControlHandler(store, profile.OwnerID, profile.TargetID, token, key), ReadHeaderTimeout: 2 * time.Second, ReadTimeout: 5 * time.Second, WriteTimeout: 8 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 8192}
+	server := http.Server{Handler: handler, ReadHeaderTimeout: 2 * time.Second, ReadTimeout: 5 * time.Second, WriteTimeout: 8 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 8192}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
 	fmt.Fprintln(os.Stdout, "maintenance owner control listening", listener.Addr().String())

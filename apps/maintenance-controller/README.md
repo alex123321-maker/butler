@@ -25,3 +25,14 @@ The actual separate owner-process test proves authenticated stop with Core
 absent and retention across restart. Independent release checker, node effects,
 trial and rollback acceptance remain pending. A listening endpoint is not
 acceptance of the updater or proof of functional candidate quality.
+
+The optional `node_token_file` enables a separate fixed
+`/private/maintenance/node` POST boundary. Its private token must differ from the
+owner token and remains outside Core/author mounts. The node can only present an
+existing signed claim for one-use live dispatch or return a signed measured
+outcome. PostgreSQL repeats the original permission, stop, version, review,
+observation and expiry checks. The node credential cannot create owner permission,
+reserve a claim, stop/resume the target or sign arbitrary data. Losing a dispatch
+response never authorizes retry. The client checks that the returned record exactly
+matches its original signed bytes. This boundary starts no node or Docker
+operation; physical executor and release acceptance remain separate work.

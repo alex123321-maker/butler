@@ -1,5 +1,15 @@
 # Independent release admission
 
+The optional private `NodeControlClient`/handler carries exact signed records
+across the separate node/controller boundary. Dispatch repeats the Store's live
+one-use checks; outcome recording retains the original signed measurement.
+The fixed operator owner/target and separate node token cannot be replaced by
+request data. Node authentication grants no owner controls, claim creation,
+review signing or physical operation. Its controller route defaults absent and
+requires an additional private token distinct from the owner token. A lost reply
+is not retried. Actual process-boundary tests and a physical executor are still
+required; this component is not release acceptance.
+
 Work in progress for issue21. This package compares complete submitted source
 inventories and conservatively classifies changes against fixed operator
 module boundaries. It deploys nothing and accepts

@@ -1,0 +1,10 @@
+=== RUN   TestMaintenanceOwnerControlProcessHelper
+--- PASS: TestMaintenanceOwnerControlProcessHelper (0.00s)
+=== RUN   TestMaintenanceOwnerStopWithoutCoreProcessIntegration
+    main_integration_test.go:37: actual separate controller process, Core absent, node_route=false, role boundaries enforced, unauthenticated/ambiguous stop denied, durable stop survives restart; no physical node/deployment/inference proof
+--- PASS: TestMaintenanceOwnerStopWithoutCoreProcessIntegration (3.20s)
+=== RUN   TestMaintenanceNodeCredentialSeparationProcessIntegration
+    main_integration_test.go:41: actual separate controller process, Core absent, node_route=true, role boundaries enforced, unauthenticated/ambiguous stop denied, durable stop survives restart; no physical node/deployment/inference proof
+--- PASS: TestMaintenanceNodeCredentialSeparationProcessIntegration (3.21s)
+PASS
+ok  	github.com/butler/butler/apps/maintenance-controller	8.321s
