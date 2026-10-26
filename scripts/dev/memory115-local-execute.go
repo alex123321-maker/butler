@@ -191,6 +191,27 @@ func local115Return(ctx context.Context, conn local115ControlQueries, expected, 
 	return nil
 }
 
+func local115WaitDatabaseExit(ctx context.Context, target interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}) error {
+	for {
+		var quiet bool
+		if target.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND backend_type='client backend' AND pid<>pg_backend_pid())`).Scan(&quiet) != nil {
+			return local115Fail("native database backend exit unavailable; auth handback prohibited")
+		}
+		if quiet {
+			return nil
+		}
+		timer := time.NewTimer(25 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return local115Fail("native database backends remain; auth handback prohibited")
+		case <-timer.C:
+		}
+	}
+}
+
 func local115Recover(ctx context.Context, target interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }, planSHA, expected string, importedReceipt bool) (string, string, error) {
@@ -362,7 +383,12 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if err != nil {
 		return local115Fail("local native database creation failed")
 	}
-	target, err := pgxpool.New(ctx, local115TargetDSN)
+	targetConfig, err := pgxpool.ParseConfig(local115TargetDSN)
+	if err != nil {
+		return local115Fail("local native target configuration unavailable")
+	}
+	targetConfig.MaxConns = 1
+	target, err := pgxpool.NewWithConfig(ctx, targetConfig)
 	if err != nil {
 		return local115Fail("local native target unavailable")
 	}
@@ -371,6 +397,7 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if target.QueryRow(ctx, `SELECT to_regclass('public.issue90_native_windows') IS NOT NULL OR EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='experience_native_v1')`).Scan(&consumed) != nil || consumed {
 		return local115Fail("local native domain consumed or unavailable; never replay")
 	}
+	target.Close() // No idle operator target backend during native collection.
 	var expected string
 	if conn.QueryRow(ctx, `SELECT value FROM public.system_settings WHERE key=$1 AND is_secret`, local115AuthKey).Scan(&expected) != nil || expected == "" {
 		return local115Fail("private encrypted source auth unavailable")
@@ -426,11 +453,22 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	// collector goroutine, credential-bearing child or process-local snapshot.
 	cleanup, done := context.WithTimeout(context.Background(), 45*time.Second)
 	defer done()
+	recoveryTarget, err := pgxpool.NewWithConfig(cleanup, targetConfig)
+	if err != nil {
+		return local115Fail("local native recovery connection unavailable")
+	}
+	defer recoveryTarget.Close()
+	quiet, stopQuiet := context.WithTimeout(cleanup, 10*time.Second)
+	err = local115WaitDatabaseExit(quiet, recoveryTarget)
+	stopQuiet()
+	if err != nil {
+		return err
+	}
 	_, receiptErr := os.Stat(filepath.Join(root, "actual/provider-auth-imported.json"))
 	if receiptErr != nil && !os.IsNotExist(receiptErr) {
 		return local115Fail("native auth import receipt unavailable for recovery")
 	}
-	latest, source, err := local115Recover(cleanup, target, local115PlanSHA, expected, receiptErr == nil)
+	latest, source, err := local115Recover(cleanup, recoveryTarget, local115PlanSHA, expected, receiptErr == nil)
 	if err != nil {
 		return err
 	}

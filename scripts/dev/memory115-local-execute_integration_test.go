@@ -111,4 +111,34 @@ func TestLocal115ActualPostgresRecoveryAndCAS(t *testing.T) {
 			}
 		})
 	}
+	t.Run("pending_backend_must_exit_before_final_read", func(t *testing.T) {
+		if _, err := conn.Exec(ctx, `CREATE TABLE public.operator_backend_refresh(value text);INSERT INTO public.operator_backend_refresh VALUES('synthetic-original')`); err != nil {
+			t.Fatal("new synthetic backend fixture unavailable")
+		}
+		t.Cleanup(func() { _, _ = conn.Exec(context.Background(), `DROP TABLE public.operator_backend_refresh`) })
+		other, err := pgx.ConnectConfig(ctx, cfg)
+		if err != nil {
+			t.Fatal("synthetic credential-writer backend unavailable")
+		}
+		defer other.Close(context.Background())
+		if _, err = other.Exec(ctx, `BEGIN;UPDATE public.operator_backend_refresh SET value='synthetic-latest-durable'`); err != nil {
+			t.Fatal("synthetic pending refresh unavailable")
+		}
+		blocked, stop := context.WithTimeout(ctx, 10*time.Millisecond)
+		if local115WaitDatabaseExit(blocked, conn) == nil {
+			stop()
+			t.Fatal("live backend allowed premature final snapshot")
+		}
+		stop()
+		if _, err = other.Exec(ctx, `COMMIT`); err != nil {
+			t.Fatal("synthetic refresh commit failed")
+		}
+		if other.Close(ctx) != nil || local115WaitDatabaseExit(ctx, conn) != nil {
+			t.Fatal("exited backend did not release final read")
+		}
+		var final string
+		if conn.QueryRow(ctx, `SELECT value FROM public.operator_backend_refresh`).Scan(&final) != nil || final != "synthetic-latest-durable" {
+			t.Fatal("final read did not observe latest durable refresh")
+		}
+	})
 }
