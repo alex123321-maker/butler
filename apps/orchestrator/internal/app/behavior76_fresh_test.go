@@ -100,6 +100,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		historyPath = "/src20/.cache/behavior76/native-day-v6/behavior76_attempts.jsonl"
 		expected = 640
 	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-day-v7-r2/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedEmptyHistory(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-day-v7-r2/behavior76_attempts.jsonl"
+		expected = 643
+	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
@@ -168,9 +175,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			version, prefix = "behavior76-fixture-stream-v5", "issue76-fixture-stream-"
 			if dayFit {
 				stimuliSHA, expectationsSHA = behavior76DayStimuliSHA, behavior76DayExpectationsSHA
-				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 7, 640, 633, 4900143, 7
-				priorDirectory = "native-day-v6"
-				version, prefix = "behavior76-fixture-day-v7", "issue76-fixture-day-"
+				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 8, 643, 635, 4910612, 8
+				priorDirectory = "native-day-v7-r2"
+				version, prefix = "behavior76-fixture-local-model-v8", "issue76-fixture-day-"
+				if stimuliSHA == "a2d7ffa28a497a72246ba608d1a18351f316c6804a581784a1f76306975ba047" || expectationsSHA == "dabe70e665b96396bb1e3e9bfdbf7503ba2d07dead08482f6ce50d1d19708cc7" {
+					t.Fatal("closed day-v7-r2 controls cannot be reused")
+				}
 				if stimuliSHA == "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba" || expectationsSHA == "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9" {
 					t.Fatal("closed day-v6 controls cannot be reused")
 				}
@@ -236,6 +246,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 	indexVersion := "behavior76-checker-index-v1"
 	if local {
 		indexVersion = "behavior76-checker-index-v2-local-tail"
+	}
+	if dayFit {
+		indexVersion = "behavior76-checker-index-v3-local-model-tail"
 	}
 	index := behavior76Index{Version: indexVersion, StimuliSHA256: stimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
@@ -355,6 +368,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal(e)
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T012812", "admitted": 134, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		body, e = behavior76ClosedEmptyHistory(ctx, transaction, root)
+		if e != nil {
+			t.Fatal(e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T050548", "admitted": 3, "closed": true, "manifest_sha256": behavior76Hash(body)})
 		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
 			t.Fatal("owning database day unavailable")
 		}
@@ -394,6 +412,10 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 		protocolPath := "docs/testing/issue76-fixture-local-protocol.md"
 		if streaming {
 			protocolPath = "docs/testing/issue76-fixture-stream-protocol.md"
+		}
+		if dayFit {
+			protocolPath = "docs/testing/issue76-local-model-protocol.md"
+			manifest["local_model_failure_mode"] = behavior76LocalModelMode
 		}
 		protocol, e := os.ReadFile(filepath.Join("/src20", protocolPath))
 		if e != nil {
@@ -446,7 +468,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 				t.Setenv(prompt.SettingKeyBasePrompt, base)
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
-				if streaming {
+				if dayFit {
+					f = newBehavior76ModelFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
+				} else if streaming {
 					f = newBehavior76StreamFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
 				} else if local {
 					f = newBehavior76LocalFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
@@ -499,7 +523,7 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 					stepDir := filepath.Join(caseDir, fmt.Sprintf("step-%02d", j+1))
 					stepRel := relative + fmt.Sprintf("/step-%02d", j+1)
 					if local && f.scope.localStopped() {
-						outcome := behavior76Outcome{State: "not_executed_after_fixture_local_unknown", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, FailurePhase: "fixture_local_stop", FixtureStopRef: relative + "/tables/behavior76_fixture_stops.jsonl"}
+						outcome := behavior76Outcome{State: f.scope.disposition(true), RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, FailurePhase: "fixture_local_stop", FixtureStopRef: relative + "/tables/behavior76_fixture_stops.jsonl"}
 						behavior76Write(t, filepath.Join(stepDir, "outcome.json"), outcome)
 						item.Steps = append(item.Steps, behavior76IndexStep{StepID: step.ID, Outcome: stepRel + "/outcome.json"})
 						continue
@@ -544,6 +568,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 							outcome.FailurePhase = "collector"
 							sealed.Store(true)
 						}
+					}
+					if local && f.scope.localStopped() {
+						outcome.FixtureStopRef = relative + "/tables/behavior76_fixture_stops.jsonl"
 					}
 					behavior76Write(t, filepath.Join(stepDir, "after.json"), f.snapshot())
 					behavior76Write(t, filepath.Join(stepDir, "outcome.json"), outcome)

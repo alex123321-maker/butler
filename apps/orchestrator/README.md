@@ -1,3 +1,9 @@
+The separately admitted [issue76 v8 research study](../../docs/testing/issue76-local-model-protocol.md)
+also permits one exact completed-empty adapter response to stop its whole
+isolated fixture after durable journal/identity/source checks and actual EOF.
+It retains failed/UNKNOWN/unavailable outcomes and costs, keeps all other
+faults global, and does not change production provider or lifecycle behavior.
+
 The explicit research constructor `input.NewServiceWithClaimAdmission` can
 install an immutable denial fence around queue expiry and claim acquisition.
 Closing that fence stops new claim loops while previously claimed executions

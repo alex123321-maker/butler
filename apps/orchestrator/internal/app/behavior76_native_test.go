@@ -136,8 +136,12 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 	stage.Store("")
 	observed := transport.WithProviderStageObserver(ctx, func(s transport.ProviderStage) { stage.Store(string(s)) })
 	start := time.Now()
-	finish := func(status string, events []map[string]any, usage *transport.Usage, version string) {
-		defer release()
+	var persisted, persistedOK bool
+	persist := func(status string, events []map[string]any, usage *transport.Usage, version string) bool {
+		if persisted {
+			return persistedOK
+		}
+		persisted = true
 		done, stop := context.WithTimeout(context.Background(), 5*time.Second)
 		defer stop()
 		var in, out, total, thinking any
@@ -149,10 +153,17 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 				thinking = *usage.ThinkingTokens
 			}
 		}
-		tag, e := p.journal.Exec(done, `UPDATE public.behavior76_attempts SET status=$3,events=$4,stage=$5,milliseconds=$6,input_tokens=$7,output_tokens=$8,total_tokens=$9,thinking_tokens=$10,model_version=NULLIF($11,'') WHERE window_id=$1 AND n=$2 AND status='unknown'`, p.window, n, status, behavior76JSON(events), stage.Load().(string), time.Since(start).Milliseconds(), in, out, total, thinking, version)
+		tag, e := p.journal.Exec(done, `UPDATE public.behavior76_attempts SET status=$3,events=$4,stage=$5,milliseconds=$6,input_tokens=$7,output_tokens=$8,total_tokens=$9,thinking_tokens=$10,model_version=NULLIF($11,'') WHERE window_id=$1 AND n=$2 AND status='unknown' AND run_id=$12 AND slot=$13 AND kind=$14`, p.window, n, status, behavior76JSON(events), stage.Load().(string), time.Since(start).Milliseconds(), in, out, total, thinking, version, run, p.slot, kind)
 		if e != nil || tag.RowsAffected() != 1 {
 			p.sealed.Store(true)
+			return false
 		}
+		persistedOK = true
+		return true
+	}
+	finish := func(status string, events []map[string]any, usage *transport.Usage, version string) {
+		defer release()
+		persist(status, events, usage, version)
 	}
 	if err != nil || p.sealed.Load() {
 		finish("not_entered_global_stop", nil, nil, "")
@@ -164,26 +175,74 @@ func (p *behavior76NativeProvider) invoke(ctx context.Context, kind, run string,
 		p.sealed.Store(true)
 		return nil, errBehavior76Native
 	}
-	return p.observeStream(ctx, stream, finish), nil
+	return p.observeStream(ctx, stream, finish, func(events []map[string]any, usage *transport.Usage, version, observedRun string) bool {
+		if observedRun != run {
+			p.sealed.Store(true)
+			return false
+		}
+		return p.stopCompletedEmpty(ctx, n, run, persist, events, usage, version)
+	}), nil
 }
 
 // A clean channel close is not a completed provider operation. In particular,
 // Core's owning watchdog can cancel HTTP before any event arrives. Preserve
 // its NULL usage and close the whole experiment before a later admission.
-func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream transport.EventStream, finish func(string, []map[string]any, *transport.Usage, string)) transport.EventStream {
+func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream transport.EventStream, finish func(string, []map[string]any, *transport.Usage, string), localEOF ...func([]map[string]any, *transport.Usage, string, string) bool) transport.EventStream {
 	output := make(chan transport.TransportEvent)
 	go func() {
 		defer close(output)
 		status, version := "stream_closed", ""
 		var events []map[string]any
 		var usage *transport.Usage
+		var held *transport.TransportEvent
+		var observedRun string
 		defer func() {
 			if status == "stream_closed" || status == "cancelled" || behavior76AuthorityFailure(context.Cause(ctx)) {
 				p.sealed.Store(true)
 			}
 			finish(status, events, usage, version)
 		}()
-		for event := range stream {
+		for {
+			var event transport.TransportEvent
+			var open bool
+			select {
+			case event, open = <-stream:
+			default:
+				// Prefer an already available terminal/EOF over the owning
+				// consumer's cancellation after a successful tool handoff.
+				select {
+				case event, open = <-stream:
+				case <-ctx.Done():
+					status = "cancelled"
+					return
+				}
+			}
+			if !open {
+				if held != nil {
+					if ctx.Err() != nil || len(localEOF) != 1 || !localEOF[0](events, usage, version, observedRun) {
+						p.sealed.Store(true)
+					}
+					select {
+					case output <- *held:
+					case <-ctx.Done():
+						status = "cancelled"
+					}
+				}
+				return
+			}
+			if held != nil {
+				// Any event after the proposed empty terminal makes the entire
+				// sequence ineligible. Preserve it; no local reinterpretation.
+				p.sealed.Store(true)
+			}
+			if p.scope != nil && p.scope.localEmpty {
+				if observedRun == "" {
+					observedRun = event.RunID
+				}
+				if event.RunID == "" || event.RunID != observedRun {
+					p.sealed.Store(true)
+				}
+			}
 			if event.Usage != nil {
 				v := *event.Usage
 				usage = &v
@@ -218,7 +277,9 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				safe["safe_reason"] = transport.DiagnosticReason(event.TransportError)
 				safe["http_status"] = transport.DiagnosticHTTPStatus(event.TransportError)
 				status = "transport_error"
-				p.sealed.Store(true)
+				if p.scope == nil || !p.scope.localEmpty || len(localEOF) != 1 || event.TransportError.HTTPStatus != 0 || !behavior76ExactEmptyEvents(append(events, safe)) {
+					p.sealed.Store(true)
+				}
 			}
 			if event.EventType == transport.EventTypeToolCallBatchRequested || (event.EventType == transport.EventTypeToolCallRequested && (event.ToolCall == nil || event.ToolCall.ToolCallRef == "" || event.ToolCall.ToolName == "" || !json.Valid([]byte(event.ToolCall.ArgsJSON)))) {
 				// This composition explicitly does not support batch calls. A
@@ -241,6 +302,14 @@ func (p *behavior76NativeProvider) observeStream(ctx context.Context, stream tra
 				p.sealed.Store(true)
 			}
 			events = append(events, safe)
+			if held != nil {
+				continue // Drain and record all late events before returning the error.
+			}
+			if event.TransportError != nil && !p.sealed.Load() && p.scope != nil && p.scope.localEmpty {
+				copy := event
+				held = &copy
+				continue
+			}
 			select {
 			case output <- event:
 			case <-ctx.Done():

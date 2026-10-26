@@ -31,6 +31,10 @@ func behavior76PublicWrapped(t *testing.T, f *behavior76Fixture, global *atomic.
 		t.Fatal(err)
 	}
 	window := "public-scope-" + f.lookup("task", "A")
+	if f.scope.localEmpty {
+		f.scope.binding.Window = window
+		f.scope.binding.Arm = "public-scope"
+	}
 	if _, err = journal.Exec(f.ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,'{"max_native_entries":192,"native":false}',clock_timestamp()+INTERVAL '2 minutes')`, window); err != nil {
 		t.Fatal(err)
 	}

@@ -47,7 +47,11 @@ func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.Input
 			observer.observeCoreOutcome(result, executionErr)
 		}
 		if e.f.scope != nil {
-			if executionErr != nil && !(errors.Is(executionErr, errBehavior76FixtureStopped) && e.f.scope.localStopped()) {
+			localModel := false
+			if p, ok := e.provider.(*behavior76NativeProvider); ok && executionErr != nil {
+				localModel = p.localModelExecutionError(event, executionErr)
+			}
+			if executionErr != nil && !localModel && !(errors.Is(executionErr, errBehavior76FixtureStopped) && e.f.scope.localStopped()) {
 				e.f.scope.global.Store(true)
 			}
 			if result != nil && (result.ErrorCode == "effect_unknown" || result.ErrorCode == "external_effect_unknown") {
@@ -94,7 +98,7 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		leave, e := f.scope.enterEvaluation(f.ctx)
 		if e != nil {
 			if e == errBehavior76FixtureStopped {
-				outcome.State = "not_executed_after_fixture_local_unknown"
+				outcome.State = f.scope.disposition(true)
 				return outcome, nil
 			}
 			return outcome, e
@@ -318,9 +322,14 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 				if e = f.waitOwningWorkers(cleanup); e != nil {
 					return outcome, e
 				}
+				if outcome.OwnerInputID != "" {
+					if e = f.pool.QueryRow(cleanup, `SELECT coalesce(run_id,'') FROM accepted_inputs WHERE input_id=$1`, outcome.OwnerInputID).Scan(&outcome.OwnerRunID); e != nil {
+						return outcome, e
+					}
+				}
 				// Actual owner/automatic records and UNKNOWN remain untouched.
 				// The local stop is an arm disposition, never task completion.
-				outcome.State = "fixture_local_unknown"
+				outcome.State = f.scope.disposition(false)
 				outcome.FailurePhase = "fixture_local_stop"
 				return outcome, nil
 			}

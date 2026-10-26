@@ -51,7 +51,7 @@ func TestBehavior76StreamCorpusCompositionPreflight(t *testing.T) {
 	behavior76CompositionPreflightMode(t, behavior76StreamStimuliSHA, true, true)
 }
 
-func behavior76CompositionPreflightMode(t *testing.T, expectedSHA string, local, streaming bool) {
+func behavior76CompositionPreflightMode(t *testing.T, expectedSHA string, local, streaming bool, localModel ...bool) {
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
 	if err != nil || behavior76Hash(raw) != expectedSHA {
 		t.Fatal("frozen independent stimulus commitment unavailable")
@@ -72,7 +72,9 @@ func behavior76CompositionPreflightMode(t *testing.T, expectedSHA string, local,
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
 				var global atomic.Bool
-				if streaming {
+				if len(localModel) == 1 && localModel[0] {
+					f = newBehavior76ModelFixture(t, context.Background(), &global)
+				} else if streaming {
 					f = newBehavior76StreamFixture(t, context.Background(), &global)
 				} else if local {
 					f = newBehavior76LocalFixture(t, context.Background(), &global)

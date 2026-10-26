@@ -1,0 +1,88 @@
+{
+  "version": "issue76-local-model-checker-v2-dependency-closure-v1",
+  "component_receipt_sha256": "33636871f6c0a473fb51ded358e5c72132e32f6d24326b62402d7f07fb1c0dd7",
+  "runtime_file_count": 7,
+  "runtime_files": [
+    {
+      "sha256": "3d3b2aff00d23165cc74d8fb264681ee44610648e2b43254bd5b1e530b21b370",
+      "path": "local-model-proof-reader-v2.ps1"
+    },
+    {
+      "sha256": "897beea0409d4fb526ff434ba03ab51df07b6c919b8c680d81cc97d6176b32fd",
+      "path": "local-tail-adapter-v2.ps1"
+    },
+    {
+      "sha256": "8719c35f525a0d3d417e9cd0ee037fe357462a3827585dde14426723bef9ed63",
+      "path": "local-scoring-composition-v2.ps1"
+    },
+    {
+      "sha256": "4c964b15d07620d1e70e5a75d6b00d4501851d1a9907a7ff60007733156a1f2c",
+      "path": "authority-stream-scoring-v2b.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "score-mechanical-fresh-v3.ps1"
+    }
+  ],
+  "selftest_additional_files": [
+    {
+      "sha256": "27d9bd2202e71fba967bb87a95b98bd0970ca24fdb2e5891de8179a03bdeda48",
+      "path": "test-local-tail-adapter-v2.ps1"
+    },
+    {
+      "sha256": "02ff9e9f34cf2424810f9b3c07ec6fe8eafa3420bb27cdf2741d69d2d4214989",
+      "path": "test-local-model-proof-v2.ps1"
+    },
+    {
+      "sha256": "65acaa0f73c7bb07092ad580385a587b3a753de04cf2bf1ad5ff4ba186e9d828",
+      "path": "test-local-scoring-composition-v2.ps1"
+    },
+    {
+      "sha256": "f521cee0653e6337e265a8ddd3e3fc4c1ace3cdc466b3af5333c984e2aefde0a",
+      "path": "test-local-model-composition-v2.ps1"
+    },
+    {
+      "sha256": "8b79bd14060d04d2e5e74349e7b81e94bb6ec19a735557792578e014438bd768",
+      "path": "authority-stream-scoring-v2b-selftests.ps1"
+    },
+    {
+      "sha256": "a9874bbb9ced4bc276510dbcc15b89a49602e7ebe926031a60b7a26c379825f7",
+      "path": "test-local-model-proof-v2-union.ps1"
+    },
+    {
+      "sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869",
+      "path": "score-mechanical-v2.ps1"
+    }
+  ],
+  "optional_immutability_audit_sources": [
+    "local-tail-adapter-v1.ps1",
+    "local-scoring-composition-v1.ps1",
+    "authority-stream-scoring-v2a.ps1"
+  ],
+  "runtime_entry": "Invoke-Issue76StreamScoringFilesV2 from authority-stream-scoring-v2b.ps1",
+  "direct_entry": "Invoke-Issue76LocalScoringFilesV2 from local-scoring-composition-v2.ps1",
+  "pin_fields": [
+    "window",
+    "producer",
+    "protocol_sha256",
+    "stimuli_sha256",
+    "expectations_sha256",
+    "manifest_sha256",
+    "index_sha256",
+    "attempts_sha256",
+    "windows_sha256"
+  ],
+  "producer_pin": "Exact manifest.source and stop.binding.producer string, including git/binary identity; not a bare git ref when source is composite.",
+  "adjacency": "Preserve exact basenames in one checker directory; helpers/loader are resolved relative to PSScriptRoot.",
+  "legacy_source_loading": "Frozen old scorer is parsed as AST only by v2 composition. Never run its real historical CLI/commitment.",
+  "new_model_auth_PG_calls": 0,
+  "hidden_corpus_authorship": false
+}

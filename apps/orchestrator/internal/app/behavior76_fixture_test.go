@@ -93,6 +93,18 @@ func newBehavior76StreamFixture(t *testing.T, parent context.Context, global *at
 }
 
 func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global *atomic.Bool, streaming bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	return newBehavior76FixtureConfiguredMode(t, parent, global, streaming, false, bindings...)
+}
+
+func newBehavior76ModelFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	t.Helper()
+	if global == nil {
+		t.Fatal("explicit global stop required")
+	}
+	return newBehavior76FixtureConfiguredMode(t, parent, global, true, true, bindings...)
+}
+
+func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -172,6 +184,9 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 		if streaming {
 			protocolPath = "/src20/docs/testing/issue76-fixture-stream-protocol.md"
 		}
+		if localEmpty {
+			protocolPath = "/src20/docs/testing/issue76-local-model-protocol.md"
+		}
 		body, e := os.ReadFile(protocolPath)
 		if e != nil {
 			t.Fatal("prospective public stop protocol unavailable")
@@ -190,6 +205,10 @@ func newBehavior76FixtureConfigured(t *testing.T, parent context.Context, global
 			t.Fatal(e)
 		}
 		binding.Mode = "fixture-local-v4"
+		if localEmpty {
+			binding.Mode = "fixture-local-model-v8"
+		}
+		f.scope.localEmpty = localEmpty
 		f.scope.binding = binding
 	}
 	f.broker = f.startBroker()

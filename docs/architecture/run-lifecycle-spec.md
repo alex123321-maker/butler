@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+The separate research-only [issue76 v8 protocol](../testing/issue76-local-model-protocol.md)
+adds a prospective whole-fixture stop for one exact completed-empty adapter
+response, only after durable native journaling, live identity/source proof and
+underlying channel EOF. It preserves ordinary Input/run/effect/final statuses
+and nullable charges. All other faults retain global research-stop priority;
+production constructors and lifecycle policy remain unchanged.
+
 An explicit startup-only `input.NewServiceWithClaimAdmission` constructor
 supports an immutable trusted denial fence around queue expiry and durable
 claim acquisition. Successful admission releases its fence before executing
