@@ -1,0 +1,14 @@
+{
+  "version": "issue76-independent-r3-masked-judgments-seal-v1",
+  "sealed_utc": "2026-10-26T22:16:17.8729157+00:00",
+  "planned_arms": 48,
+  "planned_owner_opportunities": 96,
+  "planned_families": 12,
+  "judgments_sha256": "3f9477c4fa698239dc599915a9d303326f2b44920b67cdafc0b65245033c4d2c",
+  "mechanical_sha256": "d3390dd70e0a043d8ad937ca55e26711dad05d9e336a3c99e618a705a7f5a496",
+  "mapping_read": false,
+  "original_missing_failed_unknowns_preserved": true,
+  "quality_results_released_to_parent": false,
+  "new_native_admission": false,
+  "issue_closure": false
+}

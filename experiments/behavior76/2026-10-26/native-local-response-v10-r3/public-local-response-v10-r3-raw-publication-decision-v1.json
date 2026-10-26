@@ -1,0 +1,27 @@
+{
+  "version": "issue76-r3-independent-raw-publication-decision-v1",
+  "issued_utc": "2026-10-26T22:31:57.274402+00:00",
+  "decision": "EXACT_SYNTHETIC_RAW_ARCHIVE_RELEASE_ACCEPTABLE_WITH_STATED_LIMITS",
+  "raw_files": 3761,
+  "raw_bytes": 109422520,
+  "archive_sha256": "4ce493b4a91d4d364e387df1ecc071d70cd91cb811546dffc6c4827e7b374799",
+  "inventory_sha256": "98447bb97b8f43b7932f6a25baa8fee0835dd4035f4bd693e3cb222d54c4dc4b",
+  "expanded_scan_sha256": "c3f8c81fc6898771efb6cd9d37bebe4676a79b6813d5e15d6a9b1cb491c5938f",
+  "basis": [
+    "All original file hashes and every ZIP entry were verified independently against the exact inventory.",
+    "Frozen export allowlist is fixture-local; no system_settings/credential stores/private auth/PG dump/native opaque continuation payload export.",
+    "All raw bytes including decompressed authority segments scanned; all JSON/JSONL records parsed; fixed credential formats, credential property keys and forbidden file categories returned zero findings.",
+    "Inputs are labelled synthetic; private grading/goldens and the actual arm mapping file live outside this raw root."
+  ],
+  "disclosures": [
+    "Raw includes synthetic task/profile/document values and user/tool/model text, model-request prompt/schema/code snippets, operational paths and fixture IDs/expired fixture ownership tokens.",
+    "The root ledger contains older synthetic-window attempts and historical unknown costs, not only current197 entries.",
+    "Public release consumes this holdout: never claim these cases remain hidden or independently reusable as fresh controls.",
+    "A finite automated scan plus reviewed export provenance cannot guarantee absence of arbitrary PII, unfamiliar credential encodings or memorized model text. This is not a full human legal/privacy review.",
+    "Do not publish private expectations, private scoring/judgment answers, arm mapping blob, case-authoring helpers, private PG backups or auth/settings."
+  ],
+  "redaction": "No redaction or rezip of the original is needed for findings detected here. If a later sensitive item is discovered, retain immutable private original, withdraw exact public archive, publish a separately named derivative with omissions and hashes; do not pretend derivative equals original.",
+  "publication_scope": "Only this exact inventory/archive pair; no blanket approval for sibling caches or future raw.",
+  "source_or_judgments_modified": false,
+  "Go_PG_auth_native_calls": 0
+}

@@ -1513,6 +1513,15 @@ dependencies, the shared cache, SQL errors and750ms authority bound are unchange
 
 The prospective [issue76 response-failure study](../../docs/testing/issue76-local-response-protocol.md) adds an explicitly constructed fixture-only stop after exact adapter response rejection. Partial text and nullable expense remain evidence; candidate activation and closed windows are unchanged.
 
+The [closed v10-r3 comparison](../../docs/testing/issue76-r3-results-2026-10-26.md)
+completed48 arms and independently assessed all96 planned owner opportunities.
+The unchanged instruction candidate is NO_GO: two critical UNKNOWNs and a paired
+semantic loss prohibit promotion. Baseline21/candidate24 qualified passes do not
+establish superiority because27 pairs lack comparable semantic answers. The
+bounded pilot is complete, while whole-issue literal scenario coverage remains
+partial. Closed evidence, negative results and all historical nullable charges
+are retained; no working deployment is changed.
+
 Core now joins its run-scoped lease/authority supervisor before terminal task
 mutation and atomic final persistence, while keeping the original execution
 context and database fences live. In-flight checks retain real failures; normal

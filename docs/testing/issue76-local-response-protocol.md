@@ -130,3 +130,11 @@ admissions, 15 measured and 115562 known full tokens remain. Inclusive history
 is 10 closed windows, 723 admissions, 713 measured, 5626388 known full tokens
 and 10 NULL usage rows. All prior 707 rows and the 383 original v9 raw files
 must exactly match their sealed originals before any new admission.
+
+## Closed v10-r3 result, 2026-10-26
+
+The separately frozen r3 collection completed operationally. Its unchanged
+quality gate rejects the candidate. See [results and scope limits](issue76-r3-results-2026-10-26.md)
+for the independently sealed96 judgments, retained negative outcomes and full
+expense. Completion of this bounded pilot does not close the entire issue's
+literal coverage gaps, activate a candidate or amend any earlier closed window.
