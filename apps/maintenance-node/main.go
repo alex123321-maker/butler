@@ -41,7 +41,46 @@ func readBounded(path string, limit int64) ([]byte, error) {
 	return raw, nil
 }
 
+func readChallenge(ctx context.Context, input io.Reader) ([]byte, error) {
+	if ctx.Err() != nil {
+		return nil, maintenance.ErrState
+	}
+	type result struct {
+		raw []byte
+		err error
+	}
+	completed := make(chan result, 1)
+	go func() {
+		raw, err := io.ReadAll(io.LimitReader(input, 4097))
+		completed <- result{raw: raw, err: err}
+	}()
+	select {
+	case <-ctx.Done():
+		// Stdin belongs to this one-shot process. Closing a pipe/file releases its
+		// pending read; no private configuration or signing key has been loaded.
+		if closer, ok := input.(io.Closer); ok {
+			_ = closer.Close()
+		}
+		return nil, maintenance.ErrState
+	case result := <-completed:
+		if result.err != nil || ctx.Err() != nil || len(result.raw) > 4096 {
+			return nil, maintenance.ErrState
+		}
+		return result.raw, nil
+	}
+}
+
 func run(ctx context.Context, configPath string, input io.Reader, output io.Writer) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	challengeRaw, err := readChallenge(ctx, input)
+	if err != nil {
+		return maintenance.ErrState
+	}
+	challenge, err := maintenance.ParseObservationChallenge(challengeRaw)
+	if err != nil {
+		return maintenance.ErrState
+	}
 	raw, err := readBounded(configPath, 8192)
 	if err != nil {
 		return maintenance.ErrState
@@ -58,6 +97,9 @@ func run(ctx context.Context, configPath string, input io.Reader, output io.Writ
 	if err != nil {
 		return maintenance.ErrState
 	}
+	if ctx.Err() != nil {
+		return maintenance.ErrState
+	}
 	seed, err := readBounded(config.SigningSeedFile, ed25519.SeedSize)
 	if err != nil || len(seed) != ed25519.SeedSize {
 		return maintenance.ErrState
@@ -69,16 +111,6 @@ func run(ctx context.Context, configPath string, input io.Reader, output io.Writ
 	if err != nil {
 		return maintenance.ErrState
 	}
-	challengeRaw, err := io.ReadAll(io.LimitReader(input, 4097))
-	if err != nil {
-		return maintenance.ErrState
-	}
-	challenge, err := maintenance.ParseObservationChallenge(challengeRaw)
-	if err != nil {
-		return maintenance.ErrState
-	}
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
 	observation, err := observer.Observe(ctx, challenge)
 	if err != nil {
 		return maintenance.ErrState

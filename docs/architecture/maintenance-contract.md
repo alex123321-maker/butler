@@ -111,6 +111,14 @@ the caller cannot supply identity or settlement fields. It always leaves effect
 settlement false and cannot reconcile UNKNOWN. Store currentness remains required
 after the response. This source is not a node executor or functional acceptance.
 
+The independent component review found a node input deadline defect: its old
+stdin read preceded the context bound and could retain the process/key without
+EOF. The original-source reproducer is retained as FAIL. The corrected one-shot
+budget starts before input, reads/validates the bounded challenge before loading
+private configuration/key, and closes owned input on cancellation. The same
+100ms/no-EOF regression returns in0.10s; the actual separate Docker observation
+process still passes. This fixes input liveness only, not updater acceptance.
+
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated
 module capsules; no existing monolithic service is reclassified as ordinary by a

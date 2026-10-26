@@ -6,6 +6,12 @@ and signs only that measured physical identity with the private node key. It
 cannot deploy, execute submitted code, sign arbitrary payloads, assert effect
 settlement or clear UNKNOWN. A running process is not functional success.
 
+One five-second context includes stdin and inspection. Input is read and checked
+before private configuration/signing material is loaded. An open pipe without
+EOF is bounded by the caller deadline; cancellation closes the owned input.
+The independent original-source regression failed after5.25s with a100ms caller
+deadline; the same regression now returns after0.10s without EOF or signing.
+
 Invoke explicitly with `-enable-local-observation -config <private file>`.
 Canonical private configuration contains `docker_socket` (local Unix socket),
 `container` (one literal name), `profile_file` and `signing_seed_file` (32 raw
