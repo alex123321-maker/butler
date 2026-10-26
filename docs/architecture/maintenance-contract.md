@@ -263,6 +263,20 @@ This control boundary alone is neither a physical executor nor release acceptanc
 
 ## Required isolated acceptance
 
+An additive fixed `cmd/maintenance-capsule-guard` is prepared as the future
+capsule PID1 barrier. It accepts no commands or paths, waits at most30seconds
+for one canonical finite private host marker, checks the fixed regular
+candidate ELF hash and replaces PID1 with `/candidate` using a fixed minimal
+environment. It grants no authority: the future executor still needs the exact
+signed claim, live one-use dispatch, actual kernel isolation checks and a
+read-only measured root before marker publication. A marker cannot substitute
+for any of those checks. Existing packaging/deployment is unchanged.
+Targeted unit/vet checks and a separate Linux synthetic process demonstrate
+the hash/expiry/cancellation barrier and PID/environment replacement. The
+synthetic process is not a resource-isolation, independent release or deployment
+acceptance test. Guarded packaging, bounded runtime and actual node execution
+remain required.
+
 Acceptance requires actual separate checker/controller/executor processes and
 retained PostgreSQL history, not interfaces backed only by fixtures. Prove a good
 candidate, broken release, live-but-functionally-broken release, incompatible

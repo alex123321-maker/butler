@@ -92,3 +92,21 @@ match the module, and automatic toolchain checksum verification was disabled.
 The successful invocation used the already cached explicit Go1.27.2 executable;
 both startup errors remain archived separately from test outcomes. No new
 dependency, provider call, authorization material or working update was used.
+
+## Fixed capsule barrier, 2026-10-26
+
+Two focused Windows Go1.27.2 tests and vet pass for the new default-unused
+`cmd/maintenance-capsule-guard`. They cover strict canonical finite markers,
+wrong candidate hash and cancellation before a barrier. Their synthetic ELF
+header fixture is never executed and is not built-artifact evidence.
+
+A separate Linux process executes the actual cross-built guard and a fixed
+benign Go fixture in an empty test root. The guard successfully replaces itself:
+the fixture reports the original PID14351, only `GOMAXPROCS=2`, and its own
+exit42. A synthetic parent environment sentinel is absent. This chroot process
+test does not establish candidate isolation or resource bounds; no arbitrary
+candidate was run, no controller authority was granted and no deployment was
+performed. The host marker remains a private launch barrier, not permission.
+The existing Docker packager is unchanged and does not include this guard.
+Exact evidence is retained under
+`experiments/maintenance21/2026-10-26/capsule-guard-v1/`.
