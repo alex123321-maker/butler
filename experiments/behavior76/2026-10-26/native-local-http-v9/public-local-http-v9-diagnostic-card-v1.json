@@ -1,0 +1,145 @@
+{
+  "version": "issue76-independent-local-http-v9-diagnostic-card-v1",
+  "window": "issue76-fixture-day-20261026T092444",
+  "producer": "0bd2d6dd425b2eb13b4984ed0286754edbe6c57f",
+  "collector_elf_sha256": "54de972a69f02cc2c0d1103f08375b88c40ee3723f4ddceeeba33c89048f2b2f",
+  "operational_disposition": "CLOSED_GLOBAL_PROVIDER_PROTOCOL_FAILURE_NOT_QUALIFIED",
+  "known": {
+    "local_stop_records": 0,
+    "default_zero_quiescence_fields_are_not_observation": true,
+    "actual_owner_opportunity": {
+      "native_entry_ids": [
+        16
+      ],
+      "outcome_sha256": "f94606725095c9b872c874c6a249b576a2689dbe7129242f56961ff09573a996",
+      "owner_run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+      "automatic_run_ids": [],
+      "failure_phase": "collector",
+      "owner_input_id": "input-f5c462ef1c0f2c1f445bea313e4fb41c",
+      "state": "failed",
+      "step": "turn1",
+      "outcome_path": "slot-03/arm-40ea87482f6acd535495555f54bfecfc/step-01/outcome.json"
+    },
+    "partial_text_contents_read": false,
+    "native_entry": {
+      "stage": "response_stream",
+      "kind": "start",
+      "events": [
+        {
+          "type": "run_started",
+          "http_status": null,
+          "safe_reason": null,
+          "error_code": null
+        },
+        {
+          "type": "assistant_delta",
+          "http_status": null,
+          "safe_reason": null,
+          "error_code": null
+        },
+        {
+          "type": "assistant_delta",
+          "http_status": null,
+          "safe_reason": null,
+          "error_code": null
+        },
+        {
+          "type": "transport_error",
+          "http_status": 0,
+          "safe_reason": "stream_finish_rejected",
+          "error_code": "provider_protocol_error"
+        }
+      ],
+      "model_version": null,
+      "n": 16,
+      "input_tokens": null,
+      "total_tokens": null,
+      "milliseconds": 61986,
+      "status": "transport_error",
+      "output_tokens": null,
+      "thinking_tokens": null,
+      "slot": "slot-03/arm-40ea87482f6acd535495555f54bfecfc/turn1",
+      "run_id": "run-1793007153745004521-6747ac51cf08f6b9"
+    },
+    "actual_run": {
+      "started_at": "2026-10-26T16:32:33.745004+07:00",
+      "current_state": "failed",
+      "finished_at": "2026-10-26T16:33:35.954419+07:00",
+      "error_type": "transport_error",
+      "run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+      "status": "failed"
+    },
+    "last_trace": {
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 24966,
+      "segments": 6,
+      "sealed": false,
+      "qualified": false,
+      "tail_events": 390,
+      "dropped_events": 0,
+      "paired_spans": 12483,
+      "operation_failures": 0
+    },
+    "usable_final_or_tool_in_failed_native_entry": false,
+    "partial_text_delta_events": 2,
+    "last_quiescence": {
+      "schema": "",
+      "observed_at": "0001-01-01T00:00:00Z",
+      "fixture_locally_stopped": false,
+      "broker_reaped": false,
+      "runtime_stopped": false,
+      "provider_and_recipient_in_flight": 0,
+      "live_leases": 0,
+      "live_claims": 0,
+      "broker_backends": 0,
+      "broker_application_observed_before_stop": true
+    },
+    "actual_input": {
+      "error_code": "provider_protocol_error",
+      "checkpoint": "model_budget_reserved",
+      "claim_expires_at": null,
+      "run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+      "input_id": "input-f5c462ef1c0f2c1f445bea313e4fb41c",
+      "status": "blocked"
+    }
+  },
+  "source_pins": [
+    {
+      "sha256": "90acc1691034ac387c721b863ec241f3223b4f2636c4fd0b45b44084005cc0f7",
+      "executed_producer_blob_exact": true,
+      "path": "internal/transport/antigravity/protocol.go"
+    },
+    {
+      "sha256": "50805463e2de0dde5140d8b1cf9106826fc8f57561fe80e31b2ec1f44531b6a7",
+      "executed_producer_blob_exact": true,
+      "path": "internal/transport/antigravity/stream_diagnostics.go"
+    },
+    {
+      "sha256": "bc5363067f7edd1a2884cae65e230b0620e0c69873bdef18e52a48341ad82138",
+      "executed_producer_blob_exact": true,
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    }
+  ],
+  "source_meaning": {
+    "policy": "Four-event chain with two deltas and this protocol reason is outside both exact empty-answer and exact HTTP-no-response exceptions; GLOBAL under unchanged v9",
+    "safe_projection": "stream_diagnostics.go maps that fixed local parser error to stream_finish_rejected",
+    "not_an_upstream_diagnosis": true,
+    "parser": "protocol.go candidate.FinishReason guard returns protocolError(model response was blocked or failed) for a nonempty rejecting finish value; accepted literal STOP/MAX_TOKENS take a different branch"
+  },
+  "unknown": [
+    "Actual rejected finish-reason literal was not retained",
+    "No inference of safety, MAX_TOKENS, upstream service fault or other root cause",
+    "Retained usage/model version are NULL; this neither proves zero cost nor absence of upstream metadata",
+    "No complete answer or semantic quality verdict",
+    "Last quiescence was not successfully observed/sealed; zero/default fields cannot prove processes/claims/backends absent"
+  ],
+  "prohibitions": [
+    "No usage/model-version backfill",
+    "No retry/replacement/replay/new admission",
+    "No historical reclassification",
+    "No raw wire/body/header/error/partial text, golden or mapping read"
+  ],
+  "native_auth_PG_Go_calls_by_checker": 0,
+  "quality_assessed": false
+}

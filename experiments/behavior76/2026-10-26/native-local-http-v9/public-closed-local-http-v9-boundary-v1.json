@@ -1,0 +1,206 @@
+{
+  "version": "issue76-independent-closed-local-http-v9-boundary-v1",
+  "decision": "NO_GO_INCOMPLETE_GLOBAL",
+  "window": "issue76-fixture-day-20261026T092444",
+  "source": "git:0bd2d6dd425b2eb13b4984ed0286754edbe6c57f;binary-sha256:54de972a69f02cc2c0d1103f08375b88c40ee3723f4ddceeeba33c89048f2b2f",
+  "raw": {
+    "index_sha256": "3d33a943dde718451234cf8d726914a833a5c20d4edbc6b7e7d50d9d5bf34844",
+    "readonly": 383,
+    "bytes": 15898119.0,
+    "independent_inventory_sha256": "36a7644505b948f472ddb544e913182cd1fc168f874d4e39af88993aa1cc9d14",
+    "parent_inventory_sha256": "045adc74308ea3faf3024e2b8070cd97aa9ea1470e0bce025354d88b72dfb879",
+    "case_files_verified": 374,
+    "all_archive_entries_independently_byte_verified": true,
+    "files": 383,
+    "manifest_sha256": "bd66d1587f75b32e575faf30592f7c200cb0b47e5f36a193dc08af47970e4a5e",
+    "archive_sha256": "0a2d985fe63d0854406dea12b476bbda9501e71a98528f459ae1da3213d6b125"
+  },
+  "accounting": {
+    "exported_all_measured": 713,
+    "prior707_exact_opaque_UTF8_rows_unchanged": true,
+    "current_admissions": 16,
+    "exported_all_NULL": 10,
+    "no_exported_entry_after_n": 16,
+    "current_measured": 15,
+    "current_known_tokens": 115562.0,
+    "exported_all_known_tokens": 5626388.0,
+    "exported_closed_windows": 10,
+    "current_NULL": 1,
+    "exported_all_admissions": 723,
+    "live_database_queried": false
+  },
+  "coverage": {
+    "unstarted_arms": 43,
+    "actual_owner_inputs": 9,
+    "actual_automatic_final_rows": 0,
+    "unindexed_owner_opportunities": 87,
+    "unindexed_original_steps": 127,
+    "healthy_operationally_sealed_arms": 4,
+    "planned_arms": 48,
+    "indexed_original_steps": 15,
+    "planned_episodes": 24,
+    "planned_owner_opportunities": 96,
+    "planned_original_paired_steps": 142,
+    "planned_families": 12,
+    "actual_family_identity_not_read": true,
+    "indexed_owner_outcomes": 9,
+    "owner_states": [
+      {
+        "count": 8,
+        "state": "completed"
+      },
+      {
+        "count": 1,
+        "state": "failed"
+      }
+    ],
+    "full96_metadata_rows_written": 96,
+    "quality_or_usable_answer_success_not_assessed": true,
+    "indexed_arms": 5,
+    "actual_automatic_runs": 0,
+    "actual_owner_final_rows": 8
+  },
+  "original_planned_coverage": {
+    "unindexed_owner_opportunities": 87,
+    "recorded_failed_first_owner_turn": 1,
+    "recorded_owner_opportunities": 9,
+    "actual_family_identity_not_opened": true,
+    "denominator_never_reduced": true,
+    "indexed_episode_slots": 3,
+    "begun_failed_arm_missing_second_owner_opportunity": 1,
+    "complete_paired_operational_slots": 2,
+    "recorded_completed_owner_rows_not_quality_pass": 8,
+    "unstarted_arms": 43,
+    "planned_owner_opportunities": 96
+  },
+  "operational_seals": {
+    "unsealed_failed_arm": 1,
+    "last_quiescence_success_not_proven": true,
+    "healthy_observed_and_sealed_arms": 4,
+    "last_trace_qualified": false,
+    "last_trace_structurally_paired": true
+  },
+  "retained_effect_states_not_quality": {
+    "effect_confirmed": 7
+  },
+  "local_stops": 0,
+  "last_entry": {
+    "stage": "response_stream",
+    "kind": "start",
+    "events": [
+      {
+        "type": "run_started",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "assistant_delta",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "assistant_delta",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "transport_error",
+        "http_status": 0,
+        "safe_reason": "stream_finish_rejected",
+        "error_code": "provider_protocol_error"
+      }
+    ],
+    "model_version": null,
+    "n": 16,
+    "input_tokens": null,
+    "total_tokens": null,
+    "milliseconds": 61986,
+    "status": "transport_error",
+    "output_tokens": null,
+    "thinking_tokens": null,
+    "slot": "slot-03/arm-40ea87482f6acd535495555f54bfecfc/turn1",
+    "run_id": "run-1793007153745004521-6747ac51cf08f6b9"
+  },
+  "last_owner_run": {
+    "started_at": "2026-10-26T16:32:33.745004+07:00",
+    "current_state": "failed",
+    "finished_at": "2026-10-26T16:33:35.954419+07:00",
+    "error_type": "transport_error",
+    "run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+    "status": "failed"
+  },
+  "last_owner_input": {
+    "error_code": "provider_protocol_error",
+    "checkpoint": "model_budget_reserved",
+    "claim_expires_at": null,
+    "run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+    "input_id": "input-f5c462ef1c0f2c1f445bea313e4fb41c",
+    "status": "blocked"
+  },
+  "missing_last_turn_not_resumed": true,
+  "admission": {
+    "no_entry17": true,
+    "consumed_time": "2026-10-26T16:24:36.3149929+07:00",
+    "no_new_native_admission": true,
+    "current_admitted": 16,
+    "exact_one_authorized_launch_consumed": true,
+    "consumed_marker_path": ".cache/issue76-independent/local-http-v9-admission-consumed-v1.json",
+    "consumed_marker_sha256": "01b1ef2c5558c6dcc0b54f57a2756f413e9894f507777b05819f12a90fa36963",
+    "exported_closed_windows": 10,
+    "certificate_sha256": "3266b58eeb3779d04d11952279436987a33a8b0bafe2914efc220e290d5f5a65"
+  },
+  "independent_history": {
+    "prior_exact_opaque_UTF8_rows": 707,
+    "path": "public-local-http-v9-opaque-history-bytes-v1.json",
+    "only_window_n_identity_projected": true,
+    "no_datetime_coercion": true,
+    "all_exported_rows": 723,
+    "live_database_queried": false,
+    "sha256": "8aafa2dc15ee22cb418b596d558e3eaa2d819d8e1d2f30de8ccc828f67a06b70"
+  },
+  "parent_SQL_proof": {
+    "sql_path": ".cache/behavior76/check-closed-local-http-v9-history-v1.sql",
+    "attribution": "Parent executed SQL; checker reviewed the actual SQL/log, did not query PG",
+    "sql_sha256": "5ff4cba3d0acde85661af4d62d0fdd97da838dc698ff04e8dd5be31ea6c82d39",
+    "original707_unchanged_reported": true,
+    "log_path": ".cache/behavior76/local-http-v9-closed-history-v1.log",
+    "ROLLBACK_recorded": true,
+    "no17_reported": true,
+    "all723_equal_actual_export_reported": true,
+    "log_sha256": "71a11fb14134a5955f5646aa492ae56044aa17d1ded5fbb6ecb8f838646cbfa4"
+  },
+  "dependencies": [
+    {
+      "sha256": "5c74c8a40bd4114e2cab68162b12a267818a85b8df300f427cb987cc85b43f33",
+      "path": "public-closed-local-http-v9-raw-boundary-v1.json"
+    },
+    {
+      "sha256": "f7c4d7c8a18828f94a83fd0b49025e30548975ff7effc412af581439ea2deee9",
+      "path": "public-local-http-v9-diagnostic-card-v1.json"
+    },
+    {
+      "sha256": "36a7644505b948f472ddb544e913182cd1fc168f874d4e39af88993aa1cc9d14",
+      "path": "native-local-http-v9-independent-raw-inventory-v1.json"
+    },
+    {
+      "sha256": "2efde148c0031b575b176e5d132b30d78acc8dc1c474fda7118d92458db20cdf",
+      "path": "native-local-http-v9-trace-metadata-v1.json"
+    },
+    {
+      "sha256": "947456288de90705bc5e62be7124ed2c52deb110876156717cac7813fc058830",
+      "path": "native-local-http-v9-owner-opportunity-metadata-v1.json"
+    }
+  ],
+  "diagnostic_root_cause": "UNKNOWN beyond retained fixed parser rejection branch",
+  "NULL_cost_not_zero": true,
+  "all_original_failures_unknowns_costs_retained": true,
+  "quality_scored": false,
+  "partial_or_full_answers_read": false,
+  "goldens_or_mapping_read": false,
+  "native_auth_PG_Go_calls_by_checker": 0,
+  "source_policy_threshold_changed": false,
+  "new_window_retry_replay_authorized": false
+}
