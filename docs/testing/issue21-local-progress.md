@@ -136,3 +136,22 @@ does not replace the actual zero ancestor. No candidate was started, no private
 provider credential was read and no deployment or authority grant occurred.
 Exact logs, scripts, source pins and identities are in
 `experiments/maintenance21/2026-10-26/guarded-package-v1/`.
+
+## Typed launch marker v2, 2026-10-26
+
+The current guard separates independent-check bindings from maintenance-effect
+claim bindings; it remains an unsigned private host barrier. The independently
+reviewed design requires different code-owned admission paths and prohibits
+falling back to a check when deployment authority is absent. Those actual host
+constructors are still unimplemented. No passing release review or owner
+maintenance permission is inferred from parser acceptance.
+
+Two focused Windows tests and vet pass. A separate actual Linux process again
+replaces itself in that test root with the fixed benign fixture, retaining PID16251,
+only `GOMAXPROCS=2`, and fixture exit42. This uses a deliberately synthetic
+unsigned parser marker, not a valid independent-check plan or signed claim.
+It does not prove container PID1, isolation or deployment. A fresh actual local
+Docker/race guarded-package check passes10.41seconds, with vet0, unchanged five
+Go source pins and no candidate start by packaging. Both cold file hashes/modes
+are verified for new guard/image identities; v1 artifacts are retained.
+Evidence: `experiments/maintenance21/2026-10-26/capsule-guard-v2/`.

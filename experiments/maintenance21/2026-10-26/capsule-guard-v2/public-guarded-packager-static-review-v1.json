@@ -1,0 +1,123 @@
+{
+  "version": "issue21-independent-guarded-packager-static-review-v1",
+  "issued_utc": "2026-10-26T22:57:14.607050+00:00",
+  "decision": "COLD_PACKAGING_COMPONENT_REVIEW_NO_CONCRETE_BYPASS_FOUND_NOT_UPDATER_ACCEPTANCE",
+  "observed_clean_commit": "43fba0c1ec3601147de9b9e79df649940934183c",
+  "source_pins": [
+    {
+      "path": "internal/maintenance/docker_artifact.go",
+      "sha256": "93b57f713ffd207efb5bd339ebcda7e9527ac9a2d5ffe2be51e5091ce5109b40",
+      "HEAD_blob_equals_working_bytes": true,
+      "before_after_pin_match": true
+    },
+    {
+      "path": "internal/maintenance/docker_guarded_artifact.go",
+      "sha256": "e042a984db5ac3390b8094036d57bee9861d122aa00b9eb642001174b48de378",
+      "HEAD_blob_equals_working_bytes": true,
+      "before_after_pin_match": true
+    },
+    {
+      "path": "internal/maintenance/docker_guarded_artifact_test.go",
+      "sha256": "f83c6e2dafa5017177a10239a3578254ff30c3ba9011e96d83db3b986a1be693",
+      "HEAD_blob_equals_working_bytes": true,
+      "before_after_pin_match": true
+    }
+  ],
+  "dependency_source_pins": [
+    {
+      "path": "internal/maintenance/build_bounds.go",
+      "sha256": "08f543311593487caee8c873ede28ab4fd385f0901c22e2a21b8c8d72cc7de5c"
+    },
+    {
+      "path": "internal/maintenance/docker_builder.go",
+      "sha256": "8b965863aa7c36b0663777e47d14c8ba3346e59ba678dc8ce308c928bf3b6327"
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/main.go",
+      "sha256": "d68058f8ef89379d7696e6ca07f8a3613bd115d8dc3efc0bbf17c6b54a6c41b6"
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/exec_linux.go",
+      "sha256": "391f3eced9eac3196d0db376ae13f8ce3c0567a0d5e05e1f0b6548dc755d4647"
+    }
+  ],
+  "published_evidence_files": [
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/ancestor.log",
+      "bytes": 334,
+      "sha256": "feda2dc799b3fbc91ffb9c3c3fa0d9ae0298b2f00ec3cb966b94fc56d2a000fd"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-unit-v1.log",
+      "bytes": 301,
+      "sha256": "ac43e908c7502770500f10d6bcb110e80775bf1db2dc662f408cfd506a74b2f9"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-v1-exit.json",
+      "bytes": 113,
+      "sha256": "1e321318a021d7271b0c6bed9be4b8ffef0f185e0623afd2e11455c2ab250d3d"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-v1-source-after.json",
+      "bytes": 473,
+      "sha256": "f3c075ee373d6f3be2c08da337cbb49da657b6b78554095aa6f0f2e8851fc188"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-v1-source-before.json",
+      "bytes": 473,
+      "sha256": "f3c075ee373d6f3be2c08da337cbb49da657b6b78554095aa6f0f2e8851fc188"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-v1.log",
+      "bytes": 2789,
+      "sha256": "3134d055fe41a10441a0f992d390eeeb38d1ff4cba9c76405e0fb8ddcfdd4a22"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/maintenance21-guarded-package-v1.sh",
+      "bytes": 1183,
+      "sha256": "3dcd1a603f626b9e36d271b20c1f747c029beed55943f44224faedc781894f01"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/guarded-package-v1/resume-private-docker21-v3.sh",
+      "bytes": 1783,
+      "sha256": "31c2500bee093769ea6b274ab834a91c371818f3d61564301c574a8ef81367f9"
+    }
+  ],
+  "checkout_chronology": "Initially dirty; parent committed43fba0c1 while read-only audit continued; all three supplied before/after source pins remained exact. No formal freeze claimed.",
+  "legacy_recipe_and_executableArchive_source_unchanged": true,
+  "retained_actual_tests": {
+    "linux_race_top_level_PASS": 3,
+    "FAIL": 0,
+    "SKIP": 0,
+    "package_seconds": 22.323,
+    "sequential_vet_script_exit": 0,
+    "candidate_processes_started": 0,
+    "trusted_compiler_process_started_in_legacy_build_case": true
+  },
+  "recorded_actual_identities": {
+    "image_sha256": "115e80c5f5847af75122ee6165a98a03e3a702fef42faed5154af2c9317f1151",
+    "guard_elf_sha256": "2b7d42c682ad98dc78ec9bfce442b8d4a7f0e25b601623d1b922e48c025340d3",
+    "candidate_elf_sha256": "a8ce3e6c649def3681f4959a334e88d700b3b10fd1ecea18383057b719800296",
+    "observed_by_checker": "source/log/file pins only; no new daemon query or rerun"
+  },
+  "cleanup_review": "Exact known cold-container ID only, deferred separate background5sDELETE; cleanup error replaces success with ErrBuild. Unknown creation response or failed verification may retain cold container/image; not claimed absent.",
+  "review_doc": {
+    "path": "public-guarded-packager-source-review-v1.md",
+    "sha256": "d0e931a9dee076565472009ba9f36e27b960f9ebdfb34eefa7988f47d021df1f"
+  },
+  "prepared_host_interface": {
+    "path": "public-capsule-host-barrier-interface-prepared-v1.md",
+    "sha256": "a5e0a607b3e0487ad081c5074f3001466d20e4dca4a7cd85ae424fece0659558",
+    "status": "PREPARED_ONLY"
+  },
+  "required_next_observables": [
+    "Actual live guarded image/process identity, PID/starttime/cgroup membership and fixed capsule-specific bounds.",
+    "Read-only candidate/guard paths, private non-candidate-writable marker surface, actual restricted mounts/FDs/network.",
+    "Exact original signed claim plus current one-use dispatch before marker and declared target effect.",
+    "Actual finite candidate wait/result/join/cleanup and immutable UNKNOWN on missing settlement.",
+    "Prior functional contract actual task/approval/compatibility/checker signer/trial/rollback evidence."
+  ],
+  "new_hidden_or_admission_or_freeze": false,
+  "Go_PG_Docker_model_auth_private_key_operations": 0,
+  "source_edits": 0
+}

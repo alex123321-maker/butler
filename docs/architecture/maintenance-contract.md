@@ -282,6 +282,17 @@ performs no candidate execution and cleanup failure denies its result. Actual
 local Docker/race artifact checks pass; bounded runtime, physical executor and
 independent release/trial/rollback acceptance remain required.
 
+The current guard marker v2 distinguishes `independent_check` from
+`maintenance_effect` and binds `admission_sha256` separately from the candidate
+ELF. A checker-before-review run uses only its separately authorized finite
+synthetic check plan/case, not a fabricated deployment claim. The node effect
+mode still requires the original controller signature and current one-use
+dispatch. Private code-owned constructors must select the modes with no caller
+choice or fallback; the unsigned guard marker itself grants neither permission.
+Historical v1 binary/image/process evidence remains unchanged. Current v2
+parser/process and cold-image packaging checks do not implement these host
+admission constructors or establish actual runtime isolation.
+
 Acceptance requires actual separate checker/controller/executor processes and
 retained PostgreSQL history, not interfaces backed only by fixtures. Prove a good
 candidate, broken release, live-but-functionally-broken release, incompatible

@@ -12,7 +12,7 @@ import (
 
 func TestLaunchPermitStrictAndFinite(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Microsecond)
-	value := launchPermit{Version: "butler.maintenance.capsule-launch.v1", ClaimSHA256: strings.Repeat("1", 64), CandidateSHA256: strings.Repeat("2", 64), ExpiresAt: now.Add(time.Second)}
+	value := launchPermit{Version: "butler.maintenance.capsule-launch.v2", AdmissionKind: "independent_check", AdmissionSHA256: strings.Repeat("1", 64), CandidateSHA256: strings.Repeat("2", 64), ExpiresAt: now.Add(time.Second)}
 	raw, _ := json.Marshal(value)
 	if _, err := permit(raw, now); err != nil {
 		t.Fatal("finite canonical permit rejected")
@@ -21,12 +21,19 @@ func TestLaunchPermitStrictAndFinite(t *testing.T) {
 		append(append([]byte(nil), raw...), '\n'),
 		[]byte(strings.Replace(string(raw), `"version":`, `"unknown":0,"version":`, 1)),
 		[]byte(strings.Replace(string(raw), `"version":`, `"version":"duplicate","version":`, 1)),
-		[]byte(strings.Replace(string(raw), value.ClaimSHA256, strings.Repeat("A", 64), 1)),
+		[]byte(strings.Replace(string(raw), value.AdmissionSHA256, strings.Repeat("A", 64), 1)),
+		[]byte(strings.Replace(string(raw), "independent_check", "arbitrary", 1)),
+		[]byte(strings.Replace(string(raw), ".v2", ".v1", 1)),
 		make([]byte, 513),
 	} {
 		if _, err := permit(invalid, now); err == nil {
 			t.Fatal("ambiguous or oversized permit accepted")
 		}
+	}
+	value.AdmissionKind = "maintenance_effect"
+	maintenance, _ := json.Marshal(value)
+	if _, err := permit(maintenance, now); err != nil {
+		t.Fatal("typed effect marker rejected; guard parsing alone grants no authority")
 	}
 	for _, expiry := range []time.Time{now, now.Add(-time.Second), now.Add(30*time.Second + time.Nanosecond)} {
 		value.ExpiresAt = expiry
@@ -62,7 +69,7 @@ func TestLaunchWaitRequiresExactCandidateAndHonorsCancellation(t *testing.T) {
 	}
 	writePermit := func(hash string) {
 		t.Helper()
-		value := launchPermit{Version: "butler.maintenance.capsule-launch.v1", ClaimSHA256: strings.Repeat("3", 64), CandidateSHA256: hash, ExpiresAt: time.Now().UTC().Add(time.Second)}
+		value := launchPermit{Version: "butler.maintenance.capsule-launch.v2", AdmissionKind: "independent_check", AdmissionSHA256: strings.Repeat("3", 64), CandidateSHA256: hash, ExpiresAt: time.Now().UTC().Add(time.Second)}
 		raw, _ := json.Marshal(value)
 		if err := os.WriteFile(filepath.Join(directory, "control", "launch.json"), raw, 0600); err != nil {
 			t.Fatal(err)

@@ -18,7 +18,8 @@ var errGuard = errors.New("capsule launch unavailable")
 
 type launchPermit struct {
 	Version         string    `json:"version"`
-	ClaimSHA256     string    `json:"claim_sha256"`
+	AdmissionKind   string    `json:"admission_kind"`
+	AdmissionSHA256 string    `json:"admission_sha256"`
 	CandidateSHA256 string    `json:"candidate_sha256"`
 	ExpiresAt       time.Time `json:"expires_at"`
 }
@@ -39,7 +40,7 @@ func permit(raw []byte, now time.Time) (launchPermit, error) {
 		return value, errGuard
 	}
 	canonical, err := json.Marshal(value)
-	if err != nil || !bytes.Equal(raw, canonical) || value.Version != "butler.maintenance.capsule-launch.v1" || !validDigest(value.ClaimSHA256) || !validDigest(value.CandidateSHA256) || !value.ExpiresAt.After(now) || value.ExpiresAt.After(now.Add(30*time.Second)) {
+	if err != nil || !bytes.Equal(raw, canonical) || value.Version != "butler.maintenance.capsule-launch.v2" || (value.AdmissionKind != "independent_check" && value.AdmissionKind != "maintenance_effect") || !validDigest(value.AdmissionSHA256) || !validDigest(value.CandidateSHA256) || !value.ExpiresAt.After(now) || value.ExpiresAt.After(now.Add(30*time.Second)) {
 		return launchPermit{}, errGuard
 	}
 	return value, nil
@@ -66,8 +67,9 @@ func readRegular(root *os.Root, name string, limit int64) ([]byte, error) {
 	return raw, nil
 }
 
-// The private host atomically publishes control/launch.json only after current
-// one-use dispatch and actual kernel isolation checks. No candidate code has run
+// The private host atomically publishes control/launch.json only after the
+// applicable finite check admission or one-use deployment dispatch, and actual
+// kernel isolation checks. No candidate code has run
 // before this point. A bare marker is not a signed owner/maintenance permission;
 // host confinement, controller checks and measured artifact bindings remain
 // mandatory. A read-only root excludes replacing candidate between hash/exec.

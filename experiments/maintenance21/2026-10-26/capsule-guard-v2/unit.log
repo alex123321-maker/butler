@@ -1,0 +1,6 @@
+=== RUN   TestLaunchPermitStrictAndFinite
+--- PASS: TestLaunchPermitStrictAndFinite (0.00s)
+=== RUN   TestLaunchWaitRequiresExactCandidateAndHonorsCancellation
+--- PASS: TestLaunchWaitRequiresExactCandidateAndHonorsCancellation (0.04s)
+PASS
+ok  	github.com/butler/butler/cmd/maintenance-capsule-guard	0.561s
