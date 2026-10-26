@@ -1,0 +1,45 @@
+{
+  "version": "issue76-independent-day-v7-precommit-source-review-v1",
+  "reviewed_parent_head": "50dcb24a4c226be6f81b5b4c2d849f9d09bf5f65",
+  "decision": "NO_CONCRETE_BLOCKER_IN_REVIEWED_DIFF",
+  "files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "1a8170613b686fb8799c67fd34f7a697b2502d56f70c530deaa5e58976bfd919"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "fe1167207d8062f9b319a0646cc5238c43ba3f01ab31be53aa05658a3f3fa9a9"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "fac84ddd00c6b7e866188dac3f96836b3a0c5aaaf8dc2f0c20120257ea9958b4"
+    },
+    {
+      "path": "docs/testing/issue76-day-v7-preparation.md",
+      "sha256": "7a529862e79ff461d595beedac888837e89f2881ccbb890031ac30722b5abc40"
+    }
+  ],
+  "scope": [
+    "New day-v7 version/stimuli path and explicit closed-v6 corpus rejection.",
+    "Pinned day-v6 raw file set2569, manifest and closed134-entry window; cumulative exact640JSONB rows.",
+    "Seven closed windows/640 admissions/633 measured/4900143 known tokens/7NULL history.",
+    "20s to2m only for public read-only offline history integration test."
+  ],
+  "runtime_bounds_changed": false,
+  "authority_timeout_changed": false,
+  "parser_candidate_scoring_changed": false,
+  "native_binding": "EMPTY; existing length guard denies admission before output/native construction",
+  "reviewed_parent_history_gate": {
+    "result": "DayWindowAdmission PASS; FreshHistoryBoundaryIntegration PASS68.69s; mutation and truncation negatives included",
+    "sha256": "59eafcf88861cfdd51c69aab6871f2eb59ca8f4a29d6d7b60a4b3fc54e738d7e",
+    "path": ".cache/behavior76/day-v7-history-v2.log",
+    "independently_rerun": false
+  },
+  "full_public_gate": "Pending parent session; not claimed PASS",
+  "no_additional_tests": true,
+  "no_pg_queries_or_writes": true,
+  "no_model_auth_calls": true,
+  "no_hidden_goldens_maps_or_answers_read": true,
+  "no_native_admission": true
+}

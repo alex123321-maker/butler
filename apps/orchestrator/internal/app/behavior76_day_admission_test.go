@@ -12,8 +12,24 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba"
-const behavior76DayExpectationsSHA = "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9"
+const behavior76DayStimuliSHA = ""
+const behavior76DayExpectationsSHA = ""
+
+func behavior76ClosedDayHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
+	directory := filepath.Join(root, "native-day-v6")
+	if err := behavior76CheckRawFiles(directory, "/src20/experiments/behavior76/2026-10-26/native-day-v6/raw-inventory.json", "517f7b215c956ef9b8664622380d2b9fcd7f8282bf5cc3d5f20f892868b1e7d6", 2569); err != nil {
+		return nil, err
+	}
+	manifest, err := os.ReadFile(filepath.Join(directory, "manifest.json"))
+	if err != nil || behavior76Hash(manifest) != "7516824e49cb0760b759faf15109eeceef2aee31b08bcc88c06ef62e7692d24c" {
+		return nil, errors.New("closed day-v6 manifest changed")
+	}
+	var exact bool
+	if err = tx.QueryRow(ctx, `SELECT closed AND admitted=134 AND manifest=$1::jsonb AND (SELECT count(*)=134 FROM public.behavior76_attempts WHERE window_id='issue76-fixture-day-20261026T012812') FROM public.behavior76_windows WHERE id='issue76-fixture-day-20261026T012812'`, string(manifest)).Scan(&exact); err != nil || !exact {
+		return nil, errors.New("closed day-v6 history changed")
+	}
+	return manifest, nil
+}
 
 func behavior76ClosedStreamHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-stream-v5")

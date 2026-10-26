@@ -44,7 +44,9 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL") == "" {
 		t.Skip("isolated original local history required")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	// This read-only audit hashes all retained windows on the Windows bind.
+	// It grants no model/fixture authority; their original bounds are unchanged.
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	config, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 	if err != nil || config.ConnConfig.Database != "behavior76_test" || config.ConnConfig.Host != "127.0.0.1" {
@@ -90,6 +92,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		}
 		historyPath = "/src20/.cache/behavior76/native-stream-v5/behavior76_attempts.jsonl"
 		expected = 506
+	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-day-v6/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedDayHistory(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-day-v6/behavior76_attempts.jsonl"
+		expected = 640
 	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
@@ -159,9 +168,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			version, prefix = "behavior76-fixture-stream-v5", "issue76-fixture-stream-"
 			if dayFit {
 				stimuliSHA, expectationsSHA = behavior76DayStimuliSHA, behavior76DayExpectationsSHA
-				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 6, 506, 500, 3832577, 6
-				priorDirectory = "native-stream-v5"
-				version, prefix = "behavior76-fixture-day-v6", "issue76-fixture-day-"
+				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 7, 640, 633, 4900143, 7
+				priorDirectory = "native-day-v6"
+				version, prefix = "behavior76-fixture-day-v7", "issue76-fixture-day-"
+				if stimuliSHA == "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba" || expectationsSHA == "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9" {
+					t.Fatal("closed day-v6 controls cannot be reused")
+				}
 				if stimuliSHA == behavior76StreamStimuliSHA || expectationsSHA == behavior76StreamExpectationsSHA {
 					t.Fatal("closed stream controls cannot be reused")
 				}
@@ -338,6 +350,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal(e)
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-stream-20261025T231554", "admitted": 101, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		body, e = behavior76ClosedDayHistory(ctx, transaction, root)
+		if e != nil {
+			t.Fatal(e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T012812", "admitted": 134, "closed": true, "manifest_sha256": behavior76Hash(body)})
 		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
 			t.Fatal("owning database day unavailable")
 		}
