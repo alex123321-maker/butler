@@ -12,8 +12,8 @@ import (
 )
 
 // Only fresh independent literal bindings may follow the public source freeze.
-const behavior76DayStimuliSHA = "UNBOUND"
-const behavior76DayExpectationsSHA = "UNBOUND"
+const behavior76DayStimuliSHA = "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba"
+const behavior76DayExpectationsSHA = "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9"
 
 func behavior76ClosedStreamHistory(ctx context.Context, tx pgx.Tx, root string) ([]byte, error) {
 	directory := filepath.Join(root, "native-stream-v5")
