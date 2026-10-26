@@ -53,6 +53,34 @@ outside the author tree, retain full hashes/Git modes, and reject links,
 submodules, aliases and non-commit identities. Preparing source neither executes
 it nor proves its built artifact: the independent sandbox build remains required.
 
+The bounded compiler/packager now passes actual local component checks. Its
+fixed private configuration pins a compiler image ID and module directory;
+submitted Dockerfiles, tests, generation instructions, URLs and shell fragments
+cannot select the compiler. It rechecks the complete snapshot, stages measured
+bytes into an owned source volume, mounts source read only for Go compilation,
+disables cgo/toolchain/module downloads and all networking, and uses bounded
+memory/CPU/PIDs/tmpfs/time. The first profile supports dependency-free Go
+capsules and fails on unavailable imports. It reads the actual bounded static
+ELF without running it and can import only a fixed scratch package containing
+that ELF. Actual image ID, executable, compiler and complete source identities
+stay separate. Compilation/packaging grants no review, trial or installation
+permission. Actual daemon compilation/import passes; independent release checker
+and deployment acceptance remain pending.
+
+Before compiler dispatch, the builder requires measured Linux
+cgroup v2/cgroupfs limits and the exact host-visible worker PID. Actual
+memory/CPU/PID, UID/no-capabilities/no-new-privileges and IPv4 route observations
+must match the bounded profile. Effective no-swap needs a real zero at the worker
+or an ancestor, not a Docker warning or "max" value. Hidden/unsupported physical
+state denies compilation. The private ancestor workaround remains an actual
+kernel measurement, never a general assumption about another daemon/platform.
+These checks pass against the actual private worker. Its fixed trusted PID1
+supervisor waits for a host marker before invoking Go and has independent finite
+wait/compile/output-hold deadlines. The host opens the measured worker's `/out`
+tmpfs with `os.Root`; a request cannot select a host path. Status publication uses
+atomic rename. Earlier failed Docker exec/copy API probes remain failures; the
+working path adds no privilege and does not loosen resource limits.
+
 Read-only Docker inspection is now a local node component. Its private startup
 configuration fixes a local Unix socket and exact literal container name; no
 model request selects a target, daemon or URL. Artifact identity is Docker's
@@ -74,6 +102,14 @@ Swap is prohibited at its private ancestor cgroup because this host's Docker
 driver does not expose the per-container swap limit. The initial failed
 pivot-root/swap probes remain failures. This is inspection/isolation component
 evidence only; independent checker/node/deployment acceptance remains pending.
+
+The separate `maintenance-node` observer is default disabled and passes an actual
+separate-process identity test. Private startup pins the profile, node key and
+literal Unix socket/container. Its one-shot canonical challenge contains only
+profile digest, epoch and nonce. The process signs its own physical inspection;
+the caller cannot supply identity or settlement fields. It always leaves effect
+settlement false and cannot reconcile UNKNOWN. Store currentness remains required
+after the response. This source is not a node executor or functional acceptance.
 
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated

@@ -21,6 +21,7 @@ it is separate from public channel ingress and normal model/tool execution.
 Duplicate/unknown fields and scope from another operation are rejected. Errors
 do not include request bodies, signing material, tokens or database URLs.
 
-Actual separate-process owner-stop proof and independent checker/node/trial/
-rollback acceptance remain pending. A listening endpoint is not acceptance of
-the updater or proof of functional candidate quality.
+The actual separate owner-process test proves authenticated stop with Core
+absent and retention across restart. Independent release checker, node effects,
+trial and rollback acceptance remain pending. A listening endpoint is not
+acceptance of the updater or proof of functional candidate quality.

@@ -80,6 +80,37 @@ objects/links/submodules/case aliases, and executes no submitted source. Owned
 snapshot cleanup verifies the resolved target before recursive removal. This
 prepares source only; the independent sandbox build/checker is still pending.
 
+A private `DockerBuilder` and fixed scratch-ELF packager now pass actual isolated
+component validation. The builder copies the complete rechecked
+snapshot into an owned volume, invokes only a pinned operator Go compiler with
+network/module downloads disabled, and measures the actual ELF and imported
+Docker image. Author tests, generation commands and Dockerfiles are retained in
+the inventory but never selected as build instructions. Compilation does not run
+the resulting program. The first compiler supports dependency-free Go capsules;
+unavailable dependencies fail. The actual private daemon test compiles a capsule,
+captures its static ELF and measures the imported image ID. Fixed/hidden release
+checking, trial and deployment acceptance remain pending.
+
+Before compilation the builder also reads actual Linux cgroup v2 limits
+and the exact worker process identity. Memory/CPU/PID, UID/capability/new-privilege
+and IPv4 route checks fail closed. Swap must have an actual zero limit at the
+container or an ancestor; an ignored Docker option is insufficient. This initial
+profile requires host PID visibility and cgroupfs; unsupported visibility/layout
+fails before source compilation. These kernel checks pass against the actual
+private worker. A fixed trusted PID1 supervisor waits for a private marker until
+the host verifies bounds, then invokes only the fixed compiler. The host pins
+that measured process's `/out` tmpfs with `os.Root`; no author-selected host path
+is accepted. Completion is published by atomic rename. Initial Docker exec/copy
+API failures remain retained; no capabilities or bounds were loosened.
+
+The initial `NodeObserver` and separate default-disabled `maintenance-node`
+one-shot process pass a separate actual-process observation test. Only nonce/epoch/exact-profile
+challenges are accepted; real fixed-target inspection supplies the signed
+artifact/configuration. Requests cannot select identity or effect settlement.
+This observer always leaves settlement false, grants no deployment authority and
+cannot clear UNKNOWN. Final targeted race checks pass10 tests with0 failures or
+skips, and vet exits0; see `experiments/maintenance21/2026-10-26/build-observer-v5.log`.
+
 The read-only `DockerInspector` pins one private local Unix socket and literal
 container target. It reads Docker's actual immutable image ID, full Config
 (except the separately measured image reference), HostConfig, mounts and actual
@@ -96,4 +127,4 @@ The fixture separately passes actual kernel checks for UID65532,64MiB memory,
 one CPU,32 PIDs, no capabilities/new privileges/network routes or host key/socket
 mounts. A private ancestor cgroup prohibits swap (the Docker driver cannot set
 the per-container swap limit on this host). The original pivot-root and swap
-probe failures remain preserved. Node process/deployment acceptance is pending.
+probe failures remain preserved. Node effect execution/deployment acceptance is pending.
