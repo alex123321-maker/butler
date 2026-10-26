@@ -1,0 +1,4 @@
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration
+    database.go:20: failed to connect to `user=postgres database=memory115_test`: 127.0.0.1:55451 (127.0.0.1): server error: FATAL: database "memory115_test" does not exist (SQLSTATE 3D000)
+--- FAIL: TestExperienceNativeSkillReadPermissionDiagnosticIntegration (0.08s)
+FAIL

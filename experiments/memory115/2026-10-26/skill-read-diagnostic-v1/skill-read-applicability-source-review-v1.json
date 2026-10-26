@@ -1,0 +1,30 @@
+{
+  "version": "issue115-source-supported-skill-read-applicability-gap-v1",
+  "created_utc": "2026-10-26T17:32:27.335498+00:00",
+  "closed_native_source": "4c01d416783c028fdeb5158186bb3f5790583fb2",
+  "read_only_zip_sha256": "0c949fb275d1f69f234b07b95e312f67692f9aa1c2e7ae3d84ba4aa6fe4c468d",
+  "native19_declared_tool_names": [
+    "extension.project.check",
+    "extension.project.inspect",
+    "http.request",
+    "memory.neighbors",
+    "memory.open",
+    "memory.search",
+    "skills.load",
+    "skills.search"
+  ],
+  "original1_required_dependencies_missing_from_native19": [
+    {
+      "tool": "extension.project.prepare-patch",
+      "contract_hash": "b4ae5d3347e0f245f651906544fe88d9654524803ef7cd088a1b4716b14f3d3d",
+      "contract_revision": "2f5465aa845618846cfe79a92b0d7faf686a7c82cd5e118d957df5ded012ac35:3"
+    }
+  ],
+  "source_rule": "experience.Store.eligibleLessonTx rejects absent or changed current Broker-permitted dependency; skill preparation task grants inspect_and_check_only",
+  "conclusion": "SOURCE_SUPPORTED_HYPOTHESIS_NOT_RUNTIME_CAUSAL_PROOF",
+  "original_failure_cause": "UNKNOWN until zero-inference reproduction or exact private currentness metadata proof",
+  "new_native_auth_PG_calls": 0,
+  "closed_window_modified": false,
+  "protocol_permissions_changed": false,
+  "next_safe_work": "Fresh legitimate local fixture and ordinary scripted provider, compare exact skill-preparation grant against frozen lesson dependencies; do not weaken catalog/authority guards or resume sealed window"
+}

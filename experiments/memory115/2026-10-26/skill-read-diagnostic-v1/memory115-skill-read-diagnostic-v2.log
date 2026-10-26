@@ -1,0 +1,4 @@
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration
+    memory_experience_skill_read_diagnostic_test.go:125: frozen migrations unavailable
+--- FAIL: TestExperienceNativeSkillReadPermissionDiagnosticIntegration (3.58s)
+FAIL
