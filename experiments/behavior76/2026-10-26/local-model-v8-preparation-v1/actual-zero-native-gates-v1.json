@@ -1,0 +1,17 @@
+{
+  "version": "issue76-local-model-v8-actual-zero-native-gates-v1",
+  "tested_literal_commit": "36071fbb6ad77db61d4d60c4f6e09acb63843a05",
+  "semantic_commit": "c31f6bc8551e7c77893adacd8213126bcf55208a",
+  "setup_episodes": 24,
+  "composition_arms": 48,
+  "owner_opportunities": 96,
+  "original_paired_steps": 132,
+  "scripted_provider_only": true,
+  "quality_unassessed": true,
+  "native_calls": 0,
+  "auth_access": 0,
+  "collector_elf_sha256": "666114960db862f6a8d6c1edf37165b5bc1b83869b09a38dde6c574ceac4d0e0",
+  "setup_log_sha256": "02cf334fbee811ec4d9268255dce316a2ba70246c47f1ac1f80160a71c05b642",
+  "composition_log_sha256": "079d11bbdfc1b381b6069a3df2c38db99e79694c185d8789ea6a0a232e0c890b",
+  "native_admission": false
+}
