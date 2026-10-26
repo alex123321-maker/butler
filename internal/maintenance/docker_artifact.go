@@ -56,12 +56,26 @@ func (builder *DockerBuilder) Package(ctx context.Context, built BuiltExecutable
 	if err != nil {
 		return BuiltImage{}, ErrBuild
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	query := url.Values{"fromSrc": {"-"}, "changes": {"ENTRYPOINT [\"/candidate\"]", "USER 65532:65532", "WORKDIR /"}}
-	raw, err := builder.request(ctx, http.MethodPost, "/images/create?"+query.Encode(), "application/x-tar", archive, 64<<10, 200)
+	imageID, err := builder.importFixedArchive(ctx, archive, "/candidate")
 	if err != nil {
 		return BuiltImage{}, ErrBuild
+	}
+	return BuiltImage{ImageSHA256: imageID, ELFSHA256: built.ELFSHA256, Commit: built.Commit, InventorySHA256: built.InventorySHA256, CompilerSHA256: built.CompilerSHA256, PackagingSHA256: Digest([]byte(fixedELFPackage))}, nil
+}
+
+// Only the two code-owned packaging recipes may select this private parameter.
+// Neither candidate data nor a runtime request can supply an entrypoint.
+func (builder *DockerBuilder) importFixedArchive(ctx context.Context, archive []byte, entrypoint string) (string, error) {
+	if builder == nil || builder.client == nil || len(archive) < 1024 || len(archive) > 64<<20 || (entrypoint != "/candidate" && entrypoint != "/maintenance-guard") {
+		return "", ErrBuild
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	entry, _ := json.Marshal([]string{entrypoint})
+	query := url.Values{"fromSrc": {"-"}, "changes": {"ENTRYPOINT " + string(entry), "USER 65532:65532", "WORKDIR /"}}
+	raw, err := builder.request(ctx, http.MethodPost, "/images/create?"+query.Encode(), "application/x-tar", archive, 64<<10, 200)
+	if err != nil {
+		return "", ErrBuild
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	imageID := ""
@@ -74,18 +88,18 @@ func (builder *DockerBuilder) Package(ctx context.Context, built BuiltExecutable
 		if err := decoder.Decode(&event); err == io.EOF {
 			break
 		} else if err != nil || event.Error != "" || (len(event.ErrorDetail) != 0 && string(event.ErrorDetail) != "null") {
-			return BuiltImage{}, ErrBuild
+			return "", ErrBuild
 		}
 		if len(event.Status) == 71 && event.Status[:7] == "sha256:" && validDigest(event.Status[7:]) {
 			imageID = event.Status[7:]
 		}
 	}
 	if imageID == "" {
-		return BuiltImage{}, ErrBuild
+		return "", ErrBuild
 	}
 	raw, err = builder.request(ctx, http.MethodGet, "/images/sha256:"+imageID+"/json", "", nil, 256<<10, 200)
 	if err != nil {
-		return BuiltImage{}, ErrBuild
+		return "", ErrBuild
 	}
 	var image struct {
 		ID     string `json:"Id"`
@@ -98,8 +112,8 @@ func (builder *DockerBuilder) Package(ctx context.Context, built BuiltExecutable
 			Volumes    map[string]json.RawMessage
 		}
 	}
-	if json.Unmarshal(raw, &image) != nil || image.ID != "sha256:"+imageID || len(image.Config.Entrypoint) != 1 || image.Config.Entrypoint[0] != "/candidate" || image.Config.User != "65532:65532" || image.Config.WorkingDir != "/" || len(image.Config.Env) != 0 || len(image.Config.Cmd) != 0 || len(image.Config.Volumes) != 0 {
-		return BuiltImage{}, ErrBuild
+	if json.Unmarshal(raw, &image) != nil || image.ID != "sha256:"+imageID || len(image.Config.Entrypoint) != 1 || image.Config.Entrypoint[0] != entrypoint || image.Config.User != "65532:65532" || image.Config.WorkingDir != "/" || len(image.Config.Env) != 0 || len(image.Config.Cmd) != 0 || len(image.Config.Volumes) != 0 {
+		return "", ErrBuild
 	}
-	return BuiltImage{ImageSHA256: imageID, ELFSHA256: built.ELFSHA256, Commit: built.Commit, InventorySHA256: built.InventorySHA256, CompilerSHA256: built.CompilerSHA256, PackagingSHA256: Digest([]byte(fixedELFPackage))}, nil
+	return imageID, nil
 }

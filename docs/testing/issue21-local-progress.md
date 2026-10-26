@@ -110,3 +110,29 @@ performed. The host marker remains a private launch barrier, not permission.
 The existing Docker packager is unchanged and does not include this guard.
 Exact evidence is retained under
 `experiments/maintenance21/2026-10-26/capsule-guard-v1/`.
+
+An independent source-only audit of472af660 found no direct new parser/auth
+bypass under the documented host assumptions, and retained the concrete missing
+integration/authority/isolation/compatibility boundaries. Its public receipt and
+PREPARED_ONLY functional contract are included with that evidence. They are not
+a formal freeze, hidden corpus, successful executor or release approval.
+
+## Guarded packaging, 2026-10-26
+
+The later optional guarded recipe now includes the pinned guard. Three actual
+Linux/race checks pass with0failures/0skips in22.323seconds: the original bounded
+compiler/direct-entry package, strict guarded archive checks, and a real guarded
+package whose two file hashes/modes are read from a never-started container.
+Vet exits0; the three changed Go sources are byte-identical before/after checks.
+The original legacy package recipe/hash is preserved. An earlier Windows unit
+check also passed the archive and malformed-ELF controls.
+
+The existing private8GiB engine store was remounted without formatting. It is
+separate from Docker Desktop's regular store. This run's private container
+ancestor has2GiB memory,256PIDs and measured zero swap; the compiler's own
+original1GiB/128PID/one-CPU bounds remain unchanged and actually checked before
+compilation. Docker's unsupported per-container swap warning is retained and
+does not replace the actual zero ancestor. No candidate was started, no private
+provider credential was read and no deployment or authority grant occurred.
+Exact logs, scripts, source pins and identities are in
+`experiments/maintenance21/2026-10-26/guarded-package-v1/`.

@@ -21,6 +21,9 @@ must be read only, and candidate/guard paths must have no mutable mounts.
 does not enforce runtime duration, resource limits, current authority or effect
 settlement and cannot sign a result. The host must retain a finite deadline,
 stop/join the container, measure outcome and preserve uncertainty. Successful
-exec does not mean functional success. Existing compiler packaging is unchanged;
-physical guarded packaging/executor, independent checks and rollback acceptance
-remain outstanding. No working Butler process uses this command.
+exec does not mean functional success. The optional `GuardedPackager` now binds
+one privately pinned guard and independently built candidate into a distinct
+scratch image, verifies actual file bytes/modes in a never-started container,
+and retains the guard/package/image identities separately. The legacy direct-
+entry package is unchanged. Actual guarded execution, independent checks and
+rollback acceptance remain outstanding. No working Butler process uses this command.

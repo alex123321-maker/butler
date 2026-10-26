@@ -1,0 +1,284 @@
+{
+  "version": "issue21-independent-node-control-capsule-static-review-v1",
+  "issued_utc": "2026-10-26T22:42:13.030578+00:00",
+  "decision": "STATIC_COMPONENT_REVIEW_COMPLETED_NOT_RELEASE_ACCEPTANCE",
+  "clean_HEAD": "472af660a826578ba3e0e73a86288f05cee15480",
+  "source_pins": [
+    {
+      "path": "internal/maintenance/node_control.go",
+      "sha256": "7af16a2741eb244e9b295cd8e3d3854dd90e2ee2fe3f2d355d3baef917b0297f",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/node_control_test.go",
+      "sha256": "139aafefbc00e27a1f518f78390138dc7340e218006c7d68c97f5f8d8b801bf6",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/claim.go",
+      "sha256": "24e4154c9a2cdd94b5199872ca7286e6487211ce1a2e7674dd370852ae00aca4",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/outcome.go",
+      "sha256": "f78af86b00adfd379f5c8787cd909ba7016a117899d04236f7cbfa6b5481e9b6",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/profile.go",
+      "sha256": "2a4dc004e38d1ef76123406a4452a55d5253cc3e28d3927db01edeb0f6505310",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/review.go",
+      "sha256": "504d9c7e6d579afbe8e0c3886bb59df75e3158e50bdbfba81f95305e8a89ba11",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "internal/maintenance/docker_artifact.go",
+      "sha256": "a87092a56b0b358074485991c4220d60c6668a60b47b6b202a8ea5fec08e6334",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "apps/maintenance-controller/main.go",
+      "sha256": "cf55083d7dc177f58cbb03f9878a1c1a13bd1d03452b2efd186528047c75efce",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "apps/maintenance-controller/main_integration_test.go",
+      "sha256": "103e063c7fe4a369c24c456b3c414665901ba47208686219dd635da1c9fcd466",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/main.go",
+      "sha256": "d68058f8ef89379d7696e6ca07f8a3613bd115d8dc3efc0bbf17c6b54a6c41b6",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/main_test.go",
+      "sha256": "b7fd8ee28a1cd0b8b6b475df89d9e427f5a5f3679f5b7d10fe4f83c2b9b328b1",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/exec_linux.go",
+      "sha256": "391f3eced9eac3196d0db376ae13f8ce3c0567a0d5e05e1f0b6548dc755d4647",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/exec_other.go",
+      "sha256": "bb64b24248aa4facc1ee9f395b2c014e4567361cba9159d42fce85a733667d2a",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "cmd/maintenance-capsule-guard/README.md",
+      "sha256": "4c160800a6c3e6297d90052b2c238c82807048e2129a7fb176ba59071d825da4",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "docs/architecture/maintenance-contract.md",
+      "sha256": "bd16d8f0905141299829e3c4783cbdca46aa486bd295c0edfc7e621209d091d5",
+      "Git_blob_equals_working_bytes": true
+    },
+    {
+      "path": "docs/testing/issue21-local-progress.md",
+      "sha256": "ac33cf0aaf3eb093479178e9d9c2e59888498548a48ec6740e06d704b8a61518",
+      "Git_blob_equals_working_bytes": true
+    }
+  ],
+  "published_capsule_files": [
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/build-exit.json",
+      "bytes": 102,
+      "sha256": "9b469082ca7f3acaaeff2f638093245f588e68a6099927bf778b024426df479b"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/candidate-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/candidate.go",
+      "bytes": 199,
+      "sha256": "d16c18796a0464f3dbf44e368401abce0c27681f23001a86944a0cf53120a1fd"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/guard-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/maintenance21-guard-unit-v1-exit.json",
+      "bytes": 93,
+      "sha256": "f39adf002c524b30b395bcf66e51a89afd8428181b10f02f75b946a3f80b86b9"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/maintenance21-guard-unit-v1.log",
+      "bytes": 314,
+      "sha256": "5c25144adc07a0299d5f39ef6f992a5e5d219167f16c83e35d455e77b4ed7d34"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/maintenance21-guard-vet-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/process-exit.json",
+      "bytes": 24,
+      "sha256": "b0a01177d85a30b714526dbea05aa0bf41b08b3198d6aaa5949f0a54e39324a6"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/source-binary-pins.json",
+      "bytes": 1086,
+      "sha256": "b7cbd89785d247d7443b4923bca127d11c6388bdcb3aa8ed04816ce21be60e64"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/stdout.json",
+      "bytes": 45,
+      "sha256": "247ac938096b1c1b873631424c5ad6dc86e6b5c5d22fa0dfe46f46c90af88a1d"
+    },
+    {
+      "path": "experiments/maintenance21/2026-10-26/capsule-guard-v1/synthetic-launch.json",
+      "bytes": 261,
+      "sha256": "3e300293f8441093ba141e1c5ceda5025aac5b30339d4f083690d76c056be4eb"
+    }
+  ],
+  "node_control_receipt_and_log_files_verified": [
+    {
+      "sha256": "224c064c290854308ccc9d551eeabd5f5359f551581348759626ffd117d00cfb",
+      "bytes": 947,
+      "path": "maintenance21-node-changed-map-v1.log"
+    },
+    {
+      "sha256": "eb3a14d50419ec69fc245e755ffff90aa472cf59e92fd606900d6f6c66f336fe",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v1-exit.json"
+    },
+    {
+      "sha256": "719e0fb6ebee0b623481339aaf06c650087c91a6852089d2eac8d043c32ce7aa",
+      "bytes": 950,
+      "path": "maintenance21-node-check-v1.ps1"
+    },
+    {
+      "sha256": "003784e6110003ff1877172f41b67cc0e5234d6a9dab82818fa17c2fe201278c",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v2-exit.json"
+    },
+    {
+      "sha256": "730f78c43a0ee9969d9cdef9a59ee30e9746a7803dfd52a304593fdde8f23032",
+      "bytes": 987,
+      "path": "maintenance21-node-check-v2.ps1"
+    },
+    {
+      "sha256": "99aa6262c94a697e0d796cb74721850dcef524b12a29363edac1e80b44e98777",
+      "bytes": 143,
+      "path": "maintenance21-node-check-v3-exit.json"
+    },
+    {
+      "sha256": "4b860ac19c96582fbc998a81e3cd15071dcd22607e90befc9c5ba133816749e8",
+      "bytes": 1223,
+      "path": "maintenance21-node-check-v3.ps1"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-package-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-package-v2.log"
+    },
+    {
+      "sha256": "a69e22e118176cdd5745b6206fd002bd6d71f23f871626c83e0afee7460bcbe7",
+      "bytes": 2047,
+      "path": "maintenance21-node-package-v3.log"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-process-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-process-v2.log"
+    },
+    {
+      "sha256": "eb783517f4d7ccf871a7e6fb414c0526a7f3ccb2ea96907d08ff4e97e3d3e700",
+      "bytes": 949,
+      "path": "maintenance21-node-process-v3.log"
+    },
+    {
+      "sha256": "3222c2ac4f0acc738d10b2cc876c34c81f9d21e3301542878ae09945050daf01",
+      "bytes": 73,
+      "path": "maintenance21-node-vet-v1.log"
+    },
+    {
+      "sha256": "f9eb7d0ed6652a9db845667ad3062df290769c58e6cd3476bccfaebf51f11aa8",
+      "bytes": 117,
+      "path": "maintenance21-node-vet-v2.log"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "maintenance21-node-vet-v3.log"
+    }
+  ],
+  "documented_assumptions_essential": [
+    "Claim marker is trusted-host barrier, not signature/authority.",
+    "Root/candidate/guard mounts must be immutable across hash and exec.",
+    "Fixed private host owns actual bounds, live admission, stop/join and settlement."
+  ],
+  "concrete_authorization_or_canonical_parser_bypass_found": false,
+  "actual_guard_evidence": {
+    "unit_top_level_PASS": 2,
+    "unit_package_seconds": 0.335,
+    "recorded_vet_exit": 0,
+    "separate_benign_process_pid": 14351,
+    "process_exit": 42,
+    "environment": [
+      "GOMAXPROCS=2"
+    ],
+    "container_PID1_or_isolation_qualified": false,
+    "guard_binary_digest_recorded_not_rebuilt_or_independently_reread": "2b7d42c682ad98dc78ec9bfce442b8d4a7f0e25b601623d1b922e48c025340d3",
+    "candidate_binary_digest_recorded_not_rebuilt_or_independently_reread": "94cb37371d2c93303886203e8e6c57d8412e5fc3d500c5591560b4ab200bf4b1"
+  },
+  "actual_node_control_evidence": {
+    "targeted_package_top_levels": 3,
+    "separate_controller_scenarios": 2,
+    "noop_helper_is_extra_functional_evidence": false,
+    "physical_operations": 0,
+    "signing_measurements": "synthetic in-process fixtures, not actual executor/checker proof",
+    "prior_failed_toolchain_launches_preserved": true
+  },
+  "implementation_gaps": [
+    "Current Package still ENTRYPOINT /candidate, guard not packaged.",
+    "No bounded guarded physical executor or live target change.",
+    "No independent fixed/hidden functional checker and signer execution.",
+    "No real active task/approval continuation preservation across update or incompatible-state denial evidence.",
+    "No actual trial/promotion/rollback original-task benefit evidence."
+  ],
+  "review_doc": {
+    "path": "public-node-capsule-source-review-472af660-v1.md",
+    "sha256": "47525a1309e4bbece40f9e4c87e9a46fb7c490fa506439177055152854e23b18"
+  },
+  "prepared_contract": {
+    "path": "public-capsule-functional-contract-prepared-v1.md",
+    "sha256": "216956d9de6c73821c1bbfc2c1026536e4916b7d5a7e99f1c4f868779c6b865f",
+    "status": "PREPARED_ONLY_NOT_FORMAL_FREEZE"
+  },
+  "issue21_snapshot": {
+    "path": "current-issue21-snapshot-472af660-v1.json",
+    "sha256": "922b3afca23a198cdb588b27c9795e8f6653cbaf87ecfd01336a710305848b36",
+    "read_only_GitHub_connector": true
+  },
+  "no_current_or_hidden_corpus_authored": true,
+  "source_edits": 0,
+  "Go_PG_Docker_model_auth_private_key_operations": 0,
+  "new_acceptance_or_deployment_admission": false
+}

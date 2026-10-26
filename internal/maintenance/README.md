@@ -1,5 +1,16 @@
 # Independent release admission
 
+The optional `GuardedPackager` now packages one privately pinned static Linux
+guard and independently built candidate with fixed `/maintenance-guard`
+entrypoint, UID/GID and modes. It clones the trusted guard, validates its actual
+ELF/hash and verifies both imported files through a never-started disposable
+container. Cleanup failure denies the package result. The legacy direct-entry
+recipe remains distinct and unchanged. Actual local Docker/race checks pass
+both recipes and the strict archive checks, with vet0 and no skips. This is
+artifact evidence only: it executes no candidate and grants no review or
+deployment permission. The later fixed executor must independently verify the
+guard, kernel bounds, live authority and launch barrier.
+
 The optional private `NodeControlClient`/handler carries exact signed records
 across the separate node/controller boundary. Dispatch repeats the Store's live
 one-use checks; outcome recording retains the original signed measurement.

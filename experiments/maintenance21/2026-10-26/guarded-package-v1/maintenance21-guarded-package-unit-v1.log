@@ -1,0 +1,6 @@
+=== RUN   TestDockerBuildRejectsNonExecutableArchive
+--- PASS: TestDockerBuildRejectsNonExecutableArchive (0.00s)
+=== RUN   TestGuardedArchiveRequiresExactRegularMember
+--- PASS: TestGuardedArchiveRequiresExactRegularMember (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/maintenance	1.191s

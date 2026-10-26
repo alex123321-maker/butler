@@ -270,12 +270,17 @@ candidate ELF hash and replaces PID1 with `/candidate` using a fixed minimal
 environment. It grants no authority: the future executor still needs the exact
 signed claim, live one-use dispatch, actual kernel isolation checks and a
 read-only measured root before marker publication. A marker cannot substitute
-for any of those checks. Existing packaging/deployment is unchanged.
+for any of those checks. Deployment remains absent.
 Targeted unit/vet checks and a separate Linux synthetic process demonstrate
 the hash/expiry/cancellation barrier and PID/environment replacement. The
 synthetic process is not a resource-isolation, independent release or deployment
-acceptance test. Guarded packaging, bounded runtime and actual node execution
-remain required.
+acceptance test. An optional separately configured `GuardedPackager` now pins
+the trusted guard and independently built candidate, imports a fixed distinct
+scratch recipe and verifies actual bytes/modes through a never-started container.
+Only the two code-owned legacy/guarded recipes can select an entrypoint. It
+performs no candidate execution and cleanup failure denies its result. Actual
+local Docker/race artifact checks pass; bounded runtime, physical executor and
+independent release/trial/rollback acceptance remain required.
 
 Acceptance requires actual separate checker/controller/executor processes and
 retained PostgreSQL history, not interfaces backed only by fixtures. Prove a good
