@@ -1,0 +1,114 @@
+{
+  "positive_episodes": 12,
+  "input_lines_within256KiB": true,
+  "event_counts_unpaired": {
+    "owner_message": 48,
+    "owner_control": 3,
+    "document_change": 3,
+    "manual_resource_change": 6,
+    "profile_change": 3,
+    "service_restart": 8
+  },
+  "version": "issue76-independent-local-http-v9-final-structural-receipt-v1",
+  "stimuli_sha256": "bb40fdc7ca4c22c15230364445d0c1e74384392cc9d55ab53ea8aa42a32e5686",
+  "no_arm_identity_or_model_judgment_in_stimuli": true,
+  "exactly_two_evaluated_owner_turns_per_episode": true,
+  "real_task_store_setup_composition_not_yet_run": true,
+  "all_task_resource_scope_refs_resolved": true,
+  "episodes": 24,
+  "arms": 48,
+  "children_inherit_actual_parent_policy": true,
+  "guest_boundary": "Guest-like material is quoted untrusted document data, not an authenticated foreign-principal ingress test",
+  "family_coverage": [
+    {
+      "family": "amendment",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "clarification",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "feedback_candidate",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "manual_change",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "new_task_coexistence",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "owner_done_report",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "preference_exception",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "preference_lifecycle",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "restart",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "scoped_stop_negation",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "status_continuation",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    },
+    {
+      "family": "untrusted_command",
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2
+    }
+  ],
+  "single_arm_original_steps": 71,
+  "all_stimuli_synthetic": true,
+  "restart_and_readonly_stopped_boundaries_present": true,
+  "no_native_admission": true,
+  "new_task_boundary": "Coexistence uses separate fixture roots; not proof of natural-language dynamic task creation",
+  "families": 12,
+  "owner_opportunities": 96,
+  "negative_episodes": 12,
+  "paired_original_steps": 142,
+  "expectations_sha256": "fc202c9b27a025344156273c73ba2bb86c62d1ffed593f18c928668c8abd2c15",
+  "manual_observed_and_owner_report_present": true,
+  "source_lifecycle_correct_revoke_delete_present": true,
+  "no_expected_fields_in_stimuli": true,
+  "actual_session_scoped_accepted_profile_present": true,
+  "actual_unaccepted_candidate_profile_present": true,
+  "untrusted_command_document_and_tool_data_present": true,
+  "actual_setup_composition_not_yet_run": true,
+  "fixed_original_path": ".cache/issue76-independent/hidden-local-http-v9/stimuli.jsonl"
+}
