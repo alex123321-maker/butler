@@ -1,0 +1,28 @@
+{
+  "version": "issue29-arc-prepared-probe-v2",
+  "created_utc": "2026-10-26T20:46:32.1226741+00:00",
+  "previous_source": "42df6f46452b9156e0314c017333381270cbfe72",
+  "status": "PREPARED_ONLY",
+  "powershell_syntax_errors": 0,
+  "python_syntax_checked": false,
+  "SDK_installed_by_this_task": false,
+  "weights_downloaded": false,
+  "tensor_probe_executed": false,
+  "voice_service_changed": false,
+  "operating_system": "Windows11 Home 10.0.26300",
+  "physical_memory_KiB": 32961912,
+  "available_bundled_python": "3.12.14",
+  "require_fresh_repo_local_venv": true,
+  "require_pinned_install_report": true,
+  "error_reporting": "fixed stage/reason, exception class and numeric winerror only",
+  "files": [
+    {
+      "working_sha256": "897efe03e85449ac03ae49ddf52e93536ada6a959fd981200d97a7577c4cb195",
+      "path": "scripts/dev/voice-arc-probe.py"
+    },
+    {
+      "working_sha256": "74c913df41583772791f025583850050643709dc7afda0b6a946d317290bca56",
+      "path": "scripts/dev/voice-arc-probe.ps1"
+    }
+  ]
+}

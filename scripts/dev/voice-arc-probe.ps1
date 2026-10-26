@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory)][string]$PythonExecutable,
+  [Parameter(Mandatory)][ValidatePattern('^[a-f0-9]{64}$')][string]$SDKReportSHA256,
   [Parameter(Mandatory)][ValidatePattern('^[a-z0-9][a-z0-9-]{0,47}$')][string]$RunName
 )
 $ErrorActionPreference='Stop'
@@ -8,6 +9,12 @@ $repo=(Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $cache=Join-Path $repo '.cache/voice29-arc'
 $python=(Resolve-Path -LiteralPath $PythonExecutable).Path
 if(-not $IsWindows -or [IO.Path]::GetExtension($python)-cne'.exe' -or -not(Test-Path -LiteralPath (Join-Path (Split-Path (Split-Path $python -Parent) -Parent) 'pyvenv.cfg'))){throw 'Explicit Windows virtual-environment Python required'}
+if(-not $python.StartsWith($cache+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'Use a fresh repository-local SDK environment'}
+$sdkReport=Join-Path $cache 'sdk-install-report-v1.json'
+if(-not(Test-Path -LiteralPath $sdkReport) -or (Get-Item $sdkReport).Length-gt4MB -or (Get-FileHash $sdkReport).Hash.ToLowerInvariant()-cne$SDKReportSHA256){throw 'Exact retained SDK installation report required'}
+$packages=(Get-Content $sdkReport -Raw|ConvertFrom-Json).install
+$torch=@($packages|Where-Object {$_.metadata.name-ceq'torch'})
+if($torch.Count-ne1-or$torch[0].download_info.archive_info.hashes.sha256-cne'3ad605be4728b6d3a28a44d07dd794b1a9e45551b0057815bf25eb2a6d6a56a7'){throw 'The SDK report does not bind the pinned official torch wheel'}
 if((git -C $repo status --porcelain)){throw 'Commit the reviewed probe source before execution'}
 $out=Join-Path $cache $RunName
 if(Test-Path -LiteralPath $out){throw 'Use a new diagnostic identity; preserve earlier results'}
@@ -50,7 +57,7 @@ try{
   $errorOutput=$stderr.GetAwaiter().GetResult()
   [IO.File]::WriteAllText((Join-Path $out 'stdout.json'),$output,[Text.UTF8Encoding]::new($false))
   [IO.File]::WriteAllText((Join-Path $out 'stderr.log'),$errorOutput,[Text.UTF8Encoding]::new($false))
-  $record=[ordered]@{version='issue29-local-arc-probe-process-v1';started_utc=$started;finished_utc=[DateTimeOffset]::UtcNow;producer=(git -C $repo rev-parse HEAD).Trim();script_sha256=(Get-FileHash $probe).Hash.ToLowerInvariant();exit_code=$process.ExitCode;stopped_at_bound=$stopped;sampled_peak_RSS_bytes=$sampledRSS;RSS_sampling_millis=250;deadline_seconds=120;hard_memory_limit_enforced=$false;model_loads=0;microphone_capture=$false;resource_admission_qualified=$false;voice_service_changed=$false}
+  $record=[ordered]@{version='issue29-local-arc-probe-process-v1';started_utc=$started;finished_utc=[DateTimeOffset]::UtcNow;producer=(git -C $repo rev-parse HEAD).Trim();script_sha256=(Get-FileHash $probe).Hash.ToLowerInvariant();sdk_install_report_sha256=$SDKReportSHA256;exit_code=$process.ExitCode;stopped_at_bound=$stopped;sampled_peak_RSS_bytes=$sampledRSS;RSS_sampling_millis=250;deadline_seconds=120;hard_memory_limit_enforced=$false;model_loads=0;microphone_capture=$false;resource_admission_qualified=$false;voice_service_changed=$false}
   [IO.File]::WriteAllText((Join-Path $out 'process.json'),($record|ConvertTo-Json -Depth 6)+"`n",[Text.UTF8Encoding]::new($false))
   if($stopped-or$process.ExitCode-ne0){throw 'Diagnostic failed; retain output without retrying this identity'}
   $result=$output|ConvertFrom-Json
