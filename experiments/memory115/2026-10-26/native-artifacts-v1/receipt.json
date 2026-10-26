@@ -1,0 +1,14 @@
+{
+  "version": "issue115-offline-native-artifacts-v1",
+  "source_commit": "06dc4da5b17b592dea16d321c44c17cd1a8606a5",
+  "go": "1.27.2 linux/amd64",
+  "flags": "GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-buildvcs=false",
+  "app_test_race": true,
+  "provider_constructed": false,
+  "storage_claims": 0,
+  "native_admissions": 0,
+  "build_log_sha256": "643de11f26bf41f6814037ae15cefa2ad40d98ee2e5d9267bf01e3f241f1278f",
+  "preseal_prepared": false,
+  "binary_directory": "/private/memory115-prepared-20261026-v1/bin",
+  "binaries_published": false
+}
