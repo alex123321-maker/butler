@@ -1,0 +1,156 @@
+{
+  "version": "issue76-public-response-v10-source-constraints-v2",
+  "status": "PROSPECTIVE_DRAFT_NOT_IMPLEMENTATION_ACCEPTANCE",
+  "contract_path": "public-local-response-tail-contract-v4-proposal-v3.md",
+  "contract_sha256": "dad91e3b869c9bed7172a0fb98074a260272d25e361835d9646e5141b45976c3",
+  "reason_whitelist": [
+    "stream_json_invalid",
+    "stream_usage_ambiguous",
+    "stream_usage_invalid",
+    "stream_usage_conflict",
+    "stream_model_version_invalid",
+    "stream_candidate_unsupported",
+    "stream_candidate_unexpected",
+    "stream_finish_rejected",
+    "stream_part_invalid",
+    "stream_part_unsupported",
+    "stream_thought_invalid",
+    "stream_function_ambiguous",
+    "stream_content_missing"
+  ],
+  "union_order": "Keep old exact model_empty_answer FIRST (nullable/measured usage/version), old exact HTTP next; new model_response_rejected only13 new reasons; effect_unknown unchanged",
+  "binding_mode": "fixture-local-response-v10",
+  "index_version": "behavior76-checker-index-v5-local-response-tail",
+  "manifest_mode": "whole_fixture_after_exact_response_rejection_v1",
+  "native_evidence_keys": [
+    "window_id",
+    "n",
+    "slot",
+    "run_id",
+    "kind",
+    "status",
+    "stage",
+    "milliseconds",
+    "input_tokens",
+    "output_tokens",
+    "total_tokens",
+    "thinking_tokens",
+    "model_version",
+    "events",
+    "owner_inputs",
+    "native_admission_cutoff_n"
+  ],
+  "delta_keys": [
+    "type",
+    "text_delta"
+  ],
+  "delta_payload_exact_keys": [
+    "DeltaType",
+    "Content",
+    "SequenceNo"
+  ],
+  "usage_exact_required_keys": [
+    "InputTokens",
+    "OutputTokens",
+    "TotalTokens"
+  ],
+  "usage_exact_optional_keys": [
+    "ThinkingTokens"
+  ],
+  "metadata_rules": [
+    "Preserve actual normalized non-NULL integer usage including observed zero, exact nullable column equality and valid observed version; never null/coerce known values",
+    "Missing usage requires four NULL row columns; missing optional thinking remains NULL",
+    "Explicit usage:null/thinking:null, floats, negative/inconsistent/aliased/extra fields or values outside actual signed64 Go/PG storage are ineligible",
+    "Observed empty version pointer must become GLOBAL before NULLIF storage; current row cannot prove that distinction retrospectively",
+    "Nested delta rehydration needs exact case-sensitive keys before any Go struct decoder; bare struct decoding can ignore extras/case aliases",
+    "Do not duplicate or print partial content in public diagnostics; retain original evidence reference/count and unassessed partial quality"
+  ],
+  "delta_sequence": "Same positive invocation-turn1..4 across all deltas, not increasing per delta",
+  "derived_existing_text_bound_UTF8_bytes": 16777216,
+  "source_guards": [
+    "Actual native channel EOF, no late event, live original context and global-priority recheck",
+    "Exact original run/task/constraints/lease/source authority with unique actual input witness",
+    "Serialized durable root-journal write/readback exact to typed events and nullable metadata, full identity predicate and one affected row",
+    "Stop INSERT/cutoff under same native/runtime/Input-claim admission mutex, first cause immutable",
+    "Core normalized error exemption must match actual failed run/Input/window/slot/stage/complete event chain, never generic provider_protocol_error alone",
+    "Late currentness/budget/storage/global errors override local stop before any next scheduled arm",
+    "Whole original owning task/cohort closes further claims/native/recipient admissions without rewriting blocked/queued rows; already-admitted work drains under original bounds",
+    "Successful worker/process/backend/lease/claim/observer/anchor quiescence and sealed inventories required; defaults/open/unsealed evidence never qualifies",
+    "Use exact same predicate for live typed stream and strict stored rehydration, including problematic-dimension rules"
+  ],
+  "excluded_concrete_paths": [
+    {
+      "why": "Conflates framing/terminal with network scanner errors and16MiB total limit",
+      "reason": "stream_terminal_missing"
+    },
+    {
+      "why": "Conflates shape with non-null upstream error envelope including possible authentication",
+      "reason": "stream_envelope_invalid"
+    },
+    {
+      "why": "Known measured usage/version can be returned afterEOF; MAX_TOKENS/function-limit class remainsGLOBAL",
+      "reason": "stream_function_truncated"
+    },
+    {
+      "why": "Explicit limit fault",
+      "reason": "stream_frame_limit"
+    },
+    {
+      "why": "Authority/effect fault",
+      "reason": "stream_automatic_function_execution"
+    }
+  ],
+  "public_source_reference_pins": [
+    {
+      "path": "internal/transport/antigravity/protocol.go",
+      "sha256": "90acc1691034ac387c721b863ec241f3223b4f2636c4fd0b45b44084005cc0f7"
+    },
+    {
+      "path": "internal/transport/antigravity/provider.go",
+      "sha256": "aaa7615bb7563ad5551a32e764b137902adc0fbca5ef3585c2df1b2cf72f58be"
+    },
+    {
+      "path": "internal/transport/antigravity/stream_diagnostics.go",
+      "sha256": "50805463e2de0dde5140d8b1cf9106826fc8f57561fe80e31b2ec1f44531b6a7"
+    },
+    {
+      "path": "internal/transport/events.go",
+      "sha256": "fc37142d8bac7d6afa377fdcf5264ea9f55cce0c6ac5d319dabd2329d7e81c93"
+    }
+  ],
+  "original_design": {
+    "families": 12,
+    "criterion_extents": 27,
+    "arms": 48,
+    "owner_opportunities": 96,
+    "episodes": 24,
+    "candidate_thresholds_limits_changed": false
+  },
+  "prior_closed_history": {
+    "v9raw": 383,
+    "NULLusage": 10,
+    "known_total_tokens": 5626388,
+    "admissions": 723,
+    "measured": 713,
+    "v8raw": 1253,
+    "windows": 10,
+    "reclassification_allowed": false
+  },
+  "new_source_freeze_hidden_authorship_native_admission": false,
+  "Go_PG_auth_native_calls_by_checker": 0,
+  "old_answers_goldens_mapping_read": false,
+  "problem_dimension_rules": [
+    "stream_usage_ambiguous/invalid/conflict: no usage property and fourNULLusagecolumns; observedusage retainedbutGLOBAL, nevererased",
+    "stream_model_version_invalid: versionNULL only; actualnonnullversion retainedbutGLOBAL",
+    "Independent valid dimensions retained: validversion withusageerror; validusage withversionerror"
+  ],
+  "required_reader_runtime_files": [
+    "local-model-proof-reader-v4.ps1",
+    "local-tail-adapter-v4.ps1",
+    "local-scoring-composition-v4.ps1",
+    "authority-stream-scoring-v2d.ps1",
+    "authority-stream-reader-v2a.cs",
+    "authority-stream-reader-v2a.ps1",
+    "score-mechanical-fresh-v3.ps1"
+  ]
+}

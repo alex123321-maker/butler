@@ -1,0 +1,45 @@
+{
+  "version": "issue76-independent-r3-source-scorer-freeze-template-v1",
+  "decision": "PREPARED_ONLY_NOT_FORMAL_FREEZE",
+  "prepared_utc": "2026-10-26T19:22:50.9767984+00:00",
+  "script": {
+    "sha256": "7f1c5af55626d2e870374c242a58b4e580ea3781d93a62b114516b8f5e61156f",
+    "path": "freeze-local-response-v10-r3-v1.ps1"
+  },
+  "default_action": "Print PREPARED_ONLY and return, no checks or issuance",
+  "future_explicit_formal_inputs": [
+    "IssueFormalFreeze switch",
+    "exact full clean committed producer+semanticSHA",
+    "committed preparation directory+receiptSHA",
+    "completed Public61 zeroFAIL/SKIP/race +vet0 logs"
+  ],
+  "requires": {
+    "history_measured": 762,
+    "criterion_AST_statements": 27,
+    "known_tokens": 5948714,
+    "unbound_literals": 2,
+    "history_admissions": 774,
+    "fixed_fresh_wrapper_paths": 3,
+    "candidate": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+    "runtime_components": 7,
+    "source_files_expected": 70,
+    "hidden_directory_must_be_absent": "hidden-local-response-v10-r3",
+    "history_closed": 11,
+    "closed_r2_raw_files": 822,
+    "checker_PASS": 298,
+    "null_usage": 12
+  },
+  "source_review": {
+    "sha256": "b4da82bb75b06658304ff87feb0a88b297340acc3e41eef24fd902639b028d2d",
+    "path": "public-local-response-v10-r3-source-review-v1.json"
+  },
+  "dependencies": {
+    "sha256": "6e23afc882d9f701d473a39332ac0c18ef7a4d601998bba1f4b454f5e3b177d2",
+    "path": "public-local-response-v10-r3-dependencies-v1.json"
+  },
+  "existing_issues_preserved": "Closedr2GLOBALFAIL802ms subtype; sole underlying delay cause unproven; nullableexpense retained",
+  "formal_receipt_issued": false,
+  "hidden_authored": false,
+  "Go_PG_auth_native": 0,
+  "rejected_fault_test_retried": false
+}

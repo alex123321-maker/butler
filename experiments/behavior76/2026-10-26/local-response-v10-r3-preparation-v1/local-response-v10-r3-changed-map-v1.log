@@ -1,0 +1,24 @@
+Changed files:
+- apps/orchestrator/internal/app/behavior76_authority_storage_test.go
+- apps/orchestrator/internal/app/behavior76_authority_stream_test.go
+- apps/orchestrator/internal/app/behavior76_authority_trace_test.go
+- apps/orchestrator/internal/app/behavior76_day_admission_test.go
+- apps/orchestrator/internal/app/behavior76_fresh_test.go
+- apps/orchestrator/internal/app/behavior76_local_study_test.go
+- apps/orchestrator/internal/app/behavior76_resources_test.go
+- apps/orchestrator/README.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/testing/issue76-fixture-stream-protocol.md
+- docs/testing/issue76-local-response-protocol.md
+- scripts/dev/behavior-local-run.sh
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- docs/testing/issue76-fixture-local-protocol.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...
