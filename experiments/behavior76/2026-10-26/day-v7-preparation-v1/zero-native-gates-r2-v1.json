@@ -1,0 +1,28 @@
+{
+  "version": "issue76-day-v7-r2-zero-native-gates-v1",
+  "semantic_source": "7f66e971fb098682a74b372e09bb53d606ab2e46",
+  "literal_bound_source": "18c18985c20e90bcf70f476fe1a36a59589debbd",
+  "source_delta": "Exactly2hash constants and3fixed corpus path literals; no semantic changes",
+  "collector_elf_sha256": "8d0b8e0a9b2368b163b844d234249636a689a22784ec8036aa0b068634def74b",
+  "stimuli_sha256": "a2d7ffa28a497a72246ba608d1a18351f316c6804a581784a1f76306975ba047",
+  "expectations_sha256": "dabe70e665b96396bb1e3e9bfdbf7503ba2d07dead08482f6ce50d1d19708cc7",
+  "setup_subcases": 24,
+  "composition_arms": 48,
+  "original_owner_opportunities": 96,
+  "paired_steps": 128,
+  "native_calls": 0,
+  "auth_sources_constructed": 0,
+  "new_native_window_opened": false,
+  "logs": [
+    {
+      "path": "day-v7-r2-preflight-v1.log",
+      "sha256": "764bf97e2c2abebcda0525484ae34be3ac85ae3f3bd9adba4d55f7c2afdc1836"
+    },
+    {
+      "path": "day-v7-r2-composition-v1.log",
+      "sha256": "bd503f9caa06fae2b5d985242016965415589e8f987acda178acc6df62d3d522"
+    }
+  ],
+  "native_admission": false,
+  "quality_acceptance": false
+}
