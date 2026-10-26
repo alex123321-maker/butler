@@ -84,6 +84,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 			t.Fatal("sealed local-r2 window changed", e)
 		}
 	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-stream-v5/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedStreamHistory(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-stream-v5/behavior76_attempts.jsonl"
+		expected = 506
+	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
@@ -126,6 +133,13 @@ func behavior76CollectFreshConfigured(t *testing.T, local bool) {
 }
 
 func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
+	behavior76CollectStudy(t, local, streaming, false)
+}
+
+func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
+	if dayFit && !streaming {
+		t.Fatal("day-fit collection requires the unchanged stream protocol")
+	}
 	if streaming && !local {
 		t.Fatal("streaming requires explicit fixture-local construction")
 	}
@@ -143,6 +157,15 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 			priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 5, 405, 400, 3084472, 5
 			priorDirectory = "native-local-v4-r2"
 			version, prefix = "behavior76-fixture-stream-v5", "issue76-fixture-stream-"
+			if dayFit {
+				stimuliSHA, expectationsSHA = behavior76DayStimuliSHA, behavior76DayExpectationsSHA
+				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 6, 506, 500, 3832577, 6
+				priorDirectory = "native-stream-v5"
+				version, prefix = "behavior76-fixture-day-v6", "issue76-fixture-day-"
+				if stimuliSHA == behavior76StreamStimuliSHA || expectationsSHA == behavior76StreamExpectationsSHA {
+					t.Fatal("closed stream controls cannot be reused")
+				}
+			}
 			if stimuliSHA == behavior76LocalStimuliSHA || expectationsSHA == behavior76LocalExpectationsSHA {
 				t.Fatal("closed local controls cannot be reused")
 			}
@@ -187,6 +210,14 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 	if dir == "" || source == "" {
 		t.Fatal("explicit clean producer/output required")
 	}
+	var dayStart, dayDeadline, dayEnd time.Time
+	if dayFit {
+		dayStart = time.Now().UTC()
+		dayDeadline, dayEnd, err = behavior76DayWindow(dayStart)
+		if err != nil {
+			t.Fatal("pre-entry owner-day admission rejected before output or native construction", err)
+		}
+	}
 	if err = os.Mkdir(dir, 0700); err != nil {
 		t.Fatal("new fresh evidence directory required", err)
 	}
@@ -219,7 +250,13 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 		}
 	}
 	started := time.Now().UTC()
+	if dayFit {
+		started = dayStart
+	}
 	deadline := started.Add(4 * time.Hour)
+	if dayFit {
+		deadline = dayDeadline
+	}
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	config, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -294,6 +331,21 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-local-20261025T214647", "admitted": 29, "closed": true, "manifest_sha256": behavior76Hash(body)})
 	}
+	var dayObserved time.Time
+	if dayFit {
+		body, e := behavior76ClosedStreamHistory(ctx, transaction, root)
+		if e != nil {
+			t.Fatal(e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fixture-stream-20261025T231554", "admitted": 101, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
+			t.Fatal("owning database day unavailable")
+		}
+		actualEnd := dayObserved.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
+		if !dayEnd.Equal(actualEnd) || deadline.After(actualEnd) || !deadline.After(dayObserved) {
+			t.Fatal("original whole window does not fit the actual owning database UTC day")
+		}
+	}
 	var history bool
 	if err = transaction.QueryRow(ctx, `SELECT (SELECT count(*)=$1 AND bool_and(closed) AND sum(admitted)=$2 FROM public.behavior76_windows) AND (SELECT count(*)=$2 AND count(total_tokens)=$3 AND sum(total_tokens)=$4 AND count(*) FILTER(WHERE total_tokens IS NULL)=$5 FROM public.behavior76_attempts)`, priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown).Scan(&history); err != nil || !history {
 		t.Fatal("fresh-only admission requires exactly closed A/B/C and all spent/unknown usage")
@@ -339,6 +391,14 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 		if streaming {
 			manifest["authority_observer"] = map[string]any{"version": "behavior76-authority-pg-trace-stream-v2", "maximum_buffered_events": behavior76StreamBuffer, "maximum_segments": behavior76StreamSegments, "maximum_compressed_bytes": behavior76StreamBytes, "maximum_header_bytes": behavior76StreamHeader, "maximum_line_bytes": behavior76StreamLine, "maximum_open_spans": behavior76StreamOpen}
 		}
+	}
+	if dayFit {
+		policyPath := "docs/testing/issue76-day-window-admission.md"
+		policy, e := os.ReadFile(filepath.Join("/src20", policyPath))
+		if e != nil {
+			t.Fatal("public day admission policy unavailable")
+		}
+		manifest["owner_day_admission"] = map[string]any{"policy": policyPath, "policy_sha256": behavior76Hash(policy), "database_observed_at": dayObserved.UTC(), "original_window_started_at": started, "original_window_deadline": deadline, "owning_day_ends_at": dayEnd, "whole_original_window_fits": true, "scope_deadlines_extended": false}
 	}
 	behavior76Write(t, filepath.Join(dir, "manifest.json"), manifest)
 	if _, err = transaction.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,$3)`, window, behavior76JSON(manifest), deadline); err != nil {

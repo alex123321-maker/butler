@@ -1,0 +1,160 @@
+{
+  "version": "behavior76-day-public-gates-v1",
+  "result": "PASS_PUBLIC_ONLY_NOT_NATIVE",
+  "native_calls": 0,
+  "auth_sources_constructed": 0,
+  "new_native_window_opened": false,
+  "new_controls": "UNBOUND",
+  "public_race": {
+    "sha256": "c7d268e67d4413938e5f03b22c55ca339b3660448768d95d8e4329d8f919d099",
+    "skipped": 0,
+    "log": "day-public-v1.log",
+    "passed": 36,
+    "failed": 0
+  },
+  "vet": {
+    "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f",
+    "exit_code": 0,
+    "log": "day-vet-v1.log"
+  },
+  "history": {
+    "closed_windows": 6,
+    "unavailable_usage": 6,
+    "known_tokens": 3832577,
+    "full_jsonb_equality_and_tamper_rejection": "PASS",
+    "measured": 500,
+    "admissions": 506,
+    "graceful_restart_recheck": "PASS"
+  },
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_stream_test.go",
+      "sha256": "c954a73765811238258535c7a0eb981c108ce4357dcdde8d5538e15874068792"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_trace_test.go",
+      "sha256": "5db699f29d721a38d351c01dfdb692485435b0baf8cc50a318732421a9939824"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_backend_quiescence_test.go",
+      "sha256": "26f5132ef9f2215c6a518d370453517c79e4cfbe986ea385730fd2a9c92b40a1"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_classification_test.go",
+      "sha256": "5d5a20ca610210a9729ee44e0e9aef60505df5906d2432111bd16e0a52c5727b"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "sha256": "0e659872c428ae12bc34388d017fb214952484c9b175c7e8aa22c0dd87f3df79"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go",
+      "sha256": "68f3eedafb57c3713614fe4ef03a067d34006f6248478bea8a901f89a5636191"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_continuation_test.go",
+      "sha256": "515756b85eb08b4cd9a7d17bf7f3cd67f1759ae91ae51f9a9a14bacdd006e41e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "f6b84e37a0fecda14529439fbc5963b2b02f7e92cf3265b0ffa79a33a27e63d3"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_events_test.go",
+      "sha256": "2ec01e200204934f0c2d8d780b6abed6330300dc84dd159cc4c6887c30456f6e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_evidence_test.go",
+      "sha256": "8a83c0626a9bbd1c6124a1127a8e3695645545654221957c684d249f0dd76f41"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "3066ea28eb8e82c36e5e80bc640943d1d4a5a20460ba784d1971a77b21de7cc2"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "43fe56682d66d722e23b5b7931a3870964f0a9fbdfe4917777c2bff4efe94a23"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_study_test.go",
+      "sha256": "8ebec36bb2b0649a47ecd2e788b2f9982b23dc754bb1dcab7db2c3f72eee5ebb"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "d7f7140c33e24aeb0c6aa63bda5c2ea3997b543b512d25ca1ed49d0e561b8893"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_offline_test.go",
+      "sha256": "20c359003b32c49c75d96f4987001b38193fa4dff6a75452a7be935d743601e7"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_pgx_trace_test.go",
+      "sha256": "335419cfb556ab5e133eb648517d968ebc63c14228ac86eeead51a0aa02379eb"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_preflight_test.go",
+      "sha256": "649b0a47e9dfeb27d16bbf88ba02033580e0576e15e3fa7fd3c16d0221603fb8"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_resources_test.go",
+      "sha256": "e3a960583e125daddecf9037fbe9a18709b800e8acd78c1d19b8f3553861ab37"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_runtime_test.go",
+      "sha256": "1a2a926407d94d6917edf2a98cff2b63bf09a6d653a9b423cb30f03631446e1c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_safety_test.go",
+      "sha256": "a66acc32e46b9c2c5081295635faaa0fe0012ea441220d3a679757d9e83551d5"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go",
+      "sha256": "9716e3c3f4ed685319fb1c788e794324f3c78a1a7443d0fd7ae79e66b2fc7e86"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "adf6ab89e0375dda3312e48ef7f4d735adc6644f3590e207a397ebd01c65cae7"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_source_rows_test.go",
+      "sha256": "794c485ea01693400d68507b1655487fbf970859a7931883326b530eb669a321"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_stream_integration_test.go",
+      "sha256": "7f2479a7e850e8542d733e58bb77c68f9e9ca4537bbd62d1c6c61497c4243f9a"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_task_context_test.go",
+      "sha256": "f94fcb485eba7a5afbd164ff1da6a29d2eff9807c80be2c8c36895f5121c3363"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_types_test.go",
+      "sha256": "285e17de3cf1ac80ee657ce1b76512d53352f45a35b35055f88a5b007a1dda0f"
+    },
+    {
+      "path": "docs/testing/issue76-day-window-admission.md",
+      "sha256": "395d006c5efbe9dc7d5ccbd73a4e7bafbbff99e76eb2777b3495b954b82b6ab9"
+    },
+    {
+      "path": "docs/testing/issue76-fixture-stream-protocol.md",
+      "sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5"
+    },
+    {
+      "path": "scripts/dev/behavior-local-acceptance.ps1",
+      "sha256": "6b1dd3e9eb1a664beb96e94aa2f3c94ff6711d2fe2e35790df12f5dc9aaa3e94"
+    },
+    {
+      "path": "scripts/dev/behavior-local-host.sh",
+      "sha256": "f8408d939f231cf28cb3d04a6b1c33157f431df2aba6a90be3f0ea85a60a4831"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "ea3918ca955614dd623741b43c1136f4c1e2bd5939575c902b782c161afb3334"
+    }
+  ],
+  "fixture_protocol": "stream-v5 unchanged",
+  "limits": "4h/768;120s model;20m fixture;750ms authority;9+1 unchanged",
+  "source_note": "Day-fit is stricter admission; includes pre-entry time and independently reads PostgreSQL clock; no renewal or extension",
+  "candidate_promoted": false,
+  "issue76_closed": false
+}

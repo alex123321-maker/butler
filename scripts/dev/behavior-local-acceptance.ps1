@@ -1,13 +1,13 @@
 [CmdletBinding()]
 param(
- [ValidateSet('Offline','Queued','Safety','Public','Resources','Evidence','Preflight','Composition','Boundary','FreshPreflight','FreshComposition','Native','LocalPreflight','LocalComposition','LocalNative','StreamPreflight','StreamComposition','StreamNative','StreamPublic')][string]$Action='Offline',
+ [ValidateSet('Offline','Queued','Safety','Public','Resources','Evidence','Preflight','Composition','Boundary','FreshPreflight','FreshComposition','Native','LocalPreflight','LocalComposition','LocalNative','StreamPreflight','StreamComposition','StreamNative','StreamPublic','DayPreflight','DayComposition','DayNative')][string]$Action='Offline',
  [switch]$EnableNative,
  [string]$OutputDirectory=''
 )
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 $state=Initialize-ButlerAgentEnvironment
-if($Action -in @('Native','LocalNative','StreamNative') -and -not $EnableNative){throw 'EnableNative required for actual provider inference'}
+if($Action -in @('Native','LocalNative','StreamNative','DayNative') -and -not $EnableNative){throw 'EnableNative required for actual provider inference'}
 Push-Location $state.RepoRoot
 try {
  $before=(& git rev-parse HEAD).Trim()
@@ -20,7 +20,7 @@ try {
  & wsl -d docker-desktop --exec /bin/sh $hostScript build $nonce
  if($LASTEXITCODE -ne 0){throw 'Local behavioral collector build failed'}
  $digest=(Get-FileHash (Join-Path $cache 'collector.test') -Algorithm SHA256).Hash.ToLowerInvariant()
- if($Action -in @('Native','LocalNative','StreamNative')){
+ if($Action -in @('Native','LocalNative','StreamNative','DayNative')){
   & git diff --quiet HEAD
   if($LASTEXITCODE -ne 0 -or @(git ls-files --others --exclude-standard).Count -or (& git rev-parse HEAD).Trim() -ne $before){throw 'Committed clean prospective source required'}
   if($OutputDirectory -notmatch '^\.cache/behavior76/[A-Za-z0-9_-]+$'){throw 'New output directory required under .cache/behavior76'}
