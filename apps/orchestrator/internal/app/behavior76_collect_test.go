@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/config"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
@@ -37,6 +38,7 @@ type behavior76Assembler struct{ base *prompt.Assembler }
 type behavior76TaskExecutor struct {
 	f        *behavior76Fixture
 	provider transport.ModelProvider
+	tasks    task.Manager // Explicit public fault fixture only; nil is ordinary.
 }
 
 func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.InputEvent) (result *flow.ExecutionResult, executionErr error) {
@@ -75,6 +77,9 @@ func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.Input
 		if err != nil && err != pgx.ErrNoRows {
 			return nil, err
 		}
+	}
+	if e.tasks != nil {
+		return behavior76CoreWithAssembler(e.f, e.provider, mandate, e.tasks).Execute(ctx, event)
 	}
 	return behavior76CoreWithAssembler(e.f, e.provider, mandate).Execute(ctx, event)
 }
@@ -367,10 +372,10 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	}
 }
 
-func behavior76CoreWithAssembler(f *behavior76Fixture, p transport.ModelProvider, mandate string) *flow.Service {
+func behavior76CoreWithAssembler(f *behavior76Fixture, p transport.ModelProvider, mandate string, tasks ...task.Manager) *flow.Service {
 	// Config is constructed in one helper to avoid using a response bridge: native
 	// tool calls and results remain the ordinary Core/Broker transport protocol.
-	return f.makeCoreWithAssembler(p, mandate, behavior76Assembler{base: prompt.NewAssembler()})
+	return f.makeCoreWithAssembler(p, mandate, behavior76Assembler{base: prompt.NewAssembler()}, tasks...)
 }
 
 func behavior76NativeFactory(t *testing.T, journal *pgxpool.Pool, f *behavior76Fixture, window, slot string, sealed *atomic.Bool) transport.ModelProvider {

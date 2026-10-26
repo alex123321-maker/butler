@@ -1,5 +1,38 @@
 # Butler — Run Lifecycle Specification
 
+## Joining supervision before terminal task mutation
+
+Once no model/tool work remains, Core joins the current run's lease/authority
+supervisor before SaveRunOutcome can block/revise its task, before an explicit
+terminal BlockRun, and immediately before the atomic final Completion.Save.
+This prevents its own terminal mutation from looking like external revocation.
+The private per-run join request does not cancel the execution context: terminal
+writes retain the original deadline, ownership token and current database fences.
+No Background/WithoutCancel context, new authority or deadline is introduced.
+
+An in-flight lease/task observation finishes under the existing 750ms bound and
+retains every genuine failure even after a join request. Such a failure still
+cancels the provider and remains on the original context; joining never filters
+ErrConflict, unavailable, timeout or stale results. Ordinary final cleanup still
+cancels the context, joins the supervisor and releases the lease. Recovery uses
+the same run-scoped control. Joining permits no model retry or further tool work.
+
+Terminal write errors are never only warnings. Failed working/transient outcome
+writes and failed run transitions retain the preceding execution error plus a
+fixed terminal persistence label; block failures propagate through execution,
+budget stop, communication and recovery. Trusted error inspection retains the
+actual underlying cause. Logs and durable outward error text omit raw storage
+diagnostics. An unsuccessful terminal write cannot become a bare provider error
+or a nil-error blocked result and cannot qualify for research-local exemption.
+
+The issue76 public diagnostic independently reproduced the prior interleaving:
+real SaveRunOutcome committed blocked/revision+1 while its watcher still read
+active authority, causing ErrConflict and provider cancellation. Its archived
+baseline remains a reproduced defect, not an acceptance pass or a reclassified
+closed native result. The prospective experiment requires new final gates.
+
+## Research protocol boundaries
+
 The prospective [issue76 v9 protocol](../testing/issue76-local-http-protocol.md)
 extends only the research-local whole-fixture stop union with an exact live-
 context, no-response, recognized socket/EOF failure. All timeouts and authority,

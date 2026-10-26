@@ -1494,4 +1494,17 @@ The prospective fixture-local study uses the pinned, research-only
 Its isolated5.8.0 module copy adds only the upstream missing callback; ordinary
 dependencies, the shared cache, SQL errors and750ms authority bound are unchanged.
 
-The prospective [issue76 response-failure study](../../docs/testing/issue76-local-response-protocol.md) adds an explicitly constructed fixture-only stop after exact adapter response rejection. Partial text and nullable expense remain evidence; product behavior and closed windows are unchanged.
+The prospective [issue76 response-failure study](../../docs/testing/issue76-local-response-protocol.md) adds an explicitly constructed fixture-only stop after exact adapter response rejection. Partial text and nullable expense remain evidence; candidate activation and closed windows are unchanged.
+
+Core now joins its run-scoped lease/authority supervisor before terminal task
+mutation and atomic final persistence, while keeping the original execution
+context and database fences live. In-flight checks retain real failures; normal
+cleanup still cancels and releases the lease. This prevents a failed attempt's
+own task block/revision from triggering a second false provider cancellation.
+The actual PostgreSQL diagnostic and final regression are separate from model
+quality and deployment evidence. See the run lifecycle's terminal supervision
+contract.
+
+Terminal persistence failures propagate with fixed safe stage labels and retain
+the preceding/underlying causes for trusted inspection. Failed outcome, block
+or run-transition writes cannot be mistaken for an isolated provider failure.

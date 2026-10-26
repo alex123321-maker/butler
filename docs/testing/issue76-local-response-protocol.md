@@ -3,7 +3,17 @@
 Protocol v10 is a separate study under the owner's 2026-10-26 decision to
 isolate response-format and response-finish failures. It adds to v9; all closed
 windows retain their original source, failures, denominators and expense.
-This document neither admits native inference nor enables a product change.
+This document neither admits native inference nor authorizes deployment.
+
+Before source/scorer freeze, the first public v10 gate exposed a common Core
+terminal-supervision race. An independent actual-Store diagnostic reproduced
+own task block/revision causing watcher ErrConflict and provider cancellation.
+The original gate retains its unavailable warning and FAIL; its exact unlogged
+subtype is not retrospectively invented. Core now joins supervision before own
+terminal task mutation/final persistence, without cancelling the original write
+context or suppressing in-flight failures. The 750ms check, write fences and all
+other limits remain. Final independent regression/Public gates are required;
+no old native outcome is waived. See the run lifecycle contract.
 
 Trusted construction uses fixture-local-response-v10, index
 behavior76-checker-index-v5-local-response-tail and manifest

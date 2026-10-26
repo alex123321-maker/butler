@@ -25,7 +25,9 @@ func (s *Service) failedCommunicationCorrection(ctx context.Context, current *se
 		return nil, err
 	}
 	if decision == "failed" {
-		s.blockTaskRun(ctx, current.GetRunId(), "communication_result_missing")
+		if blockErr := s.blockTaskRun(ctx, current.GetRunId(), "communication_result_missing"); blockErr != nil {
+			return nil, blockErr.withPreceding(cause)
+		}
 		return &ExecutionResult{RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "communication_result_missing"}, nil
 	}
 	// A result may have been published before a broken terminal stream. Keep

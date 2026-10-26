@@ -406,12 +406,19 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 func (f *behavior76Fixture) makeCore(provider transport.ModelProvider, mandate string) *flow.Service {
 	return f.makeCoreWithAssembler(provider, mandate, prompt.NewAssembler())
 }
-func (f *behavior76Fixture) makeCoreWithAssembler(provider transport.ModelProvider, mandate string, assembler flow.PromptAssembler) *flow.Service {
+func (f *behavior76Fixture) makeCoreWithAssembler(provider transport.ModelProvider, mandate string, assembler flow.PromptAssembler, overrides ...task.Manager) *flow.Service {
+	var tasks task.Manager = newBehavior76PreparedTasks(f)
+	if len(overrides) > 1 || (len(overrides) == 1 && overrides[0] == nil) {
+		f.t.Fatal("one explicit nonnil public task wrapper required")
+	}
+	if len(overrides) == 1 {
+		tasks = overrides[0]
+	}
 	results := completion.New(f.pool)
 	results.DataGuard = f.sources.CheckRunSourcesTx
 	return flow.NewService(session.NewPostgresRepository(f.pool), f.leases, run.NewService(run.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), provider, flow.Config{
 		ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel, OwnerID: "behavior76-worker", LeaseTTL: 60,
-		AutonomyMode: 3, ActionMandateID: mandate, Tasks: newBehavior76PreparedTasks(f), Checkpoints: input.NewStore(f.pool), Budgets: f.budgets, Completion: results,
+		AutonomyMode: 3, ActionMandateID: mandate, Tasks: tasks, Checkpoints: input.NewStore(f.pool), Budgets: f.budgets, Completion: results,
 		MemorySources: f.sources, Tools: f.broker, ToolCatalog: f.broker, ActionAuthorizer: discoveryBrokerDiagnostics{BrokerClient: f.broker, t: f.t},
 		ProfileStore: profileStoreAdapter{store: f.profiles, sources: f.sources}, PromptManager: prompt.NewStaticManager(), PromptAssembler: assembler,
 		SemanticSearchEnabled: true, SemanticMemory: behavior76Documents{f: f},
