@@ -1,5 +1,14 @@
 # Antigravity native transport
 
+Rejected native streams now retain a fixed content-free local branch reason via
+`transport.DiagnosticReason`. Exact adapter-owned literals distinguish malformed
+JSON/envelopes, content, candidates, usage and terminal failures. This changes
+diagnostics only: no retry, parser relaxation, new inference or historical
+backfill. A branch does not establish adapter-versus-upstream responsibility.
+Offline `TestStreamRejectionsExportOnlyLocalBranch` and
+`TestStreamDiagnosticFailureNeverRetriesOrPublishesOutcome` cover rejection,
+privacy and the unchanged one-request failure behavior.
+
 The isolated [issue97 research command](../../../cmd/effort-eval/README.md)
 qualifies explicit Flash Low/High on the same paid discovered Cloud Code route.
 Trusted `ThinkingLevel=LOW/HIGH` is paired with its exact configured profile;

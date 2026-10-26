@@ -368,7 +368,7 @@ func matchesReference(state *runState, ref *transport.ProviderSessionRef) bool {
 	return ref == nil || (ref.ProviderName == Name && ref.SessionRef == state.ref.SessionRef && ref.ResponseRef == "")
 }
 func protocolError(message string) error {
-	return providerError(transport.ErrorTypeProviderProtocolError, message)
+	return &transport.Error{Type: transport.ErrorTypeProviderProtocolError, ProviderName: Name, Message: message, SafeReason: streamDiagnosticReason(message), Retryable: false}
 }
 func providerError(kind transport.ErrorType, message string) error {
 	return &transport.Error{Type: kind, ProviderName: Name, Message: message, Retryable: false}

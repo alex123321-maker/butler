@@ -133,6 +133,16 @@ it does not establish which account/project/request precondition failed.
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
 
+Native SSE failures additionally project exact transport-owned rejection literals
+onto fixed `stream_*` reasons (JSON/envelope, usage ambiguity/invalidity/conflict,
+model version, candidate shape/order, finish, automatic execution, content parts,
+thoughts, function ambiguity/truncation, missing content/terminal, frame limit,
+empty answer), plus `http_non_sse_response`. These identify the local rejecting
+branch; they do not attribute a fault to upstream or the adapter. No wire text,
+reader error, field name or arbitrary message is exported. Error type, retry,
+usage retention, bounds and admission remain unchanged. Historical unknown
+reasons are never backfilled from later diagnostics.
+
 Native memory-eval on laba follows the established private antigravity-proxy route
 and bypasses loopback/own PostgreSQL/local-models. New operator pins require this
 route; actual Docker environment is reduced to proxy/bypass booleans checked
