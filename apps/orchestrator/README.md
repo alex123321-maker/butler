@@ -29,6 +29,15 @@ the existing PC default HTTPS route is used. Legacy lab execution retains its
 original exact loopback-relay requirement. No provider endpoint/model or parser
 changes are introduced by this harness-only distinction.
 
+The separate closed-local history profile now recomputes the failed local
+issue115 cohort from its original157 raw files and recursively retained213-entry
+predecessor. It preserves232 native admissions/one unknown and233 product rows/
+two NULL observations. Local opaque auth return never satisfies the legacy
+lab-main return contract. Independently decoded nested lineage compares by all
+values, including its retained predecessor. This is offline accounting, without
+new permission or native admission; see
+[closed local history evidence](../../docs/testing/issue115-closed-local-history.md).
+
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
 Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts

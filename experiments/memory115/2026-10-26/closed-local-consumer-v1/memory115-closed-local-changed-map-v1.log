@@ -1,0 +1,17 @@
+Changed files:
+- apps/orchestrator/internal/app/memory_closed_experience_native_history_test.go
+- apps/orchestrator/internal/app/memory_experience_native_entry_test.go
+- apps/orchestrator/internal/app/memory115_closed_local_native_history_test.go
+- apps/orchestrator/README.md
+- docs/testing/issue115-closed-local-history.md
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/episodic-experience.md
+- docs/architecture/background-memory-jobs.md
+- docs/architecture/versioned-memory-sources.md
+
+Suggested verification:
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...
+- SSH laba: scripts/dev/memory-experience-lab.sh isolated issue90 root fresh-label terminal; real PG/race, ordinary stopped original through actual Broker/runtimes, owner-only one-use note policy, currentness/tombstones/writer fencing and ordered migrations. No native inference or skipped mandatory tests.
+- SSH laba: scripts/dev/memory-experience-backup-lab.sh isolated issue90 root fresh-label terminal; actual dump BEFORE deletion, fresh restore and newest external anchor, unknown outcome/provenance/accounting retained. Native A/B/C remains a separate frozen complete-cost quality gate.

@@ -1,0 +1,15 @@
+{
+  "version": "issue115-local-closed-wrapper-construction-v1",
+  "created_utc": "2026-10-26T22:01:34.0769253+00:00",
+  "status": "WRAPPER_PREPARED_NOT_YET_CONSUMER_VALIDATED",
+  "manifest_sha256": "1a8754c08fc724a1a3c8c3c657bc390aa7060bb446748de959eb461248656911",
+  "original_raw_files": 157,
+  "original_prior_files": 277,
+  "original_raw_archive_unchanged": true,
+  "original_preseal_unchanged": true,
+  "new_usage_claims_require_independent_recomputation": true,
+  "new_native_admissions": 0,
+  "auth_access": 0,
+  "Go_PG_models": 0,
+  "release_qualified": false
+}

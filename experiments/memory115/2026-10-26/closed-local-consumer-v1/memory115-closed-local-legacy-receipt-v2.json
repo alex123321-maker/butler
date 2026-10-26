@@ -1,0 +1,31 @@
+{
+  "auth_sources_constructed": 0,
+  "closed_leaf_sha256": "8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f",
+  "historical_carry": {
+    "model_turns": 213,
+    "tokens": 230326272,
+    "cost_micros": 0,
+    "external_calls": 144,
+    "children": 0,
+    "active_millis": 81065000,
+    "egress_bytes": 600834048,
+    "provider_input_bytes": 1786773504
+  },
+  "historical_usage": {
+    "native_entries": 213,
+    "native_known_usage": 212,
+    "native_unknown_usage": 1,
+    "native_missing_total": 0,
+    "known_full_token_lower_bound": 1605455,
+    "product_attempts": 213,
+    "product_observed": 212,
+    "product_null": 1,
+    "product_without_native_entry": 0
+  },
+  "issue115_closed": false,
+  "new_native_admissions": 0,
+  "new_window_opened": false,
+  "release_qualified": false,
+  "result": "EXACT_CLOSED_HISTORY_CONSUMED_NOT_NATIVE_ACCEPTANCE",
+  "version": "butler115-existing-closed90-consumer-local-v1"
+}
