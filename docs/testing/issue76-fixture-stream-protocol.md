@@ -38,6 +38,36 @@ terminal index16777216 bytes. Every storage, capacity, correlation or late-event
 fault sets the shared GLOBAL stop. No event is discarded to permit continuation.
 The old flat v1 recorder and closed traces remain unchanged.
 
+Corrected v10-r3 preparation keeps those exact event/segment/byte/span/header
+bounds and the same v2 reader format. In the measured local Linux root, callback
+chunks are exclusively written, synced and closed in a code-owned unique0700
+`/tmp/behavior76-authority-spool-*` directory, with0600 files and a private fixed
+identity/destination record. No model or environment input selects that directory.
+Publication to the Windows evidence mount runs after actual quiescence, outside
+owning pgx callbacks. Every destination chunk is created exclusively, synced,
+closed and read back against its original size/SHA256 before a sealed header may
+be published. Only verified duplicate private chunks are removed, by enumerated
+nonrecursive removal; the small identity remains. All copy/readback/retirement
+failures remain GLOBAL, before the public header can become qualified.
+
+A failed quiescence publishes only the exact unsealed persisted prefix and
+retains its private chunks, identity and exact unflushed tail/header. It does not
+flush or qualify the tail, infer completeness, or permit another admission.
+Partial duplicate retirement retains verified destination originals plus private
+unsealed metadata; no cross-filesystem rename or replay is used. Header/export
+failure remains NO_GO even when individual copied chunks are intact. Private
+storage and retained failure prefixes remain subject to the real filesystem
+capacity and existing GLOBAL storage-failure policy; no capacity is raised.
+Native admission also observes `/tmp` with actual filesystem/type/device/free
+space and requires ext4 on the same private loop device as PGDATA, with the
+unchanged1GiB minimum free. The ordinary storage gate observes its actual created
+spool path. Failed closeout closes a separate recording latch under the trace
+mutex; subsequent callbacks become GLOBAL/drop faults and cannot append an
+invisible private chunk or upgrade the frozen unsealed prefix.
+Synchronous local gzip/Sync can still take time. The prior802ms authority failure
+is not retrospectively explained as a proven sole storage cause. Ordinary
+storage/closeout, actual fixture/export/resource and Public gates are required.
+
 The small `authority-trace.json` contains exact identity, ordered segment
 descriptors, counters and tail; it has no legacy events array. A healthy index
 is sealed only after actual fixture worker, Broker, recipient, backend and lease

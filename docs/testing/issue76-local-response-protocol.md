@@ -5,6 +5,24 @@ isolate response-format and response-finish failures. It adds to v9; all closed
 windows retain their original source, failures, denominators and expense.
 This document neither admits native inference nor authorizes deployment.
 
+V10-r2 is now CLOSED GLOBAL FAIL/NO_GO. It admitted51 actual requests, measured49
+and retained322326 known full tokens plus2NULL usage rows. The lease authority
+observation reached802ms against750ms; the exact delay cause remains unresolved.
+A synchronous observer chunk boundary supports a storage/mutex interference
+hypothesis, not a proven provider failure.20owner slots were observed across11
+started arms;76of96 opportunities remain unobserved. All822 raw files remain.
+Inclusive history is11closed/774admissions/762measured/5948714known full tokens/
+12NULL. No source, result, uncertainty or expense from that window is rewritten.
+
+The separate v10-r3 preparation changes only research observer storage and
+prospective history/control bindings. It preserves v10 response/stop semantics,
+candidate,27criterion AST extents, thresholds,4096-event buffering and all limits.
+The streamed protocol describes durable private local chunk spooling followed by
+exclusive verified evidence publication outside owning callbacks. Actual private
+spool failures and failed/unsealed closeout stay GLOBAL. A separate source freeze,
+fresh independent controls and all actual gates are required before any new
+window; closed r2 controls cannot be reused.
+
 The first v10 source freeze/control corpus is CLOSED before native admission:
 setup passed, composition completed 47 arms and counted 95 of 96 planned owner
 turns, then failed at fixture admission. Its original unlogged low-level cause

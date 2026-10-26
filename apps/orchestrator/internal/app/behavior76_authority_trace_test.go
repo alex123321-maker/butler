@@ -216,6 +216,10 @@ func (o *behavior76AuthorityTrace) TraceAcquireEnd(ctx context.Context, pool *pg
 func (o *behavior76AuthorityTrace) snapshot() behavior76AuthorityTraceSnapshot {
 	o.mu.Lock()
 	defer o.mu.Unlock()
+	return o.snapshotLocked()
+}
+
+func (o *behavior76AuthorityTrace) snapshotLocked() behavior76AuthorityTraceSnapshot {
 	events := append([]behavior76AuthorityTraceEvent{}, o.events...)
 	for i := range events {
 		if events[i].Deadline != nil {

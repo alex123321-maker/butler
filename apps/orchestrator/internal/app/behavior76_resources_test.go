@@ -51,7 +51,38 @@ func behavior76LocalResources(ctx context.Context, pool *pgxpool.Pool) (map[stri
 	if capacity < 3*1024*1024 || available < 1024*1024 {
 		return nil, errors.New("prospective local disk capacity unavailable")
 	}
-	return map[string]any{"version": "behavior76-persistent-local-resources-v1", "endpoint": "127.0.0.1:55451/behavior76_test", "data_directory": dataDirectory, "server_version": version, "max_wal_size": maximum, "min_wal_size": minimum, "shared_buffers": buffers, "fsync": fsync, "jit_available": jit, "disk_device": fields[0], "disk_capacity_kib": capacity, "disk_available_kib": available, "minimum_available_kib": 1024 * 1024, "authority_total_connections": 10, "authority_reserved_connections": 1, "watchdog_millis": 750}, nil
+	spool, err := behavior76SpoolFilesystem(ctx, "/tmp")
+	if err != nil || spool["device"] != fields[0] {
+		return nil, errors.New("private spool must use the measured local PostgreSQL root filesystem")
+	}
+	return map[string]any{"version": "behavior76-persistent-local-resources-v1", "endpoint": "127.0.0.1:55451/behavior76_test", "data_directory": dataDirectory, "server_version": version, "max_wal_size": maximum, "min_wal_size": minimum, "shared_buffers": buffers, "fsync": fsync, "jit_available": jit, "disk_device": fields[0], "disk_capacity_kib": capacity, "disk_available_kib": available, "minimum_available_kib": 1024 * 1024, "authority_total_connections": 10, "authority_reserved_connections": 1, "watchdog_millis": 750, "observer_spool_filesystem": spool}, nil
+}
+
+// Observe the actual path's filesystem, not an assumption from GOOS or its name.
+// Native admission and the ordinary storage profile require the same local ext4
+// device as PGDATA. There is no fallback to the Windows publication filesystem.
+func behavior76SpoolFilesystem(ctx context.Context, path string) (map[string]any, error) {
+	if path != "/tmp" && !strings.HasPrefix(path, "/tmp/behavior76-authority-spool-") {
+		return nil, errors.New("code-owned local spool path required")
+	}
+	raw, err := exec.CommandContext(ctx, "/bin/df", "-PkT", path).Output()
+	if err != nil {
+		return nil, errors.New("actual spool filesystem observation unavailable")
+	}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if len(lines) != 2 {
+		return nil, errors.New("actual spool filesystem observation malformed")
+	}
+	fields := strings.Fields(lines[1])
+	if len(fields) != 7 || !strings.HasPrefix(fields[0], "/dev/loop") || fields[1] != "ext4" {
+		return nil, errors.New("actual private ext4 loop filesystem required")
+	}
+	capacity, capacityErr := strconv.ParseInt(fields[2], 10, 64)
+	available, availableErr := strconv.ParseInt(fields[4], 10, 64)
+	if capacityErr != nil || availableErr != nil || capacity < 3*1024*1024 || available < 1024*1024 {
+		return nil, errors.New("original private spool disk capacity unavailable")
+	}
+	return map[string]any{"root": "/tmp", "device": fields[0], "filesystem": fields[1], "capacity_kib": capacity, "available_kib": available, "minimum_available_kib": 1024 * 1024, "publication_inside_callback": false}, nil
 }
 
 func TestBehavior76LocalUnknownResourceProfileIntegration(t *testing.T) {

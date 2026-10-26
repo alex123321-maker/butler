@@ -45,12 +45,16 @@ type behavior76StreamSegment struct {
 }
 
 type behavior76AuthorityStream struct {
-	directory  string
-	identity   behavior76StreamIdentity
-	global     *atomic.Bool
-	segments   []behavior76StreamSegment
-	compressed int64
-	sealed     bool
+	directory       string
+	destination     string
+	published       int
+	retired         bool
+	recordingClosed bool
+	identity        behavior76StreamIdentity
+	global          *atomic.Bool
+	segments        []behavior76StreamSegment
+	compressed      int64
+	sealed          bool
 }
 
 type behavior76AuthorityStreamSnapshot struct {
@@ -98,7 +102,12 @@ func (o *behavior76AuthorityTrace) enableStream(directory string, binding behavi
 	if err = marker.Close(); err != nil {
 		return err
 	}
-	o.stream = &behavior76AuthorityStream{directory: directory, identity: behavior76StreamIdentity{binding.Window, binding.Arm, binding.Schema, binding.Producer, binding.ProtocolSHA256}, global: global, segments: []behavior76StreamSegment{}}
+	identity := behavior76StreamIdentity{binding.Window, binding.Arm, binding.Schema, binding.Producer, binding.ProtocolSHA256}
+	spool, err := behavior76NewPrivateStreamSpool(directory, identity)
+	if err != nil {
+		return err
+	}
+	o.stream = &behavior76AuthorityStream{directory: spool, destination: directory, identity: identity, global: global, segments: []behavior76StreamSegment{}}
 	return nil
 }
 
@@ -111,7 +120,7 @@ func (o *behavior76AuthorityTrace) failStreamLocked(category string) {
 }
 
 func (o *behavior76AuthorityTrace) appendStreamLocked(event behavior76AuthorityTraceEvent) {
-	if o.stream.sealed || o.observerFailed || o.openSpans > behavior76StreamOpen {
+	if o.stream.sealed || o.stream.recordingClosed || o.observerFailed || o.openSpans > behavior76StreamOpen {
 		o.dropped++
 		o.failStreamLocked("closed_failed_or_open_span_bound")
 		return
@@ -124,8 +133,9 @@ func (o *behavior76AuthorityTrace) appendStreamLocked(event behavior76AuthorityT
 	}
 }
 
-// Bounded synchronous batches retain every actual event. No callback is
-// invented, no error is suppressed and no SQL or deadline is changed.
+// Bounded synchronous batches retain every actual event in the private local
+// spool. Cross-filesystem publication does not run inside a pgx callback.
+// No callback/error is invented or suppressed; SQL and deadlines are unchanged.
 func (o *behavior76AuthorityTrace) flushStreamLocked() error {
 	if len(o.events) == 0 {
 		return nil
@@ -187,13 +197,24 @@ func (o *behavior76AuthorityTrace) streamSnapshotLocked(tail []behavior76Authori
 // A failed or late observer remains a shared GLOBAL fault, including after seal.
 func (o *behavior76AuthorityTrace) sealStream() behavior76AuthorityTraceSnapshot {
 	o.mu.Lock()
+	defer o.mu.Unlock()
 	if o.stream != nil && !o.stream.sealed {
-		if o.openSpans != 0 || o.observerFailed || o.dropped != 0 {
+		alreadyClosed := o.stream.recordingClosed
+		o.stream.recordingClosed = true
+		if alreadyClosed || o.stream.global.Load() || o.openSpans != 0 || o.observerFailed || o.dropped != 0 {
 			o.failStreamLocked("unsettled_seal")
 		} else if err := o.flushStreamLocked(); err != nil {
 			o.failStreamLocked("final_segment_write_or_capacity")
-		} else {
-			o.stream.sealed = true
+		}
+		if err := o.publishStreamLocked(); err != nil {
+			o.failStreamLocked("segment_publication_or_readback")
+		}
+		if !o.observerFailed && o.openSpans == 0 && o.dropped == 0 {
+			if err := o.retireStreamSpoolLocked(); err != nil {
+				o.failStreamLocked("private_spool_retirement")
+			} else {
+				o.stream.sealed = true
+			}
 		}
 		index := o.streamSnapshotLocked(append([]behavior76AuthorityTraceEvent{}, o.events...))
 		encoded, err := json.MarshalIndent(index, "", "  ")
@@ -201,9 +222,11 @@ func (o *behavior76AuthorityTrace) sealStream() behavior76AuthorityTraceSnapshot
 			o.failStreamLocked("terminal_header_bound")
 			o.stream.sealed = false
 		}
+		if !o.stream.sealed {
+			o.retainUnsealedStreamLocked()
+		}
 	}
-	o.mu.Unlock()
-	return o.snapshot()
+	return o.snapshotLocked()
 }
 
 func behavior76PublicStreamBinding() behavior76ScopeBinding {
@@ -330,7 +353,7 @@ func TestBehavior76AuthorityStreamBeyondLegacyCapacity(t *testing.T) {
 }
 
 func TestBehavior76AuthorityStreamWriteFailureAndLateEventStop(t *testing.T) {
-	for _, kind := range []string{"create_new_collision", "late_after_seal"} {
+	for _, kind := range []string{"create_new_collision", "late_after_seal", "late_after_unsealed_close"} {
 		t.Run(kind, func(t *testing.T) {
 			directory := t.TempDir()
 			var global atomic.Bool
@@ -354,11 +377,30 @@ func TestBehavior76AuthorityStreamWriteFailureAndLateEventStop(t *testing.T) {
 					t.Fatal("existing evidence overwritten", err)
 				}
 			} else {
-				if result := trace.sealStream(); !result.stream.Sealed || result.Failed {
+				var retained string
+				if kind == "late_after_unsealed_close" {
+					result := trace.unsealedStreamEvidence()
+					if result.stream.Sealed || result.Failed || !trace.stream.recordingClosed {
+						t.Fatal("unqualified prefix was not terminally closed")
+					}
+					body, err := os.ReadFile(filepath.Join(trace.stream.directory, "unsealed-authority-trace.json"))
+					if err != nil {
+						t.Fatal("exact private prefix unavailable")
+					}
+					retained = behavior76Hash(body)
+				} else if result := trace.sealStream(); !result.stream.Sealed || result.Failed {
 					t.Fatal("healthy seal failed")
 				}
+				before := trace.snapshot()
 				late := trace.start(context.Background(), "query", "other_query", "", nil)
 				trace.end(context.Background(), late, "query", nil, nil)
+				if kind == "late_after_unsealed_close" {
+					after := trace.snapshot()
+					body, err := os.ReadFile(filepath.Join(trace.stream.directory, "unsealed-authority-trace.json"))
+					if err != nil || behavior76Hash(body) != retained || len(after.Events) != len(before.Events) || len(after.stream.Segments) != len(before.stream.Segments) || after.Dropped != before.Dropped+2 || !after.Failed {
+						t.Fatal("late callback rewrote the frozen prefix or escaped the global fault")
+					}
+				}
 			}
 			if !global.Load() || !trace.failed() {
 				t.Fatal("observer fault did not seal shared GLOBAL")

@@ -33,6 +33,15 @@ closed native result. The prospective experiment requires new final gates.
 
 ## Research protocol boundaries
 
+Corrected issue76 v10-r3 research observation persists its existing bounded
+metadata chunks in the measured private local Linux spool. Windows artifact
+publication and exact readback happen outside owning pgx callbacks, after actual
+quiescence. Failed closeout retains an explicitly unsealed prefix/tail and denies
+new admission. Copy, readback, retirement, capacity and late-observer failures stay
+GLOBAL;750ms,9+1, ordinary source/authority guards and production behavior do not
+change. See the streamed-fixture protocol. The closed r2 delay's sole cause is
+unproven; this prospective change grants no retry or new native admission.
+
 The prospective [issue76 v9 protocol](../testing/issue76-local-http-protocol.md)
 extends only the research-local whole-fixture stop union with an exact live-
 context, no-response, recognized socket/EOF failure. All timeouts and authority,

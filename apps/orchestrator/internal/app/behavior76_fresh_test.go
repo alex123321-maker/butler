@@ -121,6 +121,13 @@ func TestBehavior76FreshHistoryBoundaryIntegration(t *testing.T) {
 		historyPath = "/src20/.cache/behavior76/native-local-http-v9/behavior76_attempts.jsonl"
 		expected = 723
 	}
+	if _, e := os.Stat("/src20/.cache/behavior76/native-local-response-v10-r2/behavior76_attempts.jsonl"); e == nil {
+		if _, e = behavior76ClosedResponseHistory(ctx, tx, "/src20/.cache/behavior76"); e != nil {
+			t.Fatal(e)
+		}
+		historyPath = "/src20/.cache/behavior76/native-local-response-v10-r2/behavior76_attempts.jsonl"
+		expected = 774
+	}
 	body, err := os.ReadFile(historyPath)
 	if err != nil {
 		t.Fatal("sealed history required")
@@ -189,9 +196,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			version, prefix = "behavior76-fixture-stream-v5", "issue76-fixture-stream-"
 			if dayFit {
 				stimuliSHA, expectationsSHA = behavior76DayStimuliSHA, behavior76DayExpectationsSHA
-				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 10, 723, 713, 5626388, 10
-				priorDirectory = "native-local-http-v9"
+				priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 11, 774, 762, 5948714, 12
+				priorDirectory = "native-local-response-v10-r2"
 				version, prefix = "behavior76-fixture-local-response-v10", "issue76-fixture-day-"
+				if stimuliSHA == "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4" || expectationsSHA == "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642" {
+					t.Fatal("closed v10-r2 controls cannot be reused")
+				}
 				if stimuliSHA == "bb40fdc7ca4c22c15230364445d0c1e74384392cc9d55ab53ea8aa42a32e5686" || expectationsSHA == "fc202c9b27a025344156273c73ba2bb86c62d1ffed593f18c928668c8abd2c15" {
 					t.Fatal("closed v9 controls cannot be reused")
 				}
@@ -403,6 +413,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal(e)
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T092444", "admitted": 16, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		body, e = behavior76ClosedResponseHistory(ctx, transaction, root)
+		if e != nil {
+			t.Fatal(e)
+		}
+		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T181012", "admitted": 51, "closed": true, "manifest_sha256": behavior76Hash(body)})
 		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
 			t.Fatal("owning database day unavailable")
 		}

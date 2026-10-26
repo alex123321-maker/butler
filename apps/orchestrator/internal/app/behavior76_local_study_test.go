@@ -34,6 +34,8 @@ func (f *behavior76Fixture) sealFixtureEvidence(dir string) {
 		trace := f.authorityTrace.snapshot()
 		if f.authorityTrace.stream != nil && f.streamQuiescent {
 			trace = f.authorityTrace.sealStream()
+		} else if f.authorityTrace.stream != nil {
+			trace = f.authorityTrace.unsealedStreamEvidence()
 		}
 		behavior76Write(f.t, filepath.Join(dir, "authority-trace.json"), trace)
 	}

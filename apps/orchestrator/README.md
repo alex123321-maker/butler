@@ -1,3 +1,12 @@
+Corrected issue76 v10-r3 preparation keeps research metadata chunk Sync on the
+private local Linux filesystem and copies verified chunks to Windows evidence
+only outside owning callbacks. Qualified headers follow actual quiescence and
+exclusive copy/readback; failed prefixes/tails remain unsealed and retained.
+Storage/observer failures remain global with the same750ms and9+1 bounds. This
+is research-only and requires fresh gates; it does not qualify the closed r2
+authority timeout or enable a candidate. See the
+[streamed protocol](../../docs/testing/issue76-fixture-stream-protocol.md).
+
 The prospective [issue76 v9 study](../../docs/testing/issue76-local-http-protocol.md)
 adds one exact adapter-owned no-response socket/EOF failure to the whole-fixture
 research stop union. All timeouts/auth/source/authority/storage failures remain
