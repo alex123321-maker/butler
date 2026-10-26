@@ -1,0 +1,18 @@
+{
+  "version": "issue29-local-arc-probe-process-v1",
+  "started_utc": "2026-10-26T22:22:07.6973746+00:00",
+  "finished_utc": "2026-10-26T22:22:12.8244599+00:00",
+  "producer": "9395e2269d83b28d463a764442bf5820bb1458a0",
+  "script_sha256": "897efe03e85449ac03ae49ddf52e93536ada6a959fd981200d97a7577c4cb195",
+  "sdk_install_report_sha256": "3dfba96a07d8b46b78969a2ce3d57c3eb871f865ad5211ae6b41c41012861d26",
+  "exit_code": 0,
+  "stopped_at_bound": false,
+  "sampled_peak_RSS_bytes": 4358144,
+  "RSS_sampling_millis": 250,
+  "deadline_seconds": 120,
+  "hard_memory_limit_enforced": false,
+  "model_loads": 0,
+  "microphone_capture": false,
+  "resource_admission_qualified": false,
+  "voice_service_changed": false
+}

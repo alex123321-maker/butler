@@ -1,8 +1,18 @@
 # Issue29: local Intel Arc feasibility probe
 
-Prepared only on2026-10-26. No SDK installation, model download, tensor inference,
-microphone capture or service modification has occurred. Run only after the
-current issue76 measurement window closes, with other heavy jobs stopped.
+Prepared and executed on2026-10-26 after the issue76 measurement window closed.
+The repository-local SDK installation and fixed tensor probe passed. No model
+download, microphone capture or service modification occurred.
+
+The retained [hardware result](../../experiments/voice29/2026-10-26/arc-hardware-v1/stdout.json)
+reports Intel Arc, torch2.10.0+xpu and an exact BF16 matrix result in264ms.
+The process exited0 within the120-second deadline. Reported device capacity
+17,612,996,608bytes and Torch reserved peak2,097,152bytes are SDK observations,
+not an available model budget or a simultaneous-workload measurement. The
+250ms sampled process RSS also cannot establish a peak or hard memory bound.
+NumPy is absent from this tensor-only environment; the retained SDK warning
+does not change the exact tensor result and does not prove ASR compatibility.
+The complete official installation report pins all30 resolved packages.
 
 This PC reports Core Ultra9 185H / Intel Arc, driver32.0.101.8132. WMI's AdapterRAM
 is not a measured usable accelerator budget. The existing pinned voice worker

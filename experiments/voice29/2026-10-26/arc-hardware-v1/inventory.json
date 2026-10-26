@@ -1,0 +1,32 @@
+[
+  {
+    "file": "prepare-sdk-v1.ps1",
+    "bytes": 4029,
+    "sha256": "ac5ab6aa9c1b58044ec9904643605ad288a09351d59515658fe7224cbbc34b7a"
+  },
+  {
+    "file": "process.json",
+    "bytes": 730,
+    "sha256": "a9082379023943b1ea7010a8f908bb039b068980525c105cf845f4f7a9a9d773"
+  },
+  {
+    "file": "sdk-install-report-v1.json",
+    "bytes": 144857,
+    "sha256": "3dfba96a07d8b46b78969a2ce3d57c3eb871f865ad5211ae6b41c41012861d26"
+  },
+  {
+    "file": "sdk-preparation-receipt-v1.json",
+    "bytes": 607,
+    "sha256": "a81edda1198f1a083fbd4f2a8b876d525131887955fcac9952d787b3dc52787d"
+  },
+  {
+    "file": "stderr.log",
+    "bytes": 388,
+    "sha256": "0304e6db7957375197f6557fb9094260bdf0a19c3b24db0ef0ee3a1025617b30"
+  },
+  {
+    "file": "stdout.json",
+    "bytes": 405,
+    "sha256": "889ac07f782ca13bd9b6a8c0126d0dde98ff2e0ef4ac6281d91098fe9d50b21d"
+  }
+]
