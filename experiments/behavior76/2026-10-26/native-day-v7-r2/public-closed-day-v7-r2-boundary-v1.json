@@ -1,0 +1,167 @@
+{
+  "version": "issue76-independent-closed-day-v7-r2-boundary-v1",
+  "decision": "NO_GO_INCOMPLETE_GLOBAL",
+  "window": "issue76-fixture-day-20261026T050548",
+  "producer": "42c01c3a1912bc8ae401566ad918f3adfa4c61ba",
+  "collector_elf_sha256": "8d0b8e0a9b2368b163b844d234249636a689a22784ec8036aa0b068634def74b",
+  "raw": {
+    "parent_inventory_equals_independent_hashes": true,
+    "files": 71,
+    "independent_inventory_sha256": "99d1146cbd9e88f4e6152ac22fdc0e731669aaace3e9d1d262ca2bdd2c647a71",
+    "verified_case_files": 66,
+    "zip_all71entries_independently_byte_verified": true,
+    "readonly": 71,
+    "index_sha256": "e467938bac1941229131e7f50de9c0c8b3287e8dae2e4881f786ebba807be466",
+    "archive_sha256": "1967bb9c152f082b4825745ec7fcbe74cdcc5a6666e912a23bb3b622ec43d0ef",
+    "bytes": 10073465,
+    "manifest_sha256": "6f7cf255045c456124bc0cbd7ebc62f2c0c644a82ad0d310c2db0759f0e43e34",
+    "parent_inventory_sha256": "88a4e621879b34d6634384a7b7f70533cd47bd016d6c6451a9e9e1453c5f0938"
+  },
+  "accounting": {
+    "closed_windows": 8,
+    "sql_log_sha256": "0d16af22c77fd3dcbff494d101cde180ca0e09120a77e36a16935ae11b595e7b",
+    "v1_checker_failure_retained": "Incorrect inherited model_versionISNULL assertion; actual n3 version is observed, fixed only checkerpredicate in v2; no raw record changed",
+    "current_admissions": 3,
+    "all643JSONB_rows_equal_sealed_export": true,
+    "current_measured": 2,
+    "sql_proof": "v2PASS; temporary checker tables only and ROLLBACK; no durable data changed",
+    "expense_limit": "NULL is unavailable expense, never zero/inferred cost; provider-total tokens are not an invoice amount",
+    "current_known_provider_total_tokens": 10469,
+    "original640_exact_unchanged": true,
+    "current_null_usage": 1,
+    "all_null_usage": 8,
+    "no_entry4": true,
+    "all_admissions": 643,
+    "all_measured": 635,
+    "all_known_provider_total_tokens": 4910612
+  },
+  "coverage": {
+    "planned_paired_steps": 128,
+    "actual_owner_final_rows": 0,
+    "indexed_arms": 1,
+    "represented_families_upper_bound": 1,
+    "failed_owner_outcomes": 1,
+    "planned_families": 12,
+    "indexed_original_steps": 1,
+    "unstarted_arms": 47,
+    "actual_automatic_runs": 0,
+    "completed_owner_outcomes": 0,
+    "both_arms_complete_episode_slots": 0,
+    "no_partial_collector_or_effect_status_is_quality_PASS": true,
+    "complete": false,
+    "unindexed_owner_opportunities": 95,
+    "both_arms_indexed_episode_slots": 0,
+    "unstarted_arm_opportunities": 94,
+    "unindexed_original_steps": 127,
+    "planned_arms": 48,
+    "complete_arms": 0,
+    "missing_second_opportunity_of_started_arm": 1,
+    "indexed_owner_outcomes": 1,
+    "planned_owner_opportunities": 96,
+    "actual_automatic_finals": 0,
+    "actual_owner_inputs": 1,
+    "planned_episodes": 24
+  },
+  "last_entry": {
+    "n": 3,
+    "model_version": "gemini-3.8-flash-n",
+    "total_tokens": null,
+    "stage": "response_stream",
+    "input_tokens": null,
+    "events": [
+      {
+        "error_code": null,
+        "type": "run_started",
+        "http_status": null,
+        "safe_reason": null
+      },
+      {
+        "error_code": "provider_protocol_error",
+        "type": "transport_error",
+        "http_status": 0,
+        "safe_reason": "stream_empty_answer"
+      }
+    ],
+    "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+    "kind": "submit",
+    "thinking_tokens": null,
+    "status": "transport_error",
+    "output_tokens": null,
+    "milliseconds": 65091
+  },
+  "actual_exported_run_input_states": [
+    {
+      "error_type": null,
+      "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+      "error_code": null,
+      "table": "runs",
+      "current_state": "model_running",
+      "status": "model_running"
+    },
+    {
+      "error_type": null,
+      "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+      "error_code": "",
+      "table": "accepted_inputs",
+      "current_state": null,
+      "status": "running"
+    }
+  ],
+  "retained_effect_states_not_quality": [
+    {
+      "count": 2,
+      "state": "effect_confirmed"
+    }
+  ],
+  "primary_boundary": "Actual n3 transport_error/provider_protocol_error/stream_empty_answer triggers global stop; no later admission or arm",
+  "origin": {
+    "observed_local_rejection_branch": "No usable non-thought text and no validated function after successful readStreamProtocol",
+    "usage": "NULL retained; never reconstructed",
+    "upstream_vs_adapter_cause": "UNKNOWN",
+    "model_version": "gemini-3.8-flash-n",
+    "metadata_discard_hypothesis": "NOT_ESTABLISHED; exact code already forwards answer.Usage/ModelVersion and n3 actual version is retained",
+    "terminal_reason_and_response_shape": "NOT_RETAINED; do not infer STOP/MAX_TOKENS or thought-only/empty candidate"
+  },
+  "trace": {
+    "structural_forensic_validation": {
+      "version": "issue76-authority-stream-forensic-unsealed-v1",
+      "event_count": 35764,
+      "spans": 17882,
+      "operation_failures": 0,
+      "segments": 8,
+      "total_compressed_bytes": 1057278,
+      "peak_active_spans": 2,
+      "qualified": false,
+      "quality_assessed": false
+    },
+    "header_unsealed": true,
+    "quiescence_receipt_has_empty_schema_and_zero_time": true,
+    "recorder_capacity_or_authority_operation_failure_not_observed": true,
+    "qualification": false,
+    "quiescence_failed": true,
+    "default_zero_receipt_counts_are_not_independent_quiescence_proof": true
+  },
+  "historical_v6_and_older_dispositions_unchanged": true,
+  "new_model_native_auth_calls": 0,
+  "old_or_new_model_answer_text_read": false,
+  "goldens_read": false,
+  "mapping_read": false,
+  "quality_assessed": false,
+  "promotion_or_issue_closure": false,
+  "retry_or_new_window_authorized": false,
+  "dependencies": {
+    "audit-closed-day-v7-r2-boundary-v1.ps1": "52d020a67c5777a9e8a451988173c61dd8338b223e4c5ee22c38bf2f81e20a1f",
+    "closed-day-v7-r2-history-v1.log": "770596d4aae78bcafbec6225566e4258d599b85d646bba323a7db0ec8ca24600",
+    "public-day-v7-r2-archive-crosscheck-v1.json": "ca9dff4ad291758ef1f362d589d584008663d4f1ec1711d591034b436097e90d",
+    "closed-day-v7-r2-history-v2.log": "0d16af22c77fd3dcbff494d101cde180ca0e09120a77e36a16935ae11b595e7b",
+    "native-day-v7-r2-trace-metadata-v1.json": "fafbf64d698e277a5ddc16d590184e974ec13fe8ae82aa6f0304f9ae8f627bfb",
+    "audit-day-v7-r2-protocol-origin-v1.ps1": "b65415a015764f6d0f406651b30c210e666c4058e7c7d0c60f62343f3bb1c55a",
+    "public-closed-day-v7-r2-raw-boundary-v1.json": "fd0ccb0cfb0ca6a5bafee41ea877eea33da679ed139db712ebef24c43f984ae3",
+    "check-closed-day-v7-r2-history-v1.sql": "2144c4afc144acce5a2dd7821517fd5ac6e93389f105796a8d0deb248534c7a4",
+    "public-unsealed-day-v7-r2-forensics-v1.json": "fdef79dbf543f6944673558306fea0818857f6ab933bc2832e3a7e7d11c353d4",
+    "native-day-v7-r2-independent-raw-inventory-v1.json": "99d1146cbd9e88f4e6152ac22fdc0e731669aaace3e9d1d262ca2bdd2c647a71",
+    "audit-unsealed-day-v7-r2-v1.ps1": "5648ed6eb9181216f131a061c6b5f22e07b4f8e4005294c142b12d7de958e89f",
+    "public-day-v7-r2-protocol-origin-v1.json": "bfd723fcdf1efdb8e77d78444d00301d1a77ab38e57d7fff865e8c76a1eff732",
+    "check-closed-day-v7-r2-history-v2.sql": "99def7d5b8d5aaf47e8b20a53d0b2e53eecbd168a993b1886733ab6797e90587"
+  }
+}

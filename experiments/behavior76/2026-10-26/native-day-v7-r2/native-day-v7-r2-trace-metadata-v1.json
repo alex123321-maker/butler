@@ -1,0 +1,33 @@
+{
+  "native_calls_by_checker": 0,
+  "quality_assessed": false,
+  "traces": [
+    {
+      "header_sha256": "b4464b6e645e38feb104424a84e8ea161775d502b1d3e9a24e610e99e0d0a4b1",
+      "quiescence": {
+        "schema": "",
+        "observed_at": "0001-01-01T00:00:00Z",
+        "fixture_locally_stopped": false,
+        "broker_reaped": false,
+        "runtime_stopped": false,
+        "provider_and_recipient_in_flight": 0,
+        "live_leases": 0,
+        "live_claims": 0,
+        "broker_backends": 0,
+        "broker_application_observed_before_stop": true
+      },
+      "last_sequence": 35764,
+      "open_spans": 0,
+      "dropped_events": 0,
+      "sealed": false,
+      "segments": 8,
+      "event_count": 35764,
+      "validation": null,
+      "arm": "slot-01/arm-79c3ddb5b24620dbd2c848a3645d9bba",
+      "tail_events": 2996,
+      "observer_failed": false,
+      "operation_failures": 0
+    }
+  ],
+  "version": "issue76-closed-stream-trace-metadata-v1"
+}

@@ -1,0 +1,15 @@
+{
+  "version": "issue76-native-day-v7-r2-raw-seal-v1",
+  "window": "issue76-fixture-day-20261026T050548",
+  "producer": "42c01c3a1912bc8ae401566ad918f3adfa4c61ba",
+  "files": 71,
+  "bytes": 10073465.0,
+  "inventory_sha256": "88a4e621879b34d6634384a7b7f70533cd47bd016d6c6451a9e9e1453c5f0938",
+  "archive_sha256": "1967bb9c152f082b4825745ec7fcbe74cdcc5a6666e912a23bb3b622ec43d0ef",
+  "every_archive_entry_byte_verified": true,
+  "all_windows_files_read_only": true,
+  "quality_scored": false,
+  "mapping_opened": false,
+  "goldens_opened": false,
+  "result": "CLOSED_GLOBAL_PROTOCOL_FAILURE_NOT_QUALIFIED"
+}
