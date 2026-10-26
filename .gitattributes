@@ -21,3 +21,7 @@
 # Exact synthetic acceptance evidence retains the producer's original bytes.
 /experiments/converter20/** -text whitespace=cr-at-eol
 /experiments/converter20/**/*.log -whitespace
+
+# Byte-pinned local memory evidence must survive Git checkout unchanged.
+/experiments/memory115/** -text whitespace=cr-at-eol
+/experiments/memory115/**/*.log -whitespace
