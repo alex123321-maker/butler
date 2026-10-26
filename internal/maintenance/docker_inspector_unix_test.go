@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -76,4 +77,23 @@ func TestDockerInspectorFixedLocalSocket(t *testing.T) {
 	if _, err = inspector.Inspect(ctx); err == nil {
 		t.Fatal("cancelled inspection accepted")
 	}
+}
+
+func TestDockerInspectorOwnedDaemonIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_TEST_MAINTENANCE_DOCKER") != "private-local-inspection-only" {
+		t.Skip("explicit owned daemon/fixture required")
+	}
+	expected := os.Getenv("BUTLER_TEST_MAINTENANCE_DOCKER_IMAGE")
+	if !validDigest(expected) {
+		t.Fatal("exact owned image identity required")
+	}
+	inspector, err := NewDockerInspector("/run/butler21-docker.sock", "butler21-runtime-smoke-v3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, err := inspector.Inspect(t.Context())
+	if err != nil || identity.State != "stopped" || identity.ArtifactSHA256 != expected || !validDigest(identity.RuntimeSHA256) {
+		t.Fatal("actual Docker identity unavailable", identity, err)
+	}
+	t.Log("actual private Docker image/configuration inspected; stopped process is not functional/trial/promotion proof")
 }

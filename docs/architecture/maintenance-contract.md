@@ -66,7 +66,14 @@ Missing state is explicit; ambiguous/oversized JSON, partial state, transient
 Docker lifecycle, redirects, unavailable socket or cancellation cannot produce a
 qualified observation. This component neither signs arbitrary data nor asserts
 effect settlement. Its public tests use synthetic responses over an actual local
-Unix HTTP listener; real daemon/node/process acceptance still remains pending.
+Unix HTTP listener. A separate opt-in Linux/race test now inspects the exact
+stopped test container in a private local Docker28.3.3 daemon. The daemon uses
+an isolated mount namespace and separate8GiB store; a trusted public fixture
+proves effective UID/memory/CPU/PID/capability/egress and host-file/socket bounds.
+Swap is prohibited at its private ancestor cgroup because this host's Docker
+driver does not expose the per-container swap limit. The initial failed
+pivot-root/swap probes remain failures. This is inspection/isolation component
+evidence only; independent checker/node/deployment acceptance remains pending.
 
 The initial classifier treats existing apps/cmd/internal and deployment/checker
 paths as protected. Ordinary automatic updates require explicitly pinned isolated

@@ -28,7 +28,8 @@ stop epoch. History retains missing/unknown artifacts and configuration mismatch
 Only a fresh current response can update the qualified identity; stop/resume and
 reconfiguration invalidate it. Nonce replay cannot overwrite newer evidence.
 This authenticates an inspector's report, not the actual inspector implementation:
-the node process and fixed-target physical inspection still require acceptance.
+the node process and deployment still require acceptance. The separate fixed-target
+physical inspector is now exercised against the private Docker daemon below.
 
 The [maintenance contract](../../docs/architecture/maintenance-contract.md) remains
 proposed. Controller service, independent checker, node execution, effect admission,
@@ -88,5 +89,11 @@ labels and health text do not establish artifact identity or functional success.
 Missing targets are explicit; ambiguous JSON/state, redirect, cancellation and
 unavailable daemon observations fail closed. It performs no writes, signing,
 effect settlement or UNKNOWN reconciliation. Public tests use a real local Unix
-HTTP listener with synthetic Docker responses; actual Docker inspection/node
-process and deployment acceptance remain pending.
+HTTP listener with synthetic Docker responses. A separate opt-in Linux/race test
+also measures the exact stopped fixture in a private Docker28.3.3 daemon; it is
+actual image/configuration proof, not functional/trial/promotion acceptance.
+The fixture separately passes actual kernel checks for UID65532,64MiB memory,
+one CPU,32 PIDs, no capabilities/new privileges/network routes or host key/socket
+mounts. A private ancestor cgroup prohibits swap (the Docker driver cannot set
+the per-container swap limit on this host). The original pivot-root and swap
+probe failures remain preserved. Node process/deployment acceptance is pending.
