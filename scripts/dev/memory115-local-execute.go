@@ -172,10 +172,51 @@ type local115ControlQueries interface {
 }
 
 func local115ControlIdle(ctx context.Context, conn local115ControlQueries) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	var idle bool
-	err := conn.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM public.behavior76_windows WHERE NOT closed) AND NOT EXISTS(SELECT 1 FROM public.session_ownership WHERE expires_at>clock_timestamp()) AND NOT EXISTS(SELECT 1 FROM public.accepted_inputs WHERE claim_expires_at>clock_timestamp())`).Scan(&idle)
+	err := conn.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM public.behavior76_windows WHERE NOT closed) AND NOT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND backend_type='client backend' AND pid<>pg_backend_pid())`).Scan(&idle)
 	if err != nil || !idle {
-		return local115Fail("local source provider is active or unavailable")
+		return local115Fail("local source window or credential backend is active or unavailable")
+	}
+	// The real source retains each fixture's task tables in its own schema;
+	// only the provider journal/settings live in public. Inspect catalog names,
+	// never model data, and require complete lease/Input pairs in every schema.
+	var raw []byte
+	if conn.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(jsonb_build_object('schema',nspname,'table',relname) ORDER BY nspname,relname),'[]'::jsonb) FROM (SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND c.relname IN('session_ownership','accepted_inputs') AND n.nspname NOT LIKE 'pg_%' AND n.nspname<>'information_schema' ORDER BY n.nspname,c.relname LIMIT 513) source_tables`).Scan(&raw) != nil || len(raw) > 256*1024 {
+		return local115Fail("local source task-store catalog unavailable")
+	}
+	var tables []struct {
+		Schema string `json:"schema"`
+		Table  string `json:"table"`
+	}
+	if json.Unmarshal(raw, &tables) != nil || len(tables) == 0 || len(tables) > 512 {
+		return local115Fail("bounded complete source task stores required")
+	}
+	pairs := make(map[string]int)
+	for _, table := range tables {
+		column, bit := "", 0
+		switch table.Table {
+		case "session_ownership":
+			column, bit = "expires_at", 1
+		case "accepted_inputs":
+			column, bit = "claim_expires_at", 2
+		default:
+			return local115Fail("unknown source task-store relation")
+		}
+		if table.Schema == "" || len(table.Schema) > 63 || pairs[table.Schema]&bit != 0 {
+			return local115Fail("source task-store identity differs")
+		}
+		pairs[table.Schema] |= bit
+		query := "SELECT NOT EXISTS(SELECT 1 FROM " + pgx.Identifier{table.Schema, table.Table}.Sanitize() + " WHERE " + pgx.Identifier{column}.Sanitize() + ">clock_timestamp())"
+		if conn.QueryRow(ctx, query).Scan(&idle) != nil || !idle {
+			return local115Fail("source task-store live lease or claim remains, or observation unavailable")
+		}
+	}
+	for _, pair := range pairs {
+		if pair != 3 {
+			return local115Fail("source task-store lease/Input pair incomplete")
+		}
 	}
 	return nil
 }
@@ -350,9 +391,6 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if probeErr != nil || strings.TrimSpace(string(observed)) != "0::/butler-memory115-"+label || !local115Reaped(cgPath) {
 		return local115Fail("actual kernel resource containment not proven before auth")
 	}
-	if !execute {
-		return local115JSON(filepath.Join(root, "prepared.json"), map[string]any{"result": "ORIGINAL_PRESEAL_AND_ACTUAL_RESOURCES_RECHECKED_NO_AUTH_OR_NATIVE", "native_calls": 0, "auth_access": 0, "plan_sha256": local115PlanSHA, "actual_cgroup_probe": true, "whole_cgroup_empty": true, "cpu_max": "100000 100000", "memory_max": "2147483648", "swap_max": "0", "pids_max": "256"})
-	}
 	// Private key/ciphertext access occurs only in explicit execute after the
 	// original collector check and actual kernel resource containment proof.
 	conn, err := pgx.Connect(ctx, local115ControlDSN)
@@ -366,6 +404,9 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	}
 	if err = local115ControlIdle(ctx, conn); err != nil {
 		return err
+	}
+	if !execute {
+		return local115JSON(filepath.Join(root, "prepared.json"), map[string]any{"result": "ORIGINAL_PRESEAL_RESOURCES_AND_REAL_SOURCE_FENCES_RECHECKED_NO_AUTH_OR_NATIVE", "native_calls": 0, "auth_access": 0, "plan_sha256": local115PlanSHA, "actual_cgroup_probe": true, "whole_cgroup_empty": true, "actual_source_window_and_namespace_fences": true, "source_other_credential_backends_idle": true, "cpu_max": "100000 100000", "memory_max": "2147483648", "swap_max": "0", "pids_max": "256"})
 	}
 	admin, err := pgx.Connect(ctx, "postgres://postgres@127.0.0.1:55451/postgres?sslmode=disable")
 	if err != nil {

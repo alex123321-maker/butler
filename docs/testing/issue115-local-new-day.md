@@ -60,7 +60,12 @@ the original zero-native prepared check and creates a fresh kernel cgroup with
 one CPU, 2 GiB memory, no swap and 256 processes. An actual child must observe
 that cgroup and exit before preparation succeeds. The default preparation path
 does not read an encryption key, auth setting or provider import and cannot
-start the native comparison. Root controller enablement adds no resource limit
+start the native comparison. It also checks the actual source window journal,
+other credential-database backends and every complete lease/Input table pair
+in the retained fixture schemas. Catalog names are bounded and SQL-quoted;
+missing pairs, unknown layouts, live claims/leases or failed observations deny
+entry. The real fixture tables are not assumed to be in public.
+Root controller enablement adds no resource limit
 to any existing process; only the wrapper's newly created child cgroup is bounded.
 
 The explicit execute path checks that all source windows are closed and no
@@ -77,10 +82,9 @@ state precede a bounded check that every other client backend in the credential
 database has exited. The operator closes its preflight target connection before
 collection and uses one fresh recovery connection, so its own idle pool cannot
 masquerade as a native writer. A pending backend blocks the final read. Only
-afterward may durable target
-recovery, source CAS, authenticated subscription readiness and a fresh encrypted
-local snapshot proceed. Forced cleanup or failed native
-collection remains failure even if auth handback succeeds. Ambiguous recovery
+afterward may durable target recovery, source CAS, authenticated subscription
+readiness and a fresh encrypted local snapshot proceed. Forced cleanup or
+failed native collection remains failure even if auth handback succeeds. Ambiguous recovery
 retains private files and fails closed. This local handback cannot establish
 the legacy lab-main handback or release qualification. Original deadline and
 the 33 selected stages/full 57 denominator are unchanged.

@@ -73,6 +73,34 @@ func TestLocal115ActualPostgresRecoveryAndCAS(t *testing.T) {
 			}
 		})
 	}
+	for _, name := range []string{"namespaced_idle", "namespaced_live_lease", "namespaced_live_claim", "incomplete_namespace"} {
+		t.Run(name, func(t *testing.T) {
+			tx := transaction(t)
+			exec(t, tx, `CREATE TABLE public.behavior76_windows(closed boolean);CREATE TABLE public.system_settings(key text PRIMARY KEY,value text,is_secret boolean,updated_by text,updated_at timestamptz);CREATE SCHEMA retained_fixture;CREATE TABLE retained_fixture.session_ownership(expires_at timestamptz)`)
+			exec(t, tx, `INSERT INTO public.system_settings(key,value,is_secret) VALUES($1,'synthetic-original',true)`, local115AuthKey)
+			if name != "incomplete_namespace" {
+				exec(t, tx, `CREATE TABLE retained_fixture.accepted_inputs(claim_expires_at timestamptz)`)
+			}
+			if name == "namespaced_live_lease" {
+				exec(t, tx, `INSERT INTO retained_fixture.session_ownership VALUES(clock_timestamp()+interval '1 hour')`)
+			}
+			if name == "namespaced_live_claim" {
+				exec(t, tx, `INSERT INTO retained_fixture.accepted_inputs VALUES(clock_timestamp()+interval '1 hour')`)
+			}
+			err := local115Return(ctx, tx, "synthetic-original", "synthetic-new-durable-refresh")
+			var actual string
+			if tx.QueryRow(ctx, `SELECT value FROM public.system_settings WHERE key=$1`, local115AuthKey).Scan(&actual) != nil {
+				t.Fatal("namespaced source readback failed")
+			}
+			if name == "namespaced_idle" {
+				if err != nil || actual != "synthetic-new-durable-refresh" {
+					t.Fatal("actual retained-schema layout was rejected", err)
+				}
+			} else if err == nil || actual == "synthetic-new-durable-refresh" {
+				t.Fatal("namespaced source fence bypassed", name)
+			}
+		})
+	}
 	for _, name := range []string{"no_import", "durable_refresh", "import_without_setting", "empty_allocated_domain", "entries_without_auth", "schema_without_claim", "wrong_claim"} {
 		t.Run(name, func(t *testing.T) {
 			tx := transaction(t)

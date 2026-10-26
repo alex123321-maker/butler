@@ -1,0 +1,10 @@
+{
+  "version": "butler115-local-native-once-launch.v1",
+  "operator_producer": "6eb1d18359730377a23140978eeaeeb7dfc01924",
+  "operator_elf_sha256": "0607d8ad0565c01c7e70ca9d2c04df632f6379fd9cc300153c1a90b0e42be02c",
+  "original_preseal_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "label": "native-20261026-v1",
+  "consumed_at_utc": "2026-10-26T10:07:43.2179813+00:00",
+  "model_retries": 0,
+  "production_or_lab": false
+}
