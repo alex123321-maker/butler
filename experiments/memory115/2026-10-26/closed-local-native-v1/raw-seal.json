@@ -1,0 +1,14 @@
+{
+  "version": "butler115-closed-local-raw-seal.v1",
+  "result": "NATIVE_FAILED_LOCAL_AUTH_HANDBACK_PROVED_NOT_QUALIFIED",
+  "files": 157,
+  "bytes": 3200241.0,
+  "inventory_sha256": "dbc8d6baa126c1b59ad42dc07a6677d57badb6430da2613f361a28e42a6ec104",
+  "archive_sha256": "0c949fb275d1f69f234b07b95e312f67692f9aa1c2e7ae3d84ba4aa6fe4c468d",
+  "every_archive_entry_byte_verified": true,
+  "private_provider_material_publication_scan_pass": true,
+  "private_material_written": false,
+  "local_handback_proved": true,
+  "release_qualified": false,
+  "replayed": false
+}

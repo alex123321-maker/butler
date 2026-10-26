@@ -1,0 +1,18 @@
+{
+  "cmd_wait_returned": true,
+  "collector_started": true,
+  "forced_cleanup": false,
+  "fresh_local_encrypted_snapshot_saved": true,
+  "lab_main_auth_claim": false,
+  "local_auth_resolved": true,
+  "native_database_backends_gone": true,
+  "native_exit_status": 1,
+  "opaque_source_cas": true,
+  "plan_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "raw_material_printed": false,
+  "recovery_source": "latest_durable_local_setting",
+  "release_qualified": false,
+  "source_windows_closed_checked": true,
+  "version": "butler115-local-provider-handback.v1",
+  "whole_cgroup_empty": true
+}

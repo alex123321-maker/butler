@@ -1,0 +1,7 @@
+{
+  "native_domain": "memory115_native_test/experience_native_v1",
+  "new_authority": false,
+  "original_deadline": "2026-10-27T00:00:00Z",
+  "plan_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "source": "2a26ceaf6427eb6727167909a7560c731aff8f9a"
+}

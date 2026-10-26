@@ -1,0 +1,7 @@
+{
+  "cmd_wait_returned": true,
+  "forced_cleanup": false,
+  "native_exit_status": 1,
+  "observed_at": "2026-10-26T10:28:24.016410473Z",
+  "whole_cgroup_empty": true
+}
