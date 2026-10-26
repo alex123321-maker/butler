@@ -1,5 +1,15 @@
 # Butler Dev Scripts
 
+The Linux-only `memory115-local-execute.go` operator wrapper protects the existing
+frozen local #115 collector. Compile it explicitly (`go build -o OUTPUT
+scripts/dev/memory115-local-execute.go`); its default `-label NEW_LABEL` path
+checks pinned artifacts/preseal and actual kernel containment with no auth or
+native calls. `-execute` is a separate one-use native action and must not overlap
+another local provider collector. Explicit operator tests use the two companion
+`*_test.go` files; the integration case requires the separate loopback55451
+`memory115_operator_test` database through `BUTLER_TEST_OPERATOR_POSTGRES_URL`.
+See [protocol and qualification limits](../../docs/testing/issue115-local-new-day.md).
+
 `pwsh -NoProfile -File scripts/dev/issue17-local.ps1` checks the eight resource
 arbitration criteria on this PC using Docker Desktop's Linux engine. It creates
 an internal network, unpublished disposable PostgreSQL and a private executable

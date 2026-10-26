@@ -50,3 +50,38 @@ tests cover semantic day/binding and retained unknown/cost controls. Actual
 native execution still requires a clean source/ELF/corpus freeze, the existing
 prepared cohort checks and local private auth/exit handling. No successful native
 experience, positive selected composition, production rollout or GO is claimed.
+
+## Local operator execution boundary
+
+`scripts/dev/memory115-local-execute.go` is a separately compiled Linux operator
+wrapper for the pinned collector, not a replacement collector or a production
+endpoint. It pins the original preseal/history and all five ELF files, reruns
+the original zero-native prepared check and creates a fresh kernel cgroup with
+one CPU, 2 GiB memory, no swap and 256 processes. An actual child must observe
+that cgroup and exit before preparation succeeds. The default preparation path
+does not read an encryption key, auth setting or provider import and cannot
+start the native comparison. Root controller enablement adds no resource limit
+to any existing process; only the wrapper's newly created child cgroup is bounded.
+
+The explicit execute path checks that all source windows are closed and no
+source claim/lease is live, serializes local operator ownership, rejects an
+already consumed target domain and clones only encrypted auth outside model
+context. Both the original and recovered ciphertext must pass the existing
+key-associated encryption codec and strict private-import parser before a
+source compare-and-swap. The parser validation sink retains no state and makes
+no provider request. Child environment is a finite allowlist; key material is
+never put in argv, output, experiment receipts or model input.
+
+After the collector exits, actual command Wait and the whole cgroup's empty
+state precede durable target recovery, source CAS, authenticated subscription
+readiness and a fresh encrypted local snapshot. Forced cleanup or failed native
+collection remains failure even if auth handback succeeds. Ambiguous recovery
+retains private files and fails closed. This local handback cannot establish
+the legacy lab-main handback or release qualification. Original deadline and
+the 33 selected stages/full 57 denominator are unchanged.
+
+The initial local qualification covers actual zero-auth preparation/resource
+containment, race/vet, strict encrypted-format guards and synthetic transactions
+in the dedicated `memory115_operator_test` PostgreSQL database. It does not
+prove an authenticated execute, successful native comparison or final handback.
+Actual native collection and independent original consumers remain required.
