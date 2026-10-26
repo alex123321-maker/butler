@@ -1,0 +1,220 @@
+{
+  "version": "issue76-independent-semantic-freeze-day-v7-v2",
+  "decision": "SEMANTICS_FROZEN_ONLY_NOT_NATIVE_ADMISSION",
+  "commit": "7f66e971fb098682a74b372e09bb53d606ab2e46",
+  "worktree_clean": true,
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_stream_test.go",
+      "sha256": "c954a73765811238258535c7a0eb981c108ce4357dcdde8d5538e15874068792"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_trace_test.go",
+      "sha256": "5db699f29d721a38d351c01dfdb692485435b0baf8cc50a318732421a9939824"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_backend_quiescence_test.go",
+      "sha256": "26f5132ef9f2215c6a518d370453517c79e4cfbe986ea385730fd2a9c92b40a1"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_classification_test.go",
+      "sha256": "5d5a20ca610210a9729ee44e0e9aef60505df5906d2432111bd16e0a52c5727b"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "sha256": "0e659872c428ae12bc34388d017fb214952484c9b175c7e8aa22c0dd87f3df79"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go",
+      "sha256": "68f3eedafb57c3713614fe4ef03a067d34006f6248478bea8a901f89a5636191"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_continuation_test.go",
+      "sha256": "515756b85eb08b4cd9a7d17bf7f3cd67f1759ae91ae51f9a9a14bacdd006e41e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "1a8170613b686fb8799c67fd34f7a697b2502d56f70c530deaa5e58976bfd919"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_events_test.go",
+      "sha256": "2ec01e200204934f0c2d8d780b6abed6330300dc84dd159cc4c6887c30456f6e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_evidence_test.go",
+      "sha256": "8a83c0626a9bbd1c6124a1127a8e3695645545654221957c684d249f0dd76f41"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "3066ea28eb8e82c36e5e80bc640943d1d4a5a20460ba784d1971a77b21de7cc2"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "fe1167207d8062f9b319a0646cc5238c43ba3f01ab31be53aa05658a3f3fa9a9"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_study_test.go",
+      "sha256": "8ebec36bb2b0649a47ecd2e788b2f9982b23dc754bb1dcab7db2c3f72eee5ebb"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "d7f7140c33e24aeb0c6aa63bda5c2ea3997b543b512d25ca1ed49d0e561b8893"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_offline_test.go",
+      "sha256": "20c359003b32c49c75d96f4987001b38193fa4dff6a75452a7be935d743601e7"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_pgx_trace_test.go",
+      "sha256": "335419cfb556ab5e133eb648517d968ebc63c14228ac86eeead51a0aa02379eb"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_preflight_test.go",
+      "sha256": "649b0a47e9dfeb27d16bbf88ba02033580e0576e15e3fa7fd3c16d0221603fb8"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_resources_test.go",
+      "sha256": "e3a960583e125daddecf9037fbe9a18709b800e8acd78c1d19b8f3553861ab37"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_runtime_test.go",
+      "sha256": "1a2a926407d94d6917edf2a98cff2b63bf09a6d653a9b423cb30f03631446e1c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_safety_test.go",
+      "sha256": "a66acc32e46b9c2c5081295635faaa0fe0012ea441220d3a679757d9e83551d5"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go",
+      "sha256": "9716e3c3f4ed685319fb1c788e794324f3c78a1a7443d0fd7ae79e66b2fc7e86"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "adf6ab89e0375dda3312e48ef7f4d735adc6644f3590e207a397ebd01c65cae7"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_source_rows_test.go",
+      "sha256": "794c485ea01693400d68507b1655487fbf970859a7931883326b530eb669a321"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_stream_integration_test.go",
+      "sha256": "7f2479a7e850e8542d733e58bb77c68f9e9ca4537bbd62d1c6c61497c4243f9a"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_task_context_test.go",
+      "sha256": "f94fcb485eba7a5afbd164ff1da6a29d2eff9807c80be2c8c36895f5121c3363"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_types_test.go",
+      "sha256": "285e17de3cf1ac80ee657ce1b76512d53352f45a35b35055f88a5b007a1dda0f"
+    },
+    {
+      "path": "docs/testing/issue76-day-v7-preparation.md",
+      "sha256": "7a529862e79ff461d595beedac888837e89f2881ccbb890031ac30722b5abc40"
+    },
+    {
+      "path": "docs/testing/issue76-day-window-admission.md",
+      "sha256": "395d006c5efbe9dc7d5ccbd73a4e7bafbbff99e76eb2777b3495b954b82b6ab9"
+    },
+    {
+      "path": "docs/testing/issue76-fixture-stream-protocol.md",
+      "sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5"
+    },
+    {
+      "path": "internal/transport/antigravity/provider.go",
+      "sha256": "aaa7615bb7563ad5551a32e764b137902adc0fbca5ef3585c2df1b2cf72f58be"
+    },
+    {
+      "path": "internal/transport/antigravity/stream_diagnostics.go",
+      "sha256": "50805463e2de0dde5140d8b1cf9106826fc8f57561fe80e31b2ec1f44531b6a7"
+    },
+    {
+      "path": "internal/transport/errors.go",
+      "sha256": "0798b5f1e2ce5209c9ec7ebba5f154c26cd52386796060fef6e8134d52c99e0a"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "fac84ddd00c6b7e866188dac3f96836b3a0c5aaaf8dc2f0c20120257ea9958b4"
+    }
+  ],
+  "public_gates": {
+    "public_log_sha256": "071e0f2662cd149c585da11881313dba59a026165c66fb7e5e799df4e1ce2092",
+    "vet_exit": 0,
+    "receipt_path": "experiments/behavior76/2026-10-26/day-v7-preparation-v1/receipt.json",
+    "fail": 0,
+    "vet_log_sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f",
+    "public_race_top_level_pass": 36,
+    "receipt_sha256": "02b35d132a5ebef0ceb36ebf1ff51a74dd7bc97e8d8bfcadf483b7b49808c8d9",
+    "skip": 0
+  },
+  "independent_reviews": {
+    "final_semantic_files_equal_reviewed": true,
+    "precommit_source": "bd3f15a777e8d2bc36fa487c3dc94c6471d4267eb085471fbccc1a8fd2d8bd88",
+    "transport_diagnostics": "f4c7d7d3a0588faa015f96f199c9d344dea255cdd1808a0c1a0f2e9261f62a89"
+  },
+  "authorship": {
+    "previous_pre_freeze_corpus": "hidden-day-v7",
+    "requirement": "Fresh independent content/seed/identities/order authored after this source-only certificate; then literal hashes/path binding and existing setup/composition.",
+    "previous_commitment_sha256": "0007c965bdc2f8e54c8969b94337278a5a517928c11edbc62132dee957458515",
+    "previous_corpus_disposition": "UNUSED_NOT_ADMITTED; authored before formal source freeze, never bound/executed",
+    "status": "NO_POST_FREEZE_CORPUS_AUTHORED_YET",
+    "next_authoring_path": "hidden-day-v7-r2"
+  },
+  "frozen_candidate_scorer_reader": [
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": ".cache/issue76-independent/score-mechanical-fresh-v3.ps1"
+    },
+    {
+      "sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+      "path": ".cache/issue76-independent/local-scoring-composition-v1.ps1"
+    },
+    {
+      "sha256": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf",
+      "path": ".cache/issue76-independent/local-tail-adapter-v1.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": ".cache/issue76-independent/authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+      "path": ".cache/issue76-independent/authority-stream-scoring-v2a.ps1"
+    },
+    {
+      "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+      "path": "apps/orchestrator/internal/prompt/task_continuity.go"
+    }
+  ],
+  "history": {
+    "known_provider_total_tokens": 4900143,
+    "null_usage": 7,
+    "history_gate": {
+      "closed_windows": 7,
+      "admissions": 640,
+      "measured": 633,
+      "known_full_tokens": 4900143,
+      "null_usage": 7,
+      "full_jsonb_equality_and_mutation_truncation_rejection": "PASS",
+      "read_only_audit_millis": 68690,
+      "old20s_timeout_retained": "day-v7-history-v1.log",
+      "new_offline_audit_bound_seconds": 120
+    },
+    "closed_windows": 7,
+    "prior_failures_and_unknowns_retained": true,
+    "certificate_sha256": "82306ff85630717663a3157978dac037e6016d365762b671a6876197faccc049",
+    "admissions": 640,
+    "measured": 633
+  },
+  "limits": "4h whole-window owner-UTC-day fit /768 admissions;120s model;20m fixture;750ms authority;9+1",
+  "stop_policy": "Owner-approved classified synthetic UNKNOWN stops entire original fixture/cohort; all provider/auth/source/authority/journal/observer/isolation/deadline faults GLOBAL",
+  "new_native_calls": 0,
+  "new_pg_operations": 0,
+  "new_auth_construction": 0,
+  "quality_acceptance": false,
+  "issue_closure": false,
+  "remaining_native_prerequisites": "Literal-only binding, existing complete zero-native setup/composition and final exact clean producer/ELF one-window certificate.",
+  "supersedes": "semantic-freeze-day-v7-v1.json",
+  "supersedes_sha256": "9f5f1c18cbe6e04466bb0b91e957769495ed5545ce9c98865f7527ad741f896c",
+  "issued_at_utc": "2026-10-26T04:30:04.8562315Z"
+}

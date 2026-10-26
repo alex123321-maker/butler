@@ -1,0 +1,20 @@
+{
+  "version": "issue76-independent-authoring-receipt-day-v7-r2-v1",
+  "commitment_sha256": "44ac02495385f4af45f4c5de17733235188c3dacbdbc7883e7980eff639b4a96",
+  "authoring_script_sha256": "b8b02e5740888ff5b1de41d38cccb3430605a12829573c33847fa2a8d4288e6a",
+  "completed_at_utc": "2026-10-26T04:34:33.5142056Z",
+  "formal_freeze_precedes_this_authorship": true,
+  "source_clean_exact": true,
+  "semantics_unchanged": true,
+  "prior_v7_disposition": "UNUSED_NOT_ADMITTED; prior stimuli/goldens and commitment retained",
+  "new_content": "24 independently authored new synthetic scenarios, new topics, values, identities, seed and schedule; not an old failed-slot repeat",
+  "protocol_criteria_or_threshold_changes": false,
+  "native_admission": false,
+  "required_existing_next_steps": [
+    "Only new stimuli path and2literal hash bindings.",
+    "Existing full zero-native setup/composition.",
+    "Final exact clean producer/ELF one-window admission and existing history/resource/day-fit checks."
+  ],
+  "historical_unknowns_backfilled": false,
+  "historical_failures_erased": false
+}
