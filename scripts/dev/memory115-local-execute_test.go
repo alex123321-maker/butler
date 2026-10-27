@@ -129,7 +129,7 @@ func TestLocal115FixedProfilesKeepLegacyAndDenyUnboundOrSubstitutedSuccessor(t *
 		t.Fatal("prospective operator reuses a closed identity", err)
 	}
 	for _, role := range []string{"broker", "broker_control", "extension", "http"} {
-		if successor.artifacts[role].path == legacy.artifacts[role].path || !strings.HasPrefix(successor.artifacts[role].path, "/private/memory115-prepared-skillprep-v1/bin/") {
+		if successor.artifacts[role].path == legacy.artifacts[role].path || !strings.HasPrefix(successor.artifacts[role].path, "/private/memory115-prepared-skillprep-v2/bin/") {
 			t.Fatal("new source cohort reuses a closed executable path")
 		}
 	}

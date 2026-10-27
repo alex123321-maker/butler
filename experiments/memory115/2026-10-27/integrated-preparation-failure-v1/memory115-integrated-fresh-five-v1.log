@@ -1,0 +1,3 @@
+producer=baaf94ef6298258d5590709cd649541ab371e93f
+go version go1.27.2 linux/amd64
+/bin/sh: findmnt: not found

@@ -188,15 +188,52 @@ func experienceNativeChild(t *testing.T, reservations *experienceNativePortReser
 	}
 	t.Cleanup(stop)
 	for until := time.Now().Add(10 * time.Second); time.Now().Before(until); {
-		connection, err := net.DialTimeout("tcp", grpcAddress, 100*time.Millisecond)
-		if err == nil {
-			connection.Close()
+		if experienceNativeEndpointsReady(addresses) {
 			return stop
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
 	t.Fatal("actual component did not become ready")
 	return stop
+}
+
+// Both listeners are required before private control RPCs. A listening gRPC
+// socket alone does not establish that the Broker's HTTP control is ready.
+// This is startup observation only: it sends no tool/control request or secret.
+func experienceNativeEndpointsReady(addresses []string) bool {
+	if len(addresses) == 0 {
+		return false
+	}
+	for _, address := range addresses {
+		connection, err := net.DialTimeout("tcp4", address, 100*time.Millisecond)
+		if err != nil {
+			return false
+		}
+		_ = connection.Close()
+	}
+	return true
+}
+
+func TestExperienceNativeChildReadinessRequiresEveryFrozenEndpoint(t *testing.T) {
+	grpc, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer grpc.Close()
+	if experienceNativeEndpointsReady(nil) || experienceNativeEndpointsReady([]string{grpc.Addr().String(), "127.0.0.1:0"}) {
+		t.Fatal("gRPC readiness incorrectly replaced missing HTTP readiness")
+	}
+	httpControl, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer httpControl.Close()
+	if !experienceNativeEndpointsReady([]string{grpc.Addr().String(), httpControl.Addr().String()}) {
+		t.Fatal("both actual frozen listeners should be ready")
+	}
+	if !experienceNativeEndpointsReady([]string{grpc.Addr().String()}) {
+		t.Fatal("single-listener child readiness changed")
+	}
 }
 
 type experienceNativeToolCatalog struct {

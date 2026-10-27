@@ -1384,6 +1384,12 @@ independent task verification and effect reconciliation. Generic blocked-task
 jobs remain denied. Migration080, exact current input/source/authority checks and
 the still-closed experience release gate are required.
 
+The experience integration fixture waits for every declared child listener,
+including the Broker HTTP control endpoint, within the original bounded startup
+wait. TCP readiness sends no tool/control action and does not retry a failed
+action. A listening gRPC socket alone is insufficient. Controlled startup or
+storage failures remain failures, with later native acceptance blocked.
+
 The private owner `POST /api/v4/memory/experience-observations` accepts only an
 existing `run_id` and requires the normal owner bearer and delivery ID. The
 production adapter derives and seals current typed evidence, returning a

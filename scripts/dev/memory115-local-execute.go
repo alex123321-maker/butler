@@ -75,16 +75,16 @@ func local115OperatorProfileByName(name string) (local115OperatorProfile, error)
 		profile.plan, profile.planSHA, profile.history, profile.historySHA = local115Plan, local115PlanSHA, local115History, local115HistorySHA
 		profile.database, profile.targetDSN = "memory115_native_test", local115TargetDSN
 	case "skill-preparation-v1":
-		profile.name, profile.source, profile.sourceCommit = name, "/private/memory115-source-skillprep-v1", local115SkillSourceCommit
-		profile.plan, profile.planSHA = "/private/memory115-prepared-skillprep-v1/plan/preseal.json", local115SkillPlanSHA
+		profile.name, profile.source, profile.sourceCommit = name, "/private/memory115-source-skillprep-v2", local115SkillSourceCommit
+		profile.plan, profile.planSHA = "/private/memory115-prepared-skillprep-v2/plan/preseal.json", local115SkillPlanSHA
 		profile.history, profile.historySHA = "/src115/.cache/memory115-skill-successor-recipe-v1/recipe.json", local115SkillHistorySHA
 		profile.database, profile.targetDSN = "memory115_skillprep_v1_test", "postgres://postgres@127.0.0.1:55451/memory115_skillprep_v1_test?sslmode=disable"
 		profile.artifacts = map[string]struct{ path, sha string }{
-			"app":            {"/private/memory115-prepared-skillprep-v1/bin/app.test", local115SkillAppSHA},
-			"broker":         {"/private/memory115-prepared-skillprep-v1/bin/tool-broker", local115SkillBrokerSHA},
-			"broker_control": {"/private/memory115-prepared-skillprep-v1/bin/broker-control.test", local115SkillBrokerControlSHA},
-			"extension":      {"/private/memory115-prepared-skillprep-v1/bin/extension.test", local115SkillExtensionSHA},
-			"http":           {"/private/memory115-prepared-skillprep-v1/bin/http.test", local115SkillHTTPSHA},
+			"app":            {"/private/memory115-prepared-skillprep-v2/bin/app.test", local115SkillAppSHA},
+			"broker":         {"/private/memory115-prepared-skillprep-v2/bin/tool-broker", local115SkillBrokerSHA},
+			"broker_control": {"/private/memory115-prepared-skillprep-v2/bin/broker-control.test", local115SkillBrokerControlSHA},
+			"extension":      {"/private/memory115-prepared-skillprep-v2/bin/extension.test", local115SkillExtensionSHA},
+			"http":           {"/private/memory115-prepared-skillprep-v2/bin/http.test", local115SkillHTTPSHA},
 		}
 	default:
 		return local115OperatorProfile{}, local115Fail("unknown fixed local operator profile")

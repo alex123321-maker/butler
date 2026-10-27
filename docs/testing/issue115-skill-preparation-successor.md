@@ -102,6 +102,40 @@ All five new artifacts are built from this snapshot, with an identical complete
 source inventory before/after. Targeted integration gates are in progress;
 neither these builds nor the earlier controlled passes qualify new native work.
 
+The integrated controls then failed in the full scripted collector at control033:
+the first reviewed-extension list returned the bounded unavailable error. Later
+subcases could not reopen the active one-use slot. The full log and failed exit
+remain; read, production, operator, vet and preseal stages were not executed.
+No actual provider call or real credential access occurred. The exact underlying
+list failure is unknown; historical PostgreSQL disk errors are dated October25
+and do not establish the cause of this October27 failure.
+
+Inspection found a separate startup observation gap: the fixture waited for
+gRPC TCP readiness but immediately used the also-required HTTP control endpoint.
+The test-only helper now waits for both declared listeners in its original10s
+bound. It sends no control/tool request, changes no action retry or authority,
+and does not reclassify the saved failure. A targeted missing-HTTP/listening-both
+control accompanies the change. Its next prepared source/five-artifact paths are
+`/private/memory115-source-skillprep-v2` and
+`/private/memory115-prepared-skillprep-v2`; the unused v1 artifacts/snapshot remain.
+The same authorized recipe, logical profile,33-of57 scope and640-entry ceiling
+are retained. All operator commitments remain unbound until the next freeze.
+
+The dedicated local experiment filesystem was expanded from4GiB to8GiB after all
+owning workers joined, retaining all existing data and journals. Only256MiB was
+free after retained synthetic database clones; the larger capacity is necessary
+for subsequent retained evidence. CPU/memory/PID and model authority are
+unchanged. This environment change and the helper fix require fresh relevant
+gates; no old pass is silently attributed to the new artifact cohort.
+
+The readiness unit passes under the race detector. The19-file raw failed-gate
+packet and receipt are preserved in
+`experiments/memory115/2026-10-27/integrated-preparation-failure-v1/`.
+Actual app controls are23 top-level passes/1 failure and95 subcase passes/25
+failures, with zero skips/races. Seven other required names belong to the
+orchestrator package; they were not executed by the app regex and must be routed
+to that package in the next gate, never counted as passed from an empty match.
+
 Before new inference, derive and validate the latest closed local history through
 its original consumer; preserve all213 previous plus19 local native admissions,
 every NULL and the extra product attempt without a native entry. Create a new
