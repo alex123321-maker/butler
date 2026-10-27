@@ -18,8 +18,8 @@ const behavior76LiteralIndexVersion = "behavior76-checker-index-v6-literal"
 
 // Independent literal control hashes remain unbound. No new native entry is
 // possible merely because this public interface compiles.
-const behavior76LiteralStimuliSHA = ""
-const behavior76LiteralExpectationsSHA = ""
+const behavior76LiteralStimuliSHA = "9bc4872c85fb6b2d5e1a1b84b94b24a6a1e6d64ae749d527cbf5698431ca5d0c"
+const behavior76LiteralExpectationsSHA = "f20937430079aa6c259a6917f9f1ab846875b4baff71c58cf4c72e4d1ff49865"
 
 // This shape check is shared by the public interface and future admission.
 // It is not freshness proof or permission to run a model.
