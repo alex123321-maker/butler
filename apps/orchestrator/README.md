@@ -38,6 +38,16 @@ values, including its retained predecessor. This is offline accounting, without
 new permission or native admission; see
 [closed local history evidence](../../docs/testing/issue115-closed-local-history.md).
 
+The separately versioned local skill-preparation successor retains that exact
+failed232-entry leaf and the owner's new decision to prepare/check an unapplied
+synthetic patch. Its hash-bound lineage selects only the existing exact-resource
+inspect/prepare/check grant at skill preparation; legacy preparation stays
+inspect/check. Its one-use storage is the distinct fixed loopback database
+`memory115_skillprep_v1_test`. It preserves the full57 denominator, selected33
+stages, finite640-entry ceiling, all prior unknown usage and ordinary source,
+review, Broker and recipient boundaries. Code/preparation alone is not native
+acceptance; see [the successor protocol](../../docs/testing/issue115-skill-preparation-successor.md).
+
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
 Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts

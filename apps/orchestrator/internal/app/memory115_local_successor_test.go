@@ -63,7 +63,7 @@ type local115HistoryBinding struct {
 
 func validateLocal115HistoryBinding(h experienceNativeLineage) error {
 	b := h.LocalSuccessor
-	if b == nil || b.Historical.LocalSuccessor != nil || b.Historical.Hash != local115ClosedSHA || b.DiagnosticsSHA256 != local115DiagnosticsSHA || validateExperienceNativeLineage(b.Historical) != nil || h.Carry != b.Historical.Carry || h.Usage != b.Historical.Usage || h.Day <= b.Historical.Day || !h.Deadline.After(b.Historical.Deadline) {
+	if b == nil || h.SkillPreparationSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.LocalSuccessor != nil || b.Historical.Hash != local115ClosedSHA || b.DiagnosticsSHA256 != local115DiagnosticsSHA || validateExperienceNativeLineage(b.Historical) != nil || h.Carry != b.Historical.Carry || h.Usage != b.Historical.Usage || h.Day <= b.Historical.Day || !h.Deadline.After(b.Historical.Deadline) {
 		return errors.New("closed failed memory history and separate diagnostics must be retained exactly")
 	}
 	return nil

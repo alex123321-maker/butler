@@ -13,6 +13,16 @@ finite extraction attempts and atomic publication. Tool Broker retains all tool
 validation, policy, credentials, approval and effect mediation. No lesson can
 remove a required approval or grant a tool.
 
+The local #115 research collector has a separate prospective skill-preparation
+recipe for the owner's explicit2026-10-27 decision. It derives the latest closed
+failed232-entry population through the original closed-local consumer, pins the
+decision and diagnosis, and selects an existing exact synthetic resource grant
+for inspect/prepare-unapplied/check only. Legacy preparation stays inspect/check.
+This fixture-specific profile neither changes lesson applicability nor grants
+recipient apply/commit, product enablement, native admission or release approval.
+The new exact database/day/preseal remain one-use; see the
+[prospective protocol](../testing/issue115-skill-preparation-successor.md).
+
 Success is three separate observations: an agent's report, an explicit owner
 verification and actual independently confirmed effects. Known failures and
 unknown effects are never transformed into confirmed success by generation,

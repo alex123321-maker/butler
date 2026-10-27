@@ -79,6 +79,26 @@ func TestExperienceNativeSkillReadPermissionDiagnosticIntegration(t *testing.T) 
 	if os.Getenv("BUTLER_EXPERIENCE_SKILL_READ_DIAGNOSTIC") != "fresh-scripted-lessons-only" {
 		t.Skip("explicit local zero-native applicability diagnostic only")
 	}
+	runExperienceSkillReadPermissionDiagnostic(t, "prepare_and_verify_exact_resource")
+}
+
+func TestExperienceNativeSkillPreparationSuccessorReadIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_ISSUE115_SKILL_SUCCESSOR_READ") != "fresh-scripted-latest232-v1" {
+		t.Skip("explicit new preparation successor zero-native gate required")
+	}
+	history := experienceNativeConfiguredHistory(t)
+	profile, err := experienceNativeSkillPreparationProfile(history)
+	if err != nil || history.SkillPreparationSuccessor == nil || profile != "prepare_and_verify_exact_resource" {
+		t.Fatal("new exact recipe did not select the authorized bounded preparation profile", err)
+	}
+	runExperienceSkillReadPermissionDiagnostic(t, profile)
+}
+
+func runExperienceSkillReadPermissionDiagnostic(t *testing.T, completeProfile string) {
+	t.Helper()
+	if completeProfile != "prepare_and_verify_exact_resource" {
+		t.Fatal("fixed existing prepare/check profile required")
+	}
 	ctx, stop := context.WithTimeout(t.Context(), 20*time.Minute)
 	defer stop()
 	corpus := experienceWindowFixture()
@@ -152,7 +172,7 @@ func TestExperienceNativeSkillReadPermissionDiagnosticIntegration(t *testing.T) 
 		}
 	}
 	refs := []catalog.SourceRef{c.originals[0].Lesson, c.originals[1].Lesson}
-	for _, permissions := range []string{"inspect_and_check_only", "prepare_and_verify_exact_resource"} {
+	for _, permissions := range []string{"inspect_and_check_only", completeProfile} {
 		t.Run(permissions, func(t *testing.T) {
 			directory := c.directory(t, "consumer-"+permissions)
 			recipient, err := newExperienceRecipient(directory, c.originals[0].Recipient.Config)
