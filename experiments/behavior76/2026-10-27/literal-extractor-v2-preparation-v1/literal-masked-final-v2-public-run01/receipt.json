@@ -1,0 +1,180 @@
+{
+  "version": "issue76-masked-final-extractor-v2-public-tests-v1",
+  "status": "PREPARED_PUBLIC_SYNTHETIC_TESTS_ONLY_NOT_ACTUAL_EXTRACTION",
+  "PowerShell": "7.6.5",
+  "PASS": 41,
+  "FAIL": 0,
+  "checks": [
+    {
+      "verdict": "pass",
+      "name": "original12-runtime-pins-unchanged"
+    },
+    {
+      "verdict": "pass",
+      "name": "valid-unique-proof-available-unassessed-not-PASS"
+    },
+    {
+      "verdict": "pass",
+      "name": "exact-raw-final-and-UTF8SHA-retained"
+    },
+    {
+      "verdict": "pass",
+      "name": "trailing-text"
+    },
+    {
+      "verdict": "pass",
+      "name": "trailing-second-JSON"
+    },
+    {
+      "verdict": "pass",
+      "name": "malformed"
+    },
+    {
+      "verdict": "pass",
+      "name": "null"
+    },
+    {
+      "verdict": "pass",
+      "name": "array"
+    },
+    {
+      "verdict": "pass",
+      "name": "string-root"
+    },
+    {
+      "verdict": "pass",
+      "name": "null-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "array-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "numeric-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "object-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "boolean-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "missing-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "case-aliased-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "duplicate-answer"
+    },
+    {
+      "verdict": "pass",
+      "name": "root-case-collision"
+    },
+    {
+      "verdict": "pass",
+      "name": "nested-duplicate"
+    },
+    {
+      "verdict": "pass",
+      "name": "code-fence-not-repaired"
+    },
+    {
+      "verdict": "pass",
+      "name": "mechanical-unavailable-valid-parser-never-manufactures-availability"
+    },
+    {
+      "verdict": "pass",
+      "name": "mechanical-invalid-duplicate-permissive-PS-accepts-stays-unavailable"
+    },
+    {
+      "verdict": "pass",
+      "name": "mechanical-invalid-case-alias-permissive-PS-accepts-stays-unavailable"
+    },
+    {
+      "verdict": "pass",
+      "name": "explicit-structured-final-unavailable-wins-over-parser"
+    },
+    {
+      "verdict": "pass",
+      "name": "missing-semantic"
+    },
+    {
+      "verdict": "pass",
+      "name": "duplicate-semantic"
+    },
+    {
+      "verdict": "pass",
+      "name": "wrong-semantic-evidence"
+    },
+    {
+      "verdict": "pass",
+      "name": "answer-proof-mismatch"
+    },
+    {
+      "verdict": "pass",
+      "name": "missing-owner-input"
+    },
+    {
+      "verdict": "pass",
+      "name": "run-not-in-cohort"
+    },
+    {
+      "verdict": "pass",
+      "name": "wrong-origin"
+    },
+    {
+      "verdict": "pass",
+      "name": "wrong-owner-row"
+    },
+    {
+      "verdict": "pass",
+      "name": "failed-owner-join"
+    },
+    {
+      "verdict": "pass",
+      "name": "duplicate-owner-join"
+    },
+    {
+      "verdict": "pass",
+      "name": "duplicate-selected-final"
+    },
+    {
+      "verdict": "pass",
+      "name": "automatic-final-only"
+    },
+    {
+      "verdict": "pass",
+      "name": "empty-string-is-not-repaired-or-automatically-PASS"
+    },
+    {
+      "verdict": "pass",
+      "name": "exact-ISO-string-token-before-rendering"
+    },
+    {
+      "verdict": "pass",
+      "name": "kernel-is-separate-not-parsed-or-model-PASS"
+    },
+    {
+      "verdict": "pass",
+      "name": "nonstring-final-retained-unavailable"
+    },
+    {
+      "verdict": "pass",
+      "name": "original12-runtime-pins-still-unchanged"
+    }
+  ],
+  "scope": "same pinned Invoke-Issue76JsonStringTokenScopeV7",
+  "helper_sha256": "8b182760f6708a836f73decc6fce9ee11c9d8e08aadc5458f5278f01571acea6",
+  "test_sha256": "8a8ef4565d27fb556016c862c88501ad9b36646658be34673a82d0efc07eaef4",
+  "old_runtime_or_criteria_changed": false,
+  "actual_r1_extraction_or_review_or_mapping": false,
+  "mechanical_rerun": false,
+  "Go_PG_Docker_auth_provider_native": 0
+}

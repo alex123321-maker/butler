@@ -46,3 +46,31 @@ Public packet: `experiments/behavior76/2026-10-27/literal-v7-offline-reanalysis-
 The Python inventory issuer is an offline evidence-audit helper only, with no
 product/runtime dependency. Private exact diagnostics, goldens, mapping and
 actual native answer files are excluded from this preparation packet.
+
+The separately frozen v7 mechanical invocation subsequently completed once,
+retaining all68 owner and semantic rows. Its receipt is
+`4ab0bec7c4892662de4f30fa4a3495a7794a552cef326bfacd1fe20e8e5ef48e`;
+the private result is `41825ea0599c7d9adf1a47e314fbcbe4e01209cfcc9c8a5f4d0ab95dbc9d65f4`.
+Completion does not mean that the mechanical criteria all passed. The following
+communication extraction helper v1 failed on a retained final that was not a
+single JSON document; it produced no episode projection or completed judgment.
+Its source, failure and safe diagnosis remain unchanged. The original v6 strict
+failure also remains unchanged.
+
+A separate additive extractor v2 has now been reviewed and frozen BEFORE its
+actual invocation. The parent independently repeated its45 public checks with
+zero failures. It requires the existing unique mechanical owner/run/final and
+semantic proof; an invalid or unavailable final retains a null decoded answer
+and UNAVAILABLE communication even if a permissive parser could read it. Exact
+raw content and its UTF8 hash stay private. Kernel and automatic finals follow
+separate paths. The pinned v7 JSON token scope and all original criteria remain
+unchanged. Availability never supplies a communication PASS.
+
+The16-file public packet is
+`experiments/behavior76/2026-10-27/literal-extractor-v2-preparation-v1/`.
+Parent freeze `c8450644fa027a31e516879a413535c1061d0a75c3697a32e16fa1018776ecbf`
+preserves the reviewed helper/driver, tests, safe v1 diagnosis and completed
+mechanical receipt. Actual extraction and masked communication review are still
+pending at this preservation point. All68 judgments must be sealed before
+mapping disclosure. This is post hoc analysis and authorizes no new inference,
+mechanical rerun, promotion or deployment.

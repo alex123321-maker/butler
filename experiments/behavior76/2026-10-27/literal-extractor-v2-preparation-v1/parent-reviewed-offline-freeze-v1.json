@@ -1,0 +1,18 @@
+{
+  "version": "issue76-parent-extractor-v2-reviewed-offline-freeze-v1",
+  "issued_at_utc": "2026-10-27T05:42:14.6709262+00:00",
+  "preparation_sha256": "8638068a6280d2ffe3fbaee30ef5141661e52fdec0213baca55f0c8ea8b50c76",
+  "helper_sha256": "8b182760f6708a836f73decc6fce9ee11c9d8e08aadc5458f5278f01571acea6",
+  "driver_sha256": "b56fba13d16dbf667da8980ccf041f0cf3c2dccbd4450ed903b8490f3d8cdb48",
+  "public_tests_repeated_by_parent": 45,
+  "public_FAIL": 0,
+  "full_owner_denominator": 68,
+  "all_original_criteria_unchanged": true,
+  "actual_extraction_authorized": false,
+  "actual_v2_extraction_not_yet_started": true,
+  "mechanical_rerun_authorized": false,
+  "new_native_or_promotion_authorized": false,
+  "mapping_must_remain_unread_until_all68_judgments_sealed": true,
+  "original_v6_status": "STRICT_FAIL_NO_GO_IMMUTABLE",
+  "posthoc_only": true
+}

@@ -1,0 +1,25 @@
+# Additive masked final extractor v2 — PREPARED ONLY
+
+The original frozen v6 execution remains STRICT_FAIL/NO_GO. The separate post hoc v7 mechanical invocation completed once with all 68 planned owner rows and 68 semantic rows. Its exact result SHA is 41825ea0599c7d9adf1a47e314fbcbe4e01209cfcc9c8a5f4d0ab95dbc9d65f4. Neither that result nor the original 12 frozen runtime files, 27 statement ASTs, 12 helpers, rubric, thresholds, data, costs or stop rules are changed or rerun by this extractor.
+
+The earlier communication extractor v1 incorrectly assumed that every retained run_final_results.content was a parseable single JSON document. It failed before producing any episode projection or completed judgment. Its source and private failure record remain immutable. This is an extraction-helper failure, not a failure of the completed v7 mechanical invocation. Only a safe category is public; the raw actual final and private failure remain private.
+
+## Binding and availability
+
+The new driver is PREPARED_ONLY by default, without reading data. Actual invocation requires the separate ExecuteReviewedExtraction switch after parent review and explicit authorization. It pins the existing mechanical receipt/result, original v1 failure, original stimulus/golden bytes and v7 scope; verifies all old runtime pins; and uses a fresh masked-evidence-v2 directory. It never invokes scoring criteria or the mechanical wrapper. Every original evaluated step must have exactly one existing owner row and semantic row; all 68 planned opportunities are retained.
+
+The owner-final selector binds the exact episode/arm/step, original owner origin, actual owner input/run/cohort, unique selected final and unique existing mechanical semantic row. Both original owner-input/run and owner-run-in-slot proof checks must uniquely pass. The existing semantic row must be unassessed, contain the same string answer and name the actual run_final_results table. An existing nonpassing structured-final, final-uniqueness or owner-correlation fact prevents availability. Existing failed/unavailable semantic or owner rows never become available even if PowerShell could parse the final.
+
+A separate syntax check accepts only a whole JSON object with an exact case-sensitive answer string, without duplicate keys or conflicting root case aliases. Null/array/scalar roots, nonstring/missing/aliased answers, trailing JSON/text, code fences and malformed input are retained as unavailable. This is a conservative extraction gate, not a change to any existing mechanical verdict. No first-object extraction, code-fence removal, truncation, permissive repair, DateTime stringification or culture conversion is allowed. Empty string remains an empty string only when the existing mechanical proof permits review; availability alone never means communication PASS.
+
+Each selected actual final is retained privately as exact raw content plus its strict UTF8 SHA256 and actual run/result identity. When syntax or existing mechanical proof is invalid/unavailable, decoded_answer and decoded_final are null and communication_availability is UNAVAILABLE, even if raw text is readable. The helper can only mark AVAILABLE_FOR_EXISTING_MANUAL_RUBRIC; it never emits a communication PASS. An invalid final is never exposed as a decoded answer for review. Unavailable communication must remain unavailable in the final 68-row denominator.
+
+Kernel origin takes the unchanged separate kernel proof/response path, with model communication NOT_APPLICABLE. Automatic finals retain exact private raw/SHA records with their actual automatic identities; they cannot become owner answers. State, effect, source/authority and automatic costs remain independently auditable.
+
+All JSON extraction, including expectations, rubric, snapshots and outcome rendering, occurs within the same pinned Invoke-Issue76JsonStringTokenScopeV7. Its ALL nested unqualified/module-qualified ConvertFrom-Json DateKind String scope is unchanged. Exact JSON string tokens are preserved before rendering. No actual responses, mapping or private values appear in public tests.
+
+## Public evidence and limits
+
+Generic tests cover valid, trailing JSON/text, malformed, null/array/scalar roots, nonstring answers, duplicate/alias cases accepted by permissive PS parsing, mechanical-invalid-but-parser-accepts, identity/evidence/final-uniqueness failures, kernel separation, ISO string identity and default no-extraction behavior. Source hashes and exact old 27+12 AST witnesses are checked. The first 41-case test execution and its source-as-run snapshot are preserved; the extended 45-case execution adds explicit failed/owner-unavailable gates, default-driver denial and AST checks.
+
+This pack authorizes no actual v2 extraction, review, judging, mapping disclosure, native run or promotion. Parent must review and explicitly authorize the distinct extraction step. The original v1 failure and all historical results remain immutable. All 68 masked judgments must later be sealed before mapping; synthetic-data, statistical and AI-review limitations remain.
