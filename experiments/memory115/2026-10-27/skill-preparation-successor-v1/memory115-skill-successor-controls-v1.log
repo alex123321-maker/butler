@@ -1,0 +1,153 @@
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence
+--- PASS: TestLocal115ClosedHandbackProfileBoundaries (0.03s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence (0.00s)
+=== RUN   TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution
+--- PASS: TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution (0.00s)
+=== RUN   TestLocal115SuccessorPreservesOldDayCostsAndUnknown
+--- PASS: TestLocal115SuccessorPreservesOldDayCostsAndUnknown (0.00s)
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy
+--- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation (0.01s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy (0.01s)
+=== RUN   TestClosedExperienceDomainBindsInstantAndEveryIdentity
+--- PASS: TestClosedExperienceDomainBindsInstantAndEveryIdentity (0.00s)
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/valid
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsealed_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsupported_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/completed_omission
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unlabelled_omission
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/native_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/database_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/global_entry_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/reserved_clone_after_limit
+--- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork (0.01s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/valid (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsealed_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsupported_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/completed_omission (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unlabelled_omission (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/native_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/database_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/global_entry_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/reserved_clone_after_limit (0.00s)
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/charged_unknown_not_zero
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/admitted_without_native_entry
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/incomplete_capture_remains_unknown
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/full_total_and_missing_total
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/independent_observed_usage_matches_native
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_run
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/missing_slot
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/sequence_gap
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/foreign_clone
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_reservation
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/continuation_before_start
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/invented_finished_usage
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/omitted_null_key
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/changed_copied_prefix
+--- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries (0.02s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/charged_unknown_not_zero (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/admitted_without_native_entry (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/incomplete_capture_remains_unknown (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/full_total_and_missing_total (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/independent_observed_usage_matches_native (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_run (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/missing_slot (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/sequence_gap (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/foreign_clone (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_reservation (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/continuation_before_start (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/invented_finished_usage (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/omitted_null_key (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/changed_copied_prefix (0.00s)
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed/http_not_200
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed/snapshot_missing
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed/cas_missing
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed/null_not_false
+=== RUN   TestClosedExperienceReferencesAndHandbackFailClosed/discovery_missing
+--- PASS: TestClosedExperienceReferencesAndHandbackFailClosed (0.00s)
+    --- PASS: TestClosedExperienceReferencesAndHandbackFailClosed/http_not_200 (0.00s)
+    --- PASS: TestClosedExperienceReferencesAndHandbackFailClosed/snapshot_missing (0.00s)
+    --- PASS: TestClosedExperienceReferencesAndHandbackFailClosed/cas_missing (0.00s)
+    --- PASS: TestClosedExperienceReferencesAndHandbackFailClosed/null_not_false (0.00s)
+    --- PASS: TestClosedExperienceReferencesAndHandbackFailClosed/discovery_missing (0.00s)
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/task_increase
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/source_note_partition
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/extended_window
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/longer_foreground
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/swapped_environment
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/missing_binary
+=== RUN   TestClosedExperienceFinitePresealRejectsExpandedAuthority/day_refund
+--- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority (0.01s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/task_increase (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/source_note_partition (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/extended_window (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/longer_foreground (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/swapped_environment (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/missing_binary (0.00s)
+    --- PASS: TestClosedExperienceFinitePresealRejectsExpandedAuthority/day_refund (0.00s)
+=== RUN   TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC
+--- PASS: TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC (0.00s)
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_profile
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/unknown_write
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_identity
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_environment
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_permission
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_reset
+--- PASS: TestExperienceNativeMechanicalInputsFailClosed (0.06s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_profile (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/unknown_write (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_identity (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_environment (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_permission (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_reset (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.18s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.05s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.01s)
+PASS
