@@ -46,9 +46,17 @@ it constructs no database, auth manager or provider. A failed created identity
 is kept. `TestExperienceNativeSkillPreparationSuccessorReadIntegration` then
 uses the new recipe's derived profile for a fresh controlled ordinary Core/
 Broker comparison of denied narrow reads against successful complete reads;
-it must also prove unchanged recipient dispatches. These gates are prepared,
-not yet executed for this source. Run their targeted Linux race/vet checks only
-after the current #76 native resource lane is free. The generic changed-path
+it must also prove unchanged recipient dispatches. The actual new recipe writer
+and derived-profile lesson-read gate remain pending. After the #76 collector
+exited and joined, the first offline gates passed at source
+`c6b64815464f831e9b011b21e0acff5f04ba7a9b`:12 top-level race controls/64
+subcases, actual latest232 and legacy213 imports, and app vet0. The local
+operator's7 tests/38 subcases also pass, including18 cases against its dedicated
+PostgreSQL test database. No skips, race reports, real credentials or new model
+calls occurred. Raw logs, exact commands, executable hash and source snapshots
+are retained in `experiments/memory115/2026-10-27/skill-preparation-successor-v1`.
+These are component results before the planned source integration, not native
+qualification. The generic changed-path
 mapper still suggests historical lab commands; the owner's current PC-only
 instruction requires their existing local equivalent, with no SSH execution.
 
@@ -91,8 +99,8 @@ previously offloaded prepared executables if a later runtime gate requires them;
 do not use their old producer as the new admitted collector.
 
 Native/heavy measurements must run sequentially with issue76 on this PC. The
-new owner decision is recorded; a separate versioned code/profile is prepared,
-while its validation, new recipe/preseal, final gates and actual native comparison
+new owner decision is recorded; a separate versioned code/profile and initial
+offline controls are validated, while the new recipe/preseal, remaining gates and actual native comparison
 remain outstanding. This document
 itself performs no provider call, credential read, source-window write, patch
 application, live update or release qualification.

@@ -1,0 +1,167 @@
+{
+  "version": "issue115-skill-preparation-successor-component-gates-v1",
+  "created_utc": "2026-10-27T04:36:59.4012512+00:00",
+  "status": "COMPONENT_GATES_PASS_NOT_NATIVE_ADMISSION",
+  "producer": "c6b64815464f831e9b011b21e0acff5f04ba7a9b",
+  "app_elf_sha256": "c81d408a21e2aa17c7d3718650814cfcb4059dd37a023059eff9480c6d2ff9f9",
+  "app_elf_bytes": 84752888,
+  "controls_top_PASS": 12,
+  "controls_subcase_PASS": 64,
+  "actual_latest232_import_PASS": true,
+  "actual_legacy213_import_PASS": true,
+  "operator_top_PASS": 7,
+  "operator_subcase_PASS": 38,
+  "operator_actual_PG_subcases": 18,
+  "FAIL": 0,
+  "SKIP": 0,
+  "race_warnings": 0,
+  "vet_exit": 0,
+  "real_credentials_access": 0,
+  "native_calls": 0,
+  "new_native_recipe_or_domain_or_preseal_created": false,
+  "new_operator_eight_commitments_unbound": true,
+  "new_derived_profile_lesson_read_gate": "PENDING",
+  "integration_with_issue76_fixes": "PENDING_BEFORE_FINAL_SOURCE_FREEZE",
+  "prior_unknown_usage_preserved": true,
+  "old_closed_native_failure_reclassified": false,
+  "release_qualified": false,
+  "raw_files": [
+    {
+      "path": "memory115-skill-successor-offline-v1.sh",
+      "bytes": 3824,
+      "sha256": "cfbd3aa2da8c7c0eaf78b7618587252a05390fca2b94aa9042d276a39a40f1f4"
+    },
+    {
+      "path": "memory115-skill-successor-build-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-successor-controls-v1.log",
+      "bytes": 13953,
+      "sha256": "186cefd5a90639cfc691da310cdb7cc035a1eba8581dc1a242918b3a3bd612fd"
+    },
+    {
+      "path": "memory115-skill-successor-latest232-v1.log",
+      "bytes": 383,
+      "sha256": "453e73250062e59b24c4a5d071edffd0f41e1a3d8014bb1493172ddc2a9bb1ef"
+    },
+    {
+      "path": "memory115-skill-successor-old213-v1.log",
+      "bytes": 275,
+      "sha256": "3e82f9ede886f56cae390ecc28898ba4ededc58040daba5c7b2fbb2884b37dbe"
+    },
+    {
+      "path": "memory115-skill-successor-vet-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-successor-offline-v1-exit.json",
+      "bytes": 87,
+      "sha256": "c44224ee533dedf90afedc695e992e18ffe4b73396f68a0307ae1c50c9fedf3a"
+    },
+    {
+      "path": "memory115-skill-successor-elf-v1.txt",
+      "bytes": 144,
+      "sha256": "dda5d5b9d8992b573e2c0e21e22ee41f154d0a2b4b0e348cceebdf639d3779f2"
+    },
+    {
+      "path": "memory115-skill-successor-offline-launch-v1.log",
+      "bytes": 278,
+      "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+    },
+    {
+      "path": "memory115-skill-successor-operator-v1.sh",
+      "bytes": 1151,
+      "sha256": "4d220b6e7abc588499253b5398190a25f178ced14e681aef877efe8fbb585ff3"
+    },
+    {
+      "path": "memory115-skill-successor-operator-v1.log",
+      "bytes": 8042,
+      "sha256": "1b8403f394ee4694b7aee1d0635b8229cda6e5a68bf14a1b711cb42df9c56605"
+    },
+    {
+      "path": "memory115-skill-successor-operator-v1-exit.json",
+      "bytes": 117,
+      "sha256": "04194cba2f824bdf89692bfb234c5973c85098e629c76b91c8495563f9a6b5dc"
+    },
+    {
+      "path": "memory115-skill-successor-operator-launch-v1.log",
+      "bytes": 278,
+      "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+    },
+    {
+      "path": "memory115-skill-successor-changed-map-v1.log",
+      "bytes": 1656,
+      "sha256": "31fa08ca1a32fdbc1f930e17cd947256cb6ac72d5e423e62edb922f48498e30c"
+    }
+  ],
+  "source": [
+    {
+      "source_path": "apps/orchestrator/internal/app/memory115_skill_preparation_successor_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory115_skill_preparation_successor_test.go.txt",
+      "sha256": "dd30be3c352973a1863de66b76e07745021d8eef1462357a5c6f7e20ecc46367"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory115_local_successor_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory115_local_successor_test.go.txt",
+      "sha256": "bcad02e6d127220ff6151b8efa8bbe897a22b4bea40b714e55f713e9ad436560"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_native_collect_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_native_collect_test.go.txt",
+      "sha256": "7160434d6bb195c6f0ff4c690601e67f4bd832cf0c5119a13380f5c5af4b81a8"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_native_entry_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_native_entry_test.go.txt",
+      "sha256": "f5b4c1b12210f5250c9a78383c5d82c52e53a4ab061b9cded0fa18a2413d7f28"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_native_prepare_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_native_prepare_test.go.txt",
+      "sha256": "502014a6dc890095c0ff2c728916cc2bbb28b13bcd5adcbd40184e3d4f9e73ab"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_native_seal_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_native_seal_test.go.txt",
+      "sha256": "1f5dcbe09c40b90d00edcd03b10d6b7ba5ddc502bdc0e423ba715e9a69d7d6ba"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_skill_read_diagnostic_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_skill_read_diagnostic_test.go.txt",
+      "sha256": "14cbc1283d1ae97e4a3f928531e815b36412531dc03cdf951e32b4ccebd70686"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_experience_native_plan_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_experience_native_plan_test.go.txt",
+      "sha256": "22326a97c134d55e3cdad0ece24eb18c1ef5ea3200dde42ad4e4073031208c0b"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory115_closed_local_native_history_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory115_closed_local_native_history_test.go.txt",
+      "sha256": "c2a4fb6393190da0aeff7256399694b71a73182c8f772ec95bbbee80ccfac08b"
+    },
+    {
+      "source_path": "apps/orchestrator/internal/app/memory_closed_experience_native_history_test.go",
+      "snapshot": "apps__orchestrator__internal__app__memory_closed_experience_native_history_test.go.txt",
+      "sha256": "5a7304c660b8bd5ef838cf02ec073e9f683a925e4fe72d403d0f17353133e74b"
+    },
+    {
+      "source_path": "scripts/dev/memory115-local-execute.go",
+      "snapshot": "scripts__dev__memory115-local-execute.go.txt",
+      "sha256": "4e3d4df0e523dfa09cd2284091541ec4a4448cf1da00e5227a896cb6546726e7"
+    },
+    {
+      "source_path": "scripts/dev/memory115-local-execute_test.go",
+      "snapshot": "scripts__dev__memory115-local-execute_test.go.txt",
+      "sha256": "9fa2032aeef93eb4dc0ee4ff7c5e52cd5ec397d0251a276e336d2e1b288ea3b7"
+    },
+    {
+      "source_path": "scripts/dev/memory115-local-execute_integration_test.go",
+      "snapshot": "scripts__dev__memory115-local-execute_integration_test.go.txt",
+      "sha256": "5d57a30ba63ac5bb24342c04db29e266aeb02364801738584567f8dc509db56a"
+    }
+  ]
+}
