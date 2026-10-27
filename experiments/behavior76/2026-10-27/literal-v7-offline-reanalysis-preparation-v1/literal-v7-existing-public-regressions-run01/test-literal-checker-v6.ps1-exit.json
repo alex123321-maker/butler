@@ -1,0 +1,17 @@
+{
+  "script": "test-literal-checker-v6.ps1",
+  "expected": 22,
+  "original_expected_pass": 22,
+  "source_sha256": "5e5228ee457a2d21246fd23b1f09b4f54b97500ed00c231afbb6f9785a670d53",
+  "group": "existing_literal22",
+  "exit": 0,
+  "observed_summary_counts": [
+    22
+  ],
+  "pass": true,
+  "elapsed_seconds": 8.601,
+  "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-literal-checker-v6.ps1.log",
+  "log_sha256": "f47f2832206b9cdf91a00d7f96cb64d25d653df442921776b91f5485ba8228ef",
+  "log_bytes": 274,
+  "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+}

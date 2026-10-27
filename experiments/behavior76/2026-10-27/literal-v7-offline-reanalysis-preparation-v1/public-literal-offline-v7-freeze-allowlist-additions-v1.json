@@ -1,0 +1,37 @@
+{
+  "version": "issue76-offline-v7-freeze-public-allowlist-additions-v1",
+  "base_allowlist": {
+    "path": ".cache/issue76-independent/public-literal-json-token-v7-publication-allowlist-v1.json",
+    "bytes": 17059,
+    "sha256": "2daddf50a532b45966ddce1bfa7b26fb2bc5711e02a1ed5b981128ce45feba01"
+  },
+  "files": [
+    {
+      "path": ".cache/issue76-independent/freeze-literal-offline-reanalysis-v7-v1.py",
+      "bytes": 10623,
+      "sha256": "84f158eac9500fb766e11e57341ef41241a7ba99982b7434b2cce524ee4a0117"
+    },
+    {
+      "path": ".cache/issue76-independent/literal-v7-communication-token-boundary-contract-v1.md",
+      "bytes": 2424,
+      "sha256": "357a9936438f15920a6429695d7abce3d23b958254f7c7d2174432adfc709382"
+    },
+    {
+      "path": ".cache/issue76-independent/literal-v7-formal-offline-criterion-witness-v1.json",
+      "bytes": 8008,
+      "sha256": "3f3d87c079f38d24b878a0fdbf9cb97c04999c6b2d4ef164c3f0f2e65227cbff"
+    },
+    {
+      "path": ".cache/issue76-independent/literal-v7-formal-offline-runtime-inventory-v1.json",
+      "bytes": 52083,
+      "sha256": "408d62660516057722840a7d08965aac935a0b4c46836142914baa77e848d865"
+    },
+    {
+      "path": ".cache/issue76-independent/formal-freeze-literal-offline-reanalysis-v7-v1.json",
+      "bytes": 5539,
+      "sha256": "a8342dd7a8b4e5c1de391cb1bbaa3e27267de865e8c8f85893e9fdfaad288378"
+    }
+  ],
+  "private_output_not_publishable": ".cache/issue76-independent/closed-literal-v11-r1-offline-v7-private",
+  "no_actual_scoring_or_mapping": true
+}

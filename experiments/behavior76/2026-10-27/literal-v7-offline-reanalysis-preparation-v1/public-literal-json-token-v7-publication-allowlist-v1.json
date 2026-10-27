@@ -1,0 +1,420 @@
+{
+  "version": "issue76-json-token-v7-publication-allowlist-v1",
+  "status": "PREPARED_PUBLIC_FIX_REVIEW_ONLY_NOT_ACTUAL_R1_REANALYSIS",
+  "relative_layout_must_be_preserved": true,
+  "files": [
+    {
+      "path": "authority-stream-reader-v2a.cs",
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "bytes": 9794
+    },
+    {
+      "path": "authority-stream-reader-v2a.ps1",
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "bytes": 533
+    },
+    {
+      "path": "authority-stream-scoring-v2d-selftests.ps1",
+      "sha256": "bd177c2dd6557249fc1328f7a204ad7c4e4b906e2649b344db96179124834567",
+      "bytes": 6780
+    },
+    {
+      "path": "authority-stream-scoring-v2d.ps1",
+      "sha256": "d8ef5be5485d2ae515f435bd5e3ef87a261a089c58e422350b41e117956745ab",
+      "bytes": 4183
+    },
+    {
+      "path": "authority-stream-scoring-v6-literal.ps1",
+      "sha256": "e306bdbe342b1f9975426d519dd6a6a08633cfe7d94d40185f94b97df0f72779",
+      "bytes": 4201
+    },
+    {
+      "path": "check-literal-actual-bridge-v1.ps1",
+      "sha256": "d4ce2c7972afc6b1e9563c187908f37396815f6027c7ed60c779048f4027d085",
+      "bytes": 4313
+    },
+    {
+      "path": "literal-index-adapter-v6.ps1",
+      "sha256": "509344a7d02e68f75751e8828ec4e50b25588fcb487e66d2af22c4bce141ef27",
+      "bytes": 28990
+    },
+    {
+      "path": "literal-json-token-boundary-reanalysis-v7.ps1",
+      "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+      "bytes": 5997
+    },
+    {
+      "path": "literal-json-token-v7-public-run01/receipt.json",
+      "sha256": "34fd66dedaff0dc2bc56a557166a6ab36900b51ad52ba293f1d9b33337c354e9",
+      "bytes": 5298
+    },
+    {
+      "path": "literal-json-token-v7-public-run01/runtime-source-as-run.ps1",
+      "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+      "bytes": 5997
+    },
+    {
+      "path": "literal-json-token-v7-public-run01/test-source-as-run.ps1",
+      "sha256": "92e15bcb98cce974a52e0af908bfdc5b2b34692874c8e1daa8ad0718fafcf5d5",
+      "bytes": 10180
+    },
+    {
+      "path": "literal-json-token-v7-public-run02/receipt.json",
+      "sha256": "c8809e7bac3aa542233c7fcb2e2d2173e1df40ce13ea4435ff27491cd112a1e2",
+      "bytes": 5419
+    },
+    {
+      "path": "literal-json-token-v7-public-run02/runtime-source-as-run.ps1",
+      "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+      "bytes": 5997
+    },
+    {
+      "path": "literal-json-token-v7-public-run02/test-source-as-run.ps1",
+      "sha256": "6a0df363af5316392205eaf74805711aafadec2347c85309af365db0042f46d1",
+      "bytes": 10639
+    },
+    {
+      "path": "literal-json-token-v7-public-run03/receipt.json",
+      "sha256": "69c1d340e8b98e326a4b2f88083fb792efe731240771aab8d72fb18f9ae52681",
+      "bytes": 5546
+    },
+    {
+      "path": "literal-json-token-v7-public-run03/runtime-source-as-run.ps1",
+      "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+      "bytes": 5997
+    },
+    {
+      "path": "literal-json-token-v7-public-run03/test-source-as-run.ps1",
+      "sha256": "ea98e09652c8248b9c7765b267b0f77ff2d3250e4255097b5619df2964c29ceb",
+      "bytes": 11207
+    },
+    {
+      "path": "literal-json-token-v7-public-run04/criterion-witness.json",
+      "sha256": "f14cdc8b0138f897d91c320a9b48711dcc311c16ca2a1d6a506ecb1bf11a265a",
+      "bytes": 13626
+    },
+    {
+      "path": "literal-json-token-v7-public-run04/receipt.json",
+      "sha256": "b11f9232c27969ed6466da27729cec490d88f3b30f15695d8c34ab69a120a0df",
+      "bytes": 5677
+    },
+    {
+      "path": "literal-kernel-proof-v1.ps1",
+      "sha256": "b66fc09932f010176f470a7b31499fabe39d70ebce1cf1ab0f0cedc40a7919d5",
+      "bytes": 17305
+    },
+    {
+      "path": "literal-scoring-composition-v6.ps1",
+      "sha256": "f9d8a4d555300b66e3b055906d28888bdc5fe8ec886a5ec63556f23ae0d67912",
+      "bytes": 14128
+    },
+    {
+      "path": "literal-v11-formal-criterion-witness-v1.json",
+      "sha256": "9dae6a0b6357ed3fcf5feacd8a2504a827345832194741d31d5952c29868b82f",
+      "bytes": 5577
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/actual-public-bridge-files/receipt.json",
+      "sha256": "829d3485ba6fb24bc1b50062655b781ee093b37605822431d0ddb3048a8db8f6",
+      "bytes": 37220
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/authority-stream-scoring-v2d-selftests.ps1-exit.json",
+      "sha256": "0cd49fbe3817b361782492a1e673cbf11f5f125a6295a1a4dc58c4480b3e7fa8",
+      "bytes": 708
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/authority-stream-scoring-v2d-selftests.ps1.log",
+      "sha256": "e0b29df5f021bcc1334d842e659c71810cc1bdd9dda4b291cba655010fef5f03",
+      "bytes": 749
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/check-literal-actual-bridge-v1.ps1-exit.json",
+      "sha256": "dea4f3c8a298612e136c2f52eac43941ab52d72709fecf94ce7ebaa6168cdc47",
+      "bytes": 700
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/check-literal-actual-bridge-v1.ps1.log",
+      "sha256": "d076dbebd72e6937df0d83812d1961e3671b79d45eca7924263d958bf21c1b5b",
+      "bytes": 278
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/comparison-attempt01-failure.json",
+      "sha256": "921ec7a1ec737f1a35b6aec272c484145fa258a3582896795ba3136e1cad9c9e",
+      "bytes": 328
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/comparison-attempt01-source.py.txt",
+      "sha256": "46d3ed4cff077ec1eb47c70035a3adf5da8030c96f6f396b3bf7db32bdb4e0c8",
+      "bytes": 8702
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/literal22-public-files/receipt.json",
+      "sha256": "d2de106b07ab2295e2dbc4f092a8fe8b525ae398e2b30c3a9a4ecf1ac6e3832d",
+      "bytes": 1812
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/receipt.json",
+      "sha256": "41deac299a3d59a53b3691a069b3f2b67d7fdbdffddc63933b895aafe4333eeb",
+      "bytes": 10862
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-literal-checker-v6.ps1-exit.json",
+      "sha256": "35b411e6cd752062ced4b65c2e9815bfe4e1af94c1fce36cb0827a07eb446146",
+      "bytes": 671
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-literal-checker-v6.ps1.log",
+      "sha256": "f47f2832206b9cdf91a00d7f96cb64d25d653df442921776b91f5485ba8228ef",
+      "bytes": 274
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-http-composition-v4.ps1-exit.json",
+      "sha256": "53d00fb7d83ead6dd03e05a1f406c24b1ff669022905a228ef21f27469d7f3d2",
+      "bytes": 692
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-http-composition-v4.ps1.log",
+      "sha256": "b5228e38fd601c47d156eccb8406b65e5bc0a5d3dd57a3df2085a430c60e628f",
+      "bytes": 604
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-http-proof-v4.ps1-exit.json",
+      "sha256": "0133dd104ca5d8ec3c0afe249bac74ea9c2848abdd9b55834a3e163f874989ca",
+      "bytes": 685
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-http-proof-v4.ps1.log",
+      "sha256": "a09a297bc337699e2ed8d4d130a88811f0e511c49cb8adc2220dae16cdc2d1ea",
+      "bytes": 2043
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-composition-v4.ps1-exit.json",
+      "sha256": "dba5fc60fda8d6c7280c6594b861df4b4b189905c2f5a63b589187cba8212c2e",
+      "bytes": 694
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-composition-v4.ps1.log",
+      "sha256": "2c6390b0d1c9851a2b422d3cc0c811baddf01efd231f88a9a4250fd175f90cba",
+      "bytes": 637
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-proof-v4-union.ps1-exit.json",
+      "sha256": "ed4680e6704b575e735e5e09ad28846fe7740ddadb3e5cb4bd58401051a720b5",
+      "bytes": 694
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-proof-v4-union.ps1.log",
+      "sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5",
+      "bytes": 185
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-proof-v4.ps1-exit.json",
+      "sha256": "0f777452c3797a56a105562b4c6d39a86d884548e80b78ec36ea58671da80dfd",
+      "bytes": 687
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-model-proof-v4.ps1.log",
+      "sha256": "155d7e20d67203d62afeec442c7c627ed2e3630a5b959ea09851b1372b167e85",
+      "bytes": 2194
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-composition-v4.ps1-exit.json",
+      "sha256": "e9819284ee85cb4f91af8933d3154cc4d4b09ca9955b44309bfdd3f023c8aae9",
+      "bytes": 703
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-composition-v4.ps1.log",
+      "sha256": "44d9d5227eff72152c613d9628386fcfcb51587daf5323dea8cdf29ec4566be4",
+      "bytes": 762
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-metadata-consistency-v4.ps1-exit.json",
+      "sha256": "71c7cc65f086c73cf10cb1b79482917147c25a4d6890438f0f1d23331e1a559a",
+      "bytes": 718
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-metadata-consistency-v4.ps1.log",
+      "sha256": "ded74e434196abdd8394e380d71cd41cc65b1a6dc060a052df014517ab23ea3e",
+      "bytes": 840
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-proof-v4.ps1-exit.json",
+      "sha256": "ace9cf800e6e97349987072bd0c9d6d49e354100e66a92213096b22c17cd6ec4",
+      "bytes": 696
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-response-proof-v4.ps1.log",
+      "sha256": "adcc04d6bfce5c97ca59ce4306dcd20239240ae6c0fd1276db4468b21871c1fe",
+      "bytes": 4804
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-scoring-composition-v4.ps1-exit.json",
+      "sha256": "88f37c6d2a9f1cff8cf73cf8bd474fd89a64dc3858ba690c1cefb7dba5f842a4",
+      "bytes": 701
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-scoring-composition-v4.ps1.log",
+      "sha256": "f1a2f7c539f439f346505483d533065ba9a9adb66fa9942ea66e5c08cf990788",
+      "bytes": 872
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-tail-adapter-v4.ps1-exit.json",
+      "sha256": "ac68e6ae602955ac8da8a8a7bbf41423551757267f262ff3f026b801ad0628ef",
+      "bytes": 688
+    },
+    {
+      "path": "literal-v7-existing-public-regressions-run01/test-local-tail-adapter-v4.ps1.log",
+      "sha256": "b9009c26eed4bd53c30f46d136272b286b15a9f396820aa357956ee663f62065",
+      "bytes": 1167
+    },
+    {
+      "path": "local-model-proof-reader-v4.ps1",
+      "sha256": "2241e8d023b6f00e28dbfc4599a74d5d2b571bf1bb2667faf0de5c1c7f85fd39",
+      "bytes": 12818
+    },
+    {
+      "path": "local-scoring-composition-v4.ps1",
+      "sha256": "35b2734bb3ccc3c381de2d796a0d1d1a09779615c5ada2e26d67be37a081ee25",
+      "bytes": 15197
+    },
+    {
+      "path": "local-tail-adapter-v4.ps1",
+      "sha256": "4e6bdc53519a1d9dce02a10e2c5a8887becbed8205e791c16c11d13d233c344a",
+      "bytes": 23390
+    },
+    {
+      "path": "prepare-literal-json-token-v7-receipts-v1.py",
+      "sha256": "5df9e90be074821936af6ce00b9a6b29745bcfb0c91f9247d3dbaac4a82ad00c",
+      "bytes": 9505
+    },
+    {
+      "path": "public-closed-literal-v11-r1-frozen-checker-failure-diagnosis-v1.json",
+      "sha256": "d5d5d9ac247f2b7efb0a945a7b2b961b1bbe33202f752a770d08f29842c5a250",
+      "bytes": 2552
+    },
+    {
+      "path": "public-closed-literal-v11-r1-frozen-checker-receipt-v1.json",
+      "sha256": "b4bfa23b85e40007542dc7f3705d9538c7f64463ddf0a0618d589566519f676c",
+      "bytes": 610
+    },
+    {
+      "path": "public-literal-json-token-reanalysis-v7-contract-prepared-v1.md",
+      "sha256": "c82b1eda9b76777edc00504bf7756fa6b738bfd70d74cb556d03c34ea9697d7d",
+      "bytes": 5646
+    },
+    {
+      "path": "public-literal-json-token-reanalysis-v7-dependencies-prepared-v1.json",
+      "sha256": "76211a8f9f36bf3890dd98677650a9e2a6effc8b65bd49753ea85227622842ab",
+      "bytes": 6624
+    },
+    {
+      "path": "public-literal-json-token-reanalysis-v7-minimal-delta-v1.md",
+      "sha256": "3437955f973b6b0996459f80c1954420aa732040a0d8a251c718988497d70037",
+      "bytes": 1656
+    },
+    {
+      "path": "public-literal-json-token-reanalysis-v7-preparation-receipt-v1.json",
+      "sha256": "c19815f3aef491230762cac1aa61b7afb8239b9390791c0c0230fcc0a20b7a3a",
+      "bytes": 4510
+    },
+    {
+      "path": "public-literal-json-token-v7-public-regression-comparison-v1.json",
+      "sha256": "a576948a4d3a2683f02251f353bbd9581e51a69611df0d1ebf5a83d804b8d155",
+      "bytes": 6453
+    },
+    {
+      "path": "run-existing-public-json-v7-v1.py",
+      "sha256": "13ef0bb24a973e9948b9bcacd01a1fde47ffa4a6c4d1c4aee57b9c03b73122e7",
+      "bytes": 4268
+    },
+    {
+      "path": "run-scoped-public-json-v7.ps1",
+      "sha256": "5ca209cf3d40fbe52aa4b3d25ed5225efdc060546a73321cf7195d4751c875c9",
+      "bytes": 522
+    },
+    {
+      "path": "score-mechanical-fresh-v3.ps1",
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "bytes": 21480
+    },
+    {
+      "path": "score-mechanical-v2.ps1",
+      "sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869",
+      "bytes": 21474
+    },
+    {
+      "path": "test-literal-checker-v6.ps1",
+      "sha256": "5e5228ee457a2d21246fd23b1f09b4f54b97500ed00c231afbb6f9785a670d53",
+      "bytes": 15026
+    },
+    {
+      "path": "test-literal-json-token-boundary-v7.ps1",
+      "sha256": "485d4736e39e4ea82afe197e996076f2f95cbcf9cdf7864797259fca97138997",
+      "bytes": 11487
+    },
+    {
+      "path": "test-local-http-composition-v4.ps1",
+      "sha256": "515d44fa248f6b24ea6a992f99dcfcf93bab864af8a652302241bd863749dc48",
+      "bytes": 6691
+    },
+    {
+      "path": "test-local-http-proof-v4.ps1",
+      "sha256": "a2748fece16527e9a481b99a30b5175413f536e75826efd3d30b748f87750cb8",
+      "bytes": 7178
+    },
+    {
+      "path": "test-local-model-composition-v4.ps1",
+      "sha256": "34acdc929c6806f7f443c37d2d346842d0d565815e8404e0fd3490c9d032c72b",
+      "bytes": 7173
+    },
+    {
+      "path": "test-local-model-proof-v4-union.ps1",
+      "sha256": "96c22fea4b9ea9d91d81a254a73ee08c182bad8e6e1a230e2c1248aa8acec1d4",
+      "bytes": 2559
+    },
+    {
+      "path": "test-local-model-proof-v4.ps1",
+      "sha256": "9b4f4257a04906b900676d65b49f663d6241cd45b839b7e04bdb1309e161e61c",
+      "bytes": 11605
+    },
+    {
+      "path": "test-local-response-composition-v4.ps1",
+      "sha256": "51fce63bc3b0714303d00ea80b8adba95a650b40a42360f9ffd1fec0d6b4b3be",
+      "bytes": 7672
+    },
+    {
+      "path": "test-local-response-metadata-consistency-v4.ps1",
+      "sha256": "f6f427bd7aef535c6998c091f83c2374439a9da2339e44a43531a1999cf74c87",
+      "bytes": 3226
+    },
+    {
+      "path": "test-local-response-proof-v4.ps1",
+      "sha256": "3da3ba2db3aa5976c8c9e74023a6fa57f0a9998546e2d609263e389877b26858",
+      "bytes": 11147
+    },
+    {
+      "path": "test-local-scoring-composition-v4.ps1",
+      "sha256": "f6d37d87e4d63d3c84a2e61e81370c5e1e4f6b35ceb2e988117d46e294741f37",
+      "bytes": 13146
+    },
+    {
+      "path": "test-local-tail-adapter-v4.ps1",
+      "sha256": "c8bb57fe70bc679d3148d04043d39d9a219bf7e6dc515b02bc355563d06a9918",
+      "bytes": 13552
+    }
+  ],
+  "existing_public_Go_fixture_reference": "experiments/behavior76/2026-10-27/literal-plan-components-v1/literal-actual-proofs-v9",
+  "runtime_entrypoint": "Invoke-Issue76LiteralOfflineReanalysisFilesV7",
+  "runtime_old11_unchanged": true,
+  "new_generic_public_PASS": 45,
+  "existing_public_PASS": 332,
+  "posthoc_limitations_required": true,
+  "forbidden": [
+    "hidden-literal-v11-r1 contents and private generator/seed/goldens",
+    "closed-literal-v11-r1-private/frozen-v6-strict-failure-v1.json with actual private expected value",
+    "actual r1 responses/snapshots/raw/input/mapping/assessment",
+    "auth/settings/keys/DB dumps"
+  ],
+  "reproduction_note": "Runtime and tests require their pinned sibling files. Existing Python scheduling helpers are local own-cache harnesses; materialize the documented sibling layout or invoke public PS scripts with explicit paths. No actual-r1 scoring invocation is permitted yet."
+}

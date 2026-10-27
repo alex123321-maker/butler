@@ -1,0 +1,17 @@
+{
+  "script": "authority-stream-scoring-v2d-selftests.ps1",
+  "expected": 6,
+  "original_expected_pass": 6,
+  "source_sha256": "bd177c2dd6557249fc1328f7a204ad7c4e4b906e2649b344db96179124834567",
+  "group": "existing_original_public298",
+  "exit": 0,
+  "observed_summary_counts": [
+    6
+  ],
+  "pass": true,
+  "elapsed_seconds": 14.392,
+  "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/authority-stream-scoring-v2d-selftests.ps1.log",
+  "log_sha256": "e0b29df5f021bcc1334d842e659c71810cc1bdd9dda4b291cba655010fef5f03",
+  "log_bytes": 749,
+  "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+}

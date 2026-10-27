@@ -1,0 +1,91 @@
+{
+  "version": "issue76-literal-json-token-reanalysis-v7-preparation-receipt-v1",
+  "decision": "CONCRETE_BOUNDARY_FIX_READY_FOR_PARENT_REVIEW_ONLY",
+  "issued_at_utc": "2026-10-27T05:02:07.396726+00:00",
+  "new_runtime": {
+    "path": "literal-json-token-boundary-reanalysis-v7.ps1",
+    "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+    "bytes": 5997
+  },
+  "dependencies": {
+    "path": "public-literal-json-token-reanalysis-v7-dependencies-prepared-v1.json",
+    "sha256": "76211a8f9f36bf3890dd98677650a9e2a6effc8b65bd49753ea85227622842ab",
+    "bytes": 6624
+  },
+  "contract": {
+    "path": "public-literal-json-token-reanalysis-v7-contract-prepared-v1.md",
+    "sha256": "c82b1eda9b76777edc00504bf7756fa6b738bfd70d74cb556d03c34ea9697d7d",
+    "bytes": 5646
+  },
+  "minimal_delta": {
+    "path": "public-literal-json-token-reanalysis-v7-minimal-delta-v1.md",
+    "sha256": "3437955f973b6b0996459f80c1954420aa732040a0d8a251c718988497d70037",
+    "bytes": 1656
+  },
+  "generic_public_history": [
+    {
+      "path": "literal-json-token-v7-public-run01/receipt.json",
+      "sha256": "34fd66dedaff0dc2bc56a557166a6ab36900b51ad52ba293f1d9b33337c354e9",
+      "bytes": 5298
+    },
+    {
+      "path": "literal-json-token-v7-public-run02/receipt.json",
+      "sha256": "c8809e7bac3aa542233c7fcb2e2d2173e1df40ce13ea4435ff27491cd112a1e2",
+      "bytes": 5419
+    },
+    {
+      "path": "literal-json-token-v7-public-run03/receipt.json",
+      "sha256": "69c1d340e8b98e326a4b2f88083fb792efe731240771aab8d72fb18f9ae52681",
+      "bytes": 5546
+    },
+    {
+      "path": "literal-json-token-v7-public-run04/receipt.json",
+      "sha256": "b11f9232c27969ed6466da27729cec490d88f3b30f15695d8c34ab69a120a0df",
+      "bytes": 5677
+    }
+  ],
+  "generic_final_PASS": 45,
+  "generic_final_FAIL": 0,
+  "generic_test_history_note": "Run01 two negative callback probes strengthened in run02 with actual not-entered witnesses; unrelated defaults and exact frozen ReadJson tests added subsequently. Prior source-as-run snapshots retained. No runtime or old predicate change.",
+  "existing_public_regressions": {
+    "path": "literal-v7-existing-public-regressions-run01/receipt.json",
+    "sha256": "41deac299a3d59a53b3691a069b3f2b67d7fdbdffddc63933b895aafe4333eeb",
+    "bytes": 10862
+  },
+  "existing_public_PASS": 332,
+  "existing_public_failed_groups": 0,
+  "public_baseline_comparison": {
+    "path": "public-literal-json-token-v7-public-regression-comparison-v1.json",
+    "sha256": "a576948a4d3a2683f02251f353bbd9581e51a69611df0d1ebf5a83d804b8d155",
+    "bytes": 6453
+  },
+  "scoped_public_bridge": {
+    "path": "literal-v7-existing-public-regressions-run01/actual-public-bridge-files/receipt.json",
+    "sha256": "829d3485ba6fb24bc1b50062655b781ee093b37605822431d0ddb3048a8db8f6",
+    "bytes": 37220
+  },
+  "original27_and12_helper_ASTs_exact": true,
+  "old11_runtime_bytes_unchanged": true,
+  "JSON_token_strings_preserved_before_conversion": true,
+  "all_decoder_calls_in_scope_affected_not_only_goldens": true,
+  "DateTime_stringification_casts_used": false,
+  "default_scope_leakage_on_success_or_throw": false,
+  "private_case_value_used_in_public_examples": false,
+  "original_frozen_v6_failure_retained": "b4bfa23b85e40007542dc7f3705d9538c7f64463ddf0a0618d589566519f676c",
+  "original_v6_qualification": "STRICT_FAIL_NO_GO_UNCHANGED",
+  "new_boundary_is_posthoc_and_requires_separate_review_freeze": true,
+  "actual_r1_evaluation_or_communication_or_mapping_started": false,
+  "corpus_goldens_raw_expense_criteria_rubric_thresholds_stop_rules_unchanged": true,
+  "actual_r1_plan": "16episodes/32arms/68owner; remains unassessed",
+  "historical_r3_candidate_NO_GO_retained": true,
+  "Go_PG_Docker_provider_auth_native_calls": 0,
+  "new_native_admission": false,
+  "formal_reanalysis_freeze_issued": false,
+  "limitations": [
+    "Public regression equality covers original case assertions and declared outcomes, not every intermediate exception trace.",
+    "Scoped DateKind String deliberately changes representation of any matching ISO JSON string in any nested decoder; do not claim gold-loader-only scope.",
+    "The failed frozen prospective execution is never rewritten as an original-protocol pass.",
+    "No actual r1 result may be generated until parent reviews the concrete pack and separately freezes/authorizes offline reanalysis.",
+    "No candidate promotion, new stop exemption, new provider call, data resampling or private expected-value cast is permitted."
+  ]
+}

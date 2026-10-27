@@ -1,0 +1,29 @@
+{
+  "version": "literal-r1-closed-accounting-v1",
+  "observed_utc": "2026-10-27T04:24:02.9396968+00:00",
+  "new": {
+    "entries": 163,
+    "known_full_tokens": 1310748,
+    "NULL": 0,
+    "observed": 163
+  },
+  "inclusive": {
+    "windows": 13,
+    "entries": 1134,
+    "known_full_tokens": 9010959,
+    "NULL": 12,
+    "observed": 1122
+  },
+  "old971_rows_exact": true,
+  "old12_window_records_exact": true,
+  "current1134_export_exact": true,
+  "temporary_client_staging_before_readonly": true,
+  "actual_comparison": "BEGIN READ ONLY then ROLLBACK",
+  "application_journal_writes": 0,
+  "native_calls_for_check": 0,
+  "private_auth_access": 0,
+  "post_run_elf_sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e",
+  "post_run_elf_readonly": true,
+  "quality": "PENDING_INDEPENDENT_68_SEAL",
+  "invoice_cost": "unknown"
+}

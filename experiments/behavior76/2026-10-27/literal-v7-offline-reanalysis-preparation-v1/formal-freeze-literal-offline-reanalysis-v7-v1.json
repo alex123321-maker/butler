@@ -1,0 +1,136 @@
+{
+  "version": "issue76-literal-offline-reanalysis-v7-formal-freeze-v1",
+  "decision": "FORMAL_POSTHOC_SOURCE_SCORER_JSON_BOUNDARY_FREEZE_ONLY_NOT_EVALUATION_AUTHORIZATION",
+  "issued_at_utc": "2026-10-27T05:14:23.183818+00:00",
+  "producer": "f1eabf538c640adbb92d957ecd672094816bebca",
+  "semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "worktree_clean": true,
+  "runtime_inventory": {
+    "path": ".cache/issue76-independent/literal-v7-formal-offline-runtime-inventory-v1.json",
+    "bytes": 52083,
+    "sha256": "408d62660516057722840a7d08965aac935a0b4c46836142914baa77e848d865"
+  },
+  "criterion_witness": {
+    "path": ".cache/issue76-independent/literal-v7-formal-offline-criterion-witness-v1.json",
+    "bytes": 8008,
+    "sha256": "3f3d87c079f38d24b878a0fdbf9cb97c04999c6b2d4ef164c3f0f2e65227cbff"
+  },
+  "runtime_count": 12,
+  "measured_ELF": {
+    "path": ".cache/behavior76/literal-collector-c8411429-r1.test",
+    "bytes": 86820998,
+    "sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e"
+  },
+  "measured_raw": {
+    "root": ".cache/behavior76/native-literal-v11-r1",
+    "inventory": {
+      "path": ".cache/behavior76/native-literal-v11-r1-raw-inventory-v1.json",
+      "bytes": 522461,
+      "sha256": "77b6843f538af5e15454817ec3b3a433707ccdb893d935776de789de31b4c127"
+    },
+    "files": 2553,
+    "bytes": 72850851,
+    "all_SHA_readonly_file_set_exact": true
+  },
+  "controls": {
+    "stimuli": {
+      "path": ".cache/issue76-independent/hidden-literal-v11-r1/stimuli.jsonl",
+      "bytes": 42847,
+      "sha256": "9bc4872c85fb6b2d5e1a1b84b94b24a6a1e6d64ae749d527cbf5698431ca5d0c"
+    },
+    "expectations": {
+      "path": ".cache/issue76-independent/hidden-literal-v11-r1/expectations.jsonl",
+      "bytes": 43075,
+      "sha256": "f20937430079aa6c259a6917f9f1ab846875b4baff71c58cf4c72e4d1ff49865"
+    },
+    "content_read": false,
+    "case_values_projected": false
+  },
+  "plan": {
+    "episodes": 16,
+    "arms": 32,
+    "owner_opportunities": 68,
+    "dimensions": 8,
+    "legacy_families": 6
+  },
+  "original_failure": {
+    "path": ".cache/issue76-independent/public-closed-literal-v11-r1-frozen-checker-receipt-v1.json",
+    "bytes": 610,
+    "sha256": "b4bfa23b85e40007542dc7f3705d9538c7f64463ddf0a0618d589566519f676c"
+  },
+  "original_status": "FROZEN_V6_STRICT_FAIL_NO_GO_IMMUTABLE",
+  "public_preparation": {
+    "path": ".cache/issue76-independent/public-literal-json-token-reanalysis-v7-preparation-receipt-v1.json",
+    "bytes": 4510,
+    "sha256": "c19815f3aef491230762cac1aa61b7afb8239b9390791c0c0230fcc0a20b7a3a"
+  },
+  "public_allowlist": {
+    "path": ".cache/issue76-independent/public-literal-json-token-v7-publication-allowlist-v1.json",
+    "bytes": 17059,
+    "sha256": "2daddf50a532b45966ddce1bfa7b26fb2bc5711e02a1ed5b981128ce45feba01"
+  },
+  "dependencies": {
+    "path": ".cache/issue76-independent/public-literal-json-token-reanalysis-v7-dependencies-prepared-v1.json",
+    "bytes": 6624,
+    "sha256": "76211a8f9f36bf3890dd98677650a9e2a6effc8b65bd49753ea85227622842ab"
+  },
+  "closed_operational_proof": {
+    "path": ".cache/issue76-independent/public-closed-literal-v11-r1-operational-prevalidation-v1.json",
+    "bytes": 1127,
+    "sha256": "567f2e2a72197afc1454842f48b5b583e305f12454de5bcbc1d0cb80b9c4a85a"
+  },
+  "inclusive_expense": {
+    "closed_windows": 13,
+    "admissions": 1134,
+    "measured": 1122,
+    "known_full_tokens": 9010959,
+    "NULL_usage": 12
+  },
+  "new_window_expense": {
+    "admissions": 163,
+    "measured": 163,
+    "known_full_tokens": 1310748,
+    "NULL_usage": 0
+  },
+  "original_criteria_statement_extents": 27,
+  "original_helper_extents": 12,
+  "criteria_rubric_thresholds_stop_UNKNOWN_rules_changed": false,
+  "communication_extraction_contract": {
+    "path": ".cache/issue76-independent/literal-v7-communication-token-boundary-contract-v1.md",
+    "bytes": 2424,
+    "sha256": "357a9936438f15920a6429695d7abce3d23b958254f7c7d2174432adfc709382"
+  },
+  "decoder_scope": "ALL matching nested unqualified and module-qualified ConvertFrom-Json calls under pinned Invoke-Issue76JsonStringTokenScopeV7; not goldens-only. Exact JSON string tokens retained before communication review; no DateTime stringification casts.",
+  "future_private_output": ".cache/issue76-independent/closed-literal-v11-r1-offline-v7-private",
+  "output_absent_at_freeze": true,
+  "evaluation_state": {
+    "mechanical_reanalysis": "NOT_STARTED",
+    "communication": "NOT_STARTED",
+    "mapping_read": false,
+    "intentional_mapping_inference": false,
+    "all68_masked_judgments_must_seal_before_mapping": true
+  },
+  "next_step_requires_parent_Git_preservation_and_explicit_offline_authorization": true,
+  "new_native_authorization": false,
+  "candidate_promotion": false,
+  "limitations": [
+    "Post hoc representation repair is not original-protocol PASS.",
+    "No data resampling, expected-value edits, criterion changes or historical-result rewriting.",
+    "Public tests cover their assertions/outcomes, not every dynamic fixture byte or exception trace.",
+    "Synthetic-data, statistical and AI-communication-review limitations remain."
+  ],
+  "issuer_script": {
+    "path": ".cache/issue76-independent/freeze-literal-offline-reanalysis-v7-v1.py",
+    "bytes": 10623,
+    "sha256": "84f158eac9500fb766e11e57341ef41241a7ba99982b7434b2cce524ee4a0117"
+  },
+  "operations": {
+    "file_Git_and_AST_only": true,
+    "Go": 0,
+    "PG": 0,
+    "Docker": 0,
+    "auth": 0,
+    "provider_model": 0,
+    "scoring_or_judgments": 0
+  }
+}

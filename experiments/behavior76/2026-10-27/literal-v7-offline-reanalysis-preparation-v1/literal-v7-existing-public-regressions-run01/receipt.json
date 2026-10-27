@@ -1,0 +1,241 @@
+{
+  "version": "issue76-json-token-v7-existing-public-regressions-v1",
+  "status": "PREPARED_ONLY_NO_ACTUAL_R1_REANALYSIS",
+  "issued_at_utc": "2026-10-27T04:54:40.080249+00:00",
+  "groups": {
+    "original_public_expected_cases": 298,
+    "literal_public_expected_cases": 22,
+    "actual_saved_public_bridge_expected_checks": 12
+  },
+  "passed_cases": 332,
+  "failed_script_groups": 0,
+  "results": [
+    {
+      "script": "authority-stream-scoring-v2d-selftests.ps1",
+      "expected": 6,
+      "original_expected_pass": 6,
+      "source_sha256": "bd177c2dd6557249fc1328f7a204ad7c4e4b906e2649b344db96179124834567",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        6
+      ],
+      "pass": true,
+      "elapsed_seconds": 14.392,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/authority-stream-scoring-v2d-selftests.ps1.log",
+      "log_sha256": "e0b29df5f021bcc1334d842e659c71810cc1bdd9dda4b291cba655010fef5f03",
+      "log_bytes": 749,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "check-literal-actual-bridge-v1.ps1",
+      "expected": 12,
+      "original_expected_pass": 12,
+      "source_sha256": "d4ce2c7972afc6b1e9563c187908f37396815f6027c7ed60c779048f4027d085",
+      "group": "retained_actual_public_Go_to_PS12",
+      "exit": 0,
+      "observed_summary_counts": [
+        12
+      ],
+      "pass": true,
+      "elapsed_seconds": 4.088,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/check-literal-actual-bridge-v1.ps1.log",
+      "log_sha256": "d076dbebd72e6937df0d83812d1961e3671b79d45eca7924263d958bf21c1b5b",
+      "log_bytes": 278,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-literal-checker-v6.ps1",
+      "expected": 22,
+      "original_expected_pass": 22,
+      "source_sha256": "5e5228ee457a2d21246fd23b1f09b4f54b97500ed00c231afbb6f9785a670d53",
+      "group": "existing_literal22",
+      "exit": 0,
+      "observed_summary_counts": [
+        22
+      ],
+      "pass": true,
+      "elapsed_seconds": 8.601,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-literal-checker-v6.ps1.log",
+      "log_sha256": "f47f2832206b9cdf91a00d7f96cb64d25d653df442921776b91f5485ba8228ef",
+      "log_bytes": 274,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-http-composition-v4.ps1",
+      "expected": 8,
+      "original_expected_pass": 8,
+      "source_sha256": "515d44fa248f6b24ea6a992f99dcfcf93bab864af8a652302241bd863749dc48",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        8
+      ],
+      "pass": true,
+      "elapsed_seconds": 28.004,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-http-composition-v4.ps1.log",
+      "log_sha256": "b5228e38fd601c47d156eccb8406b65e5bc0a5d3dd57a3df2085a430c60e628f",
+      "log_bytes": 604,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-http-proof-v4.ps1",
+      "expected": 52,
+      "original_expected_pass": 52,
+      "source_sha256": "a2748fece16527e9a481b99a30b5175413f536e75826efd3d30b748f87750cb8",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        52
+      ],
+      "pass": true,
+      "elapsed_seconds": 201.313,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-http-proof-v4.ps1.log",
+      "log_sha256": "a09a297bc337699e2ed8d4d130a88811f0e511c49cb8adc2220dae16cdc2d1ea",
+      "log_bytes": 2043,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-model-composition-v4.ps1",
+      "expected": 7,
+      "original_expected_pass": 7,
+      "source_sha256": "34acdc929c6806f7f443c37d2d346842d0d565815e8404e0fd3490c9d032c72b",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        7
+      ],
+      "pass": true,
+      "elapsed_seconds": 19.635,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-model-composition-v4.ps1.log",
+      "log_sha256": "2c6390b0d1c9851a2b422d3cc0c811baddf01efd231f88a9a4250fd175f90cba",
+      "log_bytes": 637,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-model-proof-v4-union.ps1",
+      "expected": 2,
+      "original_expected_pass": 2,
+      "source_sha256": "96c22fea4b9ea9d91d81a254a73ee08c182bad8e6e1a230e2c1248aa8acec1d4",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        2
+      ],
+      "pass": true,
+      "elapsed_seconds": 20.615,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-model-proof-v4-union.ps1.log",
+      "log_sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5",
+      "log_bytes": 185,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-model-proof-v4.ps1",
+      "expected": 47,
+      "original_expected_pass": 47,
+      "source_sha256": "9b4f4257a04906b900676d65b49f663d6241cd45b839b7e04bdb1309e161e61c",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        47
+      ],
+      "pass": true,
+      "elapsed_seconds": 162.046,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-model-proof-v4.ps1.log",
+      "log_sha256": "155d7e20d67203d62afeec442c7c627ed2e3630a5b959ea09851b1372b167e85",
+      "log_bytes": 2194,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-response-composition-v4.ps1",
+      "expected": 10,
+      "original_expected_pass": 10,
+      "source_sha256": "51fce63bc3b0714303d00ea80b8adba95a650b40a42360f9ffd1fec0d6b4b3be",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        10
+      ],
+      "pass": true,
+      "elapsed_seconds": 42.762,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-response-composition-v4.ps1.log",
+      "log_sha256": "44d9d5227eff72152c613d9628386fcfcb51587daf5323dea8cdf29ec4566be4",
+      "log_bytes": 762,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-response-metadata-consistency-v4.ps1",
+      "expected": 9,
+      "original_expected_pass": 9,
+      "source_sha256": "f6f427bd7aef535c6998c091f83c2374439a9da2339e44a43531a1999cf74c87",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        9
+      ],
+      "pass": true,
+      "elapsed_seconds": 35.028,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-response-metadata-consistency-v4.ps1.log",
+      "log_sha256": "ded74e434196abdd8394e380d71cd41cc65b1a6dc060a052df014517ab23ea3e",
+      "log_bytes": 840,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-response-proof-v4.ps1",
+      "expected": 113,
+      "original_expected_pass": 113,
+      "source_sha256": "3da3ba2db3aa5976c8c9e74023a6fa57f0a9998546e2d609263e389877b26858",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        113
+      ],
+      "pass": true,
+      "elapsed_seconds": 411.518,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-response-proof-v4.ps1.log",
+      "log_sha256": "adcc04d6bfce5c97ca59ce4306dcd20239240ae6c0fd1276db4468b21871c1fe",
+      "log_bytes": 4804,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-scoring-composition-v4.ps1",
+      "expected": 12,
+      "original_expected_pass": 12,
+      "source_sha256": "f6d37d87e4d63d3c84a2e61e81370c5e1e4f6b35ceb2e988117d46e294741f37",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        12
+      ],
+      "pass": true,
+      "elapsed_seconds": 40.504,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-scoring-composition-v4.ps1.log",
+      "log_sha256": "f1a2f7c539f439f346505483d533065ba9a9adb66fa9942ea66e5c08cf990788",
+      "log_bytes": 872,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    },
+    {
+      "script": "test-local-tail-adapter-v4.ps1",
+      "expected": 32,
+      "original_expected_pass": 32,
+      "source_sha256": "c8bb57fe70bc679d3148d04043d39d9a219bf7e6dc515b02bc355563d06a9918",
+      "group": "existing_original_public298",
+      "exit": 0,
+      "observed_summary_counts": [
+        32
+      ],
+      "pass": true,
+      "elapsed_seconds": 64.724,
+      "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-tail-adapter-v4.ps1.log",
+      "log_sha256": "b9009c26eed4bd53c30f46d136272b286b15a9f396820aa357956ee663f62065",
+      "log_bytes": 1167,
+      "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+    }
+  ],
+  "original_frozen_execution_FAIL_retained": true,
+  "old11_runtime_and27_predicates_not_edited": true,
+  "actual_closed_r1_corpus_answers_goldens_mapping_not_opened": true,
+  "Go_PG_Docker_provider_auth_native_calls": 0,
+  "only_new_public_GUID_or_requested_CreateNew_output_paths_written": true,
+  "note": "Existing original public scripts and their negative source/clock/authority/stop/UNKNOWN/proof cases executed unchanged; no private study rows or judgments evaluated."
+}

@@ -1,0 +1,13 @@
+{
+  "version": "issue76-literal-v11-r1-frozen-checker-receipt-v1",
+  "decision": "FROZEN_V6_STRICT_FAILURE_RETAINED_NO_QUIET_REPAIR",
+  "started_at_utc": "2026-10-27T04:24:04.9104764+00:00",
+  "completed_at_utc": "2026-10-27T04:27:01.1837849+00:00",
+  "window": "issue76-fixture-literal-20261027T030620",
+  "fixed_public_error": "Frozen reader/composer failed; exact diagnostic retained privately.",
+  "mapping_read": false,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "communication_judgments": "NOT_STARTED_BLOCKED_BY_STRICT_READER",
+  "checker_Go_PG_Docker_auth_provider": 0
+}

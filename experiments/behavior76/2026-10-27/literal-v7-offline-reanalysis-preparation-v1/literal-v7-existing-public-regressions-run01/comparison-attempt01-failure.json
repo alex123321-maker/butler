@@ -1,0 +1,1 @@
+{"version":"issue76-v7-public-comparison-attempt01","decision":"LITERAL_LABEL_COMPARISON_FAILED_NOT_TEST_EXECUTION","group":"test-local-response-proof-v4.ps1","old_cases":113,"new_cases":113,"both_test_exit":0,"documented_random_GUID_labels":11,"source_line":40,"payload_or_predicate_failure":false,"actual_r1_reanalysis":false}
