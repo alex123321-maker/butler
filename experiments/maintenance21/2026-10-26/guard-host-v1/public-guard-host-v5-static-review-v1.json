@@ -1,0 +1,120 @@
+{
+  "version": "issue21-independent-guard-host-v5-static-review-v1",
+  "issued_utc": "2026-10-26T23:52:52.030861+00:00",
+  "decision": "V4_COLD_AND_STRUCTURAL_CLEANUP_FIXES_CONFIRMED_WITH_NEXT_PHASE_QUALIFICATIONS_NOT_UPDATE_ACCEPTANCE",
+  "observed_repository_HEAD": "23aa5a3109a3d083d9e409dcbf2d0bf27197c300",
+  "exact_source_pins": [
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux.go",
+      "sha256": "89b1cb3d7282c485aecd5682bf58be74a254dca33e8e2656e7fc47ceb533c973"
+    },
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+      "sha256": "f2914eeda3dcd97e773b4bca69f666e135759e3487ce1d513bae0b76d187043d"
+    }
+  ],
+  "v4_source_snapshot_retained": true,
+  "v5_source_snapshot": "D:\\CodexData\\home\\worktrees\\issue21-local\\butler\\.cache\\issue21-independent\\guard-host-v5-reviewed-source-v1",
+  "safe_component_publication_allowlist": [
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux.go",
+      "bytes": 26977,
+      "sha256": "89b1cb3d7282c485aecd5682bf58be74a254dca33e8e2656e7fc47ceb533c973"
+    },
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+      "bytes": 7839,
+      "sha256": "f2914eeda3dcd97e773b4bca69f666e135759e3487ce1d513bae0b76d187043d"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v5-source-before.json",
+      "bytes": 326,
+      "sha256": "8bc6b80b3f0279214a714c55fb0452aa1eb5d6b095e7b50befffbf7fcc1a34e6"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v5-source-after.json",
+      "bytes": 326,
+      "sha256": "8bc6b80b3f0279214a714c55fb0452aa1eb5d6b095e7b50befffbf7fcc1a34e6"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v5.sh",
+      "bytes": 904,
+      "sha256": "981e45db7f07e94bfc8695424e43241b1a91815dbdb9682808a827f8478b9f58"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v5.log",
+      "bytes": 3290,
+      "sha256": "5acbd862bf3c76a8714e7ba39bb5bbdea5db47f1f097edafc9f663a43a1763a2"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v5-exit.json",
+      "bytes": 181,
+      "sha256": "f52d6c77e90ae2508e6119988f5a995cd1ed29d8dce2f92056e394b0341b8a64"
+    }
+  ],
+  "review_doc": {
+    "path": "public-guard-host-v5-static-review-v1.md",
+    "sha256": "46df8a780c641b071a1dd78e384f37a7efcacbf3183e061bf2477d6e436c9467"
+  },
+  "retained_tests": {
+    "top_level_PASS": 5,
+    "never_started_subcase_PASS": 6,
+    "FAIL": 0,
+    "SKIP": 0,
+    "linux_race_package_seconds": 3.272,
+    "actual_guard_kernel_seconds": 1.1,
+    "actual_measure_close_race_seconds": 1.14,
+    "sequential_script_and_vet_exit": 0
+  },
+  "retained_actual_witness": {
+    "container_id": "b7ad78ce6b610b3da79915e608c3e9fbf369965f9b0884d3ed12111f4ce676b6",
+    "image_sha256": "5a7e4124365ea4f271c23e1c9c918b991f86d675e0f2789e520f87a321062165",
+    "guard_sha256": "c62270e6ca372fa6062f41247bdcfcb9a34d3649cf7df0e58a3119ed16add1c9",
+    "candidate_sha256": "a8ce3e6c649def3681f4959a334e88d700b3b10fd1ecea18383057b719800296",
+    "runtime_sha256": "286ae75fa61bf28f4e914f678ee7bafbda187a137825a81b4c68bae9bcfb3888",
+    "pid": 18723,
+    "pid_start_ticks": 7175222,
+    "namespace_sha256": "ce52dd9ac66e7002fbb9653915cdddf9e9c892b822352bc122f15b50cf47f68d",
+    "mount_sha256": "205a1139a17e4cc6f2c9252a3eee9566a54eca572785bdd2fc69b05c02c9e3c3",
+    "descriptor_sha256": "28725eaa16b9bcd1f8984fcc8d0d2f85533ee54f05b181b8e6df8d49cccb26a2",
+    "own_root_descriptors": 1,
+    "read_only_cpu_descriptors": 1,
+    "root_path_projection_differs": false,
+    "memory_bytes": 134217728,
+    "pids": 32,
+    "max_open_files": 64,
+    "cpu": "100000 100000",
+    "effective_swap_max": 0,
+    "guard_is_pid1": true,
+    "marker_absent": true,
+    "candidate_executed": false,
+    "measured_at": "2026-10-26T23:45:49.874117Z"
+  },
+  "retained_actual_exit": {
+    "exit_code": 0,
+    "source_unchanged": true,
+    "scope": "trustedguardonly",
+    "candidate_launch_implemented": false,
+    "authority_granted": false,
+    "native_models": 0
+  },
+  "fixes": [
+    "Initial state explicitly never-started created; cleanup ownership still created/exited.",
+    "RestartPolicy no.",
+    "Shared measure/close mutex and no PID/start/runtime/control-inode rebase.",
+    "Additional read-only mount predicates.",
+    "FD-close structural fault no longer skips physical termination; overall fixed fault retained separately from cleanupConfirmed."
+  ],
+  "residual_next_phase_qualifications": [
+    "measureLocked does not yet deny a previously recorded controlCloseFault; keep any terminal handle fault unqualified before publication.",
+    "5s cleanup context begins after mutex acquisition; it is not proof of total wall-time cleanup bound including in-flight measurement."
+  ],
+  "FD_close_failure_empirically_reproduced": false,
+  "FD_close_fault_injection_test_claimed": false,
+  "publication_limit": "Only listed v5 source/log/script/inventory/exit plus this selected safe review/receipt. No private Docker configuration, keys/settings, sibling caches, candidate data/outputs, hidden corpora or goldens. No universal secret-free guarantee.",
+  "all_prior_failures_retained": true,
+  "new_source_test_or_candidate_admission": false,
+  "formal_freeze_or_hidden_authorship": false,
+  "source_edits": 0,
+  "Go_PG_Docker_model_auth_private_key_operations": 0
+}

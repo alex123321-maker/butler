@@ -1,0 +1,115 @@
+{
+  "version": "issue21-independent-guard-host-v4-static-review-v1",
+  "issued_utc": "2026-10-26T23:37:28.345845+00:00",
+  "decision": "TRUSTED_GUARD_ONLY_REVIEW_WITH_COLD_PHASE_FINDING_NO_CANDIDATE_OR_UPDATER_ACCEPTANCE",
+  "observed_repository_HEAD": "23aa5a3109a3d083d9e409dcbf2d0bf27197c300",
+  "source_pins_before_after_equal": [
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux.go",
+      "sha256": "97c83af588b7437f9891ef980908bf9853ca92478f8250b723f7ade33c766531"
+    },
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+      "sha256": "7d8c9cffcf4c81cd7f0ac6f5564794cd7a1de0f70255a0a95fe47c7bb757515a"
+    }
+  ],
+  "reviewed_source_copies": "D:\\CodexData\\home\\worktrees\\issue21-local\\butler\\.cache\\issue21-independent\\guard-host-v4-reviewed-source-v1",
+  "actual_retained_artifacts": [
+    {
+      "path": ".cache/maintenance21-guard-host-v4-source-before.json",
+      "bytes": 326,
+      "sha256": "00ade9bcc86d93493554d97c5b2925fc6ffa04360618749743fa3dd5e6111c0f"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v4-source-after.json",
+      "bytes": 326,
+      "sha256": "00ade9bcc86d93493554d97c5b2925fc6ffa04360618749743fa3dd5e6111c0f"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v4.log",
+      "bytes": 1862,
+      "sha256": "cc1703b56c19a7004538bdaa80ac2e987895b80ac4a61282c3924fbee836f7f5"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v4-exit.json",
+      "bytes": 181,
+      "sha256": "f52d6c77e90ae2508e6119988f5a995cd1ed29d8dce2f92056e394b0341b8a64"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v4.sh",
+      "bytes": 987,
+      "sha256": "43348b7e0dc147f2a5372d38b43a5cd16be643b80806724ae4f78391e28f94aa"
+    }
+  ],
+  "actual_retained_exit": {
+    "exit_code": 0,
+    "source_unchanged": true,
+    "scope": "trustedguardonly",
+    "candidate_launch_implemented": false,
+    "authority_granted": false,
+    "native_models": 0
+  },
+  "actual_retained_witness": {
+    "container_id": "0ae35c3021c78a376f8abb982dacae30958c4be91feb773ff769d1812be154b3",
+    "image_sha256": "5a7e4124365ea4f271c23e1c9c918b991f86d675e0f2789e520f87a321062165",
+    "guard_sha256": "c62270e6ca372fa6062f41247bdcfcb9a34d3649cf7df0e58a3119ed16add1c9",
+    "candidate_sha256": "a8ce3e6c649def3681f4959a334e88d700b3b10fd1ecea18383057b719800296",
+    "runtime_sha256": "286ae75fa61bf28f4e914f678ee7bafbda187a137825a81b4c68bae9bcfb3888",
+    "pid": 18366,
+    "pid_start_ticks": 7091369,
+    "namespace_sha256": "ce52dd9ac66e7002fbb9653915cdddf9e9c892b822352bc122f15b50cf47f68d",
+    "mount_sha256": "81c5fb07ec7042082c04fd8479015be804b1a356401e2060a82f7242432fe3f2",
+    "descriptor_sha256": "28725eaa16b9bcd1f8984fcc8d0d2f85533ee54f05b181b8e6df8d49cccb26a2",
+    "own_root_descriptors": 1,
+    "read_only_cpu_descriptors": 1,
+    "root_path_projection_differs": false,
+    "memory_bytes": 134217728,
+    "pids": 32,
+    "max_open_files": 64,
+    "cpu": "100000 100000",
+    "effective_swap_max": 0,
+    "guard_is_pid1": true,
+    "marker_absent": true,
+    "candidate_executed": false,
+    "measured_at": "2026-10-26T23:31:51.342094Z"
+  },
+  "actual_tests": {
+    "top_level_PASS": 3,
+    "FAIL": 0,
+    "SKIP": 0,
+    "package_seconds": 2.075,
+    "actual_guard_test_seconds": 1.05,
+    "new_checker_execution": false
+  },
+  "findings": [
+    {
+      "id": "initial-cold-may-be-exited",
+      "severity": "P2_before_reuse_for_candidate_execution",
+      "source": "internal/maintenance/capsule_guard_host_linux.go:136",
+      "related_lines": [
+        165,
+        233,
+        525
+      ],
+      "fact": "Initial inspect(false) allows previously exited ownership state and then starts it; current guard+absent marker does not prove never executed.",
+      "suggestion": "Keep created|exited ownership for cleanup, but require separately never-started created initial phase and expected first-start/current identity.",
+      "reproduced": false,
+      "actual_v4_prior_execution_claimed": false
+    }
+  ],
+  "future_seams": [
+    "Serialize measure/control-handle/publication/close and recheck PID/start/runtime/control identity; current cached witness is not a live launch grant.",
+    "Failed Close stays unqualified containment; do not continue candidate launches on a cached cleanup failure.",
+    "Mode2/hash witnesses do not independently reconstruct seccomp policy or all Docker backing sources; trusted host topology remains explicit."
+  ],
+  "read_only_cpu_FD_exception": "Only same guest-kernel cpu.max inode, O_RDONLY and O_CLOEXEC, fd>=3; no arbitrary regular FD accepted.",
+  "prior_v1_v2_v3_failures_retained": true,
+  "review_doc": {
+    "path": "public-guard-host-v4-static-review-v1.md",
+    "sha256": "c9d3b0769cbf151d3b826d1fa41b6e9c0981f6798433761b972accefda60afd0"
+  },
+  "next_step": "Public v2 typed-admission and boundedI/O lifecycle after addressing cold phase/freshness; not hidden authoring or launch admission.",
+  "source_edits": 0,
+  "Go_PG_Docker_model_auth_private_key_operations": 0,
+  "formal_freeze_or_hidden_authoring_or_admission": false
+}

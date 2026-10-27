@@ -1,5 +1,18 @@
 # Independent release admission
 
+A private Linux `capsuleGuardHost` can now create a fixed128MiB/32PID/one-CPU
+guard container, verify actual cold files/configuration and strictly never-
+started state, then measure the trusted guard's real PID/start time, namespaces,
+UID/GID/capabilities/seccomp, cgroup/no-swap, read-only mounts, environment and
+descriptor boundaries. It publishes no marker and executes no candidate. Cold
+owned-object cleanup is separate from qualified running-runtime inspection;
+the latter remains strict. Lifecycle operations serialize, terminal faults stay
+terminal, and the original five-second close context includes lock acquisition.
+Seven Linux/race tests and six subcases pass with vet0. Earlier failures and
+independent findings are preserved in the [guard host evidence](../../experiments/maintenance21/2026-10-26/guard-host-v1/README.md).
+This private preparation/measurement component is not a launch authority,
+functional checker or release acceptance. Its constructors are not model tools.
+
 The optional `GuardedPackager` now packages one privately pinned static Linux
 guard and independently built candidate with fixed `/maintenance-guard`
 entrypoint, UID/GID and modes. It clones the trusted guard, validates its actual

@@ -1,0 +1,13 @@
+{
+  "exit_code": 0,
+  "no_marker_published": true,
+  "candidate_launch_intended": false,
+  "scope": "trusted-guard-component-only",
+  "explicit_environment_keys": [
+    "GOMAXPROCS",
+    "HOME",
+    "HOSTNAME",
+    "PATH"
+  ],
+  "native_models": 0
+}

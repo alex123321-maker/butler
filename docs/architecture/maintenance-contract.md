@@ -293,6 +293,29 @@ Historical v1 binary/image/process evidence remains unchanged. Current v2
 parser/process and cold-image packaging checks do not implement these host
 admission constructors or establish actual runtime isolation.
 
+A private Linux guard-only preparation/measurement component now passes actual
+local kernel tests. Its distinct capsule profile is128MiB/32PIDs/oneCPU/64open
+files/effective zero swap, separate from compiler bounds. Cold preflight requires
+explicit never-started created state, zero start/finish timestamps and restart
+count0; it cannot restart an exited object. Only cleanup accepts a known exact
+created/exited object without inventing its missing runtime/network identity.
+Running qualification still uses the unchanged full Docker inspector plus actual
+PID/start time, namespaces, cgroup, privileges, mounts, environment and FD proofs.
+The one ordinary-file FD exception is the exact guest cpu.max inode opened
+read-only/CLOEXEC by the pinned Go runtime, not an arbitrary host file.
+
+Lifecycle measurement and cleanup serialize. Re-measurement cannot silently
+rebase PID/start/runtime/control inode; a terminal fault or close request denies
+qualification. Close retains its first result without replay. Its five-second
+context now includes lifecycle lock acquisition and bounded Docker cleanup; a
+missing join/deletion proof remains unqualified. A control-FD close error cannot
+skip known-object termination or become a healthy result. Go1.27/Linux's current
+os.Root.Close returns nil, so that structural error branch was not reproduced as
+a real FD failure. Publication/runtime/admission methods remain absent: this
+component never writes a marker, starts a candidate, signs an outcome or changes
+the deployed target. Actual Core/approval compatibility, checker/signer and
+trial/promotion/rollback acceptance remain required.
+
 Acceptance requires actual separate checker/controller/executor processes and
 retained PostgreSQL history, not interfaces backed only by fixtures. Prove a good
 candidate, broken release, live-but-functionally-broken release, incompatible

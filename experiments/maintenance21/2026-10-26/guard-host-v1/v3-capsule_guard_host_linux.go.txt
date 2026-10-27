@@ -1,0 +1,530 @@
+//go:build linux
+
+package maintenance
+
+import (
+	"bytes"
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+
+	"github.com/butler/butler/internal/actionauth"
+)
+
+var errCapsuleGuard = errors.New("fixed capsule guard unavailable")
+
+const capsuleControlMount = "rw,nosuid,nodev,noexec,size=65536,uid=0,gid=0,mode=0755"
+
+// This private preparation component can start only a cold-verified trusted
+// guard. It has no marker publication, candidate launch or authority API.
+type capsuleGuardHost struct {
+	api                     *DockerBuilder // Reuse only its private bounded HTTP helper.
+	image, guard, candidate string
+}
+
+type capsuleGuardWitness struct {
+	ContainerID               string    `json:"container_id"`
+	ImageSHA256               string    `json:"image_sha256"`
+	GuardSHA256               string    `json:"guard_sha256"`
+	CandidateSHA256           string    `json:"candidate_sha256"`
+	RuntimeSHA256             string    `json:"runtime_sha256"`
+	PID                       int64     `json:"pid"`
+	PIDStartTicks             uint64    `json:"pid_start_ticks"`
+	NamespaceSHA256           string    `json:"namespace_sha256"`
+	MountSHA256               string    `json:"mount_sha256"`
+	DescriptorSHA256          string    `json:"descriptor_sha256"`
+	OwnRootDescriptors        int       `json:"own_root_descriptors"`
+	RootPathProjectionDiffers bool      `json:"root_path_projection_differs"`
+	MemoryBytes               int64     `json:"memory_bytes"`
+	PIDs                      int64     `json:"pids"`
+	MaxOpenFiles              int64     `json:"max_open_files"`
+	CPU                       string    `json:"cpu"`
+	EffectiveSwapMax          int64     `json:"effective_swap_max"`
+	GuardIsPID1               bool      `json:"guard_is_pid1"`
+	MarkerAbsent              bool      `json:"marker_absent"`
+	CandidateExecuted         bool      `json:"candidate_executed"`
+	MeasuredAt                time.Time `json:"measured_at"`
+}
+
+type capsuleGuardPrepared struct {
+	mu               sync.Mutex
+	host             *capsuleGuardHost
+	id, name, group  string
+	stage            string
+	control          *os.Root
+	witness          capsuleGuardWitness
+	closeAttempted   bool
+	closeErr         error
+	cleanupConfirmed bool
+}
+
+func newCapsuleGuardHost(socket, image, guard, candidate string) (*capsuleGuardHost, error) {
+	if !validDigest(image) || !validDigest(guard) || !validDigest(candidate) {
+		return nil, errCapsuleGuard
+	}
+	inspector, err := NewDockerInspector(socket, "maintenance-capsule")
+	if err != nil {
+		return nil, errCapsuleGuard
+	}
+	return &capsuleGuardHost{api: &DockerBuilder{client: inspector.client}, image: image, guard: guard, candidate: candidate}, nil
+}
+
+func (host *capsuleGuardHost) prepare(ctx context.Context) (*capsuleGuardPrepared, error) {
+	if host == nil || host.api == nil || ctx.Err() != nil {
+		return nil, errCapsuleGuard
+	}
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	var nonce [16]byte
+	if _, err := rand.Read(nonce[:]); err != nil {
+		return nil, errCapsuleGuard
+	}
+	prepared := &capsuleGuardPrepared{host: host, name: "butler-capsule-" + hex.EncodeToString(nonce[:]), stage: "create"}
+	raw, err := host.api.json(ctx, http.MethodPost, "/containers/create?name="+prepared.name, map[string]any{
+		"Image": "sha256:" + host.image, "User": "65532:65532", "Hostname": "maintenance-capsule", "WorkingDir": "/",
+		"Entrypoint": []string{"/maintenance-guard"}, "Cmd": []string{}, "Env": []string{"GOMAXPROCS=2", "HOME=/", "HOSTNAME=maintenance-capsule", "PATH=/"},
+		"Healthcheck": map[string]any{"Test": []string{"NONE"}},
+		"HostConfig": map[string]any{
+			"NetworkMode": "none", "IpcMode": "private", "CgroupnsMode": "private", "ReadonlyRootfs": true, "CapDrop": []string{"ALL"},
+			"SecurityOpt": []string{"no-new-privileges:true"}, "PidsLimit": 32, "Memory": 128 << 20, "MemorySwap": 128 << 20, "NanoCpus": 1_000_000_000,
+			"Tmpfs": map[string]string{"/control": capsuleControlMount}, "LogConfig": map[string]any{"Type": "none"},
+			"Ulimits": []map[string]any{{"Name": "nofile", "Soft": 64, "Hard": 64}},
+		},
+	}, 201)
+	if err != nil {
+		// Name is retained for operator investigation; an unknown create is not retried.
+		return prepared, errCapsuleGuard
+	}
+	prepared.id, err = dockerBuildID(raw, "Id")
+	if err != nil {
+		return prepared, errCapsuleGuard
+	}
+	// Actual files are read before starting even the trusted guard. A caller's
+	// digest tuple or a claimed package label cannot substitute for these bytes.
+	prepared.stage = "cold_files"
+	for _, file := range []struct{ name, sha string }{{"candidate", host.candidate}, {"maintenance-guard", host.guard}} {
+		raw, err = host.api.request(ctx, http.MethodGet, "/containers/"+prepared.id+"/archive?path=/"+file.name, "", nil, 32<<20, 200)
+		if err != nil || exactGuardedArchiveMember(raw, file.name, file.sha) != nil {
+			return prepared, errCapsuleGuard
+		}
+	}
+	prepared.stage = "cold_config"
+	if _, _, err = prepared.inspect(ctx, false); err != nil {
+		return prepared, err
+	}
+	prepared.stage = "guard_start"
+	if _, err = host.api.request(ctx, http.MethodPost, "/containers/"+prepared.id+"/start", "", nil, 1024, 204); err != nil {
+		return prepared, errCapsuleGuard
+	}
+	prepared.witness, err = prepared.measure(ctx)
+	return prepared, err
+}
+
+func capsuleEnvironment(raw []byte) bool {
+	expected := map[string]string{"GOMAXPROCS": "2", "HOME": "/", "HOSTNAME": "maintenance-capsule", "PATH": "/"}
+	for _, item := range bytes.Split(bytes.TrimRight(raw, "\x00"), []byte{0}) {
+		key, value, ok := strings.Cut(string(item), "=")
+		if !ok || expected[key] == "" || expected[key] != value {
+			return false
+		}
+		delete(expected, key)
+	}
+	return len(expected) == 0
+}
+
+func (prepared *capsuleGuardPrepared) inspect(ctx context.Context, running bool) (PhysicalIdentity, int64, error) {
+	raw, err := prepared.host.api.request(ctx, http.MethodGet, "/containers/"+prepared.id+"/json", "", nil, 256<<10, 200)
+	if err != nil {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	identity, pid, err := capsuleOwnedState(raw, prepared.id, prepared.name, prepared.host.image)
+	if err != nil || (identity.State == "running") != running {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	if running {
+		// The cold state has no qualified network/runtime identity yet. Only a
+		// real running guard uses the unchanged full physical-runtime inspector.
+		identity, err = inspectDockerIdentity(raw, prepared.name, time.Now())
+		if err != nil {
+			return PhysicalIdentity{}, 0, errCapsuleGuard
+		}
+	}
+	var record struct {
+		State  struct{ Pid int64 }
+		Config struct {
+			User, Hostname, WorkingDir string
+			Entrypoint, Cmd, Env       []string
+			Volumes                    map[string]json.RawMessage
+			Healthcheck                struct{ Test []string }
+		}
+		HostConfig struct {
+			Privileged, ReadonlyRootfs                                       bool
+			NetworkMode, IpcMode, PidMode, UTSMode, UsernsMode, CgroupnsMode string
+			Binds, VolumesFrom, CapAdd, GroupAdd                             []string
+			Devices, DeviceRequests, Mounts                                  []json.RawMessage
+			Tmpfs                                                            map[string]string
+		}
+	}
+	if json.Unmarshal(raw, &record) != nil {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	c, h := record.Config, record.HostConfig
+	if c.User != "65532:65532" || c.Hostname != "maintenance-capsule" || c.WorkingDir != "/" || len(c.Entrypoint) != 1 || c.Entrypoint[0] != "/maintenance-guard" || len(c.Cmd) != 0 || len(c.Volumes) != 0 || len(c.Healthcheck.Test) != 1 || c.Healthcheck.Test[0] != "NONE" || !capsuleEnvironment([]byte(strings.Join(c.Env, "\x00"))) || h.Privileged || !h.ReadonlyRootfs || h.NetworkMode != "none" || h.IpcMode != "private" || h.PidMode != "" || h.UTSMode != "" || h.UsernsMode != "" || h.CgroupnsMode != "private" || len(h.Binds)+len(h.VolumesFrom)+len(h.CapAdd)+len(h.GroupAdd)+len(h.Devices)+len(h.DeviceRequests)+len(h.Mounts) != 0 || len(h.Tmpfs) != 1 || h.Tmpfs["/control"] != capsuleControlMount || running && record.State.Pid <= 1 || !running && record.State.Pid != 0 {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	return identity, pid, nil
+}
+
+// A never-started object is owned cleanup data, not a qualified runtime. Docker
+// has not assigned its network identity; do not manufacture that identity or
+// weaken the running-process inspector to delete this exact known object.
+func capsuleOwnedState(raw []byte, id, name, image string) (PhysicalIdentity, int64, error) {
+	if _, err := actionauth.ArgumentsHash(string(raw)); err != nil {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil || dockerFieldAliases(fields, "Id", "Name", "Image", "State") {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	var stateFields map[string]json.RawMessage
+	if json.Unmarshal(fields["State"], &stateFields) != nil || dockerFieldAliases(stateFields, "Running", "Paused", "Restarting", "Dead", "Pid", "Status") {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	var record struct {
+		ID          string `json:"Id"`
+		Name, Image string
+		State       struct {
+			Running, Paused, Restarting, Dead *bool
+			Pid                               *int64
+			Status                            string
+		}
+	}
+	if json.Unmarshal(raw, &record) != nil || record.ID != id || record.Name != "/"+name || record.Image != "sha256:"+image || record.State.Running == nil || record.State.Paused == nil || record.State.Restarting == nil || record.State.Dead == nil || record.State.Pid == nil || *record.State.Paused || *record.State.Restarting || *record.State.Dead {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	if *record.State.Running {
+		if record.State.Status != "running" || *record.State.Pid < 2 {
+			return PhysicalIdentity{}, 0, errCapsuleGuard
+		}
+	} else if (record.State.Status != "created" && record.State.Status != "exited") || *record.State.Pid != 0 {
+		return PhysicalIdentity{}, 0, errCapsuleGuard
+	}
+	return PhysicalIdentity{State: record.State.Status, ContainerID: id, ArtifactSHA256: image, MeasuredAt: time.Now().UTC().Truncate(time.Microsecond)}, *record.State.Pid, nil
+}
+
+func capsuleStartTicks(proc string) (uint64, error) {
+	raw, err := boundedHostRead(proc+"/stat", 4096)
+	end := bytes.LastIndex(raw, []byte(") "))
+	if err != nil || end < 0 {
+		return 0, errCapsuleGuard
+	}
+	fields := strings.Fields(string(raw[end+2:]))
+	if len(fields) < 20 || fields[0] != "S" && fields[0] != "R" {
+		return 0, errCapsuleGuard
+	}
+	value, err := strconv.ParseUint(fields[19], 10, 64)
+	if err != nil || value == 0 {
+		return 0, errCapsuleGuard
+	}
+	return value, nil
+}
+
+func capsuleMounts(raw []byte) bool {
+	allowed := strings.Fields("/ /proc /dev /dev/pts /sys /sys/fs/cgroup /dev/mqueue /dev/shm /control /etc/resolv.conf /etc/hostname /etc/hosts /proc/bus /proc/fs /proc/irq /proc/sys /proc/sysrq-trigger /proc/acpi /proc/interrupts /proc/kcore /proc/keys /proc/latency_stats /proc/timer_list /proc/scsi /sys/firmware")
+	seen := map[string]bool{}
+	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 10 {
+			return false
+		}
+		point := fields[4]
+		found := false
+		for _, value := range allowed {
+			found = found || point == value
+		}
+		if !found || seen[point] {
+			return false
+		}
+		seen[point] = true
+		flags := "," + fields[5] + ","
+		if point == "/" || point == "/sys" || point == "/sys/fs/cgroup" || strings.HasPrefix(point, "/etc/") {
+			if !strings.Contains(flags, ",ro,") {
+				return false
+			}
+		}
+		if point == "/control" {
+			for _, flag := range []string{"rw", "nosuid", "nodev", "noexec"} {
+				if !strings.Contains(flags, ","+flag+",") {
+					return false
+				}
+			}
+		}
+	}
+	return seen["/"] && seen["/control"] && seen["/sys/fs/cgroup"]
+}
+
+func (prepared *capsuleGuardPrepared) measure(ctx context.Context) (capsuleGuardWitness, error) {
+	prepared.stage = "measure_identity"
+	identity, pid, err := prepared.inspect(ctx, true)
+	if err != nil {
+		return capsuleGuardWitness{}, err
+	}
+	proc := "/proc/" + strconv.FormatInt(pid, 10)
+	start, err := capsuleStartTicks(proc)
+	if err != nil {
+		return capsuleGuardWitness{}, err
+	}
+	prepared.stage = "measure_privileges"
+	status, err := boundedHostRead(proc+"/status", 64<<10)
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	fields := map[string]string{}
+	for _, line := range strings.Split(string(status), "\n") {
+		key, value, ok := strings.Cut(line, ":")
+		if ok {
+			fields[key] = strings.Join(strings.Fields(value), " ")
+		}
+	}
+	if fields["Uid"] != "65532 65532 65532 65532" || fields["Gid"] != "65532 65532 65532 65532" || fields["Groups"] != "65532" || fields["NoNewPrivs"] != "1" || fields["Seccomp"] != "2" || fields["NSpid"] != fmt.Sprintf("%d 1", pid) {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	for _, name := range []string{"CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb"} {
+		if fields[name] != "0000000000000000" {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+	}
+	prepared.stage = "measure_namespaces"
+	var namespaces strings.Builder
+	for _, name := range []string{"pid", "mnt", "net", "ipc", "uts", "cgroup"} {
+		actual, err := os.Readlink(proc + "/ns/" + name)
+		parent, parentErr := os.Readlink("/proc/self/ns/" + name)
+		if err != nil || parentErr != nil || actual == parent || actual == "" {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+		namespaces.WriteString(name + "=" + actual + "\n")
+	}
+	prepared.stage = "measure_cgroup"
+	raw, err := boundedHostRead(proc+"/cgroup", 4096)
+	line := strings.TrimSpace(string(raw))
+	if err != nil || strings.ContainsRune(line, '\n') || !strings.HasPrefix(line, "0::/") {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	group := strings.TrimPrefix(line, "0::")
+	if path.Clean(group) != group || path.Base(group) != prepared.id {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.group = group
+	for name, expected := range map[string]string{"memory.max": "134217728", "pids.max": "32", "cpu.max": "100000 100000"} {
+		value, err := boundedHostRead("/sys/fs/cgroup"+group+"/"+name, 128)
+		if err != nil || strings.TrimSpace(string(value)) != expected {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+	}
+	if effectiveZeroSwap("/sys/fs/cgroup", group) != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.stage = "measure_files"
+	for _, file := range []struct{ name, sha string }{{"exe", prepared.host.guard}, {"root/candidate", prepared.host.candidate}, {"root/maintenance-guard", prepared.host.guard}} {
+		body, err := boundedHostRead(proc+"/"+file.name, 31<<20)
+		if err != nil || Digest(body) != file.sha {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+	}
+	prepared.stage = "measure_environment"
+	environment, err := boundedHostRead(proc+"/environ", 1024)
+	if err != nil || !capsuleEnvironment(environment) {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.stage = "measure_mounts"
+	mounts, err := boundedHostRead(proc+"/mountinfo", 128<<10)
+	if err != nil || !capsuleMounts(mounts) {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.stage = "measure_network"
+	interfaces, err := boundedHostRead(proc+"/net/dev", 16<<10)
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	lines := strings.Split(strings.TrimSpace(string(interfaces)), "\n")
+	if len(lines) != 3 || !strings.HasPrefix(strings.TrimSpace(lines[2]), "lo:") {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	routes, err := boundedHostRead(proc+"/net/route", 16<<10)
+	if err != nil || len(bytes.Split(bytes.TrimSpace(routes), []byte("\n"))) != 1 {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	routes, err = boundedHostRead(proc+"/net/ipv6_route", 16<<10)
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(routes)), "\n") {
+		if line == "" {
+			continue
+		}
+		f := strings.Fields(line)
+		if len(f) != 10 || f[9] != "lo" {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+	}
+	prepared.stage = "measure_descriptors"
+	limits, err := boundedHostRead(proc+"/limits", 16<<10)
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	boundedFiles := false
+	for _, line := range strings.Split(string(limits), "\n") {
+		f := strings.Fields(line)
+		if len(f) >= 5 && f[0] == "Max" && f[1] == "open" && f[2] == "files" {
+			boundedFiles = f[3] == "64" && f[4] == "64"
+		}
+	}
+	if !boundedFiles {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	fds, err := os.ReadDir(proc + "/fd")
+	if err != nil || len(fds) > 8 {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	rootInfo, err := os.Stat(proc + "/root")
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	ownRoots := 0
+	rootPathDiffers := false
+	var descriptors strings.Builder
+	for _, fd := range fds {
+		number, err := strconv.Atoi(fd.Name())
+		if err != nil || number < 0 || number >= 64 {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+		target, err := os.Readlink(proc + "/fd/" + fd.Name())
+		if err != nil {
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+		info, statErr := os.Stat(proc + "/fd/" + fd.Name())
+		ownRoot := statErr == nil && info.IsDir() && os.SameFile(info, rootInfo)
+		kind := ""
+		switch {
+		case ownRoot && number >= 3:
+			kind = "own_container_root"
+			ownRoots++
+			rootPathDiffers = rootPathDiffers || target != "/"
+		case target == "/dev/null" && number <= 2:
+			kind = "null"
+		case strings.HasPrefix(target, "pipe:[") && number <= 2:
+			kind = "pipe"
+		case target == "anon_inode:[eventpoll]" && number >= 3:
+			kind = "eventpoll"
+		case target == "anon_inode:[eventfd]" && number >= 3:
+			kind = "eventfd"
+		default:
+			return capsuleGuardWitness{}, errCapsuleGuard
+		}
+		descriptors.WriteString(fd.Name() + "=" + kind + "\n")
+	}
+	prepared.stage = "measure_control"
+	controlPath := proc + "/root/control"
+	info, err := os.Stat(controlPath)
+	if err != nil || !info.IsDir() || info.Mode().Perm() != 0755 {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	if !ok || stat.Uid != 0 || stat.Gid != 0 {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	var fs syscall.Statfs_t
+	if syscall.Statfs(controlPath, &fs) != nil || fs.Type != 0x01021994 || uint64(fs.Bsize)*fs.Blocks != 65536 {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	control, err := os.OpenRoot(controlPath)
+	if err != nil {
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	if _, err = control.Lstat("launch.json"); !os.IsNotExist(err) {
+		control.Close()
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.stage = "measure_currentness"
+	end, err := capsuleStartTicks(proc)
+	last, lastPID, inspectErr := prepared.inspect(ctx, true)
+	if err != nil || end != start || inspectErr != nil || lastPID != pid || last.RuntimeSHA256 != identity.RuntimeSHA256 || ctx.Err() != nil {
+		control.Close()
+		return capsuleGuardWitness{}, errCapsuleGuard
+	}
+	prepared.control = control
+	prepared.stage = "measured_guard_only"
+	return capsuleGuardWitness{
+		ContainerID: prepared.id, ImageSHA256: prepared.host.image, GuardSHA256: prepared.host.guard,
+		CandidateSHA256: prepared.host.candidate, RuntimeSHA256: identity.RuntimeSHA256,
+		PID: pid, PIDStartTicks: start, NamespaceSHA256: Digest([]byte(namespaces.String())),
+		MountSHA256: Digest(mounts), DescriptorSHA256: Digest([]byte(descriptors.String())),
+		OwnRootDescriptors: ownRoots, RootPathProjectionDiffers: rootPathDiffers,
+		MemoryBytes: 128 << 20, PIDs: 32, MaxOpenFiles: 64, CPU: "100000 100000", EffectiveSwapMax: 0,
+		GuardIsPID1: true, MarkerAbsent: true, CandidateExecuted: false,
+		MeasuredAt: time.Now().UTC().Truncate(time.Microsecond),
+	}, nil
+}
+
+func (prepared *capsuleGuardPrepared) close() error {
+	if prepared == nil {
+		return errCapsuleGuard
+	}
+	prepared.mu.Lock()
+	defer prepared.mu.Unlock()
+	if prepared.closeAttempted {
+		return prepared.closeErr
+	}
+	prepared.closeAttempted = true
+	prepared.closeErr = errCapsuleGuard
+	if prepared.control != nil {
+		if prepared.control.Close() != nil {
+			return prepared.closeErr
+		}
+		prepared.control = nil
+	}
+	if !validDigest(prepared.id) {
+		return prepared.closeErr
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err := prepared.host.api.request(ctx, http.MethodPost, "/containers/"+prepared.id+"/kill?signal=KILL", "", nil, 1024, 204, 409); err != nil {
+		return prepared.closeErr
+	}
+	raw, err := prepared.host.api.request(ctx, http.MethodPost, "/containers/"+prepared.id+"/wait?condition=not-running", "", nil, 4096, 200)
+	var waited struct {
+		StatusCode int
+		Error      *struct{ Message string }
+	}
+	if err != nil || json.Unmarshal(raw, &waited) != nil || waited.Error != nil && waited.Error.Message != "" {
+		return prepared.closeErr
+	}
+	observed, err := prepared.host.api.request(ctx, http.MethodGet, "/containers/"+prepared.id+"/json", "", nil, 256<<10, 200)
+	identity, pid, identityErr := capsuleOwnedState(observed, prepared.id, prepared.name, prepared.host.image)
+	if err != nil || identityErr != nil || (identity.State != "created" && identity.State != "exited") || pid != 0 {
+		return prepared.closeErr
+	}
+	if prepared.group != "" {
+		current, err := os.ReadFile("/sys/fs/cgroup" + prepared.group + "/pids.current")
+		if err != nil && !os.IsNotExist(err) || err == nil && (len(current) > 128 || strings.TrimSpace(string(current)) != "0") {
+			return prepared.closeErr
+		}
+	}
+	if _, err = prepared.host.api.request(ctx, http.MethodDelete, "/containers/"+prepared.id+"?v=1", "", nil, 1024, 204); err != nil {
+		return prepared.closeErr
+	}
+	prepared.closeErr = nil
+	prepared.cleanupConfirmed = true
+	return nil
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "toolchain": "go1.27.2.windows-amd64 used for actual Linux cross-build",
+    "path": "src/runtime/cgroup_linux.go",
+    "sha256": "a2237d59862ebb1fd5f85750663cfe03965463a6d6bf21e5a411df26504f5f7f"
+  },
+  {
+    "toolchain": "go1.27.2.windows-amd64 used for actual Linux cross-build",
+    "path": "src/internal/runtime/cgroup/cgroup_linux.go",
+    "sha256": "9f192b16192c9176b5c1bc100e786f5c726359d86782aa86a32221bebb07d031"
+  },
+  {
+    "toolchain": "go1.27.2.windows-amd64 used for actual Linux cross-build",
+    "path": "src/os/root_openat.go",
+    "sha256": "ed015476176e245d77cd330242eb19fb4abcb9b81b125eece3b43b3a290f35f2"
+  }
+]

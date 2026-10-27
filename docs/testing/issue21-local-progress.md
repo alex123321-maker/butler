@@ -155,3 +155,34 @@ Docker/race guarded-package check passes10.41seconds, with vet0, unchanged five
 Go source pins and no candidate start by packaging. Both cold file hashes/modes
 are verified for new guard/image identities; v1 artifacts are retained.
 Evidence: `experiments/maintenance21/2026-10-26/capsule-guard-v2/`.
+
+## Actual guard-only kernel preparation, 2026-10-26 UTC
+
+The new private Linux host component verifies exact cold candidate/guard bytes,
+strict never-started state, fixed configuration, then actual guard PID/start
+ticks, six private namespaces, UID/GID65532, all zero capabilities, seccomp2,
+no-new-privileges,128MiB/32PIDs/oneCPU/64open-files and effective zero swap.
+It also checks read-only root/sys/proc paths, exact marker tmpfs/owner/mode,
+only loopback interfaces/routes, four declared harmless environment variables
+and bounded descriptors. Go's actual lifetime cpu.max descriptor is accepted
+only by that guest kernel-file identity with O_RDONLY/O_CLOEXEC, not a path
+pattern or arbitrary file. Current successful witnesses contain one such FD and
+one own-container-root FD; no root-path projection difference was observed.
+
+Final v6 Linux/race checks pass7top-level tests plus6never-started subcases in
+8.134seconds, with0failures/0skips and vet0; both source hashes match before/after.
+Two actual guarded processes are killed, waited and deleted. The lifecycle race
+observed close winning and the concurrent measurement correctly unqualified;
+this is not proof of every interleaving. A separate no-container contention case
+actually waits5.00seconds and retains its unqualified close result without retry.
+The sticky-fault test uses synthetic state, not a reproduced FD-close fault.
+No marker, candidate, model, signed claim or deployment permission is created.
+
+Earlier source versions/results remain retained: a manual two-variable
+environment mismatch, a cold-network-identity/cleanup failure (with subsequent
+exact manual deletion), descriptor denials and the metadata diagnostic. The
+completed v4 witness exposed a static never-started-state gap in independent
+review; v5 fixed that and serialized lifecycle operations, then v6 made terminal
+fault and close-time bounds explicit. Original failures do not become passes.
+Evidence and independent receipts:
+`experiments/maintenance21/2026-10-26/guard-host-v1/`.
