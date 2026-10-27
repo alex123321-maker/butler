@@ -303,6 +303,9 @@ func behavior76CollectStudyPlan(t *testing.T, local, streaming, dayFit, literal 
 		}
 	}
 	if literal {
+		if err = behavior76LiteralCertificateStart(dayStart, os.Getenv("BUTLER_BEHAVIOR76_LITERAL_NOT_BEFORE_UTC"), os.Getenv("BUTLER_BEHAVIOR76_LITERAL_LATEST_START_UTC")); err != nil {
+			t.Fatal("actual literal window start outside finite certificate interval")
+		}
 		if err = behavior76LiteralBusinessDatesOutsideWindow(literalEpisodes, dayStart, dayDeadline); err != nil {
 			t.Fatal("declared business dates overlap actual measured window")
 		}

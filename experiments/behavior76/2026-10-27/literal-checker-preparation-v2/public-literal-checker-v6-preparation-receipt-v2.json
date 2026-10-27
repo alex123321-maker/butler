@@ -1,0 +1,160 @@
+{
+  "version": "issue76-literal-checker-v6-public-preparation-receipt-v2",
+  "issued_utc": "2026-10-27T01:18:54.0260046+00:00",
+  "status": "PREPARED_ONLY_NOT_FORMAL_SOURCE_SCORER_FREEZE_OR_ADMISSION",
+  "runtime_dependencies": {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-checker-v6-dependencies-prepared-v2.json",
+    "sha256": "3680094390c73866e746c23c0d712ef9b34e9e4c0c6ad11c266ed788b33a8c02",
+    "bytes": 2102
+  },
+  "public_preparation_files": [
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-kernel-proof-v1.ps1",
+      "sha256": "b66fc09932f010176f470a7b31499fabe39d70ebce1cf1ab0f0cedc40a7919d5",
+      "bytes": 17305
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-index-adapter-v6.ps1",
+      "sha256": "509344a7d02e68f75751e8828ec4e50b25588fcb487e66d2af22c4bce141ef27",
+      "bytes": 28990
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-scoring-composition-v6.ps1",
+      "sha256": "f9d8a4d555300b66e3b055906d28888bdc5fe8ec886a5ec63556f23ae0d67912",
+      "bytes": 14128
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\authority-stream-scoring-v6-literal.ps1",
+      "sha256": "e306bdbe342b1f9975426d519dd6a6a08633cfe7d94d40185f94b97df0f72779",
+      "bytes": 4201
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\test-literal-checker-v6.ps1",
+      "sha256": "5e5228ee457a2d21246fd23b1f09b4f54b97500ed00c231afbb6f9785a670d53",
+      "bytes": 15026
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-checker-v6-contract-v1.md",
+      "sha256": "bd6390f09fc4ae7eea4f323fa15dd34a22ab72650d727dee8b39d293622cd887",
+      "bytes": 7135
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-checker-v6-dependencies-prepared-v2.json",
+      "sha256": "3680094390c73866e746c23c0d712ef9b34e9e4c0c6ad11c266ed788b33a8c02",
+      "bytes": 2102
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-original-criterion-extents-prepared-v1.json",
+      "sha256": "c0d2c8714e51a6d392c4bf0fc927f5ec4afa660e87374713d9d3f445304f3401",
+      "bytes": 5637
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-v11-one-use-admission-contract-prepared-v1.md",
+      "sha256": "67b044eae245abc6ef6b0ceab01a5d303c0083bf99494b2d66f40803cb49273e",
+      "bytes": 6714
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v11-one-use-admission.schema.json",
+      "sha256": "f4575eeafe402309461103e890fcd8dabae1c24c2ee72ab5f4bdd53e8223c961",
+      "bytes": 7780
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-v11-one-use-admission-contract-prepared-v2.md",
+      "sha256": "7a67bd8427cf436c63fb428469f459228d5dceec9d8eb597c4b1420bc0c0f06b",
+      "bytes": 2638
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v11-one-use-admission-v2.schema.json",
+      "sha256": "0e30ed11461bbe80699d3db06a5c74e6457d0e93af9da62db135eea2481ba5d1",
+      "bytes": 10906
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-composition-before-comment-only-v2.ps1.txt",
+      "sha256": "73e8b53b44ab382b620384d9a30a893a000e9ce2b2c36f72af9e46e71717c47c",
+      "bytes": 14128
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-v11-launcher-static-review-v2.json",
+      "sha256": "07f89de62acdd240a7c3aa5415c352fa8105be024aecb681ab84e4681a9ba010",
+      "bytes": 3007
+    }
+  ],
+  "public_selftest_history": [
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-public-neutral-run01\\receipt.json",
+      "sha256": "1ef233109fe54fa816189cf172abebadbc78d68cdea57b8303c2f3ddb6c21c74",
+      "PASS": 12,
+      "FAIL": 4
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-public-neutral-run02\\receipt.json",
+      "sha256": "33628a06f506403e05f52f1a43a5c150313050fe4f989d1e1f78518625ce75a7",
+      "PASS": 16,
+      "FAIL": 0
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-public-neutral-run03\\receipt.json",
+      "sha256": "c3b9e5ad60af6726b91ee850f61760297c479e439a24a89097115b7db4b3a6b2",
+      "PASS": 22,
+      "FAIL": 0
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-public-neutral-run04\\receipt.json",
+      "sha256": "5e7e508538611998bef21d5814deebb35650c0aab67eab4070591bf65bbc60c4",
+      "PASS": 22,
+      "FAIL": 0
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\literal-v6-public-neutral-run05\\receipt.json",
+      "sha256": "03091ba8064adb9ae927e2e5cd1c85bedd433935e3e9baf2e7d40176b3ac9865",
+      "PASS": 22,
+      "FAIL": 0
+    }
+  ],
+  "latest_public_selftest_PASS": 22,
+  "latest_public_selftest_FAIL": 0,
+  "first_failure_retained": "Run01 syntax probes used helper-shadowed filename; original test source retained in run01/test-source-before-probe-fix.ps1; no old criterion change.",
+  "examples": "Public neutral file/JSON/schema/composition only; full wrapper test retains68UNAVAILABLE and required32-arm completenessFAIL with zero indexed actual arms. These are not actual PG/Core/Broker/native evidence.",
+  "actual_Go_composition_is_separate_parent_evidence": true,
+  "plan": {
+    "episodes": 16,
+    "arms": 32,
+    "owner_opportunities": 68,
+    "dimensions": 8,
+    "legacy_families": 6
+  },
+  "kernel": "Exact decoded UTF8 returned_result_json/owner_event_json hashes and durable Input/control/selection joins, not model finals. Automatic inputs/failures/expense separate.",
+  "business": "Confirmed late publication behavioralFAIL; actualsource/clockmetadata not COMMITtimestamp, mandate or newUNKNOWNcategory. Synthetic business/manual refs separate from catalog.",
+  "one_use_schema_prepared_v2": "Requires direct launcher/core/schema/host pins and already prepared immutable unique ELF; no build/overwrite, actual future approval still required.",
+  "historical_r3_NO_GO_unchanged": true,
+  "prior_closed_ledger": {
+    "windows": 12,
+    "admissions": 971,
+    "measured": 959,
+    "known_full_tokens": 7700211,
+    "NULL_usage": 12
+  },
+  "old7runtime_27AST_criteria_thresholds_unchanged": true,
+  "mapping_or_closed_private_answers_read": false,
+  "new_hidden_cases_or_goldens_authored": false,
+  "actual_admission_issued": false,
+  "Go_PG_provider_Docker_model_auth_private_key_operations": 0,
+  "supersedes_preparation_receipt": {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-literal-checker-v6-preparation-receipt-v1.json",
+    "sha256": "138d00893d32bf3f86592e76c8c5cc8668b6eb97fd5bbaf27ab8251832a66a92",
+    "bytes": 6477
+  },
+  "comment_only_delta": {
+    "file": "literal-scoring-composition-v6.ps1",
+    "before_sha256": "73e8b53b44ab382b620384d9a30a893a000e9ce2b2c36f72af9e46e71717c47c",
+    "after_sha256": "f9d8a4d555300b66e3b055906d28888bdc5fe8ec886a5ec63556f23ae0d67912",
+    "exact_substitution": "comment exactly96 -> exactly68",
+    "noncomment_tokens_equal": true,
+    "noncomment_token_count": 2517,
+    "old27AST_unchanged": true
+  },
+  "excluded_unused_false_regex_revision": [
+    "literal-v11-one-use-admission-v3.schema.json",
+    "public-literal-v11-one-use-admission-contract-prepared-v3.md"
+  ]
+}

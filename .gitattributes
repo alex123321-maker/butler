@@ -25,5 +25,13 @@
 # Byte-pinned local behavioral evidence must survive Git checkout unchanged.
 /experiments/behavior76/** -text whitespace=cr-at-eol
 /experiments/behavior76/**/*.log -whitespace
+
+# The literal launcher contains byte-pinned inline Linux shell text.
+/scripts/dev/behavior76-literal-*.ps1 text eol=lf
+/scripts/dev/test-behavior76-literal-*.ps1 text eol=lf
+/scripts/dev/behavior76-literal-admission.schema.json -text
 /experiments/behavior76/** -text whitespace=cr-at-eol
 /experiments/behavior76/**/*.log -whitespace
+
+# Retain the original public v4 probe's test-only trailing-prefix bytes.
+/experiments/behavior76/2026-10-27/literal-launcher-preparation-v1/literal-host-public-fe15be83c26348ecbbfc1b6789489c09/proof.json -whitespace

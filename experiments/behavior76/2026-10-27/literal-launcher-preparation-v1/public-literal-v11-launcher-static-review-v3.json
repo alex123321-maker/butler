@@ -1,0 +1,94 @@
+{
+  "version": "behavior76-literal-launcher-static-review-v3",
+  "status": "PUBLIC_STATIC_REVIEW_NO_REMAINING_CONCRETE_BLOCKER_IN_REVIEWED_DELTA",
+  "prepared_only": true,
+  "formal_freeze": false,
+  "admission_issued": false,
+  "hidden_authored": false,
+  "native": 0,
+  "Go": 0,
+  "PG": 0,
+  "Docker": 0,
+  "auth": 0,
+  "source_pins": [
+    {
+      "path": "scripts/dev/behavior76-literal-launch.ps1",
+      "sha256": "6866bddb0dc25dec47acc0b7dd63fc81af749db50d376af6810c91b62a7fe88b",
+      "bytes": 8310
+    },
+    {
+      "path": "scripts/dev/behavior76-literal-launcher-core.ps1",
+      "sha256": "4e40e5831a3ff67fc002679292369c36dd2f819980142c0e266f73498fca7ccd",
+      "bytes": 6799
+    },
+    {
+      "path": "scripts/dev/behavior76-literal-host.sh",
+      "sha256": "93d2208daa3e0bedff576999324aff95e5858f2759415ab6925d29a04ca7de56",
+      "bytes": 2168
+    },
+    {
+      "path": "scripts/dev/behavior76-literal-admission.schema.json",
+      "sha256": "0e30ed11461bbe80699d3db06a5c74e6457d0e93af9da62db135eea2481ba5d1",
+      "bytes": 10906
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_literal_plan_test.go",
+      "sha256": "cb308589086b1caacda7efbddb7b5724f1fd7a6fc6f0638497c658b9ebf1e273",
+      "bytes": 6792
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "06a0707818d161da9567b11ece7396369e0c710acb2beda6dbf9cf2ca0bbfbf6",
+      "bytes": 35911
+    }
+  ],
+  "supersedes": "public-literal-v11-launcher-static-review-v2.json",
+  "closed_findings": [
+    {
+      "id": "preentry-four-role-recheck",
+      "evidence": "PS repeats ELF,launcher,launcher_core,admission_schema,host_wrapper,stimuli immediately before proof/WSL; constant Linux gate hashes mounted four roles+ELF+stimuli before pinned wrapper."
+    },
+    {
+      "id": "linux-windows-mount-identity",
+      "evidence": "Fresh Windows proof uses consumed nonce plus exact bytes/hash, exclusive Flush/readback; constant inline Linux code hashes proof before loading pinned host script."
+    },
+    {
+      "id": "finite-time-before-entry",
+      "evidence": "PS finite same-day timestamps; Linux gate and wrapper strictly precede floor latest epoch; exact UTC strings reach Go entry and conservative logical dayStart before output/journal; original four-hour deadline remains anchored to that start."
+    }
+  ],
+  "preserved_properties": [
+    "ValidateOnly nonconsuming",
+    "exclusive irreversible marker before WSL/ELF",
+    "unique readonly ELF and no build/overwrite/fallback",
+    "fixed TestBehavior76NativeLiteralSupplement",
+    "strict UTF8 duplicate/alias/unknown JSON validation",
+    "schema v2 correct and mandatory direct pin",
+    "GLOBAL priority and original currentness/authority/resource/history guards remain",
+    "old7 PS/CSharp dependencies and old27 AST unchanged"
+  ],
+  "corrected_prior_false_diagnosis": "Prepared v2 schema0e30 was correct; v3 schema/doc unused, not frozen or required.",
+  "public_bridge": {
+    "receipt": "literal-actual-bridge-run01/receipt.json",
+    "sha256": "938f18c0b63ef1a6d4c7a786184a3f3097c866b8a7946302070ad3dfc0e442bb",
+    "PASS": 12,
+    "FAIL": 0,
+    "public_export_files": 166,
+    "not_full_study_or_quality": true
+  },
+  "parent_execution_evidence_not_reexecuted_by_checker": {
+    "purePS_checks": 18,
+    "WSL_pin_only_checks": 9,
+    "Go_time_guard_top_level": 2,
+    "native": 0,
+    "notes": "Counts supplied by parent; exact raw completed receipts belong in later committed freeze evidence."
+  },
+  "limits": [
+    "This is static prefreeze review, not source/scorer formal freeze or native authorization.",
+    "Issuer still verifies source inventory contents, exact postfreeze literals, actual completed gates, fresh authoring timing, final ELF and history proofs before any certificate.",
+    "Host prechecks do not replace actual collector bounds, authority/source checks, durable journal or independent closed-evidence scoring.",
+    "Public amend example retains blocked automatic failedrun without granting a new authority exemption.",
+    "No new hidden cases, old closed answers, private goldens or mappings were read."
+  ],
+  "decision": "NO_NEW_EXECUTION_PERMISSION"
+}

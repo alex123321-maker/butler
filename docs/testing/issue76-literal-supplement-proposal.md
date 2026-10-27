@@ -79,8 +79,8 @@ does not implement or approve it.
 
 Implement a separately versioned trusted plan/cardinality adapter and public
 composition controls, preserving old24/48/96 validation and historical results.
-The original per-case criteria, all27 AST extents, seven production runtime
-hashes, candidate instructions, exact v10 local-failure union and global faults
+The original per-case criteria, all27 AST extents, seven original checker runtime
+dependency hashes, candidate instructions, exact v10 local-failure union and global faults
 remain unchanged. New coverage/source/clock checks are additive, never waivers.
 The two old matrix-wide extents still describe the old24/48/96 pilot; their
 source and results stay intact. The new checker must declare its own16/32/68
@@ -102,6 +102,15 @@ Actual setup/composition/public gates and independent one-use admission must
 pin a clean producer, uniquely named immutable ELF, new output and day-fit
 deadline. Masked judgments seal before mapping disclosure. Publication uses an
 explicit exposure-audited allowlist. A stopped or failed collection stays closed.
+
+The prepared launcher selects an existing immutable uniquely named executable;
+it never rebuilds or overwrites cached collectors. Strict certificate/role pins,
+durable one-use consumption and fresh Windows-to-Linux bind proof precede
+execution. The fixed Linux gate/host repeat the pins and conservative finite-
+time check; actual Go entry and original window start independently recheck the
+precise not-before/latest UTC interval (at most30min, same owning UTC day).
+These checks deny delayed/unknown entry and never extend the4h window or any
+owning deadline.
 
 The result can complete coverage with further negative observations. It cannot
 erase the r3 rejection, establish general superiority, or authorize activation

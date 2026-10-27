@@ -1,0 +1,5 @@
+Exception: D:\CodexData\home\worktrees\issue20-local\butler\scripts\dev\test-behavior76-literal-host-bind.ps1:40
+Line |
+  40 |   if(-not $pass){throw ('Public host bind check failed: '+$case[0])}
+     |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Public host bind check failed: actual-bind-and-all-pins

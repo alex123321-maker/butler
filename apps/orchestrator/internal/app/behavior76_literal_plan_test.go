@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 type behavior76LiteralOpportunity struct {
@@ -96,5 +97,46 @@ func TestBehavior76NativeLiteralSupplement(t *testing.T) {
 	if !behavior76LiteralBindingsFresh() {
 		t.Fatal("fresh literal controls not bound; no new native admission")
 	}
+	if err := behavior76LiteralCertificateStart(time.Now().UTC(), os.Getenv("BUTLER_BEHAVIOR76_LITERAL_NOT_BEFORE_UTC"), os.Getenv("BUTLER_BEHAVIOR76_LITERAL_LATEST_START_UTC")); err != nil {
+		t.Fatal("finite literal certificate entry expired or unavailable")
+	}
 	behavior76CollectStudyPlan(t, true, true, true, true)
+}
+
+// A host precheck does not cover WSL startup delay. Actual ELF entry and actual
+// original window start both independently deny late/unknown certificate time.
+// This never extends the original four-hour context or any owning deadline.
+func behavior76LiteralCertificateStart(now time.Time, notBeforeText, latestText string) error {
+	before, e1 := time.Parse(time.RFC3339Nano, notBeforeText)
+	latest, e2 := time.Parse(time.RFC3339Nano, latestText)
+	if e1 != nil || e2 != nil || !strings.HasSuffix(notBeforeText, "Z") || !strings.HasSuffix(latestText, "Z") || now.IsZero() || now.Location() != time.UTC {
+		return errors.New("actual UTC certificate time required")
+	}
+	day := now.Truncate(24 * time.Hour)
+	if before.Before(day) || !before.Before(day.Add(24*time.Hour)) || latest.Before(before) || latest.Sub(before) > 30*time.Minute || latest.After(day.Add(20*time.Hour)) || now.Before(before) || now.After(latest) {
+		return errors.New("literal admission outside finite same-day start interval")
+	}
+	return nil
+}
+
+func TestBehavior76LiteralCertificateActualStart(t *testing.T) {
+	before := "2026-10-27T01:00:00.0000000Z"
+	latest := "2026-10-27T01:20:00.0000000Z"
+	now := time.Date(2026, 10, 27, 1, 10, 0, 0, time.UTC)
+	if err := behavior76LiteralCertificateStart(now, before, latest); err != nil {
+		t.Fatal(err)
+	}
+	for _, sample := range []struct {
+		now            time.Time
+		before, latest string
+	}{
+		{now, before, ""}, {now, "", latest}, {now, before, "2026-10-27T01:20:00+00:00"},
+		{now.Add(-11 * time.Minute), before, latest}, {now.Add(11 * time.Minute), before, latest},
+		{now, before, "2026-10-27T02:00:00Z"}, {now, before, "2026-10-28T01:20:00Z"},
+		{time.Date(2026, 10, 27, 19, 55, 0, 0, time.UTC), "2026-10-27T19:50:00Z", "2026-10-27T20:01:00Z"},
+	} {
+		if behavior76LiteralCertificateStart(sample.now, sample.before, sample.latest) == nil {
+			t.Fatal("unknown/early/expired/extended/day-crossing actual start admitted")
+		}
+	}
 }
