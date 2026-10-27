@@ -1,0 +1,58 @@
+[
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_input_test.go",
+    "sha256": "95ca1db2fad18f58136cd3f45c165f44cf63bdbb8b8c6aad52ef1dc4bf9b6c01"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_interface_test.go",
+    "sha256": "6ccbd4648e37e385ea72df10f2e18ffb5eb4f618d4a08f2669e09efc9fbd2357"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_json_test.go",
+    "sha256": "dbae311a69796a4a621a1736475ace6e595c49ec3f5659e7beb5f668b8c7b91c"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_observation_test.go",
+    "sha256": "38bcb625d8b3442cac7bad01f9880fb73fd1fbe0d228503a3c0a3acd34190fc8"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_plan_test.go",
+    "sha256": "ce6e38776927e105289075c20a6ba4a725b484d5753cecd449ce19d8184d02a8"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_preflight_test.go",
+    "sha256": "32c6ac460a4d3c83052155cee0d444e0ad070b5e695366f2ed62f1efc46abefe"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_service_test.go",
+    "sha256": "c4a6a5976ec8387c1ca039280cc2ddf9af9b3c5cc330d9b5e75e9e942b2521be"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_literal_types_test.go",
+    "sha256": "8175dbc718aebadfe07fd7404a866735b4e1c12a47e968a0cc2097df12101ae4"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_collect_test.go",
+    "sha256": "922afaa7e9e50c0d45480c2c7576f38a61de809566d4f093a35f19fc18033c6f"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_evidence_test.go",
+    "sha256": "ec7564ebde85e3d223088f0897ad7631f32400267bf64c33f400ba924f3d4b04"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_events_test.go",
+    "sha256": "88906457e0713905767ae37db06647d61f3d6c3faa7f335093780e5a626913a6"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_fixture_test.go",
+    "sha256": "d995170e067c32adba253f1dab8949cb5810c03898b9ba23fedd5b2f81eeedbc"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_runtime_test.go",
+    "sha256": "88dd3b7f417abc796b3c127917fac95e0e3b04766e1181083a11be9805fa0429"
+  },
+  {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\apps\\orchestrator\\internal\\app\\behavior76_fresh_test.go",
+    "sha256": "5a08ee21a39137b5d105d1c9168a0d759662074e1e99dfd74ff7f93454ef84a5"
+  }
+]

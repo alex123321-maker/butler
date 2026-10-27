@@ -1,0 +1,60 @@
+[
+  {
+    "state": "waiting_for_user",
+    "owner_input_id": "",
+    "owner_run_id": "",
+    "run_ids": [],
+    "automatic_run_ids": [],
+    "native_entry_ids": [],
+    "event_receipt": null,
+    "kernel_response": {
+      "origin": "input_service_kernel",
+      "returned_result_sha256": "732f85aba16de4e0f35ebc279ac410f92c8d58c16ad043eae3347c413b432dec",
+      "returned_result_json": "{\"ResultID\":\"\",\"AnswerState\":\"\",\"Verdict\":\"\",\"ErrorCode\":\"task_target_required\",\"Accepted\":true,\"InputID\":\"input-bc188c8e7d1589cff64c0306df7717f9\",\"ReceiptStatus\":\"waiting_for_user\",\"TaskID\":\"\",\"RunID\":\"\",\"SessionKey\":\"behavior76:conversation\",\"CurrentState\":0,\"AssistantResponse\":\"Specify the task to change; no task authority was changed.\"}",
+      "kind": "task_target_clarification",
+      "input_id": "input-bc188c8e7d1589cff64c0306df7717f9",
+      "session_key": "behavior76:conversation",
+      "receipt_status": "waiting_for_user",
+      "error_code": "task_target_required",
+      "assistant_response": "Specify the task to change; no task authority was changed.",
+      "owner_event_ref": "behavior76:turn-1",
+      "owner_id": "behavior76-synthetic-owner",
+      "owner_event_session_key": "behavior76:conversation",
+      "owner_event_source": "web",
+      "owner_event_sha256": "12379ea190bec9e3d6d561659cda1bd2574171ba4f4232a2bba4880f6744a06d",
+      "owner_event_json": "{\"EventID\":\"behavior76:turn-1\",\"EventType\":1,\"SessionKey\":\"behavior76:conversation\",\"Source\":\"web\",\"PayloadJSON\":\"{\\\"text\\\":\\\"стоп\\\",\\\"user_id\\\":\\\"behavior76-synthetic-owner\\\"}\",\"CreatedAt\":\"2026-10-27T01:16:41.941095221Z\",\"IdempotencyKey\":\"behavior76:turn-1\"}"
+    }
+  },
+  {
+    "state": "completed",
+    "owner_input_id": "",
+    "owner_run_id": "",
+    "run_ids": [],
+    "automatic_run_ids": [],
+    "native_entry_ids": [],
+    "event_receipt": null,
+    "kernel_response": {
+      "origin": "input_service_kernel",
+      "returned_result_sha256": "7c57b00da0ec52fe83a451fb14d88fd66b6ad1cd57168d60bf17902ae8df6049",
+      "returned_result_json": "{\"ResultID\":\"\",\"AnswerState\":\"\",\"Verdict\":\"\",\"ErrorCode\":\"\",\"Accepted\":true,\"InputID\":\"input-2a932be0428171c9133e81d3b5a690b3\",\"ReceiptStatus\":\"completed\",\"TaskID\":\"task_175bd2b34706918721a72090b2017101\",\"RunID\":\"\",\"SessionKey\":\"behavior76:public-interface-ambiguous_object-positive:other\",\"CurrentState\":0,\"AssistantResponse\":\"Owner control applied: stop. previous_external_effects_preserved\"}",
+      "kind": "task_control",
+      "input_id": "input-2a932be0428171c9133e81d3b5a690b3",
+      "session_key": "behavior76:public-interface-ambiguous_object-positive:other",
+      "task_id": "task_175bd2b34706918721a72090b2017101",
+      "receipt_status": "completed",
+      "assistant_response": "Owner control applied: stop. previous_external_effects_preserved",
+      "control_id": "control_c90327914be5c7cef71ecfac38c88e9e",
+      "owner_event_ref": "behavior76:turn-2",
+      "owner_id": "behavior76-synthetic-owner",
+      "owner_event_session_key": "behavior76:public-interface-ambiguous_object-positive:other",
+      "owner_event_source": "web",
+      "owner_event_sha256": "44bd8218c2181bebfd98d9f6ffd18a00db9f9d3b993866710d6d375e4c88cb14",
+      "owner_event_json": "{\"EventID\":\"behavior76:turn-2\",\"EventType\":1,\"SessionKey\":\"behavior76:public-interface-ambiguous_object-positive:other\",\"Source\":\"web\",\"PayloadJSON\":\"{\\\"task_id\\\":\\\"task_175bd2b34706918721a72090b2017101\\\",\\\"text\\\":\\\"стоп\\\",\\\"user_id\\\":\\\"behavior76-synthetic-owner\\\"}\",\"CreatedAt\":\"2026-10-27T01:16:41.955596641Z\",\"IdempotencyKey\":\"behavior76:turn-2\"}"
+    },
+    "owner_task_selection": {
+      "step_id": "turn-2",
+      "task_key": "other",
+      "provenance": "explicit_owner_ui"
+    }
+  }
+]

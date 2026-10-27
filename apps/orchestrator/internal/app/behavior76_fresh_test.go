@@ -181,6 +181,13 @@ func behavior76CollectFreshMode(t *testing.T, local, streaming bool) {
 }
 
 func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
+	behavior76CollectStudyPlan(t, local, streaming, dayFit, false)
+}
+
+func behavior76CollectStudyPlan(t *testing.T, local, streaming, dayFit, literal bool) {
+	if literal && (!local || !streaming || !dayFit || !behavior76LiteralBindingsFresh()) {
+		t.Fatal("literal study requires the complete trusted profile and fresh bindings")
+	}
 	if dayFit && !streaming {
 		t.Fatal("day-fit collection requires the unchanged stream protocol")
 	}
@@ -236,33 +243,51 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal("closed controls cannot become a new independent study")
 		}
 	}
+	if literal {
+		stimuliSHA, expectationsSHA = behavior76LiteralStimuliSHA, behavior76LiteralExpectationsSHA
+		priorWindows, priorAdmissions, priorMeasured, priorTokens, priorUnknown = 12, 971, 959, 7700211, 12
+		priorDirectory = "native-local-response-v10-r3"
+		version, prefix = behavior76LiteralVersion, "issue76-fixture-literal-"
+	}
 	raw, err := os.ReadFile(os.Getenv("BUTLER_BEHAVIOR76_STIMULI"))
 	if err != nil || behavior76Hash(raw) != stimuliSHA {
 		t.Fatal("fresh independent stimulus commitment unavailable")
 	}
-	episodes, err := behavior76ReadEpisodes(strings.NewReader(string(raw)))
-	if err != nil || len(episodes) != 24 {
-		t.Fatal("fresh independent interface unavailable")
-	}
-	families := map[string]int{}
-	for _, e := range episodes {
-		evaluated := 0
-		for _, step := range e.Steps {
-			if step.Evaluate {
-				evaluated++
+	var episodes []behavior76Episode
+	var literalEpisodes []behavior76LiteralEpisode
+	if literal {
+		literalEpisodes, err = behavior76ReadLiteralEpisodes(strings.NewReader(string(raw)))
+		if err != nil {
+			t.Fatal("complete literal independent interface unavailable")
+		}
+		for _, value := range literalEpisodes {
+			episodes = append(episodes, value.Episode)
+		}
+	} else {
+		episodes, err = behavior76ReadEpisodes(strings.NewReader(string(raw)))
+		if err != nil || len(episodes) != 24 {
+			t.Fatal("fresh independent interface unavailable")
+		}
+		families := map[string]int{}
+		for _, e := range episodes {
+			evaluated := 0
+			for _, step := range e.Steps {
+				if step.Evaluate {
+					evaluated++
+				}
 			}
+			if evaluated != 2 {
+				t.Fatal("each fresh episode requires exactly two evaluated owner opportunities")
+			}
+			families[e.Family]++
 		}
-		if evaluated != 2 {
-			t.Fatal("each fresh episode requires exactly two evaluated owner opportunities")
+		if len(families) != 12 {
+			t.Fatal("fresh full family coverage required")
 		}
-		families[e.Family]++
-	}
-	if len(families) != 12 {
-		t.Fatal("fresh full family coverage required")
-	}
-	for _, count := range families {
-		if count != 2 {
-			t.Fatal("two fresh episodes per family required")
+		for _, count := range families {
+			if count != 2 {
+				t.Fatal("two fresh episodes per family required")
+			}
 		}
 	}
 	dir, source := os.Getenv("BUTLER_BEHAVIOR76_OUTPUT"), os.Getenv("BUTLER_BEHAVIOR76_SOURCE")
@@ -277,6 +302,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal("pre-entry owner-day admission rejected before output or native construction", err)
 		}
 	}
+	if literal {
+		if err = behavior76LiteralBusinessDatesOutsideWindow(literalEpisodes, dayStart, dayDeadline); err != nil {
+			t.Fatal("declared business dates overlap actual measured window")
+		}
+	}
 	if err = os.Mkdir(dir, 0700); err != nil {
 		t.Fatal("new fresh evidence directory required", err)
 	}
@@ -286,6 +316,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 	}
 	if dayFit {
 		indexVersion = "behavior76-checker-index-v5-local-response-tail"
+	}
+	if literal {
+		indexVersion = behavior76LiteralIndexVersion
 	}
 	index := behavior76Index{Version: indexVersion, StimuliSHA256: stimuliSHA, Episodes: []behavior76IndexEpisode{}}
 	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
@@ -425,6 +458,13 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			t.Fatal(e)
 		}
 		prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T181012", "admitted": 51, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		if literal {
+			body, e = behavior76ClosedR3History(ctx, transaction, root)
+			if e != nil {
+				t.Fatal("closed r3 literal predecessor unavailable")
+			}
+			prior = append(prior, map[string]any{"id": "issue76-fixture-day-20261026T195902", "admitted": 197, "closed": true, "manifest_sha256": behavior76Hash(body)})
+		}
 		if e = transaction.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dayObserved); e != nil {
 			t.Fatal("owning database day unavailable")
 		}
@@ -450,6 +490,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 	}
 	arms := []string{"arm-" + hex.EncodeToString(entropy[:16]), "arm-" + hex.EncodeToString(entropy[16:32])}
 	mapping := map[string]bool{arms[0]: entropy[32]&1 == 1, arms[1]: entropy[32]&1 == 0}
+	if literal {
+		index.LiteralPlan, err = behavior76LiteralDeclaredPlan(literalEpisodes, arms)
+		if err != nil {
+			t.Fatal("complete planned literal denominator unavailable")
+		}
+	}
 	behavior76Write(t, filepath.Join(root, filepath.Base(dir)+"-private-arm-mapping.json"), mapping)
 	schedule := []map[string]any{}
 	for n, e := range episodes {
@@ -480,6 +526,12 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 		manifest["planned_arms"] = 48
 		manifest["planned_owner_opportunities"] = 96
 		manifest["planned_families"] = 12
+		if literal {
+			manifest["planned_arms"], manifest["planned_owner_opportunities"], manifest["planned_families"], manifest["planned_dimensions"] = 32, 68, 6, 8
+			manifest["literal_plan"] = index.LiteralPlan
+			manifest["literal_observation_contract"] = "observed-business-date-and-manual-events-v1"
+			manifest["business_dates_outside_entire_window"] = true
+		}
 		manifest["protocol"] = protocolPath
 		if streaming {
 			manifest["authority_observer"] = map[string]any{"version": "behavior76-authority-pg-trace-stream-v2", "maximum_buffered_events": behavior76StreamBuffer, "maximum_segments": behavior76StreamSegments, "maximum_compressed_bytes": behavior76StreamBytes, "maximum_header_bytes": behavior76StreamHeader, "maximum_line_bytes": behavior76StreamLine, "maximum_open_spans": behavior76StreamOpen}
@@ -522,7 +574,9 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 				t.Setenv(prompt.SettingKeyBasePrompt, base)
 				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
 				var f *behavior76Fixture
-				if dayFit {
+				if literal {
+					f = newBehavior76LiteralFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
+				} else if dayFit {
 					f = newBehavior76ResponseFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
 				} else if streaming {
 					f = newBehavior76StreamFixture(t, ctx, &sealed, behavior76ScopeBinding{Window: window, Arm: fmt.Sprintf("slot-%02d/%s", n+1, arm), ProtocolSHA256: manifest["protocol_sha256"].(string), Producer: source})
@@ -544,9 +598,16 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 						sealed.Store(true)
 						t.Fatal("trusted stream startup failed", err)
 					}
-					f.seed(e)
+					if literal {
+						f.seedLiteral(literalEpisodes[n])
+					} else {
+						f.seed(e)
+					}
 				}
 				item := behavior76IndexEpisode{EpisodeID: e.ID, MaskedArmID: arm, AliasesPath: relative + "/aliases.json", TablesDir: relative + "/tables", Steps: []behavior76IndexStep{}}
+				if literal {
+					item.Dimension, item.Polarity = literalEpisodes[n].Dimension, literalEpisodes[n].Polarity
+				}
 				defer func() {
 					defer f.retainOnEvidenceFailure()
 					if local {
@@ -583,7 +644,18 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 						continue
 					}
 					behavior76Write(t, filepath.Join(stepDir, "before.json"), f.snapshot())
-					receipt, eventErr := f.apply(step)
+					var receipt any
+					var eventErr error
+					if literal {
+						changes, e := f.applyLiteralServiceChanges(literalEpisodes[n], step.ID)
+						eventErr = e
+						if eventErr == nil {
+							receipt, eventErr = f.apply(step)
+						}
+						receipt = map[string]any{"event": receipt, "business_service_changes": changes}
+					} else {
+						receipt, eventErr = f.apply(step)
+					}
 					outcome := behavior76Outcome{State: "not_evaluated", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, EventReceipt: receipt}
 					if eventErr != nil {
 						outcome.State = "failed"
@@ -597,7 +669,17 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 							t.Fatal("ordinary native collector required")
 						}
 						native.entryLimit = behavior76FreshMaxEntries
-						outcome, eventErr = f.evaluate(provider, step)
+						if literal {
+							var selections []behavior76LiteralTaskSelection
+							for _, selection := range literalEpisodes[n].OwnerTaskSelections {
+								if selection.StepID == step.ID {
+									selections = append(selections, selection)
+								}
+							}
+							outcome, eventErr = f.evaluateLiteral(provider, step, selections...)
+						} else {
+							outcome, eventErr = f.evaluate(provider, step)
+						}
 						outcome.EventReceipt = receipt
 						rows, e := journal.Query(ctx, `SELECT n FROM public.behavior76_attempts WHERE window_id=$1 AND slot=$2 ORDER BY n`, window, relative+"/"+step.ID)
 						if e != nil {
@@ -639,7 +721,11 @@ func behavior76CollectStudy(t *testing.T, local, streaming, dayFit bool) {
 			}
 		}
 	}
-	if streaming && (sealed.Load() || ctx.Err() != nil || len(index.Episodes) != 48) {
+	plannedArms := 48
+	if literal {
+		plannedArms = 32
+	}
+	if streaming && (sealed.Load() || ctx.Err() != nil || len(index.Episodes) != plannedArms) {
 		t.Fatal("stream window closeout failed; original partial evidence and all planned denominators retained")
 	}
 }

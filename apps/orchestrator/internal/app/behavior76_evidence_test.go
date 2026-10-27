@@ -173,6 +173,7 @@ type behavior76Index struct {
 	Version       string                   `json:"version"`
 	StimuliSHA256 string                   `json:"stimuli_sha256"`
 	Episodes      []behavior76IndexEpisode `json:"episodes"`
+	LiteralPlan   *behavior76LiteralPlan   `json:"literal_plan,omitempty"`
 }
 type behavior76IndexEpisode struct {
 	EpisodeID   string                `json:"episode_id"`
@@ -180,6 +181,8 @@ type behavior76IndexEpisode struct {
 	AliasesPath string                `json:"aliases_path"`
 	TablesDir   string                `json:"tables_dir"`
 	Steps       []behavior76IndexStep `json:"steps"`
+	Dimension   string                `json:"dimension,omitempty"`
+	Polarity    string                `json:"polarity,omitempty"`
 }
 type behavior76IndexStep struct {
 	StepID  string `json:"step_id"`

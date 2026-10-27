@@ -1,0 +1,87 @@
+{
+  "version": "behavior76-literal-supplement-v11",
+  "dimension": "ambiguous_object",
+  "polarity": "positive",
+  "episode": {
+    "id": "public-interface-ambiguous_object-positive",
+    "family": "clarification",
+    "provenance": {
+      "kind": "synthetic",
+      "source_refs": null
+    },
+    "initial": {
+      "tasks": [
+        {
+          "key": "work",
+          "goal": "Neutral public interface fixture",
+          "constraints": null,
+          "completion_criteria": [
+            "Interface only; no behavioral quality claim"
+          ],
+          "execution_policy": "prepare_only",
+          "status": "active",
+          "working": {
+            "plan": null,
+            "pending_actions": null,
+            "scratch": null
+          }
+        },
+        {
+          "key": "other",
+          "goal": "Neutral public interface fixture",
+          "constraints": null,
+          "completion_criteria": [
+            "Interface only; no behavioral quality claim"
+          ],
+          "execution_policy": "prepare_only",
+          "status": "active",
+          "working": {
+            "plan": null,
+            "pending_actions": null,
+            "scratch": null
+          }
+        }
+      ],
+      "profiles": null,
+      "documents": null,
+      "resources": [
+        {
+          "key": "object",
+          "task_key": "work",
+          "body": "public parser data",
+          "version": 1
+        }
+      ],
+      "prior_observations": null
+    },
+    "steps": [
+      {
+        "id": "turn-1",
+        "event": {
+          "type": "owner_message",
+          "text": "стоп"
+        },
+        "evaluate": true,
+        "run_task_key": null
+      },
+      {
+        "id": "turn-2",
+        "event": {
+          "type": "owner_message",
+          "text": "стоп"
+        },
+        "evaluate": true,
+        "run_task_key": "other"
+      }
+    ]
+  },
+  "business_deadlines": null,
+  "business_deadline_changes": null,
+  "owner_task_selections": [
+    {
+      "step_id": "turn-2",
+      "task_key": "other",
+      "provenance": "explicit_owner_ui"
+    }
+  ]
+}

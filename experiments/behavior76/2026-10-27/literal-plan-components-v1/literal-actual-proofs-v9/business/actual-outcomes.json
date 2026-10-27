@@ -1,0 +1,34 @@
+[
+  {
+    "state": "completed",
+    "owner_input_id": "input-0bc45ffbf768509dcc0260ff82d744a1",
+    "owner_run_id": "run-1793063809293180575-28c4b632bca82935",
+    "run_ids": [
+      "run-1793063809293180575-28c4b632bca82935"
+    ],
+    "automatic_run_ids": [],
+    "native_entry_ids": [],
+    "event_receipt": null,
+    "owner_task_selection": {
+      "step_id": "s1",
+      "task_key": "A",
+      "provenance": "explicit_owner_ui"
+    }
+  },
+  {
+    "state": "completed",
+    "owner_input_id": "input-7689e738ee2914f4792ad9eaf63a4427",
+    "owner_run_id": "run-1793063810112030414-749c27061b4dcaac",
+    "run_ids": [
+      "run-1793063810112030414-749c27061b4dcaac"
+    ],
+    "automatic_run_ids": [],
+    "native_entry_ids": [],
+    "event_receipt": null,
+    "owner_task_selection": {
+      "step_id": "s2",
+      "task_key": "A",
+      "provenance": "explicit_owner_ui"
+    }
+  }
+]

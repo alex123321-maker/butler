@@ -1,0 +1,13 @@
+{
+  "sources": {},
+  "tasks": {
+    "other": {
+      "session_key": "behavior76:public-interface-ambiguous_object-positive:other",
+      "task_id": "task_175bd2b34706918721a72090b2017101"
+    },
+    "work": {
+      "session_key": "behavior76:public-interface-ambiguous_object-positive:work",
+      "task_id": "task_10b8fc99087e17721334833e0149837b"
+    }
+  }
+}
