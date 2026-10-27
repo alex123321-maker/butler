@@ -1,0 +1,81 @@
+{
+  "version": "issue115-skill-preparation-recipe-and-controlled-read-v1",
+  "producer": "c6b64815464f831e9b011b21e0acff5f04ba7a9b",
+  "app_sha256": "c81d408a21e2aa17c7d3718650814cfcb4059dd37a023059eff9480c6d2ff9f9",
+  "actual_recipe_create_new_exit": 0,
+  "recipe_sha256": "370e4c2ae13fb25ca4a4dbb9891464959df57a4b9bb7ea0ad0a4d25888ddabe4",
+  "closed_latest_parent_sha256": "1a8754c08fc724a1a3c8c3c657bc390aa7060bb446748de959eb461248656911",
+  "recipe_writer_seconds": 134.57,
+  "controlled_read_top_PASS": 1,
+  "controlled_read_sub_PASS": 10,
+  "controlled_read_seconds": 165.07,
+  "FAIL": 0,
+  "SKIP": 0,
+  "race_reports": 0,
+  "fresh_originals": 4,
+  "fresh_notes": 4,
+  "narrow_profile": "denied; zero read items; durable failed; provider callback zero",
+  "authorized_derived_profile": "two actual lesson reads; durable completed",
+  "recipient_dispatches_unchanged": true,
+  "native_calls": 0,
+  "real_credentials": 0,
+  "historical_closed_failure": "NO_GO_UNCHANGED",
+  "old_runtime_artifacts": "exact old four used only for controlled component comparison; all five temporary restored copies retired after process join; immutable archive retained",
+  "component_only": true,
+  "integrated_next_producer": "baaf94ef6298258d5590709cd649541ab371e93f",
+  "integrated_next_gates": "IN_PROGRESS_NOT_CLAIMED",
+  "new_native_preseal_and_inference": "NOT_PERFORMED",
+  "private_history_subtree_and_runtime_auth_excluded": true,
+  "raw_files": [
+    {
+      "bytes": 962,
+      "path": "memory115-skill-successor-recipe-prepare-v1.sh",
+      "sha256": "9a2592b12467ca87bde145e361730b23cd3dfd32026348a945fdebd0eab70abe"
+    },
+    {
+      "bytes": 368,
+      "path": "memory115-skill-successor-recipe-prepare-v1.log",
+      "sha256": "6cbfd7b6a2c818eccfb9880f149aeae797439da2c0781b76d8a1881c17a9d109"
+    },
+    {
+      "bytes": 72,
+      "path": "memory115-skill-successor-recipe-prepare-v1-exit.json",
+      "sha256": "b858897c4b36277e2d2777cdd1210474abbefbc16bba08af70d123c9fa70b0ca"
+    },
+    {
+      "bytes": 1579,
+      "path": "memory115-skill-successor-read-v1.sh",
+      "sha256": "9d45371690e5a78eaac91c1f845b90357ea6904db52f0b8e34a4ea71dec3201a"
+    },
+    {
+      "bytes": 16595,
+      "path": "memory115-skill-successor-read-v1.log",
+      "sha256": "c8e7ce95d3ce6c854705972d6e4849a6cdebe9951d9f917459957756eac3e9fd"
+    },
+    {
+      "bytes": 121,
+      "path": "memory115-skill-successor-read-v1-exit.json",
+      "sha256": "81da2dcccbe611156560e3b571599e7e6839e1f840facacc216f85d444e63840"
+    },
+    {
+      "bytes": 701,
+      "path": "memory115-skill-successor-recipe-v1/recipe.json",
+      "sha256": "370e4c2ae13fb25ca4a4dbb9891464959df57a4b9bb7ea0ad0a4d25888ddabe4"
+    },
+    {
+      "bytes": 1531,
+      "path": "memory115-restore-prepared-for-component-v1.sh",
+      "sha256": "13d47f1888e5572d215b953177a87aba395f0f8e5174674b9c992779edb5d655"
+    },
+    {
+      "bytes": 2001,
+      "path": "memory115-retire-restored-component-elfs-v1.sh",
+      "sha256": "bf79baf40be0b7b425cbb1ad6959ecca619f5ac201c520086c7778758c852d49"
+    },
+    {
+      "bytes": 464,
+      "path": "memory115-retire-restored-component-elfs-v1.log",
+      "sha256": "2fa4d55272bb9ef54b2e5489dea543c0e96c7edbb39865e8e46cd73c401615d8"
+    }
+  ]
+}

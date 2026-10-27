@@ -1,0 +1,4 @@
+=== RUN   TestLocal115PrepareSkillPreparationDayRecipe
+    memory115_skill_preparation_successor_test.go:130: PREPARED_SKILL_SUCCESSOR day=2026-10-27 sha256=370e4c2ae13fb25ca4a4dbb9891464959df57a4b9bb7ea0ad0a4d25888ddabe4 latest232 retained; preparation only; zero storage/auth/native construction
+--- PASS: TestLocal115PrepareSkillPreparationDayRecipe (134.57s)
+PASS

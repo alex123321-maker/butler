@@ -47,7 +47,14 @@ is kept. `TestExperienceNativeSkillPreparationSuccessorReadIntegration` then
 uses the new recipe's derived profile for a fresh controlled ordinary Core/
 Broker comparison of denied narrow reads against successful complete reads;
 it must also prove unchanged recipient dispatches. The actual new recipe writer
-and derived-profile lesson-read gate remain pending. After the #76 collector
+and derived-profile lesson-read gate subsequently passed: the recipe SHA is
+`370e4c2ae13fb25ca4a4dbb9891464959df57a4b9bb7ea0ad0a4d25888ddabe4`,
+and the controlled gate has1 top-level/10 subcase passes, zero skips/races and
+zero real credentials or native calls. Four fresh originals/notes, denied old
+reads and two successful authorized reads retain unchanged recipient dispatches.
+Exact metadata and raw logs are in
+`experiments/memory115/2026-10-27/skill-preparation-recipe-read-v1/`.
+After the #76 collector
 exited and joined, the first offline gates passed at source
 `c6b64815464f831e9b011b21e0acff5f04ba7a9b`:12 top-level race controls/64
 subcases, actual latest232 and legacy213 imports, and app vet0. The local
@@ -81,6 +88,19 @@ operator uses their own fixed paths and exact pins. The archived old artifacts,
 old source, recipe and failed population remain unchanged. No old artifact is
 silently presented as a build of the new source. Reuse the existing preparation
 and collector gates, preserving every relevant failed attempt.
+
+That integration is now committed as
+`baaf94ef6298258d5590709cd649541ab371e93f` (PR158 depends on the applicable
+PR156 source). The new snapshot verifies all6249 Git blobs/333,156,796 bytes
+against raw Git SHA1 and SHA256 and is mounted read-only. The first export was
+rejected because archive EOL attributes changed script bytes; the replacement
+uses an isolated export repository's attribute override and verifies every blob.
+Shared repository attributes/configuration remain unchanged. A first build
+attempt stopped before compilation because findmnt was absent; its failure is
+retained. The replacement proves the read-only mount from the kernel table.
+All five new artifacts are built from this snapshot, with an identical complete
+source inventory before/after. Targeted integration gates are in progress;
+neither these builds nor the earlier controlled passes qualify new native work.
 
 Before new inference, derive and validate the latest closed local history through
 its original consumer; preserve all213 previous plus19 local native admissions,
