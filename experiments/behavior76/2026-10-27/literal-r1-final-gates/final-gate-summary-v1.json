@@ -1,0 +1,18 @@
+{
+  "version": "literal-v11-r1-final-gate-summary-v1",
+  "bound_code_commit": "c8411429e36f2e7d085971617f0f84dc2f2e5b6e",
+  "semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "elf_sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e",
+  "setup_pass": 16,
+  "composition_arms": 32,
+  "composition_owner_opportunities": 68,
+  "public_top_pass": 71,
+  "public_fail": 0,
+  "public_skip": 0,
+  "public_exit": 0,
+  "vet_exit": 0,
+  "history_exit": 0,
+  "resource_exit": 0,
+  "new_native_calls": 0,
+  "actual_certificate_issued": false
+}

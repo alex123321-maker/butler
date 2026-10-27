@@ -1,0 +1,1 @@
+{"version":"literal-r1-current-history-v1","exit":0,"source":"c8411429e36f2e7d085971617f0f84dc2f2e5b6e","closed_windows":12,"admissions":971,"measured":959,"known_full_tokens":7700211,"NULL_usage":12,"application_journal_writes":0,"temporary_client_staging":true,"actual_comparison":"BEGIN READ ONLY then ROLLBACK","native_calls":0}
