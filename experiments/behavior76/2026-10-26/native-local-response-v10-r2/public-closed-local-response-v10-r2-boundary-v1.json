@@ -1,0 +1,213 @@
+{
+  "version": "issue76-independent-closed-local-response-v10-r2-boundary-v1",
+  "decision": "NO_GO_GLOBAL_FAILED_INCOMPLETE_NO_RETRY",
+  "window": "issue76-fixture-day-20261026T181012",
+  "source": "git:5fa9d724177609c97bbb74e92253cf7c474f69d0;binary-sha256:5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "index_sha256": "0adf25a461b9b672bf1563d5bf69837ed8d9ca4b80ae7f565614d4e0a8a506bd",
+  "manifest_sha256": "74ab123afbb2f8bb3642b7057298f13f04371a21763392d5e3aa084ebe0226ad",
+  "private_raw_seal_sha256": "0ef906db93ba53fca7bc1599d0fc0bd189195bfe865e1b8367bbc7146be1f0cc",
+  "raw_files": 822,
+  "raw_bytes": 24805981,
+  "inventory_sha256": "23657c8d1b60075d190dce7fccdae0a8ce15ac8c072a89a3f4759a7f50947742",
+  "private_archive_sha256": "74c7f30e476aed8d7905768c2454788681693a3c3593561c55bab9b81b2a1377",
+  "raw_exposure": {
+    "fixed_credential_markers": 0,
+    "credential_auth_settings_dump_path_matches": 0,
+    "limitation": "Fixed marker/path audit only; raw contains synthetic scenario/model text. No universal secret-free or qualitative guarantee. No private auth/settings/key/dump or mapping file present."
+  },
+  "new_accounting": {
+    "NULL_usage": 2,
+    "no_entry52": true,
+    "admissions": 51,
+    "known_full_tokens": 322326,
+    "measured": 49
+  },
+  "inclusive_accounting": {
+    "closed_windows": 11,
+    "NULL_usage": 12,
+    "admissions": 774,
+    "known_full_tokens": 5948714,
+    "measured": 762
+  },
+  "prior723_exact_opaque_row_bytes_equal": true,
+  "prior_raw_byte_proofs": [
+    {
+      "all_original_bytes_equal": true,
+      "root": "native-local-http-v9",
+      "files": 383
+    },
+    {
+      "all_original_bytes_equal": true,
+      "root": "native-local-model-v8",
+      "files": 1253
+    }
+  ],
+  "planned": {
+    "owner_opportunities": 96,
+    "paired_steps": 138,
+    "arms": 48,
+    "families": 12,
+    "original_steps": 69
+  },
+  "observed": {
+    "of_unindexed74_belong_never_started_arms": true,
+    "never_started_arms": 37,
+    "owner_local_empty_failure": 1,
+    "all_missing_or_unexecuted_owner_opportunities": 76,
+    "indexed_arms": 11,
+    "unindexed_owner_opportunities": 75,
+    "observed_owner_slots": 20,
+    "indexed_original_steps": 33,
+    "owner_GLOBAL_failure": 1,
+    "owner_completed18_not_quality": 18,
+    "outcome_dispositions": {
+      "not_evaluated": 10,
+      "failed": 1,
+      "not_executed_after_fixture_local_model_failure": 3,
+      "fixture_local_model_failure": 1,
+      "completed": 18
+    },
+    "indexed_unexecuted_local_owner_tail": 1,
+    "of_unindexed1_is_failed_arm_remaining_turn": true
+  },
+  "authority_streams": [
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 57972,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 43218,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 24284,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 27484,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 43490,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 46416,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 60380,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 62268,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 28084,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 0,
+      "quiescence_observed": true,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 27650,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": true,
+      "qualified_operational_seal": true,
+      "dropped_events": 0
+    },
+    {
+      "operation_failures": 5,
+      "quiescence_observed": false,
+      "open_spans": 0,
+      "observer_failed": false,
+      "event_count": 8214,
+      "stream_hashes_sequences_and_span_pairs_valid": true,
+      "sealed": false,
+      "qualified_operational_seal": false,
+      "dropped_events": 0
+    }
+  ],
+  "qualified_operational_seals": 10,
+  "unsealed_failed_arm": 1,
+  "last_quiescence_is_default_not_success_proof": true,
+  "diagnostic_card": {
+    "sha256": "1eda73f3c1da86e380b851366b17cd145d76f6b98d983d63157ea343b1dc45ec",
+    "path": "public-closed-local-response-v10-r2-diagnostic-card-v1.json"
+  },
+  "original_admission_consumed": true,
+  "late_failures_retained": true,
+  "usage_NULL_not_zero": true,
+  "old_results_unmodified": true,
+  "no_quality_scoring_promotion_or_closure": true,
+  "answers_goldens_armmapping_not_opened": true,
+  "current_stimuli_only_opaque_ID_evaluateflags_used": true,
+  "checker_Go_PG_auth_native_calls": 0,
+  "live_database_state_not_independently_queried": true,
+  "no_new_experiment_or_admission": true
+}

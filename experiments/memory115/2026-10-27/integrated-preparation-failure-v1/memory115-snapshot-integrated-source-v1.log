@@ -1,0 +1,5 @@
+Exception: D:\CodexData\home\worktrees\issue106-local\butler\.cache\memory115-snapshot-integrated-source-v1.ps1:62
+Line |
+  62 |  …  -or $info.Length -ne $entry.bytes){throw 'Extracted member differs'}
+     |                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Extracted member differs

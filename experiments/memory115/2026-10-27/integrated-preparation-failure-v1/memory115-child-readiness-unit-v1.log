@@ -1,0 +1,4 @@
+=== RUN   TestExperienceNativeChildReadinessRequiresEveryFrozenEndpoint
+--- PASS: TestExperienceNativeChildReadinessRequiresEveryFrozenEndpoint (0.01s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	1.064s

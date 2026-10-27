@@ -1,0 +1,11 @@
+Dedicated local experiment filesystem; all owning app tests joined; no model job.
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/loop0             4046560   3564128    256336  93% /mnt/host/wsl/butler-effort76
+resize2fs 1.47.0 (5-Feb-2023)
+Filesystem at /dev/loop0 is mounted on /mnt/host/wsl/butler-effort76; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/loop0 is now 2097152 (4k) blocks long.
+
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/loop0             8173020   3564128   4215028  46% /mnt/host/wsl/butler-effort76
+PASS capacity 4GiB to8GiB; no shrink/deletion/migration; existing journals/history retained; CPU/memory/pids/native authority unchanged.

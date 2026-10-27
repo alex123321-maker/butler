@@ -1,0 +1,94 @@
+{
+  "version": "independent-effect-unknown-metadata-diagnosis-v1",
+  "run_id": "run-1792941650078444425-5f13882eaf89f6e6",
+  "effect_id": "effect_9601df39979744bf747c5e40583e92800faa0d9ce8ef835e31510fab96064c90",
+  "tool_call_id": "agy-c40eecebe1038708f897f346096db4f5-2",
+  "method": "GET",
+  "effect": "read",
+  "tool_status": "effect_unknown",
+  "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+  "retryable": false,
+  "dispatch_outcome": "unknown",
+  "runtime_reason_or_grpc_status_retained": false,
+  "effect_evidence": [
+    {
+      "evidence": {
+        "method": "read_result",
+        "source": "runtime_response",
+        "verdict": "effect_unknown",
+        "action_id": "effect_9601df39979744bf747c5e40583e92800faa0d9ce8ef835e31510fab96064c90",
+        "evidence_id": "evidence_82e8403fa94c58cb7c8d1470e41c7720",
+        "observed_at": "2026-10-25T15:22:23.106814326Z",
+        "recorded_at": "2026-10-25T15:22:23.106814386Z",
+        "result_digest": "",
+        "source_run_id": "run-1792941650078444425-5f13882eaf89f6e6",
+        "source_action_id": "action_781d45ae342d27009e3d3f14ea32a417e7601f7d411ddac2dc8315b430a3db99",
+        "source_tool_call_id": "agy-c40eecebe1038708f897f346096db4f5-2"
+      },
+      "action_id": "effect_9601df39979744bf747c5e40583e92800faa0d9ce8ef835e31510fab96064c90",
+      "evidence_id": "evidence_82e8403fa94c58cb7c8d1470e41c7720",
+      "observed_at": "2026-10-25T22:22:23.106814+07:00",
+      "recorded_at": "2026-10-25T22:22:23.106814+07:00",
+      "source_action_id": "action_781d45ae342d27009e3d3f14ea32a417e7601f7d411ddac2dc8315b430a3db99"
+    }
+  ],
+  "recipient_receipts": 0,
+  "object_events": 0,
+  "actual_binding_task_differs_from_actual_object_task": true,
+  "CAS_branch_applies_to_GET": false,
+  "cause": "specific runtime RPC failure not retained; actual foreign task binding supplies deterministic reject precondition in pinned recipient source, not proof of exact return branch",
+  "mapping_read": false,
+  "model_answers_or_goldens_included": false,
+  "evidence_files": [
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/tool_calls.jsonl",
+      "sha256": "fabb260e3400726c4bdd3fecebf174d7c16667911df6376bfd777f0436ce27aa"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/behavior76_recipient_receipts.jsonl",
+      "sha256": "bf50f7835c2cd8ce90904a78b98dc8abbbfa8bdc82cbbc94697b00476a2f00a1"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/action_intents.jsonl",
+      "sha256": "186f0e1379f36cb101f3069f26608b9aaa794d410d050ca5241557e8974ffa6e"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/action_effects.jsonl",
+      "sha256": "28fd3a3354fb6a2537a2a819c55143c1d7343b433fa5fa4faa194fa3fe2282ea"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/action_effect_evidence.jsonl",
+      "sha256": "643afa5eec32d6c71e374d81154e8afd853c6ec5d32452bdcf25c09b79a55484"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/behavior76_objects.jsonl",
+      "sha256": "b89697f08ab9269750cac2d9c62ea9c7b5bff90c24c520cc9c5df2851c8171f8"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/behavior76_object_events.jsonl",
+      "sha256": "40c3d8f757631d12e10dbf1eef80c6b9702692979521d5ee0e97b9e9a82bcad1"
+    },
+    {
+      "path": ".cache/behavior76/native-fresh-v3/slot-06/arm-53996e3d2f11212d54e766c64e404e36/tables/action_effect_dispatches.jsonl",
+      "sha256": "5b9292cf3ec05c755fcf274d103833adf146eb065b584939bbff523914cd0183"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_runtime_test.go",
+      "sha256": "dfb57892f1cf0fb0605ac3ae1f0062ed19e66cb5523804cbbbe45b6a4b3e4cbe"
+    },
+    {
+      "path": "apps/tool-broker/internal/runtimeclient/router.go",
+      "sha256": "f04ae1fd12b5c8f657c98c4ef9eca32091f3a3c9b76015b0f7c4ceb548f66ef6"
+    },
+    {
+      "path": "apps/tool-broker/internal/broker/server.go",
+      "sha256": "14a857c5fbd41433e7d9561f087cb4fde8f7e47ba411f4ff068909a3b182b8ea"
+    },
+    {
+      "path": "internal/actionauth/effect.go",
+      "sha256": "d015d89cafe092547803bf9e0e3da9f8c9739f159ff1376ff51d2ad1e6abad1d"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+[
+  {
+    "path": "build-literal-r1-bound-v1.sh",
+    "bytes": 441,
+    "sha256": "97ca040b689eec7ba2de829168620cf6bdd8cb291789e9692130afaaf786515c"
+  },
+  {
+    "path": "check-closed-local-response-v10-r3-history-v1.sql",
+    "bytes": 2544,
+    "sha256": "5be16e1c1e8ccacfddfe00ff6c243bf5cbffc72c2589c9011d3244b77982b354"
+  },
+  {
+    "path": "final-gate-summary-v1.json",
+    "bytes": 585,
+    "sha256": "ae3a315114004a6a734b6fa795e6e987ff7406358091f61073ff097d21399a9b"
+  },
+  {
+    "path": "literal-r1-actual-composition-v1-exit.json",
+    "bytes": 294,
+    "sha256": "4da0492ba0fed57d47b58dac0c77feabd481523387e41338caf52b15aa1ec621"
+  },
+  {
+    "path": "literal-r1-actual-composition-v1.log",
+    "bytes": 104840,
+    "sha256": "9e8822dc72dd31a4ddd77854bd9b7cf72055f45074041ed2da09ed3778671384"
+  },
+  {
+    "path": "literal-r1-actual-setup-v1-exit.json",
+    "bytes": 237,
+    "sha256": "9b719de4193a3c607cf22261534941c54a38e21319c38b1e44cd89e1cba96a39"
+  },
+  {
+    "path": "literal-r1-actual-setup-v1.log",
+    "bytes": 10292,
+    "sha256": "76e3399e48e584ca7d99eaec2c54ed28a0637a311cddaf78751f25a354cda90a"
+  },
+  {
+    "path": "literal-r1-bound-build-v1-receipt.json",
+    "bytes": 711,
+    "sha256": "ad23cefea66cb0ec3c6dfe2021c2cde4febc7b40de86b18343a012d906c391b9"
+  },
+  {
+    "path": "literal-r1-bound-build-v1.log",
+    "bytes": 278,
+    "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+  },
+  {
+    "path": "literal-r1-current-history-v1-exit.json",
+    "bytes": 333,
+    "sha256": "5aa922fbc9ebdc103ef3f6f4739a95fa5dcbf82ac6da74c4613d7ee5718244b6"
+  },
+  {
+    "path": "literal-r1-current-history-v1.log",
+    "bytes": 414,
+    "sha256": "f265cb46735607398b19bbc1412b62248044dd7333152d625e555afd200906b0"
+  },
+  {
+    "path": "literal-r1-current-resource-v1-exit.json",
+    "bytes": 151,
+    "sha256": "209653e67bcc8f052cbb48a840d8be333e055ca03fb0644261c39935fc789524"
+  },
+  {
+    "path": "literal-r1-current-resource-v1.log",
+    "bytes": 978,
+    "sha256": "24ffb4e55b1edc84fc54bac28b36192462a431a49f9a3146e57b0ee593d0a784"
+  },
+  {
+    "path": "literal-r1-final-elf-buildinfo-v1.log",
+    "bytes": 2845,
+    "sha256": "fc860e58ec0adfddb8d7101ccfeebc64370ee132e6ca587cc8019b0ab37bd21a"
+  },
+  {
+    "path": "literal-r1-final-public-v1-exit.json",
+    "bytes": 237,
+    "sha256": "311e00e26fe10ede6691c896a43869684b3f778a1c3ddfdc42a0dec069f3f0e3"
+  },
+  {
+    "path": "literal-r1-final-public-v1.log",
+    "bytes": 309492,
+    "sha256": "f47580109d462f858ef4e7fef221059fe58ced6161892be2518fa48d0eb039a6"
+  },
+  {
+    "path": "literal-r1-final-readiness-v1.log",
+    "bytes": 278,
+    "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+  },
+  {
+    "path": "literal-r1-final-vet-v1-exit.json",
+    "bytes": 116,
+    "sha256": "8d74b81d0aa039511c016c962455c9ce42a0e2c7603b302880415b44b63ffd80"
+  },
+  {
+    "path": "literal-r1-final-vet-v1.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "literal-r1-parent-lane-observation-v1.log",
+    "bytes": 308,
+    "sha256": "df0e2c6f64273cfeca84cfb6e43cde30491de522b48adbbff818d6d8d79e27e8"
+  },
+  {
+    "path": "literal-r1-parent-lane-v1.json",
+    "bytes": 942,
+    "sha256": "10fa9857fa57d272b5eb9a702309c3786d0e84074e46b2a8b3d43eb45a4ff2f6"
+  },
+  {
+    "path": "literal-v11-r1-binding-audit-v1.json",
+    "bytes": 3012,
+    "sha256": "f0df876bd0d805ef9f318775e638240d6c532fb07c9654256fa0c88156db3c7e"
+  },
+  {
+    "path": "literal-v11-r1-completed-gates-audit-v1.json",
+    "bytes": 3330,
+    "sha256": "e6fca7adecabde778c1bc67fa21aea7ab735e3aff38feffecabf8a3b370d4776"
+  },
+  {
+    "path": "literal-v11-r1-final-public71-audit-v1.json",
+    "bytes": 5647,
+    "sha256": "182164faa9420d203339910d5055abe5c089d9384b0959de85c015d759625d93"
+  },
+  {
+    "path": "literal-v11-r1-remaining-admission-artifacts-prepared-v1.md",
+    "bytes": 3178,
+    "sha256": "a22dac935d2117d366153d5ee2466dbf9e57b23c1d117e7e707854f7e95b1cfd"
+  },
+  {
+    "path": "README.md",
+    "bytes": 2493,
+    "sha256": "ccbf9e0f55c78b48a0c8b87ce30bd73b1b0974ec6f9d6b4bc37282b7f6e4941a"
+  },
+  {
+    "path": "run-literal-r1-actual-composition-v1.sh",
+    "bytes": 1265,
+    "sha256": "775fc36b81a18a64e03007adbd360e40f11338f5b5158ab10e96d15739ac982e"
+  },
+  {
+    "path": "run-literal-r1-actual-setup-v1.sh",
+    "bytes": 1189,
+    "sha256": "eda99ffc2dbfbcffc853780a86bde267ccde0c43eec83384e0f94af6b7ac736d"
+  },
+  {
+    "path": "run-literal-r1-final-public-v1.sh",
+    "bytes": 1705,
+    "sha256": "b24c16ce99ab36b5fed18de505f164b565fba15b93ef0e7917d8df4e328e6ffb"
+  },
+  {
+    "path": "run-literal-r1-final-readiness-v1.sh",
+    "bytes": 2331,
+    "sha256": "eb0ceeecd1fafc8cbfc1144833c3c2f6a96495a684b5cd205b35e2e94ca2fc47"
+  }
+]

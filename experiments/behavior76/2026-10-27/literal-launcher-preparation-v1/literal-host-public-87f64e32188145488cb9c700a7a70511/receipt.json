@@ -1,0 +1,69 @@
+{
+  "version": "behavior76-literal-public-host-bind-v1",
+  "checks": [
+    {
+      "check": "actual-bind-and-all-pins",
+      "exit": 17,
+      "stub_reached": true,
+      "pass": true
+    },
+    {
+      "check": "wrong-fresh-nonce",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-wrapper",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-launcher",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-core",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-schema",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-elf",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "wrong-stimulus",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    },
+    {
+      "check": "expired-before-exec",
+      "exit": 1,
+      "stub_reached": false,
+      "pass": true
+    }
+  ],
+  "pass": 9,
+  "fail": 0,
+  "WSL_pin_only_processes": 9,
+  "actual_native_host_wrapper_executed": false,
+  "actual_ELF_entered": false,
+  "actual_certificate": false,
+  "native_calls": 0,
+  "auth_access": 0,
+  "PG_access": 0,
+  "source_frozen": false
+}

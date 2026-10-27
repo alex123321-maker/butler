@@ -1,0 +1,40 @@
+Changed files:
+- apps/orchestrator/internal/app/behavior76_claim_window_test.go
+- apps/orchestrator/internal/app/behavior76_collect_test.go
+- apps/orchestrator/internal/app/behavior76_day_admission_test.go
+- apps/orchestrator/internal/app/behavior76_idle_claim_diagnostic_test.go
+- apps/orchestrator/internal/app/behavior76_scope_test.go
+- apps/orchestrator/README.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/testing/issue76-local-response-protocol.md
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-behavior76_collect_test.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-behavior76_fixture_test.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-behavior76_idle_claim_diagnostic_test.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-behavior76_scope_test.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-claim_admission.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/baseline-service.go.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/composition-parent-receipt-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/idle-claim-legacy-binary-sha256.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/idle-claim-legacy-source-after-sha256.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/idle-claim-legacy-source-before-sha256.txt
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/independent-claim-window-repair-static-review-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/independent-failure-exposure-audit-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/independent-idle-claim-legacy-receipt-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/independent-literal-binding-audit-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/package-receipt-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/package-static-review-addendum-v1.json
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/README.md
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/run-idle-claim-legacy-v1.sh
+- experiments/behavior76/2026-10-26/local-response-v10-pre-native-failure-v1/setup-receipt-v1.json
+- scripts/dev/behavior-local-run.sh
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- docs/testing/issue76-fixture-local-protocol.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...

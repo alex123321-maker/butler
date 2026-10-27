@@ -1,0 +1,39 @@
+{
+  "version": "issue76-independent-literal-binding-local-model-v8-v1",
+  "decision": "EXACT_LITERAL_ONLY_BINDING_CONFIRMED_NO_NATIVE_ADMISSION",
+  "producer": "36071fbb6ad77db61d4d60c4f6e09acb63843a05",
+  "semantic_source": "c31f6bc8551e7c77893adacd8213126bcf55208a",
+  "source_delta": "Only2 Go hash constants; reconstructed source equals frozen semantic source;3existing wrapper paths unchanged",
+  "new_publication": [
+    {
+      "sha256": "4e08a61ffc34c4485ca05e551390eac1d0df37c07df00c75f35019cc58efab95",
+      "path": "experiments\\behavior76\\2026-10-26\\local-model-v8-preparation-v1\\public-authoring-receipt-local-model-v8-v1.json",
+      "git_blob_exact": true
+    },
+    {
+      "sha256": "c3417e6be7a4c46d821458d84bf6c2d4b8e8670c78f67879cf4bd2b46fc213a6",
+      "path": "experiments\\behavior76\\2026-10-26\\local-model-v8-preparation-v1\\public-commitment-local-model-v8.json",
+      "git_blob_exact": true
+    },
+    {
+      "sha256": "13f85da03712b189ed06ae90cc06b5b433bbd53bb86e028e565843025c79db5f",
+      "path": "experiments\\behavior76\\2026-10-26\\local-model-v8-preparation-v1\\public-structure-local-model-v8-v1.json",
+      "git_blob_exact": true
+    },
+    {
+      "sha256": "8cd9472e1704b2bd3385eacd33163c3ab7e264515434e2772f33d4afd1536973",
+      "path": "experiments\\behavior76\\2026-10-26\\local-model-v8-preparation-v1\\semantic-freeze-local-model-v8-v1.json",
+      "git_blob_exact": true
+    }
+  ],
+  "frozen_other_source_files_verified": 39,
+  "prior_published_files_unchanged": 35,
+  "runtime_dependency_files_unchanged": 7,
+  "stimuli_sha256": "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00",
+  "expectations_sha256": "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0",
+  "formal_source_scorer_freeze_sha256": "8cd9472e1704b2bd3385eacd33163c3ab7e264515434e2772f33d4afd1536973",
+  "corpus_content_goldens_mapping_answers_read": false,
+  "setup_composition_and_rebuilt_ELF": "PENDING; no live partial result inspected or promoted",
+  "checker_native_auth_PG_operations": 0,
+  "native_admission": false
+}

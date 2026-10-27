@@ -1,0 +1,153 @@
+{
+  "version": "issue76-independent-terminal-observer-fixed-regression-v1",
+  "decision": "TARGETED_ACTUAL_PG_REGRESSION_PASS_NOT_STUDY_ADMISSION",
+  "created_utc": "2026-10-26T15:21:30.4450785+00:00",
+  "base_head": "a7ec560a43178e0ba906d1c65f7478818cd0e9f7",
+  "source_state": "parent terminal observer patch + independent test/helper additions; not yet formally frozen",
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_observer_integration_test.go",
+      "archive": "tested-behavior76_terminal_observer_integration_test.go",
+      "sha256": "f7e579d120791f65fdfeb2ec65f3b68911189274bb24e898d9ac5440766744a4"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "archive": "tested-behavior76_collect_test.go",
+      "sha256": "ac78530c206eb7bba2779878f9bb5ead0732fb5213f3cee4d454008f05b20598"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "archive": "tested-behavior76_fixture_test.go",
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go",
+      "archive": "tested-service_state.go",
+      "sha256": "4db8430bc418ab712265852f67043f0b827b50c218753a9d0a47ab6861f360a0"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go",
+      "archive": "tested-service_execute.go",
+      "sha256": "b6a7742edfabc17e7edb88ca48907bc799f9848a9dda5dee21e35a76d6d8835f"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/working_memory.go",
+      "archive": "tested-working_memory.go",
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/terminal_watch_test.go",
+      "archive": "tested-terminal_watch_test.go",
+      "sha256": "a16c2dfee658c5324168d7784f01459cb5090156e1d86ccf510db8ab2c29a5d5"
+    },
+    {
+      "path": "apps/orchestrator/internal/task/authority.go",
+      "archive": "tested-authority.go",
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc"
+    },
+    {
+      "path": "apps/orchestrator/internal/task/store.go",
+      "archive": "tested-store.go",
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "binary-sha256.txt",
+      "sha256": "ae4e6f46864b29f99af661fb55915df8c83f19a9a99876eee06e8a7c1764692a",
+      "bytes": 152
+    },
+    {
+      "path": "build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "exit.json",
+      "sha256": "1ba3b9d9fbd76746e92a3de2cf69a76d002b639c0128e98664bae0e4622986c3",
+      "bytes": 111
+    },
+    {
+      "path": "run-terminal-observer-fixed-v1.sh",
+      "sha256": "19a65e86031f68839cb1e04869e45fbc73167aa1b9ba8ba20f0d6cadd43c489e",
+      "bytes": 1771
+    },
+    {
+      "path": "test.log",
+      "sha256": "3820388440570e7888ebf0f0b3a62510756d1b2032be50135ecbc36b4bc2fa4d",
+      "bytes": 4229
+    },
+    {
+      "path": "tested-authority.go",
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "bytes": 1800
+    },
+    {
+      "path": "tested-behavior76_collect_test.go",
+      "sha256": "ac78530c206eb7bba2779878f9bb5ead0732fb5213f3cee4d454008f05b20598",
+      "bytes": 29177
+    },
+    {
+      "path": "tested-behavior76_fixture_test.go",
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77",
+      "bytes": 24423
+    },
+    {
+      "path": "tested-behavior76_terminal_observer_integration_test.go",
+      "sha256": "f7e579d120791f65fdfeb2ec65f3b68911189274bb24e898d9ac5440766744a4",
+      "bytes": 14885
+    },
+    {
+      "path": "tested-service_execute.go",
+      "sha256": "b6a7742edfabc17e7edb88ca48907bc799f9848a9dda5dee21e35a76d6d8835f",
+      "bytes": 24519
+    },
+    {
+      "path": "tested-service_state.go",
+      "sha256": "4db8430bc418ab712265852f67043f0b827b50c218753a9d0a47ab6861f360a0",
+      "bytes": 7651
+    },
+    {
+      "path": "tested-store.go",
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4",
+      "bytes": 20457
+    },
+    {
+      "path": "tested-terminal_watch_test.go",
+      "sha256": "a16c2dfee658c5324168d7784f01459cb5090156e1d86ccf510db8ab2c29a5d5",
+      "bytes": 4862
+    },
+    {
+      "path": "tested-working_memory.go",
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05",
+      "bytes": 9512
+    }
+  ],
+  "test": "TestBehavior76GlobalStopTerminalObserverIntegration",
+  "top_level_pass": 1,
+  "subcases_pass": 2,
+  "FAIL": 0,
+  "SKIP": 0,
+  "race_warning": false,
+  "runtime_seconds": 9.17,
+  "actual_PostgreSQL": true,
+  "ordinary_Input_Core_Store": true,
+  "native_model_auth_calls": 0,
+  "checks": [
+    "real successful preterminal authority observation",
+    "own failed Store outcome commit still creates task conflict",
+    "original context/token and actual ownership.Begin remain live after commit",
+    "original normalized transport_connection_error retained",
+    "ordinary Input blocked and run failed persisted",
+    "zero own provider CancelRun after owning worker join",
+    "real preterminal ReleaseLease causes watcher CancelRun and execution error"
+  ],
+  "legacy_diagnostic_body_unchanged": true,
+  "legacy_receipt_sha256": "eb5d7d4d593a1d9718ffa57199efffcf65d64de00a5932f6f165c1ba3796b6e2",
+  "production_source_modified_by_checker": false,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "historical_native_failures_reclassified": false,
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "new_native_admission": false
+}

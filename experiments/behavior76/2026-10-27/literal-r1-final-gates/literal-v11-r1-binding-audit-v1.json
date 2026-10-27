@@ -1,0 +1,74 @@
+{
+  "version": "issue76-literal-v11-r1-independent-binding-audit-v1",
+  "decision": "EXACT_TWO_LITERAL_BINDINGS_SOURCE_SCORER_EQUIVALENT_NOT_NATIVE_ADMISSION",
+  "issued_at_utc": "2026-10-27T02:29:43.480997+00:00",
+  "producer": "c8411429e36f2e7d085971617f0f84dc2f2e5b6e",
+  "formal_semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "formal_freeze_sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+  "formal_source_inventory_sha256": "7002b1bbcdbde4bf9fa8ec6828ad308720b835b7302970be4de0c1e3e49e5b31",
+  "normalized_source_bytes_exact": true,
+  "source_pins_checked": 269,
+  "prior_public_files_unchanged": 338,
+  "physical_committed_blob_checks": 626,
+  "literal_bindings": [
+    {
+      "constant": "behavior76LiteralStimuliSHA",
+      "sha256": "9bc4872c85fb6b2d5e1a1b84b94b24a6a1e6d64ae749d527cbf5698431ca5d0c"
+    },
+    {
+      "constant": "behavior76LiteralExpectationsSHA",
+      "sha256": "f20937430079aa6c259a6917f9f1ab846875b4baff71c58cf4c72e4d1ff49865"
+    }
+  ],
+  "allowed_source_file": "apps/orchestrator/internal/app/behavior76_literal_types_test.go",
+  "other_changes_only_nonsemantic_freeze_commitment_preservation": true,
+  "public_metadata_exact_cache_and_Git": [
+    {
+      "path": "experiments/behavior76/2026-10-27/literal-r1-commitment/public-commitment-literal-v11-r1.json",
+      "sha256": "d41a227c42b8bc790ba0e28d7438bd24fca5f544b7e04b8ca6e676f2fbf4ff8c",
+      "bytes": 2173
+    },
+    {
+      "path": "experiments/behavior76/2026-10-27/literal-r1-commitment/public-literal-v11-r1-structure-v1.json",
+      "sha256": "165dbf597263941343217d5d82f295d3d8055ab52b70328a4e04f59a71a4214f",
+      "bytes": 2109
+    },
+    {
+      "path": "experiments/behavior76/2026-10-27/literal-r1-commitment/public-literal-v11-r1-freshness-v1.json",
+      "sha256": "98bf263280b03348d681abc3c61b62876bebf1e233135fe100580fb709cd58a7",
+      "bytes": 1450
+    },
+    {
+      "path": "experiments/behavior76/2026-10-27/literal-r1-commitment/public-literal-v11-r1-authoring-provenance-v1.json",
+      "sha256": "4d8f998cdde9199f84b5ba3e2b41f9a397e15a11f790dbc5aa07476eaa9c7474",
+      "bytes": 2026
+    },
+    {
+      "path": "experiments/behavior76/2026-10-27/literal-r1-commitment/public-literal-v11-r1-ownership-v1.json",
+      "sha256": "99be13d190e424fa55f77db38eb016e5402fdf9361e155cbadcd3406f41046b2",
+      "bytes": 1605
+    }
+  ],
+  "commitment_sha256": "d41a227c42b8bc790ba0e28d7438bd24fca5f544b7e04b8ca6e676f2fbf4ff8c",
+  "old7checker_runtime_new4_and27_AST_unchanged": true,
+  "plan": {
+    "episodes": 16,
+    "arms": 32,
+    "owner_opportunities": 68,
+    "dimensions": 8,
+    "legacy_families": 6,
+    "original_steps": 40,
+    "paired_steps": 80
+  },
+  "private_hash_verification_only_no_case_values_read_or_output": true,
+  "operations": {
+    "Go": 0,
+    "PG": 0,
+    "Docker": 0,
+    "auth": 0,
+    "provider_model": 0
+  },
+  "fresh_actual_gates_not_yet_audited": true,
+  "final_unique_ELF_not_yet_audited": true,
+  "native_admission": false
+}

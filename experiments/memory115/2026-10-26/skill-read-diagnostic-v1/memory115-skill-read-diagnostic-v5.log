@@ -1,0 +1,116 @@
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_1
+2026/10/26 19:46:26 INFO run created component=run run_id=run-1793043986269284944-9207a99d206bd5b4 session_key=web:54f402135adc9669bb9393536277bd183976e18dfe59c49994e407136d705d83 state=created
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=created to_state=queued
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=queued to_state=acquired
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=acquired to_state=preparing
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=preparing to_state=model_running
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:26 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:27 INFO run transitioned component=run run_id=run-1793043986269284944-9207a99d206bd5b4 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_2
+2026/10/26 19:46:28 INFO run created component=run run_id=run-1793043988985665283-f63fa8a20905b48c session_key=web:8fac72d17acf7f1d803aea652bff3c3a0724d1a41c44b51baa0d6443cc61c22f state=created
+2026/10/26 19:46:28 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=created to_state=queued
+2026/10/26 19:46:28 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=queued to_state=acquired
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=acquired to_state=preparing
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=preparing to_state=model_running
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=model_running to_state=tool_pending
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=model_running to_state=tool_pending
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=model_running to_state=tool_pending
+2026/10/26 19:46:29 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:30 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:30 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:30 INFO run transitioned component=run run_id=run-1793043988985665283-f63fa8a20905b48c from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_3
+2026/10/26 19:46:31 INFO run created component=run run_id=run-1793043991510234557-5f0d888d25b22b8d session_key=web:cd038b2c6b860562f7cef8b2d13f98197bbd06525ea66a1b06c276766e07adc8 state=created
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=created to_state=queued
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=queued to_state=acquired
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=acquired to_state=preparing
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=preparing to_state=model_running
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=model_running to_state=tool_pending
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:31 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:32 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:32 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=model_running to_state=tool_pending
+2026/10/26 19:46:32 INFO run transitioned component=run run_id=run-1793043991510234557-5f0d888d25b22b8d from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:33 INFO run created component=run run_id=run-1793043993537319215-41d95476caf881c3 session_key=web:cd038b2c6b860562f7cef8b2d13f98197bbd06525ea66a1b06c276766e07adc8 state=created
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=created to_state=queued
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=queued to_state=acquired
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=acquired to_state=preparing
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=preparing to_state=model_running
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:33 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:34 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:34 INFO run transitioned component=run run_id=run-1793043993537319215-41d95476caf881c3 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_4
+2026/10/26 19:46:35 INFO run created component=run run_id=run-1793043995181641699-115927a611744582 session_key=web:a686cb984e749e9ea387297fe90abc906d80076561611a4f60a05f0b0230e4e6 state=created
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=created to_state=queued
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=queued to_state=acquired
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=acquired to_state=preparing
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=preparing to_state=model_running
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:35 INFO run transitioned component=run run_id=run-1793043995181641699-115927a611744582 from_state=tool_pending to_state=tool_running
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_1
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_2
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_3
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_4
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/inspect_and_check_only
+2026/10/26 19:46:49 INFO run created component=run run_id=run-1793044009538079143-4240de131ed04e84 session_key=web:99969e3b73f90379d396193f5d4bd88fe30b8237369b9401b53ae348628846d4 state=created
+2026/10/26 19:46:49 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=created to_state=queued
+2026/10/26 19:46:49 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=queued to_state=acquired
+2026/10/26 19:46:49 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=acquired to_state=preparing
+2026/10/26 19:46:49 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=preparing to_state=model_running
+2026/10/26 19:46:50 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=model_running to_state=tool_pending
+2026/10/26 19:46:50 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:50 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:50 INFO run transitioned component=run run_id=run-1793044009538079143-4240de131ed04e84 from_state=awaiting_model_resume to_state=failed
+    memory_experience_skill_read_diagnostic_test.go:200: CONTROLLED_SKILL_READ profile=inspect_and_check_only prepare_contract_visible=false durable_state=failed observed_read_results=0 recipient_changed=false native_auth_calls=0 original_closed_failure_not_reclassified=true
+=== RUN   TestExperienceNativeSkillReadPermissionDiagnosticIntegration/prepare_and_verify_exact_resource
+2026/10/26 19:46:53 INFO run created component=run run_id=run-1793044013009513175-acf65e041be2bb6e session_key=web:2d16941ba7c3142b275ae7a10c57a0a514655603694d3c6d007d0558e4369ff2 state=created
+2026/10/26 19:46:53 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=created to_state=queued
+2026/10/26 19:46:53 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=queued to_state=acquired
+2026/10/26 19:46:53 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=acquired to_state=preparing
+2026/10/26 19:46:53 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=preparing to_state=model_running
+2026/10/26 19:46:53 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=model_running to_state=tool_pending
+2026/10/26 19:46:54 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:56 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:46:56 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:46:57 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=model_running to_state=tool_pending
+2026/10/26 19:46:57 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=tool_pending to_state=tool_running
+2026/10/26 19:46:59 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:47:01 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:47:04 INFO run transitioned component=run run_id=run-1793044013009513175-acf65e041be2bb6e from_state=model_running to_state=finalizing
+    memory_experience_skill_read_diagnostic_test.go:200: CONTROLLED_SKILL_READ profile=prepare_and_verify_exact_resource prepare_contract_visible=true durable_state=completed observed_read_results=2 recipient_changed=false native_auth_calls=0 original_closed_failure_not_reclassified=true
+--- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration (47.05s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_1 (2.82s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_2 (2.54s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_3 (3.84s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_original_4 (1.81s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_1 (2.40s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_2 (2.37s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_3 (5.23s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/fresh_note_4 (2.46s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/inspect_and_check_only (2.49s)
+    --- PASS: TestExperienceNativeSkillReadPermissionDiagnosticIntegration/prepare_and_verify_exact_resource (14.50s)
+PASS

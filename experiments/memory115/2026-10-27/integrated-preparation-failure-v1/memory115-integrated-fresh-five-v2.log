@@ -1,0 +1,14 @@
+producer=baaf94ef6298258d5590709cd649541ab371e93f
+go version go1.27.2 linux/amd64
+171 132 0:69 /CodexData/home/worktrees/issue106-local/butler/.cache/memory115-source-skillprep-baaf-v2 /private/memory115-source-skillprep-v1 ro,noatime shared:27 - 9p D:\134 rw,aname=drvfs;path=D:\;uid=0;gid=0;metadata;symlinkroot=/mnt/host/,cache=5,access=client,msize=65536,trans=fd,rfd=5,wfd=5
+/private/memory115-prepared-skillprep-v1/bin/app.test 87082423 555
+/private/memory115-prepared-skillprep-v1/bin/broker-control.test 32367308 555
+/private/memory115-prepared-skillprep-v1/bin/extension.test 22544722 555
+/private/memory115-prepared-skillprep-v1/bin/http.test 21795778 555
+/private/memory115-prepared-skillprep-v1/bin/tool-broker 29909534 555
+80d8e9d080d01e60c96c1d8f5ebda405b77cd42535626d98120ff0c8f1faa77f  /private/memory115-prepared-skillprep-v1/bin/app.test
+b8195af63a2a34fa5d280d911f8d8d3e0ee93f3eab36e3a5126bdc66aca355fb  /private/memory115-prepared-skillprep-v1/bin/broker-control.test
+011bddd4d1cd89b534e0d55e42ba2a492f130f60b52b9b8c8a8aaee682f20d71  /private/memory115-prepared-skillprep-v1/bin/extension.test
+82e7503c3b9f3da5c5525238e59e5f51486a4adfa5dd6b559bfcbf3612c68626  /private/memory115-prepared-skillprep-v1/bin/http.test
+72b41a9715f785cc3d6d6b09e138f48e94380a3ad6fd907061b7aba033a87b22  /private/memory115-prepared-skillprep-v1/bin/tool-broker
+PASS fresh-five; source exact before/after; native=0 auth=0

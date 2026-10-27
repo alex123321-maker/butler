@@ -1,0 +1,33 @@
+{
+  "version": "issue76-independent-day-v7-r2-structure-v1",
+  "verdict": "PASS",
+  "episodes": 24,
+  "goldens": 24,
+  "families": 12,
+  "owner_opportunities": 96,
+  "arms": 48,
+  "steps_single_arm_matrix": 64,
+  "paired_steps": 128,
+  "max_stimulus_line_utf8_bytes": 5193,
+  "native": 0,
+  "pg_writes": 0,
+  "parser_execution": "Pure offline structural validation only; actual existing Go setup/composition remain prospective",
+  "pins": [
+    {
+      "sha256": "44ac02495385f4af45f4c5de17733235188c3dacbdbc7883e7980eff639b4a96",
+      "path": "public-commitment-day-v7-r2.json"
+    },
+    {
+      "sha256": "3568d703bcc778467a25f0fc017be03f2c9c3e7a9ad03d359f8cd2478a2dda3b",
+      "path": "public-authoring-receipt-day-v7-r2-v1.json"
+    },
+    {
+      "sha256": "a2d7ffa28a497a72246ba608d1a18351f316c6804a581784a1f76306975ba047",
+      "path": "hidden-day-v7-r2/stimuli.jsonl"
+    },
+    {
+      "sha256": "dabe70e665b96396bb1e3e9bfdbf7503ba2d07dead08482f6ce50d1d19708cc7",
+      "path": "hidden-day-v7-r2/expectations.jsonl"
+    }
+  ]
+}

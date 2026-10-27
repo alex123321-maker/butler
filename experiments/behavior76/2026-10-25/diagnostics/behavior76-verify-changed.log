@@ -1,0 +1,36 @@
+Changed files:
+- .gitattributes
+- apps/orchestrator/internal/app/behavior76_collect_test.go
+- apps/orchestrator/internal/app/behavior76_events_test.go
+- apps/orchestrator/internal/app/behavior76_evidence_test.go
+- apps/orchestrator/internal/app/behavior76_fixture_test.go
+- apps/orchestrator/internal/app/behavior76_native_test.go
+- apps/orchestrator/internal/app/behavior76_offline_test.go
+- apps/orchestrator/internal/app/behavior76_preflight_test.go
+- apps/orchestrator/internal/app/behavior76_runtime_test.go
+- apps/orchestrator/internal/app/behavior76_types_test.go
+- apps/orchestrator/internal/prompt/task_continuity.go
+- apps/orchestrator/README.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- experiments/behavior76/2026-10-25/development-catalog.json
+- experiments/behavior76/2026-10-25/public-checker-commitment-v2.json
+- experiments/behavior76/2026-10-25/public-commitment-v1.json
+- experiments/behavior76/2026-10-25/public-commitment-v2.json
+- experiments/behavior76/2026-10-25/public-contract-v2.md
+- experiments/behavior76/2026-10-25/public-revision-v2.md
+- experiments/behavior76/2026-10-25/README.md
+- experiments/behavior76/2026-10-25/scoring-input-schema-v1.md
+- scripts/dev/behavior-local-acceptance.ps1
+- scripts/dev/behavior-local-host.sh
+- scripts/dev/behavior-local-run.sh
+- scripts/dev/verify-changed.ps1
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...

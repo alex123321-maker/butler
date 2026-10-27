@@ -1,0 +1,75 @@
+{
+  "version": "issue76-independent-local-http-v9-source-review-v3",
+  "decision": "NO_CONCRETE_SOURCE_BLOCKER_FOUND_PENDING_FINAL_EXISTING_GATES_AND_FORMAL_FREEZE",
+  "supersedes": {
+    "path": "public-local-http-v9-source-review-v2.json",
+    "sha256": "b7ccb8beb650fd612a43705e780e613218ecb028535f48ea1bd8103df6750dda"
+  },
+  "scope": "Narrow new handoff EOF observer diff plus prior helper/scope/Core exemption review",
+  "reviewed_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "bc5363067f7edd1a2884cae65e230b0620e0c69873bdef18e52a48341ad82138"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_handoff_eof_test.go",
+      "sha256": "7b36e5e462f0a6b1e0de8a44df344f948aa661bfc2d9864f8be6f431934b406d"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go",
+      "sha256": "8031596226181b03456b748116b922d94ea4cad14820faa8e07076e15348ae9e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "f1b59026a48d0cc2e26c5e21540c405395832231cc95102cef8b78faf19837d9"
+    },
+    {
+      "path": "internal/transport/antigravity/protocol.go",
+      "sha256": "90acc1691034ac387c721b863ec241f3223b4f2636c4fd0b45b44084005cc0f7"
+    },
+    {
+      "path": "internal/transport/antigravity/http_failure_diagnostic_test.go",
+      "sha256": "3aaf558954522484ef623f636f96637d9f2a74a2c0700a2a42bbc53c736d19ef"
+    }
+  ],
+  "findings": [
+    {
+      "status": "closed_in_reviewed_source",
+      "id": "HTTP-CLIENT-TIMEOUT-01"
+    },
+    {
+      "status": "closed_in_reviewed_source",
+      "id": "HTTP-MULTICAUSE-01"
+    },
+    {
+      "problem": "Prefix backlog could force cancellable optional-terminal send after a published proposal; consumer cancellation could then produce false GLOBAL",
+      "status": "closed_in_reviewed_source",
+      "id": "HANDOFF-EOF-PUBLICATION-01",
+      "basis": "Wait for free output capacity covering complete <=2-event tail before publishing any proposal; sole producer means free capacity cannot shrink except its own bounded sends; all tail sends now nonblocking by capacity proof",
+      "regressions_present": [
+        "asynchronous underlying EOF before proposal publication",
+        "actual parent cancellation before EOF GLOBAL",
+        "late error retained and no proposal published",
+        "queued run_started+delta prefix plus optional run_completed; consumer immediately cancels on proposal"
+      ]
+    }
+  ],
+  "remaining_concrete_blockers": 0,
+  "source_observations": [
+    "Actual EOF and successful journal finish precede proposal publication",
+    "Invalid/late fault seals GLOBAL and publishes no proposal",
+    "Cancellable one-millisecond capacity wait uses original context and occurs before proposal visibility",
+    "Immediate ctx/global recheck before bounded batch publication",
+    "No source/authority/cancellation deadline exception introduced",
+    "Ordinary Core input/run/effect/task states, native costs and already-admitted cohort remain distinct",
+    "Same observer mechanism applies to both arms; no candidate/criterion/threshold changes"
+  ],
+  "limitations": [
+    "Parent final existing Public gate on these exact source bytes remains required; this is source inspection, not a test result",
+    "Prior Public-v1 failure and authority-observation-unavailable 3ms remain retained/unresolved; EOF fix does not establish their full causal resolution",
+    "No formal source/scorer freeze, new hidden authorship or native admission issued"
+  ],
+  "checker_runtime_166PASS_unchanged": true,
+  "PG_Go_auth_native_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false
+}

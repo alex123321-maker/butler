@@ -1,0 +1,11 @@
+{
+  "version": "issue76-local-http-v9-one-use-launch-v1",
+  "certificate_sha256": "3266b58eeb3779d04d11952279436987a33a8b0bafe2914efc220e290d5f5a65",
+  "producer": "0bd2d6dd425b2eb13b4984ed0286754edbe6c57f",
+  "elf_sha256": "54de972a69f02cc2c0d1103f08375b88c40ee3723f4ddceeeba33c89048f2b2f",
+  "output": ".cache/behavior76/native-local-http-v9",
+  "admission_consumed_utc": "2026-10-26T09:24:36.3149929+00:00",
+  "new_attempts_allowed": 1,
+  "rebuild_after_admission": false,
+  "old_windows_reopened": false
+}

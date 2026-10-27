@@ -1,0 +1,13 @@
+{
+  "formal_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+  "new_goals_objects_commands_feedback_profiles_and_negative_counterparts": true,
+  "distinct_primary_goals": 24,
+  "new_ids_seed_and_schedule": true,
+  "stimuli_sha256": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+  "version": "issue76-independent-local-response-v10-r2-opaque-semantic-difference-v1",
+  "basis": "Fresh prospective authoring from public task families and interfaces; not old-case renaming, replay or response-informed selection.",
+  "independently_authored_episodes": 24,
+  "criteria_candidate_limits_and_thresholds_changed": false,
+  "old_hidden_comparison_performed": false,
+  "expectations_sha256": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642"
+}

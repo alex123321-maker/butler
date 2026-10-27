@@ -1,0 +1,917 @@
+[
+  {
+    "path": "check-literal-actual-bridge-v1.ps1",
+    "sha256": "d4ce2c7972afc6b1e9563c187908f37396815f6027c7ed60c779048f4027d085",
+    "bytes": 4313
+  },
+  {
+    "path": "independent-actual-bridge-receipt.json",
+    "sha256": "938f18c0b63ef1a6d4c7a786184a3f3097c866b8a7946302070ad3dfc0e442bb",
+    "bytes": 37220
+  },
+  {
+    "path": "literal-actual-proof-v9-exit.json",
+    "sha256": "5b5fecaa7ce1af13bc4e15d815b679a6a69ab625d4f8eab047eae6d5b0bb3b99",
+    "bytes": 98
+  },
+  {
+    "path": "literal-actual-proof-v9-source-after.json",
+    "sha256": "3dc007c2b3a908b7af97997557500694d9ee8bce09bf1ae89a454c42b217ab0b",
+    "bytes": 172
+  },
+  {
+    "path": "literal-actual-proof-v9-source-before.json",
+    "sha256": "3dc007c2b3a908b7af97997557500694d9ee8bce09bf1ae89a454c42b217ab0b",
+    "bytes": 172
+  },
+  {
+    "path": "literal-actual-proof-v9.log",
+    "sha256": "1c57d473f9216a3d6eee7411cdbff780cf1ccea8e859df524cbe3ec6473fe8db",
+    "bytes": 8004
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/actual-outcomes.json",
+    "sha256": "e273d38a93da696aae3447c3f5362c7e6fab4d6ba3f0484bee5fe3071f85d5c4",
+    "bytes": 887
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/actual-snapshot.json",
+    "sha256": "972e9194f270dc77df9c5a6c832bf3f70450b2e260ae0899ac346351ca343d40",
+    "bytes": 13140
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/aliases.json",
+    "sha256": "f2a839f31c5c571b1acd7af2f201621d0519d267bcbae1290305ad41b8d8ec13",
+    "bytes": 493
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/public-input.json",
+    "sha256": "602e1c04d7edfaa2f51b39d1b8d87180a8aeef922860f7eedd7ea607764723f7",
+    "bytes": 2738
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/accepted_inputs.jsonl",
+    "sha256": "6494f0fcc9cfb86dddb40e098e677a027f95513c91b71a814a9f7d041870fa1b",
+    "bytes": 78044
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_authorizations.jsonl",
+    "sha256": "9d1e0ec4188c5987174742860407bef64f332c2a57a82b98a07ef25417195fc7",
+    "bytes": 5032
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_effect_dispatches.jsonl",
+    "sha256": "21a1129e5fc6f8ce910bc5addcec099568bf5a8a90854e9701a64af68e2e1732",
+    "bytes": 1140
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_effect_evidence.jsonl",
+    "sha256": "00423b0d64d31b4d0a56380578fd17ff6f1b7d1546e91318af0a2260d2ce5476",
+    "bytes": 3313
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_effects.jsonl",
+    "sha256": "dc91c3dbb27dd29692d2e644a6efdee13c0ba8647c906bc39e21c9743aab0664",
+    "bytes": 4086
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_intents.jsonl",
+    "sha256": "b85fd5b2040c5bd25846bd89572cfb83206ec6bb8f2df0c8a83221f2c03acf2f",
+    "bytes": 4447
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/action_mandates.jsonl",
+    "sha256": "adaf22118db7ab90ee38c6cc1bf2197162b4a439461f51c9870ce8b1d12fb7ee",
+    "bytes": 1068
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_aliases.jsonl",
+    "sha256": "4b3ad5cc0bd209d5222bc649ae43cbcf3d4170128d0303b1717e049b8db4d0de",
+    "bytes": 629
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_business_deadline_events.jsonl",
+    "sha256": "29262b273b30954916c0b7d93df5ef1370c97a2268953254f7fdb0df7f544c32",
+    "bytes": 1019
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_business_deadlines.jsonl",
+    "sha256": "091ccc5461ff6b05055774ba00dee5c46d0fef63a6c98cd87b8512552f2bed6b",
+    "bytes": 218
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_business_observations.jsonl",
+    "sha256": "c90f9f918ddb21884b27a956d4b8dc7a4128b8db3e13a68c1369fc5c8768ccc2",
+    "bytes": 1393
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_object_events.jsonl",
+    "sha256": "09fbba93816ac613564956d299ffe7495edb14b4b06a4f6f76f642de749a2646",
+    "bytes": 2313
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_objects.jsonl",
+    "sha256": "373a5ae5d3ffb0a05fb12156f4abd86cb4bd422aa24fdc478c09de2e3ef8c567",
+    "bytes": 315
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_observations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_recipient_receipts.jsonl",
+    "sha256": "72463b1c11e00b847fa2300d36d911f3a135f678bebd87ff6e814476dbe91686",
+    "bytes": 2856
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/behavior76_task_mandates.jsonl",
+    "sha256": "919927bb341e3f0622b890bdbe5e7c5e66448921eb83cc10e4fbc7a4416cd871",
+    "bytes": 142
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/execution_budget_reservations.jsonl",
+    "sha256": "66f0dccc346e1ba67115b46a55fc1890807ec53ca2bb655ae4ef4448b6918d48",
+    "bytes": 7273
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/execution_budget_scopes.jsonl",
+    "sha256": "f0bbc051116627070ea5ff1f19ae2cd84ed3d14fa35c4a252b11d54209198689",
+    "bytes": 2177
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/execution_model_attempts.jsonl",
+    "sha256": "8e53b426968c2b48caeb9d2be85bb4f7b14422a15f086b31c240dfa5a735d6f7",
+    "bytes": 2368
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_claim_temporal_heads.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_claim_temporal_revisions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_claims.jsonl",
+    "sha256": "e68c89d920cc87c40eba3dc73a5db4787bf1872b7b953b64a42d19fe7a6b2409",
+    "bytes": 750
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_deletions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_fact_decision_history.jsonl",
+    "sha256": "750394445479f4012006faf2228c5ba9ed917c8ddf909e8c082ffc7c6fc06ed5",
+    "bytes": 263
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_fact_heads.jsonl",
+    "sha256": "aec396ff64fef6f60e1c31fb84ae640eaa6335184380e624ce86289a7faf85a5",
+    "bytes": 214
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_profile.jsonl",
+    "sha256": "aa6bfa273c49bf309dccefc75368eb8fb6d08f6d4dd2fb2c9b54f905e6d0d1a2",
+    "bytes": 1151
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_restore_state.jsonl",
+    "sha256": "26940c1f21dd1be5fb8b4ca60ee7ac31e4218b69f614ae24134d4cc68986cd59",
+    "bytes": 36
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_run_sources.jsonl",
+    "sha256": "3b4541b999a67429b4b457eaf9b3cbf9c0b0113993272ee323eb51dfe0e1a6f5",
+    "bytes": 1084
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_run_transcripts.jsonl",
+    "sha256": "a786007724f7ba38f69eee82ceb33315709e9433640a12afb6a51a2e00eceb11",
+    "bytes": 304
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_scope_grants.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_source_dependencies.jsonl",
+    "sha256": "0bbfa50ee8392ae4c53df68b0a006fe3c17c7c2ab14b53feaef70b8a4cc7d63d",
+    "bytes": 1294
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_source_revisions.jsonl",
+    "sha256": "d06019ecdbd7465032da4a89965162b1439b9df3b12521c19fd7f5486f88d182",
+    "bytes": 4672
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_sources.jsonl",
+    "sha256": "1a6755aff8eb61830bf7a805352ef5388afe17b78a332386bb94f8743e402ac1",
+    "bytes": 2581
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_summary_dependencies.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_summary_sources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_temporal_run_pins.jsonl",
+    "sha256": "92ed242fbe1fd1bd8114e02a1281ef39ea62287ee55006d6d871406ac3d09a39",
+    "bytes": 1515
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/memory_temporal_source_pins.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/messages.jsonl",
+    "sha256": "de2512a487a3ee78ec05c48d9e9d7dbb860c1383bb3070465c3ac0044f6b6884",
+    "bytes": 2539
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/owner_goals.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/run_final_results.jsonl",
+    "sha256": "f04ac432defe8cd6f7109ba22f3b0a0023472184d3c371db92713b43feb44b47",
+    "bytes": 2357
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/runs.jsonl",
+    "sha256": "bc9ab80a4b0d25e60e4a39d41cf6e1b5eaf4d71a6cbbb5537b9d57e2fc92d369",
+    "bytes": 4574
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/session_ownership.jsonl",
+    "sha256": "fe55ddab42b7fba206c673579d193249e833a2bad59a6a240dc229c410d44575",
+    "bytes": 273
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/session_summaries.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/sessions.jsonl",
+    "sha256": "a66838b10509550da9358c104ec38c3610514aea5cc85a99cc92ef78d9af7df3",
+    "bytes": 295
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/task_authority_bindings.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/task_control_events.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/task_control_targets.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/task_results.jsonl",
+    "sha256": "5c4e6c688bd976ec36c8c1e3fbb7b09bfa4767a398945bcdc492b41753d20d86",
+    "bytes": 1793
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/tasks.jsonl",
+    "sha256": "a107dc364aefc203eddc998ad8364e20deaf7b66f738db49f3f61e1ac2d69f44",
+    "bytes": 3090
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/tool_calls.jsonl",
+    "sha256": "762a95e5d22545eab105a77f80db79c651fd99113dd81a68cc13a6b65eee28c1",
+    "bytes": 3940
+  },
+  {
+    "path": "literal-actual-proofs-v9/business/tables/transcript_heads.jsonl",
+    "sha256": "05f32c615e01c5981f8df804c0c3baafb1e5adb0bb8cfd47fd3d8c13fa711de9",
+    "bytes": 93
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/actual-outcomes.json",
+    "sha256": "512eaeaff0d3bec0dafd6e92a93e3dedd1de7c7b933ea3120a1397baf6efcde2",
+    "bytes": 2610
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/actual-snapshot.json",
+    "sha256": "535f46d1ca0b6976aa6023cba51af15109bfe2c2c470e34f06e4625955f5b216",
+    "bytes": 3294
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/aliases.json",
+    "sha256": "bcd9aa85d50b52b2eb28a09e8059de911fbe77a2cd05853d02fe1b9b06ae088f",
+    "bytes": 198
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/public-input.json",
+    "sha256": "75d1f86f84f793b520a73ad89e225721a64e0fa323c4d3930df19872f27b2dcf",
+    "bytes": 1499
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/accepted_inputs.jsonl",
+    "sha256": "69f1dff5db48b0f1b5adcab24b576e9b3da23c38c7f4c9f9d8b0767086aa0b34",
+    "bytes": 3042
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_authorizations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_effect_dispatches.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_effect_evidence.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_effects.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_intents.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/action_mandates.jsonl",
+    "sha256": "0352cf2cce4658b2e6a03b35ed96dd4700e9265e12815a2f3f273fcc052dde71",
+    "bytes": 1066
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_aliases.jsonl",
+    "sha256": "103820ab48c3822a5644a59df8cf278e4a7a65c183eab6219e0acbd410adb67b",
+    "bytes": 188
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_business_deadline_events.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_business_deadlines.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_business_observations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_object_events.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_objects.jsonl",
+    "sha256": "a6a3d15204c0e8e192a35b85bdba86f3535b13b9155a7967e3222a74cbfc964e",
+    "bytes": 278
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_observations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_recipient_receipts.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/behavior76_task_mandates.jsonl",
+    "sha256": "50e1958cea833f623e60d43131c148463ee723dcca2d9943daf8c3f9c422aa50",
+    "bytes": 142
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/execution_budget_reservations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/execution_budget_scopes.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/execution_model_attempts.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_claim_temporal_heads.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_claim_temporal_revisions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_claims.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_deletions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_fact_decision_history.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_fact_heads.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_profile.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_restore_state.jsonl",
+    "sha256": "26940c1f21dd1be5fb8b4ca60ee7ac31e4218b69f614ae24134d4cc68986cd59",
+    "bytes": 36
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_run_sources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_run_transcripts.jsonl",
+    "sha256": "137328144a16d20780a2ef92a693404c15b51dc681b12c161a711f038930c979",
+    "bytes": 179
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_scope_grants.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_source_dependencies.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_source_revisions.jsonl",
+    "sha256": "f32d535ed432d11a53f336afeb02ee3aaaba98bcca695dca4aaea34c19400771",
+    "bytes": 723
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_sources.jsonl",
+    "sha256": "c853e1efdb72ca7e5db43a3a654314b7e67470848e0c6526a4f7498fa68bced2",
+    "bytes": 479
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_summary_dependencies.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_summary_sources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_temporal_run_pins.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/memory_temporal_source_pins.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/messages.jsonl",
+    "sha256": "c5e2fe7d8d4978978447208d87646f29a075ac2212a71f52d8555db5cfbf49c9",
+    "bytes": 567
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/owner_goals.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/run_final_results.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/runs.jsonl",
+    "sha256": "8d9e7c56f4bc309f373d82bfc5d7e1e7eb91392f6f2aa8e223d3f6c62a9315fc",
+    "bytes": 1121
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/session_ownership.jsonl",
+    "sha256": "c0e431ae5cbeb5d53a6cf87ccf74aefb527b412584427d27354178ccbde2526a",
+    "bytes": 300
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/session_summaries.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/sessions.jsonl",
+    "sha256": "e65913f3fba444c2aaed3ab87013b176809acb3e35b45fd285e1ab19a0e8fcdd",
+    "bytes": 322
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/task_authority_bindings.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/task_control_events.jsonl",
+    "sha256": "d4fe19da7d336280e91e1321b3db357af366ef6f96c675b58ea1a476717045f2",
+    "bytes": 1924
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/task_control_targets.jsonl",
+    "sha256": "b64d55fd88021ac201d362c497817d53caddaea75dfc39fd752cc88aba7aa691",
+    "bytes": 231
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/task_results.jsonl",
+    "sha256": "b7db544b81884e1dc796b8600d1b6225e831af2785b92364d093eb46a618b085",
+    "bytes": 504
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/tasks.jsonl",
+    "sha256": "daf97a5436b4a9542dd0b1529e1c1e084f3ce0e4389a7dda3b85457466d3a7b6",
+    "bytes": 1649
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/tool_calls.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-amend/tables/transcript_heads.jsonl",
+    "sha256": "33458174ed09b23233b980f5e8a929747448d6f6078dc346a5a52b9e7636afa2",
+    "bytes": 120
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/actual-outcomes.json",
+    "sha256": "ee444a1a0aa587a4c6cec4dbdc938c0f28309b08c925a70afcf6ea3d572b7e43",
+    "bytes": 3883
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/actual-snapshot.json",
+    "sha256": "c1f67a8f2ddd643534539e428c49a1f5204c9aa50c9921d37a5356a6f4a76643",
+    "bytes": 3378
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/aliases.json",
+    "sha256": "604685dc9c656f185a7018c77388017e79b2f8ccf9ce5f691f8b8ce2bcf42cda",
+    "bytes": 361
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/public-input.json",
+    "sha256": "e52d2eb88ece1b0402ccb61cd830cb7707bb00951cfe124cb568697205062431",
+    "bytes": 2091
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/accepted_inputs.jsonl",
+    "sha256": "669589c30e57261de01603b28a9a128bbfe2b50b407b23af8f99a6211a86ca01",
+    "bytes": 2459
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_authorizations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_effect_dispatches.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_effect_evidence.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_effects.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_intents.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/action_mandates.jsonl",
+    "sha256": "c94d74914a1dec021775074d5be67bfa07737aebadc654e1439292532caecc19",
+    "bytes": 2135
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_aliases.jsonl",
+    "sha256": "25e158e171c03a5655d943e507466a97f0b792ae6d7ab88914f99c4abd538854",
+    "bytes": 379
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_business_deadline_events.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_business_deadlines.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_business_observations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_object_events.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_objects.jsonl",
+    "sha256": "b7c7a3f72fe69d7576872458e6096535b96d5c14e60158ad5f1b47afabafba0a",
+    "bytes": 278
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_observations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_recipient_receipts.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/behavior76_task_mandates.jsonl",
+    "sha256": "b6bbfd391029dc7bd65a011098bb88f547f2d6c87e08f7b634e2138a851e399f",
+    "bytes": 284
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/execution_budget_reservations.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/execution_budget_scopes.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/execution_model_attempts.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_claim_temporal_heads.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_claim_temporal_revisions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_claims.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_deletions.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_fact_decision_history.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_fact_heads.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_profile.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_restore_state.jsonl",
+    "sha256": "26940c1f21dd1be5fb8b4ca60ee7ac31e4218b69f614ae24134d4cc68986cd59",
+    "bytes": 36
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_run_sources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_run_transcripts.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_scope_grants.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_source_dependencies.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_source_revisions.jsonl",
+    "sha256": "7d78d84806e8afa8010e8f8ae0fcef9aeeeeba26a9c807396f612ad4d4c2b698",
+    "bytes": 684
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_sources.jsonl",
+    "sha256": "d8456ef96acd16d7a887e6a160f55ae39a746f985250dd60f6e4f329dcf980cc",
+    "bytes": 480
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_summary_dependencies.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_summary_sources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_temporal_run_pins.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/memory_temporal_source_pins.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/messages.jsonl",
+    "sha256": "1afcf25760c39df520ab6a7fc5c2ae14e1bb7605974c15bae850757196b1bafd",
+    "bytes": 528
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/owner_goals.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/run_final_results.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/runs.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/session_ownership.jsonl",
+    "sha256": "7bff8a4dc0335e9cac750898758d20ca5f361af8c42603434626fede8cb47fb6",
+    "bytes": 244
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/session_summaries.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/sessions.jsonl",
+    "sha256": "24cd48f43342547915b4b4fc6900f783e77836fe9b6875b1699b790c0f170afe",
+    "bytes": 930
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/task_authority_bindings.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/task_control_events.jsonl",
+    "sha256": "57ad04c64042c41c5d3b0ee7549c9c0ae7864de038f7c791097b28fe38d5c277",
+    "bytes": 1723
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/task_control_targets.jsonl",
+    "sha256": "72f9ece5c41035c681f2d55bd769d453d0e6625cebc47019bd45ed679c9afa48",
+    "bytes": 231
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/task_results.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/tasks.jsonl",
+    "sha256": "d9cdc74811131e90307168a448b9c0cc1dcf826e8cb13ecb7afe10b26d2fce9c",
+    "bytes": 1948
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/tool_calls.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "literal-actual-proofs-v9/kernel-stop/tables/transcript_heads.jsonl",
+    "sha256": "d0d06807f44774b15099d1ca1b2497ec280ee1980655eb8f84fb52abd0296ddb",
+    "bytes": 121
+  },
+  {
+    "path": "literal-actual-proofs-v9/public-proof-receipt.json",
+    "sha256": "98fdd03dc2fea2ac41dde73df44cb1a7c8e322c1e86be6af7fa393ab0ae03828",
+    "bytes": 175
+  },
+  {
+    "path": "literal-legacy-public-v8-exit.json",
+    "sha256": "42bd718e949c9bc89807a11f4065c8b6dfd7a34384808cd83e23649a30b8db08",
+    "bytes": 145
+  },
+  {
+    "path": "literal-legacy-public-v8-source-after.json",
+    "sha256": "624eb9e4ad6da35458bb58ed5a4ed7c1e00949037003661bf87b73925bca5e46",
+    "bytes": 3229
+  },
+  {
+    "path": "literal-legacy-public-v8.log",
+    "sha256": "4ee09e5e9c0fc8baf9db88c3a3bea2e14391183d23b94d066801f32b5fe8839a",
+    "bytes": 182411
+  },
+  {
+    "path": "literal-plan-composition-v7-exit.json",
+    "sha256": "5b5fecaa7ce1af13bc4e15d815b679a6a69ab625d4f8eab047eae6d5b0bb3b99",
+    "bytes": 98
+  },
+  {
+    "path": "literal-plan-composition-v7-source-after.json",
+    "sha256": "624eb9e4ad6da35458bb58ed5a4ed7c1e00949037003661bf87b73925bca5e46",
+    "bytes": 3229
+  },
+  {
+    "path": "literal-plan-composition-v7-source-before.json",
+    "sha256": "624eb9e4ad6da35458bb58ed5a4ed7c1e00949037003661bf87b73925bca5e46",
+    "bytes": 3229
+  },
+  {
+    "path": "literal-plan-composition-v7.log",
+    "sha256": "20d6154ceea1352e795ee2574176ad2f23a44606f8a3dc07405f55af8a9c5c6b",
+    "bytes": 126822
+  },
+  {
+    "path": "README.md",
+    "sha256": "7c9bf9ecf42d0cd86ed7aef6526d7c3ab7382e95e2906ef0d886101650081fa3",
+    "bytes": 2063
+  },
+  {
+    "path": "verify-literal-actual-proof-v9.sh",
+    "sha256": "edf88d21a21a040f17cd45a6408aa40f8943e4134e15c5c06ed1da6026518cd4",
+    "bytes": 1189
+  },
+  {
+    "path": "verify-literal-legacy-public-v8.sh",
+    "sha256": "716babd1d0045c9ecc1f87759eb6536312fedab2cd40f4fd508bce501f08aa95",
+    "bytes": 1634
+  },
+  {
+    "path": "verify-literal-plan-composition-v7.sh",
+    "sha256": "cf21336a5056ded4241da820f05854896c2425f0a2ef4db5e3de5f2c73c3f6e5",
+    "bytes": 1059
+  }
+]

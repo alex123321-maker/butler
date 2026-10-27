@@ -1,3 +1,45 @@
+Corrected issue76 v10-r3 preparation keeps research metadata chunk Sync on the
+private local Linux filesystem and copies verified chunks to Windows evidence
+only outside owning callbacks. Qualified headers follow actual quiescence and
+exclusive copy/readback; failed prefixes/tails remain unsealed and retained.
+Storage/observer failures remain global with the same750ms and9+1 bounds. This
+is research-only and requires fresh gates; it does not qualify the closed r2
+authority timeout or enable a candidate. See the
+[streamed protocol](../../docs/testing/issue76-fixture-stream-protocol.md).
+
+The prospective [issue76 v9 study](../../docs/testing/issue76-local-http-protocol.md)
+adds one exact adapter-owned no-response socket/EOF failure to the whole-fixture
+research stop union. All timeouts/auth/source/authority/storage failures remain
+global. It preserves unknown expense, failed/unavailable dispositions and the
+original comparison; default production behavior does not acquire an exception.
+Its research observer journals real provider EOF before exposing a tool proposal
+and reserves room for the complete ordered tail before publication. Owning
+post-handoff cancellation cannot race a blocked trailing send; earlier cancel,
+authority faults and late provider events retain the global stop.
+
+The separately admitted [issue76 v8 research study](../../docs/testing/issue76-local-model-protocol.md)
+also permits one exact completed-empty adapter response to stop its whole
+isolated fixture after durable journal/identity/source checks and actual EOF.
+It retains failed/UNKNOWN/unavailable outcomes and costs, keeps all other
+faults global, and does not change production provider or lifecycle behavior.
+
+The explicit research constructor `input.NewServiceWithClaimAdmission` can
+install an immutable denial fence around queue expiry and claim acquisition.
+Closing that fence stops new claim loops while previously claimed executions
+finish under their original context and authority. `WaitClaimWorkers` joins
+those actual process goroutines before the caller cancels Run/maintenance.
+The fence grants no authority and has no model, input, environment or HTTP
+configuration. Ordinary `NewService` remains unfenced. See the prospective
+[issue76 local-stop protocol](../../docs/testing/issue76-fixture-local-protocol.md).
+
+Corrected issue76 v10-r2 preparation closes a separate claim window after each
+terminal evaluation and joins actual owning workers before cancelling idle Run.
+The next evaluation gets a new window; fixture stops and current authority stay
+intact. Error exits and real in-flight faults retain global failure. The first
+v10 composition failure and independently reproduced idle-cancellation defect
+remain archived; fresh source freeze/controls and actual gates are required.
+See the [v10 response protocol](../../docs/testing/issue76-local-response-protocol.md).
+
 Ordinary owner requests carry model-visible `current_request` DATA with the
 owning run/event refs and question phase. Historical messages retain their full
 sanitized text and provenance in envelopes identifying the originating run and
@@ -9,6 +51,49 @@ clearing history or changing its epoch policy. See the
 [issue147 acceptance report](../../docs/testing/issue147-current-request-2026-10-25.md).
 
 Explicit owner profiles with migration097 also deliver fixed kernel execution
+
+The offline closed experience-history consumer compares the domain receipt's
+deadline by instant, so PostgreSQL's `+07:00` export and the UTC manifest can
+denote the same immutable deadline. All domain identities, source hashes, dates,
+cost joins and unknown usage checks remain mandatory. This does not reopen an
+expired window or qualify native memory acceptance.
+
+The opt-in local issue115 history recipe can reference that exact closed90 leaf
+from a later separately identified UTC day. The old day/deadline, all213 entries
+and UNKNOWN remain nested unchanged; no counts come from the recipe author.
+The published three operator diagnostics remain a separately pinned receipt.
+The existing native collector consumes the derived lineage and may claim only
+its separate `127.0.0.1:55451/memory115_native_test` database. Its normal current
+day, one-use domain, source carry, preseal, corpus and finite budget checks still
+apply. Offline preparation grants no storage claim, auth or inference admission.
+For this local successor, ambient HTTP/HTTPS/ALL proxy variables must be absent;
+the existing PC default HTTPS route is used. Legacy lab execution retains its
+original exact loopback-relay requirement. No provider endpoint/model or parser
+changes are introduced by this harness-only distinction.
+
+The separate closed-local history profile now recomputes the failed local
+issue115 cohort from its original157 raw files and recursively retained213-entry
+predecessor. It preserves232 native admissions/one unknown and233 product rows/
+two NULL observations. Local opaque auth return never satisfies the legacy
+lab-main return contract. Independently decoded nested lineage compares by all
+values, including its retained predecessor. This is offline accounting, without
+new permission or native admission; see
+[closed local history evidence](../../docs/testing/issue115-closed-local-history.md).
+
+The separately versioned local skill-preparation successor retains that exact
+failed232-entry leaf and the owner's new decision to prepare/check an unapplied
+synthetic patch. Its hash-bound lineage selects only the existing exact-resource
+inspect/prepare/check grant at skill preparation; legacy preparation stays
+inspect/check. Its one-use storage is the distinct fixed loopback database
+`memory115_skillprep_v1_test`. It preserves the full57 denominator, selected33
+stages, finite640-entry ceiling, all prior unknown usage and ordinary source,
+review, Broker and recipient boundaries. Code/preparation alone is not native
+acceptance; see [the successor protocol](../../docs/testing/issue115-skill-preparation-successor.md).
+
+Its local operator selector remains unbound and denies all work before storage
+or private auth until the new source/five-artifact/recipe/preseal commitments are fixed.
+Legacy operator pins remain the default; both use the existing bounded process,
+source-idle fence and opaque local credential recovery/CAS path.
 
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
@@ -1299,6 +1384,12 @@ independent task verification and effect reconciliation. Generic blocked-task
 jobs remain denied. Migration080, exact current input/source/authority checks and
 the still-closed experience release gate are required.
 
+The experience integration fixture waits for every declared child listener,
+including the Broker HTTP control endpoint, within the original bounded startup
+wait. TCP readiness sends no tool/control action and does not retry a failed
+action. A listening gRPC socket alone is insufficient. Controlled startup or
+storage failures remain failures, with later native acceptance blocked.
+
 The private owner `POST /api/v4/memory/experience-observations` accepts only an
 existing `run_id` and requires the normal owner bearer and delivery ID. The
 production adapter derives and seals current typed evidence, returning a
@@ -1446,3 +1537,65 @@ quiet observations and atomic changes-only publication. Migration 100 is require
 Repeated work can suggest a reusable procedure; formal skill validation and
 activation retain their existing evidence requirements. See
 [research contract](../../docs/architecture/research-followups.md).
+
+The explicitly enabled local [issue76 behavioral pilot](../../docs/testing/issue76-local-protocol-2026-10-25.md)
+compares current default instructions with one dormant TaskContinuityProtocol.
+It uses independently frozen synthetic multi-turn controls, actual PostgreSQL
+Core/Broker/source lifecycle and explicitly synthetic recipient effects. Its
+test fixtures, native journals and masked review are separate from working-owner
+deployment. Completing collection does not enable the candidate or grant task,
+profile, source, effect or semantic completion authority.
+`scripts/dev/behavior-local-acceptance.ps1 -Action Boundary` runs the public
+continuation integrity guards without provider inference. A stopped native window
+remains closed; an independently reviewed strict-suffix continuation preserves
+the original absolute deadline, failed attempts and exact control/mapping bytes.
+The [separate fresh experiment](../../docs/testing/issue76-fresh-protocol-2026-10-25.md)
+uses a fixture-only post-AttachRun metadata hook with the actual execution token;
+it preserves stale-source fences and redaction. `-Action Composition` exercises
+every control/event through real Input/Core preparation with a scripted provider,
+without native inference or auth. It is infrastructure evidence, not model quality.
+
+The prospective fixture-local study uses the pinned, research-only
+[observer build correction](../../docs/testing/issue76-observer-build-addendum.md).
+Its isolated5.8.0 module copy adds only the upstream missing callback; ordinary
+dependencies, the shared cache, SQL errors and750ms authority bound are unchanged.
+
+The prospective [issue76 response-failure study](../../docs/testing/issue76-local-response-protocol.md) adds an explicitly constructed fixture-only stop after exact adapter response rejection. Partial text and nullable expense remain evidence; candidate activation and closed windows are unchanged.
+
+The [closed v10-r3 comparison](../../docs/testing/issue76-r3-results-2026-10-26.md)
+completed48 arms and independently assessed all96 planned owner opportunities.
+The unchanged instruction candidate is NO_GO: two critical UNKNOWNs and a paired
+semantic loss prohibit promotion. Baseline21/candidate24 qualified passes do not
+establish superiority because27 pairs lack comparable semantic answers. The
+bounded pilot is complete, while whole-issue literal scenario coverage remains
+partial. Closed evidence, negative results and all historical nullable charges
+are retained; no working deployment is changed.
+
+The [prospective literal supplement](../../docs/testing/issue76-literal-supplement-protocol.md)
+has public raw-owner Input/Controller composition and synthetic service
+observation components. Kernel returns, owner/model runs and automatic inputs
+are recorded separately. Explicit task selection requires declared owner UI
+provenance. Duplicate/aliased JSON fields are rejected before decoding. The
+observation-only business date records actual database time and confirmed late
+effects without changing permission checks; manual-change context comes from
+actual event rows. Targeted PostgreSQL/Broker/race checks passed with scripted
+providers and zero native calls. The full neutral32-arm/68-owner composition,
+61 unchanged public regressions and actual Go-to-independent-PS proof bridge
+passed. A separate existing-executable launcher has strict role/source pins,
+durable one-use consumption, Windows-to-Linux bind proof and actual-entry UTC
+checks. New formal source/checker freeze, fresh hidden controls and final
+exact-executable one-use admission remain outstanding; these prepared components
+do not complete #76 or qualify the rejected candidate.
+
+Core now joins its run-scoped lease/authority supervisor before terminal task
+mutation and atomic final persistence, while keeping the original execution
+context and database fences live. In-flight checks retain real failures; normal
+cleanup still cancels and releases the lease. This prevents a failed attempt's
+own task block/revision from triggering a second false provider cancellation.
+The actual PostgreSQL diagnostic and final regression are separate from model
+quality and deployment evidence. See the run lifecycle's terminal supervision
+contract.
+
+Terminal persistence failures propagate with fixed safe stage labels and retain
+the preceding/underlying causes for trusted inspection. Failed outcome, block
+or run-transition writes cannot be mistaken for an isolated provider failure.

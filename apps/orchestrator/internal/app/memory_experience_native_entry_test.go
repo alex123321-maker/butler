@@ -39,6 +39,12 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
+	case local115SkillSuccessorFormat:
+		return loadLocal115SkillSuccessor(path, expected)
+	case local115NativeClosedFormat:
+		return loadClosedLocal115NativeHistory(path, expected)
+	case "butler.experience.local-new-day.v1":
+		return loadLocal115Successor(path, expected)
 	case "butler.memory.closed-owner-leaf.v1", "butler.memory.closed-owner-leaf.v2":
 		history, err := loadLatestClosedOwnerHistory(path, expected)
 		if err != nil {
@@ -81,7 +87,11 @@ func TestNativeExperiencePrepareWholeComparison(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	switch os.Getenv("BUTLER_EXPERIENCE_NATIVE_EXECUTION_SLOTS") {
+	selected := os.Getenv("BUTLER_EXPERIENCE_NATIVE_EXECUTION_SLOTS")
+	if history.SkillPreparationSuccessor != nil && selected != "" && selected != "33" {
+		t.Fatal("new preparation successor requires selected33 within full57")
+	}
+	switch selected {
 	case "", "57":
 	case "33":
 		seal.ExecutionSlots = 33
@@ -137,6 +147,14 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 	parsed, err := url.Parse(dsn)
 	if err != nil || parsed.Scheme != "postgres" && parsed.Scheme != "postgresql" || !strings.HasSuffix(parsed.Path, "_test") || !experienceNativeSHA(presealSHA) || validateExperienceNativeLineage(history) != nil {
 		return nil, errors.New("isolated test storage and exact current native preseal required")
+	}
+	if history.LocalSuccessor != nil && (parsed.Hostname() != "127.0.0.1" || parsed.Port() != "55451" || parsed.Path != "/memory115_native_test") {
+		return nil, errors.New("local115 successor requires its exact separate loopback database")
+	}
+	// The new profile also rejects query-level host/service/port overrides;
+	// merely checking the URL authority would not pin pgx's effective route.
+	if history.SkillPreparationSuccessor != nil && dsn != local115SkillDSN {
+		return nil, errors.New("local115 skill-preparation successor requires its new exact loopback database")
 	}
 	admin, err := pgxpool.New(ctx, dsn)
 	if err != nil {
@@ -254,8 +272,12 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" {
-		t.Fatal("native server proxy profile differs")
+	if !experienceNativeNetworkProfile(history.LocalSuccessor != nil || history.SkillPreparationSuccessor != nil, os.Getenv) {
+		t.Fatal("native fixed network profile differs")
+	}
+	skillProfile, err := experienceNativeSkillPreparationProfile(history)
+	if err != nil {
+		t.Fatal("native skill-preparation profile differs from validated lineage")
 	}
 	proof := os.Getenv("BUTLER_EXPERIENCE_NATIVE_OUTPUT")
 	if !filepath.IsAbs(proof) || experienceNativePrivateParent(filepath.Dir(proof)) != nil || os.Mkdir(proof, 0700) != nil {
@@ -340,7 +362,7 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 		t.Fatal(err)
 	}
 	anchor := filepath.Join(proof, "source-deletion-anchor")
-	collector = &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: seal.Deadline, policy: seal.Policy, sourcePolicy: seal.SourcePolicy, addresses: addresses, expectedEnvironments: seal.Environments}
+	collector = &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: seal.Deadline, policy: seal.Policy, sourcePolicy: seal.SourcePolicy, addresses: addresses, expectedEnvironments: seal.Environments, skillPreparationV1: skillProfile == "prepare_and_verify_exact_resource"}
 	phase = "inclusive_history_import"
 	if err = applyExperienceNativeHistory(ctx, p, databases.source, history, seal.SourcePolicy); err != nil {
 		t.Fatal(err)

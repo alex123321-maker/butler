@@ -1,0 +1,110 @@
+{
+  "version": "issue76-independent-local-model-v8-safe-transport-forensics-v1",
+  "window": "issue76-fixture-day-20261026T065844",
+  "source": "git:71a21b712c478af8ea9e748945703abf15d85636;binary-sha256:666114960db862f6a8d6c1edf37165b5bc1b83869b09a38dde6c574ceac4d0e0",
+  "last_entry": {
+    "slot": "slot-08/arm-205a7eb862491c5566a3931a5eaa8753/turn2",
+    "events": [
+      {
+        "safe_reason": null,
+        "type": "run_started",
+        "error_code": null,
+        "http_status": null
+      },
+      {
+        "safe_reason": "",
+        "type": "transport_error",
+        "error_code": "transport_connection_error",
+        "http_status": 0
+      }
+    ],
+    "stage": "http_round_trip",
+    "n": 64,
+    "input_tokens": null,
+    "kind": "submit",
+    "output_tokens": null,
+    "run_id": "run-1793000221386829719-63578ba15d20d1ef",
+    "total_tokens": null,
+    "model_version": null,
+    "milliseconds": 10352,
+    "status": "transport_error",
+    "thinking_tokens": null
+  },
+  "actual_input_boundary": {
+    "outcome_path": "slot-08/arm-205a7eb862491c5566a3931a5eaa8753/step-03/outcome.json",
+    "owner_second_turn_has_no_execution_run": true,
+    "blocking_input_id": "input-ed02d1fa0179f10d5d0fab2ce487dbba",
+    "failed_entry_is_automatic": true,
+    "native_entry_ids": [
+      63,
+      64
+    ],
+    "state": "queued_after_stopped_input",
+    "owner_run_id": "",
+    "automatic_run_ids": [
+      "run-1793000221386829719-63578ba15d20d1ef"
+    ],
+    "owner_input_id": "input-89b363f19a6158d06724cb042653e451",
+    "outcome_sha256": "26ad561b1c582111b324e8e2094f9fd62271c15860f005ac107332fa702845f1"
+  },
+  "trace": {
+    "default_zero_quiescence_fields_are_not_observed_proof": true,
+    "tail_events": 1362,
+    "dropped_events": 0,
+    "quiescence": {
+      "schema": "",
+      "observed_at": "0001-01-01T00:00:00Z",
+      "fixture_locally_stopped": false,
+      "broker_reaped": false,
+      "runtime_stopped": false,
+      "provider_and_recipient_in_flight": 0,
+      "live_leases": 0,
+      "live_claims": 0,
+      "broker_backends": 0,
+      "broker_application_observed_before_stop": true
+    },
+    "segments": 14,
+    "operation_failures": 0,
+    "observer_failed": false,
+    "open_spans": 0,
+    "event_count": 58706,
+    "sealed": false,
+    "qualified": false,
+    "paired_spans": 29353
+  },
+  "source_pins": [
+    {
+      "sha256": "e3fb4929b9f5e5e3bbe373117040550bba10a853698c8805684ad541b6abede5",
+      "path": "internal/transport/antigravity/protocol.go"
+    },
+    {
+      "sha256": "0798b5f1e2ce5209c9ec7ebba5f154c26cd52386796060fef6e8134d52c99e0a",
+      "path": "internal/transport/errors.go"
+    }
+  ],
+  "source_origin": {
+    "retained_reason": "empty",
+    "stage_boundary": "protocol.go:203 enters response_stream only after successful HTTP status/content-type admission",
+    "conclusion": "Error code/stage do not distinguish local cancellation/dispatch boundary from HTTP connection failure and do not prove upstream receipt",
+    "upstream_fault_attributed": false,
+    "direct_http_failure": "protocol.go:189-194 maps client.Do error with live context to fixed transport_connection_error",
+    "network_exception_or_body_inspected": false,
+    "retained_usage": null,
+    "cancellation": "protocol.go:183-192 may return ctx.Err; errors.go:157-159 maps context.Canceled to transport_connection_error",
+    "retained_model_version": null,
+    "concrete_origin": "UNKNOWN",
+    "protocol_stage": "protocol.go:179 sets http_round_trip before current authority/dispatch checks and client.Do",
+    "retained_http_status": 0
+  },
+  "first_cause_interpretation": "Only three durable local stops are effect_unknown. Last provider-class transport error is GLOBAL under the frozen v8 protocol; quiescence/stream seal failure retained separately. No reconstructed precise causal cancellation claim.",
+  "limitations": [
+    "No retained safe branch/cancellation-cause discriminator for n64",
+    "Zero SQL errors cannot establish successful current-authority predicates",
+    "Unsealed structurally paired trace does not qualify the last arm",
+    "No cost backfill or assertion of zero cost for NULL usage"
+  ],
+  "no_PG_auth_native_calls": true,
+  "answers_goldens_mapping_read": false,
+  "quality_assessed": false,
+  "new_window_or_retry_authorized": false
+}

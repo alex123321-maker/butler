@@ -74,6 +74,7 @@ type experienceNativeCollector struct {
 	originals            [4]experienceNativeOriginal
 	skill                skills.Record
 	expectedEnvironments map[string]string
+	skillPreparationV1   bool
 }
 
 func (c *experienceNativeCollector) collect() {

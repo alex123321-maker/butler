@@ -1,0 +1,24 @@
+{
+  "semantic_source": "4a0a69ea349ac3fd3928ce2edd5ecf393e31029d",
+  "bound_source": "60fbb1c3e9bc9918123b771ae3df141636d2dbaa",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "quality_disclosed": false,
+  "public_additions": 3,
+  "stream_wrapper_sha256": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+  "source_changes": "exactly_two_UNBOUND_constant_values",
+  "result": "PASS_LITERAL_BINDINGS_ONLY",
+  "criteria_changed": false,
+  "native_admission": false,
+  "thresholds_changed": false,
+  "version": "issue76-independent-stream-v5-literal-binding-review-v1",
+  "mapping_read": false,
+  "setup": {
+    "log_sha256": "e3f45e9b8dc7c518b71d751b41d4df34378ca2c24eea3acf0636b6baec54ec8c",
+    "failed": 0,
+    "passed": 24
+  },
+  "stimuli_sha256": "71ad44ddfadbc18d5cc5c06f5fd4edc043af66584e7f244e7d0b5dac66ddf94b",
+  "composition": "running_not_read",
+  "expectations_sha256": "84862a7ba12647633c7665e98c9541eb374ced4ad53a2d1fe896f08e6ed494b8",
+  "reader_sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641"
+}

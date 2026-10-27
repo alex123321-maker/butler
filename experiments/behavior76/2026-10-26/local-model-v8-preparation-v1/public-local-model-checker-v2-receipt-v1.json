@@ -1,0 +1,123 @@
+{
+  "version": "issue76-independent-local-model-checker-v2-receipt-v1",
+  "status": "CHECKER_COMPONENTS_READY_NOT_NATIVE_ADMISSION_OR_HIDDEN_AUTHORSHIP",
+  "public_contract_proposal_sha256": "95704c1147cdedd57c8b9bd6f3549c9d2c73da16c331a02238f0173697fa0f75",
+  "binding_mode": "fixture-local-model-v8",
+  "manifest_opt_in": "whole_fixture_after_exact_empty_answer_v1",
+  "index": "behavior76-checker-index-v3-local-model-tail",
+  "new_components": [
+    "local-model-proof-reader-v2.ps1",
+    "local-tail-adapter-v2.ps1",
+    "local-scoring-composition-v2.ps1",
+    "authority-stream-scoring-v2b.ps1"
+  ],
+  "frozen_original_sources": {
+    "authority-stream-scoring-v2a.ps1": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+    "local-scoring-composition-v1.ps1": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+    "authority-stream-reader-v2a.cs": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+    "score-mechanical-fresh-v3.ps1": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+    "local-tail-adapter-v1.ps1": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf"
+  },
+  "file_pins": [
+    {
+      "path": "local-model-proof-reader-v2.ps1",
+      "sha256": "3d3b2aff00d23165cc74d8fb264681ee44610648e2b43254bd5b1e530b21b370"
+    },
+    {
+      "path": "local-tail-adapter-v2.ps1",
+      "sha256": "897beea0409d4fb526ff434ba03ab51df07b6c919b8c680d81cc97d6176b32fd"
+    },
+    {
+      "path": "local-scoring-composition-v2.ps1",
+      "sha256": "8719c35f525a0d3d417e9cd0ee037fe357462a3827585dde14426723bef9ed63"
+    },
+    {
+      "path": "authority-stream-scoring-v2b.ps1",
+      "sha256": "4c964b15d07620d1e70e5a75d6b00d4501851d1a9907a7ff60007733156a1f2c"
+    },
+    {
+      "path": "test-local-tail-adapter-v2.ps1",
+      "sha256": "27d9bd2202e71fba967bb87a95b98bd0970ca24fdb2e5891de8179a03bdeda48"
+    },
+    {
+      "path": "test-local-model-proof-v2.ps1",
+      "sha256": "02ff9e9f34cf2424810f9b3c07ec6fe8eafa3420bb27cdf2741d69d2d4214989"
+    },
+    {
+      "path": "test-local-scoring-composition-v2.ps1",
+      "sha256": "65acaa0f73c7bb07092ad580385a587b3a753de04cf2bf1ad5ff4ba186e9d828"
+    },
+    {
+      "path": "test-local-model-composition-v2.ps1",
+      "sha256": "f521cee0653e6337e265a8ddd3e3fc4c1ace3cdc466b3af5333c984e2aefde0a"
+    },
+    {
+      "path": "authority-stream-scoring-v2b-selftests.ps1",
+      "sha256": "8b79bd14060d04d2e5e74349e7b81e94bb6ec19a735557792578e014438bd768"
+    },
+    {
+      "path": "test-local-model-proof-v2-union.ps1",
+      "sha256": "a9874bbb9ced4bc276510dbcc15b89a49602e7ebe926031a60b7a26c379825f7"
+    },
+    {
+      "path": "local-tail-adapter-v2-selftests-v2.log",
+      "sha256": "231c833fb77aed13e51865dc6ee7142125535102554cc0fb12490c07b7818742"
+    },
+    {
+      "path": "local-model-proof-v2-selftests-v2.log",
+      "sha256": "8e21998b5738963e384cdf20e3f86db1a1405634b42de623488e3b238acb2678"
+    },
+    {
+      "path": "local-scoring-composition-v2-selftests-v1.log",
+      "sha256": "7ba7f6b5f902bd72c2e32735b0e873d2be9a73395cd77b95230afe2cc799ab82"
+    },
+    {
+      "path": "local-model-composition-v2-selftests-v1.log",
+      "sha256": "cdf5974f05219f1bd3ce661a32f38eb099b454866f97242adf3ee5aeb69a300a"
+    },
+    {
+      "path": "authority-stream-scoring-v2b-selftests-v1.log",
+      "sha256": "a1a6feeae88bb094e04f01602da55adfdfd19468a9ebee0a2a2f3989b1904d55"
+    },
+    {
+      "path": "local-model-proof-v2-union-v1.log",
+      "sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5"
+    },
+    {
+      "path": "public-local-model-checker-v2.md",
+      "sha256": "8603a9f47ead90ddea5a482fbfcd085ff303938efe3c3357b4c16bd78bf4283d"
+    }
+  ],
+  "public_offline_tests": {
+    "typed_model_proof": 47,
+    "stream_prevalidation_composition": 6,
+    "model_composition": 7,
+    "total_pass": 106,
+    "inherited_adapter": 32,
+    "failed_final": 0,
+    "cause_union": 2,
+    "original_criterion_composition": 12
+  },
+  "prior_partial_test_failure": {
+    "sha256": "f43ab2a70acdf9408502872947f6f928e418ab83321ca1d51184576693bff863",
+    "disposition": "Aborted own PowerShell wrapper recursion; retained, not PASS; corrected final47PASS",
+    "log": "local-model-proof-v2-selftests-v1.log"
+  },
+  "criterion_expressions_changed": false,
+  "thresholds_changed": false,
+  "old_unknown_critical": true,
+  "model_failure_success": false,
+  "denominators": {
+    "arms": 48,
+    "families": 12,
+    "episodes": 24,
+    "opportunities": 96
+  },
+  "native_calls": 0,
+  "auth_access": 0,
+  "pg_operations": 0,
+  "hidden_controls_read_or_created": false,
+  "old_answer_or_mapping_access": false,
+  "new_native_admission": false,
+  "remaining": "Final producer/source public gates+formal source/scorer freeze precede new hidden authorship; no corpus has been prepared."
+}

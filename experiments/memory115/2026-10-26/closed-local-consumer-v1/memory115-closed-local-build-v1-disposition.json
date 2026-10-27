@@ -1,0 +1,7 @@
+{
+  "binary_sha256": "8821767bc5893c40427e38351a011b9e6ee9a02894d7d4d37fc7de533fcd98c5",
+  "native_auth_PG_calls": 0,
+  "reason": "runner path profile source was refined during or after build; no tests run from this draft binary",
+  "used_for_acceptance": false,
+  "version": "issue115-draft-build-v1-not-validation"
+}

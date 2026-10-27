@@ -1,0 +1,25 @@
+{
+  "version": "issue76-day-v6-zero-native-gates-v1",
+  "semantic_source": "cc8a4cc05979dae7f30a8aaa1f45aaac1b2efb95",
+  "literal_bound_source": "cc37b11d43527be665cb0691ee181cebff1ead6b",
+  "collector_elf_sha256": "187659feedd16530a8e3ba63507ec26ca21ca8aef502414efb24ea13b11c37a8",
+  "source_delta": "Only two independently supplied literal bindings",
+  "native_calls": 0,
+  "native_admission": false,
+  "stimuli_sha256": "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba",
+  "expectations_sha256": "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9",
+  "logs": [
+    {
+      "result": "PASS",
+      "sha256": "79af17351494a16ea69fba46978359adcdee28a671a56846aee2d771efb37aaf",
+      "subcases": 24,
+      "path": "day-v6-preflight-v1.log"
+    },
+    {
+      "result": "PASS",
+      "sha256": "448e1f67586331b5dce4e7ae17aea1fcefbc80c2082b027c450589192631da8b",
+      "subcases": 48,
+      "path": "day-v6-composition-v1.log"
+    }
+  ]
+}

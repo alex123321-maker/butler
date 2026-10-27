@@ -1,0 +1,17 @@
+{
+  "dataset_writes": 1,
+  "final_structure_checks_pass": true,
+  "native_admission": false,
+  "all_authorship_after_preserved_formal_freeze": true,
+  "source69_runtime7_unchanged": true,
+  "old_controls_answers_read": false,
+  "version": "issue76-independent-local-response-v10-r2-authoring-validation-history-v1",
+  "stimuli_sha256": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+  "Go_PG_auth_native_calls": 0,
+  "expectations_sha256": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642",
+  "first_authoring_utc": "2026-10-26T17:52:25.3260609+00:00",
+  "previous_dataset_versions_bound_or_admitted": false,
+  "formal_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+  "golden_writes": 1,
+  "public_fault_test_rejection_action_retried": false
+}

@@ -1,0 +1,59 @@
+{
+  "version": "issue76-independent-day-window-source-review-v1",
+  "result": "NO_CONCRETE_SOURCE_BLOCKER_FOUND",
+  "source_base": "fccfddd2fbcefa2700425f088042f6a8da20bffe",
+  "source_dirty": true,
+  "review_scope": "Operational admission only; no hidden authorship/native/auth/PG/test replay",
+  "changes": [
+    "New trusted dayFit constructor flag and UNBOUND fresh controls",
+    "Go UTC original4h fit before output",
+    "Preserved original start through hash/history checks; DB current UTC day recheck before durable INSERT",
+    "Original6closed506rows and stream1719 exact predecessor proofs",
+    "Separate policy SHA metadata; fixture/tool protocol unchanged"
+  ],
+  "duration_extended": false,
+  "scope_deadlines_extended": false,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "reader_or_scorer_changed": false,
+  "old_collectors_day_fit": false,
+  "model_seconds": 120,
+  "fixture_minutes": 20,
+  "window_hours": 4,
+  "native_cap": 768,
+  "authority_watchdog_millis": 750,
+  "business_connections": 9,
+  "authority_connections": 1,
+  "fixture_protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "11cbd1a8d7ffc9e906a89b8eaa19f543983ddaa5d4846128caa0a95fa428eaae"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "a1546299cde97332fe2294764d9c5703cbde51fd604964352c61f2151c23a312"
+    },
+    {
+      "path": "scripts/dev/behavior-local-acceptance.ps1",
+      "sha256": "6b1dd3e9eb1a664beb96e94aa2f3c94ff6711d2fe2e35790df12f5dc9aaa3e94"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "ea3918ca955614dd623741b43c1136f4c1e2bd5939575c902b782c161afb3334"
+    },
+    {
+      "path": "docs/testing/issue76-day-window-admission.md",
+      "sha256": "8aeaa3563e597f89f927b219be09cba2b4d2080fad7614c468d38a1e1dfbde34"
+    }
+  ],
+  "tests": "pending_parent_format_build_and_existing_gates_not_claimed_PASS",
+  "new_controls_authored": false,
+  "mapping_read": false,
+  "quality_assessed": false,
+  "native_admission": false,
+  "checker_pg_calls": 0,
+  "checker_native_calls": 0,
+  "closed_stream_v5_boundary_sha256": "3a9c09ab81e4cb8572732f2d80724adaca958dbb0a140d0ee1f50ee611f4cbd6"
+}

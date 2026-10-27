@@ -1,0 +1,22 @@
+[
+  {
+    "sha256": "e388b9ab2c1c96b51a5e0a4008ebd03305fc27b80d7884133f3d43642a736d25",
+    "path": "apps/orchestrator/internal/app/behavior76_literal_types_test.go"
+  },
+  {
+    "sha256": "f4c691ff6c4337728a79606d54e6ccc17b8ef858eeeb999a7e9bc6dff0e5d704",
+    "path": "apps/orchestrator/internal/app/behavior76_literal_interface_test.go"
+  },
+  {
+    "sha256": "dde248512817bddd76c15833724837e3077dedeb2b5fa2027737db3e2d02902a",
+    "path": "apps/orchestrator/internal/app/behavior76_literal_input_test.go"
+  },
+  {
+    "sha256": "70fd3dde2201f35d9f0263099856879e682e048f8598fe77d26d39fb2260389b",
+    "path": "apps/orchestrator/internal/app/behavior76_collect_test.go"
+  },
+  {
+    "sha256": "546359df064385bc24145834efce3af9d1d0e8f052fc53c607dfb09aed78be18",
+    "path": "apps/orchestrator/internal/app/behavior76_evidence_test.go"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "version": "issue76-local-model-v8-one-use-launch-v1",
+  "certificate_sha256": "c93e4e395564a84b1545df25c9a9059d2a919e708534acafb9fd902939300aa3",
+  "producer": "71a21b712c478af8ea9e748945703abf15d85636",
+  "elf_sha256": "666114960db862f6a8d6c1edf37165b5bc1b83869b09a38dde6c574ceac4d0e0",
+  "output": ".cache/behavior76/native-local-model-v8",
+  "admission_consumed_utc": "2026-10-26T06:58:35.5054977+00:00",
+  "new_attempts_allowed": 1,
+  "rebuild_after_admission": false,
+  "old_windows_reopened": false
+}

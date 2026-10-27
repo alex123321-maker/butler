@@ -1,0 +1,20 @@
+{
+  "version": "issue76-independent-completed-r2-composition-exposure-v1",
+  "log_sha256": "e7b5408eaee3e929722d1299571e1380a07b2f8c84d6d9b94deca1070251a6f1",
+  "log_bytes": 161511,
+  "arm_PASS": 48,
+  "owner_opportunities": 96,
+  "paired_steps": 138,
+  "private_literal_matches": {
+    "golden_prose": 0,
+    "source_bodies": 0,
+    "opaque_episode_ids": 24,
+    "resource_keys": 0,
+    "scenario_prose": 0,
+    "family_labels": 0
+  },
+  "credential_marker_matches": 0,
+  "limitations": "Exact/JSON-escaped literal projection only; opaque episode identifiers can occur in operational session IDs. Does not rule out paraphrases.",
+  "old_controls_answers_maps_opened": false,
+  "Go_PG_auth_native_calls": 0
+}

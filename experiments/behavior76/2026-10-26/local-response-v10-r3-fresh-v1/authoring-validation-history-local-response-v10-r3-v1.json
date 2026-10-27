@@ -1,0 +1,17 @@
+{
+  "version": "issue76-independent-local-response-v10-r3-authoring-validation-history-v1",
+  "attempts": [
+    {
+      "attempt": 1,
+      "native_or_actual_setup": "NOT_RUN",
+      "outcome": "OFFLINE_STRUCTURAL_PASS"
+    }
+  ],
+  "prior_drafts_or_failures": [],
+  "readonly_originals_preserved": true,
+  "actual_setup_composition_still_required": true,
+  "formal_freeze_precedes_authoring": true,
+  "authoring_precedes_binding": true,
+  "full48_96_12_denominator_retained": true,
+  "Go_PG_auth_native_calls": 0
+}

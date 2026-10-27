@@ -1,0 +1,20 @@
+{
+  "version": "issue115-existing-native-cohort-prepared-local-v2",
+  "source_commit": "2a26ceaf6427eb6727167909a7560c731aff8f9a",
+  "source_snapshot_files": 4830,
+  "source_snapshot_inventory_sha256": "b9973d313d339136eb01b54213134d903e879a4f9f860ecec08d70c6ea078ef7",
+  "native_source_directory": "/private/memory115-source-2a26ceaf",
+  "app_elf_sha256": "88f674b66e6171e2457998133643ab4bcdadaa6e78acc370af69508ffb6c8fa0",
+  "preseal_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "preparation_pass_seconds": 34.57,
+  "check_pass_seconds": 34.08,
+  "execution_slots": 33,
+  "full_denominator": 57,
+  "intentional_omissions": 24,
+  "native_admissions": 0,
+  "auth_sources_constructed": 0,
+  "storage_claims": 0,
+  "provider_readiness": "NOT_CHECKED",
+  "release_qualified": false,
+  "remaining": "Private local auth/exit protocol and new complete native experiment; native92/selected composition and final reconciliation"
+}

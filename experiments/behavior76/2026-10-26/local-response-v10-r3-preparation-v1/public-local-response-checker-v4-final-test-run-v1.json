@@ -1,0 +1,152 @@
+{
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "passed": 289.0,
+  "runtime_files": [
+    {
+      "sha256": "2241e8d023b6f00e28dbfc4599a74d5d2b571bf1bb2667faf0de5c1c7f85fd39",
+      "path": "local-model-proof-reader-v4.ps1"
+    },
+    {
+      "sha256": "4e6bdc53519a1d9dce02a10e2c5a8887becbed8205e791c16c11d13d233c344a",
+      "path": "local-tail-adapter-v4.ps1"
+    },
+    {
+      "sha256": "35b2734bb3ccc3c381de2d796a0d1d1a09779615c5ada2e26d67be37a081ee25",
+      "path": "local-scoring-composition-v4.ps1"
+    },
+    {
+      "sha256": "d8ef5be5485d2ae515f435bd5e3ef87a261a089c58e422350b41e117956745ab",
+      "path": "authority-stream-scoring-v2d.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "score-mechanical-fresh-v3.ps1"
+    }
+  ],
+  "failed_groups": 0,
+  "runtime_unchanged_during_all_tests": true,
+  "Go_PG_auth_native_calls": 0,
+  "maximum_parallel_test_processes": 3,
+  "version": "issue76-final-public-response-checker-v4-run-v1",
+  "source_freeze_or_new_authorship_or_native_admission": false,
+  "public_tests": [
+    {
+      "status": "pass",
+      "passed": 12,
+      "script": "test-local-scoring-composition-v4.ps1",
+      "elapsed_seconds": 67.4080584,
+      "log_sha256": "04bc045bcfb8434dc334f98e45989209c62d0a8477494377a891f47d088d651e",
+      "exit_code": 0,
+      "log": "local-scoring-composition-v4-final-v3.log",
+      "expected_cases": 12,
+      "script_sha256": "f6d37d87e4d63d3c84a2e61e81370c5e1e4f6b35ceb2e988117d46e294741f37"
+    },
+    {
+      "status": "pass",
+      "passed": 2,
+      "script": "test-local-model-proof-v4-union.ps1",
+      "elapsed_seconds": 11.6231215,
+      "log_sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5",
+      "exit_code": 0,
+      "log": "local-model-proof-v4-union-final-v3.log",
+      "expected_cases": 2,
+      "script_sha256": "96c22fea4b9ea9d91d81a254a73ee08c182bad8e6e1a230e2c1248aa8acec1d4"
+    },
+    {
+      "status": "pass",
+      "passed": 7,
+      "script": "test-local-model-composition-v4.ps1",
+      "elapsed_seconds": 48.5496217,
+      "log_sha256": "dbdf72a5dad131a69cd63615d933797d7d40a22787ca3a49c94c6816c18265f5",
+      "exit_code": 0,
+      "log": "local-model-composition-v4-final-v3.log",
+      "expected_cases": 7,
+      "script_sha256": "34acdc929c6806f7f443c37d2d346842d0d565815e8404e0fd3490c9d032c72b"
+    },
+    {
+      "status": "pass",
+      "passed": 32,
+      "script": "test-local-tail-adapter-v4.ps1",
+      "elapsed_seconds": 167.794445,
+      "log_sha256": "f0e247f5b6ce7e5aa49399f8aa8c16dc15d2be586b09f516270becd637496432",
+      "exit_code": 0,
+      "log": "local-tail-adapter-v4-final-v3.log",
+      "expected_cases": 32,
+      "script_sha256": "c8bb57fe70bc679d3148d04043d39d9a219bf7e6dc515b02bc355563d06a9918"
+    },
+    {
+      "status": "pass",
+      "passed": 6,
+      "script": "authority-stream-scoring-v2d-selftests.ps1",
+      "elapsed_seconds": 44.1795683,
+      "log_sha256": "5113cb34ab375b0ebdff25d3d01a1a9b18f2b2cb02771c095ff0588fdd73c16b",
+      "exit_code": 0,
+      "log": "authority-stream-scoring-v2d-final-v3.log",
+      "expected_cases": 6,
+      "script_sha256": "bd177c2dd6557249fc1328f7a204ad7c4e4b906e2649b344db96179124834567"
+    },
+    {
+      "status": "pass",
+      "passed": 8,
+      "script": "test-local-http-composition-v4.ps1",
+      "elapsed_seconds": 59.4336145,
+      "log_sha256": "6fe9c9c3339b018ef41d3b35dc45ff8192f5563e9f235de58bba4a6c63a1a38c",
+      "exit_code": 0,
+      "log": "local-http-composition-v4-final-v3.log",
+      "expected_cases": 8,
+      "script_sha256": "515d44fa248f6b24ea6a992f99dcfcf93bab864af8a652302241bd863749dc48"
+    },
+    {
+      "status": "pass",
+      "passed": 47,
+      "script": "test-local-model-proof-v4.ps1",
+      "elapsed_seconds": 277.4156618,
+      "log_sha256": "3e1d95be0440247d160de77694d6449aba1ba5a1e086f797062569b1959e7406",
+      "exit_code": 0,
+      "log": "local-model-proof-v4-final-v3.log",
+      "expected_cases": 47,
+      "script_sha256": "9b4f4257a04906b900676d65b49f663d6241cd45b839b7e04bdb1309e161e61c"
+    },
+    {
+      "status": "pass",
+      "passed": 10,
+      "script": "test-local-response-composition-v4.ps1",
+      "elapsed_seconds": 79.0912439,
+      "log_sha256": "6fa41be875fbc82a19a7bb95ca817d8b03f896e4dc213fa07e000379b3eb8a50",
+      "exit_code": 0,
+      "log": "local-response-composition-v4-final-v2.log",
+      "expected_cases": 10,
+      "script_sha256": "51fce63bc3b0714303d00ea80b8adba95a650b40a42360f9ffd1fec0d6b4b3be"
+    },
+    {
+      "status": "pass",
+      "passed": 52,
+      "script": "test-local-http-proof-v4.ps1",
+      "elapsed_seconds": 276.9512028,
+      "log_sha256": "8351fa884804d7a06f031a83fdfee7817f724053e77490e61f1f332040d36ac4",
+      "exit_code": 0,
+      "log": "local-http-proof-v4-final-v3.log",
+      "expected_cases": 52,
+      "script_sha256": "a2748fece16527e9a481b99a30b5175413f536e75826efd3d30b748f87750cb8"
+    },
+    {
+      "status": "pass",
+      "passed": 113,
+      "script": "test-local-response-proof-v4.ps1",
+      "elapsed_seconds": 412.6036066,
+      "log_sha256": "6aaeb16bb6aa349c8cc443f47560437c9607801c3fc5bf8293d57724e597143d",
+      "exit_code": 0,
+      "log": "local-response-proof-v4-final-v2.log",
+      "expected_cases": 113,
+      "script_sha256": "3da3ba2db3aa5976c8c9e74023a6fa57f0a9998546e2d609263e389877b26858"
+    }
+  ]
+}

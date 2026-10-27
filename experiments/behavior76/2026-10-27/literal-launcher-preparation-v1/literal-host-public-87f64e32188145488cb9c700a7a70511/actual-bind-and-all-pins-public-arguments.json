@@ -1,0 +1,21 @@
+[
+  ".cache/behavior76/literal-host-public-87f64e32188145488cb9c700a7a70511/proof.json",
+  "1941572a6cdbcb797b4400ac1f12c7cb8e1a4b2183f45029f8c2c31580c2a276",
+  ".cache/behavior76/literal-host-public-87f64e32188145488cb9c700a7a70511/stub.sh",
+  "52342bff36404e6b8bf9c6ce456f365a6aa9083c7677bc5c46a158adb9184daf",
+  "scripts/dev/behavior76-literal-launch.ps1",
+  "6866bddb0dc25dec47acc0b7dd63fc81af749db50d376af6810c91b62a7fe88b",
+  "scripts/dev/behavior76-literal-launcher-core.ps1",
+  "4e40e5831a3ff67fc002679292369c36dd2f819980142c0e266f73498fca7ccd",
+  "scripts/dev/behavior76-literal-admission.schema.json",
+  "0e30ed11461bbe80699d3db06a5c74e6457d0e93af9da62db135eea2481ba5d1",
+  ".cache/behavior76/literal-host-public-87f64e32188145488cb9c700a7a70511/elf.test",
+  "83620b4f07394910c072e4f8080648919c09f48b4a218dd96dfc36a76bd0ac64",
+  "public-nonproducer",
+  ".cache/behavior76/literal-host-public-87f64e32188145488cb9c700a7a70511/stimuli.jsonl",
+  "bbdcea0d527012c65ec9aa124875ebb5c0ac1a62bf14e67bebc8d6ae07df76a0",
+  ".cache/behavior76/literal-host-public-87f64e32188145488cb9c700a7a70511/never-a-native-output",
+  "1793066336",
+  "2026-10-27T01:52:56.6641521Z",
+  "2026-10-27T01:58:56.6618718Z"
+]

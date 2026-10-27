@@ -1,0 +1,104 @@
+{
+  "version": "behavior76-literal-launcher-public-v1",
+  "checks": [
+    {
+      "label": "canonical structural fixture only",
+      "pass": true,
+      "expected_denial": false
+    },
+    {
+      "label": "duplicate root member denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "case aliased root member denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "extra field denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "wrong fixed arm count denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "string boolean denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "uppercase digest denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "issuer hash mismatch denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "invalid UTF8 denied before JSON decoding",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "fractional integer denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "trailing JSON denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "UTC is parsed independently of local timezone",
+      "pass": true,
+      "expected_denial": false
+    },
+    {
+      "label": "non UTC offset denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "path traversal denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "absolute path denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "Windows device path denied",
+      "pass": true,
+      "expected_denial": true
+    },
+    {
+      "label": "duplicate durable marker does not overwrite",
+      "pass": true,
+      "expected_denial": false
+    },
+    {
+      "label": "main native entry denies fake public producer before consumption or WSL",
+      "pass": true,
+      "expected_denial": false
+    }
+  ],
+  "pass": 18,
+  "fail": 0,
+  "source_frozen": false,
+  "actual_certificate_issued": false,
+  "native_calls": 0,
+  "auth_access": 0,
+  "PG_access": 0,
+  "WSL_processes_started": 0,
+  "public_fixtures_retained": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\behavior76\\literal-launcher-public-271839d2e4684e67a5a86e9593abaf2c"
+}

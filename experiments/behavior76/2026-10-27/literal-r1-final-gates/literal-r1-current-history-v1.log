@@ -1,0 +1,9 @@
+CREATE TABLE
+CREATE TABLE
+COPY 971
+COPY 774
+BEGIN
+SET
+psql:/src20/.cache/behavior76/check-closed-local-response-v10-r3-history-v1.sql:25: NOTICE:  EXACT_CLOSED_LOCAL_RESPONSE_R3:971 rows equal sealed export; original774 unchanged;12closed windows;959measured/7700211known/12NULL; R3:197admitted/197measured/1751497known/0NULL; noentry198; actual_transaction_read_only=on; no application journal writes
+DO
+ROLLBACK

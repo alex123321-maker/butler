@@ -1,0 +1,42 @@
+[CmdletBinding()]
+param()
+$ErrorActionPreference='Stop'
+$repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$relative='.cache/behavior76/literal-host-public-'+[guid]::NewGuid().ToString('N')
+$publicRoot=Join-Path $repoRoot $relative
+[void][IO.Directory]::CreateDirectory($publicRoot)
+$utf8=[Text.UTF8Encoding]::new($false)
+$tokens=$null;$parseErrors=$null
+$ast=[Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'behavior76-literal-launch.ps1'),[ref]$tokens,[ref]$parseErrors)
+if($parseErrors.Count){throw 'Launcher parse failed'}
+$assignments=@($ast.FindAll({param($node) $node -is [Management.Automation.Language.AssignmentStatementAst] -and $node.Left -is [Management.Automation.Language.VariableExpressionAst] -and $node.Left.VariablePath.UserPath -ceq 'linuxGate'},$true))
+if($assignments.Count -ne 1){throw 'One fixed inline host gate required'}
+$gate=$assignments[0].Right.SafeGetValue()
+if($gate -isnot [string]){throw 'Inline gate must be constant text'}
+$items=@{}
+foreach($entry in @(@('proof.json','public fresh bind nonce '+[guid]::NewGuid().ToString('N')),@('stub.sh',"#!/bin/sh`nprintf 'PUBLIC_HOST_GATE_STUB_ONLY\n'`nexit 17`n"),@('elf.test','public non executable bytes'),@('stimuli.jsonl','public schema fixture only'))){
+ $file=Join-Path $publicRoot $entry[0]
+ [IO.File]::WriteAllText($file,$entry[1],$utf8)
+ $items[$entry[0]]=@{path=$relative+'/'+$entry[0];sha=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()}
+}
+$launcher='scripts/dev/behavior76-literal-launch.ps1'
+$core='scripts/dev/behavior76-literal-launcher-core.ps1'
+$schema='scripts/dev/behavior76-literal-admission.schema.json'
+$latest=[DateTimeOffset]::UtcNow.AddMinutes(5)
+$notBefore=[DateTimeOffset]::UtcNow.AddMinutes(-1).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'")
+$baseArguments=@($items.'proof.json'.path,$items.'proof.json'.sha,$items.'stub.sh'.path,$items.'stub.sh'.sha,$launcher,(Get-FileHash (Join-Path $repoRoot $launcher) -Algorithm SHA256).Hash.ToLowerInvariant(),$core,(Get-FileHash (Join-Path $repoRoot $core) -Algorithm SHA256).Hash.ToLowerInvariant(),$schema,(Get-FileHash (Join-Path $repoRoot $schema) -Algorithm SHA256).Hash.ToLowerInvariant(),$items.'elf.test'.path,$items.'elf.test'.sha,'public-nonproducer',$items.'stimuli.jsonl'.path,$items.'stimuli.jsonl'.sha,$relative+'/never-a-native-output',[string]$latest.ToUnixTimeSeconds(),$notBefore,$latest.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'"))
+$checks=[Collections.Generic.List[object]]::new()
+foreach($case in @(@('actual-bind-and-all-pins',-1),@('wrong-fresh-nonce',1),@('wrong-wrapper',3),@('wrong-launcher',5),@('wrong-core',7),@('wrong-schema',9),@('wrong-elf',11),@('wrong-stimulus',14),@('expired-before-exec',16))){
+ $probe=[object[]]$baseArguments.Clone()
+ if($case[1] -ge 0){$probe[$case[1]]=$(if($case[1] -eq 16){'1'}else{'b'*64})}
+ $log=Join-Path $publicRoot ($case[0]+'.log')
+ & wsl -d docker-desktop --exec /bin/sh -c $gate public-bind-probe @probe > $log 2>&1
+ $exit=$LASTEXITCODE
+ $reached=[IO.File]::ReadAllText($log).Contains('PUBLIC_HOST_GATE_STUB_ONLY')
+ $pass=$(if($case[1] -lt 0){$exit -eq 17 -and $reached}else{$exit -ne 17 -and $exit -ne 0 -and -not $reached})
+ $checks.Add([ordered]@{check=$case[0];exit=$exit;stub_reached=$reached;pass=$pass})
+ if(-not $pass){throw ('Public host bind check failed: '+$case[0])}
+}
+$receipt=[ordered]@{version='behavior76-literal-public-host-bind-v1';checks=$checks;pass=$checks.Count;fail=0;WSL_pin_only_processes=$checks.Count;actual_native_host_wrapper_executed=$false;actual_ELF_entered=$false;actual_certificate=$false;native_calls=0;auth_access=0;PG_access=0;source_frozen=$false}
+[IO.File]::WriteAllText((Join-Path $publicRoot 'receipt.json'),($receipt|ConvertTo-Json -Depth 6),$utf8)
+Write-Output ('PUBLIC_HOST_BIND_PASS '+$checks.Count+' pin-only checks; receipt='+(Join-Path $publicRoot 'receipt.json'))

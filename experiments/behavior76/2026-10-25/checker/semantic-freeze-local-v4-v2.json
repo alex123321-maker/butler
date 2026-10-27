@@ -1,0 +1,133 @@
+{
+  "version": "issue76-independent-semantic-freeze-local-v4-v2",
+  "producer": "7691d83448c5ed41baabd2e799eb8af7a0aa671b",
+  "parent": "d480c9a6108d2ccc58cb394bd9accadd4538c2ae",
+  "working_tree_clean": true,
+  "go_source_sha256": "aabe28b4e0148885b740078dfac68303c82e56b67bce7ffd7b3de3d701348339",
+  "go_source_files": 2142,
+  "go_source_manifest_sha256": "e652be5b18bb7043f59f053468313412f49f889001b08d8b0a77eea1bfd67826",
+  "protocol_sha256": "37ac1880ea3e9479856f9303d925fa78cd62d9785e32f11cbc64108eb9557651",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "public_suite": {
+    "top_level_pass": 29,
+    "log_sha256": "13148c88c6258d4948ae0e87a8eb412d242aea51049edf8fa5a55361d23afb2f",
+    "wrapper_exit0_reported_by_author": true,
+    "skip": 0,
+    "fail": 0
+  },
+  "vet": {
+    "exit_code_reported": 0,
+    "log_sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+  },
+  "independent_input": {
+    "race": true,
+    "log_sha256": "0709961c978d253c44d5251d2b49214945c99a6678f6d6797f384bd1a4f2b564",
+    "pass": 44,
+    "seconds": 186.796
+  },
+  "parser_selftests": 32,
+  "composition_integration_selftests": 12,
+  "scoring_composition_receipt_sha256": "e8e92deee2a51b298ecf1c247d7619069b787e1476b03980868574aaf623a01e",
+  "resources": {
+    "max_wal_size": "128MB",
+    "go": "1.27.2",
+    "loop_backed_capacity_min_gib": 3,
+    "watchdog_ms": 750,
+    "min_wal_size": "32MB",
+    "actual_data_directory": "/var/lib/postgresql/effort76",
+    "endpoint": "127.0.0.1:55451/behavior76_test",
+    "jit_available": false,
+    "historical_latency_cause": "unresolved",
+    "postgres": "17.11",
+    "authority_business_connections": 9,
+    "fsync": "on",
+    "available_min_gib": 1,
+    "shared_buffers": "32MB",
+    "authority_reserved_connections": 1
+  },
+  "immutable_history": {
+    "all_original_rows_equal": true,
+    "unknown_usage": 4,
+    "measured": 372,
+    "admissions": 376,
+    "prior_protocol_deviations_and_infrastructure_failures_retained": true,
+    "known_tokens": 2867576
+  },
+  "authorship": {
+    "positive_negative_each_family": true,
+    "evaluated_owner_turns_per_episode": 2,
+    "authorized": true,
+    "arms": 2,
+    "only_fresh_synthetic_values": true,
+    "planned_owner_opportunities": 96,
+    "families": 12,
+    "episodes": 24
+  },
+  "no_model_auth_or_native_admission": true,
+  "old_or_new_mapping_read": false,
+  "old_quality_disclosed": false,
+  "post_authorship_source_changes": "literal hash/path bindings only; any semantic change requires independent prospective review before collection",
+  "source_pins": [
+    {
+      "sha256": "37ac1880ea3e9479856f9303d925fa78cd62d9785e32f11cbc64108eb9557651",
+      "path": "docs/testing/issue76-fixture-local-protocol.md"
+    },
+    {
+      "sha256": "e3a960583e125daddecf9037fbe9a18709b800e8acd78c1d19b8f3553861ab37",
+      "path": "apps/orchestrator/internal/app/behavior76_resources_test.go"
+    },
+    {
+      "sha256": "b0b204786cf34bdef319b26ff50a19a5fbe3b1ff7709e179f0a31238f0626223",
+      "path": "apps/orchestrator/internal/app/behavior76_local_study_test.go"
+    },
+    {
+      "sha256": "64f42444caf8a93813d968da5b44fdaa6e671c53773f4a00d39a679153e695ee",
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+    },
+    {
+      "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+      "path": "apps/orchestrator/internal/prompt/task_continuity.go"
+    },
+    {
+      "sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+      "path": "experiments/behavior76/2026-10-25/checker/local-scoring-composition-v1.ps1"
+    },
+    {
+      "sha256": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf",
+      "path": "experiments/behavior76/2026-10-25/checker/local-tail-adapter-v1.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "experiments/behavior76/2026-10-25/checker/score-mechanical-fresh-v3.ps1"
+    },
+    {
+      "sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869",
+      "path": "experiments/behavior76/2026-10-25/checker/score-mechanical-v2.ps1"
+    },
+    {
+      "sha256": "b8d7ad33e581e3de6fc5fedbd02a72161d5e1677c1eb038bb69a2c40ca2701eb",
+      "path": "scripts/dev/behavior-local-acceptance.ps1"
+    },
+    {
+      "sha256": "e4817535ff327919dd77a60f6f9decb253056993de4871ce84c8576867fa3f6c",
+      "path": "scripts/dev/behavior-local-run.sh"
+    }
+  ],
+  "supersedes_certificate_sha256": "c3a16b07a08085ab42ab781fd7137ae52e3f7985b67f3db9aaddbb3abbb6e15d",
+  "public_additive_source_fix": {
+    "rca_receipt_sha256": "73d051b884bdc1a94885f96a504a641a34485fcbf96df81b3935b5b8cbd930a4",
+    "no_new_authorship_before_fix": true,
+    "one_public_rca_replay": "PASS4.46s, no reproduction, no causal repair claim",
+    "effect": "Propagate deferred source/metadata row errors and set existing shared research stop before fallback; optional public-only trace selector",
+    "prior_strict_handoff_failure_retained": true,
+    "deferred_sqlstate": "22012",
+    "prior_750ms_cause": "unresolved",
+    "regressions_passed": 2,
+    "paths": [
+      "behavior76_events_test.go",
+      "behavior76_collect_test.go",
+      "behavior76_fixture_test.go",
+      "behavior76_source_rows_test.go"
+    ]
+  }
+}

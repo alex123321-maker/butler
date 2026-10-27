@@ -1,0 +1,8 @@
+
+producer          : baaf94ef6298258d5590709cd649541ab371e93f
+files             : 6249
+bytes             : 333156796
+all_blobs_exact   : True
+inventory_sha256  : ec7404c33da138111fe1fb5d0d3738cb31a110431b244c1486d66525719727b7
+native_auth_calls : 0
+

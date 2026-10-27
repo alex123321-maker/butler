@@ -1,0 +1,15 @@
+{
+  "version": "issue76-independent-local-response-v10-r2-private-raw-seal-v1",
+  "issued_utc": "2026-10-26T18:37:02.6425155+00:00",
+  "root": ".cache/behavior76/native-local-response-v10-r2",
+  "raw_files": 822,
+  "raw_bytes": 24805981.0,
+  "inventory_sha256": "23657c8d1b60075d190dce7fccdae0a8ce15ac8c072a89a3f4759a7f50947742",
+  "archive_sha256": "74c7f30e476aed8d7905768c2454788681693a3c3593561c55bab9b81b2a1377",
+  "every_original_and_zip_entry_SHA256_verified": true,
+  "originals_Windows_readonly": true,
+  "archive_directory_owner_SYSTEM_only": true,
+  "semantic_answer_or_mapping_read": false,
+  "publication": "PRIVATE_UNTIL_EXPOSURE_AUDIT",
+  "Go_PG_auth_native_calls": 0
+}

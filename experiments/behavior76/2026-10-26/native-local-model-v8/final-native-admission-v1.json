@@ -1,0 +1,108 @@
+{
+  "version": "issue76-independent-final-native-admission-local-model-v8-v1",
+  "decision": "ADMIT_EXACTLY_ONE_PROSPECTIVE_FINITE_LOCAL_MODEL_COLLECTION_WINDOW",
+  "issued_utc": "2026-10-26T06:58:18.6857881Z",
+  "latest_start_utc": "2026-10-26T07:28:18.6857881Z",
+  "producer": "71a21b712c478af8ea9e748945703abf15d85636",
+  "tested_literal_source": "36071fbb6ad77db61d4d60c4f6e09acb63843a05",
+  "formal_semantic_source": "c31f6bc8551e7c77893adacd8213126bcf55208a",
+  "underlying_semantic_source": "2b5507dfde97e1bbd167da1649d148cc212f0ace",
+  "source_delta": "Exactly2postfreeze hash constants; allfollowingchangespublicmetadata/logs only; clean tree and actual ELF verified",
+  "collector_elf_sha256": "666114960db862f6a8d6c1edf37165b5bc1b83869b09a38dde6c574ceac4d0e0",
+  "required_runtime_source": "git:71a21b712c478af8ea9e748945703abf15d85636;binary-sha256:666114960db862f6a8d6c1edf37165b5bc1b83869b09a38dde6c574ceac4d0e0",
+  "formal_source_scorer_freeze_sha256": "8cd9472e1704b2bd3385eacd33163c3ab7e264515434e2772f33d4afd1536973",
+  "postfreeze_literal_review_sha256": "1d14ded37de22b252b11c5197ce71141d42694e4f70b5dd81840479808840740",
+  "protocol": {
+    "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+    "output_index": "behavior76-checker-index-v3-local-model-tail",
+    "binding_mode": "fixture-local-model-v8",
+    "path": "docs/testing/issue76-local-model-protocol.md",
+    "local_model_failure_mode": "whole_fixture_after_exact_empty_answer_v1",
+    "day_fit_sha256": "395d006c5efbe9dc7d5ccbd73a4e7bafbbff99e76eb2777b3495b954b82b6ab9",
+    "sha256": "92aacef6cef3d90d82f85857030fe15e9d70ce3ea0ab842c38853797d732ee42"
+  },
+  "corpus": {
+    "stimuli_path": ".cache/issue76-independent/hidden-local-model-v8/stimuli.jsonl",
+    "structural_receipt_sha256": "13f85da03712b189ed06ae90cc06b5b433bbd53bb86e028e565843025c79db5f",
+    "families": 12,
+    "episodes": 24,
+    "expectations_sha256": "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0",
+    "authoring_provenance_sha256": "4e08a61ffc34c4485ca05e551390eac1d0df37c07df00c75f35019cc58efab95",
+    "arms": 48,
+    "original_owner_opportunities": 96,
+    "stimuli_sha256": "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00",
+    "original_paired_steps": 132,
+    "authorship_after_formal_freeze_verified": true,
+    "public_commitment_sha256": "c3417e6be7a4c46d821458d84bf6c2d4b8e8670c78f67879cf4bd2b46fc213a6"
+  },
+  "checker_runtime_pins": [
+    {
+      "sha256": "3d3b2aff00d23165cc74d8fb264681ee44610648e2b43254bd5b1e530b21b370",
+      "path": "local-model-proof-reader-v2.ps1"
+    },
+    {
+      "sha256": "897beea0409d4fb526ff434ba03ab51df07b6c919b8c680d81cc97d6176b32fd",
+      "path": "local-tail-adapter-v2.ps1"
+    },
+    {
+      "sha256": "8719c35f525a0d3d417e9cd0ee037fe357462a3827585dde14426723bef9ed63",
+      "path": "local-scoring-composition-v2.ps1"
+    },
+    {
+      "sha256": "4c964b15d07620d1e70e5a75d6b00d4501851d1a9907a7ff60007733156a1f2c",
+      "path": "authority-stream-scoring-v2b.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "score-mechanical-fresh-v3.ps1"
+    }
+  ],
+  "completed_gates": "41Public top-level racePASS/0FAIL/0SKIP and vet0;106independent offline checkerPASS;24actualSetupPASS;48actualCompositionPASS/96owner opportunities/132originalpairedsteps;originalInput44PASSretained",
+  "actual_zero_native_gate_receipt": {
+    "setup_log_sha256": "02cf334fbee811ec4d9268255dce316a2ba70246c47f1ac1f80160a71c05b642",
+    "sha256": "1a19e4f5499912f3858dd1d96864b6f69df0763e8d2b48c77953f2079616983f",
+    "path": "experiments/behavior76/2026-10-26/local-model-v8-preparation-v1/actual-zero-native-gates-v1.json",
+    "composition_log_sha256": "079d11bbdfc1b381b6069a3df2c38db99e79694c185d8789ea6a0a232e0c890b"
+  },
+  "output": ".cache/behavior76/native-local-model-v8",
+  "output_verified_absent": true,
+  "limits": {
+    "fixture_minutes": 20,
+    "authority_connections": 1,
+    "entries_per_original_owner_slot": 8,
+    "cumulative_admission_ceiling": 1411,
+    "business_connections": 9,
+    "authority_watchdog_millis": 750,
+    "model_seconds": 120,
+    "window_hours": 4,
+    "entries_per_run": 4,
+    "native_entries": 768
+  },
+  "mandatory_existing_preentry_guards": "Actual exact8closed windows/643originalJSONB rows and allpinned predecessor rawbytes; resource profile/research build/settingsPK/source/ELF guards; Go+PostgreSQL UTCwhole-original-window dayfit. Original4h start includes preentrychecks, no resetting/extending deadlines, renewing authority or refund. Any guard rejection consumes no replacement authorization.",
+  "history": {
+    "expected_admissions": 643,
+    "expected_measured": 635,
+    "expected_closed_windows": 8,
+    "basis": "Verified frozen closed-history certificate/source contract; not re-queried by checker in this admission step; actual mandatory collector guards remain.",
+    "null_usage": 8,
+    "closed_predecessor_certificate_sha256": "3f450a5b7dabc462ad2f18885b1a0f82e7c3b82d103a719a5ea4f1c37440d4b1",
+    "known_provider_total_tokens": 4910612,
+    "old_global_failures_partial_results_unknowns_unresolved_latency_retained": true
+  },
+  "local_stop": "Only exact completed run_started->provider_protocol_error/stream_empty_answer/http0, no delta/tool/final, successful journal/source/authority proof and actual EOF may stop wholeoriginal isolatedarm. Initialcauseimmutable; nullableusage/version retained; allalreadyadmittedwork drained; originaltail unavailable. EffectUNKNOWNremainsclassifiedandcritical.",
+  "global_stop": "All other provider/auth/source/authority/budget/deadline/journal/hash/observer/isolation/quiescence/bounds faults GLOBAL, includinglatefaults. No replay/resampling/replacement/same-arm continuation or hidden retry.",
+  "reporting": "Retain48/96/12 denominator; localmodel failure unsuccessful; unavailabletail neverexpecteddenialPASS; owner andautomatic finals/effects/cost distinct; criticalUNKNOWNneverPASS; fully indexed dispositions do not imply96usableanswers.",
+  "operational_profile": "Parent heavy/build/PG/issue21/container work must not overlap; declared finished/paused, Dockerstopped, keeper+PG only. Unrelated user/agent work is not claimed absent; no global-machine-idle guarantee. Existing bounds/guards remain authoritative.",
+  "masked_review": "No live quality/response/golden/mapping inspection. Closed immutable evidence first, then fullplanned masked judgments sealed before mapping access.",
+  "checker_native_auth_PG_operations": 0,
+  "quality_promotion_deployment_or_issue_closure": false,
+  "extra_formal_gates_added": false
+}

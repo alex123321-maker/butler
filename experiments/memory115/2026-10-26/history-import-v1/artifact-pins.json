@@ -1,0 +1,32 @@
+[
+  {
+    "path": "closed90-import-v5.log",
+    "bytes": 294,
+    "sha256": "c03e5a720cdba875acd85760225f4127b9cab52c295982de57c38f4a55e27aac"
+  },
+  {
+    "path": "closed90-import-v6.log",
+    "bytes": 487,
+    "sha256": "2192dc006287ceea1f163986f8deca98a5b925bdb609942b92092804c142ca3a"
+  },
+  {
+    "path": "closed90-import-v7.log",
+    "bytes": 8147,
+    "sha256": "0cffc0dfa382bdb0607a6be947d3b4be45b68567ad52d88fb9b306b51967b480"
+  },
+  {
+    "path": "import-receipt.json",
+    "bytes": 935,
+    "sha256": "6d34e80d0a6bec1a48e477b62804be911bdf88395796588e9f1e8591858755a4"
+  },
+  {
+    "path": "noncredential-provenance.json",
+    "bytes": 957,
+    "sha256": "d3266b382914a63637937c5b3a59008b766e2c93663e8394bac84b21e151b9b7"
+  },
+  {
+    "path": "retained-packet-inventory.json",
+    "bytes": 51421,
+    "sha256": "432a132cf7bf2247335053e4c8e075f9412923eaf8dec0d43f25d22306cc2d89"
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "version": "issue115-integrated-preparation-failure-v1",
+  "source_commit": "baaf94ef6298258d5590709cd649541ab371e93f",
+  "snapshot_files": 6249,
+  "snapshot_bytes": 333156796,
+  "snapshot_raw_git_blobs_exact": true,
+  "snapshot_readonly": true,
+  "snapshot_inventory_sha256": "ec7404c33da138111fe1fb5d0d3738cb31a110431b244c1486d66525719727b7",
+  "five_artifacts_fresh": true,
+  "app_sha256": "80d8e9d080d01e60c96c1d8f5ebda405b77cd42535626d98120ff0c8f1faa77f",
+  "source_before_after_exact": true,
+  "build_attempt1": "FAILED before compile: findmnt absent; literal five_fresh_artifacts=true metadata is not successful build evidence",
+  "snapshot_attempt1": "FAILED exact raw blob guard: git archive EOL conversion; retained",
+  "controls_top_PASS": 23,
+  "controls_top_FAIL": 1,
+  "controls_sub_PASS": 95,
+  "controls_sub_FAIL": 25,
+  "SKIP": 0,
+  "race_reports": 0,
+  "required_name_routing": "24 app names actually executed;7 required names belong to orchestrator package and were not executed. No all31 completion claim.",
+  "first_failure": "control033 reviewed-extension list unavailable",
+  "underlying_list_failure_cause": "UNKNOWN",
+  "later_subcases": "34..57 denied one-use foreground slot; original57 denominator retained in log",
+  "other_gate_stages": "read production operator vet and preseal NOT_EXECUTED",
+  "no_new_native_preseal_or_domain": true,
+  "actual_provider_calls": 0,
+  "real_auth": 0,
+  "historical_pg_disk_errors": "October25, not cause evidence for October27",
+  "storage": "dedicated local ext4 expanded4GiBto8GiB after process join; all original data retained; unchangedCPU memory pids model authority",
+  "readiness_change": "test-only: original10s bound now observes every required listener; no control action retry or weakened policy",
+  "readiness_unit_PASS": 1,
+  "readiness_unit_race_reports": 0,
+  "next_cohort": "new v2 immutable source and all5 artifacts required; still unbound, no qualification",
+  "files": [
+    {
+      "sha256": "6dcf7d0fb43c1c9f9b3e51fefbf5a62e37087ce9e25416c20f15c2176f521691",
+      "path": "memory115-snapshot-integrated-source-v1.ps1",
+      "bytes": 5888
+    },
+    {
+      "sha256": "b06d72754cca9606d8a310732adeaaf9b5acbcf57b8e65ff65119fb52c131e10",
+      "path": "memory115-snapshot-integrated-source-v1.log",
+      "bytes": 320
+    },
+    {
+      "sha256": "50b39f6f6300d548ad89d62fd1f79b6bd8fad86b7a2ddce2b45a76e48a760173",
+      "path": "memory115-snapshot-integrated-source-v2.ps1",
+      "bytes": 6943
+    },
+    {
+      "sha256": "268e6dd423f00acd2fb3d46e7e93aa8d722e8a5d20fb925b9ce0a6c251a90a2f",
+      "path": "memory115-snapshot-integrated-source-v2.log",
+      "bytes": 258
+    },
+    {
+      "sha256": "ec7404c33da138111fe1fb5d0d3738cb31a110431b244c1486d66525719727b7",
+      "path": "memory115-source-skillprep-baaf-v2-inventory.json",
+      "bytes": 1843355
+    },
+    {
+      "sha256": "fdbbfdc1eb1bcafac23811b22ccc6874fb7340124aa37bb13521a15379518ffe",
+      "path": "memory115-integrated-fresh-five-v1.sh",
+      "bytes": 2457
+    },
+    {
+      "sha256": "f142683934ef569fe83c4008164c63986c3c21fddb78683b28b91e7df123ea35",
+      "path": "memory115-integrated-fresh-five-v1.log",
+      "bytes": 110
+    },
+    {
+      "sha256": "f291bde0bedf5c53314f0a5075bcdaa439bbc41723a2657b94718e701967f758",
+      "path": "memory115-integrated-fresh-five-v1-exit.json",
+      "bytes": 143
+    },
+    {
+      "sha256": "3a5678ab849d3d7a3b217d2c516cac8b1b4e9cf5fcab9795d7d1d104db1dfd9f",
+      "path": "memory115-integrated-fresh-five-v2.sh",
+      "bytes": 2287
+    },
+    {
+      "sha256": "55f424747b6e253c8835571050b1f75a50bc213fd5b704b805a12332d3f57b61",
+      "path": "memory115-integrated-fresh-five-v2.log",
+      "bytes": 1417
+    },
+    {
+      "sha256": "7ff4cdabaf78406ae55a702f4901db453b7b7dda0e89602dd143694a3af3f403",
+      "path": "memory115-integrated-fresh-five-v2-exit.json",
+      "bytes": 151
+    },
+    {
+      "sha256": "f3cb8cbdcd3c14c0a5a920846435cfde143fbd02ae8a1a46f7a831d8cce5bf7a",
+      "path": "memory115-integrated-gates-v1.sh",
+      "bytes": 7333
+    },
+    {
+      "sha256": "a9bca35e1e1051f85551a6d03f5cf81711527b81c729644a82283944755642b4",
+      "path": "memory115-integrated-controls-v1.log",
+      "bytes": 114399
+    },
+    {
+      "sha256": "3bedb00b7fce5386abc3cf15bbd615ed1d6de05b0601af7f968d594f20398457",
+      "path": "memory115-integrated-gates-v1-exit.json",
+      "bytes": 75
+    },
+    {
+      "sha256": "6dd5cf6e1da88382471fbd11bca79a2855f7d4dd0137c96d178f66c05e673d65",
+      "path": "memory115-expand-local-storage-v1.sh",
+      "bytes": 946
+    },
+    {
+      "sha256": "c5590f6328a6005b48e8e3ff0e45eedfac73319e7df53c7f57c02be4f76e4fd1",
+      "path": "memory115-expand-local-storage-v1.log",
+      "bytes": 755
+    },
+    {
+      "sha256": "8d33aa30589f93c183859b536ae72ed6cfb35a2a808f1805f914f47d216b3f20",
+      "path": "memory115-child-readiness-unit-v1.sh",
+      "bytes": 766
+    },
+    {
+      "sha256": "fbdb1ee218619bb18e0cd67f899c3d076f6e424027be9c512086495da2c06918",
+      "path": "memory115-child-readiness-unit-v1.log",
+      "bytes": 225
+    },
+    {
+      "sha256": "73553db8a1ac6b8c07d15ddac04c26f730de19545ba72f2cbb22e46910cf0f7f",
+      "path": "memory115-child-readiness-unit-v1-exit.json",
+      "bytes": 85
+    }
+  ]
+}

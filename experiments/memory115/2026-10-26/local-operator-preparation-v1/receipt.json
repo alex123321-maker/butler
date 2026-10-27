@@ -1,0 +1,31 @@
+{
+  "version": "butler115-local-operator-preparation.v1",
+  "result": "ZERO_AUTH_PREPARATION_AND_SYNTHETIC_OPERATOR_GATES_PASS",
+  "operator_elf_sha256": "7576f9b9bf9617bfccb82f4ee9f1caa54c83dc9038da68019b6f574b8a547c24",
+  "unit_integration_race_exit": 0,
+  "vet_exit": 0,
+  "build_exit": 0,
+  "top_level_tests": 6,
+  "actual_PG_cases": 13,
+  "strict_cipher_cases": 6,
+  "operator_test_db": "127.0.0.1:55451/memory115_operator_test",
+  "test_transactions_rolled_back": true,
+  "original_pinned_collector_check_exit": 0,
+  "original_pinned_collector_check_seconds": 34.13,
+  "actual_kernel_cgroup_probe": true,
+  "new_cgroup_empty_and_removed": true,
+  "existing_process_limits_changed": false,
+  "resource_controllers_enabled": [
+    "cpu",
+    "memory",
+    "pids"
+  ],
+  "original_preseal_sha256": "dad3bd40c6cf6d469593b0afb8c98be4c0962e4e32e9ace6ab9020d91c203099",
+  "original_deadline": "2026-10-27T00:00:00Z",
+  "native_calls": 0,
+  "auth_reads": 0,
+  "actual_auth_handback_proven": false,
+  "native_comparison_proven": false,
+  "release_qualified": false,
+  "lab_main_auth_claim": false
+}

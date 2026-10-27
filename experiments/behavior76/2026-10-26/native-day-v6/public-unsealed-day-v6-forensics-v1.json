@@ -1,0 +1,25 @@
+{
+  "pg_calls": 0,
+  "actual_raw_unchanged": true,
+  "goldens_read": false,
+  "native_calls": 0,
+  "qualification": false,
+  "forensic_source_sha256": "dbadf5b0cc99500d72094f04962e18117bb8a6b4a3e4051d350ca45693fe4110",
+  "mapping_read": false,
+  "stream": {
+    "version": "issue76-authority-stream-forensic-unsealed-v1",
+    "event_count": 60214,
+    "spans": 30107,
+    "operation_failures": 0,
+    "segments": 14,
+    "total_compressed_bytes": 1809948,
+    "peak_active_spans": 2,
+    "qualified": false,
+    "quality_assessed": false
+  },
+  "schema_binding": "header_claim_only_due_failed_quiescence",
+  "version": "issue76-day-v6-unsealed-stream-forensics-v1",
+  "requires_actual_unsealed_header": true,
+  "header_sha256": "46d7d6dad3ed4222e0bb0743855832e8d055e2052c31d04226eaf7d1b0bd1c04",
+  "quality_assessed": false
+}

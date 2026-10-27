@@ -1,0 +1,25 @@
+{
+  "version": "issue76-independent-r2-completed-setup-exposure-v1",
+  "decision": "COMPLETED_SETUP_METADATA_VERIFIED_EXPOSURE_COUNTS_ONLY_NOT_ADMISSION",
+  "setup_receipt_sha256": "b6b5613ba6a5495d962047df74b15353be0b9749fd04ab2c185acf39ed65b20d",
+  "setup_log_sha256": "884f5afb8af2f6b1894ec368dc15b34ee194e980ca43013d09dcd1d1a22ac112",
+  "setup_log_bytes": 14918,
+  "actual_setup_case_PASS": 24,
+  "FAIL": 0,
+  "SKIP": 0,
+  "native_auth_calls": 0,
+  "distinct_exact_or_JSON_escaped_private_literal_matches": {
+    "resource_keys": 0,
+    "golden_prose": 0,
+    "opaque_episode_ids": 0,
+    "source_bodies": 0,
+    "scenario_prose": 0,
+    "family_labels": 0
+  },
+  "fixed_credential_marker_matches": 0,
+  "limitations": "Literal matching cannot rule out paraphrase or every possible secret; no actual model inference occurred.",
+  "current_r2_controls_used_only_for_private_exposure_audit": true,
+  "old_controls_answers_maps_read": false,
+  "active_composition_log_or_results_opened": false,
+  "Go_PG_auth_native_calls": 0
+}

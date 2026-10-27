@@ -1,0 +1,328 @@
+{
+  "tasks": [
+    {
+      "task_id": "task_226acafaf1e5115a78931cb444a3df4f",
+      "session_key": "behavior76:public-development:A",
+      "owner_id": "behavior76-synthetic-owner",
+      "goal": "Prepare the local draft without publishing",
+      "source": {
+        "episode": "public-development",
+        "task_key": "A",
+        "type": "synthetic_behavior76"
+      },
+      "status": "active",
+      "revision": 1,
+      "constraints_revision": 1,
+      "execution_policy": "normal",
+      "constraints": [
+        "Only prepare; do not publish"
+      ],
+      "completion_criteria": [
+        "Checked local draft"
+      ],
+      "working": {
+        "plan": [
+          "read",
+          "prepare",
+          "verify"
+        ],
+        "pending_actions": [
+          "prepare draft"
+        ],
+        "scratch": {
+          "last_tool": {
+            "name": "http.request",
+            "payload": "{\"body\":\"{\\\"business_deadline_observation\\\":{\\\"kind\\\":\\\"observed_business_date_data\\\",\\\"source_ref\\\":\\\"synthetic:business-date:public-development:draft\\\",\\\"source_revision\\\":2,\\\"configured_at\\\":\\\"2026-10-27T01:16:50.099472Z\\\",\\\"deadline_at\\\":\\\"2026-10-26T01:16:49.180893Z\\\",\\\"observed_at\\\":\\\"2026-10-27T01:16:50.440939Z\\\",\\\"deadline_passed_at_observation\\\":true,\\\"publication_late\\\":true},\\\"butler_effect_receipt\\\":{\\\"action_fingerprint\\\":\\\"e7c0efe847c2f8f5d50eb0f74e83677f4a786bd69eb4c266d13d1bd05c99f04c\\\",\\\"artifact_id\\\":\\\"synthetic:draft:v3:a41030713cf4573c1f73f4ade7f0706d527db47b966e7128dd82ce170fbe2865\\\",\\\"effect_state\\\":\\\"effect_confirmed\\\",\\\"idempotency_key\\\":\\\"butler_7975b1500a8d293a51ddf1292aacd3036764637417d70e4824f7246a422d2770\\\"},\\\"object\\\":{\\\"key\\\":\\\"draft\\\",\\\"task_key\\\":\\\"A\\\",\\\"task_id\\\":\\\"task_226acafaf1e5115a78931cb444a3df4f\\\",\\\"body\\\":\\\"public committed bytes\\\",\\\"version\\\":3,\\\"sha256\\\":\\\"a41030713cf4573c1f73f4ade7f0706d527db47b966e7128dd82ce170fbe2865\\\",\\\"prepared_body\\\":\\\"checked draft bytes\\\",\\\"committed_body\\\":\\\"public committed bytes\\\",\\\"commit_count\\\":1},\\\"synthetic_test_effect\\\":true}\",\"status_code\":200,\"truncated\":false}"
+          },
+          "run_stage": "active",
+          "synthetic_fixture_business_dates": [
+            {
+              "configured_at": "2026-10-27T01:16:50.099472+00:00",
+              "deadline_at": "2026-10-26T01:16:49.180893+00:00",
+              "kind": "observed_business_date_data",
+              "observed_at": "2026-10-27T01:16:50.136971+00:00",
+              "resource_key": "draft",
+              "source_ref": "synthetic:business-date:public-development:draft",
+              "source_revision": 2
+            }
+          ],
+          "synthetic_fixture_manual_changes": null,
+          "synthetic_fixture_observations": null,
+          "synthetic_fixture_resource_refs": [
+            {
+              "key": "draft",
+              "task_key": "A",
+              "url": "https://fixture.invalid/objects/draft"
+            }
+          ],
+          "synthetic_fixture_task_inventory": [
+            {
+              "constraints_revision": 1,
+              "goal": "Prepare the local draft without publishing",
+              "revision": 1,
+              "status": "active",
+              "task_id": "task_226acafaf1e5115a78931cb444a3df4f",
+              "task_key": "A"
+            }
+          ]
+        }
+      },
+      "working_revision": 10,
+      "last_run_id": "run-1793063810112030414-749c27061b4dcaac",
+      "legacy": false,
+      "result_delivery": "attempt",
+      "created_at": "2026-10-27T01:16:49.185113Z",
+      "updated_at": "2026-10-27T01:16:50.464728Z"
+    }
+  ],
+  "objects": [
+    {
+      "key": "draft",
+      "task_key": "A",
+      "task_id": "task_226acafaf1e5115a78931cb444a3df4f",
+      "body": "public committed bytes",
+      "version": 3,
+      "sha256": "a41030713cf4573c1f73f4ade7f0706d527db47b966e7128dd82ce170fbe2865",
+      "prepared_body": "checked draft bytes",
+      "committed_body": "public committed bytes",
+      "commit_count": 1
+    }
+  ],
+  "profiles": [
+    {
+      "id": 1,
+      "key": "reports",
+      "status": "active",
+      "summary": "Use brief reports unless the current task asks for detail",
+      "scope_id": "behavior76-synthetic-owner",
+      "edited_at": "2026-10-27T01:16:49.251183+00:00",
+      "edited_by": "behavior76-synthetic-owner",
+      "source_id": "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643",
+      "confidence": 1,
+      "created_at": "2026-10-27T01:16:49.237784+00:00",
+      "expires_at": null,
+      "provenance": {
+        "kind": "memory_derived",
+        "catalog": {
+          "revision": 1,
+          "source_id": "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643"
+        },
+        "claim_id": "claim_eccc49301be35f7bf03b0514364a89b52fe7c2ce",
+        "sensitivity": "private",
+        "source_refs": [
+          "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643"
+        ]
+      },
+      "scope_type": "user",
+      "suppressed": false,
+      "updated_at": "2026-10-27T01:16:49.237784+00:00",
+      "value_json": "Use brief reports unless the current task asks for detail",
+      "memory_type": "profile",
+      "source_type": "catalog",
+      "effective_to": null,
+      "supersedes_id": null,
+      "effective_from": "2026-10-27T01:16:49.251183+00:00",
+      "effective_status": "active",
+      "confirmation_state": "confirmed"
+    }
+  ],
+  "claims": [
+    {
+      "status": "confirmed",
+      "summary": "Use brief reports unless the current task asks for detail",
+      "claim_id": "claim_eccc49301be35f7bf03b0514364a89b52fe7c2ce",
+      "fact_key": "reports",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76-synthetic-owner",
+      "source_id": "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643",
+      "created_at": "2026-10-27T01:16:49.234237+00:00",
+      "episode_id": null,
+      "event_time": null,
+      "profile_id": 1,
+      "scope_type": "user",
+      "value_json": "Use brief reports unless the current task asks for detail",
+      "accepted_at": "2026-10-27T01:16:49.253568+00:00",
+      "accepted_by": "behavior76-synthetic-owner",
+      "memory_type": "profile",
+      "supersedes_id": "",
+      "source_revision": 1,
+      "extraction_confidence": 1
+    }
+  ],
+  "sources": [
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76-synthetic-owner",
+      "source_id": "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643",
+      "created_at": "2026-10-27T01:16:49.212889+00:00",
+      "scope_type": "user",
+      "updated_at": "2026-10-27T01:16:49.215887+00:00",
+      "source_kind": "document",
+      "external_key": "public-pref",
+      "head_revision": 1,
+      "access_revision": 1
+    },
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76-synthetic-owner",
+      "source_id": "source_b761f0faa1da9ba13dfb01e4d3d1c766731824f475dd549ff39a86bce3c02769",
+      "created_at": "2026-10-27T01:16:49.257713+00:00",
+      "scope_type": "user",
+      "updated_at": "2026-10-27T01:16:49.259348+00:00",
+      "source_kind": "document",
+      "external_key": "public-doc",
+      "head_revision": 1,
+      "access_revision": 1
+    },
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76:public-development:A",
+      "source_id": "message:msg-1793063809523766542-a7168994eb99",
+      "created_at": "2026-10-27T01:16:49.526284+00:00",
+      "scope_type": "session",
+      "updated_at": "2026-10-27T01:16:49.526284+00:00",
+      "source_kind": "message",
+      "external_key": "message:msg-1793063809523766542-a7168994eb99",
+      "head_revision": 1,
+      "access_revision": 1
+    },
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76:public-development:A",
+      "source_id": "message:final:run-1793063809293180575-28c4b632bca82935",
+      "created_at": "2026-10-27T01:16:50.041884+00:00",
+      "scope_type": "session",
+      "updated_at": "2026-10-27T01:16:50.041884+00:00",
+      "source_kind": "message",
+      "external_key": "message:final:run-1793063809293180575-28c4b632bca82935",
+      "head_revision": 1,
+      "access_revision": 1
+    },
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76:public-development:A",
+      "source_id": "message:msg-1793063810283861345-9e960f9e171a",
+      "created_at": "2026-10-27T01:16:50.285381+00:00",
+      "scope_type": "session",
+      "updated_at": "2026-10-27T01:16:50.285381+00:00",
+      "source_kind": "message",
+      "external_key": "message:msg-1793063810283861345-9e960f9e171a",
+      "head_revision": 1,
+      "access_revision": 1
+    },
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76:public-development:A",
+      "source_id": "message:final:run-1793063810112030414-749c27061b4dcaac",
+      "created_at": "2026-10-27T01:16:50.551604+00:00",
+      "scope_type": "session",
+      "updated_at": "2026-10-27T01:16:50.551604+00:00",
+      "source_kind": "message",
+      "external_key": "message:final:run-1793063810112030414-749c27061b4dcaac",
+      "head_revision": 1,
+      "access_revision": 1
+    }
+  ],
+  "deletion_manifest_sha256": "d7cd040b0cd518e54fd0dc76a4065ea13d7da79109b97e66ba3f7fe4032dd43e",
+  "deletion_watermark": 0,
+  "literal_service": {
+    "deadlines": [
+      {
+        "source_ref": "synthetic:business-date:public-development:draft",
+        "deadline_at": "2026-10-26T01:16:49.180893+00:00",
+        "resource_key": "draft",
+        "configured_at": "2026-10-27T01:16:50.099472+00:00",
+        "source_revision": 2
+      }
+    ],
+    "deadline_events": [
+      {
+        "n": 1,
+        "at": "2026-10-27T01:16:49.263508+00:00",
+        "provenance": "synthetic_service_configuration",
+        "after_state": {
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-28T01:16:49.180892+00:00",
+          "resource_key": "draft",
+          "configured_at": "2026-10-27T01:16:49.26328+00:00",
+          "source_revision": 1
+        },
+        "before_state": null,
+        "resource_key": "draft",
+        "before_step_id": ""
+      },
+      {
+        "n": 2,
+        "at": "2026-10-27T01:16:50.099501+00:00",
+        "provenance": "synthetic_service_configuration",
+        "after_state": {
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-26T01:16:49.180893+00:00",
+          "resource_key": "draft",
+          "configured_at": "2026-10-27T01:16:50.099472+00:00",
+          "source_revision": 2
+        },
+        "before_state": {
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-28T01:16:49.180892+00:00",
+          "resource_key": "draft",
+          "configured_at": "2026-10-27T01:16:49.26328+00:00",
+          "source_revision": 1
+        },
+        "resource_key": "draft",
+        "before_step_id": "s2"
+      }
+    ],
+    "observations": [
+      {
+        "kind": "read",
+        "action_id": "effect_b504f1e3bcdb490d7128cd8aac9b80e8735022704fc3f0cb350aa7fd8a4d0f13",
+        "observation": {
+          "kind": "observed_business_date_data",
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-28T01:16:49.180892Z",
+          "observed_at": "2026-10-27T01:16:49.737289Z",
+          "configured_at": "2026-10-27T01:16:49.26328Z",
+          "source_revision": 1,
+          "deadline_passed_at_observation": false
+        },
+        "resource_key": "draft"
+      },
+      {
+        "kind": "prepare",
+        "action_id": "effect_721ea7647e8a3934818b1258f3c787dd3975b8d3db1487316cef4326f2b17486",
+        "observation": {
+          "kind": "observed_business_date_data",
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-28T01:16:49.180892Z",
+          "observed_at": "2026-10-27T01:16:49.921387Z",
+          "configured_at": "2026-10-27T01:16:49.26328Z",
+          "source_revision": 1,
+          "deadline_passed_at_observation": false
+        },
+        "resource_key": "draft"
+      },
+      {
+        "kind": "commit",
+        "action_id": "effect_ad42ed3253563b96a705451de588548c1b14b518fdb49360c9aa7f855249121a",
+        "observation": {
+          "kind": "observed_business_date_data",
+          "source_ref": "synthetic:business-date:public-development:draft",
+          "deadline_at": "2026-10-26T01:16:49.180893Z",
+          "observed_at": "2026-10-27T01:16:50.440939Z",
+          "configured_at": "2026-10-27T01:16:50.099472Z",
+          "source_revision": 2,
+          "publication_late": true,
+          "deadline_passed_at_observation": true
+        },
+        "resource_key": "draft"
+      }
+    ]
+  }
+}

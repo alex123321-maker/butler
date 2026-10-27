@@ -1,0 +1,103 @@
+{
+  "version": "issue76-independent-composition-failure-local-response-v10-v1",
+  "decision": "COMPOSITION_NO_GO_UNDERLYING_OPERATIONAL_CAUSE_NOT_RETAINED",
+  "created_utc": "2026-10-26T17:11:54.5031290+00:00",
+  "producer": "c5722f29558cd6348eb242f85eb0780eedb4a34a",
+  "ELF": "4a82858999109d580527a67582bcc6f49ead9217a895c9286fac68f0f1fea435",
+  "log_sha256": "7a98db7add9f0821d8e4df71ccedcf2200947baf58f483bc1be4d749cf8e0a72",
+  "source_files": [
+    {
+      "sha256": "3e2822abebd39516d45a5aa2de40da090af0c614111c55edc1401ccf015ea766",
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go"
+    },
+    {
+      "sha256": "12b5134551480dca6e7cf36f25250e0f8b0b2981b246b4ebbfd715b302ae3d01",
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go"
+    },
+    {
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go"
+    },
+    {
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a",
+      "path": "apps/orchestrator/internal/input/claim_admission.go"
+    },
+    {
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc",
+      "path": "apps/orchestrator/internal/input/service.go"
+    }
+  ],
+  "failure_boundary": {
+    "new_owner_run_created_for_failed_evaluation": false,
+    "failed_arm_WARN": 0,
+    "opaque_slot": 8,
+    "category_recorded": "fixture_operation_unavailable",
+    "failed_arm_runs_created": 1,
+    "failed_arm_ERROR": 0,
+    "failed_arm_run_errors": 0,
+    "quiescence_or_stream_seal_failure": false,
+    "public_arm": 1,
+    "gate": "f.evaluate returned error; behavior76_composition_test.go:115",
+    "failed_arm_runs_completed": 1
+  },
+  "coverage": {
+    "completed_arms": 47,
+    "full_summary_emitted": false,
+    "actual_counted_owner_turns": 95,
+    "planned_arms": 48,
+    "unobserved_evaluated_owner_turns": 1,
+    "planned_owner_opportunities": 96
+  },
+  "source_hypothesis": {
+    "actual_underlying_error": "UNKNOWN: generic safe projection discarded it; no retained failure snapshot",
+    "policy": "Do not whitelist arbitrary context errors or relax global source/authority/storage policy",
+    "category": "normal per-evaluation worker cancellation can poison shared fixture safety state",
+    "candidate_repair_to_test_publicly": "Gracefully close only per-evaluation claim admission under existing scope mutex and join claim/process workers before cancelling idle Run; keep whole fixture open for next owner turn. In-flight real failures must still be retained.",
+    "chain": [
+      "evaluate success defers stop() plus worker.Run join",
+      "idle claim callback may concurrently hold scope.mu inside checkLocked/reconcileLocked",
+      "cancelled evaluation-worker context makes reconciliation SQL return error",
+      "reconcileLocked marks sharedGLOBAL for every query error",
+      "next evaluation rejects at enterEvaluation before another run creation"
+    ],
+    "status": "SOURCE_SUPPORTED_NOT_RUNTIME_PROVEN"
+  },
+  "content_exposure_audit": [
+    {
+      "distinct_private_literal_matches": {
+        "golden_prose": 0,
+        "resource_keys": 0,
+        "source_bodies": 0,
+        "opaque_episode_ids": 0,
+        "scenario_prose": 0,
+        "family_labels": 0
+      },
+      "fixed_credential_marker_matches": 0,
+      "path": ".cache/behavior76/local-response-v10-setup-v1.log",
+      "limitations": "Exact literal/JSON-escaped matching cannot rule out paraphrase; no actual model inference occurred.",
+      "sha256": "cb24e3cb9f409e5c852752482f0479f2952919ee81cebcc205c4ab83add45189",
+      "bytes": 15341
+    },
+    {
+      "distinct_private_literal_matches": {
+        "golden_prose": 0,
+        "resource_keys": 0,
+        "source_bodies": 0,
+        "opaque_episode_ids": 24,
+        "scenario_prose": 0,
+        "family_labels": 0
+      },
+      "fixed_credential_marker_matches": 0,
+      "path": ".cache/behavior76/local-response-v10-composition-v1.log",
+      "limitations": "Exact literal/JSON-escaped matching cannot rule out paraphrase; no actual model inference occurred.",
+      "sha256": "7a98db7add9f0821d8e4df71ccedcf2200947baf58f483bc1be4d749cf8e0a72",
+      "bytes": 153797
+    }
+  ],
+  "private_stimuli_goldens_read": "only current independently authored v10 for content exposure/structure audit; no old corpora/answers/mappings",
+  "Go_PG_auth_native_calls": 0,
+  "source_or_dataset_edits": 0,
+  "retries": 0,
+  "quality_scoring": false,
+  "new_native_admission": false
+}

@@ -1,0 +1,21 @@
+=== RUN   TestLocal115SuccessorPreservesOldDayCostsAndUnknown
+--- PASS: TestLocal115SuccessorPreservesOldDayCostsAndUnknown (0.00s)
+=== RUN   TestLocal115PrepareNewDayRecipe
+    memory115_local_successor_test.go:150: prepared new UTC day 2026-10-26 recipe sha256=579aa8c25bcfdba06b1be91f2cb613f2550ee685932c3919e2468bef13f11ec7; original213/212/1/1605455 unchanged; zero storage/auth/native construction
+--- PASS: TestLocal115PrepareNewDayRecipe (5.29s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.12s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.00s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.01s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	13.045s

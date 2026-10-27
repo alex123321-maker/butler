@@ -16,8 +16,9 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
-// This lab-only consumer independently recomputes a closed cohort's immutable
-// cost population. It grants neither provider authority nor quality acceptance.
+// The legacy entry retains its lab-main handback. Shared validation independently
+// recomputes immutable costs; the explicit local entry has a separate handback.
+// Neither entry grants provider authority or quality acceptance.
 type closedExperienceManifest struct {
 	Format             string                                          `json:"format"`
 	Owner              string                                          `json:"owner"`
@@ -35,6 +36,20 @@ type closedExperienceManifest struct {
 	Review             *bool                                           `json:"independent_quality_review_required"`
 	Invoice            string                                          `json:"invoice_cost"`
 	DiscoveryInference *bool                                           `json:"control_plane_handback_is_inference"`
+}
+
+type closedExperienceDomain struct {
+	Window   string `json:"window_id"`
+	Hash     string `json:"window_hash"`
+	Schema   string `json:"schema_name"`
+	Owner    string `json:"owner_id"`
+	History  string `json:"history_sha256"`
+	Day      string
+	Deadline time.Time
+}
+
+func (d closedExperienceDomain) matches(m closedExperienceManifest, deadline time.Time) bool {
+	return d.Window == experienceNativeWindow && d.Hash == m.Preseal && d.Schema == experienceNativeSchema && d.Owner == m.Owner && d.History == m.Previous && d.Day == m.Day && d.Deadline.Equal(deadline)
 }
 
 // Every component is checked with Lstat. A lexical path check alone would let
@@ -63,12 +78,25 @@ func closedExperienceRead(root, name, expected string, limit int64) ([]byte, err
 }
 
 func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeLineage, error) {
+	return loadClosedExperienceNativeHistoryProfile(path, expected, false)
+}
+
+// Local handback is a separate explicit profile. The original lab consumer
+// retains all of its original handback requirements and cannot fall back here.
+func loadClosedExperienceNativeHistoryProfile(path, expected string, local bool) (experienceNativeLineage, error) {
 	var out experienceNativeLineage
 	root := filepath.Dir(path)
 	raw, err := closedExperienceRead(root, filepath.Base(path), expected, 4*1024*1024)
 	var m closedExperienceManifest
-	if err != nil || json.Unmarshal(raw, &m) != nil || m.Format != "butler.experience.closed-owner-leaf.v1" || m.Owner != experienceNativeOwner || m.Denominator != 57 || m.Maximum != 640 || !m.Complete || m.Qualified == nil || *m.Qualified || m.Review == nil || !*m.Review || m.DiscoveryInference == nil || *m.DiscoveryInference || m.Invoice != "unknown" || !experienceNativeSHA(m.Preseal) || !experienceNativeSHA(m.Previous) {
+	format := "butler.experience.closed-owner-leaf.v1"
+	if local {
+		format = local115NativeClosedFormat
+	}
+	if err != nil || json.Unmarshal(raw, &m) != nil || m.Format != format || m.Owner != experienceNativeOwner || m.Denominator != 57 || m.Maximum != 640 || !m.Complete || m.Qualified == nil || *m.Qualified || m.Review == nil || !*m.Review || m.DiscoveryInference == nil || *m.DiscoveryInference || m.Invoice != "unknown" || !experienceNativeSHA(m.Preseal) || !experienceNativeSHA(m.Previous) {
 		return out, errors.New("complete unqualified closed experience leaf required")
+	}
+	if local && (m.Preseal != local115NativeClosedPreseal || m.Previous != local115NativeClosedPrevious) {
+		return out, errors.New("exact original failed local cohort and predecessor required")
 	}
 	refs := map[string]string{}
 	for _, ref := range m.References {
@@ -90,6 +118,9 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 	if refs["plan/preseal.json"] != m.Preseal || refs["history/history.json"] != m.Previous {
 		return out, errors.New("closure preseal or recursive parent differs")
 	}
+	if local && (refs["sealed-local-raw-inventory.json"] != local115NativeClosedInventory || refs["sealed-local-raw-evidence.zip"] != local115NativeClosedArchive || refs["closed-handback.json"] != local115NativeClosedHandback) {
+		return out, errors.New("original local raw seal and separate local handback required")
+	}
 	previous, err := loadExperienceNativeHistory(filepath.Join(root, "history", "history.json"), m.Previous)
 	if err != nil {
 		return out, err
@@ -101,7 +132,7 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 		Maximum int    `json:"maximum_entries"`
 		Slots   []experienceNativeSlot
 	}
-	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != 640 || plan.Owner != m.Owner || plan.Lineage != previous || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
+	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != 640 || plan.Owner != m.Owner || !reflect.DeepEqual(plan.Lineage, previous) || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
 		return out, errors.New("closed cohort differs from exact original preseal and parent")
 	}
 	corpus, err := experienceNativeCorpusFiles()
@@ -153,6 +184,9 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 		return nil
 	}); err != nil || count != len(files) {
 		return out, errors.New("private inventory is incomplete")
+	}
+	if local && validateLocal115ClosedRawPopulation(root, files) != nil {
+		return out, errors.New("local raw population differs from its original157-file seal")
 	}
 	for name, hash := range files {
 		if old := refs[name]; old != "" && old != hash {
@@ -225,23 +259,26 @@ func loadClosedExperienceNativeHistory(path, expected string) (experienceNativeL
 	if err = closedExperienceJournal(journal, slots, window.Entries, byDatabase, m, previous, quotes); err != nil {
 		return out, err
 	}
-	var domain struct {
-		Window   string `json:"window_id"`
-		Hash     string `json:"window_hash"`
-		Schema   string `json:"schema_name"`
-		Owner    string `json:"owner_id"`
-		History  string `json:"history_sha256"`
-		Day      string
-		Deadline time.Time
-	}
-	if read("actual/domain-claim.json", &domain) != nil || domain.Window != experienceNativeWindow || domain.Hash != m.Preseal || domain.Schema != experienceNativeSchema || domain.Owner != m.Owner || domain.History != m.Previous || domain.Day != m.Day || domain.Deadline != previous.Deadline {
+	var domain closedExperienceDomain
+	if read("actual/domain-claim.json", &domain) != nil || !domain.matches(m, previous.Deadline) {
 		return out, errors.New("one-use domain receipt differs")
 	}
-	var handback closedExperienceHandback
-	if read("closed-handback.json", &handback) != nil || handback.validate() != nil {
-		return out, errors.New("closed collector and actual opaque main handback required")
+	if local {
+		var handback local115ClosedHandback
+		if read("closed-handback.json", &handback) != nil || handback.validate() != nil {
+			return out, errors.New("closed collector and exact separate local opaque handback required")
+		}
+	} else {
+		var handback closedExperienceHandback
+		if read("closed-handback.json", &handback) != nil || handback.validate() != nil {
+			return out, errors.New("closed collector and actual opaque main handback required")
+		}
 	}
-	if refs["runner.jsonl"] == "" {
+	runner := "runner.jsonl"
+	if local {
+		runner = "runner.log"
+	}
+	if refs[runner] == "" {
 		return out, errors.New("original runner evidence omitted")
 	}
 	out = experienceNativeLineage{Hash: expected, Day: m.Day, Deadline: m.Deadline, Carry: m.Carry, Usage: m.Usage.Inclusive}
@@ -573,7 +610,9 @@ func closedExperienceJournal(j map[string]json.RawMessage, slots map[string]expe
 		Name   string `json:"database_name"`
 		State  string
 	}
-	if json.Unmarshal(j["experience_native_windows"], &windows) != nil || len(windows) != 1 || windows[0].Window != m.Preseal || windows[0].Owner != m.Owner || !windows[0].Closed || windows[0].Maximum != 640 || windows[0].Used < len(entries) || windows[0].Used > 640 || json.Unmarshal(j["experience_native_allocations"], &allocations) != nil || len(allocations) != 57 || json.Unmarshal(j["experience_native_entries"], &rows) != nil || len(rows) != windows[0].Used || json.Unmarshal(j["experience_native_history"], &bindings) != nil || len(bindings) != 1 || bindings[0].Window != m.Preseal || bindings[0].Hash != m.Previous || bindings[0].Reservation != quotes.HistoryReservation || bindings[0].Metadata != previous || json.Unmarshal(j["experience_native_case_databases"], &clones) != nil || clones == nil {
+	// Local lineage contains a nested pointer. Independently decoded identical
+	// JSON must compare by complete value, never by that allocation's address.
+	if json.Unmarshal(j["experience_native_windows"], &windows) != nil || len(windows) != 1 || windows[0].Window != m.Preseal || windows[0].Owner != m.Owner || !windows[0].Closed || windows[0].Maximum != 640 || windows[0].Used < len(entries) || windows[0].Used > 640 || json.Unmarshal(j["experience_native_allocations"], &allocations) != nil || len(allocations) != 57 || json.Unmarshal(j["experience_native_entries"], &rows) != nil || len(rows) != windows[0].Used || json.Unmarshal(j["experience_native_history"], &bindings) != nil || len(bindings) != 1 || bindings[0].Window != m.Preseal || bindings[0].Hash != m.Previous || bindings[0].Reservation != quotes.HistoryReservation || !reflect.DeepEqual(bindings[0].Metadata, previous) || json.Unmarshal(j["experience_native_case_databases"], &clones) != nil || clones == nil {
 		return errors.New("closed durable global population or original history binding differs")
 	}
 	used, seen, seq := map[string]int{}, map[string]bool{}, map[int]bool{}

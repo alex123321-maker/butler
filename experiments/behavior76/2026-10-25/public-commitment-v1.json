@@ -1,0 +1,89 @@
+{
+  "version": "issue76-independent-hidden-v1",
+  "baseline": "7537509d38f6ef21ae7d2641fa37ca8a2f27d2e6",
+  "origin": "synthetic",
+  "episodes": 24,
+  "families": 12,
+  "evaluated_owner_turns": 48,
+  "arms": 2,
+  "stimuli_sha256": "f5326bd99629d3e48353b59a588549e88fbf20d33e63743c37cf52abd163bd5b",
+  "expectations_sha256": "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a",
+  "generator_sha256": "6d55bc3d533f4309ce61a6179c5c4164689ea2e2706e3e8ee3ff46a932ce9117",
+  "public_contract_sha256": "18e80cd51cc06ac88d168937c2eab08c3ec90c7f6243fdd79ea07d7322b18851",
+  "coverage": [
+    {
+      "family": "amendment",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "clarification",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "feedback_candidate",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "manual_change",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "new_task_coexistence",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "owner_done_report",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "preference_exception",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "preference_lifecycle",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "restart",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "scoped_stop_negation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "status_continuation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    {
+      "family": "untrusted_command",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1
+    }
+  ],
+  "validation": "JSONL roundtrip validated; provisional coverage formatting was corrected before publication; stimuli/expectations unchanged.",
+  "validator_sha256": "66b00d485a4c6576aa93de795c1d9f3d1a1ed8bb8a261b4332ce88da1c27f5b8"
+}

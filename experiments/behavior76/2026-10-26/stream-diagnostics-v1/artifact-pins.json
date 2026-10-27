@@ -1,0 +1,32 @@
+[
+  {
+    "path": "independent_stream_diagnostics_test.go.txt",
+    "bytes": 3233,
+    "sha256": "9d390af72330a99f8d289f98edd027aabd5de86ff845f2bf79c59c6088c5bed3"
+  },
+  {
+    "path": "independent-review.json",
+    "bytes": 3269,
+    "sha256": "f4c7d7d3a0588faa015f96f199c9d344dea255cdd1808a0c1a0f2e9261f62a89"
+  },
+  {
+    "path": "independent-run.log",
+    "bytes": 2194,
+    "sha256": "06cd5e4798443e854a17c8d0f6e0497abe7ad82ed9667fd3a726355a9840204a"
+  },
+  {
+    "path": "stream-diagnostics-suite-v1.log",
+    "bytes": 559,
+    "sha256": "0a62476ee87a8df324e0982000924ef3974242ffd416ead4c3fc204951ef7e6b"
+  },
+  {
+    "path": "stream-diagnostics-suite-v2.log",
+    "bytes": 404,
+    "sha256": "e0d6bfbad3fd7dbe01f482b39a68adbf5ed090789ab484e5d832de31d73c89c0"
+  },
+  {
+    "path": "stream-diagnostics-v1.log",
+    "bytes": 3037,
+    "sha256": "d90de66e210917642e27f34f8f84c3abec288533d1fb104eb9132225139b5cc5"
+  }
+]

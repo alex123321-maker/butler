@@ -1,0 +1,99 @@
+{
+  "version": "issue76-closed-day-v7-r2-protocol-origin-v1",
+  "classification": "OBSERVED_LOCAL_EMPTY_ANSWER_REJECTION; UPSTREAM_VS_ADAPTER_ROOT_CAUSE_NOT_ESTABLISHED",
+  "last_entry": {
+    "n": 3,
+    "model_version": "gemini-3.8-flash-n",
+    "total_tokens": null,
+    "stage": "response_stream",
+    "input_tokens": null,
+    "events": [
+      {
+        "error_code": null,
+        "type": "run_started",
+        "http_status": null,
+        "safe_reason": null
+      },
+      {
+        "error_code": "provider_protocol_error",
+        "type": "transport_error",
+        "http_status": 0,
+        "safe_reason": "stream_empty_answer"
+      }
+    ],
+    "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+    "kind": "submit",
+    "thinking_tokens": null,
+    "status": "transport_error",
+    "output_tokens": null,
+    "milliseconds": 65091
+  },
+  "actual_durable_run_input_metadata": [
+    {
+      "error_type": null,
+      "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+      "error_code": null,
+      "table": "runs",
+      "current_state": "model_running",
+      "status": "model_running"
+    },
+    {
+      "error_type": null,
+      "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+      "error_code": "",
+      "table": "accepted_inputs",
+      "current_state": null,
+      "status": "running"
+    }
+  ],
+  "effect_states_not_quality_verdicts": [
+    {
+      "count": 2,
+      "state": "effect_confirmed"
+    }
+  ],
+  "owner_final_rows": 0,
+  "source_chain": [
+    "The exact transport-owned empty-answer literal occurs after readStreamProtocol returned successfully and validateFunctionCalls returned no function.",
+    "That branch reports no usable non-thought text or function; SafeReason maps this local branch to stream_empty_answer.",
+    "The same branch ALREADY assigns answer.Usage and answer.ModelVersion into its error event before sending. No discard defect is established by NULL usage.",
+    "readStreamProtocol only publishes Usage from a complete validated prompt/candidate/total set after terminal completion.",
+    "The safe research observer keeps observed model version separately from nullable usage, and seals globally on the transport_error."
+  ],
+  "limits_of_inference": [
+    "No provider response text, thoughts, function arguments, golden expected answer or mapping was opened.",
+    "STOP versus MAX_TOKENS, empty candidate shape versus thought-only content, and whether absent/incomplete usage metadata arrived are not retained here; do not choose among them.",
+    "Model version is actually observed, not proof of proprietary weight identity or quality.",
+    "NULL usage is unavailable expense, never zero cost and never estimated from adjacent entries.",
+    "This future diagnostic cannot backfill previous missing rejection reasons."
+  ],
+  "source_pins": [
+    {
+      "sha256": "aaa7615bb7563ad5551a32e764b137902adc0fbca5ef3585c2df1b2cf72f58be",
+      "path": "internal/transport/antigravity/provider.go"
+    },
+    {
+      "sha256": "e3fb4929b9f5e5e3bbe373117040550bba10a853698c8805684ad541b6abede5",
+      "path": "internal/transport/antigravity/protocol.go"
+    },
+    {
+      "sha256": "50805463e2de0dde5140d8b1cf9106826fc8f57561fe80e31b2ec1f44531b6a7",
+      "path": "internal/transport/antigravity/stream_diagnostics.go"
+    },
+    {
+      "sha256": "0798b5f1e2ce5209c9ec7ebba5f154c26cd52386796060fef6e8134d52c99e0a",
+      "path": "internal/transport/errors.go"
+    },
+    {
+      "sha256": "d7f7140c33e24aeb0c6aa63bda5c2ea3997b543b512d25ca1ed49d0e561b8893",
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    }
+  ],
+  "partial_text_read": false,
+  "goldens_read": false,
+  "mapping_read": false,
+  "quality_assessed": false,
+  "native_calls": 0,
+  "pg_calls": 0,
+  "qualification": false
+}

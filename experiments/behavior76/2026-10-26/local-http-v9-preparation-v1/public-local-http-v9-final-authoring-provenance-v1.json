@@ -1,0 +1,39 @@
+{
+  "formal_freeze_issued_at": "2026-10-26T08:53:40.746366Z",
+  "old_closed_answers_or_maps_opened": false,
+  "new_substantive_fictional_case_content": true,
+  "private_authoring_source_sha256": "2dec7e0526d8997e8ed9c96b46fc13928a681394bd5b7a4195448c2e4200c40f",
+  "old_hidden_corpus_or_goldens_opened": false,
+  "fresh_seed_commitment_sha256": "326bcd4ed52a300904fb07db7ccb17dfb1f52155764099b67582ceee2f176f1a",
+  "case_content_or_expectations_disclosed_to_author": false,
+  "authoring_started_at": "2026-10-26T16:07:20.3736975+07:00",
+  "version": "issue76-independent-local-http-v9-final-authoring-provenance-v1",
+  "old_expected_values_reused": false,
+  "Go_PG_auth_native_calls": 0,
+  "public_inputs_used": [
+    "Frozen public Episode/Step v1 interface",
+    "Current public fixture/Task/Profile/Catalog API semantics",
+    "Frozen 27 criterion extents and communication rubric"
+  ],
+  "authoring_finished_at": "2026-10-26T16:07:20.6581002+07:00",
+  "authorship_strictly_after_formal_freeze": true,
+  "native_admission": false,
+  "formal_freeze_sha256": "2210980ef23df4abba28cd675d46ab4b42b0e90cb3e26f6bceaacc583b4bde9a",
+  "initial_unused_draft": {
+    "model_runs": 0,
+    "status": "UNUSED_NOT_ADMITTED",
+    "expectations_sha256": "036dc9cbeecda6000aeefed192f1b2fa979f241c974dfbbdd21f41e4deedfb2a",
+    "stimuli_sha256": "603334bd746af2a86a6b51bd944feaf69f8f176c5241f1a8b6259aa5b3d2ce08",
+    "bindings": 0
+  },
+  "refinement_started_at": "2026-10-26T16:09:59.1670474+07:00",
+  "refinement_finished_at": "2026-10-26T16:09:59.3573029+07:00",
+  "private_refinement_source_sha256": "db854465cc02fbf37c919e49d89ff3c5c3b7c4bb7e24fb8bdec1d5fb0d6dbccc",
+  "refinement_reason": "Before any binding, make actual session-scoped accepted/candidate profile eligibility and command-shaped tool-output coverage explicit in three newly authored synthetic episodes; not response-driven changes.",
+  "old_closed_corpora_or_goldens_opened": false,
+  "fixed_path_binding_preserved": true,
+  "original_draft_archived_without_byte_changes": true,
+  "no_source_shell_path_changes": true,
+  "actual_final_stimuli_path": ".cache/issue76-independent/hidden-local-http-v9/stimuli.jsonl",
+  "literal_binding_changes_allowed": 2
+}

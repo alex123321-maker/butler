@@ -1,0 +1,62 @@
+{
+  "auth_sources_constructed": 0,
+  "history": {
+    "sha256": "579aa8c25bcfdba06b1be91f2cb613f2550ee685932c3919e2468bef13f11ec7",
+    "day": "2026-10-26",
+    "deadline": "2026-10-27T00:00:00Z",
+    "inclusive_carry": {
+      "model_turns": 213,
+      "tokens": 230326272,
+      "cost_micros": 0,
+      "external_calls": 144,
+      "children": 0,
+      "active_millis": 81065000,
+      "egress_bytes": 600834048,
+      "provider_input_bytes": 1786773504
+    },
+    "inclusive_usage": {
+      "native_entries": 213,
+      "native_known_usage": 212,
+      "native_unknown_usage": 1,
+      "native_missing_total": 0,
+      "known_full_token_lower_bound": 1605455,
+      "product_attempts": 213,
+      "product_observed": 212,
+      "product_null": 1,
+      "product_without_native_entry": 0
+    },
+    "local_successor": {
+      "historical": {
+        "sha256": "8d9329e13da9e51e620c5fa66d6625ae11c938006b18369d2e09f068f1517b3f",
+        "day": "2026-10-18",
+        "deadline": "2026-10-19T00:00:00Z",
+        "inclusive_carry": {
+          "model_turns": 213,
+          "tokens": 230326272,
+          "cost_micros": 0,
+          "external_calls": 144,
+          "children": 0,
+          "active_millis": 81065000,
+          "egress_bytes": 600834048,
+          "provider_input_bytes": 1786773504
+        },
+        "inclusive_usage": {
+          "native_entries": 213,
+          "native_known_usage": 212,
+          "native_unknown_usage": 1,
+          "native_missing_total": 0,
+          "known_full_token_lower_bound": 1605455,
+          "product_attempts": 213,
+          "product_observed": 212,
+          "product_null": 1,
+          "product_without_native_entry": 0
+        }
+      },
+      "separate_operator_diagnostics_sha256": "771675b9f7e90637b13ce5509dd72947cecc840273a48d79e412b6749c7d5ff1"
+    }
+  },
+  "new_native_admissions": 0,
+  "new_storage_claims": 0,
+  "release_qualified": false,
+  "result": "NEW_DAY_RECIPE_VALIDATED_NO_NATIVE_ADMISSION"
+}

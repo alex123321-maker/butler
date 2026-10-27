@@ -1,0 +1,169 @@
+package app
+
+import (
+	"context"
+	"errors"
+	"os"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/apps/orchestrator/internal/prompt"
+	"github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
+	runv1 "github.com/butler/butler/internal/gen/run/v1"
+	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/transport"
+)
+
+type behavior76TerminalAuthorityObservation struct {
+	run string
+	err error
+}
+
+// This public diagnostic embeds the ordinary prepared/real Store, including
+// its optional authority interfaces. It neither changes SQL nor grants power.
+type behavior76TerminalHoldTasks struct {
+	*behavior76PreparedTasks
+	parent       context.Context
+	committed    chan string
+	release      chan struct{}
+	observations chan behavior76TerminalAuthorityObservation
+	once         sync.Once
+	committedRun atomic.Value
+}
+
+func (s *behavior76TerminalHoldTasks) SaveRunOutcome(ctx context.Context, run, state, note string) error {
+	if err := s.Store.SaveRunOutcome(ctx, run, state, note); err != nil {
+		return err
+	}
+	if state != "failed" {
+		return nil
+	}
+	s.once.Do(func() { s.committedRun.Store(run); s.committed <- run })
+	select {
+	case <-s.release:
+		return nil
+	case <-s.parent.Done():
+		return s.parent.Err()
+	}
+}
+
+func (s *behavior76TerminalHoldTasks) ValidateRunAuthority(ctx context.Context, run string) error {
+	err := s.Store.ValidateRunAuthority(ctx, run)
+	if committed, ok := s.committedRun.Load().(string); ok && committed == run {
+		select {
+		case s.observations <- behavior76TerminalAuthorityObservation{run: run, err: err}:
+		default:
+		}
+	}
+	return err
+}
+
+type behavior76TerminalFailureProvider struct {
+	*initiativeProjectScriptedProvider
+	started atomic.Int32
+	cancel  chan transport.CancelRunRequest
+}
+
+func (p *behavior76TerminalFailureProvider) StartRun(_ context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
+	p.started.Add(1)
+	return initiativeProjectStream(
+		transport.NewEvent(q.Context.RunID, transport.EventTypeRunStarted, p.Name()),
+		transport.NewTransportErrorEvent(q.Context.RunID, p.Name(), &transport.Error{Type: transport.ErrorTypeTransportConnectionError, Message: "public synthetic transport failure"}),
+	), nil
+}
+
+func (p *behavior76TerminalFailureProvider) CancelRun(_ context.Context, q transport.CancelRunRequest) (*transport.TransportEvent, error) {
+	select {
+	case p.cancel <- q:
+	default:
+	}
+	event := transport.NewTerminalEvent(q.RunID, transport.EventTypeRunCancelled, p.Name())
+	return &event, nil
+}
+
+// This opt-in, zero-native diagnostic documents the OLD bug. Its success means
+// the causal self-revocation was observed, not that acceptance passed. It is
+// excluded from ordinary Public selectors and must not survive as a product
+// regression requiring the bug after its production repair.
+func TestBehavior76TerminalObserverLegacyDiagnosticIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_TERMINAL_OBSERVER_DIAGNOSTIC") != "reproduce-old-self-revocation-v1" {
+		t.Skip("explicit old-core public diagnostic only")
+	}
+	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "disabled" {
+		t.Fatal("native must be disabled")
+	}
+	t.Setenv(prompt.SettingKeyBasePrompt, prompt.DefaultBasePrompt)
+	t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
+	defer cancel()
+	f := newBehavior76Fixture(t)
+	episode := behavior76DevelopmentEpisode()
+	episode.Initial.Tasks[0].ExecutionPolicy = "normal"
+	f.seed(episode)
+	taskID, sessionKey := f.lookup("task", "A"), f.lookup("session", "A")
+	before, err := f.tasks.Get(ctx, taskID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tasks := &behavior76TerminalHoldTasks{behavior76PreparedTasks: newBehavior76PreparedTasks(f), parent: ctx, committed: make(chan string, 1), release: make(chan struct{}), observations: make(chan behavior76TerminalAuthorityObservation, 4)}
+	var release sync.Once
+	unblock := func() { release.Do(func() { close(tasks.release) }) }
+	defer unblock()
+	provider := &behavior76TerminalFailureProvider{initiativeProjectScriptedProvider: &initiativeProjectScriptedProvider{}, cancel: make(chan transport.CancelRunRequest, 1)}
+	core := behavior76CoreWithAssembler(f, provider, f.mandate("A"), tasks)
+	inputs := input.NewStore(f.pool)
+	worker := input.NewService(inputs, session.NewPostgresRepository(f.pool), core, run.NewService(run.NewPostgresRepository(f.pool), nil), nil)
+	accepted, err := worker.Execute(ctx, ingress.InputEvent{EventID: "public-terminal-observer-diagnostic", IdempotencyKey: "public-terminal-observer-diagnostic", SessionKey: sessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: behavior76JSON(map[string]any{"text": "Public synthetic failure; no external effect.", "user_id": behavior76Owner, "task_id": taskID}), CreatedAt: time.Now().UTC()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	live, stop := context.WithCancel(ctx)
+	done := make(chan error, 1)
+	go func() { done <- worker.Run(live) }()
+	defer func() {
+		unblock()
+		stop()
+		select {
+		case <-done:
+		case <-time.After(3 * time.Second):
+			t.Error("public worker not joined")
+		}
+	}()
+	var runID string
+	select {
+	case runID = <-tasks.committed:
+	case <-ctx.Done():
+		t.Fatal("ordinary failed outcome did not commit", ctx.Err())
+	}
+	var status, runState string
+	var revision int64
+	if err = f.pool.QueryRow(ctx, `SELECT t.status,t.revision,r.current_state FROM tasks t JOIN runs r ON r.task_id=t.task_id WHERE r.run_id=$1`, runID).Scan(&status, &revision, &runState); err != nil || status != "blocked" || revision != before.Revision+1 || runState != "model_running" {
+		t.Fatal("not held after own task commit before failed run transition", status, revision, runState, err)
+	}
+	select {
+	case observed := <-tasks.observations:
+		if observed.run != runID || !errors.Is(observed.err, task.ErrConflict) {
+			t.Fatal("actual watcher did not observe own blocked/revision conflict", observed.run, observed.err)
+		}
+	case <-ctx.Done():
+		t.Fatal("actual watcher did not run after held commit", ctx.Err())
+	}
+	select {
+	case request := <-provider.cancel:
+		if request.RunID != runID || request.Reason != "owner authority revoked or unavailable" {
+			t.Fatal("wrong authority cancellation identity", request)
+		}
+	case <-ctx.Done():
+		t.Fatal("authority cancellation not observed before release", ctx.Err())
+	}
+	if provider.started.Load() != 1 {
+		t.Fatal("unexpected provider admissions", provider.started.Load())
+	}
+	t.Logf("CAUSAL_REPRO own_task_status=%s task_revision_delta=1 pre_transition_run_state=%s guard_error=task.ErrConflict authority_CancelRun_before_release=true provider_calls=1 accepted_input_present=%t native_calls=0", status, runState, accepted.InputID != "")
+	unblock()
+}

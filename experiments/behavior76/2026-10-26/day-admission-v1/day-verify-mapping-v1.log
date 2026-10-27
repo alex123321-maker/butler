@@ -1,0 +1,17 @@
+warning: in the working copy of 'scripts/dev/behavior-local-acceptance.ps1', LF will be replaced by CRLF the next time Git touches it
+Changed files:
+- apps/orchestrator/internal/app/behavior76_day_admission_test.go
+- apps/orchestrator/internal/app/behavior76_fresh_test.go
+- docs/testing/issue76-day-window-admission.md
+- scripts/dev/behavior-local-acceptance.ps1
+- scripts/dev/behavior-local-run.sh
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- docs/testing/issue76-fixture-local-protocol.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.

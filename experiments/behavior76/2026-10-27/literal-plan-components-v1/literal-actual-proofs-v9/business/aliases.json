@@ -1,0 +1,22 @@
+{
+  "sources": {
+    "public-doc": [
+      {
+        "revision": 1,
+        "source_id": "source_b761f0faa1da9ba13dfb01e4d3d1c766731824f475dd549ff39a86bce3c02769"
+      }
+    ],
+    "public-pref": [
+      {
+        "revision": 1,
+        "source_id": "source_d6a399edff0d30132a7bd2f5f88e3697714dc10729a87efb19abb000bb5e2643"
+      }
+    ]
+  },
+  "tasks": {
+    "A": {
+      "session_key": "behavior76:public-development:A",
+      "task_id": "task_226acafaf1e5115a78931cb444a3df4f"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+Changed files:
+- apps/orchestrator/internal/app/behavior76_collect_test.go
+- apps/orchestrator/internal/app/behavior76_fixture_test.go
+- apps/orchestrator/internal/app/behavior76_terminal_observer_integration_test.go
+- apps/orchestrator/internal/app/behavior76_terminal_write_integration_test.go
+- apps/orchestrator/internal/orchestrator/budget.go
+- apps/orchestrator/internal/orchestrator/communication_failure.go
+- apps/orchestrator/internal/orchestrator/recovery.go
+- apps/orchestrator/internal/orchestrator/service_execute.go
+- apps/orchestrator/internal/orchestrator/service_state.go
+- apps/orchestrator/internal/orchestrator/terminal_watch_test.go
+- apps/orchestrator/internal/orchestrator/terminal_write_test.go
+- apps/orchestrator/internal/orchestrator/terminal_write.go
+- apps/orchestrator/README.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/testing/issue76-local-response-protocol.md
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- docs/testing/issue76-fixture-local-protocol.md
+- docs/architecture/model-transport-contract.md
+- docs/architecture/execution-budget-contract.md
+- docs/architecture/user-communication-spec.md
+- docs/architecture/action-authorization-contract.md
+- docs/architecture/atomic-result-delivery.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.
+- ssh laba: scripts/dev/tool-turn-usage-lab.sh <isolated-agent-root> all after Sync. Synthetic Tiered/High SSE and actual PG per-request usage, duplicate/conflict/cancel/source guards, race/vet; zero inference or historical backfill.
+- Linux + isolated PostgreSQL *_test: scripts/dev/communication-core-tests.sh (targeted race/vet, no skipped required cases; dormant backend only, no inference or actual channels)
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...

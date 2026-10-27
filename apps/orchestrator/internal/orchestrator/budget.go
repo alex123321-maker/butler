@@ -233,6 +233,7 @@ func (s *Service) stopBudget(ctx context.Context, current *sessionv1.RunRecord, 
 	if !ok {
 		return nil, err
 	}
+	stopCause := err
 	stage, payload := "", ""
 	if s.config.Checkpoints != nil {
 		var e error
@@ -245,6 +246,8 @@ func (s *Service) stopBudget(ctx context.Context, current *sessionv1.RunRecord, 
 		return nil, err
 	}
 	_, _ = s.provider.CancelRun(ctx, transport.CancelRunRequest{RunID: current.GetRunId(), Reason: reason})
-	s.blockTaskRun(ctx, current.GetRunId(), reason)
+	if blockErr := s.blockTaskRun(ctx, current.GetRunId(), reason); blockErr != nil {
+		return nil, blockErr.withPreceding(stopCause)
+	}
 	return &ExecutionResult{RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: reason}, nil
 }

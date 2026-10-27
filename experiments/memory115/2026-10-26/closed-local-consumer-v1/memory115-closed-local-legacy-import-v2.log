@@ -1,0 +1,4 @@
+=== RUN   TestLocal115ClosedHistoryImport
+    memory115_local_history_test.go:40: original closed90 consumer imported213 admissions/212 measured/1 unknown, known full tokens1605455; no native admission or qualification
+--- PASS: TestLocal115ClosedHistoryImport (27.47s)
+PASS

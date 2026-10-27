@@ -1,0 +1,200 @@
+{
+  "version": "issue76-literal-v11-formal-source-scorer-freeze-v1",
+  "decision": "FORMAL_SOURCE_AND_SCORER_FREEZE_BEFORE_NEW_AUTHORSHIP_NOT_NATIVE_ADMISSION",
+  "issued_at_utc": "2026-10-27T02:02:06.346073Z",
+  "producer": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "worktree_clean": true,
+  "source_inventory": {
+    "path": ".cache/issue76-independent/literal-v11-formal-source-inventory-v1.json",
+    "sha256": "7002b1bbcdbde4bf9fa8ec6828ad308720b835b7302970be4de0c1e3e49e5b31",
+    "bytes": 157860
+  },
+  "criterion_witness": {
+    "path": ".cache/issue76-independent/literal-v11-formal-criterion-witness-v1.json",
+    "sha256": "9dae6a0b6357ed3fcf5feacd8a2504a827345832194741d31d5952c29868b82f",
+    "bytes": 5577
+  },
+  "runtime_dependencies": [
+    {
+      "path": "local-model-proof-reader-v4.ps1",
+      "sha256": "2241e8d023b6f00e28dbfc4599a74d5d2b571bf1bb2667faf0de5c1c7f85fd39",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/local-model-proof-reader-v4.ps1"
+    },
+    {
+      "path": "local-tail-adapter-v4.ps1",
+      "sha256": "4e6bdc53519a1d9dce02a10e2c5a8887becbed8205e791c16c11d13d233c344a",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/local-tail-adapter-v4.ps1"
+    },
+    {
+      "path": "local-scoring-composition-v4.ps1",
+      "sha256": "35b2734bb3ccc3c381de2d796a0d1d1a09779615c5ada2e26d67be37a081ee25",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/local-scoring-composition-v4.ps1"
+    },
+    {
+      "path": "authority-stream-scoring-v2d.ps1",
+      "sha256": "d8ef5be5485d2ae515f435bd5e3ef87a261a089c58e422350b41e117956745ab",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/authority-stream-scoring-v2d.ps1"
+    },
+    {
+      "path": "authority-stream-reader-v2a.cs",
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/authority-stream-reader-v2a.cs"
+    },
+    {
+      "path": "authority-stream-reader-v2a.ps1",
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/authority-stream-reader-v2a.ps1"
+    },
+    {
+      "path": "score-mechanical-fresh-v3.ps1",
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/score-mechanical-fresh-v3.ps1"
+    },
+    {
+      "path": "literal-kernel-proof-v1.ps1",
+      "sha256": "b66fc09932f010176f470a7b31499fabe39d70ebce1cf1ab0f0cedc40a7919d5",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/literal-kernel-proof-v1.ps1"
+    },
+    {
+      "path": "literal-index-adapter-v6.ps1",
+      "sha256": "509344a7d02e68f75751e8828ec4e50b25588fcb487e66d2af22c4bce141ef27",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/literal-index-adapter-v6.ps1"
+    },
+    {
+      "path": "literal-scoring-composition-v6.ps1",
+      "sha256": "f9d8a4d555300b66e3b055906d28888bdc5fe8ec886a5ec63556f23ae0d67912",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/literal-scoring-composition-v6.ps1"
+    },
+    {
+      "path": "authority-stream-scoring-v6-literal.ps1",
+      "sha256": "e306bdbe342b1f9975426d519dd6a6a08633cfe7d94d40185f94b97df0f72779",
+      "published_path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/authority-stream-scoring-v6-literal.ps1"
+    }
+  ],
+  "runtime_dependency_receipt": {
+    "path": "experiments/behavior76/2026-10-27/literal-checker-preparation-v2/public-literal-checker-v6-dependencies-prepared-v2.json",
+    "sha256": "3680094390c73866e746c23c0d712ef9b34e9e4c0c6ad11c266ed788b33a8c02",
+    "bytes": 2102
+  },
+  "original_criterion_AST_extents": 27,
+  "original_per_case_extent_types": 25,
+  "old_global_matrix_extents_preserved_not_invoked_for_newplan": 2,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "candidate": {
+    "path": "apps/orchestrator/internal/prompt/task_continuity.go",
+    "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+    "bytes": 1735
+  },
+  "protocol": {
+    "path": "docs/testing/issue76-literal-supplement-protocol.md",
+    "sha256": "b7698708185984cf0b66306714bec0b0c84f77bce709acf9c0e65756a03857da",
+    "bytes": 5728
+  },
+  "fixture_stop_protocol": {
+    "path": "docs/testing/issue76-local-response-protocol.md",
+    "sha256": "a5e5e9f12020867bc9db10e479c874594518701b75611008490656588efd0354",
+    "bytes": 9400
+  },
+  "prepared_admission_schema": {
+    "path": "scripts/dev/behavior76-literal-admission.schema.json",
+    "sha256": "0e30ed11461bbe80699d3db06a5c74e6457d0e93af9da62db135eea2481ba5d1",
+    "bytes": 10906
+  },
+  "plan": {
+    "episodes": 16,
+    "arms": 32,
+    "owner_opportunities": 68,
+    "dimensions": 8,
+    "legacy_families": 6,
+    "feedback_owner_turns_per_episode": 3,
+    "other_owner_turns_per_episode": 2
+  },
+  "bounds": {
+    "native_entries": 768,
+    "entries_per_owner": 8,
+    "entries_per_run": 4,
+    "model_seconds": 120,
+    "arm_seconds": 1200,
+    "window_seconds": 14400,
+    "authority_milliseconds": 750,
+    "PG_business": 9,
+    "PG_authority": 1,
+    "latest_start_UTC_hour": 20,
+    "owning_UTC_day_fit": true
+  },
+  "history": {
+    "closed_windows": 12,
+    "admissions": 971,
+    "measured": 959,
+    "known_full_tokens": 7700211,
+    "NULL_usage": 12,
+    "old_failures_and_UNKNOWN_retained": true,
+    "old_r2_cached5b56_not_restored": true,
+    "closed_r3_remains_NO_GO": true,
+    "no_new_live_DB_audit": true
+  },
+  "gates": {
+    "legacy_public_top_PASS": 61,
+    "legacy_FAIL": 0,
+    "legacy_SKIP": 0,
+    "new_public_plan_top_PASS": 9,
+    "actual_public_composition_arms": 32,
+    "actual_public_composition_owner_opportunities": 68,
+    "actual_public_bridge_checks_PASS": 12,
+    "pure_file_neutral_PASS": 22,
+    "purePS_launcher_checks_PASS": 18,
+    "actual_host_pin_only_checks_PASS": 9,
+    "final_Go_time_guard_top_PASS": 2,
+    "vet_exit": 0,
+    "actual_new_hidden_setup_or_composition": false
+  },
+  "stable_observer_build": {
+    "version": "behavior76-pgx-observer-build-v1",
+    "original_sha256": "076f1d636cd6e2a1b8cadaea24ac60375cd98f1d63034ff796427f49a4408684",
+    "derived_sha256": "9fdbb58e77cebad5ff489cec5481b1aac2d5e111e44157605b796f7a7d8078fc",
+    "module_files_sha256": "7c7a00ec60a1f07f50cf8aa946240ad1e7dcb21173f81d0e4013b1edd046f7ac",
+    "original_go_mod_sha256": "497ecffdafc415eb100d18e79fed48d932a23fdec272845d3627b0622ce89225",
+    "original_go_sum_sha256": "51681ce4d3ec209d949e3f90eed48308b29901c11757e55a5aebf9e5e4e437d3",
+    "research_mod_sha256": "b02cebb072429acbf980947f81e3b03238b9a7afb82a4e242800b8479e98cc0d",
+    "upstream": "https://github.com/jackc/pgx/blob/v5.11.0/conn.go#L440-L449"
+  },
+  "allowed_postfreeze_source_bindings": {
+    "file": "apps/orchestrator/internal/app/behavior76_literal_types_test.go",
+    "exact_replacements": [
+      {
+        "before": "const behavior76LiteralStimuliSHA = \"\"",
+        "after_pattern": "const behavior76LiteralStimuliSHA = \"[0-9a-f]{64}\""
+      },
+      {
+        "before": "const behavior76LiteralExpectationsSHA = \"\"",
+        "after_pattern": "const behavior76LiteralExpectationsSHA = \"[0-9a-f]{64}\""
+      }
+    ],
+    "count": 2,
+    "other_semantic_changes": false,
+    "nonsemantic_preservation_results_artifacts_allowed": true
+  },
+  "authorship": {
+    "status": "NOT_STARTED",
+    "directory_glob_absent": "hidden-literal-v11*",
+    "must_wait_for_parent_Git_preservation_and_separate_instruction": true,
+    "fresh_independent_16_episode_controls_required": true,
+    "old_controls_or_closed_answers_maps_reused": false
+  },
+  "issuer_operations": {
+    "file_Git_only": true,
+    "Go": 0,
+    "PG": 0,
+    "Docker": 0,
+    "auth": 0,
+    "native_model": 0
+  },
+  "remaining_limits": [
+    "This is not a new native certificate, task acceptance, quality PASS or candidate promotion.",
+    "Actual future fresh bound setup/composition and immutable unique ELF are still required before separate finite one-use admission.",
+    "Expected restrictive classifier/automatic catalog failures remain ordinary actual faults, without authority regrant or new local exemption.",
+    "Old7 denotes checker PS/CSharp runtime dependencies, not production services."
+  ]
+}

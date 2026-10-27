@@ -1,0 +1,117 @@
+{
+  "version": "issue76-independent-hidden-fresh-v3",
+  "producer_semantic_freeze": "22e834fb2a4961e3ae251fe3c77fe581b8168c73",
+  "origin": "synthetic",
+  "episodes": 24,
+  "families": 12,
+  "evaluated_owner_turns": 48,
+  "paired_owner_opportunities": 96,
+  "arms": 2,
+  "stimuli_path": "hidden-fresh-v3/stimuli.jsonl",
+  "expectations_path": "hidden-fresh-v3/expectations.jsonl",
+  "stimuli_sha256": "8d064bab832f2b3e71fe61260b7e918f413c47fb6df0f96675375f999de2160b",
+  "expectations_sha256": "7479b3d977b413a96fa7d37fb8dc1a899b428ccaaabac2343c367bc605947e89",
+  "generator_sha256": "698bc6828fb4908f947d75ba3a48e797ff73ae128ec9a7ba4d99ff3f6fdf4cad",
+  "public_contract_sha256": "674dcc29f00dff2ff28b6e35d399dfd0af64d39e79f4fa0a54912d04bf754b2a",
+  "candidate_source_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "acceptance_basis": "Unchanged v2 rubric and mechanical criteria; fresh independent synthetic content; no old quality/mapping disclosed",
+  "prior_experiment_status": "A/B/C incomplete and retained;174 admissions;2 unavailable usage",
+  "coverage": [
+    {
+      "family": "amendment",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "clarification",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "feedback_candidate",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "manual_change",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "new_task_coexistence",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "owner_done_report",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "preference_exception",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "preference_lifecycle",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "restart",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "scoped_stop_negation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "status_continuation",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    },
+    {
+      "family": "untrusted_command",
+      "episodes": 2,
+      "positive": 1,
+      "negative": 1,
+      "arms": 4,
+      "owner_opportunities": 8
+    }
+  ]
+}

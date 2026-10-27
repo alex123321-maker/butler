@@ -1,0 +1,32 @@
+[
+  {
+    "path": "local-successor-controls-v2.log",
+    "bytes": 1903,
+    "sha256": "d733ba4caebe9feb6036c4f5f9147139ffcf9826b81fb8f8f36e4922efe8690a"
+  },
+  {
+    "path": "local-successor-final-v1.log",
+    "bytes": 2093,
+    "sha256": "88256be530957c390c81e194e92b039b90b442194d03d09a15a68d231e2654c6"
+  },
+  {
+    "path": "local-successor-linux-v1.log",
+    "bytes": 2138,
+    "sha256": "8d401f1ef79ecdae85e4034e2ab119c2871b81bd92ee258c2533237570047d4a"
+  },
+  {
+    "path": "local-successor-preseal-v3.log",
+    "bytes": 1815,
+    "sha256": "96a5bfd1d252e1698681c0ef3842e47f27d4c7749ea9da83f9c72b89d3b1d40a"
+  },
+  {
+    "path": "recipe.json",
+    "bytes": 484,
+    "sha256": "579aa8c25bcfdba06b1be91f2cb613f2550ee685932c3919e2468bef13f11ec7"
+  },
+  {
+    "path": "safe-receipt.json",
+    "bytes": 1967,
+    "sha256": "cac07fc45e571a44d75c3f6aee49bac7bb112b9091ab4829fcb04acf81f2b1ef"
+  }
+]

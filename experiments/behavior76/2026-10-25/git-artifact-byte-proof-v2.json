@@ -1,0 +1,394 @@
+{
+  "previous_proof_producer_commit": "424d93caf429717c00a8aa822bb3472ce92589cc",
+  "artifacts": [
+    {
+      "bytes": 3546,
+      "path": "experiments/behavior76/2026-10-25/.gitattributes",
+      "sha256": "4a578a048d12f8cd9f99238c322f9840d03b3c584a096bb57637e21a98727676"
+    },
+    {
+      "bytes": 4047,
+      "path": "experiments/behavior76/2026-10-25/authority-predicate-metadata-diagnosis-v1.json",
+      "sha256": "c9e38fd952c47597594037ca550a06c14357f486b5a875756c9a82edb660850c"
+    },
+    {
+      "bytes": 4242,
+      "path": "experiments/behavior76/2026-10-25/authority-predicate-metadata-diagnosis-v2.json",
+      "sha256": "0f7e5dabd9b07daedc048b76c722dca61d86a183b9366d58a27d4d63890ce75e"
+    },
+    {
+      "bytes": 13145,
+      "path": "experiments/behavior76/2026-10-25/checker/local-scoring-composition-v1.ps1",
+      "sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2"
+    },
+    {
+      "bytes": 17222,
+      "path": "experiments/behavior76/2026-10-25/checker/local-tail-adapter-v1.ps1",
+      "sha256": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf"
+    },
+    {
+      "bytes": 21480,
+      "path": "experiments/behavior76/2026-10-25/checker/score-mechanical-fresh-v3.ps1",
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d"
+    },
+    {
+      "bytes": 21474,
+      "path": "experiments/behavior76/2026-10-25/checker/score-mechanical-v2.ps1",
+      "sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869"
+    },
+    {
+      "bytes": 13141,
+      "path": "experiments/behavior76/2026-10-25/checker/test-local-scoring-composition-v1.ps1",
+      "sha256": "d56a20367848b1e39ab035b7e5647c8c4e460542ec5087f10b4b7dd06f209ae9"
+    },
+    {
+      "bytes": 13169,
+      "path": "experiments/behavior76/2026-10-25/checker/test-local-tail-adapter-v1.ps1",
+      "sha256": "d5c375d04a4b802864e8550187e878998aca2f3e59025a9ff19f0706f6281802"
+    },
+    {
+      "bytes": 251,
+      "path": "experiments/behavior76/2026-10-25/closed-archives-marker-scan.json",
+      "sha256": "72b4c4cc0b2688d144a83773f46f282f0b39eb5c1a583778d24de31e52e0ea47"
+    },
+    {
+      "bytes": 1604,
+      "path": "experiments/behavior76/2026-10-25/closed-raw-archives.json",
+      "sha256": "b52b3743ed331c7938f9f2ac5bf3b762367e8c5ec5c0d689dca3ea5ce5b9b82d"
+    },
+    {
+      "bytes": 532,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/capacity-recovery-v1.log",
+      "sha256": "8d85103e97fc71ed6f1a6acb0d6c0389a3ec05e683744d6d2db6a6169c62ccd3"
+    },
+    {
+      "bytes": 1011,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/disposable-input-db-drop-v1.log",
+      "sha256": "12fff9e1111156d0fc84f0a27f6dda3ca735d36d5e052f09187f6084558288da"
+    },
+    {
+      "bytes": 615,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/history-after-capacity-v1.log",
+      "sha256": "32873859e6a00f42c43d5b38a0d8dc2fbbebd812fc6be916dd15389994319cce"
+    },
+    {
+      "bytes": 1675,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-claim-admission-race-v1.log",
+      "sha256": "a96d55291a01858f657a0765e537456701b499062266e2f161c4ffa0c411c099"
+    },
+    {
+      "bytes": 2870,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-claim-admission-race-v2.log",
+      "sha256": "040eaf81cb461abd0357afa2f14ad8d557180cd1918f76112158aa83cb7c3c89"
+    },
+    {
+      "bytes": 3236,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-claim-admission-race-v3.log",
+      "sha256": "6c82f0a5914e9dfce8635fc7224196d655550d78ca14f0f0c8173a3e5805458a"
+    },
+    {
+      "bytes": 94690,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-package-race-v1.log",
+      "sha256": "1b2e5ca6282fa7a55f61b361739692ab7b0cb9452965885fdaaed54930b7262d"
+    },
+    {
+      "bytes": 85465,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-package-race-v3.log",
+      "sha256": "da8525b9a01a52ac1ea2534519ce06f8df2cd164d01f5385bfdbc731537d26f7"
+    },
+    {
+      "bytes": 96925,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/input-package-race-v4.log",
+      "sha256": "0709961c978d253c44d5251d2b49214945c99a6678f6d6797f384bd1a4f2b564"
+    },
+    {
+      "bytes": 60,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-scoring-composition-selftest-v1.log",
+      "sha256": "70b23b5c79c286fd29995a18c7cd2317f1601c63644d6b9db58837a564fa77ae"
+    },
+    {
+      "bytes": 240,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-scoring-composition-selftest-v2.log",
+      "sha256": "87a06572fbdeb99330f3d43f0e7f426a82089ffec2a28ae795dc43f2fd7ec4b0"
+    },
+    {
+      "bytes": 664,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-scoring-composition-selftest-v3.log",
+      "sha256": "d0548801c41c297a59e86a58b16697c90548cb218b05d857ef110b44fac1be82"
+    },
+    {
+      "bytes": 664,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-scoring-composition-selftest-v4.log",
+      "sha256": "71ef86215e9cfb0df1b4fd40575b6d7df5f48d9b641ffd25f2dde0698b9cab1b"
+    },
+    {
+      "bytes": 869,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-scoring-composition-selftest-v5.log",
+      "sha256": "1967060303782bcebc2fec187df040bcbbeaab6f1de437fd8960ee7eb44b2504"
+    },
+    {
+      "bytes": 1164,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/local-tail-adapter-selftest-v3.log",
+      "sha256": "69afb4de9920d5d15997ba7abc7ea9d443bc7c2684ac9d982ea763ef4ed63945"
+    },
+    {
+      "bytes": 3473,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/persistent-root-recovery-v1.log",
+      "sha256": "61f48b081076054f07fff2d6e50115025b6621b36d5d67c022e58e43ad3c3cac"
+    },
+    {
+      "bytes": 1094,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/persistent-root-verification-v1.log",
+      "sha256": "be1fa769e623a66afe481b80a0cb88f0b95b19d93e7742be1752417c59b0e52e"
+    },
+    {
+      "bytes": 11658,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-boundary-v1.log",
+      "sha256": "ae9e084f08e54d13984f4c66e0e8a2ccb74f74d61406a90cd119a34a5d5c71c5"
+    },
+    {
+      "bytes": 75501,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-public-v1.log",
+      "sha256": "c9e97708ebde6624eb43ef2b4b302ffa19062f2c89b3a399de0a94116e68c3e4"
+    },
+    {
+      "bytes": 76199,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-public-v2.log",
+      "sha256": "5803fd0a6b55878c4b53a3b71dbe02d8a35be49a9f6eddd20efda9f53cbf856f"
+    },
+    {
+      "bytes": 75843,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-public-v3.log",
+      "sha256": "13148c88c6258d4948ae0e87a8eb412d242aea51049edf8fa5a55361d23afb2f"
+    },
+    {
+      "bytes": 9798,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v1.log",
+      "sha256": "ed7d65d8c2f5582b85aef41420251139169a20059901cb5e7a7dcaceb6905864"
+    },
+    {
+      "bytes": 12148,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v2.log",
+      "sha256": "17bb24dea79eecb4728405f78386b1dd05137055323ab0e5cc5d6014c1234461"
+    },
+    {
+      "bytes": 20558,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v3.log",
+      "sha256": "554dedd668e3bed4f57f491d058c65250994e5de0c0f9b8a147ab8f50eb7e699"
+    },
+    {
+      "bytes": 27603,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v4.log",
+      "sha256": "8d3129702ef5e9f374cff964771ba5c2748bee4989cc35daf18b31b367fc6787"
+    },
+    {
+      "bytes": 35918,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v5.log",
+      "sha256": "eb5f460d10e5c70cc31376582156e934565f382ca953807d793967d4cd0aa27a"
+    },
+    {
+      "bytes": 39671,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v6.log",
+      "sha256": "6181ffa4a25c64ad3d220fbecd32e4017f69ad08e1c0d877529c12d1b05bb9eb"
+    },
+    {
+      "bytes": 39671,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-safety-v7.log",
+      "sha256": "8707ee8c2b1465de0c23f12c82d686aba440515b3e25414ac9e552eff2a97ca1"
+    },
+    {
+      "bytes": 278,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-vet-v1.log",
+      "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+    },
+    {
+      "bytes": 278,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/prospective-local-vet-v3.log",
+      "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+    },
+    {
+      "bytes": 3565,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/strict-global-safety-race-v1.log",
+      "sha256": "466f25ca9ba63cd4fdc7b880f80132b32f6f8f3c99b0c0510536b7b082c67a67"
+    },
+    {
+      "bytes": 4355,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/strict-global-safety-race-v2.log",
+      "sha256": "008ce490a773070f6c176209c23e2c265408df413e1897afb3f0133f3f2bddb3"
+    },
+    {
+      "bytes": 7326,
+      "path": "experiments/behavior76/2026-10-25/diagnostics/strict-global-safety-race-v3.log",
+      "sha256": "fec3d07d561053d7171ad20be92d9a0e917021e654cf18b2500f8fa9deb57ca7"
+    },
+    {
+      "bytes": 4594,
+      "path": "experiments/behavior76/2026-10-25/effect-unknown-metadata-diagnosis-v1.json",
+      "sha256": "15c9711a58e98a8565e89b753ae98cfdc8dc0d47c6f5e92cba2111dd34568cea"
+    },
+    {
+      "bytes": 212,
+      "path": "experiments/behavior76/2026-10-25/fresh-marker-scan-v1.json",
+      "sha256": "5d586a3a2360eb6cf701a78ec487335a21719e856a78bad6546e86ea4ad03d69"
+    },
+    {
+      "bytes": 2052,
+      "path": "experiments/behavior76/2026-10-25/fresh-masked-seal-v1.json",
+      "sha256": "0257d61914f0f18b1f9e4c3ad4d24c360399d9f31daeca3d33145e265a707a95"
+    },
+    {
+      "bytes": 5576,
+      "path": "experiments/behavior76/2026-10-25/fresh-operational-forensics-v1.json",
+      "sha256": "45f5218f0f7c7c128ccac1b7ea0ce922d1fe5377d9d948d9fdada88aae741c10"
+    },
+    {
+      "bytes": 5576,
+      "path": "experiments/behavior76/2026-10-25/fresh-operational-forensics-v2.json",
+      "sha256": "3ec0dec58f9080ea749a3cfe5e303c83ee16c6f9e8edb51120bbc5710fd8c771"
+    },
+    {
+      "bytes": 445,
+      "path": "experiments/behavior76/2026-10-25/fresh-sealed-witness-integrity-v1.json",
+      "sha256": "de3657f4bede836ae22709e62854e14578951fccc89f9307595dc1f29a762472"
+    },
+    {
+      "bytes": 4525,
+      "path": "experiments/behavior76/2026-10-25/fresh-v3-final-native-admission-v1.json",
+      "sha256": "e933587bf75dfa3dd9ad0ae203b6c8f4231c42f5b611e72f1616d37a4335884c"
+    },
+    {
+      "bytes": 14172,
+      "path": "experiments/behavior76/2026-10-25/git-artifact-byte-proof-v1.json",
+      "sha256": "c21ea6b5adee222b76116731cfb7e8b30519fc751bcee72544b655d73fcd2eb6"
+    },
+    {
+      "bytes": 4823,
+      "path": "experiments/behavior76/2026-10-25/live-observer-source-only-review-v1.md",
+      "sha256": "81d5db91afd37169f07ead7cb9844c2da137771e7a3375c421d0c0eef7568055"
+    },
+    {
+      "bytes": 1998855,
+      "path": "experiments/behavior76/2026-10-25/native-20261025b.zip",
+      "sha256": "819b2847d1f963c5e869af5638a59d106b555560ca98e42af384cd7179a81eae"
+    },
+    {
+      "bytes": 261626,
+      "path": "experiments/behavior76/2026-10-25/native-20261025c.zip",
+      "sha256": "6991c8986d5b353d82f00245e27bd6d9c90de06d7607e4e645a1a5e246986cb5"
+    },
+    {
+      "bytes": 278365,
+      "path": "experiments/behavior76/2026-10-25/native-b-raw-sha256.json",
+      "sha256": "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848"
+    },
+    {
+      "bytes": 9153,
+      "path": "experiments/behavior76/2026-10-25/native-c-raw-sha256.json",
+      "sha256": "0fce72bbfdf54299890e527a261e599ba0dbc36ad5b783b3eb177f5d293f99c2"
+    },
+    {
+      "bytes": 526689,
+      "path": "experiments/behavior76/2026-10-25/native-fresh-v3-raw-sha256.json",
+      "sha256": "24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105"
+    },
+    {
+      "bytes": 2980858,
+      "path": "experiments/behavior76/2026-10-25/native-fresh-v3.zip",
+      "sha256": "065c342749c976dde4d09afafd6d8a8074c3e1e7e1da8bf2b1ad8b0fb6dc40df"
+    },
+    {
+      "bytes": 1907,
+      "path": "experiments/behavior76/2026-10-25/old-bc-masked-seal-v1.json",
+      "sha256": "48ebea2dd47cbc976feb598119f7a7d09c1e68de27ae2d0a7065f395c558244a"
+    },
+    {
+      "bytes": 7117,
+      "path": "experiments/behavior76/2026-10-25/public-effect-authority-diagnosis-v1.md",
+      "sha256": "64b4b373d9eb1a28c5093e67ff0cd043222ca4b9d0f41faeabd17ce9969db1f6"
+    },
+    {
+      "bytes": 3979,
+      "path": "experiments/behavior76/2026-10-25/public-fixture-local-semantic-review-v1.json",
+      "sha256": "19ec7d38857a96157867ba43b784f6c333115561dca6cddacef9b779f0787172"
+    },
+    {
+      "bytes": 7936,
+      "path": "experiments/behavior76/2026-10-25/public-frozen-criterion-extents-v1.json",
+      "sha256": "39732b35b2aeb79a6d4217c2aa88e82545482ccdaf83e3400d9886a6ce0d4581"
+    },
+    {
+      "bytes": 7206,
+      "path": "experiments/behavior76/2026-10-25/public-gates-receipt-v1.json",
+      "sha256": "0ea6edaba710b6d16e8094145e37dc7fb605e003ff675c634da7e1b7992f049c"
+    },
+    {
+      "bytes": 3003,
+      "path": "experiments/behavior76/2026-10-25/public-input-capacity-recovery-receipt-v1.json",
+      "sha256": "20ad65dcee265060ce6f188203da906741c635b33a5a94499820f02c844677fa"
+    },
+    {
+      "bytes": 5415,
+      "path": "experiments/behavior76/2026-10-25/public-input-claim-fence-review-v1.md",
+      "sha256": "91716ddff64a522a8e4ec3791c04a5cacd95ae485a220a9442f98b11cdf614e1"
+    },
+    {
+      "bytes": 9055,
+      "path": "experiments/behavior76/2026-10-25/public-linearized-fixture-gate-interface-v1.md",
+      "sha256": "18349b95e0b09477b2ef58362838c457602b628106d9a5075de43bba279a9812"
+    },
+    {
+      "bytes": 1665,
+      "path": "experiments/behavior76/2026-10-25/public-local-tail-parser-receipt-v1.json",
+      "sha256": "8173cba9f4a837336a1a361296b8bff0069a9a09a12f6d44db4050cc6bef6b13"
+    },
+    {
+      "bytes": 6657,
+      "path": "experiments/behavior76/2026-10-25/public-next-study-methodology-proposal-v1.md",
+      "sha256": "e32f267fd0aac48300c564c59d1626736058f8565df0e69edf44f8e3e8de8539"
+    },
+    {
+      "bytes": 11759,
+      "path": "experiments/behavior76/2026-10-25/public-prospective-fixture-local-unknown-amendment-v1.md",
+      "sha256": "6d116b1d17fa4106af70b5be97bb1f5e65cd6dc0d03033e67974d2b539a6d70b"
+    },
+    {
+      "bytes": 2737,
+      "path": "experiments/behavior76/2026-10-25/public-resource-source-review-v2.json",
+      "sha256": "496f84ebff61adb508c637ebed5f1d39536532111a9c490cfede0bbb712203c7"
+    },
+    {
+      "bytes": 2656,
+      "path": "experiments/behavior76/2026-10-25/public-safety-v3-review-v1.md",
+      "sha256": "fd76ff94ec61911d9ba7938d2f1ef245b25069b976c6d0022f34cbec21b0f8a0"
+    },
+    {
+      "bytes": 1761,
+      "path": "experiments/behavior76/2026-10-25/public-scoring-composition-receipt-v1.json",
+      "sha256": "e8e92deee2a51b298ecf1c247d7619069b787e1476b03980868574aaf623a01e"
+    },
+    {
+      "bytes": 4511,
+      "path": "experiments/behavior76/2026-10-25/public-scoring-composition-v1.md",
+      "sha256": "259b0349401a71792e4e5d72f907b9d491eb21c441dfbff4720d31032604684b"
+    },
+    {
+      "bytes": 9134,
+      "path": "experiments/behavior76/2026-10-25/public-scoring-input-local-tail-addendum-v1.md",
+      "sha256": "ab74467cb3d7c9897c13c836810bb9d927a49a46c3b90f6eb60a2b07399c9de8"
+    },
+    {
+      "bytes": 5881,
+      "path": "experiments/behavior76/2026-10-25/public-stop-admission-matrix-v1.md",
+      "sha256": "b7ca4cdd28ff71e2889db18643eb039e8acb14f4577882f4c9a3294fb04eca9c"
+    },
+    {
+      "bytes": 4419,
+      "path": "experiments/behavior76/2026-10-25/public-strict-safety-source-review-v1.md",
+      "sha256": "03abc800bd432578856f81f3ea6fcb58e84c9cee94dd988bd2649deb8e48c169"
+    }
+  ],
+  "all_git_blob_bytes_equal_original_files": true,
+  "previous_proof": "git-artifact-byte-proof-v1.json",
+  "added_artifacts_verified": 77,
+  "version": "behavior76-git-artifact-byte-proof-v2"
+}

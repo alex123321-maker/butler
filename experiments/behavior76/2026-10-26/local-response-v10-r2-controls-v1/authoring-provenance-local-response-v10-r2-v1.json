@@ -1,0 +1,28 @@
+{
+  "first_private_authoring_utc": "2026-10-26T17:52:25.3260609+00:00",
+  "stimuli_sha256": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+  "substantively_new_case_content": true,
+  "old_v10_or_other_controls_goldens_answers_maps_read_or_reused": false,
+  "authoring_script_sha256": "f8e0589f8707dff291e581fa6532487d5caad328f1d8f93bc67ae17559edb4b8",
+  "hidden_expectations_released_to_parent": false,
+  "version": "issue76-independent-local-response-v10-r2-authoring-provenance-v1",
+  "formal_freeze_issued_utc": "2026-10-26T17:41:52.8375626Z",
+  "native_admission": false,
+  "seed_sha256": "9b435949f5c8af1e06e50483f7b7c02203e5cd58a9f318e06812485e31241608",
+  "public_inputs": [
+    "issue76 twelve scenario families",
+    "frozen public interface and actual API semantics",
+    "unchanged27 criterion extents"
+  ],
+  "no_quality_results_used_for_selection_or_tuning": true,
+  "all_synthetic_no_real_owner_episode": true,
+  "completed_utc": "2026-10-26T17:52:54.0055817+00:00",
+  "source_and_runtime_pins_unchanged": true,
+  "expectations_sha256": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642",
+  "final_construction_utc": "2026-10-26T17:52:53.7585829+00:00",
+  "independent_author": "issue76_independent",
+  "formal_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+  "new_seed": true,
+  "Go_PG_auth_native_calls": 0,
+  "freeze_preservation_commit": "9a0ce2daa7e61501db12d9e11ccf4a8fe993f63e"
+}

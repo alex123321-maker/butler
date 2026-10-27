@@ -1,0 +1,41 @@
+{
+  "version": "issue76-independent-native-a-boundary-audit",
+  "window": "issue76-local-20261025T104513",
+  "closed": true,
+  "wrapper_admissions": 1,
+  "kernel_admissions": 1,
+  "kernel_unobserved_attempts": 1,
+  "confirmed_model_inference_http_requests": 0,
+  "stage": "authentication",
+  "status": "transport_error",
+  "safe_error": "provider_unavailable",
+  "milliseconds": 363,
+  "usage": "unavailable",
+  "model_version": "unavailable",
+  "confirmed_effects": 0,
+  "authoritative_model_finals": 0,
+  "quality": "not_assessed_infrastructure_failure",
+  "arm_mapping_read": false,
+  "hidden_contents_read_for_audit": false,
+  "source_identity": "verified",
+  "corpus_identity": "verified",
+  "raw_hashes": [
+    {
+      "path": "manifest.json",
+      "sha256": "712670def12bb6ab11d7d689ed39c3a46bbd6455988594f10aaf9c421e9834ae"
+    },
+    {
+      "path": "index.json",
+      "sha256": "933da145d1d8d4d2acd41e57f609d5ddfbdb449f328d14fcfcca010a5a138ddd"
+    },
+    {
+      "path": "behavior76_attempts.jsonl",
+      "sha256": "ab50ccea1c3caac38c8a41c1ccf1fbae645a0669693c15fe551bb93b2a8a836d"
+    },
+    {
+      "path": "behavior76_windows.jsonl",
+      "sha256": "07d76ee50ae616456e8c80a8d740fbd2e6925392d94d81fcc200a34e869d1687"
+    }
+  ],
+  "note_sha256": "fe77afcb3edf36eaf186f479a3aec900e501168cd4312a7b2e64c261784fca98"
+}

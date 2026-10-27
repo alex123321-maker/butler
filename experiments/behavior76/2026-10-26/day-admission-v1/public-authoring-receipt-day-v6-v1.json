@@ -1,0 +1,47 @@
+{
+  "all_synthetic": true,
+  "mapping_read": false,
+  "positive_episodes": 12,
+  "episodes": 24,
+  "files": [
+    {
+      "bytes": 62955,
+      "path": "hidden-day-v6/stimuli.jsonl",
+      "sha256": "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba"
+    },
+    {
+      "bytes": 41999,
+      "path": "hidden-day-v6/expectations.jsonl",
+      "sha256": "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9"
+    },
+    {
+      "bytes": 3628,
+      "path": "public-commitment-day-v6.json",
+      "sha256": "2009a293d3afa34fd1bd175990cdda2bffc76d9d86cf3672f9605a2687fac50b"
+    },
+    {
+      "bytes": 7365,
+      "path": "semantic-freeze-day-v6-v1.json",
+      "sha256": "7ff0e3eecb8c5c2810cd62ed0eeaa7d00c0394bd373588e44a130a99c19da367"
+    }
+  ],
+  "pg_calls": 0,
+  "families": 12,
+  "evaluated_owner_turns": 48,
+  "criteria_changed": false,
+  "source": "cc8a4cc05979dae7f30a8aaa1f45aaac1b2efb95",
+  "paired_owner_opportunities": 96,
+  "native_admission": false,
+  "version": "issue76-independent-day-v6-authoring-receipt-v1",
+  "negative_episodes": 12,
+  "semantic_freeze_sha256": "7ff0e3eecb8c5c2810cd62ed0eeaa7d00c0394bd373588e44a130a99c19da367",
+  "arms": 48,
+  "paired_steps": 128,
+  "original_steps": 64,
+  "thresholds_changed": false,
+  "original_interface_unchanged": true,
+  "old_controls_or_results_read_for_derivation": false,
+  "setup_and_composition": "pending_literal_binding",
+  "native_calls": 0,
+  "case_and_expected_contents_disclosed": false
+}

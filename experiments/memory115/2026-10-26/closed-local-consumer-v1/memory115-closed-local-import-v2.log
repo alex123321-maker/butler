@@ -1,0 +1,4 @@
+=== RUN   TestLocal115ClosedNativeHistoryImport
+    memory115_closed_local_native_history_test.go:119: closed durable global population or original history binding differs
+--- FAIL: TestLocal115ClosedNativeHistoryImport (37.43s)
+FAIL

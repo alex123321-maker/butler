@@ -1,0 +1,21 @@
+{
+  "version": "issue76-independent-setup-preflight-attempt3",
+  "action": "Preflight",
+  "exit_code": 0,
+  "phase": "complete_setup_snapshot",
+  "setup_slots": 24,
+  "setup_passed": 24,
+  "setup_failed": 0,
+  "families": 12,
+  "elapsed_seconds": 99.88,
+  "native_calls": 0,
+  "provider_factory_called": false,
+  "credential_resolution_called": false,
+  "stimuli_sha256": "bad4a7c39747d93baaf2bcffeb68b6fcd1b672b39909e9d34a2ec1055a9f54b0",
+  "expectations_sha256": "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a",
+  "log_path": "preflight-controls-v2c.log",
+  "log_sha256": "c1da502ede94c79fbfbe709df113a73aeebc7e3d56bb9d692bdd42d56b4377d1",
+  "collector_sha256": "7dad13fc348e5cdc6508fd20206f573defa83de96213e36930d6e8f35ca07a63",
+  "control_specific_feedback_disclosed": false,
+  "scope": "Actual seed/apply owner events/snapshot only; no model behavior or effect execution qualification"
+}

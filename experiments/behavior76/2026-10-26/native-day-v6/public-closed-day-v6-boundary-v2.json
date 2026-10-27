@@ -1,0 +1,164 @@
+{
+  "version": "issue76-independent-closed-day-v6-boundary-v2",
+  "decision": "NO_GO_INCOMPLETE_GLOBAL",
+  "window": "issue76-fixture-day-20261026T012812",
+  "producer": "9f6733c5de5f969097f5aeea1bfac15179ded8f6",
+  "collector_elf_sha256": "187659feedd16530a8e3ba63507ec26ca21ca8aef502414efb24ea13b11c37a8",
+  "raw": {
+    "raw_boundary_sha256": "75b40fa5edbc2a62cd6a3c1570a7e38720310e6c86c337f219244fd579ed7c35",
+    "archive_sha256": "92f6b511243eace416e3bad54053363d858ae4dad862303077c6f0c0650a5469",
+    "readonly": 2569,
+    "manifest_sha256": "7516824e49cb0760b759faf15109eeceef2aee31b08bcc88c06ef62e7692d24c",
+    "bytes": 66843767,
+    "verified_case_files": 2531,
+    "independent_inventory_sha256": "dfb1397ebdd11a9796fd6320cd4c98523d5960ab0376cce977fd7017f1de90e0",
+    "index_sha256": "726bce7120188a72d09f8e359a21b9fc7905598976784e11ad2dd893b2198c7f",
+    "files": 2569,
+    "parent_inventory_sha256": "517f7b215c956ef9b8664622380d2b9fcd7f8282bf5cc3d5f20f892868b1e7d6"
+  },
+  "accounting": {
+    "original506_exact_unchanged": true,
+    "all640_exact_equal_current_export": true,
+    "all_admissions": 640,
+    "current_null_usage": 1,
+    "all_null_usage": 7,
+    "closed_windows": 7,
+    "history_sql_log_sha256": "ea5b48b4ca64ae971768b7cae12fcc61674d0757e9b578bdf4bd1431986891db",
+    "all_measured": 633,
+    "current_known_tokens": 1067566,
+    "no_entry135": true,
+    "current_admissions": 134,
+    "all_known_tokens": 4900143,
+    "current_measured": 133
+  },
+  "coverage": {
+    "actual_owner_final_rows": 61,
+    "complete": false,
+    "opportunities_without_owning_Input": 32,
+    "indexed_unexecuted_local_tails": 2,
+    "collector_subtest_PASS_not_quality_PASS": true,
+    "planned_arms": 48,
+    "failed_owner_outcomes": 1,
+    "actual_automatic_final_rows": 6,
+    "actual_admission_denials": 2,
+    "all_original_steps_recorded_in_prefix_arms": 33,
+    "completed_owner_outcomes": 61,
+    "automatic_runs": 6,
+    "never_evaluated_owner_opportunities": 30,
+    "planned_owner_opportunities": 96,
+    "actual_owner_inputs": 64,
+    "unstarted_arms": 14,
+    "indexed_arms": 34,
+    "unindexed_owner_opportunities": 28,
+    "indexed_owner_outcomes": 68,
+    "fixture_local_unknown_owner_outcomes": 2,
+    "both_arms_indexed_episode_slots": 17,
+    "both_arms_completed_collection_slots": 16
+  },
+  "last_admission": {
+    "http_status_available": false,
+    "kind": "start",
+    "text_delta_events": 2,
+    "tool_proposal_events": 0,
+    "safe_reason": "",
+    "stage": "response_stream",
+    "final_events": 0,
+    "milliseconds": 66018,
+    "events": [
+      "run_started",
+      "assistant_delta",
+      "assistant_delta",
+      "transport_error"
+    ],
+    "usage": "NULL_UNKNOWN_NOT_ZERO",
+    "code": "provider_protocol_error",
+    "n": 134,
+    "replayable": false,
+    "status": "transport_error",
+    "text_contents_read": false
+  },
+  "origin": {
+    "do_not_infer": [
+      "malformed SSE",
+      "early EOF",
+      "token limit",
+      "invalid function arguments",
+      "provider upstream defect",
+      "scope expiry",
+      "750ms authority timeout"
+    ],
+    "upstream_vs_adapter_cause": "UNKNOWN",
+    "budget_scopes": [
+      {
+        "scope_id": "5289cd007ea509599b8fe3f0ab04a867cb14d0b3a20ce1338131d8b3a55b21f2",
+        "kind": "mandate",
+        "deadline": "2026-10-26T09:53:54.313742+07:00"
+      },
+      {
+        "scope_id": "917dd6afd66e5205309a1a7e38b700fb82c5a594a5f0bdd4dd2bdcbe50da7c1c",
+        "kind": "task",
+        "deadline": "2026-10-26T09:53:55.420748+07:00"
+      },
+      {
+        "scope_id": "67815ed251b9aa6b1a413b93257fc3a895baf45882a66f78e7bfc224b27590f9",
+        "kind": "task",
+        "deadline": "2026-10-26T09:53:55.392723+07:00"
+      },
+      {
+        "scope_id": "ab4377fa38f3300a1cc32ed80fe1ed5d3e4509fe25f3525cd03fe0485b5c5f3c",
+        "kind": "owner_day",
+        "deadline": "2026-10-27T07:00:00+07:00"
+      },
+      {
+        "scope_id": "ca27ebc4c5cf149be5fdc7af3bed0c9b5d9bd42a70ac44808bba0a2c715e9e85",
+        "kind": "mandate",
+        "deadline": "2026-10-26T09:53:54.313742+07:00"
+      }
+    ],
+    "observed_boundary": "typed native provider protocol error while processing streamed response, after two actual text deltas",
+    "same_as_old_midnight_failure": false,
+    "source_chain_receipt_sha256": "202cacf3b216797eb96f9b5aaafd50a4a84b3c25da95db489d120f9846b9330a",
+    "actual_run": "failed transport_error; fixed error_message provider_protocol_error",
+    "actual_input": "blocked provider_protocol_error; checkpoint model_budget_reserved",
+    "precise_rejecting_branch": "UNKNOWN_NOT_RETAINED"
+  },
+  "observer": {
+    "last_identity_schema": "header claim only; failed quiescence cannot independently qualify it",
+    "last_actual_events": 60214,
+    "last_forensic_qualified": false,
+    "last_operation_failures": 0,
+    "no_capacity_fault_observed": true,
+    "last_dropped_events": 0,
+    "failed_quiescence_never_PASS": true,
+    "last_observer_failed": false,
+    "independently_validated_sealed_streams": 33,
+    "last_paired_spans": 30107,
+    "last_header_sealed": false,
+    "last_forensic_sha256": "692b1a2bcfe1b4385033a1a9b1480dcccb2a1ceae7858efc2c38cd820d7ad73a",
+    "last_quiescence": {
+      "schema": "",
+      "observed_at": "0001-01-01T00:00:00Z",
+      "fixture_locally_stopped": false,
+      "broker_reaped": false,
+      "runtime_stopped": false,
+      "provider_and_recipient_in_flight": 0,
+      "live_leases": 0,
+      "live_claims": 0,
+      "broker_backends": 0,
+      "broker_application_observed_before_stop": true
+    },
+    "last_open_spans": 0
+  },
+  "mappings_read": false,
+  "goldens_read": false,
+  "quality_assessed": false,
+  "candidate_promoted": false,
+  "issue_closed": false,
+  "new_window_or_retry_authorized": false,
+  "checker_native_calls": 0,
+  "checker_auth_access": 0,
+  "checker_tests_replayed": 0,
+  "live_DB_work_completed": true,
+  "previous_receipt_sha256": "02e4cc1e9022cf045f789fb12909fc6c0842ac8bb16d4452c75f5e20c9a95810",
+  "correction": "Clarify paired coverage: seventeen slots have both arms indexed, but only sixteen have both arms complete as collector subtests. No semantic success is implied."
+}

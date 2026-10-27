@@ -1,0 +1,17 @@
+{
+  "private_full_dump_sha256": "048e21d0db2f986a2f6756a58f05170a8342f027fede815d887e13303825c5c7",
+  "private_full_dump_published": false,
+  "pg_restore_list_pass": true,
+  "restore_proved": false,
+  "native_admissions": 3,
+  "inclusive_admissions": 643,
+  "new_known_full_tokens": 10469,
+  "inclusive_known_full_tokens": 4910612,
+  "new_null_usage": 1,
+  "inclusive_null_usage": 8,
+  "last_safe_reason": "stream_empty_answer",
+  "last_model_version": "gemini-3.8-flash-n",
+  "last_usage": "NULL_NOT_RECONSTRUCTED",
+  "quality_assessed": false,
+  "candidate_promoted": false
+}

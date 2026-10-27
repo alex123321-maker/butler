@@ -1,0 +1,4 @@
+=== RUN   TestLocal115ClosedNativeHistoryImport
+    memory115_closed_local_native_history_test.go:125: CLOSED_LOCAL_HISTORY: original157 raw files and prior213 recursively retained;232native/231known/1unknown;233product/231observed/2NULL/1withoutNative;1738466known full tokens; noauth/PG/native or release qualification
+--- PASS: TestLocal115ClosedNativeHistoryImport (34.33s)
+PASS

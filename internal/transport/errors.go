@@ -65,7 +65,11 @@ func DiagnosticReason(err error) string {
 		return ""
 	}
 	switch failure.SafeReason {
-	case "batch_tool_calls_unsupported", "unsupported_schema_min_items", "unsupported_schema_max_items", "response_schema_rejected", "upstream_invalid_argument",
+	case "stream_json_invalid", "stream_envelope_invalid", "stream_usage_ambiguous", "stream_usage_invalid", "stream_usage_conflict",
+		"stream_model_version_invalid", "stream_candidate_unsupported", "stream_candidate_unexpected", "stream_finish_rejected", "stream_automatic_function_execution",
+		"stream_part_invalid", "stream_part_unsupported", "stream_thought_invalid", "stream_function_ambiguous", "stream_content_missing", "stream_terminal_missing",
+		"stream_frame_limit", "stream_function_truncated", "stream_empty_answer", "http_non_sse_response", "http_do_failed_without_response",
+		"batch_tool_calls_unsupported", "unsupported_schema_min_items", "unsupported_schema_max_items", "response_schema_rejected", "upstream_invalid_argument",
 		"upstream_bad_request_non_json", "upstream_failed_precondition", "upstream_model_rejected", "upstream_thinking_rejected", "upstream_output_limit_rejected", "upstream_system_instruction_rejected",
 		"upstream_access_token_expired", "upstream_scope_insufficient", "upstream_service_disabled", "upstream_billing_disabled", "upstream_iam_denied", "upstream_location_policy", "upstream_unauthenticated", "upstream_permission_denied":
 		return failure.SafeReason

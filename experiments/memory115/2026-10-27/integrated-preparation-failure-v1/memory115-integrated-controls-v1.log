@@ -1,0 +1,880 @@
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence
+--- PASS: TestLocal115ClosedHandbackProfileBoundaries (0.03s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence (0.00s)
+=== RUN   TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution
+--- PASS: TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution (0.00s)
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy
+--- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation (0.01s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy (0.01s)
+=== RUN   TestExperienceCompoundSourceBound
+=== RUN   TestExperienceCompoundSourceBound/catalog_default
+=== RUN   TestExperienceCompoundSourceBound/experience_default
+=== RUN   TestExperienceCompoundSourceBound/catalog_explicit
+=== RUN   TestExperienceCompoundSourceBound/experience_compound
+=== RUN   TestExperienceCompoundSourceBound/existing_ceiling
+=== RUN   TestExperienceCompoundSourceBound/invalid_zero
+=== RUN   TestExperienceCompoundSourceBound/invalid_short
+=== RUN   TestExperienceCompoundSourceBound/invalid_long
+--- PASS: TestExperienceCompoundSourceBound (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/catalog_default (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/experience_default (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/catalog_explicit (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/experience_compound (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/existing_ceiling (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_zero (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_short (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_long (0.00s)
+=== RUN   TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration
+--- PASS: TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration (6.20s)
+=== RUN   TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration
+--- PASS: TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration (6.75s)
+=== RUN   TestExperienceNativeTemplateRejectsAuthBeforeFreezeIntegration
+--- PASS: TestExperienceNativeTemplateRejectsAuthBeforeFreezeIntegration (5.08s)
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/original_1
+2026/10/27 05:47:17 INFO run created component=run run_id=run-1793080037182606321-f594b0e85b55b603 session_key=web:30a556c95d7d03ca549b6c9df00ade2f7580d7992a129713f9d2906d12331439 state=created
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=created to_state=queued
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=queued to_state=acquired
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=acquired to_state=preparing
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=preparing to_state=model_running
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:17 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:18 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:19 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:19 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:19 INFO run transitioned component=run run_id=run-1793080037182606321-f594b0e85b55b603 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/original_2
+2026/10/27 05:47:21 INFO run created component=run run_id=run-1793080041159398180-42c958a355958334 session_key=web:d9da02d1c92e01f4b12ffe7a7ea0766ebb3fc16f0e3e41104cc0ea71bcfa98d3 state=created
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=created to_state=queued
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=queued to_state=acquired
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=acquired to_state=preparing
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=preparing to_state=model_running
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:21 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:22 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:23 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:23 INFO run transitioned component=run run_id=run-1793080041159398180-42c958a355958334 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/original_3
+2026/10/27 05:47:24 INFO run created component=run run_id=run-1793080044833961133-79e46504c229439b session_key=web:e020443a08315985a0a547bbfe90a47f37730f22218f15741e017d732c5c8253 state=created
+2026/10/27 05:47:24 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=created to_state=queued
+2026/10/27 05:47:24 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=queued to_state=acquired
+2026/10/27 05:47:24 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=acquired to_state=preparing
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=preparing to_state=model_running
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=model_running to_state=tool_pending
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:25 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=model_running to_state=tool_pending
+2026/10/27 05:47:26 INFO run transitioned component=run run_id=run-1793080044833961133-79e46504c229439b from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:27 INFO run created component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 session_key=web:e020443a08315985a0a547bbfe90a47f37730f22218f15741e017d732c5c8253 state=created
+2026/10/27 05:47:27 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=created to_state=queued
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=queued to_state=acquired
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=acquired to_state=preparing
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=preparing to_state=model_running
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:28 INFO run transitioned component=run run_id=run-1793080047983767581-8cc0de0bf871ca53 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/original_4
+2026/10/27 05:47:30 INFO run created component=run run_id=run-1793080050401230323-146674cd462d708d session_key=web:6e36c6622fdb4a3df96f93b78b727a940698a9c4d55465119b41f8560e3acf3e state=created
+2026/10/27 05:47:30 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=created to_state=queued
+2026/10/27 05:47:30 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=queued to_state=acquired
+2026/10/27 05:47:30 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=acquired to_state=preparing
+2026/10/27 05:47:30 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=preparing to_state=model_running
+2026/10/27 05:47:30 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=model_running to_state=tool_pending
+2026/10/27 05:47:31 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:31 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:31 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:31 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=model_running to_state=tool_pending
+2026/10/27 05:47:31 INFO run transitioned component=run run_id=run-1793080050401230323-146674cd462d708d from_state=tool_pending to_state=tool_running
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/note_1
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/note_2
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/note_3
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/note_4
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/skill_preparation
+2026/10/27 05:47:46 INFO run created component=run run_id=run-1793080066801169718-5a10638bfc128537 session_key=web:cace01b40f42ee4d59b9a12c97e8f144d19085b017ed17f5076ad3e7715c72ac state=created
+2026/10/27 05:47:46 INFO run transitioned component=run run_id=run-1793080066801169718-5a10638bfc128537 from_state=created to_state=queued
+2026/10/27 05:47:46 INFO run transitioned component=run run_id=run-1793080066801169718-5a10638bfc128537 from_state=queued to_state=acquired
+2026/10/27 05:47:46 INFO run transitioned component=run run_id=run-1793080066801169718-5a10638bfc128537 from_state=acquired to_state=preparing
+2026/10/27 05:47:47 INFO run transitioned component=run run_id=run-1793080066801169718-5a10638bfc128537 from_state=preparing to_state=model_running
+2026/10/27 05:47:47 INFO run transitioned component=run run_id=run-1793080066801169718-5a10638bfc128537 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_010
+2026/10/27 05:47:50 INFO run created component=run run_id=run-1793080070762978436-3b61123a7a5ef12b session_key=web:53e381a7597b10f78e326783ff6df02f195f497e16b257802aae49142548eb04 state=created
+2026/10/27 05:47:50 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=created to_state=queued
+2026/10/27 05:47:50 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=queued to_state=acquired
+2026/10/27 05:47:50 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=acquired to_state=preparing
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=preparing to_state=model_running
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=model_running to_state=tool_pending
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=model_running to_state=tool_pending
+2026/10/27 05:47:51 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=model_running to_state=tool_pending
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:52 INFO run transitioned component=run run_id=run-1793080070762978436-3b61123a7a5ef12b from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_011
+2026/10/27 05:47:55 INFO run created component=run run_id=run-1793080075935688949-ebfb7042548cf653 session_key=web:25e35c45ab74999b94e34d4a521cc967dda29286c7ade3c48786704ce2671d1b state=created
+2026/10/27 05:47:55 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=created to_state=queued
+2026/10/27 05:47:55 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=queued to_state=acquired
+2026/10/27 05:47:55 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=acquired to_state=preparing
+2026/10/27 05:47:56 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=preparing to_state=model_running
+2026/10/27 05:47:56 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:56 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=model_running to_state=tool_pending
+2026/10/27 05:47:57 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_pending to_state=tool_running
+2026/10/27 05:47:58 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:47:58 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:47:58 INFO run transitioned component=run run_id=run-1793080075935688949-ebfb7042548cf653 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_012
+2026/10/27 05:48:00 INFO run created component=run run_id=run-1793080080500706027-221b52b137f98047 session_key=web:c48c664b35661fa8ce614752970cd06ed3560187f803bf674be53dc6afc82dcf state=created
+2026/10/27 05:48:00 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=created to_state=queued
+2026/10/27 05:48:00 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=queued to_state=acquired
+2026/10/27 05:48:00 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=acquired to_state=preparing
+2026/10/27 05:48:02 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=preparing to_state=model_running
+2026/10/27 05:48:03 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:04 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:05 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:06 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:07 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:08 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:09 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:10 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:11 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:11 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:13 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:13 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:14 INFO run transitioned component=run run_id=run-1793080080500706027-221b52b137f98047 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_013
+2026/10/27 05:48:17 INFO run created component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab session_key=web:7cc798151d1b8f9ccedf533ce6c8f7d666d02bf9c989df479352d9bbf345d5ba state=created
+2026/10/27 05:48:17 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=created to_state=queued
+2026/10/27 05:48:17 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=queued to_state=acquired
+2026/10/27 05:48:17 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=acquired to_state=preparing
+2026/10/27 05:48:18 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=preparing to_state=model_running
+2026/10/27 05:48:18 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=model_running to_state=tool_pending
+2026/10/27 05:48:18 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=model_running to_state=tool_pending
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=model_running to_state=tool_pending
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:19 INFO run transitioned component=run run_id=run-1793080097805552043-dd5a2e0d8f4728ab from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_014
+2026/10/27 05:48:23 INFO run created component=run run_id=run-1793080103013123719-a2cdd0da881938c0 session_key=web:d50160cd9a3f2192259578e200783704fda906738ccc67a21b5f29525084c6ef state=created
+2026/10/27 05:48:23 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=created to_state=queued
+2026/10/27 05:48:23 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=queued to_state=acquired
+2026/10/27 05:48:23 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=acquired to_state=preparing
+2026/10/27 05:48:24 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=preparing to_state=model_running
+2026/10/27 05:48:25 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:25 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:26 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:26 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:26 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:27 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:27 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:28 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:28 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:28 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:29 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:29 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:29 INFO run transitioned component=run run_id=run-1793080103013123719-a2cdd0da881938c0 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_015
+2026/10/27 05:48:31 INFO run created component=run run_id=run-1793080111530696099-cae39d754d94bc29 session_key=web:7ba509e560ff0aec4e1622ae349cd25d508bb7a75e61160d7d4016a91eaa66c7 state=created
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=created to_state=queued
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=queued to_state=acquired
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=acquired to_state=preparing
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=preparing to_state=model_running
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:31 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:32 INFO run transitioned component=run run_id=run-1793080111530696099-cae39d754d94bc29 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_016
+2026/10/27 05:48:35 INFO run created component=run run_id=run-1793080115356194659-9e0d34cb25124186 session_key=web:008a6f88517726eb3b04ebdcdb0084de691d493b7f158def313ccc432beecbf2 state=created
+2026/10/27 05:48:35 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=created to_state=queued
+2026/10/27 05:48:35 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=queued to_state=acquired
+2026/10/27 05:48:35 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=acquired to_state=preparing
+2026/10/27 05:48:36 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=preparing to_state=model_running
+2026/10/27 05:48:37 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:37 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:37 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:38 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:38 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:38 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:39 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:39 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:39 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:39 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:40 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:40 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:41 INFO run transitioned component=run run_id=run-1793080115356194659-9e0d34cb25124186 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_017
+2026/10/27 05:48:42 INFO run created component=run run_id=run-1793080122731798849-22eb46154a2ffc35 session_key=web:0e33a576aeda911966bdffca7c1aa741e3c0cf36cf0be86cc119fdf133b1906a state=created
+2026/10/27 05:48:42 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=created to_state=queued
+2026/10/27 05:48:42 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=queued to_state=acquired
+2026/10/27 05:48:42 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=acquired to_state=preparing
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=preparing to_state=model_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:43 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:44 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:44 INFO run transitioned component=run run_id=run-1793080122731798849-22eb46154a2ffc35 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_018
+2026/10/27 05:48:46 INFO run created component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 session_key=web:0eb8ed78e7b69fb796ee4f6abad87a577ffc30db2f9623b008736a51c2238ca7 state=created
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=created to_state=queued
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=queued to_state=acquired
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=acquired to_state=preparing
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=preparing to_state=model_running
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:46 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=model_running to_state=tool_pending
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:47 INFO run transitioned component=run run_id=run-1793080126009708929-89d78bd661c9a7c2 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_019
+2026/10/27 05:48:49 INFO run created component=run run_id=run-1793080129501767544-0f2f40d7088eb11f session_key=web:3b6a3a23e04dfa731ad7991050efefe1488b0b674187e24a2127fd2b2594f3cc state=created
+2026/10/27 05:48:49 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=created to_state=queued
+2026/10/27 05:48:49 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=queued to_state=acquired
+2026/10/27 05:48:49 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=acquired to_state=preparing
+2026/10/27 05:48:49 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=preparing to_state=model_running
+2026/10/27 05:48:49 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=model_running to_state=tool_pending
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=model_running to_state=tool_pending
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=model_running to_state=tool_pending
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:50 INFO run transitioned component=run run_id=run-1793080129501767544-0f2f40d7088eb11f from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_020
+2026/10/27 05:48:53 INFO run created component=run run_id=run-1793080133095725082-813d273dae5e55dd session_key=web:b357d437e53b03afef80859384499ea562e662808245f059591b214dca2aaff9 state=created
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=created to_state=queued
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=queued to_state=acquired
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=acquired to_state=preparing
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=preparing to_state=model_running
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=model_running to_state=tool_pending
+2026/10/27 05:48:53 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=model_running to_state=tool_pending
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=model_running to_state=tool_pending
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:54 INFO run transitioned component=run run_id=run-1793080133095725082-813d273dae5e55dd from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_021
+2026/10/27 05:48:56 INFO run created component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c session_key=web:098c8b9b8997699aa2d3151f56396e8072a2688fd5bc99ef6f05a2a509ed5c36 state=created
+2026/10/27 05:48:56 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=created to_state=queued
+2026/10/27 05:48:56 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=queued to_state=acquired
+2026/10/27 05:48:56 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=acquired to_state=preparing
+2026/10/27 05:48:57 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=preparing to_state=model_running
+2026/10/27 05:48:58 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=model_running to_state=tool_pending
+2026/10/27 05:48:58 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_pending to_state=tool_running
+2026/10/27 05:48:58 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:48:59 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:48:59 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=model_running to_state=tool_pending
+2026/10/27 05:48:59 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:00 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:00 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:00 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=model_running to_state=tool_pending
+2026/10/27 05:49:01 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:01 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:01 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:02 INFO run transitioned component=run run_id=run-1793080136717457599-1ed0e7f7613bd69c from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_022
+2026/10/27 05:49:04 INFO run created component=run run_id=run-1793080144502732312-ad70d26383046a8d session_key=web:f1e57e39d580ca5c6aa575e6e62485f7825f2a01755cd8399d0a1e6118b6b8cf state=created
+2026/10/27 05:49:04 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=created to_state=queued
+2026/10/27 05:49:04 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=queued to_state=acquired
+2026/10/27 05:49:04 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=acquired to_state=preparing
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=preparing to_state=model_running
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=model_running to_state=tool_pending
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=model_running to_state=tool_pending
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:05 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=model_running to_state=tool_pending
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:06 INFO run transitioned component=run run_id=run-1793080144502732312-ad70d26383046a8d from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_023
+2026/10/27 05:49:09 INFO run created component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 session_key=web:3a1415ff35c809284823a821aa8a132fff2f3e05262456a735dd0bf2e96165aa state=created
+2026/10/27 05:49:09 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=created to_state=queued
+2026/10/27 05:49:09 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=queued to_state=acquired
+2026/10/27 05:49:09 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=acquired to_state=preparing
+2026/10/27 05:49:10 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=preparing to_state=model_running
+2026/10/27 05:49:11 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:11 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:12 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:12 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:13 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:13 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:14 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:14 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:15 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:15 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:15 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:16 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:17 INFO run transitioned component=run run_id=run-1793080149889480732-c34a3b2aefd947a7 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_024
+2026/10/27 05:49:19 INFO run created component=run run_id=run-1793080159583576933-7e6d159e79966b0f session_key=web:01f8e2875da42e021183ef43644e980df8aaba2f61e186cfa1f99915011d7e4b state=created
+2026/10/27 05:49:19 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=created to_state=queued
+2026/10/27 05:49:19 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=queued to_state=acquired
+2026/10/27 05:49:19 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=acquired to_state=preparing
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=preparing to_state=model_running
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=model_running to_state=tool_pending
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=model_running to_state=tool_pending
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:20 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=model_running to_state=tool_pending
+2026/10/27 05:49:21 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:21 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:21 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:21 INFO run transitioned component=run run_id=run-1793080159583576933-7e6d159e79966b0f from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_025
+2026/10/27 05:49:23 INFO run created component=run run_id=run-1793080163791381505-14c5d3353243d504 session_key=web:8c1a1d1630dd3a5c9f86358737f389166828f3a5190e39aec5afe1ec27ac7b56 state=created
+2026/10/27 05:49:23 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=created to_state=queued
+2026/10/27 05:49:23 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=queued to_state=acquired
+2026/10/27 05:49:23 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=acquired to_state=preparing
+2026/10/27 05:49:24 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=preparing to_state=model_running
+2026/10/27 05:49:25 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:25 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:25 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:26 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:26 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:26 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:27 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:27 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:27 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:27 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:28 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:28 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:28 INFO run transitioned component=run run_id=run-1793080163791381505-14c5d3353243d504 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_026
+2026/10/27 05:49:30 INFO run created component=run run_id=run-1793080170841321727-0680c1435fdf172a session_key=web:89ea6bf97b9c0671de0b989a2515aca7234b6674acd2d3321605a5d0a0704688 state=created
+2026/10/27 05:49:30 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=created to_state=queued
+2026/10/27 05:49:30 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=queued to_state=acquired
+2026/10/27 05:49:30 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=acquired to_state=preparing
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=preparing to_state=model_running
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:31 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:32 INFO run transitioned component=run run_id=run-1793080170841321727-0680c1435fdf172a from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_027
+2026/10/27 05:49:34 INFO run created component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 session_key=web:0004afcb1cb855e411541c8c5956a02f1420b54578354e03ada58de150a86425 state=created
+2026/10/27 05:49:34 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=created to_state=queued
+2026/10/27 05:49:34 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=queued to_state=acquired
+2026/10/27 05:49:34 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=acquired to_state=preparing
+2026/10/27 05:49:34 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=preparing to_state=model_running
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:35 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:36 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:36 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:36 INFO run transitioned component=run run_id=run-1793080174326067379-6c1c05f95e1493c9 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_028
+2026/10/27 05:49:37 INFO run created component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 session_key=web:395b22093a8f6c1bea8d8663042a9b598693b8789d99cc3bae32b1b5ec44249d state=created
+2026/10/27 05:49:37 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=created to_state=queued
+2026/10/27 05:49:37 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=queued to_state=acquired
+2026/10/27 05:49:37 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=acquired to_state=preparing
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=preparing to_state=model_running
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:38 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:39 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:39 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:39 INFO run transitioned component=run run_id=run-1793080177804870998-16fd2c0ff9c97613 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_029
+2026/10/27 05:49:41 INFO run created component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 session_key=web:dc81ee8a8ba6d897cf3bf735d5668fdc3854dbc569385503c449a7f19b22c4a3 state=created
+2026/10/27 05:49:41 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=created to_state=queued
+2026/10/27 05:49:41 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=queued to_state=acquired
+2026/10/27 05:49:41 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=acquired to_state=preparing
+2026/10/27 05:49:42 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=preparing to_state=model_running
+2026/10/27 05:49:42 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:42 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:42 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=model_running to_state=tool_pending
+2026/10/27 05:49:43 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:44 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:44 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:44 INFO run transitioned component=run run_id=run-1793080181730960715-ed944d36db4b9cf7 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_030
+2026/10/27 05:49:48 INFO run created component=run run_id=run-1793080188412287362-3e89d19b11e9d85a session_key=web:817eeb1cbf550b591ee648d562797d45e1946809483e1787c64ea6127a2acc12 state=created
+2026/10/27 05:49:48 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=created to_state=queued
+2026/10/27 05:49:48 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=queued to_state=acquired
+2026/10/27 05:49:48 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=acquired to_state=preparing
+2026/10/27 05:49:49 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=preparing to_state=model_running
+2026/10/27 05:49:49 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:50 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:50 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:51 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:51 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:51 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:52 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:52 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:52 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=model_running to_state=tool_pending
+2026/10/27 05:49:53 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:53 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:53 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:54 INFO run transitioned component=run run_id=run-1793080188412287362-3e89d19b11e9d85a from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_031
+2026/10/27 05:49:58 INFO run created component=run run_id=run-1793080198133292055-56e23bf70334425b session_key=web:2157e6ffd08877f68a8ff85c19243619b1291c69e56ebfc70eb035408c6233dc state=created
+2026/10/27 05:49:58 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=created to_state=queued
+2026/10/27 05:49:58 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=queued to_state=acquired
+2026/10/27 05:49:58 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=acquired to_state=preparing
+2026/10/27 05:49:58 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=preparing to_state=model_running
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=model_running to_state=tool_pending
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=model_running to_state=tool_pending
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_pending to_state=tool_running
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=model_running to_state=tool_pending
+2026/10/27 05:49:59 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:00 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:00 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:00 INFO run transitioned component=run run_id=run-1793080198133292055-56e23bf70334425b from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_032
+2026/10/27 05:50:03 INFO run created component=run run_id=run-1793080203461790755-c4885ffd926d2a5f session_key=web:8d2b8dfcc19e297a68508ecefb6e8a8930784bb0fab484217bdae5cf0d068d62 state=created
+2026/10/27 05:50:03 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=created to_state=queued
+2026/10/27 05:50:03 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=queued to_state=acquired
+2026/10/27 05:50:03 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=acquired to_state=preparing
+2026/10/27 05:50:04 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=preparing to_state=model_running
+2026/10/27 05:50:06 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=model_running to_state=tool_pending
+2026/10/27 05:50:07 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:10 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:11 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:11 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=model_running to_state=tool_pending
+2026/10/27 05:50:12 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:12 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:13 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:13 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=model_running to_state=tool_pending
+2026/10/27 05:50:13 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:14 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:14 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:16 INFO run transitioned component=run run_id=run-1793080203461790755-c4885ffd926d2a5f from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_033
+    memory_experience_native_runtime_test.go:282: actual reviewed extension preparation failed list reviewed extension is unavailable
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_034
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_035
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_036
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_037
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_038
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_039
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_040
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_041
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_042
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_043
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_044
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_045
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_046
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_047
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_048
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_049
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_050
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_051
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_052
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_053
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_054
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_055
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_056
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+=== RUN   TestExperienceNativeWholeCollectorControlledIntegration/control_057
+    memory_experience_native_collect_test.go:129: one-use single foreground slot required
+--- FAIL: TestExperienceNativeWholeCollectorControlledIntegration (190.95s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/original_1 (3.85s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/original_2 (3.72s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/original_3 (5.77s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/original_4 (2.84s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/note_1 (3.41s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/note_2 (3.16s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/note_3 (4.76s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/note_4 (2.54s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/skill_preparation (3.14s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_010 (3.93s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_011 (5.43s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_012 (16.56s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_013 (5.14s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_014 (9.91s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_015 (3.05s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_016 (8.22s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_017 (3.05s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_018 (3.73s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_019 (2.99s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_020 (3.91s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_021 (7.43s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_022 (4.23s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_023 (10.89s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_024 (4.13s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_025 (7.55s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_026 (3.32s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_027 (3.87s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_028 (3.14s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_029 (5.46s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_030 (9.38s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_031 (5.96s)
+    --- PASS: TestExperienceNativeWholeCollectorControlledIntegration/control_032 (16.53s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_033 (3.33s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_034 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_035 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_036 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_037 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_038 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_039 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_040 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_041 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_042 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_043 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_044 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_045 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_046 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_047 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_048 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_049 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_050 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_051 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_052 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_053 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_054 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_055 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_056 (0.00s)
+    --- FAIL: TestExperienceNativeWholeCollectorControlledIntegration/control_057 (0.00s)
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-normal
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-receipt-outage
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v2-normal
+--- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-normal (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-receipt-outage (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v2-normal (0.00s)
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/aggregated_new_models
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/changed_same_id
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/same_operation_new_id
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_new_id
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_refund
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/missing_population
+--- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds (0.04s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/aggregated_new_models (0.01s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/changed_same_id (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/same_operation_new_id (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_new_id (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_refund (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/missing_population (0.00s)
+=== RUN   TestExperienceNativeStorageClaimCannotReopenCohortIntegration
+--- PASS: TestExperienceNativeStorageClaimCannotReopenCohortIntegration (6.43s)
+=== RUN   TestExperienceNativeFailedSetupExportsAllAllocatedQuotePopulationsIntegration
+--- PASS: TestExperienceNativeFailedSetupExportsAllAllocatedQuotePopulationsIntegration (7.31s)
+=== RUN   TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC
+--- PASS: TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC (0.00s)
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_profile
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/unknown_write
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_identity
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_environment
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_permission
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_reset
+--- PASS: TestExperienceNativeMechanicalInputsFailClosed (0.02s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_profile (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/unknown_write (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_identity (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_environment (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_permission (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_reset (0.00s)
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-01
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-02
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-03
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-04
+2026/10/27 05:50:40 INFO run created component=run run_id=run-1793080240761741345-c09ba8e64adee663 session_key=web:a7a5f74877d720881820147605415811f720b6416c516f0554505f4b9a424339 state=created
+2026/10/27 05:50:40 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=created to_state=queued
+2026/10/27 05:50:40 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=queued to_state=acquired
+2026/10/27 05:50:40 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=acquired to_state=preparing
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=preparing to_state=model_running
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=model_running to_state=tool_pending
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=model_running to_state=tool_pending
+2026/10/27 05:50:41 INFO run transitioned component=run run_id=run-1793080240761741345-c09ba8e64adee663 from_state=tool_pending to_state=tool_running
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-01
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-02
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-03
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-04
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-05
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-06
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-07
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-08
+--- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration (7.55s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-01 (0.05s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-02 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-03 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-04 (1.38s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-01 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-02 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-03 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-04 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-05 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-06 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-07 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-08 (0.03s)
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration/0
+2026/10/27 05:50:47 INFO run created component=run run_id=run-1793080247737190891-94deb8350af204eb session_key=web:f05d2efba75cf3e19e85afda6eb089593fe88afd24d4c8b287645708318291c4 state=created
+2026/10/27 05:50:47 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=created to_state=queued
+2026/10/27 05:50:47 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=queued to_state=acquired
+2026/10/27 05:50:47 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=acquired to_state=preparing
+2026/10/27 05:50:48 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=preparing to_state=model_running
+2026/10/27 05:50:48 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=model_running to_state=tool_pending
+2026/10/27 05:50:48 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:49 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:49 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:49 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=model_running to_state=tool_pending
+2026/10/27 05:50:49 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=model_running to_state=tool_pending
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:50 INFO run transitioned component=run run_id=run-1793080247737190891-94deb8350af204eb from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration/1
+2026/10/27 05:50:52 INFO run created component=run run_id=run-1793080252329105028-643d90a014293fa1 session_key=web:551786a357e0e99bc1d957ea7c71f0aaddbcc05f2de725571972851a27ae65b1 state=created
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=created to_state=queued
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=queued to_state=acquired
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=acquired to_state=preparing
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=preparing to_state=model_running
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=model_running to_state=tool_pending
+2026/10/27 05:50:52 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=model_running to_state=tool_pending
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=model_running to_state=tool_pending
+2026/10/27 05:50:53 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_pending to_state=tool_running
+2026/10/27 05:50:54 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:50:54 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:50:54 INFO run transitioned component=run run_id=run-1793080252329105028-643d90a014293fa1 from_state=model_running to_state=finalizing
+--- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration (13.52s)
+    --- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration/0 (4.57s)
+    --- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration/1 (3.75s)
+=== RUN   TestExperienceNativePrivateParentPreflightPrecedesAuth
+--- PASS: TestExperienceNativePrivateParentPreflightPrecedesAuth (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.31s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.06s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal (0.06s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.02s)
+=== RUN   TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes
+--- PASS: TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes (0.15s)
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/start
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/tool_result
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/continuation
+--- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage (0.20s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/start (0.07s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/tool_result (0.06s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/continuation (0.07s)
+=== RUN   TestExperienceNativeAbortRetainsGlobalPartitionIntegration
+--- PASS: TestExperienceNativeAbortRetainsGlobalPartitionIntegration (6.53s)
+=== RUN   TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration
+--- PASS: TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration (9.63s)
+=== RUN   TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration
+2026/10/27 05:51:17 INFO run created component=run run_id=run-1793080277316550238-f1bc0132288a4535 session_key=web:4f9537b7999f6334e9ae98bcef880a83547df3b990831a646ba96bbf6a466dab state=created
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=created to_state=queued
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=queued to_state=acquired
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=acquired to_state=preparing
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=preparing to_state=model_running
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=model_running to_state=tool_pending
+2026/10/27 05:51:17 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=tool_pending to_state=tool_running
+2026/10/27 05:51:18 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:51:18 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:51:18 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=model_running to_state=tool_pending
+2026/10/27 05:51:18 INFO run transitioned component=run run_id=run-1793080277316550238-f1bc0132288a4535 from_state=tool_pending to_state=tool_running
+2026/10/27 05:51:19 INFO run created component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 session_key=web:4f9537b7999f6334e9ae98bcef880a83547df3b990831a646ba96bbf6a466dab state=created
+2026/10/27 05:51:19 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=created to_state=queued
+2026/10/27 05:51:19 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=queued to_state=acquired
+2026/10/27 05:51:19 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=acquired to_state=preparing
+2026/10/27 05:51:19 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=preparing to_state=model_running
+2026/10/27 05:51:20 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=model_running to_state=tool_pending
+2026/10/27 05:51:20 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=tool_pending to_state=tool_running
+2026/10/27 05:51:20 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:51:20 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:51:20 INFO run transitioned component=run run_id=run-1793080279411000048-479ce6b4bb2aff95 from_state=model_running to_state=finalizing
+2026/10/27 05:51:33 INFO run created component=run run_id=run-1793080293854182306-7efde8f6e67ee061 session_key=web:f55e001d92cd34ce71633d2a759f44e14168d93cac9d749265f2de452cff92cf state=created
+2026/10/27 05:51:33 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=created to_state=queued
+2026/10/27 05:51:33 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=queued to_state=acquired
+2026/10/27 05:51:33 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=acquired to_state=preparing
+2026/10/27 05:51:34 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=preparing to_state=model_running
+2026/10/27 05:51:34 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=model_running to_state=tool_pending
+2026/10/27 05:51:34 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=tool_pending to_state=tool_running
+2026/10/27 05:51:35 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=tool_running to_state=awaiting_model_resume
+2026/10/27 05:51:36 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=awaiting_model_resume to_state=model_running
+2026/10/27 05:51:36 INFO run transitioned component=run run_id=run-1793080293854182306-7efde8f6e67ee061 from_state=model_running to_state=finalizing
+--- PASS: TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration (25.41s)
+=== RUN   TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative
+--- PASS: TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative (0.02s)
+FAIL

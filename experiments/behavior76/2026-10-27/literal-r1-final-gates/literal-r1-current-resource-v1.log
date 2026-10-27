@@ -1,0 +1,4 @@
+=== RUN   TestBehavior76LocalUnknownResourceProfileIntegration
+    behavior76_resources_test.go:108: prospective persistent private disk/PostgreSQL resource identity observed before any native admission; native/auth=0 {"authority_reserved_connections":1,"authority_total_connections":10,"data_directory":"/var/lib/postgresql/effort76","disk_available_kib":1205616,"disk_capacity_kib":4046560,"disk_device":"/dev/loop0","endpoint":"127.0.0.1:55451/behavior76_test","fsync":"on","jit_available":false,"max_wal_size":"128MB","min_wal_size":"32MB","minimum_available_kib":1048576,"observer_spool_filesystem":{"available_kib":1205616,"capacity_kib":4046560,"device":"/dev/loop0","filesystem":"ext4","minimum_available_kib":1048576,"publication_inside_callback":false,"root":"/tmp"},"server_version":"17.11","shared_buffers":"32MB","version":"behavior76-persistent-local-resources-v1","watchdog_millis":750}
+--- PASS: TestBehavior76LocalUnknownResourceProfileIntegration (0.04s)
+PASS

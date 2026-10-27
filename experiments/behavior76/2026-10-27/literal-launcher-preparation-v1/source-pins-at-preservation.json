@@ -1,0 +1,50 @@
+[
+  {
+    "sha256": "2729967ba643709d4a06b34ebd0e86c2b690bb4a8738f3d28999a45f4d039c47",
+    "path": ".gitattributes"
+  },
+  {
+    "sha256": "06a0707818d161da9567b11ece7396369e0c710acb2beda6dbf9cf2ca0bbfbf6",
+    "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+  },
+  {
+    "sha256": "cb308589086b1caacda7efbddb7b5724f1fd7a6fc6f0638497c658b9ebf1e273",
+    "path": "apps/orchestrator/internal/app/behavior76_literal_plan_test.go"
+  },
+  {
+    "sha256": "8c4c7af85aae6aaa698a22a0e4324027a92f2638ca2ddf2da6671304916e4303",
+    "path": "apps/orchestrator/README.md"
+  },
+  {
+    "sha256": "0a1f3ca42b5d60a7eb11ccf81a1a5c73309b82aa7bc2e492dd612cae3a34615f",
+    "path": "docs/testing/issue76-literal-supplement-proposal.md"
+  },
+  {
+    "sha256": "b7698708185984cf0b66306714bec0b0c84f77bce709acf9c0e65756a03857da",
+    "path": "docs/testing/issue76-literal-supplement-protocol.md"
+  },
+  {
+    "sha256": "0e30ed11461bbe80699d3db06a5c74e6457d0e93af9da62db135eea2481ba5d1",
+    "path": "scripts/dev/behavior76-literal-admission.schema.json"
+  },
+  {
+    "sha256": "93d2208daa3e0bedff576999324aff95e5858f2759415ab6925d29a04ca7de56",
+    "path": "scripts/dev/behavior76-literal-host.sh"
+  },
+  {
+    "sha256": "6866bddb0dc25dec47acc0b7dd63fc81af749db50d376af6810c91b62a7fe88b",
+    "path": "scripts/dev/behavior76-literal-launch.ps1"
+  },
+  {
+    "sha256": "4e40e5831a3ff67fc002679292369c36dd2f819980142c0e266f73498fca7ccd",
+    "path": "scripts/dev/behavior76-literal-launcher-core.ps1"
+  },
+  {
+    "sha256": "4ce2d33e6733a5f9643e700f2debeab687f77b6a90920b166aa6056238ffde78",
+    "path": "scripts/dev/test-behavior76-literal-host-bind.ps1"
+  },
+  {
+    "sha256": "d40c9dbe1cc4355562073dac543fd4ec19a1508e118ad47e0825cdf4d7033b78",
+    "path": "scripts/dev/test-behavior76-literal-launcher.ps1"
+  }
+]

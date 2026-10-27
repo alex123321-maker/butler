@@ -1,0 +1,7 @@
+=== RUN   TestBehavior76AuthorityTraceCancelledRollbackIntegration
+    behavior76_pgx_trace_test.go:51: actual cancelled prepared query and rollback both remain errors; closed_after_query=false closed_after_rollback=true observer_failed=false open_spans=1 dropped=0 operation_errors=1 events=7; native/auth=0
+    behavior76_pgx_trace_test.go:56: driver did not report every actual operation return
+--- FAIL: TestBehavior76AuthorityTraceCancelledRollbackIntegration (2.48s)
+FAIL
+FAIL	github.com/butler/butler/apps/orchestrator/internal/app	2.527s
+FAIL

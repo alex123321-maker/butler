@@ -1,0 +1,64 @@
+{
+  "version": "issue76-independent-r2-original-ELF-bounded-search-v1",
+  "issued_utc": "2026-10-26T19:51:36.3288539+00:00",
+  "target_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "searched_roots": [
+    ".cache/behavior76",
+    ".cache/issue76-independent",
+    "experiments/behavior76"
+  ],
+  "searched_pattern": "recursive regular *.test files only",
+  "candidates": [
+    {
+      "path": ".cache/behavior76/collector-v10-r2-bound.test",
+      "sha256": "199e8b8c97201f482309ccb1771ba76ee4f0cea5adb0bcb5fb7ffff71bf0d7bd",
+      "bytes": 86522755
+    },
+    {
+      "path": ".cache/behavior76/collector-v10-r2-unbound.test",
+      "sha256": "a9eb411e3fe6ce6649f0fede27df884e62f6b1875a8e5c1aeea40b08b0cc7366",
+      "bytes": 86476879
+    },
+    {
+      "path": ".cache/behavior76/collector-v10-r3-bound.test",
+      "sha256": "199e8b8c97201f482309ccb1771ba76ee4f0cea5adb0bcb5fb7ffff71bf0d7bd",
+      "bytes": 86522755
+    },
+    {
+      "path": ".cache/behavior76/collector-v10-r3-public-v1-cb740beb.test",
+      "sha256": "cb740beb39b5592f7bcd1663fc0644e711155a9aa05561a942036ab70a709d4d",
+      "bytes": 86523251
+    },
+    {
+      "path": ".cache/behavior76/collector-v10-r3-unbound.test",
+      "sha256": "b155057f7da92b054deff1e7c110999173c69547e6fe5d8c63d14dc89401916d",
+      "bytes": 86524179
+    },
+    {
+      "path": ".cache/behavior76/collector.test",
+      "sha256": "199e8b8c97201f482309ccb1771ba76ee4f0cea5adb0bcb5fb7ffff71bf0d7bd",
+      "bytes": 86522755
+    },
+    {
+      "path": ".cache/behavior76/closed-binaries/local-http-v9-54de972a69f02cc2c0d1103f08375b88c40ee3723f4ddceeeba33c89048f2b2f.test",
+      "sha256": "54de972a69f02cc2c0d1103f08375b88c40ee3723f4ddceeeba33c89048f2b2f",
+      "bytes": 86069602
+    },
+    {
+      "path": ".cache/behavior76/closed-binaries/public-v10-a7ec-bbc22051a0eb6235a309e536192b082954aea9ef9466b869125c30dbc5626007.test",
+      "sha256": "bbc22051a0eb6235a309e536192b082954aea9ef9466b869125c30dbc5626007",
+      "bytes": 86170406
+    },
+    {
+      "path": ".cache/issue76-independent/private-closed-binaries/v10-pre-native-4a828589/collector.test",
+      "sha256": "4a82858999109d580527a67582bcc6f49ead9217a895c9286fac68f0f1fea435",
+      "bytes": 86441692
+    }
+  ],
+  "exact_original_found": false,
+  "limitations": "Only these repo-local research/evidence roots; Linux go-cache/private backups/whole PC not searched. A hash receipt or unbound/rebuilt binary is not an original binary copy.",
+  "parent_report": "Newr3build mistakenly targetedoldr2boundfilename; originalr2source/raw/cert remain unchanged",
+  "independent_private_closed_binary_is_older4a828_not5b56": true,
+  "recovery_or_rebuild_attempted": false,
+  "Go_PG_auth_native_calls": 0
+}

@@ -1,0 +1,189 @@
+{
+  "FAIL": 0,
+  "files": [
+    {
+      "path": "memory_experience_skill_read_diagnostic_test.go.txt",
+      "bytes": 10472,
+      "sha256": "c87d06e3dad1b76ed1372110286256e4ddf41543e07515b8f5dab7483ce687d3"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-build-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-build-v2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-build-v3.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-build-v4.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-build-v5.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-changed-map-v1.log",
+      "bytes": 972,
+      "sha256": "08f0c554b6223f6dc1e971677f21be0280b4b96db1ad3f0031e3d5b36eef9f03"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-elf-v1.txt",
+      "bytes": 150,
+      "sha256": "710c4966a7e1330397b6e156ff04e5ae0f6606e8c72c43727b9d27a27dfee7e5"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-elf-v2.txt",
+      "bytes": 150,
+      "sha256": "e3f0cd5426121295611b7ee6b6dba1b748fe9a5b7a521e15bee1b2433ed7a996"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-elf-v3.txt",
+      "bytes": 150,
+      "sha256": "9909c99abdcd53bcc8777721a441b8c699b24293673f3e3b804876f7513dc170"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-elf-v4.txt",
+      "bytes": 150,
+      "sha256": "45adfb7f6fef179260d98a5dc0945299a43020ea478508687721dd8de009e50b"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-elf-v5.txt",
+      "bytes": 150,
+      "sha256": "e6f96ffff321e4f405a29bf1fdd095f5127b11dad565021a46d06a91a8c6b334"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-source-v1.go.txt",
+      "bytes": 9833,
+      "sha256": "cc34ab7922e983fb17dfa479676f89cf6c39532b85eabf67873eb7155974331c"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-source-v2.go.txt",
+      "bytes": 10111,
+      "sha256": "e7c94ca15b1ce945bb44375a1952e50638a2832ca5df118707590c044eb5950a"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v1-exit.json",
+      "bytes": 68,
+      "sha256": "7cbaf403066945deaafe59eb7972bbea473fe904bb98cfb4515122ca4642f238"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v1.log",
+      "bytes": 345,
+      "sha256": "2e543a4d6f79332a2b8894638132e9aed60729c8d04b9e0bb85491eaec33b0b2"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v1.sh",
+      "bytes": 1725,
+      "sha256": "e75916320428b77e280dfd3e16db8464e9df48a0c478dd8461e67c3c20545913"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v2-exit.json",
+      "bytes": 68,
+      "sha256": "7cbaf403066945deaafe59eb7972bbea473fe904bb98cfb4515122ca4642f238"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v2.log",
+      "bytes": 242,
+      "sha256": "91593d93a871f9e891e6e07184c6ffe11e1093de77af861a316e9df01711fefe"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v2.sh",
+      "bytes": 1725,
+      "sha256": "e20dd3fecd2d5a33d5f6f4957a2d389c18718541daf7fadd7e3635099359b35b"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v3-exit.json",
+      "bytes": 68,
+      "sha256": "7cbaf403066945deaafe59eb7972bbea473fe904bb98cfb4515122ca4642f238"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v3.log",
+      "bytes": 16431,
+      "sha256": "ecb7bd3372e606c03b426d1091f4ddfa575f6a8252ed079a70e239bb92915aee"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v3.sh",
+      "bytes": 1764,
+      "sha256": "fba0a82f54487e8eac0973960a66f1dffa212b388348997c2226034b78c394b9"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v4-exit.json",
+      "bytes": 68,
+      "sha256": "7cbaf403066945deaafe59eb7972bbea473fe904bb98cfb4515122ca4642f238"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v4.log",
+      "bytes": 16419,
+      "sha256": "717ff569fabccce6008e297a3e938dc62809095206f8b183b9bfac39f79f0508"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v4.sh",
+      "bytes": 1764,
+      "sha256": "0a37c893257ffe9cb3811b822994d664d906dddc22e5b6c109d05c808127e1e6"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v5-exit.json",
+      "bytes": 68,
+      "sha256": "3b5bfabc6775b8910885d92f31caaf0229bcd679466e4165db268ee58d7f0e51"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v5.log",
+      "bytes": 16595,
+      "sha256": "6072947b95bc74b05347df8dd69ca2752320e28ee95607495bf55110c21ceb20"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-v5.sh",
+      "bytes": 1764,
+      "sha256": "d3269b25768295422e79a4d3c1a91ca6606734f1616e9d8bbf73c76fe4a74b79"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-vet-v1-exit.json",
+      "bytes": 49,
+      "sha256": "07197977a106344e285152d1ba16a2b6e375fc246239914cbb9e7a15858ad27d"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-vet-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "memory115-skill-read-diagnostic-vet-v1.sh",
+      "bytes": 588,
+      "sha256": "3fddb8bf6d52d799dc745c09b6bcb169cbcd0f62c598a7881fe947413a20cc53"
+    },
+    {
+      "path": "skill-read-applicability-source-review-v1.json",
+      "bytes": 1556,
+      "sha256": "6867bbe4442ad49e10267e571304bda1d87883de41b1dfda794054f2e2bdc505"
+    }
+  ],
+  "scripted_synthetic_carry_not_provider_expense": true,
+  "auth_access": 0,
+  "vet_exit": 0,
+  "SKIP": 0,
+  "version": "issue115-fresh-scripted-applicability-diagnostic-v1",
+  "parent_PASS": 1,
+  "release_acceptance": false,
+  "observations": {
+    "recipient_dispatch_count_changed": false,
+    "narrow_profile": "prepare contract absent; actual memory.open denied/items0; durable run failed; provider continuation not called",
+    "complete_profile": "prepare contract present; two actual ordinary reads ok; durable completed"
+  },
+  "native_calls": 0,
+  "production_permission_changed": false,
+  "old_native_failure_reclassified": false,
+  "source_sha256": "c87d06e3dad1b76ed1372110286256e4ddf41543e07515b8f5dab7483ce687d3",
+  "subcase_PASS": 10,
+  "created_utc": "2026-10-26T19:48:42.2905398+00:00",
+  "race_exit": 0
+}

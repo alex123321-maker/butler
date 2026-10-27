@@ -1,0 +1,210 @@
+{
+  "version": "issue115-closed-local-consumer-evidence-v1",
+  "created_utc": "2026-10-26T22:14:08.3009608+00:00",
+  "status": "OFFLINE_ACCOUNTING_VALIDATED_NOT_NATIVE_ACCEPTANCE",
+  "controls_top_PASS": 6,
+  "controls_subcases_PASS": 40,
+  "actual_recursive_imports_PASS": 2,
+  "FAIL": 0,
+  "SKIP": 0,
+  "race_warning": 0,
+  "vet_exit": 0,
+  "initial_new_import_v2_failed": true,
+  "failure_reason": "complete lineage struct comparison included nested pointer address; full value equality now used",
+  "old_failed_source_and_log_retained": true,
+  "original_raw_files": 157,
+  "prior_private_files": 277,
+  "native_entries": 232,
+  "native_known": 231,
+  "native_unknown": 1,
+  "product_attempts": 233,
+  "product_observed": 231,
+  "product_NULL": 2,
+  "product_without_native": 1,
+  "known_full_tokens": 1738466,
+  "local_handback_not_lab_main": true,
+  "original_native_failure_reclassified": false,
+  "permissions_changed": false,
+  "new_PG_auth_models": 0,
+  "release_qualified": false,
+  "private_tree_published": false,
+  "source": [
+    {
+      "sha256": "c2a4fb6393190da0aeff7256399694b71a73182c8f772ec95bbbee80ccfac08b",
+      "path": "apps/orchestrator/internal/app/memory115_closed_local_native_history_test.go"
+    },
+    {
+      "sha256": "5a7304c660b8bd5ef838cf02ec073e9f683a925e4fe72d403d0f17353133e74b",
+      "path": "apps/orchestrator/internal/app/memory_closed_experience_native_history_test.go"
+    },
+    {
+      "sha256": "105d14815bf82e9add51c7518143b8894b6b8eae546b41ff4cad7f772f03946e",
+      "path": "apps/orchestrator/internal/app/memory_experience_native_entry_test.go"
+    },
+    {
+      "sha256": "0c2171d1f9724c4409f83fbb639d99cc0ec24a384e693cabbb37efe27251c8fa",
+      "path": "apps/orchestrator/README.md"
+    },
+    {
+      "sha256": "cebae4e326f7b9df906ffee3d1ac400bf9efc4ad71fb2567aeafcb94594f7745",
+      "path": "docs/testing/issue115-closed-local-history.md"
+    }
+  ],
+  "files": [
+    {
+      "path": "closed-local-leaf-manifest.json",
+      "sha256": "1a8754c08fc724a1a3c8c3c657bc390aa7060bb446748de959eb461248656911",
+      "bytes": 74487
+    },
+    {
+      "path": "memory115-closed-local-build-v1-disposition.json",
+      "sha256": "4f2aa74e946d4ad20ef8980b0f186d04d0c65005a163ce01b6e947b044171c65",
+      "bytes": 325
+    },
+    {
+      "path": "memory115-closed-local-changed-map-v1.log",
+      "sha256": "3db7b0bed31d6b4c8e45e71bf886de6f84a1d50784ead77b8e94ed1492f6e799",
+      "bytes": 1238
+    },
+    {
+      "path": "memory115-closed-local-consumer-build-v1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "memory115-closed-local-consumer-build-v1.sh",
+      "sha256": "e990792f205132be99abd7a81e4e12422b05528b3281f9829e435de98be3d691",
+      "bytes": 660
+    },
+    {
+      "path": "memory115-closed-local-consumer-build-v2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "memory115-closed-local-consumer-build-v3.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "memory115-closed-local-consumer-elf-v1.txt",
+      "sha256": "9286c345543dc63916962ead90c87ca20c74a99f93154bf1a560702c582a9e81",
+      "bytes": 150
+    },
+    {
+      "path": "memory115-closed-local-consumer-elf-v2.txt",
+      "sha256": "f52c7cc4844b59e496b3ffcc3875e7878eb07cc241d38ebc30bf778cf07a930b",
+      "bytes": 150
+    },
+    {
+      "path": "memory115-closed-local-consumer-elf-v3.txt",
+      "sha256": "b0f6aadb87d53f223e8e97af8edff8073ce44b6ee6f76c86b526890394ad622d",
+      "bytes": 150
+    },
+    {
+      "path": "memory115-closed-local-consumer-v2-exit.json",
+      "sha256": "0099af77fe659037dd24813125f044cf5830739f66607341777314f88b2ee9b7",
+      "bytes": 97
+    },
+    {
+      "path": "memory115-closed-local-consumer-v2.sh",
+      "sha256": "822409f7242f13bd2a81b242daefca5c636bd29721d1d4cb96ae887e01ba769a",
+      "bytes": 3978
+    },
+    {
+      "path": "memory115-closed-local-consumer-v3-exit.json",
+      "sha256": "4545eba7c7be4d94827918c15702dea2fa7daa9d6d0eeb091c2d04bb31732319",
+      "bytes": 97
+    },
+    {
+      "path": "memory115-closed-local-consumer-v3.sh",
+      "sha256": "b365a25bdb5d01a7a226e2ee2c29c660ed7411dfaef75e8980c27abb28f6c67c",
+      "bytes": 3978
+    },
+    {
+      "path": "memory115-closed-local-controls-v2.log",
+      "sha256": "14471f17f11cf6828c2168443391177aa025336cbaf411a9afe719005e7bb288",
+      "bytes": 8367
+    },
+    {
+      "path": "memory115-closed-local-controls-v3.log",
+      "sha256": "1b1072ac5fc5b196c1278aa4cade710cfe4dbbae4169039b3bb3b69f11777e95",
+      "bytes": 8367
+    },
+    {
+      "path": "memory115-closed-local-import-v2.log",
+      "sha256": "302232bda435a7e04f9b9df9ac817454ad611e35a000cdfb3dc2c4b256c52b62",
+      "bytes": 234
+    },
+    {
+      "path": "memory115-closed-local-import-v3.log",
+      "sha256": "cf94454c858a4963f2d4764a60c165d2a99c2bc439fa4afbc434c49734ccb15b",
+      "bytes": 383
+    },
+    {
+      "path": "memory115-closed-local-journal-source-v2.go.txt",
+      "sha256": "cd3d33cce45af21a4e90dd093f2c68751f504bea737758dca8453893f1c56cbc",
+      "bytes": 31778
+    },
+    {
+      "path": "memory115-closed-local-legacy-import-v2.log",
+      "sha256": "ec24f379f7d4f0beba1a3993df3cbeb03323cd55953ff968bde1e90cfa4749cc",
+      "bytes": 275
+    },
+    {
+      "path": "memory115-closed-local-legacy-import-v3.log",
+      "sha256": "acd63d59f6497add04e863da294bef6ae289a17cc2a75ccccb7417c4c980b26d",
+      "bytes": 275
+    },
+    {
+      "path": "memory115-closed-local-legacy-receipt-v2.json",
+      "sha256": "6d34e80d0a6bec1a48e477b62804be911bdf88395796588e9f1e8591858755a4",
+      "bytes": 935
+    },
+    {
+      "path": "memory115-closed-local-legacy-receipt-v3.json",
+      "sha256": "6d34e80d0a6bec1a48e477b62804be911bdf88395796588e9f1e8591858755a4",
+      "bytes": 935
+    },
+    {
+      "path": "memory115-closed-local-source-after-v2.txt",
+      "sha256": "235c60751ce0d2699a4459c38c2e116c79b2793b8bcf736eb578c5b84b12c3eb",
+      "bytes": 424
+    },
+    {
+      "path": "memory115-closed-local-source-after-v3.txt",
+      "sha256": "e4144f9b381230f0bcb2cbf37b20bf4d46560a72ecaf1dcc8e6281815de74f4d",
+      "bytes": 424
+    },
+    {
+      "path": "memory115-closed-local-source-before-v2.txt",
+      "sha256": "235c60751ce0d2699a4459c38c2e116c79b2793b8bcf736eb578c5b84b12c3eb",
+      "bytes": 424
+    },
+    {
+      "path": "memory115-closed-local-source-before-v3.txt",
+      "sha256": "e4144f9b381230f0bcb2cbf37b20bf4d46560a72ecaf1dcc8e6281815de74f4d",
+      "bytes": 424
+    },
+    {
+      "path": "memory115-closed-local-vet-v2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "memory115-closed-local-vet-v3.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "memory115-closed-local-wrapper-v1-construction.json",
+      "sha256": "99290b1bef4ae4a3c3ccf3df4060b69002ed44635fd3a3e8b2d77f8d14789d56",
+      "bytes": 584
+    },
+    {
+      "path": "memory115-prepare-closed-local-wrapper-v1.ps1",
+      "sha256": "21930b4faa3102986ac1e63a056c35b45e7c860b0f4d6fc6785e661414b5b814",
+      "bytes": 7760
+    }
+  ]
+}
