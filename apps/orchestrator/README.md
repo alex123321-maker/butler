@@ -1522,6 +1522,18 @@ bounded pilot is complete, while whole-issue literal scenario coverage remains
 partial. Closed evidence, negative results and all historical nullable charges
 are retained; no working deployment is changed.
 
+The [prospective literal supplement](../../docs/testing/issue76-literal-supplement-proposal.md)
+now has public raw-owner Input/Controller composition and synthetic service
+observation components. Kernel returns, owner/model runs and automatic inputs
+are recorded separately. Explicit task selection requires declared owner UI
+provenance. Duplicate/aliased JSON fields are rejected before decoding. The
+observation-only business date records actual database time and confirmed late
+effects without changing permission checks; manual-change context comes from
+actual event rows. Targeted PostgreSQL/Broker/race checks passed with scripted
+providers and zero native calls. New source/checker freeze, hidden controls,
+full composition and one-use native admission are still outstanding; these
+components do not complete #76 or qualify the rejected candidate.
+
 Core now joins its run-scoped lease/authority supervisor before terminal task
 mutation and atomic final persistence, while keeping the original execution
 context and database fences live. In-flight checks retain real failures; normal

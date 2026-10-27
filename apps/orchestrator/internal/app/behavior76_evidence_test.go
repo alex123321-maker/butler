@@ -81,13 +81,14 @@ func TestBehavior76EvidenceExportIntegration(t *testing.T) {
 }
 
 type behavior76Snapshot struct {
-	Tasks                  []task.Record      `json:"tasks"`
-	Objects                []behavior76Object `json:"objects"`
-	Profiles               []json.RawMessage  `json:"profiles"`
-	Claims                 []json.RawMessage  `json:"claims"`
-	Sources                []json.RawMessage  `json:"sources"`
-	DeletionManifestSHA256 string             `json:"deletion_manifest_sha256"`
-	DeletionWatermark      int64              `json:"deletion_watermark"`
+	Tasks                  []task.Record                     `json:"tasks"`
+	Objects                []behavior76Object                `json:"objects"`
+	Profiles               []json.RawMessage                 `json:"profiles"`
+	Claims                 []json.RawMessage                 `json:"claims"`
+	Sources                []json.RawMessage                 `json:"sources"`
+	DeletionManifestSHA256 string                            `json:"deletion_manifest_sha256"`
+	DeletionWatermark      int64                             `json:"deletion_watermark"`
+	LiteralService         *behavior76LiteralServiceSnapshot `json:"literal_service,omitempty"`
 }
 
 func (f *behavior76Fixture) backupPrivate(name string) bool {
@@ -153,17 +154,20 @@ func (f *behavior76Fixture) retainOnEvidenceFailure() {
 }
 
 type behavior76Outcome struct {
-	State           string   `json:"state"`
-	OwnerInputID    string   `json:"owner_input_id"`
-	OwnerRunID      string   `json:"owner_run_id"`
-	BlockingInputID string   `json:"blocking_input_id,omitempty"`
-	RunIDs          []string `json:"run_ids"`
-	AutomaticRunIDs []string `json:"automatic_run_ids"`
-	NativeEntryIDs  []int    `json:"native_entry_ids"`
-	ErrorCode       string   `json:"safe_error_category,omitempty"`
-	FailurePhase    string   `json:"failure_phase,omitempty"`
-	EventReceipt    any      `json:"event_receipt"`
-	FixtureStopRef  string   `json:"fixture_stop_ref,omitempty"`
+	State              string                            `json:"state"`
+	OwnerInputID       string                            `json:"owner_input_id"`
+	OwnerRunID         string                            `json:"owner_run_id"`
+	BlockingInputID    string                            `json:"blocking_input_id,omitempty"`
+	RunIDs             []string                          `json:"run_ids"`
+	AutomaticRunIDs    []string                          `json:"automatic_run_ids"`
+	NativeEntryIDs     []int                             `json:"native_entry_ids"`
+	ErrorCode          string                            `json:"safe_error_category,omitempty"`
+	FailurePhase       string                            `json:"failure_phase,omitempty"`
+	EventReceipt       any                               `json:"event_receipt"`
+	FixtureStopRef     string                            `json:"fixture_stop_ref,omitempty"`
+	KernelResponse     *behavior76LiteralKernelResponse  `json:"kernel_response,omitempty"`
+	AutomaticInputs    []behavior76LiteralAutomaticInput `json:"automatic_inputs,omitempty"`
+	OwnerTaskSelection *behavior76LiteralTaskSelection   `json:"owner_task_selection,omitempty"`
 }
 type behavior76Index struct {
 	Version       string                   `json:"version"`
@@ -275,6 +279,22 @@ func (f *behavior76Fixture) snapshot() behavior76Snapshot {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if f.literal {
+		s.LiteralService = &behavior76LiteralServiceSnapshot{}
+		for _, item := range []struct {
+			table  string
+			target *[]json.RawMessage
+		}{
+			{"behavior76_business_deadlines", &s.LiteralService.Deadlines},
+			{"behavior76_business_deadline_events", &s.LiteralService.DeadlineEvents},
+			{"behavior76_business_observations", &s.LiteralService.Observations},
+		} {
+			*item.target, err = behavior76Rows(f.ctx, f.pool, item.table)
+			if err != nil {
+				t.Fatal("actual literal service snapshot unavailable", err)
+			}
+		}
+	}
 	return s
 }
 func (f *behavior76Fixture) export(dir string) {
@@ -302,6 +322,9 @@ func (f *behavior76Fixture) export(dir string) {
 	})
 	if f.scope != nil {
 		converterLocalNativeExport(f.t, f.pool, dir, schema, []string{"behavior76_fixture_stops", "behavior76_recipient_diagnostics"})
+	}
+	if f.literal {
+		converterLocalNativeExport(f.t, f.pool, dir, schema, []string{"behavior76_business_deadlines", "behavior76_business_deadline_events", "behavior76_business_observations"})
 	}
 }
 func (f *behavior76Fixture) aliases() map[string]any {

@@ -186,6 +186,37 @@ func (f *behavior76Fixture) enrichWorking(key string) (err error) {
 	working.Scratch["synthetic_fixture_task_inventory"] = inventory
 	working.Scratch["synthetic_fixture_observations"] = observations
 	working.Scratch["synthetic_fixture_resource_refs"] = resourceRefs
+	if f.literal {
+		// Independent event rows are observed DATA. They do not assert an owner
+		// preference or invent feedback exchanges absent from the transcript.
+		var manual, business []json.RawMessage
+		for _, query := range []struct {
+			sql    string
+			target *[]json.RawMessage
+		}{
+			{`SELECT jsonb_build_object('kind','observed_manual_change_data','source_ref','synthetic:manual-event:'||n,'resource_key',resource_key,'before_state',before_state,'after_state',after_state,'observed_at',at) FROM behavior76_object_events WHERE kind='independent_owner_change' ORDER BY n`, &manual},
+			{`SELECT jsonb_build_object('kind','observed_business_date_data','resource_key',resource_key,'source_ref',source_ref,'source_revision',source_revision,'deadline_at',deadline_at,'configured_at',configured_at,'observed_at',clock_timestamp()) FROM behavior76_business_deadlines ORDER BY resource_key`, &business},
+		} {
+			rows, e := f.pool.Query(f.ctx, query.sql)
+			if e != nil {
+				return e
+			}
+			for rows.Next() {
+				var raw []byte
+				if e = rows.Scan(&raw); e != nil {
+					rows.Close()
+					return e
+				}
+				*query.target = append(*query.target, json.RawMessage(raw))
+			}
+			rows.Close()
+			if e = rows.Err(); e != nil {
+				return e
+			}
+		}
+		working.Scratch["synthetic_fixture_manual_changes"] = manual
+		working.Scratch["synthetic_fixture_business_dates"] = business
+	}
 	_, err = f.tasks.SaveWorking(f.ctx, record.TaskID, record.WorkingRevision, working)
 	return err
 }

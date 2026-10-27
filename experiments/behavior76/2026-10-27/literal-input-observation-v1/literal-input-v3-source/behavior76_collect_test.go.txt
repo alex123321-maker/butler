@@ -1,0 +1,722 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/apps/orchestrator/internal/input"
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/apps/orchestrator/internal/prompt"
+	"github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/config"
+	runv1 "github.com/butler/butler/internal/gen/run/v1"
+	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/providerauth"
+	"github.com/butler/butler/internal/transport"
+	"github.com/butler/butler/internal/transport/antigravity"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const behavior76StimuliSHA = "bad4a7c39747d93baaf2bcffeb68b6fcd1b672b39909e9d34a2ec1055a9f54b0"
+const behavior76ExpectationsSHA = "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a"
+const behavior76OutputContract = `This is an explicitly synthetic local behavioral experiment. Use only the declared tools for actual test effects. A resource reference or model proposal is not an observation. Before a write obtain the current resource version/hash. Never treat a model final as owner verification. After any tool calls return exactly one JSON object (no Markdown): {"answer":string,"task_key":string|null,"next_action":{"kind":"answer"|"ask"|"read"|"prepare"|"commit"|"wait","resource_key":string|null,"expected_version":integer|null,"body":string|null,"reason":string},"needs_clarification":boolean,"used_source_refs":[string],"proposed_profile_update":{"kind":"none"|"candidate","source_refs":[string],"summary":string},"completion_claim":"not_complete"|"technical_result"|"owner_verified"}. next_action describes remaining proposed work, not an effect receipt. Report actual uncertainty and actual limits. No accepted permanent profile can be changed by this output.`
+
+type behavior76Assembler struct{ base *prompt.Assembler }
+
+type behavior76TaskExecutor struct {
+	f        *behavior76Fixture
+	provider transport.ModelProvider
+	tasks    task.Manager // Explicit public fault fixture only; nil is ordinary.
+}
+
+func (e behavior76TaskExecutor) Execute(ctx context.Context, event ingress.InputEvent) (result *flow.ExecutionResult, executionErr error) {
+	defer func() {
+		if observer, ok := e.provider.(interface {
+			observeCoreOutcome(*flow.ExecutionResult, error)
+		}); ok {
+			observer.observeCoreOutcome(result, executionErr)
+		}
+		if e.f.scope != nil {
+			localModel := false
+			if p, ok := e.provider.(*behavior76NativeProvider); ok && executionErr != nil {
+				localModel = p.localModelExecutionError(event, executionErr)
+			}
+			if executionErr != nil && !localModel && !(errors.Is(executionErr, errBehavior76FixtureStopped) && e.f.scope.localStopped()) {
+				e.f.scope.global.Store(true)
+			}
+			if result != nil && (result.ErrorCode == "effect_unknown" || result.ErrorCode == "external_effect_unknown") {
+				if e.f.scope.observe() != errBehavior76FixtureStopped {
+					e.f.scope.global.Store(true)
+				}
+			}
+		}
+	}()
+	var payload struct {
+		TaskID string `json:"task_id"`
+	}
+	if err := json.Unmarshal([]byte(event.PayloadJSON), &payload); err != nil {
+		return nil, err
+	}
+	mandate := ""
+	if payload.TaskID != "" {
+		// Only select a fixed, already issued fixture mandate by the actual
+		// queued input's current task/revision. This adapter creates no grant.
+		err := e.f.pool.QueryRow(ctx, `SELECT m.mandate_id FROM behavior76_task_mandates m JOIN tasks t ON t.task_id=m.task_id AND t.revision=m.task_revision WHERE t.task_id=$1`, payload.TaskID).Scan(&mandate)
+		if err != nil && err != pgx.ErrNoRows {
+			return nil, err
+		}
+	}
+	if e.tasks != nil {
+		return behavior76CoreWithAssembler(e.f, e.provider, mandate, e.tasks).Execute(ctx, event)
+	}
+	return behavior76CoreWithAssembler(e.f, e.provider, mandate).Execute(ctx, event)
+}
+
+func (a behavior76Assembler) Assemble(state prompt.ConfigState, ctx prompt.Context) prompt.Assembly {
+	v := a.base.Assemble(state, ctx)
+	// Both arms share this output contract. The ordinary complete-context budget
+	// accounts the actual TrustedInstructions generated from the returned value.
+	v.EffectiveBasePrompt += "\n\n" + behavior76OutputContract
+	return v
+}
+
+func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step behavior76Step) (outcome behavior76Outcome, err error) {
+	return f.evaluateInput(provider, step, false)
+}
+
+// Literal input uses the ordinary authenticated production control path. The
+// legacy collector remains on its original typed/projection interface.
+func (f *behavior76Fixture) evaluateLiteral(provider transport.ModelProvider, step behavior76Step) (behavior76Outcome, error) {
+	if !behavior76LiteralRawOwnerStep(step) {
+		return behavior76Outcome{}, errors.New("literal evaluation requires raw graded owner input")
+	}
+	return f.evaluateInput(provider, step, true)
+}
+
+func (f *behavior76Fixture) evaluateInput(provider transport.ModelProvider, step behavior76Step, literal bool) (outcome behavior76Outcome, err error) {
+	outcome = behavior76Outcome{State: "completed", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}}
+	defer func() {
+		if f.scope != nil && err != nil {
+			f.scope.global.Store(true)
+		}
+	}()
+	if f.scope != nil {
+		leave, e := f.scope.enterEvaluation(f.ctx)
+		if e != nil {
+			if e == errBehavior76FixtureStopped {
+				outcome.State = f.scope.disposition(true)
+				return outcome, nil
+			}
+			return outcome, e
+		}
+		defer leave()
+	}
+	oldRuns := map[string]bool{}
+	rows, e := f.pool.Query(f.ctx, `SELECT run_id FROM runs`)
+	if e != nil {
+		return outcome, e
+	}
+	for rows.Next() {
+		var id string
+		if e = rows.Scan(&id); e != nil {
+			rows.Close()
+			return outcome, e
+		}
+		oldRuns[id] = true
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return outcome, e
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		rows, e := f.pool.Query(cleanup, `SELECT run_id FROM runs ORDER BY started_at,run_id`)
+		if e != nil {
+			err = e
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+			if e = rows.Scan(&id); e != nil {
+				err = e
+				return
+			}
+			if !oldRuns[id] {
+				outcome.RunIDs = append(outcome.RunIDs, id)
+				if id != outcome.OwnerRunID {
+					outcome.AutomaticRunIDs = append(outcome.AutomaticRunIDs, id)
+				}
+			}
+		}
+		if e = rows.Err(); e != nil {
+			err = e
+		}
+	}()
+	key := ""
+	if step.RunTaskKey != nil {
+		key = *step.RunTaskKey
+	}
+	var taskID, sessionKey string
+	if key != "" {
+		taskID = f.lookup("task", key)
+		sessionKey = f.lookup("session", key)
+		if _, e := f.tasks.Get(f.ctx, taskID); e != nil {
+			return outcome, e
+		}
+	} else {
+		sessionKey = "behavior76:conversation"
+		if _, err := f.pool.Exec(f.ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES($1,$2,'web') ON CONFLICT DO NOTHING`, sessionKey, behavior76Owner); err != nil {
+			return outcome, err
+		}
+	}
+	// Constructing the public assembler here keeps the exact same additional
+	// output contract and context accounting for baseline and candidate.
+	activeRows, e := f.pool.Query(f.ctx, `SELECT a.key FROM behavior76_aliases a JOIN tasks t ON t.task_id=a.value WHERE a.kind='task' AND t.status='active' ORDER BY a.key`)
+	if e != nil {
+		return outcome, e
+	}
+	var activeKeys []string
+	for activeRows.Next() {
+		var k string
+		if e = activeRows.Scan(&k); e != nil {
+			activeRows.Close()
+			return outcome, e
+		}
+		activeKeys = append(activeKeys, k)
+	}
+	e = activeRows.Err()
+	activeRows.Close()
+	if e != nil {
+		return outcome, e
+	}
+	for _, k := range activeKeys {
+		f.mandate(k)
+	}
+	inputs := input.NewStore(f.pool)
+	sessions := session.NewPostgresRepository(f.pool)
+	worker := input.NewService(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil)
+	var claimWindow *behavior76ClaimWindow
+	if f.scope != nil {
+		claimWindow = &behavior76ClaimWindow{scope: f.scope}
+		worker, err = input.NewServiceWithClaimAdmission(inputs, sessions, behavior76TaskExecutor{f: f, provider: provider}, run.NewService(run.NewPostgresRepository(f.pool), nil), nil, claimWindow.admit)
+		if err != nil {
+			return outcome, err
+		}
+	}
+	inputContext := f.ctx
+	if literal {
+		worker.SetTaskControls(f.controls)
+		inputContext = owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: behavior76Owner, SessionKey: sessionKey, Channel: "web", DeliveryID: "behavior76:" + step.ID})
+	}
+	payload := map[string]any{"text": step.Event.Text, "user_id": behavior76Owner}
+	if taskID != "" {
+		payload["task_id"] = taskID
+	}
+	if step.Event.Intent == "conversation" || step.Event.Intent == "new_task" {
+		payload["intent"] = step.Event.Intent
+	}
+	text := step.Event.Text
+	if step.Event.Type == "owner_control" {
+		text = step.Event.Instruction
+		payload["text"] = text
+	}
+	accepted, err := worker.Execute(inputContext, ingress.InputEvent{EventID: "behavior76:" + step.ID, IdempotencyKey: "behavior76:" + step.ID, SessionKey: sessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: behavior76JSON(payload), CreatedAt: time.Now().UTC()})
+	if err != nil {
+		outcome.State = "admission_denied"
+		outcome.ErrorCode = behavior76SafeError(err)
+		outcome.FailurePhase = "input_admission"
+		if f.scope != nil {
+			expected := false
+			if taskID != "" && errors.Is(err, input.ErrNotFound) {
+				var proof bool
+				proofErr := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM tasks WHERE task_id=$1 AND owner_id=$2 AND session_key=$3 AND status<>'active') AND NOT EXISTS(SELECT 1 FROM accepted_inputs WHERE session_key=$3 AND source='web' AND dedup_key=$4)`, taskID, behavior76Owner, sessionKey, "behavior76:"+step.ID).Scan(&proof)
+				expected = proofErr == nil && proof
+			}
+			if !expected {
+				return outcome, err
+			}
+			err = nil
+		}
+	} else {
+		if literal && accepted.AssistantResponse != "" {
+			outcome.KernelResponse, err = f.literalKernelReceipt(accepted, step)
+			if err != nil {
+				return outcome, err
+			}
+			outcome.State = accepted.ReceiptStatus
+			// A control receipt is a real owner exchange but not a model run.
+			// Controller continuations remain in the queued cohort below and
+			// every run/expense is recorded as automatic, never an owner final.
+		} else {
+			outcome.OwnerInputID = accepted.InputID
+		}
+	}
+	// Observe the actual already-admitted cohort, including Controller inputs in
+	// other sessions. A fast owner reply cannot justify cancelling a slower
+	// automatic continuation. Blocked/waiting rows are never rewritten/resumed.
+	cohortRows, e := f.pool.Query(f.ctx, `SELECT input_id FROM accepted_inputs WHERE input_id=$1 OR status IN ('queued','running')`, outcome.OwnerInputID)
+	if e != nil {
+		return outcome, e
+	}
+	var cohort []string
+	for cohortRows.Next() {
+		var id string
+		if e = cohortRows.Scan(&id); e != nil {
+			cohortRows.Close()
+			return outcome, e
+		}
+		cohort = append(cohort, id)
+	}
+	e = cohortRows.Err()
+	cohortRows.Close()
+	if e != nil {
+		return outcome, e
+	}
+	if literal {
+		// Observe all already admitted automatic inputs even when they fail
+		// before model entry. A completed kernel audit receipt never hides a
+		// failed continuation or counts as successful task completion.
+		defer func() {
+			cleanup, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			for _, id := range cohort {
+				if id == outcome.OwnerInputID || (outcome.KernelResponse != nil && id == outcome.KernelResponse.InputID) {
+					continue
+				}
+				var value behavior76LiteralAutomaticInput
+				value.InputID = id
+				if e := f.pool.QueryRow(cleanup, `SELECT coalesce(run_id,''),status,error_code FROM accepted_inputs WHERE input_id=$1`, id).Scan(&value.RunID, &value.Status, &value.ErrorCode); e != nil {
+					err = errors.Join(err, errors.New("actual automatic input outcome unavailable"))
+					return
+				}
+				outcome.AutomaticInputs = append(outcome.AutomaticInputs, value)
+			}
+		}()
+	}
+	if len(cohort) == 0 {
+		return outcome, nil
+	}
+	live, stop := context.WithCancel(f.ctx)
+	done := make(chan struct{})
+	var workerErr error
+	joinBeforeCancel := false
+	go func() { workerErr = worker.Run(live); close(done) }()
+	defer func() {
+		if claimWindow != nil {
+			claimWindow.close()
+			if joinBeforeCancel {
+				cleanup, cancel := context.WithTimeout(f.ctx, 125*time.Second)
+				err = errors.Join(err, worker.WaitClaimWorkers(cleanup))
+				cancel()
+			}
+		}
+		// Error/global exits retain immediate cancellation after closing admission.
+		// Only an observed terminal cohort or already-drained local stop joins
+		// ordinary owning work first. No execution context/deadline is extended.
+		stop()
+		<-done
+		err = errors.Join(err, workerErr)
+		if f.scope != nil {
+			if e := f.scope.check(f.ctx); e != nil && e != errBehavior76FixtureStopped {
+				err = errors.Join(err, e)
+			}
+		}
+	}()
+	for {
+		terminal := outcome.OwnerInputID == ""
+		if outcome.OwnerInputID != "" {
+			record, err := inputs.Get(f.ctx, outcome.OwnerInputID)
+			if err != nil {
+				return outcome, err
+			}
+			outcome.OwnerRunID = record.RunID
+			switch record.Status {
+			case "completed":
+				terminal = true
+				outcome.State, outcome.ErrorCode, outcome.FailurePhase, outcome.BlockingInputID = "completed", "", "", ""
+			case "failed", "blocked", "expired", "cancelled":
+				terminal = true
+				outcome.State = "failed"
+				outcome.ErrorCode = record.ErrorCode
+				outcome.FailurePhase = "ordinary_worker"
+				outcome.BlockingInputID = ""
+			case "waiting_for_user":
+				terminal = true
+				outcome.State = "waiting_for_user"
+				outcome.ErrorCode = record.ErrorCode
+				outcome.FailurePhase = "ordinary_wait"
+				outcome.BlockingInputID = ""
+			case "queued":
+				var blocker string
+				err := f.pool.QueryRow(f.ctx, `SELECT h.input_id FROM accepted_inputs h JOIN accepted_inputs i ON i.session_key=h.session_key WHERE i.input_id=$1 AND h.session_sequence<i.session_sequence AND h.status IN ('blocked','waiting_for_user') ORDER BY h.session_sequence LIMIT 1`, record.InputID).Scan(&blocker)
+				if err != nil && err != pgx.ErrNoRows {
+					return outcome, err
+				}
+				if err == nil {
+					terminal = true
+					outcome.State = "queued_after_stopped_input"
+					outcome.BlockingInputID = blocker
+					outcome.FailurePhase = "ordinary_queue"
+				}
+			}
+		}
+		if native, ok := provider.(*behavior76NativeProvider); ok && native.sealed.Load() {
+			if !terminal {
+				outcome.State = "failed"
+				outcome.ErrorCode = "native_boundary_sealed"
+				outcome.FailurePhase = "observer_safety_stop"
+			}
+			return outcome, nil
+		}
+		if f.scope != nil {
+			if e := f.scope.observe(); e != nil {
+				if e != errBehavior76FixtureStopped {
+					return outcome, e
+				}
+				cleanup, cancel := context.WithTimeout(f.ctx, 125*time.Second)
+				defer cancel()
+				if e = f.scope.drain(cleanup); e != nil {
+					return outcome, e
+				}
+				if e = worker.WaitClaimWorkers(cleanup); e != nil {
+					f.scope.global.Store(true)
+					return outcome, e
+				}
+				if e = f.waitOwningWorkers(cleanup); e != nil {
+					return outcome, e
+				}
+				if outcome.OwnerInputID != "" {
+					if e = f.pool.QueryRow(cleanup, `SELECT coalesce(run_id,'') FROM accepted_inputs WHERE input_id=$1`, outcome.OwnerInputID).Scan(&outcome.OwnerRunID); e != nil {
+						return outcome, e
+					}
+				}
+				// Actual owner/automatic records and UNKNOWN remain untouched.
+				// The local stop is an arm disposition, never task completion.
+				outcome.State = f.scope.disposition(false)
+				outcome.FailurePhase = "fixture_local_stop"
+				joinBeforeCancel = true
+				return outcome, nil
+			}
+		}
+		if terminal {
+			var pending bool
+			if err := f.pool.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs i WHERE i.input_id=ANY($1::text[]) AND (i.status='running' OR (i.status='queued' AND NOT EXISTS(SELECT 1 FROM accepted_inputs h WHERE h.session_key=i.session_key AND h.session_sequence<i.session_sequence AND h.status NOT IN ('completed','failed','expired','cancelled')))))`, cohort).Scan(&pending); err != nil {
+				return outcome, err
+			}
+			if !pending {
+				joinBeforeCancel = true
+				return outcome, nil
+			}
+		}
+		select {
+		case <-worker.ClaimAdmissionFailed():
+			f.scope.global.Store(true)
+			return outcome, worker.ClaimAdmissionError()
+		case <-worker.ClaimWorkersDone():
+			if f.scope != nil && f.scope.localStopped() {
+				continue
+			}
+			if f.scope != nil {
+				f.scope.global.Store(true)
+			}
+			return outcome, fmt.Errorf("claim workers ended before ordinary cohort observation")
+		case <-done:
+			if workerErr != nil {
+				return outcome, workerErr
+			}
+			return outcome, fmt.Errorf("ordinary worker ended before cohort observation")
+		case <-f.ctx.Done():
+			return outcome, f.ctx.Err()
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
+}
+
+func behavior76CoreWithAssembler(f *behavior76Fixture, p transport.ModelProvider, mandate string, tasks ...task.Manager) *flow.Service {
+	// Config is constructed in one helper to avoid using a response bridge: native
+	// tool calls and results remain the ordinary Core/Broker transport protocol.
+	return f.makeCoreWithAssembler(p, mandate, behavior76Assembler{base: prompt.NewAssembler()}, tasks...)
+}
+
+func behavior76NativeFactory(t *testing.T, journal *pgxpool.Pool, f *behavior76Fixture, window, slot string, sealed *atomic.Bool) transport.ModelProvider {
+	t.Helper()
+	if f.researchStop != nil && f.researchStop != sealed {
+		t.Fatal("one shared research stop required")
+	}
+	f.researchStop = sealed
+	if f.scope != nil && (f.scope.binding.Window != window || f.scope.binding.Producer != os.Getenv("BUTLER_BEHAVIOR76_SOURCE") || f.scope.localStopped() || sealed.Load()) {
+		t.Fatal("exact live prospective native fixture binding required before private auth construction")
+	}
+	keyFile, err := privateNativeFixtureFile("/private/behavior76/settings.key", 128)
+	if err != nil {
+		t.Fatal("private local key reference unavailable")
+	}
+	key, err := io.ReadAll(keyFile)
+	_ = keyFile.Close()
+	if err != nil {
+		t.Fatal("private local key unreadable")
+	}
+	manager := providerauth.NewManager(config.NewPostgresSettingsStore(journal, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))})))
+	native, err := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 120 * time.Second, AuthSource: manager})
+	if err != nil {
+		t.Fatal("native local constructor unavailable")
+	}
+	return &behavior76NativeProvider{ModelProvider: native, fixture: f, journal: journal, window: window, slot: slot, sealed: sealed, scope: f.scope}
+}
+
+func TestBehavior76NativeLocal(t *testing.T) {
+	if os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "synthetic-local-only" {
+		t.Skip("explicit local native pilot required")
+	}
+	behavior76Collect(t, true)
+}
+
+func behavior76Collect(t *testing.T, native bool) {
+	t.Helper()
+	if !native || os.Getenv("BUTLER_BEHAVIOR76_NATIVE_ENABLE") != "synthetic-local-only" {
+		t.Fatal("collector requires explicit native opt-in; no implicit offline path")
+	}
+	stimuliPath := os.Getenv("BUTLER_BEHAVIOR76_STIMULI")
+	dir := os.Getenv("BUTLER_BEHAVIOR76_OUTPUT")
+	source := os.Getenv("BUTLER_BEHAVIOR76_SOURCE")
+	if stimuliPath == "" || dir == "" || source == "" {
+		t.Fatal("explicit immutable local collector inputs required")
+	}
+	data, err := os.ReadFile(stimuliPath)
+	if err != nil || behavior76Hash(data) != behavior76StimuliSHA {
+		t.Fatal("independent stimuli commitment mismatch")
+	}
+	episodes, err := behavior76ReadEpisodes(strings.NewReader(string(data)))
+	if err != nil || len(episodes) != 24 {
+		t.Fatal("independent corpus interface mismatch", err)
+	}
+	if err = os.Mkdir(dir, 0700); err != nil {
+		t.Fatal("new immutable evidence directory required", err)
+	}
+	index := behavior76Index{Version: "behavior76-checker-index-v1", StimuliSHA256: behavior76StimuliSHA, Episodes: []behavior76IndexEpisode{}}
+	defer func() { behavior76Write(t, filepath.Join(dir, "index.json"), index) }()
+	// C collects only the never-started suffix of closed B. Original partial
+	// responses, failed slots, spent ledgers and absolute wall deadline survive.
+	const priorWindow = "issue76-local-20261025T104513"
+	priorDir := filepath.Join(filepath.Dir(dir), "native-20261025a")
+	var priorManifest struct {
+		MappingSHA string `json:"mapping_sha256"`
+		Schedule   []struct {
+			EpisodeID string   `json:"episode_id"`
+			ArmOrder  []string `json:"arm_order"`
+		} `json:"schedule"`
+	}
+	priorRaw, e := os.ReadFile(filepath.Join(priorDir, "manifest.json"))
+	if e != nil || behavior76Hash(priorRaw) != "712670def12bb6ab11d7d689ed39c3a46bbd6455988594f10aaf9c421e9834ae" || json.Unmarshal(priorRaw, &priorManifest) != nil || len(priorManifest.Schedule) != 24 || len(priorManifest.Schedule[0].ArmOrder) != 2 {
+		t.Fatal("original auth-failed schedule unavailable")
+	}
+	bDir := filepath.Join(filepath.Dir(dir), "native-20261025b")
+	bRaw, e := os.ReadFile(filepath.Join(bDir, "manifest.json"))
+	if e != nil || behavior76Hash(bRaw) != behavior76BManifestSHA {
+		t.Fatal("original B manifest unavailable")
+	}
+	bIndexRaw, e := os.ReadFile(filepath.Join(bDir, "index.json"))
+	var bIndex behavior76Index
+	if e != nil || behavior76Hash(bIndexRaw) != behavior76BIndexSHA || json.Unmarshal(bIndexRaw, &bIndex) != nil || bIndex.StimuliSHA256 != behavior76StimuliSHA {
+		t.Fatal("original B index unavailable")
+	}
+	if err = behavior76CheckRawFiles(bDir, filepath.Join(filepath.Dir(dir), "native-b-raw-sha256.json"), "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848", 1492); err != nil {
+		t.Fatal(err)
+	}
+	privateRaw, e := os.ReadFile(filepath.Join(filepath.Dir(dir), "native-20261025a-private-arm-mapping.json"))
+	if e != nil {
+		t.Fatal("original private mapping unavailable")
+	}
+	var mapping map[string]bool
+	if json.Unmarshal(privateRaw, &mapping) != nil || len(mapping) != 2 || behavior76Hash([]byte(behavior76JSON(mapping))) != priorManifest.MappingSHA {
+		t.Fatal("original private mapping changed")
+	}
+	arms := priorManifest.Schedule[0].ArmOrder
+	if err = behavior76CheckPrefix(bIndex, episodes, arms, 36); err != nil {
+		t.Fatal(err)
+	}
+	schedule := []map[string]any{}
+	for n, e := range episodes {
+		if priorManifest.Schedule[n].EpisodeID != e.ID || len(priorManifest.Schedule[n].ArmOrder) != 2 || priorManifest.Schedule[n].ArmOrder[0] != arms[n%2] || priorManifest.Schedule[n].ArmOrder[1] != arms[(n+1)%2] {
+			t.Fatal("original schedule cannot be changed")
+		}
+		schedule = append(schedule, map[string]any{"episode_id": e.ID, "arm_order": []string{arms[n%2], arms[(n+1)%2]}})
+	}
+	// Mapping is kept separately until the reviewer seals masked judgments.
+	behavior76Write(t, filepath.Join(filepath.Dir(dir), filepath.Base(dir)+"-private-arm-mapping.json"), mapping)
+	window := "issue76-local-" + time.Now().UTC().Format("20060102T150405")
+	deadline, err := time.Parse(time.RFC3339Nano, behavior76OriginalDeadline)
+	if err != nil || !time.Now().Before(deadline) {
+		t.Fatal("original cumulative wall deadline cannot be extended")
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+	dsn := os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL")
+	parsed, err := pgxpool.ParseConfig(dsn)
+	if err != nil || parsed.ConnConfig.Database != "behavior76_test" || parsed.ConnConfig.Host != "127.0.0.1" {
+		t.Fatal("separate loopback behavior76_test required")
+	}
+	parsed.MaxConns = 2
+	journal, err := pgxpool.NewWithConfig(ctx, parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	if _, err = journal.Exec(ctx, behavior76JournalDDL); err != nil {
+		t.Fatal(err)
+	}
+	var preserved, settingsKey bool
+	err = journal.QueryRow(ctx, `SELECT closed AND admitted=1 AND manifest=$2::jsonb AND (SELECT count(*)=1 AND bool_and(status='transport_error' AND stage='authentication' AND input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e?'final' OR e?'tool_call' OR e?'tool_batch')) FROM public.behavior76_attempts WHERE window_id=$1) FROM public.behavior76_windows WHERE id=$1`, priorWindow, string(priorRaw)).Scan(&preserved)
+	if err != nil || !preserved {
+		t.Fatal("original authentication failure/unknown cannot be reset")
+	}
+	var bPreserved bool
+	err = journal.QueryRow(ctx, `SELECT closed AND admitted=171 AND manifest=$2::jsonb
+ AND (SELECT count(*)=171 AND min(n)=1 AND max(n)=171 AND count(total_tokens)=170 AND sum(total_tokens)=1262564 FROM public.behavior76_attempts WHERE window_id=$1)
+ AND EXISTS(SELECT 1 FROM public.behavior76_attempts WHERE window_id=$1 AND n=171 AND kind='start' AND status='transport_error' AND stage='response_stream' AND milliseconds=56165 AND input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL AND thinking_tokens IS NULL AND model_version IS NULL AND EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e->>'error_code'='provider_protocol_error') AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(events) e WHERE e?'final' OR e?'tool_call' OR e?'tool_batch'))
+ FROM public.behavior76_windows WHERE id=$1`, behavior76BWindow, string(bRaw)).Scan(&bPreserved)
+	if err != nil || !bPreserved {
+		t.Fatal("original B partial stream, counters and unavailable usage cannot be replaced")
+	}
+	if err = journal.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.system_settings'::regclass AND contype='p' AND conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid='public.system_settings'::regclass AND attname='key')]::smallint[])`).Scan(&settingsKey); err != nil || !settingsKey {
+		t.Fatal("encrypted settings persistence requires its original primary key")
+	}
+	manifest := map[string]any{"version": "behavior76-local-v1", "window": window, "source": source, "stimuli_sha256": behavior76StimuliSHA, "expectations_sha256": behavior76ExpectationsSHA, "mapping_sha256": behavior76Hash([]byte(behavior76JSON(mapping))), "max_native_entries": 768, "max_per_turn": 8, "max_per_run": 4, "wall_millis": (4 * time.Hour).Milliseconds(), "native": native, "model": antigravity.FlashHighModel, "output_contract": behavior76OutputContract, "baseline_prompt": prompt.DefaultBasePrompt, "candidate_addition": prompt.TaskContinuityProtocol}
+	manifest["version"] = "behavior76-local-v3-strict-suffix"
+	manifest["schedule"] = schedule
+	manifest["prior_window"] = map[string]any{"id": priorWindow, "admitted": 1, "unavailable_usage": 1, "model_dispatch_reached": false, "original_manifest_sha256": behavior76Hash(priorRaw)}
+	manifest["predecessor_b"] = map[string]any{"id": behavior76BWindow, "admitted": 171, "unavailable_usage": 1, "original_manifest_sha256": behavior76BManifestSHA, "original_index_sha256": behavior76BIndexSHA, "raw_inventory_sha256": "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848", "episode_arms": 36, "planned_turns": 72, "partial_stream_retained": true}
+	manifest["max_native_entries"] = behavior76CEntryLimit
+	manifest["wall_millis"] = time.Until(deadline).Milliseconds()
+	manifest["absolute_deadline"] = behavior76OriginalDeadline
+	manifest["cumulative_admission_ceiling"] = 364
+	manifest["first_episode_index"] = 18
+	manifest["planned_episode_arms"] = 12
+	manifest["planned_owner_turns"] = 24
+	manifest["operational_amendment"] = "Prospective separate window for the exact never-started suffix only; no replay, reset, candidate/provider/rubric change or extension of original deadline. B's failed/unavailable slot is retained in the combined comparison."
+	behavior76Write(t, filepath.Join(dir, "manifest.json"), manifest)
+	admission, err := journal.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admission.Rollback(context.Background())
+	if _, err = admission.Exec(ctx, `LOCK TABLE public.behavior76_windows IN SHARE ROW EXCLUSIVE MODE`); err != nil {
+		t.Fatal(err)
+	}
+	var solePredecessor bool
+	if err = admission.QueryRow(ctx, `SELECT count(*)=2 AND bool_and(closed AND ((id=$1 AND admitted=1) OR (id=$2 AND admitted=171))) FROM public.behavior76_windows`, priorWindow, behavior76BWindow).Scan(&solePredecessor); err != nil || !solePredecessor {
+		t.Fatal("this C-only suffix exception requires exactly its two closed predecessors")
+	}
+	if _, err = admission.Exec(ctx, `INSERT INTO public.behavior76_windows(id,manifest,expires_at) VALUES($1,$2,$3)`, window, behavior76JSON(manifest), deadline); err != nil {
+		t.Fatal("window cannot reopen", err)
+	}
+	if err = admission.Commit(ctx); err != nil {
+		t.Fatal("new window admission commit unavailable")
+	}
+	defer func() {
+		_, e := journal.Exec(context.Background(), `UPDATE public.behavior76_windows SET closed=true WHERE id=$1`, window)
+		if e != nil {
+			t.Error("window close unavailable")
+		}
+		converterLocalNativeExport(t, journal, dir, "public", []string{"behavior76_windows", "behavior76_attempts"})
+	}()
+	var sealed atomic.Bool
+	for n, episode := range episodes {
+		if n < 18 {
+			continue // The entire begun prefix remains in B, including failed171.
+		}
+		if ctx.Err() != nil {
+			t.Fatal("overall collector deadline reached")
+		}
+		order := []string{arms[n%2], arms[(n+1)%2]}
+		for _, arm := range order {
+			if sealed.Load() {
+				t.Fatal("native boundary sealed; preserve all prior attempts and unobserved slots")
+			}
+			e := episode
+			t.Run(fmt.Sprintf("slot-%02d-%s", n+1, arm), func(t *testing.T) {
+				base := prompt.DefaultBasePrompt
+				if mapping[arm] {
+					base += "\n\n" + prompt.TaskContinuityProtocol
+				}
+				t.Setenv(prompt.SettingKeyBasePrompt, base)
+				t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
+				f := newBehavior76Fixture(t, ctx)
+				f.seed(e)
+				relative := fmt.Sprintf("slot-%02d/%s", n+1, arm)
+				caseDir := filepath.Join(dir, filepath.FromSlash(relative))
+				if err = os.MkdirAll(caseDir, 0700); err != nil {
+					t.Fatal(err)
+				}
+				item := behavior76IndexEpisode{EpisodeID: e.ID, MaskedArmID: arm, AliasesPath: relative + "/aliases.json", TablesDir: relative + "/tables", Steps: []behavior76IndexStep{}}
+				defer func() {
+					defer f.retainOnEvidenceFailure()
+					f.backupPrivate(fmt.Sprintf("%s-slot-%02d-%s", window, n+1, arm))
+					f.export(filepath.Join(caseDir, "tables"))
+					behavior76Write(t, filepath.Join(caseDir, "aliases.json"), f.aliases())
+					index.Episodes = append(index.Episodes, item)
+				}()
+				for j, step := range e.Steps {
+					if filepath.Base(step.ID) != step.ID || strings.Contains(step.ID, "..") {
+						t.Fatal("invalid step path")
+					}
+					stepDir := filepath.Join(caseDir, fmt.Sprintf("step-%02d", j+1))
+					stepRel := relative + fmt.Sprintf("/step-%02d", j+1)
+					behavior76Write(t, filepath.Join(stepDir, "before.json"), f.snapshot())
+					receipt, eventErr := f.apply(step)
+					outcome := behavior76Outcome{State: "not_evaluated", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}, EventReceipt: receipt}
+					if eventErr != nil {
+						outcome.State = "failed"
+						outcome.ErrorCode = behavior76SafeError(eventErr)
+						outcome.FailurePhase = "fixture_event"
+						sealed.Store(true)
+					} else if step.Evaluate {
+						provider := behavior76NativeFactory(t, journal, f, window, relative+"/"+step.ID, &sealed)
+						outcome, eventErr = f.evaluate(provider, step)
+						outcome.EventReceipt = receipt
+						entries, e := journal.Query(ctx, `SELECT n FROM public.behavior76_attempts WHERE window_id=$1 AND slot=$2 ORDER BY n`, window, relative+"/"+step.ID)
+						if e != nil {
+							t.Fatal("native entry correlation unavailable", e)
+						}
+						for entries.Next() {
+							var n int
+							if e = entries.Scan(&n); e != nil {
+								t.Fatal(e)
+							}
+							outcome.NativeEntryIDs = append(outcome.NativeEntryIDs, n)
+						}
+						entries.Close()
+						if eventErr != nil {
+							outcome.State = "failed"
+							outcome.ErrorCode = behavior76SafeError(eventErr)
+							outcome.FailurePhase = "collector"
+							sealed.Store(true)
+						}
+					}
+					behavior76Write(t, filepath.Join(stepDir, "after.json"), f.snapshot())
+					behavior76Write(t, filepath.Join(stepDir, "outcome.json"), outcome)
+					item.Steps = append(item.Steps, behavior76IndexStep{StepID: step.ID, Before: stepRel + "/before.json", After: stepRel + "/after.json", Outcome: stepRel + "/outcome.json"})
+					if sealed.Load() {
+						t.Fatal("collector sealed; original evidence retained")
+					}
+				}
+			})
+		}
+	}
+}

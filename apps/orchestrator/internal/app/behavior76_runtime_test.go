@@ -25,6 +25,7 @@ type behavior76Runtime struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
 	pool             *pgxpool.Pool
 	scope            *behavior76FixtureScope
+	literal          bool                                // Fixed before serving; adds observed DATA, not authority.
 	loseNextWriteAck atomic.Bool                         // Trusted public fault test only; no corpus/model selector.
 	beforeCommit     func(context.Context, string) error // Fixed public race-test hook, configured before serving work.
 }
@@ -218,6 +219,18 @@ func (r *behavior76Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteR
 		return nil, err
 	}
 	result := map[string]any{"object": o, "synthetic_test_effect": true}
+	if r.literal {
+		observation, e := behavior76ObserveLiteralDeadline(ctx, tx, key, kind)
+		if e != nil {
+			return nil, e
+		}
+		if observation != nil {
+			result["business_deadline_observation"] = observation
+			if _, e = tx.Exec(ctx, `INSERT INTO behavior76_business_observations(action_id,resource_key,kind,observation) VALUES($1,$2,$3,$4)`, req.Context.ActionId, key, kind, behavior76JSON(observation)); e != nil {
+				return nil, e
+			}
+		}
+	}
 	if kind == "commit" {
 		result["butler_effect_receipt"] = map[string]any{"idempotency_key": keyID, "action_fingerprint": fingerprint, "effect_state": string(actionauth.StateConfirmed), "artifact_id": fmt.Sprintf("synthetic:%s:v%d:%s", key, o.Version, o.SHA256)}
 	}

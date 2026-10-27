@@ -65,6 +65,7 @@ type behavior76Fixture struct {
 	authorityTrace    *behavior76AuthorityTrace
 	researchStop      *atomic.Bool
 	streamQuiescent   bool
+	literal           bool // Trusted constructor profile; never a corpus/model selector.
 }
 
 func newBehavior76Fixture(t *testing.T, parents ...context.Context) *behavior76Fixture {
@@ -121,6 +122,15 @@ func newBehavior76ResponseFixture(t *testing.T, parent context.Context, global *
 }
 
 func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty, localHTTP, localResponse bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	return newBehavior76FixtureConfiguredLiteralMode(t, parent, global, streaming, localEmpty, localHTTP, localResponse, false, bindings...)
+}
+
+func newBehavior76LiteralFixture(t *testing.T, parent context.Context, global *atomic.Bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
+	local := global != nil
+	return newBehavior76FixtureConfiguredLiteralMode(t, parent, global, local, local, local, local, true, bindings...)
+}
+
+func newBehavior76FixtureConfiguredLiteralMode(t *testing.T, parent context.Context, global *atomic.Bool, streaming, localEmpty, localHTTP, localResponse, literal bool, bindings ...behavior76ScopeBinding) *behavior76Fixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	u, err := url.Parse(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -185,10 +195,15 @@ func newBehavior76FixtureConfiguredMode(t *testing.T, parent context.Context, gl
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	tasks := task.NewStoreWithAuthorityReads(pool, reads)
 	tasks.SetBudgets(budgets, "")
-	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: reads, sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path, authorityTrace: authorityTrace, researchStop: global}
+	f := &behavior76Fixture{t: t, ctx: ctx, pool: pool, reads: reads, sources: sources, tasks: tasks, profiles: profile.NewStore(pool), leases: leases, budgets: budgets, manifestPath: path, authorityTrace: authorityTrace, researchStop: global, literal: literal}
 	f.reconstruct()
 	if _, err = pool.Exec(ctx, behavior76ObjectsSQL+`CREATE TABLE behavior76_aliases(kind text NOT NULL,key text NOT NULL,value text NOT NULL,PRIMARY KEY(kind,key)); CREATE TABLE behavior76_observations(n bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,observation jsonb NOT NULL);`); err != nil {
 		t.Fatal(err)
+	}
+	if literal {
+		if _, err = pool.Exec(ctx, behavior76LiteralServiceDDL); err != nil {
+			t.Fatal("literal service observation setup unavailable", err)
+		}
 	}
 	if global != nil {
 		if _, err = pool.Exec(ctx, behavior76ScopeDDL); err != nil {
@@ -288,7 +303,7 @@ func (f *behavior76Fixture) startBroker() *tools.BrokerClient {
 		t.Fatal(err)
 	}
 	server := grpc.NewServer()
-	f.recipient = &behavior76Runtime{pool: f.pool, scope: f.scope}
+	f.recipient = &behavior76Runtime{pool: f.pool, scope: f.scope, literal: f.literal}
 	runtimev1.RegisterToolRuntimeServiceServer(server, f.recipient)
 	go server.Serve(listener)
 	t.Cleanup(server.Stop)

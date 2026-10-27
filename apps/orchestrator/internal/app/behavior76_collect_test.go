@@ -22,6 +22,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
@@ -93,6 +94,27 @@ func (a behavior76Assembler) Assemble(state prompt.ConfigState, ctx prompt.Conte
 }
 
 func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step behavior76Step) (outcome behavior76Outcome, err error) {
+	return f.evaluateInput(provider, step, false)
+}
+
+// Literal input uses the ordinary authenticated production control path. The
+// legacy collector remains on its original typed/projection interface.
+func (f *behavior76Fixture) evaluateLiteral(provider transport.ModelProvider, step behavior76Step, selections ...behavior76LiteralTaskSelection) (behavior76Outcome, error) {
+	if !behavior76LiteralRawOwnerStep(step) {
+		return behavior76Outcome{}, errors.New("literal evaluation requires raw graded owner input")
+	}
+	if len(selections) > 1 || (step.RunTaskKey == nil && len(selections) != 0) || (step.RunTaskKey != nil && (len(selections) != 1 || selections[0].StepID != step.ID || selections[0].TaskKey != *step.RunTaskKey || selections[0].Provenance != "explicit_owner_ui")) {
+		return behavior76Outcome{}, errors.New("literal selected task requires declared actual owner UI input")
+	}
+	outcome, err := f.evaluateInput(provider, step, true)
+	if len(selections) == 1 {
+		selection := selections[0]
+		outcome.OwnerTaskSelection = &selection
+	}
+	return outcome, err
+}
+
+func (f *behavior76Fixture) evaluateInput(provider transport.ModelProvider, step behavior76Step, literal bool) (outcome behavior76Outcome, err error) {
 	outcome = behavior76Outcome{State: "completed", RunIDs: []string{}, AutomaticRunIDs: []string{}, NativeEntryIDs: []int{}}
 	defer func() {
 		if f.scope != nil && err != nil {
@@ -205,6 +227,11 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 			return outcome, err
 		}
 	}
+	inputContext := f.ctx
+	if literal {
+		worker.SetTaskControls(f.controls)
+		inputContext = owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: behavior76Owner, SessionKey: sessionKey, Channel: "web", DeliveryID: "behavior76:" + step.ID})
+	}
 	payload := map[string]any{"text": step.Event.Text, "user_id": behavior76Owner}
 	if taskID != "" {
 		payload["task_id"] = taskID
@@ -217,7 +244,8 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 		text = step.Event.Instruction
 		payload["text"] = text
 	}
-	accepted, err := worker.Execute(f.ctx, ingress.InputEvent{EventID: "behavior76:" + step.ID, IdempotencyKey: "behavior76:" + step.ID, SessionKey: sessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: behavior76JSON(payload), CreatedAt: time.Now().UTC()})
+	inputEvent := ingress.InputEvent{EventID: "behavior76:" + step.ID, IdempotencyKey: "behavior76:" + step.ID, SessionKey: sessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: behavior76JSON(payload), CreatedAt: time.Now().UTC()}
+	accepted, err := worker.Execute(inputContext, inputEvent)
 	if err != nil {
 		outcome.State = "admission_denied"
 		outcome.ErrorCode = behavior76SafeError(err)
@@ -235,7 +263,18 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 			err = nil
 		}
 	} else {
-		outcome.OwnerInputID = accepted.InputID
+		if literal && accepted.AssistantResponse != "" {
+			outcome.KernelResponse, err = f.literalKernelReceipt(accepted, inputEvent)
+			if err != nil {
+				return outcome, err
+			}
+			outcome.State = accepted.ReceiptStatus
+			// A control receipt is a real owner exchange but not a model run.
+			// Controller continuations remain in the queued cohort below and
+			// every run/expense is recorded as automatic, never an owner final.
+		} else {
+			outcome.OwnerInputID = accepted.InputID
+		}
 	}
 	// Observe the actual already-admitted cohort, including Controller inputs in
 	// other sessions. A fast owner reply cannot justify cancelling a slower
@@ -257,6 +296,27 @@ func (f *behavior76Fixture) evaluate(provider transport.ModelProvider, step beha
 	cohortRows.Close()
 	if e != nil {
 		return outcome, e
+	}
+	if literal {
+		// Observe all already admitted automatic inputs even when they fail
+		// before model entry. A completed kernel audit receipt never hides a
+		// failed continuation or counts as successful task completion.
+		defer func() {
+			cleanup, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			for _, id := range cohort {
+				if id == outcome.OwnerInputID || (outcome.KernelResponse != nil && id == outcome.KernelResponse.InputID) {
+					continue
+				}
+				var value behavior76LiteralAutomaticInput
+				value.InputID = id
+				if e := f.pool.QueryRow(cleanup, `SELECT coalesce(run_id,''),status,error_code FROM accepted_inputs WHERE input_id=$1`, id).Scan(&value.RunID, &value.Status, &value.ErrorCode); e != nil {
+					err = errors.Join(err, errors.New("actual automatic input outcome unavailable"))
+					return
+				}
+				outcome.AutomaticInputs = append(outcome.AutomaticInputs, value)
+			}
+		}()
 	}
 	if len(cohort) == 0 {
 		return outcome, nil
