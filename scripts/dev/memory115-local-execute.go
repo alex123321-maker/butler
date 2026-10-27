@@ -39,12 +39,65 @@ const local115AuthKey = "BUTLER_PROVIDER_AUTH_ANTIGRAVITY"
 const local115ControlDSN = "postgres://postgres@127.0.0.1:55451/behavior76_test?sslmode=disable"
 const local115TargetDSN = "postgres://postgres@127.0.0.1:55451/memory115_native_test?sslmode=disable"
 
-var local115Artifacts = map[string]struct{ path, sha string }{
-	"app":            {"/private/memory115-prepared-20261026-v2/bin/app.test", "88f674b66e6171e2457998133643ab4bcdadaa6e78acc370af69508ffb6c8fa0"},
-	"broker":         {"/private/memory115-prepared-20261026-v1/bin/tool-broker", "f49e585b57187791e77cb7c39e4b9cab239f5d5a3c751f8d348e88329e180c3d"},
-	"broker_control": {"/private/memory115-prepared-20261026-v1/bin/broker-control.test", "1791ba611b4ea9ac45837bac710f1a9a7cbe27ae7d9eed444bf3a0c1e2721b98"},
-	"extension":      {"/private/memory115-prepared-20261026-v1/bin/extension.test", "2a409ae52762d3468e5d0693f80b770f455b284a11156e7ada22e9f0b586d106"},
-	"http":           {"/private/memory115-prepared-20261026-v1/bin/http.test", "ba5d56a18162da93bcd57c228dcca0f421f479e61fc95aa24c40c71547217ee4"},
+func local115LegacyArtifactPins() map[string]struct{ path, sha string } {
+	return map[string]struct{ path, sha string }{
+		"app":            {"/private/memory115-prepared-20261026-v2/bin/app.test", "88f674b66e6171e2457998133643ab4bcdadaa6e78acc370af69508ffb6c8fa0"},
+		"broker":         {"/private/memory115-prepared-20261026-v1/bin/tool-broker", "f49e585b57187791e77cb7c39e4b9cab239f5d5a3c751f8d348e88329e180c3d"},
+		"broker_control": {"/private/memory115-prepared-20261026-v1/bin/broker-control.test", "1791ba611b4ea9ac45837bac710f1a9a7cbe27ae7d9eed444bf3a0c1e2721b98"},
+		"extension":      {"/private/memory115-prepared-20261026-v1/bin/extension.test", "2a409ae52762d3468e5d0693f80b770f455b284a11156e7ada22e9f0b586d106"},
+		"http":           {"/private/memory115-prepared-20261026-v1/bin/http.test", "ba5d56a18162da93bcd57c228dcca0f421f479e61fc95aa24c40c71547217ee4"},
+	}
+}
+
+// Only these compiled operator profiles exist. No CLI path, URL, executable,
+// hash or environment override can construct a new profile. The prospective
+// skill profile stays unusable until its separately frozen artifacts are bound.
+const local115SkillSourceCommit = ""
+const local115SkillPlanSHA = ""
+const local115SkillHistorySHA = ""
+const local115SkillAppSHA = ""
+
+type local115OperatorProfile struct {
+	name, source, sourceCommit, plan, planSHA, history, historySHA string
+	database, targetDSN                                            string
+	artifacts                                                      map[string]struct{ path, sha string }
+}
+
+func local115OperatorProfileByName(name string) (local115OperatorProfile, error) {
+	profile := local115OperatorProfile{artifacts: local115LegacyArtifactPins()}
+	switch name {
+	case "legacy-20261026":
+		profile.name, profile.source, profile.sourceCommit = name, local115Source, "2a26ceaf6427eb6727167909a7560c731aff8f9a"
+		profile.plan, profile.planSHA, profile.history, profile.historySHA = local115Plan, local115PlanSHA, local115History, local115HistorySHA
+		profile.database, profile.targetDSN = "memory115_native_test", local115TargetDSN
+	case "skill-preparation-v1":
+		profile.name, profile.source, profile.sourceCommit = name, "/private/memory115-source-skillprep-v1", local115SkillSourceCommit
+		profile.plan, profile.planSHA = "/private/memory115-prepared-skillprep-v1/plan/preseal.json", local115SkillPlanSHA
+		profile.history, profile.historySHA = "/src115/.cache/memory115-skill-successor-recipe-v1/recipe.json", local115SkillHistorySHA
+		profile.database, profile.targetDSN = "memory115_skillprep_v1_test", "postgres://postgres@127.0.0.1:55451/memory115_skillprep_v1_test?sslmode=disable"
+		profile.artifacts["app"] = struct{ path, sha string }{"/private/memory115-prepared-skillprep-v1/bin/app.test", local115SkillAppSHA}
+	default:
+		return local115OperatorProfile{}, local115Fail("unknown fixed local operator profile")
+	}
+	return profile, nil
+}
+
+func (profile local115OperatorProfile) bound() bool {
+	expected, err := local115OperatorProfileByName(profile.name)
+	if err != nil || profile.source != expected.source || profile.sourceCommit != expected.sourceCommit || profile.plan != expected.plan || profile.planSHA != expected.planSHA || profile.history != expected.history || profile.historySHA != expected.historySHA || profile.database != expected.database || profile.targetDSN != expected.targetDSN {
+		return false
+	}
+	sha := regexp.MustCompile(`^[0-9a-f]{64}$`)
+	if !regexp.MustCompile(`^[0-9a-f]{40}$`).MatchString(profile.sourceCommit) || !sha.MatchString(profile.planSHA) || !sha.MatchString(profile.historySHA) || len(profile.artifacts) != 5 {
+		return false
+	}
+	for _, role := range []string{"app", "broker", "broker_control", "extension", "http"} {
+		pin := profile.artifacts[role]
+		if pin != expected.artifacts[role] || !strings.HasPrefix(pin.path, "/private/") || !sha.MatchString(pin.sha) {
+			return false
+		}
+	}
+	return true
 }
 
 func local115Fail(code string) error      { return errors.New(code) }
@@ -136,11 +189,21 @@ func local115Hash(path string) (string, error) {
 }
 
 func local115Environment() []string {
-	return []string{"PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin", "GOMAXPROCS=1", "BUTLER_BROKER_E2E_BINARY=" + local115Artifacts["broker"].path, "BUTLER_GUARDED_REQUEST_BROKER_BINARY=" + local115Artifacts["broker_control"].path, "BUTLER_EXTENSION_E2E_BINARY=" + local115Artifacts["extension"].path, "BUTLER_EXPERIENCE_HTTP_BINARY=" + local115Artifacts["http"].path, "BUTLER_EXPERIENCE_NATIVE_HISTORY=" + local115History, "BUTLER_EXPERIENCE_NATIVE_HISTORY_SHA256=" + local115HistorySHA, "BUTLER_EXPERIENCE_NATIVE_PLAN=" + local115Plan, "BUTLER_EXPERIENCE_NATIVE_PLAN_SHA256=" + local115PlanSHA}
+	profile, _ := local115OperatorProfileByName("legacy-20261026")
+	return profile.environment()
+}
+
+func (profile local115OperatorProfile) environment() []string {
+	return []string{"PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin", "GOMAXPROCS=1", "BUTLER_BROKER_E2E_BINARY=" + profile.artifacts["broker"].path, "BUTLER_GUARDED_REQUEST_BROKER_BINARY=" + profile.artifacts["broker_control"].path, "BUTLER_EXTENSION_E2E_BINARY=" + profile.artifacts["extension"].path, "BUTLER_EXPERIENCE_HTTP_BINARY=" + profile.artifacts["http"].path, "BUTLER_EXPERIENCE_NATIVE_HISTORY=" + profile.history, "BUTLER_EXPERIENCE_NATIVE_HISTORY_SHA256=" + profile.historySHA, "BUTLER_EXPERIENCE_NATIVE_PLAN=" + profile.plan, "BUTLER_EXPERIENCE_NATIVE_PLAN_SHA256=" + profile.planSHA}
 }
 
 func local115Command(ctx context.Context, env []string, selected, timeout string) *exec.Cmd {
-	args := []string{local115HostRoot, "/bin/sh", "-c", `cd ` + local115Source + `/apps/orchestrator/internal/app && exec ` + local115Artifacts["app"].path + ` -test.v -test.run '` + selected + `' -test.timeout ` + timeout}
+	profile, _ := local115OperatorProfileByName("legacy-20261026")
+	return profile.command(ctx, env, selected, timeout)
+}
+
+func (profile local115OperatorProfile) command(ctx context.Context, env []string, selected, timeout string) *exec.Cmd {
+	args := []string{local115HostRoot, "/bin/sh", "-c", `cd ` + profile.source + `/apps/orchestrator/internal/app && exec ` + profile.artifacts["app"].path + ` -test.v -test.run '` + selected + `' -test.timeout ` + timeout}
 	cmd := exec.CommandContext(ctx, "/usr/sbin/chroot", args...)
 	// Secret values stay exclusively in the child environment, never argv.
 	// Inheritance is replaced by this finite trusted allowlist.
@@ -331,6 +394,14 @@ func local115Reaped(path string) bool {
 }
 
 func local115Execute(ctx context.Context, label string, execute bool) error {
+	profile, err := local115OperatorProfileByName("legacy-20261026")
+	if err != nil {
+		return err
+	}
+	return profile.execute(ctx, label, execute)
+}
+
+func (profile local115OperatorProfile) execute(ctx context.Context, label string, execute bool) error {
 	if !regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`).MatchString(label) {
 		return local115Fail("bounded one-use local label required")
 	}
@@ -339,19 +410,22 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 			return local115Fail("local native profile forbids ambient proxy substitution")
 		}
 	}
-	for path, want := range map[string]string{local115Plan: local115PlanSHA, local115History: local115HistorySHA} {
+	if !profile.bound() {
+		return local115Fail("fixed local operator profile is not fully frozen and bound")
+	}
+	for path, want := range map[string]string{profile.plan: profile.planSHA, profile.history: profile.historySHA} {
 		got, err := local115Hash(local115Physical(path))
 		if err != nil || got != want {
 			return local115Fail("frozen preseal/history bytes changed")
 		}
 	}
-	for _, pin := range local115Artifacts {
+	for _, pin := range profile.artifacts {
 		got, err := local115Hash(local115Physical(pin.path))
 		if err != nil || got != pin.sha {
 			return local115Fail("frozen native executable bytes changed")
 		}
 	}
-	raw, err := os.ReadFile(local115Physical(local115Plan))
+	raw, err := os.ReadFile(local115Physical(profile.plan))
 	if err != nil {
 		return local115Fail("preseal unavailable")
 	}
@@ -368,7 +442,7 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 		return local115Fail("new private wrapper identity required")
 	}
 	checkCtx, cancel := context.WithTimeout(ctx, 3*time.Minute)
-	err = local115RunLog(local115Command(checkCtx, append(local115Environment(), "BUTLER_EXPERIENCE_NATIVE_CHECK=1"), "^TestNativeExperienceCheckPreparedWholeComparison$", "3m"), filepath.Join(root, "pre-auth-pins-check.log"))
+	err = local115RunLog(profile.command(checkCtx, append(profile.environment(), "BUTLER_EXPERIENCE_NATIVE_CHECK=1"), "^TestNativeExperienceCheckPreparedWholeComparison$", "3m"), filepath.Join(root, "pre-auth-pins-check.log"))
 	cancel()
 	if err != nil {
 		return local115Fail("original zero-native prepared check failed; no auth clone")
@@ -406,25 +480,25 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 		return err
 	}
 	if !execute {
-		return local115JSON(filepath.Join(root, "prepared.json"), map[string]any{"result": "ORIGINAL_PRESEAL_RESOURCES_AND_REAL_SOURCE_FENCES_RECHECKED_NO_AUTH_OR_NATIVE", "native_calls": 0, "auth_access": 0, "plan_sha256": local115PlanSHA, "actual_cgroup_probe": true, "whole_cgroup_empty": true, "actual_source_window_and_namespace_fences": true, "source_other_credential_backends_idle": true, "cpu_max": "100000 100000", "memory_max": "2147483648", "swap_max": "0", "pids_max": "256"})
+		return local115JSON(filepath.Join(root, "prepared.json"), map[string]any{"result": "ORIGINAL_PRESEAL_RESOURCES_AND_REAL_SOURCE_FENCES_RECHECKED_NO_AUTH_OR_NATIVE", "native_calls": 0, "auth_access": 0, "plan_sha256": profile.planSHA, "actual_cgroup_probe": true, "whole_cgroup_empty": true, "actual_source_window_and_namespace_fences": true, "source_other_credential_backends_idle": true, "cpu_max": "100000 100000", "memory_max": "2147483648", "swap_max": "0", "pids_max": "256"})
 	}
 	admin, err := pgx.Connect(ctx, "postgres://postgres@127.0.0.1:55451/postgres?sslmode=disable")
 	if err != nil {
 		return local115Fail("local native database admin unavailable")
 	}
 	var exists bool
-	if admin.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname='memory115_native_test')`).Scan(&exists) != nil {
+	if admin.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=$1)`, profile.database).Scan(&exists) != nil {
 		admin.Close(ctx)
 		return local115Fail("local native database identity unavailable")
 	}
 	if !exists {
-		_, err = admin.Exec(ctx, `CREATE DATABASE memory115_native_test`)
+		_, err = admin.Exec(ctx, `CREATE DATABASE `+pgx.Identifier{profile.database}.Sanitize())
 	}
 	admin.Close(ctx)
 	if err != nil {
 		return local115Fail("local native database creation failed")
 	}
-	targetConfig, err := pgxpool.ParseConfig(local115TargetDSN)
+	targetConfig, err := pgxpool.ParseConfig(profile.targetDSN)
 	if err != nil {
 		return local115Fail("local native target configuration unavailable")
 	}
@@ -459,14 +533,14 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if err = local115ValidateCipher(ctx, strings.TrimSpace(string(key)), expected); err != nil {
 		return err
 	}
-	if err = local115JSON(filepath.Join(root, "execution-consumed.json"), map[string]any{"plan_sha256": local115PlanSHA, "source": "2a26ceaf6427eb6727167909a7560c731aff8f9a", "native_domain": "memory115_native_test/experience_native_v1", "original_deadline": seal.Deadline, "new_authority": false}); err != nil {
+	if err = local115JSON(filepath.Join(root, "execution-consumed.json"), map[string]any{"plan_sha256": profile.planSHA, "source": profile.sourceCommit, "native_domain": profile.database + "/experience_native_v1", "original_deadline": seal.Deadline, "new_authority": false}); err != nil {
 		return err
 	}
-	env := append(local115Environment(), "BUTLER_TEST_MEMORY_POSTGRES_URL="+local115TargetDSN, "BUTLER_EXPERIENCE_NATIVE_EXECUTE=1", "BUTLER_EXPERIENCE_NATIVE_APPROVED_SHA256="+local115PlanSHA, "BUTLER_EXPERIENCE_NATIVE_OUTPUT="+inside+"/actual", "BUTLER_EXPERIENCE_PROCESS_PROOF="+inside+"/actual/processes", "BUTLER_EXPERIENCE_NATIVE_AUTH_VALUE_FILE="+inside+"/auth-import.value", "BUTLER_EXPERIENCE_NATIVE_AUTH_RETURN_FILE="+inside+"/auth-return.value", config.SettingsEncryptionKeyEnv+"="+strings.TrimSpace(string(key)))
+	env := append(profile.environment(), "BUTLER_TEST_MEMORY_POSTGRES_URL="+profile.targetDSN, "BUTLER_EXPERIENCE_NATIVE_EXECUTE=1", "BUTLER_EXPERIENCE_NATIVE_APPROVED_SHA256="+profile.planSHA, "BUTLER_EXPERIENCE_NATIVE_OUTPUT="+inside+"/actual", "BUTLER_EXPERIENCE_PROCESS_PROOF="+inside+"/actual/processes", "BUTLER_EXPERIENCE_NATIVE_AUTH_VALUE_FILE="+inside+"/auth-import.value", "BUTLER_EXPERIENCE_NATIVE_AUTH_RETURN_FILE="+inside+"/auth-return.value", config.SettingsEncryptionKeyEnv+"="+strings.TrimSpace(string(key)))
 	// Cleanup time grants no model/tool authority: the original collector still
 	// clamps every operation to the sealed owner/day deadline.
 	nativeCtx, stop := context.WithDeadline(ctx, seal.Deadline.Add(30*time.Second))
-	cmd := local115Command(nativeCtx, env, "^TestNativeExperienceWholeComparison$", "2310m")
+	cmd := profile.command(nativeCtx, env, "^TestNativeExperienceWholeComparison$", "2310m")
 	cmd.SysProcAttr = &syscall.SysProcAttr{UseCgroupFD: true, CgroupFD: int(cg.Fd()), Setpgid: true}
 	nativeErr := local115RunLog(cmd, filepath.Join(root, "runner.log"))
 	stop()
@@ -509,7 +583,7 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if receiptErr != nil && !os.IsNotExist(receiptErr) {
 		return local115Fail("native auth import receipt unavailable for recovery")
 	}
-	latest, source, err := local115Recover(cleanup, recoveryTarget, local115PlanSHA, expected, receiptErr == nil)
+	latest, source, err := local115Recover(cleanup, recoveryTarget, profile.planSHA, expected, receiptErr == nil)
 	if err != nil {
 		return err
 	}
@@ -538,7 +612,7 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 	if err = local115Exclusive(filepath.Join(root, "source-after-native.value"), []byte(final)); err != nil {
 		return err
 	}
-	if err = local115JSON(filepath.Join(root, "local-handback.json"), map[string]any{"version": "butler115-local-provider-handback.v1", "native_exit_status": exit, "collector_started": cmd.Process != nil, "cmd_wait_returned": cmd.ProcessState != nil, "whole_cgroup_empty": reaped, "forced_cleanup": forced, "native_database_backends_gone": true, "opaque_source_cas": true, "source_windows_closed_checked": true, "recovery_source": source, "local_auth_resolved": true, "fresh_local_encrypted_snapshot_saved": true, "lab_main_auth_claim": false, "raw_material_printed": false, "release_qualified": false, "plan_sha256": local115PlanSHA}); err != nil {
+	if err = local115JSON(filepath.Join(root, "local-handback.json"), map[string]any{"version": "butler115-local-provider-handback.v1", "native_exit_status": exit, "collector_started": cmd.Process != nil, "cmd_wait_returned": cmd.ProcessState != nil, "whole_cgroup_empty": reaped, "forced_cleanup": forced, "native_database_backends_gone": true, "opaque_source_cas": true, "source_windows_closed_checked": true, "recovery_source": source, "local_auth_resolved": true, "fresh_local_encrypted_snapshot_saved": true, "lab_main_auth_claim": false, "raw_material_printed": false, "release_qualified": false, "plan_sha256": profile.planSHA}); err != nil {
 		return err
 	}
 	if nativeErr != nil || forced {
@@ -550,10 +624,15 @@ func local115Execute(ctx context.Context, label string, execute bool) error {
 func main() {
 	label := flag.String("label", "", "one-use local label")
 	execute := flag.Bool("execute", false, "run only the exact prepared native cohort after all gates")
+	profileName := flag.String("profile", "legacy-20261026", "fixed compiled local operator profile")
 	flag.Parse()
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
-	if err := local115Execute(ctx, *label, *execute); err != nil {
+	profile, err := local115OperatorProfileByName(*profileName)
+	if err == nil {
+		err = profile.execute(ctx, *label, *execute)
+	}
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}

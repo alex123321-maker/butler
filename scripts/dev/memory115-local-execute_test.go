@@ -116,6 +116,61 @@ func TestLocal115NoSecretOrNativeBeforeStaticGuards(t *testing.T) {
 	}
 }
 
+func TestLocal115FixedProfilesKeepLegacyAndDenyUnboundOrSubstitutedSuccessor(t *testing.T) {
+	for _, key := range []string{"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"} {
+		t.Setenv(key, "")
+	}
+	legacy, err := local115OperatorProfileByName("legacy-20261026")
+	if err != nil || !legacy.bound() || legacy.plan != local115Plan || legacy.history != local115History || legacy.source != local115Source || legacy.targetDSN != local115TargetDSN || legacy.database != "memory115_native_test" || strings.Join(legacy.environment(), "\n") != strings.Join(local115Environment(), "\n") {
+		t.Fatal("legacy fixed operator binding changed", err)
+	}
+	successor, err := local115OperatorProfileByName("skill-preparation-v1")
+	if err != nil || successor.targetDSN != "postgres://postgres@127.0.0.1:55451/memory115_skillprep_v1_test?sslmode=disable" || successor.database != "memory115_skillprep_v1_test" || successor.source == legacy.source || successor.plan == legacy.plan || successor.history == legacy.history || successor.artifacts["app"].path == legacy.artifacts["app"].path {
+		t.Fatal("prospective operator reuses a closed identity", err)
+	}
+	for _, role := range []string{"broker", "broker_control", "extension", "http"} {
+		if successor.artifacts[role] != legacy.artifacts[role] {
+			t.Fatal("unrelated immutable runtime changed")
+		}
+	}
+	for _, name := range []string{"", "../foreign", "skill-preparation-v2", "postgres://foreign"} {
+		if _, err := local115OperatorProfileByName(name); err == nil {
+			t.Fatal("unknown operator profile accepted")
+		}
+	}
+	for name, mutate := range map[string]func(*local115OperatorProfile){
+		"unbound_plan":    func(p *local115OperatorProfile) { p.planSHA = "" },
+		"unbound_history": func(p *local115OperatorProfile) { p.historySHA = "" },
+		"unbound_app":     func(p *local115OperatorProfile) { pin := p.artifacts["app"]; pin.sha = ""; p.artifacts["app"] = pin },
+		"different_database": func(p *local115OperatorProfile) {
+			p.database, p.targetDSN = "foreign_test", "postgres://postgres@127.0.0.1:55451/foreign_test?sslmode=disable"
+		},
+		"query_host_override": func(p *local115OperatorProfile) { p.targetDSN += "&host=synthetic.invalid" },
+		"foreign_source":      func(p *local115OperatorProfile) { p.source = "/private/foreign" },
+		"foreign_app": func(p *local115OperatorProfile) {
+			pin := p.artifacts["app"]
+			pin.path = "/private/foreign"
+			p.artifacts["app"] = pin
+		},
+	} {
+		for _, base := range []string{"legacy-20261026", "skill-preparation-v1"} {
+			t.Run(base+"/"+name, func(t *testing.T) {
+				profile, _ := local115OperatorProfileByName(base)
+				mutate(&profile)
+				if err := profile.execute(t.Context(), "synthetic-denied-before-io", true); err == nil || err.Error() != "fixed local operator profile is not fully frozen and bound" {
+					t.Fatal("unbound/substituted profile reached filesystem, PostgreSQL or auth", err)
+				}
+			})
+		}
+	}
+	changed, _ := local115OperatorProfileByName("legacy-20261026")
+	delete(changed.artifacts, "app")
+	again, _ := local115OperatorProfileByName("legacy-20261026")
+	if len(again.artifacts) != 5 || !again.bound() {
+		t.Fatal("profile maps share mutable process-global pins")
+	}
+}
+
 func TestLocal115ResourceReceiptNeedsActualKernelPopulationProof(t *testing.T) {
 	dir := t.TempDir()
 	if local115Reaped(dir) {

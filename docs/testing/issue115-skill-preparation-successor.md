@@ -52,6 +52,19 @@ after the current #76 native resource lane is free. The generic changed-path
 mapper still suggests historical lab commands; the owner's current PC-only
 instruction requires their existing local equivalent, with no SSH execution.
 
+The local operator adds only the compiled `skill-preparation-v1` selector;
+`legacy-20261026` stays the default with its original exact pins. The new
+selector has distinct source/app/recipe/preseal/database paths. Its four source,
+app, recipe and plan commitments are deliberately empty during preparation;
+all must be frozen and bound before even the filesystem/database/auth stage.
+The shared containment, source-window/namespace fences, opaque credential
+clone, no-retry execution, process/backend joins, durable recovery and source
+CAS handback are retained. There is no caller-authored profile JSON or path/
+database/URL/executable selector. Future binding belongs outside the frozen
+collector source snapshot and must retain exact producer provenance. Targeted
+operator controls and actual isolated PostgreSQL recovery/CAS checks are still
+required before new native entry.
+
 Before new inference, derive and validate the latest closed local history through
 its original consumer; preserve all213 previous plus19 local native admissions,
 every NULL and the extra product attempt without a native entry. Create a new

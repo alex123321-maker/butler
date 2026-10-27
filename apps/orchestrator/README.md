@@ -48,6 +48,11 @@ stages, finite640-entry ceiling, all prior unknown usage and ordinary source,
 review, Broker and recipient boundaries. Code/preparation alone is not native
 acceptance; see [the successor protocol](../../docs/testing/issue115-skill-preparation-successor.md).
 
+Its local operator selector remains unbound and denies all work before storage
+or private auth until the new source/app/recipe/preseal commitments are fixed.
+Legacy operator pins remain the default; both use the existing bounded process,
+source-idle fence and opaque local credential recovery/CAS path.
+
 An admitted explicit owner request receives the already permitted canonical
 communication.message schema immediately, avoiding catalog turns just to reply.
 Recovery deduplicates loaded refs. Absent/legacy/revoked/noncanonical contracts
