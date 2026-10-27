@@ -54,8 +54,8 @@ instruction requires their existing local equivalent, with no SSH execution.
 
 The local operator adds only the compiled `skill-preparation-v1` selector;
 `legacy-20261026` stays the default with its original exact pins. The new
-selector has distinct source/app/recipe/preseal/database paths. Its four source,
-app, recipe and plan commitments are deliberately empty during preparation;
+selector has distinct source/five-artifact/recipe/preseal/database paths. Its
+eight source, five-artifact, recipe and plan commitments are deliberately empty during preparation;
 all must be frozen and bound before even the filesystem/database/auth stage.
 The shared containment, source-window/namespace fences, opaque credential
 clone, no-retry execution, process/backend joins, durable recovery and source
@@ -64,6 +64,15 @@ database/URL/executable selector. Future binding belongs outside the frozen
 collector source snapshot and must retain exact producer provenance. Targeted
 operator controls and actual isolated PostgreSQL recovery/CAS checks are still
 required before new native entry.
+
+Before the next build/freeze, integrate the applicable #76 production fixes.
+The source comparison found changes in Input claim/service, Orchestrator
+terminal supervision/recovery and the provider's typed stream diagnostics.
+Build all five new native artifacts from the final integrated source; the new
+operator uses their own fixed paths and exact pins. The archived old artifacts,
+old source, recipe and failed population remain unchanged. No old artifact is
+silently presented as a build of the new source. Reuse the existing preparation
+and collector gates, preserving every relevant failed attempt.
 
 Before new inference, derive and validate the latest closed local history through
 its original consumer; preserve all213 previous plus19 local native admissions,

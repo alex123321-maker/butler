@@ -129,8 +129,8 @@ func TestLocal115FixedProfilesKeepLegacyAndDenyUnboundOrSubstitutedSuccessor(t *
 		t.Fatal("prospective operator reuses a closed identity", err)
 	}
 	for _, role := range []string{"broker", "broker_control", "extension", "http"} {
-		if successor.artifacts[role] != legacy.artifacts[role] {
-			t.Fatal("unrelated immutable runtime changed")
+		if successor.artifacts[role].path == legacy.artifacts[role].path || !strings.HasPrefix(successor.artifacts[role].path, "/private/memory115-prepared-skillprep-v1/bin/") {
+			t.Fatal("new source cohort reuses a closed executable path")
 		}
 	}
 	for _, name := range []string{"", "../foreign", "skill-preparation-v2", "postgres://foreign"} {

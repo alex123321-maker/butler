@@ -49,7 +49,7 @@ review, Broker and recipient boundaries. Code/preparation alone is not native
 acceptance; see [the successor protocol](../../docs/testing/issue115-skill-preparation-successor.md).
 
 Its local operator selector remains unbound and denies all work before storage
-or private auth until the new source/app/recipe/preseal commitments are fixed.
+or private auth until the new source/five-artifact/recipe/preseal commitments are fixed.
 Legacy operator pins remain the default; both use the existing bounded process,
 source-idle fence and opaque local credential recovery/CAS path.
 
