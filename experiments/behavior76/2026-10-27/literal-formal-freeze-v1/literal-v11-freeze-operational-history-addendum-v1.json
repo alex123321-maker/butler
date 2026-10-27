@@ -1,0 +1,67 @@
+{
+  "version": "issue76-literal-v11-freeze-operational-history-addendum-v1",
+  "formal_receipt_sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+  "formal_source_inventory_sha256": "7002b1bbcdbde4bf9fa8ec6828ad308720b835b7302970be4de0c1e3e49e5b31",
+  "issuer_script": {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-v1.py",
+    "sha256": "d03b1203637f5ea5a2375ca23abe84e2dfd5d880e1d031fab84580123734e45e",
+    "bytes": 13782
+  },
+  "failed_attempts": [
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run01-failure.json",
+      "sha256": "749fbc2a73e4a9c338e40bf65b1754fbfc8be26ca4e3bb85084b112bf1f1a467",
+      "bytes": 342
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run02-failure.json",
+      "sha256": "8b268106868203a332192dbf7062262b79d1365c29ed1c29b5d1ff7bd0c86025",
+      "bytes": 329
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run03-failure.json",
+      "sha256": "b5fc1485d13462289048bdcac400ac04f415725dfec665aa5dbee44958b6e9ee",
+      "bytes": 484
+    }
+  ],
+  "failed_attempt_sources": [
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run01-source.py.txt",
+      "sha256": "3cea13cb0cf7bb6216b6f61b4656a3e8fb9984d4da63d2c1ffcc198da30e602c",
+      "bytes": 12832
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run02-source.py.txt",
+      "sha256": "89ea4f4d907aa82c022b58ef4300b6abb4398153164295eb6d948a30cfbc1d67",
+      "bytes": 12822
+    },
+    {
+      "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\freeze-literal-v11-run03-source.py.txt",
+      "sha256": "f6150f8342e8193bb956599df8286bfe063dd5625eeb26ee609f8f4ad221ab99",
+      "bytes": 12861
+    }
+  ],
+  "failure_classification": [
+    "Attempt1 wrong prior receipt key; no formal written.",
+    "Attempt2 prior39-record AST witness contains27 statements plus12 helpers; exact27 statement hashes subsequently verified.",
+    "Attempt3 protocol raw hash differs solely by previously published eight-line closed-r3 historical appendix; exact old bytes remain a prefix."
+  ],
+  "protocol_doc_difference": {
+    "path": "docs/testing/issue76-local-response-protocol.md",
+    "prior_source": "36512e41f4d3447272b943fc41be43d120edba36",
+    "prior_sha256": "eb861abec3aaab466bcc39b2eb4d8f6e1d742e3dd61fa26f9ee28938a04fc492",
+    "current_sha256": "a5e5e9f12020867bc9db10e479c874594518701b75611008490656588efd0354",
+    "first_publication_commit": "d81ec5b6c9f8860693294c10e33026c65047b324",
+    "exact_old_bytes_prefix_verified": true,
+    "exact_eight_line_appendix_verified": true,
+    "operational_stop_rules_changed": false,
+    "formal_receipt_correctly_pins_current_document": true
+  },
+  "no_formal_rewrite": true,
+  "hidden_authorship_started": false,
+  "actual_native_admission": false,
+  "Go": 0,
+  "PG": 0,
+  "auth": 0,
+  "native": 0
+}

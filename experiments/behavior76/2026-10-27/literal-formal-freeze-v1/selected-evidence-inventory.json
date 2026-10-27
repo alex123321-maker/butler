@@ -1,0 +1,62 @@
+[
+  {
+    "path": "freeze-literal-v11-run01-failure.json",
+    "sha256": "749fbc2a73e4a9c338e40bf65b1754fbfc8be26ca4e3bb85084b112bf1f1a467",
+    "bytes": 342
+  },
+  {
+    "path": "freeze-literal-v11-run01-source.py.txt",
+    "sha256": "3cea13cb0cf7bb6216b6f61b4656a3e8fb9984d4da63d2c1ffcc198da30e602c",
+    "bytes": 12832
+  },
+  {
+    "path": "freeze-literal-v11-run02-failure.json",
+    "sha256": "8b268106868203a332192dbf7062262b79d1365c29ed1c29b5d1ff7bd0c86025",
+    "bytes": 329
+  },
+  {
+    "path": "freeze-literal-v11-run02-source.py.txt",
+    "sha256": "89ea4f4d907aa82c022b58ef4300b6abb4398153164295eb6d948a30cfbc1d67",
+    "bytes": 12822
+  },
+  {
+    "path": "freeze-literal-v11-run03-failure.json",
+    "sha256": "b5fc1485d13462289048bdcac400ac04f415725dfec665aa5dbee44958b6e9ee",
+    "bytes": 484
+  },
+  {
+    "path": "freeze-literal-v11-run03-source.py.txt",
+    "sha256": "f6150f8342e8193bb956599df8286bfe063dd5625eeb26ee609f8f4ad221ab99",
+    "bytes": 12861
+  },
+  {
+    "path": "freeze-literal-v11-v1.py",
+    "sha256": "d03b1203637f5ea5a2375ca23abe84e2dfd5d880e1d031fab84580123734e45e",
+    "bytes": 13782
+  },
+  {
+    "path": "literal-v11-formal-criterion-witness-v1.json",
+    "sha256": "9dae6a0b6357ed3fcf5feacd8a2504a827345832194741d31d5952c29868b82f",
+    "bytes": 5577
+  },
+  {
+    "path": "literal-v11-formal-source-inventory-v1.json",
+    "sha256": "7002b1bbcdbde4bf9fa8ec6828ad308720b835b7302970be4de0c1e3e49e5b31",
+    "bytes": 157860
+  },
+  {
+    "path": "literal-v11-freeze-operational-history-addendum-v1.json",
+    "sha256": "7c4c0c060a4028a4140b1e75aa77a53f631341788f402b0a3d97aa15914bf1df",
+    "bytes": 3332
+  },
+  {
+    "path": "README.md",
+    "sha256": "e4006292403fef28f20b38172b7edaeee12d2a348dbda3ccbe2e7897d179adb3",
+    "bytes": 1851
+  },
+  {
+    "path": "semantic-freeze-literal-v11-v1.json",
+    "sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+    "bytes": 8652
+  }
+]
