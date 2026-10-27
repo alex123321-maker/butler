@@ -1,0 +1,561 @@
+{
+  "version": "issue76-independent-operational-diagnostic-card-v1",
+  "window": "issue76-fixture-day-20261026T181012",
+  "confirmed_GLOBAL_subtype": "execution_authority_observation_timeout",
+  "actual_log": "phase=lease classification=deadline elapsed_ms=802",
+  "authority_pool_deadline_event": {
+    "sequence": 8195,
+    "span": 4098,
+    "phase": "pool_acquire",
+    "edge": "end",
+    "at_utc": "2026-10-26T18:29:44.785170205Z",
+    "elapsed_us": 802083,
+    "original_context_deadline_utc": "2026-10-26T18:29:44.733022671Z",
+    "original_context_time_left_us": -52154,
+    "query_family": "pool_acquire",
+    "outcome": "deadline",
+    "context_cause": "deadline",
+    "pool": {
+      "available": true,
+      "max_conns": 1,
+      "total_conns": 1,
+      "acquired_conns": 1,
+      "idle_conns": 0
+    }
+  },
+  "retained_trace_near_boundary": [
+    {
+      "sequence": 8191,
+      "span": 4096,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:43.76404124Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 1982665,
+      "query_family": "delegation_metadata",
+      "public_sql_template_sha256": "17bb87ba96c4ea8de9f866f57734774c37a582bc3e5cf1d47176d1492b086d64",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8192,
+      "span": 4096,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:43.76441451Z",
+      "elapsed_us": 373,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 1982289,
+      "query_family": "delegation_metadata",
+      "public_sql_template_sha256": "17bb87ba96c4ea8de9f866f57734774c37a582bc3e5cf1d47176d1492b086d64",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8193,
+      "span": 4097,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.784905808Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 961795,
+      "query_family": "delegation_check",
+      "public_sql_template_sha256": "3f5af44e8eb679a1ff41dd92e5858626bd4dbbb380e007f6825e3257d13947a1",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8194,
+      "span": 4098,
+      "phase": "pool_acquire",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:43.983086331Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:44.733022671Z",
+      "original_context_time_left_us": 749930,
+      "query_family": "pool_acquire",
+      "outcome": "pending",
+      "context_cause": "deadline",
+      "pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 1,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8195,
+      "span": 4098,
+      "phase": "pool_acquire",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.785170205Z",
+      "elapsed_us": 802083,
+      "original_context_deadline_utc": "2026-10-26T18:29:44.733022671Z",
+      "original_context_time_left_us": -52154,
+      "query_family": "pool_acquire",
+      "outcome": "deadline",
+      "context_cause": "deadline",
+      "pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 1,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8196,
+      "span": 4097,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.786267267Z",
+      "elapsed_us": 1361,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 960438,
+      "query_family": "delegation_check",
+      "public_sql_template_sha256": "3f5af44e8eb679a1ff41dd92e5858626bd4dbbb380e007f6825e3257d13947a1",
+      "outcome": "cancelled",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8197,
+      "span": 4099,
+      "phase": "pool_acquire",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.786275465Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4999980,
+      "query_family": "pool_acquire",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 1,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8198,
+      "span": 4100,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.786315427Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 960390,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+      "outcome": "pending",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8199,
+      "span": 4100,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.786363766Z",
+      "elapsed_us": 48,
+      "original_context_deadline_utc": "2026-10-26T18:29:45.746707432Z",
+      "original_context_time_left_us": 960342,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+      "outcome": "other_error",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8200,
+      "span": 4099,
+      "phase": "pool_acquire",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.798059857Z",
+      "elapsed_us": 11784,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4988193,
+      "query_family": "pool_acquire",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": true,
+        "max_conns": 1,
+        "total_conns": 1,
+        "acquired_conns": 1,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8201,
+      "span": 4101,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.798136161Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4988120,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "e6f07d43b5c21db0fbb9a31feac2dc599787763393dd5acbfad80e247eb02ad5",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8202,
+      "span": 4101,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.799450821Z",
+      "elapsed_us": 1314,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4986801,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "e6f07d43b5c21db0fbb9a31feac2dc599787763393dd5acbfad80e247eb02ad5",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8203,
+      "span": 4102,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.799539519Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4986716,
+      "query_family": "task_current",
+      "public_sql_template_sha256": "574835ff3897e4f3d78239816011b2655641c3ec484583df959a8fe81988427d",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8204,
+      "span": 4102,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.820236181Z",
+      "elapsed_us": 20696,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4966015,
+      "query_family": "task_current",
+      "public_sql_template_sha256": "574835ff3897e4f3d78239816011b2655641c3ec484583df959a8fe81988427d",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8205,
+      "span": 4103,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.820306931Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4965949,
+      "query_family": "schedule_probe",
+      "public_sql_template_sha256": "c6b256bd4c4e12523769899b301652b17b3bf5b45191442745e0dd289654e2fc",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8206,
+      "span": 4103,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.822367338Z",
+      "elapsed_us": 2060,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4963885,
+      "query_family": "schedule_probe",
+      "public_sql_template_sha256": "c6b256bd4c4e12523769899b301652b17b3bf5b45191442745e0dd289654e2fc",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8207,
+      "span": 4104,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.822422688Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4963833,
+      "query_family": "schedule_check",
+      "public_sql_template_sha256": "ca0f145a080d3d44efeefdbb2c5f3e706bb2e20600e8cead4ddb8c10bec5d5c4",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8208,
+      "span": 4104,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.836477085Z",
+      "elapsed_us": 14054,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4949775,
+      "query_family": "schedule_check",
+      "public_sql_template_sha256": "ca0f145a080d3d44efeefdbb2c5f3e706bb2e20600e8cead4ddb8c10bec5d5c4",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8209,
+      "span": 4105,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.836546469Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4949709,
+      "query_family": "delegation_metadata",
+      "public_sql_template_sha256": "17bb87ba96c4ea8de9f866f57734774c37a582bc3e5cf1d47176d1492b086d64",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8210,
+      "span": 4105,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.837914345Z",
+      "elapsed_us": 1367,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4948339,
+      "query_family": "delegation_metadata",
+      "public_sql_template_sha256": "17bb87ba96c4ea8de9f866f57734774c37a582bc3e5cf1d47176d1492b086d64",
+      "outcome": "ok",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8211,
+      "span": 4106,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.837968536Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4948287,
+      "query_family": "delegation_check",
+      "public_sql_template_sha256": "3f5af44e8eb679a1ff41dd92e5858626bd4dbbb380e007f6825e3257d13947a1",
+      "outcome": "pending",
+      "context_cause": "none",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8212,
+      "span": 4106,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.839560178Z",
+      "elapsed_us": 1591,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4946692,
+      "query_family": "delegation_check",
+      "public_sql_template_sha256": "3f5af44e8eb679a1ff41dd92e5858626bd4dbbb380e007f6825e3257d13947a1",
+      "outcome": "cancelled",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8213,
+      "span": 4107,
+      "phase": "query",
+      "edge": "start",
+      "at_utc": "2026-10-26T18:29:44.839610403Z",
+      "elapsed_us": 0,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4946645,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+      "outcome": "pending",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    },
+    {
+      "sequence": 8214,
+      "span": 4107,
+      "phase": "query",
+      "edge": "end",
+      "at_utc": "2026-10-26T18:29:44.839656121Z",
+      "elapsed_us": 45,
+      "original_context_deadline_utc": "2026-10-26T18:29:49.786257389Z",
+      "original_context_time_left_us": 4946600,
+      "query_family": "transaction_control",
+      "public_sql_template_sha256": "da25480fb483e6ce3d30f1a179c3c07e9f3b045425b0ac54acc6758a97e2db62",
+      "outcome": "other_error",
+      "context_cause": "cancelled",
+      "pool": {
+        "available": false,
+        "max_conns": 0,
+        "total_conns": 0,
+        "acquired_conns": 0,
+        "idle_conns": 0
+      }
+    }
+  ],
+  "known_chain": "Reserve1 acquisition exceeded original750ms observation deadline; watcher cancelled actual run; native submit51 cancelled before response; quiescence not proven; trace unsealed; studyGLOBALFAIL.",
+  "unknown": "Why authority reserve was occupied/observer callback stalled is not uniquely proven. No server SQLSTATE evidence. No upstream/provider/network failure inferred.",
+  "concrete_hypothesis": "TraceQueryEnd sequence8192 triggers synchronous4096-event gzip/Write/Sync/Close under trace.mu; gap to nextquery start is~1.02049s, concurrent750ms pool_acquire timed out. Callback/flush wall duration itself was not instrumented, so sole root cause remains unproven.",
+  "quiescence": {
+    "schema": "",
+    "observed_at": "0001-01-01T00:00:00Z",
+    "fixture_locally_stopped": false,
+    "broker_reaped": false,
+    "runtime_stopped": false,
+    "provider_and_recipient_in_flight": 0,
+    "live_leases": 0,
+    "live_claims": 0,
+    "broker_backends": 0,
+    "broker_application_observed_before_stop": true
+  },
+  "native51": {
+    "total_tokens": null,
+    "thinking_tokens": null,
+    "input_tokens": null,
+    "model_version": null,
+    "event_types": [
+      "run_started"
+    ],
+    "status": "cancelled",
+    "stage": "http_round_trip",
+    "kind": "submit",
+    "milliseconds": 12541,
+    "output_tokens": null
+  },
+  "no_model_response_or_tool_proposal_from51": true,
+  "known_prior_handoff50_and_effects_not_relabelled": true,
+  "new_experiment_proposed": false,
+  "quality_assessed": false
+}

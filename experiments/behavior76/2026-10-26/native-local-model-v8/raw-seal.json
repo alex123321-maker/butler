@@ -1,0 +1,15 @@
+{
+  "version": "issue76-native-local-model-v8-raw-seal-v1",
+  "window": "issue76-fixture-day-20261026T065844",
+  "producer": "71a21b712c478af8ea9e748945703abf15d85636",
+  "files": 1253,
+  "bytes": 41807566.0,
+  "inventory_sha256": "c85f02ef8e3555f1043c4698f48f1bfa0e3af6670fb269fd7a20c3d83c4f2d00",
+  "archive_sha256": "3af0c500db74ce26d8176bc77bf119799e28cd04fae7625942eada102869c2a1",
+  "every_archive_entry_byte_verified": true,
+  "all_windows_files_read_only": true,
+  "quality_scored": false,
+  "mapping_opened": false,
+  "goldens_opened": false,
+  "result": "CLOSED_GLOBAL_TRANSPORT_FAILURE_NOT_QUALIFIED"
+}

@@ -1,0 +1,56 @@
+=== RUN   TestBehavior76AuthorityStreamStorageProfile
+    behavior76_authority_storage_test.go:199: PRIVATE_SPOOL_PUBLIC_PROFILE events=8192 segments=2 destination_on_measured_output=true maximum_end_callback_us=129381 original_deadline_ms=750 destination_IO_inside_callback=false native_auth_calls=0 original_closed_failure_not_reclassified=true
+--- PASS: TestBehavior76AuthorityStreamStorageProfile (0.33s)
+=== RUN   TestBehavior76AuthorityStreamUnsealedPrivatePrefix
+--- PASS: TestBehavior76AuthorityStreamUnsealedPrivatePrefix (0.15s)
+=== RUN   TestBehavior76AuthorityStreamFinalSealFailure
+--- PASS: TestBehavior76AuthorityStreamFinalSealFailure (0.06s)
+=== RUN   TestBehavior76AuthorityStreamBeyondLegacyCapacity
+    behavior76_authority_stream_test.go:349: public simulated observer events only: 65570 exact original events/17 bounded segments; real canceled errors retained2; native/auth=0
+--- PASS: TestBehavior76AuthorityStreamBeyondLegacyCapacity (6.21s)
+=== RUN   TestBehavior76AuthorityStreamWriteFailureAndLateEventStop
+=== RUN   TestBehavior76AuthorityStreamWriteFailureAndLateEventStop/create_new_collision
+2026/10/26 19:12:53 behavior76 observer stream failure category=segment_publication_or_readback window=public-stream-mechanism arm=public-observer-only
+=== RUN   TestBehavior76AuthorityStreamWriteFailureAndLateEventStop/late_after_seal
+2026/10/26 19:12:53 behavior76 observer stream failure category=closed_failed_or_open_span_bound window=public-stream-mechanism arm=public-observer-only
+--- PASS: TestBehavior76AuthorityStreamWriteFailureAndLateEventStop (0.02s)
+    --- PASS: TestBehavior76AuthorityStreamWriteFailureAndLateEventStop/create_new_collision (0.01s)
+    --- PASS: TestBehavior76AuthorityStreamWriteFailureAndLateEventStop/late_after_seal (0.01s)
+=== RUN   TestBehavior76AuthorityStreamFixtureIntegration
+=== RUN   TestBehavior76AuthorityStreamFixtureIntegration/unknown
+2026/10/26 19:12:54 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 19:12:54 INFO postgres connected component=postgres
+2026/10/26 19:12:54 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 19:12:56 INFO run created component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 session_key=behavior76:public-development:A state=created
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=created to_state=queued
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=queued to_state=acquired
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=acquired to_state=preparing
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=preparing to_state=model_running
+2026/10/26 19:12:56 INFO model turn usage observed component=orchestrator-run run_id=run-1793041976089165664-77bd94dcdbc7eec6 operation_id=operation_e715440217fa8c42800ffcddae7a6b18ee7391f0c0e1c5b8 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=model_running to_state=tool_pending
+2026/10/26 19:12:56 INFO run transitioned component=run run_id=run-1793041976089165664-77bd94dcdbc7eec6 from_state=tool_pending to_state=tool_running
+    behavior76_stream_integration_test.go:81: public unknown: 454 original events / 1 segments; actual quiescence; native/auth=0
+2026/10/26 19:12:57 INFO closing postgres pool component=postgres total_conns=3
+=== RUN   TestBehavior76AuthorityStreamFixtureIntegration/next-success
+2026/10/26 19:12:59 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 19:12:59 INFO postgres connected component=postgres
+2026/10/26 19:12:59 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 19:13:00 INFO run created component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 session_key=behavior76:public-development:A state=created
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=created to_state=queued
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=queued to_state=acquired
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=acquired to_state=preparing
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=preparing to_state=model_running
+2026/10/26 19:13:00 INFO model turn usage observed component=orchestrator-run run_id=run-1793041980460011057-50b8e3cd8a13acf3 operation_id=operation_916abc321bfadd8874d517de96ba75e697a3498633e4141f input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=model_running to_state=tool_pending
+2026/10/26 19:13:00 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=tool_pending to_state=tool_running
+2026/10/26 19:13:01 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=tool_running to_state=awaiting_model_resume
+2026/10/26 19:13:01 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=awaiting_model_resume to_state=model_running
+2026/10/26 19:13:01 INFO model turn usage observed component=orchestrator-run run_id=run-1793041980460011057-50b8e3cd8a13acf3 operation_id=operation_1b23d6f38b1fcac0f2f045436fb9f4c572067f584644912b input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/26 19:13:01 INFO run transitioned component=run run_id=run-1793041980460011057-50b8e3cd8a13acf3 from_state=model_running to_state=finalizing
+2026/10/26 19:13:01 INFO run completed component=orchestrator-run run_id=run-1793041980460011057-50b8e3cd8a13acf3 session_key=behavior76:public-development:A
+    behavior76_stream_integration_test.go:81: public next-success: 730 original events / 1 segments; actual quiescence; native/auth=0
+2026/10/26 19:13:01 INFO closing postgres pool component=postgres total_conns=3
+--- PASS: TestBehavior76AuthorityStreamFixtureIntegration (9.43s)
+    --- PASS: TestBehavior76AuthorityStreamFixtureIntegration/unknown (4.76s)
+    --- PASS: TestBehavior76AuthorityStreamFixtureIntegration/next-success (4.67s)
+PASS

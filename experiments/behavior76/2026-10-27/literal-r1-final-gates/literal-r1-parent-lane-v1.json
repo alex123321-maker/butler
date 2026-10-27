@@ -1,0 +1,22 @@
+{
+  "version": "literal-v11-r1-parent-lane-v1",
+  "observed_utc": "2026-10-27T02:54:11.1460016+00:00",
+  "parent_owned_native_processes": 0,
+  "parent_owned_heavy_test_build_processes": 0,
+  "public_session89537_joined_exit": 0,
+  "readiness_session36437_joined_exit": 0,
+  "private_docker21_live_pid": false,
+  "issue115_native_or_heavy_started": false,
+  "other_agent147_untouched": true,
+  "global_shared_PC_idle_claim": false,
+  "output_path": ".cache/behavior76/native-literal-v11-r1",
+  "output_absent": true,
+  "consumed_marker_path": ".cache/issue76-independent/literal-v11-r1-native.consumed.json",
+  "consumed_marker_absent": true,
+  "ELF_sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e",
+  "ELF_readonly": true,
+  "current_PG_profile": "original private17.11/fsync32MB/WAL128+32/noJIT",
+  "current_private_ext4_available_kib": 1205616,
+  "source_clean": true,
+  "native_calls": 0
+}

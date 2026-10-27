@@ -1,0 +1,43 @@
+package antigravity
+
+import (
+ "errors"
+ "io"
+ "strings"
+ "testing"
+
+ "github.com/butler/butler/internal/transport"
+)
+
+type independentFailReader struct{}
+func (independentFailReader) Read([]byte) (int,error) { return 0, errors.New("invalid SSE response JSON PRIVATE_READER_ERROR") }
+
+func TestIndependentStreamDiagnosticBoundaries(t *testing.T) {
+ complete := "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"SYNTHETIC\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":2,\"candidatesTokenCount\":3,\"totalTokenCount\":5}}\n\n"
+ for _, tc := range []struct{name,body,reason string; cloud bool}{
+  {"cloud wrapper alias", "data: {\"Response\":{}}\n\n", "stream_envelope_invalid", true},
+  {"cloud nested error", "data: {\"response\":{\"error\":{\"message\":\"PRIVATE_SYNTHETIC\"}}}\n\n", "stream_envelope_invalid", true},
+  {"cloud nested usage alias", "data: {\"response\":{\"UsageMetadata\":{}}}\n\n", "stream_usage_ambiguous", true},
+  {"usage conflict", complete + "data: {\"usageMetadata\":{\"promptTokenCount\":2,\"candidatesTokenCount\":3,\"totalTokenCount\":6}}\n\n", "stream_usage_conflict", false},
+  {"thought signature type", "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"PRIVATE_SYNTHETIC\",\"thoughtSignature\":7}]},\"finishReason\":\"STOP\"}]}\n\n", "stream_thought_invalid", false},
+  {"duplicate JSON", "data: {\"candidates\":[],\"candidates\":[]}\n\n", "stream_json_invalid", false},
+  {"multiline frame bound", strings.Repeat("data: "+strings.Repeat("x",4096)+"\n",257), "stream_frame_limit", false},
+  {"single line scanner bound", "data: "+strings.Repeat("x",1024*1024)+"\n\n", "stream_terminal_missing", false},
+ } {
+  t.Run(tc.name,func(t *testing.T) {
+   answer,err:=readStreamProtocol(strings.NewReader(tc.body),func(string)bool{return true},tc.cloud)
+   if transport.DiagnosticCode(err)!="provider_protocol_error" || transport.DiagnosticReason(err)!=tc.reason {t.Fatalf("bad diagnostic %v %q",err,transport.DiagnosticReason(err))}
+   if answer.Usage!=nil || len(answer.Parts)!=0 || answer.Text!="" {t.Fatal("failed parser returned body or unqualified usage")}
+   if strings.Contains(err.Error(),"PRIVATE_SYNTHETIC") {t.Fatal("private error content exported")}
+  })
+ }
+ t.Run("reader errors never classified by content",func(t *testing.T) {
+  _,err:=readStream(io.MultiReader(strings.NewReader(complete),independentFailReader{}),func(string)bool{return true})
+  if transport.DiagnosticReason(err)!="stream_terminal_missing" || strings.Contains(err.Error(),"PRIVATE_READER_ERROR") {t.Fatal("reader error projection unsafe")}
+ })
+ t.Run("complete truncation preserves measured usage only",func(t *testing.T) {
+  body:="data: {\"candidates\":[{\"content\":{\"parts\":[{\"functionCall\":{\"name\":\"PRIVATE_SYNTHETIC\",\"args\":{}}}]},\"finishReason\":\"MAX_TOKENS\"}],\"usageMetadata\":{\"promptTokenCount\":2,\"candidatesTokenCount\":3,\"totalTokenCount\":5}}\n\n"
+  answer,err:=readStream(strings.NewReader(body),func(string)bool{return true})
+  if transport.DiagnosticReason(err)!="stream_function_truncated" || answer.Usage==nil || answer.Usage.TotalTokens!=5 || len(answer.Parts)!=0 || answer.Text!="" {t.Fatal("usage or function retention changed")}
+ })
+}

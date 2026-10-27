@@ -1,0 +1,18 @@
+{
+  "version": "issue76-v10-r2-zero-native-composition-v1",
+  "exit_code": 0,
+  "top_pass": 1,
+  "arm_pass": 48,
+  "fail": 0,
+  "skip": 0,
+  "race_warning": 0,
+  "owner_opportunities": 96,
+  "original_steps": 69,
+  "paired_steps": 138,
+  "log_step_label": "original steps in existing log actually counts paired traversal;69 original/138paired",
+  "native_calls": 0,
+  "auth_access": 0,
+  "log_sha256": "e7b5408eaee3e929722d1299571e1380a07b2f8c84d6d9b94deca1070251a6f1",
+  "collector_elf_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "producer": "5fa9d724177609c97bbb74e92253cf7c474f69d0"
+}

@@ -1,0 +1,51 @@
+{
+  "version": "issue76-source-scorer-freeze-local-response-v10-r2-template-v1",
+  "decision": "TEMPLATE_ONLY_NOT_FORMAL_SOURCE_OR_SCORER_FREEZE",
+  "producer": "TO_BE_SUPPLIED_AFTER_FINAL_EVIDENCE_CLEAN_COMMIT",
+  "semantic_source": "TO_BE_SUPPLIED",
+  "parent_receipt_sha256": "TO_BE_SUPPLIED",
+  "required_parent_results": {
+    "SKIP": 0,
+    "vet_exit": 0,
+    "race_warning": 0,
+    "actual_Public_PASS": 59,
+    "independent_checker_PASS": 298,
+    "FAIL": 0
+  },
+  "prepared_script": {
+    "sha256": "c904e802778de53b4d85bf901be12e61287a8b25746228cec5cb324481a735e6",
+    "path": "freeze-local-response-v10-r2-v1.ps1"
+  },
+  "static_source_review": {
+    "sha256": "5cc5854933daf31bcda9939ed4a775f478a0d0920121d42620219dfdfb76f5a6",
+    "path": "public-local-response-v10-r2-source-review-v1.json"
+  },
+  "dependencies": {
+    "sha256": "878e8cbbb91d3cfba6f50ac79a02406cd56b83dc31fc543a9ecd26c0d773276d",
+    "path": "public-local-response-v10-r2-dependencies-v1.json"
+  },
+  "runtime7_exact": true,
+  "criterion_AST_extents": 27,
+  "candidate_and_thresholds_unchanged": true,
+  "history": {
+    "null_usage": 10,
+    "admissions": 723,
+    "known_full_tokens": 5626388,
+    "measured": 713,
+    "closed_windows": 10
+  },
+  "prior_failed_pre_native": {
+    "observed_turns": 95,
+    "planned_turns": 96,
+    "actual_cause": "UNKNOWN",
+    "arms": 47,
+    "controls_not_reused": true,
+    "native_auth": 0
+  },
+  "new_authorship_path": "hidden-local-response-v10-r2",
+  "new_authorship": "NOT_STARTED",
+  "actual_setup_composition_and_final_one_use_admission_still_required": true,
+  "formal_freeze_issued": false,
+  "Go_PG_auth_native_calls_by_checker": 0,
+  "new_native_admission": false
+}

@@ -1,0 +1,465 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:butler:research:literal-v11-one-use-admission-schema:v2",
+  "title": "PREPARED schema only; not an admission certificate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "decision",
+    "issued_utc",
+    "not_before_utc",
+    "latest_start_utc",
+    "owner_utc_day",
+    "source",
+    "artifacts",
+    "plan",
+    "bounds",
+    "prior_history",
+    "stop_policy",
+    "one_use",
+    "no_promotion"
+  ],
+  "properties": {
+    "version": {
+      "const": "issue76-literal-v11-one-use-admission-v1"
+    },
+    "decision": {
+      "const": "ADMIT_EXACTLY_ONE_LITERAL_V11_WINDOW"
+    },
+    "issued_utc": {
+      "$ref": "#/$defs/utc"
+    },
+    "not_before_utc": {
+      "$ref": "#/$defs/utc"
+    },
+    "latest_start_utc": {
+      "$ref": "#/$defs/utc"
+    },
+    "owner_utc_day": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_commit",
+        "semantic_commit",
+        "bound_code_commit",
+        "preservation_commit",
+        "clean_worktree",
+        "literal_hash_substitutions",
+        "other_semantic_changes"
+      ],
+      "properties": {
+        "producer_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "semantic_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "bound_code_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "preservation_commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "clean_worktree": {
+          "const": true
+        },
+        "literal_hash_substitutions": {
+          "const": 2
+        },
+        "other_semantic_changes": {
+          "const": false
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "formal_freeze",
+        "source_inventory",
+        "protocol",
+        "fixture_protocol",
+        "candidate",
+        "model_profile",
+        "checker_dependencies",
+        "criterion_extents",
+        "fresh_commitment",
+        "authoring_provenance",
+        "structure",
+        "stimuli",
+        "expectations",
+        "public_gate",
+        "setup_gate",
+        "composition_gate",
+        "history_proof",
+        "closed_r3_inventory",
+        "build_receipt",
+        "prepared_unique_elf",
+        "launcher",
+        "host_wrapper",
+        "launcher_core",
+        "admission_schema"
+      ],
+      "properties": {
+        "formal_freeze": {
+          "$ref": "#/$defs/pin"
+        },
+        "source_inventory": {
+          "$ref": "#/$defs/pin"
+        },
+        "protocol": {
+          "$ref": "#/$defs/pin"
+        },
+        "fixture_protocol": {
+          "$ref": "#/$defs/pin"
+        },
+        "candidate": {
+          "$ref": "#/$defs/pin"
+        },
+        "model_profile": {
+          "$ref": "#/$defs/pin"
+        },
+        "checker_dependencies": {
+          "$ref": "#/$defs/pin"
+        },
+        "criterion_extents": {
+          "$ref": "#/$defs/pin"
+        },
+        "fresh_commitment": {
+          "$ref": "#/$defs/pin"
+        },
+        "authoring_provenance": {
+          "$ref": "#/$defs/pin"
+        },
+        "structure": {
+          "$ref": "#/$defs/pin"
+        },
+        "stimuli": {
+          "$ref": "#/$defs/pin"
+        },
+        "expectations": {
+          "$ref": "#/$defs/pin"
+        },
+        "public_gate": {
+          "$ref": "#/$defs/pin"
+        },
+        "setup_gate": {
+          "$ref": "#/$defs/pin"
+        },
+        "composition_gate": {
+          "$ref": "#/$defs/pin"
+        },
+        "history_proof": {
+          "$ref": "#/$defs/pin"
+        },
+        "closed_r3_inventory": {
+          "$ref": "#/$defs/pin"
+        },
+        "build_receipt": {
+          "$ref": "#/$defs/pin"
+        },
+        "prepared_unique_elf": {
+          "$ref": "#/$defs/pin"
+        },
+        "launcher": {
+          "$ref": "#/$defs/pin"
+        },
+        "host_wrapper": {
+          "$ref": "#/$defs/pin"
+        },
+        "launcher_core": {
+          "$ref": "#/$defs/pin"
+        },
+        "admission_schema": {
+          "$ref": "#/$defs/pin"
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "index_version",
+        "episodes",
+        "arms",
+        "owner_opportunities",
+        "dimensions",
+        "legacy_families",
+        "original_steps",
+        "paired_steps",
+        "public_zero_fail_skip",
+        "setup_cases",
+        "composition_arms",
+        "composition_owner_opportunities"
+      ],
+      "properties": {
+        "version": {
+          "const": "behavior76-literal-supplement-v11"
+        },
+        "index_version": {
+          "const": "behavior76-checker-index-v6-literal"
+        },
+        "episodes": {
+          "const": 16
+        },
+        "arms": {
+          "const": 32
+        },
+        "owner_opportunities": {
+          "const": 68
+        },
+        "dimensions": {
+          "const": 8
+        },
+        "legacy_families": {
+          "const": 6
+        },
+        "original_steps": {
+          "type": "integer",
+          "minimum": 34
+        },
+        "paired_steps": {
+          "type": "integer",
+          "minimum": 68
+        },
+        "public_zero_fail_skip": {
+          "const": true
+        },
+        "setup_cases": {
+          "const": 16
+        },
+        "composition_arms": {
+          "const": 32
+        },
+        "composition_owner_opportunities": {
+          "const": 68
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "native_entries",
+        "entries_per_owner",
+        "entries_per_run",
+        "model_seconds",
+        "arm_seconds",
+        "window_seconds",
+        "authority_milliseconds",
+        "business_connections",
+        "authority_connections",
+        "latest_start_utc_hour",
+        "same_owner_UTC_day",
+        "actual_start_rechecked_by_collector"
+      ],
+      "properties": {
+        "native_entries": {
+          "const": 768
+        },
+        "entries_per_owner": {
+          "const": 8
+        },
+        "entries_per_run": {
+          "const": 4
+        },
+        "model_seconds": {
+          "const": 120
+        },
+        "arm_seconds": {
+          "const": 1200
+        },
+        "window_seconds": {
+          "const": 14400
+        },
+        "authority_milliseconds": {
+          "const": 750
+        },
+        "business_connections": {
+          "const": 9
+        },
+        "authority_connections": {
+          "const": 1
+        },
+        "latest_start_utc_hour": {
+          "const": 20
+        },
+        "same_owner_UTC_day": {
+          "const": true
+        },
+        "actual_start_rechecked_by_collector": {
+          "const": true
+        }
+      }
+    },
+    "prior_history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "closed_windows",
+        "admissions",
+        "measured",
+        "known_full_tokens",
+        "NULL_usage",
+        "raw_rows_exact",
+        "original_failures_retained",
+        "old_cached5b56_not_restored"
+      ],
+      "properties": {
+        "closed_windows": {
+          "const": 12
+        },
+        "admissions": {
+          "const": 971
+        },
+        "measured": {
+          "const": 959
+        },
+        "known_full_tokens": {
+          "const": 7700211
+        },
+        "NULL_usage": {
+          "const": 12
+        },
+        "raw_rows_exact": {
+          "const": true
+        },
+        "original_failures_retained": {
+          "const": true
+        },
+        "old_cached5b56_not_restored": {
+          "const": true
+        }
+      }
+    },
+    "stop_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "global_priority",
+        "effect_unknown",
+        "empty_answer",
+        "http_no_response",
+        "response_rejection",
+        "no_new_automatic_authority_exemption"
+      ],
+      "properties": {
+        "global_priority": {
+          "const": true
+        },
+        "effect_unknown": {
+          "const": "whole_fixture_after_exact_classified_effect_unknown"
+        },
+        "empty_answer": {
+          "const": "whole_fixture_after_exact_empty_answer_v1"
+        },
+        "http_no_response": {
+          "const": "whole_fixture_after_exact_http_do_no_response_v1"
+        },
+        "response_rejection": {
+          "const": "whole_fixture_after_exact_response_rejection_v1"
+        },
+        "no_new_automatic_authority_exemption": {
+          "const": true
+        }
+      }
+    },
+    "one_use": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "output_path",
+        "consumed_marker_path",
+        "fixed_entrypoint",
+        "new_output_absent",
+        "consumed_marker_absent",
+        "exclusive_durable_marker_before_ELF",
+        "rebuild",
+        "overwrite_existing_ELF",
+        "retry_or_resume",
+        "own_overlapping_heavy_work_stopped"
+      ],
+      "properties": {
+        "output_path": {
+          "$ref": "#/$defs/path"
+        },
+        "consumed_marker_path": {
+          "$ref": "#/$defs/path"
+        },
+        "fixed_entrypoint": {
+          "const": "TestBehavior76NativeLiteralSupplement"
+        },
+        "new_output_absent": {
+          "const": true
+        },
+        "consumed_marker_absent": {
+          "const": true
+        },
+        "exclusive_durable_marker_before_ELF": {
+          "const": true
+        },
+        "rebuild": {
+          "const": false
+        },
+        "overwrite_existing_ELF": {
+          "const": false
+        },
+        "retry_or_resume": {
+          "const": false
+        },
+        "own_overlapping_heavy_work_stopped": {
+          "const": true
+        }
+      }
+    },
+    "no_promotion": {
+      "const": true
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,7})?Z$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_./-]+$"
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

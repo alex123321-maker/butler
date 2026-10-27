@@ -1,0 +1,31 @@
+{
+  "version": "behavior76-observer-fixed-public-admission-v1",
+  "tested_source": "f5c23451791abcc880e81b414fbdaba3c65b879c",
+  "binary_sha256": "aa693b65434e324853a16c6f5f147ba142675645aadd5b5ebdf9d8a7062a6e7a",
+  "public_tests": 31,
+  "public_failed": 0,
+  "public_skipped": 0,
+  "composition_arms": 48,
+  "composition_owner_turns": 96,
+  "composition_result": "PASS",
+  "resource_gate": "PASS",
+  "vet_exit": 0,
+  "native_calls": 0,
+  "auth_reads": 0,
+  "original_750ms_latency_cause": "unresolved",
+  "prior_failures_retained": true,
+  "files": [
+    {
+      "path": "local-v4-r2-vet-observer-fixed-v1.log",
+      "sha256": "da881a61e6cae60e3ce8e39a585f849719add6a2a5d34f1a18aed85891fdc38f"
+    },
+    {
+      "path": "local-v4-r2-composition-observer-fixed-v1.log",
+      "sha256": "40e1625c9f5f1f1d4fdb094798784dd69841429667818b252cd3def57f9ed229"
+    },
+    {
+      "path": "local-v4-r2-resources-observer-fixed-v1.log",
+      "sha256": "3882543b04485e6234342db40ec91a98025acb55a5f69c1f4a9aae2468db5422"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+Changed files:
+- apps/orchestrator/internal/app/behavior76_composition_test.go
+- apps/orchestrator/internal/app/behavior76_day_admission_test.go
+- apps/orchestrator/internal/app/behavior76_fixture_test.go
+- apps/orchestrator/internal/app/behavior76_fresh_test.go
+- apps/orchestrator/internal/app/behavior76_handoff_eof_test.go
+- apps/orchestrator/internal/app/behavior76_local_http_integration_test.go
+- apps/orchestrator/internal/app/behavior76_local_model_integration_test.go
+- apps/orchestrator/internal/app/behavior76_local_model_test.go
+- apps/orchestrator/internal/app/behavior76_native_test.go
+- apps/orchestrator/internal/app/behavior76_scope_integration_test.go
+- apps/orchestrator/internal/app/behavior76_scope_test.go
+- apps/orchestrator/README.md
+- docs/architecture/model-transport-contract.md
+- docs/architecture/run-lifecycle-spec.md
+- docs/testing/issue76-local-http-protocol.md
+- internal/transport/antigravity/http_failure_diagnostic_test.go
+- internal/transport/antigravity/protocol.go
+- internal/transport/antigravity/README.md
+- internal/transport/errors.go
+- scripts/dev/behavior-local-run.sh
+
+Relevant specs:
+- docs/architecture/run-lifecycle-spec.md
+- docs/architecture/memory-model.md
+- docs/architecture/task-owner-controls-spec.md
+- docs/testing/issue76-local-protocol-2026-10-25.md
+- docs/testing/issue76-fixture-local-protocol.md
+- docs/architecture/model-transport-contract.md
+- docs/architecture/credential-management.md
+
+Suggested verification:
+- This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...
+- ssh laba: scripts/dev/antigravity-wire-lab.sh in a new isolated agent root after Sync; tests, default, and aicode modes use --network none, synthetic credentials and no operator profile (zero inference)
+- pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/transport/...

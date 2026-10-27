@@ -1,0 +1,56 @@
+{
+  "version": "issue76-independent-proposed-spool-static-review-v1",
+  "issued_utc": "2026-10-26T18:51:35.0016945+00:00",
+  "decision": "FEASIBLE_PROSPECTIVE_STORAGE_CHANGE_WITH_EXPLICIT_PUBLICATION_FAILED_PATH_RULES_NOT_APPROVED_IMPLEMENTATION",
+  "review_path": "public-local-response-v10-r3-spool-static-review-v1.md",
+  "review_sha256": "244a27efb4b3f391d8b53296bafcdbb54800f743cb925ee19250552ba0acfb8e",
+  "source_pins": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_stream_test.go",
+      "sha256": "c954a73765811238258535c7a0eb981c108ce4357dcdde8d5538e15874068792"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_trace_test.go",
+      "sha256": "5db699f29d721a38d351c01dfdb692485435b0baf8cc50a318732421a9939824"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_study_test.go",
+      "sha256": "8ebec36bb2b0649a47ecd2e788b2f9982b23dc754bb1dcab7db2c3f72eee5ebb"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "a3d8994e3e64ac092805bca13f99f0cffce24ce97b7a44027da076c805904c29"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "cb09ecfbe29392de6530e65bbd02dd3dae150fce3b15523b028125fb69adfc62"
+    },
+    {
+      "path": ".cache/behavior76/pgx-observer-build-v1/pgx/rows.go",
+      "sha256": "8d1f45143eb128d21bb90b07610653bb9ddce9fee81a98377ffd2cc389524f82"
+    },
+    {
+      "path": ".cache/behavior76/pgx-observer-build-v1/pgx/pgxpool/rows.go",
+      "sha256": "670c96349c225837f1e190994ef88bd3d3730a70e8130dc95913ffc4d28b8a8c"
+    },
+    {
+      "path": ".cache/issue76-independent/authority-stream-reader-v2a.cs",
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641"
+    }
+  ],
+  "critical_hazards": [
+    "sealed header before destination files/hash verification",
+    "failure path cannot discard original unsealed trace or claim quiescence",
+    "private spool must be fixed trusted actualext4/unique0700/0600/noncleanup",
+    "cross-filesystem copy uses exclusive allowlisted files and readback, not rename",
+    "retained spools share4GiB and require failclosed capacity handling",
+    "synchronous gzip+Sync can still delay sole authority connection"
+  ],
+  "reader_or_criteria_change_required": false,
+  "existing_limits_unchanged": true,
+  "original_failure_sole_root_cause_proven": false,
+  "new_formal_gates_added": false,
+  "new_source_freeze_or_hidden_authoring_or_native_admission": false,
+  "Go_PG_auth_native_tests_or_parent_source_edits": 0,
+  "rejected_fault_test_retried": false
+}

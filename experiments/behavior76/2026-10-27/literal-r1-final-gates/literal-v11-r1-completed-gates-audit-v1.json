@@ -1,0 +1,93 @@
+{
+  "version": "issue76-literal-v11-r1-completed-build-setup-composition-audit-v1",
+  "decision": "COMPLETED_GATES_AND_UNIQUE_ELF_VALIDATED_NO_NATIVE_ADMISSION",
+  "issued_at_utc": "2026-10-27T02:40:21.089815+00:00",
+  "producer": "c8411429e36f2e7d085971617f0f84dc2f2e5b6e",
+  "binding_audit_sha256": "f0df876bd0d805ef9f318775e638240d6c532fb07c9654256fa0c88156db3c7e",
+  "formal_freeze_sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+  "build_receipt": {
+    "path": ".cache/behavior76/literal-r1-bound-build-v1-receipt.json",
+    "sha256": "ad23cefea66cb0ec3c6dfe2021c2cde4febc7b40de86b18343a012d906c391b9",
+    "bytes": 711
+  },
+  "actual_unique_ELF": {
+    "path": ".cache/behavior76/literal-collector-c8411429-r1.test",
+    "sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e",
+    "bytes": 86820998,
+    "readonly": true
+  },
+  "completed_gates": [
+    {
+      "kind": "setup",
+      "receipt": {
+        "path": ".cache/behavior76/literal-r1-actual-setup-v1-exit.json",
+        "sha256": "9b719de4193a3c607cf22261534941c54a38e21319c38b1e44cd89e1cba96a39",
+        "bytes": 237
+      },
+      "log": {
+        "path": ".cache/behavior76/literal-r1-actual-setup-v1.log",
+        "sha256": "76e3399e48e584ca7d99eaec2c54ed28a0637a311cddaf78751f25a354cda90a",
+        "bytes": 10292
+      },
+      "top_level_PASS": 1,
+      "case_or_arm_PASS": 16,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_warning": false,
+      "native_calls": 0,
+      "auth_access": 0,
+      "exposure_check": {
+        "full_hidden_semantic_values_or_resource_keys_matched": 0,
+        "fixed_credential_markers_matched": 0,
+        "opaque_random_episode_ID_values_matched": 0,
+        "scan_is_limited_not_universal_privacy_proof": true,
+        "public_log_recommendation": "PUBLISH_ONLY_AFTER_SAME_BYTE_HASH_CONFIRMATION"
+      }
+    },
+    {
+      "kind": "composition",
+      "receipt": {
+        "path": ".cache/behavior76/literal-r1-actual-composition-v1-exit.json",
+        "sha256": "4da0492ba0fed57d47b58dac0c77feabd481523387e41338caf52b15aa1ec621",
+        "bytes": 294
+      },
+      "log": {
+        "path": ".cache/behavior76/literal-r1-actual-composition-v1.log",
+        "sha256": "9e8822dc72dd31a4ddd77854bd9b7cf72055f45074041ed2da09ed3778671384",
+        "bytes": 104840
+      },
+      "top_level_PASS": 1,
+      "case_or_arm_PASS": 32,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_warning": false,
+      "native_calls": 0,
+      "auth_access": 0,
+      "exposure_check": {
+        "full_hidden_semantic_values_or_resource_keys_matched": 0,
+        "fixed_credential_markers_matched": 0,
+        "opaque_random_episode_ID_values_matched": 15,
+        "scan_is_limited_not_universal_privacy_proof": true,
+        "public_log_recommendation": "PUBLISH_ONLY_AFTER_SAME_BYTE_HASH_CONFIRMATION"
+      }
+    }
+  ],
+  "plan": {
+    "episodes": 16,
+    "arms": 32,
+    "owner_opportunities": 68,
+    "original_steps": 40,
+    "paired_steps": 80
+  },
+  "pending_actual_public71_not_opened": true,
+  "pending_current_history_resource_lane_evidence": true,
+  "native_admission": false,
+  "checker_runtime_operations": {
+    "Go": 0,
+    "PG": 0,
+    "auth": 0,
+    "provider_model": 0,
+    "Docker": 0
+  },
+  "private_values_used_only_in_content_free_exposure_comparison_not_output": true
+}

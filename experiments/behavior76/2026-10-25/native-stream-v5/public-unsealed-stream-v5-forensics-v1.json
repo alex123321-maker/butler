@@ -1,0 +1,26 @@
+{
+  "actual_raw_unchanged": true,
+  "goldens_read": false,
+  "quality_assessed": false,
+  "version": "issue76-unsealed-stream-forensics-v1",
+  "native_calls": 0,
+  "schema_binding": "header_claim_only_due_failed_quiescence_no_independent_schema_receipt",
+  "stream": {
+    "version": "issue76-authority-stream-forensic-unsealed-v1",
+    "event_count": 11254,
+    "spans": 5627,
+    "operation_failures": 0,
+    "segments": 2,
+    "total_compressed_bytes": 263000,
+    "peak_active_spans": 2,
+    "qualified": false,
+    "quality_assessed": false
+  },
+  "header_sha256": "e5899d6985fcabb1dab2bbe7f83faa79470728f861c97f9b43f49d278d01803b",
+  "result": "COUNTER_RECONSTRUCTION_ONLY_NOT_QUALIFIED",
+  "requires_actual_unsealed_header": true,
+  "qualification_bypassed": false,
+  "pg_calls": 0,
+  "mapping_read": false,
+  "forensic_validator_source_sha256": "dbadf5b0cc99500d72094f04962e18117bb8a6b4a3e4051d350ca45693fe4110"
+}

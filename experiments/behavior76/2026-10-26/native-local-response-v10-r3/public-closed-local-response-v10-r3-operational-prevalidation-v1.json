@@ -1,0 +1,55 @@
+{
+  "version": "issue76-independent-r3-closed-operational-prevalidation-v1",
+  "decision": "ORIGINAL_WINDOW_CLOSED_OPAQUE_BYTES_AND_LEDGER_CHECKED_NOT_QUALITY_ACCEPTANCE",
+  "original_process_exit_code": 0,
+  "root_identity_pin": {
+    "attempts_sha256": "1fefb560c3b92cf9f89df9cf5f8a216ff34ca53bd6b94ac88c418ce950d739ec",
+    "window": "issue76-fixture-day-20261026T195902",
+    "expectations_sha256": "aa06f92a233e9717cfc751118711af6e8e315074497b9a011a6a8ccb115501d9",
+    "index_sha256": "2c6d1f540992e3ca473528d44e48a6f09c8ff34887a14acab4b3dd7cd0005259",
+    "windows_sha256": "da0cfec77498cb8268c64044c56f0ca6e9da3ec4af55ed90d5efe411fedc7717",
+    "protocol_sha256": "eb861abec3aaab466bcc39b2eb4d8f6e1d742e3dd61fa26f9ee28938a04fc492",
+    "producer": "git:b4d464af2c02d59ed661c25d98dd0d8b8573b0f3;binary-sha256:199e8b8c97201f482309ccb1771ba76ee4f0cea5adb0bcb5fb7ffff71bf0d7bd",
+    "stimuli_sha256": "211f246fab476a7917c0979054b2028e68d8baea8b8ea452786ef6b4671ac648",
+    "manifest_sha256": "6d8e43f55a8abd42ea0033d66638f9857ee3b0402dbbdff751909f5c42171bb6"
+  },
+  "raw_files": 3761,
+  "raw_bytes": 109422520.0,
+  "raw_inventory_sha256": "98447bb97b8f43b7932f6a25baa8fee0835dd4035f4bd693e3cb222d54c4dc4b",
+  "private_archive_sha256": "4ce493b4a91d4d364e387df1ecc071d70cd91cb811546dffc6c4827e7b374799",
+  "originals_readonly_verified": true,
+  "fixed_credential_markers": 0,
+  "private_auth_settings_dump_mapping_paths": 0,
+  "exposure_limit": "Fixed marker/path audit only; synthetic scenario/model text remains in raw. No universal secret-free or quality guarantee.",
+  "prior774_opaque_rows_unchanged": true,
+  "new_accounting": {
+    "NULL_usage": 0,
+    "admissions": 197,
+    "no_next_entry": true,
+    "measured": 197,
+    "known_full_tokens": 1751497
+  },
+  "inclusive_accounting": {
+    "closed_windows": 12,
+    "NULL_usage": 12,
+    "admissions": 971,
+    "measured": 959,
+    "known_full_tokens": 7700211
+  },
+  "planned": {
+    "episodes": 24,
+    "paired_steps": 124,
+    "original_steps": 62,
+    "arms": 48,
+    "families": 12,
+    "owner_opportunities": 96
+  },
+  "indexed_arms": 48,
+  "unstarted_arms": 0,
+  "authority_quiescence_stop_and_receipt_qualification": "PENDING_EXACT_FROZEN_VALIDATOR_OR_CONTENT_FREE_FORENSICS",
+  "old_r2_cached5b56_overwritten_not_restored": true,
+  "old_failures_NULL_unknowns_retained": true,
+  "quality_assessed": false,
+  "mapping_opened": false,
+  "Go_PG_auth_native_calls": 0
+}

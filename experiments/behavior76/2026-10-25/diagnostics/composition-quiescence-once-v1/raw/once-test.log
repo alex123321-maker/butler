@@ -1,0 +1,27 @@
+=== RUN   TestBehavior76LocalCorpusCompositionPreflight
+=== RUN   TestBehavior76LocalCorpusCompositionPreflight/slot-05-public-arm-0
+2026/10/25 20:55:33 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/25 20:55:33 INFO postgres connected component=postgres
+2026/10/25 20:55:33 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/25 20:55:34 INFO run created component=run run_id=run-1792961734470887319-a6fc3e052f289d76 session_key=behavior76:l405:P state=created
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734470887319-a6fc3e052f289d76 from_state=created to_state=queued
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734470887319-a6fc3e052f289d76 from_state=queued to_state=acquired
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734470887319-a6fc3e052f289d76 from_state=acquired to_state=preparing
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734470887319-a6fc3e052f289d76 from_state=preparing to_state=model_running
+2026/10/25 20:55:34 INFO model turn usage observed component=orchestrator-run run_id=run-1792961734470887319-a6fc3e052f289d76 operation_id=operation_e202d7556702595ec38420632deae0085a887ab3e518381a input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734470887319-a6fc3e052f289d76 from_state=model_running to_state=finalizing
+2026/10/25 20:55:34 INFO run completed component=orchestrator-run run_id=run-1792961734470887319-a6fc3e052f289d76 session_key=behavior76:l405:P
+2026/10/25 20:55:34 INFO run created component=run run_id=run-1792961734824630511-298c846a76fbd62e session_key=behavior76:l405:P state=created
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734824630511-298c846a76fbd62e from_state=created to_state=queued
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734824630511-298c846a76fbd62e from_state=queued to_state=acquired
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734824630511-298c846a76fbd62e from_state=acquired to_state=preparing
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734824630511-298c846a76fbd62e from_state=preparing to_state=model_running
+2026/10/25 20:55:34 INFO model turn usage observed component=orchestrator-run run_id=run-1792961734824630511-298c846a76fbd62e operation_id=operation_48fdf272d987cb8e05cd6e3e08a902182c7ec41501b5db97 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/25 20:55:34 INFO run transitioned component=run run_id=run-1792961734824630511-298c846a76fbd62e from_state=model_running to_state=finalizing
+2026/10/25 20:55:35 INFO run completed component=orchestrator-run run_id=run-1792961734824630511-298c846a76fbd62e session_key=behavior76:l405:P
+2026/10/25 20:55:35 INFO closing postgres pool component=postgres total_conns=3
+=== NAME  TestBehavior76LocalCorpusCompositionPreflight
+    behavior76_composition_test.go:105: composition coverage incomplete arms=1 turns=2
+--- FAIL: TestBehavior76LocalCorpusCompositionPreflight (4.15s)
+    --- PASS: TestBehavior76LocalCorpusCompositionPreflight/slot-05-public-arm-0 (4.13s)
+FAIL

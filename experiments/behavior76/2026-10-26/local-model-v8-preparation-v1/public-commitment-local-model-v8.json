@@ -1,0 +1,146 @@
+{
+  "version": "issue76-independent-public-commitment-local-model-v8-v1",
+  "status": "POST_FORMAL_FREEZE_PREPARED_NOT_NATIVE_ADMISSION",
+  "formal_source_scorer_freeze_sha256": "8cd9472e1704b2bd3385eacd33163c3ab7e264515434e2772f33d4afd1536973",
+  "frozen_producer": "c31f6bc8551e7c77893adacd8213126bcf55208a",
+  "semantic_source": "2b5507dfde97e1bbd167da1649d148cc212f0ace",
+  "authorship_started_at_utc": "2026-10-26T06:39:09.8145598Z",
+  "provenance": "synthetic",
+  "stimuli_path": "hidden-local-model-v8/stimuli.jsonl",
+  "expectations_path": "hidden-local-model-v8/expectations.jsonl",
+  "stimuli_sha256": "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00",
+  "expectations_sha256": "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0",
+  "seed_sha256": "c41ede46b00ede35b91921f4799fd97da287783232a8bd85b49900e6469aeb18",
+  "episodes": 24,
+  "families": 12,
+  "positive": 12,
+  "negative_boundary": 12,
+  "arms": 48,
+  "owner_opportunities_per_episode": 2,
+  "original_owner_opportunities": 96,
+  "steps_single_arm_matrix": 66,
+  "paired_steps": 132,
+  "coverage": [
+    {
+      "owner_opportunities": 8,
+      "family": "status_continuation",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "amendment",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "scoped_stop_negation",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "new_task_coexistence",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "manual_change",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "owner_done_report",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "clarification",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "preference_exception",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "feedback_candidate",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "preference_lifecycle",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "untrusted_command",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    },
+    {
+      "owner_opportunities": 8,
+      "family": "restart",
+      "negative_boundary": 1,
+      "arms": 4,
+      "episodes": 2,
+      "positive": 1
+    }
+  ],
+  "interface": "Frozen Episode/Step v1;2owner turns turn1/turn2; actual child policy inheritance",
+  "output_index": "behavior76-checker-index-v3-local-model-tail",
+  "binding_mode": "fixture-local-model-v8",
+  "local_model_failure_mode": "whole_fixture_after_exact_empty_answer_v1",
+  "protocol_path": "docs/testing/issue76-local-model-protocol.md",
+  "protocol_sha256": "92aacef6cef3d90d82f85857030fe15e9d70ce3ea0ab842c38853797d732ee42",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "new_checker_receipt_sha256": "33636871f6c0a473fb51ded358e5c72132e32f6d24326b62402d7f07fb1c0dd7",
+  "criterion_source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "scorer_threshold_changes": false,
+  "history": {
+    "closed_v7_r2_certificate_sha256": "3f450a5b7dabc462ad2f18885b1a0f82e7c3b82d103a719a5ea4f1c37440d4b1",
+    "admissions": 643,
+    "measured": 635,
+    "null_usage": 8,
+    "known_provider_total_tokens": 4910612,
+    "closed_windows": 8
+  },
+  "independence": {
+    "new_authorship_after_formal_freeze": true,
+    "previous_stimuli_goldens_responses_or_maps_read": false,
+    "old_cases_reused": false,
+    "new_native_auth_PG_operations": 0
+  },
+  "remaining": "Only path/hash literal binding; existing setup/composition; final source/ELF admission."
+}

@@ -1,0 +1,15 @@
+{
+  "version": "issue76-independent-authoring-provenance-local-model-v8-v1",
+  "formal_freeze_precedes_authorship": true,
+  "formal_freeze_sha256": "8cd9472e1704b2bd3385eacd33163c3ab7e264515434e2772f33d4afd1536973",
+  "authorship_started_at_utc": "2026-10-26T06:39:09.8145598Z",
+  "completed_at_utc": "2026-10-26T06:39:10.0006263Z",
+  "authoring_source_sha256": "fb778bb98357e9effd1ab45daada9c0ae68bd8824b62c39275ab27f7b6d90aad",
+  "public_commitment_sha256": "c3417e6be7a4c46d821458d84bf6c2d4b8e8670c78f67879cf4bd2b46fc213a6",
+  "corpus": "24 substantively new synthetic episodes from public frozen interfaces only; previous controls/results/maps are not inputs",
+  "new_seed_order_and_identifiers": true,
+  "original_criteria_limits_stop_semantics_changed": false,
+  "new_native_auth_PG_operations": 0,
+  "hidden_expected_values_disclosed_to_author": false,
+  "native_admission": false
+}

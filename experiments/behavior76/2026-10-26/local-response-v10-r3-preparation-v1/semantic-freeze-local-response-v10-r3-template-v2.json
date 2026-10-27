@@ -1,0 +1,56 @@
+{
+  "version": "issue76-independent-r3-source-scorer-freeze-template-v2",
+  "decision": "PREPARED_ONLY_NOT_FORMAL_FREEZE",
+  "prepared_utc": "2026-10-26T19:29:14.8792408+00:00",
+  "script": {
+    "sha256": "f7c1a6df9fc3b1912a5c70c3a414532a72c0f07f4c97332df36fb30cbb139db5",
+    "path": "freeze-local-response-v10-r3-v2.ps1"
+  },
+  "default_action": "Print PREPARED_ONLY and return, no checks or issuance",
+  "future_explicit_formal_inputs": [
+    "IssueFormalFreeze switch",
+    "exact full clean committed producer+semanticSHA",
+    "committed preparation directory+receiptSHA",
+    "completed Public61 zeroFAIL/SKIP/race +vet0 logs"
+  ],
+  "requires": {
+    "history_measured": 762,
+    "criterion_AST_statements": 27,
+    "known_tokens": 5948714,
+    "unbound_literals": 2,
+    "history_admissions": 774,
+    "fixed_fresh_wrapper_paths": 3,
+    "candidate": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+    "runtime_components": 7,
+    "source_files_expected": 70,
+    "hidden_directory_must_be_absent": "hidden-local-response-v10-r3",
+    "history_closed": 11,
+    "closed_r2_raw_files": 822,
+    "checker_PASS": 298,
+    "null_usage": 12
+  },
+  "source_review": {
+    "sha256": "9c8e368a9c451dd9cc25665ca626587856aff87fc784ea63dacd09786902497b",
+    "path": "public-local-response-v10-r3-source-review-v2.json"
+  },
+  "dependencies": {
+    "sha256": "25ca1da2ecfa062f025c02701061b6cb639e17c64073157c119714dd95a6e5ca",
+    "path": "public-local-response-v10-r3-dependencies-v2.json"
+  },
+  "existing_issues_preserved": "Closedr2GLOBALFAIL802ms subtype; sole underlying delay cause unproven; nullableexpense retained",
+  "formal_receipt_issued": false,
+  "hidden_authored": false,
+  "Go_PG_auth_native": 0,
+  "rejected_fault_test_retried": false,
+  "prior_Public_v1_retained": {
+    "ELF_sha256": "cb740beb39b5592f7bcd1663fc0644e711155a9aa05561a942036ab70a709d4d",
+    "native_auth": 0,
+    "superseded_not_erased": true,
+    "sole_failed_test": "TestBehavior76FreshHistoryBoundaryIntegration",
+    "top_FAIL": 1,
+    "log_sha256": "3a9ea944517675daa578f52cc271989b0782c7365e4002f3396d221f528e33dd",
+    "SKIP": 0,
+    "top_PASS": 60,
+    "race_warning": 0
+  }
+}

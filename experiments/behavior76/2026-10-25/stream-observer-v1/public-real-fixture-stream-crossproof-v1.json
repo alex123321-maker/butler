@@ -1,0 +1,86 @@
+{
+  "mapping_read": false,
+  "native_calls": 0,
+  "cases": [
+    {
+      "header_sha256": "835bee663c7daca9bc569716c5187eef9987d1c2e5d1b6fe7e9de9dcc020a4b2",
+      "quiescence": {
+        "schema": "memory_96d7aa20f63c3b5a2148cadabc0e0e2e",
+        "observed_at": "2026-10-25T22:52:09.337200969Z",
+        "fixture_locally_stopped": true,
+        "broker_reaped": true,
+        "runtime_stopped": true,
+        "provider_and_recipient_in_flight": 0,
+        "live_leases": 0,
+        "live_claims": 0,
+        "broker_backends": 0,
+        "broker_application_observed_before_stop": true
+      },
+      "sealed_files_sha256": "65602b3cb8e20132fc2177b8aa0957efbb5209711dcb7bc554be41722e374271",
+      "expected_identity": {
+        "arm": "TestBehavior76AuthorityStreamFixtureIntegration/unknown",
+        "window": "public-no-native",
+        "schema": "memory_96d7aa20f63c3b5a2148cadabc0e0e2e",
+        "protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+        "producer": "public-scripted"
+      },
+      "verified_files": 56,
+      "reader": {
+        "version": "issue76-authority-stream-validation-v2",
+        "event_count": 454,
+        "spans": 227,
+        "operation_failures": 0,
+        "segments": 1,
+        "total_compressed_bytes": 14640,
+        "peak_active_spans": 1,
+        "qualified": true,
+        "quality_assessed": false
+      },
+      "name": "unknown"
+    },
+    {
+      "header_sha256": "2248fcf1ed6ccac2623629e0b46cab6cc5333b0e1e3ab091f481de20a94e7606",
+      "quiescence": {
+        "schema": "memory_89c716b9f8c19b428693912e40166b9a",
+        "observed_at": "2026-10-25T22:52:14.708943572Z",
+        "fixture_locally_stopped": false,
+        "broker_reaped": true,
+        "runtime_stopped": true,
+        "provider_and_recipient_in_flight": 0,
+        "live_leases": 0,
+        "live_claims": 0,
+        "broker_backends": 0,
+        "broker_application_observed_before_stop": true
+      },
+      "sealed_files_sha256": "1fb0a3e3c2a17b6b7486a8ef1a7eb975ebe66e84d6133bfb531cc59764957bde",
+      "expected_identity": {
+        "arm": "TestBehavior76AuthorityStreamFixtureIntegration/next-success",
+        "window": "public-no-native",
+        "schema": "memory_89c716b9f8c19b428693912e40166b9a",
+        "protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+        "producer": "public-scripted"
+      },
+      "verified_files": 56,
+      "reader": {
+        "version": "issue76-authority-stream-validation-v2",
+        "event_count": 752,
+        "spans": 376,
+        "operation_failures": 0,
+        "segments": 1,
+        "total_compressed_bytes": 24238,
+        "peak_active_spans": 1,
+        "qualified": true,
+        "quality_assessed": false
+      },
+      "name": "next-success"
+    }
+  ],
+  "pg_actions_by_checker": 0,
+  "hidden_controls_read": false,
+  "reader_receipt_sha256": "f7e965e3f1270cdd1be5b5a5d30be72497d75d4df45601cb195b6abefc8e4908",
+  "version": "issue76-real-public-fixture-stream-crossproof-v1",
+  "result": "PASS",
+  "quality_assessed": false,
+  "protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+  "provider": "scripted_public_no_native"
+}

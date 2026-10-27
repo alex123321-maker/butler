@@ -1,0 +1,102 @@
+{
+  "receipt_sha256": "2f2eb5e697116faa74bb2db5b715c11df91849f015e6a3c5cce328cc1fa86a33",
+  "last": {
+    "slot": "slot-08/arm-205a7eb862491c5566a3931a5eaa8753/turn2",
+    "events": [
+      {
+        "safe_reason": null,
+        "type": "run_started",
+        "error_code": null,
+        "http_status": null
+      },
+      {
+        "safe_reason": "",
+        "type": "transport_error",
+        "error_code": "transport_connection_error",
+        "http_status": 0
+      }
+    ],
+    "stage": "http_round_trip",
+    "n": 64,
+    "input_tokens": null,
+    "kind": "submit",
+    "output_tokens": null,
+    "run_id": "run-1793000221386829719-63578ba15d20d1ef",
+    "total_tokens": null,
+    "model_version": null,
+    "milliseconds": 10352,
+    "status": "transport_error",
+    "thinking_tokens": null
+  },
+  "raw": {
+    "parent_inventory_sha256": "c85f02ef8e3555f1043c4698f48f1bfa0e3af6670fb269fd7a20c3d83c4f2d00",
+    "index_sha256": "c56eefe7dff32485bf2de12e275cf863962679fe010ee246b0bb72834c53b2d3",
+    "bytes": 41807566.0,
+    "archive_sha256": "3af0c500db74ce26d8176bc77bf119799e28cd04fae7625942eada102869c2a1",
+    "case_files_verified": 1233,
+    "all_archive_entries_independently_byte_verified": true,
+    "files": 1253,
+    "manifest_sha256": "74306fd83b00e36166c185415f6e28435d29a8d7ffdca1a4dd18ccba82817910",
+    "independent_inventory_sha256": "42aa673232f24a252de3f84e54b1f7b44cae34baf24f811d118de8a43a986f40",
+    "readonly": 1253
+  },
+  "coverage": {
+    "actual_automatic_runs": 4,
+    "unstarted_arms": 32,
+    "unindexed_owner_opportunities": 64,
+    "planned_arms": 48,
+    "actual_owner_inputs": 30,
+    "full96_metadata_rows_written": 96,
+    "indexed_owner_outcomes": 32,
+    "indexed_arms": 16,
+    "unindexed_original_steps": 88,
+    "indexed_original_steps": 44,
+    "owner_states": [
+      {
+        "count": 26,
+        "state": "completed"
+      },
+      {
+        "count": 3,
+        "state": "fixture_local_unknown"
+      },
+      {
+        "count": 2,
+        "state": "not_executed_after_fixture_local_unknown"
+      },
+      {
+        "count": 1,
+        "state": "queued_after_stopped_input"
+      }
+    ],
+    "planned_episodes": 24,
+    "planned_families": 12,
+    "planned_original_paired_steps": 132,
+    "quality_or_usable_answer_success_not_assessed": true,
+    "planned_owner_opportunities": 96,
+    "actual_automatic_final_rows": 3,
+    "actual_family_identity_not_read": true,
+    "healthy_operationally_sealed_arms": 15,
+    "actual_owner_final_rows": 26
+  },
+  "accounting": {
+    "no_exported_entry_after_n": 64,
+    "exported_all_admissions": 707,
+    "live_database_queried": false,
+    "exported_all_NULL": 9,
+    "exported_closed_windows": 9,
+    "current_measured": 63,
+    "current_admissions": 64,
+    "prior643_opaque_structural_rows_unchanged": true,
+    "exported_all_known_tokens": 5510826.0,
+    "current_known_tokens": 600214.0,
+    "current_NULL": 1,
+    "exported_all_measured": 698
+  },
+  "stops": [
+    {
+      "cause": "effect_unknown",
+      "count": 3
+    }
+  ]
+}

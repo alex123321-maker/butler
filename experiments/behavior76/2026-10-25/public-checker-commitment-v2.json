@@ -1,0 +1,15 @@
+{
+  "version": "issue76-independent-checker-commitment-v2",
+  "status": "pre-native; corpus-v2 adapter only, unchanged frozen golden bytes and mechanical criteria",
+  "checker_path": "score-mechanical-v2.ps1",
+  "checker_sha256": "c4d06cbc395d660eb9a2401b5d8f55bbc8e05db411d82e90b06f2e49dfb1c869",
+  "previous_checker_sha256": "0032d18d0fd9ae8c64cd3068e0f8b11dbc7e7815ec3b6d93b640fca4d98330fe",
+  "index_schema_sha256": "8c34da8af48e27e65da0e62da49534e048b4998a34d233183250eaea1639cd42",
+  "selftest_sha256": "619f25064f150bf984b7d29f62fb0ff9bfd2534c473592263d4575bdc3530772",
+  "selftests_passed": 5,
+  "native_calls": 0,
+  "stimuli_sha256": "bad4a7c39747d93baaf2bcffeb68b6fcd1b672b39909e9d34a2ec1055a9f54b0",
+  "expectations_sha256": "b5b54a98710ce02b87b29397401258f649d3daec152bd54be3495c1e1be6572a",
+  "judgments_frozen": false,
+  "arm_mapping_disclosed": false
+}

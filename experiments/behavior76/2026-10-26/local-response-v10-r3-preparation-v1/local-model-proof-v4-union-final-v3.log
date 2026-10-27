@@ -1,0 +1,3 @@
+PASS effect_unknown_explicit_NULL_native_evidence_and_unchanged_tail
+PASS immutable_effect_first_cause_retains_late_eligible_native_failure
+SELFTEST_PASS 2 no_native_no_PG_no_hidden

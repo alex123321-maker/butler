@@ -1,0 +1,1 @@
+{"version":"issue76-literal-v11-freeze-attempt-v2","status":"NO_FORMAL_ISSUED_CHECKER_WITNESS_CONTAINER_MISMATCH","error":"prior criterion_extents includes 27 statements plus 12 helper functions; compare kind=statement","actual_27_hash_difference_observed":false,"formal_receipt_written":false,"hidden_authored":false,"native":0}

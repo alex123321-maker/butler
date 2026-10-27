@@ -1,5 +1,14 @@
 # Butler — Model Transport Contract
 
+The Antigravity adapter's content-free `http_do_failed_without_response`
+diagnostic means its single HTTP Do call returned an error without a response
+object while the owning context was live and a fixed socket/EOF cause matched.
+All timeout/cancellation and unknown/certificate/auth causes are excluded.
+It proves no network root cause,
+generation/usage or retry eligibility. Context cancellation and errors with a
+returned response retain their existing diagnostics. No automatic retry, route,
+parser or production failure-policy change follows from this metadata.
+
 Issue97's [native research profiles](../../cmd/effort-eval/README.md) explicitly
 select paid Flash Low/High on the same discovered Cloud Code route. Trusted
 construction-time `ThinkingLevel=LOW/HIGH` must match the configured model and
@@ -132,6 +141,16 @@ it does not establish which account/project/request precondition failed.
 `DiagnosticReason` rejects all other strings. Provider
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
+
+Native SSE failures additionally project exact transport-owned rejection literals
+onto fixed `stream_*` reasons (JSON/envelope, usage ambiguity/invalidity/conflict,
+model version, candidate shape/order, finish, automatic execution, content parts,
+thoughts, function ambiguity/truncation, missing content/terminal, frame limit,
+empty answer), plus `http_non_sse_response`. These identify the local rejecting
+branch; they do not attribute a fault to upstream or the adapter. No wire text,
+reader error, field name or arbitrary message is exported. Error type, retry,
+usage retention, bounds and admission remain unchanged. Historical unknown
+reasons are never backfilled from later diagnostics.
 
 Native memory-eval on laba follows the established private antigravity-proxy route
 and bypasses loopback/own PostgreSQL/local-models. New operator pins require this

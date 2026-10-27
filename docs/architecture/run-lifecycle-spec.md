@@ -1,5 +1,85 @@
 # Butler — Run Lifecycle Specification
 
+## Joining supervision before terminal task mutation
+
+Once no model/tool work remains, Core joins the current run's lease/authority
+supervisor before SaveRunOutcome can block/revise its task, before an explicit
+terminal BlockRun, and immediately before the atomic final Completion.Save.
+This prevents its own terminal mutation from looking like external revocation.
+The private per-run join request does not cancel the execution context: terminal
+writes retain the original deadline, ownership token and current database fences.
+No Background/WithoutCancel context, new authority or deadline is introduced.
+
+An in-flight lease/task observation finishes under the existing 750ms bound and
+retains every genuine failure even after a join request. Such a failure still
+cancels the provider and remains on the original context; joining never filters
+ErrConflict, unavailable, timeout or stale results. Ordinary final cleanup still
+cancels the context, joins the supervisor and releases the lease. Recovery uses
+the same run-scoped control. Joining permits no model retry or further tool work.
+
+Terminal write errors are never only warnings. Failed working/transient outcome
+writes and failed run transitions retain the preceding execution error plus a
+fixed terminal persistence label; block failures propagate through execution,
+budget stop, communication and recovery. Trusted error inspection retains the
+actual underlying cause. Logs and durable outward error text omit raw storage
+diagnostics. An unsuccessful terminal write cannot become a bare provider error
+or a nil-error blocked result and cannot qualify for research-local exemption.
+
+The issue76 public diagnostic independently reproduced the prior interleaving:
+real SaveRunOutcome committed blocked/revision+1 while its watcher still read
+active authority, causing ErrConflict and provider cancellation. Its archived
+baseline remains a reproduced defect, not an acceptance pass or a reclassified
+closed native result. The prospective experiment requires new final gates.
+
+## Research protocol boundaries
+
+Corrected issue76 v10-r3 research observation persists its existing bounded
+metadata chunks in the measured private local Linux spool. Windows artifact
+publication and exact readback happen outside owning pgx callbacks, after actual
+quiescence. Failed closeout retains an explicitly unsealed prefix/tail and denies
+new admission. Copy, readback, retirement, capacity and late-observer failures stay
+GLOBAL;750ms,9+1, ordinary source/authority guards and production behavior do not
+change. See the streamed-fixture protocol. The closed r2 delay's sole cause is
+unproven; this prospective change grants no retry or new native admission.
+
+The prospective [issue76 v9 protocol](../testing/issue76-local-http-protocol.md)
+extends only the research-local whole-fixture stop union with an exact live-
+context, no-response, recognized socket/EOF failure. All timeouts and authority,
+auth/source/storage faults retain global priority. Production/default lifecycle,
+ordinary statuses, budgets and effect/replay guards remain unchanged.
+
+The separate research-only [issue76 v8 protocol](../testing/issue76-local-model-protocol.md)
+adds a prospective whole-fixture stop for one exact completed-empty adapter
+response, only after durable native journaling, live identity/source proof and
+underlying channel EOF. It preserves ordinary Input/run/effect/final statuses
+and nullable charges. All other faults retain global research-stop priority;
+production constructors and lifecycle policy remain unchanged.
+
+An explicit startup-only `input.NewServiceWithClaimAdmission` constructor
+supports an immutable trusted denial fence around queue expiry and durable
+claim acquisition. Successful admission releases its fence before executing
+Core. `ErrClaimAdmissionClosed` ends new claim loops without cancelling already
+claimed executions; `WaitClaimWorkers` joins their actual owning process/finish
+goroutines before cancelling the enclosing Run/maintenance context. Missing
+release functions and unclassified fence failures fail closed and remain
+visible to that caller. This callback grants no task, tool or model authority,
+cannot be changed through input/model/environment data and is absent from
+ordinary construction. The prospective issue76 synthetic fixture uses it to
+preserve queued work after a research-local stop; ordinary Input/task/run/effect
+statuses and deadlines are never rewritten to manufacture quiescence.
+
+The corrected issue76 v10-r2 fixture also closes an irreversible per-evaluation
+claim window under that same admission mutex after observing the terminal cohort.
+It joins actual claim/process workers before cancelling idle Run, with the
+original context and existing 125-second drain cap. Error exits retain immediate
+cancellation after admission closure. Each next evaluation constructs a new
+window; fixture stop/authority state remains unchanged. A closed window denies
+admission without querying with an intentionally cancelled idle context. Open
+windows and in-flight operations retain all real storage/context/source failures,
+and final current scope reconciliation still fails globally. The archived public
+baseline reproduced idle-cancellation poisoning; the closed hidden composition's
+unlogged low-level cause remains UNKNOWN, not retrospectively classified.
+
 The explicit owner composition installs migration102's bounded
 [stopped-attempt finalizer](stopped-input-finalization.md). It atomically ends
 inactive blocked Input/run attempts with failure, retains unknown effects and
@@ -1282,3 +1362,7 @@ no Broker action is prepared or dispatched. Recovery replays that known DATA.
 At most four corrections are allowed, with ordinary model budgets retained.
 Such a known non-dispatch is not an equivalent committed write during model
 retry recovery. See [research and checked monitors](research-followups.md).
+
+## Prospective issue76 response failure isolation
+
+The explicitly constructed research fixture may stop one original comparison arm after an exact adapter response rejection, actual provider EOF and successful journal/current-authority proof. It retains partial text, unknown expense, blocked Input, failed run and the whole planned tail. Other authority, source, deadline, limit and persistence faults remain global. This adds no product retry or task-completion authority. See [the v10 research protocol](../testing/issue76-local-response-protocol.md).

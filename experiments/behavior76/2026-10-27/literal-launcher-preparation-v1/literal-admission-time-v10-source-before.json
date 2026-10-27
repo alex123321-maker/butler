@@ -1,0 +1,10 @@
+[
+  {
+    "sha256": "cb308589086b1caacda7efbddb7b5724f1fd7a6fc6f0638497c658b9ebf1e273",
+    "path": "apps/orchestrator/internal/app/behavior76_literal_plan_test.go"
+  },
+  {
+    "sha256": "06a0707818d161da9567b11ece7396369e0c710acb2beda6dbf9cf2ca0bbfbf6",
+    "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+  }
+]

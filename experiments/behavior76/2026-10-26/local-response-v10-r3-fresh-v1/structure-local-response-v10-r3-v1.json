@@ -1,0 +1,99 @@
+{
+  "version": "issue76-independent-local-response-v10-r3-structure-v1",
+  "decision": "OFFLINE_STRUCTURE_VALIDATED_NOT_ACTUAL_SETUP_OR_COMPOSITION",
+  "episodes": 24,
+  "families": 12,
+  "arms": 48,
+  "owner_opportunities": 96,
+  "original_steps": 62,
+  "paired_original_steps": 124,
+  "per_family": [
+    {
+      "negative": 1,
+      "family": "status_continuation",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "amendment",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "scoped_stop_negation",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "new_task_coexistence",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "manual_change",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "owner_done_report",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "clarification",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "preference_exception",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "feedback_candidate",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "preference_lifecycle",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "untrusted_command",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    },
+    {
+      "negative": 1,
+      "family": "restart",
+      "paired_owner_opportunities": 8,
+      "positive": 1
+    }
+  ],
+  "accepted_profiles": 5,
+  "candidate_profiles": 1,
+  "actual_restart_events": 4,
+  "expected_inactive_admission_denials": 1,
+  "positive_commit_cases": 4,
+  "source70_and_runtime7_unchanged": true,
+  "criterion_AST_extents": 27,
+  "criteria_thresholds_changed": false,
+  "current_task_object_source_step_golden_refs_valid": true,
+  "child_policy_inheritance_valid": true,
+  "typed_controller_state_not_language_understanding_proof": true,
+  "effect_outcome_cost_communication_distinct": true,
+  "stimuli_sha256": "211f246fab476a7917c0979054b2028e68d8baea8b8ea452786ef6b4671ac648",
+  "expectations_sha256": "aa06f92a233e9717cfc751118711af6e8e315074497b9a011a6a8ccb115501d9",
+  "Go_PG_auth_native_calls": 0
+}

@@ -1,0 +1,13 @@
+{
+  "version": "issue76-independent-local-response-v10-r3-semantic-difference-v1",
+  "comparison_method": "Prospective independent content authorship from public frozen interface; no old corpus opened for comparison.",
+  "fresh_story_goals_constraints_owner_utterances_source_bodies_artifact_values_ids_seed_order": true,
+  "existing12families_and_positive_negative_coverage_retained": true,
+  "no_cosmetic_only_oldcase_transformation": true,
+  "old_content_byte_diff_not_claimed_without_reading": true,
+  "prior_r2_stimuli_not_read": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+  "prior_r2_goldens_not_read": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642",
+  "stimuli_sha256": "211f246fab476a7917c0979054b2028e68d8baea8b8ea452786ef6b4671ac648",
+  "expectations_sha256": "aa06f92a233e9717cfc751118711af6e8e315074497b9a011a6a8ccb115501d9",
+  "criteria_or_candidate_tuning": false
+}

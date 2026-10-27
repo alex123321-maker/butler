@@ -1,0 +1,1153 @@
+{
+  "all_outcomes": [
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        1,
+        2
+      ],
+      "owner_input_id": "input-d7e341f7d872cc506ad602a82bca2340",
+      "arm": "slot-01/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978123145184588-1d4b7f7c3e3e1581",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-01/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "uncertain",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        3,
+        4
+      ],
+      "owner_input_id": "input-1a8722b709241f48b11257f16ce6855c",
+      "arm": "slot-01/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978201231678775-14e7900865d3e47e",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        5,
+        6
+      ],
+      "owner_input_id": "input-e1cc2122d0404087627106647f57826d",
+      "arm": "slot-01/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978234853658249-015cce8e4cb2bb2f",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-01/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "uncertain",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        7,
+        8
+      ],
+      "owner_input_id": "input-0dd04659d26baab98caf6dd3984e75fe",
+      "arm": "slot-01/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978308329925828-ddd7525add7a31a0",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        9,
+        10,
+        11
+      ],
+      "owner_input_id": "input-7e977f47e00b152435a73ad96a74949a",
+      "arm": "slot-02/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978337743492273-872dd4122e736830",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        12,
+        13
+      ],
+      "owner_input_id": "input-ff1bee64b48581b138abdbaa1912c401",
+      "arm": "slot-02/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978378886007069-746ca33e339c08d1",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        14,
+        15,
+        16
+      ],
+      "owner_input_id": "input-b64a9d45676fa2826eafd24ff7673f18",
+      "arm": "slot-02/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978412728140096-219c17743aea0c64",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        17
+      ],
+      "owner_input_id": "input-3cbf9fe800cb0e304e9373887dca8dc1",
+      "arm": "slot-02/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978445688865808-c38b9cb83fe4328e",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        18
+      ],
+      "owner_input_id": "input-ba017173c1df8e312af55dadb3cb5f02",
+      "arm": "slot-03/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978506783323595-70d052a4a2194175",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-03/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "stoptree",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        19,
+        20,
+        21
+      ],
+      "owner_input_id": "input-d1025f76f3b2bb3649f44ad0a62112a6",
+      "arm": "slot-03/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978559956574960-6ffab204be917e1a",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        22
+      ],
+      "owner_input_id": "input-2187fe6b7bca38a6227afbf842b4879f",
+      "arm": "slot-03/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978624054877871-6dbc86604f68dcc8",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-03/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "stoptree",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        23,
+        24,
+        25
+      ],
+      "owner_input_id": "input-2483233642d0e7738468d8ceefc2d7bb",
+      "arm": "slot-03/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978682481015513-8e919e60b7465e2d",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        26,
+        27
+      ],
+      "owner_input_id": "input-fc3db664d6541936501a5122ccba58a9",
+      "arm": "slot-04/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792978740203455058-15ece06bb6ff0770",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-04/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "narrow",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "owner_input_id": "input-fa4ccf6c98eff34e4d20bd2fe9ccc330",
+      "arm": "slot-04/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792978895771301858-9b4d3c3ed29fef9a",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        33,
+        34
+      ],
+      "owner_input_id": "input-74f66e888df600665c33061de79f755d",
+      "arm": "slot-04/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979010970034675-74f7d1eda4e1f41e",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-04/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "narrow",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "owner_input_id": "input-b7044621ef37bc6929894acdc601775f",
+      "arm": "slot-04/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979181753024645-c3638694604fa2f4",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        40,
+        41
+      ],
+      "owner_input_id": "input-0140fafc280686fa0b78233296669113",
+      "arm": "slot-05/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979250842606705-baef19c207711ae5",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-05/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "childonly",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        42,
+        43,
+        44
+      ],
+      "owner_input_id": "input-407abbe5bdeb21d89c8b3ec4f179f120",
+      "arm": "slot-05/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979403383297969-34ce0282cc38f380",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        45,
+        46
+      ],
+      "owner_input_id": "input-01976a066f0f2956a16283e90798251b",
+      "arm": "slot-05/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979470361478182-e1946f1ff5ea78c2",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-05/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "childonly",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        47,
+        48,
+        49
+      ],
+      "owner_input_id": "input-b57e2a7c00c51394b9569c5917a3bf69",
+      "arm": "slot-05/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979573809465716-da975042b85e7afc",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        50,
+        51
+      ],
+      "owner_input_id": "input-1568ea5a849cd8cc9ca1b7b9af4737d8",
+      "arm": "slot-06/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979629703543687-db841ebe9e2e4b85",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        52
+      ],
+      "owner_input_id": "input-5097845b325f9dc1630fb0d6b8b7b6bc",
+      "arm": "slot-06/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979673114506500-cd36617a3209d4e7",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        53,
+        54
+      ],
+      "owner_input_id": "input-419cbfd788f5221743007e256f4f06cd",
+      "arm": "slot-06/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979714998569763-4cae7f0f3c9a6493",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        55
+      ],
+      "owner_input_id": "input-1de87a5ce6964e42549ee1333d0f111b",
+      "arm": "slot-06/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979790882101142-38844cc4057211f8",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        56
+      ],
+      "owner_input_id": "input-272610c7fb598d7f0a7b820badf1704a",
+      "arm": "slot-07/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979853791576981-04c0647790d0121a",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        57
+      ],
+      "owner_input_id": "input-a6a264efe95a1e393a7abdaa820772b1",
+      "arm": "slot-07/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979884045494253-c6278ad47f5b4e0b",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        58
+      ],
+      "owner_input_id": "input-937f7a911912453e7635416acd664d3e",
+      "arm": "slot-07/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979908612065588-8840b50bd4ae2e6b",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        59
+      ],
+      "owner_input_id": "input-9eef6b856609d9407507649ddab208b5",
+      "arm": "slot-07/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792979946865053595-6491bf2f3cd2d95f",
+      "safe_error_category": null
+    },
+    {
+      "state": "fixture_local_unknown",
+      "native_entry_ids": [
+        60,
+        61
+      ],
+      "owner_input_id": "input-af75561e71bd9e2cb5d23a5d0c389a15",
+      "arm": "slot-08/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": "fixture_local_stop",
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979976239029009-0b337cb26963f117",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_executed_after_fixture_local_unknown",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-08/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": "fixture_local_stop",
+      "step_id": "turn2",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "fixture_local_unknown",
+      "native_entry_ids": [
+        62,
+        63
+      ],
+      "owner_input_id": "input-99fbc796431492008dd447090a5cb55a",
+      "arm": "slot-08/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": "fixture_local_stop",
+      "step_id": "turn1",
+      "owner_run_id": "run-1792979996973090727-2272e7069bd1bc40",
+      "safe_error_category": "effect_unknown"
+    },
+    {
+      "state": "not_executed_after_fixture_local_unknown",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-08/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": "fixture_local_stop",
+      "step_id": "turn2",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        64
+      ],
+      "owner_input_id": "input-bfc90d253614c65f5dc5c80a5d3bd7ed",
+      "arm": "slot-09/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980016841433307-a35805a2ff7cca6f",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        65
+      ],
+      "owner_input_id": "input-337c38fb7152e3215a955faccefa56eb",
+      "arm": "slot-09/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980066283673946-3af610b06172c892",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        66
+      ],
+      "owner_input_id": "input-8dca6f409d0b7172effec8a01393d279",
+      "arm": "slot-09/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980088427134541-cde54e60db178dc3",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        67
+      ],
+      "owner_input_id": "input-d7174d8c61eac9ed23cee3e90599f219",
+      "arm": "slot-09/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980116064401689-28da8fcc488522e9",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        68,
+        69,
+        70
+      ],
+      "owner_input_id": "input-6d7cb61f8e88ea861c15165f1de1e71e",
+      "arm": "slot-10/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980147796843433-4a5ed3fdf58155f3",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-10/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "rebuilt",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "admission_denied",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-10/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": "input_admission",
+      "step_id": "turn2",
+      "owner_run_id": "",
+      "safe_error_category": "fixture_operation_unavailable"
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        71,
+        72
+      ],
+      "owner_input_id": "input-b5802a25c0b96e728a0d0a6de341c7ea",
+      "arm": "slot-10/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980260303442983-be4f44bac4dde7e5",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-10/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "rebuilt",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "admission_denied",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-10/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": "input_admission",
+      "step_id": "turn2",
+      "owner_run_id": "",
+      "safe_error_category": "fixture_operation_unavailable"
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        73,
+        74,
+        75
+      ],
+      "owner_input_id": "input-cf93acfad8eed529f3a0b8993bbc7232",
+      "arm": "slot-11/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980326717363478-b5b2c4eeba710742",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-11/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "readonly",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-11/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "rebuilt",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        76,
+        77,
+        78,
+        79
+      ],
+      "owner_input_id": "input-423950232f8530054ceac42aff25a269",
+      "arm": "slot-11/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980432170098110-0c82bdb0e742c376",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        80,
+        81,
+        82,
+        83
+      ],
+      "owner_input_id": "input-b9fbcc50458e4ef15d4c516bc9e5c47f",
+      "arm": "slot-11/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980461195739631-c11c03bb1bc759f9",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-11/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "readonly",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-11/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "rebuilt",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        84,
+        85,
+        86,
+        87
+      ],
+      "owner_input_id": "input-435c9d6851645f9706f284b8b81e3b29",
+      "arm": "slot-11/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980644609391686-fc41c7fc377abb9f",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        88
+      ],
+      "owner_input_id": "input-e65749d2b3db1350980c2f7adfa26c55",
+      "arm": "slot-12/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980671479463936-5d9e0ff700071fa6",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-12/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "revised",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        89
+      ],
+      "owner_input_id": "input-bd1d9cb9d9be694fa6e0a198daadd561",
+      "arm": "slot-12/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980697710088744-4d33e16116f23c4e",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        90
+      ],
+      "owner_input_id": "input-2b8aca5fb82aff8a35eb2ca04308ac52",
+      "arm": "slot-12/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980728490876775-92c0febea6f05f04",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-12/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "revised",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        91
+      ],
+      "owner_input_id": "input-a07c2fd7006179150d8cf22be34961be",
+      "arm": "slot-12/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980755612534509-15a8a89e2c207bb9",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        92
+      ],
+      "owner_input_id": "input-7e976775e7166dc5e0cbaabe7c155520",
+      "arm": "slot-13/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980779131423290-8d1c85ba16748ae2",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        93,
+        94,
+        95
+      ],
+      "owner_input_id": "input-9da43fc313c5a9cf93bd9bb9338950fb",
+      "arm": "slot-13/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980826071306515-3277f0f9b03d9a76",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        96
+      ],
+      "owner_input_id": "input-dc6757de8abdb7d70d8cbe65b9e0a2f7",
+      "arm": "slot-13/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980873115437243-5f8239d9881cbc82",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        97,
+        98,
+        99
+      ],
+      "owner_input_id": "input-83ded6d4994924f55834e7e737ba5a8b",
+      "arm": "slot-13/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792980914564901130-c67b767f249f714f",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        100,
+        101,
+        102
+      ],
+      "owner_input_id": "input-226e0266272f93ea73cc24629f84a87e",
+      "arm": "slot-14/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792980975822003206-233c1697480716e5",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        103,
+        104
+      ],
+      "owner_input_id": "input-29f19c86fcd58678cd2f3b2e36d66474",
+      "arm": "slot-14/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981053269263533-1cd39743ad4fde15",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        105,
+        106,
+        107
+      ],
+      "owner_input_id": "input-24a822eaaac503bf9a29a1aee48b3d7d",
+      "arm": "slot-14/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981176137635625-ec3746ce7e8a2de1",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        108,
+        109
+      ],
+      "owner_input_id": "input-97060e56378d30c9ba145910d198a774",
+      "arm": "slot-14/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981263762494155-67171a82d73a8cd5",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        110,
+        111
+      ],
+      "owner_input_id": "input-16f8846cdaceafe06c531d16d2b688ef",
+      "arm": "slot-15/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981342027211735-cd9aa9390e459250",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-15/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "ownerpartial",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        112,
+        113
+      ],
+      "owner_input_id": "input-b5b9028a7e77dddd4b273d356386d935",
+      "arm": "slot-15/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981412474525868-acccb9d0d056da51",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        114,
+        115
+      ],
+      "owner_input_id": "input-e4d2c2722aae2cd8bfa8094f7b8f5750",
+      "arm": "slot-15/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981503713860727-71ed05a53ca50b1f",
+      "safe_error_category": null
+    },
+    {
+      "state": "not_evaluated",
+      "native_entry_ids": [],
+      "owner_input_id": "",
+      "arm": "slot-15/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "ownerpartial",
+      "owner_run_id": "",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        116,
+        117
+      ],
+      "owner_input_id": "input-81dbdd6c7f231a66eeba60f7bebef21b",
+      "arm": "slot-15/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981580143867774-e5b4e75cda8e859f",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        118,
+        119,
+        120
+      ],
+      "owner_input_id": "input-64a4a8eaebab5412661adcf462c5c85f",
+      "arm": "slot-16/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981655324989410-7068457b4fece900",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        121,
+        122,
+        123
+      ],
+      "owner_input_id": "input-2cb8d030b6e518a9f19e02822f689b67",
+      "arm": "slot-16/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981699613434904-5ce10647df40b0af",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        124,
+        125,
+        126
+      ],
+      "owner_input_id": "input-a7925f6b37ca363e844c729b44add614",
+      "arm": "slot-16/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981748960919563-d4272874e3b21e8c",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        127,
+        128,
+        129
+      ],
+      "owner_input_id": "input-86817ba37c79be1bd3417789795028d6",
+      "arm": "slot-16/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981827017948945-c56e1f0109f90cb2",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        130,
+        131
+      ],
+      "owner_input_id": "input-440163f9444cc27de4ff4d2f5b2686df",
+      "arm": "slot-17/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792981873173732236-6d94f233cf4a25a2",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        132
+      ],
+      "owner_input_id": "input-3c5518b591b05760ea58114403be2b88",
+      "arm": "slot-17/arm-e600f4d5bb73bee73563d841625ae9c0",
+      "failure_phase": null,
+      "step_id": "turn2",
+      "owner_run_id": "run-1792981967772864978-943cb81dd2cb0840",
+      "safe_error_category": null
+    },
+    {
+      "state": "completed",
+      "native_entry_ids": [
+        133
+      ],
+      "owner_input_id": "input-b4e6a2eeec316b04501f720526dd14a5",
+      "arm": "slot-17/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": null,
+      "step_id": "turn1",
+      "owner_run_id": "run-1792982035575238874-bea207d57a7ceba4",
+      "safe_error_category": null
+    },
+    {
+      "state": "failed",
+      "native_entry_ids": [
+        134
+      ],
+      "owner_input_id": "input-acb51154b312ee2299ef2b5d1906d1d7",
+      "arm": "slot-17/arm-74fc8bdb2567758130d9293b2126a1ae",
+      "failure_phase": "collector",
+      "step_id": "turn2",
+      "owner_run_id": "run-1792982100747209153-28e7d983ebea439e",
+      "safe_error_category": "fixture_operation_unavailable"
+    }
+  ],
+  "raw_files": 2569,
+  "measured": 133,
+  "manifest_sha256": "7516824e49cb0760b759faf15109eeceef2aee31b08bcc88c06ef62e7692d24c",
+  "complete": false,
+  "owner_outcome_states": [
+    {
+      "count": 2,
+      "state": "admission_denied"
+    },
+    {
+      "count": 61,
+      "state": "completed"
+    },
+    {
+      "count": 1,
+      "state": "failed"
+    },
+    {
+      "count": 2,
+      "state": "fixture_local_unknown"
+    },
+    {
+      "count": 2,
+      "state": "not_executed_after_fixture_local_unknown"
+    }
+  ],
+  "automatic_runs": 6,
+  "actual_owner_inputs": 64,
+  "mapping_read": false,
+  "qualification": "NO_GO_INCOMPLETE_GLOBAL",
+  "version": "issue76-closed-day-v6-raw-boundary-working-v1",
+  "planned_owner_opportunities": 96,
+  "goldens_read": false,
+  "raw_bytes": 66843767.0,
+  "quality_assessed": false,
+  "native_admissions": 134,
+  "indexed_owner_outcomes": 68,
+  "traces_metadata_sha256": "a694641745c8cfd564cda11e43406ffed51d8261a63ede2435ef380282faae9a",
+  "indexed_arms": 34,
+  "all_rows": 640,
+  "window": "issue76-fixture-day-20261026T012812",
+  "producer": "git:9f6733c5de5f969097f5aeea1bfac15179ded8f6;binary-sha256:187659feedd16530a8e3ba63507ec26ca21ca8aef502414efb24ea13b11c37a8",
+  "unknown_usage": 1,
+  "raw_readonly": 2569,
+  "verified_case_files": 2531,
+  "index_sha256": "726bce7120188a72d09f8e359a21b9fc7905598976784e11ad2dd893b2198c7f",
+  "complete_prefix_arms": 33,
+  "last_entry": {
+    "model_version": null,
+    "status": "transport_error",
+    "run_id": "run-1792982100747209153-28e7d983ebea439e",
+    "slot": "slot-17/arm-74fc8bdb2567758130d9293b2126a1ae/turn2",
+    "events": [
+      {
+        "type": "run_started",
+        "error_code": null,
+        "safe_reason": null,
+        "http_status": null
+      },
+      {
+        "type": "assistant_delta",
+        "error_code": null,
+        "safe_reason": null,
+        "http_status": null
+      },
+      {
+        "type": "assistant_delta",
+        "error_code": null,
+        "safe_reason": null,
+        "http_status": null
+      },
+      {
+        "type": "transport_error",
+        "error_code": "provider_protocol_error",
+        "safe_reason": "",
+        "http_status": 0
+      }
+    ],
+    "kind": "start",
+    "n": 134,
+    "thinking_tokens": null,
+    "total_tokens": null,
+    "milliseconds": 66018,
+    "stage": "response_stream",
+    "output_tokens": null,
+    "input_tokens": null
+  },
+  "native_calls_by_checker": 0,
+  "independent_raw_inventory_sha256": "dfb1397ebdd11a9796fd6320cd4c98523d5960ab0376cce977fd7017f1de90e0",
+  "known_tokens": 1067566.0,
+  "planned_arms": 48
+}

@@ -1,0 +1,73 @@
+{
+  "version": "issue76-development-failure-catalog-v1",
+  "scope": "Known public synthetic studies and zero-native local preflight; fresh controls remain independent.",
+  "memory_status": "Offline diagnostic artifact, not an accepted Profile/Episodic instruction or authority source.",
+  "cards": [
+    {
+      "id": "known76-unsupported-facts",
+      "category": "preference_and_reporting",
+      "evidence": ["docs/testing/issue-76-context-factorial-results-20261023.md", "testdata/acceptance/results/issue76-context-factorial-review-20261023.json"],
+      "task_snapshot": "Known synthetic control f2c08; original fixture/outputs remain in the retained prior evidence.",
+      "observed": "Independent prior review found unsupported UX properties and omission of the preference to distinguish facts, assumptions and needed verification, across the four arms.",
+      "fact_basis": "Retained independent review, not a new real-owner observation.",
+      "hypothesis": "More explicit distinction between observed effects, owner reports and proposals may reduce unsupported claims.",
+      "hypothesis_status": "Unmeasured in the new multi-turn pilot.",
+      "unknowns": ["General real-owner failure rate", "Whether the new instruction candidate improves this behavior"],
+      "proposed_change": "Dormant TaskContinuityProtocol, evaluated on a fresh independent corpus.",
+      "owner_corrections": "No real-owner correction is invented for this synthetic case."
+    },
+    {
+      "id": "known20-source-timeout",
+      "category": "tool_or_storage_failure",
+      "evidence": ["experiments/converter20/2026-10-25/native-a/", "experiments/converter20/2026-10-25/native-c/", "docs/testing/converter20-local-results-2026-10-25.md"],
+      "task_snapshot": "Original immutable task/source/lease and attempt rows in A/C, including the retained unobserved kernel reservations.",
+      "observed": "Source-currentness bounds stopped A after collection and C after activation; C's final stream has unavailable usage.",
+      "fact_basis": "Actual local PostgreSQL/Core/native histories; the stopped query was not a model intent classification.",
+      "hypothesis": "Capacity routing and predicate planning contributed to bounded proof delay.",
+      "hypothesis_status": "Targeted fixes and later F pass exist; one later task does not establish general reliability or each factor's independent effect.",
+      "unknowns": ["C cancelled stream's actual token total", "Real-owner operational rate", "Independent contribution of each optimization"],
+      "proposed_change": "Retain exact storage/provider stage diagnostics and full source guards; do not substitute a longer timeout or a false success.",
+      "owner_corrections": "None; operator collection/retention actions are separately documented."
+    },
+    {
+      "id": "known20-conservative-budget",
+      "category": "budget_stop",
+      "evidence": ["experiments/converter20/2026-10-25/native-b/", "docs/testing/converter20-local-native-protocol-2026-10-25.md"],
+      "task_snapshot": "Original B task/mandate and monotonic reservation rows.",
+      "observed": "11 model and9 tool quotes exhausted the admitted2400000 active milliseconds; the old task was correctly stopped without an original conversion.",
+      "fact_basis": "Actual reservations, separate from measured elapsed time and billing.",
+      "hypothesis": "The prospective fixture allowance omitted a complete combined model/tool inventory.",
+      "hypothesis_status": "Reproduced by real-PG budget preflight; original B remains failed and spent.",
+      "unknowns": ["Monetary/subscription quota charge"],
+      "proposed_change": "Preflight all conservative allowance dimensions before fresh admission; never enlarge or refund an old scope.",
+      "owner_corrections": "None."
+    },
+    {
+      "id": "known20-wrong-data-role",
+      "category": "goal_relevant_reference_selection",
+      "evidence": ["experiments/converter20/2026-10-25/native-e/", "experiments/converter20/2026-10-25/native-f/", "docs/testing/converter20-local-results-2026-10-25.md"],
+      "task_snapshot": "Original E child snapshot, selected Need/contract references and recorded proposal; no original document body was given to the child.",
+      "observed": "The native child selected the contract reference instead of the Need; exact Broker preparation denied before child dispatch. F used immutable reference-role labels and completed the bounded scenario.",
+      "fact_basis": "Actual typed proposal and dispatch absence, not an inferred successful effect.",
+      "hypothesis": "Explicit trustworthy role metadata can make same-titled bounded DATA easier to use.",
+      "hypothesis_status": "One later native pass supports a bounded implementation decision, not a causal or reliability estimate.",
+      "unknowns": ["General reference-selection rate", "The unretained underlying E RPC status"],
+      "proposed_change": "Preserve immutable role/provenance information without expanding the selected source set or authority.",
+      "owner_corrections": "None."
+    },
+    {
+      "id": "preflight76-read-only-policy",
+      "category": "fixture_design_and_kernel_limit",
+      "evidence": ["internal/actionauth/task_policy.go", "docs/testing/issue76-local-protocol-2026-10-25.md"],
+      "task_snapshot": "Public development fixture, prepare_only task; native calls0.",
+      "observed": "The actual Broker denied even prepare-class effects because current prepare_only permits only reads. The initial task-mandate preflight also rejected URL paths, since its API requires exact origins.",
+      "fact_basis": "Exact API/source predicates and zero-native local Core/Broker tests.",
+      "hypothesis": "An infeasible policy setup would confound a prompt comparison.",
+      "hypothesis_status": "Design v1 cancelled before execution; independent v2 changes only the publicly corrected policy field.",
+      "unknowns": ["New candidate's effect on behavior; not measured by these setup failures"],
+      "proposed_change": "Use normal only for genuinely authorized test preparation; preserve true read-only denials and all original design commitments.",
+      "owner_corrections": "No new owner permission is inferred from the API fix."
+    }
+  ],
+  "fresh_family_coverage_status": "Pending independent multi-turn state/effect/communication assessment; no completion or no-gain conclusion yet."
+}

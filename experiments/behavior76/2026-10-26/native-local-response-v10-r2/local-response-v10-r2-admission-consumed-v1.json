@@ -1,0 +1,11 @@
+{
+  "version": "issue76-local-response-v10-r2-one-use-launch-v1",
+  "certificate_sha256": "5b55e4bdd7a0f95c3ba69475543e9a01f24991b02d2d36c8925a8e082122a0ac",
+  "producer": "5fa9d724177609c97bbb74e92253cf7c474f69d0",
+  "elf_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "output": ".cache/behavior76/native-local-response-v10-r2",
+  "admission_consumed_utc": "2026-10-26T18:10:04.3072286+00:00",
+  "new_attempts_allowed": 1,
+  "rebuild_after_admission": false,
+  "old_windows_reopened": false
+}

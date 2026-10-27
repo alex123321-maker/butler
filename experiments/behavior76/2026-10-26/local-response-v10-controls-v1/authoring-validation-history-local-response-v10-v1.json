@@ -1,0 +1,52 @@
+{
+  "version": "issue76-independent-local-response-v10-authoring-validation-history-v1",
+  "formal_freeze_sha256": "582f2d22185b9017f7a1497040dd8002c5e3ee26c884415ddfb308333d3af971",
+  "formal_freeze_issued_utc": "2026-10-26T16:30:22.2669614Z",
+  "first_private_authoring_file_created_utc": "2026-10-26T16:45:58.8725230+00:00",
+  "final_corpus_construction_started_utc": "2026-10-26T23:48:51.2117977+07:00",
+  "completed_utc": "2026-10-26T23:48:51.4183058+07:00",
+  "all_authorship_after_formal_freeze": true,
+  "retained_private_drafts": [
+    {
+      "sha256": "a9b576d756c125afb50d960ea4666361169d83d6d22114dd02bbd40fec434c25",
+      "contents_private": true,
+      "path": "hidden-local-response-v10/author-new-v10.ps1"
+    },
+    {
+      "sha256": "2a5d781b48a83e1ea0e2e0530e70e84232d74e385def97166a01ca6935dde6f8",
+      "contents_private": true,
+      "path": "hidden-local-response-v10/author-new-v10-r1.ps1"
+    },
+    {
+      "sha256": "ea152c71ca612d514fc92bd523307b4f63e3434d5838d6348226d74dc02fec17",
+      "contents_private": true,
+      "path": "hidden-local-response-v10/author-new-v10-r2.ps1"
+    },
+    {
+      "sha256": "a444631fca35faec256b52dc6284c395a2097f3367ae41a39c2435aab7e4132c",
+      "contents_private": true,
+      "path": "hidden-local-response-v10/private-author-error-v1.txt"
+    },
+    {
+      "sha256": "af063ffaa38e09ebb029e753b48ae64880386f9d2d4e4ff81244e27568dc1073",
+      "contents_private": true,
+      "path": "hidden-local-response-v10/private-author-error-r1.txt"
+    }
+  ],
+  "offline_script_failures_before_any_corpus_write": 2,
+  "failure_categories": [
+    "PowerShell parsing of variable followed by colon and validation block braces",
+    "Where-Object operator token spacing"
+  ],
+  "final_offline_structure_pass": true,
+  "earlier_drafts_bound_or_admitted": false,
+  "semantic_or_quality_results_used_to_revise_controls": false,
+  "corpus_or_golden_rewrite": false,
+  "source67_unchanged_after_authorship": true,
+  "runtime7_unchanged_after_authorship": true,
+  "old_controls_responses_goldens_mapping_read": false,
+  "model_Go_PG_auth_native_calls": 0,
+  "stimuli_sha256": "0f3654efcbc4795c255425e85acf79678703c6faf21fc4fe962a597b939f163d",
+  "expectations_sha256": "db8bc3ecdc1430638ed0e45b280aca48e79ef871d07ac9b4e9bf7e863c35b7a5",
+  "new_native_admission": false
+}

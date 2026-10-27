@@ -1,0 +1,266 @@
+{
+  "version": "issue76-public-local-response-v10-source-review-v3",
+  "created_utc": "2026-10-26T15:50:27.3438861+00:00",
+  "decision": "NO_ADDITIONAL_CONCRETE_SOURCE_BLOCKER_FOUND_PENDING_PARENT_FINAL_GATES",
+  "source_state": "parent v10 draft including terminal observation quiescence and safe terminal-write cause propagation; final clean commit/core/Public58/vet gates not yet established",
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go",
+      "sha256": "3e2822abebd39516d45a5aa2de40da090af0c614111c55edc1401ccf015ea766"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "dd7f1530aaf4dbabe9d40a0b6f560019e0d9b01cc76b7d3b103c932c179e9c99"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "a3d8994e3e64ac092805bca13f99f0cffce24ce97b7a44027da076c805904c29"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_integration_test.go",
+      "sha256": "89a3df2f98bf877e775bbd013e300c6216905b1a27eca176a96da5b393abfdc5"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go",
+      "sha256": "beeadbe464d44b18252ef6bce57bd16dbaf63c43196269212e6a9b8ce7bba2c3"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_integration_test.go",
+      "sha256": "506b734b333966a9d1229f6cc81ac101c843eae7b49975771ebfb44f9c0105af"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_test.go",
+      "sha256": "8eae58542abee3935ca420e0b06f8195ef6dcfe411702be44b4c95d14da5b50e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "cc8a7c5fe6490bda219c9c4e245e273fc82c2ed06b64a4210464f31fdcb439de"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go",
+      "sha256": "c4ca0f11f0d9faca557be124748e7e945e7400b56af39e2745973056d7aa29e9"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_observer_integration_test.go",
+      "sha256": "f7e579d120791f65fdfeb2ec65f3b68911189274bb24e898d9ac5440766744a4"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_write_integration_test.go",
+      "sha256": "a6299767368b91cfebeb38b289275f4f7c599e4df2f042744bf9529dd4d77d0f"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/budget.go",
+      "sha256": "cd8fa8ba73ce2934f3d57e1ae3b1218dd97de3e3f0612955a7665ce17a426ec3"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/cancellation_cause.go",
+      "sha256": "4da991e2f8015e573a53fe5c39da5acd37d7a01cb84b6bb3fce10c7cb31349ad"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/communication_failure.go",
+      "sha256": "e2b4faeb3f7a0eedd30bc32f4104c0f695f8a7280c85eeecd16ea5fda30ff3e3"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/recovery.go",
+      "sha256": "8d2b4238fe21a6d02076fe26447da4e4cf406399bc65a6cf6a980125c4dfc94b"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go",
+      "sha256": "7e435c84881a0b31ada382f056c25bb4b2becbec42169c7098d2eb7946254f06"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go",
+      "sha256": "4db8430bc418ab712265852f67043f0b827b50c218753a9d0a47ab6861f360a0"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/terminal_watch_test.go",
+      "sha256": "a16c2dfee658c5324168d7784f01459cb5090156e1d86ccf510db8ab2c29a5d5"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/terminal_write_test.go",
+      "sha256": "8d0bb3dc4402a8c6602a9624acd29d03b130087897f764db604937d723767d06"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/terminal_write.go",
+      "sha256": "84725ab94a2cd8f6b8400cef74312512540efc34f74bfcbb3fa75eafe4bfc3d6"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/working_memory.go",
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05"
+    },
+    {
+      "path": "apps/orchestrator/internal/task/authority.go",
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc"
+    },
+    {
+      "path": "apps/orchestrator/internal/task/store.go",
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4"
+    },
+    {
+      "path": "apps/orchestrator/README.md",
+      "sha256": "05d54f54cf817657413e690fc89f86a1dc4dfc016c07fb1a6396073ae7fc829b"
+    },
+    {
+      "path": "docs/architecture/run-lifecycle-spec.md",
+      "sha256": "5ee3927a8cc6bda48a4af4cafc51c5f99e037f5fe47e874ec47c2855fbfc293e"
+    },
+    {
+      "path": "docs/testing/issue76-local-response-protocol.md",
+      "sha256": "c4e48cc84e269dc8e0b3b2296bf9fe81a681b159db97b0cc84ec1b559ece395c"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "25dcb010c5028fd2bbcbff2f359cffa607186e76d3da53f6f4812474fea7ff5d"
+    }
+  ],
+  "findings": [
+    {
+      "repair": "v10 ResponseMetadata requires Total>=Input+Output after overflow-safe Validate; production Usage.Validate and old modes unchanged.",
+      "source_fix_verified": true,
+      "severity": "integrity",
+      "id": "response-total-zero",
+      "parent_regression": "zero_total_positive_counts",
+      "independent_Go_replay": false,
+      "problem": "Generic Usage.Validate allowed zero TotalTokens with positive input/output in local eligibility."
+    },
+    {
+      "repair": "v10 provider LoadOrStore run-keyed SHA256 of safe barrier root; handler requires identical root hash and one actual transport_error row; missing/reconstructed witness denies exemption.",
+      "parent_regressions": [
+        "consistent milliseconds+1",
+        "missing witness"
+      ],
+      "source_fix_verified": true,
+      "severity": "journal-integrity",
+      "id": "late-consistent-root-mutation",
+      "independent_Go_replay": false,
+      "problem": "Internally consistent root-row changes after durable barrier could satisfy normalized Core error exemption while differing from the witnessed readback."
+    },
+    {
+      "independent_actual_PG_race_regression_pass": true,
+      "id": "own-terminal-task-self-revocation",
+      "problem": "Own failed outcome committed blocked/revision+1 before deferred authority observer shutdown; ordinary watcher read task.ErrConflict and cancelled provider.",
+      "fixed_receipt_sha256": "3fba854649a67e0074495f9efee8a0a537c2ae2b66483d654c8c31161600f043",
+      "legacy_receipt_sha256": "eb5d7d4d593a1d9718ffa57199efffcf65d64de00a5932f6f165c1ba3796b6e2",
+      "source_fix_verified": true,
+      "severity": "run-lifecycle",
+      "original_failed_Public_subtype_retrospectively_inferred": false,
+      "old_core_actual_PG_causal_reproduction": true,
+      "subcases": [
+        "self failure preserves live original context/fence/error and ordinary blocked Input/failed run, zero own CancelRun",
+        "real preterminal ReleaseLease still causes watcher cancellation"
+      ],
+      "repair": "Private run-context stop request joins observation before failRun/BlockRun/final Completion.Save; original context/token/deadline/write fences remain; in-flight checks still classify actual errors; ordinary defer still cancels/joins."
+    },
+    {
+      "repair": "Safe terminalWriteError wraps actual cause; failRun joins after provider sanitization; all BlockRun callers propagate failure; fixed stages cover working_memory/transient_working_state/run_failed_transition/task_block.",
+      "id": "terminal-write-fault-after-quiesce",
+      "independent_execution_of_refined_code": false,
+      "problem": "Ignored terminal persistence faults after quiescence could leave a bare provider error or nil-error blocked result eligible for local scope.",
+      "source_fix_verified": true,
+      "severity": "storage-and-authority-integrity"
+    },
+    {
+      "repair": "errors.As(*terminalWriteError) is retained as an independent failure, including joined form.",
+      "id": "terminal-write-cause-collapse-on-owned-cancel",
+      "independent_execution_of_refined_code": false,
+      "problem": "Outer preserveOwnedCancellation could collapse a terminal write wrapper around context.Canceled to ownedCancellation and lose its stage/preceding cause.",
+      "source_fix_verified": true,
+      "severity": "cause-retention",
+      "parent_regression": "TestTerminalWriteSurvivesOwnedCancellation"
+    }
+  ],
+  "reviewed_boundaries": [
+    "exact 13 transport-owned reasons and old empty first",
+    "exact text-only same SequenceNo 1..4, aggregate UTF8<=16MiB",
+    "actual EOF and live context; extra/late event GLOBAL",
+    "strict stored usage/delta and nullable journal metadata equality",
+    "problematic usage/version dimension restrictions",
+    "unchanged old constructors; opt-in v10 mode only",
+    "exact durable row/input/task/source/ownership checks before barrier",
+    "same admission mutex; immutable first cause; owning-cohort drain",
+    "no retry/resample/refund; all96 planned opportunities retained",
+    "other network/auth/source/authority/budget/deadline/journal/observer/quiescence failures GLOBAL",
+    "terminal persistence failures cannot remain bare provider/local exemptions",
+    "fixed error strings omit raw cause while errors.Is/As retain preceding/provider/storage causes",
+    "BlockRun propagation through execution/budget/communication/recovery",
+    "owned cancellation preserves terminal wrapper",
+    "read-only actualStore test shares owned fixture schema and original ownership authority; only SaveRunOutcome delegate uses read-only client"
+  ],
+  "checker": {
+    "frozen_criterion_statement_extents": 27,
+    "public_passed": 298,
+    "failed": 0,
+    "path": "public-local-response-checker-v4-receipt-v1.json",
+    "sha256": "3bbd8c798bd85172cfcb1f6cfcac94d6fd6741fe8b2beaa1b0879f88d288a39a"
+  },
+  "limitations": [
+    "No new Go/PG execution by checker for terminal-write refinement; latest review is textual.",
+    "Earlier independent actual-PG quiescence regression remains valid archived evidence for its tested bytes, not a claim of final broad acceptance.",
+    "Final exact clean producer, Public58/0FAIL/0SKIP/race and vet0 remain required before formal freeze.",
+    "No old native failure is reclassified; no quality evaluation/promotion/deployment/issue closure/admission follows from this review."
+  ],
+  "Go_PG_auth_native_calls": "Only explicit public actual-PG diagnostic/regression; zero native/model/auth. This v2 preparation performs file-only operations.",
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "new_native_admission": false,
+  "supersedes": {
+    "path": "public-local-response-v10-source-review-v2.json",
+    "sha256": "0ba118e50cd6ed9cf3eaa00ebe28df3ca67c3a2111d3758388e04b88b99311af"
+  },
+  "parent_unit_evidence": {
+    "broad_core_Public_vet_not_yet_established": true,
+    "cases": "six in-flight cases plus absent control",
+    "sha256": "891f1250e252e0dc9de4061e64bf928d9c32e447e7cf3047904e4056f2e9d0da",
+    "reported_and_log_verified_PASS_seconds": 3.301,
+    "path": ".cache/behavior76/terminal-watch-unit-v1.log"
+  },
+  "independent_targeted_actual_PG": {
+    "artifacts": [
+      {
+        "path": "public-terminal-observer-legacy-receipt-v1.json",
+        "sha256": "eb5d7d4d593a1d9718ffa57199efffcf65d64de00a5932f6f165c1ba3796b6e2"
+      },
+      {
+        "path": "public-terminal-observer-fixed-receipt-v1.json",
+        "sha256": "3fba854649a67e0074495f9efee8a0a537c2ae2b66483d654c8c31161600f043"
+      },
+      {
+        "path": "terminal-observer-legacy-test-v1.log",
+        "sha256": "cd95073b29cfed3fd23644b5f5d259a59b873cf21f6520e6e0ec457507f6ae1f"
+      },
+      {
+        "path": "terminal-observer-fixed-test-v1.log",
+        "sha256": "3820388440570e7888ebf0f0b3a62510756d1b2032be50135ecbc36b4bc2fa4d"
+      }
+    ],
+    "model_auth_calls": 0,
+    "seconds": 9.17,
+    "top_level_PASS": 1,
+    "legacy_function_body_byteexact": true,
+    "subcases_PASS": 2
+  },
+  "parent_targeted_refinement_evidence": {
+    "functions_or_triggers_or_task_lease_row_mutations": false,
+    "status": "Parent executed; checker read-only inspected log/source, did not independently run refined code",
+    "logs": [
+      {
+        "path": "terminal-write-unit-v2.log",
+        "sha256": "1b4fe041e30d6a177fb663ac00bff9a4167eed7312accf96bce2c714c3334d92"
+      },
+      {
+        "path": "terminal-write-app-v1.log",
+        "sha256": "2d2e12986fbb673f0a56c7660d8d987e4a4b328adf920662bc9b4ada52700a84"
+      }
+    ],
+    "actual_readonly_note": "SQLSTATE25006 observed by separate read-only probe; actual task.Store.SaveRunOutcome maps failed owner lookup to task.ErrConflict; do not claim25006 retained through Unwrap"
+  }
+}

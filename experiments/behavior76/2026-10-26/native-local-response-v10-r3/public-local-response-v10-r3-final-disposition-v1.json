@@ -1,0 +1,72 @@
+{
+  "version": "issue76-r3-independent-final-disposition-v1",
+  "issued_utc": "2026-10-26T22:31:57.274402+00:00",
+  "candidate_decision": "NO_GO_NO_PROMOTION_NO_DEPLOYMENT",
+  "bounded_first_pilot": "COMPLETED_NEGATIVE_RESULT",
+  "whole_issue76_closure": "NOT_SUPPORTED_AS_FULLY_VERIFIED_BY_PRESENT_COVERAGE",
+  "criterion_audit": {
+    "path": "public-local-response-v10-r3-criterion-audit-v1.md",
+    "sha256": "ef443591ed3ebe05798827764172eae82cf37adf5b137df5f9220cf191ff1016"
+  },
+  "final_report": {
+    "path": "public-local-response-v10-r3-final-report-v1.md",
+    "sha256": "be9cf54a9a08f03930c69553d4befa2959bffb4eb0cdc44f0c195b53dc01ae51"
+  },
+  "comparison": {
+    "path": "public-local-response-v10-r3-sealed-comparison-v2.json",
+    "sha256": "cfe85c6f47570e48bb1f98c38253d018012b8946e553e37de1958ebe037ac7a0"
+  },
+  "error_catalog": {
+    "path": "public-local-response-v10-r3-error-catalog-v1.json",
+    "sha256": "95700eb8533015ea0034b203e2b92e2550cc7e0d0e08879078d161923e44acbc"
+  },
+  "raw_publication_decision": {
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-raw-publication-decision-v1.json",
+    "sha256": "f65f32a5994a0a066d87c299ab14aa2ba246716af46631e6c7bcb87634ed4afd"
+  },
+  "sealed_judgments_sha256": "3f9477c4fa698239dc599915a9d303326f2b44920b67cdafc0b65245033c4d2c",
+  "mechanical_sha256": "d3390dd70e0a043d8ad937ca55e26711dad05d9e336a3c99e618a705a7f5a496",
+  "masked_seal_sha256": "e688cd1f5848049b553f844c5eda2a81c67b713ad0852de3a38c93597521ee81",
+  "mapping_access_after_seal_only": true,
+  "judgments_changed_after_mapping": false,
+  "criteria_runtime_candidate_or_threshold_changed": false,
+  "original_comparator_v1": "Retained failed helper invocation on arm=all matrix rows; v2 separates matrix-wide checks without changing judgments.",
+  "planned": {
+    "episodes": 24,
+    "families": 12,
+    "arms": 48,
+    "owner_opportunities": 96,
+    "original_steps": 62,
+    "paired_steps": 124
+  },
+  "current_expense": {
+    "admissions": 197,
+    "measured": 197,
+    "known_full_tokens": 1751497,
+    "NULL_usage": 0,
+    "automatic_runs": 2,
+    "automatic_entries_included": 4
+  },
+  "inclusive_expense": {
+    "closed_windows": 12,
+    "admissions": 971,
+    "measured": 959,
+    "known_full_tokens": 7700211,
+    "NULL_usage": 12
+  },
+  "parent_actual_PG_confirmation": "Parent independently reported original closed PG totals equal; checker used immutable exports and opaque historical byte equality, no new PG execution.",
+  "history_limitations": [
+    "Earlier provider/source/observer/capacity failures and NULL expense retained.",
+    "Old r2 cached5b56 executable overwritten/not restored; recorded hash/source/raw/cert retained.",
+    "Original 802ms authority observation sole cause unproved; current completed run is not universal latency repair."
+  ],
+  "remaining_coverage": [
+    "Exact ambiguous action object rather than missing required field.",
+    "Simultaneous conflicting accepted preferences requiring targeted clarification.",
+    "Observed repeated manual corrections/silence/rejected-initiative trajectory rather than an explicit synthetic report.",
+    "Typed stop/amend controller updates and child-task stops do not establish unrestricted language interpretation or all format/deadline/recipient/action-class cases.",
+    "Status read-only fixtures do not fully establish continuing already-authorized initiative."
+  ],
+  "no_new_native_or_study_admission": true,
+  "Go_PG_auth_native_new_models": 0
+}

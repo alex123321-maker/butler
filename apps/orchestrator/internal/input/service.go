@@ -30,16 +30,21 @@ type SessionWriter interface {
 }
 
 type Service struct {
-	store            *Store
-	sessions         SessionWriter
-	executor         Executor
-	runs             RunReader
-	log              *slog.Logger
-	workers          int
-	claimTTL         time.Duration
-	executionTimeout time.Duration
-	maintenance      func(context.Context) error
-	controls         *task.Controller
+	store              *Store
+	sessions           SessionWriter
+	executor           Executor
+	runs               RunReader
+	log                *slog.Logger
+	workers            int
+	claimTTL           time.Duration
+	executionTimeout   time.Duration
+	maintenance        func(context.Context) error
+	controls           *task.Controller
+	claimAdmission     func(context.Context) (func(), error)
+	claimWorkersDone   chan struct{}
+	claimWorkersFailed chan struct{}
+	claimWorkersMu     sync.Mutex
+	claimWorkersErr    error
 }
 
 func (s *Service) SetTaskControls(c *task.Controller) { s.controls = c }
@@ -219,35 +224,58 @@ func (s *Service) Run(ctx context.Context) error {
 			}
 		}()
 	}
+	var claimWorkers sync.WaitGroup
 	for n := 0; n < s.workers; n++ {
 		wg.Add(1)
-		go func() { defer wg.Done(); s.work(ctx) }()
+		claimWorkers.Add(1)
+		go func() {
+			defer wg.Done()
+			defer claimWorkers.Done()
+			if err := s.work(ctx); err != nil {
+				s.claimWorkersMu.Lock()
+				if s.claimWorkersErr == nil {
+					s.claimWorkersErr = err
+					if s.claimWorkersFailed != nil {
+						close(s.claimWorkersFailed)
+					}
+				}
+				s.claimWorkersMu.Unlock()
+			}
+		}()
+	}
+	if s.claimWorkersDone != nil {
+		go func() { claimWorkers.Wait(); close(s.claimWorkersDone) }()
 	}
 	<-ctx.Done()
 	wg.Wait()
-	return nil
+	s.claimWorkersMu.Lock()
+	defer s.claimWorkersMu.Unlock()
+	return s.claimWorkersErr
 }
-func (s *Service) work(ctx context.Context) {
+func (s *Service) work(ctx context.Context) error {
 	timer := time.NewTicker(250 * time.Millisecond)
 	defer timer.Stop()
 	for {
 		if ctx.Err() != nil {
-			return
+			return nil
 		}
-		if err := s.store.ExpireQueued(ctx); err != nil && ctx.Err() == nil {
-			s.log.Warn("expire queued inputs", slog.String("error", err.Error()))
+		r, err := s.claim(ctx)
+		if errors.Is(err, ErrClaimAdmissionClosed) {
+			return nil
 		}
-		r, err := s.store.Claim(ctx, s.claimTTL)
 		if err == nil {
 			s.process(ctx, r)
 			continue
 		}
 		if !errors.Is(err, ErrNotFound) && ctx.Err() == nil {
 			s.log.Error("claim accepted input", slog.String("error", err.Error()))
+			if s.claimAdmission != nil {
+				return err
+			}
 		}
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case <-timer.C:
 		}
 	}

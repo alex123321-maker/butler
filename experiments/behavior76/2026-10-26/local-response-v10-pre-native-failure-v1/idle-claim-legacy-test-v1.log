@@ -1,0 +1,8 @@
+=== RUN   TestBehavior76IdleClaimCancellationLegacyDiagnosticIntegration
+2026/10/26 17:19:07 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 17:19:07 INFO postgres connected component=postgres
+2026/10/26 17:19:07 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+    behavior76_idle_claim_diagnostic_test.go:120: CAUSAL_IDLE_REPRO live_reconciliation_before_stop=true callbacks=2 callback_context=context.Canceled callback_return=ErrClaimAdmissionClosed ordinary_worker_Run=nil sharedGLOBAL_after_stop=true next_enterEvaluation=errBehavior76Native queued_inputs=0 executor_calls=0 native_auth_calls=0 original_hidden_failure_subtype_still_unknown=true
+2026/10/26 17:19:08 INFO closing postgres pool component=postgres total_conns=1
+--- PASS: TestBehavior76IdleClaimCancellationLegacyDiagnosticIntegration (3.44s)
+PASS

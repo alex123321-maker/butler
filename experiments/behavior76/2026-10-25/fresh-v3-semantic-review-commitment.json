@@ -1,0 +1,46 @@
+[
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_task_context_test.go",
+    "sha256": "5c70f887429b2368889960318bfc663c6f1badf077042cafe37fdade853990e9"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_offline_test.go",
+    "sha256": "cb8bd87ab879dce5b2cbc8a63374bf2319dade8ed8107f1d945e193ed1f17c6f"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_composition_test.go",
+    "sha256": "7fa2448c1c0ad28468616da691da130e773698d4ddf26e14bcbc42c8841aa4a2"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+    "sha256": "5169354609019d58497c7f3776863114ad2e3005d0f2f73d29d6e8ef5d7c1a3b"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+    "sha256": "47ba236fd8b4ba8fab9627e9f67b12fe0d5362b42e6bbdf38cf06b6056085210"
+  },
+  {
+    "path": "scripts/dev/behavior-local-run.sh",
+    "sha256": "b33cb14dc47c61d563740cc7c7063e0107ad473c325d3eab1cc9e02dbb2f6cba"
+  },
+  {
+    "path": "scripts/dev/behavior-local-acceptance.ps1",
+    "sha256": "3de08216a09feee4230b7dcd9c4abeeeb85287ab099bf7457454c3063af5db20"
+  },
+  {
+    "path": ".cache/behavior76/fixture-fix-core-broker-race-v2.log",
+    "sha256": "9d661c3644aa1058ecd06aa5c3964880f0a04678088ca93fb7dca64dfd24a395"
+  },
+  {
+    "path": ".cache/behavior76/composition-v2-corpus-race.log",
+    "sha256": "8e33ee54045e02a3d8502ba54d4b0dfd20fd609c980b49a8b4243839057aff85"
+  },
+  {
+    "path": ".cache/issue76-independent/public-contract-fresh-v3.md",
+    "sha256": "674dcc29f00dff2ff28b6e35d399dfd0af64d39e79f4fa0a54912d04bf754b2a"
+  },
+  {
+    "path": ".cache/issue76-independent/fixture-semantic-freeze-review-v3.md",
+    "sha256": "7ecdf2264220b088ed6a5aa18ad1f2e04c4f4fbf7248e0c7dc3af09549a5f4c7"
+  }
+]

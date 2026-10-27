@@ -1,0 +1,94 @@
+{
+  "version": "issue76-independent-local-model-v8-source-review-v1",
+  "decision": "NO_CONCRETE_REMAINING_BLOCKER_IN_REVIEWED_SOURCE_PENDING_FINAL_GATES",
+  "reviewed_dirty_base": "d216e875650ce890185e27f7c9fa5f8c68ee4d5d",
+  "file_pins": [
+    {
+      "sha256": "e028e61e0b4f7849ed777b46a1b61fffcaf6d5a224751fe9fd5256accc04daad",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go"
+    },
+    {
+      "sha256": "04f3a1b0f695c7499832f4115ea057ab891504b6dffb90c42b470323e70ad696",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_integration_test.go"
+    },
+    {
+      "sha256": "1040ad03ac4b86ec9da021f50172a19c3b9ae9b6342cdefefc5f1c426376f3b3",
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    },
+    {
+      "sha256": "5072caf89102db18eff941a8b148cf23d17a8cc00465ffd8c33e19af8277e2a7",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go"
+    },
+    {
+      "sha256": "9889be3fc85324e75abe1235ef921a7cfe7a87c71bcd6d458f6c9b61b75e8cad",
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go"
+    },
+    {
+      "sha256": "98d04417793b0b613671ced65d679d88b6bfd38938c33911bf9282f63bd7a01a",
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+    },
+    {
+      "sha256": "209e229c38d9a1f0816820c7e05525e2537ad3847d143e8b7aa05a081bf98413",
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go"
+    },
+    {
+      "sha256": "242dbaeba51a29779f5ca9316c2c9dc9d8beab4b09ef5a0c9423b29ef8bbad0f",
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go"
+    },
+    {
+      "sha256": "e8a4fbc58bba7d768d7438cc814d982edb445d77be73d54a56d453c5fae2c5a3",
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go"
+    },
+    {
+      "sha256": "cde812d882aff73a9a44eb8c9e0205221267a98f406754beda7164819496dae3",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go"
+    },
+    {
+      "sha256": "92aacef6cef3d90d82f85857030fe15e9d70ce3ea0ab842c38853797d732ee42",
+      "path": "docs/testing/issue76-local-model-protocol.md"
+    },
+    {
+      "sha256": "33ae161cc6f6012abdeb8878cff0c04aff612c29cb36e4642adaece53233b9a2",
+      "path": "docs/architecture/run-lifecycle-spec.md"
+    },
+    {
+      "sha256": "7f016e29dd64278413cbc70a0594d1cc6fab5726825cd1fbce09c8a2d5c65c26",
+      "path": "apps/orchestrator/README.md"
+    },
+    {
+      "sha256": "91dc9946c9f4ac2e026478c7f9118cf8a6fb3c7df992e1e1014920859ba7aeea",
+      "path": "scripts/dev/behavior-local-run.sh"
+    }
+  ],
+  "scope": [
+    "Explicit newModelFixture/fixture-local-model-v8 opt-in; old constructors/stop semantics unchanged.",
+    "Only exact two-event completed empty-error stream may be locally stopped; late events/EOF missing/cancellation and all other faults globally stop.",
+    "Successful immutable journal persistence/readback under same admission mutex precedes actual local barrier, with current ownership/task/source checks.",
+    "Exact native window/run/slot/kind/nullable usage/version/events metadata and unique Input witness.",
+    "Ordinary blocked Input/failed run and actual owner/automatic identity/final records remain untouched.",
+    "Existing cohort/claim/lease/Broker/runtime/backend/stream/anchor quiescence and next-original-schedule boundaries retained."
+  ],
+  "specific_finding": {
+    "reviewed_fix": "Exact3/4 case-sensitive required Usage properties/non-null integers/Validate, plus persisted JSONB equality to original typed safe events and exact nullable counts/version before local barrier.",
+    "previous_problem": "Permissive json.Unmarshal(null or aliased Usage fields into struct) could rehydrate an inadmissible journal shape as zero valid Usage in the execution-error exception.",
+    "actual_PG_trigger_regression": "Parent final Publicv5 contains null_event_usage and aliased_event_usage negatives; final completion pending, not independently rerun.",
+    "id": "I76-STORED-USAGE-NULL-ALIAS",
+    "source_status": "RESOLVED_IN_REVIEWED_CODE"
+  },
+  "EOF_review": "Ready-first channel read retains already available normal handoff/EOF; held empty classification still explicitly denies ctx.Err at EOF. persist/release split avoids same-mutex deadlock and does not retry failed accounting writes.",
+  "privacy": "Native evidence drops input/started_at; only safe typed journal metadata and four Input identity fields. No response text, thoughts, raw errors, credentials or opaque continuity added.",
+  "unchanged": "Production adapter parser, candidate, quality expressions/thresholds, auth/provider selection,120s/20m/4h/768,750ms and9+1.",
+  "limitations": [
+    "This is source-only review of exact dirty file bytes, not formal source freeze or native admission.",
+    "Final parent Publicv5/race/vet are still required; this receipt never infers their PASS.",
+    "Observed model-failure class does not establish upstream cause or reconstruct NULL expense.",
+    "Other globally failing evidence after a local stop still disqualifies the arm/study; a native proof alone is insufficient without actual quiescence/seal."
+  ],
+  "checker_components_receipt_sha256": "33636871f6c0a473fb51ded358e5c72132e32f6d24326b62402d7f07fb1c0dd7",
+  "checker_test_pass": 106,
+  "native_model_auth_calls": 0,
+  "PG_operations": 0,
+  "source_edits_by_checker": 0,
+  "old_maps_answers_goldens_read": false,
+  "new_hidden_authorship": false
+}

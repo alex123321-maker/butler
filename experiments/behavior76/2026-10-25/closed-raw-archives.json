@@ -1,0 +1,40 @@
+{
+  "version": "behavior76-closed-raw-archives-v1",
+  "raw_semantics_unchanged": true,
+  "private_auth_settings_keys_and_pg_dumps_excluded": true,
+  "archives": [
+    {
+      "original_files_unchanged": true,
+      "original_bytes": 8229989,
+      "archive": "native-20261025b.zip",
+      "sha256": "819b2847d1f963c5e869af5638a59d106b555560ca98e42af384cd7179a81eae",
+      "inventory": "native-b-raw-sha256.json",
+      "inventory_sha256": "c028dfbb5e782fa78bc35824d6e149ab751adabe982168f5a589cf167fabb848",
+      "exact_entry_bytes_verified": true,
+      "archive_metadata_time_is_synthetic": true,
+      "files": 1492
+    },
+    {
+      "original_files_unchanged": true,
+      "original_bytes": 2013085,
+      "archive": "native-20261025c.zip",
+      "sha256": "6991c8986d5b353d82f00245e27bd6d9c90de06d7607e4e645a1a5e246986cb5",
+      "inventory": "native-c-raw-sha256.json",
+      "inventory_sha256": "0fce72bbfdf54299890e527a261e599ba0dbc36ad5b783b3eb177f5d293f99c2",
+      "exact_entry_bytes_verified": true,
+      "archive_metadata_time_is_synthetic": true,
+      "files": 50
+    },
+    {
+      "original_files_unchanged": true,
+      "original_bytes": 12070994,
+      "archive": "native-fresh-v3.zip",
+      "sha256": "065c342749c976dde4d09afafd6d8a8074c3e1e7e1da8bf2b1ad8b0fb6dc40df",
+      "inventory": "native-fresh-v3-raw-sha256.json",
+      "inventory_sha256": "24f8595700ba3a496e8246ba7b7c062cf1183b9ba4f16e648b034672f2073105",
+      "exact_entry_bytes_verified": true,
+      "archive_metadata_time_is_synthetic": true,
+      "files": 2465
+    }
+  ]
+}

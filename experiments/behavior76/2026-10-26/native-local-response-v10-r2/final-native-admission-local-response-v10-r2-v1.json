@@ -1,0 +1,185 @@
+{
+  "version": "issue76-independent-final-native-admission-local-response-v10-r2-v1",
+  "decision": "ADMIT_EXACTLY_ONE_PROSPECTIVE_FINITE_LOCAL_RESPONSE_V10_R2_COLLECTION_WINDOW",
+  "issued_utc": "2026-10-26T18:09:38.9214271+00:00",
+  "latest_start_utc": "2026-10-26T18:39:38.9214271+00:00",
+  "producer": "5fa9d724177609c97bbb74e92253cf7c474f69d0",
+  "collector_elf_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "output": ".cache/behavior76/native-local-response-v10-r2",
+  "formal_source_scorer_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+  "preserved_formal_commit": "9a0ce2daa7e61501db12d9e11ccf4a8fe993f63e",
+  "formal_semantic_source": "99778a4f8fafc1439f8d045467b7240dfa2490d6",
+  "literal_binding_audit_sha256": "aa4611eef38371b2455d18027fe7b7bd4c5f882b421b529a82f89e8a186a5e1f",
+  "source_files_verified": 69,
+  "literal_substitutions": 2,
+  "wrapper_path_changes": 0,
+  "runtime_checker_pins": [
+    {
+      "sha256": "2241e8d023b6f00e28dbfc4599a74d5d2b571bf1bb2667faf0de5c1c7f85fd39",
+      "path": "local-model-proof-reader-v4.ps1"
+    },
+    {
+      "sha256": "4e6bdc53519a1d9dce02a10e2c5a8887becbed8205e791c16c11d13d233c344a",
+      "path": "local-tail-adapter-v4.ps1"
+    },
+    {
+      "sha256": "35b2734bb3ccc3c381de2d796a0d1d1a09779615c5ada2e26d67be37a081ee25",
+      "path": "local-scoring-composition-v4.ps1"
+    },
+    {
+      "sha256": "d8ef5be5485d2ae515f435bd5e3ef87a261a089c58e422350b41e117956745ab",
+      "path": "authority-stream-scoring-v2d.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "score-mechanical-fresh-v3.ps1"
+    }
+  ],
+  "criteria_AST_statements": 27,
+  "quality_thresholds_changed": false,
+  "protocol": {
+    "path": "docs/testing/issue76-local-response-protocol.md",
+    "sha256": "9c7cc9b5e00f00d3b15ddbf7c7fd07f66a89c56cf3be69b4139aa15dcbaecd2f",
+    "response_mode": "whole_fixture_after_exact_response_rejection_v1",
+    "index": "behavior76-checker-index-v5-local-response-tail",
+    "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+    "binding": "fixture-local-response-v10"
+  },
+  "corpus": {
+    "interface": "frozen Episode/Step v1",
+    "families": 12,
+    "original_steps": 69,
+    "owner_turns_per_episode": 2,
+    "paired_arms": 48,
+    "formal_freeze_issued_utc": "2026-10-26T17:41:52.8375626Z",
+    "first_private_authoring_utc": "2026-10-27T00:52:25.3260609+07:00",
+    "final_construction_started_utc": "2026-10-27T00:52:53.7585829+07:00",
+    "stimuli_sha256": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+    "version": "issue76-independent-local-response-v10-r2-commitment-v1",
+    "provenance": "synthetic",
+    "native_admission": false,
+    "positive_per_family": 1,
+    "stimuli_path": "hidden-local-response-v10-r2/stimuli.jsonl",
+    "post_preserved_freeze_authorship": true,
+    "completed_utc": "2026-10-27T00:52:54.0055817+07:00",
+    "paired_original_steps": 138,
+    "expectations_sha256": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642",
+    "planned_owner_opportunities": 96,
+    "negative_per_family": 1,
+    "episodes": 24,
+    "formal_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+    "freeze_preserved_git_commit": "9a0ce2daa7e61501db12d9e11ccf4a8fe993f63e",
+    "expectations_path": "hidden-local-response-v10-r2/expectations.jsonl"
+  },
+  "completed_original_gates": {
+    "composition_arms_PASS": 48,
+    "paired_steps": 138,
+    "Public_top_PASS": 59,
+    "SKIP": 0,
+    "native_auth": 0,
+    "same_bound_ELF": true,
+    "vet_exit": 0,
+    "actual_gate_pins": [
+      {
+        "receipt_path": ".cache\\behavior76\\local-response-v10-r2-setup-v1-receipt.json",
+        "receipt_sha256": "b6b5613ba6a5495d962047df74b15353be0b9749fd04ab2c185acf39ed65b20d",
+        "kind": "setup",
+        "log_sha256": "884f5afb8af2f6b1894ec368dc15b34ee194e980ca43013d09dcd1d1a22ac112"
+      },
+      {
+        "receipt_path": ".cache\\behavior76\\local-response-v10-r2-composition-v1-receipt.json",
+        "receipt_sha256": "1b539b7b7e52e40a270787334598a90acb8238597612b00bfa316fc15783ccb9",
+        "kind": "composition",
+        "log_sha256": "e7b5408eaee3e929722d1299571e1380a07b2f8c84d6d9b94deca1070251a6f1"
+      }
+    ],
+    "original_steps": 69,
+    "owner_opportunities": 96,
+    "checker_PASS": 298,
+    "race_warning": 0,
+    "setup_cases_PASS": 24,
+    "FAIL": 0
+  },
+  "composition_exposure_receipt": {
+    "sha256": "e142f8abe6ae4498c70598e3d1db58ff065fc5d80143fc3682e0ba2665d50647",
+    "path": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r2-composition-exposure-v1.json"
+  },
+  "history": {
+    "null_usage": 10,
+    "old_raw_byte_proof": [
+      {
+        "files": 383,
+        "inventory_sha256": "045adc74308ea3faf3024e2b8070cd97aa9ea1470e0bce025354d88b72dfb879",
+        "bytes": 15898119,
+        "window": "native-local-http-v9",
+        "all_raw_bytes_equal": true
+      },
+      {
+        "files": 1253,
+        "inventory_sha256": "c85f02ef8e3555f1043c4698f48f1bfa0e3af6670fb269fd7a20c3d83c4f2d00",
+        "bytes": 41807566,
+        "window": "native-local-model-v8",
+        "all_raw_bytes_equal": true
+      }
+    ],
+    "SQL_path": ".cache\\behavior76\\check-closed-local-http-v9-history-v1.sql",
+    "measured": 713,
+    "read_only_ROLLBACK": true,
+    "old_failures_unknowns_unresolved_latency_retained": true,
+    "known_full_tokens": 5626388,
+    "actual_SQL_log_path": ".cache\\behavior76\\local-response-v10-r2-closed-history-v1.log",
+    "v9_no17": true,
+    "admissions": 723,
+    "prior707_unchanged": true,
+    "actual_SQL_log_sha256": "4c3e3ad40fe36a35610ef60b34f5984e215090c9c1af06f49ececa3add1ea6da",
+    "closed_windows": 10,
+    "SQL_sha256": "5ff4cba3d0acde85661af4d62d0fdd97da838dc698ff04e8dd5be31ea6c82d39",
+    "failed_original_v10_pre_native": {
+      "native_auth": 0,
+      "original_low_level_cause": "UNKNOWN",
+      "arms": 47,
+      "planned_turns": 96,
+      "observed_turns": 95
+    },
+    "checker_did_not_query_PG": true
+  },
+  "limits": {
+    "authority_connections": 1,
+    "window_hours": 4,
+    "entries_per_run": 4,
+    "fixture_minutes": 20,
+    "authority_watchdog_millis": 750,
+    "entries_per_owner_slot": 8,
+    "cumulative_admission_ceiling": 1491,
+    "business_connections": 9,
+    "model_seconds": 120,
+    "native_entries": 768
+  },
+  "launcher": {
+    "path": ".cache/behavior76/execute-local-response-v10-r2-once.ps1",
+    "sha256": "d5c9272596f912b544b1963b933f5da5cf8b4cbb4d8dbd7ba8a43c8616c02a14",
+    "marker_verified_absent": true,
+    "no_rebuild_after_admission": true,
+    "exclusive_CreateNew": true,
+    "consumed_marker": ".cache/issue76-independent/local-response-v10-r2-admission-consumed-v1.json"
+  },
+  "output_verified_absent": true,
+  "mandatory_existing_preentry_guards": "Exact10closed/723full original rows/raw hashes; resource/research build/settings/source/ELF guards; actual Go+PostgreSQL UTCday-fit of full original4h including pre-entry. Latest<=20:00UTC. No budget/deadline/authority extension/refund.",
+  "local_stop_union": "Old exact empty FIRST, exact confirmed HTTP-no-response, exact13 response-format/finish rejections, or classified effectUNKNOWN only. Faithful known usage/version retained, NULL unknown. Exact EOF/current source+authority+context/durable journal+root witness/mutex cutoff/drain required. Whole original arm stops; no next same-arm admission; original tail UNAVAILABLE, never success/expected-denialPASS; criticalUNKNOWN neverPASS.",
+  "global_priority": "All other provider/auth/source/authority/context/deadline/budget/storage/journal/hash/observer/isolation/quiescence/bounds faults, including late terminal-write or claim-worker faults, GLOBAL. No arbitrary cancellation/SQL exception.",
+  "reporting": "Full48arms/96owner/12families denominator; owner/automatic outcomes/effects/cost/communication distinct. Retain partial attempts, unknown expense and all late faults. No retry/replay/replacement/resampling/window reopen.",
+  "operational_profile": "Parent own heavy/Go/build/PG/21/115/container work declared paused; Docker stopped; unrelated user/agent work not claimed absent. Parent runtime18:06UTC other activePGclients0/free1245972KiB is snapshot, actual preentry resource guards remain mandatory.",
+  "masked_review": "No live quality/response/golden/mapping inspection. Closed immutable evidence first, fullplanned masked judgments sealed before mapping.",
+  "checker_Go_PG_auth_native_operations": 0,
+  "extra_formal_gates_added": false,
+  "rejected_fault_test_retried": false,
+  "quality_promotion_deployment_or_issue_closure": false
+}

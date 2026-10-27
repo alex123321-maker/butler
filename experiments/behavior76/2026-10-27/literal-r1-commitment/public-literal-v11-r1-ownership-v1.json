@@ -1,0 +1,29 @@
+{
+  "version": "issue76-literal-v11-r1-public-metadata-v1",
+  "synthetic_only": true,
+  "formal_freeze_sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+  "freeze_preservation_commit": "872545387dc4b4e55f51314592e8c148efff583c",
+  "semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "stimuli_sha256": "9bc4872c85fb6b2d5e1a1b84b94b24a6a1e6d64ae749d527cbf5698431ca5d0c",
+  "expectations_sha256": "f20937430079aa6c259a6917f9f1ab846875b4baff71c58cf4c72e4d1ff49865",
+  "candidate_and_27criteria_thresholds_unchanged": true,
+  "actual_native_admission": false,
+  "new_model_provider_Go_PG_Docker_auth_operations": 0,
+  "private_case_contents_or_expectations_in_this_metadata": false,
+  "kind": "CHECKER_OWNED_HOLDOUT_FILES",
+  "stimuli_path": ".cache/issue76-independent/hidden-literal-v11-r1/stimuli.jsonl",
+  "expectations_path": ".cache/issue76-independent/hidden-literal-v11-r1/expectations.jsonl",
+  "case_author": "independent checker agent /root/issue76_independent",
+  "parent_implementation_author_has_not_been_sent_contents": true,
+  "baseline_candidate_arm_mapping_exists_for_this_new_study": false,
+  "stimuli_are_intended_for_runner_only_after_binding": true,
+  "expectations_are_checker_only": true,
+  "private_generator_seed_record_and_checks_not_for_parent_publication": true,
+  "public_allowlist_only": [
+    "public-commitment-literal-v11-r1.json",
+    "public-literal-v11-r1-structure-v1.json",
+    "public-literal-v11-r1-freshness-v1.json",
+    "public-literal-v11-r1-authoring-provenance-v1.json",
+    "public-literal-v11-r1-ownership-v1.json"
+  ]
+}

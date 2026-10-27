@@ -1,0 +1,138 @@
+{
+  "version": "issue76-independent-terminal-observer-causal-reproduction-v1",
+  "decision": "OLD_CORE_SELF_REVOCATION_REPRODUCED_NOT_ACCEPTANCE_PASS",
+  "created_utc": "2026-10-26T12:03:34.5156262+00:00",
+  "baseline_head": "a7ec560a43178e0ba906d1c65f7478818cd0e9f7",
+  "source_files": [
+    {
+      "sha256": "2103ab7f531977110c180fc47c4ff4688b82f35ed5cb3c4f00bd82f0f9d3731e",
+      "archive": "baseline-behavior76_terminal_observer_integration_test.go",
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_observer_integration_test.go"
+    },
+    {
+      "sha256": "ac78530c206eb7bba2779878f9bb5ead0732fb5213f3cee4d454008f05b20598",
+      "archive": "baseline-behavior76_collect_test.go",
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go"
+    },
+    {
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77",
+      "archive": "baseline-behavior76_fixture_test.go",
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go"
+    },
+    {
+      "sha256": "de1d0e006888739868641e15f9e8f4e223097f03c807017d1049bf2c4e73c0b6",
+      "archive": "baseline-service_state.go",
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go"
+    },
+    {
+      "sha256": "de20b9ba349eeea76975a5188915fde40c40a9aed7ae08a64b17f6c7fb716e30",
+      "archive": "baseline-service_execute.go",
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go"
+    },
+    {
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05",
+      "archive": "baseline-working_memory.go",
+      "path": "apps/orchestrator/internal/orchestrator/working_memory.go"
+    },
+    {
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "archive": "baseline-authority.go",
+      "path": "apps/orchestrator/internal/task/authority.go"
+    },
+    {
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4",
+      "archive": "baseline-store.go",
+      "path": "apps/orchestrator/internal/task/store.go"
+    }
+  ],
+  "artifacts": [
+    {
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "bytes": 1800,
+      "path": "baseline-authority.go"
+    },
+    {
+      "sha256": "ac78530c206eb7bba2779878f9bb5ead0732fb5213f3cee4d454008f05b20598",
+      "bytes": 29177,
+      "path": "baseline-behavior76_collect_test.go"
+    },
+    {
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77",
+      "bytes": 24423,
+      "path": "baseline-behavior76_fixture_test.go"
+    },
+    {
+      "sha256": "2103ab7f531977110c180fc47c4ff4688b82f35ed5cb3c4f00bd82f0f9d3731e",
+      "bytes": 6930,
+      "path": "baseline-behavior76_terminal_observer_integration_test.go"
+    },
+    {
+      "sha256": "de20b9ba349eeea76975a5188915fde40c40a9aed7ae08a64b17f6c7fb716e30",
+      "bytes": 23991,
+      "path": "baseline-service_execute.go"
+    },
+    {
+      "sha256": "de1d0e006888739868641e15f9e8f4e223097f03c807017d1049bf2c4e73c0b6",
+      "bytes": 6654,
+      "path": "baseline-service_state.go"
+    },
+    {
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4",
+      "bytes": 20457,
+      "path": "baseline-store.go"
+    },
+    {
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05",
+      "bytes": 9512,
+      "path": "baseline-working_memory.go"
+    },
+    {
+      "sha256": "d4ac8d206bfa1e04cc14287961b98d9ae330a6921d721ff10f16e78816642deb",
+      "bytes": 153,
+      "path": "binary-sha256.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "build.log"
+    },
+    {
+      "sha256": "d464f4b611d86c0663b95e136b57f4872b56ed18df70aa7219d89b8037e61c5a",
+      "bytes": 147,
+      "path": "exit.json"
+    },
+    {
+      "sha256": "ec78066d25a39589a140386f6598d012f8de76a5cf5629d43edcacf6047db094",
+      "bytes": 1898,
+      "path": "run-terminal-observer-legacy-v1.sh"
+    },
+    {
+      "sha256": "cd95073b29cfed3fd23644b5f5d259a59b873cf21f6520e6e0ec457507f6ae1f",
+      "bytes": 2010,
+      "path": "test.log"
+    }
+  ],
+  "test": "TestBehavior76TerminalObserverLegacyDiagnosticIntegration",
+  "diagnostic_exit": 0,
+  "diagnostic_runtime_seconds": 5.68,
+  "race_warning": false,
+  "actual_PostgreSQL": true,
+  "ordinary_Input_Core_Store": true,
+  "synthetic_provider_calls": 1,
+  "native_model_auth_calls": 0,
+  "actual_store_commit": {
+    "run_state_before_transition": "model_running",
+    "semantic_revision_delta": 1,
+    "task_status": "blocked"
+  },
+  "actual_watcher_error": "task.ErrConflict",
+  "actual_authority_CancelRun_before_hold_release": true,
+  "production_source_modified_by_checker": false,
+  "test_only_helper_changes": "Optional explicit task.Manager override; old callers unchanged",
+  "old_public_failure_log": "local-response-v10-public-v1.log retained separately",
+  "historical_native_root_causes_reclassified": false,
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "new_native_admission": false,
+  "next": "Parent may now apply and review distinct observer-quiesce repair; preserved legacy diagnostic must not become acceptance requiring the old bug."
+}

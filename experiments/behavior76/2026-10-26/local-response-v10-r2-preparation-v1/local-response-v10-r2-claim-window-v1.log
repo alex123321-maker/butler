@@ -1,0 +1,23 @@
+=== RUN   TestBehavior76LocalResponseClaimWindowIntegration
+2026/10/26 17:31:56 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 17:31:56 INFO postgres connected component=postgres
+2026/10/26 17:31:56 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 17:31:57 INFO run created component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 session_key=behavior76:public-development:A state=created
+2026/10/26 17:31:57 INFO run transitioned component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 from_state=created to_state=queued
+2026/10/26 17:31:57 INFO run transitioned component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 from_state=queued to_state=acquired
+2026/10/26 17:31:57 INFO run transitioned component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 from_state=acquired to_state=preparing
+2026/10/26 17:31:57 INFO run transitioned component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 from_state=preparing to_state=model_running
+2026/10/26 17:31:57 INFO model turn usage observed component=orchestrator-run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 operation_id=operation_4553f5fd8a3e8904db46674df9b38a5f4cbdb4e9942da960 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/26 17:31:57 INFO run transitioned component=run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 from_state=model_running to_state=finalizing
+2026/10/26 17:31:57 INFO run completed component=orchestrator-run run_id=run-1793035917367400329-ecb1b0e0ef89e1c4 session_key=behavior76:public-development:A
+2026/10/26 17:31:58 INFO run created component=run run_id=run-1793035918111717343-a0862ed7f07181a4 session_key=behavior76:public-development:A state=created
+2026/10/26 17:31:58 INFO run transitioned component=run run_id=run-1793035918111717343-a0862ed7f07181a4 from_state=created to_state=queued
+2026/10/26 17:31:58 INFO run transitioned component=run run_id=run-1793035918111717343-a0862ed7f07181a4 from_state=queued to_state=acquired
+2026/10/26 17:31:58 INFO run transitioned component=run run_id=run-1793035918111717343-a0862ed7f07181a4 from_state=acquired to_state=preparing
+2026/10/26 17:31:58 INFO run transitioned component=run run_id=run-1793035918111717343-a0862ed7f07181a4 from_state=preparing to_state=model_running
+2026/10/26 17:31:58 INFO model turn usage observed component=orchestrator-run run_id=run-1793035918111717343-a0862ed7f07181a4 operation_id=operation_08ada07ee27a72240f1416de23dfd7e78bfe2fdd6797f110 input_tokens=1 output_tokens=1 total_tokens=2
+2026/10/26 17:31:58 INFO run transitioned component=run run_id=run-1793035918111717343-a0862ed7f07181a4 from_state=model_running to_state=finalizing
+2026/10/26 17:31:58 INFO run completed component=orchestrator-run run_id=run-1793035918111717343-a0862ed7f07181a4 session_key=behavior76:public-development:A
+2026/10/26 17:31:58 INFO closing postgres pool component=postgres total_conns=3
+--- PASS: TestBehavior76LocalResponseClaimWindowIntegration (4.75s)
+PASS

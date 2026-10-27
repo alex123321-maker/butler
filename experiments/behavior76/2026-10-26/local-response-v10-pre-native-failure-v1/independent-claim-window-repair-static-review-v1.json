@@ -1,0 +1,66 @@
+{
+  "version": "issue76-independent-claim-window-repair-static-review-v1",
+  "decision": "NO_CONCRETE_STATIC_BLOCKER_FOUND_PENDING_PARENT_ORDINARY_GATES",
+  "created_utc": "2026-10-26T17:33:16.7511586+00:00",
+  "source_state": "parent repair draft; not frozen or admitted",
+  "source_files": [
+    {
+      "sha256": "cb09ecfbe29392de6530e65bbd02dd3dae150fce3b15523b028125fb69adfc62",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go"
+    },
+    {
+      "sha256": "e34d5a7436c1dbba2bfc3fc56769e666d7c004fd131b905c8e82b349aea6974c",
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go"
+    },
+    {
+      "sha256": "bfca8a504293a8ecbcd17d56d218ce0c5304d4c71cdb885f79162ec31df3b3ff",
+      "path": "apps/orchestrator/internal/app/behavior76_claim_window_test.go"
+    },
+    {
+      "sha256": "eff6538e356c33feaf54debdf743a05caa73ac6456a86d94f14f0ac6f727ccaa",
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go"
+    },
+    {
+      "sha256": "bdf287e682a3e446ff073fe22de2d4ecf97e953aad24c84c82ede287565a245e",
+      "path": "scripts/dev/behavior-local-run.sh"
+    }
+  ],
+  "reviewed_properties": [
+    "per-evaluation closed flag and queue claim use same scope.mu",
+    "closing one window does not set fixture scope.closed or grant new authority",
+    "normal terminal/no-pending path joins actual claim/process workers before cancelling idle Run",
+    "error/global exits close admission then retain immediate cancellation",
+    "join and worker errors remain joined; final scope.check uses original live fixture context",
+    "run-capture defer executes after cleanup, so newly claimed work winning before close is joined and included",
+    "blocked/waiting inputs are not resumed or rewritten",
+    "new public successful close regression uses only live contexts then two scripted owner turns",
+    "day controls are UNBOUND_FRESH_V10_R2 placeholders with fixed hidden-local-response-v10-r2 paths; no old dataset admission"
+  ],
+  "limits_or_criteria_or_scorer_changes": false,
+  "current_parent_test_result": "PENDING; no result claimed by checker",
+  "new_Go_PG_auth_native_calls_by_checker": 0,
+  "new_source_or_tests_authored_by_checker_after_rejection": false,
+  "automatic_approval_review_rejection": {
+    "detailed_reason_not_supplied": true,
+    "reported_by_parent": true,
+    "action_not_retried_or_rephrased": true,
+    "rejected_tests_created_or_executed": false,
+    "ordinary_static_review_only": true,
+    "action": "proposed new fault-injection test authoring"
+  },
+  "previous_authorized_baseline_diagnostic": {
+    "receipt_sha256": "beaae1caa2172f611e40d407b3dda72faeadb9084e9914d4f9ff9b3c13d5dcb6",
+    "status": "old schedule reproduced before rejection; not acceptance of new repair"
+  },
+  "original_v10_failure": {
+    "planned_owner_turns": 96,
+    "observed_counted_owner_turns": 95,
+    "completed_arms": 47,
+    "retrospective_reclassification": false,
+    "original_low_level_cause": "UNKNOWN",
+    "native_auth_calls": 0
+  },
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "native_admission": false
+}

@@ -1,0 +1,81 @@
+{
+  "version": "issue76-offline-stream-diagnostics-independent-review-v1",
+  "parent_head": "28440454dce6ac5c8647fa7549e4a1ef281b7d4d",
+  "scope": "Uncommitted diagnostic-only patch; no historical quality/control/mapping access",
+  "decision": "NO_CONCRETE_BLOCKER_IN_REVIEWED_DIFF",
+  "source_pins": [
+    {
+      "path": "internal/transport/antigravity/provider.go",
+      "sha256": "aaa7615bb7563ad5551a32e764b137902adc0fbca5ef3585c2df1b2cf72f58be"
+    },
+    {
+      "path": "internal/transport/antigravity/protocol.go",
+      "sha256": "e3fb4929b9f5e5e3bbe373117040550bba10a853698c8805684ad541b6abede5"
+    },
+    {
+      "path": "internal/transport/antigravity/stream_diagnostics.go",
+      "sha256": "50805463e2de0dde5140d8b1cf9106826fc8f57561fe80e31b2ec1f44531b6a7"
+    },
+    {
+      "path": "internal/transport/antigravity/stream_diagnostics_test.go",
+      "sha256": "f75c26f4fb6c09bd02d64e9d429aa3f17ecabcc014f4b82d717a3b2e1dbeb26b"
+    },
+    {
+      "path": "internal/transport/antigravity/provider_test.go",
+      "sha256": "7429963ff1a1c2a17808996a2f5bd156dd9479cfc1da052ce7858be9f6cfd7b1"
+    },
+    {
+      "path": "internal/transport/errors.go",
+      "sha256": "0798b5f1e2ce5209c9ec7ebba5f154c26cd52386796060fef6e8134d52c99e0a"
+    },
+    {
+      "path": "internal/transport/antigravity/README.md",
+      "sha256": "282e70d6108c114d3a3d29af9dd1607f1de46a10a97105582a6fb60fee5d17ea"
+    },
+    {
+      "path": "docs/architecture/model-transport-contract.md",
+      "sha256": "82f0962e66e182db6aec1e350923716df4f37084ffd6ffa28ba630b4f1ff75cb"
+    }
+  ],
+  "source_copy_matches_current": true,
+  "independent_test": {
+    "package_seconds": 1.122,
+    "subcases": 10,
+    "race": true,
+    "test_seconds": 0.07,
+    "name": "TestIndependentStreamDiagnosticBoundaries",
+    "exit_code": 0,
+    "artifacts": [
+      {
+        "path": ".cache/issue76-independent/sse-diagnostic-review-v1/run.log",
+        "sha256": "06cd5e4798443e854a17c8d0f6e0497abe7ad82ed9667fd3a726355a9840204a"
+      },
+      {
+        "path": ".cache/issue76-independent/sse-diagnostic-review-v1/run.sh",
+        "sha256": "902562171b88169248314c02fb64525ad58599da30d7ccc7fd81f4ac40bc65be"
+      },
+      {
+        "path": ".cache/issue76-independent/sse-diagnostic-review-v1/antigravity/independent_stream_diagnostics_test.go",
+        "sha256": "9d390af72330a99f8d289f98edd027aabd5de86ff845f2bf79c59c6088c5bed3"
+      }
+    ]
+  },
+  "findings": [],
+  "limitations": [
+    "stream_terminal_missing retains preexisting aggregation of scanner errors, total-byte limit, incomplete frame, and absent terminal; stream_frame_limit identifies only the explicit accumulated-frame bound",
+    "The emitted category identifies local rejection, not upstream-vs-adapter fault origin",
+    "New diagnostics cannot recover historical missing reason/subtype or qualify incomplete day-v6 outcomes"
+  ],
+  "unchanged": [
+    "SSE/parser implementation",
+    "usage retention",
+    "retry policy",
+    "request admission",
+    "error type and retryable flag",
+    "provider HTTP/auth/model settings"
+  ],
+  "no_native": true,
+  "no_pg": true,
+  "no_auth_or_private_key_access": true,
+  "no_parent_source_edits": true
+}

@@ -1,0 +1,32 @@
+{
+  "version": "issue76-r3-expanded-publication-exposure-audit-v1",
+  "issued_utc": "2026-10-26T22:30:06.805687+00:00",
+  "all_original_files_hash_checked": 3761,
+  "expanded_text_bytes": 1255825718,
+  "json_records_parsed": 2780922,
+  "patterns_counts": {
+    "private_key": 0,
+    "authorization_header": 0,
+    "jwt": 0,
+    "google_access_token": 0,
+    "google_refresh_token": 0,
+    "api_key": 0,
+    "credential_assignment": 0
+  },
+  "nonempty_credential_property_counts": {},
+  "forbidden_paths": [],
+  "pattern_flagged_paths": {
+    "private_key": [],
+    "authorization_header": [],
+    "jwt": [],
+    "google_access_token": [],
+    "google_refresh_token": [],
+    "api_key": [],
+    "credential_assignment": []
+  },
+  "json_parse_failure_paths": [],
+  "non_utf8_paths": [],
+  "raw_inventory_sha256": "98447bb97b8f43b7932f6a25baa8fee0835dd4035f4bd693e3cb222d54c4dc4b",
+  "scope": "All raw bytes including decompressed authority gzip segments; exact keys and fixed credential formats only. No secret values emitted. Allowlisted synthetic fixture export source separately reviewed.",
+  "limitation": "No finite pattern scan proves universal absence of secrets, PII, or memorized model text. Synthetic control content, model answers, prompt/code snippets, operational paths, IDs, expired fixture ownership tokens and historical synthetic attempts are in raw; publication consumes the holdout. Raw does not include private goldens, checker judgments, arm mapping file, auth/settings, credential stores or PG dumps."
+}
