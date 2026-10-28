@@ -1,0 +1,25 @@
+{
+  "collector_source": "55d46e4b6e75f1e6caca0e3276fe03c6f67f41b6",
+  "source_archive_sha256": "c28c2e32306135fb80fdb185df7a3db927c4201eac99162b9cfbaa46dae9e241",
+  "preseal_sha256": "30acfb4f8ae5260a7e3675822247672d3dde178057d7292d54b0166200ab893c",
+  "history_sha256": "0308c67a29068c468d332cca87de140b9a34bf5bdbd42bbfc002d2ae7735cafb",
+  "operator_sha256": "98d2cec323dfd031c0ae36d9a1fcae97e0802e94df0ac8d3b374a77ede7819b7",
+  "binaries": {
+    "recipient": "bc50fd6578e91c5673c423fbc1fb2965556f31af93c63261ce1562a005cf4a1d",
+    "broker": "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c",
+    "broker_control": "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307",
+    "extension": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "http": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca"
+  },
+  "execution_slots": 57,
+  "control_slots": 48,
+  "control_repetitions": 2,
+  "previous_closed_native_entries": 503,
+  "previous_closed_unknown_usage": 3,
+  "previous_closed_known_full_tokens": 4320708,
+  "separate_diagnostic_native_entries": 25,
+  "separate_diagnostic_known_full_tokens": 90951,
+  "older_separate_diagnostics": "NULL / 4175 / 3389 observations retained in the original sealed diagnostic receipt",
+  "collection_complete": false,
+  "release_qualified": false
+}
