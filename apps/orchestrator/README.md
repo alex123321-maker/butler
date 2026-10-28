@@ -1,3 +1,12 @@
+Core records one bounded post-effect observation after a correlated UNKNOWN
+click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
+grant under current authority and a clipped five-second deadline. It contains
+only the original browser session ID. Durable observer markers prevent replay
+or model resumption, including a crash at the read dispatch checkpoint. The
+original effect stays unknown and the run remains blocked; the observation is
+not a submission receipt. Missing permission/approval, lost ACK or quarantined
+resources remain unavailable. See the browser/session and run lifecycle specs.
+
 Core's configured PostgreSQL connection cap now separates lease/Task authority
 from longer source observations: with a cap of at least4, reserve one for each
 and keep at least2 for business work. At the supported minimum of3, source

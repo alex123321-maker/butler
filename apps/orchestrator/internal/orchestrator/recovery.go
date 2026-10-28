@@ -34,10 +34,11 @@ type storedCheckpoint struct {
 		ApprovalID string `json:"approval_id"`
 	} `json:"continuation"`
 	Data struct {
-		FinalMessage     string `json:"final_message"`
-		AnswerState      string `json:"answer_state"`
-		TerminalObserved bool   `json:"terminal_observed"`
-		ToolCallID       string `json:"tool_call_id"`
+		FinalMessage     string          `json:"final_message"`
+		AnswerState      string          `json:"answer_state"`
+		TerminalObserved bool            `json:"terminal_observed"`
+		ToolCallID       string          `json:"tool_call_id"`
+		UncertainBrowser json.RawMessage `json:"uncertain_browser"`
 	} `json:"checkpoint_data"`
 }
 
@@ -157,6 +158,12 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return blockedApprovalResult(current, "communication_correction_not_resumable"), nil
 	}
 	modelRetry := stage == "model_retry_pending" && checkpoint.ModelRetry.Count == 1 && checkpoint.ModelRetry.State == "claimed"
+	if len(checkpoint.Data.UncertainBrowser) != 0 || stage == "browser_outcome_observing" || stage == "browser_outcome_observed" {
+		if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
+			return nil, blockErr.withPreceding(ErrActionOutcomeUnknown)
+		}
+		return uncertainResult(current), nil
+	}
 	if !modelRetry && !guardedSelection && !interactionWait && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
 		if blockErr := s.blockTaskRun(ctx, runID, "checkpoint_not_resumable"); blockErr != nil {
 			return nil, blockErr.withPreceding(err)

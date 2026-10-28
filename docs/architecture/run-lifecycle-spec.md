@@ -1,5 +1,19 @@
 # Butler — Run Lifecycle Specification
 
+## One post-effect browser observation
+
+After a durably recorded, correlated UNKNOWN click/fill/type response, Core can
+make one Broker-mediated `browser.freeze_snapshot` read before its normal block.
+This is kernel-owned observation, not a model proposal or a wider mandate.
+The original action ID remains in `browser_outcome_observing/observed`
+checkpoints; a separate deterministic read-call ID receives its own permanent
+slot, grant, budget accounting and tool transcript. No input/credential values
+are copied. The read stays under current authority and a clipped five-second
+deadline; approval requirements or unavailable permission prevent dispatch.
+No provider continuation, final success or additional action follows. Recovery
+from either checkpoint blocks on `effect_unknown`, even if the read succeeded;
+it never retries the read or the original interaction. See the browser contract.
+
 ## Joining supervision before terminal task mutation
 
 Once no model/tool work remains, Core joins the current run's lease/authority

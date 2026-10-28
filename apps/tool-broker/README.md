@@ -1,5 +1,11 @@
 # Tool Broker
 
+`browser.freeze_snapshot` is a fixed revision1 credential-free read, with its
+own ordinary action/grant/budget and current session/control-epoch checks. It
+cannot reconcile an old write, borrow its grant or bypass resource quarantine.
+The optional controlled-browser profile must explicitly pin the new contract
+hash like every other protected operation.
+
 Revision2 `browser.submit_get_form` and `browser.follow_link` are guarded public
 GET observations. Exact contracts forbid credential references and opaque/write
 policy; standing public-web release consent is checked before dispatch. They

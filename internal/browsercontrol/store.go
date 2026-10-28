@@ -84,7 +84,7 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 		_, err := s.Pool.Exec(ctx, `UPDATE server_browser_sessions SET mode='closed',epoch=epoch+1,controller_hash='',updated_at=clock_timestamp() WHERE browser_session_id=$1 AND run_id=$2`, args.ID, call.GetRunId())
 		return err
 	}
-	if call.GetToolName() == "browser.snapshot" || call.GetToolName() == "browser.extract_text" {
+	if call.GetToolName() == "browser.snapshot" || call.GetToolName() == "browser.freeze_snapshot" || call.GetToolName() == "browser.extract_text" {
 		epoch, ok := admittedEpoch(ctx)
 		if !ok {
 			return ErrDenied
@@ -137,7 +137,7 @@ func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (contex
 			return ctx, ErrDenied
 		}
 		if mode == "agent" {
-			if fresh && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.close" {
+			if fresh && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.freeze_snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.close" {
 				return ctx, ErrDenied
 			}
 			return WithDispatchEpoch(ctx, epoch), nil

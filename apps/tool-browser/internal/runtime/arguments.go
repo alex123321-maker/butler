@@ -14,6 +14,9 @@ func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredentia
 	if err := json.Unmarshal([]byte(payload), &raw); err != nil || raw == nil {
 		return Request{}, fmt.Errorf("browser args must be a JSON object")
 	}
+	if tool == "browser.freeze_snapshot" && (len(raw) != 1 || raw["browser_session_id"] == nil || len(resolved) != 0) {
+		return Request{}, fmt.Errorf("frozen observation accepts only an existing browser session")
+	}
 	var req Request
 	safe := make(map[string]json.RawMessage)
 	for _, key := range []string{"browser_session_id", "url", "expected_url", "observation_version", "selector", "timeout"} {

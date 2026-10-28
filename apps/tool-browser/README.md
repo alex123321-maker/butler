@@ -1,5 +1,11 @@
 # Tool Browser
 
+`browser.freeze_snapshot` revision1 closes all proxy connections and freezes
+helper routes before a non-navigating observation of the same document. It
+retains redaction and permanently excludes GET form/link thawing of that
+context. It accepts only its existing session ID and no credentials. This
+observation never proves a previous submission/login or effect reconciliation.
+
 Secret fill/type additionally return `credential_verified` after comparing the
 actual field with the private Broker-resolved value. Mismatch fails without
 exporting input values, lengths or hashes. Preparation retains its frozen-network

@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "parent_commit": "21488db0",
+  "branch": "codex/browser-uncertain-observation",
+  "final_source_snapshot": "20261029-001451-040",
+  "final_attempt": "20261028T171634Z-2209492",
+  "go_pg_race": {
+    "passed_tests_and_subtests": 40,
+    "skipped": 0,
+    "failed": 0,
+    "packages": [
+      {
+        "package": "github.com/butler/butler/apps/orchestrator/internal/input",
+        "passed": 11
+      },
+      {
+        "package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+        "passed": 12
+      },
+      {
+        "package": "github.com/butler/butler/apps/tool-broker/internal/registry",
+        "passed": 2
+      },
+      {
+        "package": "github.com/butler/butler/apps/tool-browser/internal/runtime",
+        "passed": 6
+      },
+      {
+        "package": "github.com/butler/butler/internal/actionauth",
+        "passed": 9
+      }
+    ]
+  },
+  "chromium": {
+    "passed_tests_and_subtests": 11,
+    "broker_passed": 2,
+    "required_skips": 0
+  },
+  "attempts": [
+    {
+      "attempt": "20261028T170752Z-2167651",
+      "exit_code": 1,
+      "phases": [
+        {
+          "phase": "pg_race",
+          "duration_ms": 30200,
+          "exit_code": 0
+        },
+        {
+          "phase": "vet",
+          "duration_ms": 7970,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_browser",
+          "duration_ms": 2310,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_broker",
+          "duration_ms": 4410,
+          "exit_code": 0
+        },
+        {
+          "phase": "chromium",
+          "duration_ms": 6790,
+          "exit_code": 1
+        }
+      ]
+    },
+    {
+      "attempt": "20261028T171042Z-2181166",
+      "exit_code": 1,
+      "phases": [
+        {
+          "phase": "compile_browser",
+          "duration_ms": 1340,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_broker",
+          "duration_ms": 1160,
+          "exit_code": 0
+        },
+        {
+          "phase": "chromium",
+          "duration_ms": 6800,
+          "exit_code": 0
+        },
+        {
+          "phase": "broker_chromium",
+          "duration_ms": 1780,
+          "exit_code": 1
+        }
+      ]
+    },
+    {
+      "attempt": "20261028T171337Z-2195273",
+      "exit_code": 1,
+      "phases": [
+        {
+          "phase": "compile_browser",
+          "duration_ms": 1000,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_broker",
+          "duration_ms": 2340,
+          "exit_code": 0
+        },
+        {
+          "phase": "broker_chromium",
+          "duration_ms": 1930,
+          "exit_code": 1
+        }
+      ]
+    },
+    {
+      "attempt": "20261028T171521Z-2203639",
+      "exit_code": 0,
+      "phases": [
+        {
+          "phase": "compile_browser",
+          "duration_ms": 950,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_broker",
+          "duration_ms": 1130,
+          "exit_code": 0
+        },
+        {
+          "phase": "broker_chromium",
+          "duration_ms": 1970,
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "attempt": "20261028T171634Z-2209492",
+      "exit_code": 0,
+      "phases": [
+        {
+          "phase": "pg_race",
+          "duration_ms": 13300,
+          "exit_code": 0
+        },
+        {
+          "phase": "vet",
+          "duration_ms": 720,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_browser",
+          "duration_ms": 970,
+          "exit_code": 0
+        },
+        {
+          "phase": "compile_broker",
+          "duration_ms": 1110,
+          "exit_code": 0
+        },
+        {
+          "phase": "chromium",
+          "duration_ms": 6760,
+          "exit_code": 0
+        },
+        {
+          "phase": "broker_chromium",
+          "duration_ms": 1970,
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "exit_code": 1,
+      "attempt": "20261028T172332Z-2240228",
+      "phases": [
+        {
+          "phase": "resources",
+          "duration_ms": 11690,
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "new_native_model_calls": 0,
+  "replayed_baseline_actions": 0,
+  "production_deployed": false,
+  "full_issue_163_accepted": false,
+  "post_login_baseline_slots": "UNEXECUTED",
+  "notes": [
+    "Fault-injection Core/PG recovery and synthetic private Chromium recipients; no native provider qualification.",
+    "First Chromium failure was a fixture allowed-domain mismatch.",
+    "First Broker failure exposed the resource fixture missing migration102; canonical empty-history schema added.",
+    "Next Broker failure exposed unsupported const in the new output schema; typed enum fixed it and a registry compatibility test was added.",
+    "All attempts and failed phase timings are retained. Final all-mode suite passed; no old baseline replay to fill metrics.",
+    "Reported phase timings use Linux monotonic uptime; they are test-command durations, not native action latency. Existing full model-inclusive 20-trial metrics remain separate.",
+    "No observer bypass of retained resource quarantine, unknown effect journal or consumed grants.",
+    "An additional resource compatibility PG/race run passed39 tests/subtests but the wrapper failed its skip gate on the unrelated native-host Chromium test; that skip/exit1 remain visible. No previous scenario was repeated to fill timing blanks."
+  ],
+  "auxiliary_resource_regression": {
+    "skipped": [
+      "TestSingleTabResourceActualChromiumNativeHostIntegration"
+    ],
+    "passed_tests_and_subtests": 39,
+    "wrapper_exit_code": 1,
+    "scope_note": "Overbroad PG selector included the separate, unchanged user-tab native-host Chromium test. Required controlled-browser suite remains 53 PASS/0 skips. The future resource PG filter explicitly excludes that different fixture; raw failed gate retained and not relabelled PASS.",
+    "failed": 0
+  }
+}

@@ -385,7 +385,7 @@ func classifyEffect(tool string, args map[string]any) Effect {
 			return EffectCommit
 		}
 		return EffectUnknown
-	case "converters.discover", "converters.collect", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
+	case "browser.freeze_snapshot", "converters.discover", "converters.collect", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return EffectRead
 	case "memory.propose_candidate", "single_tab.bind.guarded", "task.delegate", "task.delegate_converter", "converters.develop", "converters.test", "converters.trial", "converters.activate", "converters.rollback", "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
 		return EffectPrepare
