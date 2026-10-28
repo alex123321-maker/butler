@@ -287,6 +287,13 @@ resurrect a lost browser context.
 
 ## Operations and validation
 
+Stopped historical local actions have a kernel-only bounded review for the two
+explicit compatibility pins in [stopped finalization](stopped-input-finalization.md).
+It uses original canonical bindings and terminal executor locks. Immutable
+publication receipt or fenced transaction absence can resolve the local effect;
+read no-write proof leaves the read UNKNOWN. This is not a grant, refund,
+arbitrary external reconciliation API or proof of channel delivery.
+
 Migration `031_action_authorization` creates intent/grant/mandate tables. Durable
 approval bindings use the approval service/migration. Compose mounts a private
 authority token into orchestrator and Broker. Generate

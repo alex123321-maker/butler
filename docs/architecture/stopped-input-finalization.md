@@ -32,6 +32,42 @@ uncertain. Tool calls need correlated journal proof, except a finished validatio
 rejection. Missing receipts and generic runtime completion cannot resolve an
 external effect.
 
+Kernel local review supports two explicitly pinned historical revision1
+contracts, reproduced from commit `4dff78b5`: atomic `communication.message`
+(`f86dbe12464322551ff3d386412b54644fd32227fe0011f1bbac13b7db27b6fc`) and
+read-only `web.fetch`
+(`18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37aa58a4a11ff3d2`).
+These are recovery compatibility pins, not permission to execute old contracts.
+The optional Communication collaborator invokes the owning Action journal
+review inside the same finalization transaction. It requires an already failed,
+taskless, isolated Input/run, matching event/owner/session, no claim or active
+lease, original canonical intent/binding/hash/fingerprint, and no secret-backed
+or extension/converter action. At most twenty unknown effects are examined.
+
+For the pinned message protocol, a consumed UNKNOWN grant/finished dispatch is
+required. An exact immutable publication with matching owner, Input, run, call,
+versions and canonical accepted receipt proves local publication only. With
+the same session/run/Input locks held, absence of that effect's publication
+proves local ABSENT: its historical publisher requires those locks and a live
+claim at commit. An unrelated publication proves nothing about that effect.
+The append-only `stopped_publication_v1` evidence records a content-free digest;
+the old grant and dispatch stay consumed/UNKNOWN. Delivery remains separate.
+Current message contracts are not automatically covered: later implementations
+may own effects outside the publication transaction.
+
+For the pinned read-only contract, `pinned_read_no_write_v1` proves absence of
+write uncertainty. The effect and dispatch remain UNKNOWN, without a successful
+read receipt. This narrow verified-read map can release stopped write isolation;
+it cannot make the old read, run or task successful. Unsupported contracts,
+malformed/foreign receipts, arbitrary writes and live execution remain blocked.
+
+The operator-only `cmd/stopped-review` takes up to eight exact Input references,
+privately resolves its database connection, and runs this same kernel review.
+Its default dry run rolls back every change and reports the predicted
+classification separately from the durable one. `-apply` commits verified
+evidence. Explicit review skips only the maintenance cooldown. No public/model
+endpoint, new approval, synthetic oracle, replay or refund is introduced.
+
 Input records `input_stopped_attempts` and marks the attempt failed. The owning
 Communication collaborator verifies that proof, joins Run's failed transition,
 closes an open publication obligation with failure and saves a kernel audit in
@@ -39,10 +75,11 @@ the same transaction. Failure rolls back every part. Task status/verification
 are independently owned and remain unchanged.
 
 Checkpoint, original error, identity, attempts, expiry, usage, reservations,
-receipts, grants, effects, publications and delivery history are retained. No
+receipts, grants, publications and delivery history are retained. An effect
+verdict can change only through the owning verified review described above. No
 provider/runtime is called and no old claim, dispatch or model result is replayed.
 The failed Input/run cannot resume or execute an old grant. No owner
-acknowledgement, effect reconciliation or successful completion is manufactured.
+acknowledgement or successful completion is manufactured.
 
 Both known and uncertain attempt failures release the session queue. Uncertain
 records are reviewed again under the same proof/locks; they become known only

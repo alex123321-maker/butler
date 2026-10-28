@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/actionauth/stopped_local|apps/orchestrator/(cmd/stopped-review/|internal/(input/stopped_finalize|communication/stopped_(finalize|local)))|scripts/dev/(stopped-(local-(tests[.]ps1|review[.]sh)|continuation-tests[.]sh)|browser-stops-inventory[.]sh))" {
+      [void]$specs.Add("docs/architecture/stopped-input-finalization.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("Narrow local PG/race: scripts/dev/stopped-local-tests.ps1. Full isolated Linux pgvector/Go race, no skipped required cases, vet/operator build: scripts/dev/stopped-continuation-tests.sh OWNED_ROOT. Native continuation separately, preserving prior failure/spend and no duplicate effects.")
+      continue
+    }
     "^(cmd/browser-eval/|deploy/browser-eval/|scripts/dev/browser-(baseline-manifest|native-(control|snapshot|verify|attempt)|fixture-verify)[.]sh$|scripts/dev/browser-(public-matrix|baseline-summary)[.]ps1$)" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/testing/browser-baseline-2026-10-28.md")

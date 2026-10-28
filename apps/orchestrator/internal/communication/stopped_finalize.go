@@ -5,8 +5,13 @@ import (
 
 	"github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/jackc/pgx/v5"
 )
+
+func (s *Store) ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, stop input.StoppedAttempt) (map[string]bool, error) {
+	return actionauth.ReviewStoppedLocalTx(ctx, tx, stop.InputID)
+}
 
 // A kernel-only transaction collaborator. The stop record and failed Input are
 // the proof; this does not manufacture owner acknowledgement of an unknown effect.

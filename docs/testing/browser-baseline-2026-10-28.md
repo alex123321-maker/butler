@@ -247,6 +247,12 @@ cost/latency breakdown and the remaining matrix slots remain unfinished.
 
 ## Reproduce
 
+The next #163 slice formally recovered four historical stops and ran nav-02.
+That attempt reached browser.fill but produced a new actual effect_unknown,
+so the matrix remains stopped with ten slots unexecuted. See the
+[continuation report](browser-continuation-2026-10-28.md) and its exact-run
+evidence; the original 4/15 snapshot above is retained as historical evidence.
+
 Follow `cmd/browser-eval/README.md` for configuration, serving, unit checks and
 direct Chromium acceptance. On `laba`, the deployment inventory command is:
 

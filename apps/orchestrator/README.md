@@ -1449,4 +1449,9 @@ activation retain their existing evidence requirements. See
 
 ## Terminal persistence
 
+The operator-only `cmd/stopped-review` reviews exact failed Input references
+through Input/Communication/Action journal fences. Default mode rolls back;
+`-apply` commits only supported owning evidence. It does not dispatch models,
+tools or deliveries. See its README and the stopped-input-finalization spec.
+
 Core joins the owning lease/authority supervisor before terminal task mutation and atomic completion. In-flight failures remain authoritative; writes retain their original context and database fences. Failed outcome, task-block and run-transition writes return safe stage labels with inspectable underlying causes. See the run lifecycle specification.
