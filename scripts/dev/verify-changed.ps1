@@ -26,6 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^scripts/dev/browser-(native-timings[.]sh|timings-summary[.]ps1|observation-audit[.]sh)$" {
+      [void]$specs.Add("docs/testing/browser-action-timings-2026-10-28.md")
+      [void]$tests.Add("Derive only from existing records/configs: READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")
+      continue
+    }
     "^(internal/storage/postgres/(authority|postgres)|apps/orchestrator/internal/session/lease_(postgres|observation)|apps/orchestrator/internal/app/communication_authority_capacity)" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/memory-model.md")

@@ -77,7 +77,7 @@ and unchanged Broker/browser/PostgreSQL container identities. Existing expired
 OAuth was refreshed privately before the first Input (HTTP200, encrypted
 persistence, resolved=true, unsafe_refresh=false); account/model/caps unchanged.
 
-| Sample | Native outcome | Telegram latency | Model calls | Input/output tokens | web.fetch | Publication rejections |
+| Sample | Answer/delivery outcome | Telegram latency | Model attempts | Input/output tokens | web.fetch | Publication rejections |
 | --- | --- | --- | --- | --- | --- | --- |
 | core-evidence-01 | PASS | 90.515s | 15 | 151065 / 1242 | 2 | 0 |
 | core-evidence-02 | PASS | 96.075s | 13 | 135286 / 1043 | 2 | 0 |
@@ -85,6 +85,12 @@ persistence, resolved=true, unsafe_refresh=false); account/model/caps unchanged.
 
 All three preselected samples remain: **2/3 completed**, no replacement. Fresh
 private-reference/publication comparisons and Telegram delivery pass for01/02.
+An additional private comparison against existing tool observations distinguishes
+task answer/delivery from browser coverage:01 observed the exact record in both
+browser and HTTP;02 observed it only through HTTP. Thus these two answers are
+not two full-browser passes. The audit creates no new request/model call and
+exports booleans only; see core-evidence-*-observation-audit.json.
+
 Their Input durations were94.007s and98.968s, without owner intervention. Each
 still chose two web.fetch reads before publication despite no validation repair;
 do not claim that this change eliminates all redundant page fetches. Core's

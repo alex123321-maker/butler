@@ -65,3 +65,52 @@ that every past authority timeout was caused by the source pool.
 
 POST/login/consent remain unaccepted under the retained unresolved browser
 write. This capacity fix neither reconciles that write nor grants new authority.
+
+## Minimal Core rollout and actual native results
+
+The deployed binary is b157b123215d9a7499551488054992c28a8fc41d9a3649bab79ba3e0fcee8614,
+from47f9429c + GET evidence patch6cb3cff0 + authority delta59569a98 sourced at
+cc4d7701. Only the six relevant production files and two tests were backported;
+the current HEAD's other Core changes/migrations were not rolled out. The source
+manifest pins all layers. Actual minimal-build PG/race checks:59 selected
+tests/subtests PASS,0 skips/failures; vet/build PASS. An earlier source-check
+failed on an unrelated test-helper context; that failed bundle/timing is retained.
+The corrected minimal patch excludes that helper and passes the owning tests.
+The final SSH wrapper had an exit-variable quoting error after successful build;
+read-only inspection confirmed all phase exit codes0 and the binary SHA, without
+another build/test run.
+
+Core-only rollout passed exact old/new hashes, health, identical environment
+and unchanged Broker/browser/PostgreSQL identities. Live allocation reports
+total4 = business2 + authority1 + source1. No migration or provider/account/cap
+change occurred; old UNKNOWN effects and reservations remain. Prior Core/binary
+and private Compose/environment rollback are retained. The active override is
+/srv/storage/butler/main/releases/browser-authority-20261028-cc4d7701/private/candidate.compose.json,
+in addition to the existing base and Broker/browser override; keep all layers.
+
+| Sample | Answer + Telegram | Telegram, s | Input, s | Model attempts | Input/output tokens |
+| --- | --- | --- | --- | --- | --- |
+| authority-isolation-01 | correct/delivered | 131.808 | 144.427 | 15 | 169907 / 1255 |
+| authority-isolation-02 | correct/delivered | 107.821 | 112.586 | 15 | 153746 / 1128 |
+| authority-isolation-03 | correct/delivered | 105.264 | 109.969 | 14 | 150094 / 1337 |
+
+All three task answers/private-recipient checks and actual deliveries passed,
+with no in-run owner intervention, no authority-failure log entry and known token
+pairs. However a private existing-observation audit shows01/02 obtained the
+exact record only through HTTP;02 did not finish the guarded browser search.
+Only03 observed it in the browser. Thus **task answer/delivery3/3, full-browser
+record coverage1/3**, not a general3/3 browser qualification. The audit causes no
+new website/model call and exports booleans only. The previous failed sample
+remains failed with both NULL usage pairs.
+
+Preselected goals: Telegram median107.821s passes<=110; input-token median153746
+passes<=160000; model-attempt median15 FAILS<=14. Monetary cost is still unknown.
+All inputs completed but browser-only coverage is insufficient, so the overall
+browser qualification remains NO_GO. Do not infer causal speedup/p95 or a proven
+retrospective source of every authority timeout from three outcomes.
+
+Per-step/action/model-accounting/state/delivery timing for all20 existing trials
+is exported without replay; see browser-action-timings-2026-10-28.md and
+browser-baseline/timings-summary-20/. Operator phase timings also retain failures
+and clock semantics. New build/rollout stages were measured prospectively;
+previous unmeasured stages were not rerun to fill blanks.

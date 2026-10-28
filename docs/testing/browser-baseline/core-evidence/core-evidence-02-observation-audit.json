@@ -1,0 +1,10 @@
+{
+  "scope": "existing_observation_private_comparison",
+  "trial": "core-evidence-02",
+  "browser_record_observed": false,
+  "http_record_observed": true,
+  "guarded_search_completed": true,
+  "raw_text_exported": false,
+  "new_requests": 0,
+  "new_model_calls": 0
+}
