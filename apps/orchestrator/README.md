@@ -1605,3 +1605,5 @@ The prospective issue115 server comparison uses a separate owner-bound laba reci
 The laba #115 profile now requires the fixed bridge relay to the existing server proxy; direct routing and ambient bypass variables fail before native output or auth. The PC profile keeps its prior route.
 
 The first proxy-bound native #115 window stopped during skill preparation after eight completed stages. Its source/journal costs and unknown usage are retained. The relay now uses the whole window deadline for reused connections; the prior five-minute connection lifetime could interrupt later HTTP/2 requests. This is an isolated experiment helper repair, with no deployment or native quality qualification. Current native operator pins are unbound after the consumed window.
+
+The owner's explicit repaired-relay continuation has a separate v2 recipe and v3 database identity. The original closed-window validators independently authenticate the complete failed257 lineage before any new native entry; same-day continuation retains the unchanged UTC cutoff, all costs/unknowns and33-of57 scope. Legacy PC/server profiles and their day rules are unchanged.

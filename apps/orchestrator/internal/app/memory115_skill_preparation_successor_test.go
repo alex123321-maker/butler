@@ -37,16 +37,20 @@ type local115SkillSuccessorManifest struct {
 }
 
 type local115SkillHistoryBinding struct {
-	Historical         experienceNativeLineage `json:"historical"`
-	DiagnosticsSHA256  string                  `json:"separate_operator_diagnostics_sha256"`
-	DecisionSHA256     string                  `json:"owner_decision_sha256"`
-	Profile            string                  `json:"skill_preparation_profile"`
-	Platform           string                  `json:"platform,omitempty"`
-	HostDecisionSHA256 string                  `json:"host_decision_sha256,omitempty"`
+	Historical          experienceNativeLineage `json:"historical"`
+	DiagnosticsSHA256   string                  `json:"separate_operator_diagnostics_sha256"`
+	DecisionSHA256      string                  `json:"owner_decision_sha256"`
+	Profile             string                  `json:"skill_preparation_profile"`
+	Platform            string                  `json:"platform,omitempty"`
+	HostDecisionSHA256  string                  `json:"host_decision_sha256,omitempty"`
+	ContinuationCreated *time.Time              `json:"continuation_created_at,omitempty"`
 }
 
 func validateLocal115SkillHistoryBinding(h experienceNativeLineage) error {
 	b := h.SkillPreparationSuccessor
+	if b != nil && b.Platform == laba115RepairedPlatform {
+		return validateLaba115Continuation(h)
+	}
 	if b != nil && !valid115SkillPlatform(b.Platform, b.HostDecisionSHA256) {
 		return errors.New("fixed skill-preparation platform and owner host decision required")
 	}

@@ -92,3 +92,30 @@ accounting test cannot grant a new window or qualify model benefit. A future
 window must first consume the complete latest closed accounting/history and
 meet its existing UTC/new-day rule, fresh source/artifact/preseal and quality
 requirements. No release, deployment or whole-issue closure follows.
+
+## Owner-authorized repaired-relay continuation
+
+The owner's next instruction explicitly requests completing A/B/C on laba with
+the repaired relay while retaining every failed result and charge. Its exact
+record is `experiments/memory115/2026-10-28/laba-repaired-relay-owner-v2.json`.
+The separately typed `butler.experience.laba-relay-repaired-window.v2` recipe
+may start a new post-closure window in the same UTC day under that instruction;
+old recipe formats retain their original new-day restriction. The deadline
+remains that UTC day's next midnight. No failed stage or consumed domain is
+reopened and the corpus, rubric,33-of57 scope,640 ceiling, method bound and
+prepared-unapplied authority are unchanged.
+
+The exact closed server leaf a4dc87a2 is validated by the original complete
+closed-window consumer: all original169 actual files plus the four process/plan/
+runner receipts must match the prior173-file seal. Quote union, full57 schedule,
+product/native correlation, journal, original parent232 and the server-specific
+failed process/auth handback all qualify before deriving257/2UNKNOWN history.
+The server handback cannot satisfy a PC or production-main handback profile.
+The new binding retains258 quoted model turns and1967005 known full tokens,
+with all NULLs and separate old diagnostics preserved. It cannot select232/213.
+
+The continuation owns `memory115_laba_abc_v3_test` on the same isolated private
+PostgreSQL. Its source/prepared/history directories and operator identity are
+separate from the failed cohort. Only a fresh qualified immutable build, recipe
+and preseal can bind it. The repaired relay has its own new process; the old
+five-minute relay remains stopped. Shared production services are untouched.

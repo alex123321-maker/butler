@@ -39,6 +39,10 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
+	case laba115RepairedFormat:
+		return loadLaba115RepairedContinuation(path, expected)
+	case laba115ClosedFormat:
+		return loadClosedExperienceNativeHistoryProfiles(path, expected, false, true)
 	case laba115SkillSuccessorFormat:
 		return load115SkillSuccessor(path, expected, true)
 	case local115SkillSuccessorFormat:
@@ -159,6 +163,9 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 		want := local115SkillDSN
 		if binding.Platform == laba115Platform {
 			want = laba115SkillDSN
+		}
+		if binding.Platform == laba115RepairedPlatform {
+			want = laba115RepairedDSN
 		}
 		if dsn != want {
 			return nil, errors.New("skill-preparation successor requires its platform's exact loopback database")

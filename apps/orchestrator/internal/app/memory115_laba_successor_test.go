@@ -19,7 +19,7 @@ const laba115Proxy = "http://10.249.116.1:18081"
 // This fixed bridge listener forwards bytes only to laba's existing loopback
 // proxy. PC successors keep their direct route; a server lineage cannot use it.
 func experienceNativeHistoryNetworkProfile(h experienceNativeLineage, getenv func(string) string) bool {
-	if h.SkillPreparationSuccessor == nil || h.SkillPreparationSuccessor.Platform != laba115Platform {
+	if h.SkillPreparationSuccessor == nil || h.SkillPreparationSuccessor.Platform != laba115Platform && h.SkillPreparationSuccessor.Platform != laba115RepairedPlatform {
 		return experienceNativeNetworkProfile(h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil, getenv)
 	}
 	if getenv("HTTPS_PROXY") != laba115Proxy {
