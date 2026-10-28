@@ -1,0 +1,108 @@
+{
+  "review_date_user_timezone": "2026-10-29 Asia/Tomsk",
+  "execution_host": "laba",
+  "question": "Can an explicit trusted instruction make the model select an applicable skill before solving the task?",
+  "original_context_diagnostic": {
+    "plan": "plan.json",
+    "source_commit": "276999b96fc95b2ae751c65715980f98e62063e3",
+    "historical_fixture": "Closed ABC6 C/control-01 first request; all nine original tool declarations and original input retained; fresh provider run identity; no task effects or old native115 admission",
+    "sample_count_per_arm": 1,
+    "results": [
+      {
+        "arm": "catalog_only",
+        "first_proposed_function": "extension.project.inspect",
+        "full_tokens": 6890
+      },
+      {
+        "arm": "explicit_guidance",
+        "first_proposed_function": "skills.load",
+        "selected_digest": "96f7e2ad1581d180dda1123a53d9e7ffc091bfec4cc2b7e123a74691c633adb5",
+        "digest_matches_original_reviewed_skill": true,
+        "full_tokens": 6586
+      },
+      {
+        "arm": "preloaded_body",
+        "first_proposed_function": "extension.project.inspect",
+        "full_tokens": 8383
+      }
+    ],
+    "native_calls": 3,
+    "observed_known_full_tokens": 21859,
+    "unknown_usage": 0,
+    "actual_tools_executed": 0,
+    "result": "An explicit generic instruction changed the observed first selection to the exact applicable skill. Preloaded body did not require another load call.",
+    "limits": "Only the first proposal was measured. No proposed inspection or skills.load was executed. This is not proof of skill-loading execution, task success, current source authority or repeatable causal improvement. One sample per arm and fixed order cannot separate all sampling/order effects."
+  },
+  "separate_synthetic_pilot": {
+    "plan": "../skill-prompt-probe-v1/plan.json",
+    "source_commit": "09b4c563da5998ac9baccde44d0405244b08032b",
+    "slots": 12,
+    "repetitions": 1,
+    "cases": ["ordinary_sort", "project_convention", "unrelated", "owner_forbids"],
+    "results": [
+      {
+        "arm": "catalog_only",
+        "correct_final_answers": "4/4",
+        "applicable_fixture_loads": "2/2",
+        "unrelated_or_forbidden_skill_calls": 0,
+        "native_calls": 6,
+        "full_tokens": 5319
+      },
+      {
+        "arm": "explicit_guidance",
+        "correct_final_answers": "4/4",
+        "applicable_fixture_loads": "2/2",
+        "unrelated_or_forbidden_skill_calls": 0,
+        "native_calls": 6,
+        "full_tokens": 6722
+      },
+      {
+        "arm": "preloaded_body",
+        "correct_final_answers": "4/4",
+        "skill_load_calls": 0,
+        "unrelated_or_forbidden_skill_calls": 0,
+        "native_calls": 4,
+        "full_tokens": 5956
+      }
+    ],
+    "native_calls": 16,
+    "known_full_tokens": 17997,
+    "input_tokens": 9325,
+    "output_tokens": 381,
+    "thinking_tokens": 8291,
+    "unknown_usage": 0,
+    "actual_business_tools_executed": 0,
+    "result": "The model already loaded the applicable fixture without extra guidance. This small synthetic pilot shows no quality or loading improvement from the stronger instruction. All three arms answered the negative cases correctly.",
+    "limits": "Fixture skills.search/load responses were simulated, not Broker or product execution. Only two tools were available, versus nine in the historical original context. Preloaded body was omitted when the owner forbade skills, so this does not test rejection of an already-loaded forbidden procedure. Fewer requests did not establish a token saving."
+  },
+  "conclusion": {
+    "supported": "Explicit applicability and loading guidance is a justified candidate for a Butler prompt change: it produced the desired first selection in the actual historical context, while the synthetic pilot respected the two tested negative cases.",
+    "not_supported": "Model intelligence deficiency, universal ignorance of tools, guaranteed instruction adherence, production safety or full task benefit are not established.",
+    "implementation_status": "Experiment-only. No production system prompt, Broker, skill policy, deployment or model defaults changed.",
+    "next_validation": "A prospective full task comparison with the explicit instruction, current Broker loading/guards, incompatible and revoked skills, owner prohibition and original acceptance criteria is still required before enabling or qualifying a product change.",
+    "issue115_closed": false
+  },
+  "accounting_and_retention": {
+    "new_native_calls_this_work": 19,
+    "new_known_full_tokens": 39856,
+    "new_unknown_usage": 0,
+    "invoice_cost": "unknown",
+    "closed_abc_native_entries_unchanged": 503,
+    "closed_abc_unknown_usage_unchanged": 3,
+    "closed_abc_known_full_tokens_unchanged": 4320708,
+    "closed_abc_cost_receipt_sha256_rechecked": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad",
+    "previous_force_diagnostic": {"native_calls": 1, "known_full_tokens": 1978, "unchanged_receipt_sha256": "22702b0cd4fe7ecf30eac26a4f16e190b921c8ba4e80bcc223f724e537936a8d"},
+    "older_separate_diagnostics": "Previously retained NULL / 4175 / 3389 token observations remain separate and are not replaced or reclassified by either new diagnostic.",
+    "new_history_qualification": false,
+    "storage": "Separate PostgreSQL diagnostic schemas and owner-only laba directories; canonical encrypted experimental provider auth remained in its source store",
+    "cleanup": "Both native processes exited 0. Both diagnostic helper containers removed. Zero remaining private PostgreSQL clients; private PostgreSQL stopped cleanly. All result directories retained."
+  },
+  "validation": {
+    "location": "laba only; pinned Go 1.27.2 image",
+    "offline_adapter_tests_race": "PASS",
+    "offline_fixed_plan_and_historical_fixture_tests_race": "PASS",
+    "offline_adapter_go_vet": "PASS",
+    "native_collection": "PASS, all 12 pilot slots and all three historical-context first decisions retained",
+    "production_acceptance": "not tested"
+  }
+}

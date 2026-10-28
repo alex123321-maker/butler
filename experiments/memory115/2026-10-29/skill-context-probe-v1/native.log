@@ -1,0 +1,6 @@
+=== RUN   TestSkillContextProbeNative
+    skill_context_probe_test.go:320: arm=catalog_only first_proposal=extension.project.inspect full_tokens=6890
+    skill_context_probe_test.go:320: arm=explicit_guidance first_proposal=skills.load full_tokens=6586
+    skill_context_probe_test.go:320: arm=preloaded_body first_proposal=extension.project.inspect full_tokens=8383
+--- PASS: TestSkillContextProbeNative (23.95s)
+PASS

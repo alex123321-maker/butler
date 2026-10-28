@@ -1,0 +1,82 @@
+{
+  "actual_tools_executed": 0,
+  "invoice_cost": "unknown",
+  "previous_pilot_native": 16,
+  "previous_pilot_sha256": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c",
+  "prior_abc_native": 503,
+  "production_changed": false,
+  "separate_diagnostic": true,
+  "source": "276999b96fc95b2ae751c65715980f98e62063e3",
+  "trial": "skill-context-20261029-v1",
+  "turns": [
+    {
+      "sequence": 1,
+      "slot": 1,
+      "turn": 1,
+      "started": "2026-10-28T17:18:30.678440663Z",
+      "elapsed_millis": 10055,
+      "usage": {
+        "InputTokens": 6060,
+        "OutputTokens": 27,
+        "TotalTokens": 6890,
+        "ThinkingTokens": 803
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-86539d3efc59e90e656c60dc56a0a7c8-1",
+        "ToolName": "extension.project.inspect",
+        "ArgsJSON": "{\"url\": \"http://external.test/project/alpha\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 2,
+      "slot": 2,
+      "turn": 1,
+      "started": "2026-10-28T17:18:40.745770626Z",
+      "elapsed_millis": 6271,
+      "usage": {
+        "InputTokens": 6141,
+        "OutputTokens": 73,
+        "TotalTokens": 6586,
+        "ThinkingTokens": 372
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-584db72c05aa5bcf6d579a3cdc369bbc-1",
+        "ToolName": "skills.load",
+        "ArgsJSON": "{\"digest\": \"96f7e2ad1581d180dda1123a53d9e7ffc091bfec4cc2b7e123a74691c633adb5\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 3,
+      "slot": 3,
+      "turn": 1,
+      "started": "2026-10-28T17:18:47.033326882Z",
+      "elapsed_millis": 7456,
+      "usage": {
+        "InputTokens": 7710,
+        "OutputTokens": 27,
+        "TotalTokens": 8383,
+        "ThinkingTokens": 646
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-7343426c86df7a7d01576b66361d162c-1",
+        "ToolName": "extension.project.inspect",
+        "ArgsJSON": "{\"url\": \"http://external.test/project/alpha\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    }
+  ]
+}

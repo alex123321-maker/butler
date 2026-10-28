@@ -1,0 +1,16 @@
+=== RUN   TestSkillPromptProbeNative
+    skill_prompt_probe_test.go:436: slot=01 arm=catalog_only case=ordinary_sort status=final loads=1 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=02 arm=explicit_guidance case=ordinary_sort status=final loads=1 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=03 arm=preloaded_body case=ordinary_sort status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=04 arm=explicit_guidance case=project_convention status=final loads=1 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=05 arm=preloaded_body case=project_convention status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=06 arm=catalog_only case=project_convention status=final loads=1 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=07 arm=preloaded_body case=unrelated status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=08 arm=catalog_only case=unrelated status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=09 arm=explicit_guidance case=unrelated status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=10 arm=catalog_only case=owner_forbids status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=11 arm=preloaded_body case=owner_forbids status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:436: slot=12 arm=explicit_guidance case=owner_forbids status=final loads=0 correct=true forbidden_call=false
+    skill_prompt_probe_test.go:441: SYNTHETIC_PILOT_COLLECTED slots=12 native=16; no quality qualification implied
+--- PASS: TestSkillPromptProbeNative (120.53s)
+PASS
