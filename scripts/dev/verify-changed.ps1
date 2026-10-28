@@ -26,6 +26,17 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^scripts/dev/browser-(native-timings[.]sh|timings-summary(-tests)?[.]ps1|observation-audit[.]sh)$" {
+      [void]$specs.Add("docs/testing/browser-action-timings-2026-10-28.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/browser-timings-summary-tests.ps1; derive only from existing records/configs: inclusive step + tail partition, READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")
+      continue
+    }
+    "^(internal/storage/postgres/(authority|postgres)|apps/orchestrator/internal/session/lease_(postgres|observation)|apps/orchestrator/internal/app/communication_authority_capacity)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$tests.Add("Isolated PG/race: TestCommunicationAuthority* capacity/source starvation/revocation and DSN/minimum-cap cases; session lease acquisition-vs-query diagnostics; watchdog cancellation/retry tests. No live authority cache or deadline extension. Deploy Core separately; preserve native FAIL/NULL usage.")
+      continue
+    }
     "^(apps/tool-browser/internal/runtime/get_form_test[.]go|internal/actionauth/(get_form_test|browser_read(_test)?)[.]go|apps/tool-broker/internal/broker/browser_read_failure_test[.]go)$" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/external-effect-journal.md")

@@ -1,0 +1,63 @@
+{
+  "scope": "existing_build_phase_measurements",
+  "timestamp_normalization": "uutils coreutils 0.8 %3N emits fractional nanoseconds without 9-place padding; left-padded to9. Monotonic durations unchanged. Raw retained separately.",
+  "phases": [
+    {
+      "phase": "source_verification",
+      "started_at": "2026-10-28T14:44:17.048398619Z",
+      "finished_at": "2026-10-28T14:44:17.090889642Z",
+      "duration_ms": 40,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "source_reconstruction",
+      "started_at": "2026-10-28T14:44:17.097277767Z",
+      "finished_at": "2026-10-28T14:44:17.376583374Z",
+      "duration_ms": 280,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "disposable_postgres_startup",
+      "started_at": "2026-10-28T14:44:17.469470364Z",
+      "finished_at": "2026-10-28T14:44:19.587165410Z",
+      "duration_ms": 2120,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "broker_test_compile",
+      "started_at": "2026-10-28T14:44:19.598853948Z",
+      "finished_at": "2026-10-28T14:44:24.716968599Z",
+      "duration_ms": 5120,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "required_pg_race",
+      "started_at": "2026-10-28T14:44:24.722914766Z",
+      "finished_at": "2026-10-28T14:45:22.042539548Z",
+      "duration_ms": 57310,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "vet",
+      "started_at": "2026-10-28T14:45:22.056470138Z",
+      "finished_at": "2026-10-28T14:45:32.779076431Z",
+      "duration_ms": 10720,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    },
+    {
+      "phase": "core_compile",
+      "started_at": "2026-10-28T14:45:32.785182745Z",
+      "finished_at": "2026-10-28T14:45:41.465142619Z",
+      "duration_ms": 8670,
+      "exit_code": 0,
+      "duration_clock": "Linux monotonic uptime (10ms resolution)"
+    }
+  ],
+  "reruns": 0
+}

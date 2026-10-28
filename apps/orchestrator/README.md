@@ -1,3 +1,11 @@
+Core's configured PostgreSQL connection cap now separates lease/Task authority
+from longer source observations: with a cap of at least4, reserve one for each
+and keep at least2 for business work. At the supported minimum of3, source
+observations use business capacity and never consume the authority reserve.
+Source/lease/task guards and deadlines remain current and fail closed. Lease
+failure diagnostics distinguish pool acquisition from query execution using
+fixed phases and counts, without query/parameter/credential text.
+
 Research publication preflight accepts current-run successful public GET form
 and link observations as quoted page evidence, including their required frozen
 network acknowledgement. Failed reads and arbitrary frozen snapshots remain

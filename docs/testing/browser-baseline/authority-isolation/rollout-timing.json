@@ -1,0 +1,8 @@
+{
+  "phase": "core_rollout_and_health",
+  "started_at": "2026-10-28T14:54:04Z",
+  "finished_at": "2026-10-28T14:54:11Z",
+  "duration_ms": 6940,
+  "exit_code": 0,
+  "duration_clock": "Linux monotonic uptime (10ms resolution)"
+}

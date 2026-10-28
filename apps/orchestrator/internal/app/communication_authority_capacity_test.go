@@ -47,7 +47,7 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 		t.Fatal(err)
 	}
 	defer db.Close()
-	if db.Pool().Config().MaxConns != 3 || db.AuthorityReadPool().Config().MaxConns != 1 || db.Pool() == db.AuthorityReadPool() {
+	if db.Pool().Config().MaxConns != 2 || db.AuthorityReadPool().Config().MaxConns != 1 || db.SourceReadPool().Config().MaxConns != 1 || db.Pool() == db.AuthorityReadPool() || db.SourceReadPool() == db.AuthorityReadPool() || db.SourceReadPool() == db.Pool() {
 		t.Fatal("reserve increased total connection allowance or shared business capacity")
 	}
 	if _, err = db.Pool().Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('web:capacity','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('capacity-run','web:capacity','input','running','mode_1','model_running','fixture',clock_timestamp(),clock_timestamp())`); err != nil {
@@ -72,14 +72,14 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 	if err = manifest.Initialize(); err != nil {
 		t.Fatal(err)
 	}
-	sources := catalog.NewWithRunObservationPool(db.Pool(), db.AuthorityReadPool(), manifest)
+	sources := catalog.NewWithRunObservationPool(db.Pool(), db.SourceReadPool(), manifest)
 	owned := ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: live.SessionKey, RunID: live.RunID, LeaseID: live.LeaseID, FenceEpoch: live.FenceEpoch})
 	defer func() {
 		for _, c := range occupied {
 			c.Release()
 		}
 	}()
-	for range 3 {
+	for range 2 {
 		c, err := db.Pool().Acquire(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -93,12 +93,56 @@ func TestCommunicationAuthorityReserveWhileBusinessPoolSaturatedIntegration(t *t
 	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatal("unreserved observer unexpectedly had capacity", err)
 	}
+	// A source proof may legitimately last longer than the lease observation
+	// window. Reproduce the old shared-reserve timeout without a sleep/SQL delay.
+	busySource, err := db.SourceReadPool().Acquire(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer busySource.Release()
+	oldShared, stopOld := context.WithTimeout(ctx, 50*time.Millisecond)
+	_, err = session.NewPostgresLeaseManagerWithAuthorityReads(db.Pool(), db.SourceReadPool()).GetLease(oldShared, live.LeaseID)
+	stopOld()
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatal("shared source reserve did not reproduce lease starvation", err)
+	}
+	var acquisition *session.LeaseObservationError
+	if !errors.As(err, &acquisition) || acquisition.Phase != "pool_acquire" || acquisition.Acquired != 1 || acquisition.Idle != 0 {
+		t.Fatal("lease queue failure has no safe acquisition diagnostic")
+	}
 	read, stopRead := context.WithTimeout(ctx, 500*time.Millisecond)
 	defer stopRead()
 	if _, err = leases.GetLease(read, live.LeaseID); err != nil {
 		t.Fatal(err)
 	}
 	if err = tasks.ValidateRunAuthority(read, "capacity-run"); err != nil {
+		t.Fatal(err)
+	}
+	blockedSource, stopBlockedSource := context.WithTimeout(owned, 50*time.Millisecond)
+	err = sources.CheckRunSources(blockedSource, "capacity-run")
+	stopBlockedSource()
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatal("source proof escaped its occupied pool or accepted cached authority", err)
+	}
+	busySource.Release()
+	// A blocked SQL read is a separate failure from pool starvation. This lock
+	// exists only in the disposable fixture schema, never in the live database.
+	lock, err := fixture.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Rollback(ctx)
+	if _, err = lock.Exec(ctx, `LOCK TABLE session_ownership IN ACCESS EXCLUSIVE MODE`); err != nil {
+		t.Fatal(err)
+	}
+	blockedSQL, stopSQL := context.WithTimeout(ctx, 50*time.Millisecond)
+	_, err = leases.GetLease(blockedSQL, live.LeaseID)
+	stopSQL()
+	var query *session.LeaseObservationError
+	if !errors.Is(err, context.DeadlineExceeded) || !errors.As(err, &query) || query.Phase != "query" {
+		t.Fatal("SQL wait confused with lease queue or accepted unavailable authority", err)
+	}
+	if err = lock.Rollback(ctx); err != nil {
 		t.Fatal(err)
 	}
 	sourceRead, stopSourceRead := context.WithTimeout(owned, 2*time.Second)
