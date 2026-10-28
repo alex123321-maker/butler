@@ -24,10 +24,10 @@ import (
 
 // Binding occurs only after the new server producer/recipe/five artifacts/plan
 // are frozen. Empty commitments deny before filesystem, DB or auth access.
-const laba115NativeSource = "d38fef70352eec66f98198cb6197fcda62d03c6e"
-const laba115NativePlanSHA = "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497"
-const laba115NativeHistorySHA = "e59ffd65c49ee8401c14059dd909bbafeb8865994c93b7ea8222002b95edfdf9"
-const laba115NativeAppSHA = "67b1c396db1cd4118fc7b4263a3dc6bab1aa87cf91a842b7cebc6c0a8d04fcbc"
+const laba115NativeSource = "1070f0f542ce72adf52275b710978e6cefccd8d0"
+const laba115NativePlanSHA = "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511"
+const laba115NativeHistorySHA = "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490"
+const laba115NativeAppSHA = "cee13f636174a12f2a5d1e2b79d416490ad2a56a88d0f4b99d2dc8458e630412"
 const laba115NativeBrokerSHA = "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c"
 const laba115NativeBrokerControlSHA = "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307"
 const laba115NativeExtensionSHA = "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b"
