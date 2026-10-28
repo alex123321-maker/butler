@@ -24,14 +24,14 @@ import (
 
 // Binding occurs only after the new server producer/recipe/five artifacts/plan
 // are frozen. Empty commitments deny before filesystem, DB or auth access.
-const laba115NativeSource = ""
-const laba115NativePlanSHA = ""
-const laba115NativeHistorySHA = ""
-const laba115NativeAppSHA = ""
-const laba115NativeBrokerSHA = ""
-const laba115NativeBrokerControlSHA = ""
-const laba115NativeExtensionSHA = ""
-const laba115NativeHTTPSHA = ""
+const laba115NativeSource = "b1fb478c71c2ced8792126370d68eb90269c9757"
+const laba115NativePlanSHA = "18d4ec76d5cbbbf241d7151eb542e7a48d7125c7ea4452ac8c67e0d148d729a2"
+const laba115NativeHistorySHA = "720ac0997a0bfef54b2a15817170abd5f13a8abaa683209975a63fffaf7bd389"
+const laba115NativeAppSHA = "e348406999e75c5d4fca779e48c1424d0bae69558e9d7a1ce40468c28ab75e36"
+const laba115NativeBrokerSHA = "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c"
+const laba115NativeBrokerControlSHA = "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307"
+const laba115NativeExtensionSHA = "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b"
+const laba115NativeHTTPSHA = "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca"
 const laba115ControlDSN = "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable"
 const laba115TargetHostDSN = "postgres://postgres@127.0.0.1:55455/memory115_laba_abc_v4_test?sslmode=disable"
 const laba115TargetChildDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_abc_v4_test?sslmode=disable"

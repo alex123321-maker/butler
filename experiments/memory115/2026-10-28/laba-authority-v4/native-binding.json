@@ -1,0 +1,25 @@
+{
+  "producer": "b1fb478c71c2ced8792126370d68eb90269c9757",
+  "bindings": {
+    "ExtensionSHA": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "PlanSHA": "18d4ec76d5cbbbf241d7151eb542e7a48d7125c7ea4452ac8c67e0d148d729a2",
+    "AppSHA": "e348406999e75c5d4fca779e48c1424d0bae69558e9d7a1ce40468c28ab75e36",
+    "HTTPSHA": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca",
+    "BrokerSHA": "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c",
+    "BrokerControlSHA": "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307",
+    "HistorySHA": "720ac0997a0bfef54b2a15817170abd5f13a8abaa683209975a63fffaf7bd389",
+    "Source": "b1fb478c71c2ced8792126370d68eb90269c9757"
+  },
+  "history280": "553e5b4ef6642b065db811b6cee8810be25a1879bf8ab3ffea6f482153be69e5",
+  "retained_native": 280,
+  "retained_unknown": 3,
+  "retained_known_full_tokens": 2154480,
+  "selected": 33,
+  "denominator": 57,
+  "ceiling": 640,
+  "business_connections": 2,
+  "authority_observation_connections": 1,
+  "authority_deadline_ms": 750,
+  "relay_sha256": "e1dd4f3c79a469e6f667659866880f4176092267c4ff65e1c90b6ee660f4be10",
+  "new_native_before_binding": 0
+}
