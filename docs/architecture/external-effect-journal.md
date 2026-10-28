@@ -33,6 +33,13 @@ starts remains unknown. Broker returns only the sanitized fixed diagnostic.
 
 ## Identity and authorization
 
+Core may record one independently authorized `browser.freeze_snapshot` after
+an UNKNOWN click/fill/type response. Its read intent, grant, charge, transcript
+and local observation are distinct from the original effect. Frozen visible
+state is not recipient acceptance/absence or reconciliation. Observer checkpoint
+recovery blocks on the original UNKNOWN and never retries either operation;
+runtime quarantine remains restrictive. See the browser/session contract.
+
 `PrepareToolCall.logical_action_ref` is optional private service metadata. The
 accepted-input repository allocates a random slot **before** preparation and
 saves it under `checkpoint_json.action_slots`. It binds run/call, task revision,

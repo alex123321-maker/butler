@@ -69,6 +69,23 @@
       "allowed_tools": []
     },
     {
+      "tool_name": "browser.freeze_snapshot",
+      "contract_revision": "1",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
+      "description": "Freeze all network traffic, then observe the existing document without navigation or input. Keeps the context frozen. Current visible state is not proof of a previous external effect.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"required\":[\"ok\",\"browser_session_id\",\"observation_version\",\"network_state\"],\"properties\":{\"ok\":{\"type\":\"boolean\",\"enum\":[true]},\"browser_session_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"network_state\":{\"type\":\"string\",\"enum\":[\"frozen\"]}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
       "tool_name": "browser.snapshot",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },

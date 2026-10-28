@@ -434,6 +434,10 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, &budget.LoopError{Reason: detail.Reason}
 	}
 	if result.GetStatus() == "effect_unknown" {
+		if observeErr := s.observeUnknownBrowser(ctx, current, requested, prepared, result); observeErr != nil {
+			// Fixed diagnostics only: storage/runtime errors can contain secrets.
+			runLog.Warn("post-effect browser observation unavailable")
+		}
 		return nil, current, ErrActionOutcomeUnknown
 	}
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {

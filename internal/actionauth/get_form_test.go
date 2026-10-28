@@ -63,6 +63,14 @@ func TestGetFormReadReleaseRequiresCurrentPublicConsent(t *testing.T) {
 }
 
 func TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration(t *testing.T) {
+	testBrowserReadKeepsUnknownWriteBlocked(t, "browser.submit_get_form")
+}
+
+func TestFrozenObservationKeepsUnknownWriteBlockedIntegration(t *testing.T) {
+	testBrowserReadKeepsUnknownWriteBlocked(t, "browser.freeze_snapshot")
+}
+
+func testBrowserReadKeepsUnknownWriteBlocked(t *testing.T, readTool string) {
 	s, store, reader, call, contract, _, _ := receiptFixture(t)
 	ctx := context.Background()
 	raw, err := os.ReadFile(filepath.Join("..", "..", "migrations", "037_execution_budgets.up.sql"))
@@ -95,6 +103,11 @@ func TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration(t *testing.T) {
 	contract.SupportsCredentialRefs = false
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}
 	call.ArgsJson = `{"browser_session_id":"new-context","expected_url":"https://example.com/catalog","observation_version":1,"selector":"form","fields":[{"name":"q","value":"public query"}]}`
+	if readTool == "browser.freeze_snapshot" {
+		call.ToolName, contract.ToolName, contract.ContractRevision = readTool, readTool, "1"
+		contract.EffectContract.VerificationMethod = "read_result"
+		call.ArgsJson = `{"browser_session_id":"old-context"}`
+	}
 	next := logicalGrant(t, s, reader, call, contract, "get-form-slot")
 	if err = store.ClaimGrant(ctx, next.ID); err != nil {
 		t.Fatal("independent GET observation blocked", err)

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -38,6 +39,9 @@ func TestBrowserSessionE2E(t *testing.T) {
 const release=()=>{fetch('/draft-release?value='+encodeURIComponent(document.getElementById('a').value)).catch(()=>{});fetch('/draft-release',{method:'POST',body:document.getElementById('a').value}).catch(()=>{})};
 document.addEventListener('input',()=>{document.getElementById('reflection').textContent=document.getElementById('password').value;release();setTimeout(release,250);setTimeout(()=>document.getElementById('reflection').dataset.changed=String(Math.random()),600)});
 </script></body></html>`)
+		case "/freeze":
+			forms.Add(1)
+			_, _ = fmt.Fprint(w, `<html><body>Existing document<input id="password" type="password" value="private-password-fixture"><span>private-password-fixture</span><a id="public" href="/draft-release">Next</a><script>setInterval(()=>{fetch('/draft-release').catch(()=>{});fetch('/draft-release',{method:'POST'}).catch(()=>{})},50)</script></body></html>`)
 		case "/draft-release":
 			draftRequests.Add(1)
 			_, _ = fmt.Fprint(w, "released")
@@ -153,6 +157,36 @@ new WebSocket('ws://external.test/escape');
 		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
 		if posts.Load() != beforePosts || escapes.Load() != beforeEscapes || allowedReads.Load() != beforeReads+1 || !strings.Contains(obs.Text, "External instructions") {
 			t.Fatal("ordinary read widened network authority or permitted GET was lost")
+		}
+		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
+	})
+	t.Run("frozen observation stops background traffic without navigation and cannot thaw", func(t *testing.T) {
+		beforeForms := forms.Load()
+		obs := open("/freeze")
+		obs = invoke("browser.freeze_snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		if obs.NetworkState != "frozen" || !strings.Contains(obs.Text, "Existing document") || forms.Load() != beforeForms+1 {
+			t.Fatal("frozen observation navigated or omitted its freeze")
+		}
+		before := draftRequests.Load()
+		time.Sleep(300 * time.Millisecond)
+		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		if draftRequests.Load() != before || obs.NetworkState != "frozen" {
+			t.Fatal("observation released background requests")
+		}
+		args := actionArgs(obs)
+		args["url"] = egresstest.Origin + "/form"
+		navigation := browserCall("browser.navigate", "run-1", args)
+		navigation.Contract.AllowedDomains = []string{"external.test"}
+		assertCode(t, executeTest(t, server, navigation), "network_frozen")
+		followArgs := actionArgs(obs)
+		followArgs["selector"] = "#public"
+		follow := browserCall("browser.follow_link", "run-1", followArgs)
+		follow.Contract.ContractRevision = "2"
+		follow.Contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}
+		follow.Contract.AllowedDomains = []string{"external.test"}
+		refused := executeTest(t, server, follow)
+		if refused.GetStatus() != "failed" || !strings.Contains(refused.GetError().GetDetailsJson(), "get_form_denied") || draftRequests.Load() != before {
+			t.Fatal("public GET reader thawed the frozen observation")
 		}
 		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
 	})

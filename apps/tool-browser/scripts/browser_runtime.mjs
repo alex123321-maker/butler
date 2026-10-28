@@ -170,6 +170,12 @@ async function execute(request) {
   if (Date.now() >= session.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
   if (tool === 'owner.control') return await ownerControl(session, request.owner_command)
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
+  if (tool === 'browser.freeze_snapshot') {
+    session.networkFrozen = true
+    // A later public GET reader must not release this observed private state.
+    session.preparedDraft = true
+    return await observe(session)
+  }
   const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
   const getForm = tool === 'browser.submit_get_form' || tool === 'browser.follow_link'
   // Freeze before reading the live guards or injecting any new value. A stale

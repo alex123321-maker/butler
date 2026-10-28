@@ -46,6 +46,10 @@ func browserCall(tool, owner string, args map[string]any) *runtimev1.ExecuteRequ
 		contract.ContractRevision = "2"
 		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
 	}
+	if tool == "browser.freeze_snapshot" {
+		contract.ContractRevision = "1"
+		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+	}
 	return &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: owner},
 		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "call-1", RunId: owner, ToolName: tool, ArgsJson: mustJSON(args)},

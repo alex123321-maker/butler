@@ -1,5 +1,13 @@
 # Exact action authorization
 
+The kernel's optional post-effect `browser.freeze_snapshot` probe receives its
+own ordinary read intent/grant and budget charge. It carries only the original
+browser session ID, checks current owner/task/constraints, and never borrows the
+preceding interaction's approval or marks it confirmed. A new approval
+requirement prevents this automatic probe; resource quarantine still denies it.
+The fixed revision1 credential-free read contract is checked in policy and
+runtime. This grants observation only, with no model continuation or write replay.
+
 Migration102 [isolates stopped attempts](stopped-input-finalization.md) without
 reconciling effects or acknowledging them for the owner. Both Core and Broker
 deny arbitrary writes across retained session/task uncertainty, including a new

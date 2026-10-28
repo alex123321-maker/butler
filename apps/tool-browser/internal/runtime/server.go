@@ -22,7 +22,7 @@ const maxSnapshotTextLen = 12000
 
 var supportedTools = map[string]bool{
 	"browser.read": true, "browser.open": true, "browser.close": true,
-	"browser.navigate": true, "browser.snapshot": true, "browser.click": true,
+	"browser.navigate": true, "browser.snapshot": true, "browser.freeze_snapshot": true, "browser.click": true,
 	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
 	"browser.prepare_fill": true, "browser.prepare_type": true,
 	"browser.submit_get_form": true,
@@ -167,6 +167,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	if guardedGETTool(args.ToolName) && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "guarded_browser_get_v1" || contract.GetSupportsCredentialRefs()) {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET navigation requires its guarded revision 2 contract")
+	}
+	if args.ToolName == "browser.freeze_snapshot" && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "invalid_contract", "frozen observation requires its exact read contract")
 	}
 	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "public-origin navigation requires revision 3")
@@ -329,7 +332,7 @@ func originOf(raw string) string {
 	return strings.ToLower(u.Scheme) + "://" + host
 }
 func isGuardedAction(tool string) bool {
-	return tool != "browser.read" && tool != "browser.open" && tool != "browser.snapshot" && tool != "browser.extract_text" && tool != "browser.close"
+	return tool != "browser.read" && tool != "browser.open" && tool != "browser.snapshot" && tool != "browser.freeze_snapshot" && tool != "browser.extract_text" && tool != "browser.close"
 }
 func validateSelectorRequired(args Request) error {
 	switch args.ToolName {

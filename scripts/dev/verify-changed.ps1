@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "browser_(outcome|observation_recovery)|frozen_observation|browser-outcome-tests[.]sh$" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$tests.Add("scripts/dev/browser-outcome-tests.sh OWNED_ROOT: mandatory PG/race UNKNOWN/read spending + observer checkpoint recovery; actual Chromium background freeze, Broker/resource one POST + frozen read + no replay/quarantine bypass. No native scenario replay to backfill timings.")
+      continue
+    }
     "^scripts/dev/browser-(native-timings[.]sh|timings-summary(-tests)?[.]ps1|observation-audit[.]sh)$" {
       [void]$specs.Add("docs/testing/browser-action-timings-2026-10-28.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/browser-timings-summary-tests.ps1; derive only from existing records/configs: inclusive step + tail partition, READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")

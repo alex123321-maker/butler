@@ -161,7 +161,7 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			}
 		}()
 	}
-	if req.ToolName == "browser.prepare_fill" || req.ToolName == "browser.prepare_type" {
+	if req.ToolName == "browser.prepare_fill" || req.ToolName == "browser.prepare_type" || req.ToolName == "browser.freeze_snapshot" {
 		if proxy := r.proxies[req.SessionID]; proxy != nil {
 			proxy.Freeze()
 		}

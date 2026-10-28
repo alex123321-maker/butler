@@ -122,6 +122,9 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
+		if b.ToolName == "browser.freeze_snapshot" && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
+			return p, fmt.Errorf("frozen observation requires its exact credential-free read contract")
+		}
 		if b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link" {
 			if b.ContractRevision != "2" || p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() {
 				return p, fmt.Errorf("GET navigation requires its exact guarded revision 2 contract")

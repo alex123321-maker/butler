@@ -22,7 +22,11 @@ target and exact deployed contract hashes. Browser session IDs come from the
 existing runtime; the adapter hashes the profile/session pair and never accepts
 a resource ID, host path, mode, lease or fence from model arguments. Credentials
 do not partition the resource. All supported operations conservatively use an
-exclusive writer lane, including snapshots. `browser.read` and `browser.open`
+exclusive writer lane, including snapshots and `browser.freeze_snapshot`.
+The frozen observer uses the same pinned profile/contract and never bypasses
+inflight quarantine. It may observe a locally acknowledged interaction whose
+external journal result remains UNKNOWN; failed/lost lane ACK still denies it.
+`browser.read` and `browser.open`
 allocate separate action-bound creation lanes. A successful authenticated open
 receipt publishes a private hashed owner/run/task/session mapping; subsequent
 operations must match it before spending or claiming. Foreign, invented,

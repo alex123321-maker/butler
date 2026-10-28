@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+`browser.freeze_snapshot` revision1 observes an existing document only after
+freezing proxy connections and helper routes. Broker/Go require the exact
+credential-free `read_only/read_result` contract; only the browser session ID
+is accepted. Core can use one bounded probe before blocking an uncertain
+interaction, through ordinary Broker authorization/accounting. This adds no
+runtime orchestration, recipient receipt, secret resolution path or replay.
+
 `web.search` revision1 uses the existing WebFetch runtime and a fixed
 credential-free DuckDuckGo Lite GET endpoint. It returns bounded title/URL/snippet
 observations and UTC time. Snippets are discovery evidence; current claims need

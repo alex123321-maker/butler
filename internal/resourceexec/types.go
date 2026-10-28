@@ -84,7 +84,7 @@ func browserSelection(p Profile, call *toolbrokerv1.ToolCall, contract *toolbrok
 			return selection{}, ErrDenied
 		}
 		identity = "new:" + g.Binding.ActionID
-	case "browser.close", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state":
+	case "browser.freeze_snapshot", "browser.close", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state":
 		if len(identity) != 32 || !isHex(identity) {
 			return selection{}, ErrDenied
 		}

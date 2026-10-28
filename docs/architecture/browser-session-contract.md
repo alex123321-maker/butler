@@ -150,6 +150,32 @@ TLS rules remain enabled. Service workers, WebSockets, downloads and extra popup
 pages remain disabled; popup-only SSO is not supported. Multi-origin navigation
 does not share another run's browser context or grant additional credentials.
 
+## Bounded observation after an uncertain interaction
+
+`browser.freeze_snapshot` revision1 is a separate credential-free read. It
+closes all proxy connections and freezes helper routes before observing the
+existing document. It never navigates, reopens a context or invokes page input/
+submit handlers. The context is marked as a private draft, so GET form/link
+readers cannot subsequently thaw it. Existing snapshot semantics are unchanged.
+The returned frozen observation proves only current visible state, never remote
+acceptance/absence, successful login or reconciliation of a preceding action.
+
+After recording a correlated `effect_unknown` response for click/fill/type,
+Core may attempt exactly one such read in the same run and browser context,
+under its current lease, source/task constraints and a newly prepared/authorized
+Broker grant. The original grant/UNKNOWN/spending remain. No credentials or
+original input values are copied into the read. A read needing new approval is
+not dispatched. A missing response, unrelated result or malformed context does
+not trigger it. The five-second child deadline never extends the run deadline.
+
+Core durably checkpoints the observation attempt before dispatch and records
+its normal tool transcript, without resuming the model. Both in-progress and
+finished observation checkpoints recover by blocking on the original UNKNOWN;
+neither replay an action nor retry the read. The owner receives the existing
+uncertainty notice. This is an observation foundation for #163, not general
+interactive continuation or a recipient receipt. Old failed runs are not
+automatically resumed; native POST/login acceptance remains outstanding.
+
 ## Private credential state
 
 Live and local-preparation fill/type accept ordinary text or `{type:"credential_ref",alias,field}`.

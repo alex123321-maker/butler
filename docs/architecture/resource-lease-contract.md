@@ -1,5 +1,13 @@
 # Resource arbitration foundation
 
+The controlled-browser profile can pin `browser.freeze_snapshot` as another
+ordinary exclusive-lane operation. Its frozen read never bypasses a retained
+inflight resource marker. A locally completed interaction can leave only its
+external journal result UNKNOWN while its resource lane is complete; observation
+then uses a new normal finite lease/grant. Failed/lost local acknowledgement
+keeps quarantine and denies the observation too. Neither case reconciles the
+original effect or authorizes another mutation.
+
 Workspace owner reconciliation now has one concrete discard-only composition:
 [explicit owner discard](isolated-code-workspaces.md#explicit-owner-discard).
 An immutable authenticated owner decision, matching actual old executor inode,

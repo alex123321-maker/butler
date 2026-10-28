@@ -73,7 +73,12 @@ func resourceBrokerDB(t *testing.T) *pgxpool.Pool {
 	if e != nil {
 		t.Fatal(e)
 	}
-	for _, name := range []string{"037_execution_budgets.up.sql", "057_task_delegations.up.sql", "058_execution_resource_leases.up.sql", "062_resource_dispatches.up.sql"} {
+	// The budget guard consults the canonical stopped-attempt table for writes.
+	// This fresh fixture has no accepted history, but still needs its real schema.
+	if _, e = pool.Exec(context.Background(), `CREATE TABLE accepted_inputs(input_id TEXT PRIMARY KEY)`); e != nil {
+		t.Fatal(e)
+	}
+	for _, name := range []string{"037_execution_budgets.up.sql", "057_task_delegations.up.sql", "058_execution_resource_leases.up.sql", "062_resource_dispatches.up.sql", "102_stopped_input_finalization.up.sql"} {
 		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name))
 		if e != nil {
 			t.Fatal(e)
@@ -157,7 +162,7 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 			t.Fatal("actual browser contracts unavailable", err)
 		}
 		contracts = nil
-		for _, name := range []string{"browser.open", "browser.snapshot", "browser.click"} {
+		for _, name := range []string{"browser.open", "browser.snapshot", "browser.freeze_snapshot", "browser.click"} {
 			actual, ok := actualRegistry.Get(name)
 			if !ok {
 				t.Fatal("actual browser contract missing")
@@ -294,8 +299,8 @@ func (f *resourceBrokerFixture) callRequest(t *testing.T, call *toolbrokerv1.Too
 	f.reader.approvals[approval] = actionauth.ApprovalSnapshot{ApprovalID: approval, Status: "approved", Binding: i.Binding, ResolvedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}
 	f.reader.mu.Unlock()
 	g, e := f.server.AuthorizeToolCall(context.Background(), &toolbrokerv1.AuthorizeToolCallRequest{ToolCall: call, ActionId: i.Binding.ActionID, ApprovalId: approval})
-	if e != nil {
-		t.Fatal(e)
+	if e != nil || g.GetError() != nil || g.GetAuthorizationId() == "" {
+		t.Fatal("authorize denied", e, g.GetError())
 	}
 	return &toolbrokerv1.ExecuteToolCallRequest{ToolCall: call, AuthorizationId: g.GetAuthorizationId()}
 }
@@ -343,6 +348,10 @@ func TestResourceBrokerActualChromiumPageCASIntegration(t *testing.T) {
 	if stale.GetStatus() != "effect_unknown" || posts.Load() != 0 {
 		t.Fatal("manual page mutation reached external click", stale.GetStatus(), posts.Load())
 	}
+	quarantined := invoke("frozen-read", "browser.freeze_snapshot", map[string]any{"browser_session_id": observation.ID})
+	if quarantined.GetStatus() == "completed" || posts.Load() != 0 {
+		t.Fatal("frozen observation bypassed quarantined runtime resource")
+	}
 	var n int
 	var inflight string
 	if e := f.pool.QueryRow(context.Background(), `SELECT COUNT(*) FROM execution_budget_reservations`).Scan(&n); e != nil || n != 2 {
@@ -352,6 +361,67 @@ func TestResourceBrokerActualChromiumPageCASIntegration(t *testing.T) {
 		t.Fatal("unconfirmed browser failure silently released resource", e)
 	}
 }
+func TestResourceBrokerFrozenObservationAfterOpaqueClickChromiumIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_BROWSER_E2E") != "1" {
+		t.Skip("requires isolated actual Chromium fixture")
+	}
+	var posts atomic.Int32
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/effect" && r.Method == "POST" {
+			posts.Add(1)
+			_, _ = fmt.Fprint(w, `<html><body>Current submitted page</body></html>`)
+			return
+		}
+		_, _ = fmt.Fprint(w, `<html><body><form method="post" action="/effect"><button id="submit">Send</button></form></body></html>`)
+	}))
+	defer site.Close()
+	t.Setenv("BUTLER_RESOURCE_BROWSER_FIXTURE", site.URL)
+	f := resourceBroker(t, nil, false)
+	invoke := func(id, tool, args string) (*toolbrokerv1.ToolResult, *toolbrokerv1.ExecuteToolCallRequest) {
+		t.Helper()
+		req := f.callRequest(t, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: id, ToolName: tool, AutonomyMode: 3, ArgsJson: args})
+		response, err := f.server.ExecuteToolCall(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return response.GetResult(), req
+	}
+	opened, _ := invoke("open", "browser.open", `{"url":"`+egresstest.Origin+`/form"}`)
+	var obs struct {
+		ID      string `json:"browser_session_id"`
+		Version int64  `json:"observation_version"`
+		URL     string `json:"final_url"`
+		Network string `json:"network_state"`
+	}
+	if opened.GetStatus() != "completed" || json.Unmarshal([]byte(opened.ResultJson), &obs) != nil || obs.ID == "" {
+		t.Fatal("open failed", opened)
+	}
+	click, original := invoke("click", "browser.click", fmt.Sprintf(`{"browser_session_id":%q,"expected_url":%q,"observation_version":%d,"selector":"#submit"}`, obs.ID, obs.URL, obs.Version))
+	if click.GetStatus() != "effect_unknown" || posts.Load() != 1 {
+		t.Fatal("opaque submission not retained exactly once", click, posts.Load())
+	}
+	snapshot, _ := invoke("observe", "browser.freeze_snapshot", fmt.Sprintf(`{"browser_session_id":%q}`, obs.ID))
+	if snapshot.GetStatus() != "completed" || json.Unmarshal([]byte(snapshot.ResultJson), &obs) != nil || obs.Network != "frozen" || !strings.Contains(snapshot.ResultJson, "Current submitted page") {
+		t.Fatal("same-context frozen read refused", snapshot)
+	}
+	var state string
+	if err := f.pool.QueryRow(context.Background(), `SELECT state FROM action_effects WHERE action_id=$1`, click.ActionId).Scan(&state); err != nil || state != "effect_unknown" {
+		t.Fatal("observation reconciled opaque write", err, state)
+	}
+	duplicate, err := f.server.ExecuteToolCall(context.Background(), original)
+	if err != nil || duplicate.GetResult().GetStatus() != "effect_unknown" || posts.Load() != 1 {
+		t.Fatal("same original dispatch replayed", err, posts.Load())
+	}
+	denied, _ := invoke("different-click", "browser.click", fmt.Sprintf(`{"browser_session_id":%q,"expected_url":%q,"observation_version":%d,"selector":"button"}`, obs.ID, obs.URL, obs.Version))
+	if denied.GetStatus() != "execution_stopped" || posts.Load() != 1 {
+		t.Fatal("observation authorized another effect", denied, posts.Load())
+	}
+	var reservations int
+	if err := f.pool.QueryRow(context.Background(), `SELECT count(*) FROM execution_budget_reservations`).Scan(&reservations); err != nil || reservations != 3 {
+		t.Fatal("wrong retained spend", err, reservations)
+	}
+}
+
 func TestResourceBrokerRuntimeAtomicClaimAndPrivateOneUseIntegration(t *testing.T) {
 	f := resourceBroker(t, &resourcePageBackend{}, false)
 	req := f.request(t, "run", "first")
