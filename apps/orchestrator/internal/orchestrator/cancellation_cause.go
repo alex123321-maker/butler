@@ -37,7 +37,8 @@ func preserveOwnedCancellation(ctx context.Context, err error) error {
 	// when cancellation is also present. Only a plain cancelled stream acquires
 	// the owning supervisor's cause.
 	var providerFailure *transport.Error
-	if errors.Is(err, context.DeadlineExceeded) || errors.As(err, &providerFailure) {
+	var terminalFailure *terminalWriteError
+	if errors.Is(err, context.DeadlineExceeded) || errors.As(err, &providerFailure) || errors.As(err, &terminalFailure) {
 		return err
 	}
 	var cause *ownedCancellation

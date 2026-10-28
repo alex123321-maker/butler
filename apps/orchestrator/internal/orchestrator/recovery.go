@@ -149,14 +149,18 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			return nil, e
 		}
 		if decision == "failed" {
-			s.blockTaskRun(ctx, runID, "communication_result_missing")
+			if blockErr := s.blockTaskRun(ctx, runID, "communication_result_missing"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "communication_result_missing"}, nil
 		}
 		return blockedApprovalResult(current, "communication_correction_not_resumable"), nil
 	}
 	modelRetry := stage == "model_retry_pending" && checkpoint.ModelRetry.Count == 1 && checkpoint.ModelRetry.State == "claimed"
 	if !modelRetry && !guardedSelection && !interactionWait && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
-		s.blockTaskRun(ctx, runID, "checkpoint_not_resumable")
+		if blockErr := s.blockTaskRun(ctx, runID, "checkpoint_not_resumable"); blockErr != nil {
+			return nil, blockErr.withPreceding(err)
+		}
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "checkpoint_not_resumable"}, nil
 	}
 	if stage == "finalizing" && (checkpoint.Data.FinalMessage != "" || checkpoint.Data.TerminalObserved) && current.GetCurrentState() == commonv1.RunState_RUN_STATE_FINALIZING {
@@ -291,7 +295,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 	} else if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 		if _, err = s.config.ApprovalService.VerifyActionApproval(ctx, actionauth.ApprovalRequest{ApprovalID: decision.ApprovalID, Binding: continuation.Binding}); err != nil {
-			s.blockTaskRun(ctx, runID, "approval_invalidated")
+			if blockErr := s.blockTaskRun(ctx, runID, "approval_invalidated"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return blockedApprovalResult(current, "approval_invalidated"), nil
 		}
 		ctx = context.WithValue(ctx, recoveredApprovalKey{}, continuation)
@@ -311,7 +317,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			}
 		}
 		if result == nil || result.GetStatus() == "effect_unknown" {
-			s.blockTaskRun(ctx, runID, "effect_unknown")
+			if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return uncertainResult(current), nil
 		}
 		ctx = context.WithValue(ctx, recoveredApprovalKey{}, continuation)
@@ -348,10 +356,14 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			return s.stopBudget(ctx, current, err)
 		}
 		if errors.Is(err, ErrActionOutcomeUnknown) {
-			s.blockTaskRun(ctx, runID, "effect_unknown")
+			if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return uncertainResult(current), nil
 		}
-		s.blockTaskRun(ctx, runID, "continuation_authorization_or_transport_failed")
+		if blockErr := s.blockTaskRun(ctx, runID, "continuation_authorization_or_transport_failed"); blockErr != nil {
+			return nil, blockErr.withPreceding(err)
+		}
 		return nil, err
 	}
 	final, current, err := s.consumeModelStream(ctx, runLog, current, event.SessionKey, lease.LeaseID, stream)
@@ -368,7 +380,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
 	}
 	if errors.Is(err, ErrActionOutcomeUnknown) {
-		s.blockTaskRun(ctx, runID, "effect_unknown")
+		if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
+			return nil, blockErr.withPreceding(err)
+		}
 		return uncertainResult(current), nil
 	}
 	if err != nil {
