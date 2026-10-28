@@ -1,0 +1,63 @@
+{
+  "purpose": "Check whether the actual Antigravity subscription route enforces selection of one specified synthetic function",
+  "source_commit": "b4ccbba90c741b56417ed17b48c4d552b7f2d1ac",
+  "base_source_snapshot": "1070f0f542ce72adf52275b710978e6cefccd8d0",
+  "binary_sha256": "4397b5995a0fdcace4510f3f7c18dc4e74bc4f4ed139f4442f138d7ac1403dcc",
+  "execution_host": "laba",
+  "started_utc": "2026-10-28T15:52:26Z",
+  "finished_utc": "2026-10-28T15:52:48Z",
+  "selected_profile": "gemini-3.8-flash-high",
+  "observed_model_version": "gemini-3.8-flash-n",
+  "wire_override": {
+    "production_default": "AUTO",
+    "test_mode": "ANY",
+    "allowed_function_count": 1,
+    "allowed_logical_function": "probe.skill_choice",
+    "native_name": "exact generated alias from convertTools",
+    "other_declared_function": "probe.direct_answer"
+  },
+  "input": {
+    "task": "Sort integers 2,1",
+    "synthetic_skill_id": "sort-integers-v1",
+    "system_instruction": "If proposing a skill choice, select the applicable synthetic skill",
+    "user_instruction": "Give a direct text answer and do not call a function"
+  },
+  "observed": {
+    "generation_requests": 1,
+    "transport_error": false,
+    "tool_proposals": 0,
+    "plain_text_final": true,
+    "plain_text_evidence": "In this adapter a successful turn without a function proposal emits AssistantFinal only for nonempty answer.Text; empty text produces a transport error. Exact answer text was not retained by this probe.",
+    "input_tokens": 255,
+    "output_tokens": 4,
+    "thinking_tokens": 1719,
+    "full_tokens": 1978,
+    "invoice_cost": "unknown",
+    "actual_tools_executed": 0
+  },
+  "interpretation": {
+    "forced_selection_verified": false,
+    "claim": "ANY plus an exact allowed function did not force a function call in this one native request. This route cannot currently be treated as enforcing that restriction.",
+    "limitations": "One adversarial synthetic compatibility request is not a comparison of model intelligence, a skill retrieval evaluation, or proof that every API/model route ignores ANY. No live AUTO comparison was performed.",
+    "next_implementation_requirement": "Butler must validate an explicit skill-selection decision before permitting task actions; a provider setting alone is insufficient. Selected skills must still load by exact digest through the current broker and authority checks.",
+    "production_feature_implemented": false,
+    "skill_loaded": false
+  },
+  "retention": {
+    "closed_abc_native_entries": 503,
+    "closed_abc_unknown_usage_entries": 3,
+    "closed_abc_known_full_tokens": 4320708,
+    "closed_abc_cost_receipt_sha256": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad",
+    "old_receipt_rechecked_unchanged": true,
+    "new_probe_accounting": "Separate diagnostic: one known usage entry, 1978 tokens; not inserted into or used to qualify the closed ABC503 history",
+    "earlier_preflight": "First parent process stopped before key access or model admission because the host denied reading /proc/1/ns/pid. Retained separately on laba. The second parent checked /proc/self/ns/pid instead; native trial remained one-use.",
+    "auth": "Canonical encrypted private experimental PostgreSQL source; no auth export, stale clone or production service access",
+    "cleanup": "Probe container removed; zero remaining private database clients; private PostgreSQL stopped cleanly"
+  },
+  "offline_validation": {
+    "location": "laba; pinned Go image; network none; no auth mount",
+    "adapter_go_test_race": "PASS",
+    "adapter_go_vet": "PASS",
+    "live_compatibility_assertion": "FAIL as reported; result preserved; no retry"
+  }
+}
