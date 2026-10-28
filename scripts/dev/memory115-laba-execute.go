@@ -24,14 +24,14 @@ import (
 
 // Binding occurs only after the new server producer/recipe/five artifacts/plan
 // are frozen. Empty commitments deny before filesystem, DB or auth access.
-const laba115NativeSource = "92f878f825e8f1ec58bed9df5c0b48cfb47035e2"
-const laba115NativePlanSHA = "03ebf6e78cc4c16ebcc3f6a7e7a6a1f8b3b1d7a921843e3f1d28a2613e6dc010"
-const laba115NativeHistorySHA = "a3a045bd2220eda99e92d85b072b59286aff3aa452e8b6407c02df4a2890d721"
-const laba115NativeAppSHA = "cda37e36c8113c0f32a201810a6a44f5d5b95bdf30a4804f97d4edb8b321beee"
-const laba115NativeBrokerSHA = "1bf5ecc3821672ff1669b3e856663d76355089d5c2e1b27942977165622186c9"
-const laba115NativeBrokerControlSHA = "5cb62d849c666055fc9f2906237dd5852b047208844559adcd45ab74256d292b"
-const laba115NativeExtensionSHA = "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b"
-const laba115NativeHTTPSHA = "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca"
+const laba115NativeSource = ""
+const laba115NativePlanSHA = ""
+const laba115NativeHistorySHA = ""
+const laba115NativeAppSHA = ""
+const laba115NativeBrokerSHA = ""
+const laba115NativeBrokerControlSHA = ""
+const laba115NativeExtensionSHA = ""
+const laba115NativeHTTPSHA = ""
 const laba115ControlDSN = "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable"
 const laba115TargetHostDSN = "postgres://postgres@127.0.0.1:55455/memory115_laba_skillprep_v1_test?sslmode=disable"
 const laba115TargetChildDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_skillprep_v1_test?sslmode=disable"
@@ -117,7 +117,7 @@ func laba115DatabaseIdentity() error {
 }
 
 func laba115NativePins() map[string]string {
-	return map[string]string{"prepared/plan/preseal.json": laba115NativePlanSHA, "history/recipe.json": laba115NativeHistorySHA, "prepared/app.test": laba115NativeAppSHA, "prepared/tool-broker": laba115NativeBrokerSHA, "prepared/broker-control.test": laba115NativeBrokerControlSHA, "prepared/extension.test": laba115NativeExtensionSHA, "prepared/http.test": laba115NativeHTTPSHA}
+	return map[string]string{"prepared-proxy-v2/plan/preseal.json": laba115NativePlanSHA, "history/recipe.json": laba115NativeHistorySHA, "prepared-proxy-v2/app.test": laba115NativeAppSHA, "prepared-proxy-v2/tool-broker": laba115NativeBrokerSHA, "prepared-proxy-v2/broker-control.test": laba115NativeBrokerControlSHA, "prepared-proxy-v2/extension.test": laba115NativeExtensionSHA, "prepared-proxy-v2/http.test": laba115NativeHTTPSHA}
 }
 func laba115NativeBound() bool {
 	return laba115PinsBound(laba115NativeSource, laba115NativePins())
@@ -127,7 +127,7 @@ func laba115PinsBound(source string, pins map[string]string) bool {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(source) || len(pins) != 7 {
 		return false
 	}
-	for _, path := range []string{"prepared/plan/preseal.json", "history/recipe.json", "prepared/app.test", "prepared/tool-broker", "prepared/broker-control.test", "prepared/extension.test", "prepared/http.test"} {
+	for _, path := range []string{"prepared-proxy-v2/plan/preseal.json", "history/recipe.json", "prepared-proxy-v2/app.test", "prepared-proxy-v2/tool-broker", "prepared-proxy-v2/broker-control.test", "prepared-proxy-v2/extension.test", "prepared-proxy-v2/http.test"} {
 		sha := pins[path]
 		if !regexp.MustCompile(`^[a-f0-9]{64}$`).MatchString(sha) {
 			return false
@@ -237,7 +237,7 @@ func laba115ExecLog(ctx context.Context, id, path string, envfile string, args .
 }
 
 func laba115ChildEnvironment() []string {
-	return []string{"PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin", "GOMAXPROCS=1", "TMPDIR=/execution/tmp", "BUTLER_BROKER_E2E_BINARY=/prepared/tool-broker", "BUTLER_GUARDED_REQUEST_BROKER_BINARY=/prepared/broker-control.test", "BUTLER_EXTENSION_E2E_BINARY=/prepared/extension.test", "BUTLER_EXPERIENCE_HTTP_BINARY=/prepared/http.test", "BUTLER_EXPERIENCE_NATIVE_HISTORY=/history/recipe.json", "BUTLER_EXPERIENCE_NATIVE_HISTORY_SHA256=" + laba115NativeHistorySHA, "BUTLER_EXPERIENCE_NATIVE_PLAN=/plan/preseal.json", "BUTLER_EXPERIENCE_NATIVE_PLAN_SHA256=" + laba115NativePlanSHA}
+	return []string{"PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin", "GOMAXPROCS=1", "HTTPS_PROXY=http://10.249.116.1:18081", "TMPDIR=/execution/tmp", "BUTLER_BROKER_E2E_BINARY=/prepared/tool-broker", "BUTLER_GUARDED_REQUEST_BROKER_BINARY=/prepared/broker-control.test", "BUTLER_EXTENSION_E2E_BINARY=/prepared/extension.test", "BUTLER_EXPERIENCE_HTTP_BINARY=/prepared/http.test", "BUTLER_EXPERIENCE_NATIVE_HISTORY=/history/recipe.json", "BUTLER_EXPERIENCE_NATIVE_HISTORY_SHA256=" + laba115NativeHistorySHA, "BUTLER_EXPERIENCE_NATIVE_PLAN=/plan/preseal.json", "BUTLER_EXPERIENCE_NATIVE_PLAN_SHA256=" + laba115NativePlanSHA}
 }
 
 func laba115Execute(ctx context.Context, native bool) error {
@@ -250,7 +250,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 			return errors.New("server frozen artifact bytes changed")
 		}
 	}
-	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared/plan/preseal.json"))
+	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-proxy-v2/plan/preseal.json"))
 	if err != nil {
 		return errors.New("server preseal unavailable")
 	}
@@ -264,9 +264,9 @@ func laba115Execute(ctx context.Context, native bool) error {
 	caller := ctx
 	ctx, setupDone := context.WithDeadline(ctx, seal.Deadline)
 	defer setupDone()
-	label := "prepare-v1"
+	label := "prepare-proxy-v2"
 	if native {
-		label = "native-v1"
+		label = "native-proxy-v2"
 	}
 	operator := filepath.Join(laba115HostRoot, "operator-"+label)
 	if os.Mkdir(operator, 0700) != nil {
@@ -287,7 +287,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 	}
 	network := "container:" + pgID
 	args := []string{"create", "--name", "issue115-" + label + "-20261028-v1", "--network", network, "--cpus", "1", "--memory", "2g", "--memory-swap", "2g", "--pids-limit", "256", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--log-driver", "none", "--user", "1000:1000", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m"}
-	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
+	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-proxy-v2,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-proxy-v2,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-proxy-v2/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
 		args = append(args, "--mount", mount)
 	}
 	for _, entry := range laba115ChildEnvironment() {

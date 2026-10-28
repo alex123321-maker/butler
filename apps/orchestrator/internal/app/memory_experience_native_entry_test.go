@@ -280,7 +280,7 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !experienceNativeNetworkProfile(history.LocalSuccessor != nil || history.SkillPreparationSuccessor != nil, os.Getenv) {
+	if !experienceNativeHistoryNetworkProfile(history, os.Getenv) {
 		t.Fatal("native fixed network profile differs")
 	}
 	skillProfile, err := experienceNativeSkillPreparationProfile(history)

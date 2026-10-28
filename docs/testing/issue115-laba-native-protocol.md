@@ -41,6 +41,16 @@ reference. Model data and exports never receive raw authentication material.
 The operator uses an empty private Docker configuration and an explicit local
 daemon socket, with no inherited proxy/context substitution.
 
+The server lineage requires exactly `HTTPS_PROXY=http://10.249.116.1:18081`,
+with alternate proxy and bypass variables absent. A bounded byte relay listening
+only on that dedicated bridge address accepts only the private database namespace
+address and forwards to the existing `127.0.0.1:18080` proxy. It neither terminates
+TLS nor logs headers/payloads. The PC lineage still rejects ambient proxies.
+The first server C92 source/preseal and bound zero-native preparation omitted
+this distinction; they are retained as superseded setup, never native evidence.
+An earlier authenticated model-name inventory used the direct route and is
+excluded from proxy-route readiness. No generation occurred in that diagnostic.
+
 An advisory lock, actual source windows, all source task-store lease/claim
 namespaces and other credential backends must be idle. The source is a private
 relocation of the existing experimental credential store, not production.

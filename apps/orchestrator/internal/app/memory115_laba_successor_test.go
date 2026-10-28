@@ -14,6 +14,46 @@ const laba115SkillSuccessorFormat = "butler.experience.laba-skill-preparation-da
 const laba115Platform = "ssh-laba-isolated-v1"
 const laba115HostDecisionSHA = "17ec6b369fec91129c1ae05e310260239c6a513a1e398c6eb5fe7b4515bcd4c5"
 const laba115SkillDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_skillprep_v1_test?sslmode=disable"
+const laba115Proxy = "http://10.249.116.1:18081"
+
+// This fixed bridge listener forwards bytes only to laba's existing loopback
+// proxy. PC successors keep their direct route; a server lineage cannot use it.
+func experienceNativeHistoryNetworkProfile(h experienceNativeLineage, getenv func(string) string) bool {
+	if h.SkillPreparationSuccessor == nil || h.SkillPreparationSuccessor.Platform != laba115Platform {
+		return experienceNativeNetworkProfile(h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil, getenv)
+	}
+	if getenv("HTTPS_PROXY") != laba115Proxy {
+		return false
+	}
+	for _, key := range []string{"https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy", "NO_PROXY", "no_proxy"} {
+		if getenv(key) != "" {
+			return false
+		}
+	}
+	return true
+}
+
+func TestLaba115NetworkProfileRequiresFixedServerProxy(t *testing.T) {
+	h := experienceNativeLineage{SkillPreparationSuccessor: &local115SkillHistoryBinding{Platform: laba115Platform}}
+	get := func(values map[string]string) func(string) string { return func(k string) string { return values[k] } }
+	if experienceNativeHistoryNetworkProfile(h, get(nil)) || !experienceNativeHistoryNetworkProfile(h, get(map[string]string{"HTTPS_PROXY": laba115Proxy})) {
+		t.Fatal("server proxy was optional or exact route was denied")
+	}
+	for _, key := range []string{"https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy", "NO_PROXY", "no_proxy"} {
+		if experienceNativeHistoryNetworkProfile(h, get(map[string]string{"HTTPS_PROXY": laba115Proxy, key: "*"})) {
+			t.Fatal("alternate proxy or bypass accepted", key)
+		}
+	}
+	for _, proxy := range []string{"http://127.0.0.1:18080", laba115Proxy + "/", "http://other:18081"} {
+		if experienceNativeHistoryNetworkProfile(h, get(map[string]string{"HTTPS_PROXY": proxy})) {
+			t.Fatal("server proxy substituted")
+		}
+	}
+	h.SkillPreparationSuccessor.Platform = ""
+	if !experienceNativeHistoryNetworkProfile(h, get(nil)) || experienceNativeHistoryNetworkProfile(h, get(map[string]string{"HTTPS_PROXY": laba115Proxy})) {
+		t.Fatal("PC network profile changed")
+	}
+}
 
 func valid115SkillPlatform(platform, decision string) bool {
 	return platform == "" && decision == "" || platform == laba115Platform && decision == laba115HostDecisionSHA
