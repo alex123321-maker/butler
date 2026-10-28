@@ -1446,3 +1446,7 @@ quiet observations and atomic changes-only publication. Migration 100 is require
 Repeated work can suggest a reusable procedure; formal skill validation and
 activation retain their existing evidence requirements. See
 [research contract](../../docs/architecture/research-followups.md).
+
+## Terminal persistence
+
+Core joins the owning lease/authority supervisor before terminal task mutation and atomic completion. In-flight failures remain authoritative; writes retain their original context and database fences. Failed outcome, task-block and run-transition writes return safe stage labels with inspectable underlying causes. See the run lifecycle specification.
