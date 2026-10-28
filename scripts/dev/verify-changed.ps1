@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(cmd/browser-eval/|deploy/browser-eval/|scripts/dev/browser-(baseline-manifest|native-(control|snapshot|verify))[.]sh$)" {
+    "^(cmd/browser-eval/|deploy/browser-eval/|scripts/dev/browser-(baseline-manifest|native-(control|snapshot|verify|attempt)|fixture-verify)[.]sh$|scripts/dev/browser-(public-matrix|baseline-summary)[.]ps1$)" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/testing/browser-baseline-2026-10-28.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/browser-eval -Count1; direct Chromium recipient smoke per cmd/browser-eval/README.md. Native agent acceptance is separate.")

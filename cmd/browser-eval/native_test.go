@@ -145,3 +145,33 @@ func TestNativeTimeoutPreservesAttemptWithoutResubmitting(t *testing.T) {
 		t.Fatal("timeout lost or resubmitted")
 	}
 }
+
+func TestNativeResumeObservesSameInputWithoutPosting(t *testing.T) {
+	var posts atomic.Int32
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			posts.Add(1)
+		}
+		if r.URL.Path != "/api/v3/inputs/"+testInput {
+			t.Error("wrong resumed Input")
+		}
+		fmt.Fprintf(w, `{"input_id":%q,"status":"completed"}`, testInput)
+	}))
+	defer s.Close()
+	dir := t.TempDir()
+	token := filepath.Join(dir, "token")
+	if err := os.WriteFile(token, []byte("operator-canary-token"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"-endpoint", s.URL, "-owner-token-file", token, "-delivery-id", "browser-baseline-resume", "-observe-input", testInput, "-attempt-dir", filepath.Join(dir, "resume"), "-timeout", "5s"}
+	if err := runNative(args); err != nil {
+		t.Fatal(err)
+	}
+	if posts.Load() != 0 {
+		t.Fatal("resume submitted new Input")
+	}
+	data, _ := os.ReadFile(filepath.Join(dir, "resume", "02-observation.json"))
+	if !strings.Contains(string(data), "INPUT_COMPLETED") {
+		t.Fatal("resume did not observe completion")
+	}
+}

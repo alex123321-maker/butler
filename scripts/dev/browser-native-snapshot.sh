@@ -11,6 +11,7 @@ BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
 SELECT json_build_object(
  'scope','native_metadata_only','observed_at',clock_timestamp(),
  'event',i.event_id,'input',i.input_id,'run',i.run_id,'status',i.status,
+ 'error_code',CASE WHEN i.error_code ~ '^[a-z0-9_]{1,64}$' THEN i.error_code ELSE NULL END,
  'accepted_at',i.accepted_at,'updated_at',i.updated_at,
  'pending_approvals',(SELECT count(*) FROM approvals a WHERE a.run_id=i.run_id AND a.status='pending'),
  'tools',(SELECT json_agg(json_build_object('name',t.tool_name,'status',t.status,'started_at',t.started_at,'finished_at',t.finished_at,'has_error',t.error IS NOT NULL AND t.error<>'{}'::jsonb) ORDER BY t.started_at) FROM tool_calls t WHERE t.run_id=i.run_id),

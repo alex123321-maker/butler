@@ -50,6 +50,9 @@ an agent retry. Do not use it as an ordinary success route.
 ## Independent evidence and limits
 
 JSONL contains sequence, UTC timestamp, fixed event kind and accepted boolean.
+Accepted form events also contain the validated, bounded quantity (1–5), so
+verification can distinguish the requested quantity 3 from another valid input.
+No arbitrary form string is exported. Older read-only journals omit quantity.
 Accepted login is distinct from account read. Each accepted form submission
 counts a real fixture effect; duplicates remain visible. A GET receipt proves a
 request reached the recipient, not that the model read it or delivered an answer.
@@ -102,6 +105,11 @@ same Input before any later attempt. Protected consent/approval is never answere
 by this runner. A waiting scenario needs the real owner flow and observation of
 that same Input, not another POST.
 
+After an actual protected owner response, reuse `native` with
+`-observe-input INPUT_ID`, the original delivery ID and a new observation
+directory (omit `-prompt-file`). This branch performs GET only and retains the
+original Input identity; it neither grants consent nor creates another task.
+
 On the current `laba` operator composition, `scripts/dev/browser-native-control.sh`
 runs a single separate example.com browser control after checking the owner queue.
 It reads the existing owner file privately, never provider credentials, and removes
@@ -111,3 +119,18 @@ metadata without args, result bodies or errors. It is not a task scorer.
 `browser-native-verify.sh ROOT METADATA` performs a protected owner GET and checks
 the fixed public control's title/link/documentation-purpose rubric. Only booleans
 are exported; this narrow rubric cannot score arbitrary tasks.
+
+`verify-fixture` takes the same owner/publication refs plus `-scenario`, private
+`-config`, exact-attempt `-journal` and new `-output`. Comparison runs inside the
+private process; only counts/booleans are exported. It checks fresh read/account
+references, accepted form count/quantity and answer credential canaries. Caller
+must join the exact current-run browser and channel receipts separately; this
+command never reconciles production effects or treats a fixture receipt as a
+kernel action receipt.
+
+The concrete #162 matrix uses `browser-native-attempt.sh` and the bounded public
+subset driver `browser-public-matrix.ps1`. It stops on waiting/failed/unknown
+observations and preserves each attempt; it does not auto-approve effects.
+Reproduce the limited summary with `browser-baseline-summary.ps1 -Output NEW_FILE`.
+All remaining slots after a blocker stay UNEXECUTED. See the testing report for
+the native stop and infrastructure correction, rather than treating it as 15/15.

@@ -133,6 +133,14 @@ func nativeAttempt(ctx context.Context, c *nativeClient, prompt, delivery, direc
 	if err := exclusiveJSON(filepath.Join(directory, "01-submission.json"), observation("ACCEPTED")); err != nil {
 		return err
 	}
+	return observeNative(ctx, c, receipt, delivery, directory, poll, start)
+}
+
+func observeNative(ctx context.Context, c *nativeClient, receipt nativeReceipt, delivery, directory string, poll time.Duration, start time.Time) error {
+	code := 0
+	observation := func(state string) nativeObservation {
+		return nativeObservation{delivery, receipt.InputID, receipt.RunID, state, code, time.Now().UTC(), time.Since(start).Milliseconds(), "UNVERIFIED", "UNKNOWN", "UNVERIFIED"}
+	}
 	id := receipt.InputID
 	for {
 		select {
@@ -173,6 +181,7 @@ func runNative(args []string) error {
 	promptFile := fs.String("prompt-file", "", "UTF-8 task file, without credentials")
 	delivery := fs.String("delivery-id", "", "unique browser-baseline-* identity")
 	directory := fs.String("attempt-dir", "", "new private attempt directory")
+	observe := fs.String("observe-input", "", "observe an existing Input after owner response; never POST")
 	timeout := fs.Duration("timeout", 3*time.Minute, "bounded observation window; does not cancel work")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -184,10 +193,6 @@ func runNative(args []string) error {
 	if err != nil {
 		return errors.New("private owner reference unavailable")
 	}
-	prompt, err := os.ReadFile(*promptFile)
-	if err != nil {
-		return errors.New("prompt unavailable")
-	}
 	c, err := newNativeClient(*endpoint, strings.TrimSpace(string(token)))
 	if err != nil {
 		return err
@@ -195,5 +200,22 @@ func runNative(args []string) error {
 	defer c.client.CloseIdleConnections()
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
+	if *observe != "" {
+		if !inputID.MatchString(*observe) || !attemptID.MatchString(*delivery) || *promptFile != "" {
+			return errors.New("invalid observation identity")
+		}
+		if err := os.Mkdir(*directory, 0700); err != nil {
+			return errors.New("observation directory must be new")
+		}
+		start := time.Now()
+		if err := exclusiveJSON(filepath.Join(*directory, "00-intent.json"), map[string]any{"delivery_id": *delivery, "observe_input": *observe, "started_at": start.UTC(), "submits_new_input": false}); err != nil {
+			return err
+		}
+		return observeNative(ctx, c, nativeReceipt{InputID: *observe}, *delivery, *directory, 1500*time.Millisecond, start)
+	}
+	prompt, err := os.ReadFile(*promptFile)
+	if err != nil {
+		return errors.New("prompt unavailable")
+	}
 	return nativeAttempt(ctx, c, string(prompt), *delivery, *directory, 1500*time.Millisecond)
 }

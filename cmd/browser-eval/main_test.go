@@ -113,10 +113,19 @@ func TestFixtureRoutesDoNotExposeOracleOrConfiguration(t *testing.T) {
 	if status != 400 || journal.Len() != 0 {
 		t.Fatal("secret query accepted")
 	}
-	for _, path := range []string{"/read", "/catalog?q=Arctic", "/catalog?q=Arctic&page=2", "/record"} {
+	for _, path := range []string{"/read", "/catalog?q=Arctic", "/catalog?q=Arctic&page=2", "/catalog?q=Arctic+delivery", "/catalog?q=arctic+delivery&page=2", "/record"} {
 		status, body := get(t, c, s.URL+path)
 		if status != 200 || strings.Contains(body, "canary-password") {
 			t.Fatal("navigation fixture failed")
+		}
+		if strings.HasPrefix(path, "/catalog?") {
+			link := "Next page"
+			if strings.Contains(path, "page=2") {
+				link = "Arctic delivery"
+			}
+			if !strings.Contains(body, link) {
+				t.Fatal("normal search query did not expose the expected navigation")
+			}
 		}
 	}
 	if strings.Contains(journal.String(), "Arctic") {

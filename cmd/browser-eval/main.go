@@ -33,6 +33,7 @@ type receipt struct {
 	At       time.Time `json:"at"`
 	Kind     string    `json:"kind"`
 	Accepted bool      `json:"accepted"`
+	Quantity int       `json:"quantity,omitempty"`
 }
 
 type fixture struct {
@@ -52,11 +53,14 @@ func randomID() string {
 	return hex.EncodeToString(b[:])
 }
 
-func (s *fixture) record(kind string, accepted bool) bool {
+func (s *fixture) record(kind string, accepted bool, quantity int) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.sequence++
-	err := json.NewEncoder(s.journal).Encode(receipt{s.sequence, time.Now().UTC(), kind, accepted})
+	if kind != "form_submission" || !accepted {
+		quantity = 0
+	}
+	err := json.NewEncoder(s.journal).Encode(receipt{Sequence: s.sequence, At: time.Now().UTC(), Kind: kind, Accepted: accepted, Quantity: quantity})
 	if f, ok := s.journal.(*os.File); ok && err == nil {
 		err = f.Sync()
 	}
@@ -92,7 +96,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/login":
 			valid := subtle.ConstantTimeCompare([]byte(r.PostForm.Get("username")), []byte(s.config.Username)) == 1 && subtle.ConstantTimeCompare([]byte(r.PostForm.Get("password")), []byte(s.config.Password)) == 1
-			if !s.record("login", valid) {
+			if !s.record("login", valid, 0) {
 				http.Error(w, "Recipient journal unavailable", 503)
 				return
 			}
@@ -109,7 +113,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/form", "/lost-response":
 			quantity, err := strconv.Atoi(r.PostForm.Get("quantity"))
 			valid := err == nil && quantity >= 1 && quantity <= 5 && r.PostForm.Get("title") == "Browser baseline"
-			if !s.record("form_submission", valid) {
+			if !s.record("form_submission", valid, quantity) {
 				http.Error(w, "Recipient journal unavailable", 503)
 				return
 			}
@@ -136,14 +140,15 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		page("Browser baseline", `<nav><a href="/read">Delivery information</a> <a href="/catalog">Catalog</a> <a href="/form">Request form</a> <a href="/login">Account</a></nav>`)
 	case "/read":
-		if !s.record("read", true) {
+		if !s.record("read", true, 0) {
 			http.Error(w, "Recipient journal unavailable", 503)
 			return
 		}
 		page("Delivery information", "<p>Delivery reference: "+html.EscapeString(s.config.Fact)+"</p>")
 	case "/catalog":
 		body := `<form method=get><label>Search <input name=q></label><button>Search</button></form>`
-		if r.URL.Query().Get("q") == "Arctic" {
+		query := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+		if query == "arctic" || query == "arctic delivery" {
 			if r.URL.Query().Get("page") == "2" {
 				body += `<a href="/record">Arctic delivery</a>`
 			} else {
@@ -152,7 +157,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		page("Catalog", body)
 	case "/record":
-		if !s.record("record_read", true) {
+		if !s.record("record_read", true, 0) {
 			http.Error(w, "Recipient journal unavailable", 503)
 			return
 		}
@@ -170,7 +175,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		if !s.record("account_read", true) {
+		if !s.record("account_read", true, 0) {
 			http.Error(w, "Recipient journal unavailable", 503)
 			return
 		}
@@ -254,6 +259,8 @@ func main() {
 		err = runNative(os.Args[2:])
 	} else if len(os.Args) > 1 && os.Args[1] == "verify-public-control" {
 		err = verifyPublicControl(os.Args[2:])
+	} else if len(os.Args) > 1 && os.Args[1] == "verify-fixture" {
+		err = verifyFixture(os.Args[2:])
 	} else {
 		err = run(os.Args[1:])
 	}

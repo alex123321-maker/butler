@@ -139,12 +139,111 @@ directory on devops. Secure cookies are forced for deployment behind TLS without
 trusting forwarded headers. Targeted Go race/vet and the cookie regression pass.
 `systemd-analyze verify` and actual service startup passed.
 
-No DNS record, public virtual host or certificate has been created yet. REG.RU
-requires a login CAPTCHA; action-time confirmation was requested through the
-browser workflow and remains pending. The existing Nginx sites are unchanged.
+At that stage no DNS record, public virtual host or certificate had been created.
+REG.RU required a login CAPTCHA; action-time confirmation was requested through
+the browser workflow. The existing Nginx sites were unchanged.
 `nginx-https.conf.template` is prepared for the actual selected domain after DNS
 verification and certificate issuance. Public form/login native attempts remain
 UNEXECUTED until those gates are complete.
+
+## HTTPS enabled and limited native matrix
+
+After the owner confirmed the CAPTCHA, it was solved through the normal REG.RU
+login UI. A single new A record `butler-eval.report-template.ru → 46.8.21.229`
+was saved and subsequently confirmed on both authoritative nameservers and
+1.1.1.1. Existing zone entries/TTL and existing Nginx virtual hosts were retained.
+Let's Encrypt issued a public certificate expiring 2027-01-26. HTTPS root returned
+200 from `laba` with ordinary certificate validation; `/oracle` and `/private.json`
+returned 404. There was no egress exception or TLS-warning bypass.
+
+The new HTTPS host proxies only the loopback recipient, disables access logging,
+bounds request bodies/timeouts and supplies noindex. Certificate renewal has a
+domain-specific Nginx reload hook after syntax validation. Captured UI proof is
+kept locally at `.cache/reg-dns-created.jpg`; private config/key material is not
+included in Git. Certificate private keys remain under the root-owned host path.
+
+Each native attempt used a new synthetic config and separate recipient process,
+journal and browser context. Four of the planned 15 matrix Inputs were submitted:
+three reads and one search/navigation. The separate example.com control is not
+counted among these four. [Content-free evidence and summary](browser-baseline/matrix/summary.json)
+join exact Input/run refs, tool events, protected publication comparison and
+delivery state. The native driver preserves attempted/failed/unexecuted states.
+
+| Attempt | Result | Telegram delivery from acceptance |
+| --- | --- | --- |
+| read-01 | narrow read PASS | 68.505 s |
+| read-02 | narrow read PASS | 72.351 s |
+| read-03 | narrow read PASS | 52.651 s |
+| nav-01 | waiting for exact fill approval, then failed at guard | no result publication |
+
+All three read answers contained the exact fresh reference read from that
+attempt's private fixture configuration. Protected owner publication GET passed,
+the model used one browser call per Input and Telegram recorded sent. The
+answer-only canary check found no fixture username/password. This is not a scan
+of all provider input, logs or memory and is not full credential acceptance.
+Median observed Telegram delivery latency was 68.505 s (range 52.651–72.351 s,
+n=3). Tool-duration sums were 1.299–1.731 s, with 6–8 model attempts per read.
+These limited data identify substantial overhead outside the browser call but
+do not isolate model/admission/context/queue time or establish p95.
+
+Recipient request counts are **not** automatically attributed to the model:
+read-02's server journal had three read events for one browser tool call. The
+open test origin can receive other requests. Actual returned fresh-reference
+comparison and current-run browser receipt are therefore also required; the
+test does not claim three separate agent actions from that count.
+
+### Concrete blocker for #163
+
+Navigation made 13 model attempts, including repeated discovery and an
+http.download, before requesting exact `browser.fill` approval for the search
+field at `/catalog`, value `Arctic delivery`. Without intervention it was
+`waiting_for_user` at about 78 s. The operator reviewed that exact public-site
+search action, approved it through the ordinary authenticated owner API and
+recorded **one intervention**. No broad mandate or policy override was created.
+
+The same Input was observed using the GET-only resume path, without another POST.
+`browser.fill` then returned execution_stopped with validation reason
+`stopped_attempt_uncertain`; the Input transitioned through blocked to failed.
+Read-only inspection found four pre-existing uncertain stopped attempts in the
+same owner/session, not this new navigation run. This matches the receiving
+budget guard in `internal/budget/stopped_attempt.go`, which permits reads but
+denies ordinary effects across that retained uncertainty even after exact
+approval. The fill did not reach runtime execution.
+
+This demonstrates a blocker in the **current deployed composition**, not a
+failed search algorithm, bad site credentials or proof that every fresh isolated
+composition fails. The matrix stopped immediately; remaining 11 slots are
+UNEXECUTED, not failed or passed. No old UNKNOWN was erased/reclassified, no
+budget refunded and no new session/run was used to evade the guard. General
+browser-assistant acceptance is **NO_GO**. Formal outcome verification and
+supported reconciliation/continuation belong to #163 before repeating effects.
+
+The failed recipient was stopped only after Input failure was confirmed, keeping
+its journal and config. A separate `infra-ready` instance now serves the public
+root; it is not a matrix attempt. Source provenance limitations above remain.
+
+### Harness corrections and reproducibility
+
+Before read-02 submission, systemd reported active just before its socket was
+ready. The matrix stopped with no read-02 Input accepted. Readiness now waits at
+most five seconds; guarded recovery verified an empty journal and zero accepted
+Inputs before the first actual submission. This infrastructure failure is not
+hidden as an agent failure or counted as a native attempt.
+
+Accepted form receipts now record bounded quantity, enabling rejection of an
+incorrect valid quantity or duplicate submit. That instrumentation was deployed
+for future recipients; it does not change prior read results. Fixture search
+also accepts case-insensitive `Arctic delivery` as well as `Arctic`, correcting
+an overly narrow fixture condition found during review; no search submission
+had executed in nav-01. The updated query behavior has not been native-qualified.
+
+`browser-public-matrix.ps1` handles the ordered public subset and stops on a
+noncompleted Input. `browser-fixture-verify.sh` compares private expected values
+and recipient receipts inside the operator process, exporting booleans/counts
+only. `browser-baseline-summary.ps1` recreates the checked-in summary and refuses
+an existing output file. Go race/vet, direct Chromium smoke and oracle-negative
+tests passed after these changes. Forms, login, OTP, full privacy scan, complete
+cost/latency breakdown and the remaining matrix slots remain unfinished.
 
 ## Reproduce
 
