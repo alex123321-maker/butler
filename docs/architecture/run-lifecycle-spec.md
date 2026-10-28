@@ -91,24 +91,32 @@ durable request commit. The exact run/call's stored request remains the proof;
 an ambiguous receipt alone cannot create a wait or authorize replay.
 
 Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
-lease, Task authority and token-only source-currentness observations. The remaining business pool has at least
-two connections: Core therefore requires a total maximum of at least three.
+lease/Task authority and the existing bounded local-model watchdog. When the
+total cap is at least four, a separate single connection serves longer token-only
+source-currentness observations. Business capacity retains at least two slots;
+the sum of configured maxima/minima does not increase, including DSN-only limits.
+The supported minimum remains three: source observations then use business
+capacity, never the authority reserve. This fallback may fail a source proof
+under business saturation; it does not authorize stale data or extend deadlines.
 Converter-participating source proofs use business capacity: returned-package
 access can bind selected source pins and repeat continuation/lifecycle guards.
-Unrelated token-only proofs retain the reserved reader under business saturation.
+Unrelated token-only proofs use the separate source reader under business
+saturation when that capacity exists.
 A current PG classification selects capacity only and is repeated after access
 locks; both routes execute all authority/source guards with unchanged deadlines.
 The total maximum and execution budgets do not increase. Channel polls, Web
-feeds and business writes cannot acquire the reserved connection. Both readers
+feeds and business writes cannot acquire either reserved connection. The readers
 still use current PostgreSQL state and their existing authority checks; an
 unavailable observer fails closed. The foreground local-model admission watchdog
-uses this same reserve, with its unchanged250ms interval and200ms proof deadline.
+uses the authority reserve, with its unchanged250ms interval and200ms proof deadline.
 It rolls back source observations; admission, allowance reservation and returned
 result acceptance remain business transactions with their existing commit/pin
 semantics. Local-model cancellation retains only a fixed phase/class diagnostic,
 and independent parent cancellation/deadlines remain authoritative.
-Observer cancellation logs only fixed phase
-and classification plus elapsed time, never raw storage/source errors.
+Observer cancellation logs only fixed phase and classification plus elapsed
+time. A failed lease read additionally distinguishes pool acquisition from SQL
+execution and records acquired/idle/total counts, retaining errors.Is/As causes.
+No query, parameters, DSN, lease identifier or raw storage error is logged.
 
 Single-transaction owning writers (interaction recovery, preparation checkpoint,
 run lease refresh, private communication publication and final persistence) lock the live fencing row inside the

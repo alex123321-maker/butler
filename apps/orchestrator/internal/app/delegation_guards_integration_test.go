@@ -82,6 +82,7 @@ func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve boo
 	t.Helper()
 	pool := memorytest.Database(t)
 	reads := pool
+	sourceReads := pool
 	if lifetime <= 0 || lifetime > 40*time.Minute {
 		t.Fatal("bounded fixture lifetime required")
 	}
@@ -99,12 +100,12 @@ func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve boo
 		}
 		t.Cleanup(db.Close)
 		pool.Close()
-		pool, reads = db.Pool(), db.AuthorityReadPool()
+		pool, reads, sourceReads = db.Pool(), db.AuthorityReadPool(), db.SourceReadPool()
 		if len(observers) == 1 && observers[0] != nil {
-			// Copy the production9+1 configurations before replacing only these
+			// Copy the production8+1+1 configurations before replacing only these
 			// test pools with traced equivalents. No pool/capacity/guard changes.
-			businessConfig, readConfig := pool.Config().Copy(), reads.Config().Copy()
-			businessConfig.ConnConfig.Tracer, readConfig.ConnConfig.Tracer = observers[0], observers[0]
+			businessConfig, readConfig, sourceConfig := pool.Config().Copy(), reads.Config().Copy(), sourceReads.Config().Copy()
+			businessConfig.ConnConfig.Tracer, readConfig.ConnConfig.Tracer, sourceConfig.ConnConfig.Tracer = observers[0], observers[0], observers[0]
 			db.Close()
 			pool, err = pgxpool.NewWithConfig(context.Background(), businessConfig)
 			if err != nil {
@@ -116,8 +117,13 @@ func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve boo
 				t.Fatal(err)
 			}
 			t.Cleanup(reads.Close)
+			sourceReads, err = pgxpool.NewWithConfig(context.Background(), sourceConfig)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(sourceReads.Close)
 		}
-		if pool.Config().MaxConns != 9 || reads.Config().MaxConns != 1 || pool == reads {
+		if pool.Config().MaxConns != 8 || reads.Config().MaxConns != 1 || sourceReads.Config().MaxConns != 1 || pool == reads || sourceReads == reads || sourceReads == pool {
 			t.Fatal("fixture reserve differs from ten-connection bootstrap")
 		}
 	}
@@ -128,7 +134,7 @@ func newDelegationGuardFixtureWithRuntime(t *testing.T, path string, reserve boo
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
 	}
-	sources := catalog.NewWithRunObservationPool(pool, reads, manifest)
+	sources := catalog.NewWithRunObservationPool(pool, sourceReads, manifest)
 	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('guard-root','guard-owner','web'); CREATE TABLE fixture_parent_capabilities(task_id text PRIMARY KEY,snapshot jsonb)`); err != nil {
 		t.Fatal(err)
 	}

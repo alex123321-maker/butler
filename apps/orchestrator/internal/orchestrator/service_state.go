@@ -131,7 +131,12 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 								classification = "stale"
 							}
 						}
-						runLog.Warn("execution authority observation stopped", slog.String("phase", checkPhase), slog.String("classification", classification), slog.Int64("elapsed_ms", time.Since(checkStarted).Milliseconds()))
+						fields := []any{slog.String("phase", checkPhase), slog.String("classification", classification), slog.Int64("elapsed_ms", time.Since(checkStarted).Milliseconds())}
+						var observation *session.LeaseObservationError
+						if errors.As(checkErr, &observation) {
+							fields = append(fields, slog.String("lease_phase", observation.Phase), slog.Int("pool_acquired", int(observation.Acquired)), slog.Int("pool_idle", int(observation.Idle)), slog.Int("pool_total", int(observation.Total)))
+						}
+						runLog.Warn("execution authority observation stopped", fields...)
 						cause := &ownedCancellation{reason: reason, failure: ownership.ErrStale}
 						if checkPhase == "lease" && classification == "deadline" {
 							cause.reason = "execution_authority_observation_timeout"

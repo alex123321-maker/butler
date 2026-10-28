@@ -1122,6 +1122,15 @@ mandatory. Trusted compound owner/auxiliary-checker contexts
 retain their existing commit semantics. Optional fixed phase/pool diagnostics
 must omit source text, SQL parameters, raw errors and credential material.
 
+These foreground observations use Core's separate source-read connection when
+the configured total PostgreSQL cap is at least4. They cannot occupy the shorter
+lease/Task authority reserve. With the minimum total cap3, use business capacity
+and retain ordinary fail-closed behavior if it is busy. Source writes, selected
+pins and compound contexts keep their existing business transactions. Connection
+allocation supplies capacity only; every current ownership/source/temporal proof
+still runs with the same bounds. No cached result or extra connection allowance
+is introduced.
+
 The active experience adapter additionally verifies current Broker contracts and
 fresh owning applicability after that standalone Catalog proof. When its store
 is installed it declares the existing trusted compound2s ceiling; without that

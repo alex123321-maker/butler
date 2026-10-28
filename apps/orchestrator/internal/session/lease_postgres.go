@@ -81,9 +81,17 @@ func (m *PostgresLeaseManager) ReleaseLease(ctx context.Context, id string) (boo
 	return tag.RowsAffected() == 1, err
 }
 func (m *PostgresLeaseManager) GetLease(ctx context.Context, id string) (LeaseRecord, error) {
-	r, err := scanDurableLease(m.authorityReads.QueryRow(ctx, `SELECT lease_id,session_key,run_id,owner_id,fence_epoch,acquired_at,expires_at FROM session_ownership WHERE lease_id=$1 AND expires_at>clock_timestamp()`, id))
+	conn, err := m.authorityReads.Acquire(ctx)
+	if err != nil {
+		return LeaseRecord{}, leaseObservationError(m.authorityReads, "pool_acquire", err)
+	}
+	defer conn.Release()
+	r, err := scanDurableLease(conn.QueryRow(ctx, `SELECT lease_id,session_key,run_id,owner_id,fence_epoch,acquired_at,expires_at FROM session_ownership WHERE lease_id=$1 AND expires_at>clock_timestamp()`, id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return LeaseRecord{}, ErrLeaseNotFound
+	}
+	if err != nil {
+		return LeaseRecord{}, leaseObservationError(m.authorityReads, "query", err)
 	}
 	return r, err
 }
