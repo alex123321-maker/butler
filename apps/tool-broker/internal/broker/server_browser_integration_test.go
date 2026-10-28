@@ -361,7 +361,7 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	}
 	// A snapshot completed before takeover but recorded after release must
 	// not clear the new generation's fresh-observation requirement.
-	oldResult := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "old-snapshot", ToolName: "browser.snapshot", Status: "completed", ResultJson: `{"ok":true}`}
+	oldResult := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "old-snapshot", ToolName: "browser.snapshot", Status: "completed", ResultJson: `{"ok":true,"final_url":"http://login.test/form"}`}
 	if err := control.Record(oldAdmission, oldSnapshot, actionauth.Grant{}, oldResult); err != nil {
 		t.Fatal(err)
 	}
