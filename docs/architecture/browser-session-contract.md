@@ -64,8 +64,8 @@ Take a new snapshot and reassess the intended action; do not blindly replay it.
 ### Bounded local preparation and truthful external outcomes
 
 Public GET search/navigation forms can use revision1 `browser.submit_get_form`
-with a form selector and `fields` (ordinary string values keyed by existing
-control names). Observations expose at most ten top-level form selectors,
+with a form selector and `fields` (an array of `{name,value}` ordinary strings
+for existing control names). Observations expose at most ten top-level form selectors,
 methods/actions and 32 field names/types per form, never input values. This is
 an explicit alternative to an opaque live fill/click, not changed semantics for
 those tools. Generic POST/login forms retain their existing effect policy.

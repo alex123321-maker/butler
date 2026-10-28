@@ -256,7 +256,7 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		return output
 	}
 	getObs := invoke("browser.open", map[string]any{"url": "http://start.test/search"})
-	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": map[string]string{"q": "Arctic delivery"}})
+	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
 	if queryReads.Load() != 1 || posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Arctic delivery") {
 		t.Fatal("Broker GET form wrote or failed to observe")
 	}

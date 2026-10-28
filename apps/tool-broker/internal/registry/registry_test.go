@@ -113,6 +113,20 @@ func TestLoadActualProjectRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load returned error: %v", err)
 	}
+	getForm, ok := reg.Get("browser.submit_get_form")
+	if !ok {
+		t.Fatal("missing GET form contract")
+	}
+	valid := `{"browser_session_id":"context","selector":"form","fields":[{"name":"q","value":"query"}],"observation_version":1,"expected_url":"https://example.com/catalog"}`
+	if err := ValidateArgs(getForm.InputSchemaJson, valid); err != nil {
+		t.Fatal("GET form schema unusable", err)
+	}
+	for _, fields := range []string{`{"q":"query"}`, `[{"name":"q","value":null}]`, `[{"name":"q","value":{"type":"credential_ref","alias":"a","field":"password"}}]`} {
+		invalid := strings.Replace(valid, `[{"name":"q","value":"query"}]`, fields, 1)
+		if err := ValidateArgs(getForm.InputSchemaJson, invalid); err == nil {
+			t.Fatal("invalid form fields accepted by Broker")
+		}
+	}
 
 	webFetch, ok := reg.Get("web.fetch")
 	if !ok {

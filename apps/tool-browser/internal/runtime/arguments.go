@@ -27,23 +27,23 @@ func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredentia
 	}
 	req.ToolName = tool
 	if tool == "browser.submit_get_form" {
-		var fields map[string]json.RawMessage
-		if json.Unmarshal(raw["fields"], &fields) != nil || fields == nil {
-			return req, fmt.Errorf("GET form requires ordinary text fields")
+		var fields []struct {
+			Name  *string `json:"name"`
+			Value *string `json:"value"`
 		}
-		for _, field := range fields {
-			var value string
-			if len(field) == 0 || field[0] != '"' || json.Unmarshal(field, &value) != nil {
-				return req, fmt.Errorf("GET form accepts only text values")
-			}
-		}
-		if len(resolved) != 0 || json.Unmarshal(raw["fields"], &req.Fields) != nil || req.Fields == nil || len(req.Fields) > 32 {
+		if len(resolved) != 0 || json.Unmarshal(raw["fields"], &fields) != nil || fields == nil || len(fields) > 32 {
 			return req, fmt.Errorf("GET form requires at most 32 ordinary text fields and no credentials")
 		}
-		for name, value := range req.Fields {
-			if len(name) == 0 || len(name) > 128 || len(value) > 4096 {
+		req.Fields = make(map[string]string, len(fields))
+		for _, field := range fields {
+			if field.Name == nil || field.Value == nil {
+				return req, fmt.Errorf("GET form requires a name and text value")
+			}
+			name, value := *field.Name, *field.Value
+			if _, duplicate := req.Fields[name]; duplicate || len(name) == 0 || len(name) > 128 || len(value) > 4096 {
 				return req, fmt.Errorf("GET form fields exceed their bounds")
 			}
+			req.Fields[name] = value
 		}
 	}
 	field := ""

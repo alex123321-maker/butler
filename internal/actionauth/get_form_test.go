@@ -68,7 +68,7 @@ func TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration(t *testing.T) {
 	contract.ContractRevision = "1"
 	contract.SupportsCredentialRefs = false
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
-	call.ArgsJson = `{"browser_session_id":"new-context","expected_url":"https://example.com/catalog","observation_version":1,"selector":"form","fields":{"q":"public query"}}`
+	call.ArgsJson = `{"browser_session_id":"new-context","expected_url":"https://example.com/catalog","observation_version":1,"selector":"form","fields":[{"name":"q","value":"public query"}]}`
 	next := logicalGrant(t, s, reader, call, contract, "get-form-slot")
 	if err = store.ClaimGrant(ctx, next.ID); err != nil {
 		t.Fatal("independent GET observation blocked", err)

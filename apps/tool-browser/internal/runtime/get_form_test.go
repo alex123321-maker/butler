@@ -28,7 +28,7 @@ func TestGetFormContractAndPrivateProtocol(t *testing.T) {
 	obs := openTest(t, server)
 	args := actionArgs(obs)
 	args["selector"] = "form"
-	args["fields"] = map[string]string{"q": "query"}
+	args["fields"] = []map[string]string{{"name": "q", "value": "query"}}
 	req := browserCall("browser.submit_get_form", "run-1", args)
 	req.Contract = getFormContract()
 	req.Contract.AllowedDomains = []string{"example.com"}
@@ -43,16 +43,16 @@ func TestGetFormContractAndPrivateProtocol(t *testing.T) {
 	if result.GetStatus() != "completed" || strings.Contains(result.ResultJson, "private-") {
 		t.Fatal("private form plan leaked", result.GetStatus())
 	}
-	for _, raw := range []string{`{"fields":{"q":{"type":"credential_ref","alias":"a","field":"password"}}}`, `{"fields":{"q":null}}`, `{"fields":[]}`, `{}`} {
+	for _, raw := range []string{`{"fields":[{"name":"q","value":{"type":"credential_ref","alias":"a","field":"password"}}]}`, `{"fields":[{"name":"q","value":null}]}`, `{"fields":{}}`, `{"fields":[{"name":"q","value":"a"},{"name":"q","value":"b"}]}`, `{}`} {
 		if _, err := decodeRequest("browser.submit_get_form", raw, nil); err == nil {
 			t.Fatal("non-text form field accepted", raw)
 		}
 	}
-	parsed, err := decodeRequest("browser.submit_get_form", `{"fields":{"q":"x"},"get_form_phase":"navigate","get_form_nonce":"forged"}`, nil)
+	parsed, err := decodeRequest("browser.submit_get_form", `{"fields":[{"name":"q","value":"x"}],"get_form_phase":"navigate","get_form_nonce":"forged"}`, nil)
 	if err != nil || parsed.GetFormPhase != "" || parsed.GetFormNonce != "" {
 		t.Fatal("model supplied private form protocol")
 	}
-	if _, err := decodeRequest("browser.submit_get_form", `{"fields":{"q":"x"}}`, []*runtimev1.ResolvedCredential{{Value: "private"}}); err == nil {
+	if _, err := decodeRequest("browser.submit_get_form", `{"fields":[{"name":"q","value":"x"}]}`, []*runtimev1.ResolvedCredential{{Value: "private"}}); err == nil {
 		t.Fatal("credential entered GET form")
 	}
 }
@@ -139,7 +139,7 @@ func TestBrowserGetFormChromium(t *testing.T) {
 	}
 	args := actionArgs(obs)
 	args["selector"] = obs.Forms[0].Selector
-	args["fields"] = map[string]string{"q": "Arctic delivery"}
+	args["fields"] = []map[string]string{{"name": "q", "value": "Arctic delivery"}}
 	result, obs := invoke("browser.submit_get_form", args)
 	if result.Status != "completed" || !strings.Contains(obs.Text, "Found Arctic delivery") || obs.NetworkState != "frozen" || gets.Load() != 1 {
 		t.Fatal("GET form did not navigate", result.GetStatus(), obs.Text)
@@ -150,7 +150,7 @@ func TestBrowserGetFormChromium(t *testing.T) {
 	time.Sleep(300 * time.Millisecond)
 	a := actionArgs(stale)
 	a["selector"] = "form"
-	a["fields"] = map[string]string{"q": "stale"}
+	a["fields"] = []map[string]string{{"name": "q", "value": "stale"}}
 	if rejected, _ := invoke("browser.submit_get_form", a); rejected.Status == "completed" {
 		t.Fatal("live stale form navigated")
 	}
@@ -158,7 +158,7 @@ func TestBrowserGetFormChromium(t *testing.T) {
 		_, current := invoke("browser.open", map[string]any{"url": egresstest.Origin + "/" + path})
 		a := actionArgs(current)
 		a["selector"] = "form"
-		a["fields"] = map[string]string{"q": "no-send"}
+		a["fields"] = []map[string]string{{"name": "q", "value": "no-send"}}
 		rejected, _ := invoke("browser.submit_get_form", a)
 		if rejected.Status == "completed" {
 			t.Fatal("unsafe GET form accepted", path)
