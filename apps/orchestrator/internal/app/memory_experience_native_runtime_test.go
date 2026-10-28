@@ -425,7 +425,9 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 	if err != nil {
 		t.Fatal("frozen compiled extension runtime unavailable")
 	}
-	r.pack, err = projectfixture.Manifest(experienceDigest(string(binary)), "experience-native-recipient-"+recipient.snapshot().Config.Version)
+	// Recipient data/version changes the independently pinned environment above,
+	// not this unchanged compiled extension ABI or its immutable package version.
+	r.pack, err = projectfixture.Manifest(experienceDigest(string(binary)), "experience-native-recipient-v1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -473,12 +475,26 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 	if arm == experienceNativeArms[2] {
 		env = append(env, "BUTLER_SKILLS_ENABLED=true")
 	}
-	r.stops = append(r.stops, experienceNativeChild(t, addresses.reserved, "broker", directory, os.Getenv("BUTLER_BROKER_E2E_BINARY"), addresses.Broker, addresses.BrokerHTTP, nil, env...))
+	// Administrative readiness shares the source template's immutable admin
+	// conversation policy. It is a distinct bootstrap process with no task/model
+	// input. The final foreground Broker below keeps the exact task policy.
+	adminPolicy := policy
+	adminPolicy.Conversation = experienceNativeSourcePolicy().Conversation
+	adminJSON, _ := json.Marshal(adminPolicy)
+	adminEnv := append([]string(nil), env...)
+	for i, value := range adminEnv {
+		if strings.HasPrefix(value, "BUTLER_EXECUTION_BUDGET_POLICY_JSON=") {
+			adminEnv[i] = "BUTLER_EXECUTION_BUDGET_POLICY_JSON=" + string(adminJSON)
+		}
+	}
+	stopAdmin := experienceNativeChild(t, addresses.reserved, "broker-admin", directory, os.Getenv("BUTLER_BROKER_E2E_BINARY"), addresses.Broker, addresses.BrokerHTTP, nil, adminEnv...)
+	r.stops = append(r.stops, stopAdmin)
 	r.broker, err = tools.DialWithTokenFile(addresses.Broker, coreFile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.stops = append(r.stops, func() { _ = r.broker.Close() })
+	adminClient := r.broker
+	r.stops = append(r.stops, func() { _ = adminClient.Close() })
 	currentTools.client = r.broker
 	r.extensions = extensions.NewControlClient("http://"+addresses.BrokerHTTP+"/internal/extensions", coreToken)
 	// The owning operator endpoint is deliberately absent from the model registry.
@@ -513,15 +529,25 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		t.Helper()
 		out, err := r.extensions.Control(experienceNativeActor(ctx, delivery+":"+q.Operation), q)
 		if err != nil || out.Error != "" {
-			t.Fatal("actual reviewed extension preparation failed", q.Operation, err)
+			t.Fatal("actual reviewed extension preparation failed", q.Operation, err, out.Error)
 		}
 		return out
 	}
 	names := []string{"extension.project.inspect", "extension.project.prepare-patch", "extension.project.check"}
 	existing := control(extensions.ControlRequest{Operation: "list"})
 	for _, item := range existing.Items {
-		if item.Record.ID == "project" && item.Record.ManifestHash == r.pack.Digest && item.Record.Available {
-			r.generation = item.Record.Generation
+		if item.Record.ID == "project" && item.Record.ManifestHash == r.pack.Digest && item.Record.Reviewed && item.Record.Status == "enabled" {
+			// Readiness is current evidence, not a reason to reconfigure or change
+			// generation. Reprobe once through the real owner/Broker/runtime path.
+			control(extensions.ControlRequest{Operation: "probe", ExtensionID: "project", Generation: item.Record.Generation})
+			for _, current := range control(extensions.ControlRequest{Operation: "list"}).Items {
+				if current.Record.ID == "project" && current.Record.Generation == item.Record.Generation && current.Record.Available {
+					r.generation = current.Record.Generation
+				}
+			}
+			if r.generation == 0 {
+				t.Fatal("current probe did not preserve exact available generation")
+			}
 		}
 	}
 	if r.generation == 0 {
@@ -533,6 +559,18 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		state = control(extensions.ControlRequest{Operation: "enable", ExtensionID: "project", Generation: state.Generation}).Item.Record
 		r.generation = state.Generation
 	}
+	_ = adminClient.Close()
+	stopAdmin()
+	// Hand the same reserved endpoints to the ordinary foreground Broker only
+	// after bootstrap has joined. No administrative policy reaches its task input.
+	r.stops = append(r.stops, experienceNativeChild(t, addresses.reserved, "broker", directory, os.Getenv("BUTLER_BROKER_E2E_BINARY"), addresses.Broker, addresses.BrokerHTTP, nil, env...))
+	r.broker, err = tools.DialWithTokenFile(addresses.Broker, coreFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.stops = append(r.stops, func() { _ = r.broker.Close() })
+	currentTools.client = r.broker
+	r.extensions = extensions.NewControlClient("http://"+addresses.BrokerHTTP+"/internal/extensions", coreToken)
 	if arm == experienceNativeArms[2] {
 		r.skillClient = skills.NewClient("http://"+addresses.BrokerHTTP+"/internal/skills", coreToken)
 	}

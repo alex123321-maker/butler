@@ -1,0 +1,891 @@
+{
+  "all24_owning_outcomes_present": false,
+  "cases": [
+    {
+      "arm": "A_no_experience",
+      "artifacts": [
+        {
+          "artifact": "222721b264f4d59ae84f036672b81ae8618f093bce5844845c05d6aee8d8834e",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-01",
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 37332,
+        "input_tokens": 32853,
+        "output_tokens": 1143,
+        "model_millis": 44002
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 48598,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 10,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "artifacts": [
+        {
+          "artifact": "fbdea17bd7ee97eca41e3b4b62121df5b07bbe370eef3c79b026baf1835e9b0e",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-01",
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 33612,
+        "input_tokens": 29331,
+        "output_tokens": 1098,
+        "model_millis": 40169
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 42414,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 11,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "artifacts": [
+        {
+          "artifact": "73ae079f363e0df777ed68035c455b29d26b7d9ece79932757162b50e86fc7cc",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-01",
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 64523,
+        "input_tokens": 58846,
+        "output_tokens": 1220,
+        "model_millis": 59139
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 75482,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [
+        "6f50210928d5dd7a532df76c38b10254808e145669aa704c76334b01a2ddedf7"
+      ],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 12,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "skills.load",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "artifacts": [
+        {
+          "artifact": "68951272e9a89b0b3a98b2479f48d5d60a195f282a099ecb581b4c8aaa06d329",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-02",
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 32646,
+        "input_tokens": 28897,
+        "output_tokens": 960,
+        "model_millis": 36847
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 39109,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 13,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "artifacts": [
+        {
+          "artifact": "3288dbbbfb36f91688dea5db58b57f1f0c7556bcf9ce7d78ab08e28bec688e25",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-02",
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 60995,
+        "input_tokens": 56730,
+        "output_tokens": 1205,
+        "model_millis": 49219
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 66090,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [
+        "6f50210928d5dd7a532df76c38b10254808e145669aa704c76334b01a2ddedf7"
+      ],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 14,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "skills.load",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "A_no_experience",
+      "artifacts": [
+        {
+          "artifact": "3f3d9cce20bf2980e07aa5668e922e2bba29745325fadb883bcff09546aa05f7",
+          "final_mentions_artifact": true,
+          "matching_unapplied_check": true,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-02",
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 36895,
+        "input_tokens": 32702,
+        "output_tokens": 1148,
+        "model_millis": 44265
+      },
+      "current_checked_artifacts": 1,
+      "current_checked_artifacts_in_final": 1,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 46354,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 15,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 201,
+          "name": "extension.project.prepare-patch",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.check",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "artifacts": [],
+      "blocker": "owning_current_task_not_completed",
+      "case": "control-03",
+      "cost": {
+        "entries": 8,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 74640,
+        "input_tokens": 72892,
+        "output_tokens": 896,
+        "model_millis": 38279
+      },
+      "current_checked_artifacts": 0,
+      "current_checked_artifacts_in_final": 0,
+      "current_matching_artifacts": 0,
+      "elapsed_millis": 48809,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039"
+      ],
+      "owning_outcome_present": true,
+      "prepare_calls": 0,
+      "recipient_dispatches": 0,
+      "recipient_entries": 0,
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 16,
+      "slot_status": "failed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.search",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {
+            "details": {
+              "action_id": "effect_aa8e714b222dad1f3d63637ac6c4e4e74ee439a20d5027c2f2c142f2971ca33f",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+          },
+          "http_status": 0,
+          "name": "memory.search",
+          "status": "effect_unknown"
+        }
+      ]
+    },
+    {
+      "arm": "A_no_experience",
+      "artifacts": [
+        {
+          "artifact": "",
+          "final_mentions_artifact": false,
+          "matching_unapplied_check": false,
+          "proposal_matches_current": false,
+          "resource": "alpha",
+          "state": "effect_absent"
+        }
+      ],
+      "blocker": "owning_current_task_not_completed",
+      "case": "control-03",
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 12747,
+        "input_tokens": 10182,
+        "output_tokens": 275,
+        "model_millis": 20876
+      },
+      "current_checked_artifacts": 0,
+      "current_checked_artifacts_in_final": 0,
+      "current_matching_artifacts": 0,
+      "elapsed_millis": 22501,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 1,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 17,
+      "slot_status": "failed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {
+            "details": {
+              "action_id": "effect_0b1539f4f2f53c119ba7443234d259d418957c52f119f1df91a9461b7d92884a",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_INTERNAL_ERROR"
+          },
+          "http_status": 0,
+          "name": "extension.project.prepare-patch",
+          "status": "effect_unknown"
+        }
+      ]
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "artifacts": [],
+      "blocker": "owning_current_task_not_completed",
+      "case": "control-03",
+      "cost": {
+        "entries": 8,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 87328,
+        "input_tokens": 83437,
+        "output_tokens": 709,
+        "model_millis": 56155
+      },
+      "current_checked_artifacts": 0,
+      "current_checked_artifacts_in_final": 0,
+      "current_matching_artifacts": 0,
+      "elapsed_millis": 64638,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039",
+        "source_ad22fdd7831a0267cbc55292f4fc93c5eb364039"
+      ],
+      "owning_outcome_present": true,
+      "prepare_calls": 0,
+      "recipient_dispatches": 0,
+      "recipient_entries": 0,
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 18,
+      "slot_status": "failed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.search",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.open",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 0,
+          "name": "memory.search",
+          "status": "completed"
+        },
+        {
+          "error": {
+            "details": {
+              "action_id": "effect_138c950d0d897c1ab5519d6189ffa6c358914d31ff64616010d69654660713a0",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+          },
+          "http_status": 0,
+          "name": "memory.search",
+          "status": "effect_unknown"
+        }
+      ]
+    },
+    {
+      "arm": "A_no_experience",
+      "artifacts": [
+        {
+          "artifact": "338ceb1def18dc9f0ca2e1117ab908c61d31a761acc4501642d6bed377a5e68d",
+          "final_mentions_artifact": false,
+          "matching_unapplied_check": false,
+          "proposal_matches_current": true,
+          "resource": "alpha",
+          "state": "effect_confirmed"
+        }
+      ],
+      "blocker": "",
+      "case": "control-04",
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 25056,
+        "input_tokens": 19705,
+        "output_tokens": 760,
+        "model_millis": 46119
+      },
+      "current_checked_artifacts": 0,
+      "current_checked_artifacts_in_final": 0,
+      "current_matching_artifacts": 1,
+      "elapsed_millis": 47858,
+      "flow_error": false,
+      "initial_check_failed_observed": false,
+      "loaded_skill_digests": [],
+      "memory_open_sources": [],
+      "owning_outcome_present": true,
+      "prepare_calls": 0,
+      "recipient_dispatches": 1,
+      "recipient_entries": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 19,
+      "slot_status": "completed",
+      "tools": [
+        {
+          "error": {},
+          "http_status": 503,
+          "name": "http.request",
+          "status": "completed"
+        },
+        {
+          "error": {},
+          "http_status": 200,
+          "name": "extension.project.inspect",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "blocker": "collector_aborted_before_slot_sealed",
+      "case": "control-04",
+      "cost": null,
+      "elapsed_millis": 1743,
+      "owning_outcome_present": false,
+      "sequence": 20,
+      "slot_status": "failed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-04",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 21,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-05",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 22,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-05",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 23,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "A_no_experience",
+      "blocker": "window_closed_before_execution",
+      "case": "control-05",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 24,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-06",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 25,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "A_no_experience",
+      "blocker": "window_closed_before_execution",
+      "case": "control-06",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 26,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-06",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 27,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "A_no_experience",
+      "blocker": "window_closed_before_execution",
+      "case": "control-07",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 28,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-07",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 29,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-07",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 30,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-08",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 31,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "blocker": "window_closed_before_execution",
+      "case": "control-08",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 32,
+      "slot_status": "not_executed"
+    },
+    {
+      "arm": "A_no_experience",
+      "blocker": "window_closed_before_execution",
+      "case": "control-08",
+      "cost": null,
+      "owning_outcome_present": false,
+      "sequence": 33,
+      "slot_status": "not_executed"
+    }
+  ],
+  "full_control_slots": 48,
+  "independent_quality_qualified": false,
+  "new_native_admission": false,
+  "plan_sha256": "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497",
+  "selected_control_slots": 24,
+  "semantic_review_required": true,
+  "shared_and_arm_native_costs": {
+    "A_no_experience": {
+      "entries": 15,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 112030,
+      "input_tokens": 95442,
+      "output_tokens": 3326,
+      "model_millis": 155262
+    },
+    "B_same_frozen_notes_no_skills": {
+      "entries": 16,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 153586,
+      "input_tokens": 141665,
+      "output_tokens": 2767,
+      "model_millis": 133171
+    },
+    "C_same_frozen_notes_and_reviewed_skills": {
+      "entries": 20,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 200158,
+      "input_tokens": 188468,
+      "output_tokens": 3321,
+      "model_millis": 146637
+    },
+    "note": {
+      "entries": 4,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 27193,
+      "input_tokens": 18895,
+      "output_tokens": 1474,
+      "model_millis": 73672
+    },
+    "original": {
+      "entries": 14,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 98261,
+      "input_tokens": 82784,
+      "output_tokens": 3248,
+      "model_millis": 147343
+    },
+    "skill_preparation": {
+      "entries": 6,
+      "unknown_usage": 0,
+      "missing_total": 0,
+      "known_full_tokens": 164141,
+      "input_tokens": 142311,
+      "output_tokens": 2391,
+      "model_millis": 169964
+    }
+  },
+  "version": "butler115.abc-post-exit-facts.v1"
+}

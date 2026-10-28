@@ -1,0 +1,4 @@
+# github.com/butler/butler/apps/orchestrator/internal/app [github.com/butler/butler/apps/orchestrator/internal/app.test]
+/delta/apps/orchestrator/internal/app/memory115_extension_probe_test.go:38:13: cannot use recipient.close (value of type func() error) as func() value in argument to t.Cleanup
+FAIL	github.com/butler/butler/apps/orchestrator/internal/app [build failed]
+FAIL

@@ -183,3 +183,42 @@ only the full closed310 leaf and owns memory115_laba_abc_v5_test. The33-of57
 scope,12-entry/11-call preparation bound,640-entry window, UTC deadline, fixed
 server proxy and prepared-unapplied permission remain unchanged. No production
 configuration is changed and no finite budget is silently raised.
+## Current readiness bootstrap continuation
+
+The v5 native window accepted its model-written skill, then collected ten of24
+control outcomes. At slot20 the inherited15-minute readiness expired. Preparation
+reconfigured the enabled extension (generation3 to4) and its probe hit the immutable
+extension-admin conversation policy mismatch: the source template owns13-entry
+conversation limits while foreground controls own12. No new probe row was admitted;
+the immutable ledger correctly refused the conflicting policy. Later slots could
+not begin because that failed preparation retained the active slot. All failures
+and missing outcomes remain unchanged, not replaced with passes. The75 new entries
+all have measured usage:755369 full tokens; inclusive385/382known/3unknown,
+386product/382observed/4NULL/1withoutNative,3259394 known full tokens. The445-file
+raw seal, full57 status population, quotes, journal and actual process/auth handback
+are retained and pass the original accounting consumer. ABC benefit remains unknown.
+
+The corrected fixture uses a separate owning bootstrap Broker before any task/model
+input. Only its administration conversation has the same fixed13-entry source
+policy used to create that immutable scope. It performs one actual readiness probe
+on the exact already reviewed/enabled generation, without reconfiguration, TTL
+extension or fabricated health. After bootstrap has joined, the same reserved
+endpoints pass to the ordinary foreground Broker with the original12/11 policy.
+The source13 allowance, global640 ceiling, per-call bounds,15-minute health TTL,
+source/current authority and every charged probe remain enforced. This changes
+test composition, not production services or a model's authority.
+
+Recipient v2 changes its pinned data/environment fingerprint and readiness value,
+while the compiled extension ABI stays v1. The fixture therefore retains that
+immutable ABI package identity; it no longer tries to stage a second digest with
+the same package version just because recipient data changed. Old v1 experience
+still has a different environment fingerprint and remains subject to compatibility
+checks. No control answer or oracle is used to alter note/skill generation.
+
+A fresh butler.experience.laba-current-probe-window.v5 consumes only the complete
+closed385 leaf and owns memory115_laba_abc_v6_test. All previous windows keep their
+original data, source/policy versions and failure status. Bootstrap correction is
+qualified with real PostgreSQL/real child Brokers and forced expired health in a
+separate controlled schema, unchanged foreground limits/generation, real charged
+probes and the v2 constructor. Full57 scripted mechanics remain distinct from
+native task/quality evidence.

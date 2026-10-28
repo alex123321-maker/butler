@@ -1,0 +1,5 @@
+=== RUN   TestExperienceNativeExpiredProbeKeepsGenerationAndForegroundLimitsIntegration
+    memory115_extension_probe_test.go:77: OLD_ADMIN_POLICY_CONFLICT_REPRODUCED; actual fresh probe preserves generation3, foreground12/11, finite15m health and both charged probes; model/auth0
+--- PASS: TestExperienceNativeExpiredProbeKeepsGenerationAndForegroundLimitsIntegration (2.93s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	3.987s

@@ -39,9 +39,9 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
-	case laba115RepairedFormat, laba115ReservedFormat, laba115SchemaFormat:
+	case laba115RepairedFormat, laba115ReservedFormat, laba115SchemaFormat, laba115ProbeFormat:
 		return loadLaba115RepairedContinuation(path, expected)
-	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3":
+	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3", "butler.experience.closed-laba-owner-leaf.v4":
 		return loadClosedExperienceNativeHistoryProfiles(path, expected, false, true)
 	case laba115SkillSuccessorFormat:
 		return load115SkillSuccessor(path, expected, true)
@@ -172,6 +172,9 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 		}
 		if binding.Platform == laba115SchemaPlatform {
 			want = laba115SchemaDSN
+		}
+		if binding.Platform == laba115ProbePlatform {
+			want = laba115ProbeDSN
 		}
 		if dsn != want {
 			return nil, errors.New("skill-preparation successor requires its platform's exact loopback database")
@@ -383,7 +386,7 @@ func runNativeExperienceWholeComparison(t *testing.T, history experienceNativeLi
 		t.Fatal(err)
 	}
 	anchor := filepath.Join(proof, "source-deletion-anchor")
-	collector = &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: seal.Deadline, policy: seal.Policy, sourcePolicy: seal.SourcePolicy, addresses: addresses, expectedEnvironments: seal.Environments, skillPreparationV1: skillProfile == "prepare_and_verify_exact_resource", skillManifestContract: history.SkillPreparationSuccessor != nil && history.SkillPreparationSuccessor.Platform == laba115SchemaPlatform}
+	collector = &experienceNativeCollector{t: t, ctx: ctx, provider: p, databases: databases, corpus: corpus, proof: proof, anchor: anchor, deadline: seal.Deadline, policy: seal.Policy, sourcePolicy: seal.SourcePolicy, addresses: addresses, expectedEnvironments: seal.Environments, skillPreparationV1: skillProfile == "prepare_and_verify_exact_resource", skillManifestContract: history.SkillPreparationSuccessor != nil && (history.SkillPreparationSuccessor.Platform == laba115SchemaPlatform || history.SkillPreparationSuccessor.Platform == laba115ProbePlatform)}
 	phase = "inclusive_history_import"
 	if err = applyExperienceNativeHistory(ctx, p, databases.source, history, seal.SourcePolicy); err != nil {
 		t.Fatal(err)
