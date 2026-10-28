@@ -1,0 +1,122 @@
+{
+  "version": "issue76-independent-pre-native-v10-failure-package-v1",
+  "decision": "PRE_NATIVE_NO_GO_NO_NATIVE_ADMISSION",
+  "created_utc": "2026-10-26T17:26:11.0040669+00:00",
+  "bound_producer": "c5722f29558cd6348eb242f85eb0780eedb4a34a",
+  "closed_bound_ELF_sha256": "4a82858999109d580527a67582bcc6f49ead9217a895c9286fac68f0f1fea435",
+  "closed_bound_ELF_bytes": 86441692,
+  "private_binary_retained": true,
+  "private_binary_owner_SYSTEM_only": true,
+  "setup_cases_PASS": 24,
+  "composition_arms_PASS": 47,
+  "observed_counted_owner_turns": 95,
+  "planned_owner_opportunities": 96,
+  "composition_low_level_cause": "UNKNOWN",
+  "independent_old_harness_schedule_reproduced": true,
+  "native_auth_calls": 0,
+  "hidden_stimuli_expectations_mapping_published": false,
+  "files": [
+    {
+      "path": "baseline-behavior76_collect_test.go.txt",
+      "sha256": "12b5134551480dca6e7cf36f25250e0f8b0b2981b246b4ebbfd715b302ae3d01",
+      "bytes": 29372
+    },
+    {
+      "path": "baseline-behavior76_fixture_test.go.txt",
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77",
+      "bytes": 24423
+    },
+    {
+      "path": "baseline-behavior76_idle_claim_diagnostic_test.go.txt",
+      "sha256": "63b7bfaad560509fa5c8afbd2c996a225adc7f7ec4787975d045d289177469a5",
+      "bytes": 4605
+    },
+    {
+      "path": "baseline-behavior76_scope_test.go.txt",
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c",
+      "bytes": 12527
+    },
+    {
+      "path": "baseline-claim_admission.go.txt",
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a",
+      "bytes": 2989
+    },
+    {
+      "path": "baseline-service.go.txt",
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc",
+      "bytes": 14583
+    },
+    {
+      "path": "composition-failed-v1.log",
+      "sha256": "7a98db7add9f0821d8e4df71ccedcf2200947baf58f483bc1be4d749cf8e0a72",
+      "bytes": 153797
+    },
+    {
+      "path": "composition-parent-receipt-v1.json",
+      "sha256": "3ce87b9511d689fa382e4258a26fffd49595c55b645d366cd4dbb9996d9b4177",
+      "bytes": 481
+    },
+    {
+      "path": "idle-claim-legacy-binary-sha256.txt",
+      "sha256": "3c907af447272686b3df450deb3a880810ad9f72d3f409eb54adf0a7d582eb00",
+      "bytes": 146
+    },
+    {
+      "path": "idle-claim-legacy-build-v1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "idle-claim-legacy-source-after-sha256.txt",
+      "sha256": "d84126ae91da2263dfe926d903e883cf7421cc8cb3d4e81af4846d96754fb879",
+      "bytes": 711
+    },
+    {
+      "path": "idle-claim-legacy-source-before-sha256.txt",
+      "sha256": "d84126ae91da2263dfe926d903e883cf7421cc8cb3d4e81af4846d96754fb879",
+      "bytes": 711
+    },
+    {
+      "path": "idle-claim-legacy-test-v1.log",
+      "sha256": "2f6b6ca3e8604a78c96a18f8b0be5c46e6b9a2f4cc9fc302994dfcacc569ec99",
+      "bytes": 1041
+    },
+    {
+      "path": "independent-failure-exposure-audit-v1.json",
+      "sha256": "1a28cad590132ba89dadbee4b3b16b709d9b3d1735f0fe9cba0042c60fa5607a",
+      "bytes": 4653
+    },
+    {
+      "path": "independent-idle-claim-legacy-receipt-v1.json",
+      "sha256": "beaae1caa2172f611e40d407b3dda72faeadb9084e9914d4f9ff9b3c13d5dcb6",
+      "bytes": 5659
+    },
+    {
+      "path": "independent-literal-binding-audit-v1.json",
+      "sha256": "a008dea59dd315116b3bffa6db21e8a831e265ec248950d6423f85fd6a874bd4",
+      "bytes": 20684
+    },
+    {
+      "path": "README.md",
+      "sha256": "fa43949c2b86d3c83b1aa661c8edffa81ff611a486739a66b19fc8f7c7262270",
+      "bytes": 1826
+    },
+    {
+      "path": "run-idle-claim-legacy-v1.sh",
+      "sha256": "4aa9535bf8c93638612535ccd5d13be2e9394eb5924e13a633116ca3de716a73",
+      "bytes": 2700
+    },
+    {
+      "path": "setup-receipt-v1.json",
+      "sha256": "2cc3ffb5cd6570c16e02b4f0a58fb7cb0f70e4d6e1c99f0481611109d3a39b1a",
+      "bytes": 421
+    },
+    {
+      "path": "setup-v1.log",
+      "sha256": "cb24e3cb9f409e5c852752482f0479f2952919ee81cebcc205c4ab83add45189",
+      "bytes": 15341
+    }
+  ],
+  "source_edits_or_commits_by_packager": 0,
+  "new_native_admission": false
+}

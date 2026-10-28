@@ -1,0 +1,142 @@
+{
+  "version": "independent-readonly-authority-predicate-diagnosis-v1",
+  "diagnostic_database": "behavior76_checker_diag_20261025_01",
+  "restored_single_fixture_only": true,
+  "transaction_read_only_before_after": true,
+  "producer": "9c83730d5858cf3f932fea78ba3e070458d288f5",
+  "authority_reserve": {
+    "authority": 1,
+    "business": 9,
+    "total_max_conns": 10,
+    "actual_wiring": [
+      "lease",
+      "task",
+      "budget",
+      "catalog"
+    ]
+  },
+  "watchdog": {
+    "deadline_ms": 750,
+    "phase": "task_authority",
+    "historical_subphase_times_unavailable": true,
+    "actual_history_elapsed_ms": [
+      2074,
+      2727
+    ],
+    "shared_between_lease_then_task": true
+  },
+  "server": {
+    "pg_jit_available": false,
+    "jit": "on",
+    "version": "17.11",
+    "jit_above_cost": 100000
+  },
+  "counts": {
+    "task_authority_bindings": 0,
+    "run_task_active_revision_matches": 1,
+    "task_delegations": 0,
+    "tasks": 1,
+    "scheduled_occurrences": 0
+  },
+  "plans": [
+    {
+      "total_cost": null,
+      "JIT": null,
+      "planning_ms": null,
+      "execution_ms": null,
+      "plan_type": null
+    },
+    {
+      "total_cost": null,
+      "JIT": null,
+      "planning_ms": null,
+      "execution_ms": null,
+      "plan_type": null
+    },
+    {
+      "total_cost": null,
+      "JIT": null,
+      "planning_ms": null,
+      "execution_ms": null,
+      "plan_type": null
+    },
+    {
+      "total_cost": null,
+      "JIT": null,
+      "planning_ms": null,
+      "execution_ms": null,
+      "plan_type": null
+    },
+    {
+      "total_cost": null,
+      "JIT": null,
+      "planning_ms": null,
+      "execution_ms": null,
+      "plan_type": null
+    }
+  ],
+  "plan_order": [
+    "actual current run/task match",
+    "actual schedule recursive predicate",
+    "exact delegation FOR SHARE EXPLAIN only",
+    "delegation predicate without lock clause for readonly ANALYZE only",
+    "actual owner assignment lookup"
+  ],
+  "historical_750ms_failure_reproduced": false,
+  "historical_cause": "not established; current low-latency clone predicates are not original pool/lock/scheduler measurements",
+  "changes": {
+    "authority": 0,
+    "Core": 0,
+    "mandates": 0,
+    "native": 0,
+    "data": 0,
+    "JIT_settings": 0,
+    "replays": 0,
+    "timeouts": 0
+  },
+  "mapping_read": false,
+  "source_files": [
+    {
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "path": "apps/orchestrator/internal/task/authority.go"
+    },
+    {
+      "sha256": "3d02a105c57a3c8ea8383b5c30c13292cd3dca0e0e9eec749e271fda3c5c4e99",
+      "path": "internal/actionauth/owner_authority.go"
+    },
+    {
+      "sha256": "2c3f5683e9f1d1e55fb758ac54d3f9d85de9b78554ffb6a3d46aa6daf243019d",
+      "path": "internal/scheduling/guard.go"
+    },
+    {
+      "sha256": "c325413182c3794187103396bd13ca376d78d8854a0b7fcf6ec069fdb0fd8c24",
+      "path": "internal/delegation/contract.go"
+    },
+    {
+      "sha256": "6e39954aa82fcac7ed922518c5542f2af73520c4f6cafcfde3ffdae3bf2cc160",
+      "path": "internal/storage/postgres/authority.go"
+    },
+    {
+      "sha256": "de1d0e006888739868641e15f9e8f4e223097f03c807017d1049bf2c4e73c0b6",
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go"
+    },
+    {
+      "sha256": "47ba236fd8b4ba8fab9627e9f67b12fe0d5362b42e6bbdf38cf06b6056085210",
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go"
+    }
+  ],
+  "artifacts": [
+    {
+      "sha256": "564ab181eba969e44856902d9e55bf580ea48f40ba60b0e15148f437e163fb59",
+      "path": "fresh-authority-plan-metadata-v1.sql"
+    },
+    {
+      "sha256": "6c3be7047ae50d95a77a1676364e623e2b73df79c2a1013bbc077480e2bfb0dc",
+      "path": "fresh-authority-plan-metadata-v1.sh"
+    },
+    {
+      "sha256": "5d7014dd493f0606d3224ad74015ffc7c952007b4bfe70889faaeb7c37d9dea6",
+      "path": "fresh-authority-plan-metadata-v1.log"
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "version": "issue76-literal-JSON-token-boundary-v7-public-tests-v1",
+  "status": "PREPARED_ONLY_PUBLIC_GENERIC_VALUES_NO_REANALYSIS",
+  "PowerShell": "7.6.5",
+  "cmdlet_module": "Microsoft.PowerShell.Utility",
+  "actual_DateKind_String_capability": true,
+  "PASS": 43,
+  "FAIL": 0,
+  "checks": [
+    {
+      "name": "original-eleven-runtime-byte-pins-unchanged",
+      "verdict": "pass"
+    },
+    {
+      "name": "installed-cmdlet-capability-DateKind-String",
+      "verdict": "pass"
+    },
+    {
+      "name": "public-baseline-default-ISO-string-converted-to-DateTime",
+      "verdict": "pass"
+    },
+    {
+      "name": "public-baseline-original-Contains-operation-reproduces-type-failure",
+      "verdict": "pass"
+    },
+    {
+      "name": "same-public-Contains-operation-type-preserved-no-predicate-edit",
+      "verdict": "pass"
+    },
+    {
+      "name": "unchanged-literal-reader-inherits-string-token-binding",
+      "verdict": "pass"
+    },
+    {
+      "name": "unchanged-nested-expected-copy-retains-JSON-token",
+      "verdict": "pass"
+    },
+    {
+      "name": "caller-default-DateTime-behavior-not-mutated-after-return",
+      "verdict": "pass"
+    },
+    {
+      "name": "scope-cleanup-on-exception-leaves-caller-unchanged",
+      "verdict": "pass"
+    },
+    {
+      "name": "disabled-parameter-defaults-fail-before-work",
+      "verdict": "pass"
+    },
+    {
+      "name": "unqualified-script-shadow-rejected-before-work",
+      "verdict": "pass"
+    },
+    {
+      "name": "unrelated-caller-default-retained-and-local-copy-does-not-leak",
+      "verdict": "pass"
+    },
+    {
+      "name": "prepared-entrypoint-does-not-read-absent-paths-or-run-evaluation",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-0",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-1",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-2",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-3",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-4",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-5",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-6",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-7",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-8",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-9",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-10",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-11",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-12",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-13",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-14",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-15",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-16",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-17",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-18",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-19",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-20",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-21",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-22",
+      "verdict": "pass"
+    },
+    {
+      "name": "generic-JSON-kind-tree-and-exact-string-UTF8-23",
+      "verdict": "pass"
+    },
+    {
+      "name": "unchanged-literal-reader-duplicate-rejection-preserved",
+      "verdict": "pass"
+    },
+    {
+      "name": "unchanged-typed-case-alias-rejection-preserved",
+      "verdict": "pass"
+    },
+    {
+      "name": "arbitrary-DATA-case-distinction-preserved",
+      "verdict": "pass"
+    },
+    {
+      "name": "all27-original-and-new-statement-AST-witnesses-identical",
+      "verdict": "pass"
+    },
+    {
+      "name": "all12-original-helper-AST-witnesses-identical",
+      "verdict": "pass"
+    },
+    {
+      "name": "old11-byte-pins-still-identical-after-all-public-tests",
+      "verdict": "pass"
+    }
+  ],
+  "criterion_witness_sha256": "537312af946b34eadf2a1868022e67484fc558a52fa8a6f077abb9276da91bc1",
+  "original_runtime_files_changed": 0,
+  "original_frozen_FAIL_retained": true,
+  "actual_corpus_or_answers_or_mapping_opened": false,
+  "actual_judgment_or_scoring_run": false,
+  "Go_PG_Docker_provider_auth_native": 0,
+  "input_examples": "Only generic public 2041/2042 ISO strings, scalars/objects/arrays; no actual private case/date or response."
+}

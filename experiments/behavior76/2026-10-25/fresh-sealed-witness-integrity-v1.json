@@ -1,0 +1,13 @@
+{
+  "version": "fresh-sealed-witness-integrity-v1",
+  "judgments_sha256": "778a2d2808bc574573f023ed27937ab27caa3316c1115e518816e79e9a5a6333",
+  "seal_sha256": "0257d61914f0f18b1f9e4c3ad4d24c360399d9f31daeca3d33145e265a707a95",
+  "owner_rows": 96,
+  "arm_rows": 48,
+  "automatic_rows": 6,
+  "witness_references": 2121,
+  "unique_witness_files": 953,
+  "all_hashes_match": true,
+  "mapping_read": false,
+  "quality_disclosed": false
+}

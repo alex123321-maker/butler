@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/butler/butler/internal/providerauth"
@@ -188,10 +192,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	}
 	resp, err := p.client.Do(req)
 	if err != nil {
-		if ctx.Err() != nil {
-			return modelAnswer{}, ctx.Err()
-		}
-		return modelAnswer{}, providerError(transport.ErrorTypeTransportConnectionError, "Antigravity HTTP connection failed")
+		return modelAnswer{}, httpExchangeFailure(ctx, resp, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -202,6 +203,52 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	}
 	transport.ObserveProviderStage(ctx, transport.ProviderStageStream)
 	return readStreamProtocol(resp.Body, onText, cloud)
+}
+
+// A fixed local branch observation, never a diagnosis of DNS/TLS/upstream cause.
+// Context cancellation and errors with a returned response cannot acquire it.
+// There is still exactly one request, with no retry or outcome reconstruction.
+func httpExchangeFailure(ctx context.Context, response *http.Response, cause error) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	failure := &transport.Error{Type: transport.ErrorTypeTransportConnectionError, ProviderName: Name, Message: "Antigravity HTTP connection failed", Retryable: false}
+	if response == nil && confirmedNoResponseConnectionFailure(cause) {
+		failure.SafeReason = "http_do_failed_without_response"
+	}
+	return failure
+}
+
+func confirmedNoResponseConnectionFailure(err error) bool {
+	// Never select one convenient cause from an ambiguous multi-error. The
+	// finite single chain also prevents cyclic/unknown wrappers from qualifying.
+	for depth := 0; depth < 16 && err != nil; depth++ {
+		if err == context.Canceled || err == context.DeadlineExceeded {
+			return false
+		}
+		if _, multi := err.(interface{ Unwrap() []error }); multi {
+			return false
+		}
+		if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+			return false
+		}
+		switch err.(type) {
+		case *tls.CertificateVerificationError, tls.RecordHeaderError, *tls.RecordHeaderError, x509.UnknownAuthorityError, *x509.UnknownAuthorityError, x509.CertificateInvalidError, *x509.CertificateInvalidError, x509.HostnameError, *x509.HostnameError:
+			return false
+		}
+		if wrapper, ok := err.(interface{ Unwrap() error }); ok {
+			err = wrapper.Unwrap()
+			continue
+		}
+		// Exact terminal causes, not arbitrary custom Is methods or raw text.
+		for _, known := range []error{io.EOF, io.ErrUnexpectedEOF, syscall.ECONNRESET, syscall.ECONNREFUSED, syscall.ECONNABORTED, syscall.EPIPE, syscall.ENETUNREACH, syscall.EHOSTUNREACH} {
+			if err == known {
+				return true
+			}
+		}
+		return false
+	}
+	return false
 }
 
 func checkInferenceAuthority(ctx context.Context) error {

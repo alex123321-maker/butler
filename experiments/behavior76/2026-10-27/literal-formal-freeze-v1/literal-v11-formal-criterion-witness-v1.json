@@ -1,0 +1,200 @@
+{
+  "original_source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "changed": false,
+  "version": "issue76-literal-v6-original-criterion-extents-prepared-v1",
+  "per_case_types": 25,
+  "old_global_matrix_types": 2,
+  "statement_extents": [
+    {
+      "index": 9,
+      "start_line": 65,
+      "kind": "statement",
+      "sha256": "de72d31b99f60cd123b64ae9aa635396a4e7575b3d4dc50fb56da40640837dbe",
+      "end_line": 65
+    },
+    {
+      "index": 10,
+      "start_line": 66,
+      "kind": "statement",
+      "sha256": "f49b552c92392adb335d064d9dee62437a0fd830e1d34bdd365e669ffe287961",
+      "end_line": 66
+    },
+    {
+      "index": 23,
+      "start_line": 100,
+      "kind": "statement",
+      "sha256": "0519a865bb157bc713f527a02f0519a13ced74b7369133abcd68e72ccf9f63aa",
+      "end_line": 100
+    },
+    {
+      "index": 24,
+      "start_line": 101,
+      "kind": "statement",
+      "sha256": "48f61d1554bd01eb7d059d45df0d8184149ca6ccb5d20412cb7d8d8dbcba83b8",
+      "end_line": 101
+    },
+    {
+      "index": 25,
+      "start_line": 102,
+      "kind": "statement",
+      "sha256": "0e2cbaad602ac69cdfb769a9c02b6781f0f5a8cfccf4faf4ccc1c0a7cedc6741",
+      "end_line": 102
+    },
+    {
+      "index": 26,
+      "start_line": 103,
+      "kind": "statement",
+      "sha256": "a5f6a5d91a462095bf269ece3069e93422c496b42c6a3c4c9dfecc0b4e06f298",
+      "end_line": 103
+    },
+    {
+      "index": 27,
+      "start_line": 104,
+      "kind": "statement",
+      "sha256": "74053b57fe080092f0a71388b6e462bf66062f9ed764fd840e8e29639a04d554",
+      "end_line": 104
+    },
+    {
+      "index": 28,
+      "start_line": 105,
+      "kind": "statement",
+      "sha256": "8bea33f465f162afffb23b61a0dda124d12227a6dfff3ba165e827815f1cd00f",
+      "end_line": 105
+    },
+    {
+      "index": 29,
+      "start_line": 106,
+      "kind": "statement",
+      "sha256": "c9ef5efcc5e40dffa204d7f6b54f98ba757902cd10abb58e1e0ea1e7f193e819",
+      "end_line": 106
+    },
+    {
+      "index": 30,
+      "start_line": 107,
+      "kind": "statement",
+      "sha256": "99d72e94291ff7ebabb3c4670739bfd9194c8d3b8f7dad1199b424e75e41984f",
+      "end_line": 107
+    },
+    {
+      "index": 31,
+      "start_line": 108,
+      "kind": "statement",
+      "sha256": "75ea51116cf5099bba5563db051cdb9ff76258a5bca7f3108b00c480e94553c5",
+      "end_line": 111
+    },
+    {
+      "index": 32,
+      "start_line": 112,
+      "kind": "statement",
+      "sha256": "995fde9d63b3279ec77230cd13079e50b110de4e24afb55a935be00ce419eaad",
+      "end_line": 112
+    },
+    {
+      "index": 33,
+      "start_line": 113,
+      "kind": "statement",
+      "sha256": "f59ea6dbbaeb33d6b66eb906b5223bcefcf89b41739455b7c0f4b1700f5e2915",
+      "end_line": 115
+    },
+    {
+      "index": 34,
+      "start_line": 116,
+      "kind": "statement",
+      "sha256": "0694d633f26198bf04778c42efd72c6f89e0d3c7e2d433468db2c016dbc4c8d4",
+      "end_line": 116
+    },
+    {
+      "index": 35,
+      "start_line": 117,
+      "kind": "statement",
+      "sha256": "83e337f41cf92fbfad371ae5dfbd704aaecc49484cc75300246ea12bfbf2b467",
+      "end_line": 117
+    },
+    {
+      "index": 36,
+      "start_line": 118,
+      "kind": "statement",
+      "sha256": "357178b4dcc92b13bdf7a22b246b952208874f0c66fe8b9f959d50e5be389985",
+      "end_line": 131
+    },
+    {
+      "index": 37,
+      "start_line": 132,
+      "kind": "statement",
+      "sha256": "566acbe05f837bd47ae40440a5e699a9d220ef857319f0a0495d01f5d660712a",
+      "end_line": 153
+    },
+    {
+      "index": 38,
+      "start_line": 154,
+      "kind": "statement",
+      "sha256": "7feff473fe2bfb54188d74a4e3674d5f714154ddd1684e6972cacd0be9224e79",
+      "end_line": 176
+    },
+    {
+      "index": 39,
+      "start_line": 177,
+      "kind": "statement",
+      "sha256": "3d8c1ba900da708e587fabbb032987cb7d30decea7b8b73b0d697e21ab52cc88",
+      "end_line": 185
+    },
+    {
+      "index": 40,
+      "start_line": 186,
+      "kind": "statement",
+      "sha256": "626c699d5d08ae57bcefad1541d693041b198d9ea72e35e08c94f055dd5c4296",
+      "end_line": 189
+    },
+    {
+      "index": 41,
+      "start_line": 190,
+      "kind": "statement",
+      "sha256": "810c5588b0a5463db1dfacad059591eb5d32db56c187d038ec5278c13ef4a901",
+      "end_line": 193
+    },
+    {
+      "index": 42,
+      "start_line": 194,
+      "kind": "statement",
+      "sha256": "29aaf3e981cfc109b648e47492a4df9c20eb9a0bf77a5421376ce21074070436",
+      "end_line": 201
+    },
+    {
+      "index": 43,
+      "start_line": 202,
+      "kind": "statement",
+      "sha256": "89c390cb4cca254e78d2bbd29e203055d1b5a1f4c36f7d642d53e34ff1cdbfd1",
+      "end_line": 202
+    },
+    {
+      "index": "snapshot-76",
+      "start_line": 76,
+      "kind": "statement",
+      "sha256": "3f9344023fdb49459af84c05a79feb183e364a7b3c6841c03ac3edc35afa7fd7",
+      "end_line": 76
+    },
+    {
+      "index": "snapshot-77",
+      "start_line": 77,
+      "kind": "statement",
+      "sha256": "f478d7cfcd03b8a6c736e6b56ee4e4801be1d337b895fc27be35254a03dbd6a8",
+      "end_line": 93
+    },
+    {
+      "index": "matrix-205",
+      "start_line": 205,
+      "kind": "statement",
+      "sha256": "13fa329ee441ed8c84b6edd0205ecce566115db4ded29bfa3f4f6a5324d5a5f8",
+      "end_line": 208
+    },
+    {
+      "index": "matrix-209",
+      "start_line": 209,
+      "kind": "statement",
+      "sha256": "1439dcd5943f7f0cfb4f19af53593e5659fe6f3b84f8062b8fb4e4b2df405380",
+      "end_line": 209
+    }
+  ],
+  "status": "FORMAL_WITNESS_OLD27_UNCHANGED_NEW32_68_GLOBAL_MATRIX_SEPARATE",
+  "producer": "9fb9ceeb13420af0fb49272816df7273f558e3a4"
+}

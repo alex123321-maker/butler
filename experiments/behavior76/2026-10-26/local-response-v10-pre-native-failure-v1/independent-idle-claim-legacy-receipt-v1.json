@@ -1,0 +1,139 @@
+{
+  "version": "issue76-independent-idle-claim-legacy-causal-reproduction-v1",
+  "decision": "OLD_HARNESS_IDLE_CANCELLATION_GLOBAL_POISONING_REPRODUCED_NOT_ACCEPTANCE_PASS",
+  "created_utc": "2026-10-26T17:20:02.1213786+00:00",
+  "head": "c5722f29558cd6348eb242f85eb0780eedb4a34a",
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_idle_claim_diagnostic_test.go",
+      "archive": "baseline-behavior76_idle_claim_diagnostic_test.go",
+      "sha256": "63b7bfaad560509fa5c8afbd2c996a225adc7f7ec4787975d045d289177469a5"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "archive": "baseline-behavior76_collect_test.go",
+      "sha256": "12b5134551480dca6e7cf36f25250e0f8b0b2981b246b4ebbfd715b302ae3d01"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "archive": "baseline-behavior76_scope_test.go",
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "archive": "baseline-behavior76_fixture_test.go",
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/claim_admission.go",
+      "archive": "baseline-claim_admission.go",
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/service.go",
+      "archive": "baseline-service.go",
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "baseline-behavior76_collect_test.go",
+      "bytes": 29372,
+      "sha256": "12b5134551480dca6e7cf36f25250e0f8b0b2981b246b4ebbfd715b302ae3d01"
+    },
+    {
+      "path": "baseline-behavior76_fixture_test.go",
+      "bytes": 24423,
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77"
+    },
+    {
+      "path": "baseline-behavior76_idle_claim_diagnostic_test.go",
+      "bytes": 4605,
+      "sha256": "63b7bfaad560509fa5c8afbd2c996a225adc7f7ec4787975d045d289177469a5"
+    },
+    {
+      "path": "baseline-behavior76_scope_test.go",
+      "bytes": 12527,
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c"
+    },
+    {
+      "path": "baseline-claim_admission.go",
+      "bytes": 2989,
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a"
+    },
+    {
+      "path": "baseline-service.go",
+      "bytes": 14583,
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc"
+    },
+    {
+      "path": "binary-sha256.txt",
+      "bytes": 146,
+      "sha256": "3c907af447272686b3df450deb3a880810ad9f72d3f409eb54adf0a7d582eb00"
+    },
+    {
+      "path": "build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "exit.json",
+      "bytes": 175,
+      "sha256": "3e53c608a7bf10efba86d90f5609b09d8ce8a5cd7530fec22127b9ea14c08b40"
+    },
+    {
+      "path": "run-idle-claim-legacy-v1.sh",
+      "bytes": 2700,
+      "sha256": "4aa9535bf8c93638612535ccd5d13be2e9394eb5924e13a633116ca3de716a73"
+    },
+    {
+      "path": "source-after-sha256.txt",
+      "bytes": 711,
+      "sha256": "d84126ae91da2263dfe926d903e883cf7421cc8cb3d4e81af4846d96754fb879"
+    },
+    {
+      "path": "source-before-sha256.txt",
+      "bytes": 711,
+      "sha256": "d84126ae91da2263dfe926d903e883cf7421cc8cb3d4e81af4846d96754fb879"
+    },
+    {
+      "path": "test.log",
+      "bytes": 1041,
+      "sha256": "2f6b6ca3e8604a78c96a18f8b0be5c46e6b9a2f4cc9fc302994dfcacc569ec99"
+    }
+  ],
+  "test": "TestBehavior76IdleClaimCancellationLegacyDiagnosticIntegration",
+  "diagnostic_exit": 0,
+  "runtime_seconds": 3.44,
+  "race_warning": false,
+  "actual_local_PG_fixture": true,
+  "ordinary_claim_fenced_input_service": true,
+  "live_reconciliation_before_stop": true,
+  "callbacks_held_before_real_scope_admission": 2,
+  "normal_worker_context_cancel_before_callback_release": true,
+  "actual_callback_context": "context.Canceled",
+  "actual_callback_return": "input.ErrClaimAdmissionClosed",
+  "ordinary_worker_Run_return": "nil",
+  "shared_GLOBAL_after_stop": true,
+  "next_live_enterEvaluation": "errBehavior76Native",
+  "queued_inputs": 0,
+  "executor_calls": 0,
+  "native_model_auth_calls": 0,
+  "hidden_stimuli_goldens_responses_mapping_read": false,
+  "production_or_frozen_harness_source_modified": false,
+  "only_added_opt_in_public_diagnostic_file": true,
+  "source_and_original_collector_unchanged_during_run": true,
+  "original_bound_ELF_sha256": "4a82858999109d580527a67582bcc6f49ead9217a895c9286fac68f0f1fea435",
+  "original_composition_failure": {
+    "actual_low_level_cause": "UNKNOWN: original closed log did not retain it",
+    "counted_owner_turns": 95,
+    "retrospectively_reclassified": false,
+    "completed_arms": 47,
+    "log_sha256": "7a98db7add9f0821d8e4df71ccedcf2200947baf58f483bc1be4d749cf8e0a72",
+    "planned_owner_turns": 96
+  },
+  "repair_proposal": "Close a separate per-evaluation claim window under the existing fixture admission mutex; join actual claim/process workers before cancelling idle Run. Do not close the whole fixture or filter context/source/authority/storage errors; in-flight real failures must remain global and bounds unchanged.",
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "native_admission": false
+}

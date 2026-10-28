@@ -1,0 +1,38 @@
+{
+  "version": "issue76-literal-v11-r1-closed-operational-prevalidation-v1",
+  "decision": "EXACT_CLOSED_RAW_SOURCE_LEDGER_PRECHECK_PASS_NOT_QUALITY",
+  "window": "issue76-fixture-literal-20261027T030620",
+  "producer": "f1eabf538c640adbb92d957ecd672094816bebca",
+  "raw_files": 2553,
+  "raw_bytes": 72850851,
+  "all_raw_readonly_and_SHA_exact": true,
+  "original971_rows_and12_window_records_unchanged": true,
+  "inclusive": {
+    "closed_windows": 13,
+    "admissions": 1134,
+    "measured": 1122,
+    "known_full_tokens": 9010959,
+    "NULL_usage": 12
+  },
+  "new_window": {
+    "admissions": 163,
+    "measured": 163,
+    "known_full_tokens": 1310748,
+    "NULL_usage": 0
+  },
+  "indexed_arms": 32,
+  "planned_owner_opportunities": 68,
+  "fixed_runtime4_plus_old7_unchanged": true,
+  "formal_source_equivalent_after_two_bindings": true,
+  "consumed_once_and_actual_start_within_certificate": true,
+  "mapping_read": false,
+  "answers_or_quality_assessed": false,
+  "old_input_event_text_not_projected": true,
+  "checker_operations": {
+    "Go": 0,
+    "PG": 0,
+    "Docker": 0,
+    "auth": 0,
+    "provider_model": 0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": "issue76-v10-r2-zero-native-setup-v1",
+  "exit_code": 0,
+  "top_pass": 1,
+  "case_pass": 24,
+  "fail": 0,
+  "skip": 0,
+  "native_calls": 0,
+  "auth_access": 0,
+  "log_sha256": "884f5afb8af2f6b1894ec368dc15b34ee194e980ca43013d09dcd1d1a22ac112",
+  "collector_elf_sha256": "5b56b7a50c889fa924f4e8d750e149cfbca9b1d19c179fdf84fbbc7367fda00c",
+  "producer": "5fa9d724177609c97bbb74e92253cf7c474f69d0"
+}

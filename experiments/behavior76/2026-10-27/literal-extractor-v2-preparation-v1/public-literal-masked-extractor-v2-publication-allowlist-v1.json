@@ -1,0 +1,73 @@
+{
+  "version": "issue76-literal-masked-extractor-v2-publication-allowlist-v1",
+  "status": "PUBLIC_PREPARATION_ONLY_NOT_ACTUAL_REVIEW",
+  "files": [
+    {
+      "path": "literal-masked-final-extractor-v2.ps1",
+      "bytes": 6248,
+      "sha256": "8b182760f6708a836f73decc6fce9ee11c9d8e08aadc5458f5278f01571acea6"
+    },
+    {
+      "path": "extract-literal-r1-offline-v7-masked-evidence-v2.ps1",
+      "bytes": 7828,
+      "sha256": "b56fba13d16dbf667da8980ccf041f0cf3c2dccbd4450ed903b8490f3d8cdb48"
+    },
+    {
+      "path": "test-literal-masked-final-extractor-v2.ps1",
+      "bytes": 10966,
+      "sha256": "2311bd2f4315188d81b9198f1b4771d77ab585b7a22f20e323203038961af166"
+    },
+    {
+      "path": "public-literal-masked-extractor-v2-contract-prepared-v1.md",
+      "bytes": 5090,
+      "sha256": "cc7071f20346ac821a8220ec9235bdfb78022094e4eca610543daa4b1c0e4a53"
+    },
+    {
+      "path": "public-literal-masked-extractor-v2-minimal-delta-v1.md",
+      "bytes": 1552,
+      "sha256": "f031c4021a7fa1ee6d5fe1a2ca6f60d924d5dd79ddc6778d1126b4b1cf5a915e"
+    },
+    {
+      "path": "public-literal-offline-v7-extraction-v1-safe-diagnosis-v1.json",
+      "bytes": 1136,
+      "sha256": "3eb849f3e29db093c50df0ee0c7175c2dda53c68b893994d1b15e602144ac3b4"
+    },
+    {
+      "path": "public-literal-masked-extractor-v2-preparation-receipt-v1.json",
+      "bytes": 5483,
+      "sha256": "8638068a6280d2ffe3fbaee30ef5141661e52fdec0213baca55f0c8ea8b50c76"
+    },
+    {
+      "path": "literal-masked-final-v2-public-run01/receipt.json",
+      "bytes": 4088,
+      "sha256": "635a68d7eab5e420d508c985cfceb319eb9fcd4b8e585e0487e98de7b6e62d25"
+    },
+    {
+      "path": "literal-masked-final-v2-public-run01/test-source-as-run.ps1.txt",
+      "bytes": 9537,
+      "sha256": "8a8ef4565d27fb556016c862c88501ad9b36646658be34673a82d0efc07eaef4"
+    },
+    {
+      "path": "literal-masked-final-v2-public-run02/receipt.json",
+      "bytes": 4608,
+      "sha256": "ddf60d7a267912c8dd1f930ccbe6ef000eb70ae22baf2c5ef2227f638ecd1af1"
+    },
+    {
+      "path": "extract-literal-r1-offline-v7-masked-evidence-v1.ps1",
+      "bytes": 5181,
+      "sha256": "3f9dc2dd3e8cedf8c080dade3cea2e347136e4fa9ce6538b75ae4d51e642af06"
+    },
+    {
+      "path": "prepare-literal-masked-extractor-v2-receipts-v1.py",
+      "bytes": 5760,
+      "sha256": "714b3b97f624cc8d75bdb0f854555b85232a0ce77d37421f33dae4e66c8dc690"
+    }
+  ],
+  "existing_frozen12_dependencies": "public-literal-json-token-reanalysis-v7-dependencies-prepared-v1.json",
+  "forbidden": [
+    "actual raw finals/private extraction failure/private projection",
+    "corpus/goldens/mapping/assessments",
+    "auth/settings/credentials/dumps"
+  ],
+  "preserve_relative_layout": true
+}

@@ -1,0 +1,81 @@
+{
+  "version": "issue76-independent-zero-native-quiescence-rca-v1",
+  "producer": "bdc00b25cf68cbc26d144cc9415d85ccf15a5733",
+  "binary_sha256": "958d0accdd76c47d1c32ad3f635c4a461215cc9a4703def00f1c3637c76ea25b",
+  "source_change": "Diagnostic export only; same atomic snapshot/predicate, no wait or recheck",
+  "replays": 1,
+  "selected_arm_result": "PASS",
+  "selected_arm_seconds": 4.13,
+  "top_level_result": "FAIL as expected for narrow selection arms1/turns2; NOT a full composition PASS",
+  "test_exit_code": 1,
+  "decision": {
+    "read_pool_idle": 1,
+    "global": false,
+    "unpaired_end_events": 0,
+    "scope_evaluations": 0,
+    "read_pool_acquired": 0,
+    "dropped_events": 0,
+    "operation_failures": 0,
+    "scope_closed": true,
+    "open_spans": 0,
+    "events": 642,
+    "scope_active": 0,
+    "read_pool_total": 1,
+    "reconstructed_open_spans": 0,
+    "scope_stopped": false,
+    "observer_failed": false
+  },
+  "cleanup_identical_to_decision": true,
+  "decision_and_cleanup_sha256": "b1a4d2f8e692a96ff728ad653dde15a4d500dca241b174479e309618ef8ffbcc",
+  "late_events": 0,
+  "late_end_events": 0,
+  "original_failure": {
+    "log_sha256": "3c54c93fe073d53e41722373d2a54925f21d8c78a21c1dcbd7795a6383424b9e",
+    "observed_owner_turns": 96,
+    "cause": "unresolved; source-guard-tail hypothesis neither established nor ruled out",
+    "full_run_passed_arms": 47,
+    "failed_vs_open_subtype": "unavailable; original decision snapshot was not exported",
+    "full_run_result": "FAIL",
+    "retained": true
+  },
+  "corpus_stimuli_sha256": "878f220f31c4e615a56b81cace7be96639a4f4e6dcffee3159b095675ef5d109",
+  "goldens_sha256": "464cb37c9d8bec967baba27fe6b401b6fc41d3d5d855f3ecf5955c04312f4ee0",
+  "corpus_and_goldens_changed": false,
+  "native_calls": 0,
+  "auth_reads": 0,
+  "mapping_or_semantic_expected_results_disclosed": false,
+  "native_admission": false,
+  "full_collection_or_gate_pass_claimed": false,
+  "files": [
+    {
+      "path": "binary-sha256.txt",
+      "bytes": 145,
+      "sha256": "3a024f473059b619f4169f31f0f06ed81a006d9a954dcaa87f9709345eb40858"
+    },
+    {
+      "path": "build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cleanup-8f0f1206bc32a63cee9a975d059f16713a4b54ee23596a6786ede60b97f59591.json",
+      "bytes": 415371,
+      "sha256": "b1a4d2f8e692a96ff728ad653dde15a4d500dca241b174479e309618ef8ffbcc"
+    },
+    {
+      "path": "decision-8f0f1206bc32a63cee9a975d059f16713a4b54ee23596a6786ede60b97f59591.json",
+      "bytes": 415371,
+      "sha256": "b1a4d2f8e692a96ff728ad653dde15a4d500dca241b174479e309618ef8ffbcc"
+    },
+    {
+      "path": "exit.json",
+      "bytes": 203,
+      "sha256": "521e6869b44ddc473683744da12fa3043588197aa938fe26dfa24eb218318916"
+    },
+    {
+      "path": "once-test.log",
+      "bytes": 3427,
+      "sha256": "80c70a9b744ca708946c8304336c9e49c367a9d495731b7d3adf87d4bd7c8f72"
+    }
+  ]
+}

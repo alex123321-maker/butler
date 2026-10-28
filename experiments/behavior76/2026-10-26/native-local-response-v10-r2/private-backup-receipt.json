@@ -1,0 +1,10 @@
+{
+  "version": "issue76-v10-r2-private-closed-backup-receipt-v1",
+  "scope": "Private encrypted-settings-bearing PG dump stays outside Git and model; no restore performed",
+  "dump_sha256": "b7b5d285f6a7c1edea7c535a1789099356e9bc8b20741176e6b0fa77026824d2",
+  "bytes": 10896875,
+  "pg_restore_list_exit": 0,
+  "actual_restore_tested": false,
+  "all_windows_closed": 11,
+  "other_PG_clients": 0
+}

@@ -1,0 +1,21 @@
+{
+  "version": "issue76-literal-offline-v7-extraction-v1-safe-diagnosis-v1",
+  "decision": "COMMUNICATION_EXTRACTION_STOPPED_PENDING_REVIEW_NO_RETRY",
+  "successful_mechanical_receipt_sha256": "4ab0bec7c4892662de4f30fa4a3495a7794a552cef326bfacd1fe20e8e5ef48e",
+  "successful_mechanical_result_sha256": "41825ea0599c7d9adf1a47e314fbcbe4e01209cfcc9c8a5f4d0ab95dbc9d65f4",
+  "owner_rows": 68,
+  "semantic_rows": 68,
+  "private_failure_sha256": "94b842bf0f67981c8d0e1ba9748187339dc6ac5e8d8b45fd96302c1b4d1fc8a2",
+  "failed_extractor_sha256": "3f9dc2dd3e8cedf8c080dade3cea2e347136e4fa9ce6538b75ae4d51e642af06",
+  "fixed_category": "ACTUAL_FINAL_NOT_SINGLE_JSON_UNHANDLED_BY_EXTRACTION_HELPER",
+  "failing_source_line": 41,
+  "partial_projection_files": 0,
+  "completed_communication_judgments": 0,
+  "mapping_read": false,
+  "actual_raw_final_or_private_expected_value_published": false,
+  "original_frozen_v6_status": "STRICT_FAIL_NO_GO_IMMUTABLE",
+  "posthoc_v7_mechanical_status": "COMPLETED_ONCE_UNCHANGED",
+  "new_v2_actual_extraction": "NOT_STARTED",
+  "mechanical_rerun": false,
+  "no_native_or_promotion": true
+}

@@ -1,0 +1,23 @@
+{
+  "version": "issue76-literal-r1-offline-v7-mechanical-execution-v1",
+  "posthoc": true,
+  "started_at_utc": "2026-10-27T05:24:02.7749350+00:00",
+  "formal_freeze_sha256": "a8342dd7a8b4e5c1de391cb1bbaa3e27267de865e8c8f85893e9fdfaad288378",
+  "source_checks": 269,
+  "runtime_checks": 12,
+  "raw_files": 2553,
+  "raw_bytes": 72850851,
+  "original27_AST_and12helpers_exact": true,
+  "original_V6_status": "STRICT_FAIL_NO_GO_IMMUTABLE",
+  "mapping_read": false,
+  "communication_judgments": "NOT_STARTED",
+  "new_native_authorization": false,
+  "candidate_promotion": false,
+  "operations_Go_PG_Docker_auth_provider": 0,
+  "private_result_sha256": "41825ea0599c7d9adf1a47e314fbcbe4e01209cfcc9c8a5f4d0ab95dbc9d65f4",
+  "private_result_path": ".cache/issue76-independent/closed-literal-v11-r1-offline-v7-private/posthoc-v7-mechanical-result-v1.json",
+  "decision": "POSTHOC_V7_MECHANICAL_EXECUTED_NOT_QUALITY_ACCEPTANCE",
+  "owner_rows": 68,
+  "semantic_rows": 68,
+  "completed_at_utc": "2026-10-27T05:25:51.0824106+00:00"
+}

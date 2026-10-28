@@ -1,0 +1,15 @@
+{
+  "version": "issue76-local-http-v9-literal-binding-v1",
+  "semantic_producer": "4401300aa55cded3a12b94ef82b4512d756017ff",
+  "formal_freeze_sha256": "2210980ef23df4abba28cd675d46ab4b42b0e90cb3e26f6bceaacc583b4bde9a",
+  "stimuli_sha256": "bb40fdc7ca4c22c15230364445d0c1e74384392cc9d55ab53ea8aa42a32e5686",
+  "expectations_sha256": "fc202c9b27a025344156273c73ba2bb86c62d1ffed593f18c928668c8abd2c15",
+  "source_change": "Only two literal SHA constants in behavior76_day_admission_test.go",
+  "wrapper_path_changed": false,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "hidden_values_read_by_parent": false,
+  "old_draft_admitted": false,
+  "native_admission": false,
+  "new_model_calls": 0
+}

@@ -1,0 +1,17 @@
+{
+  "script": "check-literal-actual-bridge-v1.ps1",
+  "expected": 12,
+  "original_expected_pass": 12,
+  "source_sha256": "d4ce2c7972afc6b1e9563c187908f37396815f6027c7ed60c779048f4027d085",
+  "group": "retained_actual_public_Go_to_PS12",
+  "exit": 0,
+  "observed_summary_counts": [
+    12
+  ],
+  "pass": true,
+  "elapsed_seconds": 4.088,
+  "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/check-literal-actual-bridge-v1.ps1.log",
+  "log_sha256": "d076dbebd72e6937df0d83812d1961e3671b79d45eca7924263d958bf21c1b5b",
+  "log_bytes": 278,
+  "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+}

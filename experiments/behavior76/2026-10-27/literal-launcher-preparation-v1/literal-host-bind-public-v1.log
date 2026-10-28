@@ -1,0 +1,30 @@
+test-behavior76-literal-host-bind.ps1: Exception calling "SafeGetValue" with "0" argument(s): "Cannot generate a PowerShell object for a ScriptBlock evaluating dynamic expressions. Dynamic expression: @'
+set -eu
+root=/mnt/host/wsl/butler-effort76/src20
+check_pin(){ actual=$(sha256sum "$root/$1"); test "${actual%% *}" = "$2"; }
+check_pin "$1" "$2"
+shift 2
+wrapper=$1
+check_pin "$1" "$2"
+shift 2
+check_pin "$1" "$2"
+shift 2
+check_pin "$1" "$2"
+shift 2
+check_pin "$1" "$2"
+shift 2
+elf=$1
+digest=$2
+check_pin "$elf" "$digest"
+producer=$3
+stimuli=$4
+stimuli_digest=$5
+output=$6
+latest_epoch=$7
+not_before_utc=$8
+latest_start_utc=$9
+check_pin "$stimuli" "$stimuli_digest"
+case "$latest_epoch" in ''|*[!0-9]*) exit 2;; esac
+test "$(date -u +%s)" -lt "$latest_epoch"
+exec /bin/sh "$root/$wrapper" "$elf" "$digest" "$producer" "$stimuli" "$output" "$latest_epoch" "$not_before_utc" "$latest_start_utc"
+'@."

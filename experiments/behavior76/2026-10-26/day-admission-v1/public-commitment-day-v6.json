@@ -1,0 +1,122 @@
+{
+  "scoring_wrapper_sha256": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+  "version": "issue76-independent-hidden-day-v6-v1",
+  "families": 12,
+  "interface": "Frozen Episode/Step v1, checker-index-v2-local-tail and authority-stream-v2",
+  "source_freeze": "cc8a4cc05979dae7f30a8aaa1f45aaac1b2efb95",
+  "stimuli_path": ".cache/issue76-independent/hidden-day-v6/stimuli.jsonl",
+  "pg_calls": 0,
+  "real_owner_episodes": 0,
+  "owner_turns": 48,
+  "native_admission": false,
+  "expectations_path": ".cache/issue76-independent/hidden-day-v6/expectations.jsonl",
+  "paired_owner_opportunities": 96,
+  "day_admission_policy_sha256": "395d006c5efbe9dc7d5ccbd73a4e7bafbbff99e76eb2777b3495b954b82b6ab9",
+  "thresholds_changed": false,
+  "native_calls": 0,
+  "arms": 48,
+  "source_freeze_receipt_sha256": "7ff0e3eecb8c5c2810cd62ed0eeaa7d00c0394bd373588e44a130a99c19da367",
+  "order": "Independent fresh identifier sort before freeze; no result-dependent reshuffle",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "stimuli_sha256": "628eb9293577e9a37148367c8ae29ee8f77b2807d9adc5f92128f910fc7cd3ba",
+  "episodes": 24,
+  "criteria_changed": false,
+  "old_controls_results_or_maps_read_for_derivation": false,
+  "all_synthetic": true,
+  "expectations_sha256": "d6146f7c01ed7c120d1a0fdc7b435a9a52d07a8f15cda1823b20833e2014d0e9",
+  "coverage": [
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "amendment",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "clarification",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "feedback_candidate",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "manual_change",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "new_task_coexistence",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "owner_done_report",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "preference_exception",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "preference_lifecycle",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "restart",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "scoped_stop_negation",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "status_continuation",
+      "paired_owner_opportunities": 8
+    },
+    {
+      "negative": 1,
+      "positive": 1,
+      "episodes": 2,
+      "family": "untrusted_command",
+      "paired_owner_opportunities": 8
+    }
+  ],
+  "evaluated_step_ids": [
+    "turn1",
+    "turn2"
+  ],
+  "zero_native_setup_composition": "required_after_literal_binding",
+  "positive_episodes": 12,
+  "original_steps": 64,
+  "negative_episodes": 12,
+  "fixture_protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5"
+}

@@ -1,0 +1,109 @@
+{
+  "version": "issue76-r3-exact-public-safe-allowlist-v1",
+  "issued_utc": "2026-10-26T22:31:57.274402+00:00",
+  "safe_summary_files": [
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-closed-local-response-v10-r3-operational-prevalidation-v1.json",
+      "suggested_public_name": "public-closed-local-response-v10-r3-operational-prevalidation-v1.json",
+      "bytes": 2489,
+      "sha256": "10205c2b7ab89d1bb61176d0aca0b7ec00efe23530847ba99df689aa37750d90"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-masked-judgments-seal-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-masked-judgments-seal-v1.json",
+      "bytes": 584,
+      "sha256": "e688cd1f5848049b553f844c5eda2a81c67b713ad0852de3a38c93597521ee81"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-sealed-review-limitations-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-sealed-review-limitations-v1.json",
+      "bytes": 1658,
+      "sha256": "72f2fcef80412f047959fb1910c2abe1f0d612844c3585250d05335f5216a466"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-sealed-comparison-v2.json",
+      "suggested_public_name": "public-local-response-v10-r3-sealed-comparison-v2.json",
+      "bytes": 26935,
+      "sha256": "cfe85c6f47570e48bb1f98c38253d018012b8946e553e37de1958ebe037ac7a0"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-final-report-v1.md",
+      "suggested_public_name": "public-local-response-v10-r3-final-report-v1.md",
+      "bytes": 4916,
+      "sha256": "be9cf54a9a08f03930c69553d4befa2959bffb4eb0cdc44f0c195b53dc01ae51"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-criterion-audit-v1.md",
+      "suggested_public_name": "public-local-response-v10-r3-criterion-audit-v1.md",
+      "bytes": 5508,
+      "sha256": "ef443591ed3ebe05798827764172eae82cf37adf5b137df5f9220cf191ff1016"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-error-catalog-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-error-catalog-v1.json",
+      "bytes": 5838,
+      "sha256": "95700eb8533015ea0034b203e2b92e2550cc7e0d0e08879078d161923e44acbc"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-expanded-exposure-audit-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-expanded-exposure-audit-v1.json",
+      "bytes": 1524,
+      "sha256": "c3f8c81fc6898771efb6cd9d37bebe4676a79b6813d5e15d6a9b1cb491c5938f"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-raw-publication-decision-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-raw-publication-decision-v1.json",
+      "bytes": 2469,
+      "sha256": "f65f32a5994a0a066d87c299ab14aa2ba246716af46631e6c7bcb87634ed4afd"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r3-final-disposition-v1.json",
+      "suggested_public_name": "public-local-response-v10-r3-final-disposition-v1.json",
+      "bytes": 3549,
+      "sha256": "e3ef7be3890454a963b66298871f756769ad77e0d28ce14c6c2eac91be5dab66"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\issue76-current-criterion-snapshot-v1.json",
+      "suggested_public_name": "issue76-current-criterion-snapshot-v1.json",
+      "bytes": 29599,
+      "sha256": "f30cae6174814221ada48f1dc7e79361f8d10df767cf7d93bc57a13ed2d83ba1"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-local-response-v10-r2-original-ELF-search-v1.json",
+      "suggested_public_name": "public-local-response-v10-r2-original-ELF-search-v1.json",
+      "bytes": 2807,
+      "sha256": "67c9ab995e4939cef2e70350430bc0f8b5899c9eb0ae4a9f626b60f888465d54"
+    }
+  ],
+  "optional_exact_synthetic_raw_after_stated_disclosures": [
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\closed-local-response-v10-r3-v1\\raw-inventory.json",
+      "suggested_public_name": "r3-raw-inventory.json",
+      "bytes": 768276,
+      "sha256": "98447bb97b8f43b7932f6a25baa8fee0835dd4035f4bd693e3cb222d54c4dc4b"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\closed-local-response-v10-r3-v1\\raw-seal.json",
+      "suggested_public_name": "r3-raw-seal.json",
+      "bytes": 701,
+      "sha256": "e944b72e646594f654f80338c07bf9871a1a0aeecc5a96d66625864eb2ce707e"
+    },
+    {
+      "source": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\closed-local-response-v10-r3-v1\\raw-evidence.zip",
+      "suggested_public_name": "r3-raw-evidence.zip",
+      "bytes": 96975036,
+      "sha256": "4ce493b4a91d4d364e387df1ecc071d70cd91cb811546dffc6c4827e7b374799"
+    }
+  ],
+  "exclude_entire_categories": [
+    "hidden-* directories including stimuli/goldens",
+    "closed-local-response-v10-r3-private-scoring-v1 and all private judgments/review facts",
+    "actual private-arm-mapping.json blob",
+    "private assessment/authoring scripts and helpers",
+    "auth/settings/credentials/private keys",
+    "all PG dumps/private backups",
+    "unlisted sibling cache artifacts"
+  ],
+  "copy_policy": "Copy only exact listed bytes to a NEW public directory; no glob copying. Existing formal source/control/public checker packs remain independently pinned and may be referenced without copying private neighbors.",
+  "not_included": "Allowlist does not include its own hash; final message supplies that outer pin."
+}

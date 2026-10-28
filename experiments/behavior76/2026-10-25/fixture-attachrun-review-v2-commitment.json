@@ -1,0 +1,22 @@
+[
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_task_context_test.go",
+    "sha256": "c6b5f82fb7e727a04b3dabd8eba96af56f911f3244f52ebb6ade762315c8dafe"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+    "sha256": "5169354609019d58497c7f3776863114ad2e3005d0f2f73d29d6e8ef5d7c1a3b"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+    "sha256": "4c655f358c9a9ae087e0e1a2c7fa0a9d6ffa47e0c5facd38c6dbf007e63f2a5b"
+  },
+  {
+    "path": ".cache/behavior76/lifecycle-boundary-race-v2.log",
+    "sha256": "6df5b505cb2282935306d1eeb0953c4113aeb9c03f65d07acdde184b89c05dc2"
+  },
+  {
+    "path": ".cache/issue76-independent/fixture-attachrun-review-v2.md",
+    "sha256": "a63e3fd2f33cc76f29c226eb03a4fbe9f030c2d50f07134734bbd62477986e4e"
+  }
+]

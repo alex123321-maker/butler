@@ -1,0 +1,50 @@
+{
+  "all_synthetic": true,
+  "files": [
+    {
+      "sha256": "71ad44ddfadbc18d5cc5c06f5fd4edc043af66584e7f244e7d0b5dac66ddf94b",
+      "bytes": 58566,
+      "path": "hidden-stream-v5/stimuli.jsonl"
+    },
+    {
+      "sha256": "84862a7ba12647633c7665e98c9541eb374ced4ad53a2d1fe896f08e6ed494b8",
+      "bytes": 40691,
+      "path": "hidden-stream-v5/expectations.jsonl"
+    },
+    {
+      "sha256": "5fe4d3d136b8513eb229f46ba56b9f9507717df35da2dc2a5f97201725d8b74b",
+      "bytes": 3855,
+      "path": "public-commitment-stream-v5.json"
+    },
+    {
+      "sha256": "0f858fd262584d20ecfa8f20e42a0ca84cb2c2adabcfa778c3bb502a061deda9",
+      "bytes": 6840,
+      "path": "semantic-freeze-stream-v5-v1.json"
+    },
+    {
+      "sha256": "aca17ada63067aec67d170b581e36024de1ce2adfc2a2b1eb6883a801138f325",
+      "bytes": 50547,
+      "path": "build-hidden-stream-v5.ps1"
+    }
+  ],
+  "thresholds_changed": false,
+  "native_admission": false,
+  "criteria_changed": false,
+  "negative_episodes": 12,
+  "paired_owner_opportunities": 96,
+  "source": "4a0a69ea349ac3fd3928ce2edd5ecf393e31029d",
+  "setup_and_composition": "pending_literal_binding",
+  "families": 12,
+  "native_calls": 0,
+  "mapping_read": false,
+  "source_freeze_sha256": "0f858fd262584d20ecfa8f20e42a0ca84cb2c2adabcfa778c3bb502a061deda9",
+  "steps": 63,
+  "golden_content_disclosed": false,
+  "old_controls_or_results_read_for_derivation": false,
+  "positive_episodes": 12,
+  "arms": 48,
+  "episodes": 24,
+  "case_content_disclosed": false,
+  "pg_calls": 0,
+  "version": "issue76-stream-v5-independent-authoring-receipt-v1"
+}

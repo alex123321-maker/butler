@@ -1,0 +1,288 @@
+{
+  "version": "issue76-literal-offline-v7-formal-criterion-witness-v1",
+  "original27_statements": [
+    {
+      "start_line": 65,
+      "index": 9,
+      "sha256": "de72d31b99f60cd123b64ae9aa635396a4e7575b3d4dc50fb56da40640837dbe",
+      "kind": "statement",
+      "end_line": 65
+    },
+    {
+      "start_line": 66,
+      "index": 10,
+      "sha256": "f49b552c92392adb335d064d9dee62437a0fd830e1d34bdd365e669ffe287961",
+      "kind": "statement",
+      "end_line": 66
+    },
+    {
+      "start_line": 100,
+      "index": 23,
+      "sha256": "0519a865bb157bc713f527a02f0519a13ced74b7369133abcd68e72ccf9f63aa",
+      "kind": "statement",
+      "end_line": 100
+    },
+    {
+      "start_line": 101,
+      "index": 24,
+      "sha256": "48f61d1554bd01eb7d059d45df0d8184149ca6ccb5d20412cb7d8d8dbcba83b8",
+      "kind": "statement",
+      "end_line": 101
+    },
+    {
+      "start_line": 102,
+      "index": 25,
+      "sha256": "0e2cbaad602ac69cdfb769a9c02b6781f0f5a8cfccf4faf4ccc1c0a7cedc6741",
+      "kind": "statement",
+      "end_line": 102
+    },
+    {
+      "start_line": 103,
+      "index": 26,
+      "sha256": "a5f6a5d91a462095bf269ece3069e93422c496b42c6a3c4c9dfecc0b4e06f298",
+      "kind": "statement",
+      "end_line": 103
+    },
+    {
+      "start_line": 104,
+      "index": 27,
+      "sha256": "74053b57fe080092f0a71388b6e462bf66062f9ed764fd840e8e29639a04d554",
+      "kind": "statement",
+      "end_line": 104
+    },
+    {
+      "start_line": 105,
+      "index": 28,
+      "sha256": "8bea33f465f162afffb23b61a0dda124d12227a6dfff3ba165e827815f1cd00f",
+      "kind": "statement",
+      "end_line": 105
+    },
+    {
+      "start_line": 106,
+      "index": 29,
+      "sha256": "c9ef5efcc5e40dffa204d7f6b54f98ba757902cd10abb58e1e0ea1e7f193e819",
+      "kind": "statement",
+      "end_line": 106
+    },
+    {
+      "start_line": 107,
+      "index": 30,
+      "sha256": "99d72e94291ff7ebabb3c4670739bfd9194c8d3b8f7dad1199b424e75e41984f",
+      "kind": "statement",
+      "end_line": 107
+    },
+    {
+      "start_line": 108,
+      "index": 31,
+      "sha256": "75ea51116cf5099bba5563db051cdb9ff76258a5bca7f3108b00c480e94553c5",
+      "kind": "statement",
+      "end_line": 111
+    },
+    {
+      "start_line": 112,
+      "index": 32,
+      "sha256": "995fde9d63b3279ec77230cd13079e50b110de4e24afb55a935be00ce419eaad",
+      "kind": "statement",
+      "end_line": 112
+    },
+    {
+      "start_line": 113,
+      "index": 33,
+      "sha256": "f59ea6dbbaeb33d6b66eb906b5223bcefcf89b41739455b7c0f4b1700f5e2915",
+      "kind": "statement",
+      "end_line": 115
+    },
+    {
+      "start_line": 116,
+      "index": 34,
+      "sha256": "0694d633f26198bf04778c42efd72c6f89e0d3c7e2d433468db2c016dbc4c8d4",
+      "kind": "statement",
+      "end_line": 116
+    },
+    {
+      "start_line": 117,
+      "index": 35,
+      "sha256": "83e337f41cf92fbfad371ae5dfbd704aaecc49484cc75300246ea12bfbf2b467",
+      "kind": "statement",
+      "end_line": 117
+    },
+    {
+      "start_line": 118,
+      "index": 36,
+      "sha256": "357178b4dcc92b13bdf7a22b246b952208874f0c66fe8b9f959d50e5be389985",
+      "kind": "statement",
+      "end_line": 131
+    },
+    {
+      "start_line": 132,
+      "index": 37,
+      "sha256": "566acbe05f837bd47ae40440a5e699a9d220ef857319f0a0495d01f5d660712a",
+      "kind": "statement",
+      "end_line": 153
+    },
+    {
+      "start_line": 154,
+      "index": 38,
+      "sha256": "7feff473fe2bfb54188d74a4e3674d5f714154ddd1684e6972cacd0be9224e79",
+      "kind": "statement",
+      "end_line": 176
+    },
+    {
+      "start_line": 177,
+      "index": 39,
+      "sha256": "3d8c1ba900da708e587fabbb032987cb7d30decea7b8b73b0d697e21ab52cc88",
+      "kind": "statement",
+      "end_line": 185
+    },
+    {
+      "start_line": 186,
+      "index": 40,
+      "sha256": "626c699d5d08ae57bcefad1541d693041b198d9ea72e35e08c94f055dd5c4296",
+      "kind": "statement",
+      "end_line": 189
+    },
+    {
+      "start_line": 190,
+      "index": 41,
+      "sha256": "810c5588b0a5463db1dfacad059591eb5d32db56c187d038ec5278c13ef4a901",
+      "kind": "statement",
+      "end_line": 193
+    },
+    {
+      "start_line": 194,
+      "index": 42,
+      "sha256": "29aaf3e981cfc109b648e47492a4df9c20eb9a0bf77a5421376ce21074070436",
+      "kind": "statement",
+      "end_line": 201
+    },
+    {
+      "start_line": 202,
+      "index": 43,
+      "sha256": "89c390cb4cca254e78d2bbd29e203055d1b5a1f4c36f7d642d53e34ff1cdbfd1",
+      "kind": "statement",
+      "end_line": 202
+    },
+    {
+      "start_line": 76,
+      "index": "snapshot-76",
+      "sha256": "3f9344023fdb49459af84c05a79feb183e364a7b3c6841c03ac3edc35afa7fd7",
+      "kind": "statement",
+      "end_line": 76
+    },
+    {
+      "start_line": 77,
+      "index": "snapshot-77",
+      "sha256": "f478d7cfcd03b8a6c736e6b56ee4e4801be1d337b895fc27be35254a03dbd6a8",
+      "kind": "statement",
+      "end_line": 93
+    },
+    {
+      "start_line": 205,
+      "index": "matrix-205",
+      "sha256": "13fa329ee441ed8c84b6edd0205ecce566115db4ded29bfa3f4f6a5324d5a5f8",
+      "kind": "statement",
+      "end_line": 208
+    },
+    {
+      "start_line": 209,
+      "index": "matrix-209",
+      "sha256": "1439dcd5943f7f0cfb4f19af53593e5659fe6f3b84f8062b8fb4e4b2df405380",
+      "kind": "statement",
+      "end_line": 209
+    }
+  ],
+  "original12_helpers": [
+    {
+      "sha256": "92184a8508f22356072439904fac801bceb47cfbff7dc191e08ce6b3fa0d1f42",
+      "name": "Check",
+      "end_line": 21,
+      "start_line": 19,
+      "kind": "function"
+    },
+    {
+      "sha256": "14a48830627e75c408c088abd11c1062807ffd362361792b040e58aba3d9d121",
+      "name": "Missing",
+      "end_line": 22,
+      "start_line": 22,
+      "kind": "function"
+    },
+    {
+      "sha256": "1eb7bf8f2ed666158b37f26abfd6b16dd875e4dd25ddc8c7fa67a6b114bbf9d1",
+      "name": "SafePath",
+      "end_line": 28,
+      "start_line": 23,
+      "kind": "function"
+    },
+    {
+      "sha256": "60b1860537eb4dc8f290073404486840a8d992eb81b0a404a20ffffdcef1fc7f",
+      "name": "ReadJson",
+      "end_line": 29,
+      "start_line": 29,
+      "kind": "function"
+    },
+    {
+      "sha256": "af91482e4795569d380e636420a3c812ba3bbf072bbb4aacd505c97748a6685b",
+      "name": "ReadTable",
+      "end_line": 35,
+      "start_line": 30,
+      "kind": "function"
+    },
+    {
+      "sha256": "621f61bdfcb9253db61554e62dbb998e591c73a6b7012623d9f533ab487ebd15",
+      "name": "Canonical",
+      "end_line": 41,
+      "start_line": 36,
+      "kind": "function"
+    },
+    {
+      "sha256": "8489bc4742bfdcd08baaeb1449ecd1e4fe7147d17b15a214cd6321736f38cc92",
+      "name": "HashString",
+      "end_line": 42,
+      "start_line": 42,
+      "kind": "function"
+    },
+    {
+      "sha256": "0d5e2b2c72aa93227f82894f619038a555d66d067edb72b1daec472a709eaa41",
+      "name": "Row",
+      "end_line": 43,
+      "start_line": 43,
+      "kind": "function"
+    },
+    {
+      "sha256": "5c088a58f63407518290596ac96ce3ca1eb95882efdd94f69549e1e647f0f5a1",
+      "name": "TaskRow",
+      "end_line": 44,
+      "start_line": 44,
+      "kind": "function"
+    },
+    {
+      "sha256": "3db124b659239d1ed5627147de21be08ba2f8d46c958fda80804ce9ac75c9303",
+      "name": "ObjectRow",
+      "end_line": 45,
+      "start_line": 45,
+      "kind": "function"
+    },
+    {
+      "sha256": "4a01a82b8fc7a245c7ad51952dadbca4de71bf13ca7eefb42de5491a9c044ac3",
+      "name": "FieldCheck",
+      "end_line": 49,
+      "start_line": 46,
+      "kind": "function"
+    },
+    {
+      "sha256": "26ff997702a558ec3825452dfb6c7d820958601ee2f6503127704cd9f150ff52",
+      "name": "ProfileProjection",
+      "end_line": 54,
+      "start_line": 50,
+      "kind": "function"
+    }
+  ],
+  "unchanged": true,
+  "source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "prior_public_witness": {
+    "path": ".cache/issue76-independent/literal-json-token-v7-public-run04/criterion-witness.json",
+    "bytes": 13626,
+    "sha256": "f14cdc8b0138f897d91c320a9b48711dcc311c16ca2a1d6a506ecb1bf11a265a"
+  },
+  "predicate_execution": false
+}

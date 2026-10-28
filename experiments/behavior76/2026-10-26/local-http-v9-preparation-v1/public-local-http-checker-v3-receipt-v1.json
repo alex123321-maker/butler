@@ -1,0 +1,141 @@
+{
+  "version": "issue76-public-local-http-checker-v3-receipt-v1",
+  "decision": "CHECKER_READY_PENDING_SOURCE_FREEZE",
+  "contract": {
+    "sha256": "d09207210bee58a9d64be0ff2ea052f0f5c851bae326d09483f01ccad083a7b4",
+    "path": "public-local-http-tail-contract-v3-proposal-v2.md"
+  },
+  "runtime_dependencies_complete": true,
+  "runtime_files": [
+    {
+      "sha256": "9aef6c76abac41fcc8e21645d3774d16a7e8679b19dc9fa163569fcd79488388",
+      "path": "local-model-proof-reader-v3.ps1"
+    },
+    {
+      "sha256": "ad4738c4b04b53d22a3adead3fa87b212521398018cfc2da552278c10d434cc6",
+      "path": "local-tail-adapter-v3.ps1"
+    },
+    {
+      "sha256": "90c70ae4caf6312149c607e226dccf71c44fb9ac1ad37e4dfa8ac42d1bddba16",
+      "path": "local-scoring-composition-v3.ps1"
+    },
+    {
+      "sha256": "9e640281ccecbdf92c384e3b34eccb7ebe3938bb26b8340bd59990a725cb8890",
+      "path": "authority-stream-scoring-v2c.ps1"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+      "path": "score-mechanical-fresh-v3.ps1"
+    }
+  ],
+  "public_tests": [
+    {
+      "sha256": "f498019680fcc91fbeae45d5cf19606768052751234fb533827493c998ca7f36",
+      "log_sha256": "3b1e572ddac0ddc8c5f6c5be426e0726440de0f9281e557dac609540b78cc410",
+      "path": "test-local-tail-adapter-v3.ps1",
+      "passed": 32,
+      "failed": 0,
+      "log": "local-tail-adapter-v3-selftests-v1.log"
+    },
+    {
+      "sha256": "850f64682dfa0eede94b53304bc51ad3ba55bc57ece535daaa4d6782ea0d2a3b",
+      "log_sha256": "cb75c14aa63076b954486beb680e5b217d6863c96f7dcafc7a9167ee3d8c2ea7",
+      "path": "test-local-model-proof-v3.ps1",
+      "passed": 47,
+      "failed": 0,
+      "log": "local-model-proof-v3-selftests-v1.log"
+    },
+    {
+      "sha256": "d4697d15528a9a04a4e71d1ef1a8e5a97aab50e0444c1820b8594591bd9b9aeb",
+      "log_sha256": "edd7b59cb8b5de11e7f94a42dcd5afa16a337e5153949e978262bb6c5cf96e7b",
+      "path": "test-local-scoring-composition-v3.ps1",
+      "passed": 12,
+      "failed": 0,
+      "log": "local-scoring-composition-v3-selftests-v1.log"
+    },
+    {
+      "sha256": "37bb7bfe61f22ee855286186b00992b3892cab053296918af4263514ff2eaf11",
+      "log_sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5",
+      "path": "test-local-model-proof-v3-union.ps1",
+      "passed": 2,
+      "failed": 0,
+      "log": "local-model-proof-v3-union-selftests-v1.log"
+    },
+    {
+      "sha256": "b2a0778c9c489bab3f0ff7c3bc401feb21a6568f3de115d5bbed13b4642dc4ac",
+      "log_sha256": "8d891457c3d5ff89b9545899f73b4ce5543dfe54fe0013d415b73f2f08bea994",
+      "path": "test-local-model-composition-v3.ps1",
+      "passed": 7,
+      "failed": 0,
+      "log": "local-model-composition-v3-selftests-v1.log"
+    },
+    {
+      "sha256": "53516c2bda0abe7b99fcd6d5330fae772e98ace71853aca920725157d991cbf9",
+      "log_sha256": "d1d4160a7f961807597851b8a451507d1d87d06cffc0fdd36778963b7d111c65",
+      "path": "authority-stream-scoring-v2c-selftests.ps1",
+      "passed": 6,
+      "failed": 0,
+      "log": "authority-stream-scoring-v2c-selftests-v1.log"
+    },
+    {
+      "sha256": "b83ff993d366f807d81d23c612f0b1e58a5c4b263207dea4a408db4fc7e4cc2b",
+      "log_sha256": "61f2e40c2911e3d232fbeee1f7725a2d073159fe74f0de7621eb2a11abe5384c",
+      "path": "test-local-http-proof-v3.ps1",
+      "passed": 52,
+      "failed": 0,
+      "log": "local-http-proof-v3-selftests-v1.log"
+    },
+    {
+      "sha256": "08c68ac946efb43cced051b5d0389b8f4ef4f70710b466209346945d8d48f357",
+      "log_sha256": "04e9a1a1d6fa26931261a25262cb335167c8d4f7c5c6a7b08172e3b141c89687",
+      "path": "test-local-http-composition-v3.ps1",
+      "passed": 8,
+      "failed": 0,
+      "log": "local-http-composition-v3-selftests-v1.log"
+    }
+  ],
+  "passed": 166,
+  "failed": 0,
+  "original_path_regressions": 106,
+  "new_HTTP_proof_and_composition_tests": 60,
+  "old_components_unchanged": [
+    {
+      "sha256": "3d3b2aff00d23165cc74d8fb264681ee44610648e2b43254bd5b1e530b21b370",
+      "path": "local-model-proof-reader-v2.ps1"
+    },
+    {
+      "sha256": "897beea0409d4fb526ff434ba03ab51df07b6c919b8c680d81cc97d6176b32fd",
+      "path": "local-tail-adapter-v2.ps1"
+    },
+    {
+      "sha256": "8719c35f525a0d3d417e9cd0ee037fe357462a3827585dde14426723bef9ed63",
+      "path": "local-scoring-composition-v2.ps1"
+    },
+    {
+      "sha256": "4c964b15d07620d1e70e5a75d6b00d4501851d1a9907a7ff60007733156a1f2c",
+      "path": "authority-stream-scoring-v2b.ps1"
+    }
+  ],
+  "criteria_source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "frozen_statement_extents": 27,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "planned_arms": 48,
+  "planned_owner_opportunities": 96,
+  "planned_families": 12,
+  "critical_UNKNOWN_is_success": false,
+  "HTTP_failure_is_success": false,
+  "native_PG_auth_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "new_hidden_authorship": false,
+  "new_native_admission": false,
+  "source_limit": "Exported reason requires trusted source branch/EOF/currentness/durable barrier/quiescence. Public checker is not itself evidence those live predicates succeeded."
+}

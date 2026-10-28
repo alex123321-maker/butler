@@ -26,6 +26,21 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^apps/orchestrator/internal/input/(claim_admission.*|service)[.]go$" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/testing/issue76-fixture-local-protocol.md")
+      [void]$tests.Add("This PC: real isolated PostgreSQL, go test -race ./apps/orchestrator/internal/input; explicit claim fence delayed owning finish, queued-tail preservation, callback/expiry failures and ordinary construction. Then behavior-local-acceptance.ps1 -Action Safety/Queued for actual Core/Broker drain and global priority. No native calls in these gates.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/behavior76_|apps/orchestrator/internal/prompt/task_continuity[.]go$|scripts/dev/behavior-local-|scripts/dev/behavior76-pgx-build[.]go$)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/task-owner-controls-spec.md")
+      [void]$specs.Add("docs/testing/issue76-local-protocol-2026-10-25.md")
+      [void]$specs.Add("docs/testing/issue76-fixture-local-protocol.md")
+      [void]$tests.Add("This PC: behavior-local-acceptance.ps1 -Action Offline (actual PG/Broker, race, synthetic recipient/effect/currentness boundaries); independently inspect -Action Preflight without exposing hidden controls. Native requires committed clean producer, exact control commitment, new one-use output/window and explicit EnableNative. Preserve all failed windows and unknown spending; no production defaults, lab or kernel update.")
+      continue
+    }
     "^(migrations/104_temporal_currentness_plans[.]|internal/memory/catalog/temporal_plan_integration_test[.]go$)" {
       [void]$specs.Add("docs/architecture/memory-temporal.md")
       [void]$tests.Add("This PC: isolated PostgreSQL/race catalog TestTemporal.*Integration, including original-predicate equivalence after empty/nonempty state, metadata change and down/up; then converter-local-acceptance.ps1 -Action Streaming with actual Broker/runtime. No inference; no accepted fact, source or authority cache.")

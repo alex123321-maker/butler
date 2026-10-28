@@ -1,0 +1,26 @@
+[
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_literal_types_test.go",
+    "sha256": "2d7f6ed156a3acfc60674f265d553e9059f77c5139ed3df4065f4871d62db85e"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_literal_interface_test.go",
+    "sha256": "04e1a00f1d9c02224e0cabcf6e97f207ad4aa324c96b50976772128a57060565"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_literal_input_test.go",
+    "sha256": "fe0a5363a17cb6e75a8efbeb47f2ef318d7a56512bf49a38494c2aa29ce47014"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_literal_json_test.go",
+    "sha256": "dbae311a69796a4a621a1736475ace6e595c49ec3f5659e7beb5f668b8c7b91c"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+    "sha256": "87c1c8563aa1a3573ad9f53919085d1450c46f0152d7970ffe15ff378575a0e8"
+  },
+  {
+    "path": "apps/orchestrator/internal/app/behavior76_evidence_test.go",
+    "sha256": "79afd435c5b453ed0f51ec209de96bee2fd5dca7e72fed7dde784d9e4f6309f1"
+  }
+]

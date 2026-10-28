@@ -1,0 +1,16 @@
+{
+  "version": "behavior76-literal-r1-prepared-build-v1",
+  "source_commit": "c8411429e36f2e7d085971617f0f84dc2f2e5b6e",
+  "semantic_source": "9fb9ceeb13420af0fb49272816df7273f558e3a4",
+  "formal_freeze_sha256": "2d68f8e6fe48bd3e1210c818782ba2d0e4bf7ea2d159cb6b41c30ba4377d9f96",
+  "path": ".cache/behavior76/literal-collector-c8411429-r1.test",
+  "bytes": 86820998,
+  "sha256": "7336e3fcfc282f9663a7fb23641146400900a7056e8a57889b803d272c3c411e",
+  "read_only": true,
+  "race": true,
+  "Go": "1.27.2",
+  "GOMAXPROCS": 2,
+  "GOFLAGS": "-buildvcs=false -modfile=/src20/.cache/behavior76/pgx-observer-build-v1/research.mod -mod=readonly",
+  "new_native_calls": 0,
+  "old_ELFs_overwritten": false
+}

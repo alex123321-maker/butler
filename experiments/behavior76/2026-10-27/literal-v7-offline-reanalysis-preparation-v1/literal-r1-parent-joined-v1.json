@@ -1,0 +1,16 @@
+{
+  "version": "issue76-literal-r1-parent-joined-v1",
+  "observed_utc": "2026-10-27T04:20:11.5133067+00:00",
+  "session_id": 16621,
+  "process_exit_code": 0,
+  "cmd_wait_returned": true,
+  "window": "issue76-fixture-literal-20261027T030620",
+  "all32_fixture_quiescence_files_present": true,
+  "raw_files": 2553,
+  "raw_bytes": 72850851,
+  "raw_inventory_sha256": "77b6843f538af5e15454817ec3b3a433707ccdb893d935776de789de31b4c127",
+  "producer": "f1eabf538c640adbb92d957ecd672094816bebca",
+  "source_clean_observed": true,
+  "closed_semantic_quality_verification": "PENDING",
+  "native_or_auth_reentry_authorized": false
+}

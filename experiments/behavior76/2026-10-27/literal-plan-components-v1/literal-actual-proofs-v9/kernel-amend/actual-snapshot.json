@@ -1,0 +1,100 @@
+{
+  "tasks": [
+    {
+      "task_id": "task_23dc936568946a7ef7c846f86deb082c",
+      "session_key": "behavior76:public-interface-ambiguous_object-positive:work",
+      "owner_id": "behavior76-synthetic-owner",
+      "goal": "Neutral public interface fixture",
+      "source": {
+        "episode": "public-interface-ambiguous_object-positive",
+        "last_owner_control": {
+          "channel": "web",
+          "control_id": "control_1d3fb66d851cb8d690e9f165dc05ece0",
+          "delivery_id": "behavior76:turn-1",
+          "instruction": "только подготовь черновик"
+        },
+        "task_key": "work",
+        "type": "synthetic_behavior76"
+      },
+      "status": "blocked",
+      "revision": 3,
+      "constraints_revision": 2,
+      "execution_policy": "prepare_only",
+      "constraints": [
+        "Owner amendment: только подготовь черновик"
+      ],
+      "completion_criteria": [
+        "Interface only; no behavioral quality claim"
+      ],
+      "working": {
+        "plan": [],
+        "pending_actions": [],
+        "scratch": {
+          "synthetic_fixture_business_dates": null,
+          "synthetic_fixture_manual_changes": null,
+          "synthetic_fixture_observations": null,
+          "synthetic_fixture_resource_refs": [
+            {
+              "key": "object",
+              "task_key": "work",
+              "url": "https://fixture.invalid/objects/object"
+            }
+          ],
+          "synthetic_fixture_task_inventory": [
+            {
+              "constraints_revision": 2,
+              "goal": "Neutral public interface fixture",
+              "revision": 2,
+              "status": "active",
+              "task_id": "task_23dc936568946a7ef7c846f86deb082c",
+              "task_key": "work"
+            }
+          ]
+        }
+      },
+      "working_revision": 4,
+      "last_run_id": "run-1793063805683002420-686f26261b922cd5",
+      "legacy": false,
+      "result_delivery": "attempt",
+      "created_at": "2026-10-27T01:16:45.602744Z",
+      "updated_at": "2026-10-27T01:16:45.806633Z"
+    }
+  ],
+  "objects": [
+    {
+      "key": "object",
+      "task_key": "work",
+      "task_id": "task_23dc936568946a7ef7c846f86deb082c",
+      "body": "public parser data",
+      "version": 1,
+      "sha256": "050c844af4ed98762253dfc82f91f89e6ee2b9601a46a0e4991cb9c6c4d20ef4",
+      "prepared_body": null,
+      "committed_body": null,
+      "commit_count": 0
+    }
+  ],
+  "profiles": [],
+  "claims": [],
+  "sources": [
+    {
+      "status": "active",
+      "owner_id": "behavior76-synthetic-owner",
+      "scope_id": "behavior76:public-interface-ambiguous_object-positive:work",
+      "source_id": "message:control:control_1d3fb66d851cb8d690e9f165dc05ece0",
+      "created_at": "2026-10-27T01:16:45.660072+00:00",
+      "scope_type": "session",
+      "updated_at": "2026-10-27T01:16:45.660073+00:00",
+      "source_kind": "message",
+      "external_key": "message:control:control_1d3fb66d851cb8d690e9f165dc05ece0",
+      "head_revision": 1,
+      "access_revision": 1
+    }
+  ],
+  "deletion_manifest_sha256": "d7cd040b0cd518e54fd0dc76a4065ea13d7da79109b97e66ba3f7fe4032dd43e",
+  "deletion_watermark": 0,
+  "literal_service": {
+    "deadlines": [],
+    "deadline_events": [],
+    "observations": []
+  }
+}

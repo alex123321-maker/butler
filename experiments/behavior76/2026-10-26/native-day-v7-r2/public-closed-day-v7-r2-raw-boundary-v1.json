@@ -1,0 +1,81 @@
+{
+  "actual_owner_inputs": 1,
+  "all_rows": 643,
+  "planned_owner_opportunities": 96,
+  "verified_case_files": 66,
+  "mapping_read": false,
+  "window": "issue76-fixture-day-20261026T050548",
+  "indexed_arms": 1,
+  "complete": false,
+  "index_sha256": "e467938bac1941229131e7f50de9c0c8b3287e8dae2e4881f786ebba807be466",
+  "traces_metadata_sha256": "fafbf64d698e277a5ddc16d590184e974ec13fe8ae82aa6f0304f9ae8f627bfb",
+  "independent_raw_inventory_sha256": "99d1146cbd9e88f4e6152ac22fdc0e731669aaace3e9d1d262ca2bdd2c647a71",
+  "complete_prefix_arms": 0,
+  "indexed_owner_outcomes": 1,
+  "automatic_runs": 0,
+  "native_admissions": 3,
+  "known_tokens": 10469.0,
+  "quality_assessed": false,
+  "manifest_sha256": "6f7cf255045c456124bc0cbd7ebc62f2c0c644a82ad0d310c2db0759f0e43e34",
+  "raw_bytes": 10073465.0,
+  "unknown_usage": 1,
+  "all_outcomes": [
+    {
+      "safe_error_category": "native_boundary_sealed",
+      "owner_input_id": "input-66a273c11eab9f7eec00f252497459d8",
+      "owner_run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+      "arm": "slot-01/arm-79c3ddb5b24620dbd2c848a3645d9bba",
+      "native_entry_ids": [
+        1,
+        2,
+        3
+      ],
+      "failure_phase": "observer_safety_stop",
+      "step_id": "turn1",
+      "state": "failed"
+    }
+  ],
+  "planned_arms": 48,
+  "goldens_read": false,
+  "producer": "git:42c01c3a1912bc8ae401566ad918f3adfa4c61ba;binary-sha256:8d0b8e0a9b2368b163b844d234249636a689a22784ec8036aa0b068634def74b",
+  "owner_outcome_states": [
+    {
+      "state": "failed",
+      "count": 1
+    }
+  ],
+  "measured": 2,
+  "version": "issue76-closed-day-v7-r2-raw-boundary-working-v1",
+  "raw_files": 71,
+  "raw_readonly": 71,
+  "last_entry": {
+    "events": [
+      {
+        "type": "run_started",
+        "safe_reason": null,
+        "error_code": null,
+        "http_status": null
+      },
+      {
+        "type": "transport_error",
+        "safe_reason": "stream_empty_answer",
+        "error_code": "provider_protocol_error",
+        "http_status": 0
+      }
+    ],
+    "thinking_tokens": null,
+    "input_tokens": null,
+    "total_tokens": null,
+    "stage": "response_stream",
+    "kind": "submit",
+    "n": 3,
+    "output_tokens": null,
+    "model_version": "gemini-3.8-flash-n",
+    "slot": "slot-01/arm-79c3ddb5b24620dbd2c848a3645d9bba/turn1",
+    "status": "transport_error",
+    "run_id": "run-1792991193017279826-8fb43094fc64ebbf",
+    "milliseconds": 65091
+  },
+  "native_calls_by_checker": 0,
+  "qualification": "NO_GO_INCOMPLETE_GLOBAL"
+}

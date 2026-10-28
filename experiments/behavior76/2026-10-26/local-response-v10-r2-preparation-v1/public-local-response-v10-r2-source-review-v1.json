@@ -1,0 +1,180 @@
+{
+  "version": "issue76-independent-local-response-v10-r2-static-source-review-v1",
+  "decision": "NO_CONCRETE_STATIC_BLOCKER_FOUND_PENDING_PARENT_ORDINARY_GATES",
+  "created_utc": "2026-10-26T17:38:36.3060274+00:00",
+  "source_files": [
+    {
+      "sha256": "bfca8a504293a8ecbcd17d56d218ce0c5304d4c71cdb885f79162ec31df3b3ff",
+      "path": "apps/orchestrator/internal/app/behavior76_claim_window_test.go"
+    },
+    {
+      "sha256": "3e2822abebd39516d45a5aa2de40da090af0c614111c55edc1401ccf015ea766",
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go"
+    },
+    {
+      "sha256": "eff6538e356c33feaf54debdf743a05caa73ac6456a86d94f14f0ac6f727ccaa",
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go"
+    },
+    {
+      "sha256": "e0f59194ab9843b6578a0fb3f6db0ab2fc8ea4f7ccf465becbf976701e96fb77",
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go"
+    },
+    {
+      "sha256": "a3d8994e3e64ac092805bca13f99f0cffce24ce97b7a44027da076c805904c29",
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go"
+    },
+    {
+      "sha256": "63b7bfaad560509fa5c8afbd2c996a225adc7f7ec4787975d045d289177469a5",
+      "path": "apps/orchestrator/internal/app/behavior76_idle_claim_diagnostic_test.go"
+    },
+    {
+      "sha256": "89a3df2f98bf877e775bbd013e300c6216905b1a27eca176a96da5b393abfdc5",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_integration_test.go"
+    },
+    {
+      "sha256": "beeadbe464d44b18252ef6bce57bd16dbaf63c43196269212e6a9b8ce7bba2c3",
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go"
+    },
+    {
+      "sha256": "506b734b333966a9d1229f6cc81ac101c843eae7b49975771ebfb44f9c0105af",
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_integration_test.go"
+    },
+    {
+      "sha256": "8eae58542abee3935ca420e0b06f8195ef6dcfe411702be44b4c95d14da5b50e",
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_test.go"
+    },
+    {
+      "sha256": "cc8a7c5fe6490bda219c9c4e245e273fc82c2ed06b64a4210464f31fdcb439de",
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go"
+    },
+    {
+      "sha256": "c4ca0f11f0d9faca557be124748e7e945e7400b56af39e2745973056d7aa29e9",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go"
+    },
+    {
+      "sha256": "cb09ecfbe29392de6530e65bbd02dd3dae150fce3b15523b028125fb69adfc62",
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go"
+    },
+    {
+      "sha256": "f7e579d120791f65fdfeb2ec65f3b68911189274bb24e898d9ac5440766744a4",
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_observer_integration_test.go"
+    },
+    {
+      "sha256": "a6299767368b91cfebeb38b289275f4f7c599e4df2f042744bf9529dd4d77d0f",
+      "path": "apps/orchestrator/internal/app/behavior76_terminal_write_integration_test.go"
+    },
+    {
+      "sha256": "cd8fa8ba73ce2934f3d57e1ae3b1218dd97de3e3f0612955a7665ce17a426ec3",
+      "path": "apps/orchestrator/internal/orchestrator/budget.go"
+    },
+    {
+      "sha256": "4da991e2f8015e573a53fe5c39da5acd37d7a01cb84b6bb3fce10c7cb31349ad",
+      "path": "apps/orchestrator/internal/orchestrator/cancellation_cause.go"
+    },
+    {
+      "sha256": "e2b4faeb3f7a0eedd30bc32f4104c0f695f8a7280c85eeecd16ea5fda30ff3e3",
+      "path": "apps/orchestrator/internal/orchestrator/communication_failure.go"
+    },
+    {
+      "sha256": "8d2b4238fe21a6d02076fe26447da4e4cf406399bc65a6cf6a980125c4dfc94b",
+      "path": "apps/orchestrator/internal/orchestrator/recovery.go"
+    },
+    {
+      "sha256": "7e435c84881a0b31ada382f056c25bb4b2becbec42169c7098d2eb7946254f06",
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go"
+    },
+    {
+      "sha256": "4db8430bc418ab712265852f67043f0b827b50c218753a9d0a47ab6861f360a0",
+      "path": "apps/orchestrator/internal/orchestrator/service_state.go"
+    },
+    {
+      "sha256": "a16c2dfee658c5324168d7784f01459cb5090156e1d86ccf510db8ab2c29a5d5",
+      "path": "apps/orchestrator/internal/orchestrator/terminal_watch_test.go"
+    },
+    {
+      "sha256": "8d0bb3dc4402a8c6602a9624acd29d03b130087897f764db604937d723767d06",
+      "path": "apps/orchestrator/internal/orchestrator/terminal_write_test.go"
+    },
+    {
+      "sha256": "84725ab94a2cd8f6b8400cef74312512540efc34f74bfcbb3fa75eafe4bfc3d6",
+      "path": "apps/orchestrator/internal/orchestrator/terminal_write.go"
+    },
+    {
+      "sha256": "ea9c193c7f4d5048f275055c818cd666a230e7e09149b27bb7a71945628f5d05",
+      "path": "apps/orchestrator/internal/orchestrator/working_memory.go"
+    },
+    {
+      "sha256": "04ca1691f8286085f76c91ec681907c600e9d1c8d939df798feb136e88455cfc",
+      "path": "apps/orchestrator/internal/task/authority.go"
+    },
+    {
+      "sha256": "0ee18bc1bbdbdcb1c61a3853187de0cf04c10b31649ecf731e4bb93e9381abf4",
+      "path": "apps/orchestrator/internal/task/store.go"
+    },
+    {
+      "sha256": "b429d5d1a656ce2e89dcdbb3e719d23b1dfb5f5721689e4eb6bbc58911860a4f",
+      "path": "apps/orchestrator/README.md"
+    },
+    {
+      "sha256": "21499837665806eb5c7161de62cfacd16b830dc62e71cf20bbfa27330c8d3216",
+      "path": "docs/architecture/run-lifecycle-spec.md"
+    },
+    {
+      "sha256": "9c7cc9b5e00f00d3b15ddbf7c7fd07f66a89c56cf3be69b4139aa15dcbaecd2f",
+      "path": "docs/testing/issue76-local-response-protocol.md"
+    },
+    {
+      "sha256": "bdf287e682a3e446ff073fe22de2d4ecf97e953aad24c84c82ede287565a245e",
+      "path": "scripts/dev/behavior-local-run.sh"
+    }
+  ],
+  "prior_source_review": {
+    "sha256": "98856f87bc03cedd33ccbbefc070e7af9e9757d871c737924c0f5e83c9ac5c5e",
+    "path": "public-local-response-v10-source-review-v3.json"
+  },
+  "repair": "Close only per-evaluation claim window under existing scope.mu; join actual claim/process workers before normal idle cancellation; final scope reconciliation uses original live fixture context; all errors retained.",
+  "ordinary_parent_regression": {
+    "native_auth_calls": 0,
+    "scripted_owner_turns": 2,
+    "executed_by": "parent; source/log inspected by checker",
+    "log": {
+      "sha256": "6fee3b76efe4d16b9d593d2456f61e62d484d19a8eddfdf102f4eb6404d2a5ab",
+      "path": "local-response-v10-r2-claim-window-v1.log"
+    },
+    "PASS_seconds": 4.75
+  },
+  "reviewed_properties": [
+    "same mutex linearizes whole queue claim and window close",
+    "next owner turn creates new window without closing fixture",
+    "terminal/no-pending or already-drained localstop joins before cancel",
+    "global/error exits retain cancellation after closing admission",
+    "WaitClaimWorkers/workerErr/final scope.check failures remain visible",
+    "run capture executes after cleanup and includes admitted work",
+    "no cancelled-context/SQL exception or broader local error class",
+    "new59th Public case is ordinary successful idle-close lifecycle, not fault injection"
+  ],
+  "original_v10_pre_native": {
+    "observed_turns": 95,
+    "planned_turns": 96,
+    "native_auth_calls": 0,
+    "arms": 47,
+    "package_receipt_sha256": "579a3b8599ed299036d6e920c1b2ad46329c4143a2a93c214dc0ec327a25ba6e",
+    "original_cause": "UNKNOWN",
+    "control_reuse_prohibited": true
+  },
+  "new_controls_state": "UNBOUND_FRESH_V10_R2_*; hidden-local-response-v10-r2 absent; must be authored after new formal freeze",
+  "automatic_rejection": {
+    "proposed_new_fault_test_authored_or_run": false,
+    "only_static_review_after_rejection": true,
+    "no_retry": true
+  },
+  "runtime7_unchanged": true,
+  "criterion_AST_extents": 27,
+  "checker_PASS": 298,
+  "criteria_or_thresholds_changed": false,
+  "parent_full_Public_and_vet": "PENDING; not claimed",
+  "Go_PG_auth_native_calls_by_checker_this_step": 0,
+  "formal_freeze": false,
+  "hidden_authorship": false,
+  "native_admission": false
+}

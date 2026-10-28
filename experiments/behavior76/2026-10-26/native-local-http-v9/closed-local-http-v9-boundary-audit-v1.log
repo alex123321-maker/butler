@@ -1,0 +1,101 @@
+{
+  "accounting": {
+    "exported_all_measured": 713,
+    "prior707_exact_opaque_UTF8_rows_unchanged": true,
+    "current_admissions": 16,
+    "exported_all_NULL": 10,
+    "no_exported_entry_after_n": 16,
+    "current_measured": 15,
+    "current_known_tokens": 115562.0,
+    "exported_all_known_tokens": 5626388.0,
+    "exported_closed_windows": 10,
+    "current_NULL": 1,
+    "exported_all_admissions": 723,
+    "live_database_queried": false
+  },
+  "last": {
+    "stage": "response_stream",
+    "kind": "start",
+    "events": [
+      {
+        "type": "run_started",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "assistant_delta",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "assistant_delta",
+        "http_status": null,
+        "safe_reason": null,
+        "error_code": null
+      },
+      {
+        "type": "transport_error",
+        "http_status": 0,
+        "safe_reason": "stream_finish_rejected",
+        "error_code": "provider_protocol_error"
+      }
+    ],
+    "model_version": null,
+    "n": 16,
+    "input_tokens": null,
+    "total_tokens": null,
+    "milliseconds": 61986,
+    "status": "transport_error",
+    "output_tokens": null,
+    "thinking_tokens": null,
+    "slot": "slot-03/arm-40ea87482f6acd535495555f54bfecfc/turn1",
+    "run_id": "run-1793007153745004521-6747ac51cf08f6b9"
+  },
+  "stops": [],
+  "receipt_sha256": "5c74c8a40bd4114e2cab68162b12a267818a85b8df300f427cb987cc85b43f33",
+  "coverage": {
+    "unstarted_arms": 43,
+    "actual_owner_inputs": 9,
+    "actual_automatic_final_rows": 0,
+    "unindexed_owner_opportunities": 87,
+    "unindexed_original_steps": 127,
+    "healthy_operationally_sealed_arms": 4,
+    "planned_arms": 48,
+    "indexed_original_steps": 15,
+    "planned_episodes": 24,
+    "planned_owner_opportunities": 96,
+    "planned_original_paired_steps": 142,
+    "planned_families": 12,
+    "actual_family_identity_not_read": true,
+    "indexed_owner_outcomes": 9,
+    "owner_states": [
+      {
+        "count": 8,
+        "state": "completed"
+      },
+      {
+        "count": 1,
+        "state": "failed"
+      }
+    ],
+    "full96_metadata_rows_written": 96,
+    "quality_or_usable_answer_success_not_assessed": true,
+    "indexed_arms": 5,
+    "actual_automatic_runs": 0,
+    "actual_owner_final_rows": 8
+  },
+  "raw": {
+    "index_sha256": "3d33a943dde718451234cf8d726914a833a5c20d4edbc6b7e7d50d9d5bf34844",
+    "readonly": 383,
+    "bytes": 15898119.0,
+    "independent_inventory_sha256": "36a7644505b948f472ddb544e913182cd1fc168f874d4e39af88993aa1cc9d14",
+    "parent_inventory_sha256": "045adc74308ea3faf3024e2b8070cd97aa9ea1470e0bce025354d88b72dfb879",
+    "case_files_verified": 374,
+    "all_archive_entries_independently_byte_verified": true,
+    "files": 383,
+    "manifest_sha256": "bd66d1587f75b32e575faf30592f7c200cb0b47e5f36a193dc08af47970e4a5e",
+    "archive_sha256": "0a2d985fe63d0854406dea12b476bbda9501e71a98528f459ae1da3213d6b125"
+  }
+}

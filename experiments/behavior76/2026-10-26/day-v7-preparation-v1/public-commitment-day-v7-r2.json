@@ -1,0 +1,149 @@
+{
+  "version": "issue76-independent-public-commitment-day-v7-r2-v1",
+  "status": "POST_FREEZE_PREPARED_NOT_NATIVE_ADMISSION",
+  "semantic_freeze_commit": "7f66e971fb098682a74b372e09bb53d606ab2e46",
+  "semantic_freeze_certificate_sha256": "e23989715c75ac6c93ff652877884512745ab4f86592fe4462523c5c74c31c0c",
+  "authorship_started_at_utc": "2026-10-26T04:34:33.3508674Z",
+  "provenance": "synthetic",
+  "stimuli_path": "hidden-day-v7-r2/stimuli.jsonl",
+  "expectations_path": "hidden-day-v7-r2/expectations.jsonl",
+  "stimuli_sha256": "a2d7ffa28a497a72246ba608d1a18351f316c6804a581784a1f76306975ba047",
+  "expectations_sha256": "dabe70e665b96396bb1e3e9bfdbf7503ba2d07dead08482f6ce50d1d19708cc7",
+  "seed_sha256": "898431b769abf9cd86ffd0bb69cd4332c3aebf017adf20f7e066528199c05feb",
+  "episodes": 24,
+  "families": 12,
+  "positive_episodes": 12,
+  "negative_boundary_episodes": 12,
+  "arms": 48,
+  "owner_opportunities_per_episode": 2,
+  "planned_owner_opportunities": 96,
+  "steps_single_arm_matrix": 64,
+  "paired_steps": 128,
+  "coverage": [
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "status_continuation"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "amendment"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "scoped_stop_negation"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "new_task_coexistence"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "manual_change"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "owner_done_report"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "clarification"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "preference_exception"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "feedback_candidate"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "preference_lifecycle"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "untrusted_command"
+    },
+    {
+      "negative_boundary": 1,
+      "episodes": 2,
+      "planned_owner_opportunities": 8,
+      "positive": 1,
+      "planned_arms": 4,
+      "family": "restart"
+    }
+  ],
+  "interface": "Existing Episode/Step v1 actual API; child empty policy inherits parent; owner steps turn1/turn2",
+  "fixture_protocol_path": "docs/testing/issue76-fixture-stream-protocol.md",
+  "fixture_protocol_sha256": "3e573f54cf61fe2ddd28066c225e55421b47cd0b4cc17d66e36bca9116a57cb5",
+  "day_admission_sha256": "395d006c5efbe9dc7d5ccbd73a4e7bafbbff99e76eb2777b3495b954b82b6ab9",
+  "candidate_protocol_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "scorer_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "composition_sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+  "stream_reader_sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+  "stop": "Classified synthetic UNKNOWN stops original whole isolated arm/cohort; provider/auth/source/authority/deadline/journal/observer/isolation/quiescence faults GLOBAL",
+  "limits": "4h whole-window UTC-owner-day-fit;768entries;120smodel;20mfixture;750msauthority;9+1",
+  "history": {
+    "null_usage": 7,
+    "admissions": 640,
+    "measured": 633,
+    "known_provider_total_tokens": 4900143,
+    "certificate_sha256": "82306ff85630717663a3157978dac037e6016d365762b671a6876197faccc049",
+    "closed_windows": 7
+  },
+  "independence": {
+    "prior_case_content_or_results_used": false,
+    "old_pre_freeze_v7": "UNUSED_NOT_ADMITTED; preserved immutable",
+    "pg_writes": 0,
+    "native_calls": 0,
+    "auth_constructions": 0,
+    "old_mappings_read": false,
+    "authored_after_formal_freeze": true,
+    "new_expected_values_only_not_criteria": true
+  },
+  "final_collector_elf": "PENDING_PARENT_FINAL_PIN"
+}

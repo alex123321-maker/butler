@@ -1,0 +1,12 @@
+{
+  "prior_file_sha256": "1c7b0508a7f1260b1f581239ed5e18c7b09ac85d0269725b2a6a6aaaa92ff338",
+  "new_rows": 723,
+  "version": "issue76-independent-exact-opaque-history-v9-v1",
+  "comparison": "Exact UTF8 original line bytes keyed by window_id/n; no date coercion or semantic body read",
+  "new_file_sha256": "e469447fcabf76080fb9c3688e2712603d63733262e44ebe4ad6840c04d02692",
+  "prior_rows": 707,
+  "PG_calls": 0,
+  "quality_assessed": false,
+  "old_rows_byte_exact": true,
+  "only_identity_fields_projected": true
+}

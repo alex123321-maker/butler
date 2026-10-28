@@ -1,0 +1,16 @@
+{
+  "version": "issue76-independent-opaque-history-byte-proof-v1",
+  "prior_rows": 643,
+  "current_export_rows": 707,
+  "all_prior_rows_exact_UTF8_line_bytes_equal": true,
+  "identity_only_JSON_properties_accessed": [
+    "window_id",
+    "n"
+  ],
+  "timestamp_strings_never_coerced_to_dates": true,
+  "old_model_bodies_not_inspected": true,
+  "prior_export_sha256": "1983a46b6c5bb7ca3d0f0b9ffef9b105951b397999525d6a6488a32836e0fc58",
+  "current_export_sha256": "1c7b0508a7f1260b1f581239ed5e18c7b09ac85d0269725b2a6a6aaaa92ff338",
+  "PG_calls": 0,
+  "quality_assessed": false
+}

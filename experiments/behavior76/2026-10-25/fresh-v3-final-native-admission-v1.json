@@ -1,0 +1,92 @@
+{
+  "version": "issue76-independent-fresh-v3-final-native-admission-v1",
+  "decision": "approved_one_prospectively_frozen_fresh_window",
+  "producer_commit": "9c83730d5858cf3f932fea78ba3e070458d288f5",
+  "clean_worktree_verified": true,
+  "collector_elf_sha256": "2d379e542f7ad18e70b029d20a5c7444c860bb43afa5026f96d66199084f1f44",
+  "actual_broker_elf_sha256": "dc228503701bfe579b7a4b1fc2eeeab3e5fa3d980384dcf00c88f4a5ec62cd56",
+  "candidate_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "stimuli_sha256": "8d064bab832f2b3e71fe61260b7e918f413c47fb6df0f96675375f999de2160b",
+  "expectations_sha256": "7479b3d977b413a96fa7d37fb8dc1a899b428ccaaabac2343c367bc605947e89",
+  "scorer_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "public_contract_sha256": "674dcc29f00dff2ff28b6e35d399dfd0af64d39e79f4fa0a54912d04bf754b2a",
+  "observer_amendment_sha256": "94772b420ae68da57e1cbb90e84b63ec053fc43bf4afd9fc40ed632719c21dff",
+  "independent_setup_composition_receipt_sha256": "368717a47d11c13b09db4813f1a6afd4d656bbbfef25d54607140f0b981789c5",
+  "final_readonly_history_log_sha256": "a1fc2371ef611fb25acea4aefe63499912c7e1303aee9e1ec0ba0fb7a48a491d",
+  "exact174_original_rows_still_equal": true,
+  "evidence_smoke": {
+    "seconds": 5.1,
+    "tables": 48,
+    "native_auth_calls": 0,
+    "exact_private_anchor": true,
+    "readable_pg_archive": true,
+    "log_sha256": "f3ebd086d8e8041fdb9c7b730c5ea104a7f0cf79ed51a3d87c5af06216ba84be"
+  },
+  "source_changes_after_full_composition": "Only reviewed public evidence smoke/imports and selector additions; shared fixture/provider/candidate semantics unchanged",
+  "final_source_members": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "sha256": "e5d0e30d5f6ee99049350e7aa5196392f31742c4a6f5fca166c1cfe2ddc97873"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_evidence_test.go",
+      "sha256": "40501dc6e5000e4ecfd99cec05aa4273ea9ef2f7b49b1e7617cfd3d24faf04b1"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "e8b38b2b70bb64f90eaf5c325405cc2871685c486542eb81aedca89104855f11"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "af40a3ed1286764d314c3ddabec31ac4a33eb7f467f243845446f0194fcca96b"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_offline_test.go",
+      "sha256": "20c359003b32c49c75d96f4987001b38193fa4dff6a75452a7be935d743601e7"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_task_context_test.go",
+      "sha256": "f94fcb485eba7a5afbd164ff1da6a29d2eff9807c80be2c8c36895f5121c3363"
+    },
+    {
+      "path": "scripts/dev/behavior-local-acceptance.ps1",
+      "sha256": "d37bfc566bcda8df92c951660322c1793be9ac80fbdd8570544aaf9252b534de"
+    },
+    {
+      "path": "scripts/dev/behavior-local-host.sh",
+      "sha256": "f8408d939f231cf28cb3d04a6b1c33157f431df2aba6a90be3f0ea85a60a4831"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "224cb6b84b198190608b3e50ac532fef9b8ae813c3bf06c562a5d20ef3b2d0a4"
+    }
+  ],
+  "output_directory": ".cache/behavior76/native-fresh-v3",
+  "output_pristine_verified": true,
+  "new_native_limit": 768,
+  "cumulative_native_ceiling": 942,
+  "prior_admissions": 174,
+  "prior_usage_unavailable": 2,
+  "new_wall_hours": 4,
+  "episode_arm_minutes": 20,
+  "native_entry_seconds": 120,
+  "per_run_max_entries": 4,
+  "per_owner_opportunity_max_entries": 8,
+  "global_stop_on_provider_source_authority_journal_errors": true,
+  "no_retry_or_window_reopening": true,
+  "one_window_only": true,
+  "post_stop_another_window_requires_new_prospective_review": true,
+  "fresh_native_calls_before_decision": 0,
+  "mapping_read": false,
+  "hidden_goldens_disclosed": false,
+  "masked_judgments_seal_before_mapping_required": true,
+  "quality": "not_assessed",
+  "promotion": "not_assessed",
+  "issue_closure": "not_assessed",
+  "conditions": [
+    "Rebuild must match the approved exact producer ELF/source/Broker identities before admission",
+    "No source/model/provider/corpus/golden/scoring/policy changes during collection",
+    "Observe actual full schedule once; retain failed/missing/partial rows, NULL usage and all historical A/B/C evidence",
+    "After stop preserve immutable raw evidence and independently audit before any next step"
+  ]
+}

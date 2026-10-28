@@ -1,0 +1,77 @@
+{
+  "version": "issue76-public-stream-reader-receipt-v2a",
+  "supersedes_implementation_receipt_sha256": "0a5bc46ef7cdf4624d1b1babbaef77013e40bc5b8cdc8e75c49b9f79698dc3ed",
+  "reason": "exact_token_enum_membership",
+  "result": "PASS_PUBLIC_REPRESENTATION_TESTS_ONLY",
+  "reader_selftests": 45,
+  "composition_integration_selftests": 4,
+  "provider_calls": 0,
+  "pg_calls": 0,
+  "new_hidden_authorship": false,
+  "mapping_read": false,
+  "quality_disclosed": false,
+  "native_admission": false,
+  "criteria_changed": false,
+  "thresholds_changed": false,
+  "planned_arms": 48,
+  "planned_owner_opportunities": 96,
+  "planned_families": 12,
+  "closed_local_r2_boundary_receipt_sha256": "e4997e2b0ae724f420ef82bb520e15ad0f893d272be34d0d5d273bea97ba6738",
+  "frozen": {
+    "scorer": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+    "adapter": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf",
+    "composition": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2"
+  },
+  "files": [
+    {
+      "sha256": "358d3ca4061c328634a820bd5dfd190b4a1ca6aaadf434be4b8e56c016a7eb5c",
+      "bytes": 7953,
+      "path": "public-authority-stream-contract-v2.md"
+    },
+    {
+      "sha256": "5b7a90294502a1bbb343b9c8625a649b367ff0a320daa459bbb4d1693f925928",
+      "bytes": 1718,
+      "path": "public-authority-stream-reader-v2a-addendum.md"
+    },
+    {
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641",
+      "bytes": 9794,
+      "path": "authority-stream-reader-v2a.cs"
+    },
+    {
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5",
+      "bytes": 533,
+      "path": "authority-stream-reader-v2a.ps1"
+    },
+    {
+      "sha256": "1c5d855dfb7ae45ae9b0c5ab8a54f787fc7126cf8ff0c9141917682a06a1c589",
+      "bytes": 10655,
+      "path": "authority-stream-reader-v2a-selftests.ps1"
+    },
+    {
+      "sha256": "9977649b3f663d6b8e71ebdc0b56ba6cead665a00b79df08a6f60cd4059e957f",
+      "bytes": 4165,
+      "path": "authority-stream-scoring-v2a.ps1"
+    },
+    {
+      "sha256": "0be047e7391b2135823155d82fc83762536f4f512b264443d440d39cb5f94048",
+      "bytes": 5321,
+      "path": "authority-stream-scoring-v2a-selftests.ps1"
+    },
+    {
+      "sha256": "f6b946096c1bcb53c55368c2cef95a6b00d5a2d36f2b6d4774bf61a3dc6d7596",
+      "bytes": 1667,
+      "path": "authority-stream-reader-v2a-selftests-v1.log"
+    },
+    {
+      "sha256": "e42958e4c01a84d7e91336f5644d683f050ffd6bcad7d4dc08a45ceeaa17d863",
+      "bytes": 631,
+      "path": "authority-stream-scoring-v2a-selftests-v1.log"
+    },
+    {
+      "sha256": "81047ca03a2db20cf39d566bf26b944acf6826ea1534e072c8733509f4977754",
+      "bytes": 3191,
+      "path": "build-stream-reader-v2a.ps1"
+    }
+  ]
+}

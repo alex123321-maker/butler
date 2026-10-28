@@ -1,0 +1,11 @@
+{
+  "version": "issue76-consumed-day-v7-r2-admission-v1",
+  "certificate_sha256": "49125f382ecd9adbc3b3bd0bbae1f80243255f8f36a87e84b2b55712fd731225",
+  "producer": "42c01c3a1912bc8ae401566ad918f3adfa4c61ba",
+  "elf_sha256": "8d0b8e0a9b2368b163b844d234249636a689a22784ec8036aa0b068634def74b",
+  "output": ".cache/behavior76/native-day-v7-r2",
+  "consumed_utc": "2026-10-26T05:05:40.2204569+00:00",
+  "attempts": 1,
+  "replay_allowed": false,
+  "launcher_note": "Prior date-type exception preceded consumed marker/WSL/ELF; no prior experiment started"
+}

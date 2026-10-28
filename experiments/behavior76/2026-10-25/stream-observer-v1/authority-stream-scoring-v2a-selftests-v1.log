@@ -1,0 +1,18 @@
+{
+  "provider_calls": 0,
+  "failed": 0,
+  "mapping_read": false,
+  "hidden_controls_read": false,
+  "version": "issue76-stream-composition-selftests-v2",
+  "public_test_root": "D:\\CodexData\\home\\worktrees\\issue20-local\\butler\\.cache\\issue76-independent\\public-stream-composition-efdad61c21174249a753eb07490e6cfe",
+  "thresholds_changed": false,
+  "criteria_changed": false,
+  "passed": 4,
+  "tests": [
+    "original-criteria-and-96-rows-identical",
+    "observer-fault-blocks-composition",
+    "local-stop-tail-remains-unavailable",
+    "resealed-corrupt-stream-blocks-composition"
+  ],
+  "pg_calls": 0
+}

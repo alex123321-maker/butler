@@ -1,0 +1,131 @@
+{
+  "version": "issue76-json-token-v7-public-outcome-comparison-v1",
+  "original_public_groups": [
+    {
+      "script": "test-local-scoring-composition-v4.ps1",
+      "source_sha256": "f6d37d87e4d63d3c84a2e61e81370c5e1e4f6b35ceb2e988117d46e294741f37",
+      "old_case_count": 12,
+      "new_case_count": 12,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "04bc045bcfb8434dc334f98e45989209c62d0a8477494377a891f47d088d651e",
+      "new_log_sha256": "f1a2f7c539f439f346505483d533065ba9a9adb66fa9942ea66e5c08cf990788"
+    },
+    {
+      "script": "test-local-model-proof-v4-union.ps1",
+      "source_sha256": "96c22fea4b9ea9d91d81a254a73ee08c182bad8e6e1a230e2c1248aa8acec1d4",
+      "old_case_count": 2,
+      "new_case_count": 2,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5",
+      "new_log_sha256": "8a0761d65b2026ee8624abbbb5b60c19bad49e1777f9c715b6eeef4e866b1da5"
+    },
+    {
+      "script": "test-local-model-composition-v4.ps1",
+      "source_sha256": "34acdc929c6806f7f443c37d2d346842d0d565815e8404e0fd3490c9d032c72b",
+      "old_case_count": 7,
+      "new_case_count": 7,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "dbdf72a5dad131a69cd63615d933797d7d40a22787ca3a49c94c6816c18265f5",
+      "new_log_sha256": "2c6390b0d1c9851a2b422d3cc0c811baddf01efd231f88a9a4250fd175f90cba"
+    },
+    {
+      "script": "test-local-tail-adapter-v4.ps1",
+      "source_sha256": "c8bb57fe70bc679d3148d04043d39d9a219bf7e6dc515b02bc355563d06a9918",
+      "old_case_count": 32,
+      "new_case_count": 32,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "f0e247f5b6ce7e5aa49399f8aa8c16dc15d2be586b09f516270becd637496432",
+      "new_log_sha256": "b9009c26eed4bd53c30f46d136272b286b15a9f396820aa357956ee663f62065"
+    },
+    {
+      "script": "authority-stream-scoring-v2d-selftests.ps1",
+      "source_sha256": "bd177c2dd6557249fc1328f7a204ad7c4e4b906e2649b344db96179124834567",
+      "old_case_count": 6,
+      "new_case_count": 6,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "5113cb34ab375b0ebdff25d3d01a1a9b18f2b2cb02771c095ff0588fdd73c16b",
+      "new_log_sha256": "e0b29df5f021bcc1334d842e659c71810cc1bdd9dda4b291cba655010fef5f03"
+    },
+    {
+      "script": "test-local-http-composition-v4.ps1",
+      "source_sha256": "515d44fa248f6b24ea6a992f99dcfcf93bab864af8a652302241bd863749dc48",
+      "old_case_count": 8,
+      "new_case_count": 8,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "6fe9c9c3339b018ef41d3b35dc45ff8192f5563e9f235de58bba4a6c63a1a38c",
+      "new_log_sha256": "b5228e38fd601c47d156eccb8406b65e5bc0a5d3dd57a3df2085a430c60e628f"
+    },
+    {
+      "script": "test-local-model-proof-v4.ps1",
+      "source_sha256": "9b4f4257a04906b900676d65b49f663d6241cd45b839b7e04bdb1309e161e61c",
+      "old_case_count": 47,
+      "new_case_count": 47,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "3e1d95be0440247d160de77694d6449aba1ba5a1e086f797062569b1959e7406",
+      "new_log_sha256": "155d7e20d67203d62afeec442c7c627ed2e3630a5b959ea09851b1372b167e85"
+    },
+    {
+      "script": "test-local-response-composition-v4.ps1",
+      "source_sha256": "51fce63bc3b0714303d00ea80b8adba95a650b40a42360f9ffd1fec0d6b4b3be",
+      "old_case_count": 10,
+      "new_case_count": 10,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "6fa41be875fbc82a19a7bb95ca817d8b03f896e4dc213fa07e000379b3eb8a50",
+      "new_log_sha256": "44d9d5227eff72152c613d9628386fcfcb51587daf5323dea8cdf29ec4566be4"
+    },
+    {
+      "script": "test-local-http-proof-v4.ps1",
+      "source_sha256": "a2748fece16527e9a481b99a30b5175413f536e75826efd3d30b748f87750cb8",
+      "old_case_count": 52,
+      "new_case_count": 52,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "8351fa884804d7a06f031a83fdfee7817f724053e77490e61f1f332040d36ac4",
+      "new_log_sha256": "a09a297bc337699e2ed8d4d130a88811f0e511c49cb8adc2220dae16cdc2d1ea"
+    },
+    {
+      "script": "test-local-response-proof-v4.ps1",
+      "source_sha256": "3da3ba2db3aa5976c8c9e74023a6fa57f0a9998546e2d609263e389877b26858",
+      "old_case_count": 113,
+      "new_case_count": 113,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": {
+        "field": "public test output label only",
+        "exact_pattern": "^invalid_usage_[0-9a-f]{8}$",
+        "normalized_label": "invalid_usage_<GUID>",
+        "old_instances": 11,
+        "new_instances": 11,
+        "multiset_preserves_all_instances": true,
+        "source_line": 40,
+        "not_dynamic_fixture_byte_equivalence": true
+      },
+      "old_log_sha256": "6aaeb16bb6aa349c8cc443f47560437c9607801c3fc5bf8293d57724e597143d",
+      "new_log_sha256": "adcc04d6bfce5c97ca59ce4306dcd20239240ae6c0fd1276db4468b21871c1fe"
+    },
+    {
+      "script": "test-local-response-metadata-consistency-v4.ps1",
+      "source_sha256": "f6f427bd7aef535c6998c091f83c2374439a9da2339e44a43531a1999cf74c87",
+      "old_case_count": 9,
+      "new_case_count": 9,
+      "same_case_name_multiset_and_asserted_pass_outcomes": true,
+      "label_only_normalization": null,
+      "old_log_sha256": "1262d050fa834ee5021630ec4779b76c0968be091b8671365d57f4d92f486087",
+      "new_log_sha256": "ded74e434196abdd8394e380d71cd41cc65b1a6dc060a052df014517ab23ea3e"
+    }
+  ],
+  "old_public_cases": 298,
+  "new_public_cases": 298,
+  "literal22_case_outcomes_exact": true,
+  "actual_saved_public_bridge12_check_payloads_exact": true,
+  "comparison_scope": "Same unchanged test sources, case-name multisets and original tests positive/denial assertions. Does not assert identity of every intermediate object or complete exception trace.",
+  "original_public_and_scoped_results_both_passing": true,
+  "actual_r1_scoring_or_mapping": false
+}

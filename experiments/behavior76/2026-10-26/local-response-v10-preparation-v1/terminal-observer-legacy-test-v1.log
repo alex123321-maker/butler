@@ -1,0 +1,15 @@
+=== RUN   TestBehavior76TerminalObserverLegacyDiagnosticIntegration
+2026/10/26 12:02:30 INFO connecting to postgres component=postgres dsn=po****************************************************************************************************************************le max_conns=9 min_conns=0
+2026/10/26 12:02:30 INFO postgres connected component=postgres
+2026/10/26 12:02:30 INFO reserved PostgreSQL authority capacity total_max_conns=10 business_max_conns=9 authority_max_conns=1
+2026/10/26 12:02:31 INFO run created component=run run_id=run-1793016151271945403-3b95f6a55f8a666c session_key=behavior76:public-development:A state=created
+2026/10/26 12:02:31 INFO run transitioned component=run run_id=run-1793016151271945403-3b95f6a55f8a666c from_state=created to_state=queued
+2026/10/26 12:02:31 INFO run transitioned component=run run_id=run-1793016151271945403-3b95f6a55f8a666c from_state=queued to_state=acquired
+2026/10/26 12:02:31 INFO run transitioned component=run run_id=run-1793016151271945403-3b95f6a55f8a666c from_state=acquired to_state=preparing
+2026/10/26 12:02:31 INFO run transitioned component=run run_id=run-1793016151271945403-3b95f6a55f8a666c from_state=preparing to_state=model_running
+2026/10/26 12:02:31 ERROR run execution failed component=orchestrator-run run_id=run-1793016151271945403-3b95f6a55f8a666c error=transport_connection_error
+2026/10/26 12:02:31 WARN execution authority observation stopped component=orchestrator-run run_id=run-1793016151271945403-3b95f6a55f8a666c phase=task_authority classification=unavailable elapsed_ms=1
+    behavior76_terminal_observer_integration_test.go:167: CAUSAL_REPRO own_task_status=blocked task_revision_delta=1 pre_transition_run_state=model_running guard_error=task.ErrConflict authority_CancelRun_before_release=true provider_calls=1 accepted_input_present=true native_calls=0
+2026/10/26 12:02:31 INFO closing postgres pool component=postgres total_conns=3
+--- PASS: TestBehavior76TerminalObserverLegacyDiagnosticIntegration (5.68s)
+PASS

@@ -1,0 +1,10 @@
+{
+  "version": "issue76-independent-day-v7-r2-archive-crosscheck-v1",
+  "mapping_goldens_answers_read": false,
+  "files": 71,
+  "bytes": 10073465,
+  "parent_inventory_sha256": "88a4e621879b34d6634384a7b7f70533cd47bd016d6c6451a9e9e1453c5f0938",
+  "archive_sha256": "1967bb9c152f082b4825745ec7fcbe74cdcc5a6666e912a23bb3b622ec43d0ef",
+  "all_parent_inventory_rows_equal_independent_hashes": true,
+  "all_zip_entries_independently_byte_verified": true
+}

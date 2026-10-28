@@ -1,0 +1,96 @@
+{
+  "version": "issue76-independent-public-semantic-review-v1",
+  "scope": "Public source and zero-native operational evidence only",
+  "candidate_unchanged": true,
+  "source_review": "No further source blocker found after acquired-fence error recheck",
+  "native_admission": false,
+  "fresh_authorship_admission": false,
+  "source_commit": "Uncommitted snapshot: exact paths/hashes below",
+  "independent_input_targeted": {
+    "status": "PASS",
+    "seconds": 13.61,
+    "log": "input-claim-admission-race-v3.log",
+    "sha256": "6c82f0a5914e9dfce8635fc7224196d655550d78ca14f0f0c8173a3e5805458a",
+    "race": true
+  },
+  "independent_full_input_final": {
+    "sqlstate": "53100",
+    "race": true,
+    "status": "INFRASTRUCTURE_FAIL",
+    "cause": "Local WSL tmpfs full, subsequent PostgreSQL checkpoint unavailable",
+    "sha256": "da8525b9a01a52ac1ea2534519ce06f8df2cd164d01f5385bfdbc731537d26f7",
+    "log": "input-package-race-v3.log",
+    "passing_gate": false,
+    "seconds": 133.467
+  },
+  "parser": {
+    "receipt_sha256": "8173cba9f4a837336a1a361296b8bff0069a9a09a12f6d44db4050cc6bef6b13",
+    "selftests_passed": 32,
+    "thresholds_changed": false,
+    "criteria_changed": false
+  },
+  "data_safety": {
+    "mapping_read": false,
+    "native_calls": 0,
+    "hidden_control_contents_disclosed": false,
+    "production_implementation_changed_by_checker": false,
+    "database_drops": 0,
+    "pg_restarted": false
+  },
+  "remaining_gates": [
+    "Restore coordinated local storage capacity and repeat exact final whole Input gate",
+    "Clean immutable semantic source/protocol freeze before fresh independent controls",
+    "Literal control/golden/scorer binding and full zero-native setup/composition/history/effect/source/export gates",
+    "Independent exact clean producer/ELF/window/cap admission before any native call"
+  ],
+  "source_pins": [
+    {
+      "path": "apps/orchestrator/internal/input/service.go",
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/claim_admission.go",
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/claim_admission_test.go",
+      "sha256": "9b2002efcc47456a47f2ffa459ff6b23d4caea24f010854b3b34772bf16133f1"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "bb951df6265d1ab112f5e111eb13ca6381ee057e5d4bd30017655d645e378763"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_collect_test.go",
+      "sha256": "1edc9403b270ab82ca42d38dbf379b40cdc1a1787420b38354eaa6043bfd7ae1"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "d7f7140c33e24aeb0c6aa63bda5c2ea3997b543b512d25ca1ed49d0e561b8893"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "38430a971a280d3d8abe1777b6202a2f5ddc77480a6e047c11d0dd2b74ad600d"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_runtime_test.go",
+      "sha256": "1a2a926407d94d6917edf2a98cff2b63bf09a6d653a9b423cb30f03631446e1c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "b608a3c9b9f51ec3af53d97659f8933dc918988ec53a27f110a98da9697b5b34"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_authority_trace_test.go",
+      "sha256": "2b2cf3f7ba651d1b92990a074c0585800979f25527748fb6a825a84e862cd689"
+    },
+    {
+      "path": "docs/testing/issue76-fixture-local-protocol.md",
+      "sha256": "b445d80829bd5ef048f39aa80846012133b3e0ad906fbb788f01fe86f5dfc3e4"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/task_continuity.go",
+      "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb"
+    }
+  ]
+}

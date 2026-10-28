@@ -1,0 +1,17 @@
+{
+  "script": "test-local-response-proof-v4.ps1",
+  "expected": 113,
+  "original_expected_pass": 113,
+  "source_sha256": "3da3ba2db3aa5976c8c9e74023a6fa57f0a9998546e2d609263e389877b26858",
+  "group": "existing_original_public298",
+  "exit": 0,
+  "observed_summary_counts": [
+    113
+  ],
+  "pass": true,
+  "elapsed_seconds": 411.518,
+  "log": ".cache/issue76-independent/literal-v7-existing-public-regressions-run01/test-local-response-proof-v4.ps1.log",
+  "log_sha256": "adcc04d6bfce5c97ca59ce4306dcd20239240ae6c0fd1276db4468b21871c1fe",
+  "log_bytes": 4804,
+  "scope": "ALL nested ConvertFrom-Json command invocations receive DateKind String default; no original file edited."
+}

@@ -1,0 +1,132 @@
+package app
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+	"testing"
+	"time"
+)
+
+// Neutral public parser fixtures are not hidden behavioral controls or quality
+// expectations. This helper constructs no PG, provider, permission or runtime.
+func behavior76PublicLiteralInterface() []behavior76LiteralEpisode {
+	var values []behavior76LiteralEpisode
+	for _, dimension := range strings.Fields("ambiguous_object accepted_preference_conflict repeated_feedback status_initiative format_amendment deadline_amendment recipient_amendment scoped_action_stop") {
+		for _, polarity := range []string{"positive", "negative"} {
+			value := behavior76LiteralEpisode{Version: behavior76LiteralVersion, Dimension: dimension, Polarity: polarity}
+			value.Episode.ID = "public-interface-" + dimension + "-" + polarity
+			value.Episode.Family = behavior76LiteralFamily(dimension)
+			value.Episode.Provenance.Kind = "synthetic"
+			value.Episode.Initial.Tasks = []behavior76Task{{Key: "work", Goal: "Neutral public interface fixture", CompletionCriteria: []string{"Interface only; no behavioral quality claim"}, ExecutionPolicy: "prepare_only", Status: "active"}}
+			value.Episode.Initial.Resources = []behavior76Resource{{Key: "object", TaskKey: "work", Body: "public parser data", Version: 1}}
+			turns := 2
+			if dimension == "repeated_feedback" {
+				turns = 3
+			}
+			for n := 0; n < turns; n++ {
+				key := "work"
+				value.Episode.Steps = append(value.Episode.Steps, behavior76Step{ID: fmt.Sprintf("turn-%d", n+1), Evaluate: true, RunTaskKey: &key, Event: behavior76Event{Type: "owner_message", Text: "Public parser input; not a behavioral experiment."}})
+			}
+			if dimension == "deadline_amendment" {
+				value.Deadlines = []behavior76LiteralDeadline{{ResourceKey: "object", DeadlineAt: time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)}}
+				value.DeadlineChanges = []behavior76LiteralDeadlineChange{{BeforeStepID: "turn-2", ResourceKey: "object", DeadlineAt: time.Date(2031, 1, 1, 0, 0, 0, 0, time.UTC), Provenance: "synthetic_service_configuration"}}
+			}
+			values = append(values, value)
+		}
+	}
+	return values
+}
+
+func behavior76LiteralInterfaceJSON(values []behavior76LiteralEpisode) string {
+	var result strings.Builder
+	for _, value := range values {
+		raw, _ := json.Marshal(value)
+		result.Write(raw)
+		result.WriteByte('\n')
+	}
+	return result.String()
+}
+
+func TestBehavior76LiteralDeclaredPlanAndRawOwnerInterface(t *testing.T) {
+	values := behavior76PublicLiteralInterface()
+	parsed, err := behavior76ReadLiteralEpisodes(strings.NewReader(behavior76LiteralInterfaceJSON(values)))
+	if err != nil || len(parsed) != 16 {
+		t.Fatal("complete neutral public plan rejected", err)
+	}
+	if !behavior76LiteralBindingsValid(behavior76LiteralStimuliSHA, behavior76LiteralExpectationsSHA, false) {
+		t.Fatal("hidden control bindings must be both absent or distinct canonical digests")
+	}
+	for name, mutate := range map[string]func([]behavior76LiteralEpisode) []behavior76LiteralEpisode{
+		"missing planned pair": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode { return v[:15] },
+		"duplicate pair":       func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode { v[1] = v[0]; return v },
+		"pre-resolved intent": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode {
+			v[0].Episode.Steps[0].Event.Intent = "stop"
+			return v
+		},
+		"typed control": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode {
+			v[0].Episode.Steps[0].Event = behavior76Event{Type: "owner_control", TaskKey: "work", Kind: "stop", Instruction: "public"}
+			return v
+		},
+		"invented owner history": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode {
+			v[0].Episode.Steps[0].Evaluate = false
+			return v
+		},
+		"extra graded turn": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode {
+			v[0].Episode.Steps = append(v[0].Episode.Steps, behavior76Step{ID: "extra", Evaluate: true, Event: behavior76Event{Type: "owner_message", Text: "public"}})
+			return v
+		},
+		"deadline provenance": func(v []behavior76LiteralEpisode) []behavior76LiteralEpisode {
+			for n := range v {
+				if v[n].Dimension == "deadline_amendment" {
+					v[n].DeadlineChanges[0].Provenance = "model_interpretation"
+					break
+				}
+			}
+			return v
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			v := mutate(behavior76PublicLiteralInterface())
+			if _, err := behavior76ReadLiteralEpisodes(strings.NewReader(behavior76LiteralInterfaceJSON(v))); err == nil {
+				t.Fatal("invalid literal plan admitted")
+			}
+		})
+	}
+}
+
+func TestBehavior76LiteralHashBindingShape(t *testing.T) {
+	a, b := strings.Repeat("a", 64), strings.Repeat("b", 64)
+	if !behavior76LiteralBindingsValid("", "", false) || behavior76LiteralBindingsValid("", "", true) || !behavior76LiteralBindingsValid(a, b, true) {
+		t.Fatal("unbound preparation and canonical binding states confused")
+	}
+	for _, pair := range [][2]string{{a, ""}, {"", b}, {a, a}, {strings.ToUpper(a), b}, {a[:63], b}, {a + "\n", b}, {strings.Repeat("z", 64), b}} {
+		if behavior76LiteralBindingsValid(pair[0], pair[1], false) || behavior76LiteralBindingsValid(pair[0], pair[1], true) {
+			t.Fatal("invalid digest pair admitted")
+		}
+	}
+}
+
+func TestBehavior76LiteralCanonicalJSON(t *testing.T) {
+	value := behavior76PublicLiteralInterface()[0]
+	// DATA map keys are case-sensitive data, not aliases of struct fields.
+	value.Episode.Initial.Tasks[0].Working.Scratch = map[string]any{"A": 1, "a": 2}
+	raw := behavior76LiteralInterfaceJSON([]behavior76LiteralEpisode{value})
+	if err := behavior76LiteralCanonicalKeys(raw); err != nil {
+		t.Fatal("canonical public interface rejected", err)
+	}
+	for name, invalid := range map[string]string{
+		"duplicate root":   strings.Replace(raw, `"version":`, `"version":"discarded","version":`, 1),
+		"aliased root":     strings.Replace(raw, `"version":`, `"Version":`, 1),
+		"duplicate nested": strings.Replace(raw, `"text":`, `"text":"discarded","text":`, 1),
+		"aliased event":    strings.Replace(raw, `"text":`, `"Text":`, 1),
+		"duplicate map":    strings.Replace(raw, `"A":1`, `"A":0,"A":1`, 1),
+		"trailing":         raw + `{}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if invalid == raw || behavior76LiteralCanonicalKeys(invalid) == nil {
+				t.Fatal("ambiguous JSON interpretation admitted")
+			}
+		})
+	}
+}

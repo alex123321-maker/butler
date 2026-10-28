@@ -1,0 +1,10 @@
+{
+  "published_files": 15,
+  "allowlist_sha256": "d0b84b988d791969b3eef26bc3df27a4f554f6adbe7b793e59bd458222606f03",
+  "exact_original_raw_files": 3761,
+  "exact_original_raw_bytes": 109422520,
+  "candidate_decision": "NO_GO",
+  "whole_issue76": "OPEN_literal_coverage_gaps",
+  "private_auth_settings_mapping_scoring_dumps_copied": false,
+  "new_models": 0
+}

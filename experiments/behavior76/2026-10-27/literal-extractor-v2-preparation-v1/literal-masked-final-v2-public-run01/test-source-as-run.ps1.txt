@@ -1,0 +1,71 @@
+[CmdletBinding()]
+param([Parameter(Mandatory)][string]$OutputRoot)
+$ErrorActionPreference='Stop'
+if(Test-Path -LiteralPath $OutputRoot){throw 'CreateNew public test output required'}
+$null=New-Item -ItemType Directory -Path $OutputRoot
+. (Join-Path $PSScriptRoot 'literal-json-token-boundary-reanalysis-v7.ps1')
+. (Join-Path $PSScriptRoot 'literal-masked-final-extractor-v2.ps1')
+$checks=[Collections.Generic.List[object]]::new()
+function Need([bool]$v){if(-not $v){throw 'public_extractor_v2_assertion'}}
+function Case([string]$Name,[scriptblock]$Body){try{& $Body;$checks.Add(@{name=$Name;verdict='pass'})}catch{$checks.Add(@{name=$Name;verdict='fail';fixed_error='public_extractor_v2_assertion'});Write-Output ('FAIL '+$Name)}}
+Invoke-Issue76JsonStringTokenScopeV7 -Work {
+ function Fixture([string]$Raw){
+  @{EpisodeID='public-episode';MaskedArmID='public-masked';StepID='public-step';TablesDir='public/tables';OwnerRow=@{episode_id='public-episode';masked_arm_id='public-masked';step_id='public-step';origin='owner_model_or_actual_denial';verdict='unassessed'};Outcome=@{owner_run_id='public-run';owner_input_id='public-input';run_ids=@('public-run')};SemanticRows=@(@{episode_id='public-episode';masked_arm_id='public-masked';step_id='public-step';verdict='unassessed';answer='Public answer';evidence_ref='public/tables/run_final_results.jsonl'});MechanicalChecks=@(@{episode_id='public-episode';masked_arm_id='public-masked';check='owner-input-run:public-step';verdict='pass'},@{episode_id='public-episode';masked_arm_id='public-masked';check='owner-run-in-slot:public-step';verdict='pass'});FinalRows=@(@{run_id='public-run';result_id='public-result';content=$Raw})}
+ }
+ function Unavailable($p,[string]$ExpectedParse){$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.communication_availability -ceq 'UNAVAILABLE' -and $null -eq $x.decoded_answer -and $null -eq $x.decoded_final -and -not $x.model_final -and $x.communication_verdict -cne 'PASS' -and $x.parse_status -ceq $ExpectedParse);return $x}
+ Case 'original12-runtime-pins-unchanged' {Assert-Issue76LiteralV7OriginalRuntimePins;Need ((Get-FileHash (Join-Path $PSScriptRoot 'literal-json-token-boundary-reanalysis-v7.ps1')).Hash.ToLowerInvariant() -ceq '57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80')}
+ Case 'valid-unique-proof-available-unassessed-not-PASS' {$p=Fixture '{"answer":"Public answer"}';$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.communication_availability -ceq 'AVAILABLE_FOR_EXISTING_MANUAL_RUBRIC' -and $x.decoded_answer -ceq 'Public answer' -and $x.communication_verdict -ceq 'UNASSESSED_NOT_PASS')}
+ Case 'exact-raw-final-and-UTF8SHA-retained' {$raw=" `n{`"answer`":`"Public answer`"}`r`n";$p=Fixture $raw;$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.raw_finals[0].raw_final -ceq $raw -and $x.raw_finals[0].raw_utf8_sha256 -ceq [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($raw))).ToLowerInvariant())}
+ foreach($example in @(
+  @{name='trailing-text';raw="{`"answer`":`"Public answer`"}`nAdditional public text";parse='json_invalid'},
+  @{name='trailing-second-JSON';raw='{"answer":"Public answer"}{"answer":"second"}';parse='json_invalid'},
+  @{name='malformed';raw='{"answer":';parse='json_invalid'},
+  @{name='null';raw='null';parse='json_root_not_object'},
+  @{name='array';raw='[{"answer":"Public answer"}]';parse='json_root_not_object'},
+  @{name='string-root';raw='"Public answer"';parse='json_root_not_object'},
+  @{name='null-answer';raw='{"answer":null}';parse='answer_not_string'},
+  @{name='array-answer';raw='{"answer":["Public answer"]}';parse='answer_not_string'},
+  @{name='numeric-answer';raw='{"answer":1}';parse='answer_not_string'},
+  @{name='object-answer';raw='{"answer":{"text":"Public answer"}}';parse='answer_not_string'},
+  @{name='boolean-answer';raw='{"answer":true}';parse='answer_not_string'},
+  @{name='missing-answer';raw='{}';parse='exact_answer_key_missing'},
+  @{name='case-aliased-answer';raw='{"Answer":"Public answer"}';parse='exact_answer_key_missing'},
+  @{name='duplicate-answer';raw='{"answer":"other","answer":"Public answer"}';parse='duplicate_or_root_case_aliased_key'},
+  @{name='root-case-collision';raw='{"answer":"Public answer","Answer":"other"}';parse='duplicate_or_root_case_aliased_key'},
+  @{name='nested-duplicate';raw='{"answer":"Public answer","data":{"x":1,"x":2}}';parse='duplicate_or_root_case_aliased_key'},
+  @{name='code-fence-not-repaired';raw='```json{"answer":"Public answer"}```';parse='json_invalid'}
+ )){Case $example.name {$p=Fixture $example.raw;$null=Unavailable $p $example.parse}}
+ Case 'mechanical-unavailable-valid-parser-never-manufactures-availability' {$p=Fixture '{"answer":"Public answer"}';$p.SemanticRows[0].verdict='unavailable';$null=Unavailable $p 'json_object_string_answer'}
+ Case 'mechanical-invalid-duplicate-permissive-PS-accepts-stays-unavailable' {$raw='{"answer":"other","answer":"Public answer"}';$parsed=ConvertFrom-Json $raw -AsHashtable;Need ($parsed.answer -ceq 'Public answer');$p=Fixture $raw;$p.SemanticRows[0].verdict='unavailable';$null=Unavailable $p 'duplicate_or_root_case_aliased_key'}
+ Case 'mechanical-invalid-case-alias-permissive-PS-accepts-stays-unavailable' {$raw='{"Answer":"Public answer"}';$parsed=ConvertFrom-Json $raw -AsHashtable;Need ($null -ne $parsed);$p=Fixture $raw;$p.SemanticRows[0].verdict='unavailable';$null=Unavailable $p 'exact_answer_key_missing'}
+ Case 'explicit-structured-final-unavailable-wins-over-parser' {$p=Fixture '{"answer":"Public answer"}';$p.MechanicalChecks+=@{episode_id='public-episode';masked_arm_id='public-masked';check='structured-final:public-step';verdict='unavailable'};$null=Unavailable $p 'json_object_string_answer'}
+ foreach($negative in @('missing-semantic','duplicate-semantic','wrong-semantic-evidence','answer-proof-mismatch','missing-owner-input','run-not-in-cohort','wrong-origin','wrong-owner-row','failed-owner-join','duplicate-owner-join','duplicate-selected-final','automatic-final-only')){
+  Case $negative {
+   $p=Fixture '{"answer":"Public answer"}';$parse='json_object_string_answer'
+   switch -Exact ($negative){
+    'missing-semantic'{$p.SemanticRows=@()}
+    'duplicate-semantic'{$p.SemanticRows+=,$p.SemanticRows[0]}
+    'wrong-semantic-evidence'{$p.SemanticRows[0].evidence_ref='foreign/tables/run_final_results.jsonl'}
+    'answer-proof-mismatch'{$p.SemanticRows[0].answer='different'}
+    'missing-owner-input'{$p.Outcome.owner_input_id=''}
+    'run-not-in-cohort'{$p.Outcome.run_ids=@('other')}
+    'wrong-origin'{$p.OwnerRow.origin='automatic'}
+    'wrong-owner-row'{$p.OwnerRow.step_id='foreign'}
+    'failed-owner-join'{$p.MechanicalChecks[0].verdict='fail'}
+    'duplicate-owner-join'{$p.MechanicalChecks+=,$p.MechanicalChecks[0]}
+    'duplicate-selected-final'{$p.FinalRows+=,$p.FinalRows[0];$parse='selected_final_not_unique'}
+    'automatic-final-only'{$p.FinalRows[0].run_id='automatic-run';$parse='selected_final_not_unique'}
+   }
+   $null=Unavailable $p $parse
+  }
+ }
+ Case 'empty-string-is-not-repaired-or-automatically-PASS' {$p=Fixture '{"answer":""}';$p.SemanticRows[0].answer='';$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.communication_availability -ceq 'AVAILABLE_FOR_EXISTING_MANUAL_RUBRIC' -and $x.decoded_answer -ceq '' -and $x.communication_verdict -cne 'PASS')}
+ Case 'exact-ISO-string-token-before-rendering' {$raw='{"answer":"Public answer","date":"2041-02-03T04:05:06.123456789+03:00"}';$p=Fixture $raw;$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.decoded_final.date -is [string] -and $x.decoded_final.date -ceq '2041-02-03T04:05:06.123456789+03:00')}
+ Case 'kernel-is-separate-not-parsed-or-model-PASS' {$p=Fixture 'non JSON fixed kernel text';$p.OwnerRow.origin='input_service_kernel';$x=Get-Issue76MaskedOwnerFinalV2 @p;Need ($x.communication_availability -ceq 'NOT_APPLICABLE_MODEL' -and $null -eq $x.decoded_answer -and $x.raw_finals.Count -eq 0 -and -not $x.model_final)}
+ Case 'nonstring-final-retained-unavailable' {$p=Fixture '{}';$p.FinalRows[0].content=5;$null=Unavailable $p 'nonstring_final_content'}
+ Case 'original12-runtime-pins-still-unchanged' {Assert-Issue76LiteralV7OriginalRuntimePins;Need ((Get-FileHash (Join-Path $PSScriptRoot 'literal-json-token-boundary-reanalysis-v7.ps1')).Hash.ToLowerInvariant() -ceq '57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80')}
+}
+$receipt=[ordered]@{version='issue76-masked-final-extractor-v2-public-tests-v1';status='PREPARED_PUBLIC_SYNTHETIC_TESTS_ONLY_NOT_ACTUAL_EXTRACTION';PowerShell=$PSVersionTable.PSVersion.ToString();PASS=@($checks|Where-Object verdict -CEQ 'pass').Count;FAIL=@($checks|Where-Object verdict -CEQ 'fail').Count;checks=$checks;scope='same pinned Invoke-Issue76JsonStringTokenScopeV7';helper_sha256=(Get-FileHash (Join-Path $PSScriptRoot 'literal-masked-final-extractor-v2.ps1')).Hash.ToLowerInvariant();test_sha256=(Get-FileHash $PSCommandPath).Hash.ToLowerInvariant();old_runtime_or_criteria_changed=$false;actual_r1_extraction_or_review_or_mapping=$false;mechanical_rerun=$false;Go_PG_Docker_auth_provider_native=0}
+$dest=Join-Path $OutputRoot 'receipt.json';$bytes=[Text.UTF8Encoding]::new($false).GetBytes(($receipt|ConvertTo-Json -Depth 30)+"`n");$f=[IO.FileStream]::new($dest,[IO.FileMode]::CreateNew);try{$f.Write($bytes);$f.Flush($true)}finally{$f.Dispose()};(Get-Item $dest).IsReadOnly=$true
+@{path=$dest;sha256=(Get-FileHash $dest).Hash.ToLowerInvariant();PASS=$receipt.PASS;FAIL=$receipt.FAIL;actual_r1_extraction=$false}|ConvertTo-Json -Compress
+if($receipt.FAIL){exit 1}

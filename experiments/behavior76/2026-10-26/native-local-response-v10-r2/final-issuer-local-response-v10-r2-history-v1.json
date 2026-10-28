@@ -1,0 +1,11 @@
+{
+  "version": "issue76-independent-r2-final-issuer-history-v1",
+  "original_v1_script_sha256": "48d2e00bfb412347709ccf7350a858fe2c1dd4e31b6e7615a201895a388d08d7",
+  "original_v1_status": "FAILED_BEFORE_CERTIFICATE: dynamic exposure scriptblock PSScriptRoot unavailable; same failure source-located without native/PG",
+  "additive_v2_script_sha256": "5df96b060ab7c7853d9c04404d78f5595017cd9684c472a9c974055af6505ed5",
+  "additive_v2_exit": 0,
+  "only_plumbing_correction": "Dynamic literal-exposure projection uses explicitly captured checkerRoot; no criteria/source/gates changed",
+  "certificate_sha256": "5b55e4bdd7a0f95c3ba69475543e9a01f24991b02d2d36c8925a8e082122a0ac",
+  "certificates_issued": 1,
+  "Go_PG_auth_native": 0
+}

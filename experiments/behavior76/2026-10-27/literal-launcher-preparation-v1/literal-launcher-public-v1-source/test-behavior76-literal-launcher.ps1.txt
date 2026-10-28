@@ -1,0 +1,72 @@
+[CmdletBinding()]
+param()
+$ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'behavior76-literal-launcher-core.ps1')
+$repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$schemaPath=Join-Path $PSScriptRoot 'behavior76-literal-admission.schema.json'
+$publicRoot=Join-Path $repoRoot ('.cache/behavior76/literal-launcher-public-'+[guid]::NewGuid().ToString('N'))
+[void][IO.Directory]::CreateDirectory($publicRoot)
+$utf8=[Text.UTF8Encoding]::new($false)
+$schemaText=[IO.File]::ReadAllText($schemaPath)
+$schema=$schemaText|ConvertFrom-Json -AsHashtable
+function Example-B76Schema($Rule,$Root){
+ if($Rule.ContainsKey('$ref')){return Example-B76Schema $Root.'$defs'[$Rule.'$ref'.Split('/')[-1]] $Root}
+ if($Rule.ContainsKey('const')){return $Rule.const}
+ switch($Rule.type){
+  'object'{$result=[ordered]@{};foreach($field in $Rule.required){$result[$field]=Example-B76Schema $Rule.properties[$field] $Root};return $result}
+  'integer'{return [long]$Rule.minimum}
+  'string'{
+   if($Rule.ContainsKey('format')){return '2026-10-27T01:00:00.0000000Z'}
+   if($Rule.pattern -eq '^[0-9a-f]{64}$'){return ('a'*64)}
+   if($Rule.pattern -eq '^[0-9a-f]{40}$'){return ('1'*40)}
+   if($Rule.pattern -eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'){return '2026-10-27'}
+   return '.cache/public-fixture.txt'
+  }
+  default{throw 'Public schema example rule unsupported'}
+ }
+}
+$example=Example-B76Schema $schema $schema
+# Deliberately nonexistent producer/pins: a public structural fixture can never
+# pass the actual launcher's clean-source/existing-artifact/time gates.
+$raw=$example|ConvertTo-Json -Depth 20 -Compress
+$checks=[Collections.Generic.List[object]]::new()
+function Check-B76([string]$Label,[scriptblock]$Work,[bool]$Deny=$false){
+ $failed=$false
+ try{& $Work}catch{$failed=$true}
+ $pass=$failed -eq $Deny
+ $checks.Add([ordered]@{label=$Label;pass=$pass;expected_denial=$Deny})
+ if(-not $pass){throw ('Public launcher check failed: '+$Label)}
+}
+function Read-B76Public([string]$Value){
+ $path=Join-Path $publicRoot ([guid]::NewGuid().ToString('N')+'.json')
+ [IO.File]::WriteAllText($path,$Value,$utf8)
+ $hash=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+ return Read-B76Certificate $path $schemaPath $hash
+}
+Check-B76 'canonical structural fixture only' { $parsed=Read-B76Public $raw; if($parsed.plan.arms -ne 32 -or $parsed.source.producer_commit -ne ('1'*40)){throw 'bad public parse'} }
+Check-B76 'duplicate root member denied' { [void](Read-B76Public $raw.Replace('"version":','"version":"discarded","version":')) } $true
+Check-B76 'case aliased root member denied' { [void](Read-B76Public $raw.Replace('"version":','"Version":')) } $true
+Check-B76 'extra field denied' { [void](Read-B76Public ('{"unknown":0,'+$raw.Substring(1))) } $true
+Check-B76 'wrong fixed arm count denied' { [void](Read-B76Public $raw.Replace('"arms":32','"arms":48')) } $true
+Check-B76 'string boolean denied' { [void](Read-B76Public $raw.Replace('"clean_worktree":true','"clean_worktree":"true"')) } $true
+Check-B76 'uppercase digest denied' { [void](Read-B76Public $raw.Replace(('a'*64),('A'*64))) } $true
+Check-B76 'fractional integer denied' { [void](Read-B76Public $raw.Replace('"original_steps":34','"original_steps":34.5')) } $true
+Check-B76 'trailing JSON denied' { [void](Read-B76Public ($raw+'{}')) } $true
+Check-B76 'UTC is parsed independently of local timezone' { if((Get-B76Utc '2026-10-27T01:00:00.0000000Z').Offset -ne [TimeSpan]::Zero){throw 'bad UTC'} }
+Check-B76 'non UTC offset denied' { [void](Get-B76Utc '2026-10-27T08:00:00+07:00') } $true
+Check-B76 'path traversal denied' { [void](Resolve-B76RepoPath $repoRoot '.cache/../private/file') } $true
+Check-B76 'absolute path denied' { [void](Resolve-B76RepoPath $repoRoot 'D:/outside') } $true
+Check-B76 'Windows device path denied' { [void](Resolve-B76RepoPath $repoRoot '.cache/CON.txt' -Absent) } $true
+Check-B76 'duplicate durable marker does not overwrite' {
+ $path=Join-Path $publicRoot 'public-only.consumed.json'
+ $bytes=$utf8.GetBytes('{"public_test_only":true,"native_calls":0}')
+ Write-B76ConsumedMarker $path $bytes
+ $first=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+ $denied=$false
+ try{Write-B76ConsumedMarker $path ($utf8.GetBytes('replacement'))}catch{$denied=$true}
+ if(-not $denied -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $first){throw 'one-use marker replaced'}
+}
+$receipt=[ordered]@{version='behavior76-literal-launcher-public-v1';checks=$checks;pass=$checks.Count;fail=0;source_frozen=$false;actual_certificate_issued=$false;native_calls=0;auth_access=0;PG_access=0;WSL_processes_started=0;public_fixtures_retained=$publicRoot}
+$receiptPath=Join-Path $publicRoot 'receipt.json'
+[IO.File]::WriteAllText($receiptPath,($receipt|ConvertTo-Json -Depth 8),$utf8)
+Write-Output ('PUBLIC_LAUNCHER_PASS '+$checks.Count+' checks; receipt='+$receiptPath)

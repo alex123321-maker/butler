@@ -1,0 +1,924 @@
+{
+  "rows": [
+    {
+      "owner_run_id": "run-1793006725713360124-da27db3a654325e5",
+      "state": "completed",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "safe_error_category": null,
+      "arm_dir": "slot-01/arm-40ea87482f6acd535495555f54bfecfc",
+      "step_id": "turn1",
+      "episode_id": "v9-92962d404e4e14b3",
+      "owner_input_id": "input-83bf4e76eb79bbfed3c165ee2853d014",
+      "failure_phase": null,
+      "native_entry_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "owner_run_id": "run-1793006789785951465-069bd65b94552d07",
+      "state": "completed",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "safe_error_category": null,
+      "arm_dir": "slot-01/arm-40ea87482f6acd535495555f54bfecfc",
+      "step_id": "turn2",
+      "episode_id": "v9-92962d404e4e14b3",
+      "owner_input_id": "input-fc91c8ccf4ae2075fa763a912e579cf0",
+      "failure_phase": null,
+      "native_entry_ids": [
+        3,
+        4
+      ]
+    },
+    {
+      "owner_run_id": "run-1793006828736125571-a7abeb642747b67a",
+      "state": "completed",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "safe_error_category": null,
+      "arm_dir": "slot-01/arm-fa113b1d737a9bbd1bc16a0211330082",
+      "step_id": "turn1",
+      "episode_id": "v9-92962d404e4e14b3",
+      "owner_input_id": "input-ad0220a55dd9e13a249d734a8150b53e",
+      "failure_phase": null,
+      "native_entry_ids": [
+        5,
+        6
+      ]
+    },
+    {
+      "owner_run_id": "run-1793006903182455670-2d61bc40575b4533",
+      "state": "completed",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "safe_error_category": null,
+      "arm_dir": "slot-01/arm-fa113b1d737a9bbd1bc16a0211330082",
+      "step_id": "turn2",
+      "episode_id": "v9-92962d404e4e14b3",
+      "owner_input_id": "input-c0b99093d09e0e9b4b6b0510acebba6b",
+      "failure_phase": null,
+      "native_entry_ids": [
+        7,
+        8
+      ]
+    },
+    {
+      "owner_run_id": "run-1793006934373482431-5590ef19cc494bb6",
+      "state": "completed",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "safe_error_category": null,
+      "arm_dir": "slot-02/arm-fa113b1d737a9bbd1bc16a0211330082",
+      "step_id": "turn1",
+      "episode_id": "v9-71c33922693d96cb",
+      "owner_input_id": "input-f96c379a49dc746a74087f8b772eecf2",
+      "failure_phase": null,
+      "native_entry_ids": [
+        9,
+        10
+      ]
+    },
+    {
+      "owner_run_id": "run-1793006983950936647-e5d6fd62f9abd40f",
+      "state": "completed",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "safe_error_category": null,
+      "arm_dir": "slot-02/arm-fa113b1d737a9bbd1bc16a0211330082",
+      "step_id": "turn2",
+      "episode_id": "v9-71c33922693d96cb",
+      "owner_input_id": "input-849fb23d7557f12a60f2f70a78787bc1",
+      "failure_phase": null,
+      "native_entry_ids": [
+        11
+      ]
+    },
+    {
+      "owner_run_id": "run-1793007038771944879-ede0afbf2f4d4506",
+      "state": "completed",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "safe_error_category": null,
+      "arm_dir": "slot-02/arm-40ea87482f6acd535495555f54bfecfc",
+      "step_id": "turn1",
+      "episode_id": "v9-71c33922693d96cb",
+      "owner_input_id": "input-fa3ce46b2ade648a8218b452d7440663",
+      "failure_phase": null,
+      "native_entry_ids": [
+        12,
+        13
+      ]
+    },
+    {
+      "owner_run_id": "run-1793007076079302403-9e859f9fa6e442f0",
+      "state": "completed",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "safe_error_category": null,
+      "arm_dir": "slot-02/arm-40ea87482f6acd535495555f54bfecfc",
+      "step_id": "turn2",
+      "episode_id": "v9-71c33922693d96cb",
+      "owner_input_id": "input-bf91a9b2e59ad159d9be1505ce5275d6",
+      "failure_phase": null,
+      "native_entry_ids": [
+        14,
+        15
+      ]
+    },
+    {
+      "owner_run_id": "run-1793007153745004521-6747ac51cf08f6b9",
+      "state": "failed",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "safe_error_category": "fixture_operation_unavailable",
+      "arm_dir": "slot-03/arm-40ea87482f6acd535495555f54bfecfc",
+      "step_id": "turn1",
+      "episode_id": "v9-cb2a6a7a5b97c369",
+      "owner_input_id": "input-f5c462ef1c0f2c1f445bea313e4fb41c",
+      "failure_phase": "collector",
+      "native_entry_ids": [
+        16
+      ]
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cb2a6a7a5b97c369",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-cb2a6a7a5b97c369",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cb2a6a7a5b97c369",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-fac0aa831f550cb7",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-fac0aa831f550cb7",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-fac0aa831f550cb7",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-fac0aa831f550cb7",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-9877eba693e44532",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-9877eba693e44532",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-9877eba693e44532",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-9877eba693e44532",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-cc3433acdb1295f8",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cc3433acdb1295f8",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-cc3433acdb1295f8",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cc3433acdb1295f8",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-6861bc2d5f0750ef",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-6861bc2d5f0750ef",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-6861bc2d5f0750ef",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-6861bc2d5f0750ef",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-0f8cbbc68b3268f0",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-0f8cbbc68b3268f0",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-0f8cbbc68b3268f0",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-0f8cbbc68b3268f0",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-5e58db49bdf9e21f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-5e58db49bdf9e21f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-5e58db49bdf9e21f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-5e58db49bdf9e21f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-c58fb09605e4889e",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-c58fb09605e4889e",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-c58fb09605e4889e",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-c58fb09605e4889e",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-01ba17228c178889",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-01ba17228c178889",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-01ba17228c178889",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-01ba17228c178889",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-cb7b69c2e469a5d0",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cb7b69c2e469a5d0",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-cb7b69c2e469a5d0",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-cb7b69c2e469a5d0",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-c0411b249c63694b",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-c0411b249c63694b",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-c0411b249c63694b",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-c0411b249c63694b",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-7f413d1e3660cf9f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-7f413d1e3660cf9f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-7f413d1e3660cf9f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-7f413d1e3660cf9f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-70993c3f47e8767f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-70993c3f47e8767f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-70993c3f47e8767f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-70993c3f47e8767f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-0733e44e78dbcb15",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-0733e44e78dbcb15",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-0733e44e78dbcb15",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-0733e44e78dbcb15",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-94fb0ea24f0ce8ae",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-94fb0ea24f0ce8ae",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-94fb0ea24f0ce8ae",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-94fb0ea24f0ce8ae",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-8bcbe7c056629741",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-8bcbe7c056629741",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-8bcbe7c056629741",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-8bcbe7c056629741",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-be75bf4993f7834f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-be75bf4993f7834f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-be75bf4993f7834f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-be75bf4993f7834f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-4a993a3eea76a380",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-4a993a3eea76a380",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-4a993a3eea76a380",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-4a993a3eea76a380",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-5a93ec32be264673",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-5a93ec32be264673",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-5a93ec32be264673",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-5a93ec32be264673",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-638013cfc47180db",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-638013cfc47180db",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-638013cfc47180db",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-638013cfc47180db",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-1383a513ba1b756f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-1383a513ba1b756f",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-1383a513ba1b756f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-1383a513ba1b756f",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-3b3c6afbe87fd99b",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-3b3c6afbe87fd99b",
+      "owner_run_id": "",
+      "arm": "arm-fa113b1d737a9bbd1bc16a0211330082",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn1",
+      "episode_id": "v9-3b3c6afbe87fd99b",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    },
+    {
+      "step_id": "turn2",
+      "episode_id": "v9-3b3c6afbe87fd99b",
+      "owner_run_id": "",
+      "arm": "arm-40ea87482f6acd535495555f54bfecfc",
+      "native_entry_ids": [],
+      "state": "unavailable_unindexed_original_opportunity",
+      "owner_input_id": ""
+    }
+  ],
+  "planned_owner_opportunities": 96,
+  "version": "issue76-closed-full96-boundary-v1",
+  "quality_assessed": false,
+  "only_dispositions_no_semantic_scoring": true
+}

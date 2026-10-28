@@ -1,0 +1,54 @@
+{
+  "version": "issue76-independent-public-resource-source-review-v2",
+  "supersedes": "public-fixture-local-semantic-review-v1.json only for completed resource/Input follow-up",
+  "review_result": "No remaining source blocker identified in the narrow resource binding fix",
+  "scope": [
+    "Exact pool endpoint127.0.0.1:55451/behavior76_test enforced by helper before SQL",
+    "Actual server data_directory read and checked; df probes the same exact observed directory",
+    "Read-only version/WAL/shared_buffers/fsync/JIT/capacity observation before native window INSERT",
+    "Resource profile included in prospective manifest; original750ms/reserve9+1/candidate/criteria unchanged",
+    "Prior full-input infrastructure FAIL retained; independent final Input44 race PASS on declared new storage"
+  ],
+  "independent_input_receipt_sha256": "20ad65dcee265060ce6f188203da906741c635b33a5a94499820f02c844677fa",
+  "parser_receipt_sha256": "8173cba9f4a837336a1a361296b8bff0069a9a09a12f6d44db4050cc6bef6b13",
+  "public_final_suite": "Pending exact frozen wrapper run and vet; prior binary-only PASS plus wrapper failure is not a wrapper PASS",
+  "conditions_before_fresh_authorship": [
+    "Final public suite and vet succeed on frozen source/scripts",
+    "Clean committed semantic producer and protocol pin accepted prospectively"
+  ],
+  "native_admission": false,
+  "fresh_authorship_admission": false,
+  "hidden_controls_authored": 0,
+  "mapping_read": false,
+  "hidden_quality_disclosed": false,
+  "source_pins": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_resources_test.go",
+      "sha256": "e3a960583e125daddecf9037fbe9a18709b800e8acd78c1d19b8f3553861ab37"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "64f42444caf8a93813d968da5b44fdaa6e671c53773f4a00d39a679153e695ee"
+    },
+    {
+      "path": "docs/testing/issue76-fixture-local-protocol.md",
+      "sha256": "37ac1880ea3e9479856f9303d925fa78cd62d9785e32f11cbc64108eb9557651"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/service.go",
+      "sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/claim_admission.go",
+      "sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a"
+    },
+    {
+      "path": "apps/orchestrator/internal/input/claim_admission_test.go",
+      "sha256": "9b2002efcc47456a47f2ffa459ff6b23d4caea24f010854b3b34772bf16133f1"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/task_continuity.go",
+      "sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb"
+    }
+  ]
+}

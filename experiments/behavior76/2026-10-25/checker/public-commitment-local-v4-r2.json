@@ -1,0 +1,128 @@
+{
+  "version": "issue76-independent-hidden-local-v4-r2",
+  "origin": "synthetic",
+  "producer_semantic_freeze": "7691d83448c5ed41baabd2e799eb8af7a0aa671b",
+  "semantic_freeze_certificate_sha256": "4f3f3b3e6c7163b10482208ac8a2e173b184de9d0d31f63e3d4ebcb92cec422e",
+  "protocol_sha256": "37ac1880ea3e9479856f9303d925fa78cd62d9785e32f11cbc64108eb9557651",
+  "episodes": 24,
+  "families": 12,
+  "evaluated_owner_turns": 48,
+  "paired_owner_opportunities": 96,
+  "arms": 2,
+  "typed_and_owner_steps": 71,
+  "stimuli_path": "hidden-local-v4-r2/stimuli.jsonl",
+  "expectations_path": "hidden-local-v4-r2/expectations.jsonl",
+  "stimuli_sha256": "878f220f31c4e615a56b81cace7be96639a4f4e6dcffee3159b095675ef5d109",
+  "expectations_sha256": "464cb37c9d8bec967baba27fe6b401b6fc41d3d5d855f3ecf5955c04312f4ee0",
+  "generator_sha256": "5beb4a43a1da91952beb748379605453f3eb0c8cf3799db10bccf883001672e8",
+  "candidate_source_sha256": "f9a880ca92a51fb16c68cd859be7830bbc696a69496853537f64c49bb61acaeb",
+  "scoring_composition_sha256": "5cb74cc78c66a6a8d30397f132d3b59fb0f455a2face28dbd1cb266fde873ec2",
+  "parser_sha256": "8975943bd13c617557505eb8eb0536b23d6570e2568f2b09765c0fce52f142bf",
+  "criterion_source_sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d",
+  "acceptance_basis": "Unchanged frozen criteria/thresholds and prospective availability composition; new independent synthetic values; no outcome tuning",
+  "historical_experiments": "Closed failures/deviations/costs unchanged;376 admissions,4 NULL usage;750ms cause unresolved",
+  "native_admission": false,
+  "mapping_read": false,
+  "coverage": [
+    {
+      "family": "amendment",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "clarification",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "feedback_candidate",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "manual_change",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "new_task_coexistence",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "owner_done_report",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "preference_exception",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "preference_lifecycle",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "restart",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "scoped_stop_negation",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "status_continuation",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    },
+    {
+      "family": "untrusted_command",
+      "positive": 1,
+      "negative": 1,
+      "owner_opportunities": 8,
+      "episodes": 2,
+      "arms": 4
+    }
+  ],
+  "original_v4_commitment_sha256": "0fa0cd8ba3172243f99eb3fb690bacdb346606f406be81cddc0e6a91eb4760e5",
+  "correction_generator_sha256": "034c9f0e88829db4072c50c785966d5eef986d8739a7397c83cb5928f17d910b",
+  "correction_scope": "Exactly2 conflicting child initial-policy strings -> empty for ordinary parent inheritance; original owner constraints/steps/goldens unchanged",
+  "prior_v4_status": "Zero-native setup failed; frozen original retained; no model response/effect evaluated"
+}

@@ -1,0 +1,120 @@
+{
+  "version": "issue76-public-local-response-v10-source-review-v1",
+  "created_utc": "2026-10-26T11:43:19.3609483+00:00",
+  "decision": "NO_ADDITIONAL_CONCRETE_SOURCE_BLOCKER_FOUND_PENDING_PARENT_FINAL_GATES",
+  "source_state": "uncommitted v10 draft; this is a source review, not a semantic freeze or native admission",
+  "source_files": [
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_test.go",
+      "sha256": "8eae58542abee3935ca420e0b06f8195ef6dcfe411702be44b4c95d14da5b50e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_response_integration_test.go",
+      "sha256": "506b734b333966a9d1229f6cc81ac101c843eae7b49975771ebfb44f9c0105af"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_test.go",
+      "sha256": "beeadbe464d44b18252ef6bce57bd16dbaf63c43196269212e6a9b8ce7bba2c3"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_local_model_integration_test.go",
+      "sha256": "89a3df2f98bf877e775bbd013e300c6216905b1a27eca176a96da5b393abfdc5"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_native_test.go",
+      "sha256": "cc8a7c5fe6490bda219c9c4e245e273fc82c2ed06b64a4210464f31fdcb439de"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_test.go",
+      "sha256": "4c127c410738c683a6b8d1bdd262a17c2df644da8311d00e8994eaec0095d02c"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_scope_integration_test.go",
+      "sha256": "c4ca0f11f0d9faca557be124748e7e945e7400b56af39e2745973056d7aa29e9"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fixture_test.go",
+      "sha256": "0f8b729f216951e3f386a645f15154a2f47fa575d729738ded3ba401c3b9d70e"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_fresh_test.go",
+      "sha256": "a3d8994e3e64ac092805bca13f99f0cffce24ce97b7a44027da076c805904c29"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_day_admission_test.go",
+      "sha256": "dd7f1530aaf4dbabe9d40a0b6f560019e0d9b01cc76b7d3b103c932c179e9c99"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/behavior76_composition_test.go",
+      "sha256": "3e2822abebd39516d45a5aa2de40da090af0c614111c55edc1401ccf015ea766"
+    },
+    {
+      "path": "scripts/dev/behavior-local-run.sh",
+      "sha256": "25dcb010c5028fd2bbcbff2f359cffa607186e76d3da53f6f4812474fea7ff5d"
+    },
+    {
+      "path": "docs/testing/issue76-local-response-protocol.md",
+      "sha256": "8babbdc6c231db7d6184ec0e08b1b570a21682ea1d71302657ae6b4971975221"
+    },
+    {
+      "path": "docs/architecture/run-lifecycle-spec.md",
+      "sha256": "0cd1056c9f8b90867d02eb8fb5ce0f2d1428cc9430a6999410da53dd5a570be7"
+    },
+    {
+      "path": "apps/orchestrator/README.md",
+      "sha256": "8f0f079f5be20b1b7f187a5dbcc45d6e1c88d49843354b536c49e2b7d8e63b5d"
+    }
+  ],
+  "findings": [
+    {
+      "repair": "v10 ResponseMetadata requires Total>=Input+Output after overflow-safe Validate; production Usage.Validate and old modes unchanged.",
+      "source_fix_verified": true,
+      "severity": "integrity",
+      "id": "response-total-zero",
+      "parent_regression": "zero_total_positive_counts",
+      "independent_Go_replay": false,
+      "problem": "Generic Usage.Validate allowed zero TotalTokens with positive input/output in local eligibility."
+    },
+    {
+      "repair": "v10 provider LoadOrStore run-keyed SHA256 of safe barrier root; handler requires identical root hash and one actual transport_error row; missing/reconstructed witness denies exemption.",
+      "parent_regressions": [
+        "consistent milliseconds+1",
+        "missing witness"
+      ],
+      "source_fix_verified": true,
+      "severity": "journal-integrity",
+      "id": "late-consistent-root-mutation",
+      "independent_Go_replay": false,
+      "problem": "Internally consistent root-row changes after durable barrier could satisfy normalized Core error exemption while differing from the witnessed readback."
+    }
+  ],
+  "reviewed_boundaries": [
+    "exact 13 transport-owned reasons and old empty first",
+    "exact text-only same SequenceNo 1..4, aggregate UTF8<=16MiB",
+    "actual EOF and live context; extra/late event GLOBAL",
+    "strict stored usage/delta and nullable journal metadata equality",
+    "problematic usage/version dimension restrictions",
+    "unchanged old constructors; opt-in v10 mode only",
+    "exact durable row/input/task/source/ownership checks before barrier",
+    "same admission mutex; immutable first cause; owning-cohort drain",
+    "no retry/resample/refund; all96 planned opportunities retained",
+    "other network/auth/source/authority/budget/deadline/journal/observer/quiescence failures GLOBAL"
+  ],
+  "checker": {
+    "frozen_criterion_statement_extents": 27,
+    "public_passed": 298,
+    "failed": 0,
+    "path": "public-local-response-checker-v4-receipt-v1.json",
+    "sha256": "3bbd8c798bd85172cfcb1f6cfcac94d6fd6741fe8b2beaa1b0879f88d288a39a"
+  },
+  "limitations": [
+    "No independent Go/PG execution in this review; parent narrow/final Public/vet results remain pending.",
+    "Read-only exported checker cannot itself establish actual live branch/EOF/authority/quiescence.",
+    "No quality, issue acceptance, candidate promotion or historical failure reclassification is inferred."
+  ],
+  "Go_PG_auth_native_calls": 0,
+  "hidden_controls_answers_goldens_mapping_read": false,
+  "formal_freeze": false,
+  "new_hidden_authorship": false,
+  "new_native_admission": false
+}

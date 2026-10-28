@@ -1,0 +1,140 @@
+{
+  "version": "issue76-literal-masked-extractor-v2-preparation-receipt-v1",
+  "decision": "PREPARED_FOR_PARENT_REVIEW_NO_ACTUAL_V2_EXTRACTION_OR_JUDGMENTS",
+  "issued_at_utc": "2026-10-27T05:36:48.091146+00:00",
+  "sources": [
+    {
+      "path": "literal-masked-final-extractor-v2.ps1",
+      "bytes": 6248,
+      "sha256": "8b182760f6708a836f73decc6fce9ee11c9d8e08aadc5458f5278f01571acea6"
+    },
+    {
+      "path": "extract-literal-r1-offline-v7-masked-evidence-v2.ps1",
+      "bytes": 7828,
+      "sha256": "b56fba13d16dbf667da8980ccf041f0cf3c2dccbd4450ed903b8490f3d8cdb48"
+    },
+    {
+      "path": "test-literal-masked-final-extractor-v2.ps1",
+      "bytes": 10966,
+      "sha256": "2311bd2f4315188d81b9198f1b4771d77ab585b7a22f20e323203038961af166"
+    }
+  ],
+  "documents": [
+    {
+      "path": "public-literal-masked-extractor-v2-contract-prepared-v1.md",
+      "bytes": 5090,
+      "sha256": "cc7071f20346ac821a8220ec9235bdfb78022094e4eca610543daa4b1c0e4a53"
+    },
+    {
+      "path": "public-literal-masked-extractor-v2-minimal-delta-v1.md",
+      "bytes": 1552,
+      "sha256": "f031c4021a7fa1ee6d5fe1a2ca6f60d924d5dd79ddc6778d1126b4b1cf5a915e"
+    },
+    {
+      "path": "public-literal-offline-v7-extraction-v1-safe-diagnosis-v1.json",
+      "bytes": 1136,
+      "sha256": "3eb849f3e29db093c50df0ee0c7175c2dda53c68b893994d1b15e602144ac3b4"
+    }
+  ],
+  "old12_runtime_unchanged": [
+    {
+      "path": "local-model-proof-reader-v4.ps1",
+      "sha256": "2241e8d023b6f00e28dbfc4599a74d5d2b571bf1bb2667faf0de5c1c7f85fd39"
+    },
+    {
+      "path": "local-tail-adapter-v4.ps1",
+      "sha256": "4e6bdc53519a1d9dce02a10e2c5a8887becbed8205e791c16c11d13d233c344a"
+    },
+    {
+      "path": "local-scoring-composition-v4.ps1",
+      "sha256": "35b2734bb3ccc3c381de2d796a0d1d1a09779615c5ada2e26d67be37a081ee25"
+    },
+    {
+      "path": "authority-stream-scoring-v2d.ps1",
+      "sha256": "d8ef5be5485d2ae515f435bd5e3ef87a261a089c58e422350b41e117956745ab"
+    },
+    {
+      "path": "authority-stream-reader-v2a.cs",
+      "sha256": "836e02f4d40d0c52449f32f8560102a8ed5e4f06ff0b95a8f5dd0a5128a74641"
+    },
+    {
+      "path": "authority-stream-reader-v2a.ps1",
+      "sha256": "b03c60b3fbcdd4ee8613545738951ecbfc9f7f204409aaea20de70a25d0332c5"
+    },
+    {
+      "path": "score-mechanical-fresh-v3.ps1",
+      "sha256": "e481f9c062a3bc4500b9f0b94da8819fbf287bec075490583cad17d54198721d"
+    },
+    {
+      "path": "literal-kernel-proof-v1.ps1",
+      "sha256": "b66fc09932f010176f470a7b31499fabe39d70ebce1cf1ab0f0cedc40a7919d5"
+    },
+    {
+      "path": "literal-index-adapter-v6.ps1",
+      "sha256": "509344a7d02e68f75751e8828ec4e50b25588fcb487e66d2af22c4bce141ef27"
+    },
+    {
+      "path": "literal-scoring-composition-v6.ps1",
+      "sha256": "f9d8a4d555300b66e3b055906d28888bdc5fe8ec886a5ec63556f23ae0d67912"
+    },
+    {
+      "path": "authority-stream-scoring-v6-literal.ps1",
+      "sha256": "e306bdbe342b1f9975426d519dd6a6a08633cfe7d94d40185f94b97df0f72779"
+    },
+    {
+      "path": "literal-json-token-boundary-reanalysis-v7.ps1",
+      "sha256": "57c1bc1a87fb6b284f46f27618ebcd85d8dbc849e0bba4634461b687ef485e80",
+      "bytes": 5997
+    }
+  ],
+  "formal_v7_freeze_sha256": "a8342dd7a8b4e5c1de391cb1bbaa3e27267de865e8c8f85893e9fdfaad288378",
+  "old27_statement_and12_helper_ASTs_exact": true,
+  "public_tests": [
+    {
+      "path": "literal-masked-final-v2-public-run01/receipt.json",
+      "bytes": 4088,
+      "sha256": "635a68d7eab5e420d508c985cfceb319eb9fcd4b8e585e0487e98de7b6e62d25"
+    },
+    {
+      "path": "literal-masked-final-v2-public-run02/receipt.json",
+      "bytes": 4608,
+      "sha256": "ddf60d7a267912c8dd1f930ccbe6ef000eb70ae22baf2c5ef2227f638ecd1af1"
+    }
+  ],
+  "latest_public_PASS": 45,
+  "latest_public_FAIL": 0,
+  "original_mechanical_result_unchanged": "41825ea0599c7d9adf1a47e314fbcbe4e01209cfcc9c8a5f4d0ab95dbc9d65f4",
+  "original_extractor_v1_failure_retained": "94b842bf0f67981c8d0e1ba9748187339dc6ac5e8d8b45fd96302c1b4d1fc8a2",
+  "original_v1_extractor_source": {
+    "path": "extract-literal-r1-offline-v7-masked-evidence-v1.ps1",
+    "bytes": 5181,
+    "sha256": "3f9dc2dd3e8cedf8c080dade3cea2e347136e4fa9ce6538b75ae4d51e642af06"
+  },
+  "raw_final_policy": "Exact private raw plus strict UTF8SHA; no repair/truncation/first-object extraction; invalid or mechanically unavailable means decoded_answer null and communication UNAVAILABLE.",
+  "availability_is_not_PASS": true,
+  "unique_existing_mechanical_proof_required": true,
+  "kernel_and_automatic_are_not_owner_model_finals": true,
+  "decoder_scope": "Same pinned V7 scope before all nested JSON parsing/rendering, including rubric/case/outcome. Not golden-only.",
+  "planned_owner_denominator": 68,
+  "criteria_rubric_thresholds_data_expectedvalues_expense_mapping_changed": false,
+  "actual_v2_extraction": "NOT_STARTED",
+  "actual_communication_review": "NOT_STARTED",
+  "mapping_read": false,
+  "mechanical_rerun": false,
+  "new_native_or_promotion": false,
+  "original_v6_status": "STRICT_FAIL_NO_GO_IMMUTABLE",
+  "requires_parent_review_and_explicit_authorization": true,
+  "operations": {
+    "file_only": true,
+    "Go": 0,
+    "PG": 0,
+    "Docker": 0,
+    "auth": 0,
+    "provider_model": 0
+  },
+  "limitations": [
+    "This is a post hoc extraction plumbing addition, not original-protocol PASS.",
+    "Generic availability tests are not actual quality judgments.",
+    "The strict frozen mechanical result remains independently authoritative."
+  ]
+}

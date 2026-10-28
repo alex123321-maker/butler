@@ -1,0 +1,38 @@
+# Literal supplement: kernel response evidence — PREPARED_ONLY
+
+Read-only review of the public16-episode/32-arm/68-owner-opportunity proposal, literal envelope/parser and actual Input.Service/Controller contracts. No source/scorer freeze, hidden cases, code edits, Go/PG/provider/Docker execution or admission was performed. The previous r3 NO_GO and all old denominators remain unchanged.
+
+## Required separate interaction record
+
+Each actual owner opportunity needs an interaction envelope alongside, not inside, any model final. Record:
+
+- Original episode/arm/step and actual ingress EventID/idempotency key, exact event/payload hash, authenticated owner/session/source/delivery refs and explicit task-selection provenance. Record the actual transport selection separately from a message's inferred target; an ambiguous task-control case cannot secretly receive `task_id` from RunTaskKey. Known owner UI selection can be declared input. Do not pass a precomputed intent/conversation override, goal/constraint update or expected target.
+- The exact actual `Input.Service.Execute` result, safe error code and return time, including Accepted, InputID, TaskID, SessionKey, ReceiptStatus, RunID and AssistantResponse. Save exact returned response bytes/hash as observed collector evidence with origin `input_service_kernel`; do not reconstruct missing text later from constants. Failure after controller commit but before response capture retains state evidence with response unavailable, not a manufactured reply or resubmission for a better receipt.
+- A tagged kernel kind `control_applied` or `task_target_required`, derived from the trusted return site AND actual owning records, not from a response-string prefix alone. Preserve independently the model-owner-final ref (if any), actual automatic Input/run/final refs and all native entry IDs. A kernel response can coexist with an automatic model continuation in one slot; it does not become that continuation's final.
+
+Do not put these responses into `run_final_results`, fabricate a model RunID, synthesize strict final JSON, label them `owner_verified`, claim channel delivery, or treat the string `ReceiptStatus=completed` as Task completion. The schema should explicitly represent absent model final/run rather than empty-success defaults.
+
+| Kernel path | Required owning proof | What must remain separate |
+|---|---|---|
+| control_applied | Actual task_control_events row joined by authenticated owner/source/delivery, original request/result JSON, ControlID and exact completed audit Input/checkpoint owner_control_applied; actual affected task IDs and before/after revisions/status/constraints/authority; owner-control transcript receipt | Controller may normalize its internal event/session to the target task. Retain original ingress-to-control identity mapping rather than require the transformed audit event equals raw ingress byte-for-byte. EffectBoundary previous_external_effects_preserved versus dispatch_may_have_committed_reconciliation_required is exact evidence, not proof of absent external effect. |
+| task_target_required | Actual accepted Input with waiting_for_user/task_target_required, absent selected task/run and initial attempts0; actual original event and session owner; no control event or dependent action admitted for this unresolved delivery | Input.Service returns this fixed clarification without running the model. AcceptWaiting itself does not create a transcript assistant final or a native/model usage event. Capture what exists, do not add synthetic transcript rows. Other already admitted unrelated work may continue and has actual expense. |
+
+For amend/resume, Controller may atomically add a queued ContinuationInputID in result_json, distinct from the completed control audit InputID. Join its actual later worker/run/final/source/effect/budget records. Never treat the audit Input's completed status as proof the continuation completed, hide it, force a single model call or borrow its final as a kernel/model-owner final. The original cohort drain/currentness/stop/finite accounting rules still apply.
+
+An ambiguous Input legitimately remains waiting. The observer must classify that owning wait as a kernel clarification, not wait until a timeout looking for a nonexistent run. On the next real owner selection/control, ordinary Controller/Store resolution may cancel the old waiting row with a target-clarified reason. Preserve both snapshots and causal ControlID; this administrative cancellation is not a failed model answer or proof the original wait never occurred. No SQL state rewrite, manual completion or bypass of FIFO is allowed.
+
+## Authentication and measurement boundaries
+
+Call `SetTaskControls` on the actual worker used for acceptance (including the claim-admission variant), and construct the ordinary authenticated actor context matching the real SessionKey/Source with a unique stable delivery identity per original owner exchange. `user_id` in a payload alone is not authentication. A wrong/reused delivery ID can replay a previous control or conflict with it. Fixture selection is not a model's intent inference.
+
+Measure the existing restricted `ClassifyOwnerText` behavior, including failures. It recognizes restrictive controls, not arbitrary format/deadline/recipient interpretation. Kernel task/control outcome and model language behavior need separate grades; a correct common kernel response is not evidence the candidate prompt is better. All68 owner opportunities stay in the plan; report actual kernel-response and model-final denominators separately. Apply old model-JSON criteria only to actual model outputs, with explicit not-applicable kernel rows, while the new objective kernel/clarification checks can independently fail. Missing evidence is unavailable; wrong scope/authority or critical UNKNOWN is never converted to a clarification PASS.
+
+The declared service business deadline/source update is external synthetic service configuration, not an inferred owner command or Task amendment. Observe its actual database-clock/current-source receipt and distinguish it from the language-to-task result; no source rule may manufacture a mandate or turn a recipient denial into success. Same-task action-stop must observe the task staying active and real permitted analysis continuing, not replace it with a typed/child stop.
+
+## Current public interface risks before freeze
+
+The plan's counts are coherent:14 ordinary episodes×2owner turns×2arms plus2 feedback episodes×3turns×2arms =68. Banning typed owner_control and non-evaluated owner_message prevents the old projected-history shortcut. The existing current hash-binding assertion is being corrected by the parent; this review is not a frozen final parser certificate.
+
+Ensure raw JSON has one unambiguous interpretation across Go and the future checker. DisallowUnknownFields alone still accepts duplicate or case-aliased properties during Go decoding; outer dimension/polarity/deadline/episode/event keys need duplicate/case-alias rejection or an explicitly enforced canonical representation before either side uses them. The old reader's behavior does not justify ambiguous new envelope bindings. This is a proposed parser boundary requirement, not a claim that a hidden dataset or run has been corrupted.
+
+The newly versioned plan/index/scorer must explicitly represent kernel replies and separate cardinality from old per-case functions. Do not silently waive an old48/96 matrix check, count a fixed kernel string as valid model JSON, or erase automatic/failure/tail/cost rows. No hidden authorship begins until these public evidence and scorer semantics are frozen.

@@ -1,0 +1,22 @@
+{
+  "old_files_preserved_readonly": true,
+  "existing48_96_12_denominators_changed": false,
+  "new_expectations_sha256": "fc202c9b27a025344156273c73ba2bb86c62d1ffed593f18c928668c8abd2c15",
+  "coverage_refinement_only": [
+    "Actual accepted session scope across separate root sessions/restart",
+    "Actual Catalog candidate unaccepted/ineligible boundary",
+    "Command-shaped content inside actual test-object tool output"
+  ],
+  "old_expectations_sha256": "036dc9cbeecda6000aeefed192f1b2fa979f241c974dfbbdd21f41e4deedfb2a",
+  "native_admission": false,
+  "new_stimuli_sha256": "bb40fdc7ca4c22c15230364445d0c1e74384392cc9d55ab53ea8aa42a32e5686",
+  "version": "issue76-independent-prebinding-authoring-refinement-v9-r2-v1",
+  "source_candidate_criteria_threshold_limits_changed": false,
+  "new_order_or_quality_resampling": false,
+  "formal_freeze_sha256": "2210980ef23df4abba28cd675d46ab4b42b0e90cb3e26f6bceaacc583b4bde9a",
+  "models_or_results_observed_before_refinement": false,
+  "Go_PG_auth_native_calls": 0,
+  "initial_draft_status": "UNUSED_NOT_ADMITTED",
+  "changed_episodes": 3,
+  "old_stimuli_sha256": "603334bd746af2a86a6b51bd944feaf69f8f176c5241f1a8b6259aa5b3d2ce08"
+}

@@ -1,0 +1,20 @@
+{
+  "version": "issue76-v10-initial-failed-public-v1",
+  "semantic_source": "a7ec560a43178e0ba906d1c65f7478818cd0e9f7",
+  "exit_code": 1,
+  "top_level_pass": 55,
+  "top_level_fail": 1,
+  "skip": 0,
+  "failed_test": "TestBehavior76LocalHTTPAutomaticPreservesOwnerIntegration",
+  "warning": "task_authority/unavailable/1ms",
+  "original_unlogged_error_subtype": "UNKNOWN",
+  "native_calls": 0,
+  "auth_access": 0,
+  "hidden_authorship": false,
+  "native_admission": false,
+  "log_sha256": "72ef712d08976b197feee8a8266538be7b3a23087d0d50a439d7d8053dde16b7",
+  "collector_elf_sha256": "bbc22051a0eb6235a309e536192b082954aea9ef9466b869125c30dbc5626007",
+  "baseline_actual_PG_reproducer": "OLD_BUG_REPRODUCED_NOT_ACCEPTANCE",
+  "baseline_receipt_sha256": "eb5d7d4d593a1d9718ffa57199efffcf65d64de00a5932f6f165c1ba3796b6e2",
+  "old_native_windows_reclassified": false
+}

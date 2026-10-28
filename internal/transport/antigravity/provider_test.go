@@ -516,8 +516,14 @@ func TestCatalogSchemasAreSupported(t *testing.T) {
 		t.Fatal("invalid catalog fixture")
 	}
 	for _, tool := range catalog.Tools {
-		if err := validateSchema(tool.Schema); err != nil {
+		// Catalog contracts retain Broker bounds. Exercise the actual native
+		// declaration conversion before checking the provider dialect.
+		native, err := nativeToolSchema(tool.Schema)
+		if err != nil {
 			t.Fatalf("unsupported current schema %s: %v", tool.Name, err)
+		}
+		if err := validateSchema(string(native)); err != nil {
+			t.Fatalf("unsupported native schema %s: %v", tool.Name, err)
 		}
 	}
 	// Representative typed credential ref used by broker-aware browser fields.

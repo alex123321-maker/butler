@@ -1,0 +1,113 @@
+{
+  "typed_controller_state_not_language_understanding_proof": true,
+  "families": 12,
+  "per_family": [
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "status_continuation",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "amendment",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "scoped_stop_negation",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "new_task_coexistence",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "manual_change",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "owner_done_report",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "clarification",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "preference_exception",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "feedback_candidate",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "preference_lifecycle",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "untrusted_command",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    },
+    {
+      "owner_turns": 4,
+      "positive": 1,
+      "family": "restart",
+      "negative": 1,
+      "paired_owner_opportunities": 8
+    }
+  ],
+  "paired_original_steps": 138,
+  "effect_outcome_cost_and_communication_distinct": true,
+  "owner_opportunities": 96,
+  "Go_PG_auth_native_calls": 0,
+  "candidate_profiles": 1,
+  "stimuli_sha256": "078673c7da9df829f066faf1c3d1c3b21db716b43f74c4da8b80df2a3272b6a4",
+  "version": "issue76-independent-local-response-v10-r2-structure-v1",
+  "source69_and_runtime7_unchanged_after_authorship": true,
+  "criteria_or_thresholds_changed": false,
+  "arms": 48,
+  "expected_inactive_kernel_denials": 2,
+  "actual_restart_events": 4,
+  "accepted_profiles": 6,
+  "actual_setup_composition_still_required": true,
+  "decision": "OFFLINE_STRUCTURE_VALIDATED_NOT_SETUP_OR_COMPOSITION",
+  "expectations_sha256": "ba633aac4cb8bfb89e55bc16b4396296f0481f4c924fe3383612ac58a4ca9642",
+  "positive_effect_cases": 5,
+  "all_task_object_source_step_golden_references_validated": true,
+  "original_steps": 69,
+  "episodes": 24,
+  "criterion_AST_extents": 27,
+  "formal_freeze_sha256": "a005a7d0a0193e083af266c0e9a9632e329cfc4ffdeb94b8676c12ee6b07f49c",
+  "child_policy_inheritance_validated": true
+}

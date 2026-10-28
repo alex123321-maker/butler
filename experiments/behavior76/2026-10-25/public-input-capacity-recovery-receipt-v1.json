@@ -1,0 +1,91 @@
+{
+  "version": "issue76-independent-capacity-input-gate-v1",
+  "scope": "Local operational evidence only",
+  "history": {
+    "measured": 372,
+    "closed_windows": 4,
+    "unknown_usage": 4,
+    "known_tokens": 2867576,
+    "all_original_jsonb_rows_equal": true,
+    "original_export_sha256": "5170b9c151737939adacd5831a6bf869ca08c7aedba2806ca4cf4775c5fd723e",
+    "admissions": 376
+  },
+  "disposable_cleanup": {
+    "native_control_fixture_relations_absent": true,
+    "drop_force": false,
+    "other_connections": 0,
+    "remaining_named_databases": 0,
+    "metadata_guards_passed": true,
+    "all_settings_empty": true,
+    "names": [
+      "behavior76_checker_input_20261025_test",
+      "behavior76_checker_input_20261026_test",
+      "behavior76_checker_input_final_20261026_test"
+    ]
+  },
+  "resource_observations": {
+    "historical_latency_cause": "unresolved; no causal attribution to storage",
+    "max_wal_size": "128MB",
+    "min_wal_size": "32MB",
+    "fsync": "on",
+    "prospective_variable_change": true,
+    "root_available_at_start_display": "2.8G",
+    "postgres": "17.11",
+    "go": "1.27.2",
+    "root_capacity_display": "3.9G",
+    "root_device": "/dev/loop0",
+    "jit_available": false
+  },
+  "input_gate": {
+    "count": 1,
+    "data_race": 0,
+    "independent_test_sha256": "9b2002efcc47456a47f2ffa459ff6b23d4caea24f010854b3b34772bf16133f1",
+    "result": "PASS",
+    "database": "behavior76_checker_input_postcapacity_20261026_test",
+    "seconds": 186.796,
+    "source_hashes_before_after_equal": true,
+    "claim_admission_sha256": "cde1f6ad962261acdeff361ed6b7011ec9619053201f6b49aaa7912425bacd6a",
+    "top_level_pass": 44,
+    "race": true,
+    "fail": 0,
+    "skip": 0,
+    "service_sha256": "6755b593d18157dddc5a15054196e2831f675d54556e30efcff85e92f9ab74bc"
+  },
+  "prior_infrastructure_failure": {
+    "sqlstate": "53100",
+    "result": "FAIL",
+    "retained": true,
+    "seconds": 133.467
+  },
+  "no_native_calls": true,
+  "mapping_read": false,
+  "hidden_quality_disclosed": false,
+  "native_or_control_authorship_admission": false,
+  "files": [
+    {
+      "path": "history-after-capacity-v1.log",
+      "bytes": 615,
+      "sha256": "32873859e6a00f42c43d5b38a0d8dc2fbbebd812fc6be916dd15389994319cce"
+    },
+    {
+      "path": "disposable-input-db-metadata-v2.log",
+      "bytes": 940,
+      "sha256": "3f3be527ce4e8d012e321c70d463778e66c1090c44f14d3671dcecc7a6bba61d"
+    },
+    {
+      "path": "disposable-input-db-drop-v1.log",
+      "bytes": 1011,
+      "sha256": "12fff9e1111156d0fc84f0a27f6dda3ca735d36d5e052f09187f6084558288da"
+    },
+    {
+      "path": "input-package-race-v4.log",
+      "bytes": 96925,
+      "sha256": "0709961c978d253c44d5251d2b49214945c99a6678f6d6797f384bd1a4f2b564"
+    },
+    {
+      "path": "input-package-race-v3.log",
+      "bytes": 85465,
+      "sha256": "da8525b9a01a52ac1ea2534519ce06f8df2cd164d01f5385bfdbc731537d26f7"
+    }
+  ]
+}

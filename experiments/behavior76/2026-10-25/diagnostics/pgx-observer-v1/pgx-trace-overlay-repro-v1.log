@@ -1,0 +1,1 @@
+go: overlay contains a replacement for /module-cache/github.com/jackc/pgx/v5@v5.8.0/conn.go. Files beneath GOMODCACHE (/module-cache) must not be replaced.

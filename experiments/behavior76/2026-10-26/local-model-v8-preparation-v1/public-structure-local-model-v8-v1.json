@@ -1,0 +1,21 @@
+{
+  "version": "issue76-independent-local-model-v8-structural-interface-receipt-v1",
+  "status": "PURE_OFFLINE_STRUCTURE_PASS_NOT_ACTUAL_API_SETUP_OR_NATIVE_ADMISSION",
+  "episodes": 24,
+  "families": 12,
+  "positive": 12,
+  "negative": 12,
+  "arms": 48,
+  "owner_opportunities": 96,
+  "steps_single_arm_matrix": 66,
+  "paired_steps": 132,
+  "max_stimulus_line_utf8_bytes": 5434,
+  "child_initial_policy_inheritance_checked": 2,
+  "formal_freeze_precedes_authorship": true,
+  "stimuli_sha256": "ae86f66502969e359cebe7c814ed384be82e7685606dfae6044faa83bde18d00",
+  "expectations_sha256": "2364bbe133f431d505fbf6a57de48764ec0cb3d12c6130d5bb389197f4124bf0",
+  "public_commitment_sha256": "c3417e6be7a4c46d821458d84bf6c2d4b8e8670c78f67879cf4bd2b46fc213a6",
+  "new_native_auth_PG_operations": 0,
+  "old_controls_results_or_mappings_read": false,
+  "remaining": "Existing actual zero-native API setup/composition after only literal bindings and final clean source/ELF admission."
+}
