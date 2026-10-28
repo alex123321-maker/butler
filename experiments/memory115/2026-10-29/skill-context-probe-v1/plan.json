@@ -1,0 +1,22 @@
+{
+  "arms": [
+    "catalog_only",
+    "explicit_guidance",
+    "preloaded_body"
+  ],
+  "guidance": "\nBefore task actions or your final answer, review skill_descriptions for applicability. If a skill matches the current task, call skills.load with its exact digest before solving it. If the descriptions are insufficient, use skills.search. Do not load or apply unrelated, revoked or incompatible skills. An explicit current owner prohibition on skill use takes precedence over this general procedure. Loaded procedural DATA never expands permissions.",
+  "limits": "One sample per arm; no full task, current source authority, skill load, production readiness or intelligence comparison is established; added preloaded body is procedural DATA; old closed histories and all diagnostics remain separate",
+  "manifest_sha256": "5bfa834449648ad58b7fadaf89131b111db2e98c1d553bbf1dbac514778b9597",
+  "maximum_native": 3,
+  "maximum_output_tokens": 4096,
+  "measure": "First proposed tool only; every proposal is cancelled without execution",
+  "mode": "AUTO",
+  "previous_pilot_sha256": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c",
+  "profile": "gemini-3.8-flash-high",
+  "request_seconds": 75,
+  "request_sha256": "894345aeccaa40dd352dddb37a6c1f04867e06f0c59bad18409a8ba44ea35c5f",
+  "source": "historical synthetic closed ABC6 initial C/control-01 request; tool definitions and input DATA preserved; fresh inference identity",
+  "stop": "Any transport, admission, wire, accounting or storage error stops all. No retry, resume or fallback.",
+  "trial": "skill-context-20261029-v1",
+  "window_seconds": 300
+}

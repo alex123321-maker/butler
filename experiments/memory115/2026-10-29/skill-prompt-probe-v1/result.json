@@ -1,0 +1,480 @@
+{
+  "actual_business_tools_executed": 0,
+  "invoice_cost": "unknown",
+  "old_abc_entries": 503,
+  "old_abc_known_tokens": 4320708,
+  "old_abc_unknown": 3,
+  "old_separate_force_probe_tokens": 1978,
+  "outcomes": [
+    {
+      "sequence": 1,
+      "Arm": "catalog_only",
+      "Case": "ordinary_sort",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 1,
+      "SuccessfulLoads": 1,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    },
+    {
+      "sequence": 2,
+      "Arm": "explicit_guidance",
+      "Case": "ordinary_sort",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 1,
+      "SuccessfulLoads": 1,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    },
+    {
+      "sequence": 3,
+      "Arm": "preloaded_body",
+      "Case": "ordinary_sort",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": true,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    },
+    {
+      "sequence": 4,
+      "Arm": "explicit_guidance",
+      "Case": "project_convention",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 1,
+      "SuccessfulLoads": 1,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "N[9|5|2]"
+    },
+    {
+      "sequence": 5,
+      "Arm": "preloaded_body",
+      "Case": "project_convention",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": true,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "N[9|5|2]"
+    },
+    {
+      "sequence": 6,
+      "Arm": "catalog_only",
+      "Case": "project_convention",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 1,
+      "SuccessfulLoads": 1,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "N[9|5|2]"
+    },
+    {
+      "sequence": 7,
+      "Arm": "preloaded_body",
+      "Case": "unrelated",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": true,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "cat"
+    },
+    {
+      "sequence": 8,
+      "Arm": "catalog_only",
+      "Case": "unrelated",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "cat"
+    },
+    {
+      "sequence": 9,
+      "Arm": "explicit_guidance",
+      "Case": "unrelated",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "cat"
+    },
+    {
+      "sequence": 10,
+      "Arm": "catalog_only",
+      "Case": "owner_forbids",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    },
+    {
+      "sequence": 11,
+      "Arm": "preloaded_body",
+      "Case": "owner_forbids",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    },
+    {
+      "sequence": 12,
+      "Arm": "explicit_guidance",
+      "Case": "owner_forbids",
+      "Status": "final",
+      "Searches": 0,
+      "LoadAttempts": 0,
+      "SuccessfulLoads": 0,
+      "Preloaded": false,
+      "TaskCorrect": true,
+      "ForbiddenCall": false,
+      "Final": "2,2,5,9"
+    }
+  ],
+  "production_changed": false,
+  "separate_diagnostic": true,
+  "source": "09b4c563da5998ac9baccde44d0405244b08032b",
+  "trial": "skill-prompt-20261029-v1",
+  "turns": [
+    {
+      "sequence": 1,
+      "slot": 1,
+      "turn": 1,
+      "started": "2026-10-28T17:12:35.251904885Z",
+      "elapsed_millis": 9996,
+      "usage": {
+        "InputTokens": 353,
+        "OutputTokens": 78,
+        "TotalTokens": 824,
+        "ThinkingTokens": 393
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-478c53d07020d60b1c7a442bfff19aa5-1",
+        "ToolName": "skills.load",
+        "ArgsJSON": "{\"digest\": \"f5178ce6e36ab6e436e9f948a446c0991571b00b4eecb7c33d39e0193c3aae3f\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 2,
+      "slot": 1,
+      "turn": 2,
+      "started": "2026-10-28T17:12:45.256762302Z",
+      "elapsed_millis": 6819,
+      "usage": {
+        "InputTokens": 995,
+        "OutputTokens": 7,
+        "TotalTokens": 1437,
+        "ThinkingTokens": 435
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 3,
+      "slot": 2,
+      "turn": 1,
+      "started": "2026-10-28T17:12:52.086370022Z",
+      "elapsed_millis": 7178,
+      "usage": {
+        "InputTokens": 434,
+        "OutputTokens": 78,
+        "TotalTokens": 1076,
+        "ThinkingTokens": 564
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-77fe864059ee94b10d0442969d65732d-1",
+        "ToolName": "skills.load",
+        "ArgsJSON": "{\"digest\": \"f5178ce6e36ab6e436e9f948a446c0991571b00b4eecb7c33d39e0193c3aae3f\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 4,
+      "slot": 2,
+      "turn": 2,
+      "started": "2026-10-28T17:12:59.271660098Z",
+      "elapsed_millis": 7255,
+      "usage": {
+        "InputTokens": 1247,
+        "OutputTokens": 7,
+        "TotalTokens": 1711,
+        "ThinkingTokens": 457
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 5,
+      "slot": 3,
+      "turn": 1,
+      "started": "2026-10-28T17:13:06.533320486Z",
+      "elapsed_millis": 17107,
+      "usage": {
+        "InputTokens": 528,
+        "OutputTokens": 7,
+        "TotalTokens": 2297,
+        "ThinkingTokens": 1762
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 6,
+      "slot": 4,
+      "turn": 1,
+      "started": "2026-10-28T17:13:23.646912379Z",
+      "elapsed_millis": 9988,
+      "usage": {
+        "InputTokens": 439,
+        "OutputTokens": 78,
+        "TotalTokens": 944,
+        "ThinkingTokens": 427
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-fd69bbaa555e2994f325cda34f4bd5d5-1",
+        "ToolName": "skills.load",
+        "ArgsJSON": "{\"digest\": \"f5178ce6e36ab6e436e9f948a446c0991571b00b4eecb7c33d39e0193c3aae3f\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 7,
+      "slot": 4,
+      "turn": 2,
+      "started": "2026-10-28T17:13:33.642774975Z",
+      "elapsed_millis": 5344,
+      "usage": {
+        "InputTokens": 1115,
+        "OutputTokens": 8,
+        "TotalTokens": 1369,
+        "ThinkingTokens": 246
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "N[9|5|2]",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 8,
+      "slot": 5,
+      "turn": 1,
+      "started": "2026-10-28T17:13:38.993783192Z",
+      "elapsed_millis": 13076,
+      "usage": {
+        "InputTokens": 533,
+        "OutputTokens": 8,
+        "TotalTokens": 1955,
+        "ThinkingTokens": 1414
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "N[9|5|2]",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 9,
+      "slot": 6,
+      "turn": 1,
+      "started": "2026-10-28T17:13:52.081994852Z",
+      "elapsed_millis": 5445,
+      "usage": {
+        "InputTokens": 358,
+        "OutputTokens": 78,
+        "TotalTokens": 688,
+        "ThinkingTokens": 252
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": {
+        "ToolCallRef": "agy-40f490094171bab9d1f7e055ab07bb5b-1",
+        "ToolName": "skills.load",
+        "ArgsJSON": "{\"digest\": \"f5178ce6e36ab6e436e9f948a446c0991571b00b4eecb7c33d39e0193c3aae3f\"}",
+        "SequenceNo": 1
+      },
+      "final": null,
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 10,
+      "slot": 6,
+      "turn": 2,
+      "started": "2026-10-28T17:13:57.533980575Z",
+      "elapsed_millis": 4841,
+      "usage": {
+        "InputTokens": 859,
+        "OutputTokens": 8,
+        "TotalTokens": 1153,
+        "ThinkingTokens": 286
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "N[9|5|2]",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 11,
+      "slot": 7,
+      "turn": 1,
+      "started": "2026-10-28T17:14:02.381275786Z",
+      "elapsed_millis": 4582,
+      "usage": {
+        "InputTokens": 518,
+        "OutputTokens": 1,
+        "TotalTokens": 697,
+        "ThinkingTokens": 178
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "cat",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 12,
+      "slot": 8,
+      "turn": 1,
+      "started": "2026-10-28T17:14:06.970051471Z",
+      "elapsed_millis": 3851,
+      "usage": {
+        "InputTokens": 343,
+        "OutputTokens": 1,
+        "TotalTokens": 510,
+        "ThinkingTokens": 166
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "cat",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 13,
+      "slot": 9,
+      "turn": 1,
+      "started": "2026-10-28T17:14:10.830438223Z",
+      "elapsed_millis": 5198,
+      "usage": {
+        "InputTokens": 424,
+        "OutputTokens": 1,
+        "TotalTokens": 691,
+        "ThinkingTokens": 266
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "cat",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 14,
+      "slot": 10,
+      "turn": 1,
+      "started": "2026-10-28T17:14:16.034726157Z",
+      "elapsed_millis": 5530,
+      "usage": {
+        "InputTokens": 366,
+        "OutputTokens": 7,
+        "TotalTokens": 707,
+        "ThinkingTokens": 334
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 15,
+      "slot": 11,
+      "turn": 1,
+      "started": "2026-10-28T17:14:21.575639977Z",
+      "elapsed_millis": 7043,
+      "usage": {
+        "InputTokens": 366,
+        "OutputTokens": 7,
+        "TotalTokens": 1007,
+        "ThinkingTokens": 634
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    },
+    {
+      "sequence": 16,
+      "slot": 12,
+      "turn": 1,
+      "started": "2026-10-28T17:14:28.62907952Z",
+      "elapsed_millis": 6986,
+      "usage": {
+        "InputTokens": 447,
+        "OutputTokens": 7,
+        "TotalTokens": 931,
+        "ThinkingTokens": 477
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "proposal": null,
+      "final": "2,2,5,9",
+      "error_code": "",
+      "wire_auto": true
+    }
+  ]
+}

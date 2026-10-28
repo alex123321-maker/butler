@@ -1,0 +1,16 @@
+{
+  "business_actions": 0,
+  "manifest_bytes": 5913,
+  "manifest_sha256": "5bfa834449648ad58b7fadaf89131b111db2e98c1d553bbf1dbac514778b9597",
+  "measure": "first native tool proposal only; no full task, no skill execution, no product acceptance",
+  "planned_new_native_maximum": 3,
+  "previous_pilot_sha256": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c",
+  "previous_separate_force_native": 1,
+  "previous_separate_prompt_native": 16,
+  "prior_closed_abc_native": 503,
+  "repetitions": 1,
+  "request_bytes": 28029,
+  "request_sha256": "894345aeccaa40dd352dddb37a6c1f04867e06f0c59bad18409a8ba44ea35c5f",
+  "source": "closed ABC6 C/control-01 initial request; historical synthetic fixture only",
+  "tools": 9
+}
