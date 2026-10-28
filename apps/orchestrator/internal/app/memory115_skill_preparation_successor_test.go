@@ -48,7 +48,7 @@ type local115SkillHistoryBinding struct {
 
 func validateLocal115SkillHistoryBinding(h experienceNativeLineage) error {
 	b := h.SkillPreparationSuccessor
-	if b != nil && b.Platform == laba115RepairedPlatform {
+	if b != nil && (b.Platform == laba115RepairedPlatform || b.Platform == laba115ReservedPlatform) {
 		return validateLaba115Continuation(h)
 	}
 	if b != nil && !valid115SkillPlatform(b.Platform, b.HostDecisionSHA256) {

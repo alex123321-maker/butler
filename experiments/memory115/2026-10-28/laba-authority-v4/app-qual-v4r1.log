@@ -1,0 +1,252 @@
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback
+=== RUN   TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim
+--- PASS: TestLocal115ClosedHandbackProfileBoundaries (0.01s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/lost_backend_quiescence (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/changed_native_outcome (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/forced_cleanup (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/claimed_lab_handback (0.00s)
+    --- PASS: TestLocal115ClosedHandbackProfileBoundaries/omitted_false_claim (0.00s)
+=== RUN   TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution
+--- PASS: TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution (0.00s)
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy
+--- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy (0.00s)
+=== RUN   TestExperienceCompoundSourceBound
+=== RUN   TestExperienceCompoundSourceBound/catalog_default
+=== RUN   TestExperienceCompoundSourceBound/experience_default
+=== RUN   TestExperienceCompoundSourceBound/catalog_explicit
+=== RUN   TestExperienceCompoundSourceBound/experience_compound
+=== RUN   TestExperienceCompoundSourceBound/existing_ceiling
+=== RUN   TestExperienceCompoundSourceBound/invalid_zero
+=== RUN   TestExperienceCompoundSourceBound/invalid_short
+=== RUN   TestExperienceCompoundSourceBound/invalid_long
+--- PASS: TestExperienceCompoundSourceBound (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/catalog_default (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/experience_default (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/catalog_explicit (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/experience_compound (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/existing_ceiling (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_zero (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_short (0.00s)
+    --- PASS: TestExperienceCompoundSourceBound/invalid_long (0.00s)
+=== RUN   TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration
+--- PASS: TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration (7.56s)
+=== RUN   TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration
+--- PASS: TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration (10.68s)
+=== RUN   TestExperienceNativeTemplateRejectsAuthBeforeFreezeIntegration
+--- PASS: TestExperienceNativeTemplateRejectsAuthBeforeFreezeIntegration (1.31s)
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-normal
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-receipt-outage
+=== RUN   TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v2-normal
+--- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-normal (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v1-receipt-outage (0.00s)
+    --- PASS: TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile/project-v2-normal (0.00s)
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_new_id
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_refund
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/missing_population
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/aggregated_new_models
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/changed_same_id
+=== RUN   TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/same_operation_new_id
+--- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds (0.02s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_new_id (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/history_refund (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/missing_population (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/aggregated_new_models (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/changed_same_id (0.00s)
+    --- PASS: TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds/same_operation_new_id (0.00s)
+=== RUN   TestExperienceNativeStorageClaimCannotReopenCohortIntegration
+--- PASS: TestExperienceNativeStorageClaimCannotReopenCohortIntegration (1.15s)
+=== RUN   TestExperienceNativeFailedSetupExportsAllAllocatedQuotePopulationsIntegration
+--- PASS: TestExperienceNativeFailedSetupExportsAllAllocatedQuotePopulationsIntegration (1.50s)
+=== RUN   TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC
+--- PASS: TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC (0.00s)
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_identity
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_environment
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_permission
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_reset
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/changed_profile
+=== RUN   TestExperienceNativeMechanicalInputsFailClosed/unknown_write
+--- PASS: TestExperienceNativeMechanicalInputsFailClosed (0.01s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_identity (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_environment (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_permission (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_reset (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/changed_profile (0.00s)
+    --- PASS: TestExperienceNativeMechanicalInputsFailClosed/unknown_write (0.00s)
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-01
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-02
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-03
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-04
+2026/10/28 12:39:36 INFO run created component=run run_id=run-1793191176926903947-94cb465f4d7ff386 session_key=web:a7a5f74877d720881820147605415811f720b6416c516f0554505f4b9a424339 state=created
+2026/10/28 12:39:36 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=created to_state=queued
+2026/10/28 12:39:36 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=queued to_state=acquired
+2026/10/28 12:39:36 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=acquired to_state=preparing
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=preparing to_state=model_running
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:37 INFO run transitioned component=run run_id=run-1793191176926903947-94cb465f4d7ff386 from_state=tool_pending to_state=tool_running
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-01
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-02
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-03
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-04
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-05
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-06
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-07
+=== RUN   TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-08
+--- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration (2.36s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-01 (0.03s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-02 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-03 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/original-04 (0.72s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-01 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-02 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-03 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-04 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-05 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-06 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-07 (0.02s)
+    --- PASS: TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration/control-08 (0.02s)
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration/0
+2026/10/28 12:39:39 INFO run created component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 session_key=web:f05d2efba75cf3e19e85afda6eb089593fe88afd24d4c8b287645708318291c4 state=created
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=created to_state=queued
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=queued to_state=acquired
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=acquired to_state=preparing
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=preparing to_state=model_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:39 INFO run transitioned component=run run_id=run-1793191179142536352-9b6aa4e98cca8139 from_state=model_running to_state=finalizing
+=== RUN   TestExperienceNativeOrdinarySourcePipelineIntegration/1
+2026/10/28 12:39:40 INFO run created component=run run_id=run-1793191180786177637-b9d95bfb222c7220 session_key=web:551786a357e0e99bc1d957ea7c71f0aaddbcc05f2de725571972851a27ae65b1 state=created
+2026/10/28 12:39:40 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=created to_state=queued
+2026/10/28 12:39:40 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=queued to_state=acquired
+2026/10/28 12:39:40 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=acquired to_state=preparing
+2026/10/28 12:39:40 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=preparing to_state=model_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:41 INFO run transitioned component=run run_id=run-1793191180786177637-b9d95bfb222c7220 from_state=model_running to_state=finalizing
+--- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration (3.88s)
+    --- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration/0 (1.69s)
+    --- PASS: TestExperienceNativeOrdinarySourcePipelineIntegration/1 (1.52s)
+=== RUN   TestExperienceNativePrivateParentPreflightPrecedesAuth
+--- PASS: TestExperienceNativePrivateParentPreflightPrecedesAuth (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.12s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.01s)
+=== RUN   TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes
+--- PASS: TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes (0.01s)
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/start
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/tool_result
+=== RUN   TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/continuation
+--- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage (0.04s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/start (0.01s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/tool_result (0.01s)
+    --- PASS: TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage/continuation (0.01s)
+=== RUN   TestExperienceNativeAbortRetainsGlobalPartitionIntegration
+--- PASS: TestExperienceNativeAbortRetainsGlobalPartitionIntegration (0.69s)
+=== RUN   TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration
+--- PASS: TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration (1.46s)
+=== RUN   TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration
+2026/10/28 12:39:45 INFO run created component=run run_id=run-1793191185327460307-c209303eb66dfadb session_key=web:4f9537b7999f6334e9ae98bcef880a83547df3b990831a646ba96bbf6a466dab state=created
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=created to_state=queued
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=queued to_state=acquired
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=acquired to_state=preparing
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=preparing to_state=model_running
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=model_running to_state=tool_pending
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=model_running to_state=tool_pending
+2026/10/28 12:39:45 INFO run transitioned component=run run_id=run-1793191185327460307-c209303eb66dfadb from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:46 INFO run created component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 session_key=web:4f9537b7999f6334e9ae98bcef880a83547df3b990831a646ba96bbf6a466dab state=created
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=created to_state=queued
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=queued to_state=acquired
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=acquired to_state=preparing
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=preparing to_state=model_running
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:46 INFO run transitioned component=run run_id=run-1793191186276134006-2af8edd3f488c9e9 from_state=model_running to_state=finalizing
+2026/10/28 12:39:50 INFO run created component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 session_key=web:f55e001d92cd34ce71633d2a759f44e14168d93cac9d749265f2de452cff92cf state=created
+2026/10/28 12:39:50 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=created to_state=queued
+2026/10/28 12:39:50 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=queued to_state=acquired
+2026/10/28 12:39:50 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=acquired to_state=preparing
+2026/10/28 12:39:51 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=preparing to_state=model_running
+2026/10/28 12:39:51 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=model_running to_state=tool_pending
+2026/10/28 12:39:51 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=tool_pending to_state=tool_running
+2026/10/28 12:39:51 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 12:39:51 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 12:39:52 INFO run transitioned component=run run_id=run-1793191190877468514-ac8e5ccf854a6992 from_state=model_running to_state=finalizing
+--- PASS: TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration (10.05s)
+=== RUN   TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative
+--- PASS: TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	41.942s

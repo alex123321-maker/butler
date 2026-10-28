@@ -1,0 +1,11 @@
+[
+  {
+    "run_id": "run-1793189410646581217-4f5f7bf10fa23649",
+    "status": "blocked",
+    "attempts": 1,
+    "max_attempts": 1,
+    "error_code": "execution_stopped",
+    "error_message": "execution_authority_check_failed\nterminal_working_memory_persistence_failed\nterminal_run_failed_transition_persistence_failed",
+    "updated_at": "2026-10-28T12:11:04.692865+00:00"
+  }
+]

@@ -119,3 +119,34 @@ PostgreSQL. Its source/prepared/history directories and operator identity are
 separate from the failed cohort. Only a fresh qualified immutable build, recipe
 and preseal can bind it. The repaired relay has its own new process; the old
 five-minute relay remains stopped. Shared production services are untouched.
+
+## Authority-reserved fixture continuation
+
+The repaired-relay v3 execution also failed during skill generation. Its Input
+retains `execution_authority_check_failed` and both terminal persistence failure
+labels; the last admission is a cancelled request with NULL usage. Its physical
+cause is not uniquely recoverable because that fixture discarded Core logs.
+It is not reclassified as a transient provider failure or an accepted skill.
+The closed280 leaf553e5b4e preserves all169 raw files and recursively consumes
+the previous257 leaf:280native/277known/3unknown,281product/277observed/4NULL/
+1withoutNative,2154480 known full tokens. The same original closure validators
+check its records, scope, quote union and process/auth exit; no reset occurs.
+
+The fixture had omitted App.New's separate authority capacity. Its corrected
+constructor keeps the existing two business connections and adds exactly one
+bounded observation connection, wired through the existing Task, lease, Budget
+and Catalog observation constructors. A real capacity regression fills the
+business pool: the old reader times out, the composed reserved lease/task/source
+checks pass within the unchanged750ms deadline, and a genuine task revocation
+still denies. New private warning logs preserve observer phase/classification
+without changing Core or its cancellation rules. Existing source/tool policies,
+recipient permissions, corpus, rubric and model inputs are not tuned.
+
+The separately typed `butler.experience.laba-authority-reserved-window.v3`
+continues under the same explicit owner instruction, reads only the latest280
+closure and uses `memory115_laba_abc_v4_test` with new source/artifact/preseal
+bindings. Previous recipe types and consumed databases remain unchanged.
+All57 scripted collector stages are rechecked for this composition change;
+this remains mechanics evidence, not native benefit. A corrected fixture is
+not a deployment, a production Core repair or permission to bypass a real
+authority failure.

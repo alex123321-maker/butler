@@ -1,0 +1,4 @@
+=== RUN   TestLaba115PrepareRepairedRelayRecipe
+    memory115_laba_continuation_test.go:214: PREPARED_REPAIRED_RELAY sha256=720ac0997a0bfef54b2a15817170abd5f13a8abaa683209975a63fffaf7bd389 native=0 auth=0 retained280/3unknown/2154480knownTokens
+--- PASS: TestLaba115PrepareRepairedRelayRecipe (28.04s)
+PASS

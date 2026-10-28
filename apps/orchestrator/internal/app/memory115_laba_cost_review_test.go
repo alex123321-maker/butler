@@ -12,11 +12,16 @@ import (
 // Post-exit accounting only. This invokes the original closed-window validators;
 // it creates no native history recipe, provider, database or admission authority.
 func TestLaba115ClosedCostReview(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW") != "closed-proxy-v2" {
+	profile := os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW")
+	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" {
 		t.Skip("explicit immutable post-exit server exports required")
 	}
-	const planSHA = "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
-	const historySHA = "a3a045bd2220eda99e92d85b072b59286aff3aa452e8b6407c02df4a2890d721"
+	planSHA := "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
+	historySHA := "a3a045bd2220eda99e92d85b072b59286aff3aa452e8b6407c02df4a2890d721"
+	if profile == "closed-abc-v3" {
+		planSHA = "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3"
+		historySHA = "b04aec6e8e7e8140532d97d004ded3530f458cfc4ec3323874d52dbe7fa3c595"
+	}
 	root := "/review"
 	read := func(name string, value any) {
 		t.Helper()

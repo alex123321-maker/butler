@@ -21,6 +21,26 @@ const laba115RepairedFormat = "butler.experience.laba-relay-repaired-window.v2"
 const laba115RepairedPlatform = "ssh-laba-repaired-relay-v2"
 const laba115RepairedDecision = "6f4a80a029a4537bcff4f0cb049b0cf5333291a4395c45a22668a85abd90f514"
 const laba115RepairedDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_abc_v3_test?sslmode=disable"
+const laba115Closed280SHA = "553e5b4ef6642b065db811b6cee8810be25a1879bf8ab3ffea6f482153be69e5"
+const laba115ReservedFormat = "butler.experience.laba-authority-reserved-window.v3"
+const laba115ReservedPlatform = "ssh-laba-authority-reserve-v3"
+const laba115ReservedDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_abc_v4_test?sslmode=disable"
+
+type laba115ClosureProfile struct {
+	Format, Plan, Previous, Inventory string
+	Total, Actual                     int
+}
+
+func laba115Closure(expected string) (laba115ClosureProfile, error) {
+	switch expected {
+	case laba115ClosedSHA:
+		return laba115ClosureProfile{laba115ClosedFormat, laba115ClosedPreseal, laba115ClosedPrevious, laba115ClosedInventory, 173, 169}, nil
+	case laba115Closed280SHA:
+		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v2", "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3", "b04aec6e8e7e8140532d97d004ded3530f458cfc4ec3323874d52dbe7fa3c595", "b02f6f1c14e77b02638b17e9bc9bc146844c6158b3b1867b2ad501a62a917acc", 169, 165}, nil
+	default:
+		return laba115ClosureProfile{}, errors.New("unregistered server closure; no old history fallback")
+	}
+}
 
 type laba115ClosedHandback struct {
 	Exit      *int   `json:"native_exit_status"`
@@ -35,7 +55,10 @@ type laba115ClosedHandback struct {
 }
 
 func (h laba115ClosedHandback) validate() error {
-	if h.Exit == nil || *h.Exit != 1 || h.Forced == nil || *h.Forced || !h.Empty || !h.Joined || !h.CAS || h.Recovery != "latest_durable_local_setting" || !h.Resolved || h.Qualified == nil || *h.Qualified || h.Plan != laba115ClosedPreseal {
+	return h.validatePlan(laba115ClosedPreseal)
+}
+func (h laba115ClosedHandback) validatePlan(plan string) error {
+	if h.Exit == nil || *h.Exit != 1 || h.Forced == nil || *h.Forced || !h.Empty || !h.Joined || !h.CAS || h.Recovery != "latest_durable_local_setting" || !h.Resolved || h.Qualified == nil || *h.Qualified || h.Plan != plan {
 		return errors.New("exact failed server handback required")
 	}
 	return nil
@@ -57,13 +80,13 @@ func (p laba115ClosedProcessExit) validate() error {
 	}
 	return nil
 }
-func validateLaba115ClosedRawPopulation(root string, files map[string]string) error {
-	raw, err := closedExperienceRead(root, "sealed-native-raw-inventory.sha256", laba115ClosedInventory, 1024*1024)
+func validateLaba115ClosedRawPopulation(root string, files map[string]string, profile laba115ClosureProfile) error {
+	raw, err := closedExperienceRead(root, "sealed-native-raw-inventory.sha256", profile.Inventory, 1024*1024)
 	if err != nil {
 		return err
 	}
 	lines := strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
-	if len(lines) != 173 {
+	if len(lines) != profile.Total {
 		return errors.New("original173-file server seal required")
 	}
 	seen := map[string]bool{}
@@ -98,7 +121,7 @@ func validateLaba115ClosedRawPopulation(root string, files map[string]string) er
 			return err
 		}
 	}
-	if actual != len(files) || actual != 169 {
+	if actual != len(files) || actual != profile.Actual {
 		return errors.New("server actual population omitted or expanded")
 	}
 	return nil
@@ -106,11 +129,16 @@ func validateLaba115ClosedRawPopulation(root string, files map[string]string) er
 
 func validateLaba115Continuation(h experienceNativeLineage) error {
 	b := h.SkillPreparationSuccessor
-	if b == nil || b.Platform != laba115RepairedPlatform || b.HostDecisionSHA256 != laba115RepairedDecision || b.ContinuationCreated == nil || h.LocalSuccessor != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != laba115ClosedSHA || b.DiagnosticsSHA256 != local115SkillDiagnosticSHA || b.DecisionSHA256 != local115SkillDecisionSHA || b.Profile != local115SkillProfile || validateExperienceNativeLineage(b.Historical) != nil || h.Carry != b.Historical.Carry || h.Usage != b.Historical.Usage {
+	want := laba115ClosedSHA
+	closed := time.Date(2026, 10, 28, 11, 33, 26, 552056827, time.UTC)
+	if b != nil && b.Platform == laba115ReservedPlatform {
+		want = laba115Closed280SHA
+		closed = time.Date(2026, 10, 28, 12, 11, 5, 490819378, time.UTC)
+	}
+	if b == nil || b.Platform != laba115RepairedPlatform && b.Platform != laba115ReservedPlatform || b.HostDecisionSHA256 != laba115RepairedDecision || b.ContinuationCreated == nil || h.LocalSuccessor != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != want || b.DiagnosticsSHA256 != local115SkillDiagnosticSHA || b.DecisionSHA256 != local115SkillDecisionSHA || b.Profile != local115SkillProfile || validateExperienceNativeLineage(b.Historical) != nil || h.Carry != b.Historical.Carry || h.Usage != b.Historical.Usage {
 		return errors.New("complete latest257 closure and exact repaired-relay owner decision required")
 	}
 	day, err := time.Parse("2006-01-02", h.Day)
-	closed := time.Date(2026, 10, 28, 11, 33, 26, 552056827, time.UTC)
 	if err != nil || h.Day < b.Historical.Day || !h.Deadline.Equal(day.Add(24*time.Hour)) || b.ContinuationCreated.UTC().Format("2006-01-02") != h.Day || !b.ContinuationCreated.After(closed) || !b.ContinuationCreated.Before(h.Deadline) {
 		return errors.New("fresh post-closure owner-authorized window within original UTC day boundary required")
 	}
@@ -131,7 +159,11 @@ func loadLaba115RepairedContinuation(path, expected string) (experienceNativeLin
 		return out, errors.New("exact repaired-relay recipe required")
 	}
 	canonical, _ := json.Marshal(m)
-	if !bytes.Equal(raw, canonical) || m.Format != laba115RepairedFormat || m.Location != laba115RepairedPlatform || m.Owner != experienceNativeOwner || m.Previous.SHA256 != laba115ClosedSHA || m.Diagnostics.SHA256 != local115SkillDiagnosticSHA || m.Decision.SHA256 != local115SkillDecisionSHA || m.Profile != local115SkillProfile || m.HostDecision == nil || m.HostDecision.SHA256 != laba115RepairedDecision {
+	wantFormat, wantPlatform, wantParent := laba115RepairedFormat, laba115RepairedPlatform, laba115ClosedSHA
+	if m.Format == laba115ReservedFormat {
+		wantFormat, wantPlatform, wantParent = laba115ReservedFormat, laba115ReservedPlatform, laba115Closed280SHA
+	}
+	if !bytes.Equal(raw, canonical) || m.Format != wantFormat || m.Location != wantPlatform || m.Owner != experienceNativeOwner || m.Previous.SHA256 != wantParent || m.Diagnostics.SHA256 != local115SkillDiagnosticSHA || m.Decision.SHA256 != local115SkillDecisionSHA || m.Profile != local115SkillProfile || m.HostDecision == nil || m.HostDecision.SHA256 != laba115RepairedDecision {
 		return out, errors.New("canonical fixed owner-authorized repaired-relay recipe required")
 	}
 	for _, ref := range []consolidationHistoryRef{m.Previous, m.Diagnostics, m.Decision, *m.HostDecision} {
@@ -148,7 +180,8 @@ func loadLaba115RepairedContinuation(path, expected string) (experienceNativeLin
 }
 
 func TestLaba115PrepareRepairedRelayRecipe(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE115_LABA_REPAIRED") != "prepare-latest257-v2" {
+	command := os.Getenv("BUTLER_ISSUE115_LABA_REPAIRED")
+	if command != "prepare-latest257-v2" && command != "prepare-latest280-v3" {
 		t.Skip("explicit latest257 repaired-relay preparation required")
 	}
 	path := os.Getenv("BUTLER_ISSUE115_LABA_REPAIRED_PATH")
@@ -157,6 +190,12 @@ func TestLaba115PrepareRepairedRelayRecipe(t *testing.T) {
 	}
 	now := time.Now().UTC()
 	m := local115SkillSuccessorManifest{Format: laba115RepairedFormat, Location: laba115RepairedPlatform, Owner: experienceNativeOwner, Created: now, Day: now.Format("2006-01-02"), Deadline: now.Truncate(24 * time.Hour).Add(24 * time.Hour), Previous: consolidationHistoryRef{Path: "closed-laba257/closed-leaf.json", SHA256: laba115ClosedSHA}, Diagnostics: consolidationHistoryRef{Path: "skill-read-diagnostic-receipt.json", SHA256: local115SkillDiagnosticSHA}, Decision: consolidationHistoryRef{Path: "owner-decision.json", SHA256: local115SkillDecisionSHA}, Profile: local115SkillProfile, HostDecision: &consolidationHistoryRef{Path: "repaired-relay-owner.json", SHA256: laba115RepairedDecision}}
+	wantEntries, wantUnknown, wantTokens := 257, 2, int64(1967005)
+	if command == "prepare-latest280-v3" {
+		m.Format, m.Location = laba115ReservedFormat, laba115ReservedPlatform
+		m.Previous = consolidationHistoryRef{Path: "closed-laba280/closed-leaf.json", SHA256: laba115Closed280SHA}
+		wantEntries, wantUnknown, wantTokens = 280, 3, 2154480
+	}
 	raw, _ := json.Marshal(m)
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
@@ -169,10 +208,10 @@ func TestLaba115PrepareRepairedRelayRecipe(t *testing.T) {
 		t.Fatal("recipe persistence failed")
 	}
 	h, err := loadExperienceNativeHistory(path, experienceDigest(string(raw)))
-	if err != nil || h.Usage.NativeEntries != 257 || h.Usage.NativeUnknownUsage != 2 || h.Usage.KnownFullTokenLowerBound != 1967005 {
+	if err != nil || h.Usage.NativeEntries != wantEntries || h.Usage.NativeUnknownUsage != wantUnknown || h.Usage.KnownFullTokenLowerBound != wantTokens {
 		t.Fatal("complete failed history did not survive continuation", err)
 	}
-	t.Logf("PREPARED_REPAIRED_RELAY sha256=%s native=0 auth=0 retained257/2unknown/1967005knownTokens", h.Hash)
+	t.Logf("PREPARED_REPAIRED_RELAY sha256=%s native=0 auth=0 retained%d/%dunknown/%dknownTokens", h.Hash, wantEntries, wantUnknown, wantTokens)
 }
 
 func TestLaba115ContinuationRetainsFailuresAndExactAuthority(t *testing.T) {
@@ -212,19 +251,45 @@ func TestLaba115ContinuationRetainsFailuresAndExactAuthority(t *testing.T) {
 }
 
 func TestLaba115ClosedFailedHistoryReceipt(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE115_LABA_CLOSED") != "verify-latest257" {
+	command := os.Getenv("BUTLER_ISSUE115_LABA_CLOSED")
+	if command != "verify-latest257" && command != "verify-latest280" {
 		t.Skip("explicit retained server closure required")
 	}
 	path := "/closure/closed-leaf.json"
-	h, err := loadExperienceNativeHistory(path, laba115ClosedSHA)
-	if err != nil || h.Usage.NativeEntries != 257 || h.Usage.NativeKnownUsage != 255 || h.Usage.NativeUnknownUsage != 2 || h.Usage.ProductAttempts != 258 || h.Usage.ProductNULL != 3 || h.Usage.KnownFullTokenLowerBound != 1967005 {
+	want, entries, known, unknown, products, nulls, tokens := laba115ClosedSHA, 257, 255, 2, 258, 3, int64(1967005)
+	if command == "verify-latest280" {
+		want, entries, known, unknown, products, nulls, tokens = laba115Closed280SHA, 280, 277, 3, 281, 4, 2154480
+	}
+	h, err := loadExperienceNativeHistory(path, want)
+	if err != nil || h.Usage.NativeEntries != entries || h.Usage.NativeKnownUsage != known || h.Usage.NativeUnknownUsage != unknown || h.Usage.ProductAttempts != products || h.Usage.ProductNULL != nulls || h.Usage.KnownFullTokenLowerBound != tokens {
 		t.Fatal("original full closure, usage or unknowns failed", err)
 	}
-	if _, err = loadClosedExperienceNativeHistoryProfile(path, laba115ClosedSHA, true); err == nil {
+	if _, err = loadClosedExperienceNativeHistoryProfile(path, want, true); err == nil {
 		t.Fatal("server handback satisfied PC profile")
 	}
-	if _, err = loadClosedExperienceNativeHistory(path, laba115ClosedSHA); err == nil {
+	if _, err = loadClosedExperienceNativeHistory(path, want); err == nil {
 		t.Fatal("private experimental handback satisfied main deployment profile")
 	}
-	t.Log("CLOSED257_PASS raw173, actual169, full57, prior232 recursively retained; no auth/native/quality authority")
+	t.Logf("CLOSED_HISTORY_PASS native=%d unknown=%d known_tokens=%d full57 and all prior failures recursively retained; no auth/native/quality authority", entries, unknown, tokens)
+}
+
+func TestLaba115ReservedContinuationCannotFallBackTo257(t *testing.T) {
+	created := time.Date(2026, 10, 28, 13, 0, 0, 0, time.UTC)
+	prior := experienceNativeLineage{Hash: laba115Closed280SHA, Day: "2026-10-28", Deadline: time.Date(2026, 10, 29, 0, 0, 0, 0, time.UTC)}
+	prior.Usage = temporalV5CurrentUsage{NativeEntries: 280, NativeKnownUsage: 277, NativeUnknownUsage: 3, KnownFullTokenLowerBound: 2154480, ProductAttempts: 281, ProductObserved: 277, ProductNULL: 4, ProductWithoutNativeEntry: 1}
+	prior.Carry.ModelTurns = 281
+	h := experienceNativeLineage{Hash: strings.Repeat("a", 64), Day: prior.Day, Deadline: prior.Deadline, Carry: prior.Carry, Usage: prior.Usage, SkillPreparationSuccessor: &local115SkillHistoryBinding{Historical: prior, Platform: laba115ReservedPlatform, HostDecisionSHA256: laba115RepairedDecision, ContinuationCreated: &created, DiagnosticsSHA256: local115SkillDiagnosticSHA, DecisionSHA256: local115SkillDecisionSHA, Profile: local115SkillProfile}}
+	if validateExperienceNativeLineage(h) != nil {
+		t.Fatal("complete latest280 continuation denied")
+	}
+	for _, dsn := range []string{laba115RepairedDSN, laba115SkillDSN, laba115ReservedDSN + "&port=5432"} {
+		if p, e := claimExperienceNativePool(t.Context(), dsn, strings.Repeat("b", 64), h); e == nil {
+			p.Close()
+			t.Fatal("consumed or substituted database accepted")
+		}
+	}
+	h.SkillPreparationSuccessor.Historical.Hash = laba115ClosedSHA
+	if validateExperienceNativeLineage(h) == nil {
+		t.Fatal("new280 population discarded in favor of old257")
+	}
 }

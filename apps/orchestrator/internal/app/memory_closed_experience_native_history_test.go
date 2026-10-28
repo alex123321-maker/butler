@@ -92,12 +92,17 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 	root := filepath.Dir(path)
 	raw, err := closedExperienceRead(root, filepath.Base(path), expected, 4*1024*1024)
 	var m closedExperienceManifest
+	var labaProfile laba115ClosureProfile
 	format := "butler.experience.closed-owner-leaf.v1"
 	if local {
 		format = local115NativeClosedFormat
 	}
 	if laba {
-		format = laba115ClosedFormat
+		labaProfile, err = laba115Closure(expected)
+		if err != nil {
+			return out, err
+		}
+		format = labaProfile.Format
 	}
 	if err != nil || json.Unmarshal(raw, &m) != nil || m.Format != format || m.Owner != experienceNativeOwner || m.Denominator != 57 || m.Maximum != 640 || !m.Complete || m.Qualified == nil || *m.Qualified || m.Review == nil || !*m.Review || m.DiscoveryInference == nil || *m.DiscoveryInference || m.Invoice != "unknown" || !experienceNativeSHA(m.Preseal) || !experienceNativeSHA(m.Previous) {
 		return out, errors.New("complete unqualified closed experience leaf required")
@@ -105,7 +110,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 	if local && (m.Preseal != local115NativeClosedPreseal || m.Previous != local115NativeClosedPrevious) {
 		return out, errors.New("exact original failed local cohort and predecessor required")
 	}
-	if laba && (m.Preseal != laba115ClosedPreseal || m.Previous != laba115ClosedPrevious) {
+	if laba && (m.Preseal != labaProfile.Plan || m.Previous != labaProfile.Previous) {
 		return out, errors.New("exact failed server cohort and predecessor required")
 	}
 	refs := map[string]string{}
@@ -198,7 +203,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 	if local && validateLocal115ClosedRawPopulation(root, files) != nil {
 		return out, errors.New("local raw population differs from its original157-file seal")
 	}
-	if laba && validateLaba115ClosedRawPopulation(root, files) != nil {
+	if laba && validateLaba115ClosedRawPopulation(root, files, labaProfile) != nil {
 		return out, errors.New("server raw population differs from its original seal")
 	}
 	for name, hash := range files {
@@ -279,7 +284,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 	if laba {
 		var handback laba115ClosedHandback
 		var exit laba115ClosedProcessExit
-		if read("closed-handback.json", &handback) != nil || handback.validate() != nil || read("process-exit.json", &exit) != nil || exit.validate() != nil {
+		if read("closed-handback.json", &handback) != nil || handback.validatePlan(labaProfile.Plan) != nil || read("process-exit.json", &exit) != nil || exit.validate() != nil {
 			return out, errors.New("closed server process and exact separate opaque handback required")
 		}
 	} else if local {

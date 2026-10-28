@@ -1,0 +1,11 @@
+{
+  "all_private_credential_backends_joined": true,
+  "auth_resolved": true,
+  "forced_cleanup": false,
+  "native_exit_status": 1,
+  "opaque_source_cas": true,
+  "plan_sha256": "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3",
+  "recovery_source": "latest_durable_local_setting",
+  "release_qualified": false,
+  "whole_cgroup_empty": true
+}

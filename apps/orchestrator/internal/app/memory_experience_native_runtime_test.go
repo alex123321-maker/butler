@@ -257,6 +257,8 @@ func (c *experienceNativeToolCatalog) ListToolsForRun(ctx context.Context, run s
 
 type experienceNativeRuntime struct {
 	pool        *pgxpool.Pool
+	reads       *pgxpool.Pool
+	directory   string
 	cat         *catalog.Store
 	lessons     *experience.Store
 	broker      *tools.BrokerClient
@@ -331,7 +333,18 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		t.Fatal("frozen runtime endpoints unavailable before fixture setup", err)
 	}
 	ctx := context.Background()
-	r := &experienceNativeRuntime{pool: pool, cat: cat, tasks: task.NewStore(pool), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewController(pool, policy), expires: expires, addresses: addresses}
+	// Match App.New's bounded authority reserve. Business work must not consume
+	// the only capacity for the unchanged750ms lease/task/source observations.
+	readConfig := pool.Config().Copy()
+	readConfig.MaxConns, readConfig.MinConns = 1, 0
+	readConfig.ConnConfig.RuntimeParams["application_name"] = "butler-authority-observer"
+	reads, err := pgxpool.NewWithConfig(ctx, readConfig)
+	if err != nil {
+		t.Fatal("bounded authority observation capacity unavailable")
+	}
+	t.Cleanup(reads.Close)
+	cat = catalog.NewWithRunObservationPool(pool, reads, catalog.NewFileManifest(anchor))
+	r := &experienceNativeRuntime{pool: pool, reads: reads, directory: directory, cat: cat, tasks: task.NewStoreWithAuthorityReads(pool, reads), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewControllerWithAuthorityReads(pool, reads, policy), expires: expires, addresses: addresses, stops: []func(){reads.Close}}
 	if foreground != nil {
 		copy := *foreground
 		r.foreground = &copy
@@ -339,7 +352,7 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 	r.goals = goal.New(pool, r.tasks, nil)
 	r.timing = newExperienceSourceTimings(t, r, directory)
 	r.budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
-	leasing := session.NewPostgresLeaseManager(pool)
+	leasing := session.NewPostgresLeaseManagerWithAuthorityReads(pool, reads)
 	approvalRepo := approvals.NewPostgresRepository(pool)
 	approvalRepo.SetCheckpointHooks(r.inputs)
 	r.decisions = approvals.NewService(approvalRepo, nil)
@@ -675,7 +688,12 @@ func (r *experienceNativeRuntime) executeQueued(t *testing.T, ctx context.Contex
 
 func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context, record task.Record, id, text, inputID string, provider transport.ModelProvider) adaptiveNativeExecution {
 	t.Helper()
-	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	observationLog, err := os.OpenFile(filepath.Join(r.directory, "run-observer-"+experienceDigest(id+"\x00"+inputID)+".log"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		t.Fatal("new private run observation log required")
+	}
+	defer observationLog.Close()
+	log := slog.New(slog.NewTextHandler(observationLog, &slog.HandlerOptions{Level: slog.LevelWarn}))
 	a, _, _, err := r.goals.ReadTaskAuthority(ctx, record.TaskID)
 	if err != nil {
 		t.Fatal("current typed assignment unavailable", err)
@@ -695,7 +713,7 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	if r.skillClient != nil {
 		fc.Skills = r.skillClient
 	}
-	base := flow.NewService(r.sessions, session.NewPostgresLeaseManager(r.pool), r.runs, r.history, provider, fc, log)
+	base := flow.NewService(r.sessions, session.NewPostgresLeaseManagerWithAuthorityReads(r.pool, r.reads), r.runs, r.history, provider, fc, log)
 	x := &adaptiveNativeExecutor{base: base, done: make(chan adaptiveNativeExecution, 1)}
 	worker, err := durableinput.NewServiceWithExecutionTimeout(r.inputs, r.sessions, x, r.runs, log, 40*time.Minute)
 	if err != nil {

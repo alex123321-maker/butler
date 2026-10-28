@@ -39,9 +39,9 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
-	case laba115RepairedFormat:
+	case laba115RepairedFormat, laba115ReservedFormat:
 		return loadLaba115RepairedContinuation(path, expected)
-	case laba115ClosedFormat:
+	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2":
 		return loadClosedExperienceNativeHistoryProfiles(path, expected, false, true)
 	case laba115SkillSuccessorFormat:
 		return load115SkillSuccessor(path, expected, true)
@@ -166,6 +166,9 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 		}
 		if binding.Platform == laba115RepairedPlatform {
 			want = laba115RepairedDSN
+		}
+		if binding.Platform == laba115ReservedPlatform {
+			want = laba115ReservedDSN
 		}
 		if dsn != want {
 			return nil, errors.New("skill-preparation successor requires its platform's exact loopback database")
