@@ -1301,6 +1301,12 @@ than the actual finite context expiry grants a resumed browser. See the
 
 ## Research draft validation
 
+An already failed, isolated historical attempt can receive owning local journal
+review under the same terminal locks. It remains failed with its original error,
+checkpoint and spending; a proven publication outcome or pinned read no-write
+proof can change isolation classification only. No old claim, grant, model or
+delivery is replayed. See [stopped finalization](stopped-input-finalization.md).
+
 A rejected research draft follows the existing tool_pending → tool_running →
 awaiting_model_resume → model_running lifecycle as local validation. It records
 a correlated `validation_rejected` observation and known tool-result checkpoint;

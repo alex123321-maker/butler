@@ -127,3 +127,10 @@ read/final/ABSENT reconciliation. No execution or input-control permission is
 returned and the stale observation body is never read. Migration081's separate
 input-link/event heads capture the exact control relationship without changing
 the ordinary080 projection or treating arbitrary diagnostic text as its body.
+
+`ReviewStoppedInput` is operator/kernel-only. It uses the existing transaction
+and optional owning Communication local-review collaborator, returning the
+predicted classification before an optional rollback. Maintenance retains its
+cooldown; explicit review bypasses only that cooldown. Neither path revives an
+old Input, grants execution, changes task completion or refunds usage. See
+`docs/architecture/stopped-input-finalization.md`.

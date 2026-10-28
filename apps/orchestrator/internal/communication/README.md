@@ -271,3 +271,9 @@ prepare Input with the effect still UNKNOWN. It audits the exact IDs and never
 updates the Broker journal/grants/evidence, refunds, retries or claims success.
 Executing and non-communication uncertain effects always deny. This is an Input
 failure acknowledgement, not independent effect verification.
+
+The separately composed `ReviewStoppedLocalTx` collaborator delegates to the
+owning Action journal adapter for pinned historical local contracts. It runs
+inside terminal Input finalization locks and never publishes, delivers, replays
+or grants. Exact publication/absence proof and read no-write proof are distinct;
+see `docs/architecture/stopped-input-finalization.md` and `cmd/stopped-review`.
