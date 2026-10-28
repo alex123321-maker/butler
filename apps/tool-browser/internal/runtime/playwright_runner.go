@@ -198,7 +198,7 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			return Result{}, err
 		}
 	}
-	if req.ToolName == "browser.submit_get_form" {
+	if req.ToolName == "browser.submit_get_form" || req.ToolName == "browser.follow_link" {
 		proxy := r.proxies[req.SessionID]
 		if proxy == nil {
 			return Result{}, egress.ErrDenied

@@ -14,9 +14,10 @@ live fill/type/click cannot borrow this verifier. DOM submission acknowledgement
 remains unknown; the budget root's unknown-effect stop remains in force. No
 automatic retry or external recipient idempotency is inferred from local state.
 
-Revision1 `browser.submit_get_form` is a separate enforced GET observation,
+Revision1 `browser.submit_get_form` and `browser.follow_link` are separate enforced GET observations,
 not an input gesture or form POST. Its two-phase frozen compiler rejects
-credential/hidden/password/file fields and rechecks live state before GET
+credential/hidden/password/file fields and any prior private input draft,
+and rechecks live state before GET
 navigation. Its `read_result` evidence describes that read only. A previous
 unknown write and consumed grant remain unchanged; later mutations still deny.
 See the browser session contract for bounds and unsupported form behavior.

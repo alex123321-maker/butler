@@ -170,7 +170,7 @@ async function execute(request) {
   if (tool === 'owner.control') return await ownerControl(session, request.owner_command)
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
   const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
-  const getForm = tool === 'browser.submit_get_form'
+  const getForm = tool === 'browser.submit_get_form' || tool === 'browser.follow_link'
   // Freeze before reading the live guards or injecting any new value. A stale
   // preparation can fail safely without resuming background page requests.
   if (localPreparation || getForm) session.networkFrozen = true
@@ -185,6 +185,9 @@ async function execute(request) {
   if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return errorResult('stale_observation', 'page changed since observation; take a new snapshot')
   if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   if (getForm) return await submitGetForm(session, request, live)
+  // An ordinary local draft is private too, even without credential_ref.
+  // A later read tool must never thaw input callbacks or release that draft.
+  if (['browser.fill','browser.type','browser.prepare_fill','browser.prepare_type'].includes(tool)) session.preparedDraft = true
   for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
   let credentialVerified
@@ -260,10 +263,15 @@ async function execute(request) {
 async function submitGetForm(session, request, live) {
   const denied = () => errorResult('get_form_denied', 'requires a same-origin GET form with ordinary fields and no credential state')
   try {
-    if (session.secrets.size) return denied()
+    if (session.secrets.size || session.preparedDraft) return denied()
     if (request.get_form_phase === 'plan') {
       session.getFormPlan = undefined
-      const compiled = await session.page.locator(request.selector).evaluate((form, fields) => {
+      const compiled = request.tool_name === 'browser.follow_link' ? await session.page.locator(request.selector).evaluate(link => {
+        if (!(link instanceof HTMLAnchorElement) || !['','_self'].includes(link.target) || link.hasAttribute('download')) return null
+        const target = new URL(link.href)
+        if (target.origin !== location.origin || target.username || target.password || !['http:','https:'].includes(target.protocol) || target.href.length > 16384) return null
+        return target.href
+      }) : await session.page.locator(request.selector).evaluate((form, fields) => {
         if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'get' || !['', '_self'].includes(form.target)) return null
         const action = new URL(form.action)
         if (action.origin !== location.origin || action.username || action.password || !['http:', 'https:'].includes(action.protocol)) return null
@@ -314,6 +322,7 @@ async function submitGetForm(session, request, live) {
 
 async function ownerControl(session, command) {
   const page = session.page
+  if (command.operation === 'take') session.preparedDraft = true
   if (command.operation === 'release') {
     session.networkFrozen = false
     session.allowWriteRequests = false

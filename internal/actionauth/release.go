@@ -27,7 +27,7 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
-	case "browser.submit_get_form":
+	case "browser.submit_get_form", "browser.follow_link":
 		resource, ok := args["expected_url"].(string)
 		if !ok || resource == "" {
 			return false, fmt.Errorf("GET form requires an observed public resource")

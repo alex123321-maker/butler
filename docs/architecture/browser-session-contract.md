@@ -44,6 +44,7 @@ PostgreSQL are not used to claim that a live DOM can be restored.
 | `browser.extract_text` | Observe visible selector text; **no navigation** | Same checks as snapshot; selector |
 | `browser.navigate` | Navigate the same context across permitted public origins | Latest version and exact `expected_url`, plus session checks |
 | `browser.submit_get_form` | Compile ordinary named fields of a public same-origin GET form into a GET navigation; no input/submit handlers | Latest version/URL, revision1 read-only contract, no credential state, two private guarded phases |
+| `browser.follow_link` | Follow a same-origin anchor by GET without click handlers, including a frozen GET-search page | Same revision1 read-only guards; no credentials, private draft, download or foreign target |
 | `browser.click` | Click on the current page | Latest version and `expected_url`, plus session checks |
 | `browser.fill` / `browser.type` | Change the current input | Latest version and `expected_url`; credential refs for secrets |
 | `browser.prepare_fill` / `browser.prepare_type` | Change input locally with all network frozen persistently | Same latest observation/URL/owner checks; exact approval or current mandate; credential refs for secrets |
@@ -72,7 +73,8 @@ those tools. Generic POST/login forms retain their existing effect policy.
 
 The runner freezes/cancels every connection before the helper compiles the
 chosen form. Hidden/password/file controls, credential-bearing contexts,
-sensitive field names, non-GET methods, foreign/nonpublic targets and extra
+sensitive field names, non-GET methods, foreign/nonpublic targets, private
+input drafts and extra
 field names are refused. Compilation does not invoke input, click, formdata,
 validation or submit handlers. At most 32 fields/4096 bytes per value and a
 16KiB compiled URL are accepted. The Go proxy independently checks the compiled
@@ -86,6 +88,12 @@ limitation as existing read/navigation tools. It remains usable for independent
 reads while a previous opaque write is unknown; it does not reconcile that
 write, revive its grant, refund spending or authorize another mutation. It
 cannot submit authenticated forms or implement JavaScript-only form behavior.
+`browser.follow_link` uses the same guarded two-phase GET path for normal
+pagination/result anchors, without invoking click handlers. It can leave a
+frozen public GET result. Neither read tool can thaw a prior input draft:
+local/live fill/type and manual takeover permanently taint that finite browser
+context for these tools, even when ordinary text rather than credentials was
+entered. Snapshot does not clear the taint; new empty contexts are explicit.
 
 For a multi-step form use `open -> prepare_fill/prepare_type -> snapshot/wait ->
 separately authorized click`. Preparation freezes **all** page requests before

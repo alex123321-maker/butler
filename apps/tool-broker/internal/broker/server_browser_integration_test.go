@@ -109,7 +109,9 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 			fmt.Fprint(w, `<body><form method="get" action="/query"><input name="q"><button>Search</button></form></body>`)
 		case "/query":
 			queryReads.Add(1)
-			fmt.Fprintf(w, `<body>Query: %s<script>fetch('/submit',{method:'POST'}).catch(()=>{})</script></body>`, r.URL.Query().Get("q"))
+			fmt.Fprintf(w, `<body>Query: %s<a href="/detail" onclick="fetch('/submit',{method:'POST'})">Next</a><script>fetch('/submit',{method:'POST'}).catch(()=>{})</script></body>`, r.URL.Query().Get("q"))
+		case "/detail":
+			fmt.Fprint(w, `<body>Record detail</body>`)
 		case "/start":
 			http.Redirect(w, r, "http://login.test/form", 302)
 		case "/form":
@@ -259,6 +261,10 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
 	if queryReads.Load() != 1 || posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Arctic delivery") {
 		t.Fatal("Broker GET form wrote or failed to observe")
+	}
+	getObs = invoke("browser.follow_link", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "a"})
+	if posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Record detail") {
+		t.Fatal("Broker link read invoked click handler")
 	}
 	invoke("browser.close", map[string]any{"browser_session_id": getObs["browser_session_id"]})
 	obs := invoke("browser.open", map[string]any{"url": "http://start.test/start"})

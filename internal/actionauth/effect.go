@@ -122,7 +122,7 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
-		if b.ToolName == "browser.submit_get_form" && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
+		if (b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link") && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
 			return p, fmt.Errorf("GET form navigation requires its exact read-only revision 1 contract")
 		}
 		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "3" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {

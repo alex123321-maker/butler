@@ -62,7 +62,7 @@ func TestBrowserGetFormChromium(t *testing.T) {
 	if os.Getenv("BUTLER_BROWSER_E2E") != "1" {
 		t.Skip("requires isolated Chromium image")
 	}
-	var gets, writes, handlers atomic.Int64
+	var gets, writes, handlers, details atomic.Int64
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" && r.Method != "HEAD" {
 			writes.Add(1)
@@ -72,7 +72,10 @@ func TestBrowserGetFormChromium(t *testing.T) {
 		switch r.URL.Path {
 		case "/query":
 			gets.Add(1)
-			fmt.Fprintf(w, `<body>Found %s<script>fetch('/write',{method:'POST'}).catch(()=>{});setTimeout(()=>fetch('/late').catch(()=>{}),200)</script></body>`, r.URL.Query().Get("q"))
+			fmt.Fprintf(w, `<body>Found %s<a href="/detail" onclick="fetch('/handler');fetch('/write',{method:'POST'})">Next</a><script>fetch('/write',{method:'POST'}).catch(()=>{});setTimeout(()=>fetch('/late').catch(()=>{}),200)</script></body>`, r.URL.Query().Get("q"))
+		case "/detail":
+			details.Add(1)
+			fmt.Fprint(w, `<body>Record detail</body>`)
 		case "/handler", "/late":
 			handlers.Add(1)
 			fmt.Fprint(w, "unexpected")
@@ -117,8 +120,9 @@ func TestBrowserGetFormChromium(t *testing.T) {
 		t.Helper()
 		req := browserCall(tool, "run-1", args)
 		req.Contract.AllowedDomains = []string{"external.test"}
-		if tool == "browser.submit_get_form" {
+		if tool == "browser.submit_get_form" || tool == "browser.follow_link" {
 			req.Contract = getFormContract()
+			req.Contract.ToolName = tool
 		}
 		response, err := server.Execute(context.Background(), req)
 		if err != nil {
@@ -146,6 +150,34 @@ func TestBrowserGetFormChromium(t *testing.T) {
 	}
 	// Frozen observation must not release delayed callbacks or another POST.
 	_, _ = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+	linkArgs := actionArgs(obs)
+	linkArgs["selector"] = "a"
+	// snapshot advanced the observation, so use a fresh version before follow.
+	_, currentLink := invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+	linkArgs = actionArgs(currentLink)
+	linkArgs["selector"] = "a"
+	linked, linkObs := invoke("browser.follow_link", linkArgs)
+	if linked.Status != "completed" || details.Load() != 1 || !strings.Contains(linkObs.Text, "Record detail") || linkObs.NetworkState != "frozen" {
+		t.Fatal("frozen GET result link did not navigate", linked.Status)
+	}
+	_, draft := invoke("browser.open", map[string]any{"url": egresstest.Origin + "/search"})
+	draftArgs := actionArgs(draft)
+	draftArgs["selector"] = "input"
+	draftArgs["value"] = "draft-must-not-escape"
+	_, draft = invoke("browser.prepare_fill", draftArgs)
+	draftArgs = actionArgs(draft)
+	draftArgs["selector"] = "form"
+	draftArgs["fields"] = []map[string]string{{"name": "q", "value": "replacement"}}
+	denied, _ := invoke("browser.submit_get_form", draftArgs)
+	if denied.Status == "completed" || !strings.Contains(denied.GetError().GetDetailsJson(), "get_form_denied") {
+		t.Fatal("GET form thawed an ordinary private draft")
+	}
+	delete(draftArgs, "fields")
+	draftArgs["selector"] = "a"
+	denied, _ = invoke("browser.follow_link", draftArgs)
+	if denied.Status == "completed" || !strings.Contains(denied.GetError().GetDetailsJson(), "get_form_denied") {
+		t.Fatal("link read thawed an ordinary private draft")
+	}
 	_, stale := invoke("browser.open", map[string]any{"url": egresstest.Origin + "/stale"})
 	time.Sleep(300 * time.Millisecond)
 	a := actionArgs(stale)
@@ -164,7 +196,7 @@ func TestBrowserGetFormChromium(t *testing.T) {
 			t.Fatal("unsafe GET form accepted", path)
 		}
 	}
-	if gets.Load() != 1 || writes.Load() != 0 || handlers.Load() != 0 {
+	if gets.Load() != 1 || details.Load() != 1 || writes.Load() != 0 || handlers.Load() != 0 {
 		t.Fatal("form handlers or write escaped", gets.Load(), writes.Load(), handlers.Load())
 	}
 }

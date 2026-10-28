@@ -26,6 +26,7 @@ var supportedTools = map[string]bool{
 	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
 	"browser.prepare_fill": true, "browser.prepare_type": true,
 	"browser.submit_get_form": true,
+	"browser.follow_link":     true,
 	"browser.extract_text":    true, "browser.set_cookie": true, "browser.restore_storage_state": true,
 }
 
@@ -158,7 +159,7 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
 	}
-	if args.ToolName == "browser.submit_get_form" && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
+	if (args.ToolName == "browser.submit_get_form" || args.ToolName == "browser.follow_link") && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET form navigation requires its read-only revision 1 contract")
 	}
 	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
@@ -309,7 +310,7 @@ func isGuardedAction(tool string) bool {
 }
 func validateSelectorRequired(args Request) error {
 	switch args.ToolName {
-	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text", "browser.submit_get_form":
+	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text", "browser.submit_get_form", "browser.follow_link":
 		if strings.TrimSpace(args.Selector) == "" {
 			return fmt.Errorf("selector is required")
 		}

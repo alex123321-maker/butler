@@ -27,7 +27,7 @@ func (s *Service) networkReleaseRequired(call *toolbrokerv1.ToolCall, contract *
 		}
 	}
 	switch call.GetToolName() {
-	case "browser.submit_get_form":
+	case "browser.submit_get_form", "browser.follow_link":
 		if contract.GetContractRevision() == "1" && !contract.GetSupportsCredentialRefs() && contract.GetEffectContract().GetRetrySafety() == "read_only" && contract.GetEffectContract().GetVerificationMethod() == "read_result" {
 			return false, nil
 		}

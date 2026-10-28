@@ -21,7 +21,7 @@
       "tool_name": "browser.open",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
-      "description": "Open a run-owned server browser across public HTTP(S) origins for 15 minutes; its page can be viewed and controlled by the owner in Web. Returns session ID, expiry, observation version and value-free forms metadata. For public GET search forms prefer browser.submit_get_form over opaque fill/click. Never transfers a user tab.",
+      "description": "Open a run-owned server browser across public HTTP(S) origins for 15 minutes; its page can be viewed and controlled by the owner in Web. Returns session ID, expiry, observation version and value-free forms metadata. For public GET search forms prefer browser.submit_get_form; follow pagination/result anchors with browser.follow_link. Opaque fill/click may write. Never transfers a user tab.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
@@ -86,13 +86,33 @@
       "allowed_tools": []
     },
     {
+      "tool_name": "browser.follow_link",
+      "contract_revision": "1",
+      "effect_contract": {
+        "verification_method": "read_result",
+        "retry_safety": "read_only"
+      },
+      "description": "Follow an ordinary same-origin hyperlink with GET, without click or page handlers. Use this for pagination and result links, including a frozen public GET search page. Requires selector, latest observation_version and expected_url. Refuses downloads, foreign origins, credential state and any prior input/private draft. Returns a fresh frozen observation. Opaque browser.click may write and cannot replace this read operation.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"selector\",\"observation_version\",\"expected_url\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"selector\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"expected_url\":{\"type\":\"string\"},\"timeout\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":30000}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
       "tool_name": "browser.submit_get_form",
       "contract_revision": "1",
       "effect_contract": {
         "verification_method": "read_result",
         "retry_safety": "read_only"
       },
-      "description": "Search or navigate a public same-origin GET form with named ordinary text fields. Use forms metadata from the current observation to choose selector and field names. Compiles a GET URL without click, input, submit or page handlers; POST forms, hidden/password/file fields and credential state are refused. Requires current session, observation_version and exact expected_url. Network freezes again after navigation. This proves a GET observation only, never a remote write.",
+      "description": "Search or navigate a public same-origin GET form with named ordinary text fields. Use forms metadata from the current observation to choose selector and field names. Compiles a GET URL without click, input, submit or page handlers; POST forms, hidden/password/file fields, credential state and any prior input/private draft are refused. Requires current session, observation_version and exact expected_url. Network freezes again after navigation. This proves a GET observation only, never a remote write.",
       "tool_class": "browser",
       "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"selector\",\"fields\",\"observation_version\",\"expected_url\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"selector\":{\"type\":\"string\"},\"fields\":{\"type\":\"array\",\"maxItems\":32,\"items\":{\"required\":[\"name\",\"value\"],\"properties\":{\"value\":{\"type\":\"string\",\"maxLength\":4096},\"name\":{\"minLength\":1,\"maxLength\":128,\"type\":\"string\"}},\"additionalProperties\":false,\"type\":\"object\"}},\"observation_version\":{\"type\":\"integer\"},\"expected_url\":{\"type\":\"string\"},\"timeout\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":30000}},\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
