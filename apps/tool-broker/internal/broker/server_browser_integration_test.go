@@ -93,6 +93,15 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(raw)); err != nil {
 		t.Fatal(err)
 	}
+	// Record now pins observed_url (migration096). Use the actual owning schema,
+	// otherwise even a successful browser.open fails in its owner-map write.
+	raw, err = os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "096_credential_vault.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(raw)); err != nil {
+		t.Fatal(err)
+	}
 	var posts, cdn, private, queryReads atomic.Int32
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
