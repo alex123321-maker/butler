@@ -156,3 +156,30 @@ supplied manifest, rather than reconstructing a file manifest. The capacity
 integration also injects a restore denial and proves it survives this composition.
 The unused6fa97874 source/build/preseal remain setup evidence only; no native
 entry was made with that preseal. Final source and artifacts are frozen separately.
+
+## Complete manifest interface continuation
+
+The reserved-authority v4 window stops at skill preparation's existing budget:
+12 model entries and11 external calls, with no accepted skill or ABC controls.
+The original records remain failed:30 new entries all measured,349545 full tokens;
+inclusive310native/307known/3unknown,311product/307observed/4NULL/1withoutNative,
+2504025 known full tokens. Its189-file raw seal is retained; the closed310 leaf
+recursively validates every failed predecessor, quote, journal and process/auth
+handback using the original consumers. Monetary invoice cost remains unknown.
+
+The native preparation searched memory for the manifest format and field names.
+The v5 prospective profile adds only the complete output wire shape, derived
+from skills.Manifest's actual Go types, plus the existing execution/read bounds.
+It contains no example skill, procedure, control task, oracle or note body. The
+existing source evidence and current dependency values are unchanged. The model
+must still read permitted evidence and independently write its skill; strict
+parsing, semantic validation, stage/test/activation and all budget gates remain.
+This is an interface-discoverability change based on preparation traces before
+any control task was run, not tuning from ABC outcomes. Earlier profiles keep
+their original input bytes and their failures.
+
+The separately typed butler.experience.laba-manifest-contract-window.v4 reads
+only the full closed310 leaf and owns memory115_laba_abc_v5_test. The33-of57
+scope,12-entry/11-call preparation bound,640-entry window, UTC deadline, fixed
+server proxy and prepared-unapplied permission remain unchanged. No production
+configuration is changed and no finite budget is silently raised.

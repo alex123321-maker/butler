@@ -1,0 +1,11 @@
+[
+  {
+    "run_id": "run-1793193114300352836-b5028965a8009353",
+    "status": "blocked",
+    "attempts": 1,
+    "max_attempts": 1,
+    "error_code": "budget_external_calls_mandate",
+    "error_message": "owner decision or reconciliation required",
+    "updated_at": "2026-10-28T13:13:16.643178+00:00"
+  }
+]

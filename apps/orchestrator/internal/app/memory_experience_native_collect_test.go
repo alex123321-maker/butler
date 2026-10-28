@@ -59,22 +59,23 @@ type experienceNativeCurrentEffect struct {
 // deliberately outside it and must finish before this receives a real provider.
 // No case oracle, note body, recipe or alternative original enters this runner.
 type experienceNativeCollector struct {
-	t                    *testing.T
-	ctx                  context.Context
-	provider             *experienceNativeProvider
-	databases            *experienceNativeClones
-	corpus               experienceNativeCorpus
-	seeds                experienceNativeSeeds
-	proof                string
-	anchor               string
-	deadline             time.Time
-	policy               budget.Policy
-	sourcePolicy         budget.Policy
-	addresses            experienceNativeAddresses
-	originals            [4]experienceNativeOriginal
-	skill                skills.Record
-	expectedEnvironments map[string]string
-	skillPreparationV1   bool
+	t                     *testing.T
+	ctx                   context.Context
+	provider              *experienceNativeProvider
+	databases             *experienceNativeClones
+	corpus                experienceNativeCorpus
+	seeds                 experienceNativeSeeds
+	proof                 string
+	anchor                string
+	deadline              time.Time
+	policy                budget.Policy
+	sourcePolicy          budget.Policy
+	addresses             experienceNativeAddresses
+	originals             [4]experienceNativeOriginal
+	skill                 skills.Record
+	expectedEnvironments  map[string]string
+	skillPreparationV1    bool
+	skillManifestContract bool
 }
 
 func (c *experienceNativeCollector) collect() {

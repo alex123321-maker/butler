@@ -14,7 +14,8 @@ import (
 // Post-exit projection of original facts, not a replacement quality oracle.
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW") != "closed-abc-v3" {
+	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -50,7 +51,11 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	var accountingPlan string
 	_ = json.Unmarshal(accounting["plan_sha256"], &accountingPlan)
-	if accountingPlan != "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3" {
+	wantPlan := "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3"
+	if profile == "closed-abc-v4" {
+		wantPlan = "18d4ec76d5cbbbf241d7151eb542e7a48d7125c7ea4452ac8c67e0d148d729a2"
+	}
+	if accountingPlan != wantPlan {
 		t.Fatal("different cohort accounting")
 	}
 	type cost struct {

@@ -1,0 +1,21 @@
+{
+  "sequence": 30,
+  "slot": "e564884e1eda87995d9fce5f5d3ee71cc2a9280b518bade2d93a5a73b6e29c32",
+  "kind": "tool_result",
+  "finished": true,
+  "usage": {
+    "InputTokens": 25482,
+    "OutputTokens": 150,
+    "TotalTokens": 25690,
+    "ThinkingTokens": 58
+  },
+  "failure": "",
+  "context_end": "",
+  "milliseconds": 5050,
+  "provider_stages": [
+    "authentication",
+    "request_serialization",
+    "http_round_trip",
+    "response_stream"
+  ]
+}
