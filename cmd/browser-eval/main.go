@@ -36,11 +36,12 @@ type receipt struct {
 }
 
 type fixture struct {
-	config   fixtureConfig
-	mu       sync.Mutex
-	journal  io.Writer
-	sequence int
-	sessions map[string]bool
+	config        fixtureConfig
+	mu            sync.Mutex
+	journal       io.Writer
+	sequence      int
+	sessions      map[string]bool
+	secureCookies bool
 }
 
 func randomID() string {
@@ -103,7 +104,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			s.mu.Lock()
 			s.sessions[token] = true
 			s.mu.Unlock()
-			http.SetCookie(w, &http.Cookie{Name: "fixture_session", Value: token, Path: "/", HttpOnly: true, Secure: r.TLS != nil, SameSite: http.SameSiteStrictMode, MaxAge: 900})
+			http.SetCookie(w, &http.Cookie{Name: "fixture_session", Value: token, Path: "/", HttpOnly: true, Secure: s.secureCookies || r.TLS != nil, SameSite: http.SameSiteStrictMode, MaxAge: 900})
 			http.Redirect(w, r, "/account", http.StatusSeeOther)
 		case "/form", "/lost-response":
 			quantity, err := strconv.Atoi(r.PostForm.Get("quantity"))
@@ -220,6 +221,7 @@ func run(args []string) error {
 	config := fs.String("config", "", "private synthetic configuration file")
 	journal := fs.String("journal", "", "new private JSONL recipient journal (never served)")
 	listen := fs.String("listen", "127.0.0.1:8097", "fixture listener; public deployment requires isolated HTTPS ingress")
+	secureCookies := fs.Bool("secure-cookies", false, "require HTTPS cookies behind a trusted TLS terminator")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -241,7 +243,7 @@ func run(args []string) error {
 		return errors.New("cannot create new recipient journal")
 	}
 	defer f.Close()
-	site := &fixture{config: c, journal: f, sessions: make(map[string]bool)}
+	site := &fixture{config: c, journal: f, sessions: make(map[string]bool), secureCookies: *secureCookies}
 	server := &http.Server{Addr: *listen, Handler: site, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 8192}
 	return server.ListenAndServe()
 }

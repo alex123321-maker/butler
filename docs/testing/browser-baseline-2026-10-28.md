@@ -122,6 +122,30 @@ The controlled native form/login tests still need an isolated externally
 reachable HTTPS origin; a domain has been requested from the owner. Loopback
 remains blocked by production egress. No workaround weakens that boundary.
 
+## Follow-up: assigned devops host prepared
+
+The owner explicitly selected SSH alias `devops` for the fixture and authorized
+adding a test subdomain in REG.RU. On that host (`46.8.21.229`, Ubuntu 24.04),
+the isolated recipient is installed under `/opt/butler-browser-eval` with a
+dedicated non-login system user and the bounded systemd template in
+`deploy/browser-eval`. This uses the existing Nginx host without adding a Docker
+installation or modifying Butler's Compose topology. Certbot 2.9.0 was installed
+from the host's configured Ubuntu packages.
+
+The `infra-smoke` instance is active on loopback port 18097. The local HTTP root
+returned the expected heading; this is an infrastructure check, not a native
+attempt. Its private synthetic config and journal live only in its mode-0700
+directory on devops. Secure cookies are forced for deployment behind TLS without
+trusting forwarded headers. Targeted Go race/vet and the cookie regression pass.
+`systemd-analyze verify` and actual service startup passed.
+
+No DNS record, public virtual host or certificate has been created yet. REG.RU
+requires a login CAPTCHA; action-time confirmation was requested through the
+browser workflow and remains pending. The existing Nginx sites are unchanged.
+`nginx-https.conf.template` is prepared for the actual selected domain after DNS
+verification and certificate issuance. Public form/login native attempts remain
+UNEXECUTED until those gates are complete.
+
 ## Reproduce
 
 Follow `cmd/browser-eval/README.md` for configuration, serving, unit checks and

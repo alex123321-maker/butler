@@ -16,6 +16,10 @@ credentials through the protected owner vault outside model/chat context. Never
 use real account data here. Restrict the directory ACL on Windows; Go file mode
 0600 alone does not establish Windows ACLs. Do not commit or upload private files.
 
+For a loopback recipient behind a trusted HTTPS terminator, pass
+`-secure-cookies`. It forces Secure cookies independently of forwarded headers.
+See [the isolated host deployment](../../deploy/browser-eval/README.md).
+
 The default listener is loopback. Production Butler refuses private destinations;
 this command adds no exception. Native evaluation needs a dedicated isolated
 HTTPS fixture origin reachable through normal egress. Keep configuration and

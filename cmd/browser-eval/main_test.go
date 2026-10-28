@@ -164,3 +164,18 @@ func TestPrivateConfigurationIsStrictAndNeverOverwritten(t *testing.T) {
 		}
 	}
 }
+
+func TestTLSProxyModeForcesSecureCookieWithoutTrustingForwardedHeaders(t *testing.T) {
+	for _, secure := range []bool{false, true} {
+		s := &fixture{config: fixtureConfig{Username: "u", Password: "p"}, journal: new(bytes.Buffer), sessions: make(map[string]bool), secureCookies: secure}
+		r := httptest.NewRequest("POST", "http://fixture/login", strings.NewReader("username=u&password=p"))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.Header.Set("X-Forwarded-Proto", "https")
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		cookies := w.Result().Cookies()
+		if len(cookies) != 1 || cookies[0].Secure != secure || !cookies[0].HttpOnly {
+			t.Fatal("TLS proxy cookie policy failed")
+		}
+	}
+}
