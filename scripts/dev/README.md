@@ -1,5 +1,12 @@
 # Butler Dev Scripts
 
+`browser-baseline-manifest.sh NEW_REPORT_FILE` reads only the four main
+Core/Broker/browser/Web container identities, health, optional source label and
+two explicitly allowed boolean env flags. It never emits a full environment or
+configuration dump and refuses an existing output. Missing data remains unknown.
+This is inventory only; see [browser baseline](../../docs/testing/browser-baseline-2026-10-28.md)
+and the operator-only [recipient](../../cmd/browser-eval/README.md).
+
 `pwsh -NoProfile -File scripts/dev/issue17-local.ps1` checks the eight resource
 arbitration criteria on this PC using Docker Desktop's Linux engine. It creates
 an internal network, unpublished disposable PostgreSQL and a private executable

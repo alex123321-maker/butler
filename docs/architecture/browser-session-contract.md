@@ -160,6 +160,12 @@ automatically rebind a user tab.
 
 ## Validation
 
+The operator-only [browser baseline recipient](../../cmd/browser-eval/README.md)
+provides independent synthetic HTTP effects for issue #162 and a direct Chromium
+smoke. It installs no model tool or production egress exception. Its journal is
+not an action receipt accepted by Butler; native task/effect/delivery evidence
+must be joined separately. See [initial evidence and remaining gates](../testing/browser-baseline-2026-10-28.md).
+
 Unit tests cover owner/context mismatch, version, current URL, origin/domain,
 exclusive control, expiry, close capacity, process generation loss, typed auth
 resolution and Unicode output. Broker catalog tests reject implicit continuation,
