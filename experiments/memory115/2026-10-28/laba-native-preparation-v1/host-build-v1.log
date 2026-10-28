@@ -1,0 +1,31 @@
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cpu
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/privileged
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_pid
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_add
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_drop
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/new_privileges
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/other_image
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/root_uid
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/memory
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/swap
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/pids
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/writable_root
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_network
+--- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cpu (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/privileged (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_pid (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_add (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_drop (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/new_privileges (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/other_image (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/root_uid (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/memory (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/swap (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/pids (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/writable_root (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_network (0.00s)
+PASS
+ok  	command-line-arguments	1.014s
+3f386e4a07f99a5cf784e26461d53d9d50b42aea9d7cc965a45ec30605216ae1  /out/memory115-laba-host

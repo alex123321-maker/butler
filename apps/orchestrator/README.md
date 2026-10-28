@@ -1599,3 +1599,5 @@ contract.
 Terminal persistence failures propagate with fixed safe stage labels and retain
 the preceding/underlying causes for trusted inspection. Failed outcome, block
 or run-transition writes cannot be mistaken for an isolated provider failure.
+
+The prospective issue115 server comparison uses a separate owner-bound laba recipe and fixed isolated host adapter. PC histories and defaults remain unchanged; native entry stays unbound until fresh source/artifact/recipe/preseal qualification. See docs/testing/issue115-laba-native-protocol.md.

@@ -1,0 +1,9 @@
+{
+  "actual_kernel_bounds": true,
+  "actual_native_capture_and_stop": true,
+  "container_removed": true,
+  "native_calls": 0,
+  "real_auth": 0,
+  "synthetic_leftover_child_detected": true,
+  "whole_cgroup_empty": true
+}

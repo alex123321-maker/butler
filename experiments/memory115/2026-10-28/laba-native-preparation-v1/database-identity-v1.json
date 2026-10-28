@@ -1,0 +1,6 @@
+{
+  "fixed_image_storage_network_and_loopback": true,
+  "native_admission": false,
+  "native_calls": 0,
+  "real_auth": 0
+}

@@ -1,5 +1,15 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The prospective [issue115 laba adapter](../testing/issue115-laba-native-protocol.md)
+keeps experimental provider credentials in a separate encrypted source store.
+Only a fixed, fully bound native execution may read the matching private key,
+after source/preseal checks and actual kernel containment. Host-only env files
+pass the key by private reference to Docker exec; they are not model arguments
+or mounted tool files. Refreshed encrypted state returns by CAS only after the
+owning PID namespace/cgroup and database backends are gone. Unproven exit or
+recovery retains UNKNOWN and prohibits handback. This does not change product
+credential policy or authorize use of production settings.
+
 The isolated [issue97 operator research command](../../cmd/effort-eval/README.md)
 accepts private file references or a local-only state/S256-PKCE browser callback
 for a new provider login. It imports through the existing strict Manager into

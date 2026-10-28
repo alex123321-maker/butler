@@ -1,0 +1,14 @@
+{
+  "actual_kernel_values": true,
+  "background_child_observed": true,
+  "cpu_max": "100000 100000",
+  "memory_max": 2147483648,
+  "native_admission": false,
+  "native_calls": 0,
+  "pid_namespace_exited": true,
+  "pids_max": 256,
+  "real_auth": 0,
+  "swap_max": 0,
+  "version": "issue115-laba-host-probe-v1",
+  "whole_cgroup_empty_or_removed": true
+}

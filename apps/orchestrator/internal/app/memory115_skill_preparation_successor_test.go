@@ -23,27 +23,33 @@ const local115SkillDSN = "postgres://postgres@127.0.0.1:55451" + local115SkillDa
 // This new discriminator does not reopen the old213 or failed232 population.
 // Only the existing closed-local consumer may derive its complete predecessor.
 type local115SkillSuccessorManifest struct {
-	Format      string                  `json:"format"`
-	Location    string                  `json:"location"`
-	Owner       string                  `json:"owner"`
-	Created     time.Time               `json:"created_at"`
-	Day         string                  `json:"day"`
-	Deadline    time.Time               `json:"deadline"`
-	Previous    consolidationHistoryRef `json:"previous"`
-	Diagnostics consolidationHistoryRef `json:"separate_operator_diagnostics"`
-	Decision    consolidationHistoryRef `json:"owner_decision"`
-	Profile     string                  `json:"skill_preparation_profile"`
+	Format       string                   `json:"format"`
+	Location     string                   `json:"location"`
+	Owner        string                   `json:"owner"`
+	Created      time.Time                `json:"created_at"`
+	Day          string                   `json:"day"`
+	Deadline     time.Time                `json:"deadline"`
+	Previous     consolidationHistoryRef  `json:"previous"`
+	Diagnostics  consolidationHistoryRef  `json:"separate_operator_diagnostics"`
+	Decision     consolidationHistoryRef  `json:"owner_decision"`
+	Profile      string                   `json:"skill_preparation_profile"`
+	HostDecision *consolidationHistoryRef `json:"host_decision,omitempty"`
 }
 
 type local115SkillHistoryBinding struct {
-	Historical        experienceNativeLineage `json:"historical"`
-	DiagnosticsSHA256 string                  `json:"separate_operator_diagnostics_sha256"`
-	DecisionSHA256    string                  `json:"owner_decision_sha256"`
-	Profile           string                  `json:"skill_preparation_profile"`
+	Historical         experienceNativeLineage `json:"historical"`
+	DiagnosticsSHA256  string                  `json:"separate_operator_diagnostics_sha256"`
+	DecisionSHA256     string                  `json:"owner_decision_sha256"`
+	Profile            string                  `json:"skill_preparation_profile"`
+	Platform           string                  `json:"platform,omitempty"`
+	HostDecisionSHA256 string                  `json:"host_decision_sha256,omitempty"`
 }
 
 func validateLocal115SkillHistoryBinding(h experienceNativeLineage) error {
 	b := h.SkillPreparationSuccessor
+	if b != nil && !valid115SkillPlatform(b.Platform, b.HostDecisionSHA256) {
+		return errors.New("fixed skill-preparation platform and owner host decision required")
+	}
 	if b == nil || h.LocalSuccessor != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != local115SkillClosedSHA || b.DiagnosticsSHA256 != local115SkillDiagnosticSHA || b.DecisionSHA256 != local115SkillDecisionSHA || b.Profile != local115SkillProfile || validateExperienceNativeLineage(b.Historical) != nil || h.Carry != b.Historical.Carry || h.Usage != b.Historical.Usage || h.Day <= b.Historical.Day || !h.Deadline.After(b.Historical.Deadline) {
 		return errors.New("exact latest closed local history, diagnostic and owner preparation decision required")
 	}
@@ -52,6 +58,9 @@ func validateLocal115SkillHistoryBinding(h experienceNativeLineage) error {
 
 func local115SkillSuccessorLineage(m local115SkillSuccessorManifest, hash string, prior experienceNativeLineage) (experienceNativeLineage, error) {
 	var out experienceNativeLineage
+	if m.HostDecision != nil {
+		return out, errors.New("PC successor cannot acquire a server host decision")
+	}
 	day, err := time.Parse("2006-01-02", m.Day)
 	if err != nil || m.Format != local115SkillSuccessorFormat || m.Location != "this-pc-isolated-memory115" || m.Owner != experienceNativeOwner || !experienceNativeSHA(hash) || m.Created.IsZero() || m.Created.UTC().Format("2006-01-02") != m.Day || !m.Deadline.Equal(day.Add(24*time.Hour)) || !m.Deadline.After(m.Created) || !m.Created.After(prior.Deadline) || m.Previous.SHA256 != local115SkillClosedSHA || m.Diagnostics.SHA256 != local115SkillDiagnosticSHA || m.Decision.SHA256 != local115SkillDecisionSHA || m.Profile != local115SkillProfile {
 		return out, errors.New("new UTC identity and exact latest232 preparation successor required")
@@ -61,6 +70,10 @@ func local115SkillSuccessorLineage(m local115SkillSuccessorManifest, hash string
 }
 
 func loadLocal115SkillSuccessor(path, expected string) (experienceNativeLineage, error) {
+	return load115SkillSuccessor(path, expected, false)
+}
+
+func load115SkillSuccessor(path, expected string, laba bool) (experienceNativeLineage, error) {
 	var out experienceNativeLineage
 	root := filepath.Dir(path)
 	raw, err := closedExperienceRead(root, filepath.Base(path), expected, 64*1024)
@@ -93,6 +106,15 @@ func loadLocal115SkillSuccessor(path, expected string) (experienceNativeLineage,
 		if _, err = closedExperienceRead(root, ref.Path, ref.SHA256, 1024*1024); err != nil {
 			return out, err
 		}
+	}
+	if laba {
+		if m.HostDecision == nil || m.HostDecision.SHA256 != laba115HostDecisionSHA {
+			return out, errors.New("exact owner server instruction required")
+		}
+		if _, err = closedExperienceRead(root, m.HostDecision.Path, m.HostDecision.SHA256, 64*1024); err != nil {
+			return out, err
+		}
+		return laba115SkillSuccessorLineage(m, expected, prior)
 	}
 	return local115SkillSuccessorLineage(m, expected, prior)
 }

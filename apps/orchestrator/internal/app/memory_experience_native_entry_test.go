@@ -39,6 +39,8 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
+	case laba115SkillSuccessorFormat:
+		return load115SkillSuccessor(path, expected, true)
 	case local115SkillSuccessorFormat:
 		return loadLocal115SkillSuccessor(path, expected)
 	case local115NativeClosedFormat:
@@ -153,8 +155,14 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 	}
 	// The new profile also rejects query-level host/service/port overrides;
 	// merely checking the URL authority would not pin pgx's effective route.
-	if history.SkillPreparationSuccessor != nil && dsn != local115SkillDSN {
-		return nil, errors.New("local115 skill-preparation successor requires its new exact loopback database")
+	if binding := history.SkillPreparationSuccessor; binding != nil {
+		want := local115SkillDSN
+		if binding.Platform == laba115Platform {
+			want = laba115SkillDSN
+		}
+		if dsn != want {
+			return nil, errors.New("skill-preparation successor requires its platform's exact loopback database")
+		}
 	}
 	admin, err := pgxpool.New(ctx, dsn)
 	if err != nil {

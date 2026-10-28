@@ -1,0 +1,162 @@
+{
+  "version": "issue115-laba-native-preparation-v1",
+  "state": "PREPARATION_ONLY_UNBOUND",
+  "working_source": "source-server-preparation-v6",
+  "parent_carrier": "78b09df68832db5e56c841d617f04099abe63643",
+  "host": "ssh laba",
+  "owner_host_decision_sha256": "17ec6b369fec91129c1ae05e310260239c6a513a1e398c6eb5fe7b4515bcd4c5",
+  "final_test_top_PASS": 8,
+  "final_test_sub_PASS": 61,
+  "final_test_FAIL": 0,
+  "final_test_SKIP": 0,
+  "final_vet": 0,
+  "actual_native_capture_stop_PASS": true,
+  "actual_database_identity_PASS": true,
+  "all_native_operator_pins_empty": true,
+  "native_calls": 0,
+  "real_auth": 0,
+  "failed_compile_v2_retained": true,
+  "original_inaccurate_source_labels_retained_and_corrected_in_readme": true,
+  "raw": [
+    {
+      "file": "database-identity-v1.json",
+      "sha256": "504c7c4d667223c9855b3729e88276ec3d6f9a101fe977d3e1426cdf3c990b23",
+      "bytes": 123
+    },
+    {
+      "file": "host-build-v1.log",
+      "sha256": "d2bd1ef839902a39d9ab1b96b573ad278dff2e6cc372141db95a735cd26c68be",
+      "bytes": 2385
+    },
+    {
+      "file": "host-probe-receipt.json",
+      "sha256": "80a30395a9d7518562b00470fe32a3355783fb8fc83ebc3646691728e9af9f42",
+      "bytes": 350
+    },
+    {
+      "file": "host-probe-v1.log",
+      "sha256": "b71d15336ed054452c696fde7470309c41d0ae9ca05488209fe4ad1eab9f8d8c",
+      "bytes": 70
+    },
+    {
+      "file": "issue115-laba-host-build-v1.sh",
+      "sha256": "691b919c7afd40bbbaf5c99295e5c04b3c20fe578ca6d1e916560f0564e88afd",
+      "bytes": 1255
+    },
+    {
+      "file": "issue115-laba-lineage-tests-v1.sh",
+      "sha256": "5dd2ecce074dd604da4ba1fb7d3d57137df5e50e98f33d04af0c374e7c6d43ff",
+      "bytes": 1450
+    },
+    {
+      "file": "issue115-laba-native-postgres-v1.sh",
+      "sha256": "5985a6d775780df50f8ebccf2d527a6a031111f2d63c848aac4a162f54ae44eb",
+      "bytes": 1298
+    },
+    {
+      "file": "issue115-laba-server-tests-v2.sh",
+      "sha256": "e0737d875af7fccd78ae623ca3a68881f1a2134bf1d00ee8554f5aa7715b0424",
+      "bytes": 2691
+    },
+    {
+      "file": "issue115-laba-server-tests-v3.sh",
+      "sha256": "bf28b788ef8f1877c2d1c32d57958c6f366eff1b7faca34ce1b6c1c702896841",
+      "bytes": 2691
+    },
+    {
+      "file": "issue115-laba-server-tests-v4.sh",
+      "sha256": "735d48d6831969693a04cade33d43fc2b67a36765c26e5262ebffeafdb8533e4",
+      "bytes": 2691
+    },
+    {
+      "file": "issue115-laba-server-tests-v5.sh",
+      "sha256": "673ad2845f5c169bd652fa39642e4764ca11e95a686b0a212ebe63e4fdd94a04",
+      "bytes": 2691
+    },
+    {
+      "file": "issue115-laba-server-tests-v6.sh",
+      "sha256": "009af13a205e985f10cc5ac32b169b57c716172c7af6850bd155a9ede22ce0ad",
+      "bytes": 2691
+    },
+    {
+      "file": "native-containment-receipt.json",
+      "sha256": "9f35bf13fa9eaba901767ae06236ab8c3b84da3eaa82848604a3207f90acd289",
+      "bytes": 220
+    },
+    {
+      "file": "native-containment-v1.log",
+      "sha256": "d0fa23dbaac992ef99640770661d51664f5798ec364de72ff807cf58cd08d214",
+      "bytes": 78
+    },
+    {
+      "file": "native-database-identity-v1.log",
+      "sha256": "a75026e9aaf15b0e09f2a7544b8c3bac92c5955f2352a381702c86caf6a88576",
+      "bytes": 56
+    },
+    {
+      "file": "README.md",
+      "sha256": "e2e3cef68daff51a6acb97015774b41d1dec45fc65cfd8a671c61976b2b0c041",
+      "bytes": 2232
+    },
+    {
+      "file": "server-tests-v2-exit.json",
+      "sha256": "19e30ac3b0f0da12bcc1498f2942848728e977bbca9758976af2de79b459314e",
+      "bytes": 125
+    },
+    {
+      "file": "server-tests-v2.log",
+      "sha256": "4c8cc694ace84563501615f59bbe65d70a06df4dfd7dbbb56fc8a773a7c4c414",
+      "bytes": 4473
+    },
+    {
+      "file": "server-tests-v3-exit.json",
+      "sha256": "f1e918346b05086589d8e48a1f0bd0630101905951f0c5e3c3cc856824760a7f",
+      "bytes": 125
+    },
+    {
+      "file": "server-tests-v3.log",
+      "sha256": "bbcda19ec106fb18d0764e248ac0b6ed1c3d459e765104fade027008dbc32218",
+      "bytes": 9763
+    },
+    {
+      "file": "server-tests-v4-exit.json",
+      "sha256": "ce575a46fea379af1fe4e9e2b327b3e6ca08699dfb9e2bf95fa98a0ab63bb0af",
+      "bytes": 125
+    },
+    {
+      "file": "server-tests-v4.log",
+      "sha256": "9fc382125f139a10be59cc75f61444069a78856a511ef677264df416625353ae",
+      "bytes": 12231
+    },
+    {
+      "file": "server-tests-v5-exit.json",
+      "sha256": "eef737d09a932bcbed9d4a9e14b8717b7c5fb06b5921fea8859957e9726b3306",
+      "bytes": 125
+    },
+    {
+      "file": "server-tests-v5.log",
+      "sha256": "c382371afdd414200c41b62310f1f1790a6cd0ce634cef88c052bc7c3724eb26",
+      "bytes": 12231
+    },
+    {
+      "file": "server-tests-v6-exit.json",
+      "sha256": "a796ea7132967a78b7e615a1154119b3abe759e7d57f99a4afac3805ffa95b99",
+      "bytes": 125
+    },
+    {
+      "file": "server-tests-v6.log",
+      "sha256": "ce9fd5e5e10add1d2a4281779f81a412f1a0daa1f51735e17c17d02dc74fea57",
+      "bytes": 12231
+    },
+    {
+      "file": "unbound-native-v6-exit.json",
+      "sha256": "d772a4f834cbaa565f6ff0140263f9a6ad1f26092f2d38d371dd39e73fbc663b",
+      "bytes": 70
+    },
+    {
+      "file": "unbound-native-v6.log",
+      "sha256": "39b17441822d43f0ebab1bb83e8465e5a3d31196db2bf04a1748375a69fe2d4b",
+      "bytes": 46
+    }
+  ]
+}
