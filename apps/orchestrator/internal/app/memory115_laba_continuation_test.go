@@ -51,6 +51,8 @@ func laba115Closure(expected string) (laba115ClosureProfile, error) {
 		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v4", "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497", "e59ffd65c49ee8401c14059dd909bbafeb8865994c93b7ea8222002b95edfdf9", "62645b5ee8a439e1899466689485e36b806ecdf66e2f054bab755ff04dd4ba4f", 445, 441}, nil
 	case guided115Closed503SHA:
 		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v5", "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511", "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490", "ec774bdb0b13477e6b34c521a336374f4d9e96e0aeaaa3faaa9a991660f2fa3f", 759, 755}, nil
+	case guided115Closed528SHA:
+		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v6", "30acfb4f8ae5260a7e3675822247672d3dde178057d7292d54b0166200ab893c", "0308c67a29068c468d332cca87de140b9a34bf5bdbd42bbfc002d2ae7735cafb", "3799af3bd95fd82bd850508c70a3d57079b76d36810bbab278f6327e01cc1ae7", 188, 184}, nil
 	default:
 		return laba115ClosureProfile{}, errors.New("unregistered server closure; no old history fallback")
 	}

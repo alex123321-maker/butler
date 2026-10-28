@@ -333,8 +333,18 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		t.Fatal("frozen runtime endpoints unavailable before fixture setup", err)
 	}
 	ctx := context.Background()
-	// Match App.New's bounded authority reserve. Business work must not consume
-	// the only capacity for the unchanged750ms lease/task/source observations.
+	reads, sourceReads := newExperienceNativeObservationPools(t, pool)
+	cat = cat.WithRunObservationPool(sourceReads)
+	r := &experienceNativeRuntime{pool: pool, reads: reads, directory: directory, cat: cat, tasks: task.NewStoreWithAuthorityReads(pool, reads), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewControllerWithAuthorityReads(pool, reads, policy), expires: expires, addresses: addresses, stops: []func(){reads.Close, sourceReads.Close}}
+	return configureExperienceNativeRuntime(t, r, cat, anchor, directory, recipient, addresses, policy, prompt, arm, subset, expires, foreground, ctx)
+}
+
+func newExperienceNativeObservationPools(t *testing.T, pool *pgxpool.Pool) (*pgxpool.Pool, *pgxpool.Pool) {
+	t.Helper()
+	ctx := t.Context()
+	// Research composition: a slow current-source proof must not consume the
+	// sole lease/task observer connection. Both reserves are bounded at one;
+	// business stays at two. Production App.New is not changed by this fixture.
 	readConfig := pool.Config().Copy()
 	readConfig.MaxConns, readConfig.MinConns = 1, 0
 	readConfig.ConnConfig.RuntimeParams["application_name"] = "butler-authority-observer"
@@ -343,8 +353,19 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		t.Fatal("bounded authority observation capacity unavailable")
 	}
 	t.Cleanup(reads.Close)
-	cat = cat.WithRunObservationPool(reads)
-	r := &experienceNativeRuntime{pool: pool, reads: reads, directory: directory, cat: cat, tasks: task.NewStoreWithAuthorityReads(pool, reads), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewControllerWithAuthorityReads(pool, reads, policy), expires: expires, addresses: addresses, stops: []func(){reads.Close}}
+	sourceConfig := readConfig.Copy()
+	sourceConfig.ConnConfig.RuntimeParams["application_name"] = "butler-experience-source-observer"
+	sourceReads, err := pgxpool.NewWithConfig(ctx, sourceConfig)
+	if err != nil {
+		t.Fatal("bounded source observation capacity unavailable")
+	}
+	t.Cleanup(sourceReads.Close)
+	return reads, sourceReads
+}
+
+func configureExperienceNativeRuntime(t *testing.T, r *experienceNativeRuntime, cat *catalog.Store, anchor, directory string, recipient *experienceRecipient, addresses experienceNativeAddresses, policy budget.Policy, prompt, arm string, subset []catalog.SourceRef, expires time.Time, foreground *experienceNativeForeground, ctx context.Context) *experienceNativeRuntime {
+	t.Helper()
+	pool, reads := r.pool, r.reads
 	if foreground != nil {
 		copy := *foreground
 		r.foreground = &copy

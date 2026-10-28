@@ -15,7 +15,7 @@ import (
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
-	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" {
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -60,6 +60,11 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	if profile == "closed-abc-v6" {
 		wantPlan = "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511"
+	}
+	limit := 33
+	if profile == "guided-full-v1" {
+		wantPlan = "30acfb4f8ae5260a7e3675822247672d3dde178057d7292d54b0166200ab893c"
+		limit = 57
 	}
 	if accountingPlan != wantPlan {
 		t.Fatal("different cohort accounting")
@@ -117,7 +122,7 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	rows := []map[string]any{}
 	complete := true
-	for _, s := range window.Slots[9:33] {
+	for _, s := range window.Slots[9:limit] {
 		row := map[string]any{"sequence": s.Sequence, "case": s.CaseID, "arm": s.Arm, "slot_status": s.Status, "blocker": s.Blocker, "cost": bySlot[s.ID]}
 		if s.Started != nil && s.Finished != nil {
 			row["elapsed_millis"] = s.Finished.Sub(*s.Started).Milliseconds()
@@ -244,9 +249,38 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		row["initial_check_failed_observed"] = currentCheckFailed
 		row["memory_open_sources"] = memoryReads
 		row["loaded_skill_digests"] = loadedSkills
+		var usagePins []struct {
+			Run                 string `json:"run_id"`
+			Digest              string `json:"digest"`
+			Task                string `json:"task_id"`
+			TaskRevision        int64  `json:"task_revision"`
+			ConstraintsRevision int64  `json:"constraints_revision"`
+		}
+		_ = json.Unmarshal(db["skill_usages"], &usagePins)
+		pins := []map[string]any{}
+		matchedLoads := 0
+		for _, pin := range usagePins {
+			if pin.Run != outcome.Result.RunID {
+				continue
+			}
+			pins = append(pins, map[string]any{"digest": pin.Digest, "task_id": pin.Task, "task_revision": pin.TaskRevision, "constraints_revision": pin.ConstraintsRevision})
+			for _, digest := range loadedSkills {
+				if pin.Digest == digest {
+					matchedLoads++
+					break
+				}
+			}
+		}
+		row["skill_usage_pins"] = pins
+		row["completed_loads_with_matching_pin"] = matchedLoads
 		rows = append(rows, row)
 	}
-	result := map[string]any{"version": "butler115.abc-post-exit-facts.v1", "plan_sha256": accountingPlan, "selected_control_slots": 24, "full_control_slots": 48, "all24_owning_outcomes_present": complete, "shared_and_arm_native_costs": groups, "cases": rows, "semantic_review_required": true, "independent_quality_qualified": false, "new_native_admission": false}
+	result := map[string]any{"version": "butler115.abc-post-exit-facts.v1", "plan_sha256": accountingPlan, "selected_control_slots": limit - 9, "full_control_slots": 48, "all_owning_outcomes_present": complete, "shared_and_arm_native_costs": groups, "cases": rows, "semantic_review_required": true, "independent_quality_qualified": false, "new_native_admission": false}
+	if limit == 33 {
+		result["all24_owning_outcomes_present"] = complete
+	} else {
+		result["all48_owning_outcomes_present"] = complete
+	}
 	f, e := os.OpenFile("/review-output/abc-facts.json", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if e != nil {
 		t.Fatal(e)

@@ -526,7 +526,7 @@ func (c *experienceNativeCollector) exportDatabase(name string, pool *pgxpool.Po
 	ctx, stop := context.WithTimeout(context.Background(), 15*time.Second)
 	defer stop()
 	out := map[string]json.RawMessage{}
-	for _, table := range []string{"execution_budget_scopes", "execution_budget_reservations", "execution_model_attempts", "memory_model_attempts", "memory_aux_jobs", "memory_model_policies", "tasks", "runs", "accepted_inputs", "action_effects", "action_effect_evidence", "action_effect_dispatches", "tool_calls", "run_final_results", "memory_experience_lessons", "skill_catalog", "skill_versions", "skill_states"} {
+	for _, table := range []string{"execution_budget_scopes", "execution_budget_reservations", "execution_model_attempts", "memory_model_attempts", "memory_aux_jobs", "memory_model_policies", "tasks", "runs", "accepted_inputs", "action_effects", "action_effect_evidence", "action_effect_dispatches", "tool_calls", "run_final_results", "memory_experience_lessons", "skill_catalog", "skill_versions", "skill_states", "skill_usages"} {
 		var raw json.RawMessage
 		if err := pool.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM `+table+` t`).Scan(&raw); err != nil {
 			return fmt.Errorf("complete private database export failed: %s", table)

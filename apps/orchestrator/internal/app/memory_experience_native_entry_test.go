@@ -39,11 +39,11 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
-	case guided115Format:
+	case guided115Format, guided115V2Format:
 		return loadGuided115History(path, expected)
 	case laba115RepairedFormat, laba115ReservedFormat, laba115SchemaFormat, laba115ProbeFormat:
 		return loadLaba115RepairedContinuation(path, expected)
-	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3", "butler.experience.closed-laba-owner-leaf.v4", "butler.experience.closed-laba-owner-leaf.v5":
+	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3", "butler.experience.closed-laba-owner-leaf.v4", "butler.experience.closed-laba-owner-leaf.v5", "butler.experience.closed-laba-owner-leaf.v6":
 		return loadClosedExperienceNativeHistoryProfiles(path, expected, false, true)
 	case laba115SkillSuccessorFormat:
 		return load115SkillSuccessor(path, expected, true)
@@ -162,7 +162,11 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 	if history.LocalSuccessor != nil && (parsed.Hostname() != "127.0.0.1" || parsed.Port() != "55451" || parsed.Path != "/memory115_native_test") {
 		return nil, errors.New("local115 successor requires its exact separate loopback database")
 	}
-	if history.GuidedFull != nil && dsn != guided115DSN {
+	guidedDSN := guided115DSN
+	if history.GuidedFull != nil && history.GuidedFull.Historical.Hash == guided115Closed528SHA {
+		guidedDSN = guided115V2DSN
+	}
+	if history.GuidedFull != nil && dsn != guidedDSN {
 		return nil, errors.New("guided full57 requires its exact fresh loopback database")
 	}
 	// The new profile also rejects query-level host/service/port overrides;

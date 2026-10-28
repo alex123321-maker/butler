@@ -13,7 +13,7 @@ import (
 // it creates no native history recipe, provider, database or admission authority.
 func TestLaba115ClosedCostReview(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW")
-	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" {
+	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" {
 		t.Skip("explicit immutable post-exit server exports required")
 	}
 	planSHA := "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
@@ -34,6 +34,10 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		planSHA = "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511"
 		historySHA = "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490"
 	}
+	if profile == "guided-full-v1" {
+		planSHA = "30acfb4f8ae5260a7e3675822247672d3dde178057d7292d54b0166200ab893c"
+		historySHA = "0308c67a29068c468d332cca87de140b9a34bf5bdbd42bbfc002d2ae7735cafb"
+	}
 	root := "/review"
 	read := func(name string, value any) {
 		t.Helper()
@@ -53,7 +57,14 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		t.Fatal("original fixed preseal differs")
 	}
 	history, err := loadExperienceNativeHistory("/history/recipe.json", historySHA)
-	if err != nil || !reflect.DeepEqual(plan.Lineage, history) || plan.ExecutionSlots != 33 || closedExperienceFinitePlan(plan, history) != nil {
+	wantScope, maximumDatabases := 33, 25
+	if profile == "guided-full-v1" {
+		wantScope, maximumDatabases = 0, 49
+		if history.GuidedFull == nil {
+			t.Fatal("guided full57 history missing")
+		}
+	}
+	if err != nil || !reflect.DeepEqual(plan.Lineage, history) || plan.ExecutionSlots != wantScope || closedExperienceFinitePlan(plan, history) != nil {
 		t.Fatal("exact retained parent and finite33-of57 plan required", err)
 	}
 	var window struct {
@@ -85,7 +96,7 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		Invoice   string   `json:"invoice_cost"`
 	}
 	read("actual/unique-quoted-costs.json", &costs)
-	if costs.Captured != len(window.Entries) || costs.Invoice != "unknown" || len(costs.Databases) < 1 || len(costs.Databases) > 25 {
+	if costs.Captured != len(window.Entries) || costs.Invoice != "unknown" || len(costs.Databases) < 1 || len(costs.Databases) > maximumDatabases {
 		t.Fatal("complete allocated cost population required")
 	}
 	byDatabase := map[string]map[string]json.RawMessage{}

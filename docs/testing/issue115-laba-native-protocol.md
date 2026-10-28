@@ -2,6 +2,31 @@
 
 ## New guided full57 comparison
 
+The v1 collection is closed/NO_GO: preparation failed with
+`execution_authority_observation_timeout`, before all48 control slots. Its new25
+native entries include24 observed usages/274,499 full tokens and one unknown.
+The validated primary history now contains528 native entries,4 unknown and
+4,595,207 known full tokens; the separate25/90,951 diagnostics remain separate.
+The exact closed528 v6 leaf retains all188 sealed files, actual exit1 and opaque
+auth handback. The v2 recipe must consume that leaf, never revert to503.
+
+The prospective v2 fixture uses two business connections, one dedicated
+lease/task/budget observation connection, and one separate source-observation
+connection (four total). Production composition is unchanged. The closed trace
+shows a source proof occupying its old shared reserve for2.09s while the lease
+observation reached750ms; this is evidence of contention, not proof of the unique
+cause of every SQL delay. A zero-native PostgreSQL regression reproduces shared
+capacity starvation, proves the separated lease read fits750ms with source
+capacity held, and still denies revoked ownership. Source checks retain2s and
+every authority/source failure retains global priority. No timeout or error is
+suppressed. Whole57 controlled mechanics must pass before new native admission.
+
+V2 uses fresh `memory115_laba_guided_full_v2_test`, source/artifact/plan bindings
+and a one-use operator. Its native database exports additionally retain
+`skill_usages` so a completed Broker load can be matched to the actual run, task,
+task/constraint revisions and exact digest. This is prospective evidence only;
+the v1 and older original export files are not amended.
+
 The owner's next explicit instruction authorizes a new full A/B/C comparison on
 laba with fixed skill-selection guidance and real Broker loading. Its separate
 `butler.experience.laba-guided-full-window.v1` recipe consumes only the complete

@@ -19,6 +19,9 @@ const guided115Closed503SHA = "9257712fd53251bf2d6bfbb79e2357a6b16b7077cc70c34a7
 const guided115SupplementSHA = "33bb7313f2dfa1b913829d96d2a1b2c33b27a09d23ce761558e5be3229236709"
 const guided115DecisionSHA = "c8e59b87624c30faeee40fb67f4d4b831e7b04fb1828d7e5bb43af45e9b28ea2"
 const guided115DSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_guided_full_v1_test?sslmode=disable"
+const guided115V2Format = "butler.experience.laba-guided-full-window.v2"
+const guided115Closed528SHA = "f1abe72864e57ebddfc5ee79a95b4c3e14325b38116d23ecffee506c70eba529"
+const guided115V2DSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_guided_full_v2_test?sslmode=disable"
 
 // Supplemental diagnostics have native requests without matching Core rows.
 // Keep their complete measured cost separately; never invent product attempts
@@ -42,7 +45,7 @@ type guided115Recipe struct {
 
 func validateGuided115Binding(h experienceNativeLineage) error {
 	b := h.GuidedFull
-	if b == nil || h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil || b.Historical.GuidedFull != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != guided115Closed503SHA || b.SupplementSHA != guided115SupplementSHA || b.DecisionSHA != guided115DecisionSHA || validateExperienceNativeLineage(b.Historical) != nil || !reflect.DeepEqual(h.Carry, b.Historical.Carry) || h.Usage != b.Historical.Usage {
+	if b == nil || h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil || b.Historical.GuidedFull != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != guided115Closed503SHA && b.Historical.Hash != guided115Closed528SHA || b.SupplementSHA != guided115SupplementSHA || b.DecisionSHA != guided115DecisionSHA || validateExperienceNativeLineage(b.Historical) != nil || !reflect.DeepEqual(h.Carry, b.Historical.Carry) || h.Usage != b.Historical.Usage {
 		return errors.New("complete closed503 and immutable supplemental accounting required")
 	}
 	day, e := time.Parse("2006-01-02", h.Day)
@@ -150,7 +153,11 @@ func loadGuided115History(path, expected string) (experienceNativeLineage, error
 		return out, errors.New("exact guided full57 recipe required")
 	}
 	canonical, _ := json.Marshal(m)
-	if !bytes.Equal(canonical, raw) || m.Format != guided115Format || m.Owner != experienceNativeOwner || m.Previous.SHA256 != guided115Closed503SHA || m.Supplement.SHA256 != guided115SupplementSHA || m.Decision.SHA256 != guided115DecisionSHA {
+	wantParent := guided115Closed503SHA
+	if m.Format == guided115V2Format {
+		wantParent = guided115Closed528SHA
+	}
+	if !bytes.Equal(canonical, raw) || m.Format != guided115Format && m.Format != guided115V2Format || m.Owner != experienceNativeOwner || m.Previous.SHA256 != wantParent || m.Supplement.SHA256 != guided115SupplementSHA || m.Decision.SHA256 != guided115DecisionSHA {
 		return out, errors.New("canonical latest503 guided owner recipe required")
 	}
 	for _, ref := range []consolidationHistoryRef{m.Previous, m.Supplement, m.Decision} {
@@ -173,7 +180,8 @@ func loadGuided115History(path, expected string) (experienceNativeLineage, error
 	return out, validateExperienceNativeLineage(out)
 }
 func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
-	if os.Getenv("BUTLER_ISSUE115_GUIDED_PREPARE") != "latest503-full57-v1" {
+	mode := os.Getenv("BUTLER_ISSUE115_GUIDED_PREPARE")
+	if mode != "latest503-full57-v1" && mode != "latest528-full57-v2" {
 		t.Skip("explicit offline latest503 full57 preparation")
 	}
 	path := os.Getenv("BUTLER_ISSUE115_GUIDED_RECIPE")
@@ -182,6 +190,10 @@ func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
 	}
 	now := time.Now().UTC()
 	m := guided115Recipe{Format: guided115Format, Owner: experienceNativeOwner, Created: now, Day: now.Format("2006-01-02"), Deadline: now.Truncate(24 * time.Hour).Add(24 * time.Hour), Previous: consolidationHistoryRef{Path: "closed-laba503/closed-leaf.json", SHA256: guided115Closed503SHA}, Supplement: consolidationHistoryRef{Path: "separate-diagnostics.json", SHA256: guided115SupplementSHA}, Decision: consolidationHistoryRef{Path: "guided-full-owner-decision.json", SHA256: guided115DecisionSHA}}
+	if mode == "latest528-full57-v2" {
+		m.Format = guided115V2Format
+		m.Previous = consolidationHistoryRef{Path: "closed-laba528/closed-leaf.json", SHA256: guided115Closed528SHA}
+	}
 	b, _ := json.Marshal(m)
 	f, e := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if e != nil {
@@ -197,10 +209,14 @@ func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if h.Usage.NativeEntries != 503 || h.Usage.NativeUnknownUsage != 3 || h.Usage.KnownFullTokenLowerBound != 4320708 {
+	wantNative, wantUnknown, wantTokens := 503, 3, int64(4320708)
+	if mode == "latest528-full57-v2" {
+		wantNative, wantUnknown, wantTokens = 528, 4, 4595207
+	}
+	if h.Usage.NativeEntries != wantNative || h.Usage.NativeUnknownUsage != wantUnknown || h.Usage.KnownFullTokenLowerBound != wantTokens {
 		t.Fatal("closed503 expense changed")
 	}
-	t.Logf("GUIDED_FULL57_HISTORY_PASS recipe=%s primary503/3unknown/4320708tokens supplemental25/90951tokens; all previous failures retained", h.Hash)
+	t.Logf("GUIDED_FULL57_HISTORY_PASS recipe=%s primary%d/%dunknown/%dtokens supplemental25/90951tokens; all previous failures retained", h.Hash, wantNative, wantUnknown, wantTokens)
 }
 func TestGuided115RejectsOldHistoryAndChangedExpenses(t *testing.T) {
 	now := time.Date(2026, 10, 28, 19, 0, 0, 0, time.UTC)
