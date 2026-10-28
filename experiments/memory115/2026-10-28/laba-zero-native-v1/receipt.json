@@ -1,0 +1,185 @@
+{
+  "version": "issue115-laba-zero-native-v1",
+  "producer": "a58aa96936c01ee3f9de6d6601e02f8df9058653",
+  "host": "ssh laba",
+  "source_files": 6282,
+  "source_bytes": 335187485,
+  "source_exact_before_after": true,
+  "all_31_required_tests_matched_actual_PASS": true,
+  "stages": [
+    {
+      "stage": "readiness",
+      "top_PASS": 1,
+      "sub_PASS": 0,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "controls",
+      "top_PASS": 1,
+      "sub_PASS": 57,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "app-controls",
+      "top_PASS": 23,
+      "sub_PASS": 63,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "source-guards",
+      "top_PASS": 7,
+      "sub_PASS": 22,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "lesson-read",
+      "top_PASS": 1,
+      "sub_PASS": 10,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "operator",
+      "top_PASS": 6,
+      "sub_PASS": 20,
+      "FAIL": 1,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "operator-v2",
+      "top_PASS": 7,
+      "sub_PASS": 38,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    },
+    {
+      "stage": "vet",
+      "top_PASS": 0,
+      "sub_PASS": 0,
+      "FAIL": 0,
+      "SKIP": 0,
+      "race_reports": 0
+    }
+  ],
+  "vet_exit": 0,
+  "original_operator_exit": 1,
+  "corrected_loopback_operator_exit": 0,
+  "full57": true,
+  "native_calls": 0,
+  "real_credentials": 0,
+  "live_deployment_changed": false,
+  "closed_native_history_changed": false,
+  "private_raw_remote": "/srv/gitea/butler-acceptance/issue115-20261028-v1",
+  "raw_receipts": [
+    {
+      "file": "app-controls-exit.json",
+      "bytes": 70,
+      "sha256": "d505a88594c5c1177e593c4278aeaeff898a97217e627e89434280f442837de3"
+    },
+    {
+      "file": "app-controls.log",
+      "bytes": 27278,
+      "sha256": "13e1fb993b576cb80beb6e4484f284587f08099997a6060a06c3de317a969086"
+    },
+    {
+      "file": "build-exit.json",
+      "bytes": 124,
+      "sha256": "06069169aeee7361baa9922e109bcb0013c211ab87068d6f49673f4ff41b74d1"
+    },
+    {
+      "file": "build.log",
+      "bytes": 478,
+      "sha256": "97d5625b4fe4b0f5717de59e6e72652eb4a9418b960602a62b0e9ef3da20086a"
+    },
+    {
+      "file": "controls-exit.json",
+      "bytes": 146,
+      "sha256": "1b24b75a2fa13af4d5cf289a38974866fcb944b32185645fba007e319ae3b147"
+    },
+    {
+      "file": "controls.log",
+      "bytes": 154153,
+      "sha256": "ffc858d98c2cd0c34f953ef3fcfca3f7a077a4ba9ce8cc4929aed558c0e9b3bb"
+    },
+    {
+      "file": "lesson-read-exit.json",
+      "bytes": 69,
+      "sha256": "d173a9bb7e4834298e024dac2aafed195ebcbb6450db192d443b31eec3582d04"
+    },
+    {
+      "file": "lesson-read.log",
+      "bytes": 16594,
+      "sha256": "256026f20a898dac8d8fd2dd8a112b7170bc729d84563a2c94b5ab50d2d1980f"
+    },
+    {
+      "file": "operator-exit.json",
+      "bytes": 66,
+      "sha256": "67ec75cdfa8bdf40b5632ac773e8601a0db6856ddc34b96cc670bd81727cb167"
+    },
+    {
+      "file": "operator-v2-exit.json",
+      "bytes": 83,
+      "sha256": "3813dfe80a87f4b57b5898f3252accf04f4645a7f5e9e5d446965a9fa2480e96"
+    },
+    {
+      "file": "operator-v2.log",
+      "bytes": 8042,
+      "sha256": "9e653880629917139a0da59ee4d0931fffb8b5be664a5c15fdfc818ae71ed4fe"
+    },
+    {
+      "file": "operator.log",
+      "bytes": 5450,
+      "sha256": "85914764279b896953c2059f327c1da4fba432313f13f9b8e9a0c255857106d4"
+    },
+    {
+      "file": "readiness-exit.json",
+      "bytes": 124,
+      "sha256": "06069169aeee7361baa9922e109bcb0013c211ab87068d6f49673f4ff41b74d1"
+    },
+    {
+      "file": "readiness.log",
+      "bytes": 225,
+      "sha256": "ecb33edb3dca69be0a4ecbc9985244a9ba77a25d7252fb646ac1b13d97b975d7"
+    },
+    {
+      "file": "source-guards-exit.json",
+      "bytes": 71,
+      "sha256": "c038de972394572816fc20383234d1c9cac5629a8174e9a790682f1960668b02"
+    },
+    {
+      "file": "source-guards.log",
+      "bytes": 5785,
+      "sha256": "73130cda9e96a726a2587da7e83bf3503bb31e1a9c8d7ef50173e396f5746ded"
+    },
+    {
+      "file": "vet-exit.json",
+      "bytes": 61,
+      "sha256": "9548b37ec650c324e8898754588680014160f97065a967b4546d3c6b4a910297"
+    },
+    {
+      "file": "vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "decision": "ZERO_NATIVE_GATES_PASS_NOT_NATIVE_OR_RELEASE_ACCEPTANCE",
+  "next": "separate current server-native recipe and fixed host adapter; legacy WSL operator remains unbound and cannot be reused as server acceptance",
+  "prepared_artifact_sha256": [
+    "28efb5b32486664ea0b71351a26f4b4237b988d0e4ac2f3e1b9912642b9d18a8  /prepared/app.test",
+    "5cb62d849c666055fc9f2906237dd5852b047208844559adcd45ab74256d292b  /prepared/broker-control.test",
+    "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b  /prepared/extension.test",
+    "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca  /prepared/http.test",
+    "1bf5ecc3821672ff1669b3e856663d76355089d5c2e1b27942977165622186c9  /prepared/tool-broker"
+  ]
+}

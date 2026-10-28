@@ -1,0 +1,157 @@
+[
+  {
+    "test": "TestCapturedRunLeaseExpiryAfterGrantWaitIntegration",
+    "package": "catalog",
+    "file": "internal/memory/catalog\\captured_grants_integration_test.go"
+  },
+  {
+    "test": "TestExperienceCapturedPinsLeaseExpiryDuringFinalWaitIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_publication_integration_test.go"
+  },
+  {
+    "test": "TestExperienceCompoundSourceBound",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_bound_test.go"
+  },
+  {
+    "test": "TestExperienceNativeAbortRetainsGlobalPartitionIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_window_test.go"
+  },
+  {
+    "test": "TestExperienceNativeClonesPreserveIsolationAndGlobalJournalIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_clone_test.go"
+  },
+  {
+    "test": "TestExperienceNativeCurrentEnvironmentMustMatchSealedArtifactProfile",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_collect_test.go"
+  },
+  {
+    "test": "TestExperienceNativeFailedSetupExportsAllAllocatedQuotePopulationsIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_entry_test.go"
+  },
+  {
+    "test": "TestExperienceNativeFrozenCorpusUsesExactOrdinaryPermissionGrantsIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_runtime_test.go"
+  },
+  {
+    "test": "TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_carry_test.go"
+  },
+  {
+    "test": "TestExperienceNativeMechanicalInputsFailClosed",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_plan_test.go"
+  },
+  {
+    "test": "TestExperienceNativeOrdinarySourcePipelineIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_runtime_test.go"
+  },
+  {
+    "test": "TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_seal_test.go"
+  },
+  {
+    "test": "TestExperienceNativePrivateParentPreflightPrecedesAuth",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_seal_test.go"
+  },
+  {
+    "test": "TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_window_test.go"
+  },
+  {
+    "test": "TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_window_test.go"
+  },
+  {
+    "test": "TestExperienceNativeStageCaptureKeepsCancellationAndUnknownUsage",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_window_test.go"
+  },
+  {
+    "test": "TestExperienceNativeStorageClaimCannotReopenCohortIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_entry_test.go"
+  },
+  {
+    "test": "TestExperienceNativeTemplateRejectsAuthBeforeFreezeIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_clone_test.go"
+  },
+  {
+    "test": "TestExperienceNativeUniqueQuotesRetainClonedPrefixAndRejectRefunds",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_cost_test.go"
+  },
+  {
+    "test": "TestExperienceNativeWholeCollectorControlledIntegration",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_collect_control_test.go"
+  },
+  {
+    "test": "TestExperienceNativeWholeDeadlinePreservesForegroundAndUTC",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_native_plan_test.go"
+  },
+  {
+    "test": "TestExperienceRecipientHTTPStatusAuditIsPrivateAndNonAuthoritative",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory_experience_recipient_protocol_test.go"
+  },
+  {
+    "test": "TestLocal115ClosedHandbackProfileBoundaries",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory115_closed_local_native_history_test.go"
+  },
+  {
+    "test": "TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory115_local_successor_test.go"
+  },
+  {
+    "test": "TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation",
+    "package": "app",
+    "file": "apps/orchestrator/internal/app\\memory115_skill_preparation_successor_test.go"
+  },
+  {
+    "test": "TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_compound_integration_test.go"
+  },
+  {
+    "test": "TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_compound_integration_test.go"
+  },
+  {
+    "test": "TestOwningSourceVerificationBoundSlowCurrentAndRevocationIntegration",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_guard_integration_test.go"
+  },
+  {
+    "test": "TestSourceGuardDoesNotAttributeAnotherRunUsage",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_usage_test.go"
+  },
+  {
+    "test": "TestSourceGuardMissingUsageDrainIsBoundedAndJoins",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_usage_test.go"
+  },
+  {
+    "test": "TestSourceGuardTickerRaceKeepsUsageAndReleasesNoData",
+    "package": "orchestrator",
+    "file": "apps/orchestrator/internal/orchestrator\\memory_source_usage_test.go"
+  }
+]
