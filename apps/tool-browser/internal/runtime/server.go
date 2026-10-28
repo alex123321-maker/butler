@@ -25,7 +25,8 @@ var supportedTools = map[string]bool{
 	"browser.navigate": true, "browser.snapshot": true, "browser.click": true,
 	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
 	"browser.prepare_fill": true, "browser.prepare_type": true,
-	"browser.extract_text": true, "browser.set_cookie": true, "browser.restore_storage_state": true,
+	"browser.submit_get_form": true,
+	"browser.extract_text":    true, "browser.set_cookie": true, "browser.restore_storage_state": true,
 }
 
 type Runner interface {
@@ -50,6 +51,9 @@ type Request struct {
 	ExpectedURL        string                  `json:"expected_url,omitempty"`
 	ObservationVersion uint64                  `json:"observation_version,omitempty"`
 	Selector           string                  `json:"selector,omitempty"`
+	Fields             map[string]string       `json:"fields,omitempty"`
+	GetFormPhase       string                  `json:"get_form_phase,omitempty"` // runner-only protocol
+	GetFormNonce       string                  `json:"get_form_nonce,omitempty"`
 	Value              string                  `json:"value,omitempty"`
 	Text               string                  `json:"text,omitempty"`
 	Timeout            int64                   `json:"timeout,omitempty"`
@@ -92,6 +96,9 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
+	Forms              []FormDescription     `json:"forms,omitempty"`
+	GetFormTarget      string                `json:"get_form_target,omitempty"` // private helper plan; never tool output
+	GetFormNonce       string                `json:"get_form_nonce,omitempty"`
 	SessionID          string                `json:"browser_session_id,omitempty"`
 	ObservationVersion uint64                `json:"observation_version,omitempty"`
 	ScopeOrigin        string                `json:"scope_origin,omitempty"`
@@ -108,6 +115,17 @@ type Result struct {
 	CredentialVerified *bool                 `json:"credential_verified,omitempty"`
 	Error              *ResultError          `json:"error,omitempty"`
 	OwnerFrame         *browsercontrol.Frame `json:"owner_frame,omitempty"`
+}
+
+type FormDescription struct {
+	Selector string                 `json:"selector"`
+	Method   string                 `json:"method"`
+	Action   string                 `json:"action"`
+	Fields   []FormFieldDescription `json:"fields"`
+}
+type FormFieldDescription struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
@@ -139,6 +157,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
+	}
+	if args.ToolName == "browser.submit_get_form" && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET form navigation requires its read-only revision 1 contract")
 	}
 	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "public-origin navigation requires revision 3")
@@ -288,7 +309,7 @@ func isGuardedAction(tool string) bool {
 }
 func validateSelectorRequired(args Request) error {
 	switch args.ToolName {
-	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text":
+	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text", "browser.submit_get_form":
 		if strings.TrimSpace(args.Selector) == "" {
 			return fmt.Errorf("selector is required")
 		}
@@ -297,6 +318,7 @@ func validateSelectorRequired(args Request) error {
 }
 func buildResultJSON(_ string, result Result) string {
 	result.OwnerFrame = nil
+	result.GetFormTarget, result.GetFormNonce = "", ""
 	return mustJSON(result)
 }
 func failedResult(req *runtimev1.ExecuteRequest, class commonv1.ErrorClass, message, detailsJSON string) *toolbrokerv1.ToolResult {

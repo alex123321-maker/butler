@@ -198,6 +198,40 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			return Result{}, err
 		}
 	}
+	if req.ToolName == "browser.submit_get_form" {
+		proxy := r.proxies[req.SessionID]
+		if proxy == nil {
+			return Result{}, egress.ErrDenied
+		}
+		// Compile the form while every connection is closed. The model cannot
+		// supply either private phase or the one-use helper nonce.
+		proxy.Freeze()
+		defer proxy.Freeze()
+		req.GetFormPhase = "plan"
+		plan, err := r.exchange(ctx, req)
+		if err != nil || !plan.OK {
+			return plan, err
+		}
+		target, err := r.policy.ValidateURL(plan.GetFormTarget)
+		if err != nil || target.User != nil || originOf(plan.GetFormTarget) != originOf(req.ExpectedURL) || len(plan.GetFormNonce) != 36 {
+			return Result{Error: &ResultError{ErrorType: "get_form_denied", Message: "GET form target is outside the permitted public origin"}}, nil
+		}
+		deadline := time.Now().Add(35 * time.Second)
+		if owned, ok := ctx.Deadline(); ok && owned.Before(deadline) {
+			deadline = owned
+		}
+		if err := proxy.AllowUntil(deadline); err != nil {
+			return Result{}, err
+		}
+		req.GetFormPhase, req.GetFormNonce = "navigate", plan.GetFormNonce
+		return r.exchange(ctx, req)
+	}
+	return r.exchange(ctx, req)
+}
+
+// exchange is called only with the runner mutex held. Errors invalidate the
+// helper generation; no phase or gesture is automatically re-dispatched.
+func (r *PlaywrightRunner) exchange(ctx context.Context, req Request) (Result, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return Result{}, fmt.Errorf("encode browser request")

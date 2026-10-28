@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$PostgresBin='D:/Repository/butler/.cache/credential-vault-lab/runtime/pgsql/bin')
+param([string]$PostgresBin='D:/Repository/butler/.cache/credential-vault-lab/runtime/pgsql/bin', [string]$Run='^TestStoppedLocal')
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 $state=Initialize-ButlerAgentEnvironment
@@ -25,7 +25,7 @@ try {
  $env:CC='D:/ProgramFiles/msys2/mingw64/bin/gcc.exe'
  Push-Location $state.RepoRoot
  try {
-  & go test -race -p 1 -count=1 -v ./internal/actionauth -run '^TestStoppedLocal'
+  & go test -race -p 1 -count=1 -v ./internal/actionauth -run $Run
   Assert-LastExitCode -Action 'stopped local PostgreSQL/race integration'
  } finally {Pop-Location}
 } finally {

@@ -93,9 +93,14 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(raw)); err != nil {
 		t.Fatal(err)
 	}
-	var posts, cdn, private atomic.Int32
+	var posts, cdn, private, queryReads atomic.Int32
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/search":
+			fmt.Fprint(w, `<body><form method="get" action="/query"><input name="q"><button>Search</button></form></body>`)
+		case "/query":
+			queryReads.Add(1)
+			fmt.Fprintf(w, `<body>Query: %s<script>fetch('/submit',{method:'POST'}).catch(()=>{})</script></body>`, r.URL.Query().Get("q"))
 		case "/start":
 			http.Redirect(w, r, "http://login.test/form", 302)
 		case "/form":
@@ -241,6 +246,12 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		}
 		return output
 	}
+	getObs := invoke("browser.open", map[string]any{"url": "http://start.test/search"})
+	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": map[string]string{"q": "Arctic delivery"}})
+	if queryReads.Load() != 1 || posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Arctic delivery") {
+		t.Fatal("Broker GET form wrote or failed to observe")
+	}
+	invoke("browser.close", map[string]any{"browser_session_id": getObs["browser_session_id"]})
 	obs := invoke("browser.open", map[string]any{"url": "http://start.test/start"})
 	if obs["final_url"] != "http://login.test/form" || cdn.Load() != 1 {
 		t.Fatal("public redirect/CDN unavailable")

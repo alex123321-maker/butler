@@ -43,6 +43,7 @@ PostgreSQL are not used to claim that a live DOM can be restored.
 | `browser.snapshot` | Observe the current page; **no navigation** | Session ID, owner, expiry, exclusive control, current domain |
 | `browser.extract_text` | Observe visible selector text; **no navigation** | Same checks as snapshot; selector |
 | `browser.navigate` | Navigate the same context across permitted public origins | Latest version and exact `expected_url`, plus session checks |
+| `browser.submit_get_form` | Compile ordinary named fields of a public same-origin GET form into a GET navigation; no input/submit handlers | Latest version/URL, revision1 read-only contract, no credential state, two private guarded phases |
 | `browser.click` | Click on the current page | Latest version and `expected_url`, plus session checks |
 | `browser.fill` / `browser.type` | Change the current input | Latest version and `expected_url`; credential refs for secrets |
 | `browser.prepare_fill` / `browser.prepare_type` | Change input locally with all network frozen persistently | Same latest observation/URL/owner checks; exact approval or current mandate; credential refs for secrets |
@@ -61,6 +62,30 @@ before an effect. Independent DOM changes therefore cause `stale_observation`.
 Take a new snapshot and reassess the intended action; do not blindly replay it.
 
 ### Bounded local preparation and truthful external outcomes
+
+Public GET search/navigation forms can use revision1 `browser.submit_get_form`
+with a form selector and `fields` (ordinary string values keyed by existing
+control names). Observations expose at most ten top-level form selectors,
+methods/actions and 32 field names/types per form, never input values. This is
+an explicit alternative to an opaque live fill/click, not changed semantics for
+those tools. Generic POST/login forms retain their existing effect policy.
+
+The runner freezes/cancels every connection before the helper compiles the
+chosen form. Hidden/password/file controls, credential-bearing contexts,
+sensitive field names, non-GET methods, foreign/nonpublic targets and extra
+field names are refused. Compilation does not invoke input, click, formdata,
+validation or submit handlers. At most 32 fields/4096 bytes per value and a
+16KiB compiled URL are accepted. The Go proxy independently checks the compiled
+public same-origin target. A private one-use nonce binds the second phase to
+the original version/document/revision; live guards are checked again before
+navigation. Only GET/HEAD routes open in the bounded window; every outcome
+freezes again. Plans/nonces are private IPC and stripped from tool responses.
+
+This proves only an ordinary GET observation, with the same application-on-GET
+limitation as existing read/navigation tools. It remains usable for independent
+reads while a previous opaque write is unknown; it does not reconcile that
+write, revive its grant, refund spending or authorize another mutation. It
+cannot submit authenticated forms or implement JavaScript-only form behavior.
 
 For a multi-step form use `open -> prepare_fill/prepare_type -> snapshot/wait ->
 separately authorized click`. Preparation freezes **all** page requests before
