@@ -49,6 +49,8 @@ func laba115Closure(expected string) (laba115ClosureProfile, error) {
 		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v3", "18d4ec76d5cbbbf241d7151eb542e7a48d7125c7ea4452ac8c67e0d148d729a2", "720ac0997a0bfef54b2a15817170abd5f13a8abaa683209975a63fffaf7bd389", "64390b23e171327eaa0e194c48d0b11330f0d3277ca3a5aaba02d7bf5a72ae71", 189, 185}, nil
 	case laba115Closed385SHA:
 		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v4", "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497", "e59ffd65c49ee8401c14059dd909bbafeb8865994c93b7ea8222002b95edfdf9", "62645b5ee8a439e1899466689485e36b806ecdf66e2f054bab755ff04dd4ba4f", 445, 441}, nil
+	case guided115Closed503SHA:
+		return laba115ClosureProfile{"butler.experience.closed-laba-owner-leaf.v5", "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511", "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490", "ec774bdb0b13477e6b34c521a336374f4d9e96e0aeaaa3faaa9a991660f2fa3f", 759, 755}, nil
 	default:
 		return laba115ClosureProfile{}, errors.New("unregistered server closure; no old history fallback")
 	}
@@ -70,7 +72,10 @@ func (h laba115ClosedHandback) validate() error {
 	return h.validatePlan(laba115ClosedPreseal)
 }
 func (h laba115ClosedHandback) validatePlan(plan string) error {
-	if h.Exit == nil || *h.Exit != 1 || h.Forced == nil || *h.Forced || !h.Empty || !h.Joined || !h.CAS || h.Recovery != "latest_durable_local_setting" || !h.Resolved || h.Qualified == nil || *h.Qualified || h.Plan != plan {
+	return h.validatePlanExit(plan, 1)
+}
+func (h laba115ClosedHandback) validatePlanExit(plan string, exit int) error {
+	if h.Exit == nil || *h.Exit != exit || h.Forced == nil || *h.Forced || !h.Empty || !h.Joined || !h.CAS || h.Recovery != "latest_durable_local_setting" || !h.Resolved || h.Qualified == nil || *h.Qualified || h.Plan != plan {
 		return errors.New("exact failed server handback required")
 	}
 	return nil
@@ -87,7 +92,10 @@ type laba115ClosedProcessExit struct {
 }
 
 func (p laba115ClosedProcessExit) validate() error {
-	if p.Exit == nil || *p.Exit != 1 || !p.Started || !p.Wait || p.Forced == nil || *p.Forced || !p.Empty || !p.Gone || !p.Removed {
+	return p.validateExit(1)
+}
+func (p laba115ClosedProcessExit) validateExit(exit int) error {
+	if p.Exit == nil || *p.Exit != exit || !p.Started || !p.Wait || p.Forced == nil || *p.Forced || !p.Empty || !p.Gone || !p.Removed {
 		return errors.New("actual whole server process exit required")
 	}
 	return nil

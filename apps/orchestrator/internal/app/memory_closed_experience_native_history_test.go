@@ -284,7 +284,11 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 	if laba {
 		var handback laba115ClosedHandback
 		var exit laba115ClosedProcessExit
-		if read("closed-handback.json", &handback) != nil || handback.validatePlan(labaProfile.Plan) != nil || read("process-exit.json", &exit) != nil || exit.validate() != nil {
+		expectedExit := 1
+		if expected == guided115Closed503SHA {
+			expectedExit = 0
+		}
+		if read("closed-handback.json", &handback) != nil || handback.validatePlanExit(labaProfile.Plan, expectedExit) != nil || read("process-exit.json", &exit) != nil || exit.validateExit(expectedExit) != nil {
 			return out, errors.New("closed server process and exact separate opaque handback required")
 		}
 	} else if local {

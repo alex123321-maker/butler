@@ -1,5 +1,33 @@
 # Prospective fixed laba skill-preparation comparison
 
+## New guided full57 comparison
+
+The owner's next explicit instruction authorizes a new full A/B/C comparison on
+laba with fixed skill-selection guidance and real Broker loading. Its separate
+`butler.experience.laba-guided-full-window.v1` recipe consumes only the complete
+closed503 leaf (including its actual successful process exit0 and unqualified
+quality result), plus the immutable25-request/90,951-token diagnostic ledger.
+The old NULL/4175/3389 observations remain separately retained. Native-only
+diagnostics do not invent Core product rows or replace the old quote union.
+
+All57 slots execute: four originals, four notes, one skill preparation and both
+24-control repetitions. No prior result is replayed or reclassified. Corpus,
+rubric, permissions, model/profile, source/control13/12 policies and640 ceiling
+remain unchanged. The new database is `memory115_laba_guided_full_v1_test` and
+the source/artifacts/recipe/preseal have fresh fixed bindings. The legacy33-slot
+successors retain their restrictions. The new profile rejects prefix33 and
+earlier385/310/280/257 closures before admission.
+
+Only the C treatment exposes the skill catalog and its current kernel guidance;
+A has no experience and B has the same notes without skills. C-B therefore
+measures the configured skill mechanism with its guidance, not procedure text
+alone. A proposal is not a successful load: current Broker receipts and exact
+PostgreSQL task/revision/digest pins are reviewed separately from task success.
+Actual receiver artifacts, UNKNOWN preservation, scope, source deletion and full
+creation/retrieval/model costs remain required. A completed collection alone
+does not qualify release or whole-issue closure. The working deployment is not
+updated by this isolated study.
+
 The owner explicitly moved continuation to ssh laba on2026-10-28. The existing
 PC study remains closed/NO_GO. Server identity is separately typed as
 `butler.experience.laba-skill-preparation-day.v1`, location

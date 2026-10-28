@@ -160,6 +160,12 @@ func TestLocal115PrepareSkillPreparationDayRecipe(t *testing.T) {
 // task text or model argument cannot select this profile; actual collection
 // obtains it from the independently reloaded, hash-bound preseal lineage.
 func experienceNativeSkillPreparationProfile(history experienceNativeLineage) (string, error) {
+	if history.GuidedFull != nil {
+		if validateGuided115Binding(history) != nil {
+			return "", errors.New("invalid full57 skill profile")
+		}
+		return "prepare_and_verify_exact_resource", nil
+	}
 	if err := validateExperienceNativeLineage(history); err != nil {
 		return "", err
 	}

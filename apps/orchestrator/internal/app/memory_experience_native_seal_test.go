@@ -31,6 +31,7 @@ type experienceNativeLineage struct {
 	Usage                     temporalV5CurrentUsage       `json:"inclusive_usage"`
 	LocalSuccessor            *local115HistoryBinding      `json:"local_successor,omitempty"`
 	SkillPreparationSuccessor *local115SkillHistoryBinding `json:"skill_preparation_successor,omitempty"`
+	GuidedFull                *guided115Binding            `json:"guided_full,omitempty"`
 }
 
 type experienceNativeSeal struct {
@@ -159,6 +160,9 @@ func experienceNativeCarryPolicy(source bool, carry budget.Units) (budget.Policy
 }
 
 func validateExperienceNativeLineage(history experienceNativeLineage) error {
+	if history.GuidedFull != nil && validateGuided115Binding(history) != nil {
+		return errors.New("exact guided full57 lineage required")
+	}
 	if history.SkillPreparationSuccessor != nil && validateLocal115SkillHistoryBinding(history) != nil {
 		return errors.New("exact retained skill-preparation successor lineage required")
 	}
@@ -235,6 +239,9 @@ func checkExperienceNativeSeal(raw []byte, expectedSHA string, now time.Time, ro
 	}
 	if history.SkillPreparationSuccessor != nil && actual.ExecutionSlots != 33 {
 		return actual, errors.New("new skill-preparation successor retains the selected33 scope within full57")
+	}
+	if history.GuidedFull != nil && actual.ExecutionSlots != 0 {
+		return actual, errors.New("guided comparison requires exact full57 scope")
 	}
 	expected.ExecutionSlots = actual.ExecutionSlots
 	if err != nil || !reflect.DeepEqual(expected, actual) {

@@ -33,8 +33,8 @@ const laba115NativeBrokerControlSHA = ""
 const laba115NativeExtensionSHA = ""
 const laba115NativeHTTPSHA = ""
 const laba115ControlDSN = "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable"
-const laba115TargetHostDSN = "postgres://postgres@127.0.0.1:55455/memory115_laba_abc_v6_test?sslmode=disable"
-const laba115TargetChildDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_abc_v6_test?sslmode=disable"
+const laba115TargetHostDSN = "postgres://postgres@127.0.0.1:55455/memory115_laba_guided_full_v1_test?sslmode=disable"
+const laba115TargetChildDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_guided_full_v1_test?sslmode=disable"
 const laba115NativePG = "issue115-native-pg-20261028-v1"
 const laba115NativeNetwork = "issue115-native-20261028-v1"
 const laba115PGImage = "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d"
@@ -117,7 +117,7 @@ func laba115DatabaseIdentity() error {
 }
 
 func laba115NativePins() map[string]string {
-	return map[string]string{"prepared-abc-v6/plan/preseal.json": laba115NativePlanSHA, "history-abc-v6/recipe.json": laba115NativeHistorySHA, "prepared-abc-v6/app.test": laba115NativeAppSHA, "prepared-abc-v6/tool-broker": laba115NativeBrokerSHA, "prepared-abc-v6/broker-control.test": laba115NativeBrokerControlSHA, "prepared-abc-v6/extension.test": laba115NativeExtensionSHA, "prepared-abc-v6/http.test": laba115NativeHTTPSHA}
+	return map[string]string{"prepared-guided-full-v1/plan/preseal.json": laba115NativePlanSHA, "history-guided-full-v1/recipe.json": laba115NativeHistorySHA, "prepared-guided-full-v1/app.test": laba115NativeAppSHA, "prepared-guided-full-v1/tool-broker": laba115NativeBrokerSHA, "prepared-guided-full-v1/broker-control.test": laba115NativeBrokerControlSHA, "prepared-guided-full-v1/extension.test": laba115NativeExtensionSHA, "prepared-guided-full-v1/http.test": laba115NativeHTTPSHA}
 }
 func laba115NativeBound() bool {
 	return laba115PinsBound(laba115NativeSource, laba115NativePins())
@@ -127,7 +127,7 @@ func laba115PinsBound(source string, pins map[string]string) bool {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(source) || len(pins) != 7 {
 		return false
 	}
-	for _, path := range []string{"prepared-abc-v6/plan/preseal.json", "history-abc-v6/recipe.json", "prepared-abc-v6/app.test", "prepared-abc-v6/tool-broker", "prepared-abc-v6/broker-control.test", "prepared-abc-v6/extension.test", "prepared-abc-v6/http.test"} {
+	for _, path := range []string{"prepared-guided-full-v1/plan/preseal.json", "history-guided-full-v1/recipe.json", "prepared-guided-full-v1/app.test", "prepared-guided-full-v1/tool-broker", "prepared-guided-full-v1/broker-control.test", "prepared-guided-full-v1/extension.test", "prepared-guided-full-v1/http.test"} {
 		sha := pins[path]
 		if !regexp.MustCompile(`^[a-f0-9]{64}$`).MatchString(sha) {
 			return false
@@ -250,7 +250,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 			return errors.New("server frozen artifact bytes changed")
 		}
 	}
-	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-abc-v6/plan/preseal.json"))
+	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-guided-full-v1/plan/preseal.json"))
 	if err != nil {
 		return errors.New("server preseal unavailable")
 	}
@@ -258,15 +258,15 @@ func laba115Execute(ctx context.Context, native bool) error {
 		Deadline       time.Time `json:"deadline"`
 		ExecutionSlots int       `json:"execution_slots"`
 	}
-	if json.Unmarshal(raw, &seal) != nil || seal.ExecutionSlots != 33 || !time.Now().Before(seal.Deadline) {
-		return errors.New("server original day or33-stage plan invalid")
+	if json.Unmarshal(raw, &seal) != nil || seal.ExecutionSlots != 0 || !time.Now().Before(seal.Deadline) {
+		return errors.New("server current UTC day or full57 plan invalid")
 	}
 	caller := ctx
 	ctx, setupDone := context.WithDeadline(ctx, seal.Deadline)
 	defer setupDone()
-	label := "prepare-abc-v6"
+	label := "prepare-guided-full-v1"
 	if native {
-		label = "native-abc-v6"
+		label = "native-guided-full-v1"
 	}
 	operator := filepath.Join(laba115HostRoot, "operator-"+label)
 	if os.Mkdir(operator, 0700) != nil {
@@ -287,7 +287,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 	}
 	network := "container:" + pgID
 	args := []string{"create", "--name", "issue115-" + label + "-20261028-v1", "--network", network, "--cpus", "1", "--memory", "2g", "--memory-swap", "2g", "--pids-limit", "256", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--log-driver", "none", "--user", "1000:1000", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m"}
-	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-abc-v6,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v6,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-abc-v6,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v6/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
+	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-guided-full-v1,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v1,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-guided-full-v1,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v1/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
 		args = append(args, "--mount", mount)
 	}
 	for _, entry := range laba115ChildEnvironment() {
@@ -349,9 +349,9 @@ func laba115RunAndRecover(ctx context.Context, source *pgx.Conn, id string, proc
 		return errors.New("server native admin unavailable")
 	}
 	var exists bool
-	err = admin.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname='memory115_laba_abc_v6_test')`).Scan(&exists)
+	err = admin.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname='memory115_laba_guided_full_v1_test')`).Scan(&exists)
 	if err == nil && !exists {
-		_, err = admin.Exec(ctx, `CREATE DATABASE memory115_laba_abc_v6_test`)
+		_, err = admin.Exec(ctx, `CREATE DATABASE memory115_laba_guided_full_v1_test`)
 	}
 	admin.Close(ctx)
 	if err != nil {
@@ -395,7 +395,7 @@ func laba115RunAndRecover(ctx context.Context, source *pgx.Conn, id string, proc
 	if ctx.Err() != nil || !time.Now().Before(deadline) {
 		return errors.New("server day expired before native entry")
 	}
-	if err = local115JSON(filepath.Join(operator, "execution-consumed.json"), map[string]any{"plan_sha256": laba115NativePlanSHA, "source": laba115NativeSource, "original_deadline": deadline, "native_domain": "memory115_laba_abc_v6_test/experience_native_v1"}); err != nil {
+	if err = local115JSON(filepath.Join(operator, "execution-consumed.json"), map[string]any{"plan_sha256": laba115NativePlanSHA, "source": laba115NativeSource, "original_deadline": deadline, "native_domain": "memory115_laba_guided_full_v1_test/experience_native_v1"}); err != nil {
 		return err
 	}
 	native, stop := context.WithDeadline(caller, deadline.Add(30*time.Second))

@@ -1,0 +1,12 @@
+{
+  "format": "butler.experience.owner-guided-full-decision.v1",
+  "instruction": "Продолжай на laba: проведи новое полное A/B/C-сравнение с явной инструкцией и реальной загрузкой навыков через Broker, сохранив все прежние результаты и расходы.",
+  "location": "ssh laba",
+  "execution_slots": 57,
+  "controls": 48,
+  "repetitions": 2,
+  "recipient_authority": "Existing synthetic prepared-unapplied patch and check authority only",
+  "previous_windows": "Remain closed, with all failed, unknown and unexecuted results unchanged",
+  "native_skill_requirement": "Observe actual Broker receipts and PostgreSQL exact task/revision pins; a model proposal alone is not a successful load",
+  "production_deployment": false
+}
