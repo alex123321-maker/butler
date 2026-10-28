@@ -48,8 +48,8 @@ open guidance while preserving existing routing/domain caps and unrelated tools.
 
 Current binary/helper/catalog hashes are in
 [release-sha256.txt](browser-baseline/get-form/release-sha256.txt).
-Deployed source: `1e24a910`; owning release:
-`/srv/storage/butler/main/releases/browser-get-form-20261028-1e24a910`.
+The three revision2 native controls used source `1b6067bf`; their owning release:
+`/srv/storage/butler/main/releases/browser-get-form-20261028-1b6067bf`.
 The current service definition is base `/srv/storage/butler/main/compose.json`
 plus that release's `compose.override.json`. Using the base alone restores the
 older service configuration; retain the overlay for this candidate. The
@@ -137,8 +137,47 @@ Real Broker/PG/Chromium passed absent failed read, denied grant replay, fresh
 snapshot, correct GET and follow-link, plus owner/cancel regression guards.
 An initial PG test correctly rejected absence because its persistence verifier
 had not yet been extended; the owning revision2/digest check was added and a
-fresh test passed. Prior failed test logs remain retained. Revision2 deployment
-and native outcomes are recorded after verification below.
+fresh test passed. Prior failed test logs remain retained.
+
+### Revision2 native series: control06/07/08
+
+All three precommitted samples completed on unchanged source `1b6067bf`, the
+same Core/model/profile/budgets, fresh recipients and ordinary unhinted prompts.
+Each exact private record matched its protected publication; current-run browser
+receipts and Telegram sent status were joined separately. No in-run owner
+intervention occurred. control06/07 received the new failed/absent pre-navigation
+diagnostic, observed the page and completed with a separately authorized fresh
+GET. control08 completed without that rejection. Consumed failed-read grants
+remain dispatch_completed, and revision1 control04/05 stay failed/unknown, as
+the content-free revision2-effects.json shows. No old mutation was reconciled.
+
+| Trial | Native result | Telegram latency | Input duration | Model attempts | Input/output tokens |
+| --- | --- | --- | --- | --- | --- |
+| control06 | PASS | 124.516s | 132.011s | 19 | 216243 / 1510 |
+| control07 | PASS | 139.791s | 143.392s | 17 | 194795 / 1501 |
+| control08 | PASS | 99.437s | 101.663s | 14 | 151894 / 1202 |
+
+Telegram median is124.516s (n=3, range99.437–139.791s); there is no defensible
+p95 or 9-of-10 claim. The first sample starts the restarted Chromium generation;
+the next two reuse its process with new contexts. Browser tool duration sums
+were2.246/2.780/1.892s, not a decomposition of total wall time. All token usage
+pairs are known, monetary cost remains unknown. Answer canary comparisons pass;
+full credential/log/provider-context privacy qualification is still pending.
+
+Every sample incurred a publication validation rejection followed by another
+web.fetch. The evidence collector did not recognize the new GET readers and
+excluded generic frozen snapshots. A source fix now recognizes ONLY completed,
+error-free public GET form/link observations with their required frozen
+acknowledgement. Old-run/failed/local/error/unfrozen/model-supplied observations
+and generic frozen snapshots remain ineligible. Current-run quote checks and
+actual publication preflight tests pass. This Core source change is **not yet
+deployed**: the running Core has separate dirty provenance and was retained.
+No native latency improvement is attributed to this staged change.
+
+A final Broker-only hardening also rejects case-variant proof keys, preventing
+Go's case-insensitive struct decoding from expanding the closed proof shape.
+The three native samples remain attributed to1b6067bf; a later health-checked
+Broker/browser release is listed separately when applied.
 
 Forms/login/consent remain unaccepted. Their nine original slots must not evade
 the retained opaque nav-02 effect via new session/Task identities. Full #163 and

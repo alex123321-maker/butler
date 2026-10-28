@@ -12,7 +12,7 @@ import (
 const noNavigationProof = `{"read_rejection":"pre_navigation_v1","navigation_dispatched":false,"reason":"page_changed"}`
 
 func TestGuardedBrowserReadRejectionPinsPreNavigationOnly(t *testing.T) {
-	for _, mode := range []string{"valid", "old_revision", "other_tool", "write", "foreign_call", "foreign_run", "credential", "missing_marker", "navigation_started", "null_navigation", "timeout", "extra_field", "duplicate_field", "payload", "internal_error"} {
+	for _, mode := range []string{"valid", "old_revision", "other_tool", "write", "foreign_call", "foreign_run", "credential", "missing_marker", "navigation_started", "null_navigation", "timeout", "extra_field", "duplicate_field", "case_variant", "payload", "internal_error"} {
 		t.Run(mode, func(t *testing.T) {
 			b := ActionBinding{RunID: "run", ToolCallID: "call", ToolName: "browser.submit_get_form", Effect: EffectRead, ContractRevision: "2"}
 			r := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "call", ToolName: b.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, DetailsJson: noNavigationProof}}
@@ -42,6 +42,8 @@ func TestGuardedBrowserReadRejectionPinsPreNavigationOnly(t *testing.T) {
 				r.Error.DetailsJson = `{"read_rejection":"pre_navigation_v1","navigation_dispatched":false,"reason":"page_changed","private":"data"}`
 			case "duplicate_field":
 				r.Error.DetailsJson = `{"read_rejection":"pre_navigation_v1","navigation_dispatched":true,"navigation_dispatched":false,"reason":"page_changed"}`
+			case "case_variant":
+				r.Error.DetailsJson = `{"READ_REJECTION":"pre_navigation_v1","navigation_dispatched":false,"reason":"page_changed"}`
 			case "payload":
 				r.ResultJson = `{"ok":true}`
 			case "internal_error":

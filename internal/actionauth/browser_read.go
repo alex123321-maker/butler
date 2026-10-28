@@ -52,6 +52,11 @@ func BrowserReadRejection(b ActionBinding, result *toolbrokerv1.ToolResult) stri
 	if json.Unmarshal([]byte(raw), &fields) != nil || len(fields) != 3 || json.Unmarshal([]byte(raw), &proof) != nil || proof.Protocol != "pre_navigation_v1" || proof.Navigation == nil || *proof.Navigation {
 		return ""
 	}
+	for _, key := range []string{"read_rejection", "navigation_dispatched", "reason"} {
+		if _, exists := fields[key]; !exists {
+			return ""
+		}
+	}
 	switch proof.Reason {
 	case "page_changed", "stale_observation", "get_form_denied", "invalid_args", "invalid_selector":
 		return proof.Reason
