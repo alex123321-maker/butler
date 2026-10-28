@@ -71,7 +71,7 @@ denies claim without spending the grant or writing a dispatch record.
 
 ## Delegated permissions
 
-Revision1 `browser.submit_get_form` is a pinned GET observation, with no
+Revision1 `browser.submit_get_form` and `browser.follow_link` are pinned GET observations, with no
 credential references or opaque/write policy. Its confirmed read does not
 reconcile an earlier unknown mutation or revive a spent grant. Real PG/budget
 tests cover independent read admission plus subsequent mutation denial.
