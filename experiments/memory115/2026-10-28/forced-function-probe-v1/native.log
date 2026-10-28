@@ -1,0 +1,4 @@
+=== RUN   TestForcedFunctionProbeNativeOnce
+    forced_function_probe_test.go:255: forced function compatibility not established; retained safe receipt
+--- FAIL: TestForcedFunctionProbeNativeOnce (18.96s)
+FAIL
