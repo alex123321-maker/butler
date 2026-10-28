@@ -1,0 +1,14 @@
+{
+  "base_commit": "47f9429cc3a712060eaf01d329e371552cd58bcf",
+  "patch_source_commit": "cb7c937eb03d195154a650e64203763a3184316c",
+  "archive_sha256": "cc9da7d6326bfa60a2aa0ee21f3fddb7fd03809e32c37f4792703a47bbc4b3e3",
+  "patch_sha256": "6cb3cff0a85b656ce273541c4e02026ca6beebca3d9f687c92371bd95195e835",
+  "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+  "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+  "production_files_changed": [
+    "internal/research/evidence.go"
+  ],
+  "new_migrations": 0,
+  "model_calls": 0,
+  "live_services_changed": 0
+}

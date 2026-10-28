@@ -69,3 +69,45 @@ variable provider/queue conditions. Report successes, failures and unmet goals.
 
 POST/login/consent remain unaccepted. A minimal Core evidence-reader update
 cannot reconcile the retained opaque nav-02 effect or authorize new writes.
+
+## Actual window, including the failed sample
+
+Core-only rollout passed health, exact executable hash, unchanged environment
+and unchanged Broker/browser/PostgreSQL container identities. Existing expired
+OAuth was refreshed privately before the first Input (HTTP200, encrypted
+persistence, resolved=true, unsafe_refresh=false); account/model/caps unchanged.
+
+| Sample | Native outcome | Telegram latency | Model calls | Input/output tokens | web.fetch | Publication rejections |
+| --- | --- | --- | --- | --- | --- | --- |
+| core-evidence-01 | PASS | 90.515s | 15 | 151065 / 1242 | 2 | 0 |
+| core-evidence-02 | PASS | 96.075s | 13 | 135286 / 1043 | 2 | 0 |
+| core-evidence-03 | FAIL before tools | unavailable | 2 | unknown / unknown | 0 | 0 |
+
+All three preselected samples remain: **2/3 completed**, no replacement. Fresh
+private-reference/publication comparisons and Telegram delivery pass for01/02.
+Their Input durations were94.007s and98.968s, without owner intervention. Each
+still chose two web.fetch reads before publication despite no validation repair;
+do not claim that this change eliminates all redundant page fetches. Core's
+existing research instruction still explicitly recommends web.fetch.
+
+The third Input failed with execution_authority_observation_timeout after its
+one existing bounded authority retry. No tools/publications occurred, two model
+usage pairs remain NULL, and nothing is replayed/refunded. Fixed diagnostics:
+at14:16:01.988Z and14:16:11.900Z, phase=lease, classification=deadline,
+elapsed_ms=750. Its later terminal metadata retains the same failure. This is
+an end-to-end failure even though the browser evidence collector was never used.
+
+Do not report the two successes' median as a passing three-sample performance
+result. The preselected full-success requirement is unmet; unknown third usage
+also prevents an honest three-sample token/cost conclusion. The reader fix
+removes the observed validation mismatch in two successful attempts, without
+establishing reliable throughput or general browser acceptance.
+
+Inspection identifies a single reserved connection shared by lease/Task checks
+and longer source observations. Source occupancy is a reproducible starvation
+candidate, not a proven live root cause: the failing instant had no pool-phase
+trace. A later content-free PG read found no current lock waits/deadlocks. The
+next slice isolates/reproduces this capacity boundary without extending guards'
+deadlines or accepting stale authority. The first sample after Core restart
+still reused the existing Chromium process, unlike the prior series' first
+sample; this is another limitation on causal latency comparisons.
