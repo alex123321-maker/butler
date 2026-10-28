@@ -117,7 +117,7 @@ func laba115DatabaseIdentity() error {
 }
 
 func laba115NativePins() map[string]string {
-	return map[string]string{"prepared-abc-v4/plan/preseal.json": laba115NativePlanSHA, "history-abc-v4/recipe.json": laba115NativeHistorySHA, "prepared-abc-v4/app.test": laba115NativeAppSHA, "prepared-abc-v4/tool-broker": laba115NativeBrokerSHA, "prepared-abc-v4/broker-control.test": laba115NativeBrokerControlSHA, "prepared-abc-v4/extension.test": laba115NativeExtensionSHA, "prepared-abc-v4/http.test": laba115NativeHTTPSHA}
+	return map[string]string{"prepared-abc-v4b/plan/preseal.json": laba115NativePlanSHA, "history-abc-v4/recipe.json": laba115NativeHistorySHA, "prepared-abc-v4b/app.test": laba115NativeAppSHA, "prepared-abc-v4b/tool-broker": laba115NativeBrokerSHA, "prepared-abc-v4b/broker-control.test": laba115NativeBrokerControlSHA, "prepared-abc-v4b/extension.test": laba115NativeExtensionSHA, "prepared-abc-v4b/http.test": laba115NativeHTTPSHA}
 }
 func laba115NativeBound() bool {
 	return laba115PinsBound(laba115NativeSource, laba115NativePins())
@@ -127,7 +127,7 @@ func laba115PinsBound(source string, pins map[string]string) bool {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(source) || len(pins) != 7 {
 		return false
 	}
-	for _, path := range []string{"prepared-abc-v4/plan/preseal.json", "history-abc-v4/recipe.json", "prepared-abc-v4/app.test", "prepared-abc-v4/tool-broker", "prepared-abc-v4/broker-control.test", "prepared-abc-v4/extension.test", "prepared-abc-v4/http.test"} {
+	for _, path := range []string{"prepared-abc-v4b/plan/preseal.json", "history-abc-v4/recipe.json", "prepared-abc-v4b/app.test", "prepared-abc-v4b/tool-broker", "prepared-abc-v4b/broker-control.test", "prepared-abc-v4b/extension.test", "prepared-abc-v4b/http.test"} {
 		sha := pins[path]
 		if !regexp.MustCompile(`^[a-f0-9]{64}$`).MatchString(sha) {
 			return false
@@ -250,7 +250,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 			return errors.New("server frozen artifact bytes changed")
 		}
 	}
-	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-abc-v4/plan/preseal.json"))
+	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-abc-v4b/plan/preseal.json"))
 	if err != nil {
 		return errors.New("server preseal unavailable")
 	}
@@ -287,7 +287,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 	}
 	network := "container:" + pgID
 	args := []string{"create", "--name", "issue115-" + label + "-20261028-v1", "--network", network, "--cpus", "1", "--memory", "2g", "--memory-swap", "2g", "--pids-limit", "256", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--log-driver", "none", "--user", "1000:1000", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m"}
-	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-abc-v4,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v4,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-abc-v4,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v4/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
+	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-abc-v4b,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v4b,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-abc-v4,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-abc-v4b/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
 		args = append(args, "--mount", mount)
 	}
 	for _, entry := range laba115ChildEnvironment() {

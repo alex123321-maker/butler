@@ -343,7 +343,7 @@ func newExperienceNativeRuntimeConfigured(t *testing.T, pool *pgxpool.Pool, cat 
 		t.Fatal("bounded authority observation capacity unavailable")
 	}
 	t.Cleanup(reads.Close)
-	cat = catalog.NewWithRunObservationPool(pool, reads, catalog.NewFileManifest(anchor))
+	cat = cat.WithRunObservationPool(reads)
 	r := &experienceNativeRuntime{pool: pool, reads: reads, directory: directory, cat: cat, tasks: task.NewStoreWithAuthorityReads(pool, reads), sessions: session.NewPostgresRepository(pool), runs: runservice.NewService(runservice.NewPostgresRepository(pool), nil), history: transcript.NewStore(pool), inputs: durableinput.NewStore(pool), results: completion.New(pool), journal: actionauth.NewPostgresStore(pool), budgets: budget.NewControllerWithAuthorityReads(pool, reads, policy), expires: expires, addresses: addresses, stops: []func(){reads.Close}}
 	if foreground != nil {
 		copy := *foreground

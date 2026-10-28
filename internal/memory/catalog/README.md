@@ -19,6 +19,9 @@ remain mandatory. No authorization is cached between calls or transactions.
 
 Core can compose `NewWithRunObservationPool` using its existing reserved
 authority connection. Only token-only `CheckRunSources` observations use it;
+`WithRunObservationPool` clones an already composed Store while retaining its
+exact manifest (including injected restore/deletion failures) and business pool.
+It does not modify the original Store or source/authority semantics.
 the same restore, lease, Task, source-pin and temporal checks still run, and the
 read transaction rolls back without a business mutation. Owner/auxiliary
 compound contexts and source writes retain the business pool. Explicit

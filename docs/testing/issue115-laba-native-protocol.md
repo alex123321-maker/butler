@@ -150,3 +150,9 @@ All57 scripted collector stages are rechecked for this composition change;
 this remains mechanics evidence, not native benefit. A corrected fixture is
 not a deployment, a production Core repair or permission to bypass a real
 authority failure.
+
+The final constructor uses Catalog.WithRunObservationPool to preserve the exact
+supplied manifest, rather than reconstructing a file manifest. The capacity
+integration also injects a restore denial and proves it survives this composition.
+The unused6fa97874 source/build/preseal remain setup evidence only; no native
+entry was made with that preseal. Final source and artifacts are frozen separately.

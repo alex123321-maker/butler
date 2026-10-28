@@ -1,5 +1,11 @@
 # Butler — Memory Model Specification
 
+Catalog's explicit `WithRunObservationPool` composition clones a Store with its
+existing business pool and exact manifest intact, including restore/deletion
+failure injections. Only the existing token-only observation path selects the
+reserved capacity. Grants, source state, deletion anchors and authority checks
+remain unchanged; the original Store is not mutated.
+
 Migration 103 changes only the query plan of summary currentness checks. A STABLE
 PL/pgSQL function checks empty summary metadata in the current statement snapshot;
 otherwise it evaluates the original recursive roots, transcript heads, dependency

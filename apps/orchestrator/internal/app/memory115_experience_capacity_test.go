@@ -15,6 +15,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+type capacityManifestProbe struct {
+	catalog.Manifest
+	denied bool
+}
+
+func (m *capacityManifestProbe) Load(ctx context.Context) ([]catalog.ManifestRecord, error) {
+	if m.denied {
+		return nil, catalog.ErrRestore
+	}
+	return m.Manifest.Load(ctx)
+}
+
 func TestExperienceNativeRuntimeKeepsAuthorityCapacityIntegration(t *testing.T) {
 	pool := memorytest.Database(t)
 	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
@@ -30,8 +42,14 @@ func TestExperienceNativeRuntimeKeepsAuthorityCapacityIntegration(t *testing.T) 
 		t.Fatal(err)
 	}
 	defer recipient.close()
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, manifest), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), "Capacity observation only", experienceNativeArms[0], nil, time.Now().Add(time.Hour))
+	probe := &capacityManifestProbe{Manifest: manifest}
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, probe), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), "Capacity observation only", experienceNativeArms[0], nil, time.Now().Add(time.Hour))
 	defer r.close()
+	probe.denied = true
+	if !errors.Is(r.cat.CheckRestore(ctx), catalog.ErrRestore) {
+		t.Fatal("observation composition replaced the original restore/deletion manifest")
+	}
+	probe.denied = false
 	if r.reads == pool || r.reads.Config().MaxConns != 1 {
 		t.Fatal("runtime did not reserve exactly one observation connection")
 	}

@@ -37,6 +37,14 @@ func NewWithRunObservationPool(pool, observations *pgxpool.Pool, manifest Manife
 	return &Store{pool: pool, manifest: manifest, runObservationPool: observations}
 }
 
+// WithRunObservationPool preserves the existing manifest, including injected
+// restore/deletion failure behavior, and business pool. The original is unchanged.
+func (s *Store) WithRunObservationPool(observations *pgxpool.Pool) *Store {
+	copy := *s
+	copy.runObservationPool = observations
+	return &copy
+}
+
 // RunObservationPool selects capacity, never grants access. Foreground composed
 // source checkers still prove the exact current run and source state themselves.
 func (s *Store) RunObservationPool(ctx context.Context) *pgxpool.Pool {
