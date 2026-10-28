@@ -33,6 +33,14 @@ model loads a selected digest through `skills.load`; procedures are omitted unti
 selection. Load enforces bytes and four run pins. Source prose cannot change
 actual tool declarations.
 
+With this catalog configured for a typed task, fixed kernel guidance asks the
+model to review descriptions and load an applicable exact digest before solving
+the task, searching when applicability is unclear. Current loaded procedures
+need no redundant load. Explicit current owner prohibitions take precedence;
+unrelated, revoked and incompatible skills must not be applied. Recovery rebuilds
+this guidance along with current pinned DATA. This is model guidance, not a new
+dispatch prerequisite, an automatic skill execution or a permission grant.
+
 ## Evidence and lifecycle
 
 The fixed v1 validator requires owner-verified criteria/results and actual

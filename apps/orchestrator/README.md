@@ -1615,3 +1615,8 @@ The prospective laba v5 experience preparation receives a complete type-derived 
 The experience fixture prepares readiness in a separate owner-only bootstrap Broker with the source's immutable administration scope; it joins before the original12/11 foreground Broker starts. Revalidation preserves the reviewed generation and15-minute TTL. Recipient data v2 changes the environment fingerprint, not the unchanged ABI package version. The latest partial ABC failure and385-entry inclusive history remain retained; this is no production deployment or quality approval.
 
 The laba ABC33 window is now complete with all24 control outcomes retained. Coordinator task scores are A7/8,B7/8,C6/8; the current experience configuration gains no completed tasks and remains unqualified/default-off. Three ordinary memory.search calls block with validation-classUNKNOWN, and no skill body is loaded in controls. Full accounting retains all503 native entries/3UNKNOWN and4320708 known full tokens; native92/positive composition/independent quality remain pending. See experiments/memory115/2026-10-28/laba-abc-v6-complete.
+With the existing skill catalog configured, typed-task context now includes a
+fixed instruction to select and load applicable skills by exact digest, with
+search when applicability is unclear. Current loaded procedures need no redundant
+load. Recovery rebuilds the guidance and pinned DATA. Owner prohibitions and
+ordinary source, lifecycle, budget, approval and Broker checks remain authoritative.

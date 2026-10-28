@@ -193,9 +193,23 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 	if os.Getenv("BUTLER_EXTENSION_E2E") != "1" {
 		t.Skip("isolated production Broker/executor proof required")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second)
+	runReviewedSkillRealBrokerE2E(t, nil)
+}
+
+func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
+	duration := 150 * time.Second
+	if native != nil {
+		duration = 15 * time.Minute
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
-	initialPool, dsn := e2eDatabase(t)
+	var initialPool *pgxpool.Pool
+	var dsn string
+	if native == nil {
+		initialPool, dsn = e2eDatabase(t)
+	} else {
+		initialPool, dsn = native.database(t)
+	}
 	initialPool.Close()
 	poolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
@@ -207,14 +221,24 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
+	reads := pool
+	if native != nil {
+		readConfig := pool.Config().Copy()
+		readConfig.MaxConns, readConfig.MinConns = 1, 0
+		reads, err = pgxpool.NewWithConfig(ctx, readConfig)
+		if err != nil {
+			t.Fatal("authority reserve unavailable")
+		}
+		t.Cleanup(reads.Close)
+	}
 	sessions := session.NewPostgresRepository(pool)
 	key := "web:owner"
 	if _, _, err := sessions.CreateSession(ctx, session.CreateSessionParams{SessionKey: key, UserID: "owner", Channel: "web", MetadataJSON: "{}"}); err != nil {
 		t.Fatal(err)
 	}
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
-	leases := session.NewPostgresLeaseManager(pool)
-	tasks := task.NewStore(pool)
+	leases := session.NewPostgresLeaseManagerWithAuthorityReads(pool, reads)
+	tasks := task.NewStoreWithAuthorityReads(pool, reads)
 	history := transcript.NewStore(pool)
 	inputs := durableinput.NewStore(pool)
 	repo := approvals.NewPostgresRepository(pool)
@@ -224,11 +248,17 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 		return owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "owner", Channel: "web", SessionKey: key, DeliveryID: id})
 	}
 	anchorPath := filepath.Join(t.TempDir(), "deletions")
+	if native != nil {
+		anchorPath = "/out/source-deletions"
+	}
 	anchor := catalog.NewFileManifest(anchorPath)
 	if err := anchor.Initialize(); err != nil {
 		t.Fatal(err)
 	}
 	sources := catalog.New(pool, anchor)
+	if native != nil {
+		sources = sources.WithRunObservationPool(reads)
+	}
 	results := completion.New(pool)
 	journal := actionauth.NewPostgresStore(pool)
 	results.Evidence = effectEvidence{journal: journal}
@@ -240,18 +270,29 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 	}
 	policy := budget.DefaultPolicy()
 	policy.Models["fixture:fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
-	budgets := budget.NewController(pool, policy)
+	if native != nil {
+		policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
+		policy.ModelMillis, policy.OutputTokens = 90000, 4096
+	}
+	budgets := budget.NewControllerWithAuthorityReads(pool, reads, policy)
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	coreToken := strings.Repeat("skills-core-fixture-", 3)
 	runtimeToken := strings.Repeat("skills-runtime-fixture-", 3)
 	ownerToken := strings.Repeat("skills-owner-fixture-", 3)
-	reader := &actionContextReader{runs: runs, sessions: sessions, leases: leases, tasks: tasks, approvals: decisions, pool: pool}
+	reader := &actionContextReader{runs: runs, sessions: sessions, leases: leases, tasks: tasks, approvals: decisions, pool: reads}
 	private := http.NewServeMux()
 	private.Handle("/internal/skill-evidence", skills.NewEvidenceHandler(coreToken, &skillEvidence{tasks: tasks, journal: journal, transcript: history, budgets: budget.NewLedger(pool), results: results, sources: sources}))
 	private.Handle("/", actionauth.NewContextHandler(coreToken, reader))
 	authority := httptest.NewServer(private)
 	defer authority.Close()
-	fixture, err := projectfixture.New(t.TempDir())
+	fixtureDirectory := t.TempDir()
+	if native != nil {
+		fixtureDirectory = "/out/recipient"
+		if err := os.Mkdir(fixtureDirectory, 0700); err != nil {
+			t.Fatal("new retained recipient required")
+		}
+	}
+	fixture, err := projectfixture.New(fixtureDirectory)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -339,7 +380,11 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 		control(extensions.ControlRequest{Operation: "grant_task", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, ManifestHash: installed.Digest, Generation: state.Generation, Tools: toolNames, Resources: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/project"}}, ExpiresAt: time.Now().Add(time.Hour)}})
-		payload, _ := json.Marshal(map[string]string{"text": "Prepare one checked patch, stop on any failed or unknown effect", "user_id": "owner", "task_id": record.TaskID})
+		text := "Prepare one checked patch, stop on any failed or unknown effect"
+		if native != nil && digest != "" {
+			text = "Inspect http://external.test/project. Prepare one immutable unapplied README.md patch changing ready=false to ready=true through http://external.test/project/patches, and check the exact stored artifact. Never apply or commit it. Stop on any failed or unknown effect."
+		}
+		payload, _ := json.Marshal(map[string]string{"text": text, "user_id": "owner", "task_id": record.TaskID})
 		event := ingress.InputEvent{EventID: "input-" + record.TaskID, IdempotencyKey: "input-" + record.TaskID, SessionKey: key, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now().UTC()}
 		accepted, _, err := inputs.Accept(actor("accept-"+record.TaskID), event, "owner", record.TaskID)
 		if err != nil {
@@ -355,8 +400,17 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 			ownedClaim := durableinput.WithClaim(ctx, claimed)
 			// Discard every provider/flow instance at a durable approval. The only
 			// continuation authority is the persisted Butler input/action state.
-			provider := &procedureProvider{digest: digest}
+			scripted := &procedureProvider{digest: digest}
+			var provider transport.ModelProvider = scripted
+			var observed *skillBrokerObservedProvider
+			if native != nil && digest != "" {
+				observed = native.provider(t, digest)
+				provider = observed
+			}
 			cfg := flow.Config{ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 60, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tasks: tasks, Checkpoints: inputs, ApprovalService: decisions, Tools: client, ActionAuthorizer: client, ToolCatalog: client, Completion: results, Budgets: budgets, MemorySources: sources}
+			if observed != nil {
+				cfg.ProviderName, cfg.ModelName = "antigravity", "gemini-3.8-flash-high"
+			}
 			if digest != "" {
 				cfg.Skills = skillClient
 			}
@@ -366,6 +420,9 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 				output, err = executor.Execute(ownedClaim, event)
 			} else {
 				output, err = executor.Resume(ownedClaim, runID, event)
+			}
+			if observed != nil {
+				observed.close()
 			}
 			if expectFailedCheck && err != nil {
 				if attempt != 3 || postCount.Load() != 3 {
@@ -389,12 +446,16 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 				t.Fatal("approval changed run identity")
 			}
 			runID = output.RunID
-			started += provider.starts
+			starts, sawDescription, sawProcedure := scripted.starts, scripted.sawDescription, scripted.sawProcedure
+			if observed != nil {
+				starts, sawDescription, sawProcedure = observed.starts, observed.sawDescription, observed.sawProcedure
+			}
+			started += starts
 			if output.CurrentState == commonv1.RunState_RUN_STATE_COMPLETED {
 				if err = inputs.Finish(ctx, claimed, "completed", "", "", 0); err != nil {
 					t.Fatal(err)
 				}
-				if digest != "" && (!provider.sawProcedure || started < 4) {
+				if digest != "" && (!sawProcedure || started < 4) {
 					t.Fatal("pinned procedure not restored through fresh provider context")
 				}
 				final, err := results.GetByRun(ctx, runID)
@@ -416,12 +477,15 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+				if native != nil && digest != "" {
+					native.verify(t, pool, record, runID, verified.ResultID, digest, postCount.Load(), site.URL)
+				}
 				return record, verified.ResultID
 			}
 			if output.CurrentState != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 				t.Fatal("expected durable approval boundary")
 			}
-			if digest != "" && attempt == 0 && (!provider.sawDescription || provider.sawProcedure) {
+			if digest != "" && attempt == 0 && (!sawDescription || sawProcedure) {
 				t.Fatal("procedure was not loaded progressively")
 			}
 			if err = inputs.Finish(ctx, claimed, "waiting_for_user", "", "", 0); err != nil {
@@ -461,6 +525,9 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 	if verifiedID == "" || record.TaskID == baseline.TaskID || postCount.Load() != 2 {
 		t.Fatal("reusable procedure duplicated recipient mutation or lacked separate outcome")
 	}
+	if native != nil {
+		return
+	} // Native task receipt retained; failure branch remains a separate scripted regression.
 	failChecks.Store(true)
 	failedTask, failedResult := executeProcedure(pack.Digest, true)
 	if failedResult != "" || failedTask.TaskID == record.TaskID || postCount.Load() != 3 {

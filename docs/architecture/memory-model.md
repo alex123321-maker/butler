@@ -1,5 +1,14 @@
 # Butler — Memory Model Specification
 
+When the existing skill catalog is configured for a typed task, Orchestrator adds
+fixed kernel guidance to review descriptions and load an applicable exact digest
+before solving the task. Missing applicability information may require search;
+an already loaded current procedure need not be loaded again. Owner prohibitions,
+compatibility, revocation, current source and Broker authority checks still govern
+use. Descriptions and procedure bodies remain procedural DATA. Recovery replaces
+the fixed guidance and reloads current pinned DATA; neither text nor a model
+selection grants permissions or proves task completion.
+
 Catalog's explicit `WithRunObservationPool` composition clones a Store with its
 existing business pool and exact manifest intact, including restore/deletion
 failure injections. Only the existing token-only observation path selects the

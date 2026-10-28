@@ -1,5 +1,16 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The separate opt-in `TestReviewedSkillNativeBrokerPipeline` targeted proof reads
+only the existing experimental canonical encrypted auth store on laba, under its
+exclusive advisory lock, after binding its source/artifacts/plan and checking the
+actual container process and kernel limits. Its private key is a read-only file
+reference in the owning process; the Broker and executor children receive neither
+that mount reference nor inherited provider/auth environment. Refresh writes the
+canonical experimental store directly, without a copied credential store or CAS
+handback. The parent joins all children and database clients before stopping the
+private database. All old accounting and the new separate attempt ledger remain;
+this does not admit a closed native115 window or access production credentials.
+
 The prospective [issue115 laba adapter](../testing/issue115-laba-native-protocol.md)
 keeps experimental provider credentials in a separate encrypted source store.
 Only a fixed, fully bound native execution may read the matching private key,

@@ -28,10 +28,10 @@ func TestRecoveredSkillsReloadDataAndRejectRevocation(t *testing.T) {
 	s := &Service{config: Config{Skills: c}}
 	old := []transport.InputItem{content.CurrentOwnerMessage("continue", "owner-input"), content.Data("stale procedure", content.Origin{Kind: content.Document, SourceRefs: []string{"skill:old"}, Sensitivity: content.Private}), content.Data("known receipt", content.Origin{Kind: content.ToolOutput, SourceRefs: []string{"tool_call:known"}, Sensitivity: content.Private})}
 	p, err := s.refreshRecoveredToolContext(context.Background(), "run", old, nil)
-	if err != nil || len(p.InputItems) != 3 {
+	if err != nil || len(p.InputItems) != 4 {
 		t.Fatalf("recovery: %v %+v", err, p)
 	}
-	item := p.InputItems[2]
+	item := p.InputItems[3]
 	if item.Role != "user" || content.ItemOrigin(item).IsInstruction() || content.ItemOrigin(item).SourceRefs[0] != "skill:immutable-v1" {
 		t.Fatal("procedure promoted to instructions")
 	}
