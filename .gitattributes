@@ -21,3 +21,7 @@
 # Exact synthetic acceptance evidence retains the producer's original bytes.
 /experiments/converter20/** -text whitespace=cr-at-eol
 /experiments/converter20/**/*.log -whitespace
+
+/experiments/maintenance21/** -text whitespace=cr-at-eol
+/experiments/maintenance21/**/*.log -whitespace
+/experiments/maintenance21/**/ipv4-routes.txt -whitespace

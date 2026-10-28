@@ -1,0 +1,119 @@
+{
+  "version": "issue21-independent-guard-host-v6-static-review-v1",
+  "issued_utc": "2026-10-27T00:00:15.150320+00:00",
+  "decision": "V5_QUALIFICATIONS_ADDRESSED_NO_NEW_STATIC_BLOCKER_FOR_TRUSTED_GUARD_ONLY_SCOPE_NOT_UPDATER_ACCEPTANCE",
+  "observed_HEAD": "23aa5a3109a3d083d9e409dcbf2d0bf27197c300",
+  "exact_source_pins": [
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux.go",
+      "sha256": "f5768d1af9191c697f54d5ebcab6dc6c3b69d2d12ad6e6a048945e4fc22aa662"
+    },
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+      "sha256": "6e6a161777a3e6bfc56b294d4feccdbccb3e882805af88de85245f4149b0bb54"
+    }
+  ],
+  "equal_before_after_source_pins": true,
+  "reviewed_source_snapshot": "D:\\CodexData\\home\\worktrees\\issue21-local\\butler\\.cache\\issue21-independent\\guard-host-v6-reviewed-source-v1",
+  "safe_selected_publication_allowlist": [
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux.go",
+      "bytes": 27857,
+      "sha256": "f5768d1af9191c697f54d5ebcab6dc6c3b69d2d12ad6e6a048945e4fc22aa662"
+    },
+    {
+      "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+      "bytes": 9082,
+      "sha256": "6e6a161777a3e6bfc56b294d4feccdbccb3e882805af88de85245f4149b0bb54"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v6-source-before.json",
+      "bytes": 326,
+      "sha256": "94d764892a7936f8758c3ef0bddbd4da91638c6c66673662ebc146db8524d68e"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v6-source-after.json",
+      "bytes": 326,
+      "sha256": "94d764892a7936f8758c3ef0bddbd4da91638c6c66673662ebc146db8524d68e"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v6.sh",
+      "bytes": 904,
+      "sha256": "981e45db7f07e94bfc8695424e43241b1a91815dbdb9682808a827f8478b9f58"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v6.log",
+      "bytes": 3550,
+      "sha256": "65a48f4301b2b1daadb8963b42214ad8c88b71800f0cefb06ba199c61382a091"
+    },
+    {
+      "path": ".cache/maintenance21-guard-host-v6-exit.json",
+      "bytes": 181,
+      "sha256": "f52d6c77e90ae2508e6119988f5a995cd1ed29d8dce2f92056e394b0341b8a64"
+    }
+  ],
+  "review_doc": {
+    "path": "public-guard-host-v6-static-review-v1.md",
+    "sha256": "cba4c1a8f88a7ffcb9588faa482479ae82448360e7255e8297e065b94be9886d"
+  },
+  "retained_actual_results": {
+    "linux_race_top_level_PASS": 7,
+    "never_started_subcase_PASS": 6,
+    "FAIL": 0,
+    "SKIP": 0,
+    "package_seconds": 8.134,
+    "sequential_script_vet_exit": 0,
+    "no_container_lock_wait_seconds": 5.0,
+    "actual_kernel_seconds": 1.0,
+    "actual_race_seconds": 1.1
+  },
+  "retained_actual_witness": {
+    "container_id": "36eda661fbdc5db8a1030346de5f6609813b681d5bd8ffcf5910b83c463b3ff9",
+    "image_sha256": "5a7e4124365ea4f271c23e1c9c918b991f86d675e0f2789e520f87a321062165",
+    "guard_sha256": "c62270e6ca372fa6062f41247bdcfcb9a34d3649cf7df0e58a3119ed16add1c9",
+    "candidate_sha256": "a8ce3e6c649def3681f4959a334e88d700b3b10fd1ecea18383057b719800296",
+    "runtime_sha256": "286ae75fa61bf28f4e914f678ee7bafbda187a137825a81b4c68bae9bcfb3888",
+    "pid": 19134,
+    "pid_start_ticks": 7244053,
+    "namespace_sha256": "ce52dd9ac66e7002fbb9653915cdddf9e9c892b822352bc122f15b50cf47f68d",
+    "mount_sha256": "9c4c7a7e2475c702e993c8b2489dc1fac944b0f4c00aa9b96f562669804cd246",
+    "descriptor_sha256": "28725eaa16b9bcd1f8984fcc8d0d2f85533ee54f05b181b8e6df8d49cccb26a2",
+    "own_root_descriptors": 1,
+    "read_only_cpu_descriptors": 1,
+    "root_path_projection_differs": false,
+    "memory_bytes": 134217728,
+    "pids": 32,
+    "max_open_files": 64,
+    "cpu": "100000 100000",
+    "effective_swap_max": 0,
+    "guard_is_pid1": true,
+    "marker_absent": true,
+    "candidate_executed": false,
+    "measured_at": "2026-10-26T23:57:18.176017Z"
+  },
+  "retained_actual_exit": {
+    "exit_code": 0,
+    "source_unchanged": true,
+    "scope": "trustedguardonly",
+    "candidate_launch_implemented": false,
+    "authority_granted": false,
+    "native_models": 0
+  },
+  "source_fixes_confirmed": [
+    "Sticky controlCloseFault/atomic closing prevent measurement qualification.",
+    "Closing recheck before final witness.",
+    "sync.Once caches first cleanup outcome without additionalAPI.",
+    "5s cleanup and15s measurement contexts include context-aware lifecycle mutex acquisition.",
+    "Remaining cleanup context bounds HTTP operations; expired lock wait stays UNKNOWN, not healthy."
+  ],
+  "FD_close_error_empirically_reproduced": false,
+  "sticky_state_test_is_synthetic": true,
+  "lock_wait_test_has_container_or_host_client": false,
+  "recorded_race": "close wins, measure unqualified, actual owned cleanup confirmed; not exhaustive interleaving proof",
+  "prior_versions_failures_findings_and_artifacts_immutable": true,
+  "publication_limit": "Only selected source/log/script/inventory/exit and safe own review/receipt, no private Docker/auth/key/settings/runtime directories, hidden corpora/goldens or candidate input/output. Not universal secret-free attestation.",
+  "remaining_scope": "Marker/check admission/boundedcandidateI/O, functional runner/independent signer, realtaskapprovalcompatibility, trial/promotion/rollback still unimplemented or unaccepted.",
+  "new_formal_freeze_or_hidden_or_admission": false,
+  "source_edits": 0,
+  "Go_PG_Docker_model_auth_private_key_operations": 0
+}

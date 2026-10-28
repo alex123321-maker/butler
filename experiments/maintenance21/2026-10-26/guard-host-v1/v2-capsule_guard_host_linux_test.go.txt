@@ -1,0 +1,109 @@
+//go:build linux
+
+package maintenance
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+	"strings"
+	"testing"
+	"time"
+)
+
+func TestCapsuleGuardColdIdentityIsNotRuntime(t *testing.T) {
+	root := publicDockerInspect()
+	state := root["State"].(map[string]any)
+	state["Running"], state["Status"], state["Pid"] = false, "created", 0
+	root["NetworkSettings"].(map[string]any)["Networks"].(map[string]any)["private"].(map[string]any)["NetworkID"] = ""
+	raw, _ := json.Marshal(root)
+	identity, pid, err := capsuleOwnedState(raw, strings.Repeat("1", 64), "public-module", strings.Repeat("2", 64))
+	if err != nil || pid != 0 || identity.State != "created" || identity.RuntimeSHA256 != "" {
+		t.Fatal("cold owned object fabricated a runtime identity", err)
+	}
+	if _, err = inspectDockerIdentity(raw, "public-module", time.Now()); err == nil {
+		t.Fatal("unchanged runtime inspector accepted missing physical network identity")
+	}
+	if _, _, err = capsuleOwnedState(raw, strings.Repeat("4", 64), "public-module", strings.Repeat("2", 64)); err == nil {
+		t.Fatal("foreign object accepted for cleanup")
+	}
+	delete(state, "Running")
+	raw, _ = json.Marshal(root)
+	if _, _, err = capsuleOwnedState(raw, strings.Repeat("1", 64), "public-module", strings.Repeat("2", 64)); err == nil {
+		t.Fatal("missing stopped-state proof accepted")
+	}
+}
+
+func TestCapsuleGuardExactEnvironmentAndMountBoundary(t *testing.T) {
+	good := "GOMAXPROCS=2\x00HOME=/\x00HOSTNAME=maintenance-capsule\x00PATH=/\x00"
+	if !capsuleEnvironment([]byte(good)) {
+		t.Fatal("fixed environment rejected")
+	}
+	for _, value := range []string{good + "EXTRA=value\x00", strings.Replace(good, "PATH=/\x00", "", 1), good + "PATH=/\x00", strings.Replace(good, "HOME=/", "HOME=/private", 1)} {
+		if capsuleEnvironment([]byte(value)) {
+			t.Fatal("non-exact environment accepted")
+		}
+	}
+	mounts := "1 0 1:1 / / ro,relatime - overlay overlay ro\n2 1 0:2 / /control rw,nosuid,nodev,noexec - tmpfs tmpfs rw\n3 1 0:3 / /sys/fs/cgroup ro,nosuid,nodev,noexec - cgroup2 cgroup ro\n"
+	if !capsuleMounts([]byte(mounts)) {
+		t.Fatal("declared minimal mount shape rejected")
+	}
+	for _, value := range []string{strings.Replace(mounts, "/ ro,relatime", "/ rw,relatime", 1), mounts + "4 1 0:4 / /operator rw - ext4 private rw\n", mounts + strings.Split(mounts, "\n")[0] + "\n"} {
+		if capsuleMounts([]byte(value)) {
+			t.Fatal("foreign mount/writable root/ambiguous shape accepted")
+		}
+	}
+}
+
+type capsuleGuardTrace struct {
+	base  http.RoundTripper
+	calls int
+}
+
+func (trace *capsuleGuardTrace) RoundTrip(request *http.Request) (*http.Response, error) {
+	trace.calls++
+	return trace.base.RoundTrip(request)
+}
+
+func TestCapsuleGuardOwnedKernelIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_TEST_MAINTENANCE_GUARD_KERNEL") != "private-trusted-guard-only" {
+		t.Skip("explicit private guard-only kernel measurement required")
+	}
+	host, err := newCapsuleGuardHost("/run/butler21-docker.sock", os.Getenv("BUTLER_TEST_MAINTENANCE_GUARD_IMAGE"), os.Getenv("BUTLER_TEST_MAINTENANCE_GUARD_SHA256"), os.Getenv("BUTLER_TEST_MAINTENANCE_CANDIDATE_SHA256"))
+	if err != nil {
+		t.Fatal("fixed physical artifact configuration unavailable", err)
+	}
+	trace := &capsuleGuardTrace{base: host.api.client.Transport}
+	host.api.client.Transport = trace
+	prepared, err := host.prepare(t.Context())
+	if prepared != nil {
+		t.Cleanup(func() {
+			if err := prepared.close(); err != nil {
+				t.Error("owned cleanup unqualified", err)
+			}
+		})
+	}
+	if err != nil {
+		stage := "constructor"
+		if prepared != nil {
+			stage = prepared.stage
+		}
+		t.Fatalf("trusted guard preparation unqualified stage=%s error=%v", stage, err)
+	}
+	w := prepared.witness
+	if w.ContainerID != prepared.id || w.PID < 2 || w.PIDStartTicks == 0 || !w.GuardIsPID1 || !w.MarkerAbsent || w.CandidateExecuted || w.MemoryBytes != 128<<20 || w.PIDs != 32 || w.CPU != "100000 100000" || w.EffectiveSwapMax != 0 || !validDigest(w.RuntimeSHA256) || !validDigest(w.NamespaceSHA256) || !validDigest(w.MountSHA256) || w.MeasuredAt.IsZero() {
+		t.Fatal("actual guard physical witness incomplete")
+	}
+	if _, err := prepared.control.Lstat("launch.json"); !os.IsNotExist(err) {
+		t.Fatal("a marker was published by a preparation-only operation")
+	}
+	if err = prepared.close(); err != nil || !prepared.cleanupConfirmed {
+		t.Fatal("actual guard kill/join/delete unavailable", err)
+	}
+	count := trace.calls
+	if err = prepared.close(); err != nil || trace.calls != count {
+		t.Fatal("closed handle replayed a physical cleanup")
+	}
+	public, _ := json.Marshal(w)
+	t.Logf("actual trusted guard witness=%s; no marker/candidate/model/claim; exact owned container killed, waited and removed", public)
+}

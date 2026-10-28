@@ -1,0 +1,14 @@
+[
+  {
+    "path": "internal/maintenance/docker_artifact.go",
+    "sha256": "93b57f713ffd207efb5bd339ebcda7e9527ac9a2d5ffe2be51e5091ce5109b40"
+  },
+  {
+    "path": "internal/maintenance/docker_guarded_artifact.go",
+    "sha256": "e042a984db5ac3390b8094036d57bee9861d122aa00b9eb642001174b48de378"
+  },
+  {
+    "path": "internal/maintenance/docker_guarded_artifact_test.go",
+    "sha256": "f83c6e2dafa5017177a10239a3578254ff30c3ba9011e96d83db3b986a1be693"
+  }
+]

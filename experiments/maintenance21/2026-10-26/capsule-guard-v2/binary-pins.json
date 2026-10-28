@@ -1,0 +1,8 @@
+{
+  "guard_v2_sha256": "c62270e6ca372fa6062f41247bdcfcb9a34d3649cf7df0e58a3119ed16add1c9",
+  "old_guard_v1_sha256": "2b7d42c682ad98dc78ec9bfce442b8d4a7f0e25b601623d1b922e48c025340d3",
+  "old_v1_unchanged": true,
+  "actual_candidate_sha256": "94cb37371d2c93303886203e8e6c57d8412e5fc3d500c5591560b4ab200bf4b1",
+  "component_only": true,
+  "authority_granted": false
+}

@@ -1,0 +1,74 @@
+=== RUN   TestMeasuredInventoryChanges
+--- PASS: TestMeasuredInventoryChanges (0.00s)
+=== RUN   TestProtectedAndUnknownInventory
+--- PASS: TestProtectedAndUnknownInventory (0.00s)
+=== RUN   TestNonregularAndModeChangeInventory
+--- PASS: TestNonregularAndModeChangeInventory (0.00s)
+=== RUN   TestAmbiguousInventoryDenied
+--- PASS: TestAmbiguousInventoryDenied (0.00s)
+=== RUN   TestMaintenanceDurableGuardsIntegration
+--- PASS: TestMaintenanceDurableGuardsIntegration (2.65s)
+=== RUN   TestMaintenanceObservationStopRaceIntegration
+--- PASS: TestMaintenanceObservationStopRaceIntegration (2.81s)
+=== RUN   TestOperatorProfilePinsSeparateAuthorities
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/unbounded_trial
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/long_effect
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/target_is_path
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/unknown_refund_allowance
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/protected_boundary
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_hidden_tests
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_checker_identity
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_schema
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/shared_signing_key
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/shared_node_key
+--- PASS: TestOperatorProfilePinsSeparateAuthorities (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/unbounded_trial (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/long_effect (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/target_is_path (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/unknown_refund_allowance (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/protected_boundary (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_hidden_tests (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_checker_identity (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_schema (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/shared_signing_key (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/shared_node_key (0.00s)
+=== RUN   TestSignedIndependentReviewBinding
+--- PASS: TestSignedIndependentReviewBinding (0.00s)
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/no_measured_gain
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/expired
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/wrong_hidden_corpus
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_zero-native_measurement
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/duplicate
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_candidate
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_baseline
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/future_completion
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unbounded_validity
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_witness
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unapproved_inference
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unknown_usage_not_refunded
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/regression
+--- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/no_measured_gain (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/expired (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/wrong_hidden_corpus (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_zero-native_measurement (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/duplicate (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_candidate (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_baseline (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/future_completion (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unbounded_validity (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_witness (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unapproved_inference (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unknown_usage_not_refunded (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/regression (0.00s)
+=== RUN   TestEvenSignedAmbiguousReviewIsRejected
+--- PASS: TestEvenSignedAmbiguousReviewIsRejected (0.00s)
+=== RUN   TestNegativeReviewRemainsAuthenticHistory
+--- PASS: TestNegativeReviewRemainsAuthenticHistory (0.00s)
+=== RUN   TestMaintenanceStagedEvidenceIntegration
+--- PASS: TestMaintenanceStagedEvidenceIntegration (2.75s)
+PASS
+ok  	github.com/butler/butler/internal/maintenance	9.632s

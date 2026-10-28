@@ -1,0 +1,32 @@
+[
+  {
+    "path": "cmd/maintenance-capsule-guard/exec_linux.go",
+    "sha256": "391f3eced9eac3196d0db376ae13f8ce3c0567a0d5e05e1f0b6548dc755d4647"
+  },
+  {
+    "path": "cmd/maintenance-capsule-guard/exec_other.go",
+    "sha256": "bb64b24248aa4facc1ee9f395b2c014e4567361cba9159d42fce85a733667d2a"
+  },
+  {
+    "path": "cmd/maintenance-capsule-guard/main_test.go",
+    "sha256": "b7fd8ee28a1cd0b8b6b475df89d9e427f5a5f3679f5b7d10fe4f83c2b9b328b1"
+  },
+  {
+    "path": "cmd/maintenance-capsule-guard/main.go",
+    "sha256": "d68058f8ef89379d7696e6ca07f8a3613bd115d8dc3efc0bbf17c6b54a6c41b6"
+  },
+  {
+    "path": "cmd/maintenance-capsule-guard/README.md",
+    "sha256": "4c160800a6c3e6297d90052b2c238c82807048e2129a7fb176ba59071d825da4"
+  },
+  {
+    "path": "private-test-root/maintenance-guard",
+    "bytes": 4354154,
+    "sha256": "2b7d42c682ad98dc78ec9bfce442b8d4a7f0e25b601623d1b922e48c025340d3"
+  },
+  {
+    "path": "private-test-root/candidate",
+    "bytes": 3914863,
+    "sha256": "94cb37371d2c93303886203e8e6c57d8412e5fc3d500c5591560b4ab200bf4b1"
+  }
+]

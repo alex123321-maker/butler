@@ -1,0 +1,10 @@
+[
+  {
+    "path": "internal/maintenance/capsule_guard_host_linux.go",
+    "sha256": "89b1cb3d7282c485aecd5682bf58be74a254dca33e8e2656e7fc47ceb533c973"
+  },
+  {
+    "path": "internal/maintenance/capsule_guard_host_linux_test.go",
+    "sha256": "f2914eeda3dcd97e773b4bca69f666e135759e3487ce1d513bae0b76d187043d"
+  }
+]

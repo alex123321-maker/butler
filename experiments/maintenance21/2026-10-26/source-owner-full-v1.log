@@ -1,0 +1,159 @@
+=== RUN   TestMaintenanceClaimConcurrentRetryIntegration
+--- PASS: TestMaintenanceClaimConcurrentRetryIntegration (2.46s)
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/revoked
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/stopped
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/stale_observation
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/changed_base
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/foreign_owner
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/changed_review
+=== RUN   TestMaintenanceClaimRechecksLiveEvidenceIntegration/wrong_signer
+--- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration (16.07s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/revoked (2.37s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/stopped (2.29s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/stale_observation (2.26s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/changed_base (2.28s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/foreign_owner (2.32s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/changed_review (2.39s)
+    --- PASS: TestMaintenanceClaimRechecksLiveEvidenceIntegration/wrong_signer (2.16s)
+=== RUN   TestMaintenanceDispatchOneUseAndOwnerStopIntegration
+--- PASS: TestMaintenanceDispatchOneUseAndOwnerStopIntegration (2.21s)
+=== RUN   TestMaintenanceDispatchRechecksRevocationIntegration
+--- PASS: TestMaintenanceDispatchRechecksRevocationIntegration (2.96s)
+=== RUN   TestMeasuredInventoryChanges
+--- PASS: TestMeasuredInventoryChanges (0.00s)
+=== RUN   TestProtectedAndUnknownInventory
+--- PASS: TestProtectedAndUnknownInventory (0.00s)
+=== RUN   TestNonregularAndModeChangeInventory
+--- PASS: TestNonregularAndModeChangeInventory (0.00s)
+=== RUN   TestAmbiguousInventoryDenied
+--- PASS: TestAmbiguousInventoryDenied (0.00s)
+=== RUN   TestMaintenanceDurableGuardsIntegration
+--- PASS: TestMaintenanceDurableGuardsIntegration (2.81s)
+=== RUN   TestMaintenanceObservationStopRaceIntegration
+--- PASS: TestMaintenanceObservationStopRaceIntegration (2.57s)
+=== RUN   TestMaintenanceMeasuredOutcomeAfterStopIntegration
+=== RUN   TestMaintenanceMeasuredOutcomeAfterStopIntegration/completed
+=== RUN   TestMaintenanceMeasuredOutcomeAfterStopIntegration/failed
+=== RUN   TestMaintenanceMeasuredOutcomeAfterStopIntegration/unknown
+--- PASS: TestMaintenanceMeasuredOutcomeAfterStopIntegration (7.58s)
+    --- PASS: TestMaintenanceMeasuredOutcomeAfterStopIntegration/completed (2.47s)
+    --- PASS: TestMaintenanceMeasuredOutcomeAfterStopIntegration/failed (2.62s)
+    --- PASS: TestMaintenanceMeasuredOutcomeAfterStopIntegration/unknown (2.49s)
+=== RUN   TestMaintenanceExpiredDispatchRetainsLateMeasurementIntegration
+--- PASS: TestMaintenanceExpiredDispatchRetainsLateMeasurementIntegration (4.03s)
+=== RUN   TestMaintenancePermissionNonceAndRevocationIntegration
+--- PASS: TestMaintenancePermissionNonceAndRevocationIntegration (3.69s)
+=== RUN   TestMaintenancePermissionRejectsUnreviewedProtectedScopeIntegration
+--- PASS: TestMaintenancePermissionRejectsUnreviewedProtectedScopeIntegration (2.29s)
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/new_owner_stop
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/unknown_action
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/different_current_artifact
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/expired_physical_proof
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/different_owner
+=== RUN   TestOwnerPermissionCannotExpandToKernelOrRollback/new_profile
+--- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/new_owner_stop (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/unknown_action (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/different_current_artifact (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/expired_physical_proof (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/different_owner (0.00s)
+    --- PASS: TestOwnerPermissionCannotExpandToKernelOrRollback/new_profile (0.00s)
+=== RUN   TestExactProtectedAndStoppedRollbackPermissions
+--- PASS: TestExactProtectedAndStoppedRollbackPermissions (0.00s)
+=== RUN   TestInvalidAndExpiredOwnerPermission
+=== RUN   TestInvalidAndExpiredOwnerPermission/ordinary_while_stopped
+=== RUN   TestInvalidAndExpiredOwnerPermission/wrong_owner
+=== RUN   TestInvalidAndExpiredOwnerPermission/missing_request_identity
+=== RUN   TestInvalidAndExpiredOwnerPermission/invented_permission
+=== RUN   TestInvalidAndExpiredOwnerPermission/kernel_in_ordinary_scope
+=== RUN   TestInvalidAndExpiredOwnerPermission/duplicate_scope
+=== RUN   TestInvalidAndExpiredOwnerPermission/unbounded_claims
+=== RUN   TestInvalidAndExpiredOwnerPermission/unbounded_expiry
+--- PASS: TestInvalidAndExpiredOwnerPermission (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/ordinary_while_stopped (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/wrong_owner (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/missing_request_identity (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/invented_permission (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/kernel_in_ordinary_scope (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/duplicate_scope (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/unbounded_claims (0.00s)
+    --- PASS: TestInvalidAndExpiredOwnerPermission/unbounded_expiry (0.00s)
+=== RUN   TestOperatorProfilePinsSeparateAuthorities
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/shared_node_key
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_hidden_tests
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_checker_identity
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/missing_schema
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/unbounded_trial
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/long_effect
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/target_is_path
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/unknown_refund_allowance
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/shared_signing_key
+=== RUN   TestOperatorProfilePinsSeparateAuthorities/protected_boundary
+--- PASS: TestOperatorProfilePinsSeparateAuthorities (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/shared_node_key (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_hidden_tests (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_checker_identity (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/missing_schema (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/unbounded_trial (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/long_effect (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/target_is_path (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/unknown_refund_allowance (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/shared_signing_key (0.00s)
+    --- PASS: TestOperatorProfilePinsSeparateAuthorities/protected_boundary (0.00s)
+=== RUN   TestMaintenanceUnknownReconciliationRequiresSettledNodeIntegration
+--- PASS: TestMaintenanceUnknownReconciliationRequiresSettledNodeIntegration (2.50s)
+=== RUN   TestSignedIndependentReviewBinding
+--- PASS: TestSignedIndependentReviewBinding (0.00s)
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_baseline
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/no_measured_gain
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/expired
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unbounded_validity
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/wrong_hidden_corpus
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unapproved_inference
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/duplicate
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_candidate
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/future_completion
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_witness
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_zero-native_measurement
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/unknown_usage_not_refunded
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing
+=== RUN   TestReviewRefusesIncompleteRegressedAndStaleEvidence/regression
+--- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_baseline (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/no_measured_gain (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/expired (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unbounded_validity (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/wrong_hidden_corpus (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unapproved_inference (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/duplicate (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_candidate (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/future_completion (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_witness (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing_zero-native_measurement (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/unknown_usage_not_refunded (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/missing (0.00s)
+    --- PASS: TestReviewRefusesIncompleteRegressedAndStaleEvidence/regression (0.00s)
+=== RUN   TestEvenSignedAmbiguousReviewIsRejected
+--- PASS: TestEvenSignedAmbiguousReviewIsRejected (0.00s)
+=== RUN   TestNegativeReviewRemainsAuthenticHistory
+--- PASS: TestNegativeReviewRemainsAuthenticHistory (0.00s)
+=== RUN   TestSourceSnapshotUsesWholeCommitInsteadOfDirtyCheckoutOrExportFilters
+--- PASS: TestSourceSnapshotUsesWholeCommitInsteadOfDirtyCheckoutOrExportFilters (0.62s)
+=== RUN   TestSourceSnapshotRefusesSymlinkBeforePrivateCopy
+--- PASS: TestSourceSnapshotRefusesSymlinkBeforePrivateCopy (0.54s)
+=== RUN   TestSourceSnapshotCleanupCannotRemoveAnUnownedDirectory
+--- PASS: TestSourceSnapshotCleanupCannotRemoveAnUnownedDirectory (0.00s)
+=== RUN   TestMaintenanceStagedEvidenceIntegration
+--- PASS: TestMaintenanceStagedEvidenceIntegration (2.54s)
+PASS
+ok  	github.com/butler/butler/internal/maintenance	54.344s
+=== RUN   TestMaintenanceOwnerControlProcessHelper
+--- PASS: TestMaintenanceOwnerControlProcessHelper (0.00s)
+=== RUN   TestMaintenanceOwnerStopWithoutCoreProcessIntegration
+    main_integration_test.go:175: actual separate owner process, Core absent, unauthenticated/ambiguous stop denied, durable stop survives process restart; no node/deployment/inference proof
+--- PASS: TestMaintenanceOwnerStopWithoutCoreProcessIntegration (3.07s)
+PASS
+ok  	github.com/butler/butler/apps/maintenance-controller	4.785s

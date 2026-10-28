@@ -1,0 +1,75 @@
+{
+  "version": "maintenance21-build-observer-component-v1",
+  "result": "COMPONENT_PASS_NOT_RELEASE_ACCEPTANCE",
+  "native_admissions": 0,
+  "new_dependencies": 0,
+  "race": {
+    "passed": 10,
+    "sha256": "497c6df99a10cbf645db8596b0ab8bfd6b760eded8e452c2e1a9271b0603c64f",
+    "skipped": 0,
+    "failed": 0,
+    "log": "build-observer-v5.log"
+  },
+  "vet_exit": 0,
+  "actual_elf_sha256": "a8ce3e6c649def3681f4959a334e88d700b3b10fd1ecea18383057b719800296",
+  "actual_imported_image_sha256": "139a840fe3b1fca72d7a5a8f824ef1734fa1a6f7cd6d6909867d3356a884a100",
+  "actual_worker_kernel_bounds_verified": true,
+  "actual_separate_node_process_verified": true,
+  "candidate_elf_run": false,
+  "deployment_performed": false,
+  "independent_release_checker_qualified": false,
+  "issue21_closed": false,
+  "earlier_failures_retained": [
+    "build-observer-v1.log",
+    "build-observer-v2.log",
+    "build-observer-v3.log"
+  ],
+  "source_files": [
+    {
+      "path": "internal/maintenance/docker_builder.go",
+      "sha256": "8b965863aa7c36b0663777e47d14c8ba3346e59ba678dc8ce308c928bf3b6327"
+    },
+    {
+      "path": "internal/maintenance/docker_artifact.go",
+      "sha256": "a87092a56b0b358074485991c4220d60c6668a60b47b6b202a8ea5fec08e6334"
+    },
+    {
+      "path": "internal/maintenance/build_bounds.go",
+      "sha256": "08f543311593487caee8c873ede28ab4fd385f0901c22e2a21b8c8d72cc7de5c"
+    },
+    {
+      "path": "internal/maintenance/node_observer.go",
+      "sha256": "020f5adf58dcda11ccc7949f8bfae497f7325a2b9a696d2eb0ed328755a2ca5e"
+    },
+    {
+      "path": "internal/maintenance/docker_builder_test.go",
+      "sha256": "bcfb4edc46983194966d9c01e5833fd964848b83913266ebf01586fb37230163"
+    },
+    {
+      "path": "internal/maintenance/docker_build_bounds_test.go",
+      "sha256": "ab19b4baa0c0df758cf13ed95776e6d7f8b6b554fd8a4521960e17fed24b0cf0"
+    },
+    {
+      "path": "internal/maintenance/docker_build_output_unix_test.go",
+      "sha256": "d8ef036bb1134b7729fcf50b5b7e9070af7da9c6c27fe176a3677ff292bc0289"
+    },
+    {
+      "path": "internal/maintenance/node_observer_test.go",
+      "sha256": "75464c55bdfdcbb9ca4736488029af74a4ec5230dfb9203aa3dc0112b14fdd31"
+    },
+    {
+      "path": "internal/maintenance/node_observer_unix_test.go",
+      "sha256": "cba0d9269551751a32325dc6586033c3edd9a3eb0031c389a72419d6fc593070"
+    },
+    {
+      "path": "apps/maintenance-node/main.go",
+      "sha256": "66604f5083b84be30a5e8f543376e235d90eee2029ebb1274cd90bc450e44f9e"
+    },
+    {
+      "path": "apps/maintenance-node/main_integration_test.go",
+      "sha256": "26b7b0fa1ec43018deb45f72435045549ef3dc7d605966d8cb654d3d56fe15a2"
+    }
+  ],
+  "compiler_image_sha256": "0a761904b78c29eba4ec83bd83b7312db1e113dcd92da7fc669843ad9bca56a1",
+  "compiler_repository_digest": "sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d"
+}

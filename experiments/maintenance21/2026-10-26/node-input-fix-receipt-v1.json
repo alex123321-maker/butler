@@ -1,0 +1,23 @@
+{
+  "version": "maintenance21-node-input-fix-v1",
+  "original": "ab6525420e7986336ec79544b6c7b47de1489733",
+  "original_review_sha256": "4fc2410186f94af19764dbb6980ff14612f8e7a0dd7d2f7d878c7e9899b7af22",
+  "original_repro": "FAIL_REPRODUCED",
+  "original_repro_log_sha256": "034547f9d88ca1289408be4c0bcb6af63ece73097665e27d1380c380a297eec3",
+  "fixed_race": {
+    "passed": 3,
+    "failed": 0,
+    "sha256": "bb8f2d366f8160f5c0a852c435faf7c6991361ecc6117b3e08353fe19a141af7",
+    "log": "node-input-fix-v1.log",
+    "skipped": 0
+  },
+  "vet_exit": 0,
+  "caller_deadline_millis": 100,
+  "observed_return_millis": 100,
+  "canonical_input_before_private_key": true,
+  "actual_separate_docker_observation_process": "PASS",
+  "native_admissions": 0,
+  "deployment": false,
+  "full_issue21_acceptance": false,
+  "main_sha256": "dd98b945226a0576fc40552d2555b3bb40be83ebf783697f56ad96b99f7f84b4"
+}
