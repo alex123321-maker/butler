@@ -1,0 +1,25 @@
+{
+  "producer": "b858c60a1277b3c99ce369db2d05ca660659dc69",
+  "bindings": {
+    "ExtensionSHA": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "Source": "b858c60a1277b3c99ce369db2d05ca660659dc69",
+    "HTTPSHA": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca",
+    "AppSHA": "a5ecdd531cebe7e9639d8c1b9c28150469a4393179a23b490e8d15f7c68a78cf",
+    "BrokerControlSHA": "5cb62d849c666055fc9f2906237dd5852b047208844559adcd45ab74256d292b",
+    "BrokerSHA": "1bf5ecc3821672ff1669b3e856663d76355089d5c2e1b27942977165622186c9",
+    "PlanSHA": "2b17c33e79f9c2b72b71d5fc3363d40c85f67b4aae89c158c9b0a0fecf54eae3",
+    "HistorySHA": "b04aec6e8e7e8140532d97d004ded3530f458cfc4ec3323874d52dbe7fa3c595"
+  },
+  "latest_closed_history": "a4dc87a2fbb3f0bc97aa4ca14df6d52ff52d0fc7640001a32764d57e8d210b59",
+  "owner_instruction": "6f4a80a029a4537bcff4f0cb049b0cf5333291a4395c45a22668a85abd90f514",
+  "prior_native": 257,
+  "prior_unknown": 2,
+  "prior_known_full_tokens": 1967005,
+  "prior_product": 258,
+  "selected_stages": 33,
+  "full_stages": 57,
+  "new_entry_ceiling": 640,
+  "provider": "gemini-3.8-flash-high",
+  "relay": "fixed whole-window deadline, existing laba proxy",
+  "new_generations_at_binding": 0
+}
