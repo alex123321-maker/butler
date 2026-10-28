@@ -176,8 +176,13 @@ No native latency improvement is attributed to this staged change.
 
 A final Broker-only hardening also rejects case-variant proof keys, preventing
 Go's case-insensitive struct decoding from expanding the closed proof shape.
-The three native samples remain attributed to1b6067bf; a later health-checked
-Broker/browser release is listed separately when applied.
+The three native samples remain attributed to1b6067bf. Final Broker/browser
+source6736b8f8 was built from committed snapshot20261028-204708-452 after fresh
+real Broker/PG/Chromium regression, targeted race units and vet passed. Release
+`/srv/storage/butler/main/releases/browser-get-form-20261028-6736b8f8` is healthy;
+running executable hashes match release-sha256.txt. Its inventory is in
+deployment-final-manifest.json; revision2-release-sha256.txt retains the actual
+three-trial build's hashes. The Core quote-evidence change remains undeployed.
 
 Forms/login/consent remain unaccepted. Their nine original slots must not evade
 the retained opaque nav-02 effect via new session/Task identities. Full #163 and
