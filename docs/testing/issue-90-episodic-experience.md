@@ -1,5 +1,16 @@
 # Issue 90: controlled episodic experience evidence
 
+Latest selected native outcome (2026-10-28, laba, source1070f0f5): all33 attempts
+and24 controls are retained, with29completed/4failed/24predeclared repeat omissions.
+Coordinator task scores A7/8,B7/8,C6/8 and allocated full-token costs
+281310/374477/619768 show no task gain for this current configuration. Three
+memory.search validation-class errors block read inputsUNKNOWN; their internal
+cause remains unresolved. No skill is loaded in controls, so skill body utility
+is unmeasured. Experience remains unqualified/default-off, with independent
+quality and native post-delete reader reconstruction still pending. All503
+native entries/3unknown and4320708 known full tokens are preserved, with old
+separate diagnostics unchanged. See the [complete comparison](../../experiments/memory115/2026-10-28/laba-abc-v6-complete/README.md).
+
 The ordinary owner reconciliation seam is separately proved in fresh
 `snapshots/v31`, `reports/terminal-v31`: **23 / 0 / 0**, race and vet;
 SHA256 of `evidence.sha256` is

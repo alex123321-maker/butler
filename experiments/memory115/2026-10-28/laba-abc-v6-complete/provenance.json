@@ -1,0 +1,42 @@
+{
+  "version": "butler115.completed-selected33-provenance.v1",
+  "collector_source": "1070f0f542ce72adf52275b710978e6cefccd8d0",
+  "operator_carrier": "506bb847b9332cff313082d21d4b5f8e18488d90",
+  "plan_sha256": "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511",
+  "history_sha256": "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490",
+  "parent_closed385_sha256": "f59951c868aca386188792a1b0e69dcfab9c255fdf443b598ca9a89e53679af7",
+  "source_tar_sha256": "57a089c8c97eebdc81ce078a2c4d3554d9f78c37e63c7ed375c90b3c7007b0cf",
+  "source_inventory_sha256": "fc37696c7f6c9e3e2801f1d038ed34700397e30031fd916de7751e0c7bfdc46c",
+  "source_files": 6504,
+  "source_bytes": 336361569,
+  "all_git_blobs_verified": true,
+  "native_operator_sha256": "9f0bc0296019f60059a0e18eb23c8d11c7259653d17126186bd16906fedbd70f",
+  "binaries": {
+    "broker_control": "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307",
+    "http": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca",
+    "app": "cee13f636174a12f2a5d1e2b79d416490ad2a56a88d0f4b99d2dc8458e630412",
+    "extension": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "broker": "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c"
+  },
+  "configured_model": "antigravity:gemini-3.8-flash-high",
+  "reported_model_versions": [
+    "gemini-3.8-flash-n"
+  ],
+  "private_raw_files": 759,
+  "private_raw_inventory_sha256": "ec774bdb0b13477e6b34c521a336374f4d9e96e0aeaaa3faaa9a991660f2fa3f",
+  "native_host_start_utc": "2026-10-28T14:23:41Z",
+  "native_host_finish_utc": "2026-10-28T14:48:12Z",
+  "host_elapsed_seconds": 1471,
+  "current_native_generation_entries": 118,
+  "native_exit_status": 0,
+  "actual_kernel_and_child_exit": true,
+  "credential_backends_joined": true,
+  "opaque_source_cas": true,
+  "auth_resolved": true,
+  "forced_cleanup": false,
+  "raw_backup_copies": "sealed on laba and owner-only Windows folder; v4/v5/v6 checksums verified",
+  "provider_authorization_files_copied": false,
+  "post_exit_operator_commitments": "all8 unbound; existing denial unit and vetPASS,networknone/auth0",
+  "new_history_admission": false,
+  "release_qualified": false
+}

@@ -15,7 +15,7 @@ import (
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
-	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" {
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -57,6 +57,9 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	if profile == "closed-abc-v5" {
 		wantPlan = "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497"
+	}
+	if profile == "closed-abc-v6" {
+		wantPlan = "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511"
 	}
 	if accountingPlan != wantPlan {
 		t.Fatal("different cohort accounting")

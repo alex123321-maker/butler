@@ -1,0 +1,5 @@
+=== RUN   TestLaba115UnboundNativeProfileDeniesBeforeAdmission
+--- PASS: TestLaba115UnboundNativeProfileDeniesBeforeAdmission (0.00s)
+PASS
+ok  	command-line-arguments	1.022s
+2d68fa92bb411c8766eb7c844ef8ee8af240c6a3e2b98e458170d8a24d0fe902  /out/memory115-laba-execute

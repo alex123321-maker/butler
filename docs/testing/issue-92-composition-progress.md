@@ -1,8 +1,18 @@
 # Memory composition evidence and remaining gates
 
-This is controlled component/composition evidence, not completed issue77/92
-acceptance or a production activation. The primary laba deployment remains
+This ledger separates controlled mechanics from native results. It does not
+complete issue77/92 acceptance or activate production. The primary laba deployment remains
 unchanged. Synthetic data is not human-reviewed real user workload.
+
+The latest selected native ABC33 window on laba (2026-10-28, source1070f0f5)
+now has all24 control outcomes. Coordinator rubric scores are A7/8,B7/8,C6/8;
+full allocated model tokens281310/374477/619768. Four inputs remain blocked;
+three involve validation-class memory.search UNKNOWN, with internal cause still
+unresolved. No skill body was loaded in controls. The current experience/skill
+configuration remains unqualified/default-off; native92, positive selected
+composition and independent quality are pending. All earlier failures and costs
+are retained:503native/3unknown,4320708 known full tokens, separate old diagnostics
+unchanged. See the [complete comparison and criterion evidence](../../experiments/memory115/2026-10-28/laba-abc-v6-complete/README.md).
 
 The [staged rollout contract](issue-92-staged-memory-rollout.md) defines separate
 entry/exit criteria, owner review, effective flags and compatible rollback. It

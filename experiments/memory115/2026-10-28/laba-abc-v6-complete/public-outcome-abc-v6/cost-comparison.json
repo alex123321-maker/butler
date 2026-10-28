@@ -1,0 +1,175 @@
+{
+  "all_unique_reserved_quotes": {
+    "aggregate_carry_reservation_rows": 1,
+    "copied_reservation_rows": 1272,
+    "historical_inclusive_quote": {
+      "active_millis": 148110000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 1134559232,
+      "external_calls": 275,
+      "model_turns": 386,
+      "provider_input_bytes": 3238002688,
+      "tokens": 417398784
+    },
+    "history_reservation_id": "941c24e4e5ebcb73e3d99feeb1929efd7a5d9413d7accb2210700ef94803f69e",
+    "inclusive_quote": {
+      "active_millis": 194480000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 1547698176,
+      "external_calls": 399,
+      "model_turns": 504,
+      "provider_input_bytes": 4227858432,
+      "tokens": 544997376
+    },
+    "new_model_reservation_rows": 118,
+    "new_non_model_reservation_rows": 124,
+    "new_unique_experiment_quote": {
+      "active_millis": 46370000,
+      "children": 0,
+      "cost_micros": 0,
+      "egress_bytes": 413138944,
+      "external_calls": 124,
+      "model_turns": 118,
+      "provider_input_bytes": 989855744,
+      "tokens": 127598592
+    },
+    "unique_reservations": 243
+  },
+  "arms": {
+    "A": {
+      "control_tasks": 8,
+      "full_allocated_elapsed_millis": 444648,
+      "full_allocated_native": {
+        "entries": 41,
+        "input_tokens": 239650,
+        "known_full_tokens": 281310,
+        "missing_total": 0,
+        "model_millis": 418954,
+        "output_tokens": 9068,
+        "unknown_usage": 0
+      },
+      "query_use_elapsed_millis": 296250,
+      "query_use_native": {
+        "entries": 27,
+        "input_tokens": 159403,
+        "known_full_tokens": 187388,
+        "missing_total": 0,
+        "model_millis": 278993,
+        "output_tokens": 6104,
+        "unknown_usage": 0
+      }
+    },
+    "B": {
+      "control_tasks": 8,
+      "full_allocated_elapsed_millis": 548849,
+      "full_allocated_native": {
+        "entries": 49,
+        "input_tokens": 325180,
+        "known_full_tokens": 374477,
+        "missing_total": 0,
+        "model_millis": 504609,
+        "output_tokens": 11460,
+        "unknown_usage": 0
+      },
+      "query_use_elapsed_millis": 320150,
+      "query_use_native": {
+        "entries": 31,
+        "input_tokens": 226411,
+        "known_full_tokens": 254158,
+        "missing_total": 0,
+        "model_millis": 292866,
+        "output_tokens": 6907,
+        "unknown_usage": 0
+      }
+    },
+    "C": {
+      "control_tasks": 8,
+      "full_allocated_elapsed_millis": 780288,
+      "full_allocated_native": {
+        "entries": 60,
+        "input_tokens": 547069,
+        "known_full_tokens": 619768,
+        "missing_total": 0,
+        "model_millis": 723210,
+        "output_tokens": 13654,
+        "unknown_usage": 0
+      },
+      "query_use_elapsed_millis": 352489,
+      "query_use_native": {
+        "entries": 35,
+        "input_tokens": 286014,
+        "known_full_tokens": 314217,
+        "missing_total": 0,
+        "model_millis": 320215,
+        "output_tokens": 6497,
+        "unknown_usage": 0
+      }
+    }
+  },
+  "full_allocated_token_differences": {
+    "B_minus_A": 93167,
+    "C_minus_B": 245291
+  },
+  "inclusive_all_failed_and_current_usage": {
+    "known_full_token_lower_bound": 4320708,
+    "native_entries": 503,
+    "native_known_usage": 500,
+    "native_missing_total": 0,
+    "native_unknown_usage": 3,
+    "product_attempts": 504,
+    "product_null": 4,
+    "product_observed": 500,
+    "product_without_native_entry": 1
+  },
+  "independent_quality_qualified": false,
+  "invoice_cost": "unknown",
+  "monetary_ratios": null,
+  "new_full_token_totals_measured": true,
+  "new_native_admission": false,
+  "new_unique_native_cost": {
+    "entries": 118,
+    "input_tokens": 932883,
+    "known_full_tokens": 1061314,
+    "missing_total": 0,
+    "model_millis": 1295069,
+    "output_tokens": 26665,
+    "unknown_usage": 0
+  },
+  "omitted_second_repetition_controls": 24,
+  "plan_sha256": "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511",
+  "policy": "S+QA; S+N+QB; S+N+K+QC. Unique spend counts S,N,K once. Allocated arm costs overlap.",
+  "selected_control_outcomes": 24,
+  "shared_preparation": {
+    "K_skill": {
+      "entries": 7,
+      "input_tokens": 162286,
+      "known_full_tokens": 185232,
+      "missing_total": 0,
+      "model_millis": 191252,
+      "output_tokens": 2604,
+      "unknown_usage": 0
+    },
+    "N_notes": {
+      "entries": 4,
+      "input_tokens": 18522,
+      "known_full_tokens": 26397,
+      "missing_total": 0,
+      "model_millis": 71782,
+      "output_tokens": 1589,
+      "unknown_usage": 0
+    },
+    "S_originals": {
+      "entries": 14,
+      "input_tokens": 80247,
+      "known_full_tokens": 93922,
+      "missing_total": 0,
+      "model_millis": 139961,
+      "output_tokens": 2964,
+      "unknown_usage": 0
+    }
+  },
+  "version": "butler115.validated-cost-arithmetic.v1",
+  "window_elapsed_millis": 1403120
+}

@@ -222,3 +222,21 @@ qualified with real PostgreSQL/real child Brokers and forced expired health in a
 separate controlled schema, unchanged foreground limits/generation, real charged
 probes and the v2 constructor. Full57 scripted mechanics remain distinct from
 native task/quality evidence.
+## Selected ABC33 completed on laba
+
+The prospective current-probe window completed all33 attempts and exported all24
+control outcomes. Actual118 new model admissions all report full usage1061314 tokens.
+The unchanged-rubric coordinator review is A7/8, B7/8, C6/8; full allocated token
+costs281310/374477/619768. Three memory.search validation-class errors produced
+UNKNOWN/blocked inputs; their internal cause remains unresolved. Skills.load was
+never used in controls, so the generated skill body's utility is unmeasured.
+The current experience/skill configuration remains unqualified/default-off.
+
+Full57 scope remains29completed/4failed/24intentional omissions. Inclusive history
+is503native/500known/3unknown,504product/500observed/4NULL/1withoutNative,
+4320708 known full tokens; old separate diagnostics are unchanged. The759-file
+raw snapshot, original accounting/journal proof and actual process/auth handback
+are sealed; all8 operator commitments are now unbound with deny-only qualification.
+Native post-delete reader reconstruction remainsUNKNOWN and independent quality,
+native92 and selected positive composition are still pending. See
+[complete outcome](../../experiments/memory115/2026-10-28/laba-abc-v6-complete/README.md).

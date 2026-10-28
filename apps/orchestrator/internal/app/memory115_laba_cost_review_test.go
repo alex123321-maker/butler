@@ -13,7 +13,7 @@ import (
 // it creates no native history recipe, provider, database or admission authority.
 func TestLaba115ClosedCostReview(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW")
-	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" {
+	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" {
 		t.Skip("explicit immutable post-exit server exports required")
 	}
 	planSHA := "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
@@ -29,6 +29,10 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 	if profile == "closed-abc-v5" {
 		planSHA = "e9a22fdb7f4125e84eef442520f41cae42ce291234343f2eeccd1b129a127497"
 		historySHA = "e59ffd65c49ee8401c14059dd909bbafeb8865994c93b7ea8222002b95edfdf9"
+	}
+	if profile == "closed-abc-v6" {
+		planSHA = "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511"
+		historySHA = "a66abae7068998bdde6df13b843a2976b021036a516cdc2733b1c83ba106c490"
 	}
 	root := "/review"
 	read := func(name string, value any) {

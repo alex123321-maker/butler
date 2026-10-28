@@ -1,0 +1,233 @@
+{
+  "cases": [
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-01",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 10
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-01",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 11
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-01",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 12
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-02",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 13
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-02",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 14
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-02",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 15
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-03",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 6,
+      "current_run_skill_load_calls": 0,
+      "sequence": 16
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-03",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 17
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-03",
+      "current_initial_inspection_failed": false,
+      "current_run_memory_open_calls": 3,
+      "current_run_skill_load_calls": 0,
+      "sequence": 18
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-04",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "exact_current_effect_lookup_returned_503": true,
+      "original04_effect_still_unknown": true,
+      "recipient_state_unchanged_from_original04": true,
+      "sequence": 19
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-04",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "exact_current_effect_lookup_returned_503": true,
+      "original04_effect_still_unknown": true,
+      "recipient_state_unchanged_from_original04": true,
+      "sequence": 20
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-04",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "exact_current_effect_lookup_returned_503": true,
+      "original04_effect_still_unknown": true,
+      "recipient_state_unchanged_from_original04": true,
+      "sequence": 21
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-05",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 22
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-05",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 23
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-05",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 24
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-06",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 25
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-06",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 26
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-06",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 27
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-07",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 28
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-07",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 29
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-07",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 30
+    },
+    {
+      "arm": "B",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-08",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 31
+    },
+    {
+      "arm": "C",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-08",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 32
+    },
+    {
+      "arm": "A",
+      "beta_task_alpha_tool_proposals": 0,
+      "case": "control-08",
+      "current_initial_inspection_failed": true,
+      "current_run_memory_open_calls": 0,
+      "current_run_skill_load_calls": 0,
+      "sequence": 33
+    }
+  ],
+  "new_native_admission": false,
+  "scope": "factual supplement; initial inspection is separate from prepared artifact check",
+  "semantic_quality_authority": false,
+  "version": "butler115.read-only-rubric-facts.v1"
+}

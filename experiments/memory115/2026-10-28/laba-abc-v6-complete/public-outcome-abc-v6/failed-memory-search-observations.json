@@ -1,0 +1,134 @@
+{
+  "version": "butler115.native-failed-read-observations.v1",
+  "cases": [
+    {
+      "sequence": "016",
+      "unknowns": [
+        {
+          "action_id": "effect_32b372c8d98ab4f5fc0b565549efb5f3fee3e7396bdc1300f0740289d113c124",
+          "tool": "memory.search",
+          "effect": "read",
+          "policy": {
+            "retry_safety": "read_only",
+            "verification_method": "read_result"
+          },
+          "state": "effect_unknown",
+          "dispatch_outcome": "unknown"
+        }
+      ],
+      "failed_search": [
+        {
+          "args": {
+            "query": "ready_flag_false"
+          },
+          "status": "effect_unknown",
+          "error": {
+            "details": {
+              "action_id": "effect_32b372c8d98ab4f5fc0b565549efb5f3fee3e7396bdc1300f0740289d113c124",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+          }
+        }
+      ],
+      "input": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "error_message": "owner decision or reconciliation required",
+          "attempts": 1,
+          "max_attempts": 1
+        }
+      ]
+    },
+    {
+      "sequence": "018",
+      "unknowns": [
+        {
+          "action_id": "effect_5d0526c3a89f98a4f413009e93765e3dcc8844c5b5d08590d170ca8fcf905729",
+          "tool": "memory.search",
+          "effect": "read",
+          "policy": {
+            "retry_safety": "read_only",
+            "verification_method": "read_result"
+          },
+          "state": "effect_unknown",
+          "dispatch_outcome": "unknown"
+        }
+      ],
+      "failed_search": [
+        {
+          "args": {
+            "query": "alpha"
+          },
+          "status": "effect_unknown",
+          "error": {
+            "details": {
+              "action_id": "effect_5d0526c3a89f98a4f413009e93765e3dcc8844c5b5d08590d170ca8fcf905729",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+          }
+        }
+      ],
+      "input": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "error_message": "owner decision or reconciliation required",
+          "attempts": 1,
+          "max_attempts": 1
+        }
+      ]
+    },
+    {
+      "sequence": "032",
+      "unknowns": [
+        {
+          "action_id": "effect_59fb155d97a7a567c0b8080d58861afa548a50764c64e25732023148fd0e08f6",
+          "tool": "memory.search",
+          "effect": "read",
+          "policy": {
+            "retry_safety": "read_only",
+            "verification_method": "read_result"
+          },
+          "state": "effect_unknown",
+          "dispatch_outcome": "unknown"
+        }
+      ],
+      "failed_search": [
+        {
+          "args": {
+            "query": "alpha"
+          },
+          "status": "effect_unknown",
+          "error": {
+            "details": {
+              "action_id": "effect_59fb155d97a7a567c0b8080d58861afa548a50764c64e25732023148fd0e08f6",
+              "dispatch_outcome": "unknown"
+            },
+            "message": "external effect outcome is unknown; verify before any new attempt",
+            "retryable": false,
+            "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+          }
+        }
+      ],
+      "input": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "error_message": "owner decision or reconciliation required",
+          "attempts": 1,
+          "max_attempts": 1
+        }
+      ]
+    }
+  ],
+  "root_cause": "unresolved after captured validation error",
+  "outcomes_rewritten": false,
+  "new_inference": false
+}

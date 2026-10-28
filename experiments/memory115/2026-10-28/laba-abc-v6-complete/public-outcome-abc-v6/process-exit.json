@@ -1,0 +1,9 @@
+{
+  "container_removed": true,
+  "docker_exec_started": true,
+  "docker_exec_wait_returned": true,
+  "forced_cleanup": false,
+  "native_exit_status": 0,
+  "pid_namespace_gone": true,
+  "whole_cgroup_empty": true
+}

@@ -1,0 +1,10 @@
+{
+  "version": "butler115.post-exit-reader-limits.v1",
+  "initial_check_failed_observed": "abc-facts field observes extension.project.check only; current initial inspect evidence is supplied separately in rubric-facts.json",
+  "request_utf8_byte_counter": "request-provenance-facts counts JSON reserialization of captured request objects, not upstream wire bytes",
+  "exact_marker_checks": "bounded provenance markers/current resets; no independent complete privacy certification",
+  "source08_reader_reconstruction": "runtime constructor precedes source deletion; native post-delete reconstruction remainsUNKNOWN",
+  "quality_review": "coordinator applies the pre-existing independent rubric after closure; independent quality qualification remainsfalse",
+  "model_cost": "full reported native TotalTokens measured for all118 new entries; invoice and wirebyte metering unknown",
+  "history": "503native includes3UNKNOWN;504product includes4NULL and1without-native; separate historical diagnosticsNULL/4175/3389 unchanged"
+}

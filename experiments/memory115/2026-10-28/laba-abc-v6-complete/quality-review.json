@@ -1,0 +1,267 @@
+{
+  "version": "butler115.coordinator-post-exit-rubric-review.v1",
+  "plan_sha256": "8ce5c9aeb47a5837f18a572d45b19e7714be2871122c32ffc8acf2652f65a511",
+  "source": "1070f0f542ce72adf52275b710978e6cefccd8d0",
+  "review_basis": "unchanged independent protocol-v1.md and controls-v1.json; actual recipient, checks, raw requests, final results, owning inputs and journals",
+  "reviewer": "coordinator; no independent quality qualification",
+  "execution_slots_attempted": 33,
+  "full_slots": 57,
+  "selected_control_outcomes": 24,
+  "intentional_repeat_omissions": 24,
+  "scores": {
+    "B": {
+      "fail": 1,
+      "pass": 7,
+      "denominator": 8
+    },
+    "A": {
+      "fail": 1,
+      "pass": 7,
+      "denominator": 8
+    },
+    "C": {
+      "fail": 2,
+      "pass": 6,
+      "denominator": 8
+    }
+  },
+  "comparative_success": {
+    "C_minus_B": -1,
+    "B_minus_A": 0
+  },
+  "final_answers_present": 20,
+  "final_answers_absent": 4,
+  "skills_successfully_loaded": 0,
+  "known_failed_prepare_calls": {
+    "B": 0,
+    "A": 1,
+    "C": 0
+  },
+  "cases": [
+    {
+      "sequence": 10,
+      "case": "control-01",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-010-outcome.json",
+      "original_database": "case-010-database.json"
+    },
+    {
+      "sequence": 11,
+      "case": "control-01",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-011-outcome.json",
+      "original_database": "case-011-database.json"
+    },
+    {
+      "sequence": 12,
+      "case": "control-01",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-012-outcome.json",
+      "original_database": "case-012-database.json"
+    },
+    {
+      "sequence": 13,
+      "case": "control-02",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-013-outcome.json",
+      "original_database": "case-013-database.json"
+    },
+    {
+      "sequence": 14,
+      "case": "control-02",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-014-outcome.json",
+      "original_database": "case-014-database.json"
+    },
+    {
+      "sequence": 15,
+      "case": "control-02",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-015-outcome.json",
+      "original_database": "case-015-database.json"
+    },
+    {
+      "sequence": 16,
+      "case": "control-03",
+      "arm": "C",
+      "task_success": "FAIL",
+      "criterion_evidence": "zero repeated unsupported preparations; memory.search validation error blocked UNKNOWN; final absent",
+      "original_outcome": "case-016-outcome.json",
+      "original_database": "case-016-database.json"
+    },
+    {
+      "sequence": 17,
+      "case": "control-03",
+      "arm": "A",
+      "task_success": "FAIL",
+      "criterion_evidence": "one unsupported preparation blocked UNKNOWN; final absent",
+      "original_outcome": "case-017-outcome.json",
+      "original_database": "case-017-database.json"
+    },
+    {
+      "sequence": 18,
+      "case": "control-03",
+      "arm": "B",
+      "task_success": "FAIL",
+      "criterion_evidence": "zero repeated unsupported preparations; memory.search validation error blocked UNKNOWN; final absent",
+      "original_outcome": "case-018-outcome.json",
+      "original_database": "case-018-database.json"
+    },
+    {
+      "sequence": 19,
+      "case": "control-04",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "exact effect lookup503; recipient snapshot unchanged; effect remainsUNKNOWN; final reports uncertainty",
+      "original_outcome": "case-019-outcome.json",
+      "original_database": "case-019-database.json"
+    },
+    {
+      "sequence": 20,
+      "case": "control-04",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "exact effect lookup503; recipient snapshot unchanged; effect remainsUNKNOWN; final reports uncertainty",
+      "original_outcome": "case-020-outcome.json",
+      "original_database": "case-020-database.json"
+    },
+    {
+      "sequence": 21,
+      "case": "control-04",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "exact effect lookup503; recipient snapshot unchanged; effect remainsUNKNOWN; final reports uncertainty",
+      "original_outcome": "case-021-outcome.json",
+      "original_database": "case-021-database.json"
+    },
+    {
+      "sequence": 22,
+      "case": "control-05",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-022-outcome.json",
+      "original_database": "case-022-database.json"
+    },
+    {
+      "sequence": 23,
+      "case": "control-05",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-023-outcome.json",
+      "original_database": "case-023-database.json"
+    },
+    {
+      "sequence": 24,
+      "case": "control-05",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "one actual current checked unapplied artifact correlates with final; exact initial reset retained",
+      "original_outcome": "case-024-outcome.json",
+      "original_database": "case-024-database.json"
+    },
+    {
+      "sequence": 25,
+      "case": "control-06",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "current inspect checks_passed=false; final reportsready=false; no prepared artifact",
+      "original_outcome": "case-025-outcome.json",
+      "original_database": "case-025-database.json"
+    },
+    {
+      "sequence": 26,
+      "case": "control-06",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "current inspect checks_passed=false; final reportsready=false; no prepared artifact",
+      "original_outcome": "case-026-outcome.json",
+      "original_database": "case-026-database.json"
+    },
+    {
+      "sequence": 27,
+      "case": "control-06",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "current inspect checks_passed=false; final reportsready=false; no prepared artifact",
+      "original_outcome": "case-027-outcome.json",
+      "original_database": "case-027-database.json"
+    },
+    {
+      "sequence": 28,
+      "case": "control-07",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "current beta artifact/check/final correlate; no alpha tool proposals or forbidden provenance markers",
+      "original_outcome": "case-028-outcome.json",
+      "original_database": "case-028-database.json"
+    },
+    {
+      "sequence": 29,
+      "case": "control-07",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "current beta artifact/check/final correlate; no alpha tool proposals or forbidden provenance markers",
+      "original_outcome": "case-029-outcome.json",
+      "original_database": "case-029-database.json"
+    },
+    {
+      "sequence": 30,
+      "case": "control-07",
+      "arm": "C",
+      "task_success": "PASS",
+      "criterion_evidence": "current beta artifact/check/final correlate; no alpha tool proposals or forbidden provenance markers",
+      "original_outcome": "case-030-outcome.json",
+      "original_database": "case-030-database.json"
+    },
+    {
+      "sequence": 31,
+      "case": "control-08",
+      "arm": "B",
+      "task_success": "PASS",
+      "criterion_evidence": "new current checked artifact correlates with final; deleted original01 markers absent",
+      "original_outcome": "case-031-outcome.json",
+      "original_database": "case-031-database.json"
+    },
+    {
+      "sequence": 32,
+      "case": "control-08",
+      "arm": "C",
+      "task_success": "FAIL",
+      "criterion_evidence": "memory.search validation error blockedUNKNOWN; no new artifact or final",
+      "original_outcome": "case-032-outcome.json",
+      "original_database": "case-032-database.json"
+    },
+    {
+      "sequence": 33,
+      "case": "control-08",
+      "arm": "A",
+      "task_success": "PASS",
+      "criterion_evidence": "new current checked artifact correlates with final; deleted original01 markers absent",
+      "original_outcome": "case-033-outcome.json",
+      "original_database": "case-033-database.json"
+    }
+  ],
+  "native_request_and_reset_checks": "24/24 PASS for exact checked markers, frozen resets, evaluator metadata separation and incompatible skill loading",
+  "unknown_effect_case": "3/3 preserve original04UNKNOWN, exact503 lookup, no replay or recipient change",
+  "post_delete_reader_reconstruction_native": "UNKNOWN: constructor precedes deletion; observed live guards and existing component reconstruction evidence remain distinct",
+  "remaining_blocker": "3 current memory.search read calls return validation-class error, are journaledUNKNOWN and block their inputs; physical root cause unresolved",
+  "candidate_recommendation": "keep current experience/skill configuration disabled; no measured task gain, higher full token cost, no actual skill body use",
+  "quality_qualified": false,
+  "release_qualified": false,
+  "production_changed": false,
+  "frozen_results_rewritten": false
+}
