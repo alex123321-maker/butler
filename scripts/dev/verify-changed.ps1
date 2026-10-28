@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(cmd/browser-eval/|deploy/browser-eval/|scripts/dev/browser-(baseline-manifest|native-(control|snapshot|verify|attempt)|fixture-verify)[.]sh$|scripts/dev/browser-(public-matrix|baseline-summary)[.]ps1$)" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/testing/browser-baseline-2026-10-28.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/browser-eval -Count1; direct Chromium recipient smoke per cmd/browser-eval/README.md. Native agent acceptance is separate.")
+      continue
+    }
     "^(migrations/104_temporal_currentness_plans[.]|internal/memory/catalog/temporal_plan_integration_test[.]go$)" {
       [void]$specs.Add("docs/architecture/memory-temporal.md")
       [void]$tests.Add("This PC: isolated PostgreSQL/race catalog TestTemporal.*Integration, including original-predicate equivalence after empty/nonempty state, metadata change and down/up; then converter-local-acceptance.ps1 -Action Streaming with actual Broker/runtime. No inference; no accepted fact, source or authority cache.")

@@ -1,0 +1,27 @@
+[Unit]
+Description=Butler synthetic browser recipient (%i)
+After=network.target
+
+[Service]
+Type=simple
+User=butler-browser-eval
+Group=butler-browser-eval
+ExecStart=/opt/butler-browser-eval/browser-eval -config /var/lib/butler-browser-eval/%i/private.json -journal /var/lib/butler-browser-eval/%i/recipient.jsonl -listen 127.0.0.1:18097 -secure-cookies
+# A crash must not restart an attempt or overwrite its uncertainty journal.
+Restart=no
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/butler-browser-eval/%i
+ReadOnlyPaths=/var/lib/butler-browser-eval/%i/private.json
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+MemoryMax=64M
+CPUQuota=25%
+TasksMax=32
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
