@@ -1,0 +1,66 @@
+=== RUN   TestReviewedSkillRealBrokerDurableApprovalE2E
+2026/10/28 17:41:55 INFO run created component=run run_id=run-1793209315119942287-656c38d092c83f0c session_key=web:owner state=created
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=created to_state=queued
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=queued to_state=acquired
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=acquired to_state=preparing
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=preparing to_state=model_running
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=model_running to_state=tool_pending
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=model_running to_state=tool_pending
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:55 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=model_running to_state=tool_pending
+2026/10/28 17:41:55 WARN execution authority observation stopped component=orchestrator-run run_id=run-1793209315119942287-656c38d092c83f0c phase=task_authority classification=unavailable elapsed_ms=11
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209315119942287-656c38d092c83f0c from_state=model_running to_state=finalizing
+2026/10/28 17:41:56 INFO run completed component=orchestrator-run run_id=run-1793209315119942287-656c38d092c83f0c session_key=web:owner
+2026/10/28 17:41:56 INFO run created component=run run_id=run-1793209316483199554-7daf1337adf99230 session_key=web:owner state=created
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=created to_state=queued
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=queued to_state=acquired
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=acquired to_state=preparing
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=preparing to_state=model_running
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=tool_pending to_state=tool_running
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:56 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:57 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209316483199554-7daf1337adf99230 from_state=model_running to_state=finalizing
+2026/10/28 17:41:58 INFO run completed component=orchestrator-run run_id=run-1793209316483199554-7daf1337adf99230 session_key=web:owner
+2026/10/28 17:41:58 INFO run created component=run run_id=run-1793209318201852268-51b88a82e70bce28 session_key=web:owner state=created
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=created to_state=queued
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=queued to_state=acquired
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=acquired to_state=preparing
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=preparing to_state=model_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=tool_pending to_state=tool_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:58 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=model_running to_state=tool_pending
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:41:59 INFO run transitioned component=run run_id=run-1793209318201852268-51b88a82e70bce28 from_state=tool_running to_state=awaiting_model_resume
+--- PASS: TestReviewedSkillRealBrokerDurableApprovalE2E (5.54s)
+PASS

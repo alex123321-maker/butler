@@ -1,0 +1,64 @@
+{
+  "date_user_timezone": "2026-10-29 Asia/Tomsk",
+  "host": "ssh laba",
+  "status": "PASS for one isolated native consuming task",
+  "source_commit": "605f6cb37077c3857ff3caae2220f0097d899e35",
+  "change": "With the existing skill catalog configured, typed tasks receive fixed kernel guidance to review applicability, load a matching exact digest, search when needed, and avoid reloading a current loaded procedure. Owner prohibitions, revocation, compatibility, source, approval, budget and Broker checks remain authoritative. Recovery regenerates the guidance and pinned procedural DATA.",
+  "proof": {
+    "entrypoint": "TestReviewedSkillNativeBrokerPipeline",
+    "composition": "Real durable Input/Session/Run/Task/Core/Approval services, production Broker process, extension runtime process and a synthetic HTTP recipient; manual test composition, not the top-level App.New deployment",
+    "initial_model_function": "skills.load",
+    "actual_broker_loads": 1,
+    "actual_postgres_skill_usages": 1,
+    "pins": "Exact digest, task_id, task revision and constraint revision checked in skill_usages",
+    "sequence": ["skills.load", "extension.project.inspect", "extension.project.prepare-patch", "extension.project.check", "final answer"],
+    "recovery": "Three durable synthetic owner approval boundaries; fresh provider construction uses current pinned procedure DATA and known tool receipts without replaying effects",
+    "native_prepared_patch_posts": 1,
+    "matching_checked_artifact": "d8193118f72260567a56c8cc2e969f17070e41c388602ad0f25b04db92168033",
+    "checks_passed": true,
+    "applied": false,
+    "original_readme_bytes_equal": true,
+    "model_final_is_owner_verification": false,
+    "verification": "Current recipient objective check plus fixture owner SaveVerifiedResult; all effect evidence confirmed. Exact original README bytes rechecked from retained recipient receipt."
+  },
+  "scope_limits": {
+    "source_baseline": "Scripted model proposals execute a separate successful task through the real Broker and recipient; current verified evidence stages, tests and activates the skill in this fresh database. Skill creation by Gemini is not claimed.",
+    "owner_approvals": "Scripted synthetic fixture owner decisions, not a real owner UI acceptance or production authorization",
+    "native_samples": 1,
+    "not_qualified": ["General reliable skill selection", "Native negative-case matrix", "A/B/C benefit", "Independent quality review", "Issue115 closure", "Top-level App.New/Doctor composition", "Production deployment"],
+    "working_butler_changed": false
+  },
+  "validation": {
+    "narrow_skill_recovery_revocation_tests_race": "PASS on laba, network none and no auth mount",
+    "orchestrator_package_unit_suite_race": "PASS 14.247s on laba, network none; database-dependent opt-ins not enabled in this unit command",
+    "orchestrator_and_app_go_vet": "PASS on laba, network none and no auth mount",
+    "existing_real_broker_scripted_e2e": "PASS 5.54s, including failed objective-check stop; zero native calls and no auth mount",
+    "new_native_pipeline": "PASS 57.53s",
+    "receipt_crosschecks": "Exact Broker returned digest and completed status, PostgreSQL pin and revisions, successful tool receipts, artifact equality, original bytes, full usage sum and actual process exit checked against retained raw evidence"
+  },
+  "accounting": {
+    "native_dispatched": 5,
+    "input_tokens": 44603,
+    "output_tokens": 452,
+    "thinking_tokens": 4062,
+    "known_full_tokens": 49117,
+    "unknown_usage": 0,
+    "invoice_cost": "unknown",
+    "reservation_basis": "Existing experimental subscription_no_overage reservation basis; zero quote price is not a verified invoice cost",
+    "closed_abc": {"native_entries": 503, "unknown_usage": 3, "known_full_token_lower_bound": 4320708, "unchanged_receipt_sha256": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad"},
+    "previous_separate_diagnostics": {"force_probe": {"native": 1, "known_full_tokens": 1978}, "prompt_pilot": {"native": 16, "known_full_tokens": 17997}, "original_context_first_decisions": {"native": 3, "known_full_tokens": 21859}, "older": "NULL / 4175 / 3389 token observations remain separate"},
+    "previous_results_reclassified_or_replayed": false,
+    "new_closed_history_admission": false
+  },
+  "containment_and_retention": {
+    "before_auth": "Pinned source archive and all three binaries, compiled plan, six compiled source deltas and zero-native gate checked; actual UID, capability mask, seccomp, no-new-privileges, private PID namespace and cgroup CPU/memory/swap/PID values verified before key access",
+    "auth": "Exclusive existing experimental-source advisory lock; private read-only key reference; refresh directly into canonical encrypted experimental auth store; no provider auth environment inherited by Broker/runtime children",
+    "exit": "Only helper init remained after the test; whole cgroup removed; no leaked child or forced child cleanup; zero database clients and private PostgreSQL stopped cleanly",
+    "new_target_database": "skill_broker_prompt_v1_test, retained",
+    "raw_results_sha256": "217779fda01dd10c50c281735c8261e62709ae795c268391510e3ca461b43cee",
+    "raw_task_proof_sha256": "0a97e84a3c09425dd2aa71cab2141a158dd06fd0828bd05eec09c64fdc428a1b",
+    "raw_target_snapshot_sha256": "1c8438021608c30b1e7e3ac2e7a7870333b4314849f7246bb9fd8373b830eb14",
+    "public_evidence": "receipt-summary.json, plan.json, build/safety/native/unit logs, native-exit.json and cleanup.json",
+    "private_evidence": "Complete request/usage/recipient/database snapshots and source deletion anchor retained on laba and backed up to the owner's PC; provider auth files excluded"
+  }
+}

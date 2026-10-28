@@ -1,0 +1,59 @@
+=== RUN   TestReviewedSkillNativeBrokerPipeline
+2026/10/28 17:45:13 INFO run created component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 session_key=web:owner state=created
+2026/10/28 17:45:13 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=created to_state=queued
+2026/10/28 17:45:13 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=queued to_state=acquired
+2026/10/28 17:45:13 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=acquired to_state=preparing
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=preparing to_state=model_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:14 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:15 INFO run transitioned component=run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 from_state=model_running to_state=finalizing
+2026/10/28 17:45:15 INFO run completed component=orchestrator-run run_id=run-1793209513874095427-2bd7101b6ed1aaa5 session_key=web:owner
+2026/10/28 17:45:15 INFO run created component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 session_key=web:owner state=created
+2026/10/28 17:45:15 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=created to_state=queued
+2026/10/28 17:45:15 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=queued to_state=acquired
+2026/10/28 17:45:15 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=acquired to_state=preparing
+2026/10/28 17:45:15 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=preparing to_state=model_running
+2026/10/28 17:45:22 INFO model turn usage observed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 operation_id=operation_6b02002b2db202410c651d9e862ac9caa87c2a3ff4fe20b1 input_tokens=7432 output_tokens=75 total_tokens=7849
+2026/10/28 17:45:22 INFO run provider session updated component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 has_provider_session_ref=true
+2026/10/28 17:45:22 INFO provider session ref persisted component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 run_id=run-1793209515235830705-7eefadf5b4d983f7
+2026/10/28 17:45:22 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:22 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=tool_pending to_state=tool_running
+2026/10/28 17:45:22 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:26 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:26 INFO model turn usage observed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 operation_id=operation_f2704e98debb3549056725cf7f6908db3e270aaf8c430a54 input_tokens=8847 output_tokens=26 total_tokens=9048
+2026/10/28 17:45:26 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:26 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:27 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:43 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:43 INFO model turn usage observed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 operation_id=operation_cc72d3ef8271f1e767d3784bb9e8e9acad8ca751c223633e input_tokens=8894 output_tokens=133 total_tokens=10740
+2026/10/28 17:45:43 INFO run provider session updated component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 has_provider_session_ref=true
+2026/10/28 17:45:43 INFO provider session ref persisted component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 run_id=run-1793209515235830705-7eefadf5b4d983f7
+2026/10/28 17:45:43 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:43 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:43 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:45:56 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:45:56 INFO model turn usage observed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 operation_id=operation_7a2fa5a0c13362b661af85415a1a1d4ac8d41b6d076c4b97 input_tokens=9441 output_tokens=92 total_tokens=10478
+2026/10/28 17:45:56 INFO run provider session updated component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 has_provider_session_ref=true
+2026/10/28 17:45:56 INFO provider session ref persisted component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 run_id=run-1793209515235830705-7eefadf5b4d983f7
+2026/10/28 17:45:56 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=model_running to_state=tool_pending
+2026/10/28 17:45:56 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_approval to_state=tool_running
+2026/10/28 17:45:56 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=tool_running to_state=awaiting_model_resume
+2026/10/28 17:46:09 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=awaiting_model_resume to_state=model_running
+2026/10/28 17:46:09 INFO run provider session updated component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 has_provider_session_ref=true
+2026/10/28 17:46:09 INFO provider session ref persisted component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 run_id=run-1793209515235830705-7eefadf5b4d983f7
+2026/10/28 17:46:10 INFO model turn usage observed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 operation_id=operation_66021c20a5978bfb11d6b630bccf6a4aced308b790915a20 input_tokens=9989 output_tokens=126 total_tokens=11002
+2026/10/28 17:46:10 INFO run transitioned component=run run_id=run-1793209515235830705-7eefadf5b4d983f7 from_state=model_running to_state=finalizing
+2026/10/28 17:46:10 INFO run completed component=orchestrator-run run_id=run-1793209515235830705-7eefadf5b4d983f7 session_key=web:owner
+    skills_e2e_test.go:524: NATIVE_SKILL_BROKER_PIPELINE_PASS exact real Broker load, current pinned DATA, durable approval/recovery, one checked unapplied artifact
+--- PASS: TestReviewedSkillNativeBrokerPipeline (57.53s)
+PASS

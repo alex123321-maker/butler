@@ -1,0 +1,133 @@
+{
+  "trial": "skill-broker-20261029-v1",
+  "source": "605f6cb37077c3857ff3caae2220f0097d899e35",
+  "pipeline_verified": true,
+  "scope": "One consuming native task through real Core/Broker/runtime and synthetic HTTP recipient; scripted fixture owner approvals and source baseline",
+  "task_id": "task_ff8287cd1f0f8391d85e1651c609fb40",
+  "run_id": "run-1793209515235830705-7eefadf5b4d983f7",
+  "verified_result_id": "result_82331cd703789cdd0903564cd3c8a42c",
+  "skill_digest": "91466a69be6963269f5cda9b260d05ceb79dae17b995c5cd59d33fb5caa2e209",
+  "actual_skill_pins": 1,
+  "completed_broker_skill_loads": 1,
+  "first_model_proposal": "skills.load",
+  "recipient_artifact": "d8193118f72260567a56c8cc2e969f17070e41c388602ad0f25b04db92168033",
+  "checks_passed": true,
+  "applied": false,
+  "original_bytes_equal": true,
+  "native_prepared_patch_posts": 1,
+  "scripted_baseline_patch_posts": 1,
+  "model_final_verdict_before_fixture_owner": "unverified",
+  "native_dispatched": 5,
+  "known_full_tokens": 49117,
+  "unknown_usage": 0,
+  "invoice_cost": "unknown",
+  "turns": [
+    {
+      "sequence": 1,
+      "kind": "start",
+      "dispatched": true,
+      "tools": [
+        "skills.load"
+      ],
+      "usage": {
+        "InputTokens": 7432,
+        "OutputTokens": 75,
+        "TotalTokens": 7849,
+        "ThinkingTokens": 342
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "elapsed_millis": 6598,
+      "error_code": ""
+    },
+    {
+      "sequence": 2,
+      "kind": "tool_result",
+      "dispatched": true,
+      "tools": [
+        "extension.project.inspect"
+      ],
+      "usage": {
+        "InputTokens": 8847,
+        "OutputTokens": 26,
+        "TotalTokens": 9048,
+        "ThinkingTokens": 175
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "elapsed_millis": 4497,
+      "error_code": ""
+    },
+    {
+      "sequence": 3,
+      "kind": "start",
+      "dispatched": true,
+      "tools": [
+        "extension.project.prepare-patch"
+      ],
+      "usage": {
+        "InputTokens": 8894,
+        "OutputTokens": 133,
+        "TotalTokens": 10740,
+        "ThinkingTokens": 1713
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "elapsed_millis": 16217,
+      "error_code": ""
+    },
+    {
+      "sequence": 4,
+      "kind": "start",
+      "dispatched": true,
+      "tools": [
+        "extension.project.check"
+      ],
+      "usage": {
+        "InputTokens": 9441,
+        "OutputTokens": 92,
+        "TotalTokens": 10478,
+        "ThinkingTokens": 945
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "elapsed_millis": 12263,
+      "error_code": ""
+    },
+    {
+      "sequence": 5,
+      "kind": "start",
+      "dispatched": true,
+      "tools": [
+        null
+      ],
+      "usage": {
+        "InputTokens": 9989,
+        "OutputTokens": 126,
+        "TotalTokens": 11002,
+        "ThinkingTokens": 887
+      },
+      "model_version": "gemini-3.8-flash-n",
+      "elapsed_millis": 13165,
+      "error_code": ""
+    }
+  ],
+  "old_receipts_unchanged": {
+    "abc.json": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad",
+    "context.json": "457ece9931bb89793e61b17d3bb0f4177c2d7dd4aebdd70feec2c7f19030df8b",
+    "force.json": "22702b0cd4fe7ecf30eac26a4f16e190b921c8ba4e80bcc223f724e537936a8d",
+    "prompt.json": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c"
+  },
+  "old_abc_entries": 503,
+  "old_abc_known_full_tokens": 4320708,
+  "old_abc_unknown": 3,
+  "previous_separate_prompt_context_calls": 19,
+  "previous_separate_prompt_context_tokens": 39856,
+  "previous_separate_forced_call_tokens": 1978,
+  "older_separate_diagnostics": "NULL / 4175 / 3389 observations retained separately",
+  "closed_history_requalified": false,
+  "release_qualified": false,
+  "production_deployed": false,
+  "kernel_limits": {
+    "cpu.max": "100000 100000",
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "pids.max": "256"
+  }
+}

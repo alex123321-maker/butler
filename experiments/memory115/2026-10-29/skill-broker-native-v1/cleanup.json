@@ -1,0 +1,1 @@
+{"remaining_clients": 0, "private_postgres_stopped": true, "probe_container_removed": true, "only_helper_init_after_test": true, "whole_cgroup_empty": true, "forced_cleanup_of_child": false, "qualified_exit": true}
