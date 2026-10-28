@@ -19,7 +19,7 @@ import (
 )
 
 func getFormContract() *toolbrokerv1.ToolContract {
-	return &toolbrokerv1.ToolContract{ToolName: "browser.submit_get_form", ContractRevision: "1", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}, AllowedDomains: []string{"external.test"}}
+	return &toolbrokerv1.ToolContract{ToolName: "browser.submit_get_form", ContractRevision: "2", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}, AllowedDomains: []string{"external.test"}}
 }
 
 func TestGetFormContractAndPrivateProtocol(t *testing.T) {
@@ -32,9 +32,9 @@ func TestGetFormContractAndPrivateProtocol(t *testing.T) {
 	req := browserCall("browser.submit_get_form", "run-1", args)
 	req.Contract = getFormContract()
 	req.Contract.AllowedDomains = []string{"example.com"}
-	req.Contract.ContractRevision = "2"
-	assertCode(t, executeTest(t, server, req), "contract_mismatch")
 	req.Contract.ContractRevision = "1"
+	assertCode(t, executeTest(t, server, req), "contract_mismatch")
+	req.Contract.ContractRevision = "2"
 	req.Contract.EffectContract.VerificationMethod = "none"
 	assertCode(t, executeTest(t, server, req), "contract_mismatch")
 	req.Contract = getFormContract()
@@ -144,6 +144,13 @@ func TestBrowserGetFormChromium(t *testing.T) {
 	args := actionArgs(obs)
 	args["selector"] = obs.Forms[0].Selector
 	args["fields"] = []map[string]string{{"name": "q", "value": "Arctic delivery"}}
+	wrong := actionArgs(obs)
+	wrong["selector"] = "form"
+	wrong["fields"] = args["fields"]
+	wrong["expected_url"] = obs.FinalURL + "?q=future"
+	if rejected, _ := invoke("browser.submit_get_form", wrong); rejected.Status != "failed" || !strings.Contains(rejected.GetError().GetDetailsJson(), "pre_navigation_v1") || gets.Load() != 0 {
+		t.Fatal("wrong expected URL lacks no-navigation proof")
+	}
 	result, obs := invoke("browser.submit_get_form", args)
 	if result.Status != "completed" || !strings.Contains(obs.Text, "Found Arctic delivery") || obs.NetworkState != "frozen" || gets.Load() != 1 {
 		t.Fatal("GET form did not navigate", result.GetStatus(), obs.Text)

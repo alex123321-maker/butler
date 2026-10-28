@@ -41,7 +41,7 @@ runtime. Failed logs were retained; only the corrected checks count as passed.
 ## Lab rollout
 
 Only Broker/browser services were recreated with an additive Compose override.
-Core, model/profile selection, encrypted provider configuration, database schema,
+Core, model/profile selection, provider encryption configuration, database schema,
 other services and previous release directories were retained. The new catalog
 was merged from the deployed one, adding/updating the two read contracts and
 open guidance while preserving existing routing/domain caps and unrelated tools.
@@ -99,11 +99,46 @@ cost is unknown. The answer-only credential-canary scan passed; full privacy
 qualification is not claimed. The recipient recorded three record reads;
 receiver counts alone do not attribute every request to a particular tool.
 
-Two further final-build navigation trials (control04/05) were fixed in advance
+Two further revision1 navigation trials (control04/05) were fixed in advance
 to assess stability after control03, with no extra retries to replace failures.
-Their results are recorded below after observation. Cold/warm behavior differs:
+Both failed; no extra retries replace them. Cold/warm behavior differs:
 control03 started the deployed Chromium generation; subsequent trials reuse its
 process with fresh empty contexts and recipient instances.
+
+| Revision1 trial | Native result | Input duration | Model attempts | Input/output tokens |
+| --- | --- | --- | --- | --- |
+| control03 | PASS: exact record + protected publication + Telegram | 105.683s | 16 | 180205 / 1472 |
+| control04 | FAIL: effect_unknown, no publication | 51.081s | 6 | 44322 / 674 |
+| control05 | FAIL: effect_unknown, no publication | 51.537s | 6 | 43381 / 613 |
+
+This is 1/3 native completion on this revision, not a reliable navigation release.
+Both failures supplied the future search URL as expected_url instead of the
+current observed /catalog. Runtime correctly rejected before navigation; Broker
+replaced the owning diagnostic with uncertainty and Core stopped. The old
+revision1 effects/Inputs stay failed/unknown; they are not rewritten by a fix.
+
+## Revision2: prove a read was rejected before navigation
+
+Both new GET tools now pin revision2 / guarded_browser_get_v1. A correlated
+failed runtime response with exactly read_rejection=pre_navigation_v1,
+navigation_dispatched=false and a fixed reason can establish local non-dispatch
+of THIS read. Broker sanitizes the diagnostic, allowing observation/reassessment.
+PG rechecks the owning read contract, dispatch/call/source correlation and a
+normalized digest of the fixed proof. The read becomes effect_absent with failed
+tool status; its grant stays consumed and spending is retained. This does not
+reconcile any previous effect or confirm any user task. Old contracts, opaque
+writes, missing/foreign proof, transport loss and navigation already started
+keep unknown outcomes.
+
+Targeted units passed all four changed packages. Real PostgreSQL/race checks
+passed the proof validation/forgery cases plus retained old-write isolation.
+Real Chromium passed rejected future URL -> zero query reads -> correct GET.
+Real Broker/PG/Chromium passed absent failed read, denied grant replay, fresh
+snapshot, correct GET and follow-link, plus owner/cancel regression guards.
+An initial PG test correctly rejected absence because its persistence verifier
+had not yet been extended; the owning revision2/digest check was added and a
+fresh test passed. Prior failed test logs remain retained. Revision2 deployment
+and native outcomes are recorded after verification below.
 
 Forms/login/consent remain unaccepted. Their nine original slots must not evade
 the retained opaque nav-02 effect via new session/Task identities. Full #163 and
@@ -113,7 +148,7 @@ general browser-assistant acceptance remain incomplete.
 
 Use scripts/dev/server-browser-lab.sh OWNED_ROOT browser/broker for the real
 Chromium and PG/process gates. For portable PG/race use
-scripts/dev/stopped-local-tests.ps1 -Run '^TestGetForm|^TestBrowserGetForm'.
+scripts/dev/stopped-local-tests.ps1 -Run '^TestGetForm|^TestBrowserGetForm|^TestGuardedBrowser'.
 The mandatory Communication CI selector includes the new PG tests. Native
 controls use the existing browser-eval native ingress observer, stable delivery
 IDs, new report directories, bounded5m observation and protected verify-fixture

@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/tool-browser/internal/runtime/get_form_test[.]go|internal/actionauth/get_form_test[.]go)$" {
+    "^(apps/tool-browser/internal/runtime/get_form_test[.]go|internal/actionauth/(get_form_test|browser_read(_test)?)[.]go|apps/tool-broker/internal/broker/browser_read_failure_test[.]go)$" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/external-effect-journal.md")
       [void]$tests.Add("Targeted runtime/actionauth/registry units and vet; isolated PostgreSQL/race TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration; scripts/dev/server-browser-lab.sh OWNED_ROOT browser (mandatory Chromium GET form + existing session/control regressions). Native result/delivery verified separately.")

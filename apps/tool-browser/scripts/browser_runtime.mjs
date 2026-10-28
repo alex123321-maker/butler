@@ -8,6 +8,7 @@ const sessions = new Map()
 let browser
 
 const errorResult = (error_type, message) => ({ ok: false, error: { error_type, message, retryable: false } })
+const rejectedRead = reason => ({ ...errorResult(reason, 'GET navigation precondition failed'), read_rejection: 'pre_navigation_v1', navigation_dispatched: false })
 const origin = value => { try { return new URL(value).origin } catch { return '' } }
 const safeError = err => {
   const message = String(err?.message || '')
@@ -182,8 +183,8 @@ async function execute(request) {
   // checks trusted ownership, exclusive control, and the last observed state.
   await collectSecretState(session)
   const live = await session.page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
-  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return errorResult('stale_observation', 'page changed since observation; take a new snapshot')
-  if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
+  if (request.expected_url !== redact(session, session.page.url())) return getForm ? rejectedRead('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   if (getForm) return await submitGetForm(session, request, live)
   // An ordinary local draft is private too, even without credential_ref.
   // A later read tool must never thaw input callbacks or release that draft.
@@ -261,7 +262,7 @@ async function execute(request) {
 // Two private phases. No click, submit, input, formdata or page handler runs.
 // This supports public GET search/navigation, never authentication or POST.
 async function submitGetForm(session, request, live) {
-  const denied = () => errorResult('get_form_denied', 'requires a same-origin GET form with ordinary fields and no credential state')
+  const denied = () => rejectedRead('get_form_denied')
   try {
     if (session.secrets.size || session.preparedDraft) return denied()
     if (request.get_form_phase === 'plan') {

@@ -43,8 +43,8 @@ PostgreSQL are not used to claim that a live DOM can be restored.
 | `browser.snapshot` | Observe the current page; **no navigation** | Session ID, owner, expiry, exclusive control, current domain |
 | `browser.extract_text` | Observe visible selector text; **no navigation** | Same checks as snapshot; selector |
 | `browser.navigate` | Navigate the same context across permitted public origins | Latest version and exact `expected_url`, plus session checks |
-| `browser.submit_get_form` | Compile ordinary named fields of a public same-origin GET form into a GET navigation; no input/submit handlers | Latest version/URL, revision1 read-only contract, no credential state, two private guarded phases |
-| `browser.follow_link` | Follow a same-origin anchor by GET without click handlers, including a frozen GET-search page | Same revision1 read-only guards; no credentials, private draft, download or foreign target |
+| `browser.submit_get_form` | Compile ordinary named fields of a public same-origin GET form into a GET navigation; no input/submit handlers | Latest version/URL, revision2 guarded read-only contract, no credential state, two private guarded phases |
+| `browser.follow_link` | Follow a same-origin anchor by GET without click handlers, including a frozen GET-search page | Same revision2 read-only guards; no credentials, private draft, download or foreign target |
 | `browser.click` | Click on the current page | Latest version and `expected_url`, plus session checks |
 | `browser.fill` / `browser.type` | Change the current input | Latest version and `expected_url`; credential refs for secrets |
 | `browser.prepare_fill` / `browser.prepare_type` | Change input locally with all network frozen persistently | Same latest observation/URL/owner checks; exact approval or current mandate; credential refs for secrets |
@@ -64,7 +64,7 @@ Take a new snapshot and reassess the intended action; do not blindly replay it.
 
 ### Bounded local preparation and truthful external outcomes
 
-Public GET search/navigation forms can use revision1 `browser.submit_get_form`
+Public GET search/navigation forms can use revision2 `browser.submit_get_form`
 with a form selector and `fields` (an array of `{name,value}` ordinary strings
 for existing control names). Observations expose at most ten top-level form selectors,
 methods/actions and 32 field names/types per form, never input values. This is
@@ -94,6 +94,19 @@ frozen public GET result. Neither read tool can thaw a prior input draft:
 local/live fill/type and manual takeover permanently taint that finite browser
 context for these tools, even when ordinary text rather than credentials was
 entered. Snapshot does not clear the taint; new empty contexts are explicit.
+
+Revision2 uses `guarded_browser_get_v1` verification. A successful response
+confirms only its read. A correlated failed response can prove that this exact
+navigation was never dispatched: trusted runtime emits only
+`read_rejection=pre_navigation_v1`, `navigation_dispatched=false` and a fixed
+reason (`page_changed`, `stale_observation`, `get_form_denied`, `invalid_args` or
+`invalid_selector`). Broker validates the exact revision, read policy, call/run,
+error class and closed proof shape, records this read as `effect_absent`, and
+returns a sanitized failure so the agent can observe and reassess. The grant
+stays consumed and spending is retained. This is local non-dispatch evidence,
+not recipient reconciliation or a successful task. Old revision1 failures,
+opaque writes, missing/cross-call proof, lost ACK and any failure after navigation
+starts remain unknown; they cannot borrow this verifier.
 
 For a multi-step form use `open -> prepare_fill/prepare_type -> snapshot/wait ->
 separately authorized click`. Preparation freezes **all** page requests before

@@ -1,10 +1,14 @@
 # Tool Broker
 
-Revision1 `browser.submit_get_form` and `browser.follow_link` are guarded public
+Revision2 `browser.submit_get_form` and `browser.follow_link` are guarded public
 GET observations. Exact contracts forbid credential references and opaque/write
 policy; standing public-web release consent is checked before dispatch. They
 retain prior unknown effects and spent grants. Runtime two-phase validation and
 private-draft freeze are described in the browser session contract.
+Their `guarded_browser_get_v1` verifier accepts only correlated fixed-shape
+pre-navigation rejection proof as local `effect_absent`, returning a sanitized
+failure for reassessment. Grants stay consumed; missing proof, old contracts,
+opaque writes and lost acknowledgements retain uncertainty.
 
 Migration102's stopped-attempt isolation is enforced at permanent grant claim
 through the budget controller. Queue release grants no repeat dispatch: new

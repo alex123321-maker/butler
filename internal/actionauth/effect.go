@@ -122,8 +122,11 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
-		if (b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link") && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
-			return p, fmt.Errorf("GET form navigation requires its exact read-only revision 1 contract")
+		if b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link" {
+			if b.ContractRevision != "2" || p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() {
+				return p, fmt.Errorf("GET navigation requires its exact guarded revision 2 contract")
+			}
+			return p, nil
 		}
 		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "3" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {
 			return p, fmt.Errorf("browser navigation requires the enforced public-origin revision 3 contract")
@@ -247,11 +250,16 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 		}
 	}
 	outcome := "unknown"
+	if reason := BrowserReadRejection(g.Binding, result); !runtimeError && record.Policy.VerificationMethod == BrowserGETVerification && record.Policy.RetrySafety == "read_only" && reason != "" {
+		outcome = "dispatch_completed"
+		e.Verdict = StateAbsent
+		e.ResultDigest = browserReadRejectionDigest(reason)
+	}
 	if !runtimeError && result != nil && result.GetRunId() == g.Binding.RunID && result.GetToolCallId() == g.Binding.ToolCallID && result.GetToolName() == g.Binding.ToolName && result.GetStatus() == "completed" {
 		outcome = "dispatch_completed"
 		e.ResultDigest = digest(result.GetResultJson())
 		switch record.Policy.VerificationMethod {
-		case "read_result":
+		case "read_result", BrowserGETVerification:
 			if g.Binding.Effect == EffectRead {
 				e.Verdict = StateConfirmed
 			}

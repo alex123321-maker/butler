@@ -214,7 +214,8 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 		}
 		target, err := r.policy.ValidateURL(plan.GetFormTarget)
 		if err != nil || target.User != nil || originOf(plan.GetFormTarget) != originOf(req.ExpectedURL) || len(plan.GetFormNonce) != 36 {
-			return Result{Error: &ResultError{ErrorType: "get_form_denied", Message: "GET form target is outside the permitted public origin"}}, nil
+			notDispatched := false
+			return Result{ReadRejection: "pre_navigation_v1", NavigationDispatched: &notDispatched, Error: &ResultError{ErrorType: "get_form_denied", Message: "GET form target is outside the permitted public origin"}}, nil
 		}
 		deadline := time.Now().Add(35 * time.Second)
 		if owned, ok := ctx.Deadline(); ok && owned.Before(deadline) {

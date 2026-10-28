@@ -87,9 +87,9 @@
     },
     {
       "tool_name": "browser.follow_link",
-      "contract_revision": "1",
+      "contract_revision": "2",
       "effect_contract": {
-        "verification_method": "read_result",
+        "verification_method": "guarded_browser_get_v1",
         "retry_safety": "read_only"
       },
       "description": "Follow an ordinary same-origin hyperlink with GET, without click or page handlers. Use this for pagination and result links, including a frozen public GET search page. Requires selector, latest observation_version and expected_url. Refuses downloads, foreign origins, credential state and any prior input/private draft. Returns a fresh frozen observation. Opaque browser.click may write and cannot replace this read operation.",
@@ -107,9 +107,9 @@
     },
     {
       "tool_name": "browser.submit_get_form",
-      "contract_revision": "1",
+      "contract_revision": "2",
       "effect_contract": {
-        "verification_method": "read_result",
+        "verification_method": "guarded_browser_get_v1",
         "retry_safety": "read_only"
       },
       "description": "Search or navigate a public same-origin GET form with named ordinary text fields. Use forms metadata from the current observation to choose selector and field names. Compiles a GET URL without click, input, submit or page handlers; POST forms, hidden/password/file fields, credential state and any prior input/private draft are refused. Requires current session, observation_version and exact expected_url. Network freezes again after navigation. This proves a GET observation only, never a remote write.",

@@ -97,25 +97,27 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
-	Forms              []FormDescription     `json:"forms,omitempty"`
-	GetFormTarget      string                `json:"get_form_target,omitempty"` // private helper plan; never tool output
-	GetFormNonce       string                `json:"get_form_nonce,omitempty"`
-	SessionID          string                `json:"browser_session_id,omitempty"`
-	ObservationVersion uint64                `json:"observation_version,omitempty"`
-	ScopeOrigin        string                `json:"scope_origin,omitempty"`
-	ExpiresAt          string                `json:"expires_at,omitempty"`
-	FinalURL           string                `json:"final_url,omitempty"`
-	Title              string                `json:"title,omitempty"`
-	Text               string                `json:"text,omitempty"`
-	Matched            bool                  `json:"matched"`
-	OK                 bool                  `json:"ok"`
-	Links              []ResultLink          `json:"links,omitempty"`
-	PageStatus         string                `json:"page_status,omitempty"`
-	LocalPreparation   bool                  `json:"local_preparation,omitempty"`
-	NetworkState       string                `json:"network_state,omitempty"`
-	CredentialVerified *bool                 `json:"credential_verified,omitempty"`
-	Error              *ResultError          `json:"error,omitempty"`
-	OwnerFrame         *browsercontrol.Frame `json:"owner_frame,omitempty"`
+	ReadRejection        string                `json:"read_rejection,omitempty"`
+	NavigationDispatched *bool                 `json:"navigation_dispatched,omitempty"`
+	Forms                []FormDescription     `json:"forms,omitempty"`
+	GetFormTarget        string                `json:"get_form_target,omitempty"` // private helper plan; never tool output
+	GetFormNonce         string                `json:"get_form_nonce,omitempty"`
+	SessionID            string                `json:"browser_session_id,omitempty"`
+	ObservationVersion   uint64                `json:"observation_version,omitempty"`
+	ScopeOrigin          string                `json:"scope_origin,omitempty"`
+	ExpiresAt            string                `json:"expires_at,omitempty"`
+	FinalURL             string                `json:"final_url,omitempty"`
+	Title                string                `json:"title,omitempty"`
+	Text                 string                `json:"text,omitempty"`
+	Matched              bool                  `json:"matched"`
+	OK                   bool                  `json:"ok"`
+	Links                []ResultLink          `json:"links,omitempty"`
+	PageStatus           string                `json:"page_status,omitempty"`
+	LocalPreparation     bool                  `json:"local_preparation,omitempty"`
+	NetworkState         string                `json:"network_state,omitempty"`
+	CredentialVerified   *bool                 `json:"credential_verified,omitempty"`
+	Error                *ResultError          `json:"error,omitempty"`
+	OwnerFrame           *browsercontrol.Frame `json:"owner_frame,omitempty"`
 }
 
 type FormDescription struct {
@@ -143,7 +145,11 @@ func (s *Server) Close() error {
 }
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
 	fail := func(class commonv1.ErrorClass, code, message string) (*runtimev1.ExecuteResponse, error) {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, class, message, mustJSON(map[string]string{"error_type": code}))}, nil
+		details := mustJSON(map[string]string{"error_type": code})
+		if guardedGETTool(req.GetToolCall().GetToolName()) && preNavigationReason(code) {
+			details = preNavigationDetails(code)
+		}
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, class, message, details)}, nil
 	}
 	call, contract := req.GetToolCall(), req.GetContract()
 	if call == nil || contract == nil || s.runner == nil {
@@ -159,8 +165,8 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
 	}
-	if (args.ToolName == "browser.submit_get_form" || args.ToolName == "browser.follow_link") && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
-		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET form navigation requires its read-only revision 1 contract")
+	if guardedGETTool(args.ToolName) && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "guarded_browser_get_v1" || contract.GetSupportsCredentialRefs()) {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET navigation requires its guarded revision 2 contract")
 	}
 	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "public-origin navigation requires revision 3")
@@ -279,10 +285,27 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	result.Text = truncate(result.Text, maxSnapshotTextLen)
 	if result.Error != nil {
+		if guardedGETTool(args.ToolName) && result.ReadRejection == "pre_navigation_v1" && result.NavigationDispatched != nil && !*result.NavigationDispatched && preNavigationReason(result.Error.ErrorType) {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "GET navigation precondition failed", preNavigationDetails(result.Error.ErrorType))}, nil
+		}
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, result.Error.Message, buildResultJSON(args.ToolName, result))}, nil
 	}
 	s.log.Info("browser request executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("tool_name", call.GetToolName()))
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: buildResultJSON(args.ToolName, result), FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
+}
+
+func guardedGETTool(tool string) bool {
+	return tool == "browser.submit_get_form" || tool == "browser.follow_link"
+}
+func preNavigationReason(reason string) bool {
+	switch reason {
+	case "page_changed", "stale_observation", "get_form_denied", "invalid_args", "invalid_selector":
+		return true
+	}
+	return false
+}
+func preNavigationDetails(reason string) string {
+	return mustJSON(map[string]any{"read_rejection": "pre_navigation_v1", "navigation_dispatched": false, "reason": reason})
 }
 func parseWebURL(raw string) (*url.URL, error) {
 	u, err := url.Parse(strings.TrimSpace(raw))

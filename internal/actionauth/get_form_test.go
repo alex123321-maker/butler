@@ -12,8 +12,8 @@ import (
 )
 
 func TestGetFormReadContractCannotBorrowWriteOrCredentialPolicy(t *testing.T) {
-	b := ActionBinding{ToolName: "browser.submit_get_form", ContractRevision: "1", Effect: EffectRead}
-	c := &toolbrokerv1.ToolContract{EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
+	b := ActionBinding{ToolName: "browser.submit_get_form", ContractRevision: "2", Effect: EffectRead}
+	c := &toolbrokerv1.ToolContract{EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}}
 	if classifyEffect(b.ToolName, nil) != EffectRead {
 		t.Fatal("GET form misclassified")
 	}
@@ -24,13 +24,13 @@ func TestGetFormReadContractCannotBorrowWriteOrCredentialPolicy(t *testing.T) {
 	if _, err := ResolveEffectPolicy(b, c); err == nil {
 		t.Fatal("opaque GET form contract accepted")
 	}
-	c.EffectContract.VerificationMethod = "read_result"
+	c.EffectContract.VerificationMethod = BrowserGETVerification
 	c.SupportsCredentialRefs = true
 	if _, err := ResolveEffectPolicy(b, c); err == nil {
 		t.Fatal("credential GET form accepted")
 	}
 	c.SupportsCredentialRefs = false
-	b.ContractRevision = "2"
+	b.ContractRevision = "1"
 	if _, err := ResolveEffectPolicy(b, c); err == nil {
 		t.Fatal("unreviewed GET form revision accepted")
 	}
@@ -39,10 +39,10 @@ func TestGetFormReadContractCannotBorrowWriteOrCredentialPolicy(t *testing.T) {
 func TestGetFormReadReleaseRequiresCurrentPublicConsent(t *testing.T) {
 	s, _, _, _, call, contract := fixture(t)
 	call.ToolName, contract.ToolName = "browser.submit_get_form", "browser.submit_get_form"
-	contract.ContractRevision = "1"
+	contract.ContractRevision = "2"
 	contract.SupportsCredentialRefs = false
 	contract.AllowedDomains = nil
-	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}
 	call.ArgsJson = `{"expected_url":"https://example.com/search","fields":[{"name":"q","value":"query"}]}`
 	if required, err := s.networkReleaseRequired(call, contract); err != nil || !required {
 		t.Fatal("GET query released without standing consent", err)
@@ -51,11 +51,11 @@ func TestGetFormReadReleaseRequiresCurrentPublicConsent(t *testing.T) {
 	if required, err := s.networkReleaseRequired(call, contract); err != nil || required {
 		t.Fatal("approved public GET query blocked", err)
 	}
-	contract.ContractRevision = "2"
+	contract.ContractRevision = "1"
 	if required, err := s.networkReleaseRequired(call, contract); err != nil || !required {
 		t.Fatal("unreviewed revision borrowed read consent", err)
 	}
-	contract.ContractRevision = "1"
+	contract.ContractRevision = "2"
 	call.ArgsJson = `{"expected_url":"http://127.0.0.1/search","fields":[]}`
 	if _, err := s.networkReleaseRequired(call, contract); err == nil {
 		t.Fatal("private form resource borrowed public consent")
@@ -91,9 +91,9 @@ func TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration(t *testing.T) {
 	}
 	oldEffectID := effect.ActionID
 	call.ToolName, call.ToolCallId, contract.ToolName = "browser.submit_get_form", "read-form", "browser.submit_get_form"
-	contract.ContractRevision = "1"
+	contract.ContractRevision = "2"
 	contract.SupportsCredentialRefs = false
-	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}
 	call.ArgsJson = `{"browser_session_id":"new-context","expected_url":"https://example.com/catalog","observation_version":1,"selector":"form","fields":[{"name":"q","value":"public query"}]}`
 	next := logicalGrant(t, s, reader, call, contract, "get-form-slot")
 	if err = store.ClaimGrant(ctx, next.ID); err != nil {

@@ -258,6 +258,17 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		return output
 	}
 	getObs := invoke("browser.open", map[string]any{"url": "http://start.test/search"})
+	badCall, badGrant := prepare("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": "http://start.test/search?q=future", "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
+	for attempt := 0; attempt < 2; attempt++ {
+		rejected, err := client.ExecuteToolCall(callCtx, &toolbrokerv1.ExecuteToolCallRequest{ToolCall: badCall, AuthorizationId: badGrant})
+		if err != nil || queryReads.Load() != 0 || posts.Load() != 0 || rejected.GetResult().GetStatus() == "completed" {
+			t.Fatal("invalid URL or consumed grant navigated", err)
+		}
+		if attempt == 0 && (rejected.GetResult().GetStatus() != "failed" || rejected.GetResult().GetEffectState() != "effect_absent" || !strings.Contains(rejected.GetResult().GetError().GetDetailsJson(), "page_changed")) {
+			t.Fatal("proved read rejection became unknown", rejected.GetResult().GetStatus(), rejected.GetResult().GetEffectState())
+		}
+	}
+	getObs = invoke("browser.snapshot", map[string]any{"browser_session_id": getObs["browser_session_id"]})
 	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
 	if queryReads.Load() != 1 || posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Arctic delivery") {
 		t.Fatal("Broker GET form wrote or failed to observe")
