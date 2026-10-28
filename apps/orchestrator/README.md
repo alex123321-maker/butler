@@ -1601,3 +1601,5 @@ the preceding/underlying causes for trusted inspection. Failed outcome, block
 or run-transition writes cannot be mistaken for an isolated provider failure.
 
 The prospective issue115 server comparison uses a separate owner-bound laba recipe and fixed isolated host adapter. PC histories and defaults remain unchanged; native entry stays unbound until fresh source/artifact/recipe/preseal qualification. See docs/testing/issue115-laba-native-protocol.md.
+
+The laba #115 profile now requires the fixed bridge relay to the existing server proxy; direct routing and ambient bypass variables fail before native output or auth. The PC profile keeps its prior route.

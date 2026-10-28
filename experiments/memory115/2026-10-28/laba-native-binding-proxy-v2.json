@@ -1,0 +1,23 @@
+{
+  "collector_producer": "683280b21e7c21f5ad4a87ca63d9e5e3491e0e3d",
+  "plan_sha256": "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7",
+  "history_sha256": "a3a045bd2220eda99e92d85b072b59286aff3aa452e8b6407c02df4a2890d721",
+  "artifacts": {
+    "PlanSHA": "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7",
+    "AppSHA": "c003e4dbde7e9aacf8b87c38e04642f0253ed99fe7d5253945713b72e790f6ac",
+    "Source": "683280b21e7c21f5ad4a87ca63d9e5e3491e0e3d",
+    "HTTPSHA": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca",
+    "BrokerSHA": "1bf5ecc3821672ff1669b3e856663d76355089d5c2e1b27942977165622186c9",
+    "BrokerControlSHA": "5cb62d849c666055fc9f2906237dd5852b047208844559adcd45ab74256d292b",
+    "HistorySHA": "a3a045bd2220eda99e92d85b072b59286aff3aa452e8b6407c02df4a2890d721",
+    "ExtensionSHA": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b"
+  },
+  "binding_outside_frozen_collector": true,
+  "proxy": "http://10.249.116.1:18081",
+  "proxy_upstream": "127.0.0.1:18080",
+  "selected_stages": 33,
+  "full_stages": 57,
+  "new_native_admission_ceiling": 640,
+  "generation_requests_before_binding": 0,
+  "supersedes_unused_plan": "03ebf6e78cc4c16ebcc3f6a7e7a6a1f8b3b1d7a921843e3f1d28a2613e6dc010"
+}
