@@ -1,11 +1,19 @@
 # Butler Dev Scripts
 
 `browser-baseline-manifest.sh NEW_REPORT_FILE` reads only the four main
-Core/Broker/browser/Web container identities, health, optional source label and
+Core/Broker/browser/Web container identities, PID 1 executable hashes, health, optional source label and
 two explicitly allowed boolean env flags. It never emits a full environment or
 configuration dump and refuses an existing output. Missing data remains unknown.
 This is inventory only; see [browser baseline](../../docs/testing/browser-baseline-2026-10-28.md)
 and the operator-only [recipient](../../cmd/browser-eval/README.md).
+
+`browser-native-control.sh OWNED_ROOT` submits one public-read control through the
+existing protected owner ingress when no queued/running owner work exists. It
+never renews/copies provider auth, answers approvals, repeats an attempt or clears
+old effects. `browser-native-snapshot.sh EVENT NEW_FILE` reads exact-run metadata;
+`browser-native-verify.sh ROOT METADATA` checks the public control publication via
+protected owner GET. The Go observer keeps Input/task/effect/delivery distinct.
+See the recipient README for limits, replay refusal and timeout semantics.
 
 `pwsh -NoProfile -File scripts/dev/issue17-local.ps1` checks the eight resource
 arbitration criteria on this PC using Docker Desktop's Linux engine. It creates

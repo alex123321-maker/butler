@@ -247,7 +247,15 @@ func run(args []string) error {
 }
 
 func main() {
-	if err := run(os.Args[1:]); err != nil {
+	var err error
+	if len(os.Args) > 1 && os.Args[1] == "native" {
+		err = runNative(os.Args[2:])
+	} else if len(os.Args) > 1 && os.Args[1] == "verify-public-control" {
+		err = verifyPublicControl(os.Args[2:])
+	} else {
+		err = run(os.Args[1:])
+	}
+	if err != nil {
 		// Do not print underlying path, HTTP, credential or configuration errors.
 		fmt.Fprintln(os.Stderr, "browser-eval failed; check arguments and private fixture files")
 		os.Exit(1)

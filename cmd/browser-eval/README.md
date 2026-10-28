@@ -53,9 +53,9 @@ Join this journal with Input/run/tool receipts and channel delivery separately.
 Journal write failure stops the operation with 503. There is no journal recovery
 or claim that this in-memory test recipient is durable Butler state.
 
-This first slice covers HTTP recipient correctness. OTP, separate login origin,
-native ingress driver, actual Chromium acceptance and latency aggregation remain
-subsequent work in #162/#168. HTTP tests are not native/browser acceptance.
+The fixture covers HTTP recipient correctness plus direct Chromium acceptance.
+OTP, separate login origin and the complete 3×5 native matrix remain subsequent
+work in #162/#168. HTTP tests are not native/browser acceptance.
 
 Run `pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/browser-eval -Count1`.
 
@@ -73,3 +73,37 @@ config/journal plus a content-free `smoke.json` in a new cache subdirectory. It
 does not save screenshots, traces or DOM dumps. All actions are scripted and
 explicitly labelled `native_agent: UNEXECUTED`. On failure errors are suppressed
 because browser exceptions can reflect secret field values.
+
+## Native ingress observation
+
+`browser-eval native` submits exactly one ordinary owner message and observes its
+Input receipt. Supply `-endpoint`, `-owner-token-file`, `-prompt-file`, a unique
+`-delivery-id browser-baseline-...`, a **new** `-attempt-dir` and `-timeout 3m`.
+The endpoint is operator configuration: HTTPS, or an explicit literal private IP
+for existing operator-local HTTP. Redirects and environment proxies are disabled;
+owner authentication stays inside the HTTP client. Secret values never go in args.
+Keep the private report directory under repo/task-local cache with restricted ACL.
+
+The runner first saves intent/time/prompt hash, then sends one POST with a stable
+delivery header. No automatic POST retry occurs. Lost acknowledgment is retained
+as SUBMISSION_UNKNOWN. Existing attempt directories are rejected before sending.
+Only fixed states and validated refs are exported, excluding raw error text,
+checkpoint data and assistant responses. API refusal is conservatively retained
+with its HTTP code; it is not permission to retry with a new identity.
+
+Input completion is never task-success evidence. Waiting, receipt mismatch,
+unavailable receipt and observation timeout remain explicit. An observation
+timeout does **not** cancel the accepted work or prove it stopped; inspect the
+same Input before any later attempt. Protected consent/approval is never answered
+by this runner. A waiting scenario needs the real owner flow and observation of
+that same Input, not another POST.
+
+On the current `laba` operator composition, `scripts/dev/browser-native-control.sh`
+runs a single separate example.com browser control after checking the owner queue.
+It reads the existing owner file privately, never provider credentials, and removes
+its temporary copy. The control refuses replay. `browser-native-snapshot.sh EVENT
+NEW_FILE` captures read-only exact-run tool timestamps/usage/publication/delivery
+metadata without args, result bodies or errors. It is not a task scorer.
+`browser-native-verify.sh ROOT METADATA` performs a protected owner GET and checks
+the fixed public control's title/link/documentation-purpose rubric. Only booleans
+are exported; this narrow rubric cannot score arbitrary tasks.

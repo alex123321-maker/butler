@@ -59,9 +59,68 @@ reports `scope: direct-chromium-recipient`, `native_agent: UNEXECUTED` explicitl
    unknown), owner waiting and interventions; compare against the short manual
    path. Initial baseline must remain usable even when #163 exposes a blocker.
 
-OTP, separate login origin, complete native ingress driver and latency/cost
-aggregation are not implemented in this first slice. No native model attempt
-or external account login has been run; there is no agent quality/speed score.
+At the end of the first slice no native model attempt or external account login
+had been run. The follow-up below adds one separate native control; OTP, separate
+login origin, complete native matrix and latency/cost aggregation remain pending.
+
+## Follow-up: one real public control
+
+The follow-up added a Go native ingress observer, exact-attempt metadata collector
+and fixed public-result verifier. It used ordinary owner Web ingress, actual
+provider, Tool Broker, browser runtime, publication and channel delivery, without
+injecting expected answers, selectors or tool calls. The queue was idle before
+submission. No approval was auto-answered and no provider auth was copied.
+
+One control requested opening `https://example.com/` in the browser and reporting
+its title and domain purpose with a link. It is **outside** the planned controlled
+3×5 fixture matrix; that matrix still has zero native attempts.
+
+The native control Input completed. The [exact-run metadata](browser-baseline/control-01-metadata.json)
+records two tools.search, one tools.load, one browser.open and one
+communication.message, all completed with no stored errors and no pending approval.
+It records model profile `antigravity / gemini-3.8-flash-high`, six model attempts,
+44094 input tokens and 450 output tokens, with zero unknown usage pairs at the
+final observation. These are reported counters, not a monetary invoice or a new
+claim about undisclosed reasoning/cache accounting. Monetary cost remains unknown.
+
+| Measurement | One observed control |
+| --- | --- |
+| Accept → first recorded model attempt | 14.37 s |
+| Accept → first browser call begins | 45.66 s |
+| Browser call duration | 2.01 s |
+| Accept → publication created | 73.38 s |
+| Accept → Telegram delivery updated as sent | 74.66 s |
+| Accept → Input completed | 79.69 s |
+| Runner start → completion observed by polling | 81.17 s |
+| Sum of five recorded tool durations | 3.07 s |
+
+The tool-duration sum is not a complete wall-time decomposition. Provider request
+latency, admission/queue time, context preparation and uninstrumented intervals
+are not separated here. This one run indicates most observed latency occurred
+outside the actual browser call; it does not establish typical latency or p95.
+
+Web had `result_ready`, which is availability rather than proof of a client read.
+Telegram had `sent`. A later protected owner GET returned 200 for the exact
+publication. The [content-free rubric result](browser-baseline/control-01-verification.json)
+confirmed the title, source link and documentation purpose in the published text.
+Together these qualify this narrow public-read control; they do not establish
+account login, form handling, full privacy acceptance or general task quality.
+Raw response text, model context and secret material were not exported.
+
+### Executable provenance correction
+
+The process binaries are mounted under `/candidate`; image identity alone is
+insufficient to identify the executing code. The manifest now includes PID 1
+executable hashes where readable, retaining null when unavailable. See the
+[updated inventory](browser-baseline/deployment-executables-20261028.json).
+Core's copied executable build metadata reported revision
+`9974b301a44c6a95e203e827de34c818c6d91bbb`, `vcs.modified=true`. This is a dirty-build
+provenance hint, **not** proof that deployment matches that commit or current main.
+The control and verifier binaries are retained separately on the task root.
+
+The controlled native form/login tests still need an isolated externally
+reachable HTTPS origin; a domain has been requested from the owner. Loopback
+remains blocked by production egress. No workaround weakens that boundary.
 
 ## Reproduce
 
