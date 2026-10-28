@@ -55,6 +55,9 @@ passing. The successful fresh run used larger bounded tmpfs, bounded WAL and
 private PostgreSQL logs; its OOM flag was false. Test containers were removed.
 Source and build cache used `/tmp/butler-browser-continuation-20261028` because
 the main storage volume was full. Copy durable evidence before reboot/cleanup.
+Raw test reports were also copied into the worktree's private `.cache` directory.
+The existing mandatory Communication CI selector includes StoppedLocal cases;
+that suite now also vets/builds the operator without executing it.
 
 The first live dry run also encountered PostgreSQL's explicit no-space failure
 before review began. Only immutable Go build-cache `*-d` files older than two
@@ -97,3 +100,5 @@ session/Task identities to bypass nav-02's actual unresolved effect. The next
 #163 slice needs supported browser interaction evidence and continuation, plus
 the protected owner credential flow for login. Existing contracts cannot prove
 arbitrary remote acceptance from DOM success or from the fixture oracle.
+After terminal failure, nav-02's recipient was stopped with its journal intact.
+A fresh `infra-after-continuation` instance serves HTTPS; it is not a matrix slot.
