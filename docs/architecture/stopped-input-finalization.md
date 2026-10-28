@@ -32,12 +32,19 @@ uncertain. Tool calls need correlated journal proof, except a finished validatio
 rejection. Missing receipts and generic runtime completion cannot resolve an
 external effect.
 
-Kernel local review supports two explicitly pinned historical revision1
+Kernel local review supports explicitly pinned historical revision1
 contracts, reproduced from commit `4dff78b5`: atomic `communication.message`
 (`f86dbe12464322551ff3d386412b54644fd32227fe0011f1bbac13b7db27b6fc`) and
 read-only `web.fetch`
 (`18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37aa58a4a11ff3d2`).
 These are recovery compatibility pins, not permission to execute old contracts.
+The public GET-form compiler from commit `1e24a910` is additionally pinned as
+`browser.submit_get_form` / revision1 / contract hash
+`504555e5109e2f7478d87fc21a5598c28f1f27b3aaa58830851675cab9bff90f`.
+Its reproduced contract is retained as a test fixture. Under the same original
+binding/owner/terminal-fence checks and exact read-only/read-result policy it
+can establish only no-write uncertainty, like the pinned web reader. It does
+not import revision2 pre-navigation absence semantics into an old failed read.
 The optional Communication collaborator invokes the owning Action journal
 review inside the same finalization transaction. It requires an already failed,
 taskless, isolated Input/run, matching event/owner/session, no claim or active

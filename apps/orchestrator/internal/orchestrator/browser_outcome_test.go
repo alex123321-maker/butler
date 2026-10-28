@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -20,6 +21,68 @@ type browserOutcomeFixture struct {
 	stage, raw, fail string
 	calls            []*toolbrokerv1.ToolCall
 	readDeadline     time.Time
+}
+
+type ownerReviewFlowFixture struct {
+	*browserOutcomeFixture
+	runs    *memoryRunManager
+	mode    string
+	reviews int
+}
+
+func (f *ownerReviewFlowFixture) SuspendUnknown(_ context.Context, run, effect, read string) (string, error) {
+	f.reviews++
+	if effect != "effect-click" || read == "" {
+		return "", errors.New("wrong effect observation")
+	}
+	if f.mode == "denied" {
+		return "", actionauth.ErrOwnerOutcome
+	}
+	f.stage = "awaiting_interaction"
+	f.runs.records[run].CurrentState = commonv1.RunState_RUN_STATE_AWAITING_APPROVAL
+	if f.mode == "lost_ack" {
+		return "", actionauth.ErrOwnerOutcomePending
+	}
+	return "review-one", nil
+}
+func (*ownerReviewFlowFixture) ResumeOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error) {
+	panic("no owner response yet")
+}
+func (*ownerReviewFlowFixture) ReadResolvedOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error) {
+	panic("no owner response yet")
+}
+
+func TestUnknownBrowserOwnerWaitNeverResumesOnItsOwn(t *testing.T) {
+	for _, mode := range []string{"wait", "lost_ack", "denied"} {
+		t.Run(mode, func(t *testing.T) {
+			runs := newMemoryRunManager()
+			f := &ownerReviewFlowFixture{browserOutcomeFixture: &browserOutcomeFixture{}, runs: runs, mode: mode}
+			p := &communicationWaitProvider{mockProvider: mockProvider{startEvents: []transport.TransportEvent{transport.NewToolCallRequestedEvent("", "test", transport.ToolCallRequest{ToolCallRef: "click", ToolName: "browser.click", ArgsJSON: `{"browser_session_id":"` + strings.Repeat("a", 32) + `","selector":"#submit","expected_url":"https://example.com/form","observation_version":1}`})}}}
+			history := &memoryTranscriptStore{}
+			s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, history, p, Config{ProviderName: "test", ModelName: "test", Tools: f, ActionAuthorizer: f, Checkpoints: f, EffectReviews: f}, nil)
+			r, err := s.Execute(context.Background(), ingress.InputEvent{EventID: "event", IdempotencyKey: "event", SessionKey: "session", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"submit once"}`, CreatedAt: time.Now()})
+			switch mode {
+			case "wait":
+				if err != nil || r == nil || r.ReceiptStatus != "waiting_for_user" {
+					t.Fatal("owner review did not suspend", r, err)
+				}
+			case "lost_ack":
+				if !errors.Is(err, ErrCommunicationStatePending) {
+					t.Fatal("ambiguous wait commit was failed/replayed", r, err)
+				}
+			case "denied":
+				if err != nil || r == nil || r.ErrorCode != "effect_unknown" {
+					t.Fatal("unproved wait escaped uncertainty", r, err)
+				}
+			}
+			if f.reviews != 1 || len(f.calls) != 2 || len(p.submittedResults) != 0 || len(history.toolCalls) != 2 || history.toolCalls[0].Status != "effect_unknown" {
+				t.Fatal("owner wait replayed action, inferred, or rewrote original history")
+			}
+			if mode != "denied" && !p.cancelled {
+				t.Fatal("old provider context retained while awaiting owner")
+			}
+		})
+	}
 }
 
 func (f *browserOutcomeFixture) SaveCheckpoint(_ context.Context, _ string, stage, raw string) error {

@@ -6,7 +6,11 @@ browser session ID, checks current owner/task/constraints, and never borrows the
 preceding interaction's approval or marks it confirmed. A new approval
 requirement prevents this automatic probe; resource quarantine still denies it.
 The fixed revision1 credential-free read contract is checked in policy and
-runtime. This grants observation only, with no model continuation or write replay.
+runtime. This grants observation only. A separate authenticated owner factual
+review may resolve the journal under migration105; its answer creates no grant,
+new approval, budget refund or automatic replay. Same-Input continuation requires
+canonical known evidence and current execution authority; a DOM or model verdict
+is insufficient. Owner-assisted results remain distinct from machine receipts.
 
 Migration102 [isolates stopped attempts](stopped-input-finalization.md) without
 reconciling effects or acknowledging them for the owner. Both Core and Broker

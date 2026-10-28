@@ -78,8 +78,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	var continuation approvalContinuation
 	var decision approvals.Record
 	credentialWait := checkpoint.Interaction.Kind == "credential_interaction"
-	interactionWait := (checkpoint.Interaction.Kind == "communication_interaction" || credentialWait) && (stage == "awaiting_interaction" || stage == "interaction_ready")
-	if interactionWait && ((!credentialWait && s.config.Communication == nil) || (credentialWait && s.config.Credentials == nil) || checkpoint.Interaction.Version != 1 || checkpoint.Interaction.ID == "") {
+	effectWait := checkpoint.Interaction.Kind == "effect_review"
+	interactionWait := (checkpoint.Interaction.Kind == "communication_interaction" || credentialWait || effectWait) && (stage == "awaiting_interaction" || stage == "interaction_ready")
+	if interactionWait && ((!credentialWait && !effectWait && s.config.Communication == nil) || (credentialWait && s.config.Credentials == nil) || (effectWait && s.config.EffectReviews == nil) || checkpoint.Interaction.Version != 1 || checkpoint.Interaction.ID == "") {
 		return blockedApprovalResult(current, "interaction_not_resumable"), nil
 	}
 	if interactionWait && stage == "awaiting_interaction" {
@@ -158,7 +159,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return blockedApprovalResult(current, "communication_correction_not_resumable"), nil
 	}
 	modelRetry := stage == "model_retry_pending" && checkpoint.ModelRetry.Count == 1 && checkpoint.ModelRetry.State == "claimed"
-	if len(checkpoint.Data.UncertainBrowser) != 0 || stage == "browser_outcome_observing" || stage == "browser_outcome_observed" {
+	if (len(checkpoint.Data.UncertainBrowser) != 0 && !(effectWait && interactionWait)) || stage == "browser_outcome_observing" || stage == "browser_outcome_observed" {
 		if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
 			return nil, blockErr.withPreceding(ErrActionOutcomeUnknown)
 		}
@@ -188,6 +189,8 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		continuation.Prepared = checkpoint.Prepared
 	}
 	var stream transport.EventStream
+	resolvedCall := ""
+	var resolvedOutcome actionauth.OwnerOutcomeResolution
 	if modelRetry {
 		stream, err = s.resumeModelRetry(ctx, current, checkpoint.Prepared, checkpoint.ModelRetry)
 		if err == nil && current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
@@ -199,7 +202,20 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 		var answer string
 		var resumeErr error
-		if credentialWait {
+		if effectWait {
+			var resolution actionauth.OwnerOutcomeResolution
+			resolution, resumeErr = s.config.EffectReviews.ResumeOutcome(ctx, runID, checkpoint.Interaction.ID)
+			if resumeErr == nil {
+				var marker browserOutcomeCheckpoint
+				if json.Unmarshal(checkpoint.Data.UncertainBrowser, &marker) != nil || marker.ToolCallID != resolution.ToolCallID || marker.EffectID != resolution.EffectID || resolution.ReviewID != checkpoint.Interaction.ID || resolution.ToolCallID == "" || resolution.EffectID == "" || (resolution.State != actionauth.StateConfirmed && resolution.State != actionauth.StateAbsent) || len(resolution.EvidenceRefs) == 0 {
+					resumeErr = ErrActionOutcomeUnknown
+				} else {
+					resolvedCall = resolution.ToolCallID
+					resolvedOutcome = resolution
+					answer = mustMarshalJSON(resolution)
+				}
+			}
+		} else if credentialWait {
 			answer, resumeErr = s.config.Credentials.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
 		} else {
 			answer, resumeErr = s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
@@ -207,6 +223,12 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		if resumeErr != nil {
 			if errors.Is(resumeErr, context.Canceled) || errors.Is(resumeErr, context.DeadlineExceeded) {
 				return nil, resumeErr
+			}
+			if effectWait {
+				if blockErr := s.blockTaskRun(ctx, runID, "effect_unknown"); blockErr != nil {
+					return nil, blockErr.withPreceding(resumeErr)
+				}
+				return uncertainResult(current), nil
 			}
 			code := "interaction_invalidated"
 			var diagnostic interface{ InteractionResumeCode() string }
@@ -219,8 +241,12 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		if e != nil {
 			return nil, e
 		}
-		checkpoint.Prepared = interactionResponsePreparation(checkpoint.Prepared, refreshed, checkpoint.Interaction.ID, answer)
-		if !credentialWait {
+		if effectWait {
+			checkpoint.Prepared = ownerOutcomePreparation(checkpoint.Prepared, refreshed, resolvedOutcome)
+		} else {
+			checkpoint.Prepared = interactionResponsePreparation(checkpoint.Prepared, refreshed, checkpoint.Interaction.ID, answer)
+		}
+		if !credentialWait && !effectWait {
 			// ResumeInteraction has verified the canonical owning run/Input and
 			// interaction. Upgrade legacy checkpoints without accepting payload refs.
 			if checkpoint.Prepared.CurrentRequest == nil && isCurrentOwnerRequest(event, checkpoint.Prepared) {
@@ -244,11 +270,21 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 		for _, call := range history.ToolCalls {
 			if call.RunID == runID && call.FinishedAt != nil {
-				if call.Status == "effect_unknown" {
-					return uncertainResult(current), nil
+				if call.Status == "effect_unknown" && (!effectWait || call.ToolCallID != resolvedCall) {
+					if s.config.EffectReviews == nil {
+						return uncertainResult(current), nil
+					}
+					previous, resolveErr := s.config.EffectReviews.ReadResolvedOutcome(ctx, runID, call.ToolCallID)
+					if resolveErr != nil || previous.ToolCallID != call.ToolCallID || (previous.State != actionauth.StateConfirmed && previous.State != actionauth.StateAbsent) || len(previous.EvidenceRefs) == 0 {
+						return uncertainResult(current), nil
+					}
+					items = append(items, ownerOutcomeItem(previous))
 				}
 				items = append(items, recoveredActionResultItem(call.ToolCallID, call.ToolName, call.ArgsJSON, recordedToolResultEnvelope(call)))
 			}
+		}
+		if effectWait {
+			items = append(items, ownerOutcomeItem(resolvedOutcome))
 		}
 		if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, lease.LeaseID, "", "")

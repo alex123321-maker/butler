@@ -555,6 +555,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		}
 	}
 	credentialKernel := credentialInteractions(postgres.Pool())
+	outcomeKernel := newBrowserOutcomeKernel(postgres.Pool(), inputStore)
 	credentialKernel.configureTelegram(telegramFlow)
 	if telegramFlow == nil {
 		credentialKernel.configureLegacyTelegram(telegram)
@@ -566,6 +567,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			EffectReviews:          outcomeKernel,
 			Credentials:            credentialKernel,
 			Communication:          communicationKernel,
 			CommunicationAdmission: communicationAdmission,
@@ -693,6 +695,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		}
 		maintenanceErr := initiativeWorker.Sweep(ctx)
 		maintenanceErr = errors.Join(maintenanceErr, credentialKernel.Sweep(ctx))
+		maintenanceErr = errors.Join(maintenanceErr, outcomeKernel.Outcomes.Expire(ctx))
 		if scheduleControl != nil {
 			maintenanceErr = errors.Join(maintenanceErr, scheduleControl.Store.Sweep(ctx))
 		}

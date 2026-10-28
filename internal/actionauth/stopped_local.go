@@ -16,6 +16,11 @@ import (
 const stoppedMessageContract = "f86dbe12464322551ff3d386412b54644fd32227fe0011f1bbac13b7db27b6fc"
 const stoppedFetchContract = "18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37aa58a4a11ff3d2"
 
+// Reproduced from the revision1 public GET compiler in 1e24a910. This
+// compatibility proof qualifies only absence of write uncertainty; it never
+// upgrades the failed read, imports revision2 absence semantics or replays it.
+const stoppedGETFormContract = "504555e5109e2f7478d87fc21a5598c28f1f27b3aaa58830851675cab9bff90f"
+
 // ReviewStoppedLocalTx uses only kernel-owned durable evidence. It can resolve
 // the reviewed atomic publication protocol after its executor is fenced out.
 // A pinned read may prove absence of WRITE uncertainty without proving that the
@@ -100,7 +105,7 @@ func ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, input string) (map[str
 		verdict := StateUnknown
 		proof := ""
 		switch {
-		case b.ToolName == "web.fetch" && b.ContractRevision == "1" && b.ContractHash == stoppedFetchContract && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+		case ((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
 			method, source = "pinned_read_no_write_v1", "owning_read_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_result_unknown")
 			reads[id] = true

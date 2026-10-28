@@ -2,10 +2,16 @@ Core records one bounded post-effect observation after a correlated UNKNOWN
 click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
 grant under current authority and a clipped five-second deadline. It contains
 only the original browser session ID. Durable observer markers prevent replay
-or model resumption, including a crash at the read dispatch checkpoint. The
-original effect stays unknown and the run remains blocked; the observation is
-not a submission receipt. Missing permission/approval, lost ACK or quarantined
-resources remain unavailable. See the browser/session and run lifecycle specs.
+or unsupported model resumption, including a crash at the read dispatch
+checkpoint. The observation is not a submission receipt. Migration105 installs
+a protected factual owner review at `/api/v4/action-outcomes`: exact frozen live
+actions can wait in the same Input; expired historical contexts can receive
+retrospective evidence without reopening their failed attempt. Known reports
+append `owner_outcome_attestation_v1` evidence and permit only currently valid
+same-Input continuation. UNKNOWN/expiry/cancellation stay restrictive. Original
+transcripts, consumed grants and spending remain. Missing permission/approval,
+lost ACK or quarantined resources remain unavailable. See the browser/session,
+external-effect and run lifecycle specs.
 
 Core's configured PostgreSQL connection cap now separates lease/Task authority
 from longer source observations: with a cap of at least4, reserve one for each

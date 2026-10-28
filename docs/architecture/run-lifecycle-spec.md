@@ -10,9 +10,20 @@ checkpoints; a separate deterministic read-call ID receives its own permanent
 slot, grant, budget accounting and tool transcript. No input/credential values
 are copied. The read stays under current authority and a clipped five-second
 deadline; approval requirements or unavailable permission prevent dispatch.
-No provider continuation, final success or additional action follows. Recovery
-from either checkpoint blocks on `effect_unknown`, even if the read succeeded;
-it never retries the read or the original interaction. See the browser contract.
+Without a canonical owner outcome review, recovery from either checkpoint blocks
+on `effect_unknown`, even if the read succeeded; it never retries either call.
+Migration105 adds a distinct `effect_review` interaction: the kernel atomically
+joins an independently journaled frozen read, Task wait, exact Input checkpoint
+and coarse run wait. It releases the executor before accepting a factual owner
+report. This report is not an action approval or independent machine receipt.
+Only confirmed/absent canonical journal evidence can make that same Input ready.
+Recovery rechecks its claim, lease, task/source versions and all other unknown
+effects, reconstructs fresh provider context with owner-report DATA, and retains
+the original UNKNOWN tool transcript. No consumed grant or action is replayed.
+An unknown report, expiry, cancellation or changed constraints cannot resume
+inference. Cleanup may queue a bounded no-inference close after an expired wait;
+it never renews execution authority. Historical reports change only journal
+evidence; an old failed Input/run stays failed. See the external-effect contract.
 
 ## Joining supervision before terminal task mutation
 

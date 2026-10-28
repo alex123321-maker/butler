@@ -169,12 +169,26 @@ not dispatched. A missing response, unrelated result or malformed context does
 not trigger it. The five-second child deadline never extends the run deadline.
 
 Core durably checkpoints the observation attempt before dispatch and records
-its normal tool transcript, without resuming the model. Both in-progress and
-finished observation checkpoints recover by blocking on the original UNKNOWN;
-neither replay an action nor retry the read. The owner receives the existing
-uncertainty notice. This is an observation foundation for #163, not general
-interactive continuation or a recipient receipt. Old failed runs are not
-automatically resumed; native POST/login acceptance remains outstanding.
+its normal tool transcript, without resuming the model. An in-progress read or
+unproven result blocks on the original UNKNOWN and never retries either call.
+Migration105 permits a separate factual owner review only after the exact read
+has confirmed, digest-correlated journal evidence and an unexpired frozen
+context. The kernel joins the same Input/Task/run wait atomically. The protected
+owner must independently check the recipient and settled processing; known
+reports require a receipt reference, of which only a digest is retained.
+`owner_outcome_attestation_v1` is explicitly owner-assisted, never a machine
+receipt. A known canonical result permits fresh model context in the same run
+under current claim, source/task versions, deadlines and budgets. It does not
+replay the old operation, restore its grant or complete the task. UNKNOWN,
+expiry, cancellation and changed constraints cannot resume inference.
+
+An authenticated owner may request retrospective review of a correlated locally
+acknowledged click/fill/type after the original run terminated and its recorded
+finite context expired. This updates journal evidence only: the failed Input/run,
+original UNKNOWN transcript and charges remain. A test-recipient journal can
+inform an explicitly counted test operator's factual report through that same
+protected API; it is never an automatic production verifier or hidden oracle.
+Native POST/login acceptance is measured separately from these safeguards.
 
 ## Private credential state
 

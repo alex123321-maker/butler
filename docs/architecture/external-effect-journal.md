@@ -37,8 +37,9 @@ Core may record one independently authorized `browser.freeze_snapshot` after
 an UNKNOWN click/fill/type response. Its read intent, grant, charge, transcript
 and local observation are distinct from the original effect. Frozen visible
 state is not recipient acceptance/absence or reconciliation. Observer checkpoint
-recovery blocks on the original UNKNOWN and never retries either operation;
-runtime quarantine remains restrictive. See the browser/session contract.
+recovery blocks on the original UNKNOWN unless a separate canonical owner review
+has resolved it. Neither operation is retried; runtime quarantine remains
+restrictive. See the browser/session contract.
 
 `PrepareToolCall.logical_action_ref` is optional private service metadata. The
 accepted-input repository allocates a random slot **before** preparation and
@@ -145,6 +146,34 @@ generic external guarantee; the contracted fixture proves this protocol only
 for a receiver that actually implements it.
 
 ## Independent reconciliation and provenance
+
+Browser interactions without a declared recipient protocol can instead request
+an explicit authenticated-owner outcome report. This is a separate factual
+decision, never the original action approval or an LLM/DOM verdict. The owner
+must assert that the recipient was checked and processing has settled, choose
+confirmed/absent/unknown, and provide a receipt reference for a known outcome.
+Only its digest is stored. Evidence is labelled `owner_outcome_attestation_v1`,
+not an independent machine receipt; owner-assisted acceptance is reported apart.
+
+The kernel admits such a report only for a correlated, locally acknowledged
+browser click/fill/type whose connections have been frozen by a separately
+journaled read, or whose finite context expired after a terminal attempt.
+Unacknowledged/inflight execution, resource quarantine, changed bindings and
+foreign/stale decisions remain restrictive. An UNKNOWN answer leaves the effect
+unknown. A known report appends evidence without renewing the consumed grant,
+refunding spending, rewriting the old transcript or completing a task/run.
+An exact live review wait can become ready under its unchanged source/task
+versions; historical reconciliation never reopens a failed Input.
+
+Protected `/api/v4/action-outcomes` uses existing owner-control authentication.
+GET lists safe pending review metadata. POST `review_historical` accepts only
+the exact effect ID/fingerprint; POST `report` accepts the nested review ID,
+fingerprint, revision1, outcome, recipient/settled assertions and receipt
+reference. Owner/run/task identities cannot be supplied in the body. Unknown
+fields, duplicate keys, oversized bodies, foreign/stale decisions and a live
+executor fail closed. Exact delivery/body replay is idempotent; no decision
+creates an action grant. Raw receipt references are never persisted or fed
+into model context. Do not put passwords, tokens or cookies in a reference.
 
 An uncertain effect is reconciled by a **separate approved read** to its pinned
 verification URL through Broker. The read must already have a confirmed journal

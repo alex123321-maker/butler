@@ -1,5 +1,12 @@
 # Butler Web
 
+Authenticated owners see pending factual action-outcome reviews separately from
+action approvals and credential requests. A known result requires an explicit
+selection, checked recipient, settled processing and a receipt reference; the
+server stores only digests. Choosing unknown keeps execution stopped. Drafts
+remain in page memory and clear on owner/review changes. Polling and submissions
+use the existing protected owner endpoint; the UI never replays the action.
+
 The credential vault bookmark is fixed at the right-center edge after owner
 connection. It opens a six-cell PIN setup/unlock and a sidebar for account CRUD,
 access/create requests, protected manual OTP and per-account SMS routing.
