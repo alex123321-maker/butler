@@ -265,7 +265,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 			return result, nil
 		}
 		if errors.Is(err, ErrActionOutcomeUnknown) {
-			s.blockTaskRun(ctx, current.GetRunId(), "effect_unknown")
+			if blockErr := s.blockTaskRun(ctx, current.GetRunId(), "effect_unknown"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "effect_unknown"}, nil
 		}
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
@@ -276,12 +278,16 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	return s.finalizeExecution(transportCtx, runLog, current, event, prepared, lease.LeaseID, finalMessage)
 }
 
-func (s *Service) blockTaskRun(ctx context.Context, runID, reason string) {
+func (s *Service) blockTaskRun(ctx context.Context, runID, reason string) *terminalWriteError {
+	quiesceLeaseRenewer(ctx)
 	if tasks, ok := s.config.Tasks.(interface {
 		BlockRun(context.Context, string, string) error
 	}); ok {
-		_ = tasks.BlockRun(ctx, runID, reason)
+		if err := tasks.BlockRun(ctx, runID, reason); err != nil {
+			return &terminalWriteError{stage: "task_block", cause: err}
+		}
 	}
+	return nil
 }
 
 func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun, leaseID, finalMessage string) (*ExecutionResult, error) {
@@ -332,7 +338,9 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 			}
 			return s.finalizeExecution(ctx, runLog, updated, event, prepared, leaseID, final)
 		case "failed":
-			s.blockTaskRun(ctx, current.GetRunId(), "communication_result_missing")
+			if blockErr := s.blockTaskRun(ctx, current.GetRunId(), "communication_result_missing"); blockErr != nil {
+				return nil, blockErr.withPreceding(err)
+			}
 			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "communication_result_missing"}, nil
 		case "waiting":
 			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
@@ -361,6 +369,10 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 		request.TaskRevision = prepared.Task.Revision
 		request.ConstraintsRevision = prepared.Task.ConstraintsRevision
 	}
+	// No inference/tool work remains. Join supervision before this terminal
+	// transaction can invalidate the task authority it was observing. Save still
+	// validates the original live ownership/task/source fences itself.
+	quiesceLeaseRenewer(ctx)
 	saved, err := s.config.Completion.Save(ctx, request)
 	// Keep the finalizing checkpoint on persistence failure. Recovery may save
 	// this answer again; it must not call the model or replay external effects.
@@ -490,6 +502,10 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
+	// SaveRunOutcome may block the task and increment its revision. Stop and
+	// join the observer first, without cancelling the still-fenced cleanup.
+	// Any genuine in-flight observation failure remains on the original context.
+	quiesceLeaseRenewer(ctx)
 	// Preserve a trusted ownership supervisor's cause when its cancellation won
 	// the stream race. Parent cancellation and independent transport failures
 	// retain their original classification. No cleanup write acquires new power.
@@ -510,17 +526,21 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 	state := current.GetCurrentState()
 	if current != nil {
 		if finalizeErr := s.finalizeWorkingMemory(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
-			runLog.Warn("working memory finalization failed on error", slog.String("error", finalizeErr.Error()))
+			failure := &terminalWriteError{stage: "working_memory", cause: finalizeErr}
+			runLog.Warn("working memory finalization failed on error", slog.String("error", failure.Error()))
+			err = errors.Join(err, failure)
 		}
 		if finalizeErr := s.finalizeTransientWorkingState(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
-			runLog.Warn("transient working memory finalization failed on error", slog.String("error", finalizeErr.Error()))
+			failure := &terminalWriteError{stage: "transient_working_state", cause: finalizeErr}
+			runLog.Warn("transient working memory finalization failed on error", slog.String("error", failure.Error()))
+			err = errors.Join(err, failure)
 		}
 	}
 	if state == commonv1.RunState_RUN_STATE_UNSPECIFIED || state == commonv1.RunState_RUN_STATE_FAILED || state == commonv1.RunState_RUN_STATE_CANCELLED || state == commonv1.RunState_RUN_STATE_TIMED_OUT || state == commonv1.RunState_RUN_STATE_COMPLETED {
 		return err
 	}
 	if _, transitionErr := s.transition(ctx, current.GetRunId(), state, commonv1.RunState_RUN_STATE_FAILED, leaseID, classifyExecutionError(err), err.Error()); transitionErr != nil {
-		return fmt.Errorf("%w: additionally failed to transition run to failed: %v", err, transitionErr)
+		return errors.Join(err, &terminalWriteError{stage: "run_failed_transition", cause: transitionErr})
 	}
 	s.scheduleHubCleanup(current.GetRunId())
 	return err

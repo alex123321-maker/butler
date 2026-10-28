@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
@@ -36,11 +37,34 @@ func (s *Service) persistProviderSessionRef(ctx context.Context, current *sessio
 	return updated, nil
 }
 
+type leaseRenewerKey struct{}
+
+// This per-run handle only joins supervision. It neither cancels the owning
+// execution context nor grants permission for terminal writes. Those writes
+// retain their original context, token and database fences.
+type leaseRenewerControl struct {
+	requested chan struct{}
+	done      chan struct{}
+	once      sync.Once
+}
+
+func (c *leaseRenewerControl) quiesce() {
+	c.once.Do(func() { close(c.requested) })
+	<-c.done
+}
+
+func quiesceLeaseRenewer(ctx context.Context) {
+	if control, ok := ctx.Value(leaseRenewerKey{}).(*leaseRenewerControl); ok {
+		control.quiesce()
+	}
+}
+
 func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseRecord, runLog *slog.Logger) (context.Context, context.CancelFunc, <-chan error) {
 	runCtx, cancelCause := context.WithCancelCause(parent)
+	control := &leaseRenewerControl{requested: make(chan struct{}), done: make(chan struct{})}
+	runCtx = context.WithValue(runCtx, leaseRenewerKey{}, control)
 	cancel := func() { cancelCause(context.Canceled) }
 	errCh := make(chan error, 1)
-	done := make(chan struct{})
 	ttl := time.Duration(s.config.LeaseTTL) * time.Second
 	if ttl <= 0 {
 		ttl = time.Minute
@@ -50,13 +74,20 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 		interval = time.Second
 	}
 	go func() {
-		defer close(done)
+		defer close(control.done)
 		ticker := time.NewTicker(250 * time.Millisecond)
 		defer ticker.Stop()
 		nextRenew := time.Now().Add(interval)
 		for {
 			select {
+			case <-control.requested:
+				return
+			default:
+			}
+			select {
 			case <-runCtx.Done():
+				return
+			case <-control.requested:
 				return
 			case <-ticker.C:
 				if lease.FenceEpoch > 0 {
@@ -81,6 +112,8 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 						}
 					}
 					checkCancel()
+					// A requested terminal join does not discard an in-flight
+					// check or its failure. Own terminal mutations wait for done.
 					if runCtx.Err() != nil {
 						return
 					}
@@ -143,7 +176,7 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 	}()
 	return runCtx, func() {
 		cancel()
-		<-done
+		control.quiesce()
 	}, errCh
 }
 
