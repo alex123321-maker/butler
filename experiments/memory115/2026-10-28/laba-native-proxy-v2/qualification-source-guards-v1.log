@@ -1,0 +1,62 @@
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/current
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/privacy
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/cancel
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/current
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/privacy
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/cancel
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/current
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/privacy
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/cancel
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/expired_lease
+=== RUN   TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/deadline
+--- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration (10.95s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/current (1.04s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/privacy (0.77s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/cancel (0.74s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/current (1.13s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/privacy (0.70s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/cancel (0.68s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/current (0.99s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/privacy (0.72s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/cancel (0.75s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/expired_lease (0.74s)
+    --- PASS: TestOwningCompoundSourceHoldsEventsForCurrentProofIntegration/assistant_final/deadline (2.68s)
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/current
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/privacy
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/cancel
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/current
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/privacy
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/cancel
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/current
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/privacy
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/cancel
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/expired_lease
+=== RUN   TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/deadline
+--- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration (10.75s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/current (1.00s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/privacy (0.72s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/cancel (0.69s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/current (0.98s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/privacy (0.70s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_requested/cancel (0.72s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/current (1.04s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/privacy (0.81s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/tool_call_batch_requested/cancel (0.71s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/expired_lease (0.67s)
+    --- PASS: TestOwningDefaultSourceHoldsEventsForCurrentProofIntegration/assistant_final/deadline (2.70s)
+=== RUN   TestOwningSourceVerificationBoundSlowCurrentAndRevocationIntegration
+--- PASS: TestOwningSourceVerificationBoundSlowCurrentAndRevocationIntegration (1.47s)
+=== RUN   TestSourceGuardTickerRaceKeepsUsageAndReleasesNoData
+--- PASS: TestSourceGuardTickerRaceKeepsUsageAndReleasesNoData (0.25s)
+=== RUN   TestSourceGuardMissingUsageDrainIsBoundedAndJoins
+--- PASS: TestSourceGuardMissingUsageDrainIsBoundedAndJoins (0.10s)
+=== RUN   TestSourceGuardDoesNotAttributeAnotherRunUsage
+--- PASS: TestSourceGuardDoesNotAttributeAnotherRunUsage (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	24.555s
+=== RUN   TestCapturedRunLeaseExpiryAfterGrantWaitIntegration
+--- PASS: TestCapturedRunLeaseExpiryAfterGrantWaitIntegration (2.70s)
+PASS
+ok  	github.com/butler/butler/internal/memory/catalog	3.723s

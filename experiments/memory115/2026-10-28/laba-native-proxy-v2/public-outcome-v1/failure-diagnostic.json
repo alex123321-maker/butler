@@ -1,0 +1,62 @@
+{
+  "failed_runs": [
+    {
+      "run_id": "run-1793187137559083680-1540bb2235d553ed",
+      "current_state": "failed",
+      "error_type": "transport_error",
+      "error_message": "transport_connection_error",
+      "started_at": "2026-10-28T11:32:17.559083+00:00",
+      "finished_at": "2026-10-28T11:33:26.337953+00:00"
+    }
+  ],
+  "skill_tools": [
+    {
+      "tool_name": "memory.open",
+      "status": "completed",
+      "error": {},
+      "result_status": "ok",
+      "http_status": null,
+      "opened_items": 1
+    },
+    {
+      "tool_name": "skills.search",
+      "status": "completed",
+      "error": {},
+      "result_status": null,
+      "http_status": null,
+      "opened_items": null
+    },
+    {
+      "tool_name": "extension.project.inspect",
+      "status": "completed",
+      "error": {},
+      "result_status": null,
+      "http_status": 200,
+      "opened_items": null
+    },
+    {
+      "tool_name": "extension.project.prepare-patch",
+      "status": "completed",
+      "error": {},
+      "result_status": null,
+      "http_status": 201,
+      "opened_items": null
+    },
+    {
+      "tool_name": "memory.open",
+      "status": "completed",
+      "error": {},
+      "result_status": "ok",
+      "http_status": null,
+      "opened_items": 1
+    },
+    {
+      "tool_name": "extension.project.check",
+      "status": "completed",
+      "error": {},
+      "result_status": null,
+      "http_status": 200,
+      "opened_items": null
+    }
+  ]
+}

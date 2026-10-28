@@ -1,0 +1,211 @@
+=== RUN   TestLaba115SuccessorKeepsHistoryAndRejectsCrossHostClaims
+--- PASS: TestLaba115SuccessorKeepsHistoryAndRejectsCrossHostClaims (0.00s)
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy
+--- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation (0.01s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.12s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.01s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	1.184s
+=== RUN   TestClaimAdmissionDrainOwnsDelayedProcessIntegration
+    claim_admission_test.go:179: two actual Input workers: delayed owning process finishes its durable claim before drain; same-session successor and late independent row remain queued; no cancellation, expiry rewrite, model or replay
+--- PASS: TestClaimAdmissionDrainOwnsDelayedProcessIntegration (1.03s)
+=== RUN   TestClaimAdmissionCallbackFailureVisibleIntegration
+=== RUN   TestClaimAdmissionCallbackFailureVisibleIntegration/nil_release
+2026/10/28 10:57:51 ERROR claim accepted input error="claim admission returned no release"
+2026/10/28 10:57:51 ERROR claim accepted input error="claim admission returned no release"
+=== RUN   TestClaimAdmissionCallbackFailureVisibleIntegration/callback_failure
+2026/10/28 10:57:51 ERROR claim accepted input error="public claim fence proof unavailable"
+2026/10/28 10:57:51 ERROR claim accepted input error="public claim fence proof unavailable"
+--- PASS: TestClaimAdmissionCallbackFailureVisibleIntegration (1.30s)
+    --- PASS: TestClaimAdmissionCallbackFailureVisibleIntegration/nil_release (0.65s)
+    --- PASS: TestClaimAdmissionCallbackFailureVisibleIntegration/callback_failure (0.65s)
+=== RUN   TestClaimAdmissionConstructorIsExplicit
+--- PASS: TestClaimAdmissionConstructorIsExplicit (0.00s)
+=== RUN   TestClaimAdmissionFailureBroadcastPrecedesOwningDrainIntegration
+2026/10/28 10:57:52 ERROR claim accepted input error="public second-worker admission failure"
+2026/10/28 10:57:52 ERROR claim accepted input error="public second-worker admission failure"
+--- PASS: TestClaimAdmissionFailureBroadcastPrecedesOwningDrainIntegration (0.94s)
+=== RUN   TestClaimAdmissionClosedSkipsQueuedExpiryIntegration
+--- PASS: TestClaimAdmissionClosedSkipsQueuedExpiryIntegration (0.66s)
+=== RUN   TestClaimAdmissionFailureWhileOtherCallbackWaitsIntegration
+2026/10/28 10:57:54 ERROR claim accepted input error="public admission failure while other callback waits"
+2026/10/28 10:57:54 ERROR claim accepted input error="public admission failure while other callback waits"
+--- PASS: TestClaimAdmissionFailureWhileOtherCallbackWaitsIntegration (0.66s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/input	5.620s
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/none
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/lease_unavailable
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/task_revoked
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/task_deadline
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/wrong_lease
+=== RUN   TestTerminalWatchQuiescePreservesInflightChecks/parent_cancel
+--- PASS: TestTerminalWatchQuiescePreservesInflightChecks (2.26s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/none (0.25s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/lease_unavailable (0.25s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/task_revoked (0.25s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/task_deadline (1.00s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/wrong_lease (0.25s)
+    --- PASS: TestTerminalWatchQuiescePreservesInflightChecks/parent_cancel (0.25s)
+=== RUN   TestTerminalWatchAbsentControlDoesNotCreateAuthority
+--- PASS: TestTerminalWatchAbsentControlDoesNotCreateAuthority (0.00s)
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe/none
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe/working_memory
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe/transient_working_state
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe/run_failed_transition
+=== RUN   TestTerminalWriteFailuresStayJoinedAndSafe/all
+--- PASS: TestTerminalWriteFailuresStayJoinedAndSafe (0.00s)
+    --- PASS: TestTerminalWriteFailuresStayJoinedAndSafe/none (0.00s)
+    --- PASS: TestTerminalWriteFailuresStayJoinedAndSafe/working_memory (0.00s)
+    --- PASS: TestTerminalWriteFailuresStayJoinedAndSafe/transient_working_state (0.00s)
+    --- PASS: TestTerminalWriteFailuresStayJoinedAndSafe/run_failed_transition (0.00s)
+    --- PASS: TestTerminalWriteFailuresStayJoinedAndSafe/all (0.00s)
+=== RUN   TestTerminalWriteBlockFailureIsReturnedSafely
+--- PASS: TestTerminalWriteBlockFailureIsReturnedSafely (0.00s)
+=== RUN   TestTerminalWriteSurvivesOwnedCancellation
+--- PASS: TestTerminalWriteSurvivesOwnedCancellation (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	3.301s
+=== RUN   TestHTTPNoResponseDiagnosticIsNarrowAndNeverRetries
+--- PASS: TestHTTPNoResponseDiagnosticIsNarrowAndNeverRetries (0.00s)
+=== RUN   TestHTTPNoResponseDiagnosticRejectsCancellationAndReturnedResponse
+--- PASS: TestHTTPNoResponseDiagnosticRejectsCancellationAndReturnedResponse (0.00s)
+=== RUN   TestHTTPNoResponseDiagnosticClientTimeoutStaysGlobalClass
+--- PASS: TestHTTPNoResponseDiagnosticClientTimeoutStaysGlobalClass (0.00s)
+=== RUN   TestHTTPNoResponseDiagnosticRejectsDeadlineUnknownAndCertificate
+--- PASS: TestHTTPNoResponseDiagnosticRejectsDeadlineUnknownAndCertificate (0.00s)
+=== RUN   TestTruncatedTextRetainsNativeFinishReason
+--- PASS: TestTruncatedTextRetainsNativeFinishReason (0.00s)
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/duplicate_key
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/parallel_calls
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/unterminated_frame
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/truncated
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/automatic_history
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/multiple_candidates
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/old_wrapped_response
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/foreign_function
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/bad_schema
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/extra_argument
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/server_execution
+=== RUN   TestUnsafeOrIncompleteResponsesNeverProposeTools/incomplete
+--- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools (0.01s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/duplicate_key (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/parallel_calls (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/unterminated_frame (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/truncated (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/automatic_history (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/multiple_candidates (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/old_wrapped_response (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/foreign_function (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/bad_schema (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/extra_argument (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/server_execution (0.00s)
+    --- PASS: TestUnsafeOrIncompleteResponsesNeverProposeTools/incomplete (0.00s)
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/302
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/400
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/401
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/403
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/404
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/429
+=== RUN   TestHTTPFailuresMaskedNoRetryOrAuthRedirect/500
+--- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/302 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/400 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/401 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/403 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/404 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/429 (0.00s)
+    --- PASS: TestHTTPFailuresMaskedNoRetryOrAuthRedirect/500 (0.00s)
+=== RUN   TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry
+=== RUN   TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/capacity
+=== RUN   TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/quota
+=== RUN   TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/malformed
+=== RUN   TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/oversized
+--- PASS: TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry (0.00s)
+    --- PASS: TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/capacity (0.00s)
+    --- PASS: TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/quota (0.00s)
+    --- PASS: TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/malformed (0.00s)
+    --- PASS: TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/oversized (0.00s)
+=== RUN   TestCancellationClosesHTTPAndIsolatedRuns
+--- PASS: TestCancellationClosesHTTPAndIsolatedRuns (0.00s)
+=== RUN   TestCancellationClosesRealSSEConnection
+--- PASS: TestCancellationClosesRealSSEConnection (0.00s)
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/json
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/envelope
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/usage_alias
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/negative_usage
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/model_version
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/candidates
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/candidate_index
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/finish
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/automatic_execution
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/part
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/unsupported_part
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/thought
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/function_ambiguity
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/content
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/terminal
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/late_candidate
+=== RUN   TestStreamRejectionsExportOnlyLocalBranch/truncated_function
+--- PASS: TestStreamRejectionsExportOnlyLocalBranch (0.01s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/json (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/envelope (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/usage_alias (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/negative_usage (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/model_version (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/candidates (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/candidate_index (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/finish (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/automatic_execution (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/part (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/unsupported_part (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/thought (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/function_ambiguity (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/content (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/terminal (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/late_candidate (0.00s)
+    --- PASS: TestStreamRejectionsExportOnlyLocalBranch/truncated_function (0.00s)
+=== RUN   TestStreamDiagnosticFailureNeverRetriesOrPublishesOutcome
+--- PASS: TestStreamDiagnosticFailureNeverRetriesOrPublishesOutcome (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/transport/antigravity	1.053s

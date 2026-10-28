@@ -1,0 +1,36 @@
+[
+  {
+    "requested_source": "source_c619a9f34568bea4d9cc695982126bf74a6eae77",
+    "items": [
+      {
+        "source": {
+          "revision": 1,
+          "source_id": "source_c619a9f34568bea4d9cc695982126bf74a6eae77",
+          "content_hash": "d8d0165b244ae159d06b5ab77a25519955ca26f4209d112b3a753e0e3cfdc874",
+          "access_revision": 1
+        },
+        "kind": "model_candidate",
+        "truncated": true,
+        "redacted": false,
+        "text_chars": 4000
+      }
+    ]
+  },
+  {
+    "requested_source": "source_9bd36a4ce3f04db06c6d503d4b73c3b2d8d293a3",
+    "items": [
+      {
+        "source": {
+          "revision": 1,
+          "source_id": "source_9bd36a4ce3f04db06c6d503d4b73c3b2d8d293a3",
+          "content_hash": "1ccd219f8c671fcfe1c56d80daa83c6173109eaed55a0c792bef0db1aeccb3a5",
+          "access_revision": 1
+        },
+        "kind": "model_candidate",
+        "truncated": true,
+        "redacted": false,
+        "text_chars": 4000
+      }
+    ]
+  }
+]

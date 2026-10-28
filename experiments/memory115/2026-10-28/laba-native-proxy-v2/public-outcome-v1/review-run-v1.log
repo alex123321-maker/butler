@@ -1,0 +1,4 @@
+=== RUN   TestLaba115ClosedCostReview
+    memory115_laba_cost_review_test.go:121: POST_EXIT_ACCOUNTING_PASS new_native=25 known=24 unknown=1 new_product=25 product_NULL=1 known_full_tokens=228539; quality remains unqualified
+--- PASS: TestLaba115ClosedCostReview (27.45s)
+PASS

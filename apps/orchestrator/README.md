@@ -1603,3 +1603,5 @@ or run-transition writes cannot be mistaken for an isolated provider failure.
 The prospective issue115 server comparison uses a separate owner-bound laba recipe and fixed isolated host adapter. PC histories and defaults remain unchanged; native entry stays unbound until fresh source/artifact/recipe/preseal qualification. See docs/testing/issue115-laba-native-protocol.md.
 
 The laba #115 profile now requires the fixed bridge relay to the existing server proxy; direct routing and ambient bypass variables fail before native output or auth. The PC profile keeps its prior route.
+
+The first proxy-bound native #115 window stopped during skill preparation after eight completed stages. Its source/journal costs and unknown usage are retained. The relay now uses the whole window deadline for reused connections; the prior five-minute connection lifetime could interrupt later HTTP/2 requests. This is an isolated experiment helper repair, with no deployment or native quality qualification. Current native operator pins are unbound after the consumed window.

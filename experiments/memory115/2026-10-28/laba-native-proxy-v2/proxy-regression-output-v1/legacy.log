@@ -1,0 +1,8 @@
+=== RUN   TestLaba115ProxyWholeDeadlineClosesBothPumps
+--- PASS: TestLaba115ProxyWholeDeadlineClosesBothPumps (0.10s)
+=== RUN   TestLaba115ProxyReusedConnectionOutlivesFiveMinutes
+    relay_test.go:82: persistent connection failed after 5m0.221746962s (300 completed round trips): EOF
+--- FAIL: TestLaba115ProxyReusedConnectionOutlivesFiveMinutes (300.22s)
+FAIL
+FAIL	command-line-arguments	300.335s
+FAIL

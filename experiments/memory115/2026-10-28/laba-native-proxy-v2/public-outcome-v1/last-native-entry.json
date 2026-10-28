@@ -1,0 +1,15 @@
+{
+  "sequence": 25,
+  "slot": "e564884e1eda87995d9fce5f5d3ee71cc2a9280b518bade2d93a5a73b6e29c32",
+  "kind": "tool_result",
+  "finished": true,
+  "usage": null,
+  "failure": "transport_connection_error",
+  "context_end": "",
+  "milliseconds": 4447,
+  "provider_stages": [
+    "authentication",
+    "request_serialization",
+    "http_round_trip"
+  ]
+}

@@ -1,0 +1,7 @@
+=== RUN   TestLaba115ProxyWholeDeadlineClosesBothPumps
+--- PASS: TestLaba115ProxyWholeDeadlineClosesBothPumps (0.10s)
+=== RUN   TestLaba115ProxyReusedConnectionOutlivesFiveMinutes
+    relay_test.go:96: PERSISTENT_SOCKET_PASS elapsed=5m3.209658504s completed_round_trips=304 auth=0 generation=0
+--- PASS: TestLaba115ProxyReusedConnectionOutlivesFiveMinutes (303.21s)
+PASS
+ok  	command-line-arguments	304.324s

@@ -19,6 +19,26 @@ import (
 
 const bridge115Proxy = "10.249.116.1:18081"
 
+// HTTP/2 reuses a connection across separately bounded model requests. Limit
+// the owning relay window, never the cumulative age of that shared connection.
+func relay115Copy(client, upstream net.Conn, deadline time.Time) {
+	end := deadline
+	client.SetDeadline(end)
+	upstream.SetDeadline(end)
+	done := make(chan struct{})
+	go func() {
+		io.Copy(upstream, client)
+		if tcp, ok := upstream.(*net.TCPConn); ok {
+			tcp.CloseWrite()
+		}
+		close(done)
+	}()
+	io.Copy(client, upstream)
+	client.Close()
+	upstream.Close()
+	<-done
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		os.Exit(2)
@@ -84,24 +104,7 @@ func main() {
 			}
 			defer upstream.Close()
 			admitted.Add(1)
-			end := time.Now().Add(5 * time.Minute)
-			if deadline.Before(end) {
-				end = deadline
-			}
-			client.SetDeadline(end)
-			upstream.SetDeadline(end)
-			done := make(chan struct{})
-			go func() {
-				io.Copy(upstream, client)
-				if tcp, ok := upstream.(*net.TCPConn); ok {
-					tcp.CloseWrite()
-				}
-				close(done)
-			}()
-			io.Copy(client, upstream)
-			client.Close()
-			upstream.Close()
-			<-done
+			relay115Copy(client, upstream, deadline)
 		}()
 	}
 	joined.Wait()

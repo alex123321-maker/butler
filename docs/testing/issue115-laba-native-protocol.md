@@ -70,10 +70,25 @@ and retains private evidence. Native/model deadlines are not extended by cleanup
 
 ## Qualification state
 
-At preparation, all server pins remain empty. No model request or real key read
-has occurred. Existing scripted qualification at a58aa969 and the new unbound
-host/lineage tests are separate evidence. New current source/five artifacts,
-actual server recipe, complete applicable gates and a preseal remain necessary
-before binding. Binding is outside the frozen collector snapshot and retains
-that producer's exact provenance. No release, deployment or whole-issue closure
-follows from a setup/probe result.
+The actual proxy-bound cohort683280b2 used plan d366ab3b, recipe a3a045bd and
+operator carrier1ab4280f. It failed during skill preparation after eight completed
+preparation slots; the remaining48 of57 slots were not executed. The last native
+method entry ended with a connection error and NULL usage. The complete source
+export, global journal, one-use domain, full57 schedule and quote union remain
+retained. Original cost validators recompute25 new native/product attempts,
+24 known usages/one UNKNOWN and228539 known full tokens. Inclusive accounting
+is257native/255known/2unknown and258product/255observed/3NULL/1withoutNative,
+1967005 known full tokens. Original separate diagnostics remain separate.
+
+The original relay bounded each shared TCP connection to five minutes, which
+can interrupt later HTTP/2 method entries on a still active connection. A fixed
+relay uses the whole owning window's deadline instead; the provider's original
+per-method deadline, eight-connection cap, memory/process and fixed-peer bounds
+remain. The real network-none socket regression makes the old pump fail after
+five minutes and the fixed pump pass304 exchanges over303 seconds; whole-window
+expiry still joins both pumps. The failed cohort is never replayed or reclassified. The old relay is
+stopped, and the current operator pins are reset to UNBOUND. A fixed relay and
+accounting test cannot grant a new window or qualify model benefit. A future
+window must first consume the complete latest closed accounting/history and
+meet its existing UTC/new-day rule, fresh source/artifact/preseal and quality
+requirements. No release, deployment or whole-issue closure follows.
