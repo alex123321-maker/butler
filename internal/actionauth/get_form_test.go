@@ -36,6 +36,32 @@ func TestGetFormReadContractCannotBorrowWriteOrCredentialPolicy(t *testing.T) {
 	}
 }
 
+func TestGetFormReadReleaseRequiresCurrentPublicConsent(t *testing.T) {
+	s, _, _, _, call, contract := fixture(t)
+	call.ToolName, contract.ToolName = "browser.submit_get_form", "browser.submit_get_form"
+	contract.ContractRevision = "1"
+	contract.SupportsCredentialRefs = false
+	contract.AllowedDomains = nil
+	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+	call.ArgsJson = `{"expected_url":"https://example.com/search","fields":[{"name":"q","value":"query"}]}`
+	if required, err := s.networkReleaseRequired(call, contract); err != nil || !required {
+		t.Fatal("GET query released without standing consent", err)
+	}
+	s.SetPublicWebReads(true)
+	if required, err := s.networkReleaseRequired(call, contract); err != nil || required {
+		t.Fatal("approved public GET query blocked", err)
+	}
+	contract.ContractRevision = "2"
+	if required, err := s.networkReleaseRequired(call, contract); err != nil || !required {
+		t.Fatal("unreviewed revision borrowed read consent", err)
+	}
+	contract.ContractRevision = "1"
+	call.ArgsJson = `{"expected_url":"http://127.0.0.1/search","fields":[]}`
+	if _, err := s.networkReleaseRequired(call, contract); err == nil {
+		t.Fatal("private form resource borrowed public consent")
+	}
+}
+
 func TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration(t *testing.T) {
 	s, store, reader, call, contract, _, _ := receiptFixture(t)
 	ctx := context.Background()
