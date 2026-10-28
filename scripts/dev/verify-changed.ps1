@@ -26,9 +26,9 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^scripts/dev/browser-(native-timings[.]sh|timings-summary[.]ps1|observation-audit[.]sh)$" {
+    "^scripts/dev/browser-(native-timings[.]sh|timings-summary(-tests)?[.]ps1|observation-audit[.]sh)$" {
       [void]$specs.Add("docs/testing/browser-action-timings-2026-10-28.md")
-      [void]$tests.Add("Derive only from existing records/configs: READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/browser-timings-summary-tests.ps1; derive only from existing records/configs: inclusive step + tail partition, READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")
       continue
     }
     "^(internal/storage/postgres/(authority|postgres)|apps/orchestrator/internal/session/lease_(postgres|observation)|apps/orchestrator/internal/app/communication_authority_capacity)" {
