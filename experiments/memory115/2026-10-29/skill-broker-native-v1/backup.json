@@ -1,0 +1,12 @@
+{
+  "archive": "skill-broker-20261029-v1-evidence.tar.gz",
+  "sha256": "fec99893debfd7fd0f2798f1477f9d1ca00173051d2adc6ba60bd0a722c54b92",
+  "laba_directory": "/srv/gitea/butler-acceptance/issue115-native-20261028-v1",
+  "owner_pc_directory": "D:/CodexData/private/butler-skill-broker-20261029-v1",
+  "source_and_destination_hashes_match": true,
+  "contents": "Complete raw requests and usage, task proof, target database snapshot, retained recipient patches and deletion anchor, containment/exit proofs, source deltas, previous accounting receipts and operator/build/test logs",
+  "provider_auth_files_included": false,
+  "full_source_retained_separately_on_laba": true,
+  "source_commit": "605f6cb37077c3857ff3caae2220f0097d899e35",
+  "source_archive_sha256": "447436cb971f8f0bcfea3cd1c328e1dd78878d008f9f88f8a55e784d81d21c3e"
+}
