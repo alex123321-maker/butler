@@ -1,0 +1,8 @@
+=== RUN   TestLaba115ClosedCostReview
+    memory115_laba_cost_review_test.go:130: POST_EXIT_ACCOUNTING_PASS new_native=30 known=30 unknown=0 new_product=30 product_NULL=0 known_full_tokens=349545; quality remains unqualified
+--- PASS: TestLaba115ClosedCostReview (27.76s)
+PASS
+=== RUN   TestLaba115ABCPostExitProjection
+    memory115_laba_abc_review_test.go:254: ABC_FACTS_PROJECTION cases=24 all_outcomes=false no inference/acceptance
+--- PASS: TestLaba115ABCPostExitProjection (0.03s)
+PASS

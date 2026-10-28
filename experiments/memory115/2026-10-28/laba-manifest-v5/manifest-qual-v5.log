@@ -1,0 +1,218 @@
+/delta/apps/orchestrator/internal/app/memory_experience_native_collect_test.go
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/old232
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/lose_unknown
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/reset_cost
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/missing_decision
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/extend_day
+=== RUN   TestLaba115ContinuationRetainsFailuresAndExactAuthority/legacy_platform
+--- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/old232 (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/lose_unknown (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/reset_cost (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/missing_decision (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/extend_day (0.00s)
+    --- PASS: TestLaba115ContinuationRetainsFailuresAndExactAuthority/legacy_platform (0.00s)
+=== RUN   TestLaba115ClosedFailedHistoryReceipt
+    memory115_laba_continuation_test.go:294: CLOSED_HISTORY_PASS native=310 unknown=3 known_tokens=2504025 full57 and all prior failures recursively retained; no auth/native/quality authority
+--- PASS: TestLaba115ClosedFailedHistoryReceipt (27.15s)
+=== RUN   TestLaba115ReservedContinuationCannotFallBackTo257
+--- PASS: TestLaba115ReservedContinuationCannotFallBackTo257 (0.00s)
+=== RUN   TestLaba115ManifestContinuationCannotDiscardBudgetFailure
+--- PASS: TestLaba115ManifestContinuationCannotDiscardBudgetFailure (0.00s)
+=== RUN   TestLaba115NetworkProfileRequiresFixedServerProxy
+--- PASS: TestLaba115NetworkProfileRequiresFixedServerProxy (0.00s)
+=== RUN   TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution
+--- PASS: TestLocal115NativeNetworkProfileRejectsAmbientProxySubstitution (0.00s)
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day
+=== RUN   TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy
+--- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old_format (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/missing_decision (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/changed_diagnostic (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/old213_fallback (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/different_profile (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/other_owner (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/lab (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/same_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/extended_day (0.00s)
+    --- PASS: TestLocal115SkillPreparationSuccessorPreservesLatestFailedPopulation/canonical_loader_rejects_duplicate_alias_unknown_and_legacy (0.00s)
+=== RUN   TestExperienceManifestWireContractContainsOnlyTypeMetadata
+--- PASS: TestExperienceManifestWireContractContainsOnlyTypeMetadata (0.00s)
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/valid
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsealed_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsupported_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/completed_omission
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unlabelled_omission
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/native_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/database_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/global_entry_after_limit
+=== RUN   TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/reserved_clone_after_limit
+--- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/valid (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsealed_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unsupported_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/completed_omission (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/unlabelled_omission (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/native_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/database_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/global_entry_after_limit (0.00s)
+    --- PASS: TestClosedExperienceShortScopeRetainsOmissionsAndRejectsLateWork/reserved_clone_after_limit (0.00s)
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/charged_unknown_not_zero
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/admitted_without_native_entry
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/incomplete_capture_remains_unknown
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/full_total_and_missing_total
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/independent_observed_usage_matches_native
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/missing_slot
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/invented_finished_usage
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/foreign_clone
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_reservation
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_run
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/continuation_before_start
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/sequence_gap
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/omitted_null_key
+=== RUN   TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/changed_copied_prefix
+--- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries (0.01s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/charged_unknown_not_zero (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/admitted_without_native_entry (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/incomplete_capture_remains_unknown (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/full_total_and_missing_total (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/independent_observed_usage_matches_native (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/missing_slot (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/invented_finished_usage (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/foreign_clone (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_reservation (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/wrong_run (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/continuation_before_start (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/sequence_gap (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/omitted_null_key (0.00s)
+    --- PASS: TestClosedExperienceProductsPreserveUnknownAndRejectForgeries/changed_copied_prefix (0.00s)
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot
+=== RUN   TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget
+--- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator (0.12s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/short_smoke_scope (0.03s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/local_successor_persisted_preseal (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/skill_preparation_successor_persisted_preseal (0.02s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_recipient (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/history_refund (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/hidden_native (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/extra_slot (0.01s)
+    --- PASS: TestExperienceNativePresealPinsSourceArtifactsHistoryAndDenominator/changed_budget (0.01s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	28.355s
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/other_image
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cpu
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/memory
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/pids
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/privileged
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/new_privileges
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/root_uid
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/swap
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/writable_root
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_network
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_pid
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_add
+=== RUN   TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_drop
+--- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/other_image (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cpu (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/memory (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/pids (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/privileged (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/new_privileges (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/root_uid (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/swap (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/writable_root (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_network (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/host_pid (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_add (0.00s)
+    --- PASS: TestLaba115ResourceConfigurationRejectsWeakerBoundaries/cap_drop (0.00s)
+=== RUN   TestLaba115UnboundNativeProfileDeniesBeforeAdmission
+--- PASS: TestLaba115UnboundNativeProfileDeniesBeforeAdmission (0.00s)
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/privileged
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/writable_root
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/foreign_storage
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/public_port
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/wrong_port
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/other_image
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/stopped
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/host_network
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/memory
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/swap
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/cpu
+=== RUN   TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/pids
+--- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/privileged (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/writable_root (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/foreign_storage (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/public_port (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/wrong_port (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/other_image (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/stopped (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/host_network (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/memory (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/swap (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/cpu (0.00s)
+    --- PASS: TestLaba115PrivateDatabaseIdentityRejectsForeignStorageAndPublicPorts/pids (0.00s)
+=== RUN   TestLaba115ChildEnvironmentKeepsHostReferencesAndSecretsOut
+--- PASS: TestLaba115ChildEnvironmentKeepsHostReferencesAndSecretsOut (0.00s)
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/closed_CAS
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/live_window
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/live_lease
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/live_claim
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/stale_source
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/not_secret
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/namespaced_idle
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/namespaced_live_lease
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/namespaced_live_claim
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/incomplete_namespace
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/no_import
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/durable_refresh
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/import_without_setting
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/empty_allocated_domain
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/entries_without_auth
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/schema_without_claim
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/wrong_claim
+=== RUN   TestLocal115ActualPostgresRecoveryAndCAS/pending_backend_must_exit_before_final_read
+--- PASS: TestLocal115ActualPostgresRecoveryAndCAS (0.22s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/closed_CAS (0.04s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/live_window (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/live_lease (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/live_claim (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/stale_source (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/not_secret (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/namespaced_idle (0.01s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/namespaced_live_lease (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/namespaced_live_claim (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/incomplete_namespace (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/no_import (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/durable_refresh (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/import_without_setting (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/empty_allocated_domain (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/entries_without_auth (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/schema_without_claim (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/wrong_claim (0.00s)
+    --- PASS: TestLocal115ActualPostgresRecoveryAndCAS/pending_backend_must_exit_before_final_read (0.12s)
+PASS
+ok  	command-line-arguments	1.241s
