@@ -1,0 +1,30 @@
+{
+  "version": "issue29-arc-prepared-probe-v1",
+  "created_utc": "2026-10-26T20:33:57.8614419+00:00",
+  "status": "PREPARED_ONLY",
+  "powershell_syntax_errors": 0,
+  "python_syntax_checked": false,
+  "SDK_installation_by_this_preparation": false,
+  "weights_downloaded": false,
+  "tensor_probe_executed": false,
+  "voice_service_changed": false,
+  "issue29_closed": false,
+  "files": [
+    {
+      "path": "scripts/dev/voice-arc-probe.py",
+      "working_sha256": "193459ad463a02062128a944b5f4cf5572465c7beadbf5f11983d9d7005aa3ad"
+    },
+    {
+      "path": "scripts/dev/voice-arc-probe.ps1",
+      "working_sha256": "75a72c8dd445f4737a54390709f4b9646724d0919a9ac6ffd45471cee1fa4e4c"
+    },
+    {
+      "path": "docs/testing/issue29-local-arc-probe.md",
+      "working_sha256": "fd115ac92f777b1e039404e909d026605526ee986c89407e7ecdd330b84b3187"
+    },
+    {
+      "path": "docs/architecture/russian-voice.md",
+      "working_sha256": "9b0a1f1422cad88b5c2ad0d499300ad1072da47805021a36565d5406ff097a82"
+    }
+  ]
+}
