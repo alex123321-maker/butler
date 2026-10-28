@@ -5,7 +5,7 @@ Orchestrator remains the run authority; runtimes execute one approved proposal.
 A technical runtime response, a model's statement, memory update, final answer,
 notification or provider session is never proof of an external write.
 
-Browser revision 2 read/open/navigate are enforced GET/HEAD observations and use
+Browser revision 3 read/open/navigate are enforced GET/HEAD observations and use
 `read_result`. `browser.prepare_fill/prepare_type` alone support
 `local_browser_preparation_v1`: pinned session, exact current URL, newer version,
 success and persistent frozen-network acknowledgement prove only browser-local
@@ -13,6 +13,23 @@ preparation. The private policy is derived from the exact approved call. Generic
 live fill/type/click cannot borrow this verifier. DOM submission acknowledgement
 remains unknown; the budget root's unknown-effect stop remains in force. No
 automatic retry or external recipient idempotency is inferred from local state.
+
+Revision2 `browser.submit_get_form` and `browser.follow_link` are separate enforced GET observations,
+not an input gesture or form POST. Its two-phase frozen compiler rejects
+credential/hidden/password/file fields and any prior private input draft,
+and rechecks live state before GET
+navigation. Its `guarded_browser_get_v1` success evidence describes that read only. A previous
+unknown write and consumed grant remain unchanged; later mutations still deny.
+See the browser session contract for bounds and unsupported form behavior.
+
+Their exact revision2 verifier also accepts a correlated, bounded, closed-shape
+runtime rejection proving `pre_navigation_v1` and `navigation_dispatched=false`
+with a fixed precondition reason. This records only this read as `effect_absent`
+and dispatch completed with a failed tool result. No external request was
+dispatched; it is not a recipient absence receipt or reconciliation of a prior
+effect. Consumed grants and spending remain. An old revision, opaque action,
+unrelated call, malformed proof, transport loss or failure after navigation
+starts remains unknown. Broker returns only the sanitized fixed diagnostic.
 
 ## Identity and authorization
 

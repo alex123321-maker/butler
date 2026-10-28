@@ -27,6 +27,10 @@ func (s *Service) networkReleaseRequired(call *toolbrokerv1.ToolCall, contract *
 		}
 	}
 	switch call.GetToolName() {
+	case "browser.submit_get_form", "browser.follow_link":
+		if contract.GetContractRevision() == "2" && !contract.GetSupportsCredentialRefs() && contract.GetEffectContract().GetRetrySafety() == "read_only" && contract.GetEffectContract().GetVerificationMethod() == BrowserGETVerification {
+			return false, nil
+		}
 	case "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return false, nil
 	case "browser.read", "browser.open", "browser.navigate":

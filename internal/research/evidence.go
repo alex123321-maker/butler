@@ -47,7 +47,7 @@ func IsReadAttempt(c transcript.ToolCall) bool {
 		return json.Unmarshal([]byte(c.ArgsJSON), &a) == nil && a.URL != "" && a.Text == "" && a.HTML == ""
 	case "http.request":
 		return json.Unmarshal([]byte(c.ArgsJSON), &a) == nil && (a.Method == "" || strings.EqualFold(a.Method, "GET") || strings.EqualFold(a.Method, "HEAD"))
-	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text":
+	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.submit_get_form", "browser.follow_link":
 		return true
 	}
 	return false
@@ -138,6 +138,14 @@ func alternativePage(c transcript.ToolCall) (Page, bool) {
 		}
 		out.URL = args.URL
 		out.Text = readable(out.Body)
+	case "browser.submit_get_form", "browser.follow_link":
+		// These distinct read contracts freeze AFTER a guarded public GET. A
+		// completed observation can support a quote without thawing a draft or
+		// treating an arbitrary frozen snapshot as fresh external evidence.
+		if !out.OK || out.Local || out.Network != "frozen" || len(out.Error) > 0 && string(out.Error) != "null" {
+			return Page{}, false
+		}
+		out.Text = out.BrowserText
 	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text":
 		if !out.OK || out.Local || out.Network == "frozen" || len(out.Error) > 0 && string(out.Error) != "null" {
 			return Page{}, false

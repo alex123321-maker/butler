@@ -9,6 +9,10 @@ also admits normalized slash paths on Windows for the same checked helper bytes.
 Browser runtime service for Butler browser automation tools.
 
 Current state:
+- `browser.submit_get_form` supports public same-origin GET search forms without click/input/submit handlers; two private phases freeze planning, independently check the public target, recheck live state and permit GET/HEAD navigation only, then freeze again
+- `browser.follow_link` uses the same GET path for public pagination/result anchors without click handlers; neither read tool can thaw a context containing any prior input draft or owner takeover, even without credential references
+- both GET tools require revision2 / `guarded_browser_get_v1`; fixed precondition failures before navigation emit a bounded non-dispatch proof, while timeout/lost response/started navigation never claim absence. Broker verifies the proof and preserves spent grants.
+- observations include bounded form selectors/methods/actions/field names/types, with no input values; GET-form navigation refuses credentials, password/hidden/file controls, sensitive/extra field names and POST forms
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
 - `browser.read` independently reads and destroys a temporary context; `browser.open` creates an explicit run-owned session for sequences, and `browser.close` destroys it
 - navigate/click/fill/type/wait/auth actions require the returned session ID, latest observation version and expected current URL; snapshot/extract never navigate

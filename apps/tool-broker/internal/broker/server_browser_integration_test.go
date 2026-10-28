@@ -93,9 +93,25 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(raw)); err != nil {
 		t.Fatal(err)
 	}
-	var posts, cdn, private atomic.Int32
+	// Record now pins observed_url (migration096). Use the actual owning schema,
+	// otherwise even a successful browser.open fails in its owner-map write.
+	raw, err = os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "096_credential_vault.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(raw)); err != nil {
+		t.Fatal(err)
+	}
+	var posts, cdn, private, queryReads atomic.Int32
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/search":
+			fmt.Fprint(w, `<body><form method="get" action="/query"><input name="q"><button>Search</button></form></body>`)
+		case "/query":
+			queryReads.Add(1)
+			fmt.Fprintf(w, `<body>Query: %s<a href="/detail" onclick="fetch('/submit',{method:'POST'})">Next</a><script>fetch('/submit',{method:'POST'}).catch(()=>{})</script></body>`, r.URL.Query().Get("q"))
+		case "/detail":
+			fmt.Fprint(w, `<body>Record detail</body>`)
 		case "/start":
 			http.Redirect(w, r, "http://login.test/form", 302)
 		case "/form":
@@ -241,6 +257,27 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 		}
 		return output
 	}
+	getObs := invoke("browser.open", map[string]any{"url": "http://start.test/search"})
+	badCall, badGrant := prepare("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": "http://start.test/search?q=future", "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
+	for attempt := 0; attempt < 2; attempt++ {
+		rejected, err := client.ExecuteToolCall(callCtx, &toolbrokerv1.ExecuteToolCallRequest{ToolCall: badCall, AuthorizationId: badGrant})
+		if err != nil || queryReads.Load() != 0 || posts.Load() != 0 || rejected.GetResult().GetStatus() == "completed" {
+			t.Fatal("invalid URL or consumed grant navigated", err)
+		}
+		if attempt == 0 && (rejected.GetResult().GetStatus() != "failed" || rejected.GetResult().GetEffectState() != "effect_absent" || !strings.Contains(rejected.GetResult().GetError().GetDetailsJson(), "page_changed")) {
+			t.Fatal("proved read rejection became unknown", rejected.GetResult().GetStatus(), rejected.GetResult().GetEffectState())
+		}
+	}
+	getObs = invoke("browser.snapshot", map[string]any{"browser_session_id": getObs["browser_session_id"]})
+	getObs = invoke("browser.submit_get_form", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "form", "fields": []map[string]string{{"name": "q", "value": "Arctic delivery"}}})
+	if queryReads.Load() != 1 || posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Arctic delivery") {
+		t.Fatal("Broker GET form wrote or failed to observe")
+	}
+	getObs = invoke("browser.follow_link", map[string]any{"browser_session_id": getObs["browser_session_id"], "observation_version": getObs["observation_version"], "expected_url": getObs["final_url"], "selector": "a"})
+	if posts.Load() != 0 || !strings.Contains(fmt.Sprint(getObs["text"]), "Record detail") {
+		t.Fatal("Broker link read invoked click handler")
+	}
+	invoke("browser.close", map[string]any{"browser_session_id": getObs["browser_session_id"]})
 	obs := invoke("browser.open", map[string]any{"url": "http://start.test/start"})
 	if obs["final_url"] != "http://login.test/form" || cdn.Load() != 1 {
 		t.Fatal("public redirect/CDN unavailable")
@@ -341,7 +378,7 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	}
 	// A snapshot completed before takeover but recorded after release must
 	// not clear the new generation's fresh-observation requirement.
-	oldResult := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "old-snapshot", ToolName: "browser.snapshot", Status: "completed", ResultJson: `{"ok":true}`}
+	oldResult := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "old-snapshot", ToolName: "browser.snapshot", Status: "completed", ResultJson: `{"ok":true,"final_url":"http://login.test/form"}`}
 	if err := control.Record(oldAdmission, oldSnapshot, actionauth.Grant{}, oldResult); err != nil {
 		t.Fatal(err)
 	}

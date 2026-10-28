@@ -1,3 +1,8 @@
+Research publication preflight accepts current-run successful public GET form
+and link observations as quoted page evidence, including their required frozen
+network acknowledgement. Failed reads and arbitrary frozen snapshots remain
+ineligible; this does not reconcile writes or prove task completion.
+
 Ordinary owner requests carry model-visible `current_request` DATA with the
 owning run/event refs and question phase. Historical messages retain their full
 sanitized text and provenance in envelopes identifying the originating run and

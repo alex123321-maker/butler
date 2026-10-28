@@ -98,3 +98,42 @@ func TestResearchAlternateReadersDoNotAcceptModelSuppliedExtraction(t *testing.T
 		})
 	}
 }
+
+func TestResearchGuardedGETObservationsSupportQuotesWithoutRefetch(t *testing.T) {
+	now := time.Now()
+	for _, tool := range []string{"browser.submit_get_form", "browser.follow_link"} {
+		for _, mode := range []string{"valid", "failed", "other_run", "unfinished", "local", "error", "unfrozen", "no_url", "no_text"} {
+			t.Run(tool+"/"+mode, func(t *testing.T) {
+				output := map[string]any{"ok": true, "network_state": "frozen", "final_url": "https://issuer.example/record", "text": "The record reference is a fresh public observation."}
+				call := transcript.ToolCall{RunID: "r", ToolName: tool, ArgsJSON: `{"browser_session_id":"context"}`, Status: "completed", FinishedAt: &now}
+				switch mode {
+				case "failed":
+					call.Status = "failed"
+				case "other_run":
+					call.RunID = "old"
+				case "unfinished":
+					call.FinishedAt = nil
+				case "local":
+					output["local_preparation"] = true
+				case "error":
+					output["error"] = map[string]string{"error_type": "page_changed"}
+				case "unfrozen":
+					output["network_state"] = "read_only"
+				case "no_url":
+					delete(output, "final_url")
+				case "no_text":
+					delete(output, "text")
+				}
+				raw, _ := json.Marshal(output)
+				call.ResultJSON = string(raw)
+				pages, forcedResearch := Pages([]transcript.ToolCall{call}, "r")
+				if forcedResearch || (len(pages) == 1) != (mode == "valid") || !IsReadAttempt(call) {
+					t.Fatal("GET provenance or ordinary automation boundary changed", mode, pages)
+				}
+				if mode == "valid" && !Supports(Evidence{URL: "https://issuer.example/record", Quote: "The record reference is a fresh public observation.", Role: "primary"}, pages, now) {
+					t.Fatal("valid current GET quote required a redundant fetch")
+				}
+			})
+		}
+	}
+}

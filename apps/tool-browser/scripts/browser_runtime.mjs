@@ -1,5 +1,6 @@
 import { chromium } from 'playwright'
 import { createInterface } from 'node:readline'
+import { randomUUID } from 'node:crypto'
 
 // Private JSON-lines protocol. Never print page diagnostics, request bodies,
 // cookies, storage state, passwords or Playwright exceptions.
@@ -7,6 +8,7 @@ const sessions = new Map()
 let browser
 
 const errorResult = (error_type, message) => ({ ok: false, error: { error_type, message, retryable: false } })
+const rejectedRead = reason => ({ ...errorResult(reason, 'GET navigation precondition failed'), read_rejection: 'pre_navigation_v1', navigation_dispatched: false })
 const origin = value => { try { return new URL(value).origin } catch { return '' } }
 const safeError = err => {
   const message = String(err?.message || '')
@@ -115,7 +117,7 @@ async function newSession(request) {
 
 async function observe(session, selector = 'body') {
   await collectSecretState(session)
-  // Read visible text only. Never serialize inputs, HTML attributes, cookies,
+  // Read visible text and bounded form structure, never input values, cookies,
   // storage, screenshot pixels or full DOM into a normal tool artifact.
   // Capture text, URL and DOM revision in one JavaScript turn. A mutation
   // between separate reads must not validate an older text snapshot.
@@ -124,7 +126,11 @@ async function observe(session, selector = 'body') {
     if (!element) throw new Error('requested selector is not present')
     const links = selector === 'body' ? Array.from(document.querySelectorAll('a[href]')).slice(0, 30)
       .map(a => ({ text: (a.innerText || '').slice(0, 120), href: a.href })).filter(a => a.text && /^https?:/.test(a.href)) : []
-    return { text: element.innerText || '', links, title: document.title, url: location.href,
+    const forms = selector === 'body' ? Array.from(document.forms).slice(0, 10).map((form, index) => ({
+      selector: `form >> nth=${index}`, method: form.method.toUpperCase(), action: form.action.slice(0, 2048),
+      fields: Array.from(form.elements).filter(e => e.name).slice(0, 32).map(e => ({ name: e.name.slice(0, 128), type: String(e.type || e.tagName).slice(0, 32) }))
+    })) : []
+    return { text: element.innerText || '', links, forms, title: document.title, url: location.href,
       revision: window.__butlerRevision, documentID: window.__butlerDocumentID }
   }, selector)
   await collectSecretState(session)
@@ -137,6 +143,7 @@ async function observe(session, selector = 'body') {
   const cleanText = Array.from(redact(session, text)).slice(0, 12000).join('')
   const page_status = /captcha|verify you are human|access denied|checking your browser|403 forbidden/i.test(cleanText + title) ? 'blocked' : 'ok'
   return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status, network_state: session.networkFrozen ? 'frozen' : 'read_only',
+    forms: captured.forms.map(form => ({ ...form, action: redact(session, form.action), fields: form.fields.map(field => ({ name: redact(session, field.name), type: field.type })) })),
     links: links.map(link => ({ text: redact(session, link.text), href: redact(session, link.href) })) }
 }
 
@@ -164,9 +171,10 @@ async function execute(request) {
   if (tool === 'owner.control') return await ownerControl(session, request.owner_command)
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
   const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
+  const getForm = tool === 'browser.submit_get_form' || tool === 'browser.follow_link'
   // Freeze before reading the live guards or injecting any new value. A stale
   // preparation can fail safely without resuming background page requests.
-  if (localPreparation) session.networkFrozen = true
+  if (localPreparation || getForm) session.networkFrozen = true
   if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool)) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
   session.scope = origin(session.page.url())
   if (tool === 'browser.snapshot') return await observe(session)
@@ -175,8 +183,12 @@ async function execute(request) {
   // checks trusted ownership, exclusive control, and the last observed state.
   await collectSecretState(session)
   const live = await session.page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
-  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return errorResult('stale_observation', 'page changed since observation; take a new snapshot')
-  if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
+  if (request.expected_url !== redact(session, session.page.url())) return getForm ? rejectedRead('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (getForm) return await submitGetForm(session, request, live)
+  // An ordinary local draft is private too, even without credential_ref.
+  // A later read tool must never thaw input callbacks or release that draft.
+  if (['browser.fill','browser.type','browser.prepare_fill','browser.prepare_type'].includes(tool)) session.preparedDraft = true
   for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
   let credentialVerified
@@ -247,8 +259,71 @@ async function execute(request) {
   }
 }
 
+// Two private phases. No click, submit, input, formdata or page handler runs.
+// This supports public GET search/navigation, never authentication or POST.
+async function submitGetForm(session, request, live) {
+  const denied = () => rejectedRead('get_form_denied')
+  try {
+    if (session.secrets.size || session.preparedDraft) return denied()
+    if (request.get_form_phase === 'plan') {
+      session.getFormPlan = undefined
+      const compiled = request.tool_name === 'browser.follow_link' ? await session.page.locator(request.selector).evaluate(link => {
+        if (!(link instanceof HTMLAnchorElement) || !['','_self'].includes(link.target) || link.hasAttribute('download')) return null
+        const target = new URL(link.href)
+        if (target.origin !== location.origin || target.username || target.password || !['http:','https:'].includes(target.protocol) || target.href.length > 16384) return null
+        return target.href
+      }) : await session.page.locator(request.selector).evaluate((form, fields) => {
+        if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'get' || !['', '_self'].includes(form.target)) return null
+        const action = new URL(form.action)
+        if (action.origin !== location.origin || action.username || action.password || !['http:', 'https:'].includes(action.protocol)) return null
+        const controls = Array.from(form.elements)
+        if (controls.length > 32) return null
+        const names = new Set(), entries = []
+        for (const element of controls) {
+          const type = String(element.type || '').toLowerCase()
+          if (['password', 'file', 'hidden'].includes(type)) return null
+          if (element.disabled || !element.name || ['submit', 'button', 'reset'].includes(type)) continue
+          const name = element.name
+          if (name.length > 128 || /password|passwd|pwd|token|secret|credential|cookie|session|csrf|xsrf|otp|api.?key|auth/i.test(name)) return null
+          if (!['text', 'search', 'number', 'email', 'tel', 'url', 'checkbox', 'radio', 'textarea', 'select-one', 'select-multiple', 'range', 'date'].includes(type)) return null
+          names.add(name)
+          if (Object.hasOwn(fields, name)) { entries.push([name, fields[name]]); continue }
+          if (['checkbox', 'radio'].includes(type) && !element.checked) continue
+          if (type.startsWith('select-')) {
+            for (const option of element.selectedOptions) entries.push([name, option.value])
+          } else entries.push([name, element.value])
+        }
+        if (Object.keys(fields).some(name => !names.has(name)) || entries.some(([name, value]) => typeof value !== 'string' || value.length > 4096)) return null
+        action.search = new URLSearchParams(entries).toString()
+        action.hash = ''
+        return action.href.length <= 16384 ? action.href : null
+      }, request.fields)
+      if (!compiled) return denied()
+      const nonce = randomUUID()
+      session.getFormPlan = { target: compiled, nonce, version: session.version, documentID: live.documentID, revision: live.revision }
+      return { ok: true, get_form_target: compiled, get_form_nonce: nonce }
+    }
+    const plan = session.getFormPlan
+    session.getFormPlan = undefined // one-use even if navigation fails
+    if (request.get_form_phase !== 'navigate' || !plan || plan.nonce !== request.get_form_nonce || plan.version !== request.observation_version || plan.documentID !== live.documentID || plan.revision !== live.revision) return denied()
+    session.allowWriteRequests = false
+    session.networkFrozen = false
+    await session.page.goto(plan.target, { waitUntil: 'domcontentloaded', timeout: request.timeout || 15000 })
+    session.networkFrozen = true
+    return await observe(session)
+  } catch (err) {
+    session.version++
+    session.dirty = true
+    return { ...safeError(err), observation_version: session.version, final_url: redact(session, session.page.url()) }
+  } finally {
+    session.allowWriteRequests = false
+    session.networkFrozen = true
+  }
+}
+
 async function ownerControl(session, command) {
   const page = session.page
+  if (command.operation === 'take') session.preparedDraft = true
   if (command.operation === 'release') {
     session.networkFrozen = false
     session.allowWriteRequests = false
