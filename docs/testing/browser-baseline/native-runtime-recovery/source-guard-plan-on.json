@@ -1,0 +1,12 @@
+{
+  "scope": "exact_guarded_source_query_generic_plan_probe",
+  "jit": "on",
+  "total_cost": 17488.59,
+  "planning_ms": 1.105,
+  "execution_ms": 21.573,
+  "jit_details": null,
+  "actual_rows": 0,
+  "input": "fixed_nonexistent_operator_reference",
+  "transaction_rolled_back": true,
+  "model_calls": 0
+}

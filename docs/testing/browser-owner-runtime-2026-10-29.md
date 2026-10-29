@@ -143,3 +143,9 @@ These bounded checks pass. General browser acceptance and #163 remain open:
 they do not establish universal browser capability, autonomous reconciliation,
 native model recovery after runtime loss, popup SSO, CAPTCHA or WebSocket support.
 No PR merge or whole-branch lab rollout is implied.
+
+Follow-up: [native runtime recovery](browser-native-runtime-recovery-2026-10-29.md)
+separately qualifies a real pre-input browser-runtime SIGKILL through the same
+Input/run, fresh context, one POST, privately checked answer and Web/TG delivery.
+It counts explicit owner assistance and retains all seven additional attempts;
+the integration-only scope and original matrix above are unchanged.

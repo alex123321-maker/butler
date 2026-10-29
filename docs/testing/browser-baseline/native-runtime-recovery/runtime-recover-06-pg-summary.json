@@ -1,0 +1,7 @@
+{
+  "samples": 220,
+  "blocked_samples": 1,
+  "max_blocked": 1,
+  "max_transaction_age_s": 5,
+  "max_idle_in_transaction_connections": 2
+}

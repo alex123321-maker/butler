@@ -1,0 +1,16 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-runtime-recovery-20261029-v14",
+  "began_at": "2026-10-29T08:19:26.313421494Z",
+  "verified_at": "2026-10-29T08:19:32.819958765Z",
+  "sha256": "2ba13a140622ef06b1889e20a119a0c51ff36ee4b572cb0eb6bc1ede6a99358a",
+  "healthy": true,
+  "environment_unchanged": true,
+  "broker_browser_postgres_redis_web_unchanged": true,
+  "dispatch_deadline_seconds": 5,
+  "persistence_deadline_seconds": 3,
+  "parent_authority_preserved": true,
+  "migrations": 0,
+  "unknowns_resolved_by_deployment": 0,
+  "budget_or_credential_reset": false,
+  "scope": "narrow_core_observation_persistence_not_full_PR"
+}
