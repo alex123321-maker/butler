@@ -26,6 +26,10 @@ func utilityObservation(s UtilitySuite, c UtilityCase, arm string) UtilityObserv
 	f := c.Expected
 	if c.Condition == "prepared_artifact" {
 		o.Receipt.PrepareCalls = 1
+		if c.Expected.Artifact == UtilityCurrentArtifact {
+			o.Receipt.Artifact = "fixture-current-artifact"
+			f.Artifact = o.Receipt.Artifact
+		}
 	}
 	for _, alt := range c.SupportAlternatives {
 		refs := []UtilityRef{}
@@ -129,6 +133,11 @@ func TestMemoryUtilityCurrentArtifactCannotBeBorrowedFromOldRun(t *testing.T) {
 	if EvaluateMemoryUtility(s, o).TaskSuccess {
 		t.Fatal("artifact without current preparation accepted")
 	}
+	// V1 exact-artifact behavior is retained; v2 delegates fresh identity to the
+	// original-bound trace observer, not to arbitrary model text.
+	s.Version = "butler-memory-utility-v1"
+	s.Cases[23].Expected.Artifact = "fixture-current-artifact"
+	c = s.Cases[23]
 	o = utilityObservation(s, c, "C")
 	o.Receipt.Artifact = "old-artifact"
 	var f UtilityFinal

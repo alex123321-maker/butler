@@ -106,7 +106,7 @@ func newMemoryUtilitySuite(entropy io.Reader) (UtilitySuite, error) {
 			c.Question = "Подготовь и проверь отдельный текущий артефакт ready, не применяя его."
 			c.Expected.Value = "ready"
 			c.Expected.Effect = "confirmed"
-			c.Expected.Artifact = "fixture-current-artifact"
+			c.Expected.Artifact = UtilityCurrentArtifact
 			c.Expected.Check = "passed"
 			c.MaxPrepare = 1
 		}
