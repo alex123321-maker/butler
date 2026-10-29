@@ -91,7 +91,7 @@ func (c *experienceNativeCollector) collect() {
 			}
 		}
 	}()
-	if c.provider.global == nil || c.databases.source == nil || c.provider.ModelProvider == nil || len(c.provider.slots) != 57 || c.policy.Task.ModelTurns != 12 || c.sourcePolicy.Task.ModelTurns != 13 || !c.deadline.After(time.Now()) || json.Unmarshal(c.corpus.Originals.RecipientSeeds, &c.seeds) != nil || len(c.seeds.Canaries) != 4 {
+	if c.provider.global == nil || c.databases.source == nil || c.provider.ModelProvider == nil || len(c.provider.slots) != 57 || c.policy.Task.ModelTurns != int64(c.provider.slots[0].Maximum) || c.sourcePolicy.Task.ModelTurns != c.policy.Task.ModelTurns+1 || !c.deadline.After(time.Now()) || json.Unmarshal(c.corpus.Originals.RecipientSeeds, &c.seeds) != nil || len(c.seeds.Canaries) != 4 {
 		c.t.Fatal("complete predeclared source/notes/skill/control cohort required")
 	}
 	executionSlots, err := experienceNativeExecutionLimit(c.provider.executionSlots)

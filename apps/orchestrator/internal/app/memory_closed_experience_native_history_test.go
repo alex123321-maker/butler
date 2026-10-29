@@ -285,7 +285,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 		var handback laba115ClosedHandback
 		var exit laba115ClosedProcessExit
 		expectedExit := 1
-		if expected == guided115Closed503SHA {
+		if expected == guided115Closed503SHA || expected == guided115Closed768SHA {
 			expectedExit = 0
 		}
 		if read("closed-handback.json", &handback) != nil || handback.validatePlanExit(labaProfile.Plan, expectedExit) != nil || read("process-exit.json", &exit) != nil || exit.validateExit(expectedExit) != nil {
@@ -528,8 +528,8 @@ func closedExperienceProducts(databases map[string]map[string]json.RawMessage, e
 }
 
 func closedExperienceFinitePlan(plan experienceNativeSeal, previous experienceNativeLineage) error {
-	policy, e1 := experienceNativeCarryPolicy(false, previous.Carry)
-	source, e2 := experienceNativeCarryPolicy(true, previous.Carry)
+	policy, e1 := experienceNativePolicyForHistory(false, previous)
+	source, e2 := experienceNativePolicyForHistory(true, previous)
 	deadline, e3 := experienceNativeWholeDeadline(plan.Created, previous.Day, previous.Deadline)
 	if e1 != nil || e2 != nil || e3 != nil || !reflect.DeepEqual(plan.Policy, policy) || !reflect.DeepEqual(plan.SourcePolicy, source) || !plan.Deadline.Equal(deadline) || plan.FGMillis != experienceNativeForegroundLimit.Milliseconds() || plan.MaximumMillis != experienceNativeWholeMaximum.Milliseconds() || len(plan.Binaries) != 5 || len(plan.Environments) != 3 || len(plan.Source) == 0 {
 		return errors.New("closed preseal finite source/control profile changed")

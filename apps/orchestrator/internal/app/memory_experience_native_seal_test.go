@@ -173,7 +173,7 @@ func validateExperienceNativeLineage(history experienceNativeLineage) error {
 	if !experienceNativeSHA(history.Hash) || u.NativeEntries < 0 || u.NativeKnownUsage < 0 || u.NativeUnknownUsage < 0 || u.ProductObserved < 0 || u.ProductNULL < 0 || u.NativeMissingTotal < 0 || u.NativeMissingTotal > u.NativeKnownUsage || u.KnownFullTokenLowerBound < 0 || u.NativeEntries != u.NativeKnownUsage+u.NativeUnknownUsage || u.ProductAttempts != u.ProductObserved+u.ProductNULL || u.ProductWithoutNativeEntry != u.ProductAttempts-u.NativeEntries || u.ProductWithoutNativeEntry < 0 || int64(u.ProductAttempts) != history.Carry.ModelTurns {
 		return errors.New("complete current owner-day usage and charge metadata required")
 	}
-	_, err := experienceNativeCarryPolicy(false, history.Carry)
+	_, err := experienceNativePolicyForHistory(false, history)
 	return err
 }
 
@@ -200,11 +200,11 @@ func prepareExperienceNativeSeal(now time.Time, sourceRoot string, corpus experi
 	if err != nil {
 		return seal, err
 	}
-	policy, err := experienceNativeCarryPolicy(false, history.Carry)
+	policy, err := experienceNativePolicyForHistory(false, history)
 	if err != nil {
 		return seal, err
 	}
-	sourcePolicy, err := experienceNativeCarryPolicy(true, history.Carry)
+	sourcePolicy, err := experienceNativePolicyForHistory(true, history)
 	if err != nil {
 		return seal, err
 	}
@@ -216,7 +216,7 @@ func prepareExperienceNativeSeal(now time.Time, sourceRoot string, corpus experi
 		configuration := experienceEnvironment(experienceRecipientConfig{Version: profile.version, Ready: profile.ready, Outage: profile.outage})
 		environments[profile.name] = experienceDigest(strings.Join([]string{configuration, pins["recipient"], pins["broker"], pins["extension"], pins["http"]}, "\x00"))
 	}
-	seal = experienceNativeSeal{Format: "butler.experience.native-preseal.v1", Owner: experienceNativeOwner, Created: now.UTC(), Deadline: deadline, Lineage: history, Originals: corpus.OriginalsSHA256, Controls: corpus.ControlsSHA256, Source: files, Binaries: pins, Schedule: experienceNativeSchedule(corpus), Policy: policy, SourcePolicy: sourcePolicy, Environments: environments, FGMillis: experienceNativeForegroundLimit.Milliseconds(), MaximumMillis: experienceNativeWholeMaximum.Milliseconds()}
+	seal = experienceNativeSeal{Format: "butler.experience.native-preseal.v1", Owner: experienceNativeOwner, Created: now.UTC(), Deadline: deadline, Lineage: history, Originals: corpus.OriginalsSHA256, Controls: corpus.ControlsSHA256, Source: files, Binaries: pins, Schedule: experienceNativeScheduleForHistory(corpus, history), Policy: policy, SourcePolicy: sourcePolicy, Environments: environments, FGMillis: experienceNativeForegroundLimit.Milliseconds(), MaximumMillis: experienceNativeWholeMaximum.Milliseconds()}
 	if history.SkillPreparationSuccessor != nil {
 		seal.ExecutionSlots = 33
 	}

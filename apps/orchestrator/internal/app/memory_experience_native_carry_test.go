@@ -24,7 +24,7 @@ const experienceNativeCarryPrefix = "issue90-v1-current-day-carry:"
 // the640 NEW-entry journal to that exact receipt. These are finite lab partitions,
 // not a production atomic budget transaction across PostgreSQL databases.
 func applyExperienceNativeHistory(ctx context.Context, p *experienceNativeProvider, source *pgxpool.Pool, history experienceNativeLineage, sourcePolicy budget.Policy) error {
-	expected, err := experienceNativeCarryPolicy(true, history.Carry)
+	expected, err := experienceNativePolicyForHistory(true, history)
 	if err != nil || !reflect.DeepEqual(expected, sourcePolicy) || p == nil || p.global == nil || source == nil || validateExperienceNativeLineage(history) != nil {
 		return errors.New("validated exact predeclared history/policy and owning databases required")
 	}
@@ -91,7 +91,7 @@ func TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegratio
 	now := time.Now().UTC()
 	deadline := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
 	history := experienceNativeLineage{Hash: strings.Repeat("f", 64), Day: now.Format("2006-01-02"), Deadline: deadline, Carry: budget.Units{ModelTurns: 3, Tokens: 3 * 1081344, ActiveMillis: 900000, ProviderInputBytes: 3 * 8388608}, Usage: temporalV5CurrentUsage{ProductAttempts: 3, ProductNULL: 3, ProductWithoutNativeEntry: 3}}
-	policy, err := experienceNativeCarryPolicy(true, history.Carry)
+	policy, err := experienceNativePolicyForHistory(true, history)
 	if err != nil || applyExperienceNativeHistory(ctx, p, databases.source, history, policy) != nil {
 		t.Fatal("current inclusive source/global carry was not imported")
 	}

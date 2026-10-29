@@ -172,7 +172,7 @@ func (c *experienceNativeCollector) promoteSkill(t *testing.T) {
 			t.Fatal("skill format metadata unavailable")
 		}
 		input["manifest_wire_schema"] = experienceManifestWireSchema(t)
-		input["execution_limits"] = map[string]int{"model_entries": 12, "external_tool_calls": 11, "memory_open_max_chars": 8192, "manifest_max_utf8_bytes": skills.MaxManifestBytes}
+		input["execution_limits"] = map[string]int{"model_entries": int(c.policy.Task.ModelTurns), "external_tool_calls": int(c.policy.Task.ExternalCalls), "memory_open_max_chars": 8192, "manifest_max_utf8_bytes": skills.MaxManifestBytes}
 		data, err = json.Marshal(input)
 		if err != nil {
 			t.Fatal("skill format metadata serialization failed")

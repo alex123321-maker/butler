@@ -500,7 +500,14 @@ func configureExperienceNativeRuntime(t *testing.T, r *experienceNativeRuntime, 
 	// conversation policy. It is a distinct bootstrap process with no task/model
 	// input. The final foreground Broker below keeps the exact task policy.
 	adminPolicy := policy
-	adminPolicy.Conversation = experienceNativeSourcePolicy().Conversation
+	adminSourcePolicy := experienceNativeSourcePolicy()
+	if policy.Task.ExternalCalls == guided115ToolCalls {
+		adminSourcePolicy, err = experienceNativeReadHeadroom(adminSourcePolicy)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	adminPolicy.Conversation = adminSourcePolicy.Conversation
 	adminJSON, _ := json.Marshal(adminPolicy)
 	adminEnv := append([]string(nil), env...)
 	for i, value := range adminEnv {

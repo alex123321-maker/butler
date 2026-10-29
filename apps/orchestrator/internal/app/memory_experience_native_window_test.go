@@ -179,6 +179,7 @@ type experienceNativeProvider struct {
 	proof               string
 	slots               []experienceNativeSlot
 	active              int
+	maximum             int
 	entries             []*experienceNativeEntry
 	failed              error
 	ongoing             bool
@@ -222,13 +223,13 @@ func newExperienceNativeProvider(proof string, slots []experienceNativeSlot, own
 	if len(owners) == 1 {
 		owner = owners[0]
 	}
-	if !filepath.IsAbs(proof) || len(slots) != 57 || maximum != experienceNativeMaximum || owner == "" || len(owner) > 160 {
+	if !filepath.IsAbs(proof) || len(slots) != 57 || maximum != experienceNativeMaximum && maximum != guided115Maximum || owner == "" || len(owner) > 160 {
 		return nil, errors.New("full finite experience schedule required")
 	}
-	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1, owner: owner, started: time.Now().UTC()}
+	p := &experienceNativeProvider{proof: proof, slots: append([]experienceNativeSlot(nil), slots...), active: -1, maximum: maximum, owner: owner, started: time.Now().UTC()}
 	// This must precede PG migrations, credentials, provider construction and
 	// original-source work. The exact denominator survives a setup abort.
-	if err := p.writeNew("schedule.json", map[string]any{"format": "experience90-window-v1", "owner_id": owner, "maximum_entries": experienceNativeMaximum, "slots": slots}); err != nil {
+	if err := p.writeNew("schedule.json", map[string]any{"format": "experience90-window-v1", "owner_id": owner, "maximum_entries": p.maximum, "slots": slots}); err != nil {
 		return nil, err
 	}
 	return p, nil
@@ -265,8 +266,8 @@ func (p *experienceNativeProvider) installGlobal(ctx context.Context, pool *pgxp
 	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('experience90-independent-global-window',0))`); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS experience_native_windows(window_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum=640),used INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);
-CREATE TABLE IF NOT EXISTS experience_native_allocations(window_id TEXT NOT NULL REFERENCES experience_native_windows,slot_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum IN(1,12)),used INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(window_id,slot_id));
+	if _, err = tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS experience_native_windows(window_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum IN(640,1276)),used INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);
+CREATE TABLE IF NOT EXISTS experience_native_allocations(window_id TEXT NOT NULL REFERENCES experience_native_windows,slot_id TEXT NOT NULL,maximum INTEGER NOT NULL CHECK(maximum IN(1,12,24)),used INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(window_id,slot_id));
 CREATE TABLE IF NOT EXISTS experience_native_entries(window_id TEXT NOT NULL REFERENCES experience_native_windows,sequence INTEGER NOT NULL,slot_id TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,operation_id TEXT NOT NULL,reservation_id TEXT NOT NULL,request_json JSONB NOT NULL,usage_json JSONB,PRIMARY KEY(window_id,sequence))`); err != nil {
 		return err
 	}
@@ -281,7 +282,7 @@ CREATE TABLE IF NOT EXISTS experience_native_entries(window_id TEXT NOT NULL REF
 	if err = p.writeNew("previous-windows.json", previous); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_windows(window_id,owner_id,maximum)VALUES($1,$2,640)`, window, p.owner); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO experience_native_windows(window_id,owner_id,maximum)VALUES($1,$2,$3)`, window, p.owner, p.maximum); err != nil {
 		return errors.New("one-use persistent window was used or unavailable")
 	}
 	for _, slot := range p.slots {
@@ -362,7 +363,7 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.failed != nil || p.active < 0 || p.executionSlots != 0 && p.active >= p.executionSlots || p.ongoing || p.ModelProvider == nil || len(p.entries) >= experienceNativeMaximum {
+	if p.failed != nil || p.active < 0 || p.executionSlots != 0 && p.active >= p.executionSlots || p.ongoing || p.ModelProvider == nil || len(p.entries) >= p.maximum {
 		return nil, errors.New("prospective provider window closed")
 	}
 	slot, used := p.slots[p.active], 0
@@ -605,7 +606,7 @@ func (p *experienceNativeProvider) export() error {
 			}
 		}
 	}
-	window := map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active, "started_at": p.started, "finished_at": time.Now().UTC(), "elapsed_millis": time.Since(p.started).Milliseconds()}
+	window := map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": p.maximum, "capture_error": p.failed != nil, "active_slot": p.active, "started_at": p.started, "finished_at": time.Now().UTC(), "elapsed_millis": time.Since(p.started).Milliseconds()}
 	if p.executionSlots != 0 {
 		window["execution_slots"] = p.executionSlots
 	}

@@ -308,3 +308,21 @@ are sealed; all8 operator commitments are now unbound with deny-only qualificati
 Native post-delete reader reconstruction remainsUNKNOWN and independent quality,
 native92 and selected positive composition are still pending. See
 [complete outcome](../../experiments/memory115/2026-10-28/laba-abc-v6-complete/README.md).
+
+## New full57 memory-read repair comparison
+
+The owner's2026-10-29 instruction authorizes a new isolated full57 window after
+closed768/764known/4unknown/6790617 known full tokens. Recipe v3 pins that exact
+completed v7 leaf, the unchanged separate diagnostics and a distinct owner
+instruction digest. No earlier outcome, charge, NULL or UNKNOWN is rewritten.
+
+The new profile permits24 foreground model entries (previously12), one note job per source task,
+the1276-entry independent journal,40-minute foreground and UTC-day clamps. It
+increases external tool admission from11 to32 calls per task equally across
+A/B/C, with corresponding declared egress and active-time ceilings. It is frozen
+before admission; no scope is enlarged during a task. Legacy profiles still
+validate their original11-call ceilings. Corpus,57 stages, two repetitions,
+model route, task scopes and stopping rules are unchanged. Explicit kernel skill
+guidance and current fixed memory reads pass through the actual Broker. All
+binaries and complete source are frozen before provider auth; working deployment
+is excluded. The change is a research fixture profile, not a product budget edit.

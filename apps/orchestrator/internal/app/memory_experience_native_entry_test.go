@@ -39,11 +39,11 @@ func loadExperienceNativeHistory(path, expected string) (experienceNativeLineage
 		return out, errors.New("exact recursively validated closed owner history required")
 	}
 	switch format.Format {
-	case guided115Format, guided115V2Format:
+	case guided115Format, guided115V2Format, guided115ExpandedFormat:
 		return loadGuided115History(path, expected)
 	case laba115RepairedFormat, laba115ReservedFormat, laba115SchemaFormat, laba115ProbeFormat:
 		return loadLaba115RepairedContinuation(path, expected)
-	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3", "butler.experience.closed-laba-owner-leaf.v4", "butler.experience.closed-laba-owner-leaf.v5", "butler.experience.closed-laba-owner-leaf.v6":
+	case laba115ClosedFormat, "butler.experience.closed-laba-owner-leaf.v2", "butler.experience.closed-laba-owner-leaf.v3", "butler.experience.closed-laba-owner-leaf.v4", "butler.experience.closed-laba-owner-leaf.v5", "butler.experience.closed-laba-owner-leaf.v6", "butler.experience.closed-laba-owner-leaf.v7":
 		return loadClosedExperienceNativeHistoryProfiles(path, expected, false, true)
 	case laba115SkillSuccessorFormat:
 		return load115SkillSuccessor(path, expected, true)
@@ -165,6 +165,9 @@ func claimExperienceNativePool(ctx context.Context, dsn, presealSHA string, hist
 	guidedDSN := guided115DSN
 	if history.GuidedFull != nil && history.GuidedFull.Historical.Hash == guided115Closed528SHA {
 		guidedDSN = guided115V2DSN
+	}
+	if guided115Expanded(history) {
+		guidedDSN = guided115ExpandedDSN
 	}
 	if history.GuidedFull != nil && dsn != guidedDSN {
 		return nil, errors.New("guided full57 requires its exact fresh loopback database")
