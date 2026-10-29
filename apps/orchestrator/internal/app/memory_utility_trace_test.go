@@ -272,6 +272,34 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 					t.Fatal("mutated original passed")
 				}
 				attacks++
+				for _, field := range []string{"args", "result"} {
+					mutated := cloneUtilityTrace(t, snapshot)
+					var values []map[string]any
+					_ = json.Unmarshal(mutated.Tables["calls"], &values)
+					values[0][field] = map[string]any{"substituted": true}
+					mutated.Tables["calls"], _ = json.Marshal(values)
+					if _, e := utilitytrace.Project(suite, binding, mutated, acceptance.MemoryDigest(mutated)); e == nil {
+						t.Fatal("substituted call accepted", field)
+					}
+					attacks++
+				}
+				if tc.mode == "memory" {
+					for _, table := range []string{"pins", "source_heads"} {
+						mutated := cloneUtilityTrace(t, snapshot)
+						mutated.Tables[table] = json.RawMessage(`[]`)
+						if _, e := utilitytrace.Project(suite, binding, mutated, acceptance.MemoryDigest(mutated)); e == nil {
+							t.Fatal("unproven source accepted", table)
+						}
+						attacks++
+					}
+					bad := binding
+					bad.Sources = append(append([]utilitytrace.SourceBinding{}, binding.Sources...), binding.Sources[0])
+					bad.Sources[1].Pin.ID = "other-native-source"
+					if _, e := utilitytrace.Project(suite, bad, snapshot, seal); e == nil {
+						t.Fatal("ambiguous source map accepted")
+					}
+					attacks++
+				}
 			}
 
 		})

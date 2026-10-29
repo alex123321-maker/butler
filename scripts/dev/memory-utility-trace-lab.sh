@@ -37,7 +37,11 @@ docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limi
  go build -o /reports/test2json cmd/test2json
  sha256sum /reports/broker /reports/extension.test /reports/http.test /reports/app.test
  ' > "$r/reports/build.log" 2>&1
-docker network create --internal "$net" > "$r/reports/network.id"
+if [ -n "${UTILITY_TRACE_SUBNET:-}" ]; then
+ docker network create --internal --subnet "$UTILITY_TRACE_SUBNET" "$net" > "$r/reports/network.id"
+else
+ docker network create --internal "$net" > "$r/reports/network.id"
+fi
 made_net=1
 docker run -d --name "$pg" --network "$net" --cpus 1 --memory 768m --memory-swap 768m \
  -e POSTGRES_USER=utility_fixture -e POSTGRES_PASSWORD=utility_fixture_only -e POSTGRES_DB=utility_trace_test \

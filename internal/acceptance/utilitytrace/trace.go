@@ -202,6 +202,13 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 	if c == nil {
 		return deny("case missing")
 	}
+	nativeIDs, utilityIDs := map[string]bool{}, map[string]bool{}
+	for _, mapping := range b.Sources {
+		if mapping.Pin.ID == "" || mapping.UtilityID == "" || nativeIDs[mapping.Pin.ID] || utilityIDs[mapping.UtilityID] {
+			return deny("source mapping is not one-to-one")
+		}
+		nativeIDs[mapping.Pin.ID], utilityIDs[mapping.UtilityID] = true, true
+	}
 	o.InputSHA256 = acceptance.MemoryDigest(c.Input())
 	tasks, e := rows[taskRow](s, "tasks")
 	if e != nil || len(tasks) != 1 {
@@ -471,7 +478,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 	// Translate only a previously frozen source identity. The original final
 	// remains in the sealed snapshot; values/effects/prose are never repaired.
 	var typed acceptance.UtilityFinal
-	if json.Unmarshal(o.Final, &typed) == nil {
+	if acceptance.DecodeStrict(o.Final, &typed, "outcome", "value", "sources", "effect", "artifact", "check") == nil {
 		for n, ref := range typed.Sources {
 			mapped := false
 			for _, sb := range b.Sources {
