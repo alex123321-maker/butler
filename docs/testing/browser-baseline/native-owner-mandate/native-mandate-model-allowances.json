@@ -1,0 +1,1 @@
+{"scope" : "actual_native_model_allowances", "allowances" : [{"input": 1048576, "model": "gemini-3.8-flash-high", "output": 32768, "provider": "antigravity"}]}

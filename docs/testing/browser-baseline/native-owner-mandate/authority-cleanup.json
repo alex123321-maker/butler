@@ -1,0 +1,1 @@
+{"scope" : "bounded_native_authority_cleanup", "observed_at" : "2026-10-29T19:21:45.889183+00:00", "all_test_goals_revoked" : true, "all_test_mandates_revoked" : true, "failed_native05_retained" : true, "native05_dispatches_retained" : 1, "budget_rows_deleted" : false, "old_inputs_replayed" : false}

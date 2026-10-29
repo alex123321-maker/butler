@@ -1515,6 +1515,11 @@ existing task reader. Unrelated work in the shared delivery session stays out of
 that context. Earlier task attempts/owner responses, privacy fences, constraints,
 UNKNOWN effects and the original context allowance are retained.
 
+Interaction recovery first resolves the canonical owning wait under the current
+claim, evidence and authority. It then rehydrates active-only source/delegation
+preparation before any fresh provider or action. A current source denial still
+stops execution; a report never revives a terminal Input or replays a POST.
+
 The protected Web message route also accepts an explicit `task_id` for an active
 Task in its current owner/session. It uses ordinary Input and communication
 admission, retaining target identity on deduplication; no worker projection or

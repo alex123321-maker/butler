@@ -1,0 +1,8 @@
+{
+  "scope": "operator_cli_preflight_failure",
+  "reason": "requested_15m_exceeded_existing_10m_observation_bound",
+  "native_inputs": 0,
+  "model_calls": 0,
+  "http_submission": false,
+  "goal_mandate_task_recreated": false
+}

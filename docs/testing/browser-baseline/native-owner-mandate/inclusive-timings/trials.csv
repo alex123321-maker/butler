@@ -1,0 +1,7 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-native-mandate-20261030-01","failed","execution_stopped","50.164",,"0","0","0","50.164","True","0","0","0","0"
+"browser-baseline-native-mandate-20261030-02","failed","budget_active_millis_mandate","40.07",,"34.963","34.777","0.186","5.107","True","0","2","2","0"
+"browser-baseline-native-mandate-20261030-03","failed","budget_tokens_mandate","17.725",,"11.921","11.846","0.075","5.804","True","0","1","1","0"
+"browser-baseline-native-mandate-20261030-04","failed","execution_stopped","62.424",,"52.026","48.039","3.987","10.397","True","0","5","6","0"
+"browser-baseline-native-mandate-20261030-05","failed","execution_stopped","166.887",,"125.73","123.179","2.551","41.157","True","0","11","10","0"
+"browser-baseline-native-mandate-20261030-06","completed",,"187.201","177.688","180.684","177.196","3.488","6.517","True","2.9103830456733704E-11","13","13","0"
