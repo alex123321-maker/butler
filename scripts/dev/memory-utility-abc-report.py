@@ -4,6 +4,12 @@ import argparse, collections, hashlib, json, pathlib
 
 def read(p): return json.loads(p.read_text())
 def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def unique_object(pairs):
+    d={}
+    for k,v in pairs:
+        if k in d: raise ValueError('duplicate field')
+        d[k]=v
+    return d
 def main():
     p=argparse.ArgumentParser();p.add_argument('root',type=pathlib.Path);p.add_argument('output',type=pathlib.Path);a=p.parse_args()
     r=a.root;plan=read(r/'out/plan/plan.json');suite=read(r/'out/plan/suite.private.json');actual=r/'out/actual'
@@ -18,6 +24,13 @@ def main():
         prep=read(d/'preparation.json') if (d/'preparation.json').exists() else {}
         snapshot=read(d/'snapshot.private.json') if (d/'snapshot.private.json').exists() else {'Tables':{}}
         tables=snapshot['Tables'];native=[]
+        value_match=None
+        if case['family']!='regression' and len(tables.get('finals',[]))==1:
+            try:
+                f=json.loads(tables['finals'][0]['content'],object_pairs_hook=unique_object)
+                if isinstance(f,dict) and set(f)=={'outcome','value','sources','effect','artifact','check'}:
+                    value_match=f['outcome']==case['expected']['outcome'] and f['value']==case['expected']['value']
+            except (ValueError,TypeError): pass
         for file in sorted(d.glob('native-*.private.json')):
             v=read(file);assert v['slot']==seq and v['sequence'] not in seen;seen[v['sequence']]=v;native.append(v)
         core={x['operation_id']:x for x in tables.get('model_attempts',[])}
@@ -32,6 +45,7 @@ def main():
                 core_token_mismatches+=ci is None or co is None or ci!=v['usage']['InputTokens'] or co!=v['usage']['OutputTokens']
         row={'sequence':seq,'arm':arm,'family':case['family'],'condition':case['condition'],'slot_status':final.get(seq,scheduled)['Status'],
              'task_success':score['task_success'],'reasons':score['reasons'],'abstained':score.get('abstained',False),'format_valid':score.get('format_valid',False),
+             'projection_error':execution.get('projection_error'),'answer_value_match_diagnostic_only':value_match,
              'elapsed_ms':execution.get('elapsed_ms'),'cold_setup_ms':prep.get('elapsed_ms'),'source_writes':prep.get('source_writes'),
              'tool_calls':dict(collections.Counter(x['tool_name'] for x in tables.get('calls',[]))),
              'native_methods_dispatched':sum(x['dispatched'] for x in native),'unknown_usage':sum(x['dispatched'] and x['usage'] is None for x in native),
@@ -46,6 +60,8 @@ def main():
             t=read(d/'preparation-snapshot.private.json');row['scripted_preparation_model_attempts']=len(t['execution_model_attempts']);row['scripted_preparation_tool_calls']=len(t['tool_calls'])
         rows.append(row);c=totals[arm];c['scheduled']+=1;c['task_success']+=row['task_success'];c['abstained']+=row['abstained'];c['format_valid']+=row['format_valid']
         c['observed_slots']+=(d/'score.json').exists()
+        c['answer_value_match_diagnostic_only']+=value_match is True
+        c['thinking_count_unreported_methods']+=sum(x['dispatched'] and x['usage'] is not None and x['usage'].get('ThinkingTokens') is None for x in native)
         c['execution_time_unknown_slots']+=row['elapsed_ms'] is None;c['cold_time_unknown_slots']+=row['cold_setup_ms'] is None
         for key in ('native_methods_dispatched','unknown_usage','known_total_tokens','known_input_tokens','known_output_tokens','known_thinking_tokens','native_failures','source_writes','elapsed_ms','cold_setup_ms','scripted_preparation_model_attempts','scripted_preparation_tool_calls','core_missing_attempts','core_token_mismatches'):c[key]+=row.get(key) or 0
         for tool,count in row['tool_calls'].items():c['tool:'+tool]+=count
@@ -66,7 +82,7 @@ def main():
        'plan_sha256':digest(r/'out/plan/plan.json'),'suite_sha256_bytes':digest(r/'out/plan/suite.private.json'),
        'pg_journal_sha256':digest(r/'out/journal-complete.private.json'),'raw_pg_entries_correlated':len(journal),
        'native_quality_qualified':False,'invoice_cost':'unknown','preparation_native_requests':0,'preparation_mode':plan['Preparation'],
-       'limitations':['public development corpus, no independent holdout','scripted prepared notes and reviewed skill; autonomous learning cost is unmeasured','strict typed exact-citation metric','implicit provider caching unverified'], 'rows':rows}
+       'limitations':['public development corpus, no independent holdout','scripted prepared notes and reviewed skill; autonomous learning and manual authorship cost are unmeasured','strict typed exact-citation/open metric; value-match is a posthoc diagnostic and not task success','implicit provider caching unverified'], 'rows':rows}
     a.output.parent.mkdir(parents=True,exist_ok=True)
     with a.output.open('x') as f:json.dump(report,f,indent=2)
     print(json.dumps({k:v for k,v in report.items() if k not in ('rows','historical_receipts_verified')}))
