@@ -3,6 +3,7 @@
 set -eu
 umask 077
 r=${1:?fresh native root}; tested=${2:?successful controlled root}; source=${3:?tested full commit}
+predecessor=${4:-}
 case "$r" in /srv/gitea/butler-acceptance/issue115-utility-native-*) ;; *) exit 2;; esac
 case "$tested" in /srv/gitea/butler-acceptance/issue115-utility-trace-whole-*) ;; *) exit 2;; esac
 test ${#source} = 40
@@ -14,6 +15,10 @@ old=/srv/gitea/butler-acceptance/issue115-native-20261028-v1
 prior=$old/skill-broker-20261029-v1
 for file in abc.json force.json prompt.json context.json; do cp -p "$prior/previous/$file" "$r/previous/$file"; done
 cp -p "$prior/out/result.json" "$r/previous/skill-broker.json"
+if [ -n "$predecessor" ]; then
+ case "$predecessor" in /srv/gitea/butler-acceptance/issue115-utility-native-*/recovery-report.json) ;; *) exit 2;; esac
+ cp -p "$predecessor" "$r/previous/predecessor-interrupted.json"
+fi
 image=sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61
 docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limit 256 --read-only --cap-drop ALL --security-opt no-new-privileges --user 1000:1000 --log-driver none --tmpfs /tmp:rw,nosuid,nodev,size=128m -v "$r/source:/source:ro" -v "$r/bin:/binproof:ro" -v "$r/out:/out" -v "$r/previous:/previous:ro" -e BUTLER_UTILITY_NATIVE_FREEZE=/out/plan -e BUTLER_UTILITY_NATIVE_SOURCE="$source" -w /source/apps/orchestrator/internal/app "$image" /binproof/app.test -test.v -test.run '^TestMemoryUtilityFreezeNativeABC$' > "$r/freeze.log" 2>&1
 net=$(basename "$r")-net

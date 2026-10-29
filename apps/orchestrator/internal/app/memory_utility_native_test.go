@@ -29,13 +29,14 @@ const utilityWholeInstructions = acceptance.MemoryUtilityInstructions + `
 Если исторического факта нет среди доступных текущих доказательств, сохрани unknown. Процедура route/codec/guard выводится из трёх current_documents; цитируй source_id/revision/content_hash из наблюдения. Исторические данные ищи memory.search и полностью читай memory.open. При применимом навыке выбери и загрузи его через Broker. Навык не даёт новых полномочий.`
 
 type utilityNativePlan struct {
-	SuiteSHA256               string
-	Slots                     []utilityWholeSlot
-	Deadline                  time.Time
-	MaximumMethods            int
-	Source                    string
-	HistoricalReceipts        map[string]string
-	Model, Rules, Preparation string
+	SuiteSHA256                   string
+	Slots                         []utilityWholeSlot
+	Deadline                      time.Time
+	MaximumMethods                int
+	Source                        string
+	HistoricalReceipts            map[string]string
+	Model, Rules, Preparation     string
+	CaseSeconds, AuthoritySeconds int
 }
 
 func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
@@ -66,7 +67,22 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		t.Fatal("latest native receipt required")
 	}
 	history["skill-broker.json"] = experienceDigest(string(prior))
-	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: 936, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Model: antigravity.FlashHighModel, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "72 fixed slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
+	files, e := filepath.Glob("/previous/*.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, file := range files {
+		b, e := os.ReadFile(file)
+		if e != nil {
+			t.Fatal(e)
+		}
+		name := filepath.Base(file)
+		if old, ok := history[name]; ok && old != experienceDigest(string(b)) {
+			t.Fatal("historical receipt changed before freeze")
+		}
+		history[name] = experienceDigest(string(b))
+	}
+	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: 936, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Model: antigravity.FlashHighModel, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "72 fixed slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
 }
 
 type utilityWholeNative struct {

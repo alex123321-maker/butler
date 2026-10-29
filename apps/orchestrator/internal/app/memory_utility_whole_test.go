@@ -86,7 +86,15 @@ func TestMemoryUtilityWholeControlledABCIntegration(t *testing.T) {
 
 func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, slot utilityWholeSlot, native *utilityWholeNative) {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	caseDuration, authorityDuration := 4*time.Minute, 3*time.Minute
+	if native != nil {
+		caseDuration = time.Duration(native.plan.CaseSeconds) * time.Second
+		authorityDuration = time.Duration(native.plan.AuthoritySeconds) * time.Second
+		if caseDuration < 4*time.Minute || authorityDuration < 3*time.Minute || authorityDuration >= caseDuration {
+			t.Fatal("frozen native case deadlines invalid")
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), caseDuration)
 	defer cancel()
 	coldStarted := time.Now()
 	pool := memorytest.Database(t)
@@ -155,7 +163,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	defer recipient.close()
 	arm := experienceNativeArms[strings.Index("ABC", slot.Arm)]
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions, arm, subset, time.Now().Add(3*time.Minute))
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions, arm, subset, time.Now().Add(authorityDuration))
 	defer r.close()
 	var reviewed *skills.Record
 	var unknown utilitytrace.UnknownBinding
