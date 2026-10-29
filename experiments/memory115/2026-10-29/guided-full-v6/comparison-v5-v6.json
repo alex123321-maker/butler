@@ -1,0 +1,344 @@
+{
+  "arms": [
+    {
+      "arm": "A_no_experience",
+      "full_known_token_delta": -14067,
+      "new_actual_task_elapsed_millis": 630706,
+      "new_control_memory_reads": 0,
+      "new_control_searches": 0,
+      "new_full_known_tokens": 468447,
+      "new_tasks": 13,
+      "old_actual_task_elapsed_millis": 570771,
+      "old_full_known_tokens": 482514,
+      "old_tasks": 14,
+      "task_delta": -1
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "full_known_token_delta": -791715,
+      "new_actual_task_elapsed_millis": 672426,
+      "new_control_memory_reads": 8,
+      "new_control_searches": 2,
+      "new_full_known_tokens": 668843,
+      "new_tasks": 13,
+      "old_actual_task_elapsed_millis": 1032528,
+      "old_full_known_tokens": 1460558,
+      "old_tasks": 14,
+      "task_delta": -1
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "full_known_token_delta": -187142,
+      "new_actual_task_elapsed_millis": 916832,
+      "new_control_memory_reads": 13,
+      "new_control_searches": 5,
+      "new_full_known_tokens": 1142293,
+      "new_tasks": 14,
+      "old_actual_task_elapsed_millis": 983091,
+      "old_full_known_tokens": 1329435,
+      "old_tasks": 13,
+      "task_delta": 1
+    }
+  ],
+  "case_costs_two_repetitions": [
+    {
+      "arm": "A_no_experience",
+      "case": "control-01",
+      "new_known_full_tokens": 55582,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 63750,
+      "old_native_entries": 9
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-01",
+      "new_known_full_tokens": 77625,
+      "new_memory_reads": 0,
+      "new_native_entries": 9,
+      "old_known_full_tokens": 74909,
+      "old_native_entries": 9
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-01",
+      "new_known_full_tokens": 101843,
+      "new_memory_reads": 0,
+      "new_native_entries": 10,
+      "old_known_full_tokens": 99954,
+      "old_native_entries": 10
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "new_known_full_tokens": 40680,
+      "new_memory_reads": 0,
+      "new_native_entries": 7,
+      "old_known_full_tokens": 56454,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "new_known_full_tokens": 57132,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 65633,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-02",
+      "new_known_full_tokens": 113141,
+      "new_memory_reads": 0,
+      "new_native_entries": 11,
+      "old_known_full_tokens": 100509,
+      "old_native_entries": 10
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "new_known_full_tokens": 25696,
+      "new_memory_reads": 0,
+      "new_native_entries": 4,
+      "old_known_full_tokens": 25115,
+      "old_native_entries": 4
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "new_known_full_tokens": 126292,
+      "new_memory_reads": 8,
+      "new_native_entries": 12,
+      "old_known_full_tokens": 908623,
+      "old_native_entries": 48
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "new_known_full_tokens": 143850,
+      "new_memory_reads": 8,
+      "new_native_entries": 12,
+      "old_known_full_tokens": 403436,
+      "old_native_entries": 28
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-04",
+      "new_known_full_tokens": 44081,
+      "new_memory_reads": 0,
+      "new_native_entries": 6,
+      "old_known_full_tokens": 46911,
+      "old_native_entries": 6
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-04",
+      "new_known_full_tokens": 53173,
+      "new_memory_reads": 0,
+      "new_native_entries": 6,
+      "old_known_full_tokens": 49034,
+      "old_native_entries": 6
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "new_known_full_tokens": 98399,
+      "new_memory_reads": 2,
+      "new_native_entries": 11,
+      "old_known_full_tokens": 64696,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-05",
+      "new_known_full_tokens": 59980,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 60342,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-05",
+      "new_known_full_tokens": 69534,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 68060,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-05",
+      "new_known_full_tokens": 97408,
+      "new_memory_reads": 0,
+      "new_native_entries": 11,
+      "old_known_full_tokens": 119438,
+      "old_native_entries": 14
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-06",
+      "new_known_full_tokens": 24162,
+      "new_memory_reads": 0,
+      "new_native_entries": 4,
+      "old_known_full_tokens": 22929,
+      "old_native_entries": 4
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-06",
+      "new_known_full_tokens": 28160,
+      "new_memory_reads": 0,
+      "new_native_entries": 4,
+      "old_known_full_tokens": 28487,
+      "old_native_entries": 4
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-06",
+      "new_known_full_tokens": 53633,
+      "new_memory_reads": 0,
+      "new_native_entries": 7,
+      "old_known_full_tokens": 51299,
+      "old_native_entries": 7
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-07",
+      "new_known_full_tokens": 65101,
+      "new_memory_reads": 0,
+      "new_native_entries": 9,
+      "old_known_full_tokens": 56046,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-07",
+      "new_known_full_tokens": 65080,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 62655,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-07",
+      "new_known_full_tokens": 93090,
+      "new_memory_reads": 0,
+      "new_native_entries": 11,
+      "old_known_full_tokens": 88439,
+      "old_native_entries": 11
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-08",
+      "new_known_full_tokens": 57668,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 57625,
+      "old_native_entries": 8
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-08",
+      "new_known_full_tokens": 68928,
+      "new_memory_reads": 0,
+      "new_native_entries": 8,
+      "old_known_full_tokens": 82283,
+      "old_native_entries": 10
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-08",
+      "new_known_full_tokens": 134046,
+      "new_memory_reads": 3,
+      "new_native_entries": 14,
+      "old_known_full_tokens": 98710,
+      "old_native_entries": 12
+    }
+  ],
+  "changed_case_outcomes": [
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "new_success": false,
+      "old_success": true,
+      "sequence": 37
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "new_success": false,
+      "old_success": true,
+      "sequence": 38
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "new_success": true,
+      "old_success": false,
+      "sequence": 43
+    }
+  ],
+  "denominator_each_arm": 16,
+  "format": "butler115.closed-v5-vs-evidence-v6.v1",
+  "inclusive_primary_usage": {
+    "known_full_token_lower_bound": 11910075,
+    "native_entries": 1278,
+    "native_known_usage": 1272,
+    "native_missing_total": 0,
+    "native_unknown_usage": 6,
+    "product_attempts": 1280,
+    "product_null": 8,
+    "product_observed": 1272,
+    "product_without_native_entry": 2
+  },
+  "invoice_cost": "unknown",
+  "isolated_causal_effect_of_read_policy": false,
+  "limitations": [
+    "v6 also contains the previously model-free C43 source-pin fix.",
+    "Source tasks, frozen notes and skills are regenerated; model sampling and external latency also vary.",
+    "Two repetitions; coordinator scoring, not independent whole-issue acceptance.",
+    "Full known tokens include provider total/thinking; unknown spend and product NULL are not zero.",
+    "Shared preparation is allocated to each eligible arm for comparison but incurred once in unique window accounting."
+  ],
+  "new_model_calls_created_by_comparison": 0,
+  "new_unique_usage": {
+    "known_full_token_lower_bound": 2061167,
+    "native_entries": 229,
+    "native_known_usage": 227,
+    "native_missing_total": 0,
+    "native_unknown_usage": 2,
+    "product_attempts": 229,
+    "product_null": 2,
+    "product_observed": 227,
+    "product_without_native_entry": 0
+  },
+  "new_within_window_comparisons": {
+    "B_minus_A": {
+      "allocated_full_tokens": 200396,
+      "allocated_model_millis": 98142,
+      "completed_tasks": 0,
+      "coordinator_task_success": 0
+    },
+    "C_minus_B": {
+      "allocated_full_tokens": 473450,
+      "allocated_model_millis": 350740,
+      "completed_tasks": 1,
+      "coordinator_task_success": 1
+    }
+  },
+  "old_results_changed": false,
+  "production_updated": false,
+  "separate_diagnostics": {
+    "invoice_cost": "unknown",
+    "known_full_tokens": 90951,
+    "legacy_usage": [
+      null,
+      4175,
+      3389
+    ],
+    "native_known_requests": 25
+  }
+}

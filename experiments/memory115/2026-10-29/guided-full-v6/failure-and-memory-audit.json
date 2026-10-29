@@ -1,0 +1,584 @@
+{
+  "all_A_reads_zero": true,
+  "all_control_read_counts_within_8_and_3": true,
+  "controls": [
+    {
+      "arm": "A_no_experience",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 10
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 11
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 12
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 13
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 14
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 15
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 2,
+      "reads": 3,
+      "searches": 1,
+      "sequence": 16
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 17
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 4,
+      "reads": 5,
+      "searches": 1,
+      "sequence": 18
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 19
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 20
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 21
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 22
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 23
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 24
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 25
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 26
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 27
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 28
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 29
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 30
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 31
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 2,
+      "reads": 3,
+      "searches": 1,
+      "sequence": 32
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 33
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 34
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 35
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-01",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 36
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 37
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 38
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-02",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 39
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 40
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 4,
+      "reads": 5,
+      "searches": 1,
+      "sequence": 41
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "memory_tool_noncompleted": 0,
+      "opens": 2,
+      "reads": 3,
+      "searches": 1,
+      "sequence": 42
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 2,
+      "searches": 2,
+      "sequence": 43
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 44
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-04",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 45
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 46
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 47
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-05",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 48
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 49
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 50
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-06",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 51
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 52
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 53
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-07",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 54
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 55
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 56
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-08",
+      "memory_tool_noncompleted": 0,
+      "opens": 0,
+      "reads": 0,
+      "searches": 0,
+      "sequence": 57
+    }
+  ],
+  "current_memory_calls": [
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "count": 6,
+      "data_status": "ok",
+      "tool": "memory.open",
+      "tool_status": "completed"
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "count": 2,
+      "data_status": "ok",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "count": 8,
+      "data_status": "ok",
+      "tool": "memory.open",
+      "tool_status": "completed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "count": 2,
+      "data_status": "empty",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "count": 3,
+      "data_status": "ok",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    }
+  ],
+  "format": "butler115.evidence-policy-window-audit.v1",
+  "maximum_observed_task_external_calls": 7,
+  "maximum_observed_task_model_entries": 8,
+  "native_calls_created_by_audit": 0,
+  "noncompleted_runs": [
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 16
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 17
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 18
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "label": "other_failure",
+      "noncompleted_tools": [],
+      "run_state": "DURABLE_FAILED",
+      "sequence": 37
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "label": "other_failure",
+      "noncompleted_tools": [],
+      "run_state": "DURABLE_FAILED",
+      "sequence": 38
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 40
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 41
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "label": "effect_unknown",
+      "noncompleted_tools": [
+        {
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 42
+    }
+  ],
+  "observed_task_limits": [
+    {
+      "external_calls": 32,
+      "model_turns": 24
+    }
+  ],
+  "original_raw_outcomes_changed": false,
+  "product_attempts_without_native_entry": [],
+  "production_updated": false
+}

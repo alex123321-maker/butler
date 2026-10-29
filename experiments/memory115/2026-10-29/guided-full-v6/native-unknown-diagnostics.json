@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "diagnostics": [
+        {
+          "http_status": 400,
+          "reason": "upstream_invalid_argument",
+          "type": "provider_protocol_error"
+        }
+      ],
+      "kind": "tool_result",
+      "native_sequence": 145,
+      "repetition": 2,
+      "slot_sequence": 37,
+      "usage": null
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "diagnostics": [
+        {
+          "http_status": 400,
+          "reason": "upstream_invalid_argument",
+          "type": "provider_protocol_error"
+        }
+      ],
+      "kind": "tool_result",
+      "native_sequence": 148,
+      "repetition": 2,
+      "slot_sequence": 38,
+      "usage": null
+    }
+  ],
+  "format": "butler115.native-unknown-diagnostics.v1",
+  "new_model_requests": 0,
+  "reservation_refunded": false,
+  "usage_reconstructed": false
+}

@@ -1,0 +1,41 @@
+{
+  "format": "butler115.guided-evidence-binding.v1",
+  "source": "9eea1672e7303c6d87ee9cc210e1a681e29f183e",
+  "plan_sha256": "02730ca74dfcb6aad0af512f93d0a68c8575cc2245ad3d7b9dff08e97b0ad9a6",
+  "history_sha256": "a31151b163ed1747519dc83215d9e057b1a142c0223bc14eaf7a0c40fa1b72f9",
+  "source_producer_commit": "9eea1672e7303c6d87ee9cc210e1a681e29f183e",
+  "model_entries_per_task": 24,
+  "external_calls_per_task": 32,
+  "maximum_new_entries": 1276,
+  "logical_slots": 57,
+  "control_repetitions": 2,
+  "prior_native_entries": 1049,
+  "prior_known_full_tokens": 9848908,
+  "prior_unknown_usage": 4,
+  "native_admission_during_binding": 0,
+  "pins": {
+    "laba115NativeSource": "9eea1672e7303c6d87ee9cc210e1a681e29f183e",
+    "laba115NativePlanSHA": "02730ca74dfcb6aad0af512f93d0a68c8575cc2245ad3d7b9dff08e97b0ad9a6",
+    "laba115NativeHistorySHA": "a31151b163ed1747519dc83215d9e057b1a142c0223bc14eaf7a0c40fa1b72f9",
+    "laba115NativeAppSHA": "745696a9a9c0090bc85934adc3301c820ff0b9a51866c28cdcfac9c3d698ee8b",
+    "laba115NativeBrokerSHA": "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c",
+    "laba115NativeBrokerControlSHA": "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307",
+    "laba115NativeExtensionSHA": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "laba115NativeHTTPSHA": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca"
+  },
+  "operator_sha256": "ac92ae1c625bf95ad779254b6d668f50251fc526121602ae7a3bda30bc356f1e",
+  "reviewer_sha256": "6250d28a5c054a25635e46f86654d2e56c07e7aefdec19e8aea41f73312a20f7",
+  "operator_binding_commit": "d1c9c72e",
+  "operator_unbinding_commit": "9ef33d22",
+  "read_policy": {
+    "applies_to": "B_C_and_skill_preparation",
+    "reject_fully_covered_ranges": true,
+    "maximum_reads": 8,
+    "maximum_consecutive_non_novel_searches": 2,
+    "state": "current_run_postgresql_confirmed_broker_receipts",
+    "A_experience": false,
+    "maximum_searches": 3
+  },
+  "source_blob_count": 6685,
+  "source_blob_bytes": 337135183
+}

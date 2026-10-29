@@ -1,0 +1,23 @@
+{
+  "actual_current_verifier_503": true,
+  "completed_broker_loads": 0,
+  "flow_error": false,
+  "isolated_causal_attribution": false,
+  "native_entries": 7,
+  "old_failed_C43_modified": false,
+  "prepare_calls": 0,
+  "read_statuses": [
+    {
+      "data_status": "empty",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    },
+    {
+      "data_status": "empty",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    }
+  ],
+  "run_state": "RUN_STATE_COMPLETED",
+  "sequence": 43
+}

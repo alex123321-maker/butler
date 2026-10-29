@@ -1,0 +1,10 @@
+{
+  "old_backups_modified": false,
+  "verified_sha256": {
+    "private-native-raw-inventory-guided-full-v6.sha256": "66754858b606f1f32cca9d7acf5b959a5e0f5f6ef607374dbb539aa56d5efd06",
+    "private-audit-proof-guided-full-v6.tar": "64bd9a5eabfeafd8261c63f22e828bf01514d92f301fbff6d42851ac8543ca01",
+    "private-native-raw-guided-full-v6.tar": "5a4ca8064fdab2ca3b17f1ca147a5a7a046d1afdf2a8b5031701e0ea8375e156"
+  },
+  "format": "butler115.private-pc-backup.v6",
+  "auth_files_copied": false
+}

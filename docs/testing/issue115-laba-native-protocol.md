@@ -1,8 +1,24 @@
 # Prospective fixed laba skill-preparation comparison
 
-## New evidence-policy full57 window, v6
+## Closed evidence-policy full57 window, v6
 
-The next owner request authorizes a new complete A/B/C on laba with the
+The owner-authorized full v6 is now closed:57/57 stages,48/48 controls,
+49 completed/8 failed,0 unexecuted. Coordinator task outcomes A13/B13/C14 of16;
+full known allocated tokens468447/668843/1142293. The A/B missing outcomes are
+two retained HTTP400 upstream_invalid_argument failures with unknown usage,
+not evidence that C's extra task is caused by the skill. New229 native/227 known/
+2 unknown/2061167 full known tokens; inclusive1278 native/6 unknown/11910075
+known tokens,1280 product/8 NULL/2 without native. Separate diagnostics stay
+separate. Reads73→21; no read-policy stop was needed. Four exact current Broker
+loads cover both repeat/similar C repetitions. C43 now survives two empty searches
+and reports the real verifier503 without replay; the old failed C43 stays failed.
+[Results, full costs and preserved failures](../../experiments/memory115/2026-10-29/guided-full-v6/README.md).
+Native/source/authority gates, opaque auth handback and raw/audit PC backups are
+verified; own PG/relay stopped at0 clients. Commitments are UNBOUND and the
+one-use v6 domain is consumed. No future admission can reuse closed1049 as its
+latest carry; a future profile needs the new closure and fresh binding.
+
+The completed admission used a new complete A/B/C on laba with the
 implemented evidence selection/read-stop policy. Its v4 guided recipe consumes
 only the exact closed1049 v8 leaf:1049 native/4 unknown/9848908 known full tokens,
 1051 product/6 NULL/2 without native, plus the unchanged separate diagnostics.
