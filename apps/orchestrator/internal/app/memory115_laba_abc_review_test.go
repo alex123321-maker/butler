@@ -16,7 +16,7 @@ import (
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
-	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" {
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" && profile != "guided-full-v6" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -73,6 +73,10 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	if profile == "guided-full-v5" {
 		wantPlan = "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54"
+		limit = 57
+	}
+	if profile == "guided-full-v6" {
+		wantPlan = "02730ca74dfcb6aad0af512f93d0a68c8575cc2245ad3d7b9dff08e97b0ad9a6"
 		limit = 57
 	}
 	if accountingPlan != wantPlan {
@@ -299,10 +303,10 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		}
 		pinRaw, pinsPresent := db["skill_usages"]
 		row["skill_usage_export_present"] = pinsPresent
-		if (profile == "guided-full-v3" || profile == "guided-full-v5") && (!pinsPresent || json.Unmarshal(pinRaw, &usagePins) != nil) {
+		if (profile == "guided-full-v3" || profile == "guided-full-v5" || profile == "guided-full-v6") && (!pinsPresent || json.Unmarshal(pinRaw, &usagePins) != nil) {
 			t.Fatal("complete actual skill usage export required")
 		}
-		if profile != "guided-full-v3" && profile != "guided-full-v5" {
+		if profile != "guided-full-v3" && profile != "guided-full-v5" && profile != "guided-full-v6" {
 			_ = json.Unmarshal(pinRaw, &usagePins)
 		}
 		pins := []map[string]any{}

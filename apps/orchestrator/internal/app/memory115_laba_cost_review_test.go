@@ -13,7 +13,7 @@ import (
 // it creates no native history recipe, provider, database or admission authority.
 func TestLaba115ClosedCostReview(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW")
-	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" {
+	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" && profile != "guided-full-v6" {
 		t.Skip("explicit immutable post-exit server exports required")
 	}
 	planSHA := "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
@@ -46,6 +46,10 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		planSHA = "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54"
 		historySHA = "a84f7e4d6dae31e34042644fb377f4a94bcaf6eb0d8cf62d7de2f7f59869a503"
 	}
+	if profile == "guided-full-v6" {
+		planSHA = "02730ca74dfcb6aad0af512f93d0a68c8575cc2245ad3d7b9dff08e97b0ad9a6"
+		historySHA = "a31151b163ed1747519dc83215d9e057b1a142c0223bc14eaf7a0c40fa1b72f9"
+	}
 	root := "/review"
 	read := func(name string, value any) {
 		t.Helper()
@@ -66,7 +70,7 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 	}
 	history, err := loadExperienceNativeHistory("/history/recipe.json", historySHA)
 	wantScope, maximumDatabases := 33, 25
-	if profile == "guided-full-v1" || profile == "guided-full-v3" || profile == "guided-full-v5" {
+	if profile == "guided-full-v1" || profile == "guided-full-v3" || profile == "guided-full-v5" || profile == "guided-full-v6" {
 		wantScope, maximumDatabases = 0, 49
 		if history.GuidedFull == nil {
 			t.Fatal("guided full57 history missing")
