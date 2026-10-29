@@ -293,3 +293,12 @@ without new pins. Generic owner inspection may omit this runtime prefilter.
 Existing Catalog authorization, full current applicability, dependency validation
 and final proof are repeated unchanged. An already exposed incompatible lesson
 continues to stop release; neither its pins nor historical failures are erased.
+
+The owner's isolated expanded #115 recipe permits24 model entries and32 external
+calls per foreground task, one extra note entry per source task, and a1276-entry
+independent journal. These are predeclared research partitions with the complete
+historical carry, not production budget defaults or mutable live-scope increases.
+Legacy640/12/11 proofs retain their original bounds. Native completion of57 stages
+and actual load/read plumbing do not qualify experience: the current full window
+remains NO_GO, with a separately retained memory_source_stale product reservation
+without native usage. See the complete guided-full-v5 result.

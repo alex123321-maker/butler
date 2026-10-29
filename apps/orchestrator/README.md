@@ -1645,3 +1645,12 @@ model route, task scopes and stopping rules are unchanged. Explicit kernel skill
 guidance and current fixed memory reads pass through the actual Broker. All
 binaries and complete source are frozen before provider auth; working deployment
 is excluded. The change is a research fixture profile, not a product budget edit.
+
+The expanded full native #115 comparison completed57 stages and48 controls on
+laba. Strict coordinator outcomes were A14/16, B14/16, C13/16. All38 search and35
+open controls completed as DATA (one denied open); six actual Broker loads have
+current run/task/version/digest pins. New281 native entries report3058291 tokens;
+a separate reserved product attempt has NULL usage and no native entry after
+memory_source_stale. All old costs/unknowns remain. Larger24/32 per-task limits
+have not qualified experience; defaults stay off. See the
+[full result](../../experiments/memory115/2026-10-29/guided-full-v5/README.md).

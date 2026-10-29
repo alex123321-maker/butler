@@ -1,0 +1,32 @@
+{
+  "audit_archive_sha256": "890afad1df3c63ffe07d011c9cec9664dfd6e4fd810619a94a422221ae7c7db9",
+  "audit_files": 65,
+  "evidence_sha256": {
+    "guided-full-review-v5c/delta/memory115_laba_abc_review_test.go": "778397eee3d48ed9d974d9ac9b16183c734303767e002e413bd9750f3bfc8017",
+    "guided-full-review-v5c/delta/memory115_laba_cost_review_test.go": "f496138423dfdaf2aff3209a8b79572d14a4a8a1eac5d290b1284a0173d1f91f",
+    "guided-full-review-v5c/delta/memory115_projection_owned_run_test.go": "5df244237ad9e8d88701cb49f430cfb724f124c9a02196c8872d44aba2aa467b",
+    "guided-full-review-v5c/delta/memory_closed_experience_native_history_test.go": "3d9a506d580535881f26e2f7de2e1b1d3fb29b64c75054bf78ee1b1234f5966c",
+    "guided-full-review-v5c/overlay.json": "46a64e189a3a72c7efb3acc5e4c2eb2faf65fb4da3abba6dd5b56abd453d4ccc",
+    "native-guided-full-v5-exit.json": "706e46409dbee96f206a8332a2956d6b3de8bb4c865f1eed252e403df215b86c",
+    "operator-unbound-guided-full-v5.json": "c2dcedbc791931bb7a353afc5bc12fe4b44f9657ffaac98a1f9012ff4b00e0d0",
+    "prepare-guided-full-v5-exit.json": "a0e6689358c2715be329cc437d05375f1d430511526899159aeb863b743e647a",
+    "preseal-guided-full-v5-exit.json": "fff8dd3bf04fd1c89b541751a105f66f0fed182882864565a4a0c9c4707595d3",
+    "private-stop-guided-full-v5.json": "2c67cc07211305df6905dee34de48afd82cf3cbaae1604a27441db9d07afaaa0",
+    "raw-seal-guided-full-v5.json": "a64f8ec5c0a99847cff4d6cc32514128dbd66ea3a1578c5aacd5da3fae616c19",
+    "review-output-guided-full-v5/abc-facts.json": "64f902a9d37d70e44aa9c19d719a4ee50948eba32a145ac5d14d4a112e61843c",
+    "review-output-guided-full-v5/broker-load-proof.json": "95e20092ef48a5c11154e3b105ffcc5ce40684a0ded0237fa46efefec09cbbbf",
+    "review-output-guided-full-v5/context-provenance-scan.json": "94ab99fa762d5f4024dfe7f48527bbc904212e3e45a8316b32128f1a7cdca2b4",
+    "review-output-guided-full-v5/coordinator-assessment.json": "51d92e998913ce840bb765c6f1345a102c2593a282254b7130150b3e277508ec",
+    "review-output-guided-full-v5/cost-review.json": "66743a331805ef76c6a14240b1394d91b41c119f44b9e7e8d0b6e1aaeb2fd0f0",
+    "review-output-guided-full-v5/failure-and-memory-audit.json": "f8aa02e42efeb509fb70c00d8fb7f6ea051ce6c4db50f111872f49783181158c",
+    "review-run-guided-full-v5-exit.json": "c6ca2ca902d37c1c0c993a95538d5f684b6b141eac258676935c3c2748b5eb93",
+    "skipped-bin-v1-review-run-guided-full-v5-exit.json": "bf53cdbfa7849d5d1e581d95bb16c7737898e0caa0763e8343305c62b763f812",
+    "skipped-review-bin-v5-disposition.json": "8f2398c3c4b96e536893c9917d4529baa621c77ce1f3e115cc92a84ef18d50b5",
+    "superseded-preseal-guided-full-v4.json": "d047ee8eb76b50bab4c1790acd593e2158260451be931608ae297f6afd13cf15"
+  },
+  "format": "butler115.guided-full-v5-audit-backup.v1",
+  "native_auth_files_included": false,
+  "new_model_calls_created_by_audit": 0,
+  "old_native_archive_and_inventory_still_match": true,
+  "old_results_rewritten": false
+}

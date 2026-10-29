@@ -1,0 +1,144 @@
+{
+  "budget_stops": [
+    {
+      "code": "budget_model_turns_task",
+      "sequence": 18
+    }
+  ],
+  "case42_run_complete_is_not_qualified_task_success": {
+    "final_preserves_uncertainty_about_ready_maybe": true,
+    "frozen_case": "control-03",
+    "prior_original03_owner_verdict": "unknown",
+    "qualified_unsupported_value_proof": false
+  },
+  "case_task_limits": [
+    {
+      "external_calls": 32,
+      "model_entries": 24
+    }
+  ],
+  "current_memory_calls": [
+    {
+      "count": 1,
+      "data_status": "denied",
+      "tool": "memory.open",
+      "tool_status": "completed"
+    },
+    {
+      "count": 34,
+      "data_status": "ok",
+      "tool": "memory.open",
+      "tool_status": "completed"
+    },
+    {
+      "count": 12,
+      "data_status": "empty",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    },
+    {
+      "count": 26,
+      "data_status": "ok",
+      "tool": "memory.search",
+      "tool_status": "completed"
+    }
+  ],
+  "format": "butler115.fixed-memory-expanded-window-audit.v1",
+  "maximum_observed_task_external_calls": 24,
+  "maximum_observed_task_model_entries": 24,
+  "memory_tool_UNKNOWNs": 0,
+  "missing_execution_result_cases": [
+    16,
+    43
+  ],
+  "new_requests_created_by_audit": 0,
+  "noncompleted_runs": [
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "completed_broker_loads": 1,
+      "flow_error": true,
+      "noncompleted_tools": [],
+      "result_error_code": "",
+      "run_state": "DURABLE_FAILED",
+      "sequence": 16
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "completed_broker_loads": 0,
+      "flow_error": false,
+      "noncompleted_tools": [
+        {
+          "name": "extension.project.prepare-patch",
+          "status": "effect_unknown"
+        }
+      ],
+      "result_error_code": "effect_unknown",
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 17
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "completed_broker_loads": 0,
+      "flow_error": false,
+      "noncompleted_tools": [],
+      "result_error_code": "budget_model_turns_task",
+      "run_state": "RUN_STATE_AWAITING_MODEL_RESUME",
+      "sequence": 18
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "completed_broker_loads": 0,
+      "flow_error": false,
+      "noncompleted_tools": [
+        {
+          "name": "extension.project.prepare-patch",
+          "status": "effect_unknown"
+        }
+      ],
+      "result_error_code": "effect_unknown",
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 40
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "completed_broker_loads": 1,
+      "flow_error": false,
+      "noncompleted_tools": [
+        {
+          "name": "extension.project.prepare-patch",
+          "status": "effect_unknown"
+        }
+      ],
+      "result_error_code": "effect_unknown",
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 41
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "completed_broker_loads": 0,
+      "flow_error": true,
+      "noncompleted_tools": [],
+      "result_error_code": "",
+      "run_state": "DURABLE_FAILED",
+      "sequence": 43
+    }
+  ],
+  "original_raw_outcomes_changed": false,
+  "product_attempts_without_native_entry": [
+    {
+      "error_code": "memory_source_stale",
+      "native_entry_present": false,
+      "reservation_refunded": false,
+      "root_cause_reproduced": false,
+      "sequence": 43,
+      "usage": null
+    }
+  ],
+  "production_updated": false
+}

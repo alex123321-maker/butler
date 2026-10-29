@@ -1,0 +1,78 @@
+{
+  "extra_known_failure_loads": 2,
+  "format": "butler115.exact-current-broker-loads.v2",
+  "inapplicable_drift_scope_inspect_only_deleted_loads": 0,
+  "loads": [
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-01",
+      "completed_broker_loads": 1,
+      "execution_result_present": true,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 12
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-02",
+      "completed_broker_loads": 1,
+      "execution_result_present": true,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 1,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 14
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-03",
+      "completed_broker_loads": 1,
+      "execution_result_present": false,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 1,
+      "run_state": "DURABLE_FAILED",
+      "sequence": 16
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-01",
+      "completed_broker_loads": 1,
+      "execution_result_present": true,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 2,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 34
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-02",
+      "completed_broker_loads": 1,
+      "execution_result_present": true,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 2,
+      "run_state": "RUN_STATE_COMPLETED",
+      "sequence": 39
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "before_first_task_action": 1,
+      "case": "control-03",
+      "completed_broker_loads": 1,
+      "execution_result_present": true,
+      "loads_with_exact_current_pin": 1,
+      "repetition": 2,
+      "run_state": "RUN_STATE_TOOL_RUNNING",
+      "sequence": 41
+    }
+  ],
+  "new_requests_created_by_audit": 0,
+  "positive_repeat_similar_loads": 4,
+  "successful_loads_are_not_task_success": true,
+  "total_before_task_action": 6,
+  "total_matching_loads": 6
+}
