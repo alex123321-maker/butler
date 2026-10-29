@@ -13,7 +13,7 @@ import (
 const guided115ExpandedFormat = "butler.experience.laba-guided-full-window.v3"
 const guided115Closed768SHA = "d7699d80d7883729454fff7b9e921c82a4e6c6f8a5c6fc6a54adb42a3d07dbda"
 const guided115ExpandedDecisionSHA = "f5a4b920e5bf7ed3f87893348700944e62957d468a828b72291c87c9063d94ac"
-const guided115ExpandedDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_guided_full_v4_test?sslmode=disable"
+const guided115ExpandedDSN = "postgres://postgres@127.0.0.1:55451/memory115_laba_guided_full_v5_test?sslmode=disable"
 const guided115ToolCalls = 32
 const guided115ModelEntries = 24
 const guided115Maximum = 53*guided115ModelEntries + 4

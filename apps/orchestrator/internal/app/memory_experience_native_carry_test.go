@@ -69,7 +69,7 @@ func applyExperienceNativeHistory(ctx context.Context, p *experienceNativeProvid
 	if err != nil || tag.RowsAffected() != 1 {
 		return errors.New("independent window/history binding consumed or changed")
 	}
-	return p.writeNew("history-import.json", map[string]any{"history": history, "source_carry_reservation_id": reservation.ID, "source_scope_id": scope.ID, "new_day_limits": sourcePolicy.Day, "new_native_entry_limit": experienceNativeMaximum, "carry_is_new_provider_attempt": false, "cross_database_production_authority": false})
+	return p.writeNew("history-import.json", map[string]any{"history": history, "source_carry_reservation_id": reservation.ID, "source_scope_id": scope.ID, "new_day_limits": sourcePolicy.Day, "new_native_entry_limit": p.maximum, "carry_is_new_provider_attempt": false, "cross_database_production_authority": false})
 }
 
 func TestExperienceNativeHistoryCarryPrecedesSourceAndGlobalAdmissionsIntegration(t *testing.T) {
