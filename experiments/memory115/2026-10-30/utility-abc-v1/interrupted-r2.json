@@ -1,0 +1,1759 @@
+{
+  "root": "/srv/gitea/butler-acceptance/issue115-utility-native-20261030-r2",
+  "recovery": "host restart reported by owner; producer is not resumed",
+  "native_admissions": 101,
+  "native_methods_dispatched": 101,
+  "known_full_tokens": 824166,
+  "unknown_usage": 1,
+  "original_raw_files_missing": 1,
+  "scheduled": 72,
+  "scored_slots": 27,
+  "slot_status_source": "inferred from existing artifacts after reboot; does not replace a producer final marker",
+  "slots": [
+    {
+      "Sequence": 1,
+      "Case": 0,
+      "Arm": "A",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 2,
+      "Case": 0,
+      "Arm": "B",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 3,
+      "Case": 0,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 4,
+      "Case": 1,
+      "Arm": "B",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 5,
+      "Case": 1,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 6,
+      "Case": 1,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 7,
+      "Case": 2,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 8,
+      "Case": 2,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 9,
+      "Case": 2,
+      "Arm": "B",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 10,
+      "Case": 3,
+      "Arm": "A",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 11,
+      "Case": 3,
+      "Arm": "B",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 12,
+      "Case": 3,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 13,
+      "Case": 4,
+      "Arm": "B",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 14,
+      "Case": 4,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 15,
+      "Case": 4,
+      "Arm": "A",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 16,
+      "Case": 5,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 17,
+      "Case": 5,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 18,
+      "Case": 5,
+      "Arm": "B",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 19,
+      "Case": 6,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 20,
+      "Case": 6,
+      "Arm": "B",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 21,
+      "Case": 6,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 22,
+      "Case": 7,
+      "Arm": "B",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 23,
+      "Case": 7,
+      "Arm": "C",
+      "Status": "completed"
+    },
+    {
+      "Sequence": 24,
+      "Case": 7,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 25,
+      "Case": 8,
+      "Arm": "C",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 26,
+      "Case": 8,
+      "Arm": "A",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 27,
+      "Case": 8,
+      "Arm": "B",
+      "Status": "failed"
+    },
+    {
+      "Sequence": 28,
+      "Case": 9,
+      "Arm": "A",
+      "Status": "interrupted"
+    },
+    {
+      "Sequence": 29,
+      "Case": 9,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 30,
+      "Case": 9,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 31,
+      "Case": 10,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 32,
+      "Case": 10,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 33,
+      "Case": 10,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 34,
+      "Case": 11,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 35,
+      "Case": 11,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 36,
+      "Case": 11,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 37,
+      "Case": 12,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 38,
+      "Case": 12,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 39,
+      "Case": 12,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 40,
+      "Case": 13,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 41,
+      "Case": 13,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 42,
+      "Case": 13,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 43,
+      "Case": 14,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 44,
+      "Case": 14,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 45,
+      "Case": 14,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 46,
+      "Case": 15,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 47,
+      "Case": 15,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 48,
+      "Case": 15,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 49,
+      "Case": 16,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 50,
+      "Case": 16,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 51,
+      "Case": 16,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 52,
+      "Case": 17,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 53,
+      "Case": 17,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 54,
+      "Case": 17,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 55,
+      "Case": 18,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 56,
+      "Case": 18,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 57,
+      "Case": 18,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 58,
+      "Case": 19,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 59,
+      "Case": 19,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 60,
+      "Case": 19,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 61,
+      "Case": 20,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 62,
+      "Case": 20,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 63,
+      "Case": 20,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 64,
+      "Case": 21,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 65,
+      "Case": 21,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 66,
+      "Case": 21,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 67,
+      "Case": 22,
+      "Arm": "B",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 68,
+      "Case": 22,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 69,
+      "Case": 22,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 70,
+      "Case": 23,
+      "Arm": "C",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 71,
+      "Case": 23,
+      "Arm": "A",
+      "Status": "unexecuted"
+    },
+    {
+      "Sequence": 72,
+      "Case": 23,
+      "Arm": "B",
+      "Status": "unexecuted"
+    }
+  ],
+  "attempts": [
+    {
+      "sequence": 1,
+      "slot": 1,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4256,
+        "TotalTokens": 4949,
+        "OutputTokens": 27,
+        "ThinkingTokens": 666
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 2,
+      "slot": 1,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5248,
+        "TotalTokens": 9285,
+        "OutputTokens": 22,
+        "ThinkingTokens": 4015
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 3,
+      "slot": 2,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5037,
+        "TotalTokens": 6054,
+        "OutputTokens": 20,
+        "ThinkingTokens": 997
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 4,
+      "slot": 2,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6099,
+        "TotalTokens": 6140,
+        "OutputTokens": 19,
+        "ThinkingTokens": 22
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 5,
+      "slot": 2,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6455,
+        "TotalTokens": 7052,
+        "OutputTokens": 172,
+        "ThinkingTokens": 425
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 6,
+      "slot": 2,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7367,
+        "TotalTokens": 10392,
+        "OutputTokens": 166,
+        "ThinkingTokens": 2859
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 7,
+      "slot": 3,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5662,
+        "TotalTokens": 7398,
+        "OutputTokens": 19,
+        "ThinkingTokens": 1717
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 8,
+      "slot": 3,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7713,
+        "TotalTokens": 8341,
+        "OutputTokens": 173,
+        "ThinkingTokens": 455
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 9,
+      "slot": 3,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8656,
+        "TotalTokens": 11464,
+        "OutputTokens": 166,
+        "ThinkingTokens": 2642
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 10,
+      "slot": 4,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5011,
+        "TotalTokens": 5839,
+        "OutputTokens": 20,
+        "ThinkingTokens": 808
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 11,
+      "slot": 4,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5885,
+        "TotalTokens": 5921,
+        "OutputTokens": 19,
+        "ThinkingTokens": 17
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 12,
+      "slot": 4,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5967,
+        "TotalTokens": 6475,
+        "OutputTokens": 27,
+        "ThinkingTokens": 481
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 13,
+      "slot": 4,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6774,
+        "TotalTokens": 9511,
+        "OutputTokens": 33,
+        "ThinkingTokens": 2704
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 14,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5610,
+        "TotalTokens": 6876,
+        "OutputTokens": 19,
+        "ThinkingTokens": 1247
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 15,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6922,
+        "TotalTokens": 7232,
+        "OutputTokens": 13,
+        "ThinkingTokens": 297
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 16,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7380,
+        "TotalTokens": 7897,
+        "OutputTokens": 74,
+        "ThinkingTokens": 443
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 17,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8515,
+        "TotalTokens": 8999,
+        "OutputTokens": 20,
+        "ThinkingTokens": 464
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 18,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 9045,
+        "TotalTokens": 10148,
+        "OutputTokens": 27,
+        "ThinkingTokens": 1076
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 19,
+      "slot": 5,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 10448,
+        "TotalTokens": 12715,
+        "OutputTokens": 22,
+        "ThinkingTokens": 2245
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 20,
+      "slot": 6,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4238,
+        "TotalTokens": 5207,
+        "OutputTokens": 27,
+        "ThinkingTokens": 942
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 21,
+      "slot": 6,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5506,
+        "TotalTokens": 6666,
+        "OutputTokens": 33,
+        "ThinkingTokens": 1127
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 22,
+      "slot": 7,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5641,
+        "TotalTokens": 7345,
+        "OutputTokens": 20,
+        "ThinkingTokens": 1684
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 23,
+      "slot": 7,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7391,
+        "TotalTokens": 8052,
+        "OutputTokens": 19,
+        "ThinkingTokens": 642
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 24,
+      "slot": 7,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8098,
+        "TotalTokens": 8657,
+        "OutputTokens": 27,
+        "ThinkingTokens": 532
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 25,
+      "slot": 7,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8957,
+        "TotalTokens": 11287,
+        "OutputTokens": 22,
+        "ThinkingTokens": 2308
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 26,
+      "slot": 8,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4261,
+        "TotalTokens": 5184,
+        "OutputTokens": 27,
+        "ThinkingTokens": 896
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 27,
+      "slot": 8,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5483,
+        "TotalTokens": 10628,
+        "OutputTokens": 33,
+        "ThinkingTokens": 5112
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 28,
+      "slot": 9,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5046,
+        "TotalTokens": 6047,
+        "OutputTokens": 19,
+        "ThinkingTokens": 982
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 29,
+      "slot": 9,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6093,
+        "TotalTokens": 6295,
+        "OutputTokens": 27,
+        "ThinkingTokens": 175
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 30,
+      "slot": 9,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6594,
+        "TotalTokens": 6919,
+        "OutputTokens": 20,
+        "ThinkingTokens": 305
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 31,
+      "slot": 9,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6965,
+        "TotalTokens": 8617,
+        "OutputTokens": 33,
+        "ThinkingTokens": 1619
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 32,
+      "slot": 10,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4248,
+        "TotalTokens": 4991,
+        "OutputTokens": 27,
+        "ThinkingTokens": 716
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 33,
+      "slot": 10,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5290,
+        "TotalTokens": 9397,
+        "OutputTokens": 22,
+        "ThinkingTokens": 4085
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 34,
+      "slot": 11,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5026,
+        "TotalTokens": 5981,
+        "OutputTokens": 19,
+        "ThinkingTokens": 936
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 35,
+      "slot": 11,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6573,
+        "TotalTokens": 7360,
+        "OutputTokens": 175,
+        "ThinkingTokens": 612
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 36,
+      "slot": 11,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7676,
+        "TotalTokens": 10885,
+        "OutputTokens": 167,
+        "ThinkingTokens": 3042
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 37,
+      "slot": 12,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5637,
+        "TotalTokens": 6727,
+        "OutputTokens": 20,
+        "ThinkingTokens": 1070
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 38,
+      "slot": 12,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6773,
+        "TotalTokens": 6870,
+        "OutputTokens": 19,
+        "ThinkingTokens": 78
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 39,
+      "slot": 12,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7462,
+        "TotalTokens": 8235,
+        "OutputTokens": 175,
+        "ThinkingTokens": 598
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 40,
+      "slot": 12,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8550,
+        "TotalTokens": 9044,
+        "OutputTokens": 18,
+        "ThinkingTokens": 476
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 41,
+      "slot": 12,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 9191,
+        "TotalTokens": 13021,
+        "OutputTokens": 167,
+        "ThinkingTokens": 3663
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 42,
+      "slot": 13,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5066,
+        "TotalTokens": 6785,
+        "OutputTokens": 23,
+        "ThinkingTokens": 1696
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 43,
+      "slot": 13,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7098,
+        "TotalTokens": 7589,
+        "OutputTokens": 175,
+        "ThinkingTokens": 316
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 44,
+      "slot": 13,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7902,
+        "TotalTokens": 11044,
+        "OutputTokens": 165,
+        "ThinkingTokens": 2977
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 45,
+      "slot": 14,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5659,
+        "TotalTokens": 8611,
+        "OutputTokens": 19,
+        "ThinkingTokens": 2933
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 46,
+      "slot": 14,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8924,
+        "TotalTokens": 9626,
+        "OutputTokens": 175,
+        "ThinkingTokens": 527
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 47,
+      "slot": 14,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 9939,
+        "TotalTokens": 11120,
+        "OutputTokens": 165,
+        "ThinkingTokens": 1016
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 48,
+      "slot": 15,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4281,
+        "TotalTokens": 5961,
+        "OutputTokens": 27,
+        "ThinkingTokens": 1653
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 49,
+      "slot": 15,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6260,
+        "TotalTokens": 14161,
+        "OutputTokens": 41,
+        "ThinkingTokens": 7860
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 50,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5648,
+        "TotalTokens": 6568,
+        "OutputTokens": 79,
+        "ThinkingTokens": 841
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 51,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7186,
+        "TotalTokens": 7297,
+        "OutputTokens": 27,
+        "ThinkingTokens": 84
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 52,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7597,
+        "TotalTokens": 7854,
+        "OutputTokens": 19,
+        "ThinkingTokens": 238
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 53,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8195,
+        "TotalTokens": 8670,
+        "OutputTokens": 178,
+        "ThinkingTokens": 297
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 54,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 9011,
+        "TotalTokens": 10694,
+        "OutputTokens": 21,
+        "ThinkingTokens": 1662
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 55,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 10740,
+        "TotalTokens": 10772,
+        "OutputTokens": 19,
+        "ThinkingTokens": 13
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 56,
+      "slot": 16,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 11113,
+        "TotalTokens": 13368,
+        "OutputTokens": 170,
+        "ThinkingTokens": 2085
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 57,
+      "slot": 17,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4245,
+        "TotalTokens": 5088,
+        "OutputTokens": 27,
+        "ThinkingTokens": 816
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 58,
+      "slot": 17,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5387,
+        "TotalTokens": 8462,
+        "OutputTokens": 34,
+        "ThinkingTokens": 3041
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 59,
+      "slot": 17,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8554,
+        "TotalTokens": 13019,
+        "OutputTokens": 22,
+        "ThinkingTokens": 4443
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 60,
+      "slot": 18,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5009,
+        "TotalTokens": 5864,
+        "OutputTokens": 27,
+        "ThinkingTokens": 828
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 61,
+      "slot": 18,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6163,
+        "TotalTokens": 6399,
+        "OutputTokens": 19,
+        "ThinkingTokens": 217
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 62,
+      "slot": 18,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6740,
+        "TotalTokens": 7405,
+        "OutputTokens": 179,
+        "ThinkingTokens": 486
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 63,
+      "slot": 18,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7746,
+        "TotalTokens": 12311,
+        "OutputTokens": 170,
+        "ThinkingTokens": 4395
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 64,
+      "slot": 19,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4234,
+        "TotalTokens": 4915,
+        "OutputTokens": 27,
+        "ThinkingTokens": 654
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 65,
+      "slot": 19,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5214,
+        "TotalTokens": 8698,
+        "OutputTokens": 33,
+        "ThinkingTokens": 3451
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 66,
+      "slot": 20,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5003,
+        "TotalTokens": 5764,
+        "OutputTokens": 27,
+        "ThinkingTokens": 734
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 67,
+      "slot": 20,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6063,
+        "TotalTokens": 6227,
+        "OutputTokens": 19,
+        "ThinkingTokens": 145
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 68,
+      "slot": 20,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6273,
+        "TotalTokens": 6359,
+        "OutputTokens": 19,
+        "ThinkingTokens": 67
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 69,
+      "slot": 20,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6405,
+        "TotalTokens": 12131,
+        "OutputTokens": 22,
+        "ThinkingTokens": 5704
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 70,
+      "slot": 21,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5620,
+        "TotalTokens": 6611,
+        "OutputTokens": 78,
+        "ThinkingTokens": 913
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 71,
+      "slot": 21,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7217,
+        "TotalTokens": 7589,
+        "OutputTokens": 27,
+        "ThinkingTokens": 345
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 72,
+      "slot": 21,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7889,
+        "TotalTokens": 8319,
+        "OutputTokens": 19,
+        "ThinkingTokens": 411
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 73,
+      "slot": 21,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8365,
+        "TotalTokens": 8464,
+        "OutputTokens": 19,
+        "ThinkingTokens": 80
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 74,
+      "slot": 21,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8510,
+        "TotalTokens": 12742,
+        "OutputTokens": 22,
+        "ThinkingTokens": 4210
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 75,
+      "slot": 22,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4997,
+        "TotalTokens": 5586,
+        "OutputTokens": 27,
+        "ThinkingTokens": 562
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 76,
+      "slot": 22,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5885,
+        "TotalTokens": 6291,
+        "OutputTokens": 19,
+        "ThinkingTokens": 387
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 77,
+      "slot": 22,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6337,
+        "TotalTokens": 6390,
+        "OutputTokens": 19,
+        "ThinkingTokens": 34
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 78,
+      "slot": 22,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6436,
+        "TotalTokens": 7111,
+        "OutputTokens": 33,
+        "ThinkingTokens": 642
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 79,
+      "slot": 23,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5618,
+        "TotalTokens": 6560,
+        "OutputTokens": 71,
+        "ThinkingTokens": 871
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 80,
+      "slot": 23,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7169,
+        "TotalTokens": 7633,
+        "OutputTokens": 27,
+        "ThinkingTokens": 437
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 81,
+      "slot": 23,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7933,
+        "TotalTokens": 8650,
+        "OutputTokens": 19,
+        "ThinkingTokens": 698
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 82,
+      "slot": 23,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8696,
+        "TotalTokens": 8780,
+        "OutputTokens": 19,
+        "ThinkingTokens": 65
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 83,
+      "slot": 23,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8826,
+        "TotalTokens": 13425,
+        "OutputTokens": 22,
+        "ThinkingTokens": 4577
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 84,
+      "slot": 24,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4240,
+        "TotalTokens": 4928,
+        "OutputTokens": 27,
+        "ThinkingTokens": 661
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 85,
+      "slot": 24,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5227,
+        "TotalTokens": 7694,
+        "OutputTokens": 33,
+        "ThinkingTokens": 2434
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 86,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5649,
+        "TotalTokens": 6629,
+        "OutputTokens": 71,
+        "ThinkingTokens": 909
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 87,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7243,
+        "TotalTokens": 7538,
+        "OutputTokens": 27,
+        "ThinkingTokens": 268
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 88,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7838,
+        "TotalTokens": 8339,
+        "OutputTokens": 19,
+        "ThinkingTokens": 482
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 89,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8946,
+        "TotalTokens": 9341,
+        "OutputTokens": 180,
+        "ThinkingTokens": 215
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 90,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 9676,
+        "TotalTokens": 10016,
+        "OutputTokens": 174,
+        "ThinkingTokens": 166
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 91,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 10334,
+        "TotalTokens": 10549,
+        "OutputTokens": 29,
+        "ThinkingTokens": 186
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 92,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 10884,
+        "TotalTokens": 13999,
+        "OutputTokens": 19,
+        "ThinkingTokens": 3096
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 93,
+      "slot": 25,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 14045,
+        "TotalTokens": 14073,
+        "OutputTokens": 19,
+        "ThinkingTokens": 9
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 94,
+      "slot": 26,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4192,
+        "TotalTokens": 5046,
+        "OutputTokens": 27,
+        "ThinkingTokens": 827
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 95,
+      "slot": 26,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5345,
+        "TotalTokens": 7345,
+        "OutputTokens": 33,
+        "ThinkingTokens": 1967
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 96,
+      "slot": 27,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 5003,
+        "TotalTokens": 5811,
+        "OutputTokens": 27,
+        "ThinkingTokens": 781
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 97,
+      "slot": 27,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 6110,
+        "TotalTokens": 6685,
+        "OutputTokens": 19,
+        "ThinkingTokens": 556
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 98,
+      "slot": 27,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 7292,
+        "TotalTokens": 8007,
+        "OutputTokens": 180,
+        "ThinkingTokens": 535
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 99,
+      "slot": 27,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 8342,
+        "TotalTokens": 9652,
+        "OutputTokens": 33,
+        "ThinkingTokens": 1277
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 100,
+      "slot": 28,
+      "dispatched": true,
+      "usage": {
+        "InputTokens": 4271,
+        "TotalTokens": 5498,
+        "OutputTokens": 27,
+        "ThinkingTokens": 1200
+      },
+      "original_raw_file_present": true,
+      "pg_body_present": true
+    },
+    {
+      "sequence": 101,
+      "slot": 28,
+      "dispatched": true,
+      "usage": null,
+      "original_raw_file_present": false,
+      "pg_body_present": false
+    }
+  ],
+  "invoice_cost": "unknown",
+  "native_quality_qualified": false,
+  "all_original_results_preserved": true
+}
