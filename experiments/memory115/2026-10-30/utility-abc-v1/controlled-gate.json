@@ -1,0 +1,14 @@
+{
+  "source": "cb9849ecb3e13bd723cab6d5a00190d0e6d149cb",
+  "code_blobs_verified": 2466,
+  "full_controlled_slots": 72,
+  "controlled_expected_successes": {
+    "A": 18,
+    "B": 24,
+    "C": 24
+  },
+  "test_failures": 0,
+  "test_skips": 0,
+  "native_requests": 0,
+  "tests_sha256": "6c2e2e34f57dc57d0f18cfb68c7e68df9a072b830ced174d297723acb368e7f3"
+}

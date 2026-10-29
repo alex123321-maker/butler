@@ -89,3 +89,15 @@ and cold setup time. Include failed native methods in costs. Report scripted set
 receipts separately from genuine native usage. All old failures/expenses and the
 new failed controlled precursor remain immutable. No #115 closure or native
 quality qualification follows automatically from this descriptive comparison.
+
+## Completed descriptive window
+
+The fresh native r3 completed all72 observations: A=5/24, B=11/24, C=12/24 under
+the frozen strict metric, with282 methods and2486166 full measured tokens. Its
+producer exit is1 because32 observations fail observer gates; it is not a passing
+native acceptance. The [complete report](../../experiments/memory115/2026-10-30/utility-abc-v1/README.md)
+retains costs, the interrupted predecessor and unchanged scores. A separate
+read-only audit classifies partial MAX_TOKENS finals, blocked unknown/exhausted
+runs, unsupported http.request projection, and the exact empty-support-set scoring
+limitation. These prevent a qualified general conclusion about memory utility.
+The skill was genuinely loaded18 times through Broker. #115 remains NO_GO/open.

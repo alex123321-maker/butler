@@ -1,0 +1,39 @@
+{
+  "native_exit": {
+    "exit_code": 1,
+    "native_window": "utility-abc-20261030-v1",
+    "previous_results_preserved": true
+  },
+  "stopped_containers": {
+    "issue115-utility-native-20261030-r3-pg": {
+      "running": false,
+      "oom_killed": false,
+      "exit_code": 0
+    },
+    "issue115-native-pg-20261028-v1": {
+      "running": false,
+      "oom_killed": false,
+      "exit_code": 0
+    }
+  },
+  "helper_removed": true,
+  "network_removed": true,
+  "cgroup_removed": true,
+  "source_clients_at_stop": 0,
+  "joined_children_before_remove": true,
+  "kernel_before_auth": {
+    "source": "cb9849ecb3e13bd723cab6d5a00190d0e6d149cb",
+    "pid": 99831,
+    "cgroup": "/sys/fs/cgroup/docker/91cd781d9fde01c6907b68f66a7e562b170a057ac7c1aa284dc3eabfc4b28c53",
+    "actual_kernel_values": {
+      "cpu.max": "100000 100000",
+      "memory.max": "3221225472",
+      "memory.swap.max": "0",
+      "pids.max": "256"
+    },
+    "binary_sha256": "c7ff2ec99fd2efa9ecf588865e4ddd25e4e99a8b8440fd743a827726443a15a6",
+    "plan_sha256": "4fbcbd415f4d39b16abf902632b95b8301aea275dca5b616fde1df5b5c15eaa2",
+    "native_requests_before_proof": 0
+  },
+  "previous_results_preserved": true
+}
