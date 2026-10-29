@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/memory_utility|cmd/memory-utility-eval/|scripts/dev/memory-utility-offline-lab[.]sh$|docs/testing/issue115-memory-utility-v1[.]md$)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/testing/issue115-memory-utility-v1.md")
+      [void]$tests.Add("Model-free: test-go.ps1 for ./internal/acceptance and ./cmd/memory-utility-eval; on laba memory-utility-offline-lab.sh in a fresh isolated source root, race/vet and CLI init under network none. This is an offline evaluator, not a native collector or memory quality acceptance; preserve old scores and costs.")
+      continue
+    }
     "^apps/orchestrator/internal/input/(claim_admission.*|service)[.]go$" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/testing/issue76-fixture-local-protocol.md")

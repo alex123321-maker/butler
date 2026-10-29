@@ -1,5 +1,12 @@
 # Lab acceptance evidence
 
+The separate [#115 utility evaluator](../../cmd/memory-utility-eval/README.md)
+adds 24 fresh synthetic development cases and strict typed source/effect scoring.
+It reuses the strict decoder and canonical hashing, preserves all older evaluators
+and scores, and never authorizes inference or qualifies native quality. Offline
+counterexamples cover contradictory finals, unsupported negative claims, stale
+and forbidden sources, missing observer gates and retained failed/unknown costs.
+
 The [issue97 effort pilot](../../cmd/effort-eval/README.md) is opt-in synthetic
 research with frozen off-model facets and no external effects. Its plain JSON
 decision/read baseline is not ordinary Core/Broker/mail acceptance. Results,

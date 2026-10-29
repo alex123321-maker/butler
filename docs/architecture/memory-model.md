@@ -1,5 +1,12 @@
 # Butler — Memory Model Specification
 
+The separate [prospective #115 utility evaluator](../testing/issue115-memory-utility-v1.md)
+checks typed claims against observer-owned source/read/effect evidence offline.
+Its 24 development cases distinguish historical recall, preferences, continuation
+and procedural reuse from safety regression. It does not write product memory,
+execute tools, qualify native performance or replace the frozen historical scores.
+Current memory consumers, Broker authority and read limits remain unchanged.
+
 When the existing skill catalog is configured for a typed task, Orchestrator adds
 fixed kernel guidance to review descriptions and load an applicable exact digest
 before solving the task. Missing applicability information may require search;
