@@ -140,3 +140,8 @@ the prospective catalog-bound fix. It does not retroactively identify the old
 invalid requests, prove that the old consent-02 Broker failure is fixed, or prove
 autonomous outcome resolution. Original #163 restart/cancel/revocation and other
 unfulfilled criteria remain open; general browser acceptance remains NO_GO.
+
+The subsequent [authority and restart window](browser-safety-2026-10-29.md)
+qualifies seven actual Broker/PG/Chromium cases and a separate native Core
+restart with same-Input continuation and delivery. It preserves all observations
+and timings in this earlier login window.

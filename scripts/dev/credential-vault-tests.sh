@@ -30,5 +30,18 @@ export BUTLER_BROWSER_E2E=1
 export BUTLER_BROWSER_E2E_BINARY="$PWD/.cache/credential-vault-ci/browser.test"
 export BUTLER_BROWSER_E2E_SCRIPT="$PWD/apps/tool-browser/scripts/browser_runtime.mjs"
 required broker-chromium ./apps/tool-broker/internal/broker -run '^TestBrokerBrowserSequenceE2E$'
+required browser-safety ./apps/tool-broker/internal/broker -run '^TestBrowserSafety(CurrentAuthorityAndBinding|BrokerProcessRestartKeepsUnknown)ChromiumIntegration$'
+for case in \
+ TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/unchanged_control \
+ TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/task_cancel \
+ TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/mandate_revoke \
+ TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_origin \
+ TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_args \
+ TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/after_opaque_ack \
+ TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/during_lost_ack; do
+ if ! grep -F '"Action":"pass"' .cache/credential-vault-ci/browser-safety.jsonl | grep -Fq "\"Test\":\"$case\""; then
+  printf 'Required browser safety case absent: %s\n' "$case"; exit 1
+ fi
+done
 required runtime-chromium ./apps/tool-browser/internal/runtime -run '^TestBrowserSessionE2E$'
 go vet ./internal/budget ./internal/credentials ./internal/credentialcontrol ./internal/actionauth ./internal/mobile ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-browser/internal/runtime

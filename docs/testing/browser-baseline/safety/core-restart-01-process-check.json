@@ -1,0 +1,16 @@
+{
+  "scope": "actual_core_restart_during_exact_native_outcome_wait",
+  "event": "browser-baseline-core-restart-20261029-01",
+  "began_at": "2026-10-29T05:30:24.704442879Z",
+  "verified_at": "2026-10-29T05:30:35.823886176Z",
+  "process_restarted": true,
+  "healthy": true,
+  "same_input_and_run": true,
+  "still_waiting_without_new_inference": true,
+  "original_unknown_click_and_tools_unchanged": true,
+  "pending_factual_review": true,
+  "publication_before_report": false,
+  "private_environment_unchanged": true,
+  "broker_browser_postgres_redis_web_unchanged": true,
+  "permission_or_budget_reset": false
+}

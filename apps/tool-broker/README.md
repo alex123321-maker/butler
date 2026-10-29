@@ -452,3 +452,12 @@ Communication and schedule fixed contracts are revision 2 for research evidence
 and checked monitoring. Their exact hashes, current Input/claim/lease/source
 authority, destination snapshots and owner approval rules remain authoritative.
 A proposed follow-up or saved observation grants no future tool capabilities.
+
+`browser_safety_integration_test.go` runs the real Broker in a separate OS
+process against isolated PostgreSQL and the actual Chromium runtime. A positive
+POST control precedes task cancellation, durable mandate revocation and changed
+origin/argument cases. Process-kill tests retain one effect and its spending,
+including a crash after receiver acceptance but before an ACK. They use fixture
+authority wiring and do not invoke a model or the production owner UI. The
+credential-vault CI script requires all seven cases without skips; see
+`docs/testing/browser-safety-2026-10-29.md` for native restart evidence and limits.

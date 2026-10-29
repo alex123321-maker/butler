@@ -385,3 +385,17 @@ Compose the owner channel explicitly with `deploy/docker-compose.server-browser.
 a dedicated browser-control token file, existing owner authentication and migration086.
 No browser HTTP/CDP/VNC ports are published. The shared lab stack is not switched
 by the validation script; see `scripts/dev/server-browser-lab.sh`.
+
+## Authority and Broker crash qualification
+
+The isolated `TestBrowserSafety*ChromiumIntegration` matrix uses actual
+PostgreSQL mandate/grant/effect/resource/budget stores and Chromium, with a
+separate authenticated Broker process. Cancellation, mandate revocation and
+changed origin/args deny an already authorized POST before dispatch. Positive
+controls demonstrate that the same fixture can submit normally. Killing and
+reconstructing the Broker after an opaque response or during a held response
+must retain UNKNOWN, one receiver effect and original spending, and block replay
+and a successor write. A frozen observation does not resolve the original effect.
+This matrix supplies fixture policy/context wiring; owner-UI control and native
+Core continuation remain distinct checks. See the
+[qualification report](../testing/browser-safety-2026-10-29.md).
