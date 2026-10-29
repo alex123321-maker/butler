@@ -3,6 +3,7 @@ package utilitytrace
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/butler/butler/internal/acceptance"
 	"github.com/butler/butler/internal/actionauth"
@@ -35,12 +36,13 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 			call = &calls[i]
 		}
 	}
-	if call == nil || call.Run != s.RunID || call.Name != "skills.load" || call.Status != "completed" || call.Finished == nil || b.Arm != "C" {
+	if call == nil || call.Run != s.RunID || (call.Name != "skills.load" && call.Name != "skills.search") || call.Status != "completed" || call.Finished == nil || b.Arm != "C" {
 		return fail()
 	}
 	var args struct {
 		Digest   string `json:"digest"`
 		MaxBytes int    `json:"max_bytes"`
+		Query    string `json:"query"`
 	}
 	if skills.Decode(call.Args, &args) != nil {
 		return fail()
@@ -54,7 +56,8 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 			binding = &b.Skills[i]
 		}
 	}
-	if binding == nil {
+	search := call.Name == "skills.search"
+	if binding == nil && !search {
 		return fail()
 	}
 	var durable struct {
@@ -63,7 +66,7 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 		Authority bool     `json:"instruction_authority"`
 		Reload    bool     `json:"reload_current_data"`
 	}
-	if acceptance.DecodeStrict(call.Result, &durable, "digest", "skill_digests", "instruction_authority", "reload_current_data") != nil || durable.Digest != args.Digest || durable.Authority || !durable.Reload || len(durable.Digests) != 0 {
+	if acceptance.DecodeStrict(call.Result, &durable, "digest", "skill_digests", "instruction_authority", "reload_current_data") != nil || durable.Digest != args.Digest || durable.Authority || !durable.Reload || (!search && len(durable.Digests) != 0) || (search && (args.Digest != "" || args.MaxBytes != 0 || len(args.Query) > 256 || len(durable.Digests) > 12)) {
 		return fail()
 	}
 	usages, e := rows[skills.Usage](s, "skill_usages")
@@ -76,7 +79,7 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 			n++
 		}
 	}
-	if n != 1 {
+	if n != 1 && !search {
 		return fail()
 	}
 	var heads []struct {
@@ -96,16 +99,45 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 		return fail()
 	}
 	var reconstructed json.RawMessage
+	descriptors := []skills.Descriptor{}
+	seen := map[string]bool{}
 	for _, h := range heads {
-		if h.Digest != args.Digest {
+		wanted := h.Digest == args.Digest
+		if search {
+			for _, d := range durable.Digests {
+				wanted = wanted || h.Digest == d
+			}
+		}
+		if !wanted {
 			continue
 		}
-		if reconstructed != nil || h.Owner != b.OwnerID || h.Status != "active" || !h.Active || h.Source != binding.Body || h.Revision != h.Source.Revision || h.Access != h.Source.AccessRevision || h.Hash != h.Source.Hash || h.SourceStatus != "active" {
+		if search {
+			binding = nil
+			for i := range b.Skills {
+				if b.Skills[i].Digest == h.Digest {
+					if binding != nil {
+						return fail()
+					}
+					binding = &b.Skills[i]
+				}
+			}
+		}
+		if binding == nil || seen[h.Digest] || (!search && reconstructed != nil) || h.Owner != b.OwnerID || h.Status != "active" || !h.Active || h.Source != binding.Body || h.Revision != h.Source.Revision || h.Access != h.Source.AccessRevision || h.Hash != h.Source.Hash || h.SourceStatus != "active" {
 			return fail()
 		}
 		p, err := skills.Parse([]byte(h.Body))
-		if err != nil || p.Digest != args.Digest {
+		if err != nil || p.Digest != h.Digest {
 			return fail()
+		}
+		seen[h.Digest] = true
+		if search {
+			for _, term := range strings.Fields(strings.ToLower(args.Query)) {
+				if !strings.Contains(strings.ToLower(p.Manifest.ID+" "+p.Manifest.Description), term) {
+					return fail()
+				}
+			}
+			descriptors = append(descriptors, skills.Descriptor{ID: p.Manifest.ID, Digest: p.Digest, Version: p.Manifest.Version, Description: p.Manifest.Description})
+			continue
 		}
 		limit := args.MaxBytes
 		if limit == 0 {
@@ -116,6 +148,30 @@ func VerifySkillLoad(s Snapshot, b Binding, callID string) (json.RawMessage, err
 			return fail()
 		}
 		reconstructed, _ = json.Marshal(map[string]any{"format": "butler.skill.data.v1", "digest": p.Digest, "manifest": p.Manifest, "instruction_authority": false})
+	}
+	if search {
+		ordered := []skills.Descriptor{}
+		for _, d := range durable.Digests {
+			found := false
+			for _, v := range descriptors {
+				if v.Digest == d {
+					if found {
+						return fail()
+					}
+					ordered = append(ordered, v)
+					found = true
+				}
+			}
+			if !found {
+				return fail()
+			}
+		}
+		for i := 1; i < len(ordered); i++ {
+			if ordered[i-1].ID >= ordered[i].ID {
+				return fail()
+			}
+		}
+		reconstructed, _ = json.Marshal(map[string]any{"format": "butler.skill.index.v1", "skills": ordered})
 	}
 	if reconstructed == nil || !s.AuthorityCurrent || !s.SourcesCurrent {
 		return fail()

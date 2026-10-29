@@ -220,6 +220,10 @@ func (r *experienceRecipient) ServeHTTP(w http.ResponseWriter, req *http.Request
 		}
 	}}
 	if req.URL.RawPath != "" || req.URL.RawQuery != "" || !strings.HasPrefix(req.URL.Path, "/project") {
+		if req.Method == http.MethodGet && req.URL.RawPath == "" && req.URL.Path == "/project/alpha" && req.URL.RawQuery == "validate_ready=maybe" && r.state.Config.Files["alpha"] != "" {
+			experienceReply(w, 200, map[string]any{"observation_format": "project_validation_v1", "project_ref": "alpha", "validated_ready": "maybe", "rejection_code": "unsupported_ready_value", "effect_absent": len(r.state.Entries) == 0, "applied": false, "checks_passed": false})
+			return
+		}
 		experienceReply(w, 400, map[string]string{"error": "fixed recipient resource required"})
 		return
 	}

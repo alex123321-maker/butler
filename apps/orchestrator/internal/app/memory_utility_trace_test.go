@@ -43,7 +43,11 @@ func (p *utilityTraceProvider) StartRun(ctx context.Context, q transport.StartRu
 	if p.mode == "memory" {
 		return p.emit(readcontrol.Search, map[string]any{"query": "идентификатор комплекта", "limit": 1}), nil
 	}
+	if p.mode == "negative" {
+		return p.emit("extension.project.inspect", map[string]string{"url": egresstest.Origin + "/project/alpha?validate_ready=maybe"}), nil
+	}
 	return p.emit("extension.project.inspect", map[string]string{"url": egresstest.Origin + "/project/alpha"}), nil
+
 }
 func (p *utilityTraceProvider) final(f acceptance.UtilityFinal) transport.EventStream {
 	if p.wrong {
@@ -70,6 +74,11 @@ func (p *utilityTraceProvider) SubmitToolResult(ctx context.Context, q transport
 		return nil, fmt.Errorf("actual tool did not complete")
 	}
 	f := acceptance.UtilityFinal{Outcome: "answered", Sources: []acceptance.UtilityRef{}, Effect: "none", Check: "not_checked"}
+	if p.mode == "negative" {
+		f.Value = "unsupported_ready_value"
+		f.Effect = "absent"
+		return p.final(f), nil
+	}
 	if p.mode == "memory" {
 		data, err := readcontrol.DecodeResult(env.Result)
 		if err != nil || len(data.Items) != 1 {
@@ -132,6 +141,7 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 		{"inspect", "inspect", 20, false, true}, {"inspect_wrong_answer", "inspect", 20, true, false},
 		{"prepared", "prepared", 23, false, true}, {"prepared_wrong_answer", "prepared", 23, true, false},
 		{"generic_rejection_remains_unknown", "rejected", 22, false, false},
+		{"typed_negative", "negative", 22, false, true}, {"typed_negative_wrong_answer", "negative", 22, true, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -302,6 +312,30 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 				}
 			}
 
+			if tc.name == "memory_read" {
+				owner := experienceNativeActor(ctx, "utility-real-source-currentness")
+				source := c.Preparation[0]
+				updated, err := cat.Put(owner, catalog.PutSource{ExternalKey: source.Source.ID, Kind: "document", ScopeType: "project", ScopeID: "utility-prior-alpha", Title: "идентификатор комплекта alpha", Body: "Superseded: prior fact no longer current"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, kind := range []string{"stale", "revoked"} {
+					if kind == "revoked" {
+						if _, err := cat.Delete(owner, updated.ID, "revoke", updated.Revision); err != nil {
+							t.Fatal(err)
+						}
+					}
+					fresh, err := utilitytrace.Capture(ctx, pool, cat, binding, run, recipient.snapshot().Config.Files)
+					if err != nil {
+						t.Fatal(err)
+					}
+					obs, e := utilitytrace.Project(suite, binding, fresh, acceptance.MemoryDigest(fresh))
+					if e == nil && acceptance.EvaluateMemoryUtility(suite, obs).TaskSuccess {
+						t.Fatal("actual currentness mutation passed", kind)
+					}
+					attacks++
+				}
+			}
 		})
 	}
 }

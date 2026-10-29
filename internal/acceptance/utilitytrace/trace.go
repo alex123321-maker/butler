@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/butler/butler/internal/acceptance"
@@ -53,7 +54,7 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 	defer tx.Rollback(ctx)
 	queries := map[string]string{
 		"skill_usages":   `SELECT to_jsonb(t) v FROM skill_usages t WHERE run_id=$1`,
-		"skill_heads":    `SELECT jsonb_build_object('digest',v.digest,'owner_id',v.owner_id,'source_ref',v.source_ref_json,'status',st.status,'active',c.active_digest=v.digest,'body',r.body,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'source_status',s.status) v FROM skill_versions v JOIN skill_states st USING(digest) JOIN skill_catalog c USING(skill_id) JOIN memory_sources s ON s.source_id=v.source_ref_json->>'source_id' JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE v.digest IN(SELECT digest FROM skill_usages WHERE run_id=$1)`,
+		"skill_heads":    `SELECT jsonb_build_object('digest',v.digest,'owner_id',v.owner_id,'source_ref',v.source_ref_json,'status',st.status,'active',c.active_digest=v.digest,'body',r.body,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'source_status',s.status) v FROM skill_versions v JOIN skill_states st USING(digest) JOIN skill_catalog c USING(skill_id) JOIN memory_sources s ON s.source_id=v.source_ref_json->>'source_id' JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE v.digest IN(SELECT digest FROM skill_usages WHERE run_id=$1) OR v.digest=ANY($3::text[])`,
 		"tasks":          `SELECT to_jsonb(t) v FROM tasks t WHERE task_id=$2`,
 		"runs":           `SELECT to_jsonb(t) v FROM runs t WHERE run_id=$1`,
 		"inputs":         `SELECT to_jsonb(t) v FROM accepted_inputs t WHERE task_id=$2`,
@@ -67,11 +68,15 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 		"source_heads":   `SELECT jsonb_build_object('source_id',s.source_id,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'body',r.body,'status',s.status) v FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id IN(SELECT source_id FROM memory_run_sources WHERE run_id=$1)`,
 		"model_attempts": `SELECT to_jsonb(t) v FROM execution_model_attempts t WHERE run_id=$1`,
 	}
+	skillDigests := []string{}
+	for _, skill := range b.Skills {
+		skillDigests = append(skillDigests, skill.Digest)
+	}
 	for name, q := range queries {
 		// Bind both selector arguments even in queries that use only one.
-		q = `WITH selectors AS (SELECT $1::text AS run,$2::text AS task) SELECT COALESCE(jsonb_agg(v),'[]'::jsonb) FROM (` + q + `) rows`
+		q = `WITH selectors AS (SELECT $1::text AS run,$2::text AS task,$3::text[] AS skill_digests) SELECT COALESCE(jsonb_agg(v),'[]'::jsonb) FROM (` + q + `) rows`
 		var raw json.RawMessage
-		if err = tx.QueryRow(ctx, q, run, b.TaskID).Scan(&raw); err != nil {
+		if err = tx.QueryRow(ctx, q, run, b.TaskID, skillDigests).Scan(&raw); err != nil {
 			return s, fmt.Errorf("capture %s: %w", name, err)
 		}
 		if len(raw) > 32<<20 {
@@ -324,7 +329,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 			return deny("effect missing")
 		}
 		resultForDigest := call.Result
-		if call.Name == "skills.load" && call.Status == "completed" {
+		if (call.Name == "skills.load" || call.Name == "skills.search") && call.Status == "completed" {
 			resultForDigest, err = VerifySkillLoad(s, b, call.ID)
 			if err != nil {
 				return deny(err.Error())
@@ -368,7 +373,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 			continue
 		}
 		switch call.Name {
-		case "skills.load":
+		case "skills.load", "skills.search":
 			// VerifySkillLoad has checked the exact loaded DATA and owning usage.
 			// Loading itself supplies no historical citation or task-success credit.
 		case readcontrol.Search, readcontrol.Open:
@@ -434,10 +439,14 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 				return deny("recipient response invalid")
 			}
 			var body struct {
-				Artifact string `json:"artifact_id"`
-				Passed   *bool  `json:"checks_passed"`
-				Applied  bool   `json:"applied"`
-				Project  string `json:"project_ref"`
+				Artifact  string `json:"artifact_id"`
+				Passed    *bool  `json:"checks_passed"`
+				Applied   bool   `json:"applied"`
+				Project   string `json:"project_ref"`
+				Format    string `json:"observation_format"`
+				Validated string `json:"validated_ready"`
+				Rejection string `json:"rejection_code"`
+				Absent    bool   `json:"effect_absent"`
 			}
 			if json.Unmarshal([]byte(env.Body), &body) != nil {
 				return deny("recipient body invalid")
@@ -451,6 +460,20 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 					return deny("current inspect missing")
 				}
 				inspectSeen = true
+				if c.Condition == "verified_negative" {
+					var args struct {
+						URL string `json:"url"`
+					}
+					if json.Unmarshal(call.Args, &args) != nil {
+						return deny("negative query absent")
+					}
+					u, err := url.Parse(args.URL)
+					if err != nil || u.Path != "/project/"+c.Resource || u.RawQuery != "validate_ready=maybe" || body.Format != "project_validation_v1" || body.Validated != "maybe" || body.Rejection != "unsupported_ready_value" || !body.Absent {
+						return deny("typed current negative proof missing")
+					}
+					o.Receipt.Effect = "absent"
+					o.Receipt.RejectionCode = body.Rejection
+				}
 			case "extension.project.prepare-patch":
 				if body.Artifact == "" || prepared != "" {
 					return deny("one current prepared artifact required")

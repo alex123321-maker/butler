@@ -142,8 +142,13 @@ func (p *procedureProvider) StartRun(_ context.Context, r transport.StartRunRequ
 		stream <- transport.NewAssistantFinalEvent(r.Context.RunID, "fixture", transport.AssistantFinal{Content: "Recipient stored and checked the exact prepared patch; original remains unapplied", FinishReason: "completed"})
 		stream <- transport.NewTerminalEvent(r.Context.RunID, transport.EventTypeRunCompleted, "fixture")
 	case phase == 0 && p.digest != "":
-		name = "skills.load"
-		args = map[string]any{"digest": p.digest, "max_bytes": 16384}
+		if os.Getenv("BUTLER_UTILITY_TRACE_OFFLINE") == "1" {
+			name = "skills.search"
+			args = map[string]any{"query": "prepare"}
+		} else {
+			name = "skills.load"
+			args = map[string]any{"digest": p.digest, "max_bytes": 16384}
+		}
 	case phase < 2:
 		name = "extension.project.inspect"
 		args["url"] = egresstest.Origin + "/project"
@@ -165,6 +170,22 @@ func (*procedureProvider) ContinueRun(context.Context, transport.ContinueRunRequ
 	return nil, errors.New("unexpected continuation")
 }
 func (p *procedureProvider) SubmitToolResult(_ context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	if strings.HasSuffix(r.ToolCallRef, "-skills.search") {
+		var reply struct {
+			Status string `json:"status"`
+			Result struct {
+				Skills []skills.Descriptor `json:"skills"`
+			} `json:"result"`
+		}
+		if json.Unmarshal([]byte(r.ToolResultJSON), &reply) != nil || reply.Status != "completed" || len(reply.Result.Skills) != 1 || reply.Result.Skills[0].Digest != p.digest {
+			return nil, errors.New("actual skill search mismatch")
+		}
+		raw, _ := json.Marshal(map[string]any{"digest": reply.Result.Skills[0].Digest, "max_bytes": 16384})
+		stream := make(chan transport.TransportEvent, 1)
+		stream <- transport.TransportEvent{RunID: r.RunID, EventType: transport.EventTypeToolCallRequested, ToolCall: &transport.ToolCallRequest{ToolCallRef: r.RunID + "-skills.load", ToolName: "skills.load", ArgsJSON: string(raw)}}
+		close(stream)
+		return stream, nil
+	}
 	// A local read may continue live. Persisted external approvals always start
 	// a fresh provider; they cannot use an orphan native function response.
 	if !strings.HasSuffix(r.ToolCallRef, "-skills.load") {
@@ -552,6 +573,12 @@ func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
 		_ = json.Unmarshal(snapshot.Tables["calls"], &calls)
 		loads := 0
 		for _, call := range calls {
+			if call.Name == "skills.search" {
+				if _, err := utilitytrace.VerifySkillLoad(snapshot, binding, call.ID); err != nil {
+					t.Fatal("actual skill search", err)
+				}
+				continue
+			}
 			if call.Name != "skills.load" {
 				continue
 			}
