@@ -51,13 +51,14 @@ persists directly in the canonical experimental store; no cloned token handback.
 
 Native profile: Gemini Flash High, explicit 8192 output-token ceiling including
 thinking, 65536 input-token reservation, 90-second request bound. Maximum13 native
-methods per slot, maximum936 methods overall, four-hour one-use window. Existing
+methods per slot, maximum936 methods overall, four-hour one-use window.
+
 The first R2 window used the controlled fixture's three-minute authority/four-minute
 case bounds and was interrupted by an owner-reported host restart. It remains
 unqualified. A new separate freeze explicitly records seven-minute authority and
 eight-minute case deadlines; live authority/lease checks remain unchanged. It pins
 the recovered predecessor receipt, including every unknown in-flight charge.
-Core/Broker task/mandate/day budgets remain in force. No retry/resume/fallback.
+Existing Core/Broker task/mandate/day budgets remain in force. No retry/resume/fallback.
 Provider/response/tool errors end the affected slot; missing/unknown usage and
 all remaining scheduled slots stay in the denominator. Authority, source,
 retention and deadline failures stop admission globally. No stopped slot is reused.

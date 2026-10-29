@@ -73,7 +73,7 @@ def main():
     historical={}
     for name,want in plan['HistoricalReceipts'].items():
         path=r/'previous'/name;assert digest(path)==want;v=read(path)
-        historical[name]={'sha256':want,'as_reported':{k:v[k] for k in ('inclusive_usage','new_usage','known_full_tokens','native_dispatched','unknown_usage','invoice_cost','calls','tokens') if k in v}}
+        historical[name]={'sha256':want,'as_reported':{k:v[k] for k in ('inclusive_usage','new_usage','known_full_tokens','native_dispatched','native_methods_dispatched','native_admissions','scored_slots','scheduled','unknown_usage','invoice_cost','calls','tokens') if k in v}}
     report={'root':str(r),'source':plan['Source'],'model':plan['Model'],'scheduled':72,'arms':{k:dict(v) for k,v in totals.items()},
        'difference_B_minus_A_success':totals['B']['task_success']-totals['A']['task_success'], 'difference_C_minus_B_success':totals['C']['task_success']-totals['B']['task_success'],
        'all_slots_reached':all(x['slot_status'] in ('completed','failed') for x in rows),'all_slots_observed':all(x['observed_slots']==24 for x in totals.values()),
