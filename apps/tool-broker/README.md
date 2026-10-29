@@ -473,3 +473,8 @@ unchanged positive control must submit exactly once. Test-only service/context
 composition grants no production authority; no model is used. See
 `docs/testing/browser-safety-2026-10-29.md` for native restart evidence and limits.
 The newer UI/runtime proof is in `docs/testing/browser-owner-runtime-2026-10-29.md`.
+
+Navigation revision4 independently accepts a closed pre-navigation rejection for
+Go-observed lost/frozen contexts under `guarded_browser_get_v1`. PG retains the
+consumed dispatch and records only this new read ABSENT. Old revision3 UNKNOWN
+reads require separate terminal owning review; no previous effect is promoted.

@@ -93,3 +93,8 @@ dispatch epoch; delayed calls cannot cross a takeover/release cycle. Manual
 frame guards include cross-origin child documents, not just the main page.
 Masking merges secret spans in the original text, including successive typed
 password prefixes; shorter values cannot expose a longer value's suffix.
+
+Navigation revision4 can reject a Go-observed lost/closed context or a previously
+observed frozen network before invoking the runner. Only that pre-dispatch guard
+emits the new `session_lost`/`network_frozen` absence proof. In-flight/helper errors
+and old navigation contracts retain uncertainty; recovery requires a fresh open.

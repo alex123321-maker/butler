@@ -112,3 +112,8 @@ workspace/shared-worker callbacks, independent reconciliation and combined
 task-tree/memory-conflict scenarios also remain pending for issue17. No model
 call, production deployment or claim of complete issue17 acceptance is made by
 this module.
+
+The same durable rejection path covers credential-free guarded browser reads,
+including navigation revision4. A closed correlated proof must survive current
+authority and durable Finish; lost Finish, arbitrary helper errors and in-flight
+loss remain UNKNOWN. Rejection receives no success ACK or new session mapping.

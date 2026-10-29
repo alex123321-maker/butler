@@ -19,6 +19,9 @@ const stoppedMessageContract = "f86dbe12464322551ff3d386412b54644fd32227fe0011f1
 // Reproduced from 00cbdf04; its publisher retains the same atomic, fenced
 // publication/outbox protocol. This pin is only for terminal owning review.
 const stoppedMessage00cbContract = "ecc90b761ddf163c0e14c0f75f99fa00e7a4893e0b9f4ded61613a86f8604a2b"
+
+// Pinned revision1 Broker-owned catalog search in 1ea37b7b: discovery only.
+const stoppedSearchContract = "eb76afa96498ff15140b9e5205304f89114c9c348fd76b23f9acef15b4e37c35"
 const stoppedFetchContract = "18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37aa58a4a11ff3d2"
 
 // Reproduced from the revision1 public GET compiler in 1e24a910. This
@@ -153,7 +156,7 @@ func ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, input string) (map[str
 			method, source = "pinned_preparation_no_write_v1", "owning_local_preparation_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_local_result_unknown")
 			reads[id] = true
-		case (((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" || b.ToolName == "browser.navigate" && b.ContractHash == stoppedNavigateContract && b.ContractRevision == "3") && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+		case (((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "tools.search" && b.ContractHash == stoppedSearchContract && b.Resource == "tool:tools.search") || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" || b.ToolName == "browser.navigate" && b.ContractHash == stoppedNavigateContract && b.ContractRevision == "3") && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
 			method, source = "pinned_read_no_write_v1", "owning_read_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_result_unknown")
 			reads[id] = true

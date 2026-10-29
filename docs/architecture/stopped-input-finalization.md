@@ -167,3 +167,11 @@ identical acknowledged failure when blocked becomes failed; Web still shows
 the terminal state. Migration102 and both Core/Broker binaries are required.
 Schema rollback refuses to drop nonempty stop records. Any binary rollback must
 retain compatible isolation guards; an older Broker cannot replace them.
+
+The revision1 Broker-owned `tools.search` contract from1ea37b7b is separately
+pinned as `eb76afa96498ff15140b9e5205304f89114c9c348fd76b23f9acef15b4e37c35`.
+With exact `tool:tools.search`, read-only/read-result policy and the same terminal
+owning fences, it can prove only no-write uncertainty. Search result, effect and
+consumed dispatch stay UNKNOWN; historical Input/run stay failed. This pin does
+not cover schema selection, other catalog hashes/revisions or credentials, and
+cannot grant execution permission for anything discovered by the catalog.

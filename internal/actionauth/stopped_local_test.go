@@ -452,3 +452,62 @@ func TestOwnerOutcomeStoppedNavigateProvesOnlyNoWriteIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestOwnerOutcomeStoppedCatalogSearchProvesOnlyNoWriteIntegration(t *testing.T) {
+	for _, mode := range []string{"valid", "foreign_hash", "new_revision", "opaque_fill", "credential", "live_lease", "wrong_policy"} {
+		t.Run(mode, func(t *testing.T) {
+			pool, b := stoppedLocalFixture(t, true, func(b *ActionBinding) {
+				b.ToolName = "tools.search"
+				b.ContractHash = stoppedSearchContract
+				b.Resource = "tool:tools.search"
+				switch mode {
+				case "foreign_hash":
+					b.ContractHash = strings.Repeat("f", 64)
+				case "new_revision":
+					b.ContractRevision = "2"
+				case "opaque_fill":
+					b.ToolName = "browser.fill"
+				case "credential":
+					b.CredentialRefs = []CredentialRef{{Alias: "private", Field: "password"}}
+				}
+			})
+			ctx := context.Background()
+			if mode == "live_lease" {
+				if _, err := pool.Exec(ctx, `UPDATE session_ownership SET lease_id='live',expires_at=clock_timestamp()+interval '1 hour'`); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if mode == "wrong_policy" {
+				if _, err := pool.Exec(ctx, `UPDATE action_effects SET policy='{"retry_safety":"unsafe","verification_method":"none"}'`); err != nil {
+					t.Fatal(err)
+				}
+			}
+			for range 2 {
+				tx, err := pool.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				reads, err := ReviewStoppedLocalTx(ctx, tx, "input")
+				if err != nil {
+					tx.Rollback(ctx)
+					t.Fatal(err)
+				}
+				if reads[b.ActionID] != (mode == "valid") {
+					tx.Rollback(ctx)
+					t.Fatal("unproven read qualified")
+				}
+				if err = tx.Commit(ctx); err != nil {
+					t.Fatal(err)
+				}
+			}
+			e, err := NewPostgresStore(pool).GetEffect(ctx, b.ActionID)
+			want := 0
+			if mode == "valid" {
+				want = 1
+			}
+			if err != nil || e.State != StateUnknown || e.DispatchOutcome != "unknown" || len(e.EvidenceRefs) != want {
+				t.Fatal("historical read outcome, dispatch or evidence changed", err)
+			}
+		})
+	}
+}

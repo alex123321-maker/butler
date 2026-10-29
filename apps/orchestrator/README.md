@@ -1496,3 +1496,10 @@ binary. It composes actual owner task/goal services on disposable full-migration
 PG for the browser Stop task / Revoke mandate acceptance test. Its loopback
 fixture context projection cannot manufacture approvals. It is not a production
 server option or native model run. See `scripts/dev/browser-owner-safety-tests.sh`.
+
+Frozen browser observation keeps a five-second dispatch bound. Its correlated
+response is persisted under a separate three-second child of the original live
+run context, after cancelling the dispatch context. This persistence phase cannot
+execute another tool, widen authority or survive parent cancellation; failure
+retains UNKNOWN and never retries a POST. Revision4 pre-dispatch ABSENT results
+continue through ordinary model proposals for a separately authorized fresh open.
