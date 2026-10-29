@@ -1,0 +1,71 @@
+{
+  "code_commit": "6be234c3",
+  "code_config_migration_blobs_verified": 2463,
+  "native_requests": 0,
+  "native_quality_qualified": false,
+  "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-skills-20261029-r4",
+  "actual_broker_skill_loads": 1,
+  "skill_corruption_controls": 11,
+  "total_corruption_controls": 50,
+  "passed_scenarios": 8,
+  "test_failures": 0,
+  "test_skips": 0,
+  "skill_trace_counts": {
+    "calls": 4,
+    "dispatches": 4,
+    "effects": 4,
+    "evidence": 4,
+    "finals": 1,
+    "inputs": 1,
+    "intents": 4,
+    "model_attempts": 5,
+    "pins": 3,
+    "runs": 1,
+    "skill_heads": 1,
+    "skill_usages": 1,
+    "source_heads": 3,
+    "tasks": 1
+  },
+  "skill_trace_sha256": "9956371387159f8e457fbea5bc38f1666bc836bc8546e080fd6d6397ca87e3c9",
+  "tests_sha256": "66eeb3ca1e660a291327bc4a7e0a7bd567960f8a17759d66e80fc57cbdc8bc07",
+  "build_sha256": "2d712225125eb50e2496970ce5f3b215e3a305636881d9e1bb73c1943b232a78",
+  "preserved_attempts": [
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-skills-20261029-r1",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    },
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-skills-20261029-r2",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    },
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-skills-20261029-r3",
+      "exit": {
+        "exit_code": 0,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    }
+  ],
+  "postgres_running": false,
+  "private_network_removed": true,
+  "exit": {
+    "exit_code": 0,
+    "native_requests": 0,
+    "controlled_transport": true
+  },
+  "full_native_abc_completed": false,
+  "native_remaining": [
+    "72 slots:24 cases x3 arms; preparation and complete immutable corpus/ledger admission",
+    "skills.search evidence mapping",
+    "all current document, stale/revoked lifecycle and verified negative/unknown fixture mappings"
+  ]
+}

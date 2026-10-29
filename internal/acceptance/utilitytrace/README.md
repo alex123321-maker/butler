@@ -24,9 +24,20 @@ through the frozen mapping into the utility oracle's source IDs. No answer value
 effect/check claim or free text is repaired. The raw final stays intact in the
 sealed snapshot. Catalog candidate discovery is distinct from a complete pinned
 open. The adapter supports memory.search/open and the reviewed project recipient's
-inspect/prepare/check protocol; other tools fail closed, including skills.load
-until its full evidence mapping is implemented. Generic rejected mutations retain
+inspect/prepare/check protocol plus exact `skills.load` corroboration. Other tools
+fail closed, including `skills.search` until its evidence mapping is implemented.
+Generic rejected mutations retain
 UNKNOWN; no typed negative reason is invented from HTTP400.
+
+`SkillBinding` pins the reviewed digest and Catalog body reference before execution.
+The collector retains owning skill usages and current version/body heads. Core's
+ref-only durable observation is checked against these and the Broker's digest of
+the reconstructed exact original wire result; procedural bytes are never copied
+back into product persistence. Current lifecycle checks include skill revocation
+and mutable installed dependencies. C alone may load; missing, foreign, revoked
+or changed evidence fails. Loading grants no answer/citation/effect credit by itself.
+`TestReviewedSkillRealBrokerDurableApprovalE2E` exercises actual stage/test/activate,
+Broker load, live context and durable approval recovery with scripted transport.
 
 Prospective utility v2 uses `@current-verified-receipt` only in the verifier's
 prepared-artifact oracle. Actual final/receipt IDs must match and a current

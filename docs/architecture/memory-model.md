@@ -12,8 +12,10 @@ to closed Core runs and permanent Broker evidence in a repeatable-read snapshot.
 It requires a pre-run source/task binding, owning input, current source fences,
 correlated dispatch/effect receipts and independently captured recipient files.
 Its controlled-transport integration exercises actual memory.search/open and
-project inspect/prepare/check; it does not qualify native model utility, skill
-loading or all 24 corpus cases. Prospective v2 binds newly prepared artifact IDs
+project inspect/prepare/check. Exact `skills.load` now also requires a pre-run
+digest/body binding, owning usage and Broker evidence against the exact manifest;
+the real Broker approval fixture verifies loading and context recovery. These
+controlled tests do not qualify native utility or all 24 corpus cases. Prospective v2 binds newly prepared artifact IDs
 to the current verified receipt; v1 fixed-artifact suites remain supported.
 
 When the existing skill catalog is configured for a typed task, Orchestrator adds

@@ -145,9 +145,27 @@ Raw private snapshots, oracle, observation, scores and failed attempts remain in
 the fresh root. Synthetic transport usage must not enter the native spend ledger.
 
 This bridge supports memory.search/open and the reviewed synthetic project
-recipient. skills.load, arbitrary HTTP tools, lifecycle mutation scenarios and a
+recipient. At that bridge revision, skills.load, arbitrary HTTP tools, lifecycle mutation scenarios and a
 typed verified-negative recipient need additional evidence mapping. Unsupported
 tools fail closed. This seven-case integration is not a complete 24-case corpus,
 a native A/B/C comparison, semantic retrieval quality proof or issue closure.
 Native admission still requires a frozen denominator/order, full cost journal
 correlation, all arm mappings and independent review as specified above.
+
+### Exact skill loading bridge
+
+The subsequent `skills.load` bridge corroborates Core's ref-only durable result
+with the exact pre-bound reviewed manifest, current Catalog body/state, owning
+`skill_usages`, action binding, completed dispatch and confirmed Broker evidence.
+It reconstructs the original result only to compare its normalized digest; this
+does not rewrite the raw observation or final. Current source/lifecycle fences
+remain required. Loading alone gives no historical citation or task success.
+An actual stage/test/activate/load/approval-recovery fixture and eleven corruption
+controls exercise this bridge without native inference.
+
+Full prospective native A/B/C still needs all 72 scheduled observations (24×3),
+source preparation/current-document access for all families, lifecycle materialization,
+skill search mapping, typed negative/unknown reconciliation fixtures and full ledger
+admission. The existing historical 48-control collector and prose outputs cannot
+stand in for that cohort. No native entry should be admitted while any of these
+paths lacks evidence mapping; retain previous raw results and expenses verbatim.
