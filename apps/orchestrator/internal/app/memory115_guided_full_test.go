@@ -49,10 +49,16 @@ func validateGuided115Binding(h experienceNativeLineage) error {
 	if b != nil && b.Historical.Hash == guided115Closed768SHA {
 		wantDecision = guided115ExpandedDecisionSHA
 	}
-	if b == nil || h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil || b.Historical.GuidedFull != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != guided115Closed503SHA && b.Historical.Hash != guided115Closed528SHA && b.Historical.Hash != guided115Closed768SHA || b.SupplementSHA != guided115SupplementSHA || b.DecisionSHA != wantDecision || validateExperienceNativeLineage(b.Historical) != nil || !reflect.DeepEqual(h.Carry, b.Historical.Carry) || h.Usage != b.Historical.Usage {
+	if b != nil && b.Historical.Hash == guided115Closed1049SHA {
+		wantDecision = guided115EvidenceDecisionSHA
+	}
+	if b == nil || h.LocalSuccessor != nil || h.SkillPreparationSuccessor != nil || b.Historical.GuidedFull != nil || b.Historical.LocalSuccessor != nil || b.Historical.SkillPreparationSuccessor != nil || b.Historical.Hash != guided115Closed503SHA && b.Historical.Hash != guided115Closed528SHA && b.Historical.Hash != guided115Closed768SHA && b.Historical.Hash != guided115Closed1049SHA || b.SupplementSHA != guided115SupplementSHA || b.DecisionSHA != wantDecision || validateExperienceNativeLineage(b.Historical) != nil || !reflect.DeepEqual(h.Carry, b.Historical.Carry) || h.Usage != b.Historical.Usage {
 		return errors.New("complete closed503 and immutable supplemental accounting required")
 	}
 	day, e := time.Parse("2006-01-02", h.Day)
+	if b.Historical.Hash == guided115Closed1049SHA && !b.Created.After(time.Date(2026, 10, 29, 5, 32, 34, 246389596, time.UTC)) {
+		return errors.New("new evidence-policy window must follow the exact closed v5 finish")
+	}
 	if e != nil || h.Day < b.Historical.Day || b.Created.UTC().Format("2006-01-02") != h.Day || !h.Deadline.Equal(day.Add(24*time.Hour)) || !b.Created.Before(h.Deadline) || !b.Created.After(time.Date(2026, 10, 28, 14, 48, 12, 0, time.UTC)) {
 		return errors.New("new owner-authorized post-closure UTC window required")
 	}
@@ -166,7 +172,11 @@ func loadGuided115History(path, expected string) (experienceNativeLineage, error
 	if m.Format == guided115V2Format {
 		wantParent = guided115Closed528SHA
 	}
-	if !bytes.Equal(canonical, raw) || m.Format != guided115Format && m.Format != guided115V2Format && m.Format != guided115ExpandedFormat || m.Owner != experienceNativeOwner || m.Previous.SHA256 != wantParent || m.Supplement.SHA256 != guided115SupplementSHA || m.Decision.SHA256 != wantDecision {
+	if m.Format == guided115EvidenceFormat {
+		wantParent = guided115Closed1049SHA
+		wantDecision = guided115EvidenceDecisionSHA
+	}
+	if !bytes.Equal(canonical, raw) || m.Format != guided115Format && m.Format != guided115V2Format && m.Format != guided115ExpandedFormat && m.Format != guided115EvidenceFormat || m.Owner != experienceNativeOwner || m.Previous.SHA256 != wantParent || m.Supplement.SHA256 != guided115SupplementSHA || m.Decision.SHA256 != wantDecision {
 		return out, errors.New("canonical latest503 guided owner recipe required")
 	}
 	for _, ref := range []consolidationHistoryRef{m.Previous, m.Supplement, m.Decision} {
@@ -190,7 +200,7 @@ func loadGuided115History(path, expected string) (experienceNativeLineage, error
 }
 func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
 	mode := os.Getenv("BUTLER_ISSUE115_GUIDED_PREPARE")
-	if mode != "latest503-full57-v1" && mode != "latest528-full57-v2" && mode != "latest768-full57-tools32" {
+	if mode != "latest503-full57-v1" && mode != "latest528-full57-v2" && mode != "latest768-full57-tools32" && mode != "latest1049-full57-evidence-v6" {
 		t.Skip("explicit offline latest503 full57 preparation")
 	}
 	path := os.Getenv("BUTLER_ISSUE115_GUIDED_RECIPE")
@@ -207,6 +217,11 @@ func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
 		m.Format = guided115ExpandedFormat
 		m.Previous = consolidationHistoryRef{Path: "closed-laba768/closed-leaf.json", SHA256: guided115Closed768SHA}
 		m.Decision = consolidationHistoryRef{Path: "memory-read-owner-decision.json", SHA256: guided115ExpandedDecisionSHA}
+	}
+	if mode == "latest1049-full57-evidence-v6" {
+		m.Format = guided115EvidenceFormat
+		m.Previous = consolidationHistoryRef{Path: "closed-laba1049/closed-leaf.json", SHA256: guided115Closed1049SHA}
+		m.Decision = consolidationHistoryRef{Path: "evidence-policy-owner-decision.json", SHA256: guided115EvidenceDecisionSHA}
 	}
 	b, _ := json.Marshal(m)
 	f, e := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
@@ -229,6 +244,9 @@ func TestGuided115PrepareLatest503FullRecipe(t *testing.T) {
 	}
 	if mode == "latest768-full57-tools32" {
 		wantNative, wantUnknown, wantTokens = 768, 4, 6790617
+	}
+	if mode == "latest1049-full57-evidence-v6" {
+		wantNative, wantUnknown, wantTokens = 1049, 4, 9848908
 	}
 	if h.Usage.NativeEntries != wantNative || h.Usage.NativeUnknownUsage != wantUnknown || h.Usage.KnownFullTokenLowerBound != wantTokens {
 		t.Fatal("closed503 expense changed")

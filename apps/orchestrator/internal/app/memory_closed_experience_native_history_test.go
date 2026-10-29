@@ -104,7 +104,11 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 		}
 		format = labaProfile.Format
 	}
-	if err != nil || json.Unmarshal(raw, &m) != nil || m.Format != format || m.Owner != experienceNativeOwner || m.Denominator != 57 || m.Maximum != 640 || !m.Complete || m.Qualified == nil || *m.Qualified || m.Review == nil || !*m.Review || m.DiscoveryInference == nil || *m.DiscoveryInference || m.Invoice != "unknown" || !experienceNativeSHA(m.Preseal) || !experienceNativeSHA(m.Previous) {
+	maximum := experienceNativeMaximum
+	if laba && expected == guided115Closed1049SHA {
+		maximum = guided115Maximum
+	}
+	if err != nil || json.Unmarshal(raw, &m) != nil || m.Format != format || m.Owner != experienceNativeOwner || m.Denominator != 57 || m.Maximum != maximum || !m.Complete || m.Qualified == nil || *m.Qualified || m.Review == nil || !*m.Review || m.DiscoveryInference == nil || *m.DiscoveryInference || m.Invoice != "unknown" || !experienceNativeSHA(m.Preseal) || !experienceNativeSHA(m.Previous) {
 		return out, errors.New("complete unqualified closed experience leaf required")
 	}
 	if local && (m.Preseal != local115NativeClosedPreseal || m.Previous != local115NativeClosedPrevious) {
@@ -147,11 +151,11 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 		Maximum int    `json:"maximum_entries"`
 		Slots   []experienceNativeSlot
 	}
-	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != 640 || plan.Owner != m.Owner || !reflect.DeepEqual(plan.Lineage, previous) || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
+	if read("plan/preseal.json", &plan) != nil || read("plan/schedule.json", &schedule) != nil || plan.Format != "butler.experience.native-preseal.v1" || schedule.Format != "experience90-window-v1" || schedule.Owner != m.Owner || schedule.Maximum != maximum || plan.Owner != m.Owner || !reflect.DeepEqual(plan.Lineage, previous) || !plan.Deadline.Equal(m.Deadline) || m.Day != previous.Day || m.Deadline.After(previous.Deadline) || !reflect.DeepEqual(schedule.Slots, plan.Schedule) {
 		return out, errors.New("closed cohort differs from exact original preseal and parent")
 	}
 	corpus, err := experienceNativeCorpusFiles()
-	if err != nil || !reflect.DeepEqual(plan.Schedule, experienceNativeSchedule(corpus)) || plan.Originals != corpus.OriginalsSHA256 || plan.Controls != corpus.ControlsSHA256 {
+	if err != nil || !reflect.DeepEqual(plan.Schedule, experienceNativeScheduleForHistory(corpus, previous)) || plan.Originals != corpus.OriginalsSHA256 || plan.Controls != corpus.ControlsSHA256 {
 		return out, errors.New("closed full57 original schedule changed")
 	}
 	if err = closedExperienceFinitePlan(plan, previous); err != nil {
@@ -233,7 +237,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 		Invoice   string   `json:"invoice_cost"`
 	}
 	var journal map[string]json.RawMessage
-	if read("actual/window-final.json", &window) != nil || read("all-original-outcomes.json", &outcomes) != nil || read("actual/unique-quoted-costs.json", &costs) != nil || read("actual/global-journal-final.json", &journal) != nil || window.Maximum != 640 || window.Active < -1 || window.Active >= 57 || len(window.Slots) != 57 || len(window.Entries) > 640 || window.Started.IsZero() || window.Finished.Before(window.Started) || window.Finished.After(m.Deadline.Add(15*time.Minute)) || outcomes.Denominator != 57 || !outcomes.Present || len(outcomes.Slots) != 57 || costs.Captured != len(window.Entries) || costs.Invoice != "unknown" {
+	if read("actual/window-final.json", &window) != nil || read("all-original-outcomes.json", &outcomes) != nil || read("actual/unique-quoted-costs.json", &costs) != nil || read("actual/global-journal-final.json", &journal) != nil || window.Maximum != maximum || window.Active < -1 || window.Active >= 57 || len(window.Slots) != 57 || len(window.Entries) > maximum || window.Started.IsZero() || window.Finished.Before(window.Started) || window.Finished.After(m.Deadline.Add(15*time.Minute)) || outcomes.Denominator != 57 || !outcomes.Present || len(outcomes.Slots) != 57 || costs.Captured != len(window.Entries) || costs.Invoice != "unknown" {
 		return out, errors.New("original sealed window, costs and full denominator required")
 	}
 	slots := map[string]experienceNativeSlot{}
@@ -285,7 +289,7 @@ func loadClosedExperienceNativeHistoryProfiles(path, expected string, local, lab
 		var handback laba115ClosedHandback
 		var exit laba115ClosedProcessExit
 		expectedExit := 1
-		if expected == guided115Closed503SHA || expected == guided115Closed768SHA {
+		if expected == guided115Closed503SHA || expected == guided115Closed768SHA || expected == guided115Closed1049SHA {
 			expectedExit = 0
 		}
 		if read("closed-handback.json", &handback) != nil || handback.validatePlanExit(labaProfile.Plan, expectedExit) != nil || read("process-exit.json", &exit) != nil || exit.validateExit(expectedExit) != nil {

@@ -19,7 +19,7 @@ const guided115ModelEntries = 24
 const guided115Maximum = 53*guided115ModelEntries + 4
 
 func guided115Expanded(h experienceNativeLineage) bool {
-	return h.GuidedFull != nil && h.GuidedFull.Historical.Hash == guided115Closed768SHA
+	return h.GuidedFull != nil && (h.GuidedFull.Historical.Hash == guided115Closed768SHA || h.GuidedFull.Historical.Hash == guided115Closed1049SHA)
 }
 
 // Only the new, separately authorized recipe selects this profile. Legacy

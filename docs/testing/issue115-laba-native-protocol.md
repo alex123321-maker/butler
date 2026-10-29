@@ -1,5 +1,30 @@
 # Prospective fixed laba skill-preparation comparison
 
+## New evidence-policy full57 window, v6
+
+The next owner request authorizes a new complete A/B/C on laba with the
+implemented evidence selection/read-stop policy. Its v4 guided recipe consumes
+only the exact closed1049 v8 leaf:1049 native/4 unknown/9848908 known full tokens,
+1051 product/6 NULL/2 without native, plus the unchanged separate diagnostics.
+It preserves the former v5 A14/B14/C13 outcomes and every failed/unexecuted item.
+All57 stages and48 controls (two repetitions) remain in the fixed denominator.
+Common24-model/32-tool policies and independent1276 ceiling are retained; B/C
+add the8-read/3-search/2-stagnant policy and exact source-field pointers. A has
+no experience, B shares the frozen notes with C, and only C has reviewed skills
+and skill guidance. B-A and C-B include the configured mechanisms and their
+complete creation/read costs, not an isolated estimate for one prompt sentence.
+
+The new database is `memory115_laba_guided_full_v6_test`; old databases, seals,
+results and unknown spend cannot be resumed/refunded. Closed history import now
+checks the registered expanded leaf against its original1276/24 schedule, rather
+than the legacy640/12 constants. Legacy closures keep their original limits.
+Source/binaries, current UTC recipe/day, schedule and operator bindings must all
+be frozen and zero-native validated before experimental auth is accessed.
+The full controlled PostgreSQL/Broker/runtime/recipient collector must pass
+before a native entry. No new rubric, provider, permission or failure-isolation
+rule is introduced. Native costs/outcomes remain distinct from retrospective
+prefix replay; quality/default-off gates and working deployment are unchanged.
+
 ## New guided full57 comparison
 
 The full UTC2026-10-29 admission is now closed with all57 stages /48 owning
