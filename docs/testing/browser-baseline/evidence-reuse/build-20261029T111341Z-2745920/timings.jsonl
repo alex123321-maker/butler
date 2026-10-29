@@ -1,0 +1,4 @@
+{"phase":"tests-race","duration_ms":7440,"exit_code":0}
+{"phase":"core-race","duration_ms":7280,"exit_code":0}
+{"phase":"vet","duration_ms":730,"exit_code":0}
+{"phase":"build","duration_ms":5210,"exit_code":0}

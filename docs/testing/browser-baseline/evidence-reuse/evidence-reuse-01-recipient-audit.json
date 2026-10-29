@@ -1,0 +1,20 @@
+{
+  "scope": "independent_recipient_journal",
+  "events": 2,
+  "accepted_posts": 1,
+  "receipts": [
+    {
+      "sequence": 1,
+      "at": "2026-10-29T11:19:04.427845951Z",
+      "kind": "form_submission",
+      "accepted": true,
+      "quantity": 3
+    },
+    {
+      "sequence": 2,
+      "at": "2026-10-29T11:19:50.160304861Z",
+      "kind": "read",
+      "accepted": true
+    }
+  ]
+}

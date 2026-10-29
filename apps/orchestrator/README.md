@@ -1503,3 +1503,8 @@ run context, after cancelling the dispatch context. This persistence phase canno
 execute another tool, widen authority or survive parent cancellation; failure
 retains UNKNOWN and never retries a POST. Revision4 pre-dispatch ABSENT results
 continue through ordinary model proposals for a separately authorized fresh open.
+
+Research citation repair tells the model to reuse sufficient fresh current-run
+browser/HTTP observations, retain supported evidence and correct/remove unsupported
+claims/links. A redundant HTTP fetch is not prescribed by a rejected citation.
+Eligibility, exact quote checks, four-correction bound and kernel gates remain.

@@ -222,7 +222,7 @@ func Check(text string, evidence []Evidence, pages []Page, now time.Time, detail
 	primary := false
 	for _, e := range evidence {
 		if (e.Role != "primary" && e.Role != "secondary") || !Supports(e, pages, now) {
-			return "An evidence entry is not supported by a successful fresh page read in this run. Open the cited page with web.fetch and use an exact short quote from its content_text; do not invent a quote or use a search snippet."
+			return "An evidence entry is not supported by a successful fresh page read in this run. Reuse supported current-run reads, including live browser reads and guarded public GET observations. Correct or remove unsupported evidence entries and their unsupported claims/links while retaining supported evidence. Generic frozen snapshots and local preparation are not fresh external evidence or write receipts. Read again only if a needed fact is missing, stale or insufficiently observed; an HTTP refetch is not required merely to change tools. Use exact short quotes from the qualifying read, never invented quotes or search snippets. Removing a citation cannot make an unsupported claim confirmed; if required evidence is unavailable, report what remains unverified."
 		}
 		primary = primary || e.Role == "primary"
 	}
