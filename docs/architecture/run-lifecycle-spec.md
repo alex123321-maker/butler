@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+Interaction recovery resolves the canonical owning interaction before active-only
+source readers run. The owning kernel checks claim/lease, exact versions,
+evidence and current authority and resumes the Task's exact wait. Source/delegation
+observations are then rehydrated and validated before refreshed tools, model
+admission or any new action. An ordinary waiting Task is not a stale delegated
+parent. Unknown/expired/cancelled/changed reports still cannot resume inference;
+current source denial after a valid report also stops before the provider. This
+ordering never reopens a terminal Input/run or replays the consumed action.
+
 ## One post-effect browser observation
 
 After a durably recorded, correlated UNKNOWN click/fill/type response, Core can

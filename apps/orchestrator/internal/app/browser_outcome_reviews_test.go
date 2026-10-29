@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -29,6 +30,21 @@ import (
 type ownerOutcomeContextFixture struct {
 	current  actionauth.ContextSnapshot
 	approval actionauth.ApprovalSnapshot
+}
+
+type ownerOutcomeAttemptGuard struct {
+	reader failedDelegationAttemptReader
+	deny   bool
+	calls  int
+}
+
+func (g *ownerOutcomeAttemptGuard) LoadFailedDelegationAttempts(ctx context.Context, id string) ([]delegation.AttemptReport, error) {
+	g.calls++
+	r, err := g.reader.LoadFailedDelegationAttempts(ctx, id)
+	if err == nil && g.deny {
+		return nil, delegation.ErrDenied
+	}
+	return r, err
 }
 
 func (f *ownerOutcomeContextFixture) GetActionContext(context.Context, string) (actionauth.ContextSnapshot, error) {
@@ -66,7 +82,7 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 		t.Skip("isolated PostgreSQL required")
 	}
 	t.Chdir("../../../..")
-	for _, outcome := range []string{"effect_confirmed", "effect_absent", "unknown", "expired", "cancelled", "changed"} {
+	for _, outcome := range []string{"effect_confirmed", "effect_absent", "unknown", "expired", "cancelled", "changed", "source_denied"} {
 		t.Run(outcome, func(t *testing.T) {
 			ctx := context.Background()
 			pool, _ := e2eDatabase(t)
@@ -95,7 +111,7 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 			if _, err = pool.Exec(ctx, `UPDATE runs SET current_state='tool_running',status='tool_running',lease_id=$2 WHERE run_id=$1`, r.RunId, lease.LeaseID); err != nil {
 				t.Fatal(err)
 			}
-			prepared := map[string]any{"SessionUserID": "owner", "Channel": "web", "UserMessage": "Submit once", "InputItems": []transport.InputItem{{Role: "user", Content: "Submit once"}}}
+			prepared := map[string]any{"CurrentRunID": r.RunId, "SessionUserID": "owner", "Channel": "web", "UserMessage": "Submit once", "InputItems": []transport.InputItem{{Role: "user", Content: "Submit once"}}}
 			raw, _ := json.Marshal(map[string]any{"prepared": prepared})
 			if _, err = pool.Exec(ctx, `INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,task_id,run_id,status,claim_id,claim_expires_at,expires_at,checkpoint,checkpoint_json) VALUES('input',$1,'event','event','web','owner','{}',$2,$3,'running','claim',now()+interval '2 minutes',now()+interval '5 minutes','browser_outcome_observed',$4)`, r.SessionKey, tr.TaskID, r.RunId, raw); err != nil {
 				t.Fatal(err)
@@ -178,6 +194,9 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 			}
 			actor := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "report"})
 			q := actionauth.OwnerOutcomeDecision{ID: id, Fingerprint: original.Fingerprint, Revision: 1, Outcome: outcome, RecipientChecked: true, ProcessingSettled: true, ReceiptReference: "synthetic-recipient-receipt"}
+			if outcome == "source_denied" {
+				q.Outcome = "effect_confirmed"
+			}
 			if outcome == "unknown" {
 				q.RecipientChecked = false
 				q.ProcessingSettled = false
@@ -203,7 +222,12 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			provider := &ownerOutcomeProviderFixture{}
-			core := flow.NewService(sessions, leases, runs, history, provider, flow.Config{EffectReviews: kernel, Checkpoints: inputs, Tasks: tasks, ProviderName: "fixture", ModelName: "fixture"}, nil)
+			// Exercise the actual root Task source reader used by production, even
+			// with no delegated children. It requires the Task's canonical wait to
+			// have resolved before reading active source state. No manager method is
+			// invoked for an empty child selection.
+			attempts := &ownerOutcomeAttemptGuard{reader: failedDelegationAttemptReader{pool: pool, manager: &task.DelegationManager{}}, deny: outcome == "source_denied"}
+			core := flow.NewService(sessions, leases, runs, history, provider, flow.Config{EffectReviews: kernel, Checkpoints: inputs, Tasks: tasks, FailedDelegationAttempts: attempts, ProviderName: "fixture", ModelName: "fixture"}, nil)
 			resumed := durableinput.WithClaim(ctx, durableinput.Record{InputID: "input", ClaimID: "resumed", RunID: r.RunId})
 			result, resumeErr := core.Resume(resumed, r.RunId, ingress.InputEvent{EventID: "event", IdempotencyKey: "event", SessionKey: r.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"Submit once"}`})
 			known := outcome == "effect_confirmed" || outcome == "effect_absent"
@@ -212,6 +236,11 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 			}
 			if !known && len(provider.calls) != 0 {
 				t.Fatal("unknown/expired/cancelled outcome resumed inference")
+			}
+			if known || outcome == "source_denied" {
+				if attempts.calls != 1 {
+					t.Fatal("current source recheck skipped")
+				}
 			}
 			if outcome == "unknown" || outcome == "expired" {
 				var taskState string

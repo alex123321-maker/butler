@@ -181,8 +181,10 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err = validateSourceCheckpoint(event, checkpoint.Prepared); err != nil {
 		return nil, err
 	}
-	if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
-		return nil, err
+	if !interactionWait {
+		if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
+			return nil, err
+		}
 	}
 	ctx = converterContinuationProposalContext(ctx, checkpoint.Prepared)
 	if continuation.Prepared.SourceInputEvent != nil || checkpoint.Prepared.DelegatedTaskID != "" {
@@ -236,6 +238,13 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 				code = diagnostic.InteractionResumeCode()
 			}
 			return blockedApprovalResult(current, code), nil
+		}
+		// Resolve the canonical interaction first: its owning kernel validates
+		// evidence/versions/claim and atomically resumes the Task's exact wait.
+		// Active-only source readers then recheck current data before inference.
+		// A waiting Task must not be mistaken for a stale delegated parent.
+		if e := s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); e != nil {
+			return nil, e
 		}
 		refreshed, e := s.refreshRecoveredToolContext(ctx, runID, checkpoint.Prepared.InputItems, checkpoint.Prepared.ToolDefs)
 		if e != nil {

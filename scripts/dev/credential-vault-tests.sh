@@ -25,6 +25,7 @@ required() {
 # Full ordered production migrations, including pgvector and 096, not just fixtures.
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
 required vault ./internal/budget ./internal/credentials ./internal/actionauth ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegramrich ./apps/tool-broker/internal/broker -run '^Test(Vault|Credential)'
+required owner-outcome-resume ./apps/orchestrator/internal/app -run '^TestBrowserOwnerOutcomeSameRunRecoveryIntegration$'
 go test -c -race -o .cache/credential-vault-ci/browser.test ./apps/tool-browser/internal/runtime
 export BUTLER_BROWSER_E2E=1
 export BUTLER_BROWSER_E2E_BINARY="$PWD/.cache/credential-vault-ci/browser.test"
