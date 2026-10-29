@@ -161,3 +161,10 @@ reload the winner. Terminal questions disable controls, with server enforcement
 independent of disabled HTML. Unicode text limits count characters. Existing
 private verified media rendering supplies optional option images. Targeted UI
 checks: `npm run test:e2e -- communication-widget.spec.ts`.
+
+`tests/e2e/browser-owner-real.spec.ts` is required by the isolated credential
+acceptance workflow through `scripts/dev/browser-owner-safety-tests.sh`. It joins
+real owner HTTP decisions to PG, Broker and server Chromium: Stop task and Revoke
+mandate fence already issued grants; an unchanged control submits once. Only
+unrelated app navigation uses the shared bootstrap fixture. Owner endpoints and
+their responses are real; the synthetic owner token stays out of browser storage.

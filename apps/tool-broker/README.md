@@ -459,5 +459,12 @@ POST control precedes task cancellation, durable mandate revocation and changed
 origin/argument cases. Process-kill tests retain one effect and its spending,
 including a crash after receiver acceptance but before an ACK. They use fixture
 authority wiring and do not invoke a model or the production owner UI. The
-credential-vault CI script requires all seven cases without skips; see
+credential-vault CI script requires all ten cases without skips, including actual
+browser process loss before dispatch, after receiver acceptance and a fresh
+context after loss. The separate `browser_owner_ui_integration_test.go` joins
+actual Web Stop task / Revoke mandate decisions through real owner services and
+PG to already authorized browser grants. Both denials require zero POSTs and an
+unchanged positive control must submit exactly once. Test-only service/context
+composition grants no production authority; no model is used. See
 `docs/testing/browser-safety-2026-10-29.md` for native restart evidence and limits.
+The newer UI/runtime proof is in `docs/testing/browser-owner-runtime-2026-10-29.md`.

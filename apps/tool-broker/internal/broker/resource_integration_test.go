@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -120,21 +121,28 @@ func (loseResourceFinish) Finish(context.Context, resourceexec.Receipt) error {
 }
 
 type resourceBrokerFixture struct {
-	selectedTab string
-	selection   *singletabcontrol.Controller
-	pool        *pgxpool.Pool
-	server      *Server
-	auth        *actionauth.PostgresStore
-	reader      resourceReader
-	store       *resourceexec.Store
-	budgets     *budget.Controller
-	backend     *resourcePageBackend
-	router      *runtimeclient.Router
+	selectedTab  string
+	selection    *singletabcontrol.Controller
+	pool         *pgxpool.Pool
+	server       *Server
+	auth         *actionauth.PostgresStore
+	reader       resourceReader
+	store        *resourceexec.Store
+	budgets      *budget.Controller
+	backend      *resourcePageBackend
+	router       *runtimeclient.Router
+	startRuntime func() func()
+	stopRuntime  func()
 }
 
 func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool) *resourceBrokerFixture {
 	t.Helper()
 	pool := resourceBrokerDB(t)
+	return resourceBrokerWithPool(t, backend, loseReceipt, pool)
+}
+
+func resourceBrokerWithPool(t *testing.T, backend *resourcePageBackend, loseReceipt bool, pool *pgxpool.Pool) *resourceBrokerFixture {
+	t.Helper()
 	listener, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
 		t.Fatal(e)
@@ -214,6 +222,8 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 	if e != nil {
 		t.Fatal(e)
 	}
+	var startRuntime func() func()
+	var stopRuntime func()
 	if backend == nil {
 		listener.Close()
 		binary := os.Getenv("BUTLER_BROWSER_E2E_BINARY")
@@ -221,25 +231,31 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 		if binary == "" || fixtureEndpoint == "" {
 			t.Fatal("actual isolated browser harness required")
 		}
-		cmd := exec.Command(binary, "-test.run=^TestBrowserRuntimeEgressHarness$")
-		cmd.Env = append(os.Environ(), "BUTLER_GRPC_ADDR="+target, "BUTLER_BROWSER_EGRESS_HARNESS=1", "BUTLER_BROWSER_FIXTURE_ENDPOINT="+fixtureEndpoint, "BUTLER_RESOURCE_AUTHORITY_HARNESS="+authorityHTTP.URL)
-		cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
-		if e = cmd.Start(); e != nil {
-			t.Fatal(e)
-		}
-		t.Cleanup(func() { _ = cmd.Process.Signal(os.Interrupt); _ = cmd.Wait() })
-		deadline := time.Now().Add(10 * time.Second)
-		for {
-			conn, err := net.DialTimeout("tcp", target, 100*time.Millisecond)
-			if err == nil {
-				conn.Close()
-				break
+		startRuntime = func() func() {
+			cmd := exec.Command(binary, "-test.run=^TestBrowserRuntimeEgressHarness$")
+			cmd.Env = append(os.Environ(), "BUTLER_GRPC_ADDR="+target, "BUTLER_BROWSER_EGRESS_HARNESS=1", "BUTLER_BROWSER_FIXTURE_ENDPOINT="+fixtureEndpoint, "BUTLER_RESOURCE_AUTHORITY_HARNESS="+authorityHTTP.URL)
+			cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
+			if e = cmd.Start(); e != nil {
+				t.Fatal(e)
 			}
-			if time.Now().After(deadline) {
-				t.Fatal("actual guarded browser subprocess unavailable")
+			var once sync.Once
+			stop := func() { once.Do(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() }) }
+			t.Cleanup(stop)
+			deadline := time.Now().Add(10 * time.Second)
+			for {
+				conn, err := net.DialTimeout("tcp", target, 100*time.Millisecond)
+				if err == nil {
+					conn.Close()
+					break
+				}
+				if time.Now().After(deadline) {
+					t.Fatal("actual guarded browser subprocess unavailable")
+				}
+				time.Sleep(25 * time.Millisecond)
 			}
-			time.Sleep(25 * time.Millisecond)
+			return stop
 		}
+		stopRuntime = startRuntime()
 	} else {
 		guarded, e := resourceexec.NewRuntime(backend, client, privateToken)
 		if e != nil {
@@ -277,7 +293,7 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 	server.SetActionAuthorizer(actionauth.NewService(auth, reader, nil))
 	server.SetBudgets(c)
 	server.SetResourceAdmission(rs)
-	return &resourceBrokerFixture{pool: pool, server: server, auth: auth, reader: reader, store: rs, budgets: c, backend: backend, router: router}
+	return &resourceBrokerFixture{pool: pool, server: server, auth: auth, reader: reader, store: rs, budgets: c, backend: backend, router: router, startRuntime: startRuntime, stopRuntime: stopRuntime}
 }
 func (f *resourceBrokerFixture) request(t *testing.T, run, id string) *toolbrokerv1.ExecuteToolCallRequest {
 	t.Helper()

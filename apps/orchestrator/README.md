@@ -1490,3 +1490,9 @@ through Input/Communication/Action journal fences. Default mode rolls back;
 tools or deliveries. See its README and the stopped-input-finalization spec.
 
 Core joins the owning lease/authority supervisor before terminal task mutation and atomic completion. In-flight failures remain authoritative; writes retain their original context and database fences. Failed outcome, task-block and run-transition writes return safe stage labels with inspectable underlying causes. See the run lifecycle specification.
+
+The opt-in `TestBrowserSafetyOwnerAPIHarness` is compiled only into the API test
+binary. It composes actual owner task/goal services on disposable full-migration
+PG for the browser Stop task / Revoke mandate acceptance test. Its loopback
+fixture context projection cannot manufacture approvals. It is not a production
+server option or native model run. See `scripts/dev/browser-owner-safety-tests.sh`.

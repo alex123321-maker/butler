@@ -116,3 +116,7 @@ and [inclusive action timings](browser-baseline/safety/timings-inclusive-v1/READ
 General browser acceptance and #163 remain open after this qualification;
 owner-UI cancellation/revocation, runtime-loss boundaries and integration/merge
 status must not be inferred from a component test or a single assisted trial.
+
+The subsequent [owner UI/runtime qualification](browser-owner-runtime-2026-10-29.md)
+now provides the separate joined owner UI and actual runtime-loss evidence. It
+retains this historical window and its native metrics unchanged.

@@ -47,6 +47,7 @@ func (r browserSafetyReader) GetActionContext(ctx context.Context, run string) (
 
 type browserSafetyProcessConfig struct {
 	DSN, SearchPath, ToolsPath, AddressFile, PrivateToken string
+	ContextEndpoint                                       string
 }
 
 // A new OS process reconstructs the real Broker from the same durable store.
@@ -115,7 +116,13 @@ func TestBrowserSafetyBrokerHarness(t *testing.T) {
 	store.SetBudgets(budgets)
 	store.SetRunDataGuard(source)
 	store.SetDispatchClaimGuard(rs)
-	reader := browserSafetyReader{resourceReader{authFixture: newAuthFixture(), pool: pool}}
+	var reader actionauth.ContextReader = browserSafetyReader{resourceReader{authFixture: newAuthFixture(), pool: pool}}
+	if cfg.ContextEndpoint != "" {
+		reader, err = actionauth.NewHTTPContextReader(cfg.ContextEndpoint, strings.Repeat("owner-context-fixture-", 3))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 	server := NewServer(reg, executor, nil, nil)
 	server.SetActionAuthorizer(actionauth.NewService(store, reader, nil))
 	server.SetBudgets(budgets)
@@ -137,6 +144,10 @@ func TestBrowserSafetyBrokerHarness(t *testing.T) {
 }
 
 func browserSafetyBrokerProcess(t *testing.T, f *resourceBrokerFixture) (toolbrokerv1.ToolBrokerServiceClient, context.Context, func()) {
+	return browserSafetyBrokerWithContext(t, f, "")
+}
+
+func browserSafetyBrokerWithContext(t *testing.T, f *resourceBrokerFixture, endpoint string) (toolbrokerv1.ToolBrokerServiceClient, context.Context, func()) {
 	t.Helper()
 	dir := t.TempDir()
 	tools, _ := json.Marshal(map[string]any{"tools": f.server.registry.List("", false)})
@@ -145,6 +156,7 @@ func browserSafetyBrokerProcess(t *testing.T, f *resourceBrokerFixture) (toolbro
 		t.Fatal("fixture contracts write")
 	}
 	cfg := browserSafetyProcessConfig{DSN: f.pool.Config().ConnString(), SearchPath: f.pool.Config().ConnConfig.RuntimeParams["search_path"], ToolsPath: toolsPath, AddressFile: filepath.Join(dir, "ready"), PrivateToken: strings.Repeat("fixture-core-private-", 3)}
+	cfg.ContextEndpoint = endpoint
 	encoded, _ := json.Marshal(cfg)
 	path := filepath.Join(dir, "private.json")
 	if os.WriteFile(path, encoded, 0600) != nil {
@@ -220,8 +232,12 @@ func browserSafetyGrant(t *testing.T, c toolbrokerv1.ToolBrokerServiceClient, ct
 }
 
 func browserSafetyOpen(t *testing.T, f *resourceBrokerFixture) (string, string, int64) {
+	return browserSafetyOpenNamed(t, f, "open")
+}
+
+func browserSafetyOpenNamed(t *testing.T, f *resourceBrokerFixture, callID string) (string, string, int64) {
 	t.Helper()
-	req := f.callRequest(t, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "open", ToolName: "browser.open", AutonomyMode: 3, ArgsJson: `{"url":"` + egresstest.Origin + `/form"}`})
+	req := f.callRequest(t, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: callID, ToolName: "browser.open", AutonomyMode: 3, ArgsJson: `{"url":"` + egresstest.Origin + `/form"}`})
 	r, err := f.server.ExecuteToolCall(context.Background(), req)
 	var view struct {
 		ID      string `json:"browser_session_id"`
@@ -422,6 +438,141 @@ func TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration(t *tes
 				t.Fatal("restart replaced dispatch history")
 			}
 			t.Logf("case=%s recipient_posts=1 original_effect=effect_unknown original_dispatches=1 retained_reservations=%d broker_process_restarted=true", kind, reservations)
+		})
+	}
+}
+
+// Kill the actual gRPC browser process, not a fake executor or Broker. Its
+// restarted helper has a fresh in-memory context map; PG cannot recreate DOM.
+func TestBrowserSafetyRuntimeLossChromiumIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_BROWSER_E2E") != "1" {
+		t.Skip("isolated PG and actual Chromium required")
+	}
+	t.Run("fresh_context_required", func(t *testing.T) {
+		var posts atomic.Int32
+		site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if r.Method == "POST" {
+				posts.Add(1)
+			}
+			fmt.Fprint(w, `<p>Read-only fixture</p>`)
+		}))
+		defer site.Close()
+		t.Setenv("BUTLER_RESOURCE_BROWSER_FIXTURE", site.URL)
+		f := resourceBroker(t, nil, false)
+		old, _, _ := browserSafetyOpen(t, f)
+		f.stopRuntime()
+		f.startRuntime()
+		router := runtimeclient.New(nil)
+		defer router.Close()
+		contract, _ := f.server.registry.Get("browser.open")
+		if router.SetTargetAuthentication(contract.RuntimeTarget, strings.Repeat("fixture-private-resource-", 3)) != nil {
+			t.Fatal("runtime auth unavailable")
+		}
+		executor, err := NewResourceExecutor(f.store, router)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f.server.executor = executor
+		stale := f.callRequest(t, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "stale-context-read", ToolName: "browser.snapshot", AutonomyMode: 3, ArgsJson: fmt.Sprintf(`{"browser_session_id":%q}`, old)})
+		r, err := f.server.ExecuteToolCall(context.Background(), stale)
+		if err != nil || r.GetResult().GetStatus() == "completed" {
+			t.Fatal("runtime restored an old context from PG")
+		}
+		fresh, _, _ := browserSafetyOpenNamed(t, f, "fresh-context-open")
+		if fresh == old || posts.Load() != 0 {
+			t.Fatal("new read reused old context or wrote to site")
+		}
+		t.Log("runtime_process_killed=true restarted=true stale_context_not_completed=true fresh_context_distinct=true recipient_posts=0")
+	})
+	for _, kind := range []string{"before_dispatch", "after_recipient_post"} {
+		t.Run(kind, func(t *testing.T) {
+			var posts atomic.Int32
+			applied, release := make(chan struct{}, 1), make(chan struct{})
+			var once sync.Once
+			finish := func() { once.Do(func() { close(release) }) }
+			site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if r.Method == "POST" {
+					posts.Add(1)
+					applied <- struct{}{}
+					select {
+					case <-release:
+					case <-r.Context().Done():
+					}
+					fmt.Fprint(w, "saved")
+					return
+				}
+				fmt.Fprint(w, `<form method=post action=/effect><button id=submit>Send</button></form>`)
+			}))
+			defer func() { finish(); site.Close() }()
+			t.Setenv("BUTLER_RESOURCE_BROWSER_FIXTURE", site.URL)
+			f := resourceBroker(t, nil, false)
+			id, url, version := browserSafetyOpen(t, f)
+			browserSafetyMandate(t, f)
+			client, ctx, _ := browserSafetyBrokerProcess(t, f)
+			args := fmt.Sprintf(`{"browser_session_id":%q,"expected_url":%q,"observation_version":%d,"selector":"#submit"}`, id, url, version)
+			original := browserSafetyGrant(t, client, ctx, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "runtime-loss-click", ToolName: "browser.click", AutonomyMode: 3, ArgsJson: args})
+			if kind == "before_dispatch" {
+				f.stopRuntime()
+			}
+			done := make(chan *toolbrokerv1.ExecuteToolCallResponse, 1)
+			go func() { r, _ := client.ExecuteToolCall(ctx, original); done <- r }()
+			if kind == "after_recipient_post" {
+				select {
+				case <-applied:
+				case <-time.After(10 * time.Second):
+					t.Fatal("POST never reached recipient")
+				}
+				f.stopRuntime()
+				finish()
+			}
+			select {
+			case r := <-done:
+				if r.GetResult().GetStatus() == "completed" {
+					t.Fatal("lost runtime became success")
+				}
+			case <-time.After(10 * time.Second):
+				t.Fatal("runtime loss did not settle Broker call")
+			}
+			g, err := f.auth.GetGrant(context.Background(), original.AuthorizationId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			i, err := f.auth.GetIntent(context.Background(), g.Binding.ActionID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			before, err := f.auth.GetEffect(context.Background(), i.EffectID)
+			if err != nil || before.State != actionauth.StateUnknown {
+				t.Fatal("runtime loss was not durably unknown")
+			}
+			var spent int
+			if f.pool.QueryRow(ctx, `SELECT count(*) FROM execution_budget_reservations`).Scan(&spent) != nil || spent != 2 {
+				t.Fatal("lost dispatch spending was not retained")
+			}
+			f.startRuntime()
+			// A fresh Broker connection avoids depending on gRPC reconnect backoff.
+			client, ctx, _ = browserSafetyBrokerProcess(t, f)
+			r, err := client.ExecuteToolCall(ctx, original)
+			wantPosts := int32(0)
+			if kind == "after_recipient_post" {
+				wantPosts = 1
+			}
+			if err != nil || r.GetResult().GetStatus() != "effect_unknown" || posts.Load() != wantPosts {
+				t.Fatal("restart replayed or upgraded lost dispatch")
+			}
+			next := browserSafetyGrant(t, client, ctx, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "runtime-loss-successor", ToolName: "browser.click", AutonomyMode: 3, ArgsJson: args})
+			r, err = client.ExecuteToolCall(ctx, next)
+			if err != nil || r.GetResult().GetStatus() == "completed" || posts.Load() != wantPosts {
+				t.Fatal("stale context allowed another POST")
+			}
+			after, err := f.auth.GetEffect(ctx, i.EffectID)
+			var now, dispatches int
+			if err != nil || after.State != before.State || after.AuthorizationID != before.AuthorizationID || f.pool.QueryRow(ctx, `SELECT count(*) FROM execution_budget_reservations`).Scan(&now) != nil || now != spent || f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effect_dispatches WHERE authorization_id=$1`, original.AuthorizationId).Scan(&dispatches) != nil || dispatches != 1 {
+				t.Fatal("runtime restart changed original identity/history/spend")
+			}
+			t.Logf("case=%s runtime_process_killed=true restarted=true recipient_posts=%d original_effect=effect_unknown retained_reservations=%d original_dispatches=1", kind, posts.Load(), spent)
 		})
 	}
 }

@@ -26,10 +26,10 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "browser_safety_integration|browser-safety-2026" {
+    "browser_safety_integration|browser_owner_ui_integration|browser_safety_fixture|browser-owner-real|browser-owner-safety-tests|browser-owner-runtime-2026|browser-safety-2026" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/external-effect-journal.md")
-      [void]$tests.Add("scripts/dev/credential-vault-tests.sh on isolated *_test PG with real Chromium: both TestBrowserSafety*ChromiumIntegration parents and all seven positive/negative subcases must pass without skips. Actual Broker process restart, one retained receiver effect/spend and no successor POST are required. Native Core restart is a separate fresh Input with inclusive wall time; do not replay old slots.")
+      [void]$tests.Add("scripts/dev/credential-vault-tests.sh on isolated *_test PG with real Chromium: three TestBrowserSafety*ChromiumIntegration parents and all ten positive/negative subcases must pass without skips. Then scripts/dev/browser-owner-safety-tests.sh must prove real owner UI stop/revoke -> PG -> old grant denial with zero POSTs, plus one unchanged positive control. Native Input wall time and the inclusive operator work window remain separate; do not replay old slots.")
       continue
     }
     "owner_outcome|browser_outcome_reviews|browser-owner-outcomes|browser-pre-input|browser-reviewed-preparation|browser_preparation_rejection|reviewed_preparation|ActionOutcomeReviews|action-outcomes[.]spec|105_browser_owner_outcomes" {
