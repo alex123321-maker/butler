@@ -374,11 +374,23 @@ func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
 		}
 		return r
 	}
+	var frozenUtilityBinding utilitytrace.Binding
 	executeProcedure := func(digest string, expectFailedCheck bool) (task.Record, string) {
 		t.Helper()
 		record, err := tasks.Create(actor("procedure-task"), task.CreateRequest{SessionKey: key, OwnerID: "owner", Goal: "Prepare reviewed fixture README correction", CompletionCriteria: []string{"recipient prepared patch checks pass; original unapplied"}})
 		if err != nil {
 			t.Fatal(err)
+		}
+		if os.Getenv("BUTLER_UTILITY_TRACE_OFFLINE") == "1" && digest != "" {
+			var rawRef []byte
+			var body catalog.SourceRef
+			if err := pool.QueryRow(ctx, `SELECT source_ref_json FROM skill_versions WHERE digest=$1`, digest).Scan(&rawRef); err != nil {
+				t.Fatal(err)
+			}
+			if json.Unmarshal(rawRef, &body) != nil {
+				t.Fatal("skill body reference")
+			}
+			frozenUtilityBinding = utilitytrace.Binding{Arm: "C", TaskID: record.TaskID, SessionKey: record.SessionKey, OwnerID: record.OwnerID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, Skills: []utilitytrace.SkillBinding{{Digest: digest, Body: body}}}
 		}
 		control(extensions.ControlRequest{Operation: "grant_task", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, ManifestHash: installed.Digest, Generation: state.Generation, Tools: toolNames, Resources: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/project"}}, ExpiresAt: time.Now().Add(time.Hour)}})
 		text := "Prepare one checked patch, stop on any failed or unknown effect"
@@ -528,15 +540,7 @@ func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
 		if err := pool.QueryRow(ctx, `SELECT last_run_id FROM tasks WHERE task_id=$1`, record.TaskID).Scan(&runID); err != nil {
 			t.Fatal(err)
 		}
-		var body catalog.SourceRef
-		var rawRef []byte
-		if err := pool.QueryRow(ctx, `SELECT source_ref_json FROM skill_versions WHERE digest=$1`, pack.Digest).Scan(&rawRef); err != nil {
-			t.Fatal(err)
-		}
-		if json.Unmarshal(rawRef, &body) != nil {
-			t.Fatal("skill body reference")
-		}
-		binding := utilitytrace.Binding{Arm: "C", TaskID: record.TaskID, SessionKey: record.SessionKey, OwnerID: record.OwnerID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, Skills: []utilitytrace.SkillBinding{{Digest: pack.Digest, Body: body}}}
+		binding := frozenUtilityBinding
 		snapshot, err := utilitytrace.Capture(ctx, pool, sources, binding, runID, map[string]string{})
 		if err != nil {
 			t.Fatal(err)
@@ -567,12 +571,30 @@ func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
 			if _, err := utilitytrace.VerifySkillLoad(snapshot, badBinding, call.ID); err == nil {
 				t.Fatal("B admitted skill")
 			}
+			for _, change := range []struct {
+				table, field string
+				value        any
+			}{
+				{"skill_heads", "status", "revoked"}, {"skill_heads", "body", "substituted"},
+				{"skill_heads", "access_revision", 999}, {"skill_usages", "task_id", "foreign-task"},
+			} {
+				bad := cloneUtilityTrace(t, snapshot)
+				var rows []map[string]any
+				if json.Unmarshal(bad.Tables[change.table], &rows) != nil || len(rows) != 1 {
+					t.Fatal("one current skill expected")
+				}
+				rows[0][change.field] = change.value
+				bad.Tables[change.table], _ = json.Marshal(rows)
+				if _, err := utilitytrace.VerifySkillLoad(bad, binding, call.ID); err == nil {
+					t.Fatal("changed skill evidence accepted", change.field)
+				}
+			}
 		}
 		if loads != 1 {
 			t.Fatal("expected one actual Broker load", loads)
 		}
 		if root := os.Getenv("BUTLER_UTILITY_TRACE_OUTPUT"); root != "" {
-			raw, _ := json.MarshalIndent(map[string]any{"binding": binding, "snapshot": snapshot, "actual_broker_loads": loads, "corruption_controls_rejected": 7, "native_requests": 0}, "", "  ")
+			raw, _ := json.MarshalIndent(map[string]any{"binding": binding, "snapshot": snapshot, "actual_broker_loads": loads, "corruption_controls_rejected": 11, "native_requests": 0}, "", "  ")
 			if err := os.WriteFile(filepath.Join(root, "skill-broker.private.json"), raw, 0600); err != nil {
 				t.Fatal(err)
 			}
