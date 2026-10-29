@@ -29,7 +29,7 @@ def main():
             assert observed['run_id']==v['run_id'] and observed['reservation_id']==v['reservation_id']
             if v['usage'] is not None:
                 ci,co=observed['actual_input_tokens'],observed['actual_output_tokens']
-                core_token_mismatches+=ci is None or co is None or ci+co!=v['usage']['TotalTokens']
+                core_token_mismatches+=ci is None or co is None or ci!=v['usage']['InputTokens'] or co!=v['usage']['OutputTokens']
         row={'sequence':seq,'arm':arm,'family':case['family'],'condition':case['condition'],'slot_status':final.get(seq,scheduled)['Status'],
              'task_success':score['task_success'],'reasons':score['reasons'],'abstained':score.get('abstained',False),'format_valid':score.get('format_valid',False),
              'elapsed_ms':execution.get('elapsed_ms'),'cold_setup_ms':prep.get('elapsed_ms'),'source_writes':prep.get('source_writes'),
