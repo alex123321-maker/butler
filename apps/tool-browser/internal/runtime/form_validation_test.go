@@ -86,7 +86,7 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 	runner.workspaceRoot = filepath.Clean(filepath.Join(filepath.Dir(os.Getenv("BUTLER_BROWSER_E2E_SCRIPT")), "..", "..", ".."))
 	server := NewServer(runner, nil)
 	defer server.Close()
-	invoke := func(tool string, args map[string]any, credentials ...*runtimev1.ResolvedCredential) Result {
+	invoke := func(t *testing.T, tool string, args map[string]any, credentials ...*runtimev1.ResolvedCredential) Result {
 		t.Helper()
 		req := browserCall(tool, "run-1", args)
 		req.Contract.AllowedDomains = nil
@@ -96,9 +96,23 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 		}
 		response, err := server.Execute(context.Background(), req)
 		if err != nil || response.GetResult().GetStatus() != "completed" {
-			t.Fatal("form observation/preparation failed", tool)
+			var failure struct {
+				Reason string       `json:"reason"`
+				Error  *ResultError `json:"error"`
+			}
+			_ = json.Unmarshal([]byte(response.GetResult().GetError().GetDetailsJson()), &failure)
+			code := failure.Reason
+			if failure.Error != nil {
+				code = failure.Error.ErrorType
+			}
+			switch code {
+			case "stale_observation", "page_changed", "credential_mismatch", "operation_failed", "session_lost", "scope_denied", "invalid_args", "timeout":
+			default:
+				code = "unclassified"
+			}
+			t.Fatal("form observation/preparation failed", tool, code)
 		}
-		for _, secret := range []string{"password-form-canary", "hidden-form-canary", "cookie-form-canary", "storage-form-canary", "late-cookie-form-canary"} {
+		for _, secret := range []string{"password-form-canary", "hidden-form-canary", "cookie-form-canary", "storage-form-canary", "late-cookie-form-canary", "credential-form-canary"} {
 			if strings.Contains(response.Result.ResultJson, secret) {
 				t.Fatal("form observation leaked a canary")
 			}
@@ -109,12 +123,12 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 		}
 		return result
 	}
-	prepare := func(obs Result, value string) Result {
+	prepare := func(t *testing.T, obs Result, value string) Result {
 		args := actionArgs(obs)
 		args["selector"], args["value"] = `input[name=quantity]`, value
-		return invoke("browser.prepare_fill", args)
+		return invoke(t, "browser.prepare_fill", args)
 	}
-	obs := invoke("browser.open", map[string]any{"url": egresstest.Origin + "/public"})
+	obs := invoke(t, "browser.open", map[string]any{"url": egresstest.Origin + "/public"})
 	if len(obs.Forms) != 1 || len(obs.Forms[0].Fields) != 2 {
 		t.Fatal("missing form fields")
 	}
@@ -122,20 +136,20 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 	if field.Constraints == nil || !field.Constraints.Required || field.Constraints.Min != "1" || field.Constraints.Max != "5" || field.Validation != nil {
 		t.Fatal("public constraints missing or unfrozen validity exposed")
 	}
-	obs = prepare(obs, "8")
+	obs = prepare(t, obs, "8")
 	field = obs.Forms[0].Fields[1]
 	if obs.NetworkState != "frozen" || field.Validation == nil || field.Validation.Valid || len(field.Validation.Issues) != 1 || field.Validation.Issues[0] != "range_overflow" || !strings.Contains(obs.Text, "Invalid events: 0") || posts.Load() != 0 {
 		t.Fatal("invalid public input not observed without events/requests")
 	}
-	obs = prepare(obs, "3")
+	obs = prepare(t, obs, "3")
 	field = obs.Forms[0].Fields[1]
 	if field.Validation == nil || !field.Validation.Valid || len(field.Validation.Issues) != 0 || posts.Load() != 0 {
 		t.Fatal("corrected public input not observed locally")
 	}
 	for _, path := range []string{"/password", "/hidden", "/cookie", "/storage", "/late-cookie"} {
 		t.Run(path, func(t *testing.T) {
-			private := invoke("browser.open", map[string]any{"url": egresstest.Origin + path})
-			private = prepare(private, "8")
+			private := invoke(t, "browser.open", map[string]any{"url": egresstest.Origin + path})
+			private = prepare(t, private, "8")
 			for _, form := range private.Forms {
 				for _, field := range form.Fields {
 					if field.Constraints != nil || field.Validation != nil {
@@ -146,12 +160,13 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 		})
 	}
 	t.Run("credential_then_plaintext", func(t *testing.T) {
-		obs := invoke("browser.open", map[string]any{"url": egresstest.Origin + "/public"})
+		obs := invoke(t, "browser.open", map[string]any{"url": egresstest.Origin + "/public"})
 		args := actionArgs(obs)
-		args["selector"] = `input[name=quantity]`
+		args["selector"] = `input[name=title]`
 		args["value"] = map[string]string{"type": "credential_ref", "alias": "fixture", "field": "username"}
-		obs = invoke("browser.prepare_fill", args, &runtimev1.ResolvedCredential{Alias: "fixture", Field: "username", Value: "9173319"})
-		for range 2 {
+		obs = invoke(t, "browser.prepare_fill", args, &runtimev1.ResolvedCredential{Alias: "fixture", Field: "username", Value: "credential-form-canary"})
+		assertPrivate := func(obs Result) {
+			t.Helper()
 			for _, form := range obs.Forms {
 				for _, field := range form.Fields {
 					if field.Constraints != nil || field.Validation != nil {
@@ -159,8 +174,19 @@ func TestBrowserPublicFormValidationChromium(t *testing.T) {
 					}
 				}
 			}
-			obs = prepare(obs, "3")
 		}
+		assertPrivate(obs)
+		// Native input/change bookkeeping may advance the live revision after
+		// fill returns. This is a privacy test, not a timing assumption that the
+		// prior snapshot stays current. Observe again before the next action.
+		obs = invoke(t, "browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		assertPrivate(obs)
+		args = actionArgs(obs)
+		args["selector"], args["value"] = `input[name=title]`, "public title"
+		obs = invoke(t, "browser.prepare_fill", args)
+		assertPrivate(obs)
+		obs = invoke(t, "browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		assertPrivate(obs)
 	})
 	if posts.Load() != 0 {
 		t.Fatal("observations or local correction caused a POST")

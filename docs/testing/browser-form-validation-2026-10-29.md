@@ -45,6 +45,23 @@ Both new Chromium parents are mandatory no-skip cases in credential-vault CI.
 PR checks for this source SHA are reported separately; earlier green CI is not
 evidence for this new revision.
 
+The first new CI SHA `fcfb31cd` failed the credential-then-plaintext runtime test
+after the Broker cases passed. Content-free diagnostics and full-source local
+repetition reproduced stale_observation before the next input: **11/20 passed**,
+then **16/20 passed** after adding a fresh snapshot. The guard was not weakened;
+the exact late page-event source is not proven. Calling FailNow through a parent
+testing.T also obscured the subtest failure; helpers now use the current subtest
+and print only closed error codes, never response material.
+
+The username privacy fixture now uses an ordinary text field, explicit fresh
+snapshots, one plaintext replacement and checks before/after both observations.
+All fields still must suppress metadata, and the numeric public invalid8/valid3
+and private-number unit cases remain. **20/20 full-source Chromium repetitions
+passed** under race. This changes the privacy test fixture, not production input
+timing or the stale guard; it does not prove that arbitrary numeric credential
+input is immune to late page revisions. Failed series are retained alongside the
+successful series under `full-repeat-*`; native Inputs were not repeated.
+
 ## Native task and independent receiver
 
 Canonical owner ingress used the configured Antigravity/gemini-3.8-flash-high
