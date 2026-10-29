@@ -130,6 +130,15 @@ installs Web's own browser revision. No package versions or production contracts
 changed. The failed [CI run and artifacts](https://github.com/alex123321-maker/butler/actions/runs/40828133657)
 remain evidence of that setup failure, not owner-control acceptance.
 
+The next [CI window](https://github.com/alex123321-maker/butler/actions/runs/40828862790)
+passed both actual owner decisions and the one-POST positive control, but the
+current app's background action-outcome polling exposed an early API teardown.
+A late route fetch received connection refused after the API had exited. The
+fixture now waits for Playwright to drain its routes and close the page before
+the final acknowledgement permits API shutdown. Request errors are not swallowed
+and control/receipt assertions are unchanged. That failed window is retained;
+successful control assertions alone are not a successful end-to-end test.
+
 These bounded checks pass. General browser acceptance and #163 remain open:
 they do not establish universal browser capability, autonomous reconciliation,
 native model recovery after runtime loss, popup SSO, CAPTCHA or WebSocket support.

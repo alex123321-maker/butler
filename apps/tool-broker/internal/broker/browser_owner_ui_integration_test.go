@@ -178,16 +178,18 @@ func TestBrowserSafetyOwnerUIChromiumIntegration(t *testing.T) {
 	mu.Lock()
 	current = step{Kind: "done"}
 	mu.Unlock()
+	// The current app polls owner observations in the background. Keep its API
+	// alive until Playwright has drained routes and closed the page; otherwise
+	// teardown can turn successful controls into a late connection-refused error.
+	select {
+	case <-proceed:
+	case <-time.After(10 * time.Second):
+		t.Fatal("UI final receipt not observed")
+	}
 	response, err := http.Post(cfg.Address+"/fixture/done", "application/json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	io.Copy(io.Discard, response.Body)
 	response.Body.Close()
-	// Let Playwright observe the final acknowledgement before stopping the server.
-	select {
-	case <-proceed:
-	case <-time.After(10 * time.Second):
-		t.Fatal("UI final receipt not observed")
-	}
 }

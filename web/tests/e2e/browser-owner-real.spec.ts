@@ -44,5 +44,9 @@ test('owner UI stop and mandate revoke fence already authorized real browser POS
     console.log(JSON.stringify({ action: `owner_ui_${kind}`, wall_ms: Date.now() - started, model_calls: 0 }))
   }
   await expect.poll(async () => (await (await request.get(`${coordination}/state`)).json()).kind).toBe('done')
+  // Drain background owner-observation requests while the real API is alive.
+  // Only the acknowledgement below lets the Go fixture shut that API down.
+  await page.unrouteAll({ behavior: 'wait' })
+  await page.close()
   expect((await request.post(`${coordination}/continue?kind=done`)).status()).toBe(200)
 })
