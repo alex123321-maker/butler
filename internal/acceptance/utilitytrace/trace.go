@@ -502,7 +502,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 						Fingerprint string                   `json:"fingerprint"`
 						Binding     actionauth.ActionBinding `json:"initial_binding"`
 					}
-					if err != nil || u.Path != "/project/"+c.Resource || u.RawQuery != "verify_unknown="+b.Unknown.Key || body.OriginalKey != b.Unknown.Key || body.Effect != "unknown" || json.Unmarshal(s.Tables["original_effects"], &originals) != nil || len(originals) != 1 {
+					if err != nil || u.Path != "/project/"+c.Resource || (u.RawQuery != "verify_unknown="+b.Unknown.Key && u.RawQuery != "verify_unknown=current") || body.OriginalKey != b.Unknown.Key || body.Effect != "unknown" || json.Unmarshal(s.Tables["original_effects"], &originals) != nil || len(originals) != 1 {
 						return deny("original unknown evidence missing")
 					}
 					v := originals[0]

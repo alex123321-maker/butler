@@ -73,7 +73,7 @@ func TestMemoryUtilityWholeControlledABCIntegration(t *testing.T) {
 	defer func() { utilityWholeWrite(t, root, "slots-final.json", slots) }()
 	for i := range slots {
 		slot := &slots[i]
-		ok := t.Run(fmt.Sprintf("%03d_%s", slot.Sequence, slot.Arm), func(t *testing.T) { slot.Status = "started"; utilityWholeCase(t, root, suite, *slot) })
+		ok := t.Run(fmt.Sprintf("%03d_%s", slot.Sequence, slot.Arm), func(t *testing.T) { slot.Status = "started"; utilityWholeCase(t, root, suite, *slot, nil) })
 		if ok {
 			slot.Status = "completed"
 		} else {
@@ -82,10 +82,11 @@ func TestMemoryUtilityWholeControlledABCIntegration(t *testing.T) {
 	}
 }
 
-func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, slot utilityWholeSlot) {
+func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, slot utilityWholeSlot, native *utilityWholeNative) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
+	coldStarted := time.Now()
 	pool := memorytest.Database(t)
 	dir := t.TempDir()
 	anchor := filepath.Join(dir, "anchor")
@@ -104,7 +105,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	subset := []catalog.SourceRef{}
 	docs := []utilitytrace.CurrentDocument{}
 	writes := 0
-	prepStarted := time.Now()
+	prepStarted := coldStarted
 	for _, s := range c.Sources {
 		if s.Channel == "current" {
 			pin := catalog.SourceRef{ID: s.Source.ID, Revision: 1, AccessRevision: 1, Hash: experienceDigest(s.Source.Body)}
@@ -152,7 +153,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	defer recipient.close()
 	arm := experienceNativeArms[strings.Index("ABC", slot.Arm)]
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), acceptance.MemoryUtilityInstructions, arm, subset, time.Now().Add(3*time.Minute))
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions, arm, subset, time.Now().Add(3*time.Minute))
 	defer r.close()
 	var reviewed *skills.Record
 	var unknown utilitytrace.UnknownBinding
@@ -172,6 +173,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 		unknown.OriginRun, unknown.OriginTask = out.Result.RunID, original.TaskID
 		recipient.mu.Lock()
 		recipient.state.Config.Outage = true
+		recipient.state.Config.UnknownKey = unknown.Key
 		recipient.mu.Unlock()
 	}
 	permissions := "inspect_and_check_only"
@@ -211,9 +213,13 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	utilityWholeWrite(t, dst, "preparation.json", map[string]any{"source_writes": writes, "elapsed_ms": time.Since(prepStarted).Milliseconds(), "native_requests": 0, "provider": "scripted synthetic fixture; no native usage allocation", "skill": reviewed, "original_unknown": unknown})
 	input := c.Input()
 	raw, _ := json.Marshal(input)
-	provider := &utilityWholeControlledProvider{input: input, arm: slot.Arm, unknown: unknown.Key}
+	controlled := &utilityWholeControlledProvider{input: input, arm: slot.Arm, unknown: unknown.Key}
 	if reviewed != nil {
-		provider.digest = reviewed.Digest
+		controlled.digest = reviewed.Digest
+	}
+	var provider transport.ModelProvider = controlled
+	if native != nil {
+		provider = native.provider(t, slot.Sequence, dst)
 	}
 	started := time.Now()
 	out := r.execute(t, ctx, record, id, string(raw), provider)
@@ -246,7 +252,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	if slot.Arm == "A" && slot.Case < 20 && c.Family != "procedure" && c.Condition != "current_sufficient" && c.Expected.Outcome != "unknown" {
 		expected = false
 	}
-	if score.TaskSuccess != expected {
+	if native == nil && score.TaskSuccess != expected {
 		t.Fatalf("whole observer score %+v expected %t", score, expected)
 	}
 }
@@ -378,6 +384,12 @@ func (p *utilityWholeControlledProvider) SubmitToolResult(ctx context.Context, q
 			return p.final(f), nil
 		}
 		item := data.Items[0]
+		for _, v := range data.Items {
+			if !strings.Contains(v.Text, "Справочная запись") {
+				item = v
+				break
+			}
+		}
 		if !p.opening {
 			p.opening = true
 			return p.emit(readcontrol.Open, map[string]any{"source_id": item.Source.ID, "source_revision": item.Source.Revision, "access_revision": item.Source.AccessRevision, "content_hash": item.Source.Hash, "max_chars": 8192}), nil

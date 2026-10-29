@@ -21,11 +21,12 @@ import (
 // It never applies a patch or resolves a request field as a filesystem path.
 // No lesson/control oracle is accepted here: only current files and fixed faults.
 type experienceRecipientConfig struct {
-	Version   string                         `json:"version"`
-	Ready     string                         `json:"accepted_ready_value"`
-	Files     map[string]string              `json:"initial_files"`
-	Outage    bool                           `json:"receipt_outage"`
-	Documents []utilitytrace.CurrentDocument `json:"current_documents,omitempty"`
+	Version    string                         `json:"version"`
+	Ready      string                         `json:"accepted_ready_value"`
+	Files      map[string]string              `json:"initial_files"`
+	Outage     bool                           `json:"receipt_outage"`
+	UnknownKey string                         `json:"unknown_key,omitempty"`
+	Documents  []utilitytrace.CurrentDocument `json:"current_documents,omitempty"`
 }
 
 type experienceRecipientEntry struct {
@@ -223,7 +224,12 @@ func (r *experienceRecipient) ServeHTTP(w http.ResponseWriter, req *http.Request
 	}}
 	if req.URL.RawPath != "" || req.URL.RawQuery != "" || !strings.HasPrefix(req.URL.Path, "/project") {
 		if req.Method == http.MethodGet && req.URL.RawPath == "" && req.URL.Path == "/project/alpha" && len(req.URL.Query()) == 1 && req.URL.Query().Get("verify_unknown") != "" && r.state.Config.Outage {
-			experienceReply(w, 200, map[string]any{"observation_format": "project_unknown_verification_v1", "project_ref": "alpha", "original_key": req.URL.Query().Get("verify_unknown"), "effect": "unknown", "checks_passed": false, "verification_available": false})
+			experienceReply(w, 200, map[string]any{"observation_format": "project_unknown_verification_v1", "project_ref": "alpha", "original_key": func() string {
+				if req.URL.Query().Get("verify_unknown") == "current" {
+					return r.state.Config.UnknownKey
+				}
+				return req.URL.Query().Get("verify_unknown")
+			}(), "effect": "unknown", "checks_passed": false, "verification_available": false})
 			return
 		}
 		if req.Method == http.MethodGet && req.URL.RawPath == "" && req.URL.Path == "/project/alpha" && req.URL.RawQuery == "validate_ready=maybe" && r.state.Config.Files["alpha"] != "" {
