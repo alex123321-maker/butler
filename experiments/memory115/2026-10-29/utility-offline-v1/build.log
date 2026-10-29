@@ -1,0 +1,4 @@
+go version go1.27.2 linux/amd64
+1657f2f8684298fd86b4207f928774cd486e6e3a56a76008c8273510db347215  /reports/tests.jsonl
+2fda98a7010d2ec1ceb2860680ab1f787ba7351e9360a364a29429513e88bc7b  /reports/memory-utility-eval
+63ccde0caeb3b757e995dbe6e7c3767f07af6c404d18a86a46c8e79863619f66  /reports/prospective-suite/manifest.json
