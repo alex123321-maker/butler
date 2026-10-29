@@ -58,9 +58,10 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  -e BUTLER_TEST_ACTIONAUTH_POSTGRES_URL='postgres://utility_fixture:utility_fixture_only@127.0.0.1:5432/utility_trace_test?sslmode=disable' -e BUTLER_EXTENSION_E2E=1 \
  -e BUTLER_BROKER_E2E_BINARY=/reports/broker -e BUTLER_EXTENSION_E2E_BINARY=/reports/extension.test \
  -e BUTLER_EXPERIENCE_HTTP_BINARY=/reports/http.test -e BUTLER_UTILITY_TRACE_OFFLINE=1 \
- -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
+ -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e BUTLER_UTILITY_WHOLE_OFFLINE=1 -e BUTLER_UTILITY_WHOLE_OUTPUT=/reports/whole -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
  "$image" sh -eu -c '
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^TestMemoryUtilityActualCoreBrokerTraceIntegration$"
+ /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestMemoryUtilityWholeControlledABCIntegration$"
  cd /source
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^TestReviewedSkillRealBrokerDurableApprovalE2E$"
  ' \

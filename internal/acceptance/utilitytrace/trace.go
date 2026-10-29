@@ -24,9 +24,12 @@ import (
 )
 
 type SourceBinding struct {
-	UtilityID string
-	Pin       catalog.SourceRef
+	UtilityID       string
+	Pin             catalog.SourceRef
+	CurrentDocument bool
 }
+
+type UnknownBinding struct{ EffectID, OriginRun, OriginTask, Key, Fingerprint string }
 
 // Freeze before execution. RunID is selected separately through its owning input.
 type Binding struct {
@@ -35,6 +38,7 @@ type Binding struct {
 	OriginalFilesSHA256                                   string
 	Sources                                               []SourceBinding
 	Skills                                                []SkillBinding
+	Unknown                                               UnknownBinding
 }
 type Snapshot struct {
 	RunID                            string
@@ -53,20 +57,21 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 	}
 	defer tx.Rollback(ctx)
 	queries := map[string]string{
-		"skill_usages":   `SELECT to_jsonb(t) v FROM skill_usages t WHERE run_id=$1`,
-		"skill_heads":    `SELECT jsonb_build_object('digest',v.digest,'owner_id',v.owner_id,'source_ref',v.source_ref_json,'status',st.status,'active',c.active_digest=v.digest,'body',r.body,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'source_status',s.status) v FROM skill_versions v JOIN skill_states st USING(digest) JOIN skill_catalog c USING(skill_id) JOIN memory_sources s ON s.source_id=v.source_ref_json->>'source_id' JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE v.digest IN(SELECT digest FROM skill_usages WHERE run_id=$1) OR v.digest=ANY($3::text[])`,
-		"tasks":          `SELECT to_jsonb(t) v FROM tasks t WHERE task_id=$2`,
-		"runs":           `SELECT to_jsonb(t) v FROM runs t WHERE run_id=$1`,
-		"inputs":         `SELECT to_jsonb(t) v FROM accepted_inputs t WHERE task_id=$2`,
-		"calls":          `SELECT to_jsonb(t) v FROM tool_calls t WHERE run_id=$1`,
-		"intents":        `SELECT to_jsonb(t) v FROM action_intents t WHERE run_id=$1`,
-		"effects":        `SELECT to_jsonb(t) v FROM action_effects t WHERE action_id IN(SELECT effect_id FROM action_intents WHERE run_id=$1)`,
-		"evidence":       `SELECT to_jsonb(t) v FROM action_effect_evidence t WHERE source_action_id IN(SELECT action_id FROM action_intents WHERE run_id=$1)`,
-		"dispatches":     `SELECT to_jsonb(t) v FROM action_effect_dispatches t WHERE execution_action_id IN(SELECT action_id FROM action_intents WHERE run_id=$1)`,
-		"finals":         `SELECT to_jsonb(t) v FROM run_final_results t WHERE run_id=$1`,
-		"pins":           `SELECT to_jsonb(t) v FROM memory_run_sources t WHERE run_id=$1`,
-		"source_heads":   `SELECT jsonb_build_object('source_id',s.source_id,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'body',r.body,'status',s.status) v FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id IN(SELECT source_id FROM memory_run_sources WHERE run_id=$1)`,
-		"model_attempts": `SELECT to_jsonb(t) v FROM execution_model_attempts t WHERE run_id=$1`,
+		"original_effects": `SELECT to_jsonb(t) v FROM action_effects t WHERE action_id=$4`,
+		"skill_usages":     `SELECT to_jsonb(t) v FROM skill_usages t WHERE run_id=$1`,
+		"skill_heads":      `SELECT jsonb_build_object('digest',v.digest,'owner_id',v.owner_id,'source_ref',v.source_ref_json,'status',st.status,'active',c.active_digest=v.digest,'body',r.body,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'source_status',s.status) v FROM skill_versions v JOIN skill_states st USING(digest) JOIN skill_catalog c USING(skill_id) JOIN memory_sources s ON s.source_id=v.source_ref_json->>'source_id' JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE v.digest IN(SELECT digest FROM skill_usages WHERE run_id=$1) OR v.digest=ANY($3::text[])`,
+		"tasks":            `SELECT to_jsonb(t) v FROM tasks t WHERE task_id=$2`,
+		"runs":             `SELECT to_jsonb(t) v FROM runs t WHERE run_id=$1`,
+		"inputs":           `SELECT to_jsonb(t) v FROM accepted_inputs t WHERE task_id=$2`,
+		"calls":            `SELECT to_jsonb(t) v FROM tool_calls t WHERE run_id=$1`,
+		"intents":          `SELECT to_jsonb(t) v FROM action_intents t WHERE run_id=$1`,
+		"effects":          `SELECT to_jsonb(t) v FROM action_effects t WHERE action_id IN(SELECT effect_id FROM action_intents WHERE run_id=$1)`,
+		"evidence":         `SELECT to_jsonb(t) v FROM action_effect_evidence t WHERE source_action_id IN(SELECT action_id FROM action_intents WHERE run_id=$1)`,
+		"dispatches":       `SELECT to_jsonb(t) v FROM action_effect_dispatches t WHERE execution_action_id IN(SELECT action_id FROM action_intents WHERE run_id=$1)`,
+		"finals":           `SELECT to_jsonb(t) v FROM run_final_results t WHERE run_id=$1`,
+		"pins":             `SELECT to_jsonb(t) v FROM memory_run_sources t WHERE run_id=$1`,
+		"source_heads":     `SELECT jsonb_build_object('source_id',s.source_id,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'body',r.body,'status',s.status) v FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id IN(SELECT source_id FROM memory_run_sources WHERE run_id=$1)`,
+		"model_attempts":   `SELECT to_jsonb(t) v FROM execution_model_attempts t WHERE run_id=$1`,
 	}
 	skillDigests := []string{}
 	for _, skill := range b.Skills {
@@ -74,9 +79,9 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 	}
 	for name, q := range queries {
 		// Bind both selector arguments even in queries that use only one.
-		q = `WITH selectors AS (SELECT $1::text AS run,$2::text AS task,$3::text[] AS skill_digests) SELECT COALESCE(jsonb_agg(v),'[]'::jsonb) FROM (` + q + `) rows`
+		q = `WITH selectors AS (SELECT $1::text AS run,$2::text AS task,$3::text[] AS skill_digests,$4::text AS original_effect) SELECT COALESCE(jsonb_agg(v),'[]'::jsonb) FROM (` + q + `) rows`
 		var raw json.RawMessage
-		if err = tx.QueryRow(ctx, q, run, b.TaskID, skillDigests).Scan(&raw); err != nil {
+		if err = tx.QueryRow(ctx, q, run, b.TaskID, skillDigests, b.Unknown.EffectID).Scan(&raw); err != nil {
 			return s, fmt.Errorf("capture %s: %w", name, err)
 		}
 		if len(raw) > 32<<20 {
@@ -439,14 +444,17 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 				return deny("recipient response invalid")
 			}
 			var body struct {
-				Artifact  string `json:"artifact_id"`
-				Passed    *bool  `json:"checks_passed"`
-				Applied   bool   `json:"applied"`
-				Project   string `json:"project_ref"`
-				Format    string `json:"observation_format"`
-				Validated string `json:"validated_ready"`
-				Rejection string `json:"rejection_code"`
-				Absent    bool   `json:"effect_absent"`
+				Artifact    string            `json:"artifact_id"`
+				Passed      *bool             `json:"checks_passed"`
+				Applied     bool              `json:"applied"`
+				Project     string            `json:"project_ref"`
+				Format      string            `json:"observation_format"`
+				Validated   string            `json:"validated_ready"`
+				Rejection   string            `json:"rejection_code"`
+				Absent      bool              `json:"effect_absent"`
+				Documents   []CurrentDocument `json:"current_documents"`
+				OriginalKey string            `json:"original_key"`
+				Effect      string            `json:"effect"`
 			}
 			if json.Unmarshal([]byte(env.Body), &body) != nil {
 				return deny("recipient body invalid")
@@ -460,6 +468,49 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 					return deny("current inspect missing")
 				}
 				inspectSeen = true
+				for _, doc := range body.Documents {
+					var sb *SourceBinding
+					for n := range b.Sources {
+						if b.Sources[n].Pin.ID == doc.Ref.ID {
+							sb = &b.Sources[n]
+						}
+					}
+					if sb == nil || !sb.CurrentDocument || sb.Pin != doc.Ref {
+						return deny("unbound current document")
+					}
+					found := false
+					for _, src := range c.Sources {
+						if src.Source.ID == sb.UtilityID && src.Channel == "current" && c.SourceAllowed(src, b.Arm) && src.Source.Body == doc.Body {
+							o.Reads = append(o.Reads, acceptance.UtilityRead{Ref: src.Ref(), Stage: "opened"})
+							found = true
+						}
+					}
+					if !found || sha(doc.Body) != doc.Ref.Hash {
+						return deny("current document changed")
+					}
+				}
+				if c.Condition == "unknown_effect" && body.Format == "project_unknown_verification_v1" {
+					var args struct {
+						URL string `json:"url"`
+					}
+					_ = json.Unmarshal(call.Args, &args)
+					u, err := url.Parse(args.URL)
+					var originals []struct {
+						ID          string                   `json:"action_id"`
+						State       string                   `json:"state"`
+						Key         string                   `json:"idempotency_key"`
+						Fingerprint string                   `json:"fingerprint"`
+						Binding     actionauth.ActionBinding `json:"initial_binding"`
+					}
+					if err != nil || u.Path != "/project/"+c.Resource || u.RawQuery != "verify_unknown="+b.Unknown.Key || body.OriginalKey != b.Unknown.Key || body.Effect != "unknown" || json.Unmarshal(s.Tables["original_effects"], &originals) != nil || len(originals) != 1 {
+						return deny("original unknown evidence missing")
+					}
+					v := originals[0]
+					if v.ID != b.Unknown.EffectID || v.State != "effect_unknown" || v.Key != b.Unknown.Key || v.Fingerprint != b.Unknown.Fingerprint || v.Binding.RunID != b.Unknown.OriginRun || v.Binding.TaskID != b.Unknown.OriginTask {
+						return deny("original unknown identity changed")
+					}
+					o.Receipt.Effect = "unknown"
+				}
 				if c.Condition == "verified_negative" && body.Format == "project_validation_v1" {
 					var args struct {
 						URL string `json:"url"`

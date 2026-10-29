@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/butler/butler/internal/acceptance/utilitytrace"
 	"github.com/butler/butler/internal/extensions/projectfixture"
 )
 
@@ -20,10 +21,11 @@ import (
 // It never applies a patch or resolves a request field as a filesystem path.
 // No lesson/control oracle is accepted here: only current files and fixed faults.
 type experienceRecipientConfig struct {
-	Version string            `json:"version"`
-	Ready   string            `json:"accepted_ready_value"`
-	Files   map[string]string `json:"initial_files"`
-	Outage  bool              `json:"receipt_outage"`
+	Version   string                         `json:"version"`
+	Ready     string                         `json:"accepted_ready_value"`
+	Files     map[string]string              `json:"initial_files"`
+	Outage    bool                           `json:"receipt_outage"`
+	Documents []utilitytrace.CurrentDocument `json:"current_documents,omitempty"`
 }
 
 type experienceRecipientEntry struct {
@@ -220,6 +222,10 @@ func (r *experienceRecipient) ServeHTTP(w http.ResponseWriter, req *http.Request
 		}
 	}}
 	if req.URL.RawPath != "" || req.URL.RawQuery != "" || !strings.HasPrefix(req.URL.Path, "/project") {
+		if req.Method == http.MethodGet && req.URL.RawPath == "" && req.URL.Path == "/project/alpha" && len(req.URL.Query()) == 1 && req.URL.Query().Get("verify_unknown") != "" && r.state.Config.Outage {
+			experienceReply(w, 200, map[string]any{"observation_format": "project_unknown_verification_v1", "project_ref": "alpha", "original_key": req.URL.Query().Get("verify_unknown"), "effect": "unknown", "checks_passed": false, "verification_available": false})
+			return
+		}
 		if req.Method == http.MethodGet && req.URL.RawPath == "" && req.URL.Path == "/project/alpha" && req.URL.RawQuery == "validate_ready=maybe" && r.state.Config.Files["alpha"] != "" {
 			experienceReply(w, 200, map[string]any{"observation_format": "project_validation_v1", "project_ref": "alpha", "validated_ready": "maybe", "rejection_code": "unsupported_ready_value", "effect_absent": len(r.state.Entries) == 0, "applied": false, "checks_passed": false})
 			return
@@ -249,7 +255,7 @@ func (r *experienceRecipient) ServeHTTP(w http.ResponseWriter, req *http.Request
 		return
 	}
 	if req.Method == http.MethodGet && len(parts) == 1 {
-		experienceReply(w, 200, map[string]any{"observation_format": "project_check_v1", "project_ref": resource, "project_revision": r.revision(resource), "revision_sha256": r.revision(resource), "environment_sha256": experienceEnvironment(r.state.Config), "accepted_ready_value": r.state.Config.Ready, "checks_passed": false, "status": "failed", "error_kind": "ready_flag_false", "files": []map[string]string{{"path": "README.md", "content": r.state.Config.Files[resource]}}})
+		experienceReply(w, 200, map[string]any{"current_documents": r.state.Config.Documents, "observation_format": "project_check_v1", "project_ref": resource, "project_revision": r.revision(resource), "revision_sha256": r.revision(resource), "environment_sha256": experienceEnvironment(r.state.Config), "accepted_ready_value": r.state.Config.Ready, "checks_passed": false, "status": "failed", "error_kind": "ready_flag_false", "files": []map[string]string{{"path": "README.md", "content": r.state.Config.Files[resource]}}})
 		return
 	}
 	if req.Method == http.MethodPost && len(parts) == 2 && parts[1] == "patches" {
