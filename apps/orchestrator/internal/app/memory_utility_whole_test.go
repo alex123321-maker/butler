@@ -21,6 +21,8 @@ import (
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/butler/butler/internal/skills"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type utilityWholeSlot struct {
@@ -210,6 +212,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 		binding.Skills = []utilitytrace.SkillBinding{{Digest: reviewed.Digest, Body: reviewed.BodySource}}
 	}
 	utilityWholeWrite(t, dst, "binding.json", binding)
+	utilityWholePreparationSnapshot(t, ctx, pool, dst)
 	utilityWholeWrite(t, dst, "preparation.json", map[string]any{"source_writes": writes, "elapsed_ms": time.Since(prepStarted).Milliseconds(), "native_requests": 0, "provider": "scripted synthetic fixture; no native usage allocation", "skill": reviewed, "original_unknown": unknown})
 	input := c.Input()
 	raw, _ := json.Marshal(input)
@@ -255,6 +258,28 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	if native == nil && score.TaskSuccess != expected {
 		t.Fatalf("whole observer score %+v expected %t", score, expected)
 	}
+}
+
+func utilityWholePreparationSnapshot(t *testing.T, ctx context.Context, pool *pgxpool.Pool, dst string) {
+	t.Helper()
+	tx, e := pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer tx.Rollback(ctx)
+	tables := []string{"memory_sources", "memory_source_revisions", "memory_deletions", "memory_scope_grants", "skill_versions", "skill_states", "skill_catalog", "skill_validations", "skill_usages", "tasks", "runs", "accepted_inputs", "tool_calls", "action_intents", "action_effects", "action_effect_evidence", "action_effect_dispatches", "run_final_results", "execution_model_attempts"}
+	dump := map[string]json.RawMessage{}
+	for _, table := range tables {
+		var raw json.RawMessage
+		if e = tx.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM `+pgx.Identifier{table}.Sanitize()+` t`).Scan(&raw); e != nil {
+			t.Fatal(e)
+		}
+		if len(raw) > 32<<20 {
+			t.Fatal("bounded preparation evidence exceeded")
+		}
+		dump[table] = raw
+	}
+	utilityWholeWrite(t, dst, "preparation-snapshot.private.json", dump)
 }
 
 func utilityWholeSkill(t *testing.T, ctx context.Context, r *experienceNativeRuntime, recipient *experienceRecipient, dst string) *skills.Record {
