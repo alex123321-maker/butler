@@ -89,6 +89,11 @@ because browser exceptions can reflect secret field values.
 
 ## Native ingress observation
 
+`-task-id task-...` optionally targets an already created active owner Task in
+the operator-pinned Web conversation through the same protected message endpoint.
+The server validates its owner/session and retains the ordinary channel proof.
+This selector does not create a mandate, approve POST or choose delivery targets.
+
 `browser-eval native` submits exactly one ordinary owner message and observes its
 Input receipt. Supply `-endpoint`, `-owner-token-file`, `-prompt-file`, a unique
 `-delivery-id browser-baseline-...`, a **new** `-attempt-dir` and `-timeout 3m`.

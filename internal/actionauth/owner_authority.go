@@ -317,7 +317,7 @@ func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
 			return false
 		}
 	}
-	resourceOK := standard
+	resourceOK := standard || ownerReplyResource(b)
 	for _, s := range m.ResourceScopes {
 		if resourceWithin(s, b.Resource) {
 			resourceOK = true

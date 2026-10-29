@@ -109,6 +109,10 @@ func (c *nativeClient) call(ctx context.Context, method, path, delivery string, 
 }
 
 func nativeAttempt(ctx context.Context, c *nativeClient, prompt, delivery, directory string, poll time.Duration) error {
+	return nativeTaskAttempt(ctx, c, prompt, delivery, directory, poll, "")
+}
+
+func nativeTaskAttempt(ctx context.Context, c *nativeClient, prompt, delivery, directory string, poll time.Duration, task string) error {
 	if !attemptID.MatchString(delivery) || len(strings.TrimSpace(prompt)) == 0 || len(prompt) > 16000 {
 		return errors.New("invalid attempt")
 	}
@@ -120,7 +124,14 @@ func nativeAttempt(ctx context.Context, c *nativeClient, prompt, delivery, direc
 	if err := exclusiveJSON(filepath.Join(directory, "00-intent.json"), map[string]any{"delivery_id": delivery, "started_at": start.UTC(), "prompt_sha256": hex.EncodeToString(hash[:]), "observation_timeout_ms": time.Until(deadline(ctx)).Milliseconds()}); err != nil {
 		return err
 	}
-	body, _ := json.Marshal(map[string]string{"text": prompt})
+	payload := map[string]string{"text": prompt}
+	if task != "" {
+		if !regexp.MustCompile(`^task-[a-zA-Z0-9-]{1,100}$`).MatchString(task) {
+			return errors.New("invalid task reference")
+		}
+		payload["task_id"] = task
+	}
+	body, _ := json.Marshal(payload)
 	receipt, code, err := c.call(ctx, "POST", "/api/v3/communications/messages", delivery, body)
 	observation := func(state string) nativeObservation {
 		return nativeObservation{delivery, receipt.InputID, receipt.RunID, state, code, time.Now().UTC(), time.Since(start).Milliseconds(), "UNVERIFIED", "UNKNOWN", "UNVERIFIED"}
@@ -179,6 +190,7 @@ func runNative(args []string) error {
 	endpoint := fs.String("endpoint", "", "trusted operator Core endpoint")
 	tokenFile := fs.String("owner-token-file", "", "private owner token file reference")
 	promptFile := fs.String("prompt-file", "", "UTF-8 task file, without credentials")
+	task := fs.String("task-id", "", "optional existing owner Task in the pinned Web conversation")
 	delivery := fs.String("delivery-id", "", "unique browser-baseline-* identity")
 	directory := fs.String("attempt-dir", "", "new private attempt directory")
 	observe := fs.String("observe-input", "", "observe an existing Input after owner response; never POST")
@@ -201,7 +213,7 @@ func runNative(args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
 	if *observe != "" {
-		if !inputID.MatchString(*observe) || !attemptID.MatchString(*delivery) || *promptFile != "" {
+		if !inputID.MatchString(*observe) || !attemptID.MatchString(*delivery) || *promptFile != "" || *task != "" {
 			return errors.New("invalid observation identity")
 		}
 		if err := os.Mkdir(*directory, 0700); err != nil {
@@ -217,5 +229,5 @@ func runNative(args []string) error {
 	if err != nil {
 		return errors.New("prompt unavailable")
 	}
-	return nativeAttempt(ctx, c, string(prompt), *delivery, *directory, 1500*time.Millisecond)
+	return nativeTaskAttempt(ctx, c, string(prompt), *delivery, *directory, 1500*time.Millisecond, *task)
 }

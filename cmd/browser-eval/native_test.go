@@ -16,6 +16,32 @@ import (
 
 const testInput = "input-0123456789abcdef0123456789abcdef"
 
+func TestNativeExactTaskUsesOrdinaryIngressOnce(t *testing.T) {
+	var posts atomic.Int32
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			posts.Add(1)
+			var body map[string]string
+			if json.NewDecoder(r.Body).Decode(&body) != nil || body["task_id"] != "task-synthetic" || body["text"] != "Use browser" {
+				t.Error("wrong exact owner task body")
+			}
+			fmt.Fprintf(w, `{"input_id":%q,"status":"queued"}`, testInput)
+			return
+		}
+		fmt.Fprintf(w, `{"input_id":%q,"status":"completed"}`, testInput)
+	}))
+	defer s.Close()
+	c, err := newNativeClient(s.URL, "operator-canary-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err = nativeTaskAttempt(ctx, c, "Use browser", "browser-baseline-task", filepath.Join(t.TempDir(), "task"), time.Millisecond, "task-synthetic"); err != nil || posts.Load() != 1 {
+		t.Fatal("task ingress replayed or failed", err)
+	}
+}
+
 func TestNativeAttemptsNeverTreatInputCompletionAsTaskSuccess(t *testing.T) {
 	for _, status := range []string{"completed", "failed", "waiting_for_user", "blocked"} {
 		t.Run(status, func(t *testing.T) {

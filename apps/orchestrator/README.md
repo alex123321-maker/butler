@@ -1510,6 +1510,12 @@ claims/links. A redundant HTTP fetch is not prescribed by a rejected citation.
 Eligibility, exact quote checks, four-correction bound and kernel gates remain.
 ## Owner-goal browser test composition
 
+The protected Web message route also accepts an explicit `task_id` for an active
+Task in its current owner/session. It uses ordinary Input and communication
+admission, retaining target identity on deduplication; no worker projection or
+manual channel-proof write is needed for native execution. Caller-selected
+purpose, mandate, channel and recipients remain unsupported.
+
 `TestBrowserMandateOwnerAPIHarness` exists only in the API test binary. It serves
 real authenticated goal/mandate/Task/control/approval handlers on isolated PG.
 A mechanical worker projection claims the controller-created Input and creates

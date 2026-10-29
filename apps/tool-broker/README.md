@@ -487,6 +487,11 @@ click still records UNKNOWN and replay is denied. Credential/privacy cases run
 against the actual browser runtime and the same observation path.
 ## Owner mandate browser acceptance
 
+Owner-goal mandates may explicitly name fixed communication methods with the
+prepare effect. Their exact credential-free kernel contract and pinned
+destination digest identify a local owner reply resource; URL scopes for all
+browser/HTTP actions, mandatory click approval, denials and budgets remain intact.
+
 The opt-in `TestBrowserOwnerMandateApprovalReductionChromiumIntegration` joins
 authenticated owner goal/mandate/Task/control APIs, a claimed canonical Input,
 real durable approval, Broker/PG/resource guards and actual Chromium. It proves
