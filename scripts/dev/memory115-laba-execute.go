@@ -25,8 +25,8 @@ import (
 // Binding occurs only after the new server producer/recipe/five artifacts/plan
 // are frozen. Empty commitments deny before filesystem, DB or auth access.
 const laba115NativeSource = "8225c92d05f7e1b9f57cc2d0ae7c75720ccdac48"
-const laba115NativePlanSHA = "24125c8bc7a690e8457813b0111aecf541588a3baa5d638ba60cd436d2c59867"
-const laba115NativeHistorySHA = "7a9d0201b972ade4f69b811e2f1767be4c69d239c58fd239e93bdc8aa7b9a5f7"
+const laba115NativePlanSHA = "0d957c32b47ac93fcc6f21826af8d54c645cf15b5347aed72dc98d653dd87ac6"
+const laba115NativeHistorySHA = "5d4b0bdcfd23fa623fce1aca8ec285420d97d4c49b694dd003c9e6e1e9c4da54"
 const laba115NativeAppSHA = "38c0592d3732f4b8fad934bfa3866f6f03ebc08c4446666a435da13811c7b5ab"
 const laba115NativeBrokerSHA = "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c"
 const laba115NativeBrokerControlSHA = "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307"
@@ -117,7 +117,7 @@ func laba115DatabaseIdentity() error {
 }
 
 func laba115NativePins() map[string]string {
-	return map[string]string{"prepared-guided-full-v2/plan/preseal.json": laba115NativePlanSHA, "history-guided-full-v2/recipe.json": laba115NativeHistorySHA, "prepared-guided-full-v2/app.test": laba115NativeAppSHA, "prepared-guided-full-v2/tool-broker": laba115NativeBrokerSHA, "prepared-guided-full-v2/broker-control.test": laba115NativeBrokerControlSHA, "prepared-guided-full-v2/extension.test": laba115NativeExtensionSHA, "prepared-guided-full-v2/http.test": laba115NativeHTTPSHA}
+	return map[string]string{"prepared-guided-full-v3/plan/preseal.json": laba115NativePlanSHA, "history-guided-full-v3/recipe.json": laba115NativeHistorySHA, "prepared-guided-full-v3/app.test": laba115NativeAppSHA, "prepared-guided-full-v3/tool-broker": laba115NativeBrokerSHA, "prepared-guided-full-v3/broker-control.test": laba115NativeBrokerControlSHA, "prepared-guided-full-v3/extension.test": laba115NativeExtensionSHA, "prepared-guided-full-v3/http.test": laba115NativeHTTPSHA}
 }
 func laba115NativeBound() bool {
 	return laba115PinsBound(laba115NativeSource, laba115NativePins())
@@ -127,7 +127,7 @@ func laba115PinsBound(source string, pins map[string]string) bool {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(source) || len(pins) != 7 {
 		return false
 	}
-	for _, path := range []string{"prepared-guided-full-v2/plan/preseal.json", "history-guided-full-v2/recipe.json", "prepared-guided-full-v2/app.test", "prepared-guided-full-v2/tool-broker", "prepared-guided-full-v2/broker-control.test", "prepared-guided-full-v2/extension.test", "prepared-guided-full-v2/http.test"} {
+	for _, path := range []string{"prepared-guided-full-v3/plan/preseal.json", "history-guided-full-v3/recipe.json", "prepared-guided-full-v3/app.test", "prepared-guided-full-v3/tool-broker", "prepared-guided-full-v3/broker-control.test", "prepared-guided-full-v3/extension.test", "prepared-guided-full-v3/http.test"} {
 		sha := pins[path]
 		if !regexp.MustCompile(`^[a-f0-9]{64}$`).MatchString(sha) {
 			return false
@@ -250,7 +250,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 			return errors.New("server frozen artifact bytes changed")
 		}
 	}
-	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-guided-full-v2/plan/preseal.json"))
+	raw, err := os.ReadFile(filepath.Join(laba115HostRoot, "prepared-guided-full-v3/plan/preseal.json"))
 	if err != nil {
 		return errors.New("server preseal unavailable")
 	}
@@ -264,9 +264,9 @@ func laba115Execute(ctx context.Context, native bool) error {
 	caller := ctx
 	ctx, setupDone := context.WithDeadline(ctx, seal.Deadline)
 	defer setupDone()
-	label := "prepare-guided-full-v2"
+	label := "prepare-guided-full-v3"
 	if native {
-		label = "native-guided-full-v2"
+		label = "native-guided-full-v3"
 	}
 	operator := filepath.Join(laba115HostRoot, "operator-"+label)
 	if os.Mkdir(operator, 0700) != nil {
@@ -287,7 +287,7 @@ func laba115Execute(ctx context.Context, native bool) error {
 	}
 	network := "container:" + pgID
 	args := []string{"create", "--name", "issue115-" + label + "-20261028-v1", "--network", network, "--cpus", "1", "--memory", "2g", "--memory-swap", "2g", "--pids-limit", "256", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--log-driver", "none", "--user", "1000:1000", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m"}
-	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-guided-full-v2,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v2,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-guided-full-v2,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v2/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
+	for _, mount := range []string{"type=bind,src=" + laba115HostRoot + "/source-guided-full-v2,dst=/source,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v3,dst=/prepared,readonly", "type=bind,src=" + laba115HostRoot + "/history-guided-full-v3,dst=/history,readonly", "type=bind,src=" + laba115HostRoot + "/prepared-guided-full-v3/plan,dst=/plan,readonly", "type=bind,src=" + execution + ",dst=/execution"} {
 		args = append(args, "--mount", mount)
 	}
 	for _, entry := range laba115ChildEnvironment() {
