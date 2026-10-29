@@ -1,0 +1,453 @@
+{
+  "source_commit": "2739e992",
+  "source_blobs_checked": 6731,
+  "source_line_ending_normalizations": [
+    "scripts/dev/verify-changed.ps1"
+  ],
+  "source_mismatches": [],
+  "native_requests": 0,
+  "controlled_transport": true,
+  "native_quality_qualified": false,
+  "test_subcases_passed": 7,
+  "test_failures": 0,
+  "test_skips": 0,
+  "corruption_controls_rejected": 39,
+  "cases": [
+    {
+      "actual_task_success": false,
+      "controlled_transport": true,
+      "expected_task_success": false,
+      "mutation_controls_rejected": 0,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "55c7c221e95dd50a75e2a43fe3bed78c6e97211f58156859612f3e7fc7484b44",
+      "name": "generic_rejection_remains_unknown",
+      "tables": {
+        "calls": 2,
+        "dispatches": 2,
+        "effects": 2,
+        "evidence": 2,
+        "finals": 0,
+        "inputs": 1,
+        "intents": 2,
+        "model_attempts": 2,
+        "pins": 1,
+        "runs": 1,
+        "source_heads": 1,
+        "tasks": 1
+      },
+      "tool_names": [
+        "extension.project.inspect",
+        "extension.project.prepare-patch"
+      ],
+      "run_states": [
+        "tool_running"
+      ],
+      "input_statuses": [
+        "blocked"
+      ],
+      "effect_states": [
+        "effect_unknown",
+        "effect_confirmed"
+      ],
+      "completed": false,
+      "receipt": {
+        "effect": "unknown",
+        "artifact": "",
+        "check": "not_checked",
+        "rejection_code": "",
+        "prepare_calls": 1
+      },
+      "relevant_opened": false,
+      "format_valid": false,
+      "reasons": [
+        "run_incomplete"
+      ],
+      "artifacts_sha256": {
+        "summary.json": "d26abe38364e957dbf4206aaecafdb39fbfa0653ebcbd84e9efe177e09283922",
+        "binding.json": "c495dd6e7997ac5c824efb1e4e51a80c3f5fb1cec4cf51f5e720c930e6f964f0",
+        "result.json": "ff22bc9fe17b0c780cb5e0810f176c63b174d4b13972336a81f22b5f64af416e",
+        "observation.json": "71255f4c0a970a7674a040bd33dca4a3ac41377cd943c275474f4986278c132c",
+        "snapshot.private.json": "a263c9a9aa4ebc4c77b68ab5ce3b69f77ec8c3cf5123eef21fd9201a2c8e4fdb",
+        "suite.private.json": "85e5eb4585e6d34eeee0671428aac800bc0cbc8b5f22783f0ab391dcb53e95d7"
+      }
+    },
+    {
+      "actual_task_success": true,
+      "controlled_transport": true,
+      "expected_task_success": true,
+      "mutation_controls_rejected": 12,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "1396d25fe58988a8cb1619676150152ff62128c318f94840021d8ff8a91b5363",
+      "name": "inspect",
+      "tables": {
+        "calls": 1,
+        "dispatches": 1,
+        "effects": 1,
+        "evidence": 1,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 1,
+        "model_attempts": 2,
+        "pins": 1,
+        "runs": 1,
+        "source_heads": 1,
+        "tasks": 1
+      },
+      "tool_names": [
+        "extension.project.inspect"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "none",
+        "artifact": "",
+        "check": "failed",
+        "rejection_code": "",
+        "prepare_calls": 0
+      },
+      "relevant_opened": false,
+      "format_valid": true,
+      "reasons": [],
+      "artifacts_sha256": {
+        "summary.json": "eb1bcf65fad868466176a84fe7bd2e392f9931f92fbd706c0a5110e07f767771",
+        "binding.json": "eefb8bfdbf0910082c7566db32c04f4c08b633f52734abfcaff470195bf3fcc6",
+        "result.json": "42040523b798d09319238cf498321a96a3374d49fae7479d4ad8b7db314444a5",
+        "observation.json": "3851d506b0177fd2fd55087135a68b999e797c914cc98fe4d0179e9512691180",
+        "snapshot.private.json": "b5c38931fdf04a5d7d8cbadf43d3cf8c82f6c2cbce8c851c557464feed6b203d",
+        "suite.private.json": "6c4f7089fbc2776bb93e23d02ef983642e0156d0267626d700047d6b9fe9c17d"
+      }
+    },
+    {
+      "actual_task_success": false,
+      "controlled_transport": true,
+      "expected_task_success": false,
+      "mutation_controls_rejected": 0,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "dce1c45586c97055ab41bcd8b7cbc786e06943f992ed79f3372d7ea4ab111e3a",
+      "name": "inspect_wrong_answer",
+      "tables": {
+        "calls": 1,
+        "dispatches": 1,
+        "effects": 1,
+        "evidence": 1,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 1,
+        "model_attempts": 2,
+        "pins": 1,
+        "runs": 1,
+        "source_heads": 1,
+        "tasks": 1
+      },
+      "tool_names": [
+        "extension.project.inspect"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "none",
+        "artifact": "",
+        "check": "failed",
+        "rejection_code": "",
+        "prepare_calls": 0
+      },
+      "relevant_opened": false,
+      "format_valid": true,
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "artifacts_sha256": {
+        "summary.json": "0dea606ba210efc29e3661b86168cffe32c2d99f21b5afff3815ffe1a9a705a0",
+        "binding.json": "f731bd3d46978dca6df8852998c4852e1e03f8f5df26ac2d3304c25bf1859bcb",
+        "result.json": "780d6a5f6fa3df0c92a32f8bbc7c257782db529985d50676a7cc72f445bf977c",
+        "observation.json": "e0e21869bb79123c6e586c95376d9df6ff34dd6a131e6c55e8fdcf5cc4328de8",
+        "snapshot.private.json": "2bb67f7020fa677cd95ec247085f5ea9ba871ebd277caac892f00f71c8ec0e64",
+        "suite.private.json": "e5d16d4cc7de1cbb9fdbdaa9e102fd723f309089955fed4ab85711dd9c4fac3d"
+      }
+    },
+    {
+      "actual_task_success": true,
+      "controlled_transport": true,
+      "expected_task_success": true,
+      "mutation_controls_rejected": 15,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "f1e5d9b52fcba17fa55b20186c1d12925c4a8247a69220d7fe07f6a3d439ca8d",
+      "name": "memory_read",
+      "tables": {
+        "calls": 2,
+        "dispatches": 2,
+        "effects": 2,
+        "evidence": 2,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 2,
+        "model_attempts": 3,
+        "pins": 2,
+        "runs": 1,
+        "source_heads": 2,
+        "tasks": 1
+      },
+      "tool_names": [
+        "memory.search",
+        "memory.open"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed",
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "none",
+        "artifact": "",
+        "check": "not_checked",
+        "rejection_code": "",
+        "prepare_calls": 0
+      },
+      "relevant_opened": true,
+      "format_valid": true,
+      "reasons": [],
+      "artifacts_sha256": {
+        "summary.json": "ba8ae9714b3390d9c2d5a7f22ef7497436bd0d4edfc93d0af37a011805e44cbd",
+        "binding.json": "df9a02494d2e386102b13252adca1c7b3e751cc16cf2b70d576ac6ae07ae405f",
+        "result.json": "8f56823e0d36102058a66af31add122394fb182cfc168cb68250315149a28102",
+        "observation.json": "b381b71e82918f2591860d304236db7a77c13ee1a851eda5c7da77d93a29632b",
+        "snapshot.private.json": "d83588b3310d97ad43be555267e54dd7573b95552cd281da7527591b85f647f2",
+        "suite.private.json": "1ff47c33014621ddb2f09fcb1599a8ec3dd0b2630c822730b7a0a92f1f953a6b"
+      }
+    },
+    {
+      "actual_task_success": false,
+      "controlled_transport": true,
+      "expected_task_success": false,
+      "mutation_controls_rejected": 0,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "2c9d3c3b1fb7edde0a1aad273911abf421d9cbb01ea9f77c4df9815fd4741025",
+      "name": "memory_wrong_answer",
+      "tables": {
+        "calls": 2,
+        "dispatches": 2,
+        "effects": 2,
+        "evidence": 2,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 2,
+        "model_attempts": 3,
+        "pins": 2,
+        "runs": 1,
+        "source_heads": 2,
+        "tasks": 1
+      },
+      "tool_names": [
+        "memory.search",
+        "memory.open"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed",
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "none",
+        "artifact": "",
+        "check": "not_checked",
+        "rejection_code": "",
+        "prepare_calls": 0
+      },
+      "relevant_opened": true,
+      "format_valid": true,
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "artifacts_sha256": {
+        "summary.json": "c8d742b5e84d1f18a72913e459cf9d97f503762f71b87bb4b07e72aa87c305ba",
+        "binding.json": "8711e864dd9ec12e7853ab892222dc6877e25046bc6ec654bd93c884ffa6ab23",
+        "result.json": "c77c1f342eaf8e4d1a031e8879510a8edd1512f6db584d8a321fe1cb1dc4ba4d",
+        "observation.json": "bb235e2db117766ebc67773338323ec251d6e867205448b4b4932d21f7a52470",
+        "snapshot.private.json": "4c081aec226f1b50d74d31ce4b9d25e8bf2b1104ecd3b751b92b4029325be80f",
+        "suite.private.json": "ca336ee025299e856fdd6f2dd75674e8630cbb6131c7af9adf775cc9ecceb810"
+      }
+    },
+    {
+      "actual_task_success": true,
+      "controlled_transport": true,
+      "expected_task_success": true,
+      "mutation_controls_rejected": 12,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "c73321980ce8259df217f25fcb086fa88ebe6af6b62a7cc0ccad4a08f8863dee",
+      "name": "prepared",
+      "tables": {
+        "calls": 3,
+        "dispatches": 3,
+        "effects": 3,
+        "evidence": 3,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 3,
+        "model_attempts": 4,
+        "pins": 1,
+        "runs": 1,
+        "source_heads": 1,
+        "tasks": 1
+      },
+      "tool_names": [
+        "extension.project.inspect",
+        "extension.project.prepare-patch",
+        "extension.project.check"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed",
+        "effect_confirmed",
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "confirmed",
+        "artifact": "c2fcf363ee68cbc5100d4ce3916159c27271efd256e82cfe0b45725c3cabe2e9",
+        "check": "passed",
+        "rejection_code": "",
+        "prepare_calls": 1
+      },
+      "relevant_opened": false,
+      "format_valid": true,
+      "reasons": [],
+      "artifacts_sha256": {
+        "summary.json": "36d71d3c92f088784866756dc69a0ba4771d4653366e0d30f3339e947f8fe2fd",
+        "binding.json": "d5a787c818d7ecf88c3f733bd6d79ca90e32bafb7e4c390afff6f288b6a48c8d",
+        "result.json": "42040523b798d09319238cf498321a96a3374d49fae7479d4ad8b7db314444a5",
+        "observation.json": "3027bbe220fb98734b5ca8f7eeb02301e013ef9cb51b0f7e714495c5a3844504",
+        "snapshot.private.json": "8a19bdd8277c3a66ad394d48da86a92b4b8155d30deac766f6c5dbbeb5c76fd7",
+        "suite.private.json": "3e6b451042be2b73ee471e55e92cc42dbe00949cea09b635bf5c1edf4da44e05"
+      }
+    },
+    {
+      "actual_task_success": false,
+      "controlled_transport": true,
+      "expected_task_success": false,
+      "mutation_controls_rejected": 0,
+      "native_calls": 0,
+      "projection_error": "<nil>",
+      "trace_sha256": "59d193a07cdd4d5da694639866fe702df0f3e67c2894c29747734f1e827dc245",
+      "name": "prepared_wrong_answer",
+      "tables": {
+        "calls": 3,
+        "dispatches": 3,
+        "effects": 3,
+        "evidence": 3,
+        "finals": 1,
+        "inputs": 1,
+        "intents": 3,
+        "model_attempts": 4,
+        "pins": 1,
+        "runs": 1,
+        "source_heads": 1,
+        "tasks": 1
+      },
+      "tool_names": [
+        "extension.project.inspect",
+        "extension.project.prepare-patch",
+        "extension.project.check"
+      ],
+      "run_states": [
+        "completed"
+      ],
+      "input_statuses": [
+        "completed"
+      ],
+      "effect_states": [
+        "effect_confirmed",
+        "effect_confirmed",
+        "effect_confirmed"
+      ],
+      "completed": true,
+      "receipt": {
+        "effect": "confirmed",
+        "artifact": "765e28f933b26928ddc3cbfdb51f53a8066a1f0c613314f212c56a97009ca888",
+        "check": "passed",
+        "rejection_code": "",
+        "prepare_calls": 1
+      },
+      "relevant_opened": false,
+      "format_valid": true,
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "artifacts_sha256": {
+        "summary.json": "63a62c08682922120e3d840982ccae8cc3849f918ca6b9b554228d006024c336",
+        "binding.json": "a00dabf16ba6ccb4c994352d1e1d4c29fbc80030b6cf162b831b44be4455c14a",
+        "result.json": "780d6a5f6fa3df0c92a32f8bbc7c257782db529985d50676a7cc72f445bf977c",
+        "observation.json": "b850e729673cc63205a6cb2c43357121f2ad3835a6df2b704b56b9390df627ca",
+        "snapshot.private.json": "6b8ef3fbe2a04f75b5ccbf4565e6080d26c48f65c6ba54285b805930991d46ff",
+        "suite.private.json": "fe4b4631ee4061880954fcd3334b382742f98937b9bbb91f701fa57e363ddc5c"
+      }
+    }
+  ],
+  "build_log_sha256": "7bb6ac857a9f705bd180d1e091223d567bcc5ee4a6ae758a7ddb6521e7a583a4",
+  "tests_jsonl_sha256": "2ab8a3dd6c501bc7400ad98f7f1773ec48e29fdd184ebaa1d36884719399a6e9",
+  "lab_root": "/srv/gitea/butler-acceptance/issue115-utility-trace-20261029-r3",
+  "postgres_running": false,
+  "postgres_exit_code": 0,
+  "private_network_removed": true,
+  "exit": {
+    "exit_code": 0,
+    "native_requests": 0,
+    "controlled_transport": true
+  },
+  "preserved_attempts": [
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-20261029-r1",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    },
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-20261029-r2",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    }
+  ]
+}
