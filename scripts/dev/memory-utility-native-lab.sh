@@ -64,4 +64,9 @@ v={k:(group/k).read_text().strip() for k in ['cpu.max','memory.max','memory.swap
 proof={'source':sys.argv[2],'pid':p,'cgroup':str(group),'actual_kernel_values':v,'binary_sha256':hashlib.sha256((r/'bin/app.test').read_bytes()).hexdigest(),'plan_sha256':hashlib.sha256((r/'out/plan/plan.json').read_bytes()).hexdigest(),'native_requests_before_proof':0}
 (r/'out/kernel-verified.json').write_text(json.dumps(proof)+'\n')
 PY
+set +e
 docker exec "$cid" /binproof/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binproof/app.test -test.v -test.timeout=14500s -test.run '^TestMemoryUtilityWholeNativeABC$' > "$r/native.jsonl" 2>&1
+native_status=$?
+set -e
+docker exec "$sourcepg" psql -U postgres -p 55451 -d behavior76_test -Atc "SELECT COALESCE(jsonb_agg(to_jsonb(e) ORDER BY seq),'[]') FROM utility_abc_20261030_v1.entries e" > "$r/out/journal-complete.private.json"
+exit "$native_status"
