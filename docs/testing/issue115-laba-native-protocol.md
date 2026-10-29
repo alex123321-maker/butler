@@ -2,6 +2,21 @@
 
 ## New guided full57 comparison
 
+The full UTC2026-10-29 admission is now closed with all57 stages /48 owning
+control outcomes, no unexecuted slots: [guided-v3 report](../../experiments/memory115/2026-10-29/guided-full-v3/README.md).
+Five actual Broker loads match current PostgreSQL task/version/digest pins,
+including all four repeat/similar C tasks before project actions. Coordinator
+outcomes are A14/16,B13/16,C11/16; new240 requests/2,195,410 known full tokens,
+zero new unknown usage. The total primary carry is768 native/4 unknown/
+6,790,617 known tokens, plus the retained separate diagnostic ledgers.
+Full allocated costs are495,065/747,268/1,171,845 tokens: no quality/cost gain.
+This completed collection remains NO_GO, not independent whole-issue acceptance.
+The expired v2 seal admitted no auth/model work; v3 renewed only the UTC recipe,
+preseal and one-use execution over the same frozen v2 collector source and
+previously unused typed v2 database. Future native admission needs an explicitly
+registered latest768 closure, a fresh database and operator binding; UNBOUND
+operators and consumed domains cannot fall back to the old528 history.
+
 The v1 collection is closed/NO_GO: preparation failed with
 `execution_authority_observation_timeout`, before all48 control slots. Its new25
 native entries include24 observed usages/274,499 full tokens and one unknown.

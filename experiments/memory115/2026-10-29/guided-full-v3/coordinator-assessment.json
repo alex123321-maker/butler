@@ -1,0 +1,868 @@
+{
+  "all48_owning_outcomes_present": true,
+  "arms": [
+    {
+      "actual_task_elapsed_millis": 573230,
+      "allocated_full_known_tokens": 495065,
+      "allocated_model_millis": 674899,
+      "arm": "A_no_experience",
+      "coordinator_task_success": 14,
+      "denominator": 16,
+      "loads": 0,
+      "marginal_known_full_tokens": 399325,
+      "marginal_native_entries": 56,
+      "run_completed": 14,
+      "unknown_usage": 0
+    },
+    {
+      "actual_task_elapsed_millis": 598002,
+      "allocated_full_known_tokens": 747268,
+      "allocated_model_millis": 744891,
+      "arm": "B_same_frozen_notes_no_skills",
+      "coordinator_task_success": 13,
+      "denominator": 16,
+      "loads": 0,
+      "marginal_known_full_tokens": 624240,
+      "marginal_native_entries": 71,
+      "run_completed": 13,
+      "unknown_usage": 0
+    },
+    {
+      "actual_task_elapsed_millis": 749148,
+      "allocated_full_known_tokens": 1171845,
+      "allocated_model_millis": 958913,
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "coordinator_task_success": 11,
+      "denominator": 16,
+      "loads": 5,
+      "marginal_known_full_tokens": 862724,
+      "marginal_native_entries": 88,
+      "run_completed": 11,
+      "unknown_usage": 0
+    }
+  ],
+  "cases": [
+    {
+      "arm": "A_no_experience",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 41015,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 10
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 34254,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 11
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 63173,
+      "load_count_with_exact_current_pin": 1,
+      "loads_before_first_task_action": 1,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 12
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 42544,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 13
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 58672,
+      "load_count_with_exact_current_pin": 1,
+      "loads_before_first_task_action": 1,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 14
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 35105,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 15
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 71906,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 16
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 30278,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_INTERNAL_ERROR",
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 17
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 44163,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 18
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-04",
+      "coordinator_task_success": true,
+      "elapsed_millis": 35627,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": true,
+      "sequence": 19
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-04",
+      "coordinator_task_success": false,
+      "elapsed_millis": 25381,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": false,
+      "sequence": 20
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "coordinator_task_success": false,
+      "elapsed_millis": 27457,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": false,
+      "sequence": 21
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37272,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 22
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 49005,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 23
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 45631,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 24
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 31946,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 25
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 23333,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 26
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 19276,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 27
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 38605,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 28
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 38531,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 29
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 44809,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 30
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-08",
+      "coordinator_task_success": true,
+      "elapsed_millis": 38358,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 31
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-08",
+      "coordinator_task_success": false,
+      "elapsed_millis": 14974,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": false,
+      "sequence": 32
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-08",
+      "coordinator_task_success": true,
+      "elapsed_millis": 40016,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 1,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 33
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 67881,
+      "load_count_with_exact_current_pin": 1,
+      "loads_before_first_task_action": 1,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 34
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 39787,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 35
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-01",
+      "coordinator_task_success": true,
+      "elapsed_millis": 40164,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 36
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 39357,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 37
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 43104,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 38
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-02",
+      "coordinator_task_success": true,
+      "elapsed_millis": 50722,
+      "load_count_with_exact_current_pin": 1,
+      "loads_before_first_task_action": 1,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 39
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 24099,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_INTERNAL_ERROR",
+          "status": "effect_unknown",
+          "tool": "extension.project.prepare-patch"
+        }
+      ],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 40
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 80123,
+      "load_count_with_exact_current_pin": 1,
+      "loads_before_first_task_action": 1,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "execution_stopped",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 41
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-03",
+      "coordinator_task_success": false,
+      "elapsed_millis": 66916,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "execution_stopped",
+          "tool": "memory.open"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "blocked_unsupported_path_not_qualified",
+      "run_completed": false,
+      "sequence": 42
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-04",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37081,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": true,
+      "sequence": 43
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-04",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37045,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": true,
+      "sequence": 44
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-04",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37494,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "run_completed": true,
+      "sequence": 45
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 39610,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 46
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37105,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 47
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-05",
+      "coordinator_task_success": true,
+      "elapsed_millis": 46977,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 48
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 26000,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 49
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 29400,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 50
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-06",
+      "coordinator_task_success": true,
+      "elapsed_millis": 20937,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "run_completed": true,
+      "sequence": 51
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 52355,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 52
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 37982,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 53
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-07",
+      "coordinator_task_success": true,
+      "elapsed_millis": 36531,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 54
+    },
+    {
+      "arm": "B_same_frozen_notes_no_skills",
+      "case": "control-08",
+      "coordinator_task_success": true,
+      "elapsed_millis": 36589,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 55
+    },
+    {
+      "arm": "A_no_experience",
+      "case": "control-08",
+      "coordinator_task_success": true,
+      "elapsed_millis": 39123,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [],
+      "prepare_calls": 1,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": true,
+      "sequence": 56
+    },
+    {
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "case": "control-08",
+      "coordinator_task_success": false,
+      "elapsed_millis": 22667,
+      "load_count_with_exact_current_pin": 0,
+      "loads_before_first_task_action": 0,
+      "noncompleted_tools": [
+        {
+          "error_class": "ERROR_CLASS_VALIDATION_ERROR",
+          "status": "effect_unknown",
+          "tool": "memory.search"
+        }
+      ],
+      "prepare_calls": 0,
+      "repetition": 2,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "run_completed": false,
+      "sequence": 57
+    }
+  ],
+  "comparisons": {
+    "B_minus_A": {
+      "allocated_full_tokens": 252203,
+      "allocated_model_millis": 69992,
+      "completed_tasks": -1,
+      "coordinator_task_success": -1
+    },
+    "C_minus_B": {
+      "allocated_full_tokens": 424577,
+      "allocated_model_millis": 214022,
+      "completed_tasks": -2,
+      "coordinator_task_success": -2
+    }
+  },
+  "completed_collection": true,
+  "format": "butler115.guided-full57-coordinator-assessment.v3",
+  "inclusive_primary_usage": {
+    "known_full_token_lower_bound": 6790617,
+    "native_entries": 768,
+    "native_known_usage": 764,
+    "native_missing_total": 0,
+    "native_unknown_usage": 4,
+    "product_attempts": 769,
+    "product_null": 5,
+    "product_observed": 764,
+    "product_without_native_entry": 1
+  },
+  "independent_quality_qualified": false,
+  "invoice_cost": "unknown",
+  "limitations": [
+    "Coordinator scoring uses actual recipient/check/final correlation, inspect and 503 observations; it is not independent whole-issue acceptance.",
+    "Only two repetitions per case; no statistical improvement claimed.",
+    "C differs by configured skill catalog and fixed guidance; this does not isolate procedure text alone.",
+    "Manual Core/Input/Session/Task/Broker/runtime composition; App.New/Run/Doctor and whole-memory coherent acceptance remain separate.",
+    "Bounded privacy scan does not replace every semantic source/lifecycle criterion."
+  ],
+  "logical_slots": 57,
+  "new_usage": {
+    "known_full_token_lower_bound": 2195410,
+    "native_entries": 240,
+    "native_known_usage": 240,
+    "native_missing_total": 0,
+    "native_unknown_usage": 0,
+    "product_attempts": 240,
+    "product_null": 0,
+    "product_observed": 240,
+    "product_without_native_entry": 0
+  },
+  "not_executed_slots": 0,
+  "production_updated": false,
+  "separate_diagnostics": {
+    "invoice_cost": "unknown",
+    "known_full_tokens": 90951,
+    "legacy_usage": [
+      null,
+      4175,
+      3389
+    ],
+    "native_known_requests": 25
+  },
+  "shared_preparation_native_costs": {
+    "note": {
+      "entries": 4,
+      "input_tokens": 18847,
+      "known_full_tokens": 27288,
+      "missing_total": 0,
+      "model_millis": 67473,
+      "output_tokens": 1533,
+      "unknown_usage": 0
+    },
+    "original": {
+      "entries": 14,
+      "input_tokens": 81384,
+      "known_full_tokens": 95740,
+      "missing_total": 0,
+      "model_millis": 131990,
+      "output_tokens": 3352,
+      "unknown_usage": 0
+    },
+    "skill_preparation": {
+      "entries": 7,
+      "input_tokens": 165162,
+      "known_full_tokens": 186093,
+      "missing_total": 0,
+      "model_millis": 145503,
+      "output_tokens": 2460,
+      "unknown_usage": 0
+    }
+  },
+  "status": "NO_GO"
+}

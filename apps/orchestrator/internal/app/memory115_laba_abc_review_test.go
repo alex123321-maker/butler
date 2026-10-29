@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 )
@@ -15,7 +16,7 @@ import (
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
-	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" {
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -64,6 +65,10 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	limit := 33
 	if profile == "guided-full-v1" {
 		wantPlan = "30acfb4f8ae5260a7e3675822247672d3dde178057d7292d54b0166200ab893c"
+		limit = 57
+	}
+	if profile == "guided-full-v3" {
+		wantPlan = "0d957c32b47ac93fcc6f21826af8d54c645cf15b5347aed72dc98d653dd87ac6"
 		limit = 57
 	}
 	if accountingPlan != wantPlan {
@@ -123,11 +128,16 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	rows := []map[string]any{}
 	complete := true
 	for _, s := range window.Slots[9:limit] {
-		row := map[string]any{"sequence": s.Sequence, "case": s.CaseID, "arm": s.Arm, "slot_status": s.Status, "blocker": s.Blocker, "cost": bySlot[s.ID]}
+		row := map[string]any{"sequence": s.Sequence, "case": s.CaseID, "arm": s.Arm, "repetition": s.Repetition, "slot_status": s.Status, "blocker": s.Blocker, "cost": bySlot[s.ID]}
 		if s.Started != nil && s.Finished != nil {
 			row["elapsed_millis"] = s.Finished.Sub(*s.Started).Milliseconds()
 		}
 		var outcome struct {
+			Task struct {
+				ID          string `json:"task_id"`
+				Revision    int64  `json:"revision"`
+				Constraints int64  `json:"constraints_revision"`
+			} `json:"task"`
 			Result    *flow.ExecutionResult
 			FlowError bool                     `json:"flow_error"`
 			Recipient experienceRecipientState `json:"recipient_audit"`
@@ -141,6 +151,7 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		row["owning_outcome_present"] = true
 		row["flow_error"] = outcome.FlowError
 		row["run_state"] = outcome.Result.CurrentState.String()
+		row["run_id"] = outcome.Result.RunID
 		var db map[string]json.RawMessage
 		if !read(fmt.Sprintf("actual/case-%03d-database.json", s.Sequence), &db) {
 			t.Fatal("owning case database omitted")
@@ -158,12 +169,14 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		}
 		row["final"] = final
 		var calls []struct {
-			Run    string          `json:"run_id"`
-			Name   string          `json:"tool_name"`
-			Status string          `json:"status"`
-			Args   json.RawMessage `json:"args"`
-			Result json.RawMessage `json:"result"`
-			Error  json.RawMessage `json:"error"`
+			Run      string          `json:"run_id"`
+			Name     string          `json:"tool_name"`
+			Status   string          `json:"status"`
+			Args     json.RawMessage `json:"args"`
+			Result   json.RawMessage `json:"result"`
+			Error    json.RawMessage `json:"error"`
+			Started  time.Time       `json:"started_at"`
+			Finished *time.Time      `json:"finished_at"`
 		}
 		if json.Unmarshal(db["tool_calls"], &calls) != nil {
 			t.Fatal("tool population missing")
@@ -174,12 +187,17 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		currentCheckFailed := false
 		memoryReads := []string{}
 		loadedSkills := []string{}
+		loadsFinished := []time.Time{}
+		var firstTaskAction time.Time
 		for _, call := range calls {
 			if call.Run != outcome.Result.RunID {
 				continue
 			}
 			if call.Name == "extension.project.prepare-patch" {
 				prepare++
+			}
+			if strings.HasPrefix(call.Name, "extension.project.") && (firstTaskAction.IsZero() || call.Started.Before(firstTaskAction)) {
+				firstTaskAction = call.Started
 			}
 			var result struct {
 				Body       string `json:"body"`
@@ -199,6 +217,9 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 			}
 			if call.Status == "completed" && call.Name == "skills.load" && result.Digest != "" {
 				loadedSkills = append(loadedSkills, result.Digest)
+				if call.Finished != nil {
+					loadsFinished = append(loadsFinished, *call.Finished)
+				}
 			}
 			var check struct {
 				ID      string `json:"artifact_id"`
@@ -249,6 +270,13 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		row["initial_check_failed_observed"] = currentCheckFailed
 		row["memory_open_sources"] = memoryReads
 		row["loaded_skill_digests"] = loadedSkills
+		beforeAction := 0
+		for _, finished := range loadsFinished {
+			if !firstTaskAction.IsZero() && !finished.After(firstTaskAction) {
+				beforeAction++
+			}
+		}
+		row["loads_completed_before_first_task_action"] = beforeAction
 		var usagePins []struct {
 			Run                 string `json:"run_id"`
 			Digest              string `json:"digest"`
@@ -256,7 +284,14 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 			TaskRevision        int64  `json:"task_revision"`
 			ConstraintsRevision int64  `json:"constraints_revision"`
 		}
-		_ = json.Unmarshal(db["skill_usages"], &usagePins)
+		pinRaw, pinsPresent := db["skill_usages"]
+		row["skill_usage_export_present"] = pinsPresent
+		if profile == "guided-full-v3" && (!pinsPresent || json.Unmarshal(pinRaw, &usagePins) != nil) {
+			t.Fatal("complete actual skill usage export required")
+		}
+		if profile != "guided-full-v3" {
+			_ = json.Unmarshal(pinRaw, &usagePins)
+		}
 		pins := []map[string]any{}
 		matchedLoads := 0
 		for _, pin := range usagePins {
@@ -265,7 +300,7 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 			}
 			pins = append(pins, map[string]any{"digest": pin.Digest, "task_id": pin.Task, "task_revision": pin.TaskRevision, "constraints_revision": pin.ConstraintsRevision})
 			for _, digest := range loadedSkills {
-				if pin.Digest == digest {
+				if pin.Digest == digest && pin.Task == outcome.Task.ID && pin.TaskRevision == outcome.Task.Revision && pin.ConstraintsRevision == outcome.Task.Constraints {
 					matchedLoads++
 					break
 				}
