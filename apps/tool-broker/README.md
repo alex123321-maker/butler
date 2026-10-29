@@ -487,6 +487,11 @@ click still records UNKNOWN and replay is denied. Credential/privacy cases run
 against the actual browser runtime and the same observation path.
 ## Owner mandate browser acceptance
 
+ID-only context reads resolve their URL/control epoch from the owned live server
+browser row, bind that metadata privately and recheck the actual result URL
+before releasing page bytes. Foreign/expired/changed contexts and URL deny scopes
+fail closed. This projection cannot authorize input, navigation or credentials.
+
 Owner-goal mandates may explicitly name fixed communication methods with the
 prepare effect. Their exact credential-free kernel contract and pinned
 destination digest identify a local owner reply resource; URL scopes for all

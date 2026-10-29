@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsercontrol"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -32,6 +33,7 @@ func TestBrowserOwnerMandateApprovalReductionChromiumIntegration(t *testing.T) {
 	if os.Getenv("BUTLER_BROWSER_MANDATE_E2E") != "1" {
 		t.Skip("explicit isolated owner API/PG/Broker/Chromium required")
 	}
+	t.Setenv("BUTLER_BROWSER_MANDATE_SCOPED_READS", "1")
 	ready := filepath.Join(t.TempDir(), "owner-ready.json")
 	cmd := exec.Command(os.Getenv("BUTLER_BROWSER_OWNER_API_BINARY"), "-test.run=^TestBrowserMandateOwnerAPIHarness$", "-test.timeout=5m")
 	cmd.Env = append(os.Environ(), "BUTLER_BROWSER_MANDATE_OWNER_HARNESS=1", "BUTLER_BROWSER_MANDATE_OWNER_READY="+ready)
@@ -116,7 +118,7 @@ func TestBrowserOwnerMandateApprovalReductionChromiumIntegration(t *testing.T) {
 		_ = json.Unmarshal(v[k], &s)
 		return s
 	}
-	for _, kind := range []string{"prepare_only", "unsafe_unknown", "strict", "changed_args", "revoke", "cancel", "expiry", "foreign_origin", "stale_contract", "restart", "budget"} {
+	for _, kind := range []string{"prepare_only", "unsafe_unknown", "strict", "changed_args", "revoke", "cancel", "expiry", "foreign_origin", "stale_contract", "restart", "budget", "scope_origin", "scope_epoch"} {
 		t.Run(kind, func(t *testing.T) {
 			setupStart := serial
 			now := time.Now().UTC()
@@ -251,6 +253,52 @@ func TestBrowserOwnerMandateApprovalReductionChromiumIntegration(t *testing.T) {
 				t.Fatal("read mandate denied", gnt.GetError())
 			}
 			observe(execute(open, gnt.AuthorizationId))
+			snapshot := call("scoped-snapshot", "browser.snapshot", fmt.Sprintf(`{"browser_session_id":%q}`, view.ID))
+			sp := prepare(snapshot)
+			var sb actionauth.ActionBinding
+			if json.Unmarshal([]byte(sp.BindingJson), &sb) != nil || sb.BrowserScopeURL != view.URL || sp.RequiresApproval {
+				t.Fatal("owned context URL not privately bound")
+			}
+			if kind == "scope_origin" || kind == "scope_epoch" {
+				if kind == "scope_origin" {
+					_, e = pool.Exec(ctx, `UPDATE server_browser_sessions SET observed_url='https://foreign.test/' WHERE run_id=$1`, runID)
+				} else {
+					_, e = pool.Exec(ctx, `UPDATE server_browser_sessions SET epoch=epoch+1 WHERE run_id=$1`, runID)
+				}
+				if e != nil || authorized(authorize(snapshot, sp, "", true)) || posts.Load() != 0 {
+					t.Fatal("changed context scope/epoch retained permission", e)
+				}
+				t.Logf("case=%s context_read_authorization_denied=true recipient_posts=0", kind)
+				return
+			}
+			sg := authorize(snapshot, sp, "")
+			if !authorized(sg) {
+				t.Fatal("scoped read denied")
+			}
+			observe(execute(snapshot, sg.AuthorizationId))
+			if kind == "strict" {
+				control := &browsercontrol.Store{Pool: pool}
+				for _, foreign := range []string{"owner", "run", "task"} {
+					bad := sb
+					if foreign == "owner" {
+						bad.OwnerID = "foreign"
+					}
+					if foreign == "run" {
+						bad.RunID = "foreign"
+					}
+					if foreign == "task" {
+						bad.TaskID = "foreign"
+					}
+					if _, _, err := control.BrowserReadScope(ctx, bad); err == nil {
+						t.Fatal("foreign context metadata exposed")
+					}
+				}
+				out := &toolbrokerv1.ToolResult{RunId: runID, ToolCallId: snapshot.ToolCallId, ToolName: snapshot.ToolName, Status: "completed", ResultJson: fmt.Sprintf(`{"ok":true,"browser_session_id":%q,"final_url":"https://foreign.test/","text":"out-of-scope-canary"}`, view.ID)}
+				if control.Record(ctx, snapshot, actionauth.Grant{Binding: sb}, out) == nil || out.ResultJson != "{}" {
+					t.Fatal("foreign observed URL released page bytes")
+				}
+				t.Log("context_read_foreign_owner_run_task_denied=true foreign_result_bytes_scrubbed=true")
+			}
 			for i, field := range []struct{ name, value string }{{"title", "Browser baseline"}, {"quantity", "8"}, {"quantity", "3"}} {
 				c := call(fmt.Sprintf("prepare-%d", i), "browser.prepare_fill", fmt.Sprintf(`{"browser_session_id":%q,"expected_url":%q,"observation_version":%d,"selector":%q,"value":%q}`, view.ID, view.URL, view.Version, "input[name="+field.name+"]", field.value))
 				p := prepare(c)

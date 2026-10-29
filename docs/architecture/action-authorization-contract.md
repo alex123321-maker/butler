@@ -221,6 +221,18 @@ combination and never changes the alias's global policy.
 
 ## Bounded mandates
 
+For owner-goal `browser.snapshot/freeze_snapshot/extract_text/close`, public
+arguments identify a context rather than a URL. Broker resolves its current
+observed URL and control epoch from the live broker-owned session row, matching
+the exact run/owner/Task. This metadata is included in the action hash; it never
+comes from model args. URL allow/deny scopes and the explicit tool/read effect
+still apply. Foreign, expired, closed and changed-epoch contexts fail closed.
+Before page bytes are released, the actual result URL is checked against current
+Task/goal/mandate and goal-wide denials, with the current browser epoch retained.
+An out-of-scope result is scrubbed and the spent read remains conservatively
+uncertain. Close returns no page bytes. No navigation/input/credential action
+can use this resource projection, and click approval remains independent.
+
 An owner-goal mandate covering `unknown` browser.click can authorize it without
 an individual approval when the loaded contract does not require approval.
 Task prose is not an additional machine-enforced confirmation flag. A mandate

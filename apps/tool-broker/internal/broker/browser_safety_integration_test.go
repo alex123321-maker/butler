@@ -20,6 +20,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/resourceexec"
@@ -48,6 +49,7 @@ func (r browserSafetyReader) GetActionContext(ctx context.Context, run string) (
 type browserSafetyProcessConfig struct {
 	DSN, SearchPath, ToolsPath, AddressFile, PrivateToken string
 	ContextEndpoint                                       string
+	BrowserScopes                                         bool
 }
 
 // A new OS process reconstructs the real Broker from the same durable store.
@@ -125,7 +127,13 @@ func TestBrowserSafetyBrokerHarness(t *testing.T) {
 		}
 	}
 	server := NewServer(reg, executor, nil, nil)
-	server.SetActionAuthorizer(actionauth.NewService(store, reader, nil))
+	authorizer := actionauth.NewService(store, reader, nil)
+	if cfg.BrowserScopes {
+		control := &browsercontrol.Store{Pool: pool, Contexts: reader}
+		authorizer.SetBrowserScopes(control)
+		server.SetBrowserControl(control)
+	}
+	server.SetActionAuthorizer(authorizer)
 	server.SetBudgets(budgets)
 	server.SetResourceAdmission(rs)
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -166,6 +174,7 @@ func browserSafetyBrokerWithContext(t *testing.T, f *resourceBrokerFixture, endp
 		t.Fatal("fixture contracts write")
 	}
 	cfg := browserSafetyProcessConfig{DSN: f.pool.Config().ConnString(), SearchPath: f.pool.Config().ConnConfig.RuntimeParams["search_path"], ToolsPath: toolsPath, AddressFile: filepath.Join(dir, "ready"), PrivateToken: strings.Repeat("fixture-core-private-", 3)}
+	cfg.BrowserScopes = os.Getenv("BUTLER_BROWSER_MANDATE_SCOPED_READS") == "1"
 	cfg.ContextEndpoint = endpoint
 	encoded, _ := json.Marshal(cfg)
 	path := filepath.Join(dir, "private.json")

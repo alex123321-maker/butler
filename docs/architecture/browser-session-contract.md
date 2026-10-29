@@ -1,5 +1,12 @@
 # Explicit browser execution sessions
 
+Owner-goal context reads privately bind Broker's observed session URL/control
+epoch for URL-scope authorization. The exact run/owner/Task, live mode and expiry
+must match. Actual returned page URLs are rechecked under current authority
+before release; denied page bytes are scrubbed. The original ID-only tool schema
+and no-navigation semantics remain unchanged. This grants no click, credential
+release or retry; mandatory POST approval and UNKNOWN handling remain separate.
+
 Revision4 `browser.prepare_fill/prepare_type` adds a narrow lost-context
 pre-input rejection. Only the Go session guard, before calling the runner, may
 emit the closed `pre_input_v1,input_dispatched=false,reason=session_lost` proof

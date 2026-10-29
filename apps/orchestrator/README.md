@@ -1510,6 +1510,11 @@ claims/links. A redundant HTTP fetch is not prescribed by a rejected citation.
 Eligibility, exact quote checks, four-correction bound and kernel gates remain.
 ## Owner-goal browser test composition
 
+Owner-goal Tasks replay their own complete primary task transcript through the
+existing task reader. Unrelated work in the shared delivery session stays out of
+that context. Earlier task attempts/owner responses, privacy fences, constraints,
+UNKNOWN effects and the original context allowance are retained.
+
 The protected Web message route also accepts an explicit `task_id` for an active
 Task in its current owner/session. It uses ordinary Input and communication
 admission, retaining target identity on deduplication; no worker projection or

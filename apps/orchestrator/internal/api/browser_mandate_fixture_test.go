@@ -51,7 +51,7 @@ func TestBrowserMandateOwnerAPIHarness(t *testing.T) {
 	approvals := approval.NewService(repo, nil)
 	controller := task.NewController(tasks, leases.Authority(), leases, runs, repo, inputs, transcript.NewStore(pool))
 	manager := goal.New(pool, tasks, controller)
-	for _, kind := range []string{"prepare_only", "unsafe_unknown", "strict", "changed_args", "revoke", "cancel", "expiry", "foreign_origin", "stale_contract", "restart", "budget"} {
+	for _, kind := range []string{"prepare_only", "unsafe_unknown", "strict", "changed_args", "revoke", "cancel", "expiry", "foreign_origin", "stale_contract", "restart", "budget", "scope_origin", "scope_epoch"} {
 		if _, _, err := sessions.CreateSession(ctx, session.CreateSessionParams{SessionKey: "web:mandate-" + kind, UserID: "owner", Channel: "web", MetadataJSON: `{}`}); err != nil {
 			t.Fatal("synthetic session bootstrap failed")
 		}
