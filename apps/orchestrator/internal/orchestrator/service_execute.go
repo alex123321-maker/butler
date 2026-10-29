@@ -515,13 +515,15 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 	} // The owning return path attempts a durable retry first.
 	// Typed provider errors may contain untrusted details even after wrapping.
 	// Persist only the fixed subtype while retaining the general run error class.
+	reason := transport.DiagnosticReason(err)
 	if code := transport.DiagnosticCode(err); code != "" {
-		err = &transport.Error{Type: transport.ErrorType(code), Message: code}
+		err = &transport.Error{Type: transport.ErrorType(code), Message: code, SafeReason: reason}
 	}
-	runLog.Error("run execution failed", slog.String("error", err.Error()))
+	runLog.Error("run execution failed", slog.String("error", err.Error()), slog.String("diagnostic_reason", reason))
 	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
-		"error_message": truncateForObservability(err.Error(), 500),
-		"error_type":    classifyExecutionError(err),
+		"error_message":     truncateForObservability(err.Error(), 500),
+		"error_type":        classifyExecutionError(err),
+		"diagnostic_reason": reason,
 	})
 	state := current.GetCurrentState()
 	if current != nil {

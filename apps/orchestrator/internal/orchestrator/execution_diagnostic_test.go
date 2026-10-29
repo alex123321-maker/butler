@@ -17,7 +17,7 @@ import (
 func TestFailedRunPersistsSafeTransportSubtype(t *testing.T) {
 	const private = "PRIVATE_DIAGNOSTIC_MARKER"
 	for _, kind := range []transport.ErrorType{transport.ErrorTypeProviderTimeout,
-		transport.ErrorTypeRateLimited, transport.ErrorTypeModelCapacityUnavailable, transport.ErrorTypeMemorySourceTimeout, transport.ErrorType(private)} {
+		transport.ErrorTypeRateLimited, transport.ErrorTypeModelCapacityUnavailable, transport.ErrorTypeMemorySourceTimeout, transport.ErrorTypeInvalidToolRequest, transport.ErrorType(private)} {
 		t.Run(string(kind), func(t *testing.T) {
 			runs := newMemoryRunManager()
 			current := &sessionv1.RunRecord{RunId: "diagnostic-run", SessionKey: "web:fixture", CurrentState: commonv1.RunState_RUN_STATE_MODEL_RUNNING}
@@ -25,7 +25,7 @@ func TestFailedRunPersistsSafeTransportSubtype(t *testing.T) {
 			var logs bytes.Buffer
 			log := slog.New(slog.NewJSONHandler(&logs, nil))
 			service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{}, log)
-			original := fmt.Errorf("%s: %w", private, &transport.Error{Type: kind, Message: private, ProviderDetails: map[string]any{"secret": private}})
+			original := fmt.Errorf("%s: %w", private, &transport.Error{Type: kind, Message: private, SafeReason: "native_arguments_missing_field", ProviderDetails: map[string]any{"secret": private}})
 			got := service.failRun(context.Background(), current, "fixture-lease", log, original)
 			want := transport.DiagnosticCode(original)
 			var typed *transport.Error
@@ -34,6 +34,9 @@ func TestFailedRunPersistsSafeTransportSubtype(t *testing.T) {
 			}
 			if strings.Contains(logs.String(), private) {
 				t.Fatal("provider material leaked into execution logs")
+			}
+			if transport.DiagnosticReason(got) != transport.DiagnosticReason(original) || (kind == transport.ErrorTypeInvalidToolRequest && !strings.Contains(logs.String(), `"diagnostic_reason":"native_arguments_missing_field"`)) {
+				t.Fatal("fixed rejection reason lost during sanitization")
 			}
 		})
 	}

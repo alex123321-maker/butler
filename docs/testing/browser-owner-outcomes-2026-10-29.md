@@ -321,3 +321,10 @@ Remaining blockers are the native invalid-tool-request failures, the unexplained
 consent-02 execution stop, reliably publishing/delivering a complete protected
 login result, and the remaining restart/cancellation/revocation/native criteria
 of #163. Existing component checks do not close those acceptance requirements.
+
+Later prospective qualification is recorded in
+[login fixes](browser-login-fixes-2026-10-29.md): a new diagnostic trial identified
+an invisible native array-bound constraint, its presentation was fixed without
+widening validation, and a separate assisted login/private-data request completed
+with exact answer verification and Web/Telegram delivery. Those additional trials
+do not replace the original failed slots or rewrite the earlier blocker snapshot.

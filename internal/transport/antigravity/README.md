@@ -1,5 +1,12 @@
 # Antigravity native transport
 
+Invalid function proposals retain a fixed content-free `DiagnosticReason` before
+Core sanitizes execution errors. It distinguishes malformed/unselected functions
+and structural argument failures without retaining names, paths, values or raw
+provider bytes. The original validator still rejects the proposal before any
+executable call; no automatic inference/action retry is added. Old unclassified
+failures cannot be backfilled. See `function_diagnostic_test.go`.
+
 The isolated [issue97 research command](../../../cmd/effort-eval/README.md)
 qualifies explicit Flash Low/High on the same paid discovered Cloud Code route.
 Trusted `ThinkingLevel=LOW/HIGH` is paired with its exact configured profile;
@@ -29,6 +36,13 @@ validation and unknown-schema-keyword denial remain intact. Nested property
 names equal to a keyword are preserved. Structured generation response schemas
 are unchanged. `TestMemoryReadCanonicalNativeSchemaCompatibility` covers all
 three canonical memory-read contracts without auth/HTTP.
+
+Omitted bounds remain visible as exact fixed-format description hints at the
+same schema node, preserving existing descriptions. In particular, catalog
+`tools.load.tool_refs` states `minItems=1; maxItems=8`; out-of-range arrays still
+fail before a tool proposal and are never split or retried by the adapter.
+`catalog_bounds_test.go` checks the actual converter and original validator,
+including nested union descriptions and keyword-like property names.
 
 Temporal facts keep the original `sources` array contract (1..8 exact refs).
 Its two array annotations are omitted only from the provider-facing declaration;

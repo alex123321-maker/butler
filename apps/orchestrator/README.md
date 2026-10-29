@@ -1477,6 +1477,13 @@ activation retain their existing evidence requirements. See
 
 ## Terminal persistence
 
+Failed native tool proposals retain an allowlisted `diagnostic_reason` in the
+run-error event/log. Coarse Input/run error codes remain unchanged; rejected
+arguments and provider bodies stay excluded. Broker preparation/authorization
+errors distinguish fixed gRPC status classes (permission, authentication,
+arguments, precondition, deadline, unavailability, cancellation) without copying
+RPC messages. These observations authorize no retry, grant or dispatch.
+
 The operator-only `cmd/stopped-review` reviews exact failed Input references
 through Input/Communication/Action journal fences. Default mode rolls back;
 `-apply` commits only supported owning evidence. It does not dispatch models,

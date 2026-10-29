@@ -1,0 +1,11 @@
+{
+  "scope": "native_bounds_presentation_race",
+  "passed_test_events": 227,
+  "failed_test_events": 0,
+  "optional_external_fixture_skips": [
+    "TestMemoryJobActualNativeAdapterHTTPIntegration",
+    "TestTemporalFailedV1RequestPreHTTPDiagnostic"
+  ],
+  "required_skipped_test_events": 0,
+  "native_calls": 0
+}

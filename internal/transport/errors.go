@@ -65,6 +65,12 @@ func DiagnosticReason(err error) string {
 		return ""
 	}
 	switch failure.SafeReason {
+	case "native_function_malformed", "native_function_not_selected", "native_arguments_missing_field", "native_arguments_unknown_field",
+		"native_arguments_wrong_type", "native_arguments_union_mismatch", "native_arguments_enum_mismatch", "native_arguments_array_bounds", "native_arguments_invalid":
+		if failure.Type == ErrorTypeInvalidToolRequest {
+			return failure.SafeReason
+		}
+		return ""
 	case "batch_tool_calls_unsupported", "unsupported_schema_min_items", "unsupported_schema_max_items", "response_schema_rejected", "upstream_invalid_argument",
 		"upstream_bad_request_non_json", "upstream_failed_precondition", "upstream_model_rejected", "upstream_thinking_rejected", "upstream_output_limit_rejected", "upstream_system_instruction_rejected",
 		"upstream_access_token_expired", "upstream_scope_insufficient", "upstream_service_disabled", "upstream_billing_disabled", "upstream_iam_denied", "upstream_location_policy", "upstream_unauthenticated", "upstream_permission_denied":
