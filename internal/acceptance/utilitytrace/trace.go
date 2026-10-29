@@ -460,7 +460,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 					return deny("current inspect missing")
 				}
 				inspectSeen = true
-				if c.Condition == "verified_negative" {
+				if c.Condition == "verified_negative" && body.Format == "project_validation_v1" {
 					var args struct {
 						URL string `json:"url"`
 					}
