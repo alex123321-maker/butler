@@ -132,6 +132,23 @@ These are the original matrix slots, not retries replacing failures:
 | login-02 | 1310.170 | FAIL: two access requests expired during owner/network waiting; a third attempt had UNKNOWN dispatch and no owning request row. No credential grant or login. |
 | login-03 | 117.727 | FAIL: the third login-02 request's retained uncertainty blocked its access request before dispatch. |
 | consent-01 | 718.842 | FAIL for complete task/delivery: real owner consent, exactly one accepted login and authenticated account read; correct private reference in unpublished draft, but publication refused an unselected Catalog source ref. |
+| consent-02 | 734.176 | FAIL: execution_stopped after owner approval and snapshot, before credential preparation or POST; request expiry/cleanup is included. Receiver journal empty. |
+| consent-03 | 91.662 | FAIL: invalid_tool_request after three discovery searches, before browser/vault access. Receiver journal empty. |
+
+The original 3×5 matrix has now attempted all 15 slots: three read completions,
+one assisted form completion, and 11 failed complete-task slots. consent-01's
+successful login/private-data read is a partial result, not another completion.
+The nine newly attempted form/login/consent slots and 79 tool spans are retained
+in [inclusive final timings](browser-baseline/owner-outcomes/timings-inclusive-original-final/README.md).
+The earlier six read/navigation slots and their existing measurements are not
+replayed or replaced. These heterogeneous observations are not an autonomous
+success rate or a latency SLO.
+
+consent-02 retains the coarse execution_stopped error; the exact failing branch
+was not established and is not inferred from its last checkpoint. consent-03's
+rejected provider payload was not retained. Neither failure justifies relaxing
+tool validation or credential policy. Real owner consent in consent-02 did not
+produce any credential preparation, browser POST, publication or delivery.
 
 form-03 required four exact action approvals and one factual test-operator
 report. Its receiver journal contains exactly one accepted form event at
@@ -244,8 +261,63 @@ The operator contains the fuller historical review. Browser/PG/Redis/Web and
 private environment remain unchanged. Immutable candidate binaries were linked
 between release folders to preserve backups without duplicating large files.
 
-All three form and three login slots and consent-01 are retained (13/15 original
-slots attempted). consent-02 is in progress and consent-03 is unexecuted. General
-acceptance remains NO_GO pending a complete delivered login/private-data result
-and explicit lost-response qualification. Future observations are appended
-without replaying old slots.
+All 15 original matrix slots are retained. General acceptance remains NO_GO
+pending a complete delivered login/private-data result and the remaining #163
+criteria. Additional fault-injection observations are recorded separately below;
+they cannot replace failed matrix slots.
+
+## Additional lost-response trial (outside the matrix)
+
+`post-loss-01` used one ordinary native Input, accepted at
+04:25:42.804159Z, and the same provider/model and Broker paths. The synthetic
+HTTPS recipient exposes a real GET form at `/lost-response`; GET applies no
+effect. A valid POST fsyncs its journal before closing the response connection.
+Every duplicate would create another journal event. No receipt/config/reset
+endpoint, browser script injection or HTTP substitute is supplied to the agent.
+
+The GET form addition passed the recipient package on Windows (5.136s) and Linux
+(1.581s), plus Linux vet/build. Its HTTP unit deliberately sends two POSTs to
+verify that duplicates remain visible; these are unit checks, separate from the
+native trial. Only the new exact systemd instance uses recipient binary
+`ec12a4169819040d0afc86e388d8fe8a1026e6c761e9040aa13ac74b8cdfbce3`.
+The prior global unit/binary and every earlier journal/config were preserved.
+
+The native receiver recorded exactly one accepted form, quantity 3, at
+04:32:09.681500897Z. The agent's single click retained `effect_unknown`, then a
+confirmed frozen snapshot suspended the same Input for factual review. After
+independently checking the receiver journal and synchronous handler, the test
+operator reported `effect_confirmed` through the protected owner API. This is
+explicit assistance, not an automatic oracle or machine receipt. The original
+UNKNOWN click remains in the final transcript, and no POST was repeated.
+
+The same Input resumed, closed the browser, corrected one locally rejected
+communication draft and published
+`publication:da349ff9a858871913ab9b49c5aa61515ff9303a0b43e333e2896654dd9f9267`.
+Web has `result_ready` and Telegram has a persisted `sent` acknowledgement.
+A protected owner GET verified the publication; private checks found the public
+title/quantity and saved wording, with no credential canary. The answer also
+contains uncertainty wording: these bounded text checks do not prove that its
+explanation is perfectly unambiguous. A delivery API acknowledgement does not
+prove that the human read it.
+
+This qualifies the assisted no-duplicate/factual-review/continuation/delivery
+path for this one fault injection. It does not qualify autonomous outcome
+resolution, a delivered credential/private-data task, CAPTCHA/SSO, or all of
+#163. Assistance: four exact action approvals (including a failed pre-input
+preparation) and one factual report. Input wall time is **573.790s**, including
+model deliberation, context/queue/operator waits and tool work: 544.486s of
+inter-tool gaps, 11.763s of tool spans and 17.541s of finalization. Telegram sent
+was observed at 558.600s from acceptance and overlaps that interval.
+
+See [native metadata](browser-baseline/owner-outcomes/post-loss-01-metadata-final.json),
+[receiver](browser-baseline/owner-outcomes/post-loss-01-recipient-final.json),
+[factual report](browser-baseline/owner-outcomes/post-loss-01-owner-outcome.json),
+[private comparison](browser-baseline/owner-outcomes/post-loss-01-verification.json)
+and [timings including the extra case](browser-baseline/owner-outcomes/timings-inclusive-with-extra-fault/README.md).
+That second timing export contains 10 trials and 94 tool spans; only nine trials
+belong to the original matrix. The original-only export remains separate.
+
+Remaining blockers are the native invalid-tool-request failures, the unexplained
+consent-02 execution stop, reliably publishing/delivering a complete protected
+login result, and the remaining restart/cancellation/revocation/native criteria
+of #163. Existing component checks do not close those acceptance requirements.

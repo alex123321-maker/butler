@@ -162,7 +162,7 @@ func (s *fixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		page("Arctic delivery", "<p>Record reference: "+html.EscapeString(s.config.Record)+"</p>")
-	case "/form":
+	case "/form", "/lost-response":
 		page("Request form", `<form method=post><label>Title <input name=title required></label><label>Quantity <input name=quantity type=number min=1 max=5 required></label><button>Save request</button></form><p id=help>Loading help</p><script>setTimeout(()=>document.querySelector('#help').textContent='Title must be Browser baseline; quantity must be between 1 and 5.',300)</script>`)
 	case "/login":
 		page("Sign in", `<form method=post><label>Username <input name=username autocomplete=username required></label><label>Password <input name=password type=password autocomplete=current-password required></label><button>Sign in</button></form>`)

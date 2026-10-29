@@ -84,6 +84,10 @@ func TestPrivateAccountRequiresActualLogin(t *testing.T) {
 
 func TestLostResponseRetainsAppliedEffectAndCountsReplay(t *testing.T) {
 	s, c, journal := testSite(t)
+	status, page := get(t, c, s.URL+"/lost-response")
+	if status != 200 || !strings.Contains(page, `<form method=post>`) || journal.Len() != 0 {
+		t.Fatal("lost-response form must be reachable without applying an effect")
+	}
 	values := url.Values{"title": {"Browser baseline"}, "quantity": {"3"}}
 	for range 2 {
 		r, err := c.PostForm(s.URL+"/lost-response", values)
@@ -95,7 +99,7 @@ func TestLostResponseRetainsAppliedEffectAndCountsReplay(t *testing.T) {
 	if strings.Count(journal.String(), `"accepted":true`) != 2 {
 		t.Fatal("recipient hid duplicate effects")
 	}
-	status, _ := post(t, c, s.URL+"/form", url.Values{"title": {"Browser baseline"}, "quantity": {"99"}})
+	status, _ = post(t, c, s.URL+"/form", url.Values{"title": {"Browser baseline"}, "quantity": {"99"}})
 	if status != 422 || strings.Count(journal.String(), `"accepted":false`) != 1 {
 		t.Fatal("invalid form applied")
 	}

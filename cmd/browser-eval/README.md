@@ -46,6 +46,12 @@ The catalog has pagination. The form includes delayed help and server validation
 `POST /lost-response` applies a valid form and drops its HTTP/1 connection; every
 replay counts again. It deliberately has no idempotency feature that could hide
 an agent retry. Do not use it as an ordinary success route.
+`GET /lost-response` exposes the same validated HTML form, posting to its own
+path, so a real browser can exercise this fault without injected scripts or an
+HTTP substitute. Opening it applies no effect. The HTTP unit deliberately sends
+two POSTs to prove that duplicates stay visible; that is not a native no-retry
+acceptance result. Record any extra fault-injection trial outside the original
+3×5 matrix rather than replacing an earlier failed slot.
 
 ## Independent evidence and limits
 
