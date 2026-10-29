@@ -326,3 +326,12 @@ model route, task scopes and stopping rules are unchanged. Explicit kernel skill
 guidance and current fixed memory reads pass through the actual Broker. All
 binaries and complete source are frozen before provider auth; working deployment
 is excluded. The change is a research fixture profile, not a product budget edit.
+
+Post-exit factual review retains executed reads and matching skill pins even if
+Flow returned no ExecutionResult. A unique current accepted-input/run relation,
+owner/session identity and captured run task revision must corroborate that run;
+a later task revision is historical state, not renewed execution authority.
+The reviewer never selects the latest run, fabricates a final or credits success
+for a missing result. Foreign/stale/ambiguous rows are rejected. The retained
+failed case016 proves six completed searches, five opens and one actual Broker
+load/current usage pin without changing its failure or creating inference.

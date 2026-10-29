@@ -640,7 +640,11 @@ func closedExperienceJournal(j map[string]json.RawMessage, slots map[string]expe
 	}
 	// Local lineage contains a nested pointer. Independently decoded identical
 	// JSON must compare by complete value, never by that allocation's address.
-	if json.Unmarshal(j["experience_native_windows"], &windows) != nil || len(windows) != 1 || windows[0].Window != m.Preseal || windows[0].Owner != m.Owner || !windows[0].Closed || windows[0].Maximum != 640 || windows[0].Used < len(entries) || windows[0].Used > 640 || json.Unmarshal(j["experience_native_allocations"], &allocations) != nil || len(allocations) != 57 || json.Unmarshal(j["experience_native_entries"], &rows) != nil || len(rows) != windows[0].Used || json.Unmarshal(j["experience_native_history"], &bindings) != nil || len(bindings) != 1 || bindings[0].Window != m.Preseal || bindings[0].Hash != m.Previous || bindings[0].Reservation != quotes.HistoryReservation || !reflect.DeepEqual(bindings[0].Metadata, previous) || json.Unmarshal(j["experience_native_case_databases"], &clones) != nil || clones == nil {
+	maximum := experienceNativeMaximum
+	if guided115Expanded(previous) {
+		maximum = guided115Maximum
+	}
+	if json.Unmarshal(j["experience_native_windows"], &windows) != nil || len(windows) != 1 || windows[0].Window != m.Preseal || windows[0].Owner != m.Owner || !windows[0].Closed || windows[0].Maximum != maximum || windows[0].Used < len(entries) || windows[0].Used > maximum || json.Unmarshal(j["experience_native_allocations"], &allocations) != nil || len(allocations) != 57 || json.Unmarshal(j["experience_native_entries"], &rows) != nil || len(rows) != windows[0].Used || json.Unmarshal(j["experience_native_history"], &bindings) != nil || len(bindings) != 1 || bindings[0].Window != m.Preseal || bindings[0].Hash != m.Previous || bindings[0].Reservation != quotes.HistoryReservation || !reflect.DeepEqual(bindings[0].Metadata, previous) || json.Unmarshal(j["experience_native_case_databases"], &clones) != nil || clones == nil {
 		return errors.New("closed durable global population or original history binding differs")
 	}
 	used, seen, seq := map[string]int{}, map[string]bool{}, map[int]bool{}

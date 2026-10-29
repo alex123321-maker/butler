@@ -16,7 +16,7 @@ import (
 // No proposal/result is repaired, accepted as memory, or sent to a model.
 func TestLaba115ABCPostExitProjection(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_ABC_REVIEW")
-	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" {
+	if profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" {
 		t.Skip("explicit closed ABC33 raw exports required")
 	}
 	read := func(name string, v any) bool {
@@ -69,6 +69,10 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 	}
 	if profile == "guided-full-v3" {
 		wantPlan = "0d957c32b47ac93fcc6f21826af8d54c645cf15b5347aed72dc98d653dd87ac6"
+		limit = 57
+	}
+	if profile == "guided-full-v5" {
+		wantPlan = "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54"
 		limit = 57
 	}
 	if accountingPlan != wantPlan {
@@ -133,29 +137,38 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 			row["elapsed_millis"] = s.Finished.Sub(*s.Started).Milliseconds()
 		}
 		var outcome struct {
-			Task struct {
-				ID          string `json:"task_id"`
-				Revision    int64  `json:"revision"`
-				Constraints int64  `json:"constraints_revision"`
-			} `json:"task"`
+			Task      laba115ProjectionTask `json:"task"`
 			Result    *flow.ExecutionResult
 			FlowError bool                     `json:"flow_error"`
 			Recipient experienceRecipientState `json:"recipient_audit"`
 		}
-		if !read(fmt.Sprintf("actual/case-%03d-outcome.json", s.Sequence), &outcome) || outcome.Result == nil {
+		if !read(fmt.Sprintf("actual/case-%03d-outcome.json", s.Sequence), &outcome) {
 			complete = false
 			row["owning_outcome_present"] = false
 			rows = append(rows, row)
 			continue
 		}
-		row["owning_outcome_present"] = true
-		row["flow_error"] = outcome.FlowError
-		row["run_state"] = outcome.Result.CurrentState.String()
-		row["run_id"] = outcome.Result.RunID
 		var db map[string]json.RawMessage
 		if !read(fmt.Sprintf("actual/case-%03d-database.json", s.Sequence), &db) {
 			t.Fatal("owning case database omitted")
 		}
+		runID, state := "", "EXECUTION_RESULT_MISSING"
+		if outcome.Result != nil {
+			runID, state = outcome.Result.RunID, outcome.Result.CurrentState.String()
+		}
+		row["execution_result_present"] = outcome.Result != nil
+		if runID == "" {
+			owned, err := laba115ProjectionOwnedRun(db, outcome.Task)
+			if err != nil {
+				t.Fatal("failed case current run cannot be uniquely proven", s.Sequence, err)
+			}
+			runID, state = owned.ID, "DURABLE_"+strings.ToUpper(owned.State)
+			row["run_recovered_from_current_input_and_task"] = true
+		}
+		row["owning_outcome_present"] = true
+		row["flow_error"] = outcome.FlowError
+		row["run_state"] = state
+		row["run_id"] = runID
 		var finals []struct {
 			Run     string `json:"run_id"`
 			Content string `json:"content"`
@@ -163,7 +176,7 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		_ = json.Unmarshal(db["run_final_results"], &finals)
 		final := ""
 		for _, f := range finals {
-			if f.Run == outcome.Result.RunID {
+			if f.Run == runID {
 				final = f.Content
 			}
 		}
@@ -190,7 +203,7 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		loadsFinished := []time.Time{}
 		var firstTaskAction time.Time
 		for _, call := range calls {
-			if call.Run != outcome.Result.RunID {
+			if call.Run != runID {
 				continue
 			}
 			if call.Name == "extension.project.prepare-patch" {
@@ -286,16 +299,16 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		}
 		pinRaw, pinsPresent := db["skill_usages"]
 		row["skill_usage_export_present"] = pinsPresent
-		if profile == "guided-full-v3" && (!pinsPresent || json.Unmarshal(pinRaw, &usagePins) != nil) {
+		if (profile == "guided-full-v3" || profile == "guided-full-v5") && (!pinsPresent || json.Unmarshal(pinRaw, &usagePins) != nil) {
 			t.Fatal("complete actual skill usage export required")
 		}
-		if profile != "guided-full-v3" {
+		if profile != "guided-full-v3" && profile != "guided-full-v5" {
 			_ = json.Unmarshal(pinRaw, &usagePins)
 		}
 		pins := []map[string]any{}
 		matchedLoads := 0
 		for _, pin := range usagePins {
-			if pin.Run != outcome.Result.RunID {
+			if pin.Run != runID {
 				continue
 			}
 			pins = append(pins, map[string]any{"digest": pin.Digest, "task_id": pin.Task, "task_revision": pin.TaskRevision, "constraints_revision": pin.ConstraintsRevision})
@@ -327,4 +340,70 @@ func TestLaba115ABCPostExitProjection(t *testing.T) {
 		t.Fatal("facts receipt persistence failed")
 	}
 	t.Logf("ABC_FACTS_PROJECTION cases=%d all_outcomes=%v no inference/acceptance", len(rows), complete)
+}
+
+func TestLaba115RetainedFailedCaseProjection(t *testing.T) {
+	if os.Getenv("BUTLER_ISSUE115_FAILED_CASE_PROJECTION") != "closed-case016-only" {
+		t.Skip("explicit completed synthetic case export required")
+	}
+	read := func(name string, v any) {
+		t.Helper()
+		path := filepath.Join("/partial", name)
+		hash, err := experienceNativeFileSHA(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := closedExperienceRead("/partial", name, hash, 64*1024*1024)
+		if err != nil || json.Unmarshal(raw, v) != nil {
+			t.Fatal("bounded complete case required", err)
+		}
+	}
+	var outcome struct {
+		Task      laba115ProjectionTask
+		Result    *flow.ExecutionResult
+		FlowError bool `json:"flow_error"`
+	}
+	var db map[string]json.RawMessage
+	read("case-016-outcome.json", &outcome)
+	read("case-016-database.json", &db)
+	if outcome.Result != nil || !outcome.FlowError {
+		t.Fatal("missing-result counterexample changed")
+	}
+	owned, err := laba115ProjectionOwnedRun(db, outcome.Task)
+	if err != nil || owned.State != "failed" {
+		t.Fatal("failed current run lost", err)
+	}
+	var calls []struct {
+		Run    string `json:"run_id"`
+		Name   string `json:"tool_name"`
+		Status string
+	}
+	if json.Unmarshal(db["tool_calls"], &calls) != nil {
+		t.Fatal("calls missing")
+	}
+	counts := map[string]int{}
+	for _, c := range calls {
+		if c.Run == owned.ID && c.Status == "completed" {
+			counts[c.Name]++
+		}
+	}
+	var pins []struct {
+		Run         string `json:"run_id"`
+		Task        string `json:"task_id"`
+		Revision    int64  `json:"task_revision"`
+		Constraints int64  `json:"constraints_revision"`
+	}
+	if json.Unmarshal(db["skill_usages"], &pins) != nil {
+		t.Fatal("pins missing")
+	}
+	matches := 0
+	for _, p := range pins {
+		if p.Run == owned.ID && p.Task == outcome.Task.ID && p.Revision == outcome.Task.Revision && p.Constraints == outcome.Task.Constraints {
+			matches++
+		}
+	}
+	if counts["skills.load"] != 1 || counts["memory.search"] < 1 || counts["memory.open"] < 1 || matches != 1 {
+		t.Fatal("failed case lost actual read/load facts", counts, matches)
+	}
+	t.Logf("FAILED_CASE_FACTS_RETAINED memory.search=%d memory.open=%d actual_Broker_load=1 current_pin=1; no ExecutionResult or success synthesized", counts["memory.search"], counts["memory.open"])
 }

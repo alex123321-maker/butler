@@ -1,0 +1,20 @@
+{
+  "format": "butler115.model-free-failed-case-projection.v1",
+  "reviewer_sha256": "5e9228382ec0dc361c25300525deee7880b86fac35519b4113f8d77d4c388fa4",
+  "case_sequence": 16,
+  "execution_result_missing": true,
+  "run_state": "failed",
+  "captured_task_revision": 1,
+  "stored_later_task_revision": 2,
+  "run_task_revision": 1,
+  "completed_memory_search": 6,
+  "completed_memory_open": 5,
+  "actual_broker_load": 1,
+  "matching_current_pin": 1,
+  "new_model_requests_created_by_review": 0,
+  "success_synthesized": false,
+  "runtime_or_raw_results_modified": false,
+  "network": "none",
+  "unit_foreign_stale_ambiguous_rejected": true,
+  "previous_failed_projection_log_retained": true
+}

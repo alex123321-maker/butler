@@ -13,7 +13,7 @@ import (
 // it creates no native history recipe, provider, database or admission authority.
 func TestLaba115ClosedCostReview(t *testing.T) {
 	profile := os.Getenv("BUTLER_ISSUE115_LABA_COST_REVIEW")
-	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" {
+	if profile != "closed-proxy-v2" && profile != "closed-abc-v3" && profile != "closed-abc-v4" && profile != "closed-abc-v5" && profile != "closed-abc-v6" && profile != "guided-full-v1" && profile != "guided-full-v3" && profile != "guided-full-v5" {
 		t.Skip("explicit immutable post-exit server exports required")
 	}
 	planSHA := "d366ab3b8c10518cf4bfda8ef627e2ea50101847a159a9afbf8ed1a53433d9a7"
@@ -42,6 +42,10 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		planSHA = "0d957c32b47ac93fcc6f21826af8d54c645cf15b5347aed72dc98d653dd87ac6"
 		historySHA = "5d4b0bdcfd23fa623fce1aca8ec285420d97d4c49b694dd003c9e6e1e9c4da54"
 	}
+	if profile == "guided-full-v5" {
+		planSHA = "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54"
+		historySHA = "a84f7e4d6dae31e34042644fb377f4a94bcaf6eb0d8cf62d7de2f7f59869a503"
+	}
 	root := "/review"
 	read := func(name string, value any) {
 		t.Helper()
@@ -62,7 +66,7 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 	}
 	history, err := loadExperienceNativeHistory("/history/recipe.json", historySHA)
 	wantScope, maximumDatabases := 33, 25
-	if profile == "guided-full-v1" || profile == "guided-full-v3" {
+	if profile == "guided-full-v1" || profile == "guided-full-v3" || profile == "guided-full-v5" {
 		wantScope, maximumDatabases = 0, 49
 		if history.GuidedFull == nil {
 			t.Fatal("guided full57 history missing")
@@ -80,7 +84,11 @@ func TestLaba115ClosedCostReview(t *testing.T) {
 		Finished       time.Time `json:"finished_at"`
 	}
 	read("actual/window-final.json", &window)
-	if len(window.Slots) != 57 || window.Maximum != 640 || len(window.Entries) > 640 || window.Started.IsZero() || window.Finished.Before(window.Started) || window.Finished.After(plan.Deadline.Add(15*time.Minute)) {
+	maximum := experienceNativeMaximum
+	if guided115Expanded(history) {
+		maximum = guided115Maximum
+	}
+	if len(window.Slots) != 57 || window.Maximum != maximum || len(window.Entries) > maximum || window.Started.IsZero() || window.Finished.Before(window.Started) || window.Finished.After(plan.Deadline.Add(15*time.Minute)) {
 		t.Fatal("original complete closed window required")
 	}
 	slots := map[string]experienceNativeSlot{}
