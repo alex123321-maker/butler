@@ -62,6 +62,17 @@ timing or the stale guard; it does not prove that arbitrary numeric credential
 input is immune to late page revisions. Failed series are retained alongside the
 successful series under `full-repeat-*`; native Inputs were not repeated.
 
+CI `c7204300` then passed the credential/Broker/Chromium script, but the mobile
+Go job failed during initiative schema migrations with SQLSTATE53200, out of
+shared memory. Its five packages shared one disposable PostgreSQL concurrently.
+The mobile workflow now uses `go test -p 1` for that group, preserving all package
+selection, race checks and assertions; production DB settings are unchanged.
+The same serialized five-package command passed on isolated PG/race in **122s**:
+445 test/subtest pass records, 209 skip records under this job's environment and
+zero failures. Skips are not counted as passes. All seven subcases and the parent
+of the previously failed project-observer integration test passed. Raw output is
+retained on laba with its hash in the [safe summary](browser-baseline/form-validation/mobile-pg-20261029T102833Z-2558524/summary.json).
+
 ## Native task and independent receiver
 
 Canonical owner ingress used the configured Antigravity/gemini-3.8-flash-high

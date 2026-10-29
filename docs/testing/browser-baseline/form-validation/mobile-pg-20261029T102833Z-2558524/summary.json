@@ -1,0 +1,27 @@
+{
+  "scope": "isolated_serialized_mobile_go_packages",
+  "package_parallelism": 1,
+  "race": true,
+  "packages_passed": 5,
+  "test_and_subtest_pass_records": 445,
+  "skip_records": 209,
+  "failure_records": 0,
+  "skipped_cases_counted_as_pass": false,
+  "required_previously_failed_cases": [
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/task_revision",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/unconfirmed",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/binding_hash",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/wrong_resource",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/release_denied",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/new-condition-healthy-false",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration/new-condition-healthy-true",
+    "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration"
+  ],
+  "began_at": "2026-10-29T10:28:34Z",
+  "finished_at": "2026-10-29T10:30:36Z",
+  "elapsed_seconds": 122,
+  "raw_report_sha256": "4607c6cb0c7814059888ab1a2b605c3f16df0360212e88b67fb83be247c05742",
+  "raw_report_location": "/srv/storage/butler/agents/browser-form-validation-20261029/reports/mobile-pg-20261029T102833Z-2558524/ordered.jsonl",
+  "production_sql_writes": 0,
+  "native_calls": 0
+}
