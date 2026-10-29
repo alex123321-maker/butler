@@ -1,0 +1,1419 @@
+{
+  "generation_requests": 0,
+  "historical_scores_unchanged": true,
+  "conditional_diagnostics_not_replacement_scores": {
+    "complete_non_unknown_triplets": [
+      {
+        "arm": "A_no_experience",
+        "tasks": 13,
+        "successes": 13,
+        "native_calls": 47,
+        "known_tokens": 335618,
+        "memory_reads": 0,
+        "loads": 0
+      },
+      {
+        "arm": "B_same_frozen_notes_no_skills",
+        "tasks": 13,
+        "successes": 13,
+        "native_calls": 47,
+        "known_tokens": 396298,
+        "memory_reads": 0,
+        "loads": 0
+      },
+      {
+        "arm": "C_same_frozen_notes_and_reviewed_skills",
+        "tasks": 13,
+        "successes": 13,
+        "native_calls": 70,
+        "known_tokens": 639778,
+        "memory_reads": 5,
+        "loads": 3
+      }
+    ],
+    "positive_complete_triplets": [
+      {
+        "arm": "A_no_experience",
+        "tasks": 3,
+        "successes": 3,
+        "native_calls": 12,
+        "known_tokens": 84626,
+        "memory_reads": 0,
+        "loads": 0
+      },
+      {
+        "arm": "B_same_frozen_notes_no_skills",
+        "tasks": 3,
+        "successes": 3,
+        "native_calls": 13,
+        "known_tokens": 111423,
+        "memory_reads": 0,
+        "loads": 0
+      },
+      {
+        "arm": "C_same_frozen_notes_and_reviewed_skills",
+        "tasks": 3,
+        "successes": 3,
+        "native_calls": 16,
+        "known_tokens": 163202,
+        "memory_reads": 0,
+        "loads": 3
+      }
+    ]
+  },
+  "inspection_count": 53,
+  "all_inspections_expose_solution_inputs": true,
+  "paired_current_state_checks": [
+    {
+      "case": "control-01",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-01",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-02",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-02",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-03",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-03",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-04",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-04",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-05",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-05",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-06",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-06",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-07",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-07",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-08",
+      "repetition": 1,
+      "arms": 3,
+      "same_inputs": true
+    },
+    {
+      "case": "control-08",
+      "repetition": 2,
+      "arms": 3,
+      "same_inputs": true
+    }
+  ],
+  "synthetic_scorer_counterexamples_not_actual_model_failures": [
+    {
+      "case": "control-06",
+      "synthetic_final": "Проверка пройдена, checks_passed=true.",
+      "expected_semantic_score": false,
+      "actual_coordinator_decision": true,
+      "rule": "current_inspection_failed_check_and_zero_preparation",
+      "limitation_demonstrated": true
+    },
+    {
+      "case": "control-04",
+      "synthetic_final": "Раньше был UNKNOWN. Теперь создание артефакта достоверно подтверждено.",
+      "expected_semantic_score": false,
+      "actual_coordinator_decision": true,
+      "rule": "actual_503_preserved_unknown_no_new_prepare",
+      "limitation_demonstrated": true
+    },
+    {
+      "case": "control-01",
+      "synthetic_final": "Артефакт audit-artifact НЕ прошёл проверку.",
+      "expected_semantic_score": false,
+      "actual_coordinator_decision": true,
+      "rule": "current_checked_matching_artifact_correlated_in_final",
+      "limitation_demonstrated": true
+    }
+  ],
+  "scorer_sha256": "cdeea7d4244311fd61d9bea362363e26cf82ae57e7d430008ef19b7e650a554f",
+  "raw_archive_sha256": "5a4ca8064fdab2ca3b17f1ca147a5a7a046d1afdf2a8b5031701e0ea8375e156",
+  "cases": [
+    {
+      "sequence": 10,
+      "case": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 28232,
+        "input_tokens": 24286,
+        "output_tokens": 1017,
+        "model_millis": 40241
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 11,
+      "case": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 44326,
+        "input_tokens": 40014,
+        "output_tokens": 1151,
+        "model_millis": 43031
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        },
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 12,
+      "case": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 50074,
+        "input_tokens": 46024,
+        "output_tokens": 1108,
+        "model_millis": 48765
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 1
+    },
+    {
+      "sequence": 13,
+      "case": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 33798,
+        "input_tokens": 29746,
+        "output_tokens": 1006,
+        "model_millis": 38034
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 14,
+      "case": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 61359,
+        "input_tokens": 57623,
+        "output_tokens": 1057,
+        "model_millis": 40650
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        },
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 1
+    },
+    {
+      "sequence": 15,
+      "case": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 29044,
+        "input_tokens": 25134,
+        "output_tokens": 1064,
+        "model_millis": 37612
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 16,
+      "case": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 53458,
+        "input_tokens": 48015,
+        "output_tokens": 608,
+        "model_millis": 50281
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 3,
+      "loads": 0
+    },
+    {
+      "sequence": 17,
+      "case": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 12490,
+        "input_tokens": 10173,
+        "output_tokens": 275,
+        "model_millis": 25682
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 18,
+      "case": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 7,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 74263,
+        "input_tokens": 69070,
+        "output_tokens": 921,
+        "model_millis": 59000
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 5,
+      "loads": 0
+    },
+    {
+      "sequence": 19,
+      "case": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 20886,
+        "input_tokens": 16862,
+        "output_tokens": 886,
+        "model_millis": 74268
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 20,
+      "case": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 27491,
+        "input_tokens": 22212,
+        "output_tokens": 758,
+        "model_millis": 42559
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 21,
+      "case": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 35815,
+        "input_tokens": 31068,
+        "output_tokens": 777,
+        "model_millis": 46610
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 22,
+      "case": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 35360,
+        "input_tokens": 30845,
+        "output_tokens": 1164,
+        "model_millis": 44393
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 23,
+      "case": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 52152,
+        "input_tokens": 47221,
+        "output_tokens": 1023,
+        "model_millis": 51025
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 24,
+      "case": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 30387,
+        "input_tokens": 25778,
+        "output_tokens": 1249,
+        "model_millis": 43268
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 25,
+      "case": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 30555,
+        "input_tokens": 26995,
+        "output_tokens": 529,
+        "model_millis": 38663
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 26,
+      "case": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 11666,
+        "input_tokens": 9363,
+        "output_tokens": 449,
+        "model_millis": 21693
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 27,
+      "case": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 14121,
+        "input_tokens": 12017,
+        "output_tokens": 452,
+        "model_millis": 20299
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 28,
+      "case": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 28447,
+        "input_tokens": 24559,
+        "output_tokens": 953,
+        "model_millis": 36672
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 29,
+      "case": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 32098,
+        "input_tokens": 27974,
+        "output_tokens": 1043,
+        "model_millis": 35140
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 30,
+      "case": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 40855,
+        "input_tokens": 36615,
+        "output_tokens": 943,
+        "model_millis": 39513
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 31,
+      "case": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 35277,
+        "input_tokens": 30846,
+        "output_tokens": 961,
+        "model_millis": 41621
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 32,
+      "case": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "cost": {
+        "entries": 8,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 80274,
+        "input_tokens": 74393,
+        "output_tokens": 1290,
+        "model_millis": 62326
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 3,
+      "loads": 0
+    },
+    {
+      "sequence": 33,
+      "case": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 28758,
+        "input_tokens": 25012,
+        "output_tokens": 963,
+        "model_millis": 38779
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 34,
+      "case": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 51769,
+        "input_tokens": 47315,
+        "output_tokens": 1014,
+        "model_millis": 43620
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 1
+    },
+    {
+      "sequence": 35,
+      "case": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 33299,
+        "input_tokens": 29647,
+        "output_tokens": 922,
+        "model_millis": 34996
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 36,
+      "case": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 27350,
+        "input_tokens": 23890,
+        "output_tokens": 974,
+        "model_millis": 35595
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 37,
+      "case": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 1,
+        "missing_total": 0,
+        "known_full_tokens": 23334,
+        "input_tokens": 20993,
+        "output_tokens": 383,
+        "model_millis": 25538
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 38,
+      "case": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 1,
+        "missing_total": 0,
+        "known_full_tokens": 11636,
+        "input_tokens": 9893,
+        "output_tokens": 291,
+        "model_millis": 20370
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 39,
+      "case": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 51782,
+        "input_tokens": 46993,
+        "output_tokens": 1140,
+        "model_millis": 44856
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 1
+    },
+    {
+      "sequence": 40,
+      "case": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 13206,
+        "input_tokens": 10311,
+        "output_tokens": 282,
+        "model_millis": 27308
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 41,
+      "case": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 7,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 90392,
+        "input_tokens": 82242,
+        "output_tokens": 927,
+        "model_millis": 78848
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 5,
+      "loads": 0
+    },
+    {
+      "sequence": 42,
+      "case": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 52029,
+        "input_tokens": 46830,
+        "output_tokens": 615,
+        "model_millis": 49676
+      },
+      "coordinator_success": false,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 3,
+      "loads": 0
+    },
+    {
+      "sequence": 43,
+      "case": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 7,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 62584,
+        "input_tokens": 57777,
+        "output_tokens": 755,
+        "model_millis": 53908
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 2,
+      "loads": 0
+    },
+    {
+      "sequence": 44,
+      "case": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 25682,
+        "input_tokens": 21373,
+        "output_tokens": 674,
+        "model_millis": 40371
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 45,
+      "case": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 23195,
+        "input_tokens": 18275,
+        "output_tokens": 747,
+        "model_millis": 44896
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 46,
+      "case": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 34174,
+        "input_tokens": 30269,
+        "output_tokens": 1007,
+        "model_millis": 36471
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 47,
+      "case": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 29593,
+        "input_tokens": 25502,
+        "output_tokens": 1024,
+        "model_millis": 38203
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 48,
+      "case": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 45256,
+        "input_tokens": 40290,
+        "output_tokens": 1010,
+        "model_millis": 48213
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 49,
+      "case": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 12496,
+        "input_tokens": 9501,
+        "output_tokens": 674,
+        "model_millis": 29166
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 50,
+      "case": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 3,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 23078,
+        "input_tokens": 19690,
+        "output_tokens": 705,
+        "model_millis": 49930
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 51,
+      "case": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 2,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 14039,
+        "input_tokens": 11887,
+        "output_tokens": 602,
+        "model_millis": 23547
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 52,
+      "case": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 52235,
+        "input_tokens": 47538,
+        "output_tokens": 1031,
+        "model_millis": 50288
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        },
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 53,
+      "case": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 32982,
+        "input_tokens": 28690,
+        "output_tokens": 952,
+        "model_millis": 51680
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 54,
+      "case": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 5,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 36654,
+        "input_tokens": 32817,
+        "output_tokens": 1120,
+        "model_millis": 40002
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        },
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 55,
+      "case": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 33651,
+        "input_tokens": 29828,
+        "output_tokens": 839,
+        "model_millis": 35371
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 56,
+      "case": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "cost": {
+        "entries": 4,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 28910,
+        "input_tokens": 24942,
+        "output_tokens": 867,
+        "model_millis": 42265
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    },
+    {
+      "sequence": 57,
+      "case": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "cost": {
+        "entries": 6,
+        "unknown_usage": 0,
+        "missing_total": 0,
+        "known_full_tokens": 53772,
+        "input_tokens": 49170,
+        "output_tokens": 952,
+        "model_millis": 49684
+      },
+      "coordinator_success": true,
+      "inspections": [
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        },
+        {
+          "accepted_value": true,
+          "current_file": true,
+          "current_revision": true
+        }
+      ],
+      "memory_reads": 0,
+      "loads": 0
+    }
+  ]
+}
