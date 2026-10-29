@@ -1,0 +1,9 @@
+{
+  "format": "butler115.memory-read-fix-archive.v1",
+  "files": 41,
+  "archive_sha256": "55ab3c8c8eaeb8181efb6367c85468d3fb36f01fb77c2c1dffa445aaa48d8dcd",
+  "provider_auth_files_included": false,
+  "database_dumps_included": false,
+  "databases_retained_on_laba": true,
+  "new_model_calls": 0
+}

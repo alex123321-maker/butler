@@ -1,0 +1,14 @@
+{
+  "format": "butler115.memory-read-fix-stop.v1",
+  "new_diagnostic_pg_id": "4423fc8f03c93cec40eb2e2cdcd1c4f13d89e023022f3e5f5454942b5681ba17",
+  "new_diagnostic_pg_stopped": true,
+  "original_pg_stopped": true,
+  "active_clients_before_stop": 0,
+  "network": "none",
+  "published_ports": 0,
+  "new_model_calls": 0,
+  "provider_auth_mounts": 0,
+  "historical_archives_preserved": true,
+  "diagnostic_databases_and_failed_setup_logs_retained": true,
+  "production_updated": false
+}

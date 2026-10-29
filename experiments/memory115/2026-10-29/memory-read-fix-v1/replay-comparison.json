@@ -1,0 +1,116 @@
+{
+  "format": "butler115.memory-read-replay.v1",
+  "new_model_calls": 0,
+  "old_inputs_resumed": false,
+  "full_old_window_pass_claimed": false,
+  "cases": [
+    {
+      "sequence": 16,
+      "baseline": {
+        "status": "ok",
+        "items": 4,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 3,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    },
+    {
+      "sequence": 18,
+      "baseline": {
+        "status": "ok",
+        "items": 4,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 3,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    },
+    {
+      "sequence": 20,
+      "baseline": {
+        "status": "ok",
+        "items": 4,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 1,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    },
+    {
+      "sequence": 21,
+      "baseline": {
+        "status": "ok",
+        "items": 4,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 1,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    },
+    {
+      "sequence": 32,
+      "baseline": {
+        "status": "ok",
+        "items": 3,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 2,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    },
+    {
+      "sequence": 57,
+      "baseline": {
+        "status": "ok",
+        "items": 3,
+        "metadata_eligible": false,
+        "metadata_error": "<nil>",
+        "lineage_error": "current memory access proof required"
+      },
+      "fixed": {
+        "status": "ok",
+        "items": 2,
+        "metadata_eligible": true,
+        "metadata_error": "<nil>",
+        "lineage_error": "<nil>",
+        "full_current_dependency_guard": "reviewed extension is unavailable"
+      }
+    }
+  ]
+}

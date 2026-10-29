@@ -1620,3 +1620,10 @@ fixed instruction to select and load applicable skills by exact digest, with
 search when applicability is unclear. Current loaded procedures need no redundant
 load. Recovery rebuilds the guidance and pinned DATA. Owner prohibitions and
 ordinary source, lifecycle, budget, approval and Broker checks remain authoritative.
+
+Runtime memory reads now pass the owning experience environment (empty without
+an experience consumer) to Catalog discovery. Lesson/ancestor metadata filtering
+precedes ranking, pagination and run pins for search, and pinning for exact
+open/neighbors. Full current source and experience release checks remain in the
+owning transaction. Incompatible lessons return ordinary DATA absence/denial;
+existing exposed pins and Broker mandate budgets retain their fail-closed checks.

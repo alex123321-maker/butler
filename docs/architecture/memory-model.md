@@ -1146,3 +1146,11 @@ parent deadline, Stop and cancellation retained. No Broker RPC runs under SQL
 locks. Background supervisors retain their separate200ms proof deadline; the
 foreground250ms observation interval is unchanged. This
 does not establish a latency SLO. See the episodic experience contract.
+
+Runtime Catalog discovery applies the owning experience environment's existing
+content-free lesson/ancestor eligibility predicate before lexical/semantic ranking,
+pagination and durable source pinning. Without a configured experience consumer,
+lessons are excluded while ordinary permitted DATA remains discoverable. Exact
+open/neighbors deny incompatible lessons before acquiring pins. Full current
+Catalog, experience and final release proofs remain required; the filter grants
+no access and cannot erase an already exposed source from run lineage.

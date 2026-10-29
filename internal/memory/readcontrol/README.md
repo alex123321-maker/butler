@@ -83,3 +83,11 @@ revision is reauthorized again. Only an actual successful open/neighbors receive
 a read_ref in adaptive composition; search snippets never do. Optional temporal
 accepted-claim observations from #88 are separate from source EventTime/current
 revision and are capped at64 per response. See ../adaptive/README.md.
+
+Runtime lesson applicability is filtered before search ranking/pagination and
+source pinning, using the owning composition's current environment. Incompatible
+lesson ancestors cannot hide ordinary DATA or poison an otherwise valid read.
+Open/neighbors return DATA `denied` without new pins for an incompatible lesson.
+Current Catalog, task, deletion, dependency and final release checks still apply.
+Read contracts and Broker budget admission are unchanged: an exhausted mandate
+stops a read before dispatch, independently of a valid query or source offset.

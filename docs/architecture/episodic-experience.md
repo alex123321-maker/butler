@@ -281,3 +281,15 @@ IDs deny the cost union. Mutable cloned scope Used projections are not summed.
 Aggregate carry rows, one-turn model reservation rows, provider-method entries,
 reported usage and unknown invoice cost remain distinct measurements. Neither an
 admitted attempt without a provider entry nor NULL usage is treated as a refund.
+
+Runtime memory search must filter lesson/ancestor metadata applicability before
+candidate ranking, pagination and `Catalog.AccessTx` run pinning. Filtering only
+after access could pin a lesson from a different environment, hide an ordinary
+result behind it, and fail the final lineage guard despite not releasing that
+lesson. The owning composition supplies the current environment; an absent
+experience consumer supplies an empty environment, excluding typed lessons.
+Exact open/neighbors perform the same metadata preflight and return DATA denied
+without new pins. Generic owner inspection may omit this runtime prefilter.
+Existing Catalog authorization, full current applicability, dependency validation
+and final proof are repeated unchanged. An already exposed incompatible lesson
+continues to stop release; neither its pins nor historical failures are erased.

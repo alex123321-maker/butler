@@ -26,60 +26,11 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.reader.lessons = store
-	d := skills.Dependency{Tool: f.call.ToolName, ContractHash: f.prepared.Binding.ContractHash, ContractRevision: f.prepared.Binding.ContractRevision}
-	o := experience.Observation{Format: experience.SnapshotFormat, OwnerID: f.f.parent.OwnerID, TaskID: f.f.parent.TaskID, TaskRevision: f.f.parent.Revision, ConstraintsRevision: f.f.parent.ConstraintsRevision, RunID: f.call.RunId, ResultID: "unverified-projection-fixture", Goal: f.f.parent.Goal, Constraints: []string{}, Environment: experience.Environment{Fingerprint: store.EnvironmentHash, Tools: []skills.Dependency{d}}, AgentReport: "No independently verified outcome in this fixture", OwnerVerdict: "unknown", VerifiedCriteria: []string{}, Actions: []experience.Action{{ID: f.prepared.EffectID, Tool: d.Tool, ContractHash: d.ContractHash, ContractRevision: d.ContractRevision, ArgumentsHash: f.prepared.Binding.ArgsHash, Effect: actionauth.StateAllowed, Evidence: []string{}}}, Failures: []experience.FailedCall{}, Unknowns: []string{"action_not_executed"}}
-	o.Actions[0].ToolCallID = f.call.ToolCallId
-	transcripts := transcript.NewStore(f.f.pool)
-	if _, err = transcripts.AppendToolCall(f.owned, transcript.ToolCall{ToolCallID: f.call.ToolCallId, RunID: f.call.RunId, ToolName: f.call.ToolName, Status: "prepared", RuntimeTarget: "explicit-unexecuted-fixture"}); err != nil {
-		t.Fatal(err)
-	}
-	captured, err := transcripts.CaptureRunTools(f.owned, f.call.RunId, 2*experience.MaxActions)
-	if err != nil {
-		t.Fatal(err)
-	}
-	o.SessionKey = captured.SessionKey
-	o.TranscriptRevision = captured.SourceRevision
-	o.ToolPins = captured.Pins
-	p := f.args.Sources[0]
-	snapshot, err := store.Seal(f.f.owner, o, []catalog.SourceRef{{ID: p.ID, Revision: p.Revision, AccessRevision: p.AccessRevision, Hash: p.Hash}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	input, err := f.f.sources.Get(f.f.owner, snapshot.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	note, _ := json.Marshal(experience.Notes{Summary: "Unverified observed attempt; revalidation required", When: []string{"Current original environment"}, NotApplicable: []string{"No outcome was verified"}, Steps: []experience.Step{{ActionID: o.Actions[0].ID, Comment: "Observe before acting; this action has not executed"}}})
-	handler := experience.Handler{}
-	body, err := handler.Validate([]catalog.Source{input}, string(note))
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx, err := f.f.pool.Begin(f.f.owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := f.f.sources.CreateDerivedTx(f.f.owner, tx, []catalog.SourceRef{snapshot}, "memory_extract", "Typed lesson fixture", body, json.RawMessage(`{}`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = handler.PublishTx(f.f.owner, tx, f.f.sources, jobs.Job{OwnerID: o.OwnerID, TaskID: o.TaskID, OriginalRunID: o.RunID, Purpose: experience.Version}, jobs.ModelAttempt{}, []catalog.Source{input}, result, body); err != nil {
-		t.Fatal(err)
-	}
-	if err = tx.Commit(f.f.owner); err != nil {
-		t.Fatal(err)
-	}
-	var claim string
-	if f.f.pool.QueryRow(f.f.ctx, `SELECT claim_id FROM memory_experience_lessons WHERE source_id=$1`, result.ID).Scan(&claim) != nil {
-		t.Fatal("candidate missing")
-	}
-	if _, err = f.f.sources.Decide(f.f.owner, catalog.Decision{ClaimID: claim}); err != nil {
-		t.Fatal(err)
-	}
+	result := createUnverifiedReadLesson(t, f, store)
 	// An ordinary Episodic projection can be a descendant of a typed lesson.
 	// Its adapter must retain ancestor applicability rather than classify only
 	// the root as an ordinary episode and bypass the experience gate.
-	tx, err = f.f.pool.Begin(f.f.owner)
+	tx, err := f.f.pool.Begin(f.f.owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,5 +185,127 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	var status, goal string
 	if f.f.pool.QueryRow(f.f.ctx, `SELECT status,goal FROM tasks WHERE task_id=$1`, f.f.parent.TaskID).Scan(&status, &goal) != nil || status != "active" || goal != f.f.parent.Goal {
 		t.Fatal("lesson changed task authority")
+	}
+}
+
+// Shared explicit unverified projection; never fabricates a successful task.
+func createUnverifiedReadLesson(t *testing.T, f *dispatchAdmissionFixture, store *experience.Store) catalog.Source {
+	t.Helper()
+	var err error
+	d := skills.Dependency{Tool: f.call.ToolName, ContractHash: f.prepared.Binding.ContractHash, ContractRevision: f.prepared.Binding.ContractRevision}
+	o := experience.Observation{Format: experience.SnapshotFormat, OwnerID: f.f.parent.OwnerID, TaskID: f.f.parent.TaskID, TaskRevision: f.f.parent.Revision, ConstraintsRevision: f.f.parent.ConstraintsRevision, RunID: f.call.RunId, ResultID: "unverified-projection-fixture", Goal: f.f.parent.Goal, Constraints: []string{}, Environment: experience.Environment{Fingerprint: store.EnvironmentHash, Tools: []skills.Dependency{d}}, AgentReport: "No independently verified outcome in this fixture", OwnerVerdict: "unknown", VerifiedCriteria: []string{}, Actions: []experience.Action{{ID: f.prepared.EffectID, Tool: d.Tool, ContractHash: d.ContractHash, ContractRevision: d.ContractRevision, ArgumentsHash: f.prepared.Binding.ArgsHash, Effect: actionauth.StateAllowed, Evidence: []string{}}}, Failures: []experience.FailedCall{}, Unknowns: []string{"action_not_executed"}}
+	o.Actions[0].ToolCallID = f.call.ToolCallId
+	transcripts := transcript.NewStore(f.f.pool)
+	if _, err = transcripts.AppendToolCall(f.owned, transcript.ToolCall{ToolCallID: f.call.ToolCallId, RunID: f.call.RunId, ToolName: f.call.ToolName, Status: "prepared", RuntimeTarget: "explicit-unexecuted-fixture"}); err != nil {
+		t.Fatal(err)
+	}
+	captured, err := transcripts.CaptureRunTools(f.owned, f.call.RunId, 2*experience.MaxActions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	o.SessionKey = captured.SessionKey
+	o.TranscriptRevision = captured.SourceRevision
+	o.ToolPins = captured.Pins
+	p := f.args.Sources[0]
+	snapshot, err := store.Seal(f.f.owner, o, []catalog.SourceRef{{ID: p.ID, Revision: p.Revision, AccessRevision: p.AccessRevision, Hash: p.Hash}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := f.f.sources.Get(f.f.owner, snapshot.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	note, _ := json.Marshal(experience.Notes{Summary: "Unverified observed attempt; revalidation required", When: []string{"Current original environment"}, NotApplicable: []string{"No outcome was verified"}, Steps: []experience.Step{{ActionID: o.Actions[0].ID, Comment: "Observe before acting; this action has not executed"}}})
+	handler := experience.Handler{}
+	body, err := handler.Validate([]catalog.Source{input}, string(note))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err := f.f.pool.Begin(f.f.owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := f.f.sources.CreateDerivedTx(f.f.owner, tx, []catalog.SourceRef{snapshot}, "memory_extract", "Typed lesson fixture", body, json.RawMessage(`{}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = handler.PublishTx(f.f.owner, tx, f.f.sources, jobs.Job{OwnerID: o.OwnerID, TaskID: o.TaskID, OriginalRunID: o.RunID, Purpose: experience.Version}, jobs.ModelAttempt{}, []catalog.Source{input}, result, body); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(f.f.owner); err != nil {
+		t.Fatal(err)
+	}
+	var claim string
+	if f.f.pool.QueryRow(f.f.ctx, `SELECT claim_id FROM memory_experience_lessons WHERE source_id=$1`, result.ID).Scan(&claim) != nil {
+		t.Fatal("candidate missing")
+	}
+	if _, err = f.f.sources.Decide(f.f.owner, catalog.Decision{ClaimID: claim}); err != nil {
+		t.Fatal(err)
+	}
+	return result
+}
+
+func TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration(t *testing.T) {
+	for _, tool := range []string{readcontrol.Search, readcontrol.Open} {
+		t.Run(tool, func(t *testing.T) {
+			f := newNamedToolControlDispatchFixture(t, nil, false, false, tool)
+			store, err := experience.New(f.f.sources, strings.Repeat("b", 64), experienceToolsFixture{readcontrol.Contract(tool)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			lesson := createUnverifiedReadLesson(t, f, store)
+			ordinary, err := f.f.sources.Put(f.f.owner, catalog.PutSource{ExternalKey: "compatible-data", Kind: "document", ScopeType: "user", ScopeID: f.f.parent.OwnerID, Title: "Fixture current DATA", Body: "Fixture current ordinary DATA"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			args := map[string]any{"query": "fixture", "limit": 1}
+			if tool == readcontrol.Open {
+				args = map[string]any{"source_id": lesson.ID, "source_revision": lesson.Revision, "access_revision": lesson.AccessRevision, "content_hash": lesson.Hash, "max_chars": 1000}
+			}
+			raw, _ := json.Marshal(args)
+			f.call.ArgsJson, f.call.ToolCallId = string(raw), "filtered-current-read"
+			f.call.AutonomyMode = commonv1.AutonomyMode_AUTONOMY_MODE_0
+			if _, err = f.f.pool.Exec(f.f.ctx, `UPDATE runs SET autonomy_mode='mode_0' WHERE run_id=$1`, f.call.RunId); err != nil {
+				t.Fatal(err)
+			}
+			f.prepared, err = f.auth.Prepare(f.f.ctx, f.call, readcontrol.Contract(tool))
+			if err != nil {
+				t.Fatal(err)
+			}
+			f.grant, err = f.auth.Authorize(f.f.ctx, f.call, readcontrol.Contract(tool), f.prepared.Binding.ActionID, "", "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			prepareMemoryReadCheckpoint(t, f)
+			// No experience consumer: the lesson is inapplicable. Source scope and
+			// actual dispatch authority still apply to the ordinary permitted DATA.
+			reads, err := NewMemoryReads(f.f.pool, f.f.sources, AdaptiveReadOptions{sourceSubset: []catalog.SourceRef{{ID: lesson.ID, Revision: lesson.Revision, AccessRevision: lesson.AccessRevision, Hash: lesson.Hash}, {ID: ordinary.ID, Revision: ordinary.Revision, AccessRevision: ordinary.AccessRevision, Hash: ordinary.Hash}}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			h, err := readcontrol.NewHandler("guarded-request-private-process-fixture-token", reads)
+			if err != nil {
+				t.Fatal(err)
+			}
+			broker := controlBrokerProcess(t, f, h, readcontrol.Path, "BUTLER_MEMORY_READ_HARNESS="+tool)
+			result, err := broker.ExecuteAuthorizedToolCall(f.f.ctx, f.call, f.grant.ID)
+			if err != nil || result.GetStatus() != "completed" {
+				t.Fatal("inapplicable source became an uncertain dispatched read", err, result)
+			}
+			data, err := readcontrol.DecodeResult([]byte(result.ResultJson))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tool == readcontrol.Search && (data.Status != "ok" || len(data.Items) != 1 || data.Items[0].Source.ID != ordinary.ID) {
+				t.Fatal("ordinary DATA was lost behind an incompatible lesson", data.Status)
+			}
+			if tool == readcontrol.Open && (data.Status != "denied" || len(data.Items) != 0) {
+				t.Fatal("incompatible body released", data.Status)
+			}
+			var pins, unknown int
+			if err = f.f.pool.QueryRow(f.f.ctx, `SELECT (SELECT count(*) FROM memory_run_sources WHERE run_id=$1 AND source_id=$2),(SELECT count(*) FROM action_effects WHERE initial_binding->>'run_id'=$1 AND state='effect_unknown')`, f.call.RunId, lesson.ID).Scan(&pins, &unknown); err != nil || pins != 0 || unknown != 0 {
+				t.Fatal("inapplicable read left pins or UNKNOWN", err, pins, unknown)
+			}
+		})
 	}
 }

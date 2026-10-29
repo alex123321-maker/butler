@@ -30,6 +30,11 @@ type Reader struct {
 	// Trusted cohort exposure subset, not authority. nil preserves the ordinary
 	// catalog; non-nil filters exact sources before ranking or loading a body.
 	SourceSubset []catalog.SourceRef
+	// Trusted owning composition only. When set, discard incompatible lesson
+	// metadata before ranking, pagination or Catalog's durable run pinning.
+	// Empty means no configured experience consumer; ordinary sources still pass.
+	// This is only a prefilter: SourceEligibility and full Catalog proof remain.
+	ExperienceEnvironment *string
 	// Concrete typed-lesson applicability proof, provided by the owning app.
 	// It runs after Catalog access in this same transaction, without IPC.
 	SourceEligibility func(context.Context, pgx.Tx, catalog.Source) (bool, error)
@@ -69,7 +74,19 @@ func (r Reader) subsetIDs() []string {
 	return ids
 }
 func (r Reader) permittedSources(parameter int) string {
-	return strings.Replace(permittedSources, "/* trusted_subset */", fmt.Sprintf("AND ($%d::text[] IS NULL OR s.source_id=ANY($%d))", parameter, parameter), 1)
+	filter := fmt.Sprintf("AND ($%d::text[] IS NULL OR s.source_id=ANY($%d))", parameter, parameter)
+	if r.ExperienceEnvironment != nil {
+		// The empty-table test is statement-local, not a cached eligibility result.
+		filter += fmt.Sprintf(" AND (NOT EXISTS(SELECT 1 FROM memory_experience_lessons) OR butler_memory_experience_lessons_eligible(ARRAY[s.source_id],$%d))", parameter+1)
+	}
+	return strings.Replace(permittedSources, "/* trusted_subset */", filter, 1)
+}
+
+func (r Reader) sourceQueryArgs(args ...any) []any {
+	if r.ExperienceEnvironment != nil {
+		args = append(args, *r.ExperienceEnvironment)
+	}
+	return args
 }
 
 func status(e error) string {
@@ -142,6 +159,15 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 			return readcontrol.Empty("denied"), nil
 		}
 	}
+	if r.ExperienceEnvironment != nil {
+		allowed, err := catalog.ExperienceMetadataEligibleTx(ctx, tx, []string{a.SourceID}, *r.ExperienceEnvironment)
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if !allowed {
+			return readcontrol.Empty("denied"), nil
+		}
+	}
 	// This read is safe even when the ID was acquired from a previous run: a
 	// source reference is evidence, never a capability. AccessTx pins ancestors.
 	sources, e := r.Sources.AccessTx(ctx, tx, []catalog.SourceRef{{ID: a.SourceID, Revision: a.Revision, AccessRevision: a.AccessRevision, Hash: a.Hash}}, "memory_read")
@@ -203,7 +229,7 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	// Search only same-owner current scopes or individually granted sources.
 	// The catalog repeats complete current ancestor/privacy proof afterwards.
 	var sourceTruncated bool
-	if e := tx.QueryRow(ctx, r.permittedSources(2)+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID, r.subsetIDs()).Scan(&sourceTruncated); e != nil {
+	if e := tx.QueryRow(ctx, r.permittedSources(2)+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, r.sourceQueryArgs(token.RunID, r.subsetIDs())...).Scan(&sourceTruncated); e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
 	rows, e := tx.Query(ctx, r.permittedSources(7)+`, matches AS (
@@ -212,7 +238,7 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	 UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator,1
  FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id
  WHERE ($5='' OR p.event_time>=NULLIF($5,'')::timestamptz) AND ($6='' OR p.event_time<NULLIF($6,'')::timestamptz) AND to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
- SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit, a.EventFrom, a.EventUntil, r.subsetIDs())
+ SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, r.sourceQueryArgs(token.RunID, a.Query, a.Limit+1, a.Page*a.Limit, a.EventFrom, a.EventUntil, r.subsetIDs())...)
 	if e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
@@ -316,7 +342,7 @@ func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Arg
 			return readcontrol.Empty("denied"), readcontrol.ErrDenied
 		}
 		var h hit
-		err := tx.QueryRow(ctx, r.permittedSources(6)+` SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id WHERE c.id=$2 AND c.updated_at=$3 AND ($4='' OR p.event_time>=NULLIF($4,'')::timestamptz) AND ($5='' OR p.event_time<NULLIF($5,'')::timestamptz)`, token.RunID, candidate.ID, candidate.Revision, a.EventFrom, a.EventUntil, r.subsetIDs()).Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc)
+		err := tx.QueryRow(ctx, r.permittedSources(6)+` SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id WHERE c.id=$2 AND c.updated_at=$3 AND ($4='' OR p.event_time>=NULLIF($4,'')::timestamptz) AND ($5='' OR p.event_time<NULLIF($5,'')::timestamptz)`, r.sourceQueryArgs(token.RunID, candidate.ID, candidate.Revision, a.EventFrom, a.EventUntil, r.subsetIDs())...).Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc)
 		if errors.Is(err, pgx.ErrNoRows) {
 			out.Truncated = true
 			continue

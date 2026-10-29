@@ -1,0 +1,91 @@
+{
+  "format": "butler115.memory-read-fix-checks.v1",
+  "status": "PASS_TARGETED_NO_NATIVE",
+  "new_model_calls": 0,
+  "inference_enabled": false,
+  "auth_mounts": 0,
+  "diagnostic_network": "none",
+  "race": true,
+  "test_and_subtest_pass_events": 128,
+  "package_passes": [
+    {
+      "package": "github.com/butler/butler/internal/memory/experience",
+      "elapsed_seconds": 54.358
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/reader",
+      "elapsed_seconds": 27.138
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/readcontrol",
+      "elapsed_seconds": 1.023
+    },
+    {
+      "package": "github.com/butler/butler/internal/actionauth",
+      "elapsed_seconds": 1.276
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "elapsed_seconds": 1.048
+    },
+    {
+      "package": "github.com/butler/butler/apps/tool-broker/internal/broker",
+      "elapsed_seconds": 1.046
+    },
+    {
+      "package": "github.com/butler/butler/apps/orchestrator/internal/app",
+      "elapsed_seconds": 24.245
+    }
+  ],
+  "required_tests_passed": [
+    "TestExperienceSearchEnvironmentPrecedesRankingAndRunPinsIntegration",
+    "TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.search",
+    "TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.open",
+    "TestExperienceActualBrokerReadAndNegativeReleaseIntegration",
+    "TestMemoryReadLifecycleAttackCorpusIntegration",
+    "TestClaimAndBudgetAdmissionAreOneTransactionIntegration",
+    "TestBudgetUsesCurrentAssignedMandateAcrossIndependentTasksIntegration"
+  ],
+  "failed_test_events": 0,
+  "excluded_external_procedure_skips": [
+    {
+      "package": "github.com/butler/butler/internal/memory/experience",
+      "test": "TestActualPostgresExperienceDumpRestoreDeletionIntegration"
+    }
+  ],
+  "required_test_skips": 0,
+  "vet_packages": 7,
+  "production_updated": false,
+  "historical_scores_changed": false,
+  "historical_known_full_tokens": 6790617,
+  "historical_native_entries": 768,
+  "historical_known_entries": 764,
+  "historical_unknown_entries": 4,
+  "historical_raw_archive_sha256": "1abe24f73ffb8343b9f95a35d1992c725cc5967b7506248c293414777d097b18",
+  "historical_inventory_sha256": "2d107e90540be8a80d09c3f1e2df54f873c70ccb573863c24a859eab3f703e5f",
+  "initial_final_gate": "failed_on_one_unconfigured_external_restore_procedure; retained; not counted as PASS",
+  "source_base_commit": "8225c92d05f7e1b9f57cc2d0ae7c75720ccdac48",
+  "carrier_head_before_fix": "4ae0dc668333beebd070f2b2afb6724bf1584e0c",
+  "overlay_sha256": "b46b7da9f58f0f7ff152a7b481d0a44867e337ee266496e282e319c070022574",
+  "source_overlay_files": {
+    "memory115_laba_abc_review_test.go": "44ecf68c3f511a2a392a2cc4562f34d9396c78a9682a133cbd64f4f8dd03e922",
+    "memory115_laba_cost_review_test.go": "ec0b70341ce926889ad4e4838137d718fc0031bdb131a681d13710b6e829fbd4",
+    "memory_experience_read_integration_test.go": "8bad8a281f3c98c085f445beed1271bf95d26f5a9240a7834ad8130bbb0d6343",
+    "memory_read.go": "1f674ce3a2873a6a98b85c5d5bf35741ede202f706652c2e266f23275f5b32d0",
+    "reader.go": "08ec27154e60fa7043cf3e79a7afdb7146a4d9bf099f5d780600a7f3f5e3d5a8",
+    "search_environment_integration_test.go": "8bf80d2176ab62a471e2da148d5c2633626a90c748308b22c46bfe858cd25d77"
+  },
+  "evidence_sha256": {
+    "final-internal.jsonl": "e49da7c586c2789aa4e25359e6a6a035cba8716eda337bdabd0303c9fa303cc9",
+    "final-boundaries.jsonl": "fdbf155a6be42f2015320119f7d02437f7333528d0f9d2ff0d6c9f93e9a8b040",
+    "baseline-incompatible-pins.log": "4a923c3e6eed32bc568c4c815b984e5c458726c6d8bb54bf730c0042b346318c",
+    "fix-integration-v1.log": "e959b6d914ab0161b712d119036e42186033e3b8b8c6713d5c048b6991c347d1",
+    "fix-integration-v2.log": "e8ecc38678a66a18868c39eb2c3cf826ba405f406584c07048a72238fd5bd11c",
+    "fix-integration-v3.log": "e027713439dffa2cdad25241cbec256801c1d56b1e20a5a5462011b79495db6f",
+    "final-validation-v1.log": "99eda1bcb967b8e34e4ce1615806038c469f318297a619d3f4e048aa91f3a1f8",
+    "final-vet-v1.log": "4f3a668bb94b14aa1ef7c14a4b9573a51d972c1a048d4c3168e9b6002ab7eaa8",
+    "isolation.json": "09e6042f1452a85dae0a7e1c3b22f4de87f7d9f00bca52d76846fd51c64b77a9",
+    "original-memory-failures.json": "995de02562c23517d58038a7dd562327691be4907b44cd20fa51af610bc3d59c",
+    "replay-comparison.json": "a05f5a326a82c711c9a2583e4726c65f3645ac7abe378ca04d595a67902933ce"
+  }
+}

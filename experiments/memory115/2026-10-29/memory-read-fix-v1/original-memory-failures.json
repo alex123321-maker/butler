@@ -1,0 +1,141 @@
+[
+  {
+    "sequence": 16,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "alpha"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_991b58b8bae562c263f5c6f3212f71cd7bd2ebd07029075536f951fa121d9109",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 18,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "accepted_ready_value"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_66f7bb5ca6e9f8f88080d3b4216b7d09fddcd433dc03538ea8f2d9ebdc7eba2c",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 20,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "effect_unknown"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_2868a996df20266ee38a8c6f5dbac015a623b5b577d5d319e9f1bec452d56982",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 21,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "alpha"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_ad1e84f65d9f3b12a3a955c4d48797df14ee8b9ed9bf3c128475d6ab5ac94dcc",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 32,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "alpha"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_19b420dd3bfdec6b3fa99affa1272e7e7685c71494a570f85d25c5048ab2f46e",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 41,
+    "tool": "memory.search",
+    "status": "execution_stopped",
+    "args": {
+      "query": "alpha"
+    },
+    "error": {
+      "details": {
+        "reason": "budget_external_calls_mandate"
+      },
+      "message": "budget_external_calls_mandate",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 42,
+    "tool": "memory.open",
+    "status": "execution_stopped",
+    "args": {
+      "offset": 9000,
+      "max_chars": 1000,
+      "source_id": "source_214f9b5de6bfe0ff697864e1a8b6f464114261ff",
+      "content_hash": "95c40b2b4dc1cd2fab75494a812c5cc8b69775ee970f69a11cb5b1896c8ecc81",
+      "access_revision": 1,
+      "source_revision": 1
+    },
+    "error": {
+      "details": {
+        "reason": "budget_external_calls_mandate"
+      },
+      "message": "budget_external_calls_mandate",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  },
+  {
+    "sequence": 57,
+    "tool": "memory.search",
+    "status": "effect_unknown",
+    "args": {
+      "query": "alpha"
+    },
+    "error": {
+      "details": {
+        "action_id": "effect_c7f28180b663745207f6cd0eec8102bac7e6e3479921a90c1cf09a477e1dc48c",
+        "dispatch_outcome": "unknown"
+      },
+      "message": "external effect outcome is unknown; verify before any new attempt",
+      "retryable": false,
+      "error_class": "ERROR_CLASS_VALIDATION_ERROR"
+    }
+  }
+]

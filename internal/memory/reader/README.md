@@ -22,3 +22,11 @@ filter and server-derived semantic candidates. EventTime is not historical
 validity. Candidate source/current-chunk refs are reauthorized through Catalog
 in the owning read transaction; semantic IPC is outside it. Search remains
 discovery and receives no opened read_ref. Production qualification remains off.
+
+The owning composition supplies `ExperienceEnvironment` before runtime reads.
+Its content-free lesson/ancestor metadata filter runs before lexical or semantic
+candidate ranking, pagination and Catalog run pinning. A configured empty value
+excludes lessons when no experience consumer is installed; nil retains generic
+reader behavior. Open/neighbors deny an incompatible lesson before acquiring its
+pins. This prefilter never grants access: complete Catalog and owning experience
+checks still run before release, and previously exposed pins are never removed.
