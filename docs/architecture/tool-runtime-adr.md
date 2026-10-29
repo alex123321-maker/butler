@@ -1151,3 +1151,9 @@ The resource wrapper may forward a correlated verified rejection only after
 current authority and durable lane Finish; it omits the success ACK and session
 mapping. Finish completion describes the lane, not external success. Legacy
 navigation and in-flight errors keep conservative UNKNOWN semantics.
+
+
+Browser observations can include bounded public-form constraints and frozen local
+validity flags, without values/messages. This optional observation DATA changes
+no input schema, contract revision/hash, permission or effect verifier. Secret
+contexts/forms suppress feedback; see the browser and credential contracts.

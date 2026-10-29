@@ -846,3 +846,9 @@ Multi-origin navigation preserves native cookies
 and SOP. A broker-resolved cookie/storage injection remains scoped to the actual
 current page host/origin with its exact approved `expected_url`, never all origins
 visited by the context. See the browser-session contract.
+
+
+Form validity/constraint feedback is omitted for password/hidden/file forms and
+contexts with known credential/cookie/storage material. Broker-resolved secret
+use pins this suppression in the Go browser context, including later snapshots.
+No password validity, field length, pattern or validation-message oracle is added.

@@ -1,0 +1,44 @@
+=== RUN   TestBrowserPublicFormValidationChromium
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//password
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//hidden
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//cookie
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//storage
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:09 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+--- PASS: TestBrowserPublicFormValidationChromium (0.86s)
+    --- PASS: TestBrowserPublicFormValidationChromium//password (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium//hidden (0.09s)
+    --- PASS: TestBrowserPublicFormValidationChromium//cookie (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium//storage (0.08s)
+=== RUN   TestBrowserGetFormChromium
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.submit_get_form
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.snapshot
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.snapshot
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.follow_link
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:10 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+--- PASS: TestBrowserGetFormChromium (1.53s)
+=== RUN   TestServerBrowserChromium
+2026/10/29 09:53:11 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 09:53:13 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.snapshot
+--- PASS: TestServerBrowserChromium (2.17s)
+PASS

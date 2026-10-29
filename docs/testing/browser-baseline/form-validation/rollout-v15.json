@@ -1,0 +1,13 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-form-validation-20261029-v15",
+  "began_at": "2026-10-29T09:55:26.951845910Z",
+  "verified_at": "2026-10-29T09:55:33.162281026Z",
+  "sha256": "2b4634aabbc75dbe17c2961e18d834dc57144a2604a5e492dad75d1bbb7bfad4",
+  "healthy": true,
+  "environment_unchanged": true,
+  "core_broker_postgres_redis_web_unchanged": true,
+  "input_contracts_and_effect_verifiers_unchanged": true,
+  "migrations": 0,
+  "budget_or_credential_reset": false,
+  "scope": "narrow_browser_form_observation_not_full_PR"
+}

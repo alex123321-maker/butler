@@ -425,3 +425,20 @@ of the original run context: it cannot execute tools, widen the run/claim/lease
 or survive parent cancellation. A persistence failure still blocks; there is no
 read or POST retry and no fabricated receipt. This keeps a completed read from
 losing its checkpoint merely because its dispatch clock expires during storage.
+
+## Public form constraints and local validity observations
+
+Ordinary form fields may include bounded `constraints` metadata: required,
+numeric min/max/step and text length bounds. When the network is frozen, optional
+`validation` contains only `valid` and a closed list of native validity flags.
+The observer reads ValidityState properties; it never calls checkValidity,
+reportValidity or submit and never returns values, patterns or validation text.
+These are page DATA for deciding the next proposal, not external effect evidence.
+A successful local correction does not confirm a later POST.
+
+Password, hidden, file/unknown controls suppress this metadata for the entire
+form. Known cookie/storage/credential state suppresses it for the context; a
+Broker-resolved credential makes Go's suppression sticky for that context.
+Secret state is collected before/after capture to suppress late discoveries.
+Go independently bounds forms/fields/constraints and rejects unknown or
+contradictory validity flags. Normal action, approval and uncertainty policy stays.

@@ -1,0 +1,11 @@
+{
+  "scope": "fixed-form-goal-text-check",
+  "title_present": true,
+  "quantity_present": true,
+  "saved_reported": true,
+  "uncertainty_wording": false,
+  "initial_8_mentioned": true,
+  "validation_mentioned": true,
+  "correction_mentioned": true,
+  "raw_text_exported": false
+}

@@ -478,3 +478,10 @@ Navigation revision4 independently accepts a closed pre-navigation rejection for
 Go-observed lost/frozen contexts under `guarded_browser_get_v1`. PG retains the
 consumed dispatch and records only this new read ABSENT. Old revision3 UNKNOWN
 reads require separate terminal owning review; no previous effect is promoted.
+
+
+The required form-validation Chromium/PG case observes an out-of-range public
+input locally, corrects it with zero POSTs, and submits once through an ordinary
+spent grant. Form validity DATA never confirms a remote effect: the final opaque
+click still records UNKNOWN and replay is denied. Credential/privacy cases run
+against the actual browser runtime and the same observation path.

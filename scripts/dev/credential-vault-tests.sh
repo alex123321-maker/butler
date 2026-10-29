@@ -49,5 +49,7 @@ done
 required browser-resource-fixture ./apps/tool-broker/internal/broker -run '^TestResource.*Integration$'
 required browser-session-recovery ./apps/tool-broker/internal/broker -run '^TestBrowserSessionRecoveryAfterRuntimeLossChromiumIntegration$'
 required browser-frozen-navigation ./apps/tool-broker/internal/broker -run '^TestBrowserFrozenNavigationRecoveryChromiumIntegration$'
+required browser-form-validation ./apps/tool-broker/internal/broker -run '^TestBrowserFormValidationChromiumIntegration$'
+required runtime-form-validation ./apps/tool-browser/internal/runtime -run '^TestBrowserPublicFormValidationChromium$'
 required runtime-chromium ./apps/tool-browser/internal/runtime -run '^TestBrowserSessionE2E$'
 go vet ./internal/budget ./internal/credentials ./internal/credentialcontrol ./internal/actionauth ./internal/mobile ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-browser/internal/runtime

@@ -129,8 +129,25 @@ type FormDescription struct {
 	Fields   []FormFieldDescription `json:"fields"`
 }
 type FormFieldDescription struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name        string                `json:"name"`
+	Type        string                `json:"type"`
+	Constraints *FormFieldConstraints `json:"constraints,omitempty"`
+	Validation  *FormFieldValidation  `json:"validation,omitempty"`
+}
+
+// Observation metadata only: no values, patterns or native validation messages.
+type FormFieldConstraints struct {
+	Required  bool   `json:"required"`
+	Min       string `json:"min,omitempty"`
+	Max       string `json:"max,omitempty"`
+	Step      string `json:"step,omitempty"`
+	MinLength *int   `json:"min_length,omitempty"`
+	MaxLength *int   `json:"max_length,omitempty"`
+}
+
+type FormFieldValidation struct {
+	Valid  bool     `json:"valid"`
+	Issues []string `json:"issues"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
@@ -284,11 +301,17 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	runCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
 	defer cancel()
+	privateForms := len(req.GetResolvedCredentials()) != 0
+	if session != nil {
+		session.privateFormMetadata = session.privateFormMetadata || privateForms
+		privateForms = session.privateFormMetadata
+	}
 	result, err := s.runner.Run(runCtx, args)
 	if err != nil {
 		s.sessions.invalidateAll()
 		return fail(commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "session_lost", "browser process failed; prior sessions are invalid and any in-flight effect is unknown")
 	}
+	sanitizeFormMetadata(&result, privateForms)
 	if session != nil {
 		if result.Error == nil && result.NetworkState == "frozen" {
 			session.networkFrozen = true
