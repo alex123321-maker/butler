@@ -48,7 +48,7 @@ func TestBrowserContractsRequireExplicitSessionAndSafeAuth(t *testing.T) {
 	}
 	for _, name := range []string{"browser.prepare_fill", "browser.prepare_type"} {
 		contract, ok := reg.Get(name)
-		if !ok || contract.GetContractRevision() != "2" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" || !contract.GetSupportsCredentialRefs() {
+		if !ok || contract.GetContractRevision() != "3" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" || !contract.GetSupportsCredentialRefs() {
 			t.Fatalf("local preparation contract incomplete: %s", name)
 		}
 	}

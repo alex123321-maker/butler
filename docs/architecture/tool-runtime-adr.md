@@ -1,5 +1,19 @@
 # Butler — Tooling and Execution Specification
 
+Communication `source_refs` are optional exact references returned by selected
+Catalog observations in the current run. Event/turn IDs are not automatically
+Catalog source refs; browser/tool-call IDs and page URLs do not belong there.
+Browser-only replies can leave the array empty and put the URL in text. The tool
+schema now explains this existing boundary; Catalog selection, export policy,
+authority and publication validation remain unchanged.
+
+Local browser preparation revision3 adds a narrow pre-input rejection protocol.
+Only Go/helper guards before any input dispatch can produce its closed fixed
+proof. Broker and PostgreSQL bind it to the original action and pinned local
+preparation policy before recording local absence. Revision2 and ambiguous or
+post-input failures retain uncertainty. No runtime orchestration, new permission
+or retry is introduced; current page reassessment is a new ordinary proposal.
+
 `browser.freeze_snapshot` revision1 observes an existing document only after
 freezing proxy connections and helper routes. Broker/Go require the exact
 credential-free `read_only/read_result` contract; only the browser session ID

@@ -178,7 +178,7 @@
     },
     {
       "tool_name": "browser.prepare_fill",
-      "contract_revision": "2",
+      "contract_revision": "3",
       "effect_contract": {
         "retry_safety": "unsafe",
         "verification_method": "local_browser_preparation_v1"
@@ -215,7 +215,7 @@
     },
     {
       "tool_name": "browser.prepare_type",
-      "contract_revision": "2",
+      "contract_revision": "3",
       "effect_contract": {
         "retry_safety": "unsafe",
         "verification_method": "local_browser_preparation_v1"

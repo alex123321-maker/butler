@@ -14,6 +14,7 @@ import (
 
 	"github.com/butler/butler/apps/orchestrator/internal/communication"
 	"github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -54,7 +55,7 @@ func run() error {
 		preview, reviewErr := store.ReviewStoppedInput(bounded, id, *apply)
 		stop()
 		if reviewErr != nil {
-			return errors.New("review unavailable; original uncertainty retained")
+			return fmt.Errorf("review unavailable; original uncertainty retained: %w", reviewErr)
 		}
 		var classification, status string
 		if err = pool.QueryRow(ctx, `SELECT f.classification,i.status FROM input_stopped_attempts f JOIN accepted_inputs i USING(input_id) WHERE f.input_id=$1`, id).Scan(&classification, &status); err != nil {
@@ -71,7 +72,12 @@ func run() error {
 }
 func main() {
 	if err := run(); err != nil {
-		fmt.Fprintln(os.Stderr, "Stopped review did not complete; inspect content-free evidence.")
+		code := "unavailable"
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) && regexp.MustCompile(`^[A-Z0-9]{5}$`).MatchString(pgerr.Code) {
+			code = pgerr.Code
+		}
+		fmt.Fprintln(os.Stderr, "Stopped review did not complete; storage_code="+code+"; no raw storage diagnostics exported.")
 		os.Exit(1)
 	}
 }

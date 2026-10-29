@@ -1,5 +1,13 @@
 # Tool Browser
 
+Local `prepare_fill/prepare_type` revision3 adds a closed `pre_input_v1`
+rejection only when Go/helper guards prove input dispatch never began. Stale
+page/URL and validated pre-input argument failures return fixed diagnostics;
+timeouts, generic failures and errors after input remain uncertain. Revision2
+keeps its old outcome semantics. Success still proves frozen local preparation
+only. Broker may record this exact new preparation as absent, retain its consumed
+grant and let the model observe/reassess through a fresh authorized proposal.
+
 `browser.freeze_snapshot` revision1 closes all proxy connections and freezes
 helper routes before a non-navigating observation of the same document. It
 retains redaction and permanently excludes GET form/link thawing of that

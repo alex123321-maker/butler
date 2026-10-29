@@ -141,7 +141,7 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		return p, nil
 	}
 	if p.VerificationMethod == "local_browser_preparation_v1" {
-		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || b.ContractRevision != "2" || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
+		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || (b.ContractRevision != "2" && b.ContractRevision != "3") || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
 			return p, fmt.Errorf("local preparation requires its exact browser contract and call")
 		}
 		call := calls[0]
@@ -258,6 +258,11 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 		e.Verdict = StateAbsent
 		e.ResultDigest = browserReadRejectionDigest(reason)
 	}
+	if reason := BrowserPreparationRejection(g.Binding, result); !runtimeError && record.Policy.VerificationMethod == "local_browser_preparation_v1" && record.Policy.LocalPreparation != nil && reason != "" {
+		outcome = "dispatch_completed"
+		e.Verdict = StateAbsent
+		e.ResultDigest = preparationRejectionDigest(reason)
+	}
 	if !runtimeError && result != nil && result.GetRunId() == g.Binding.RunID && result.GetToolCallId() == g.Binding.ToolCallID && result.GetToolName() == g.Binding.ToolName && result.GetStatus() == "completed" {
 		outcome = "dispatch_completed"
 		e.ResultDigest = digest(result.GetResultJson())
@@ -281,7 +286,7 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 
 func localPreparationVerdict(policy EffectPolicy, binding ActionBinding, raw string) EffectState {
 	pinned := policy.LocalPreparation
-	if pinned == nil || binding.Effect != EffectPrepare || binding.ContractRevision != "2" || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
+	if pinned == nil || binding.Effect != EffectPrepare || (binding.ContractRevision != "2" && binding.ContractRevision != "3") || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
 		return StateUnknown
 	}
 	if _, err := canonicalJSON(raw); err != nil {

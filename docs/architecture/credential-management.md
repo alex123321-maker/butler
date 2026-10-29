@@ -63,6 +63,15 @@ confirms equality at the moment of private field comparison, exposing no value,
 hash or length. It proves neither remote acceptance nor successful login.
 Reflected values remain masked in observations.
 
+Browser preparation revisions2 and3 retain the same deferred approved-request
+boundary. Revision3's pre-input rejection adds no release permission; current
+record/origin/run/claim checks, revocation and ordinary submission approval stay
+mandatory. Historical stopped access-request creation can be reviewed only by
+the kernel's pinned metadata protocol described in
+[stopped finalization](stopped-input-finalization.md). Its creation receipt never
+grants use or revives expired consent; no secret values or encryption keys are
+read for that review.
+
 Manual OTP uses the protected form, two-minute encrypted transient material in
 PostgreSQL and reservation to one exact tool call. Reservation permits live
 Broker revalidation, not replay of a dispatch. Maintenance deletes expired OTP

@@ -1,5 +1,13 @@
 # Tool Broker
 
+Revision3 `browser.prepare_fill/prepare_type` accepts a correlated closed
+`preparation_rejection=pre_input_v1,input_dispatched=false` runtime proof with a
+fixed precondition reason. PostgreSQL repeats the exact contract/policy/digest
+checks before recording only that preparation absent. The grant stays consumed;
+Broker returns a fixed observe/reassess diagnostic without helper text. Old
+revision2, live gestures, missing/foreign proof, timeout and lost ACK stay unknown.
+This is local non-dispatch, never a recipient receipt or task completion.
+
 `browser.freeze_snapshot` is a fixed revision1 credential-free read, with its
 own ordinary action/grant/budget and current session/control-epoch checks. It
 cannot reconcile an old write, borrow its grant or bypass resource quarantine.

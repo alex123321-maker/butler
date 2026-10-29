@@ -118,56 +118,60 @@ func (i *vaultGrantInspector) ApprovedLocalUse(_ context.Context, call *toolbrok
 }
 
 func TestCredentialOwnerGrantIsLocalAndPinsInputClaim(t *testing.T) {
-	s, store, reader, inspection, call, contract := fixture(t)
-	checker := &vaultGrantInspector{inspector: inspection, active: true}
-	s.credentials = checker
-	reader.current.InputClaimHash = strings.Repeat("a", 64)
-	inspection.hash = strings.Repeat("c", 64)
-	m := testOwnerMandate(s.now())
-	m.OwnerID = reader.current.OwnerID
-	m.Tools = []string{"browser.prepare_fill"}
-	m.ResourceScopes = []ResourceScope{{Origin: "https://example.com", PathPrefix: "/form"}}
-	m.Effects, m.CredentialRefs = []Effect{EffectPrepare}, nil
-	store.mandates[m.ID] = m
-	reader.current.Authority = &Assignment{TaskID: reader.current.TaskID, OwnerID: m.OwnerID, GoalID: m.GoalID, GoalRevision: m.GoalRevision, MandateID: m.ID, MandateRevision: m.Revision, Purpose: m.Purpose}
-	alias := "creq_" + strings.Repeat("b", 64)
-	call.ToolName = "browser.prepare_fill"
-	call.ArgsJson = `{"browser_session_id":"context","expected_url":"https://example.com/form","observation_version":7,"selector":"#input","value":{"type":"credential_ref","alias":"` + alias + `","field":"password"}}`
-	call.CredentialRefs = []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: alias, Field: "password"}}
-	contract.ToolName, contract.ContractRevision = call.ToolName, "2"
-	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
-	p, err := s.Prepare(context.Background(), call, contract)
-	if err != nil || p.RequiresApproval {
-		t.Fatal("owner grant required a duplicate approval", err)
-	}
-	g, err := s.Authorize(context.Background(), call, contract, p.Binding.ActionID, "", "")
-	if err != nil || g.InputClaimHash != reader.current.InputClaimHash {
-		t.Fatal("owner preparation grant", err)
-	}
-	if _, err = s.Verify(context.Background(), call, contract, g.ID); err != nil {
-		t.Fatal("owner preparation verify", err)
-	}
-	reader.current.InputClaimHash = strings.Repeat("b", 64)
-	if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
-		t.Fatal("owner preparation survived Input replacement")
-	}
-	reader.current.InputClaimHash = g.InputClaimHash
-	checker.active = false
-	// In production revocation also changes metadata and prevents binding.
-	inspection.err = credentialcontrol.ErrVault
-	if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
-		t.Fatal("owner preparation survived revocation")
-	}
-	inspection.err = nil
-	checker.active = true
-	reader.current.Authority = nil
-	call.ToolCallId = "submit"
-	call.ToolName, contract.ToolName = "browser.click", "browser.click"
-	call.ArgsJson = `{"browser_session_id":"context","expected_url":"https://example.com/form","observation_version":8,"selector":"#submit"}`
-	call.CredentialRefs = nil
-	contract.EffectContract = nil
-	p, err = s.Prepare(context.Background(), call, contract)
-	if err != nil || !p.RequiresApproval {
-		t.Fatal("owner credential grant authorized form submission", err)
+	for _, revision := range []string{"2", "3"} {
+		t.Run(revision, func(t *testing.T) {
+			s, store, reader, inspection, call, contract := fixture(t)
+			checker := &vaultGrantInspector{inspector: inspection, active: true}
+			s.credentials = checker
+			reader.current.InputClaimHash = strings.Repeat("a", 64)
+			inspection.hash = strings.Repeat("c", 64)
+			m := testOwnerMandate(s.now())
+			m.OwnerID = reader.current.OwnerID
+			m.Tools = []string{"browser.prepare_fill"}
+			m.ResourceScopes = []ResourceScope{{Origin: "https://example.com", PathPrefix: "/form"}}
+			m.Effects, m.CredentialRefs = []Effect{EffectPrepare}, nil
+			store.mandates[m.ID] = m
+			reader.current.Authority = &Assignment{TaskID: reader.current.TaskID, OwnerID: m.OwnerID, GoalID: m.GoalID, GoalRevision: m.GoalRevision, MandateID: m.ID, MandateRevision: m.Revision, Purpose: m.Purpose}
+			alias := "creq_" + strings.Repeat("b", 64)
+			call.ToolName = "browser.prepare_fill"
+			call.ArgsJson = `{"browser_session_id":"context","expected_url":"https://example.com/form","observation_version":7,"selector":"#input","value":{"type":"credential_ref","alias":"` + alias + `","field":"password"}}`
+			call.CredentialRefs = []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: alias, Field: "password"}}
+			contract.ToolName, contract.ContractRevision = call.ToolName, revision
+			contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
+			p, err := s.Prepare(context.Background(), call, contract)
+			if err != nil || p.RequiresApproval {
+				t.Fatal("owner grant required a duplicate approval", err)
+			}
+			g, err := s.Authorize(context.Background(), call, contract, p.Binding.ActionID, "", "")
+			if err != nil || g.InputClaimHash != reader.current.InputClaimHash {
+				t.Fatal("owner preparation grant", err)
+			}
+			if _, err = s.Verify(context.Background(), call, contract, g.ID); err != nil {
+				t.Fatal("owner preparation verify", err)
+			}
+			reader.current.InputClaimHash = strings.Repeat("b", 64)
+			if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
+				t.Fatal("owner preparation survived Input replacement")
+			}
+			reader.current.InputClaimHash = g.InputClaimHash
+			checker.active = false
+			// In production revocation also changes metadata and prevents binding.
+			inspection.err = credentialcontrol.ErrVault
+			if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
+				t.Fatal("owner preparation survived revocation")
+			}
+			inspection.err = nil
+			checker.active = true
+			reader.current.Authority = nil
+			call.ToolCallId = "submit"
+			call.ToolName, contract.ToolName = "browser.click", "browser.click"
+			call.ArgsJson = `{"browser_session_id":"context","expected_url":"https://example.com/form","observation_version":8,"selector":"#submit"}`
+			call.CredentialRefs = nil
+			contract.EffectContract = nil
+			p, err = s.Prepare(context.Background(), call, contract)
+			if err != nil || !p.RequiresApproval {
+				t.Fatal("owner credential grant authorized form submission", err)
+			}
+		})
 	}
 }

@@ -45,6 +45,43 @@ Its reproduced contract is retained as a test fixture. Under the same original
 binding/owner/terminal-fence checks and exact read-only/read-result policy it
 can establish only no-write uncertainty, like the pinned web reader. It does
 not import revision2 pre-navigation absence semantics into an old failed read.
+The ordinary-text revision2 `browser.prepare_fill` contract reproduced from
+00cbdf04 is separately pinned as
+`4b4d58b1ddfadd6a2c56e5b2596fe85d2f4edad96105f52304e9c6fa3546aff3`.
+Its exact frozen-local policy and matching pinned context/URL prove only absence
+of an external write. `pinned_preparation_no_write_v1` retains UNKNOWN local field
+state, dispatch, spending and failed Input/run. Credential-backed preparations,
+opaque live fills, other hashes/revisions/policies and active execution do not
+qualify. This does not apply revision3's new pre-input ABSENT verifier backwards.
+The budget loop independently recognizes that exact immutable no-external-write
+proof only after the original stopped attempt is classified known. It rechecks
+the complete owning/consumed-dispatch provenance for every scoped uncertainty;
+classification alone cannot release the guard. Both Core and Broker need this
+reader. Local UNKNOWN and all charges remain; normal current permission checks
+still govern each new proposal.
+Historical review also supports the revision1 `credentials.request_access`
+contract (`35ee548617ec6944e5bfc3fe85c9d4962d1551f5b8393decfa2b97ff0f45c9df`).
+The original canonical intent, consumed UNKNOWN grant/finished dispatch and
+terminal taskless fences remain mandatory. Credential Control independently
+checks the exact request owner/session/run/call/versions, an expired request
+and browser context, no parent, no notice dispatch/ACK, and exactly one owning
+`requested` audit with no approval or release audit. If the expired browser row
+was pruned, only its confirmed, credential-free original `browser.open` journal
+and digest-matched saved result can establish the original expired context.
+An existing foreign/live context cannot use this fallback. Reconstructed original
+metadata arguments must match the pinned argument hash. Only creation becomes
+CONFIRMED, with digest-only `stopped_expired_access_request_v1` evidence; grant
+and dispatch remain consumed/UNKNOWN, the request stays expired and Input/run
+stay failed. No notice, consent, secret release, form submission or login result
+is inferred. Missing/foreign/mutable/unmatched evidence retains uncertainty.
+Separately, absence of any request with that exact original call ID proves local
+ABSENT under those same terminal session/run/Input locks. The pinned creator
+takes shared session/run locks, requires a nonterminal run and atomically commits
+its request/audit, so no late creation crosses the review. A same-call row in any
+run conservatively prevents absence. Digest-only
+`stopped_access_request_absence_v1` evidence cannot borrow another call's request,
+release secrets, deliver notices, reopen the failed Input or replay a dispatch.
+
 The optional Communication collaborator invokes the owning Action journal
 review inside the same finalization transaction. It requires an already failed,
 taskless, isolated Input/run, matching event/owner/session, no claim or active
@@ -61,6 +98,12 @@ The append-only `stopped_publication_v1` evidence records a content-free digest;
 the old grant and dispatch stay consumed/UNKNOWN. Delivery remains separate.
 Current message contracts are not automatically covered: later implementations
 may own effects outside the publication transaction.
+The reproduced revision2 contract from00cbdf04 is additionally pinned as
+`ecc90b761ddf163c0e14c0f75f99fa00e7a4893e0b9f4ded61613a86f8604a2b`.
+Its reviewed publisher retains the same fenced atomic publication/outbox
+transaction, so the same exact owning receipt/absence checks apply. Revision1
+with this revision2 hash, another hash/revision, or an unknown writer does not
+qualify. This pin does not authorize execution of an obsolete contract.
 
 For the pinned read-only contract, `pinned_read_no_write_v1` proves absence of
 write uncertainty. The effect and dispatch remain UNKNOWN, without a successful

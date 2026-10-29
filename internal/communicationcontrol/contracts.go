@@ -115,7 +115,7 @@ func Contract(n string) *toolbrokerv1.ToolContract {
 	props := map[string]any{
 		"schema_version":           map[string]any{"type": "integer", "enum": []int{1}},
 		"reply_to_publication_ref": map[string]string{"type": "string", "description": "Optional publication_ref returned by a communication receipt. Never use interaction_ref or a Catalog source_ref here."},
-		"source_refs":              map[string]any{"type": "array", "description": "Optional canonical Catalog source_ref values for evidence already read in this run, including message:response:interaction:... for an owner answer. Never use interaction_ref or publication_ref here.", "items": map[string]string{"type": "string"}},
+		"source_refs":              map[string]any{"type": "array", "description": "Optional exact source_ref values returned by selected Catalog observations in this run, including message:response:interaction:... for an owner answer. Never invent message references from event or turn IDs, or put browser/tool-call IDs, URLs, interaction_ref or publication_ref here. For browser-only observations leave this array empty; include the page URL in the answer text when useful.", "items": map[string]string{"type": "string"}},
 	}
 	str := func() map[string]string { return map[string]string{"type": "string"} }
 	arr := func(item any) map[string]any { return map[string]any{"type": "array", "items": item} }

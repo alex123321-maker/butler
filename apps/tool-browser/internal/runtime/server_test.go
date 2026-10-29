@@ -57,6 +57,52 @@ func browserCall(tool, owner string, args map[string]any) *runtimev1.ExecuteRequ
 	}
 }
 
+func TestOwnerOutcomePreparationPreInputGuardsAreVersioned(t *testing.T) {
+	for _, mode := range []string{"go_guard", "helper_guard", "legacy", "missing_marker", "started", "timeout"} {
+		t.Run(mode, func(t *testing.T) {
+			runner := &stubRunner{result: Result{OK: true}}
+			server := NewServer(runner, nil)
+			obs := openTest(t, server)
+			before := len(runner.requests)
+			args := actionArgs(obs)
+			args["selector"] = "input"
+			args["value"] = "ordinary"
+			req := browserCall("browser.prepare_fill", "run-1", args)
+			req.Contract.ContractRevision = "3"
+			if mode == "go_guard" {
+				args["observation_version"] = obs.ObservationVersion + 1
+				req.ToolCall.ArgsJson = mustJSON(args)
+			} else {
+				noInput := false
+				runner.result = Result{PreparationRejection: "pre_input_v1", InputDispatched: &noInput, Error: &ResultError{ErrorType: "stale_observation", Message: "PRIVATE_HELPER_MESSAGE"}}
+				switch mode {
+				case "legacy":
+					req.Contract.ContractRevision = "2"
+				case "missing_marker":
+					runner.result.PreparationRejection = ""
+				case "started":
+					yes := true
+					runner.result.InputDispatched = &yes
+				case "timeout":
+					runner.result.Error.ErrorType = "timeout"
+				}
+			}
+			response, err := server.Execute(context.Background(), req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			known := mode == "go_guard" || mode == "helper_guard"
+			hasProof := strings.Contains(response.GetResult().GetError().GetDetailsJson(), `"preparation_rejection":"pre_input_v1"`)
+			if hasProof != known || known && strings.Contains(response.GetResult().GetError().GetMessage(), "PRIVATE_") {
+				t.Fatal("unproven input absence or leaked helper diagnostic")
+			}
+			if mode == "go_guard" && len(runner.requests) != before {
+				t.Fatal("stale Go guard reached input runner")
+			}
+		})
+	}
+}
+
 func TestLocalPreparationRequiresPinnedContractBeforeRunner(t *testing.T) {
 	runner := &stubRunner{result: Result{OK: true}}
 	server := NewServer(runner, nil)

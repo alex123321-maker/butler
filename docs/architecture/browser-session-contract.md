@@ -131,7 +131,8 @@ boundary as HTTP reads, not a claim that an arbitrary application cannot mutate
 state on GET. Broker rejects older navigation contracts instead of granting
 them the new guarantee. Privacy, resource and approval checks still apply.
 
-The new preparation tools use revision 2 `prepare` contracts and
+The preparation tools use revision3 `prepare` contracts (revision2 remains a
+compatibility success verifier) and
 `local_browser_preparation_v1`. Their response contains `local_preparation:true`,
 `network_state:"frozen"`, session ID, exact observed URL and a newer observation
 version. Private journal policy pins the original session/URL/version; missing,
@@ -141,6 +142,19 @@ has no automatic retry/crash-recovery guarantee. Existing live fill/type and
 click stay opaque: a DOM acknowledgement without an independent recipient
 receipt becomes `effect_unknown`, and the durable unknown-effect guard blocks
 later effects. Approval is execution authority, not retrospective evidence.
+
+Revision3 additionally accepts a correlated closed runtime rejection with
+`preparation_rejection=pre_input_v1`, `input_dispatched=false` and one fixed
+reason: page_changed, stale_observation, invalid_args or invalid_selector.
+Go emits it only from guards before calling the input runner; the helper emits
+it only from live page/DOM guards before reaching any input operation. A generic
+failure, missing marker, timeout, lost response or error after input begins does
+not qualify. Broker/PG bind policy, action identity and proof digest, record only
+that local preparation absent and retain its grant/spending. The model can
+observe current state and propose another ordinarily authorized action. An old
+revision2 call or opaque fill/click cannot borrow the new proof. Explicit
+resource-runtime wrappers that cannot retain this failure proof remain
+conservatively unknown/quarantined; no wrapper authority is weakened.
 
 All page requests, redirects and HTTP(S) frame/resource requests pass the private
 multi-origin proxy and the initial contract's domain caps. Checked DNS is pinned

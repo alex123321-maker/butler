@@ -26,10 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "owner_outcome|browser_outcome_reviews|browser-owner-outcomes|ActionOutcomeReviews|action-outcomes[.]spec|105_browser_owner_outcomes" {
+    "owner_outcome|browser_outcome_reviews|browser-owner-outcomes|browser-pre-input|browser-reviewed-preparation|browser_preparation_rejection|reviewed_preparation|ActionOutcomeReviews|action-outcomes[.]spec|105_browser_owner_outcomes" {
       [void]$specs.Add("docs/architecture/external-effect-journal.md")
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
       [void]$tests.Add("Isolated PostgreSQL/race and vet: scripts/dev/browser-owner-outcomes-tests.sh. Web typecheck/lint and Chromium: browser-owner-outcomes-web.sh. Known same-Input recovery, unknown/expiry/cancel/version/foreign denial, immutable grants/history and authenticated factual reporting are mandatory. Native POST/login uses ordinary ingress and counts owner assistance separately.")
       continue
     }

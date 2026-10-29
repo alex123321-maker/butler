@@ -14,6 +14,22 @@ live fill/type/click cannot borrow this verifier. DOM submission acknowledgement
 remains unknown; the budget root's unknown-effect stop remains in force. No
 automatic retry or external recipient idempotency is inferred from local state.
 
+Preparation revision3 preserves that success verifier and adds only a closed
+pre-input rejection protocol. A correlated failed runtime result with
+`preparation_rejection=pre_input_v1,input_dispatched=false` and a fixed guard
+reason can record this exact preparation absent. PG checks the pinned local
+policy/resource, revision, dispatch completion and normalized proof digest.
+Consumed grants/spending remain. Revision2, opaque gestures, timeout, foreign or
+malformed proof and lost ACK stay unknown; no external outcome is inferred.
+
+The pinned historical revision1 access-request protocol has a separate owning
+Credential Control creation receipt for terminal, taskless, expired and never
+approved/notified requests. Exact metadata/arguments, original consumed dispatch
+and creation-only audit are independently verified under terminal fences.
+`stopped_expired_access_request_v1` confirms creation only; no credential access,
+delivery or login is inferred. Failed Input/run, expired request and consumed
+UNKNOWN grant/dispatch remain. See [stopped review](stopped-input-finalization.md).
+
 Revision2 `browser.submit_get_form` and `browser.follow_link` are separate enforced GET observations,
 not an input gesture or form POST. Its two-phase frozen compiler rejects
 credential/hidden/password/file fields and any prior private input draft,

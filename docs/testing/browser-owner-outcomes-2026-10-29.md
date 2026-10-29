@@ -119,5 +119,133 @@ context/queue/owner waits and tools all remain inside elapsed time. Tool-only
 durations are secondary. Costs or unavailable usage remain unknown. Existing
 20-trial timing exports are unchanged.
 
-Native observations are in progress; this document will retain every accepted
-trial, including failures and waiting states, before reporting qualification.
+## Native failures, assisted completion and inclusive timing
+
+These are the original matrix slots, not retries replacing failures:
+
+| Trial | Input elapsed, seconds | Result |
+| --- | ---: | --- |
+| form-01 | 155.236 | FAIL: revision2 stale preparation became UNKNOWN before POST; recipient empty. |
+| form-02 | 120.259 | FAIL: generic budget guard still retained form-01's independently reviewed no-write uncertainty; no POST. |
+| form-03 | 501.850 | Assisted PASS: exactly one accepted POST, quantity3; same Input/run resumed after factual owner outcome report; final Web result and Telegram delivery verified. |
+| login-01 | 47.381 | FAIL: invalid native tool request before browser/vault access. Exact rejected provider payload was not retained; the validation rule was not weakened. |
+| login-02 | 1310.170 | FAIL: two access requests expired during owner/network waiting; a third attempt had UNKNOWN dispatch and no owning request row. No credential grant or login. |
+| login-03 | 117.727 | FAIL: the third login-02 request's retained uncertainty blocked its access request before dispatch. |
+| consent-01 | 718.842 | FAIL for complete task/delivery: real owner consent, exactly one accepted login and authenticated account read; correct private reference in unpublished draft, but publication refused an unselected Catalog source ref. |
+
+form-03 required four exact action approvals and one factual test-operator
+report. Its receiver journal contains exactly one accepted form event at
+02:32:44.543267232Z. Publication
+`publication:61c356287c88f415db52eb7ac0e4bd49c709d7bd15be6915357950db33a6e1a8`
+has a Web result and sent Telegram outbox record. Private verification checked
+title/quantity/saved wording and absence of credential canaries without exporting
+answer/fixture values. This is owner-assisted completion, not autonomous browser
+qualification. Tools consumed3.058s of its501.850s Input interval; inter-tool
+decision/context/queue/owner waits consumed493.917s and the terminal tail4.875s.
+These intervals do not isolate pure model thinking CPU time.
+
+login-02's full elapsed time includes the network failure, owner setup and all
+model/owner waits. It was not rerun after fixing the Windows route. Clash's
+current-profile private-address DIRECT overlay restored Chrome access; no Butler
+authentication, PIN or permission was disabled. These host routing changes are
+not part of the product patch or a browser-acceptance result.
+
+## Follow-up fixes and owning credential review
+
+Preparation revision3 adds a closed pre-input rejection protocol: only correlated
+guards before input dispatch can prove local absence. Revision2 lost ACK remains
+unknown. The exact historical ordinary-text revision2 preparation can separately
+prove no external write without claiming local field success. The budget loop
+independently rechecks that immutable proof for every scoped uncertainty. Both
+Core and Broker need its reader. PG/race/vet checks recorded47 and96 passing
+test/subtest events respectively, zero failures/skips. Real runtime Chromium and
+Broker/PostgreSQL/Chromium sequences passed; initial native failures remain.
+
+Credential local preparation now accepts revisions2/3 with identical current
+owner-request/record/origin/run/Input-claim/revocation boundaries. Owner consent
+does not authorize submission. The current minimal Core additionally needed the
+same revision3 local-success policy/ACK compatibility; its exact narrow backport
+was tested before deployment.
+
+The pinned historical `credentials.request_access` contract owns one atomic
+request/audit transaction. Under its original terminal session/run/Input locks,
+absence of the exact call's request proves local ABSENT: the creator takes those
+same session/run locks and requires a nonterminal run. An expired, never approved
+or notified existing request can prove creation only after exact metadata/hash/
+audit checks. A pruned browser context requires the separate confirmed original
+open and a digest-matching expired saved result. This is a kernel operator review,
+not an owner decision, secret grant, login receipt or automatic fixture oracle.
+
+Actual login-02 review found two different expired request calls and no record
+for its third UNKNOWN attempt. A real rollback dry run predicted known; exact
+application appended `stopped_access_request_absence_v1`. Input/run stay failed,
+the two existing requests stay expired, consumed UNKNOWN grant/dispatch and all
+charges remain. Its stopped classification is now known. Other calls' rows were
+not borrowed as receipts. See the retained
+[dry run](browser-baseline/owner-outcomes/login02-expired-access-drained-v6-dry.jsonl)
+and [application](browser-baseline/owner-outcomes/login02-expired-access-drained-v6-apply.jsonl).
+
+Final PG/race/vet qualification:151 pass events, zero failures/skips, including
+terminal/foreign/stale/malformed/approved/notified/released denial, pruned-context
+digest checks, real Vault creation without granting an expired request, and
+existing budget uncertainty regressions. Proof root:
+`/srv/storage/butler/agents/server-browser-owners-20261029/reports/expired-access-20261029T034040Z-718205`.
+An earlier147-event window also passed the real Broker/Vault control integration.
+Minimal deployed Core and Broker separately passed revision2/3 owner-grant,
+claim replacement, revocation and submission-boundary tests and vet/build.
+
+Failed qualification attempts are retained: a no-test package was initially
+treated as a skip; a minimal Core test found its remaining revision2-only success
+verifier; later compilation hit the existing per-user tmpfs quota. No failed
+native result was replaced, and no global quota or journal was cleared. The final
+isolated build used finite CPU/memory, no network and read-only source mounts.
+Initial operator reviews refused lock contention or insufficient context proof.
+A short no-active-Input drain avoided background session-row contention. One
+candidate rollout correctly restored the previous binaries after an unresolved
+dry run. Only a later known rollback dry run was applied.
+
+Current narrow backend release:
+`/srv/storage/butler/main/releases/browser-credential-revision3-20261029-65b3d7230556-v6`.
+Core/Broker health and binary identity were checked; private environment and
+Browser/PostgreSQL/Redis/Web containers are unchanged. No migrations, PIN reset,
+budget reset or wider permission were introduced. The historical credential
+review ran through the one-shot full-source kernel operator; this does not claim
+that its writer or the entire PR HEAD is deployed in the minimal Core.
+
+consent-01 used the real owner PIN/decision, two successful deferred secret
+preparations and a revision3 pre-input rejection/reassessment between them.
+The recipient recorded one accepted login and one authenticated account read.
+An operator factual report continued the same Input after the opaque click;
+the original UNKNOWN tool transcript remains. Private comparison confirmed the
+unpublished draft contains the exact requested private reference and no username/
+password canary. No publication or delivery exists, so the complete slot fails.
+This used three assisted decisions: owner consent, exact submit approval and
+factual outcome report. Its correct draft is not counted as a delivered answer.
+
+The publication carried an unselected `message:` source ref. The exact owning
+revision2 message contract was reproduced and its atomic fenced publisher
+reviewed. A rollback dry run followed by exact application proved only local
+publication ABSENT. The failed Input, original UNKNOWN tool/grant/dispatch,
+charges and successful receiver login remain. No answer or login was replayed.
+The schema description now explicitly distinguishes selected Catalog source refs
+from event/turn IDs and browser observations; no source/privacy gate was relaxed.
+
+Final additional qualification (including both pinned message revisions and
+wrong-revision/owner/receipt/claim/lease denials):189 PG/race pass events, no
+failure/skip; vet passed. Proof root:
+`/srv/storage/butler/agents/server-browser-owners-20261029/reports/expired-access-20261029T040542Z-827701`.
+An earlier publication fixture paired the revision2 hash with revision1; actual
+dry-run review refused it. The pairing and negative test were corrected before
+application. The first source-hint rollout restored the previous binaries after
+that unresolved dry run. Current release is
+`/srv/storage/butler/main/releases/browser-source-hint-20261029-v8`; it contains
+the tested narrow Core/Broker guard changes and source-ref description only.
+The operator contains the fuller historical review. Browser/PG/Redis/Web and
+private environment remain unchanged. Immutable candidate binaries were linked
+between release folders to preserve backups without duplicating large files.
+
+All three form and three login slots and consent-01 are retained (13/15 original
+slots attempted). consent-02 is in progress and consent-03 is unexecuted. General
+acceptance remains NO_GO pending a complete delivered login/private-data result
+and explicit lost-response qualification. Future observations are appended
+without replaying old slots.

@@ -56,6 +56,10 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	addr := listener.Addr().String()
 	_ = listener.Close()
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/changing-form" {
+			_, _ = fmt.Fprint(w, `<body><input id="a"><span id="help">Loading</span><script>setTimeout(()=>document.getElementById('help').textContent='Ready',700)</script></body>`)
+			return
+		}
 		if r.URL.Path == "/submit" {
 			_ = r.ParseForm()
 			_, _ = fmt.Fprintf(w, "<body>%s|%s</body>", r.Form.Get("a"), r.Form.Get("b"))
@@ -146,6 +150,23 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	args := func(selector string) map[string]any {
 		return map[string]any{"browser_session_id": observation["browser_session_id"], "observation_version": observation["observation_version"], "expected_url": observation["final_url"], "selector": selector}
 	}
+	accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/changing-form"}))
+	time.Sleep(900 * time.Millisecond)
+	stale := args("#a")
+	stale["value"] = "ordinary"
+	rejected := invoke("browser.prepare_fill", stale)
+	if rejected.GetStatus() != "failed" || rejected.GetEffectState() != "effect_absent" || !strings.Contains(rejected.GetError().GetDetailsJson(), `"input_dispatched":false`) {
+		t.Fatal("actual Chromium stale preparation lacked no-input proof", rejected.GetStatus(), rejected.GetEffectState())
+	}
+	accept(invoke("browser.snapshot", map[string]any{"browser_session_id": observation["browser_session_id"]}))
+	fresh := args("#a")
+	fresh["value"] = "ordinary"
+	prepared := invoke("browser.prepare_fill", fresh)
+	if prepared.GetEffectState() != "effect_confirmed" {
+		t.Fatal("fresh observed local preparation could not continue")
+	}
+	accept(prepared)
+	accept(invoke("browser.close", map[string]any{"browser_session_id": observation["browser_session_id"]}))
 	accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
 	secretArgs := args("#password")
 	secretArgs["value"] = map[string]string{"type": "credential_ref", "alias": "browser-fixture", "field": "password"}
