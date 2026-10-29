@@ -1,0 +1,6 @@
+go version go1.27.2 linux/amd64
+ok  	github.com/butler/butler/internal/acceptance	1.266s
+fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c  /reports/broker
+40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b  /reports/extension.test
+c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca  /reports/http.test
+c265ffbae37fb84e5f64e2a2aee191bbb1443971783f34caac480cfd2c388b91  /reports/app.test

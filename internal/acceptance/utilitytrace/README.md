@@ -25,9 +25,19 @@ effect/check claim or free text is repaired. The raw final stays intact in the
 sealed snapshot. Catalog candidate discovery is distinct from a complete pinned
 open. The adapter supports memory.search/open and the reviewed project recipient's
 inspect/prepare/check protocol plus exact `skills.load` corroboration. Other tools
-fail closed, including `skills.search` until its evidence mapping is implemented.
+fail closed. `skills.search` reconstructs each exposed descriptor from its frozen
+digest and current manifest head, checks query/order and corroborates the full
+index result against permanent Broker evidence. Empty search is not a load.
 Generic rejected mutations retain
 UNKNOWN; no typed negative reason is invented from HTTP400.
+
+The additive test recipient supports a fixed read-only
+`/project/alpha?validate_ready=maybe` validation. Its typed format, exact input,
+resource, rejection code and independently observed empty effect store must all
+match before an absent/rejected receipt is projected. Generic mutation rejection
+continues to preserve UNKNOWN. Real Catalog revision update followed by revoke
+invalidates a formerly successful memory observation; it is never rescored using
+the old source head as if it were current.
 
 `SkillBinding` pins the reviewed digest and Catalog body reference before execution.
 The collector retains owning skill usages and current version/body heads. Core's

@@ -169,3 +169,21 @@ skill search mapping, typed negative/unknown reconciliation fixtures and full le
 admission. The existing historical 48-control collector and prose outputs cannot
 stand in for that cohort. No native entry should be admitted while any of these
 paths lacks evidence mapping; retain previous raw results and expenses verbatim.
+
+### Search, currentness and typed rejection observer gates
+
+The next additive bridge supports real Broker `skills.search` followed by load.
+Every exposed description is reconstructed from a frozen digest/current manifest
+head, preserves stable ID order and matches the Broker's normalized original
+index result. A source revision update and subsequent Catalog revoke must each
+invalidate a previous successful memory observation. This is a real currentness
+test, not just mutation of observer JSON.
+
+The test recipient's exact GET `validate_ready=maybe` supplies a typed validation
+format, resource, requested value, `unsupported_ready_value` and an absence flag
+derived from its actual empty effect store. The observer requires all of these
+plus the current Broker read evidence; a wrong final remains unsuccessful.
+The existing untyped mutation HTTP400 still creates UNKNOWN, not verified absence.
+These observer gates do not implement the complete native 72-slot collector,
+current-document serving for all families or an original-unknown reconciliation
+lineage. Native A/B/C remains a separate uncompleted gate until those are wired.

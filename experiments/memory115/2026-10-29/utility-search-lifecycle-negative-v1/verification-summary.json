@@ -1,0 +1,64 @@
+{
+  "code_commit": "47829173",
+  "code_config_migration_blobs_verified": 2463,
+  "native_requests": 0,
+  "native_quality_qualified": false,
+  "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-complete-20261029-r3",
+  "actual_broker_skill_loads": 1,
+  "skill_corruption_controls": 11,
+  "total_corruption_controls": 64,
+  "passed_scenarios": 10,
+  "test_failures": 0,
+  "test_skips": 0,
+  "skill_trace_counts": {
+    "calls": 5,
+    "dispatches": 5,
+    "effects": 5,
+    "evidence": 5,
+    "finals": 1,
+    "inputs": 1,
+    "intents": 5,
+    "model_attempts": 6,
+    "pins": 3,
+    "runs": 1,
+    "skill_heads": 1,
+    "skill_usages": 1,
+    "source_heads": 3,
+    "tasks": 1
+  },
+  "skill_trace_sha256": "a82f88ae7def2c04a69d1539334085a72b93efa72295f6ea5011d6876dc01e97",
+  "tests_sha256": "fb9d30e07cc26fbf1bfb4ccb63a88a7f99d8b84621b3edba65f264b024e729d4",
+  "build_sha256": "31798d3f03a685e4e777d78024c353f270d28fbd46cebfeb7dbc353b21223aff",
+  "preserved_attempts": [
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-complete-20261029-r1",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    },
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-complete-20261029-r2",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "controlled_transport": true
+      }
+    }
+  ],
+  "postgres_running": false,
+  "private_network_removed": true,
+  "exit": {
+    "exit_code": 0,
+    "native_requests": 0,
+    "controlled_transport": true
+  },
+  "full_native_abc_completed": false,
+  "native_remaining": [
+    "Full 72-slot native collector: source/note/skill preparation, balanced frozen order, all family current-document access and full historical ledger admission",
+    "Original UNKNOWN effect and owning reconciliation lineage for the formal unknown_effect slot",
+    "Lifecycle materialization in all scheduled native slots; currentness gates already tested"
+  ],
+  "audit_note": "Additive metadata correction: first public audit carried a stale native_remaining list from the prior skill-only audit; all measured results and hashes unchanged. Original audit retained."
+}

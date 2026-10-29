@@ -14,6 +14,11 @@ correlated dispatch/effect receipts and independently captured recipient files.
 Its controlled-transport integration exercises actual memory.search/open and
 project inspect/prepare/check. Exact `skills.load` now also requires a pre-run
 digest/body binding, owning usage and Broker evidence against the exact manifest;
+`skills.search` also binds exposed descriptors and their exact Broker result.
+Controlled observer tests update/revoke a real Catalog source and require the
+old memory observation to lose eligibility. A separate typed read-only validation
+fixture proves a precise rejected value with absent effect; generic UNKNOWN is
+preserved. These additions change research observation only.
 the real Broker approval fixture verifies loading and context recovery. These
 controlled tests do not qualify native utility or all 24 corpus cases. Prospective v2 binds newly prepared artifact IDs
 to the current verified receipt; v1 fixed-artifact suites remain supported.
