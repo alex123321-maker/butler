@@ -17,6 +17,7 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/skills"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -32,6 +33,7 @@ type Binding struct {
 	TaskRevision, ConstraintsRevision                     int64
 	OriginalFilesSHA256                                   string
 	Sources                                               []SourceBinding
+	Skills                                                []SkillBinding
 }
 type Snapshot struct {
 	RunID                            string
@@ -50,6 +52,8 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 	}
 	defer tx.Rollback(ctx)
 	queries := map[string]string{
+		"skill_usages":   `SELECT to_jsonb(t) v FROM skill_usages t WHERE run_id=$1`,
+		"skill_heads":    `SELECT jsonb_build_object('digest',v.digest,'owner_id',v.owner_id,'source_ref',v.source_ref_json,'status',st.status,'active',c.active_digest=v.digest,'body',r.body,'revision',s.head_revision,'access_revision',s.access_revision,'content_hash',r.content_hash,'source_status',s.status) v FROM skill_versions v JOIN skill_states st USING(digest) JOIN skill_catalog c USING(skill_id) JOIN memory_sources s ON s.source_id=v.source_ref_json->>'source_id' JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE v.digest IN(SELECT digest FROM skill_usages WHERE run_id=$1)`,
 		"tasks":          `SELECT to_jsonb(t) v FROM tasks t WHERE task_id=$2`,
 		"runs":           `SELECT to_jsonb(t) v FROM runs t WHERE run_id=$1`,
 		"inputs":         `SELECT to_jsonb(t) v FROM accepted_inputs t WHERE task_id=$2`,
@@ -79,6 +83,9 @@ func Capture(ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b Bind
 	s.AuthorityCurrent = err == nil
 	if err == nil {
 		err = cat.CheckRunSourcesTx(ctx, tx, run)
+	}
+	if err == nil {
+		err = skills.CheckPinnedLifecycleTx(ctx, tx, run)
 	}
 	// A closed-run observer must not forge/reuse a live lease token. Verify
 	// current captured grants read-only, alongside Catalog's source graph fence.
@@ -316,7 +323,14 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 		if state == "" {
 			return deny("effect missing")
 		}
-		nd, err := budget.NormalizeResult(string(call.Result))
+		resultForDigest := call.Result
+		if call.Name == "skills.load" && call.Status == "completed" {
+			resultForDigest, err = VerifySkillLoad(s, b, call.ID)
+			if err != nil {
+				return deny(err.Error())
+			}
+		}
+		nd, err := budget.NormalizeResult(string(resultForDigest))
 		if err != nil {
 			return deny("invalid tool result")
 		}
@@ -354,6 +368,9 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 			continue
 		}
 		switch call.Name {
+		case "skills.load":
+			// VerifySkillLoad has checked the exact loaded DATA and owning usage.
+			// Loading itself supplies no historical citation or task-success credit.
 		case readcontrol.Search, readcontrol.Open:
 			data, err := readcontrol.DecodeResult(call.Result)
 			if err != nil {

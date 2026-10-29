@@ -24,6 +24,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
+	"github.com/butler/butler/internal/acceptance/utilitytrace"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/extensions"
@@ -522,6 +523,61 @@ func runReviewedSkillRealBrokerE2E(t *testing.T, native *skillBrokerNative) {
 	skillControl(skills.ControlRequest{Operation: "test", Digest: pack.Digest})
 	skillControl(skills.ControlRequest{Operation: "activate", Digest: pack.Digest, Generation: staged.Generation})
 	record, verifiedID := executeProcedure(pack.Digest, false)
+	if os.Getenv("BUTLER_UTILITY_TRACE_OFFLINE") == "1" {
+		var runID string
+		if err := pool.QueryRow(ctx, `SELECT last_run_id FROM tasks WHERE task_id=$1`, record.TaskID).Scan(&runID); err != nil {
+			t.Fatal(err)
+		}
+		var body catalog.SourceRef
+		var rawRef []byte
+		if err := pool.QueryRow(ctx, `SELECT source_ref_json FROM skill_versions WHERE digest=$1`, pack.Digest).Scan(&rawRef); err != nil {
+			t.Fatal(err)
+		}
+		if json.Unmarshal(rawRef, &body) != nil {
+			t.Fatal("skill body reference")
+		}
+		binding := utilitytrace.Binding{Arm: "C", TaskID: record.TaskID, SessionKey: record.SessionKey, OwnerID: record.OwnerID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, Skills: []utilitytrace.SkillBinding{{Digest: pack.Digest, Body: body}}}
+		snapshot, err := utilitytrace.Capture(ctx, pool, sources, binding, runID, map[string]string{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var calls []struct {
+			ID   string `json:"tool_call_id"`
+			Name string `json:"tool_name"`
+		}
+		_ = json.Unmarshal(snapshot.Tables["calls"], &calls)
+		loads := 0
+		for _, call := range calls {
+			if call.Name != "skills.load" {
+				continue
+			}
+			loads++
+			if _, err := utilitytrace.VerifySkillLoad(snapshot, binding, call.ID); err != nil {
+				t.Fatal(err, "authority", snapshot.AuthorityCurrent, "sources", snapshot.SourcesCurrent)
+			}
+			for _, table := range []string{"skill_usages", "skill_heads", "intents", "effects", "dispatches", "evidence"} {
+				bad := cloneUtilityTrace(t, snapshot)
+				bad.Tables[table] = json.RawMessage(`[]`)
+				if _, err := utilitytrace.VerifySkillLoad(bad, binding, call.ID); err == nil {
+					t.Fatal("skill evidence omission accepted", table)
+				}
+			}
+			badBinding := binding
+			badBinding.Arm = "B"
+			if _, err := utilitytrace.VerifySkillLoad(snapshot, badBinding, call.ID); err == nil {
+				t.Fatal("B admitted skill")
+			}
+		}
+		if loads != 1 {
+			t.Fatal("expected one actual Broker load", loads)
+		}
+		if root := os.Getenv("BUTLER_UTILITY_TRACE_OUTPUT"); root != "" {
+			raw, _ := json.MarshalIndent(map[string]any{"binding": binding, "snapshot": snapshot, "actual_broker_loads": loads, "corruption_controls_rejected": 7, "native_requests": 0}, "", "  ")
+			if err := os.WriteFile(filepath.Join(root, "skill-broker.private.json"), raw, 0600); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
 	if verifiedID == "" || record.TaskID == baseline.TaskID || postCount.Load() != 2 {
 		t.Fatal("reusable procedure duplicated recipient mutation or lacked separate outcome")
 	}

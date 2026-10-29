@@ -55,10 +55,11 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  --read-only --cap-drop ALL --security-opt no-new-privileges --log-driver none --user 1000:1000 \
  --tmpfs /tmp:rw,nosuid,nodev,size=512m -v "$r/source:/source:ro" -v "$r/reports:/reports" \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://utility_fixture:utility_fixture_only@127.0.0.1:5432/utility_trace_test?sslmode=disable' \
+ -e BUTLER_TEST_ACTIONAUTH_POSTGRES_URL='postgres://utility_fixture:utility_fixture_only@127.0.0.1:5432/utility_trace_test?sslmode=disable' -e BUTLER_EXTENSION_E2E=1 \
  -e BUTLER_BROKER_E2E_BINARY=/reports/broker -e BUTLER_EXTENSION_E2E_BINARY=/reports/extension.test \
  -e BUTLER_EXPERIENCE_HTTP_BINARY=/reports/http.test -e BUTLER_UTILITY_TRACE_OFFLINE=1 \
  -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
  "$image" /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app \
- /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run '^TestMemoryUtilityActualCoreBrokerTraceIntegration$' \
+ /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run '^(TestMemoryUtilityActualCoreBrokerTraceIntegration|TestReviewedSkillRealBrokerDurableApprovalE2E)$' \
  > "$r/reports/tests.jsonl" 2>&1
 sha256sum "$r/reports/tests.jsonl" > "$r/reports/tests.sha256"
