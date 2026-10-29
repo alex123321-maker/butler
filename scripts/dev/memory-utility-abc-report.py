@@ -20,6 +20,16 @@ def main():
         tables=snapshot['Tables'];native=[]
         for file in sorted(d.glob('native-*.private.json')):
             v=read(file);assert v['slot']==seq and v['sequence'] not in seen;seen[v['sequence']]=v;native.append(v)
+        core={x['operation_id']:x for x in tables.get('model_attempts',[])}
+        core_missing=0;core_token_mismatches=0
+        for v in native:
+            observed=core.get(v['operation_id'])
+            if observed is None:
+                core_missing+=1;continue
+            assert observed['run_id']==v['run_id'] and observed['reservation_id']==v['reservation_id']
+            if v['usage'] is not None:
+                ci,co=observed['actual_input_tokens'],observed['actual_output_tokens']
+                core_token_mismatches+=ci is None or co is None or ci+co!=v['usage']['TotalTokens']
         row={'sequence':seq,'arm':arm,'family':case['family'],'condition':case['condition'],'slot_status':final.get(seq,scheduled)['Status'],
              'task_success':score['task_success'],'reasons':score['reasons'],'abstained':score.get('abstained',False),'format_valid':score.get('format_valid',False),
              'elapsed_ms':execution.get('elapsed_ms'),'cold_setup_ms':prep.get('elapsed_ms'),'source_writes':prep.get('source_writes'),
@@ -30,12 +40,14 @@ def main():
              'known_output_tokens':sum(x['usage']['OutputTokens'] for x in native if x['dispatched'] and x['usage'] is not None),
              'known_thinking_tokens':sum(x['usage'].get('ThinkingTokens',0) or 0 for x in native if x['dispatched'] and x['usage'] is not None),
              'native_failures':sum('error_code' in x for x in native),
+             'core_missing_attempts':core_missing,'core_token_mismatches':core_token_mismatches,
              'artifact_hashes':{f.name:digest(f) for f in d.glob('*.json')}}
         if (d/'preparation-snapshot.private.json').exists():
             t=read(d/'preparation-snapshot.private.json');row['scripted_preparation_model_attempts']=len(t['execution_model_attempts']);row['scripted_preparation_tool_calls']=len(t['tool_calls'])
         rows.append(row);c=totals[arm];c['scheduled']+=1;c['task_success']+=row['task_success'];c['abstained']+=row['abstained'];c['format_valid']+=row['format_valid']
         c['observed_slots']+=(d/'score.json').exists()
-        for key in ('native_methods_dispatched','unknown_usage','known_total_tokens','known_input_tokens','known_output_tokens','known_thinking_tokens','native_failures','source_writes','elapsed_ms','cold_setup_ms','scripted_preparation_model_attempts','scripted_preparation_tool_calls'):c[key]+=row.get(key) or 0
+        c['execution_time_unknown_slots']+=row['elapsed_ms'] is None;c['cold_time_unknown_slots']+=row['cold_setup_ms'] is None
+        for key in ('native_methods_dispatched','unknown_usage','known_total_tokens','known_input_tokens','known_output_tokens','known_thinking_tokens','native_failures','source_writes','elapsed_ms','cold_setup_ms','scripted_preparation_model_attempts','scripted_preparation_tool_calls','core_missing_attempts','core_token_mismatches'):c[key]+=row.get(key) or 0
         for tool,count in row['tool_calls'].items():c['tool:'+tool]+=count
     assert len({(x['Case'],x['Arm']) for x in schedule})==72
     for entry in journal:

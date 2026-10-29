@@ -67,7 +67,7 @@ receipts unmodified and verify their hashes; do not sum overlapping prior report
 
 The native helper has a private PID namespace, one CPU,3GiB memory/no swap,
 256PIDs, read-only code/artifacts/key, dropped capabilities and no-new-privileges.
-The new target PostgreSQL has its own data/internal network and loopback port;
+The new target PostgreSQL has its own data/private bridge network and loopback port;
 native transport uses the already configured lab proxy. Capture actual cgroup
 values before auth. Join worker/runtime/database clients, remove only the owned
 helper/network, stop the owned target PG, and stop a borrowed experimental source
