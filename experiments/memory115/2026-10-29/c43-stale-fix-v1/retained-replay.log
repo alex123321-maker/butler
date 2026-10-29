@@ -1,0 +1,6 @@
+=== RUN   TestC43RetainedSourceReplayDiagnostic
+    c43_replay_diagnostic_test.go:145: C43 replay fixed=false status=empty incompatible_lesson_pins=1 model_calls=0
+    c43_replay_diagnostic_test.go:145: C43 replay fixed=true status=empty incompatible_lesson_pins=0 model_calls=0
+--- PASS: TestC43RetainedSourceReplayDiagnostic (0.19s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	1.212s

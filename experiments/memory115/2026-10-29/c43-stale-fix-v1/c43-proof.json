@@ -1,0 +1,86 @@
+{
+  "format": "butler115.c43-dependency-pin-proof.v1",
+  "new_model_requests": 0,
+  "historical_case": 43,
+  "environment": "e37d0b15238c122ce7834eb055985d683d0da1e4cab43a8fa5f4915a69430b62",
+  "recorded_run": "run-1793251344259353736-6fdb18b28cf79aad",
+  "execution_result_was_nil": true,
+  "durable_run": [
+    {
+      "state": "failed",
+      "error_type": "transport_error",
+      "error_message": "memory_source_stale"
+    }
+  ],
+  "current_permitted_tool_names": [
+    "extension.project.check",
+    "extension.project.inspect",
+    "http.request",
+    "memory.neighbors",
+    "memory.open",
+    "memory.search",
+    "skills.load",
+    "skills.search"
+  ],
+  "pinned_lessons": [
+    {
+      "source_id": "source_713357db52ad7c692b9195f45f003878a6b40942",
+      "environment_matches": true,
+      "dependencies": [
+        {
+          "tool": "extension.project.inspect",
+          "contract_hash": "0f0ce9c70045a840b59f2171757be55a5b688d016c7244ec083a087dcecb0330",
+          "contract_revision": "790ffa7125e9c11f1772aede42c2f9f534d1d3cf8c23fc96267603b04ace400e:3"
+        },
+        {
+          "tool": "extension.project.prepare-patch",
+          "contract_hash": "d7ac65182dc1cd90dd2df2d5f08c3e34d43a84a0a48f94095157c66cbb0e1384",
+          "contract_revision": "790ffa7125e9c11f1772aede42c2f9f534d1d3cf8c23fc96267603b04ace400e:3"
+        }
+      ],
+      "missing_current_tools": [
+        "extension.project.prepare-patch"
+      ]
+    }
+  ],
+  "timing_failure": [
+    {
+      "phase": "compound_source",
+      "micros": 183860,
+      "failure": "denied_or_storage_error",
+      "pool_acquired": 0,
+      "pool_idle": 2
+    }
+  ],
+  "tools": [
+    {
+      "name": "skills.search",
+      "status": "completed",
+      "data_status": null
+    },
+    {
+      "name": "http.request",
+      "status": "completed",
+      "data_status": null
+    },
+    {
+      "name": "extension.project.inspect",
+      "status": "completed",
+      "data_status": null
+    },
+    {
+      "name": "memory.search",
+      "status": "completed",
+      "data_status": "empty"
+    }
+  ],
+  "replay_scope": "Exact retained lesson/body/graph and current tool-name constraint, fresh transactional run/lease/grants; rolled back. Old installation expiry preserved, not renewed. Fresh PG regression independently proves the current-dependency guard fails while base sources and original dependency guards pass.",
+  "replay_before": {
+    "data_status": "empty",
+    "incompatible_lesson_pins": 1
+  },
+  "replay_after": {
+    "data_status": "empty",
+    "incompatible_lesson_pins": 0
+  }
+}

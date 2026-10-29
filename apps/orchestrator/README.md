@@ -1320,6 +1320,13 @@ task evidence. Migration077 is required; body text remains only in the ordinary
 deletion-aware Catalog/Episodic graph. See
 [the contract](../../docs/architecture/episodic-experience.md).
 
+Runtime memory reads pass the freshly prepared permitted Broker dependency
+snapshot into candidate discovery and exact open/neighbors before any source
+pins. This prevents same-environment lessons requiring unavailable tools from
+turning an empty search into a later `memory_source_stale` failure. All current
+release guards remain; this is a model-free correctness repair, not native
+quality qualification. See [C43 reproduction and A/B/C cost attribution](../../experiments/memory115/2026-10-29/c43-stale-fix-v1/README.md).
+
 The isolated experience comparison collector executes original Flow/Broker tasks,
 owner verification/sealing, bounded note jobs, owner acceptance and skill
 Stage/Test/Activate before freezing task data. Each A/B/C input receives a fresh

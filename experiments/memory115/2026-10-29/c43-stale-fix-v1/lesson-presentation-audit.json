@@ -1,0 +1,154 @@
+{
+  "new_model_requests": 0,
+  "lessons": [
+    {
+      "source_id": "source_faa1e69f5e977c6637f77a8bf0f8936d5bf80d21",
+      "body_chars": 8943,
+      "notes_chars": 1177,
+      "notes_position": 38,
+      "observation_position": 1230,
+      "owner_verdict": "verified",
+      "verification": "owner_verified_with_observed_actions",
+      "notes": {
+        "summary": "Preparing and verifying an isolated patch artifact for README.md readiness without applying changes to the base project.",
+        "when": [
+          "A patch artifact must be prepared separately without applying it to the project repository.",
+          "The artifact must be independently validated using project check tooling while maintaining applied=false."
+        ],
+        "not_applicable": [
+          "When the task explicitly requires applying modifications directly to the project repository.",
+          "When tooling for isolated patch preparation or check verification is absent."
+        ],
+        "steps": [
+          {
+            "action_id": "effect_2b2cd5354343d772a0f1854c002e365f3c5cc17258ace9ffd578e2bc0de44fe9",
+            "comment": "Inspected project alpha files and check status; confirmed failure due to ready=false in README.md."
+          },
+          {
+            "action_id": "effect_afed089a98f1043ebe24d00b49502e709ab21486a54fc09030a14149f6f538a9",
+            "comment": "Prepared an unapplied patch artifact (artifact_id 173acce9a78b344b0a22afee25a0ec166c516708d3ad99174b8766ba45312af0)."
+          },
+          {
+            "action_id": "effect_2dced5a628ccd432db4a06195a0a7d2c779620557f49de2689fe2ec9e9cc8d2d",
+            "comment": "Checked the patch artifact directly; verified checks_passed=true and status=passed while applied remained false."
+          }
+        ]
+      }
+    },
+    {
+      "source_id": "source_5c86eebab5ee54732d373d74f84513943c7f7744",
+      "body_chars": 9480,
+      "notes_chars": 1174,
+      "notes_position": 38,
+      "observation_position": 1227,
+      "owner_verdict": "verified",
+      "verification": "owner_verified_with_observed_actions",
+      "notes": {
+        "summary": "Prepare and verify a distinct patch artifact for README.md in project alpha with ready=true while leaving the base project unmodified.",
+        "when": [
+          "A task requires preparing an isolated patch artifact without applying changes directly to the project.",
+          "Independent verification of a candidate patch artifact is required while keeping the repository state untouched."
+        ],
+        "not_applicable": [
+          "Tasks requiring applying or merging changes directly to the project repository.",
+          "Environments where project checks cannot be performed against unapplied artifacts."
+        ],
+        "steps": [
+          {
+            "action_id": "effect_0a9e64c82865910847aaff6d42caf0a40969f6492bb6d9b57e57cb8c0e5d2f6b",
+            "comment": "Inspect project alpha to inspect current README.md content and confirm check failure due to ready=false."
+          },
+          {
+            "action_id": "effect_b3dc85b8db608f3cbbbdf9a671eed2440c93b0a525d23a05a47040b27b1d1040",
+            "comment": "Prepare a new patch artifact setting ready=true without applying it to the project."
+          },
+          {
+            "action_id": "effect_bda53390e37e942901144c060c381f41ddec62256ae136bfeadd06027d208373",
+            "comment": "Check the prepared patch artifact, confirming status passed and checks_passed true while applied remains false."
+          }
+        ]
+      }
+    },
+    {
+      "source_id": "source_3b71645fd2e0182dcb198a89008cbd16b565550d",
+      "body_chars": 12015,
+      "notes_chars": 1317,
+      "notes_position": 38,
+      "observation_position": 1370,
+      "owner_verdict": "unknown",
+      "verification": "task_unverified",
+      "notes": {
+        "summary": "Testing whether project alpha accepts ready=maybe via prepare-patch resulted in an unknown effect; owner intervention and an effect lookup confirmed effect_absent, leaving validity unverified.",
+        "when": [
+          "Testing configuration changes like ready=maybe via extension.project.prepare-patch on project alpha",
+          "Reconciling an effect_unknown outcome on prepare-patch using an http.request effect receipt lookup"
+        ],
+        "not_applicable": [
+          "Assuming ready=maybe is accepted or rejected based solely on an uncompleted attempt",
+          "Treating effect_absent from a reconciliation GET as verification of patch payload acceptance",
+          "Retrying prepare-patch when restricted by owner instructions"
+        ],
+        "steps": [
+          {
+            "action_id": "effect_60ddefc51ac5f40a342adbd1baf300717e7d69b6741195d3848ac9b60ef3109d",
+            "comment": "Inspected project alpha; retrieved README.md showing ready=false and accepted_ready_value set to true."
+          },
+          {
+            "action_id": "effect_382b8ff73b9ef59763d46ab676012824c7309f67de461e10f3c327aec250d19d",
+            "comment": "Attempted prepare-patch with ready=maybe; the call ended in an effect_unknown state."
+          },
+          {
+            "action_id": "effect_cff939a12c186ef46a28de24189d0ce6209b4bcb609d02d743b6daffa9cb62fc",
+            "comment": "Queried the effect receipt endpoint per owner instruction; confirmed effect_absent with no artifact, without verifying the original test."
+          }
+        ]
+      }
+    },
+    {
+      "source_id": "source_713357db52ad7c692b9195f45f003878a6b40942",
+      "body_chars": 5446,
+      "notes_chars": 999,
+      "notes_position": 38,
+      "observation_position": 1052,
+      "owner_verdict": "unknown",
+      "verification": "task_unverified",
+      "notes": {
+        "summary": "Inspection of project alpha followed by prepare-patch call where the outcome remained unknown and blocked without verification.",
+        "when": [
+          "Project inspection reveals unfulfilled ready flags or failed status in project files.",
+          "Preparing a patch without applying it under constraints to avoid unverified retries when tool calls fail to confirm an effect."
+        ],
+        "not_applicable": [
+          "When patch preparation confirms success or failure definitively.",
+          "When environment allows retrying actions despite unknown effects.",
+          "When verification of the patch effect has been independently completed."
+        ],
+        "steps": [
+          {
+            "action_id": "effect_07c8aa6d0e57657021ece551a9faab5255836472f469d1294a3dc3f29e4fc654",
+            "comment": "Inspected project alpha; confirmed README.md content had ready=false with checks_passed=false."
+          },
+          {
+            "action_id": "effect_4a22a819f028b533c380ee8d1859a0c325aa714b527529bae3a9a98000bdd02c",
+            "comment": "Invoked prepare-patch on project alpha; execution resulted in effect_unknown with an empty result."
+          }
+        ]
+      }
+    }
+  ],
+  "skills": [
+    {
+      "digest": "3aabb7aad67839aa908819b0012b476473afdb2ace0fc2c7cb9992437a57e757",
+      "body_chars": 4804,
+      "description": "Procedure for inspecting project files, preparing an isolated unapplied patch artifact for README.md readiness, and independently verifying the artifact without modifying the base repository.",
+      "when": [
+        "Preparing an unapplied patch artifact to update readiness flags in README.md without modifying the project repository.",
+        "Independently verifying candidate patch artifacts using project check endpoints while keeping applied=false."
+      ],
+      "not_applicable": [
+        "When the task mandates directly applying or committing modifications to the target project repository.",
+        "When isolated patch artifact preparation or unapplied check tooling is not supported."
+      ]
+    }
+  ]
+}

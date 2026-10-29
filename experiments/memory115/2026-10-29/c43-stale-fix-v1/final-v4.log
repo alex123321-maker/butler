@@ -1,0 +1,12 @@
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/legacy_order
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/missing
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/changed
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/compatible
+--- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration (6.40s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/legacy_order (1.70s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/missing (1.48s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/changed (1.54s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/compatible (1.68s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	7.425s

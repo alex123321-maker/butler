@@ -1154,3 +1154,13 @@ lessons are excluded while ordinary permitted DATA remains discoverable. Exact
 open/neighbors deny incompatible lessons before acquiring pins. Full current
 Catalog, experience and final release proofs remain required; the filter grants
 no access and cannot erase an already exposed source from run lineage.
+
+The owning runtime also supplies the exact permitted Broker tool name/hash/revision
+snapshot prepared outside SQL. Candidate lesson dependencies, including every
+lesson ancestor of a derived source, must be contained in that snapshot before
+ranking, pagination or any Catalog pin. Exact open/neighbors apply the same
+filter. Equal environment hashes alone are insufficient when the current task
+permits fewer tools. A rejected candidate returns empty/denied DATA without
+poisoning later source checks. Full current applicability, installed revisions
+and final release checks remain mandatory; existing exposed pins are retained.
+This filter needs no migration, model call or permission expansion.

@@ -1,0 +1,217 @@
+=== RUN   TestAdaptiveReportedEventFilterAndSemanticCandidateAuthorityIntegration
+--- PASS: TestAdaptiveReportedEventFilterAndSemanticCandidateAuthorityIntegration (0.80s)
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/document_policy_ru
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/tool_result_approval
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/quoted_owner_ru
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/scope_widening
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/selection_pressure_ru
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/derivative_laundering
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/true_success_ru
+=== RUN   TestMemoryReadLifecycleAttackCorpusIntegration/synthetic_private_marker
+--- PASS: TestMemoryReadLifecycleAttackCorpusIntegration (1.20s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/document_policy_ru (0.08s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/tool_result_approval (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/quoted_owner_ru (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/scope_widening (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/selection_pressure_ru (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/derivative_laundering (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/true_success_ru (0.06s)
+    --- PASS: TestMemoryReadLifecycleAttackCorpusIntegration/synthetic_private_marker (0.06s)
+=== RUN   TestCredentialFragmentMetadataIntegration
+--- PASS: TestCredentialFragmentMetadataIntegration (0.84s)
+=== RUN   TestSearchOpenNeighborsCurrentSourceIntegration
+--- PASS: TestSearchOpenNeighborsCurrentSourceIntegration (22.33s)
+PASS
+ok  	github.com/butler/butler/internal/memory/reader	26.191s
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration/healthy
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration/environment
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration/unknown_environment
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration/negative
+=== RUN   TestExperienceAllDerivedDataRetainsApplicabilityIntegration/contract_revision
+--- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration (8.84s)
+    --- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration/healthy (1.84s)
+    --- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration/environment (1.84s)
+    --- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration/unknown_environment (1.63s)
+    --- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration/negative (1.78s)
+    --- PASS: TestExperienceAllDerivedDataRetainsApplicabilityIntegration/contract_revision (1.75s)
+=== RUN   TestExperienceTrustedSubsetPrecedesSearchRankingAndOpenIntegration
+--- PASS: TestExperienceTrustedSubsetPrecedesSearchRankingAndOpenIntegration (1.47s)
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration/healthy
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration/environment
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration/unknown_environment
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration/negative
+=== RUN   TestExperienceReviewedSkillRetainsAncestorPinsIntegration/contract_revision
+--- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration (14.41s)
+    --- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration/healthy (2.96s)
+    --- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration/environment (2.87s)
+    --- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration/unknown_environment (2.90s)
+    --- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration/negative (2.84s)
+    --- PASS: TestExperienceReviewedSkillRetainsAncestorPinsIntegration/contract_revision (2.83s)
+=== RUN   TestActualPostgresExperienceDumpRestoreDeletionIntegration
+    backup_acceptance_test.go:53: actual external pg_dump/restore procedure required
+--- SKIP: TestActualPostgresExperienceDumpRestoreDeletionIntegration (0.00s)
+=== RUN   TestLessonRetainsIndependentFailureAndUnknown
+--- PASS: TestLessonRetainsIndependentFailureAndUnknown (0.02s)
+=== RUN   TestLessonRejectsForgedStepsAndAuthority
+--- PASS: TestLessonRejectsForgedStepsAndAuthority (0.02s)
+=== RUN   TestObservationRequiresExactEnvironmentAndTypedEffects
+--- PASS: TestObservationRequiresExactEnvironmentAndTypedEffects (0.01s)
+=== RUN   TestExperienceWorkerCandidateAcceptanceEnvironmentIntegration
+--- PASS: TestExperienceWorkerCandidateAcceptanceEnvironmentIntegration (1.68s)
+=== RUN   TestExperienceLaterOwnerVerificationPreservesUnknownCaseIntegration
+--- PASS: TestExperienceLaterOwnerVerificationPreservesUnknownCaseIntegration (0.91s)
+=== RUN   TestExperienceFeedbackAndCurrentPinsIntegration
+--- PASS: TestExperienceFeedbackAndCurrentPinsIntegration (1.79s)
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/correction
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/deletion
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/task_stop
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/tool_update
+=== RUN   TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/tool_delete
+--- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration (5.02s)
+    --- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/correction (0.99s)
+    --- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/deletion (1.01s)
+    --- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/task_stop (0.99s)
+    --- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/tool_update (0.99s)
+    --- PASS: TestExperienceLateCorrectionAndDeletionBlockPublicationIntegration/tool_delete (1.03s)
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_active
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_enabled
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_disabled
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_
+=== RUN   TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_unavailable
+--- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity (0.00s)
+    --- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_active (0.00s)
+    --- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_enabled (0.00s)
+    --- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_disabled (0.00s)
+    --- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_ (0.00s)
+    --- PASS: TestPrepareRetainsEnabledBrokerContractWithoutNormalizingIdentity/status_unavailable (0.00s)
+=== RUN   TestExperiencePromotionRequiresIndependentConfirmedCasesIntegration
+--- PASS: TestExperiencePromotionRequiresIndependentConfirmedCasesIntegration (3.44s)
+=== RUN   TestExperienceReconciledSealingLocksNewAndAncestorToolsBeforeInputsIntegration
+--- PASS: TestExperienceReconciledSealingLocksNewAndAncestorToolsBeforeInputsIntegration (0.85s)
+=== RUN   TestReconciledObservationKeepsOriginalBoundary
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/fake_original_final
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/rewritten_original_effect
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/unknown_current_effect
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/same_original_run
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/unbounded_revision_jump
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/failed_lookup
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/missing_row_heads
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/fake_original_report
+=== RUN   TestReconciledObservationKeepsOriginalBoundary/missing_lookup_contract
+--- PASS: TestReconciledObservationKeepsOriginalBoundary (0.05s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/fake_original_final (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/rewritten_original_effect (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/unknown_current_effect (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/same_original_run (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/unbounded_revision_jump (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/failed_lookup (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/missing_row_heads (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/fake_original_report (0.00s)
+    --- PASS: TestReconciledObservationKeepsOriginalBoundary/missing_lookup_contract (0.00s)
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/legacy_order
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/missing
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/changed
+=== RUN   TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/compatible
+--- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration (6.16s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/legacy_order (1.54s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/missing (1.50s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/changed (1.50s)
+    --- PASS: TestExperienceSearchDependencyFilterPrecedesRunPinsIntegration/compatible (1.62s)
+=== RUN   TestExperienceSearchEnvironmentPrecedesRankingAndRunPinsIntegration
+--- PASS: TestExperienceSearchEnvironmentPrecedesRankingAndRunPinsIntegration (1.79s)
+=== RUN   TestExperienceStoppedInputTombstoneCannotReviveObservationIntegration
+--- PASS: TestExperienceStoppedInputTombstoneCannotReviveObservationIntegration (0.89s)
+=== RUN   TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration
+=== RUN   TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration/checkpoint
+=== RUN   TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration/run
+--- PASS: TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration (1.88s)
+    --- PASS: TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration/checkpoint (1.00s)
+    --- PASS: TestExperienceStoppedInputAndRunWritersWaitForSourceReleaseIntegration/run (0.87s)
+=== RUN   TestExperienceStoppedObservationIgnoresUncopiedErrorTextAndTimesIntegration
+--- PASS: TestExperienceStoppedObservationIgnoresUncopiedErrorTextAndTimesIntegration (0.84s)
+=== RUN   TestExperienceStoppedInputUpgradeBackfillsExistingRowsIntegration
+--- PASS: TestExperienceStoppedInputUpgradeBackfillsExistingRowsIntegration (0.70s)
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/result
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/report
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/verified
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/live
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/cancelled
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/reason
+=== RUN   TestTerminalObservationCannotInventFinalOrVerification/revision
+--- PASS: TestTerminalObservationCannotInventFinalOrVerification (0.02s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/result (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/report (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/verified (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/live (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/cancelled (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/reason (0.00s)
+    --- PASS: TestTerminalObservationCannotInventFinalOrVerification/revision (0.00s)
+=== RUN   TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration
+=== RUN   TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration/update
+=== RUN   TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration/delete
+--- PASS: TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration (3.24s)
+    --- PASS: TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration/update (1.61s)
+    --- PASS: TestExperienceCapturedToolChangeRevokesAcceptedReadIntegration/delete (1.63s)
+=== RUN   TestExperienceIdenticalToolReinsertCannotReviveOldObservationIntegration
+--- PASS: TestExperienceIdenticalToolReinsertCannotReviveOldObservationIntegration (1.44s)
+=== RUN   TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration
+--- PASS: TestExperienceToolHeadUpgradeBackfillsExistingRowsIntegration (0.81s)
+=== RUN   TestExperienceUnrelatedAppendsAndDeletionKeepExactToolPinsIntegration
+--- PASS: TestExperienceUnrelatedAppendsAndDeletionKeepExactToolPinsIntegration (1.38s)
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/tool_name
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/args
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/status
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/runtime_target
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/started_at
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/finished_at
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/result
+=== RUN   TestExperienceToolFingerprintCoversStoredFieldsIntegration/error
+--- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration (0.74s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/tool_name (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/args (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/status (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/runtime_target (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/started_at (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/finished_at (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/result (0.00s)
+    --- PASS: TestExperienceToolFingerprintCoversStoredFieldsIntegration/error (0.00s)
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/ordinary
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/unknown_deletion
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/foreign_deletion
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/private_payload
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/identity
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/run_identity
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/revision
+=== RUN   TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/authorized_erasure
+--- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration (0.89s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/ordinary (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/unknown_deletion (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/foreign_deletion (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/private_payload (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/identity (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/run_identity (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/revision (0.00s)
+    --- PASS: TestExperienceStaleObservationAllowsOnlyOwningWorkingErasureIntegration/authorized_erasure (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	60.287s
+=== RUN   TestExperienceActualBrokerReadAndNegativeReleaseIntegration
+--- PASS: TestExperienceActualBrokerReadAndNegativeReleaseIntegration (2.94s)
+=== RUN   TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration
+=== RUN   TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.search/no_consumer
+=== RUN   TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.open/no_consumer
+=== RUN   TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.search/missing_dependency
+--- PASS: TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration (3.49s)
+    --- PASS: TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.search/no_consumer (1.17s)
+    --- PASS: TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.open/no_consumer (1.16s)
+    --- PASS: TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration/memory.search/missing_dependency (1.16s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	7.472s

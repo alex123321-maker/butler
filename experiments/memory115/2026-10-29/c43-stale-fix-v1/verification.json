@@ -1,0 +1,37 @@
+{
+  "format": "butler115.c43-offline-verification.v1",
+  "new_external_model_requests": 0,
+  "inference_network": "none",
+  "new_pg_stopped": true,
+  "original_pg_stopped": true,
+  "new_pg_clients_before_stop": 0,
+  "provider_auth_mounts": 0,
+  "old_archives_verified": {
+    "private-native-raw-guided-full-v5.tar": "0cb84857f9747885881d65318e556dc052bcf5fa7e0e222b6089eb9ad203b552",
+    "private-native-raw-inventory-guided-full-v5.sha256": "807648b8ce76b11b710bdb0a50434066fc6ab976d54e56063fe74d41c287fb6a",
+    "private-audit-proof-guided-full-v5.tar": "890afad1df3c63ffe07d011c9cec9664dfd6e4fd810619a94a422221ae7c7db9"
+  },
+  "source_sha256": {
+    "internal/memory/reader/reader.go": "a25355b0b8d5f7643e830915d50633f032907fb65d6304f1ac0d532358445681",
+    "internal/memory/experience/store.go": "642d51b071a47121066dbcc0a9cbbbce98251738f65591912bc2fe6576528493",
+    "internal/memory/experience/search_dependencies_integration_test.go": "230a5a3841ff3a7d2f312313f69e9464aa3689742779bb931bb76211e773ae01",
+    "apps/orchestrator/internal/app/memory_read.go": "af4d9e35ca352363d4aefea62fbd35fa380d3f152e8ef7edf1199d04307e2c92",
+    "apps/orchestrator/internal/app/memory_experience_read_integration_test.go": "baa38322542a11132f123d581c02e2c8769f7eaeff6441458f610a09400fca0f"
+  },
+  "checks": {
+    "full_reader_experience_race_exit": 0,
+    "actual_broker_read_and_negative_release_exit": 0,
+    "actual_broker_missing_dependency_read_exit": 0,
+    "final_dependency_race_exit": 0,
+    "vet_exit": 0,
+    "retained_replay_exit": 0,
+    "actual_backup_seed_delete_restore_exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "initial_wrappers": "Missing Broker skips rejected; package backup skip followed by explicit seed/delete/restore. Retained expired-installation diagnostic assertion corrected without renewing old access.",
+  "prior_ledger_changed": false,
+  "quality_regraded": false
+}

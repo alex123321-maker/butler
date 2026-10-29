@@ -1,0 +1,10 @@
+Recorded from the first retained-replay tool output, before correcting the
+assertion to respect the retained installation's expired authority. No native
+request occurred. Historical installation expiry was not changed.
+
+=== RUN   TestC43RetainedSourceReplayDiagnostic
+    c43_replay_diagnostic_test.go:136: local owning guard reviewed extension is unavailable
+--- FAIL: TestC43RetainedSourceReplayDiagnostic (0.18s)
+FAIL
+FAIL github.com/butler/butler/internal/memory/experience 0.197s
+FAIL

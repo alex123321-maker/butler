@@ -1,0 +1,4 @@
+=== RUN   TestActualPostgresExperienceDumpRestoreDeletionIntegration
+--- PASS: TestActualPostgresExperienceDumpRestoreDeletionIntegration (0.15s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	1.169s

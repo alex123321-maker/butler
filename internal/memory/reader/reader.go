@@ -35,6 +35,10 @@ type Reader struct {
 	// Empty means no configured experience consumer; ordinary sources still pass.
 	// This is only a prefilter: SourceEligibility and full Catalog proof remain.
 	ExperienceEnvironment *string
+	// Exact current permitted Broker dependencies, encoded by the owning typed
+	// experience adapter. Non-nil applies before any source pins. An empty array
+	// permits ordinary DATA only. nil retains the lower-level environment filter.
+	ExperienceDependencies json.RawMessage
 	// Concrete typed-lesson applicability proof, provided by the owning app.
 	// It runs after Catalog access in this same transaction, without IPC.
 	SourceEligibility func(context.Context, pgx.Tx, catalog.Source) (bool, error)
@@ -77,14 +81,28 @@ func (r Reader) permittedSources(parameter int) string {
 	filter := fmt.Sprintf("AND ($%d::text[] IS NULL OR s.source_id=ANY($%d))", parameter, parameter)
 	if r.ExperienceEnvironment != nil {
 		// The empty-table test is statement-local, not a cached eligibility result.
-		filter += fmt.Sprintf(" AND (NOT EXISTS(SELECT 1 FROM memory_experience_lessons) OR butler_memory_experience_lessons_eligible(ARRAY[s.source_id],$%d))", parameter+1)
+		filter += " AND (NOT EXISTS(SELECT 1 FROM memory_experience_lessons) OR (" + r.experiencePredicate("ARRAY[s.source_id]", parameter+1) + "))"
 	}
 	return strings.Replace(permittedSources, "/* trusted_subset */", filter, 1)
+}
+
+// ids is a static SQL expression supplied only by this package. Both owning
+// values remain SQL parameters; no model text/identifier becomes SQL syntax.
+func (r Reader) experiencePredicate(ids string, parameter int) string {
+	predicate := fmt.Sprintf("butler_memory_experience_lessons_eligible(%s,$%d)", ids, parameter)
+	if r.ExperienceDependencies != nil {
+		predicate += fmt.Sprintf(` AND NOT EXISTS(WITH RECURSIVE roots AS(SELECT unnest(%s::text[]) AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id)
+ SELECT 1 FROM roots r JOIN memory_experience_lessons l ON l.source_id=r.id WHERE jsonb_array_length(l.dependencies_json)=0 OR NOT l.dependencies_json <@ $%d::jsonb)`, ids, parameter+1)
+	}
+	return predicate
 }
 
 func (r Reader) sourceQueryArgs(args ...any) []any {
 	if r.ExperienceEnvironment != nil {
 		args = append(args, *r.ExperienceEnvironment)
+		if r.ExperienceDependencies != nil {
+			args = append(args, string(r.ExperienceDependencies))
+		}
 	}
 	return args
 }
@@ -160,7 +178,8 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 		}
 	}
 	if r.ExperienceEnvironment != nil {
-		allowed, err := catalog.ExperienceMetadataEligibleTx(ctx, tx, []string{a.SourceID}, *r.ExperienceEnvironment)
+		var allowed bool
+		err := tx.QueryRow(ctx, "SELECT "+r.experiencePredicate("$1", 2), r.sourceQueryArgs([]string{a.SourceID})...).Scan(&allowed)
 		if err != nil {
 			return readcontrol.Empty("backend_error"), err
 		}

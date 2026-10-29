@@ -1,5 +1,13 @@
 # Typed task experience inside Episodic Memory
 
+`Prepared.DependenciesJSON()` exports a deterministic content-free snapshot of
+the current permitted Broker tool names/hashes/revisions to the Catalog reader.
+The runtime filters candidate lesson ancestry before ranking, pagination and
+durable pins, even if its environment matches but the task lacks a dependency.
+The snapshot grants no access: full current source, installed tool, feedback and
+release checks still run. Existing captured sources cannot be unpinned by this
+filter. See the C43 dependency regression and the separate native quality audit.
+
 Foreground `CheckPinned` shares the Catalog's reserved source-proof capacity
 for token-only contexts. It preserves the current pin-count, Broker contract,
 lineage/applicability, feedback and dependency checks and their existing commit

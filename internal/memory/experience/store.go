@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/skills"
 	"github.com/jackc/pgx/v5"
+	"sort"
 	"time"
 )
 
@@ -24,6 +25,19 @@ type Store struct {
 type Prepared struct {
 	fingerprint string
 	tools       map[string]skills.Dependency
+}
+
+// DependenciesJSON is a deterministic, content-free snapshot of the exact
+// current permitted Broker contracts. It is a candidate filter, never authority;
+// the owning release still repeats full source and current dependency proof.
+func (p Prepared) DependenciesJSON() json.RawMessage {
+	deps := make([]skills.Dependency, 0, len(p.tools))
+	for _, d := range p.tools {
+		deps = append(deps, d)
+	}
+	sort.Slice(deps, func(i, j int) bool { return deps[i].Tool < deps[j].Tool })
+	raw, _ := json.Marshal(deps)
+	return raw
 }
 
 func New(sources *catalog.Store, environmentHash string, tools ToolCatalog) (*Store, error) {

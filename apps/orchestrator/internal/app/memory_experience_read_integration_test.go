@@ -246,14 +246,28 @@ func createUnverifiedReadLesson(t *testing.T, f *dispatchAdmissionFixture, store
 }
 
 func TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegration(t *testing.T) {
-	for _, tool := range []string{readcontrol.Search, readcontrol.Open} {
-		t.Run(tool, func(t *testing.T) {
-			f := newNamedToolControlDispatchFixture(t, nil, false, false, tool)
-			store, err := experience.New(f.f.sources, strings.Repeat("b", 64), experienceToolsFixture{readcontrol.Contract(tool)})
+	for _, scenario := range []struct{ tool, mode string }{{readcontrol.Search, "no_consumer"}, {readcontrol.Open, "no_consumer"}, {readcontrol.Search, "missing_dependency"}} {
+		tool := scenario.tool
+		t.Run(tool+"/"+scenario.mode, func(t *testing.T) {
+			producerTool := tool
+			if scenario.mode == "missing_dependency" {
+				producerTool = readcontrol.Open
+			}
+			f := newNamedToolControlDispatchFixture(t, nil, false, false, producerTool)
+			store, err := experience.New(f.f.sources, strings.Repeat("b", 64), experienceToolsFixture{readcontrol.Contract(producerTool)})
 			if err != nil {
 				t.Fatal(err)
 			}
 			lesson := createUnverifiedReadLesson(t, f, store)
+			var current *experience.Store
+			if scenario.mode == "missing_dependency" {
+				current, err = experience.New(f.f.sources, store.EnvironmentHash, experienceToolsFixture{readcontrol.Contract(tool)})
+				if err != nil {
+					t.Fatal(err)
+				}
+				f.reader.lessons = current
+				f.call.ToolName = tool
+			}
 			ordinary, err := f.f.sources.Put(f.f.owner, catalog.PutSource{ExternalKey: "compatible-data", Kind: "document", ScopeType: "user", ScopeID: f.f.parent.OwnerID, Title: "Fixture current DATA", Body: "Fixture current ordinary DATA"})
 			if err != nil {
 				t.Fatal(err)
@@ -277,9 +291,9 @@ func TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegrati
 				t.Fatal(err)
 			}
 			prepareMemoryReadCheckpoint(t, f)
-			// No experience consumer: the lesson is inapplicable. Source scope and
-			// actual dispatch authority still apply to the ordinary permitted DATA.
-			reads, err := NewMemoryReads(f.f.pool, f.f.sources, AdaptiveReadOptions{sourceSubset: []catalog.SourceRef{{ID: lesson.ID, Revision: lesson.Revision, AccessRevision: lesson.AccessRevision, Hash: lesson.Hash}, {ID: ordinary.ID, Revision: ordinary.Revision, AccessRevision: ordinary.AccessRevision, Hash: ordinary.Hash}}})
+			// A missing consumer or a missing lesson dependency is inapplicable.
+			// Current dispatch/source authority still protects ordinary DATA.
+			reads, err := NewMemoryReads(f.f.pool, f.f.sources, AdaptiveReadOptions{Experience: current, sourceSubset: []catalog.SourceRef{{ID: lesson.ID, Revision: lesson.Revision, AccessRevision: lesson.AccessRevision, Hash: lesson.Hash}, {ID: ordinary.ID, Revision: ordinary.Revision, AccessRevision: ordinary.AccessRevision, Hash: ordinary.Hash}}})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -305,6 +319,9 @@ func TestExperienceIncompatibleSearchAndOpenAreDataResultsThroughBrokerIntegrati
 			var pins, unknown int
 			if err = f.f.pool.QueryRow(f.f.ctx, `SELECT (SELECT count(*) FROM memory_run_sources WHERE run_id=$1 AND source_id=$2),(SELECT count(*) FROM action_effects WHERE initial_binding->>'run_id'=$1 AND state='effect_unknown')`, f.call.RunId, lesson.ID).Scan(&pins, &unknown); err != nil || pins != 0 || unknown != 0 {
 				t.Fatal("inapplicable read left pins or UNKNOWN", err, pins, unknown)
+			}
+			if current != nil && current.CheckPinned(f.owned, f.call.RunId) != nil {
+				t.Fatal("empty/filtered read poisoned next source release")
 			}
 		})
 	}

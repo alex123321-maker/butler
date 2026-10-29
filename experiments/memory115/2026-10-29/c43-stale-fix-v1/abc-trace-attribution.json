@@ -1,0 +1,1689 @@
+{
+  "format": "butler115.sealed-trace-attribution.v1",
+  "new_model_requests": 0,
+  "all_controls": 48,
+  "shared_preparation_full_tokens": 302954,
+  "arms": {
+    "A_no_experience": {
+      "all_controls": {
+        "native_calls": 55,
+        "input_tokens": 331463,
+        "output_tokens": 13566,
+        "thinking_tokens": 44143,
+        "full_tokens": 389172,
+        "provider_ms": 537114,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "known_failed_path": {
+        "native_calls": 4,
+        "input_tokens": 20439,
+        "output_tokens": 557,
+        "thinking_tokens": 4119,
+        "full_tokens": 25115,
+        "provider_ms": 40421,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "other_controls": {
+        "native_calls": 51,
+        "input_tokens": 311024,
+        "output_tokens": 13009,
+        "thinking_tokens": 40024,
+        "full_tokens": 364057,
+        "provider_ms": 496693,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "tool_calls": {
+        "extension.project.check": 10,
+        "extension.project.inspect": 17,
+        "extension.project.prepare-patch": 12,
+        "http.request": 2
+      },
+      "open_max_chars": {}
+    },
+    "B_same_frozen_notes_no_skills": {
+      "all_controls": {
+        "native_calls": 101,
+        "input_tokens": 1248683,
+        "output_tokens": 18733,
+        "thinking_tokens": 72268,
+        "full_tokens": 1339684,
+        "provider_ms": 939992,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "known_failed_path": {
+        "native_calls": 48,
+        "input_tokens": 870122,
+        "output_tokens": 5445,
+        "thinking_tokens": 33056,
+        "full_tokens": 908623,
+        "provider_ms": 442173,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "other_controls": {
+        "native_calls": 53,
+        "input_tokens": 378561,
+        "output_tokens": 13288,
+        "thinking_tokens": 39212,
+        "full_tokens": 431061,
+        "provider_ms": 497819,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "tool_calls": {
+        "extension.project.check": 10,
+        "extension.project.inspect": 17,
+        "extension.project.prepare-patch": 10,
+        "memory.open": 24,
+        "memory.search": 23,
+        "http.request": 2
+      },
+      "open_max_chars": {
+        "1000": 23,
+        "800": 1
+      }
+    },
+    "C_same_frozen_notes_and_reviewed_skills": {
+      "all_controls": {
+        "native_calls": 100,
+        "input_tokens": 951548,
+        "output_tokens": 15686,
+        "thinking_tokens": 59247,
+        "full_tokens": 1026481,
+        "provider_ms": 818285,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "known_failed_path": {
+        "native_calls": 28,
+        "input_tokens": 386804,
+        "output_tokens": 2623,
+        "thinking_tokens": 14009,
+        "full_tokens": 403436,
+        "provider_ms": 193310,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "other_controls": {
+        "native_calls": 72,
+        "input_tokens": 564744,
+        "output_tokens": 13063,
+        "thinking_tokens": 45238,
+        "full_tokens": 623045,
+        "provider_ms": 624975,
+        "repeated_identical_searches": 0,
+        "repeated_identical_open_calls": 0
+      },
+      "tool_calls": {
+        "extension.project.check": 10,
+        "extension.project.inspect": 17,
+        "extension.project.prepare-patch": 11,
+        "skills.load": 6,
+        "memory.open": 11,
+        "memory.search": 15,
+        "http.request": 2,
+        "skills.search": 14
+      },
+      "open_max_chars": {
+        "1000": 5,
+        "2000": 6
+      }
+    }
+  },
+  "cases": [
+    {
+      "sequence": 10,
+      "case": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 24124,
+      "output_tokens": 1087,
+      "thinking_tokens": 2725,
+      "full_tokens": 27936,
+      "native_unknown": 0,
+      "provider_ms": 36079,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4480,
+        5421,
+        6805,
+        7418
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 11,
+      "case": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 5,
+      "input_tokens": 38432,
+      "output_tokens": 991,
+      "thinking_tokens": 2784,
+      "full_tokens": 42207,
+      "native_unknown": 0,
+      "provider_ms": 40917,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 2,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5629,
+        6674,
+        8038,
+        8645,
+        9446
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 12,
+      "case": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 5,
+      "input_tokens": 45491,
+      "output_tokens": 1025,
+      "thinking_tokens": 3543,
+      "full_tokens": 50059,
+      "native_unknown": 0,
+      "provider_ms": 40991,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        6128,
+        8225,
+        8857,
+        10824,
+        11457
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 13,
+      "case": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 28497,
+      "output_tokens": 1063,
+      "thinking_tokens": 2163,
+      "full_tokens": 31723,
+      "native_unknown": 0,
+      "provider_ms": 33446,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5663,
+        6573,
+        7804,
+        8457
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 14,
+      "case": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 5,
+      "input_tokens": 45298,
+      "output_tokens": 1042,
+      "thinking_tokens": 2693,
+      "full_tokens": 49033,
+      "native_unknown": 0,
+      "provider_ms": 38692,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        6189,
+        8334,
+        8963,
+        10612,
+        11200
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 15,
+      "case": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 23668,
+      "output_tokens": 1007,
+      "thinking_tokens": 2570,
+      "full_tokens": 27245,
+      "native_unknown": 0,
+      "provider_ms": 33423,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4497,
+        5375,
+        6574,
+        7222
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 16,
+      "case": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 14,
+      "input_tokens": 188659,
+      "output_tokens": 1229,
+      "thinking_tokens": 7855,
+      "full_tokens": 197743,
+      "native_unknown": 0,
+      "provider_ms": 103064,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "memory.open": 5,
+        "memory.search": 6,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "open_offsets": [
+        0,
+        2000,
+        4000,
+        1000,
+        3000
+      ],
+      "input_token_sequence": [
+        6281,
+        8472,
+        8949,
+        9872,
+        10729,
+        11676,
+        12533,
+        13331,
+        14372,
+        15968,
+        16160,
+        16541,
+        21725,
+        22050
+      ],
+      "open_calls_per_source": [
+        5
+      ]
+    },
+    {
+      "sequence": 17,
+      "case": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 2,
+      "input_tokens": 10057,
+      "output_tokens": 275,
+      "thinking_tokens": 1781,
+      "full_tokens": 12113,
+      "native_unknown": 0,
+      "provider_ms": 16290,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4625,
+        5432
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 18,
+      "case": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 24,
+      "input_tokens": 368979,
+      "output_tokens": 2243,
+      "thinking_tokens": 6743,
+      "full_tokens": 377965,
+      "native_unknown": 0,
+      "provider_ms": 137029,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "memory.open": 11,
+        "memory.search": 12
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "open_offsets": [
+        0,
+        1000,
+        2000,
+        3000,
+        4000,
+        0,
+        500,
+        0,
+        1200,
+        500,
+        600
+      ],
+      "input_token_sequence": [
+        5775,
+        6530,
+        7341,
+        8197,
+        9146,
+        10005,
+        10801,
+        11684,
+        12445,
+        13260,
+        13977,
+        14840,
+        15598,
+        17095,
+        17515,
+        17599,
+        18422,
+        19289,
+        22053,
+        22547,
+        23242,
+        23634,
+        23802,
+        24182
+      ],
+      "open_calls_per_source": [
+        8,
+        2,
+        1
+      ]
+    },
+    {
+      "sequence": 19,
+      "case": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 3,
+      "input_tokens": 19789,
+      "output_tokens": 806,
+      "thinking_tokens": 4271,
+      "full_tokens": 24866,
+      "native_unknown": 0,
+      "provider_ms": 49475,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4404,
+        7224,
+        8161
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 20,
+      "case": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 3,
+      "input_tokens": 20916,
+      "output_tokens": 751,
+      "thinking_tokens": 3199,
+      "full_tokens": 24866,
+      "native_unknown": 0,
+      "provider_ms": 37006,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5575,
+        7282,
+        8059
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 21,
+      "case": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 28811,
+      "output_tokens": 792,
+      "thinking_tokens": 3801,
+      "full_tokens": 33404,
+      "native_unknown": 0,
+      "provider_ms": 42460,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5905,
+        6430,
+        7947,
+        8529
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 22,
+      "case": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 29152,
+      "output_tokens": 970,
+      "thinking_tokens": 2818,
+      "full_tokens": 32940,
+      "native_unknown": 0,
+      "provider_ms": 39394,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5712,
+        6540,
+        8124,
+        8776
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 23,
+      "case": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 7,
+      "input_tokens": 54468,
+      "output_tokens": 1148,
+      "thinking_tokens": 4146,
+      "full_tokens": 59762,
+      "native_unknown": 0,
+      "provider_ms": 59656,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "memory.search": 1,
+        "skills.search": 2
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5973,
+        6440,
+        6523,
+        7189,
+        8582,
+        9451,
+        10310
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 24,
+      "case": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 26174,
+      "output_tokens": 1132,
+      "thinking_tokens": 3550,
+      "full_tokens": 30856,
+      "native_unknown": 0,
+      "provider_ms": 42766,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4567,
+        5789,
+        7535,
+        8283
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 25,
+      "case": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 3,
+      "input_tokens": 19907,
+      "output_tokens": 649,
+      "thinking_tokens": 2640,
+      "full_tokens": 23196,
+      "native_unknown": 0,
+      "provider_ms": 32107,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5627,
+        6688,
+        7592
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 26,
+      "case": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 2,
+      "input_tokens": 9221,
+      "output_tokens": 422,
+      "thinking_tokens": 1630,
+      "full_tokens": 11273,
+      "native_unknown": 0,
+      "provider_ms": 24762,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4133,
+        5088
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 27,
+      "case": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 2,
+      "input_tokens": 11718,
+      "output_tokens": 795,
+      "thinking_tokens": 2167,
+      "full_tokens": 14680,
+      "native_unknown": 0,
+      "provider_ms": 25827,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5324,
+        6394
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 28,
+      "case": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 24088,
+      "output_tokens": 909,
+      "thinking_tokens": 2560,
+      "full_tokens": 27557,
+      "native_unknown": 0,
+      "provider_ms": 32950,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4520,
+        5442,
+        6761,
+        7365
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 29,
+      "case": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 27146,
+      "output_tokens": 1088,
+      "thinking_tokens": 2797,
+      "full_tokens": 31031,
+      "native_unknown": 0,
+      "provider_ms": 34301,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5111,
+        6150,
+        7642,
+        8243
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 30,
+      "case": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 6,
+      "input_tokens": 45027,
+      "output_tokens": 943,
+      "thinking_tokens": 3447,
+      "full_tokens": 49417,
+      "native_unknown": 0,
+      "provider_ms": 47839,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 2,
+        "extension.project.prepare-patch": 1,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5404,
+        5931,
+        6547,
+        8233,
+        9097,
+        9815
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 31,
+      "case": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 28874,
+      "output_tokens": 1164,
+      "thinking_tokens": 2945,
+      "full_tokens": 32983,
+      "native_unknown": 0,
+      "provider_ms": 37835,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5565,
+        6548,
+        8077,
+        8684
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 32,
+      "case": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 1,
+      "native_calls": 6,
+      "input_tokens": 45187,
+      "output_tokens": 1057,
+      "thinking_tokens": 3761,
+      "full_tokens": 50005,
+      "native_unknown": 0,
+      "provider_ms": 49822,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.search": 2
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5839,
+        6568,
+        6657,
+        7412,
+        9048,
+        9663
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 33,
+      "case": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 1,
+      "native_calls": 4,
+      "input_tokens": 25181,
+      "output_tokens": 1010,
+      "thinking_tokens": 3344,
+      "full_tokens": 29535,
+      "native_unknown": 0,
+      "provider_ms": 38018,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4537,
+        5603,
+        7118,
+        7923
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 34,
+      "case": "control-01",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 5,
+      "input_tokens": 45647,
+      "output_tokens": 1199,
+      "thinking_tokens": 3049,
+      "full_tokens": 49895,
+      "native_unknown": 0,
+      "provider_ms": 43857,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        6132,
+        8285,
+        9020,
+        10791,
+        11419
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 35,
+      "case": "control-01",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 28914,
+      "output_tokens": 976,
+      "thinking_tokens": 2812,
+      "full_tokens": 32702,
+      "native_unknown": 0,
+      "provider_ms": 35482,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5661,
+        6622,
+        7986,
+        8645
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 36,
+      "case": "control-01",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 5,
+      "input_tokens": 31965,
+      "output_tokens": 1226,
+      "thinking_tokens": 2623,
+      "full_tokens": 35814,
+      "native_unknown": 0,
+      "provider_ms": 37106,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 2,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4466,
+        5297,
+        6800,
+        7416,
+        7986
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 37,
+      "case": "control-02",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 29782,
+      "output_tokens": 1111,
+      "thinking_tokens": 3017,
+      "full_tokens": 33910,
+      "native_unknown": 0,
+      "provider_ms": 38795,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5718,
+        7020,
+        8199,
+        8845
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 38,
+      "case": "control-02",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 25326,
+      "output_tokens": 977,
+      "thinking_tokens": 2906,
+      "full_tokens": 29209,
+      "native_unknown": 0,
+      "provider_ms": 37299,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4505,
+        5629,
+        7294,
+        7898
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 39,
+      "case": "control-02",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 5,
+      "input_tokens": 46884,
+      "output_tokens": 1112,
+      "thinking_tokens": 3480,
+      "full_tokens": 51476,
+      "native_unknown": 0,
+      "provider_ms": 44023,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        6188,
+        8506,
+        9213,
+        11157,
+        11820
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 40,
+      "case": "control-03",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 2,
+      "input_tokens": 10382,
+      "output_tokens": 282,
+      "thinking_tokens": 2338,
+      "full_tokens": 13002,
+      "native_unknown": 0,
+      "provider_ms": 24131,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4618,
+        5764
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 41,
+      "case": "control-03",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 14,
+      "input_tokens": 198145,
+      "output_tokens": 1394,
+      "thinking_tokens": 6154,
+      "full_tokens": 205693,
+      "native_unknown": 0,
+      "provider_ms": 90246,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "memory.open": 6,
+        "memory.search": 5,
+        "skills.load": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [
+        2000,
+        2000,
+        2000,
+        2000,
+        2000,
+        2000
+      ],
+      "open_offsets": [
+        0,
+        2000,
+        4000,
+        8000,
+        6000,
+        10000
+      ],
+      "input_token_sequence": [
+        6219,
+        8494,
+        8983,
+        10299,
+        11720,
+        13066,
+        13894,
+        14730,
+        15174,
+        15503,
+        17287,
+        18789,
+        20247,
+        23740
+      ],
+      "open_calls_per_source": [
+        6
+      ]
+    },
+    {
+      "sequence": 42,
+      "case": "control-03",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 24,
+      "input_tokens": 501143,
+      "output_tokens": 3202,
+      "thinking_tokens": 26313,
+      "full_tokens": 530658,
+      "native_unknown": 0,
+      "provider_ms": 305144,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "memory.open": 13,
+        "memory.search": 9
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        1000,
+        800,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "open_offsets": [
+        0,
+        2000,
+        3000,
+        1000,
+        0,
+        2000,
+        4000,
+        1000,
+        2200,
+        0,
+        1500,
+        0,
+        800
+      ],
+      "input_token_sequence": [
+        5770,
+        8166,
+        9114,
+        10193,
+        11053,
+        12009,
+        12872,
+        13670,
+        14706,
+        16730,
+        17548,
+        18572,
+        19490,
+        20250,
+        21794,
+        22675,
+        24014,
+        24495,
+        27680,
+        33203,
+        37843,
+        38857,
+        39676,
+        40763
+      ],
+      "open_calls_per_source": [
+        7,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "sequence": 43,
+      "case": "control-04",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 28485,
+      "output_tokens": 156,
+      "thinking_tokens": 2651,
+      "full_tokens": 31292,
+      "native_unknown": 0,
+      "provider_ms": 40146,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1,
+        "memory.search": 1,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5925,
+        6696,
+        7539,
+        8325
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 44,
+      "case": "control-04",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 3,
+      "input_tokens": 20537,
+      "output_tokens": 840,
+      "thinking_tokens": 2791,
+      "full_tokens": 24168,
+      "native_unknown": 0,
+      "provider_ms": 31645,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5595,
+        7128,
+        7814
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 45,
+      "case": "control-04",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 3,
+      "input_tokens": 18138,
+      "output_tokens": 645,
+      "thinking_tokens": 3262,
+      "full_tokens": 22045,
+      "native_unknown": 0,
+      "provider_ms": 34318,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "http.request": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4393,
+        6563,
+        7182
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 46,
+      "case": "control-05",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 30295,
+      "output_tokens": 1119,
+      "thinking_tokens": 3706,
+      "full_tokens": 35120,
+      "native_unknown": 0,
+      "provider_ms": 38425,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5749,
+        6819,
+        8457,
+        9270
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 47,
+      "case": "control-05",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 25268,
+      "output_tokens": 972,
+      "thinking_tokens": 3246,
+      "full_tokens": 29486,
+      "native_unknown": 0,
+      "provider_ms": 39796,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4544,
+        5490,
+        7306,
+        7928
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 48,
+      "case": "control-05",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 7,
+      "input_tokens": 54911,
+      "output_tokens": 1129,
+      "thinking_tokens": 3636,
+      "full_tokens": 59676,
+      "native_unknown": 0,
+      "provider_ms": 68447,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "memory.search": 2,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        6022,
+        6388,
+        7176,
+        7869,
+        7953,
+        9443,
+        10060
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 49,
+      "case": "control-06",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 2,
+      "input_tokens": 9293,
+      "output_tokens": 589,
+      "thinking_tokens": 1774,
+      "full_tokens": 11656,
+      "native_unknown": 0,
+      "provider_ms": 21114,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4129,
+        5164
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 50,
+      "case": "control-06",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 25289,
+      "output_tokens": 621,
+      "thinking_tokens": 2193,
+      "full_tokens": 28103,
+      "native_unknown": 0,
+      "provider_ms": 30967,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "skills.search": 2
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5614,
+        6269,
+        6356,
+        7050
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 51,
+      "case": "control-06",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 2,
+      "input_tokens": 11633,
+      "output_tokens": 480,
+      "thinking_tokens": 1694,
+      "full_tokens": 13807,
+      "native_unknown": 0,
+      "provider_ms": 20764,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5323,
+        6310
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 52,
+      "case": "control-07",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 5,
+      "input_tokens": 34960,
+      "output_tokens": 1028,
+      "thinking_tokens": 3034,
+      "full_tokens": 39022,
+      "native_unknown": 0,
+      "provider_ms": 39000,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.search": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5426,
+        6044,
+        6663,
+        8111,
+        8716
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 53,
+      "case": "control-07",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 27545,
+      "output_tokens": 946,
+      "thinking_tokens": 3133,
+      "full_tokens": 31624,
+      "native_unknown": 0,
+      "provider_ms": 39042,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5127,
+        6131,
+        7836,
+        8451
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 54,
+      "case": "control-07",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 24420,
+      "output_tokens": 1117,
+      "thinking_tokens": 2952,
+      "full_tokens": 28489,
+      "native_unknown": 0,
+      "provider_ms": 35256,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4510,
+        5308,
+        6994,
+        7608
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 55,
+      "case": "control-08",
+      "arm": "B_same_frozen_notes_no_skills",
+      "repetition": 2,
+      "native_calls": 6,
+      "input_tokens": 45120,
+      "output_tokens": 994,
+      "thinking_tokens": 3186,
+      "full_tokens": 49300,
+      "native_unknown": 0,
+      "provider_ms": 44940,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "memory.search": 2
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5553,
+        6639,
+        7546,
+        7640,
+        8561,
+        9181
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 56,
+      "case": "control-08",
+      "arm": "A_no_experience",
+      "repetition": 2,
+      "native_calls": 4,
+      "input_tokens": 24369,
+      "output_tokens": 1110,
+      "thinking_tokens": 2611,
+      "full_tokens": 28090,
+      "native_unknown": 0,
+      "provider_ms": 34331,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        4525,
+        5610,
+        6811,
+        7423
+      ],
+      "open_calls_per_source": []
+    },
+    {
+      "sequence": 57,
+      "case": "control-08",
+      "arm": "C_same_frozen_notes_and_reviewed_skills",
+      "repetition": 2,
+      "native_calls": 6,
+      "input_tokens": 44379,
+      "output_tokens": 1162,
+      "thinking_tokens": 3164,
+      "full_tokens": 48705,
+      "native_unknown": 0,
+      "provider_ms": 46968,
+      "tool_calls": {
+        "extension.project.check": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "skills.search": 2
+      },
+      "repeated_identical_searches": 0,
+      "repeated_identical_open_calls": 0,
+      "open_max_chars": [],
+      "open_offsets": [],
+      "input_token_sequence": [
+        5844,
+        6490,
+        6606,
+        7249,
+        8793,
+        9397
+      ],
+      "open_calls_per_source": []
+    }
+  ],
+  "request_limit": "Resume records contain only the new tool result; no full HTTP wire replay or duplicate prompt byte estimate is made. Input tokens are provider-reported; repeated reads include distinct pages and differently worded searches, not necessarily identical calls.",
+  "causal_limit": "Two repetitions, narrow synthetic corpus, no randomized intervention or newly generated counterfactual. C43 is a source candidate pinning defect, not proof that loaded skills degrade reasoning."
+}

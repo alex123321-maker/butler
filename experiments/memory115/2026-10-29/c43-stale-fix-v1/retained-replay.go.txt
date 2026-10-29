@@ -1,0 +1,150 @@
+package experience
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/memory/reader"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/skills"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"os"
+	"testing"
+	"time"
+)
+
+// Retained synthetic C43 bodies, fresh temporary run/lease/grants. This is a
+// reader/applicability replay, not a resumed old run or native quality claim.
+func TestC43RetainedSourceReplayDiagnostic(t *testing.T) {
+	if os.Getenv("BUTLER_C43_REPLAY") != "copied-data-only" {
+		t.Fatal("explicit copied fixture required")
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	pool, err := pgxpool.New(ctx, "postgres://postgres@127.0.0.1:5432/memory115_c43_test?sslmode=disable")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	var o struct {
+		Environment string `json:"environment"`
+		Task        struct {
+			ID string `json:"task_id"`
+		}
+	}
+	raw, err := os.ReadFile("/closed/case-043-outcome.json")
+	if err != nil || json.Unmarshal(raw, &o) != nil {
+		t.Fatal("closed metadata unavailable")
+	}
+	cat := catalog.New(pool, catalog.NewFileManifest("/closed/case-043/deletion-anchor"))
+	key := fmt.Sprintf("c43-read-diagnostic-%d", time.Now().UnixNano())
+	// Fresh rows only; every diagnostic mutation is rolled back.
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	_, err = tx.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES($1,'owner','web');`, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO tasks(task_id,session_key,owner_id,goal)VALUES($1,$2,'owner','Read-only C43 DATA diagnosis')`, key, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,task_id,task_revision,started_at,updated_at)VALUES($1,$1,'diagnostic','model_running','model_running','mode_0','no-model',$1,1,clock_timestamp(),clock_timestamp())`, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO session_ownership(session_key,run_id,owner_id,lease_id,fence_epoch,expires_at)VALUES($1,$1,'diagnostic','lease',1,clock_timestamp()+interval '2 minutes')`, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO memory_scope_grants(source_id,task_id,owner_id,task_revision,access_revision,purpose) SELECT source_id,$1,owner_id,1,access_revision,purpose FROM memory_scope_grants WHERE task_id=$2`, key, o.Task.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	live := ownership.WithToken(ctx, nil, ownership.Token{SessionKey: key, RunID: key, LeaseID: "lease", FenceEpoch: 1})
+	live = owneridentity.WithActor(live, owneridentity.Actor{})
+	rows, err := tx.Query(live, `SELECT s.source_id,s.head_revision,s.access_revision,r.content_hash FROM memory_experience_lessons l JOIN memory_sources s USING(source_id) JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision ORDER BY s.source_id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var subset []catalog.SourceRef
+	for rows.Next() {
+		var ref catalog.SourceRef
+		if rows.Scan(&ref.ID, &ref.Revision, &ref.AccessRevision, &ref.Hash) != nil {
+			t.Fatal("source metadata")
+		}
+		subset = append(subset, ref)
+	}
+	rows.Close()
+	if rows.Err() != nil {
+		t.Fatal(rows.Err())
+	}
+	// Exact lesson metadata plus the current C43 permitted tool names from the
+	// sealed native request. inspect remains; prepare-patch is explicitly absent.
+	var deps []skills.Dependency
+	var depRaw []byte
+	err = tx.QueryRow(live, `SELECT dependencies_json FROM memory_experience_lessons WHERE source_id='source_713357db52ad7c692b9195f45f003878a6b40942'`).Scan(&depRaw)
+	if err != nil || json.Unmarshal(depRaw, &deps) != nil {
+		t.Fatal("retained lesson dependencies")
+	}
+	p := Prepared{fingerprint: o.Environment, tools: map[string]skills.Dependency{}}
+	for _, d := range deps {
+		if d.Tool == "extension.project.inspect" {
+			p.tools[d.Tool] = d
+		}
+	}
+	if len(deps) != 2 || len(p.tools) != 1 {
+		t.Fatal("retained dependency counterexample changed")
+	}
+	store := &Store{Sources: cat, EnvironmentHash: o.Environment}
+	makeReader := func(fixed bool) reader.Reader {
+		r := reader.Reader{Sources: cat, SourceSubset: subset, ExperienceEnvironment: &o.Environment, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+			return store.EligibleTx(ctx, tx, src, p, true)
+		}}
+		if fixed {
+			r.ExperienceDependencies = p.DependenciesJSON()
+		}
+		return r
+	}
+	for _, fixed := range []bool{false, true} {
+		nested, err := tx.Begin(live)
+		if err != nil {
+			t.Fatal(err)
+		}
+		result, err := makeReader(fixed).ReadTx(live, nested, readcontrol.Search, readcontrol.Args{Query: "alpha", Limit: 5})
+		if err != nil || result.Status != "empty" || len(result.Items) != 0 {
+			t.Fatal("C43 empty search not reproduced", err, result.Status)
+		}
+		var bad int
+		if err = nested.QueryRow(live, `SELECT count(*) FROM memory_run_sources WHERE run_id=$1 AND source_id='source_713357db52ad7c692b9195f45f003878a6b40942'`, key).Scan(&bad); err != nil {
+			t.Fatal(err)
+		}
+		if !fixed && bad != 1 {
+			t.Fatal("legacy pin poisoning absent")
+		}
+		if fixed && bad != 0 {
+			t.Fatal("fixed search pinned incompatible lesson")
+		}
+		guardErr := store.CheckPinnedTx(live, nested, key)
+		// The retained installation's expiry is unchanged. Do not revive its old
+		// authority to make a current old-run guard pass; fresh fixtures prove the
+		// exact current-contract mismatch independently of that historical expiry.
+		if fixed && guardErr != nil {
+			t.Fatal("fixed local owning guard", guardErr)
+		}
+		if !fixed && guardErr == nil {
+			t.Fatal("legacy retained snapshot no longer denies release")
+		}
+		t.Logf("C43 replay fixed=%t status=%s incompatible_lesson_pins=%d model_calls=0", fixed, result.Status, bad)
+		if err = nested.Rollback(live); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

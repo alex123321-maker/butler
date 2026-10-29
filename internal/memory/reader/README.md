@@ -30,3 +30,11 @@ excludes lessons when no experience consumer is installed; nil retains generic
 reader behavior. Open/neighbors deny an incompatible lesson before acquiring its
 pins. This prefilter never grants access: complete Catalog and owning experience
 checks still run before release, and previously exposed pins are never removed.
+
+The runtime additionally supplies `ExperienceDependencies` from the owning
+experience `Prepared.DependenciesJSON()`: exact currently permitted Broker
+tool names, hashes and revisions obtained outside SQL. All lesson ancestors must
+match before candidate ranking or pins, including semantic candidates and exact
+open/neighbors. An empty array excludes lesson lineage while retaining ordinary
+DATA. Nil retains the lower-level environment-only composition; the Orchestrator
+always supplies an explicit array. Later installed/current release proofs remain.
