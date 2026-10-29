@@ -1673,6 +1673,13 @@ have not qualified experience; defaults stay off. See the
 [full result](../../experiments/memory115/2026-10-29/guided-full-v5/README.md).
 # Research-only utility trace verification
 
+`memory_utility_whole_test.go` and `memory_utility_native_test.go` add the full
+prospective72-slot collector. The controlled whole gate runs before a separate
+frozen one-use native helper; current documents, source lifecycle, reviewed skill
+preparation and original UNKNOWN lineage use actual Core/Broker persistence.
+Native key references never enter model/tool inputs. See the
+[development protocol](../../docs/testing/issue115-utility-native-2026-10-30.md).
+
 `internal/app/memory_utility_trace_test.go` exercises actual Core/Broker persistence
 with scripted transport and the [read-only utility observer](../../internal/acceptance/utilitytrace/README.md).
 Run through `scripts/dev/memory-utility-trace-lab.sh` in a fresh isolated lab root.

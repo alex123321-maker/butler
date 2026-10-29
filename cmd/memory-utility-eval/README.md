@@ -1,5 +1,9 @@
 # Prospective memory utility evaluation
 
+For the separate actual Core/Broker72-slot development collector, preparation
+evidence and frozen native journal, see the [2026-10-30 protocol](../../docs/testing/issue115-utility-native-2026-10-30.md).
+This command remains an offline scorer; the integration harness owns inference.
+
 Offline, Go-only measurement tooling for #115, separate from frozen v6 and from
 the independently reviewed `memory-eval` suites. Reuses acceptance's strict JSON
 decoder, canonical digest and source representation. No additional dependency,

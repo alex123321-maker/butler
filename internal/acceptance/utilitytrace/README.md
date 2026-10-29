@@ -1,5 +1,14 @@
 # Core/Broker utility trace observer
 
+The [complete development collector](../../../docs/testing/issue115-utility-native-2026-10-30.md)
+freezes24×A/B/C slots before native work. It serves current documents identically
+through actual inspect receipts and captures a separately owning original UNKNOWN
+effect before its read-only verification. Catalog note revision/deletion and actual
+skill stage/test/activate have separate private preparation snapshots. Native
+attempts require the exact Core operation/reservation and a new synced global
+PostgreSQL/raw-file journal. These remain descriptive development observations,
+not independent holdout or production learning qualification.
+
 Read-only research adapter for `memory-utility-eval`. `Capture` takes a single
 repeatable-read snapshot of the owning task/run/input, all calls, intents,
 effects, dispatches, effect evidence, source pins/heads, model attempts and final.
