@@ -315,7 +315,7 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 			if tc.name == "memory_read" {
 				owner := experienceNativeActor(ctx, "utility-real-source-currentness")
 				source := c.Preparation[0]
-				updated, err := cat.Put(owner, catalog.PutSource{ExternalKey: source.Source.ID, Kind: "document", ScopeType: "project", ScopeID: "utility-prior-alpha", Title: "идентификатор комплекта alpha", Body: "Superseded: prior fact no longer current"})
+				updated, err := cat.Put(owner, catalog.PutSource{ExternalKey: source.Source.ID, Kind: "document", ScopeType: "project", ScopeID: "utility-prior-alpha", Title: "идентификатор комплекта alpha", ExpectedRevision: mappings[0].Pin.Revision, Body: "Superseded: prior fact no longer current"})
 				if err != nil {
 					t.Fatal(err)
 				}
