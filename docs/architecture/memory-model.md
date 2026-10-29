@@ -1,5 +1,15 @@
 # Butler — Memory Model Specification
 
+Explicit authenticated owner-goal Tasks use the existing task transcript reader:
+all primary messages belonging to that Task remain, including earlier attempts,
+tool transcripts and owner amendments. Unrelated work sharing the channel's
+session is not replayed. The selected primary bytes retain session revision and
+privacy/deletion fencing; no transcript is deleted or compacted. The current
+Input is preserved once, task goals/constraints/authority and unknown-effect
+guards remain authoritative, and the original context budget is unchanged.
+Other typed Tasks retain their existing history policy. This also applies on
+recovery of the same owner-goal Task; it is not permission to retry an action.
+
 Migration 103 changes only the query plan of summary currentness checks. A STABLE
 PL/pgSQL function checks empty summary metadata in the current statement snapshot;
 otherwise it evaluates the original recursive roots, transcript heads, dependency
@@ -9,7 +19,7 @@ and correction, deletion, privacy and revision fences remain authoritative.
 New epoch1 explicit taskless requests use two recent completed published
 exchanges as historical reference plus all current-run observations. Unfinished
 old requests/internal finals/old tool results are excluded without deleting
-transcript. Current input stays verbatim; typed tasks retain full history and
+transcript. Current input stays verbatim; typed tasks retain full relevant history and
 constraints. Exact interaction continuation remains owned by Communication.
 Complete transcript is pinned/privacy checked before selecting context. Old
 epoch0 inputs retain replay policy. A kernel UTC clock and current-request rule

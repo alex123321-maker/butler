@@ -89,7 +89,7 @@ because browser exceptions can reflect secret field values.
 
 ## Native ingress observation
 
-`-task-id task-...` optionally targets an already created active owner Task in
+`-task-id task_<32hex>` optionally targets an already created active owner Task in
 the operator-pinned Web conversation through the same protected message endpoint.
 The server validates its owner/session and retains the ordinary channel proof.
 This selector does not create a mandate, approve POST or choose delivery targets.

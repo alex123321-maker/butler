@@ -22,7 +22,7 @@ func TestNativeExactTaskUsesOrdinaryIngressOnce(t *testing.T) {
 		if r.Method == "POST" {
 			posts.Add(1)
 			var body map[string]string
-			if json.NewDecoder(r.Body).Decode(&body) != nil || body["task_id"] != "task-synthetic" || body["text"] != "Use browser" {
+			if json.NewDecoder(r.Body).Decode(&body) != nil || body["task_id"] != "task_0123456789abcdef0123456789abcdef" || body["text"] != "Use browser" {
 				t.Error("wrong exact owner task body")
 			}
 			fmt.Fprintf(w, `{"input_id":%q,"status":"queued"}`, testInput)
@@ -37,7 +37,7 @@ func TestNativeExactTaskUsesOrdinaryIngressOnce(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	if err = nativeTaskAttempt(ctx, c, "Use browser", "browser-baseline-task", filepath.Join(t.TempDir(), "task"), time.Millisecond, "task-synthetic"); err != nil || posts.Load() != 1 {
+	if err = nativeTaskAttempt(ctx, c, "Use browser", "browser-baseline-task", filepath.Join(t.TempDir(), "task"), time.Millisecond, "task_0123456789abcdef0123456789abcdef"); err != nil || posts.Load() != 1 {
 		t.Fatal("task ingress replayed or failed", err)
 	}
 }

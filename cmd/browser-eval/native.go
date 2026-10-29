@@ -113,7 +113,7 @@ func nativeAttempt(ctx context.Context, c *nativeClient, prompt, delivery, direc
 }
 
 func nativeTaskAttempt(ctx context.Context, c *nativeClient, prompt, delivery, directory string, poll time.Duration, task string) error {
-	if !attemptID.MatchString(delivery) || len(strings.TrimSpace(prompt)) == 0 || len(prompt) > 16000 {
+	if !attemptID.MatchString(delivery) || len(strings.TrimSpace(prompt)) == 0 || len(prompt) > 16000 || task != "" && !regexp.MustCompile(`^task_[a-f0-9]{32}$`).MatchString(task) {
 		return errors.New("invalid attempt")
 	}
 	if err := os.Mkdir(directory, 0700); err != nil {
@@ -126,9 +126,6 @@ func nativeTaskAttempt(ctx context.Context, c *nativeClient, prompt, delivery, d
 	}
 	payload := map[string]string{"text": prompt}
 	if task != "" {
-		if !regexp.MustCompile(`^task-[a-zA-Z0-9-]{1,100}$`).MatchString(task) {
-			return errors.New("invalid task reference")
-		}
 		payload["task_id"] = task
 	}
 	body, _ := json.Marshal(payload)
@@ -190,7 +187,7 @@ func runNative(args []string) error {
 	endpoint := fs.String("endpoint", "", "trusted operator Core endpoint")
 	tokenFile := fs.String("owner-token-file", "", "private owner token file reference")
 	promptFile := fs.String("prompt-file", "", "UTF-8 task file, without credentials")
-	task := fs.String("task-id", "", "optional existing owner Task in the pinned Web conversation")
+	task := fs.String("task-id", "", "optional existing task_<32hex> in the pinned Web conversation")
 	delivery := fs.String("delivery-id", "", "unique browser-baseline-* identity")
 	directory := fs.String("attempt-dir", "", "new private attempt directory")
 	observe := fs.String("observe-input", "", "observe an existing Input after owner response; never POST")
