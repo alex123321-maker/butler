@@ -1508,3 +1508,12 @@ Research citation repair tells the model to reuse sufficient fresh current-run
 browser/HTTP observations, retain supported evidence and correct/remove unsupported
 claims/links. A redundant HTTP fetch is not prescribed by a rejected citation.
 Eligibility, exact quote checks, four-correction bound and kernel gates remain.
+## Owner-goal browser test composition
+
+`TestBrowserMandateOwnerAPIHarness` exists only in the API test binary. It serves
+real authenticated goal/mandate/Task/control/approval handlers on isolated PG.
+A mechanical worker projection claims the controller-created Input and creates
+its run/lease; it cannot manufacture approved decisions. This is API/dispatch
+evidence, not a native model, task completion or delivery qualification. Public
+owner Tasks keep `result_delivery=attempt`; no public delivery-mode override is
+introduced.

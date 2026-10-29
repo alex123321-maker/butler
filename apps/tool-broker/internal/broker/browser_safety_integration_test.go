@@ -118,6 +118,7 @@ func TestBrowserSafetyBrokerHarness(t *testing.T) {
 	store.SetDispatchClaimGuard(rs)
 	var reader actionauth.ContextReader = browserSafetyReader{resourceReader{authFixture: newAuthFixture(), pool: pool}}
 	if cfg.ContextEndpoint != "" {
+		budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 		reader, err = actionauth.NewHTTPContextReader(cfg.ContextEndpoint, strings.Repeat("owner-context-fixture-", 3))
 		if err != nil {
 			t.Fatal(err)
@@ -147,10 +148,19 @@ func browserSafetyBrokerProcess(t *testing.T, f *resourceBrokerFixture) (toolbro
 	return browserSafetyBrokerWithContext(t, f, "")
 }
 
-func browserSafetyBrokerWithContext(t *testing.T, f *resourceBrokerFixture, endpoint string) (toolbrokerv1.ToolBrokerServiceClient, context.Context, func()) {
+func browserSafetyBrokerWithContext(t *testing.T, f *resourceBrokerFixture, endpoint string, configure ...func(*toolbrokerv1.ToolContract)) (toolbrokerv1.ToolBrokerServiceClient, context.Context, func()) {
 	t.Helper()
+	if endpoint != "" {
+		f.budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+	}
 	dir := t.TempDir()
-	tools, _ := json.Marshal(map[string]any{"tools": f.server.registry.List("", false)})
+	contracts := f.server.registry.List("", false)
+	for _, c := range contracts {
+		for _, option := range configure {
+			option(c)
+		}
+	}
+	tools, _ := json.Marshal(map[string]any{"tools": contracts})
 	toolsPath := filepath.Join(dir, "tools.json")
 	if os.WriteFile(toolsPath, tools, 0600) != nil {
 		t.Fatal("fixture contracts write")
@@ -197,6 +207,9 @@ func browserSafetyBrokerWithContext(t *testing.T, f *resourceBrokerFixture, endp
 	for _, name := range []string{"browser.open", "browser.click"} {
 		actual, err := client.GetToolContract(ctx, &toolbrokerv1.GetToolContractRequest{ToolName: name})
 		original, _ := f.server.registry.Get(name)
+		for _, option := range configure {
+			option(original)
+		}
 		before, _ := actionauth.ContractHash(original)
 		after, _ := actionauth.ContractHash(actual.GetContract())
 		if err != nil || before != after {

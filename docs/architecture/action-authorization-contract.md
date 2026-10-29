@@ -221,6 +221,18 @@ combination and never changes the alias's global policy.
 
 ## Bounded mandates
 
+An owner-goal mandate covering `unknown` browser.click can authorize it without
+an individual approval when the loaded contract does not require approval.
+Task prose is not an additional machine-enforced confirmation flag. A mandate
+limited to read/prepare instead denies click entirely, including preparation of
+an approval for an out-of-scope effect. To permit scoped submission while still
+requiring an exact decision, the authoritative operator registry must set
+click `requires_approval=true`; this contract rule has priority over mandates.
+Its changed full contract hash fences old intents/grants. This is an existing
+configuration mechanism, not a new permission or a default registry change.
+The isolated owner-mandate Chromium acceptance qualifies this stricter variant
+only; deployment and native/delivery qualification remain separate.
+
 Mandates bind an owner/task/task version/constraints version to exact tool
 names, exact HTTP(S) origins or non-URL tool resources, explicit effect classes
 and credential alias/field references. Wildcards are rejected. Expiry is at

@@ -51,5 +51,10 @@ required browser-session-recovery ./apps/tool-broker/internal/broker -run '^Test
 required browser-frozen-navigation ./apps/tool-broker/internal/broker -run '^TestBrowserFrozenNavigationRecoveryChromiumIntegration$'
 required browser-form-validation ./apps/tool-broker/internal/broker -run '^TestBrowserFormValidationChromiumIntegration$'
 required runtime-form-validation ./apps/tool-browser/internal/runtime -run '^TestBrowserPublicFormValidationChromium$'
+go test -c -race -o .cache/credential-vault-ci/owner-api.test ./apps/orchestrator/internal/api
+export BUTLER_BROWSER_OWNER_API_BINARY="$PWD/.cache/credential-vault-ci/owner-api.test"
+export BUTLER_TEST_MEMORY_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
+export BUTLER_BROWSER_MANDATE_E2E=1
+required browser-owner-mandate ./apps/tool-broker/internal/broker -run '^TestBrowserOwnerMandateApprovalReductionChromiumIntegration$'
 required runtime-chromium ./apps/tool-browser/internal/runtime -run '^TestBrowserSessionE2E$'
 go vet ./internal/budget ./internal/credentials ./internal/credentialcontrol ./internal/actionauth ./internal/mobile ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/tool-browser/internal/runtime

@@ -141,7 +141,7 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 	return resourceBrokerWithPool(t, backend, loseReceipt, pool)
 }
 
-func resourceBrokerWithPool(t *testing.T, backend *resourcePageBackend, loseReceipt bool, pool *pgxpool.Pool) *resourceBrokerFixture {
+func resourceBrokerWithPool(t *testing.T, backend *resourcePageBackend, loseReceipt bool, pool *pgxpool.Pool, configure ...func(*toolbrokerv1.ToolContract)) *resourceBrokerFixture {
 	t.Helper()
 	listener, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
@@ -182,6 +182,9 @@ func resourceBrokerWithPool(t *testing.T, backend *resourcePageBackend, loseRece
 	}
 	hashes := map[string]string{}
 	for _, c := range contracts {
+		for _, option := range configure {
+			option(c)
+		}
 		h, e := actionauth.ContractHash(c)
 		if e != nil {
 			t.Fatal(e)

@@ -485,3 +485,13 @@ input locally, corrects it with zero POSTs, and submits once through an ordinary
 spent grant. Form validity DATA never confirms a remote effect: the final opaque
 click still records UNKNOWN and replay is denied. Credential/privacy cases run
 against the actual browser runtime and the same observation path.
+## Owner mandate browser acceptance
+
+The opt-in `TestBrowserOwnerMandateApprovalReductionChromiumIntegration` joins
+authenticated owner goal/mandate/Task/control APIs, a claimed canonical Input,
+real durable approval, Broker/PG/resource guards and actual Chromium. It proves
+zero approvals for local preparation and one exact submit approval only when
+the operator-owned click contract requires it. The ordinary unknown-capable
+mandate is an intentionally unsafe comparison, not a deployment recommendation.
+All configuration is isolated; no native model or delivery is exercised.
+`scripts/dev/credential-vault-tests.sh` requires all cases without skips.
