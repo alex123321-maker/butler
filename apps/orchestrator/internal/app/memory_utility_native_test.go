@@ -76,6 +76,7 @@ type utilityWholeNative struct {
 	root    string
 	seq     int
 	stopped bool
+	entries string
 }
 
 func TestMemoryUtilityWholeNativeABC(t *testing.T) {
@@ -113,6 +114,16 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	}
 	ctx, cancel := context.WithDeadline(context.Background(), plan.Deadline)
 	defer cancel()
+	probe, e := pgx.Connect(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+	if e != nil {
+		t.Fatal("private target probe failed before auth")
+	}
+	var database string
+	e = probe.QueryRow(ctx, `SELECT current_database()`).Scan(&database)
+	probe.Close(ctx)
+	if e != nil || database != "utility_native_test" {
+		t.Fatal("private target identity mismatch before auth")
+	}
 	control, e := pgx.Connect(ctx, "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable")
 	if e != nil {
 		t.Fatal("experimental authority store unavailable")
@@ -126,7 +137,9 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	if control.QueryRow(ctx, `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()`).Scan(&others) != nil || others != 0 {
 		t.Fatal("experimental source has other clients")
 	}
-	if _, e = control.Exec(ctx, `CREATE SCHEMA utility_abc_20261030_v1;CREATE TABLE utility_abc_20261030_v1.entries(seq integer PRIMARY KEY,slot integer,dispatched boolean NOT NULL DEFAULT false,body jsonb)`); e != nil {
+	schema := pgx.Identifier{"utility_abc_" + plan.SuiteSHA256[:16]}.Sanitize()
+	entries := schema + ".entries"
+	if _, e = control.Exec(ctx, `CREATE SCHEMA `+schema+`;CREATE TABLE `+entries+`(seq integer PRIMARY KEY,slot integer,dispatched boolean NOT NULL DEFAULT false,body jsonb)`); e != nil {
 		t.Fatal("one-use native journal already consumed")
 	}
 	info, e := os.Lstat("/private/settings.key")
@@ -143,7 +156,7 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer pool.Close()
-	state := &utilityWholeNative{control: control, pool: pool, manager: providerauth.NewManager(config.NewPostgresSettingsStore(pool, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))}))), plan: plan, root: root}
+	state := &utilityWholeNative{control: control, pool: pool, manager: providerauth.NewManager(config.NewPostgresSettingsStore(pool, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))}))), plan: plan, root: root, entries: entries}
 	defer func() {
 		utilityWholeWrite(t, root, "slots-final.json", plan.Slots)
 		utilityWholeWrite(t, root, "journal-summary.json", map[string]any{"admitted_methods": state.seq, "global_stop": state.stopped, "invoice_cost": "unknown", "historical_receipts": plan.HistoricalReceipts, "native_quality_qualified": false})
@@ -199,7 +212,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	seq := s.seq
 	started := time.Now().UTC()
 	entry := map[string]any{"sequence": seq, "slot": p.slot, "turn": p.turn, "kind": kind, "request": request, "started": started, "usage": nil, "dispatched": false}
-	if _, e := s.control.Exec(ctx, `INSERT INTO utility_abc_20261030_v1.entries(seq,slot)VALUES($1,$2)`, seq, p.slot); e != nil {
+	if _, e := s.control.Exec(ctx, `INSERT INTO `+s.entries+`(seq,slot)VALUES($1,$2)`, seq, p.slot); e != nil {
 		s.stopped = true
 		return nil, fmt.Errorf("native journal admission failed")
 	}
@@ -219,7 +232,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 			s.stopped = true
 			return e
 		}
-		tag, e := s.control.Exec(c, `UPDATE utility_abc_20261030_v1.entries SET dispatched=true WHERE seq=$1 AND NOT dispatched`, seq)
+		tag, e := s.control.Exec(c, `UPDATE `+s.entries+` SET dispatched=true WHERE seq=$1 AND NOT dispatched`, seq)
 		if e != nil || tag.RowsAffected() != 1 {
 			s.stopped = true
 			return fmt.Errorf("native dispatch retention failed")
@@ -256,7 +269,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	}
 	persist, done := context.WithTimeout(context.Background(), 10*time.Second)
 	defer done()
-	if _, e = s.control.Exec(persist, `UPDATE utility_abc_20261030_v1.entries SET body=$2 WHERE seq=$1`, seq, raw); e != nil {
+	if _, e = s.control.Exec(persist, `UPDATE `+s.entries+` SET body=$2 WHERE seq=$1`, seq, raw); e != nil {
 		s.stopped = true
 		return nil, fmt.Errorf("native usage retention failed")
 	}

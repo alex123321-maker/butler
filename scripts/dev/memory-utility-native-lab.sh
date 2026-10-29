@@ -39,7 +39,7 @@ cleanup() {
  exit "$status"
 }
 trap cleanup EXIT
-docker network create --internal --subnet 10.249.119.0/28 "$net" > "$r/network.id"; made_net=1
+docker network create --subnet 10.249.119.0/28 "$net" > "$r/network.id"; made_net=1
 docker run -d --name "$pg" --network "$net" --cpus 1 --memory 768m --memory-swap 768m --pids-limit 128 -p 127.0.0.1:55456:5432 -e POSTGRES_USER=utility_fixture -e POSTGRES_PASSWORD=utility_fixture_only -e POSTGRES_DB=utility_native_test -v "$r/pgdata:/var/lib/postgresql/data" sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d > "$r/pg.id"; made_pg=1
 for n in $(seq 1 40); do if docker exec "$pg" pg_isready -U utility_fixture -d utility_native_test >/dev/null 2>&1; then break; fi; sleep 1; done
 test "$(docker inspect -f '{{.Id}}' "$sourcepg")" = "$(cat "$old/native-pg-container.txt")"
@@ -64,9 +64,10 @@ v={k:(group/k).read_text().strip() for k in ['cpu.max','memory.max','memory.swap
 proof={'source':sys.argv[2],'pid':p,'cgroup':str(group),'actual_kernel_values':v,'binary_sha256':hashlib.sha256((r/'bin/app.test').read_bytes()).hexdigest(),'plan_sha256':hashlib.sha256((r/'out/plan/plan.json').read_bytes()).hexdigest(),'native_requests_before_proof':0}
 (r/'out/kernel-verified.json').write_text(json.dumps(proof)+'\n')
 PY
+journal_schema=$(python3 -c 'import json,sys;print("utility_abc_"+json.load(open(sys.argv[1]))["SuiteSHA256"][:16])' "$r/out/plan/plan.json")
 set +e
 docker exec "$cid" /binproof/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binproof/app.test -test.v -test.timeout=14500s -test.run '^TestMemoryUtilityWholeNativeABC$' > "$r/native.jsonl" 2>&1
 native_status=$?
 set -e
-docker exec "$sourcepg" psql -U postgres -p 55451 -d behavior76_test -Atc "SELECT COALESCE(jsonb_agg(to_jsonb(e) ORDER BY seq),'[]') FROM utility_abc_20261030_v1.entries e" > "$r/out/journal-complete.private.json"
+docker exec "$sourcepg" psql -U postgres -p 55451 -d behavior76_test -Atc "SELECT COALESCE(jsonb_agg(to_jsonb(e) ORDER BY seq),'[]') FROM $journal_schema.entries e" > "$r/out/journal-complete.private.json"
 exit "$native_status"
