@@ -222,7 +222,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	var provider transport.ModelProvider = controlled
 	if native != nil {
-		provider = native.provider(t, slot.Sequence, dst)
+		provider = native.provider(t, slot.Sequence, dst, pool)
 	}
 	started := time.Now()
 	out := r.execute(t, ctx, record, id, string(raw), provider)

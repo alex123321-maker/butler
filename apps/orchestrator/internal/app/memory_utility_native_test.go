@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/acceptance"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
@@ -182,14 +183,15 @@ type utilityNativeProvider struct {
 	slot, turn int
 	root       string
 	failed     bool
+	casePool   *pgxpool.Pool
 }
 
-func (s *utilityWholeNative) provider(t *testing.T, slot int, root string) transport.ModelProvider {
+func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, casePool *pgxpool.Pool) transport.ModelProvider {
 	p, e := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 90 * time.Second, MaximumOutputTokens: 8192, AuthSource: s.manager})
 	if e != nil {
 		t.Fatal(e)
 	}
-	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root}
+	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root, casePool: casePool}
 }
 func (p *utilityNativeProvider) InferenceLimits() (int64, int64) { return 65536, 8192 }
 func (p *utilityNativeProvider) InferenceTimeout() time.Duration { return 90 * time.Second }
@@ -207,11 +209,30 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	if s.stopped || p.failed || s.seq >= s.plan.MaximumMethods || p.turn >= 13 || !s.plan.Deadline.After(time.Now()) {
 		return nil, fmt.Errorf("native admission stopped")
 	}
+	op, admitted := budget.ModelOperationFromContext(ctx)
+	var run, reservation string
+	if !admitted || p.casePool.QueryRow(ctx, `SELECT a.run_id,a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$2`, op, experienceNativeOwner).Scan(&run, &reservation) != nil {
+		s.stopped = true
+		return nil, fmt.Errorf("owning native reservation not corroborated")
+	}
+	requestRun := ""
+	switch q := request.(type) {
+	case transport.StartRunRequest:
+		requestRun = q.Context.RunID
+	case transport.SubmitToolResultRequest:
+		requestRun = q.RunID
+	case transport.ContinueRunRequest:
+		requestRun = q.RunID
+	}
+	if run != requestRun || reservation == "" {
+		s.stopped = true
+		return nil, fmt.Errorf("native request ownership changed")
+	}
 	s.seq++
 	p.turn++
 	seq := s.seq
 	started := time.Now().UTC()
-	entry := map[string]any{"sequence": seq, "slot": p.slot, "turn": p.turn, "kind": kind, "request": request, "started": started, "usage": nil, "dispatched": false}
+	entry := map[string]any{"sequence": seq, "slot": p.slot, "turn": p.turn, "kind": kind, "request": request, "started": started, "usage": nil, "dispatched": false, "operation_id": op, "reservation_id": reservation, "run_id": run}
 	if _, e := s.control.Exec(ctx, `INSERT INTO `+s.entries+`(seq,slot)VALUES($1,$2)`, seq, p.slot); e != nil {
 		s.stopped = true
 		return nil, fmt.Errorf("native journal admission failed")
