@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/acceptance/utilitytrace/|apps/orchestrator/internal/app/(memory_utility_trace_test|skills_e2e_test)[.]go$|scripts/dev/memory-utility-trace-lab[.]sh$)" {
+    "^(internal/acceptance/utilitytrace/|apps/orchestrator/internal/app/(memory_utility_(trace|whole|native)_test|skills_e2e_test)[.]go$|scripts/dev/memory-utility-(trace|native)-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")

@@ -1,5 +1,12 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The prospective [72-slot development ABC](../testing/issue115-utility-native-2026-10-30.md)
+uses the same canonical experimental encrypted source and credential-owner lock
+as the targeted skill proof. The helper must attest source/app/plan and actual
+kernel limits before auth; Broker/runtime children receive no credential arguments.
+Attempts and nullable usage have a new one-use journal. It does not reopen old
+windows, copy production credentials or qualify native memory quality.
+
 The separate opt-in `TestReviewedSkillNativeBrokerPipeline` targeted proof reads
 only the existing experimental canonical encrypted auth store on laba, under its
 exclusive advisory lock, after binding its source/artifacts/plan and checking the

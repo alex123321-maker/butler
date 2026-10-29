@@ -3,6 +3,9 @@
 Status: **offline development protocol; no native quality qualification**.
 Motivation and immutable baseline: [v6 audit](../../experiments/memory115/2026-10-29/evaluation-validity-audit-v1/README.md).
 Implementation: [memory-utility-eval](../../cmd/memory-utility-eval/README.md).
+The additive [complete development cohort](issue115-utility-native-2026-10-30.md)
+now defines the separate 72-slot controlled/native collector and its bounded
+descriptive admission. Historical quality qualification remains separate.
 This changes the research measurement contract only. Product memory, Broker,
 run lifecycle, provider limits and old results are unchanged.
 
