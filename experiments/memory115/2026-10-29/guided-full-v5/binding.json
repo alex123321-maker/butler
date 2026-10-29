@@ -1,0 +1,28 @@
+{
+  "format": "butler115.guided-expanded-binding.v1",
+  "source": "f69d117e7bb747c5bb6a2a9888af6dfd300528f9",
+  "plan_sha256": "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54",
+  "history_sha256": "a84f7e4d6dae31e34042644fb377f4a94bcaf6eb0d8cf62d7de2f7f59869a503",
+  "source_producer_commit": "f69d117e7bb747c5bb6a2a9888af6dfd300528f9",
+  "model_entries_per_task": 24,
+  "external_calls_per_task": 32,
+  "maximum_new_entries": 1276,
+  "logical_slots": 57,
+  "control_repetitions": 2,
+  "prior_native_entries": 768,
+  "prior_known_full_tokens": 6790617,
+  "prior_unknown_usage": 4,
+  "pre_admission_superseded_plan": "2f3f4d29853e4f8d7a9ec8c46edfdc021cdcc7b9ed0403296b79caef0ce41899",
+  "superseded_plan_model_calls": 0,
+  "native_admission_during_binding": 0,
+  "pins": {
+    "laba115NativeSource": "f69d117e7bb747c5bb6a2a9888af6dfd300528f9",
+    "laba115NativePlanSHA": "9743229d7eea847608f661d299147ef72f12dcd0e0e73840ac5c12be80edff54",
+    "laba115NativeHistorySHA": "a84f7e4d6dae31e34042644fb377f4a94bcaf6eb0d8cf62d7de2f7f59869a503",
+    "laba115NativeAppSHA": "b0605504ce0c6b1d7039858d9ca42317bb63785b015ba15f920dcd81754560c2",
+    "laba115NativeBrokerSHA": "fa1396b6bd9218ab3c25c574e99cd196feeebaabe48faa4d4685d3d96f9cac0c",
+    "laba115NativeBrokerControlSHA": "4129f9d313759914121de9de1e99bfc1f4108ae1d96229955f7e8d6400f35307",
+    "laba115NativeExtensionSHA": "40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b",
+    "laba115NativeHTTPSHA": "c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca"
+  }
+}
