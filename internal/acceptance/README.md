@@ -6,6 +6,10 @@ It reuses the strict decoder and canonical hashing, preserves all older evaluato
 and scores, and never authorizes inference or qualifies native quality. Offline
 counterexamples cover contradictory finals, unsupported negative claims, stale
 and forbidden sources, missing observer gates and retained failed/unknown costs.
+The separate [trace observer](utilitytrace/README.md) correlates these scores with
+actual Core/Broker inputs, actions, source pins and receipts. Its scripted-transport
+integration is model-free; it never qualifies native A/B/C quality. Blocked UNKNOWN
+effects remain incomplete, not successful or verified-negative outcomes.
 
 The [issue97 effort pilot](../../cmd/effort-eval/README.md) is opt-in synthetic
 research with frozen off-model facets and no external effects. Its plain JSON

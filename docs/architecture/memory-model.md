@@ -7,6 +7,15 @@ and procedural reuse from safety regression. It does not write product memory,
 execute tools, qualify native performance or replace the frozen historical scores.
 Current memory consumers, Broker authority and read limits remain unchanged.
 
+The research-only `internal/acceptance/utilitytrace` observer connects this scorer
+to closed Core runs and permanent Broker evidence in a repeatable-read snapshot.
+It requires a pre-run source/task binding, owning input, current source fences,
+correlated dispatch/effect receipts and independently captured recipient files.
+Its controlled-transport integration exercises actual memory.search/open and
+project inspect/prepare/check; it does not qualify native model utility, skill
+loading or all 24 corpus cases. Prospective v2 binds newly prepared artifact IDs
+to the current verified receipt; v1 fixed-artifact suites remain supported.
+
 When the existing skill catalog is configured for a typed task, Orchestrator adds
 fixed kernel guidance to review descriptions and load an applicable exact digest
 before solving the task. Missing applicability information may require search;

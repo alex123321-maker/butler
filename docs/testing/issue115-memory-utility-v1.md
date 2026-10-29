@@ -106,3 +106,48 @@ amortization. Invoice cost is separate from measured token/work costs.
 No historical score, frozen protocol, raw evidence or expense is changed by this
 new version. Unit witnesses and model-free tests are checks of the measuring tool,
 not evidence that memory improves the agent or that #115 is ready to close.
+
+## Prospective v2: actual Core/Broker observer
+
+`internal/acceptance/utilitytrace` captures the exact owning input, task/run,
+tool calls, action bindings, effect/dispatch/evidence records, pinned memory
+sources and current heads, model attempts and final from one repeatable-read
+transaction. Binding is frozen before execution. Actual input must equal the
+suite's public projection; task/owner/session/revisions and original file digest
+must match. Read-only current authority/source checks apply to the closed run;
+the observer never manufactures a live session lease. A trusted collector seal
+identifies the original snapshot; it is not a signature against an adversary who
+also controls the expected seal. Model-supplied observation flags are inadmissible.
+An explicitly blocked owning input with an unresolved effect may also be captured:
+it retains UNKNOWN with completion false and cannot count as task success.
+
+Each result is corroborated against Broker's normalized-result digest, execution
+action and completed dispatch. Search candidates and full pinned opens remain
+distinct. The pre-run one-to-one mapping translates only actual Catalog citation
+identities into oracle identities; raw final bytes remain sealed and no answer,
+effect or check is repaired. Missing/foreign/changed evidence fails closed.
+
+V2 generates a prepared-artifact oracle marker `@current-verified-receipt`:
+the actual final ID must match the actual current prepare/check chain. This is
+needed because a freshly allocated artifact ID cannot be known before execution.
+V1's fixed-ID semantics and all frozen results remain unchanged.
+
+`scripts/dev/memory-utility-trace-lab.sh FRESH_ROOT` builds actual Broker and
+runtime test binaries, then runs `TestMemoryUtilityActualCoreBrokerTraceIntegration`
+with race detection in a fresh private PostgreSQL on an internal Docker network.
+For an exhausted Docker default pool, set `UTILITY_TRACE_SUBNET` to an independently
+checked unused subnet. No host ports, provider credentials or native requests are
+used. Seven controlled cases cover memory read, inspect and prepare/check with
+correct/incorrect answers, plus generic rejection retaining UNKNOWN. Corruption
+controls remove receipts, substitute results/arguments, change the owning run or
+recipient files, remove pins/heads and introduce an ambiguous source mapping.
+Raw private snapshots, oracle, observation, scores and failed attempts remain in
+the fresh root. Synthetic transport usage must not enter the native spend ledger.
+
+This bridge supports memory.search/open and the reviewed synthetic project
+recipient. skills.load, arbitrary HTTP tools, lifecycle mutation scenarios and a
+typed verified-negative recipient need additional evidence mapping. Unsupported
+tools fail closed. This seven-case integration is not a complete 24-case corpus,
+a native A/B/C comparison, semantic retrieval quality proof or issue closure.
+Native admission still requires a frozen denominator/order, full cost journal
+correlation, all arm mappings and independent review as specified above.

@@ -1671,3 +1671,10 @@ a separate reserved product attempt has NULL usage and no native entry after
 memory_source_stale. All old costs/unknowns remain. Larger24/32 per-task limits
 have not qualified experience; defaults stay off. See the
 [full result](../../experiments/memory115/2026-10-29/guided-full-v5/README.md).
+# Research-only utility trace verification
+
+`internal/app/memory_utility_trace_test.go` exercises actual Core/Broker persistence
+with scripted transport and the [read-only utility observer](../../internal/acceptance/utilitytrace/README.md).
+Run through `scripts/dev/memory-utility-trace-lab.sh` in a fresh isolated lab root.
+This adds no production composition or native model calls; blocked UNKNOWN remains
+incomplete. See [the prospective protocol](../../docs/testing/issue115-memory-utility-v1.md).

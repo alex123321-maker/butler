@@ -6,6 +6,9 @@ effects, dispatches, effect evidence, source pins/heads, model attempts and fina
 It also checks current task authority and Catalog source fences. Closed-run
 inspection never forges a live ownership token: current captured source grants
 are checked separately against task/source/access revisions and expiry.
+An explicitly blocked input with an unresolved effect can be observed before
+run closure: its UNKNOWN receipt is preserved and completion stays false. It
+cannot become a successful or verified-negative observation.
 
 `Binding` is frozen before execution: suite/current-input projection, task,
 constraints/owner/session, original recipient files and an exact one-to-one

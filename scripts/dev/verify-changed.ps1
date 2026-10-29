@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/utilitytrace/|apps/orchestrator/internal/app/memory_utility_trace_test[.]go$|scripts/dev/memory-utility-trace-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/testing/issue115-memory-utility-v1.md")
+      [void]$tests.Add("SSH laba: memory-utility-trace-lab.sh in a fresh isolated root; actual Core/Broker/runtime/PG with controlled transport, race/vet, corruption controls and no required skips. Zero native calls; preserve failed roots and all historical costs. This does not qualify native A/B/C utility.")
+      continue
+    }
     "^(internal/acceptance/memory_utility|cmd/memory-utility-eval/|scripts/dev/memory-utility-offline-lab[.]sh$|docs/testing/issue115-memory-utility-v1[.]md$)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/testing/issue115-memory-utility-v1.md")

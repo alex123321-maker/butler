@@ -65,3 +65,9 @@ On laba, `scripts/dev/memory-utility-offline-lab.sh ISOLATED_ROOT` tests the two
 packages' memory/CLI tests with race detection and vets both complete packages in a pinned network-none container, builds
 the CLI and generates one new private suite. Old raw archives and costs are never
 opened for writing. See the [prospective protocol](../../docs/testing/issue115-memory-utility-v1.md).
+
+The separate [Core/Broker observer](../../internal/acceptance/utilitytrace/README.md)
+connects actual persisted traces to these observations. Its isolated controlled
+integration is `scripts/dev/memory-utility-trace-lab.sh FRESH_ROOT`; it does not
+call a native model. Newly generated v2 suites use a current verified-receipt
+marker for dynamic artifact IDs; existing v1 suites retain fixed-ID semantics.
