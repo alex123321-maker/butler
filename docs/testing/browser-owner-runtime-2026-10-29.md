@@ -121,6 +121,15 @@ credential acceptance workflow additionally builds current Web and runs
 server and browser logs. Ordinary Web-only jobs explicitly skip this opt-in case;
 that skip is not acceptance evidence.
 
+The first CI run on e3be72e0 passed the required credential/runtime/resource
+step and ordinary Web typecheck/lint/e2e, but the new owner UI launcher failed:
+it ran the Broker executable from the repository root (relative registry path
+unavailable), and Web's independently pinned Chromium revision had not been
+installed. The launcher now uses the Broker package directory; CI explicitly
+installs Web's own browser revision. No package versions or production contracts
+changed. The failed [CI run and artifacts](https://github.com/alex123321-maker/butler/actions/runs/40828133657)
+remain evidence of that setup failure, not owner-control acceptance.
+
 These bounded checks pass. General browser acceptance and #163 remain open:
 they do not establish universal browser capability, autonomous reconciliation,
 native model recovery after runtime loss, popup SSO, CAPTCHA or WebSocket support.

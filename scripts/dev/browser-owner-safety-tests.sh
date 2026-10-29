@@ -18,7 +18,7 @@ broker_pid=''
 cleanup() { if [[ -n "$broker_pid" ]]; then kill "$broker_pid" >/dev/null 2>&1 || true; fi; kill "$web_pid" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 node -e 'const url="http://127.0.0.1:"+(process.env.BUTLER_WEB_TEST_PORT||4173); (async()=>{for(let i=0;i<100;i++){try{if((await fetch(url)).ok)return}catch{} await new Promise(r=>setTimeout(r,100))}process.exit(1)})()'
-"$proof/owner-broker.test" -test.v -test.timeout=6m -test.run '^TestBrowserSafetyOwnerUIChromiumIntegration$' > "$proof/owner-broker.log" 2>&1 &
+(cd apps/tool-broker/internal/broker && exec "$proof/owner-broker.test" -test.v -test.timeout=6m -test.run '^TestBrowserSafetyOwnerUIChromiumIntegration$') > "$proof/owner-broker.log" 2>&1 &
 broker_pid=$!
 if ! (cd web && npx --no-install playwright test --workers=1 tests/e2e/browser-owner-real.spec.ts) > "$proof/owner-browser.log" 2>&1; then
  cat "$proof/owner-browser.log" "$proof/owner-broker.log"
