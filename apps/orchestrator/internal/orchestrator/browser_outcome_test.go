@@ -18,9 +18,12 @@ import (
 )
 
 type browserOutcomeFixture struct {
-	stage, raw, fail string
-	calls            []*toolbrokerv1.ToolCall
-	readDeadline     time.Time
+	stage, raw, fail     string
+	calls                []*toolbrokerv1.ToolCall
+	readDeadline         time.Time
+	readContext          context.Context
+	persistDeadline      time.Time
+	persistReadCancelled bool
 }
 
 type ownerReviewFlowFixture struct {
@@ -85,7 +88,14 @@ func TestUnknownBrowserOwnerWaitNeverResumesOnItsOwn(t *testing.T) {
 	}
 }
 
-func (f *browserOutcomeFixture) SaveCheckpoint(_ context.Context, _ string, stage, raw string) error {
+func (f *browserOutcomeFixture) SaveCheckpoint(ctx context.Context, _ string, stage, raw string) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if stage == "browser_outcome_observed" {
+		f.persistDeadline, _ = ctx.Deadline()
+		f.persistReadCancelled = f.readContext != nil && errors.Is(f.readContext.Err(), context.Canceled)
+	}
 	if f.fail == stage {
 		return errors.New("unavailable")
 	}
@@ -100,6 +110,7 @@ func (f *browserOutcomeFixture) PrepareAction(ctx context.Context, call *toolbro
 	p := actionauth.PreparedAction{Binding: actionauth.ActionBinding{OwnerID: "owner", ActionID: "action-" + call.ToolCallId, ActionHash: "hash", RunID: call.RunId, ToolCallID: call.ToolCallId, ToolName: call.ToolName, Effect: actionauth.EffectUnknown, ArgsHash: h}, EffectID: "effect-" + call.ToolCallId}
 	if call.ToolName == frozenBrowserObservation {
 		f.readDeadline, _ = ctx.Deadline()
+		f.readContext = ctx
 		p.Binding.Effect, p.Binding.ContractRevision, p.Binding.ContractHash = actionauth.EffectRead, "1", strings.Repeat("a", 64)
 		p.Binding.Resource = "browser:" + strings.Repeat("a", 32) + ":"
 		switch f.fail {
@@ -204,6 +215,43 @@ func TestUnknownBrowserObservationCannotRetryOrExtendDeadline(t *testing.T) {
 	}
 	if !f.readDeadline.Equal(deadline) {
 		t.Fatal("child extended parent deadline")
+	}
+	if strings.Contains(f.calls[0].ArgsJson, "private") {
+		t.Fatal("credential ref copied to observation")
+	}
+	var checkpoint struct {
+		Data struct {
+			Original browserOutcomeCheckpoint `json:"uncertain_browser"`
+		} `json:"checkpoint_data"`
+	}
+	if json.Unmarshal([]byte(f.raw), &checkpoint) != nil || checkpoint.Data.Original.EffectID != "original" {
+		t.Fatal("lost original uncertainty marker")
+	}
+}
+
+func TestUnknownBrowserObservationPersistsAfterDispatchClockStops(t *testing.T) {
+	f := &browserOutcomeFixture{}
+	history := &memoryTranscriptStore{}
+	s := &Service{config: Config{Tools: f, ActionAuthorizer: f, Checkpoints: f}, transcript: history}
+	current := &sessionv1.RunRecord{RunId: "run"}
+	call := &transport.ToolCallRequest{ToolCallRef: "fill", ToolName: "browser.fill", ArgsJSON: `{"browser_session_id":"` + strings.Repeat("a", 32) + `","value":{"type":"credential_ref","alias":"private","field":"password"}}`}
+	original := actionauth.PreparedAction{EffectID: "original", Binding: actionauth.ActionBinding{OwnerID: "owner", Effect: actionauth.EffectUnknown}}
+	result := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "fill", ToolName: call.ToolName, ActionId: "original", Status: "effect_unknown"}
+	f.SaveCheckpoint(context.Background(), "run", "tool_result_recorded", `{"tool_call_id":"fill","effect_id":"original","status":"effect_unknown"}`)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	deadline, _ := ctx.Deadline()
+	if err := s.observeUnknownBrowser(ctx, current, call, original, result); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.observeUnknownBrowser(ctx, current, call, original, result); err != nil || len(f.calls) != 1 {
+		t.Fatal("same unknown scheduled another read", err)
+	}
+	if f.readDeadline.After(deadline) || time.Until(f.readDeadline) > 5*time.Second {
+		t.Fatal("child extended parent deadline")
+	}
+	if !f.persistReadCancelled || f.persistDeadline.IsZero() || time.Until(f.persistDeadline) > 3*time.Second {
+		t.Fatal("persistence reused dispatch context or widened its own bound")
 	}
 	if strings.Contains(f.calls[0].ArgsJson, "private") {
 		t.Fatal("credential ref copied to observation")

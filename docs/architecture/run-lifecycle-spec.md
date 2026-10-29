@@ -1354,3 +1354,11 @@ fresh open and reassessment. This is a new model proposal with separate current
 authorization, not a kernel retry, grant replay, restored DOM or confirmation of
 an earlier UNKNOWN action. A frozen context is not implicitly thawed. Unresolved
 write effects and stopped-attempt isolation retain their existing gates.
+
+Frozen-observation dispatch retains its existing five-second child deadline.
+After a correlated response returns, that child is cancelled before transcript
+and checkpoint persistence. Persistence alone uses a separate three-second child
+of the original run context: it cannot execute tools, widen the run/claim/lease
+or survive parent cancellation. A persistence failure still blocks; there is no
+read or POST retry and no fabricated receipt. This keeps a completed read from
+losing its checkpoint merely because its dispatch clock expires during storage.

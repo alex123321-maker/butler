@@ -417,3 +417,11 @@ pins that state in the Go session. Only the new guarded read contract can prove
 ABSENT for `session_lost` or `network_frozen`; helper claims and transport loss
 cannot. The model may propose a new open for the requested URL under normal
 policy. Revision3 navigation UNKNOWN is retained and cannot inherit this proof.
+
+Frozen-observation dispatch retains its existing five-second child deadline.
+After a correlated response returns, that child is cancelled before transcript
+and checkpoint persistence. Persistence alone uses a separate three-second child
+of the original run context: it cannot execute tools, widen the run/claim/lease
+or survive parent cancellation. A persistence failure still blocks; there is no
+read or POST retry and no fabricated receipt. This keeps a completed read from
+losing its checkpoint merely because its dispatch clock expires during storage.
