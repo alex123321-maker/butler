@@ -256,34 +256,35 @@ func (c *experienceNativeToolCatalog) ListToolsForRun(ctx context.Context, run s
 }
 
 type experienceNativeRuntime struct {
-	pool        *pgxpool.Pool
-	reads       *pgxpool.Pool
-	directory   string
-	cat         *catalog.Store
-	lessons     *experience.Store
-	broker      *tools.BrokerClient
-	skillClient *skills.Client
-	goals       *goal.Manager
-	tasks       *task.Store
-	sessions    *session.PostgresRepository
-	runs        *runservice.Service
-	history     *transcript.Store
-	inputs      *durableinput.Store
-	results     *completion.Coordinator
-	journal     *actionauth.PostgresStore
-	budgets     *budget.Controller
-	pm          *promptmgmt.Manager
-	decisions   *approvals.Service
-	extensions  *extensions.ControlClient
-	pack        extensions.Package
-	generation  int64
-	environment string
-	expires     time.Time
-	addresses   experienceNativeAddresses
-	timing      *experienceSourceTimings
-	stops       []func()
-	reconcile   func(context.Context, string, string, string) (actionauth.RunEffect, error)
-	foreground  *experienceNativeForeground
+	pool          *pgxpool.Pool
+	reads         *pgxpool.Pool
+	directory     string
+	cat           *catalog.Store
+	lessons       *experience.Store
+	broker        *tools.BrokerClient
+	skillClient   *skills.Client
+	goals         *goal.Manager
+	tasks         *task.Store
+	sessions      *session.PostgresRepository
+	runs          *runservice.Service
+	history       *transcript.Store
+	inputs        *durableinput.Store
+	results       *completion.Coordinator
+	journal       *actionauth.PostgresStore
+	budgets       *budget.Controller
+	pm            *promptmgmt.Manager
+	decisions     *approvals.Service
+	extensions    *extensions.ControlClient
+	pack          extensions.Package
+	generation    int64
+	environment   string
+	expires       time.Time
+	addresses     experienceNativeAddresses
+	timing        *experienceSourceTimings
+	stops         []func()
+	reconcile     func(context.Context, string, string, string) (actionauth.RunEffect, error)
+	foreground    *experienceNativeForeground
+	evidenceReads *MemoryReads
 }
 
 // Explicit test-only composition. Nil retains the frozen90 foreground defaults;
@@ -426,6 +427,7 @@ func configureExperienceNativeRuntime(t *testing.T, r *experienceNativeRuntime, 
 		if err != nil {
 			t.Fatal(err)
 		}
+		r.evidenceReads = reads
 		if r.foreground != nil {
 			reads.temporal = temporalReadConfigured(r.foreground.TemporalEnabled, providerfactory.Result{Provider: r.foreground.Provider, ModelName: "gemini-3.8-flash-high"}, r.budgets)
 		}
@@ -767,6 +769,7 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	currentSources := experienceTimedRunSources{experienceRunSources: experienceRunSources{sources: experienceTimedCatalog{Store: r.cat, timing: r.timing}, catalog: r.cat, store: r.lessons}, timing: r.timing}
 	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "experience-native-worker", LeaseTTL: 120, Tasks: r.tasks, Budgets: r.budgets, MemorySources: currentSources, Completion: r.results, Checkpoints: r.inputs, PromptManager: r.pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tools: r.broker, ToolCatalog: r.broker, ActionAuthorizer: r.broker, OwnerGoals: r.goals, ActionMandateID: a.MandateID, ApprovalService: r.decisions}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
+	fc.MemoryEvidence = memoryEvidencePolicy(r.evidenceReads)
 	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: "gemini-3.8-flash-high"}, r.budgets, r.foreground)
 	fc.MemoryScopeResolver = func(c context.Context) ([]memoryservice.Scope, error) {
 		extra, err := r.cat.ExtraScopes(c, "memory_read")

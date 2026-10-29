@@ -1,0 +1,68 @@
+package experience
+
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"testing"
+)
+
+func TestExperienceSealedReadPrefixReplayDiagnostic(t *testing.T) {
+	if os.Getenv("BUTLER_EXPERIENCE_READ_REPLAY") != "sealed-only" {
+		t.Fatal("explicit frozen prefix replay required")
+	}
+	raw, err := os.ReadFile("/probe/read-traces.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []struct {
+		Sequence int               `json:"sequence"`
+		Case     string            `json:"case"`
+		Arm      string            `json:"arm"`
+		Reads    []ReadObservation `json:"reads"`
+	}
+	if json.Unmarshal(raw, &cases) != nil || len(cases) != 48 {
+		t.Fatal("full recorded control denominator")
+	}
+	type result struct {
+		Sequence        int    `json:"sequence"`
+		Case            string `json:"case"`
+		Arm             string `json:"arm"`
+		RecordedReads   int    `json:"recorded_reads"`
+		PermittedPrefix int    `json:"permitted_prefix"`
+		Stop            string `json:"stop,omitempty"`
+	}
+	var out []result
+	for _, c := range cases {
+		row := result{Sequence: c.Sequence, Case: c.Case, Arm: c.Arm, RecordedReads: len(c.Reads)}
+		var history []ReadObservation
+		for _, h := range c.Reads {
+			err := CheckReadProposal(history, h.Tool, h.ArgsJSON)
+			if err != nil {
+				switch {
+				case errors.Is(err, ErrReadBound):
+					row.Stop = "read_bound"
+				case errors.Is(err, ErrSearchBound):
+					row.Stop = "search_exhausted"
+				case errors.Is(err, ErrRepeatedRead):
+					row.Stop = "covered_range"
+				default:
+					t.Fatal("recorded read cannot be interpreted", c.Sequence, err)
+				}
+				break
+			}
+			history = append(history, h)
+			row.PermittedPrefix++
+		}
+		out = append(out, row)
+	}
+	b, _ := json.MarshalIndent(map[string]any{"format": "butler115.recorded-read-prefix-replay.v1", "new_model_requests": 0, "cases": out, "limit": "Retrospective recorded prefixes only; after the first changed decision the original model trajectory is not a counterfactual. No outcome, usage, saving or success is reassigned."}, "", "  ")
+	if os.WriteFile("/probe/read-prefix-replay.json", b, 0600) != nil {
+		t.Fatal("new report")
+	}
+	for _, r := range out {
+		if r.Case == "control-03" {
+			t.Logf("case=%d arm=%s reads=%d admitted_prefix=%d stop=%s", r.Sequence, r.Arm, r.RecordedReads, r.PermittedPrefix, r.Stop)
+		}
+	}
+}

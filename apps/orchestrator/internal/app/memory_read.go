@@ -261,7 +261,11 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 		if s.experience != nil {
 			environment = s.experience.EnvironmentHash
 		}
-		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, ExperienceEnvironment: &environment, ExperienceDependencies: lessonEnvironment.DependenciesJSON(), SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+		var locator func(context.Context, pgx.Tx, catalog.Source) (json.RawMessage, error)
+		if s.experience != nil {
+			locator = s.experience.EvidenceLocatorTx
+		}
+		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, ExperienceEnvironment: &environment, ExperienceDependencies: lessonEnvironment.DependenciesJSON(), SourceLocator: locator, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
 			return s.experience.EligibleTx(ctx, tx, src, lessonEnvironment, true)
 		}}).ReadTx(owned, tx, e.Tool, a)
 	}

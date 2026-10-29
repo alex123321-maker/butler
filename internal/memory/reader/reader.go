@@ -42,6 +42,21 @@ type Reader struct {
 	// Concrete typed-lesson applicability proof, provided by the owning app.
 	// It runs after Catalog access in this same transaction, without IPC.
 	SourceEligibility func(context.Context, pgx.Tx, catalog.Source) (bool, error)
+	// Optional content-free pointers into a fully authorized typed source.
+	SourceLocator func(context.Context, pgx.Tx, catalog.Source) (json.RawMessage, error)
+}
+
+func (r Reader) discoveryItem(ctx context.Context, tx pgx.Tx, src catalog.Source, key, title, text string, loc json.RawMessage) (readcontrol.Item, error) {
+	if r.SourceLocator != nil {
+		selected, err := r.SourceLocator(ctx, tx, src)
+		if err != nil {
+			return readcontrol.Item{}, err
+		}
+		if selected != nil {
+			loc = selected
+		}
+	}
+	return item(src, key, title, text, loc, 240), nil
 }
 
 func (r Reader) eligible(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
@@ -324,7 +339,11 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 			out.Truncated = true
 			continue
 		}
-		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+		v, err := r.discoveryItem(ctx, tx, byID[h.ref.ID], h.key, h.title, h.text, h.loc)
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		out.Items = append(out.Items, v)
 	}
 	if len(out.Items) == 0 {
 		out.Status = "empty"
@@ -397,7 +416,11 @@ func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Arg
 			out.Truncated = true
 			continue
 		}
-		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+		v, err := r.discoveryItem(ctx, tx, byID[h.ref.ID], h.key, h.title, h.text, h.loc)
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		out.Items = append(out.Items, v)
 	}
 	if len(out.Items) > 0 {
 		out.Status = "ok"

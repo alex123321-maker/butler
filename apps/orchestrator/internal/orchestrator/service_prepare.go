@@ -254,6 +254,7 @@ func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID stri
 }
 
 func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {
+	s.attachMemoryEvidenceInstruction(prepared)
 	if s.config.ToolDiscoveryEnabled && s.config.ToolCatalog == nil {
 		return fmt.Errorf("tool discovery requires a scoped Broker catalog")
 	}

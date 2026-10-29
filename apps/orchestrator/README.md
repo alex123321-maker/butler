@@ -1327,6 +1327,16 @@ turning an empty search into a later `memory_source_stale` failure. All current
 release guards remain; this is a model-free correctness repair, not native
 quality qualification. See [C43 reproduction and A/B/C cost attribution](../../experiments/memory115/2026-10-29/c43-stale-fix-v1/README.md).
 
+The prospective experience consumer now gives discovery exact field pointers to
+historical verdicts, unknowns and actual actions. Core's fixed evidence guidance
+survives recovery and its optional-read guard reconstructs current-run confirmed
+Broker receipts from PostgreSQL: at most8 attempts/3 searches, stopping discovery
+after2 consecutive searches without new sources and denying fully covered opens.
+Failures retain their spend; other task actions remain eligible. A violating
+proposal uses the existing incomplete-run/checkpoint stop, never fake completion.
+No migration, provider request, general adaptive activation or qualification is
+implied. See [model-free evidence selection and stopping checks](../../experiments/memory115/2026-10-29/evidence-policy-v1/README.md).
+
 The isolated experience comparison collector executes original Flow/Broker tasks,
 owner verification/sealing, bounded note jobs, owner acceptance and skill
 Stage/Test/Activate before freezing task data. Each A/B/C input receives a fresh

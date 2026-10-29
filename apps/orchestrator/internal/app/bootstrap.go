@@ -584,6 +584,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 			},
 			SemanticMemory:           semanticReader,
 			AdaptiveRetrieval:        adaptiveRetrieval,
+			MemoryEvidence:           memoryEvidencePolicy(memoryReads),
 			SemanticSearchEnabled:    memoryReads != nil && memoryReads.semantic != nil,
 			MemorySources:            memorySources,
 			DelegationContexts:       childContexts,

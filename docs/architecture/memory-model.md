@@ -1164,3 +1164,12 @@ permits fewer tools. A rejected candidate returns empty/denied DATA without
 poisoning later source checks. Full current applicability, installed revisions
 and final release checks remain mandatory; existing exposed pins are retained.
 This filter needs no migration, model call or permission expansion.
+
+The experience consumer also annotates discovery with bounded pointers into
+actual historical verdict/action/unknown fields, preserving exact source offsets
+and current authorization. Core's separate optional-read policy uses corroborated
+current-run tool receipts to stop repeated covered ranges, nonproductive
+discovery and bounded read attempts. It can stop an incomplete run; it never
+marks an unknown observation as a fact or task success. See
+[episodic experience](episodic-experience.md) for the prospective8/3/2 limits and
+their default-off/native-qualification boundary.

@@ -33,6 +33,17 @@ closed native result. The prospective experiment requires new final gates.
 
 ## Research protocol boundaries
 
+The configured experience evidence policy checks optional memory proposals before
+action authorization/dispatch. The fixed loop reasons are
+`memory_evidence_read_bound`, `memory_evidence_search_exhausted` and
+`memory_evidence_range_already_read`. They use the existing stopBudget path and
+retain the preceding checkpoint, transcript, actual model usage and action
+effects; no completion coordinator success or synthetic tool result is emitted.
+This narrows optional reads only. Other currently permitted actions can proceed
+until a violating proposal stops the run. Recovery retains current-run receipt
+history and rebuilds the fixed kernel guidance. Source/authority failure remains
+independent and cannot be converted into a no-progress allowance or refund.
+
 Corrected issue76 v10-r3 research observation persists its existing bounded
 metadata chunks in the measured private local Linux spool. Windows artifact
 publication and exact readback happen outside owning pgx callbacks, after actual

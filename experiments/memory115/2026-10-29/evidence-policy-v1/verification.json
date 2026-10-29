@@ -1,0 +1,54 @@
+{
+  "format": "butler115.evidence-policy-model-free.v1",
+  "source_base": "4ed0dac70f3e511dacb2c900c88a6af00c0091b7",
+  "new_external_model_requests": 0,
+  "network": "none",
+  "provider_auth_mounts": 0,
+  "new_pg_stopped": true,
+  "clients_before_stop": 0,
+  "source_sha256": {
+    "apps/orchestrator/internal/app/bootstrap.go": "1b44507a79e980cacff79c8778c8055b551c55db8d9d65b459e5b0834b8b0ccb",
+    "apps/orchestrator/internal/app/memory_experience_native_runtime_test.go": "43f04f359cd78afe6ee3ad889cbdf6c8e6a444c45750c64b9c1edae0b292cac7",
+    "apps/orchestrator/internal/app/memory_read.go": "3cbe2d3d901473c721f5c5672424dae59855d871a4353a2219c48e04394a9fb8",
+    "apps/orchestrator/internal/orchestrator/catalog_recovery.go": "d9b37badae787e973c1333d3aa175426e6c3e4dab42fba5eccdfadfe0e39af00",
+    "apps/orchestrator/internal/orchestrator/service.go": "1434c5ab280f393da4927933fb354e5c69c8aa7c3bebaec000a4097870244e50",
+    "apps/orchestrator/internal/orchestrator/service_prepare.go": "116404d45fc4eafb8e5d0be5a2b377f14b408b9a32a68daa816975df3a1af8b4",
+    "apps/orchestrator/internal/orchestrator/tool_handler.go": "84303b08cdf3c59ab0ae1a1eb4e5cc303a6f3ffc383baa61922c0e89bb3701b6",
+    "internal/memory/reader/reader.go": "95a7da093c89344333d45d4dd24f05982e682382775eb1f30a279fc23eeda63a",
+    "apps/orchestrator/internal/app/memory_evidence_policy.go": "b1b9f3ae9f3466b97f46d15c4a4c59a62e6b81b49318cf9f0f11816420c5c2f2",
+    "apps/orchestrator/internal/app/memory_evidence_policy_integration_test.go": "123c565580a29bb0ba60bcd7fbe9ffa81e31e0710917e51d59a2e164476466b9",
+    "apps/orchestrator/internal/orchestrator/memory_evidence.go": "8de8ebb34f11cd42ccf7742f4478c9378d5552408b7a71d709b225bc8e480812",
+    "apps/orchestrator/internal/orchestrator/memory_evidence_test.go": "01c7fe9a2328eee52d8891421e4183d574547454dfe0f81f352388715ad00c0c",
+    "internal/memory/experience/evidence_locator.go": "f04fce77bdd9f6b3036d3cd5cee424d9f2b4abf61bedfe7c4d447a09ae62c37c",
+    "internal/memory/experience/evidence_locator_integration_test.go": "95703668491e3c6695bda579ccc69bf0dc37aee0e68408931f4e5bafdebb0aec",
+    "internal/memory/experience/read_policy.go": "29fd34562921c8958bfa88893c223799c9caaf96ec5546a924f3783827a25773",
+    "internal/memory/experience/read_policy_test.go": "c1b0c571ffab10f798e002560087a43643cef65a9f2fa0e98b214cc43b173bca"
+  },
+  "old_archive_sha256": {
+    "/srv/gitea/butler-acceptance/issue115-native-20261028-v1/private-native-raw-guided-full-v5.tar": "0cb84857f9747885881d65318e556dc052bcf5fa7e0e222b6089eb9ad203b552",
+    "/srv/gitea/butler-acceptance/issue115-native-20261028-v1/private-native-raw-inventory-guided-full-v5.sha256": "807648b8ce76b11b710bdb0a50434066fc6ab976d54e56063fe74d41c287fb6a",
+    "/srv/gitea/butler-acceptance/issue115-native-20261028-v1/private-audit-proof-guided-full-v5.tar": "890afad1df3c63ffe07d011c9cec9664dfd6e4fd810619a94a422221ae7c7db9",
+    "/srv/gitea/butler-acceptance/issue115-c43-stale-20261029-v1/private-c43-proof-v1.tar": "59ecb23cbfa9ee323701c62d280a507ad7f963886dec7b55a5054602a7a0e715"
+  },
+  "checks": {
+    "memory_reader_experience_race_exit": 0,
+    "orchestrator_package_race_exit": 0,
+    "selected_actual_broker_race_exit": 0,
+    "final_targeted_race_exit": 0,
+    "vet_exit": 0,
+    "recorded_prefix_replay_exit": 0
+  },
+  "scope_limits": [
+    "Existing general PG/Redis orchestrator integrations not executed without their own env; no acceptance claimed for their skips.",
+    "Old external backup procedure excluded from the general memory package run; prior C43 restore evidence preserved.",
+    "Retrospective prefixes do not establish new outcomes or actual token savings."
+  ],
+  "current_limits": {
+    "read_attempts": 8,
+    "searches": 3,
+    "consecutive_searches_without_new_source": 2
+  },
+  "old_outcomes_or_spend_modified": false,
+  "deployment_updated": false,
+  "quality_qualified": false
+}

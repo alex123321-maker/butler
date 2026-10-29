@@ -1,0 +1,7 @@
+{
+  "format": "butler115.evidence-proof-backup.v1",
+  "archive_sha256": "2cf5829f46d13d66666e7277fdb516ae61765757dbadbab5ca4e16e179728841",
+  "archive_bytes": 522240,
+  "provider_auth_files": 0,
+  "old_results_modified": false
+}

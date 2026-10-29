@@ -57,6 +57,10 @@ type ToolCatalog interface {
 	ListTools(context.Context) ([]*toolbrokerv1.ToolContract, error)
 }
 
+type MemoryEvidencePolicy interface {
+	CheckProposal(context.Context, string, string, string) error
+}
+
 type ProfileMemoryStore interface {
 	GetByScope(context.Context, string, string) ([]memoryservice.ProfileEntry, error)
 }
@@ -213,6 +217,7 @@ type Config struct {
 	MemoryBundles         MemoryBundleService
 	SemanticSearchEnabled bool
 	AdaptiveRetrieval     *adaptive.Store
+	MemoryEvidence        MemoryEvidencePolicy
 	SemanticMemory        memoryservice.SemanticReader
 	MemoryScopeResolver   func(context.Context) ([]memoryservice.Scope, error)
 	PromptManager         PromptManager

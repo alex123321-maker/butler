@@ -1,0 +1,32 @@
+=== RUN   TestExperienceEvidenceLocatorExactRangesAndUnknownIntegration
+--- PASS: TestExperienceEvidenceLocatorExactRangesAndUnknownIntegration (1.82s)
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/two_empty
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/same_source_new_queries
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/open_after_discovery_stop
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/covered_union_unicode
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/overlap_with_new_suffix
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/gap_not_covered
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/short_eof
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/past_eof
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/other_task_action
+--- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures (0.01s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/two_empty (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/same_source_new_queries (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/open_after_discovery_stop (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/covered_union_unicode (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/overlap_with_new_suffix (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/gap_not_covered (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/short_eof (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/past_eof (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/other_task_action (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	2.848s
+=== RUN   TestMemoryEvidenceStopBeforeAuthorizationAndRecoveryGuidance
+--- PASS: TestMemoryEvidenceStopBeforeAuthorizationAndRecoveryGuidance (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	1.038s
+=== RUN   TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration
+--- PASS: TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration (1.57s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/app	2.623s

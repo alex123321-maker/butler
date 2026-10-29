@@ -1,5 +1,20 @@
 # Typed task experience inside Episodic Memory
 
+`EvidenceLocatorTx` exposes content-free pointers into a fully authorized typed
+lesson's exact source ranges. The historical verification/verdict stays distinct
+from the current task; unknowns/actions/failures can be opened directly rather
+than paging through environment, usage and unrelated provenance. Locator JSON
+uses the same canonical sanitized representation as Reader/Broker. Generic
+documents, even lesson-shaped ones, are not annotated without typed metadata.
+
+`CheckReadProposal` is a pure conservative policy over current-run receipts:
+8 attempts,3 searches,2 consecutive searches without new source versions, and
+no fully covered open ranges. Coverage is Unicode-based and handles unions,
+partial overlap, gaps and EOF. Failed/unconfirmed receipts spend attempts but
+do not establish evidence. The owning app obtains corroborated durable receipts;
+Core performs the stop before Broker authorization. No schema, background model,
+authority, task success, release qualification or general adaptive policy changes.
+
 `Prepared.DependenciesJSON()` exports a deterministic content-free snapshot of
 the current permitted Broker tool names/hashes/revisions to the Catalog reader.
 The runtime filters candidate lesson ancestry before ranking, pagination and

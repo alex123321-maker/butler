@@ -1,0 +1,10 @@
+=== RUN   TestExperienceSealedReadPrefixReplayDiagnostic
+    evidence_trace_replay_test.go:65: case=16 arm=C_same_frozen_notes_and_reviewed_skills reads=11 admitted_prefix=8 stop=read_bound
+    evidence_trace_replay_test.go:65: case=17 arm=A_no_experience reads=0 admitted_prefix=0 stop=
+    evidence_trace_replay_test.go:65: case=18 arm=B_same_frozen_notes_no_skills reads=23 admitted_prefix=8 stop=read_bound
+    evidence_trace_replay_test.go:65: case=40 arm=A_no_experience reads=0 admitted_prefix=0 stop=
+    evidence_trace_replay_test.go:65: case=41 arm=C_same_frozen_notes_and_reviewed_skills reads=11 admitted_prefix=6 stop=search_exhausted
+    evidence_trace_replay_test.go:65: case=42 arm=B_same_frozen_notes_no_skills reads=22 admitted_prefix=8 stop=read_bound
+--- PASS: TestExperienceSealedReadPrefixReplayDiagnostic (0.04s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	1.063s

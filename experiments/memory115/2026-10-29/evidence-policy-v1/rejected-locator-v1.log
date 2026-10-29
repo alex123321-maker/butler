@@ -1,0 +1,43 @@
+=== RUN   TestExperienceEvidenceLocatorExactRangesAndUnknownIntegration
+--- PASS: TestExperienceEvidenceLocatorExactRangesAndUnknownIntegration (1.67s)
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/two_empty
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/same_source_new_queries
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/open_after_discovery_stop
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/covered_union_unicode
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/overlap_with_new_suffix
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/gap_not_covered
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/short_eof
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/past_eof
+=== RUN   TestExperienceReadPolicyNoveltyRangesAndFailures/other_task_action
+--- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures (0.01s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/two_empty (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/same_source_new_queries (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/open_after_discovery_stop (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/covered_union_unicode (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/overlap_with_new_suffix (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/gap_not_covered (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/short_eof (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/past_eof (0.00s)
+    --- PASS: TestExperienceReadPolicyNoveltyRangesAndFailures/other_task_action (0.00s)
+PASS
+ok  	github.com/butler/butler/internal/memory/experience	2.694s
+=== RUN   TestMemoryEvidenceStopBeforeAuthorizationAndRecoveryGuidance
+--- PASS: TestMemoryEvidenceStopBeforeAuthorizationAndRecoveryGuidance (0.00s)
+PASS
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	1.038s
+=== RUN   TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration
+    memory_evidence_policy_integration_test.go:65: actual Broker lost bounded evidence locator {}
+    guarded_tab_request_process_test.go:159: {"time":"2026-10-29T07:15:05.4036971Z","level":"INFO","msg":"loaded tool broker config","service":"tool-broker","component":"bootstrap","config_summary":"BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/build-tmp/TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegr3073155314/003/token(env), BUTLER_ACTION_CONTEXT_URL=http://127.0.0.1:44569/context(env), BUTLER_BROWSER_CONTROL_RUNTIME_URL=(default), BUTLER_BROWSER_CONTROL_TOKEN_FILE=(default), BUTLER_CONVERTERS_ENABLED=false(default), BUTLER_CONVERTER_DELEGATION_CONTROL_URL=(default), BUTLER_CONVERTER_DELEGATION_ENABLED=false(default), BUTLER_CONVERTER_PROFILE_JSON=(default), BUTLER_CONVERTER_RUNTIME_TARGET=unix:///run/butler-converter/runtime.sock(default), BUTLER_CONVERTER_RUNTIME_TOKEN_FILE=(default), BUTLER_DELEGATION_CONTROL_URL=(default), BUTLER_DELEGATION_ENABLED=false(default), BUTLER_ENVIRONMENT=development(default), BUTLER_EXECUTION_BUDGET_POLICY_JSON=(default), BUTLER_EXTENSION_PROFILES_JSON=(default), BUTLER_EXTENSION_RUNTIME_TOKEN_FILE=(default), BUTLER_GRPC_ADDR=127.0.0.1:37297(env), BUTLER_GUARDED_TAB_ALLOWED_ORIGINS_JSON=[](default), BUTLER_GUARDED_TAB_HOST=(default), BUTLER_GUARDED_TAB_PROFILE_ID=(default), BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL=(default), BUTLER_GUARDED_TAB_REQUEST_ENABLED=false(default), BUTLER_GUARDED_TAB_RUNTIME_ENABLED=false(default), BUTLER_GUARDED_TAB_RUNTIME_TARGET=(default), BUTLER_GUARDED_TAB_RUNTIME_TOKEN_FILE=(default), BUTLER_HTTP_ADDR=127.0.0.1:0(env), BUTLER_LOG_LEVEL=info(default), BUTLER_MEMORY_CANDIDATE_CONTROL_URL=(default), BUTLER_MEMORY_CANDIDATE_ENABLED=false(default), BUTLER_MEMORY_FACT_CONTROL_URL=(default), BUTLER_MEMORY_READ_CONTROL_URL=http://127.0.0.1:44569/internal/memory-read(env), BUTLER_MEMORY_READ_ENABLED=true(env), BUTLER_MEMORY_TEMPORAL_ENABLED=false(default), BUTLER_NETWORK_ALLOWLISTS_JSON=(default), BUTLER_OWNER_CONTROL_OWNER_ID=(default), BUTLER_POSTGRES_MAX_CONNS=2(env), BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS=1800(default), BUTLER_POSTGRES_MIGRATIONS_DIR=migrations(default), BUTLER_POSTGRES_MIN_CONNS=0(env), BUTLER_POSTGRES_URL=[masked](env), BUTLER_PUBLIC_WEB_READS_ENABLED=false(default), BUTLER_SCHEDULES_CONTROL_URL=(default), BUTLER_SCHEDULES_ENABLED=false(default), BUTLER_SERVICE_NAME=tool-broker(default), BUTLER_SKILLS_ENABLED=false(default), BUTLER_TOOL_DEFAULT_TARGET=local(default), BUTLER_TOOL_DISCOVERY_ENABLED=false(default), BUTLER_TOOL_REGISTRY_PATH=/build-tmp/TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegr3073155314/004/tools.json(env), BUTLER_WORKSPACE_ENABLED=false(default), BUTLER_WORKSPACE_PROFILE_ID=(default), BUTLER_WORKSPACE_RUNTIME_TARGET=(default), BUTLER_WORKSPACE_RUNTIME_TOKEN_FILE=(default)"}
+        {"time":"2026-10-29T07:15:05.404041279Z","level":"INFO","msg":"connecting to postgres","service":"tool-broker","component":"bootstrap","component":"postgres","dsn":"po***********************************************************************************************************************************le","max_conns":2,"min_conns":0}
+        {"time":"2026-10-29T07:15:05.40763421Z","level":"INFO","msg":"postgres connected","service":"tool-broker","component":"bootstrap","component":"postgres"}
+        {"time":"2026-10-29T07:15:05.409160039Z","level":"INFO","msg":"starting tool broker http server","service":"tool-broker","component":"bootstrap","http_addr":"127.0.0.1:0"}
+        {"time":"2026-10-29T07:15:05.409281912Z","level":"INFO","msg":"starting tool broker grpc server","service":"tool-broker","component":"bootstrap","grpc_addr":"127.0.0.1:37297"}
+        {"time":"2026-10-29T07:15:05.6813507Z","level":"INFO","msg":"tool execution routed","service":"tool-broker","component":"bootstrap","component":"tool-broker","tool_name":"memory.search","tool_call_id":"evidence-discovery","runtime_target":"broker://memory-reader-v1"}
+        {"time":"2026-10-29T07:15:05.68285425Z","level":"INFO","msg":"received shutdown signal","service":"tool-broker","component":"bootstrap"}
+        {"time":"2026-10-29T07:15:05.682968091Z","level":"INFO","msg":"closing postgres pool","service":"tool-broker","component":"bootstrap","component":"postgres","total_conns":1}
+        
+--- FAIL: TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration (6.08s)
+FAIL
+FAIL	github.com/butler/butler/apps/orchestrator/internal/app	6.131s
+FAIL

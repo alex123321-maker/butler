@@ -24,7 +24,7 @@ func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string,
 	for _, item := range inputs {
 		packageData := false
 		for _, ref := range content.ItemOrigin(item).SourceRefs {
-			if strings.HasPrefix(ref, "extension-manifest:") || strings.HasPrefix(ref, "skill:") || strings.HasPrefix(ref, "skill-index:") || strings.HasPrefix(ref, "tool-catalog:") || ref == skillSelectionInstructionRef || ref == "kernel:tool-discovery-v1" || s.config.ToolDiscoveryEnabled && ref == "retrieval:tool_summary" {
+			if strings.HasPrefix(ref, "extension-manifest:") || strings.HasPrefix(ref, "skill:") || strings.HasPrefix(ref, "skill-index:") || strings.HasPrefix(ref, "tool-catalog:") || ref == skillSelectionInstructionRef || ref == memoryEvidenceInstructionRef || ref == "kernel:tool-discovery-v1" || s.config.ToolDiscoveryEnabled && ref == "retrieval:tool_summary" {
 				packageData = true
 			}
 		}
@@ -33,6 +33,7 @@ func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string,
 		}
 	}
 	if s.config.ToolCatalog == nil {
+		s.attachMemoryEvidenceInstruction(&p)
 		// Compatibility for built-in-only fixtures; installed capabilities require
 		// a live trusted scoped reader and cannot rely on old definitions.
 		for _, def := range oldDefs {

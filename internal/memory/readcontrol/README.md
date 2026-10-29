@@ -1,5 +1,13 @@
 # Broker memory reads
 
+For an authorized typed experience source, the existing discovery item's locator
+may contain `experience_evidence_v1`: historical verification/owner verdict and
+up to6 exact Unicode offset/max_chars/total_chars field pointers. Open uses the
+same source handle and an empty fragment_key to address the full original body.
+This metadata grants no authority or citation proof; current source checks still
+run. Tool args/contracts and ordinary-source locators are unchanged. Core may
+apply the separately configured prospective experience read-stop policy.
+
 With the pinned local reader composed independently, an omitted search strategy
 on page0 selects the existing hybrid search (up to four results). Explicit
 catalog_exact stays lexical. Local cold-model searches have a30-second bound;

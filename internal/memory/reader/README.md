@@ -1,5 +1,11 @@
 # Catalog DATA reader
 
+The optional owning `SourceLocator` callback runs only after full Catalog and
+typed source eligibility. Experience discovery supplies canonical sanitized
+`experience_evidence_v1` field-range pointers. Returned search text remains
+discovery, and open still reads exact current original text with ordinary guards.
+There is no accepted-fact cache or synthetic citation/read receipt.
+
 This package implements bounded source/fragment reads for the owning
 Orchestrator's private Broker endpoint. It never authenticates an owner from model
 arguments, executes a tool, changes permissions, accepts a fact or contacts an

@@ -1,5 +1,38 @@
 # Verified observations and reusable episodic lessons (#90)
 
+The prospective experience consumer adds bounded evidence selection and optional
+read stopping without native qualification or a new model request. Discovery of
+an eligible typed lesson includes an `experience_evidence_v1` locator with its
+historical verification/owner verdict and exact Unicode source ranges for
+verification, verdict, unknowns, actual actions, failed calls and model notes.
+These content-free pointers are canonical sanitized JSON, after complete current
+Catalog/lesson authorization. They grant no read receipt or current-task success.
+Open still reauthorizes the exact source revision/hash and returns original text;
+no generated replacement or accepted fact is created. Ordinary sources retain
+their locators; a document imitating lesson JSON cannot get a typed locator.
+
+When the experience consumer is constructed, Core attaches fixed evidence
+guidance and checks current-run PostgreSQL tool receipts before optional
+memory.search/open/neighbors proposals. At most8 recorded attempts and3 searches
+are permitted; two consecutive searches without a new exact source version end
+discovery. Fully covered opened ranges, including EOF and Unicode offsets, are
+not read again. A partly unread range or another permitted task action remains
+eligible. Failed/unconfirmed attempts consume calls and cannot prove novelty or
+coverage. Only completed receipts corroborated by permanent Broker confirmed
+effects count as evidence. A new source version can count as discovery, subject
+to the unchanged current source/authority guards and absolute call limits.
+
+This prospective policy uses the existing serialized Core proposal path and
+durable current-run receipts, not process counters, session-wide history, new
+tables or a new private-HTTP rate limiter. Recovery reconstructs state and fixed
+guidance. A violating proposal is stopped before authorization/dispatch through
+the existing execution LoopError/checkpoint path; it can leave an incomplete
+task, never a fabricated successful final. Independent source/privacy/dependency
+guards and all existing budgets remain. Neither UNKNOWN nor effect_absent becomes
+a proved positive/negative payload outcome. The general adaptive87 policy stays
+unchanged/default-off. Future quality/cost claims require a separately frozen
+native experiment; retrospective recorded prefixes do not supply that result.
+
 The implementation belongs to Episodic Memory. Transcript remains the original
 record, Working Memory remains current task state and Profile Memory remains
 accepted scoped facts/preferences. A typed lesson is immutable DATA, not hidden
