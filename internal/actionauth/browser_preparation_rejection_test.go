@@ -53,11 +53,32 @@ func TestOwnerOutcomePreparationRejectionRequiresExactPreInputProof(t *testing.T
 	}
 }
 
+func TestBrowserSessionLossProofRequiresRevision4(t *testing.T) {
+	for _, revision := range []string{"2", "3", "4"} {
+		b := ActionBinding{RunID: "run", ToolCallID: "call", ToolName: "browser.prepare_fill", Effect: EffectPrepare, ContractRevision: revision, Resource: "browser:context:https://external.test/form"}
+		r := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "call", ToolName: b.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, DetailsJson: `{"preparation_rejection":"pre_input_v1","input_dispatched":false,"reason":"session_lost"}`}}
+		if (BrowserPreparationRejection(b, r) == "session_lost") != (revision == "4") {
+			t.Fatal("unversioned context loss proof", revision)
+		}
+		p := EffectPolicy{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1", LocalPreparation: &LocalPreparationBinding{SessionID: "context", ExpectedURL: "https://external.test/form", ObservationVersion: 1}}
+		e := EffectEvidence{ResultDigest: preparationRejectionDigest("session_lost")}
+		if preparationAbsenceEvidence(b, p, "dispatch_completed", e) != (revision == "4") {
+			t.Fatal("PG verifier accepted legacy context loss", revision)
+		}
+		if preparationAbsenceEvidence(b, p, "unknown", e) {
+			t.Fatal("lost dispatch became absent")
+		}
+	}
+}
+
 func TestOwnerOutcomePreparationRejectionPostgresIntegration(t *testing.T) {
-	for _, mode := range []string{"valid", "old_revision", "opaque_fill", "missing_proof", "foreign_call", "dispatch_lost", "forged_digest", "artifact", "unknown_dispatch"} {
+	for _, mode := range []string{"valid", "session_lost4", "session_lost3", "old_revision", "opaque_fill", "missing_proof", "foreign_call", "dispatch_lost", "forged_digest", "artifact", "unknown_dispatch"} {
 		t.Run(mode, func(t *testing.T) {
 			s, store, reader, call, contract, _, _ := receiptFixture(t)
 			call.ToolName, contract.ToolName, contract.ContractRevision = "browser.prepare_fill", "browser.prepare_fill", "3"
+			if mode == "session_lost4" {
+				contract.ContractRevision = "4"
+			}
 			if mode == "old_revision" {
 				contract.ContractRevision = "2"
 			}
@@ -77,6 +98,9 @@ func TestOwnerOutcomePreparationRejectionPostgresIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			r := &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, DetailsJson: noInputProof}}
+			if mode == "session_lost4" || mode == "session_lost3" {
+				r.Error.DetailsJson = `{"preparation_rejection":"pre_input_v1","input_dispatched":false,"reason":"session_lost"}`
+			}
 			if mode == "missing_proof" {
 				r.Error.DetailsJson = `{"reason":"stale_observation"}`
 			}
@@ -106,7 +130,7 @@ func TestOwnerOutcomePreparationRejectionPostgresIntegration(t *testing.T) {
 			}
 			e, err := s.Outcome(ctx, g, r, mode == "dispatch_lost")
 			want := StateUnknown
-			if mode == "valid" {
+			if mode == "valid" || mode == "session_lost4" {
 				want = StateAbsent
 			}
 			if err != nil || e.State != want {

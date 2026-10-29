@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+Local preparation revision4 preserves revision2/3 compatibility and adds only a
+Go-guarded lost-context rejection before the runner starts. Its fixed proof
+does not reconcile prior writes or grant retries. A fresh context/input is a new
+ordinary proposal with current authority and accounting. The optional resource
+wrapper retains the proof only after durable lane completion; lost Finish stays
+unknown. See the browser session and external-effect contracts.
+
 Communication `source_refs` are optional exact references returned by selected
 Catalog observations in the current run. Event/turn IDs are not automatically
 Catalog source refs; browser/tool-call IDs and page URLs do not belong there.
@@ -1138,3 +1145,9 @@ observation timestamp. Links are untrusted discovery DATA and still require a
 separate ordinary Broker read. They are not primary-source certification, an
 event confirmation or permission to navigate. See
 [research and follow-ups](research-followups.md).
+
+Navigation revision4 uses a Go-only lost/frozen-context pre-navigation proof.
+The resource wrapper may forward a correlated verified rejection only after
+current authority and durable lane Finish; it omits the success ACK and session
+mapping. Finish completion describes the lane, not external success. Legacy
+navigation and in-flight errors keep conservative UNKNOWN semantics.

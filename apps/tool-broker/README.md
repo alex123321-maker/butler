@@ -1,5 +1,10 @@
 # Tool Broker
 
+Revision4 local preparation accepts `session_lost` only in a correlated closed
+pre-input proof under the pinned policy. It records that new preparation absent,
+retains the consumed grant/spending, and tells the model to open and reassess a
+fresh context. Revision2/3 and prior unknown writes retain their old semantics.
+
 Revision3 `browser.prepare_fill/prepare_type` accepts a correlated closed
 `preparation_rejection=pre_input_v1,input_dispatched=false` runtime proof with a
 fixed precondition reason. PostgreSQL repeats the exact contract/policy/digest

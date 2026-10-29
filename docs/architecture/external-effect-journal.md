@@ -1,5 +1,13 @@
 # External effect journal
 
+Revision4 local preparation can additionally prove that a new input was not
+dispatched because its context was already lost. Only the Go pre-run guard emits
+this fixed `session_lost` reason; Broker and PG recheck the correlated failed
+response, revision4 binding, pinned local policy, completed dispatch and proof
+digest. Revision2/3, helper/in-flight errors, missing/forged proof and lost ACK
+retain uncertainty. This records only that attempted preparation absent, retains
+its consumed authorization and spending, and never resolves an earlier POST.
+
 Tool Broker owns the PostgreSQL journal for dispatch and external evidence.
 Orchestrator remains the run authority; runtimes execute one approved proposal.
 A technical runtime response, a model's statement, memory update, final answer,
@@ -248,3 +256,9 @@ scoped system header injection and redirect denial. Accepted-input tests check
 pre-Prepare persistence, approval recovery and checkpoint replacement. See
 `deploy/effect-journal/verification.json` for commands and results. These local
 fault fixtures do not prove idempotency or verification for unrelated websites.
+
+Revision4 `browser.navigate` uses `guarded_browser_get_v1`: a closed correlated
+pre-navigation rejection can record ABSENT for Go-observed `session_lost` or
+`network_frozen`. Common precondition failures retain the same bounded verifier.
+A helper claim, in-flight loss, wrong revision, credentials or lost durable
+finish cannot establish absence. This never upgrades historical revision3 reads.

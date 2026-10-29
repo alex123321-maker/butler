@@ -103,6 +103,93 @@ func TestOwnerOutcomePreparationPreInputGuardsAreVersioned(t *testing.T) {
 	}
 }
 
+func TestBrowserLocalPreparationSessionLossProof(t *testing.T) {
+	for _, mode := range []string{"lost", "closed", "revision3", "opaque", "inflight", "helper_claim"} {
+		t.Run(mode, func(t *testing.T) {
+			runner := &stubRunner{result: Result{OK: true}}
+			server := NewServer(runner, nil)
+			obs := openTest(t, server)
+			args := actionArgs(obs)
+			args["selector"] = "input"
+			args["value"] = "ordinary"
+			req := browserCall("browser.prepare_fill", "run-1", args)
+			req.Contract.ContractRevision = "4"
+			before := len(runner.requests)
+			switch mode {
+			case "closed":
+				server.sessions.sessions[obs.SessionID].closed = true
+			case "inflight":
+				runner.err = errors.New("lost helper after possible input")
+			case "helper_claim":
+				no := false
+				runner.result = Result{PreparationRejection: "pre_input_v1", InputDispatched: &no, Error: &ResultError{ErrorType: "session_lost", Message: "untrusted"}}
+			default:
+				server.sessions.invalidateAll()
+			}
+			if mode == "revision3" {
+				req.Contract.ContractRevision = "3"
+			}
+			if mode == "opaque" {
+				req.ToolCall.ToolName = "browser.fill"
+				req.Contract.ToolName = "browser.fill"
+				req.Contract.ContractRevision = "3"
+			}
+			r, err := server.Execute(context.Background(), req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hasProof := strings.Contains(r.GetResult().GetError().GetDetailsJson(), `"input_dispatched":false`)
+			if hasProof != (mode == "lost" || mode == "closed") {
+				t.Fatal("session absence proof widened across dispatch/revision", mode)
+			}
+			if mode != "inflight" && mode != "helper_claim" && len(runner.requests) != before {
+				t.Fatal("lost context reached input backend")
+			}
+		})
+	}
+}
+
+func TestBrowserNavigationFrozenOrLostProofRequiresRevision4(t *testing.T) {
+	for _, mode := range []string{"frozen", "lost", "legacy", "inflight", "helper_claim"} {
+		t.Run(mode, func(t *testing.T) {
+			runner := &stubRunner{result: Result{OK: true}}
+			server := NewServer(runner, nil)
+			obs := openTest(t, server)
+			args := map[string]any{"browser_session_id": obs.SessionID, "observation_version": obs.ObservationVersion, "expected_url": obs.FinalURL, "url": "https://example.com/read"}
+			req := browserCall("browser.navigate", "run-1", args)
+			req.Contract.ContractRevision = "4"
+			req.Contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "guarded_browser_get_v1"}
+			before := len(runner.requests)
+			switch mode {
+			case "frozen":
+				server.sessions.sessions[obs.SessionID].networkFrozen = true
+			case "lost":
+				server.sessions.invalidateAll()
+			case "legacy":
+				req.Contract.ContractRevision = "3"
+				req.Contract.EffectContract.VerificationMethod = "read_result"
+				server.sessions.invalidateAll()
+			case "inflight":
+				runner.err = errors.New("lost after possible navigation")
+			case "helper_claim":
+				no := false
+				runner.result = Result{ReadRejection: "pre_navigation_v1", NavigationDispatched: &no, Error: &ResultError{ErrorType: "network_frozen", Message: "untrusted"}}
+			}
+			r, err := server.Execute(context.Background(), req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			proof := strings.Contains(r.GetResult().GetError().GetDetailsJson(), `"navigation_dispatched":false`)
+			if proof != (mode == "frozen" || mode == "lost") {
+				t.Fatal("navigation proof widened across revision/backend", mode)
+			}
+			if (mode == "frozen" || mode == "lost") && len(runner.requests) != before {
+				t.Fatal("rejected navigation reached runner")
+			}
+		})
+	}
+}
+
 func TestLocalPreparationRequiresPinnedContractBeforeRunner(t *testing.T) {
 	runner := &stubRunner{result: Result{OK: true}}
 	server := NewServer(runner, nil)

@@ -1,5 +1,15 @@
 # Explicit browser execution sessions
 
+Revision4 `browser.prepare_fill/prepare_type` adds a narrow lost-context
+pre-input rejection. Only the Go session guard, before calling the runner, may
+emit the closed `pre_input_v1,input_dispatched=false,reason=session_lost` proof
+for a missing/generation-lost or closed context. Broker and PG require revision4
+and the original pinned preparation policy. Revision2/3 cannot use this reason.
+Helper errors, process/transport loss during execution, expired/foreign contexts
+and opaque gestures cannot borrow the proof. The old grant stays consumed and
+charged; the model may propose a separately authorized fresh open and reassess
+from its observation. No old DOM, credentials or previous effect is restored.
+
 Credential-aware fill/type now return optional `credential_verified`: a private
 runtime equality check against the exact value resolved by Broker for that
 operation. No value, hash, length or character feedback is returned. A failed
@@ -399,3 +409,11 @@ and a successor write. A frozen observation does not resolve the original effect
 This matrix supplies fixture policy/context wiring; owner-UI control and native
 Core continuation remain distinct checks. See the
 [qualification report](../testing/browser-safety-2026-10-29.md).
+
+Revision4 `browser.navigate` adds the closed `pre_navigation_v1` proof for a
+Go-observed missing/closed context or an already observed frozen network before
+runner dispatch. A successful runner observation reporting `network_state=frozen`
+pins that state in the Go session. Only the new guarded read contract can prove
+ABSENT for `session_lost` or `network_frozen`; helper claims and transport loss
+cannot. The model may propose a new open for the requested URL under normal
+policy. Revision3 navigation UNKNOWN is retained and cannot inherit this proof.

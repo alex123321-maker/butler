@@ -170,7 +170,7 @@ func resourceBrokerWithPool(t *testing.T, backend *resourcePageBackend, loseRece
 			t.Fatal("actual browser contracts unavailable", err)
 		}
 		contracts = nil
-		for _, name := range []string{"browser.open", "browser.snapshot", "browser.freeze_snapshot", "browser.click"} {
+		for _, name := range []string{"browser.open", "browser.snapshot", "browser.freeze_snapshot", "browser.click", "browser.prepare_fill", "browser.navigate"} {
 			actual, ok := actualRegistry.Get(name)
 			if !ok {
 				t.Fatal("actual browser contract missing")

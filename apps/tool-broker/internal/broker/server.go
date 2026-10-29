@@ -236,10 +236,16 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 		reason := actionauth.BrowserReadRejection(grant.Binding, result)
 		// Return only the owning fixed diagnostic, never a runtime message/body.
 		result.Error = &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: "GET navigation was not dispatched: " + reason + ". Observe the current page and reassess; do not replay a consumed grant.", Retryable: false, DetailsJson: fmt.Sprintf(`{"reason":%q,"read_rejection":"pre_navigation_v1","navigation_dispatched":false}`, reason)}
+		if reason == "network_frozen" || reason == "session_lost" {
+			result.Error.Message = "This navigation was not dispatched because its browser context is frozen or lost. Open a new browser session for the requested URL; do not reuse old handles or replay a consumed grant."
+		}
 	}
 	if recorded.State == actionauth.StateAbsent && effect.Policy.VerificationMethod == "local_browser_preparation_v1" {
 		reason := actionauth.BrowserPreparationRejection(grant.Binding, result)
 		result.Error = &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: "Local input was not dispatched: " + reason + ". Observe the current page and reassess; do not replay a consumed grant.", Retryable: false, DetailsJson: fmt.Sprintf(`{"reason":%q,"preparation_rejection":"pre_input_v1","input_dispatched":false}`, reason)}
+		if reason == "session_lost" {
+			result.Error.Message = "Browser context was lost before this local input was dispatched. Open a new browser session and reassess from its fresh observation; do not reuse old handles or replay a consumed grant."
+		}
 	}
 	result.ActionId = recorded.ActionID
 	result.RunId = req.GetToolCall().GetRunId()

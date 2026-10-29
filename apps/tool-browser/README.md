@@ -1,5 +1,11 @@
 # Tool Browser
 
+Local preparation revision4 can reject a missing or closed context before any
+runner call with a closed `session_lost` pre-input proof. No helper/in-flight
+error can emit this Go-only proof. The model must open a new context; this never
+restores DOM or decides the outcome of an earlier action. Revisions2/3 retain
+their old semantics and never gain the new reason.
+
 Local `prepare_fill/prepare_type` revision3 adds a closed `pre_input_v1`
 rejection only when Go/helper guards prove input dispatch never began. Stale
 page/URL and validated pre-input argument failures return fixed diagnostics;

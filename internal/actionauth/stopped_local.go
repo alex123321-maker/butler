@@ -25,6 +25,9 @@ const stoppedFetchContract = "18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37
 // compatibility proof qualifies only absence of write uncertainty; it never
 // upgrades the failed read, imports revision2 absence semantics or replays it.
 const stoppedGETFormContract = "504555e5109e2f7478d87fc21a5598c28f1f27b3aaa58830851675cab9bff90f"
+
+// Reproduced from browser.navigate revision3 in 49ada352; read result stays UNKNOWN.
+const stoppedNavigateContract = "bf151ae84aaff52f3c3c22c0634e9bc7f48b49c551a4b6777d52d5fdf1c429f2"
 const stoppedLocalFillContract = "4b4d58b1ddfadd6a2c56e5b2596fe85d2f4edad96105f52304e9c6fa3546aff3"
 
 // Reproduced from the revision1 Broker-owned credential contract in 00cbdf04.
@@ -150,7 +153,7 @@ func ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, input string) (map[str
 			method, source = "pinned_preparation_no_write_v1", "owning_local_preparation_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_local_result_unknown")
 			reads[id] = true
-		case ((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+		case (((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" || b.ToolName == "browser.navigate" && b.ContractHash == stoppedNavigateContract && b.ContractRevision == "3") && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
 			method, source = "pinned_read_no_write_v1", "owning_read_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_result_unknown")
 			reads[id] = true

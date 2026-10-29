@@ -1347,3 +1347,10 @@ no Broker action is prepared or dispatched. Recovery replays that known DATA.
 At most four corrections are allowed, with ordinary model budgets retained.
 Such a known non-dispatch is not an equivalent committed write during model
 retry recovery. See [research and checked monitors](research-followups.md).
+
+A failed revision4 browser preparation/navigation with a verified pre-dispatch
+ABSENT proof follows ordinary tool-result model continuation. Broker suggests a
+fresh open and reassessment. This is a new model proposal with separate current
+authorization, not a kernel retry, grant replay, restored DOM or confirmation of
+an earlier UNKNOWN action. A frozen context is not implicitly thawed. Unresolved
+write effects and stopped-attempt isolation retain their existing gates.

@@ -1,5 +1,11 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Local credential preparation supports revisions2/3/4 under the same owner
+request, Input claim, metadata hash and current-field release guards. Revision4
+adds only proof that a NEW preparation could not start on an already lost
+context. It neither restores browser auth nor reuses an expired/revoked request;
+a new context must obtain ordinary Broker-mediated preparation and submission.
+
 The isolated [issue97 operator research command](../../cmd/effort-eval/README.md)
 accepts private file references or a local-only state/S256-PKCE browser callback
 for a new provider login. It imports through the existing strict Manager into

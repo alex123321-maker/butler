@@ -45,6 +45,16 @@ Its reproduced contract is retained as a test fixture. Under the same original
 binding/owner/terminal-fence checks and exact read-only/read-result policy it
 can establish only no-write uncertainty, like the pinned web reader. It does
 not import revision2 pre-navigation absence semantics into an old failed read.
+The credential-free revision3 `browser.navigate` contract reproduced from
+49ada352 is pinned separately as
+`bf151ae84aaff52f3c3c22c0634e9bc7f48b49c551a4b6777d52d5fdf1c429f2`.
+Its exact read-only/read-result policy can establish only no-write uncertainty
+under the same terminal owning fences. The historical read, effect, consumed
+grant and dispatch stay UNKNOWN and the Input/run stay failed. This does not
+apply revision4's pre-navigation ABSENT contract retrospectively. Unsupported
+hashes/revisions, credentials, live leases and changed policies remain denied.
+This compatibility review may run through the standalone operator; no policy
+reset or service restart is required to commit its append-only proof.
 The ordinary-text revision2 `browser.prepare_fill` contract reproduced from
 00cbdf04 is separately pinned as
 `4b4d58b1ddfadd6a2c56e5b2596fe85d2f4edad96105f52304e9c6fa3546aff3`.

@@ -11,6 +11,40 @@ import (
 
 const noNavigationProof = `{"read_rejection":"pre_navigation_v1","navigation_dispatched":false,"reason":"page_changed"}`
 
+func TestBrowserNavigationRevision4AbsentProofPostgresIntegration(t *testing.T) {
+	for _, revision := range []string{"3", "4"} {
+		t.Run(revision, func(t *testing.T) {
+			s, store, reader, call, contract, _, _ := receiptFixture(t)
+			call.ToolName = "browser.navigate"
+			contract.ToolName = call.ToolName
+			contract.ContractRevision = revision
+			contract.SupportsCredentialRefs = false
+			contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+			if revision == "4" {
+				contract.EffectContract.VerificationMethod = BrowserGETVerification
+			}
+			call.ArgsJson = `{"browser_session_id":"context","expected_url":"https://example.com/form","url":"https://example.com/read","observation_version":1}`
+			g := logicalGrant(t, s, reader, call, contract, "navigation-refusal")
+			ctx := context.Background()
+			if err := store.ClaimGrant(ctx, g.ID); err != nil {
+				t.Fatal(err)
+			}
+			r := &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, DetailsJson: `{"read_rejection":"pre_navigation_v1","navigation_dispatched":false,"reason":"network_frozen"}`}}
+			e, err := s.Outcome(ctx, g, r, false)
+			want := StateUnknown
+			if revision == "4" {
+				want = StateAbsent
+			}
+			if err != nil || e.State != want {
+				t.Fatal("unversioned read absence", revision, err, e.State)
+			}
+			if err = store.ClaimGrant(ctx, g.ID); err == nil {
+				t.Fatal("navigation grant revived")
+			}
+		})
+	}
+}
+
 func TestGuardedBrowserReadRejectionPinsPreNavigationOnly(t *testing.T) {
 	for _, mode := range []string{"valid", "old_revision", "other_tool", "write", "foreign_call", "foreign_run", "credential", "missing_marker", "navigation_started", "null_navigation", "timeout", "extra_field", "duplicate_field", "case_variant", "payload", "internal_error"} {
 		t.Run(mode, func(t *testing.T) {

@@ -1,5 +1,12 @@
 # Guarded controlled-browser resource dispatch
 
+The runtime wrapper can finish a lane for an exact correlated local-preparation
+pre-input rejection, preserving its closed proof for independent Broker/PG
+verification. It issues no success ACK or new session mapping. Current authority
+and durable Finish remain mandatory; malformed proof or lost Finish stays unknown.
+Revision4 alone allows the Go pre-run `session_lost` rejection. Earlier unknown
+effects are never reconciled by this response.
+
 The canonical guarded single-tab contracts and authenticated gRPC readiness
 probe are shared by optional Broker bootstrap and the installed native host.
 They pin the actual loopback listener, host and complete contract, without

@@ -19,6 +19,7 @@ type browserSession struct {
 	version                       uint64
 	generation                    uint64
 	closed                        bool
+	networkFrozen                 bool
 	controlEpoch                  int64
 	controller                    string
 	allowedDomains                []string

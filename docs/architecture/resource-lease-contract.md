@@ -1,5 +1,14 @@
 # Resource arbitration foundation
 
+A correlated, closed local-preparation pre-input rejection can finish its
+exclusive lane without claiming a successful tool or external effect. The
+runtime wrapper forwards it only after the ordinary authenticated one-use
+admission and durable Finish with current authority. It issues no browser
+success ACK and publishes no new context mapping. Broker/PG independently verify
+the exact preparation proof; revision4 alone permits `session_lost`. Malformed,
+foreign, in-flight or lost-finish responses remain UNKNOWN/quarantined. Existing
+unknown effects and resource markers still block successor writes.
+
 The controlled-browser profile can pin `browser.freeze_snapshot` as another
 ordinary exclusive-lane operation. Its frozen read never bypasses a retained
 inflight resource marker. A locally completed interaction can leave only its

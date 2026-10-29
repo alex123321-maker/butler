@@ -122,6 +122,12 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
+		if b.ToolName == "browser.navigate" && b.ContractRevision == "4" {
+			if p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" {
+				return p, fmt.Errorf("navigation requires its exact credential-free revision4 contract")
+			}
+			return p, nil
+		}
 		if b.ToolName == "browser.freeze_snapshot" && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
 			return p, fmt.Errorf("frozen observation requires its exact credential-free read contract")
 		}
@@ -141,7 +147,7 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		return p, nil
 	}
 	if p.VerificationMethod == "local_browser_preparation_v1" {
-		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || (b.ContractRevision != "2" && b.ContractRevision != "3") || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
+		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || (b.ContractRevision != "2" && b.ContractRevision != "3" && b.ContractRevision != "4") || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
 			return p, fmt.Errorf("local preparation requires its exact browser contract and call")
 		}
 		call := calls[0]
@@ -286,7 +292,7 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 
 func localPreparationVerdict(policy EffectPolicy, binding ActionBinding, raw string) EffectState {
 	pinned := policy.LocalPreparation
-	if pinned == nil || binding.Effect != EffectPrepare || (binding.ContractRevision != "2" && binding.ContractRevision != "3") || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
+	if pinned == nil || binding.Effect != EffectPrepare || (binding.ContractRevision != "2" && binding.ContractRevision != "3" && binding.ContractRevision != "4") || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
 		return StateUnknown
 	}
 	if _, err := canonicalJSON(raw); err != nil {

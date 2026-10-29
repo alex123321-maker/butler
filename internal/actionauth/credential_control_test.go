@@ -118,7 +118,7 @@ func (i *vaultGrantInspector) ApprovedLocalUse(_ context.Context, call *toolbrok
 }
 
 func TestCredentialOwnerGrantIsLocalAndPinsInputClaim(t *testing.T) {
-	for _, revision := range []string{"2", "3"} {
+	for _, revision := range []string{"2", "3", "4"} {
 		t.Run(revision, func(t *testing.T) {
 			s, store, reader, inspection, call, contract := fixture(t)
 			checker := &vaultGrantInspector{inspector: inspection, active: true}
