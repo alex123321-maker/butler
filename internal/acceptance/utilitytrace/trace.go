@@ -219,8 +219,8 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 		return deny("task/run revisions changed")
 	}
 	runs, e := rows[runRow](s, "runs")
-	if e != nil || len(runs) != 1 || runs[0].ID != s.RunID || runs[0].Session != b.SessionKey || runs[0].Finished == nil {
-		return deny("closed owning run required")
+	if e != nil || len(runs) != 1 || runs[0].ID != s.RunID || runs[0].Session != b.SessionKey {
+		return deny("owning run required")
 	}
 	inputs, e := rows[inputRow](s, "inputs")
 	if e != nil || len(inputs) != 1 {
@@ -229,6 +229,10 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 	in := inputs[0]
 	if in.Run != s.RunID || in.Task != b.TaskID || in.Owner != b.OwnerID || in.Session != b.SessionKey || in.Attempts != 1 {
 		return deny("foreign or retried input")
+	}
+	blocked := in.Status == "blocked" && runs[0].Finished == nil
+	if runs[0].Finished == nil && !blocked {
+		return deny("closed or explicitly blocked owning run required")
 	}
 	var payload struct {
 		Text   string `json:"text"`
@@ -471,7 +475,10 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 	} else if len(finals) != 0 {
 		return deny("ambiguous final")
 	}
-	o.Completed = allCompleted && len(finals) == 1 && in.Status == "completed" && (runs[0].State == "completed" || runs[0].State == "RUN_STATE_COMPLETED")
+	if blocked && (o.Receipt.Effect != "unknown" || len(finals) != 0 || allCompleted) {
+		return deny("blocked input lacks unresolved effect evidence")
+	}
+	o.Completed = !blocked && allCompleted && len(finals) == 1 && in.Status == "completed" && (runs[0].State == "completed" || runs[0].State == "RUN_STATE_COMPLETED")
 	o.AuthorityCurrent = s.AuthorityCurrent && s.SourcesCurrent
 	o.OriginalUnchanged = acceptance.MemoryDigest(s.RecipientFiles) == b.OriginalFilesSHA256
 	o.EvidenceComplete = true

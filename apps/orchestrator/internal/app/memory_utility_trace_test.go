@@ -220,7 +220,7 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 				}
 			}()
 
-			if tc.mode != "rejected" && projectErr != nil {
+			if projectErr != nil {
 				t.Fatal("trace projection", projectErr)
 			}
 			if result.TaskSuccess != tc.success {
@@ -230,8 +230,8 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 				t.Fatal(out.Err)
 			}
 			if tc.mode == "rejected" {
-				if out.Err == nil {
-					t.Fatal("generic mutation rejection incorrectly succeeded")
+				if out.Err != nil || out.Result == nil || out.Result.ReceiptStatus != "blocked" || out.Result.ErrorCode != "effect_unknown" || observation.Completed || observation.Receipt.Effect != "unknown" {
+					t.Fatal("generic rejection lost its explicit blocked/unknown state", out.Err, out.Result, observation)
 				}
 				var n int
 				if err = pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE state='effect_unknown'`).Scan(&n); err != nil || n != 1 {
