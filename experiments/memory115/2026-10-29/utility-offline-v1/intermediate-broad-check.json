@@ -1,0 +1,14 @@
+{
+  "intermediate_source_not_final_commit": true,
+  "exit": {
+    "exit_code": 0,
+    "new_model_requests": 0,
+    "network": "none"
+  },
+  "top_level_pass": 146,
+  "failed": 0,
+  "skipped": [
+    "TestNativeCommunicationRetainedContentReviews"
+  ],
+  "tests_sha256": "84198f83dd53dd677b80239d3afb11ebfec52aea4d882c5821687a3c88821d88"
+}

@@ -1,0 +1,53 @@
+{
+  "source": {
+    "commit": "c0d6d47ccf73005ad0e07168be998564bd8ecf87",
+    "git_blobs_checked": 6723,
+    "mismatches": [],
+    "line_ending_normalizations": [
+      {
+        "path": "scripts/dev/verify-changed.ps1",
+        "archive_crlf_from_gitattributes": true,
+        "raw_sha256": "ab4c28f04d3add49b5728cdf74b01c553a8b0923014258e09f276068aa020700"
+      }
+    ],
+    "manifest_sha256": "831297c96b659c27e9f1b5b3069690579454c4c8a1b2602c61e3eef8bbe5b3a8"
+  },
+  "execution": {
+    "exit_code": 0,
+    "new_model_requests": 0,
+    "network": "none"
+  },
+  "packages": {
+    "github.com/butler/butler/cmd/memory-utility-eval": {
+      "top_level_pass": 2,
+      "all_test_pass_events": 2,
+      "fail_events": 0,
+      "skip_events": 0,
+      "package_pass": true
+    },
+    "github.com/butler/butler/internal/acceptance": {
+      "top_level_pass": 36,
+      "all_test_pass_events": 101,
+      "fail_events": 0,
+      "skip_events": 0,
+      "package_pass": true
+    }
+  },
+  "utility_tests": 12,
+  "suite": {
+    "cases": 24,
+    "independent_holdout": false,
+    "inputs_sha256": "3cfb0b08886f096b1412a33d91a89fcca78bbe7d9461f533c2807308d9aed65d",
+    "native_requests": 0,
+    "suite_sha256": "e50525d4c4a63f8695ab72486ad451b3a796fb00d97d734ecc0b514d7f517f31",
+    "version": "butler-memory-utility-v1"
+  },
+  "artifacts_sha256": {
+    "tests.jsonl": "1657f2f8684298fd86b4207f928774cd486e6e3a56a76008c8273510db347215",
+    "build.log": "6f721ca0aade342bbfec4693d988bd4c33ae87cb0547859fa961c361dbcae856",
+    "memory-utility-eval": "2fda98a7010d2ec1ceb2860680ab1f787ba7351e9360a364a29429513e88bc7b",
+    "prospective-suite/manifest.json": "63ccde0caeb3b757e995dbe6e7c3767f07af6c404d18a86a46c8e79863619f66"
+  },
+  "native_quality_qualified": false,
+  "production_changed": false
+}
