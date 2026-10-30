@@ -323,7 +323,7 @@ func browserVaultFixture(t *testing.T, dsn, repoRoot string) *credentials.Vault 
 		t.Fatal("fixture pool")
 	}
 	t.Cleanup(func() { pool.Close(); _, _ = admin.Exec(ctx, "DROP SCHEMA "+schema+" CASCADE"); admin.Close() })
-	if _, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT,user_id TEXT);CREATE TABLE runs(run_id TEXT,session_key TEXT,task_id TEXT,current_state TEXT);CREATE TABLE tasks(task_id TEXT,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);CREATE TABLE server_browser_sessions(browser_session_id TEXT,run_id TEXT,owner_id TEXT,mode TEXT,expires_at TIMESTAMPTZ,fresh_needed BOOLEAN);INSERT INTO sessions VALUES('web:owner','owner');INSERT INTO runs VALUES('broker-run','web:owner','task','tool_pending');INSERT INTO tasks VALUES('task','owner',1,1,'active')`); err != nil {
+	if _, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT,user_id TEXT);CREATE TABLE runs(run_id TEXT,session_key TEXT,task_id TEXT,current_state TEXT);CREATE TABLE tasks(task_id TEXT,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);CREATE TABLE server_browser_sessions(browser_session_id TEXT,run_id TEXT,owner_id TEXT,mode TEXT,expires_at TIMESTAMPTZ,fresh_needed BOOLEAN,page_mode BOOLEAN NOT NULL DEFAULT false);INSERT INTO sessions VALUES('web:owner','owner');INSERT INTO runs VALUES('broker-run','web:owner','task','tool_pending');INSERT INTO tasks VALUES('task','owner',1,1,'active')`); err != nil {
 		t.Fatal("fixture tables")
 	}
 	migration, err := os.ReadFile(filepath.Join(repoRoot, "migrations", "096_credential_vault.up.sql"))

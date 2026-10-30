@@ -50,7 +50,8 @@ export async function openMindPanel(
     await page.getByText('Управление и доказательства', { exact: true }).click()
   }
   await expect(page.getByRole('dialog')).toBeVisible()
-  if (!path.startsWith('/tasks/'))
+  if (path === '/browser') await expect(page.locator('.mind-browser')).toBeVisible()
+  else if (!path.startsWith('/tasks/'))
     await expect(page.locator('.mind-advanced')).toBeVisible()
   const proof = page.getByLabel('Owner control token', { exact: true })
   if (await proof.count()) await proof.fill('')

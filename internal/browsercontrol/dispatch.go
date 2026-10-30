@@ -2,12 +2,32 @@ package browsercontrol
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/butler/butler/internal/browserpage"
 	"strconv"
 
 	"google.golang.org/grpc/metadata"
 )
 
 const dispatchEpochHeader = "butler-browser-epoch"
+const dispatchPageHeader = "butler-browser-page"
+
+func WithPageDispatch(ctx context.Context, b browserpage.Binding) context.Context {
+	md, _ := metadata.FromOutgoingContext(ctx)
+	md = md.Copy()
+	raw, _ := json.Marshal(b)
+	md.Set(dispatchPageHeader, string(raw))
+	return metadata.NewOutgoingContext(ctx, md)
+}
+func IncomingPageDispatch(ctx context.Context) (browserpage.Binding, bool) {
+	var b browserpage.Binding
+	md, _ := metadata.FromIncomingContext(ctx)
+	v := md.Get(dispatchPageHeader)
+	if len(v) != 1 || len(v[0]) > 4096 || json.Unmarshal([]byte(v[0]), &b) != nil || !b.Ref.Valid() || b.RuntimeVersion <= 0 || b.Epoch < 0 || b.URL == "" {
+		return b, false
+	}
+	return b, true
+}
 
 type dispatchEpochKey struct{}
 

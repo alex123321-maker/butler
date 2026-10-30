@@ -12,6 +12,7 @@ import (
 
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browsercontrol"
+	"github.com/butler/butler/internal/browserpage"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -48,6 +49,9 @@ type Server struct {
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
+	ManagedPages       bool                    `json:"managed_pages,omitempty"`
+	PageID             string                  `json:"page_id,omitempty"`
+	DocumentID         string                  `json:"document_id,omitempty"`
 	Login              *loginRequest           `json:"login,omitempty"`
 	LoginPhase         string                  `json:"login_phase,omitempty"`
 	LoginNonce         string                  `json:"login_nonce,omitempty"`
@@ -102,34 +106,37 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
-	Authentication       *browserauth.Proof    `json:"authentication,omitempty"`
-	LoginNonce           string                `json:"login_nonce,omitempty"` // private helper protocol only
-	LoginCookies         []Cookie              `json:"login_cookies,omitempty"`
-	LoginURL             string                `json:"login_url,omitempty"`
-	LoginPosts           int                   `json:"login_posts,omitempty"`
-	PreparationRejection string                `json:"preparation_rejection,omitempty"`
-	InputDispatched      *bool                 `json:"input_dispatched,omitempty"`
-	ReadRejection        string                `json:"read_rejection,omitempty"`
-	NavigationDispatched *bool                 `json:"navigation_dispatched,omitempty"`
-	Forms                []FormDescription     `json:"forms,omitempty"`
-	GetFormTarget        string                `json:"get_form_target,omitempty"` // private helper plan; never tool output
-	GetFormNonce         string                `json:"get_form_nonce,omitempty"`
-	SessionID            string                `json:"browser_session_id,omitempty"`
-	ObservationVersion   uint64                `json:"observation_version,omitempty"`
-	ScopeOrigin          string                `json:"scope_origin,omitempty"`
-	ExpiresAt            string                `json:"expires_at,omitempty"`
-	FinalURL             string                `json:"final_url,omitempty"`
-	Title                string                `json:"title,omitempty"`
-	Text                 string                `json:"text,omitempty"`
-	Matched              bool                  `json:"matched"`
-	OK                   bool                  `json:"ok"`
-	Links                []ResultLink          `json:"links,omitempty"`
-	PageStatus           string                `json:"page_status,omitempty"`
-	LocalPreparation     bool                  `json:"local_preparation,omitempty"`
-	NetworkState         string                `json:"network_state,omitempty"`
-	CredentialVerified   *bool                 `json:"credential_verified,omitempty"`
-	Error                *ResultError          `json:"error,omitempty"`
-	OwnerFrame           *browsercontrol.Frame `json:"owner_frame,omitempty"`
+	OwnerPages           []browsercontrol.OwnerPage `json:"owner_pages,omitempty"`
+	PrivatePages         []browserpage.Report       `json:"private_pages,omitempty"`
+	SelectedPageID       string                     `json:"selected_page_id,omitempty"`
+	Authentication       *browserauth.Proof         `json:"authentication,omitempty"`
+	LoginNonce           string                     `json:"login_nonce,omitempty"` // private helper protocol only
+	LoginCookies         []Cookie                   `json:"login_cookies,omitempty"`
+	LoginURL             string                     `json:"login_url,omitempty"`
+	LoginPosts           int                        `json:"login_posts,omitempty"`
+	PreparationRejection string                     `json:"preparation_rejection,omitempty"`
+	InputDispatched      *bool                      `json:"input_dispatched,omitempty"`
+	ReadRejection        string                     `json:"read_rejection,omitempty"`
+	NavigationDispatched *bool                      `json:"navigation_dispatched,omitempty"`
+	Forms                []FormDescription          `json:"forms,omitempty"`
+	GetFormTarget        string                     `json:"get_form_target,omitempty"` // private helper plan; never tool output
+	GetFormNonce         string                     `json:"get_form_nonce,omitempty"`
+	SessionID            string                     `json:"browser_session_id,omitempty"`
+	ObservationVersion   uint64                     `json:"observation_version,omitempty"`
+	ScopeOrigin          string                     `json:"scope_origin,omitempty"`
+	ExpiresAt            string                     `json:"expires_at,omitempty"`
+	FinalURL             string                     `json:"final_url,omitempty"`
+	Title                string                     `json:"title,omitempty"`
+	Text                 string                     `json:"text,omitempty"`
+	Matched              bool                       `json:"matched"`
+	OK                   bool                       `json:"ok"`
+	Links                []ResultLink               `json:"links,omitempty"`
+	PageStatus           string                     `json:"page_status,omitempty"`
+	LocalPreparation     bool                       `json:"local_preparation,omitempty"`
+	NetworkState         string                     `json:"network_state,omitempty"`
+	CredentialVerified   *bool                      `json:"credential_verified,omitempty"`
+	Error                *ResultError               `json:"error,omitempty"`
+	OwnerFrame           *browsercontrol.Frame      `json:"owner_frame,omitempty"`
 }
 
 type FormDescription struct {
@@ -189,6 +196,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	call, contract := req.GetToolCall(), req.GetContract()
 	if call == nil || contract == nil || s.runner == nil {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_request", "tool call, contract and browser runner are required")
+	}
+	if browserpage.IsTool(call.ToolName) {
+		return s.executePage(ctx, req)
 	}
 	args, err := decodeRequest(call.GetToolName(), call.GetArgsJson(), req.GetResolvedCredentials())
 	if err != nil {
@@ -266,6 +276,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, code, "browser session is unavailable: "+code)
 		}
 		defer session.mu.Unlock()
+		if session.managedPages && args.ToolName != "browser.close" {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "page_required", "managed contexts require exact page tools")
+		}
 		if session.controller != "" {
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_control", "owner is controlling this browser; wait for explicit return")
 		}
@@ -431,9 +444,14 @@ func validateSelectorRequired(args Request) error {
 	}
 	return nil
 }
-func buildResultJSON(_ string, result Result) string {
+func buildResultJSON(tool string, result Result) string {
 	result.LoginNonce, result.LoginURL, result.LoginCookies, result.LoginPosts = "", "", nil, 0
 	result.OwnerFrame = nil
+	result.OwnerPages = nil
+	if !browserpage.IsTool(tool) {
+		result.PrivatePages = nil
+		result.SelectedPageID = ""
+	}
 	result.GetFormTarget, result.GetFormNonce = "", ""
 	return mustJSON(result)
 }

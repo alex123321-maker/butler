@@ -304,7 +304,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		authorizer.SetPublicWebReads(cfg.PublicWebReadsEnabled)
 		authorizer.SetCapabilities(extensionStore)
 		server.SetActionAuthorizer(authorizer)
-		catalog := &broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore}
+		catalog := &broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore, PageToolsReady: browserScopeReader != nil}
 		server.SetScopedCatalog(catalog)
 		var skillStore *skills.Store
 		var executor broker.RuntimeExecutor = router

@@ -2,6 +2,7 @@ package browsercontrol
 
 import (
 	"context"
+	"github.com/butler/butler/internal/browserpage"
 	"math"
 	"net/url"
 	"strings"
@@ -22,11 +23,7 @@ type PageContext struct {
 }
 
 // PageRef must match the exact page and observation, not a title or active tab.
-type PageRef struct {
-	ID         string `json:"page_id"`
-	DocumentID string `json:"document_id"`
-	Version    int64  `json:"observation_version"`
-}
+type PageRef = browserpage.Ref
 
 type PageState struct {
 	PageRef

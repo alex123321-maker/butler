@@ -107,3 +107,10 @@ execution reservations and catalog DATA sources. Global execution starts disable
 Application rollback keeps this additive schema and all accounting history after
 disabling workers. Down refuses policy/job/attempt history; do not erase spending
 to force it. See [the contract](../docs/architecture/background-memory-jobs.md).
+
+## Migration108: managed browser page execution
+
+Adds a fixed managed-context mode/origin and private per-page executor counter.
+The public observation version remains PostgreSQL-owned. Apply107 then108 before
+updating Broker/browser/Web together. Down refuses any retained managed context
+or nonzero runtime counter; do not delete execution history to force rollback.

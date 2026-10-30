@@ -462,3 +462,12 @@ Broker-resolved credential makes Go's suppression sticky for that context.
 Secret state is collected before/after capture to suppress late discoveries.
 Go independently bounds forms/fields/constraints and rejects unknown or
 contradictory validity flags. Normal action, approval and uncertainty policy stays.
+
+## Managed same-origin pages (migration108)
+
+The separate `browser.open_pages` / `browser.page_*` mode now connects the private
+page ledger to action hashing, private runtime dispatch and owner page selection.
+It does not change legacy single-page or scoped-login semantics. See
+[browser pages execution](browser-pages-execution.md) for exact refs, context-wide
+fences, GET-only first-request reservation, no credential support and remaining
+UNKNOWN review/native/federation gates.

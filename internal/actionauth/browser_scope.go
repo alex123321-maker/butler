@@ -3,6 +3,7 @@ package actionauth
 import (
 	"encoding/hex"
 	"encoding/json"
+	"github.com/butler/butler/internal/browserpage"
 	"net/url"
 	"strings"
 )
@@ -36,5 +37,6 @@ func bindBrowserReadScope(b ActionBinding, resource string, epoch int64) (Action
 }
 
 func scopedResourceWithin(s ResourceScope, b ActionBinding) bool {
-	return resourceWithin(s, b.Resource) || (BrowserContextRead(b) && b.BrowserScopeURL != "" && resourceWithin(s, b.BrowserScopeURL))
+	return resourceWithin(s, b.Resource) || (BrowserContextRead(b) && b.BrowserScopeURL != "" && resourceWithin(s, b.BrowserScopeURL)) ||
+		(b.BrowserPage != nil && browserpage.IsTool(b.ToolName) && resourceWithin(s, b.BrowserPage.URL))
 }

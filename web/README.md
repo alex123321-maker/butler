@@ -168,3 +168,14 @@ real owner HTTP decisions to PG, Broker and server Chromium: Stop task and Revok
 mandate fence already issued grants; an unchanged control submits once. Only
 unrelated app navigation uses the shared bootstrap fixture. Owner endpoints and
 their responses are real; the synthetic owner token stays out of browser storage.
+
+## Owner managed-page control
+
+The browser panel supports a safe-URL/opaque-ID page selector for managed
+same-origin contexts. Frames and inputs carry exact page/document IDs. Switching
+page clears pending keys and frame tokens; document changes discard queued keys.
+The selector changes the viewing cursor, not the agent's authority. Required
+real owner API/Core/Broker/PG/Chromium coverage runs through
+`scripts/dev/browser-page-execution-tests.sh` (Windows UI equivalent:
+`browser-page-execution-local.ps1`). See
+[the execution contract](../docs/architecture/browser-pages-execution.md).

@@ -9,6 +9,7 @@ import (
 
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -26,6 +27,7 @@ type TaskCatalog struct {
 	Contexts                    actionauth.ContextReader
 	GuardedTabOnly              bool
 	BrowserResourcesUnavailable bool
+	PageToolsReady              bool
 	Mandates                    interface {
 		GetMandate(context.Context, string) (actionauth.Mandate, error)
 	}
@@ -93,6 +95,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			}
 		}
 		if c.BrowserResourcesUnavailable && (strings.HasPrefix(contract.GetToolName(), "browser.") || strings.HasPrefix(contract.GetToolName(), "single_tab.")) && contract.GetToolName() != "single_tab.bind.guarded" {
+			continue
+		}
+		if browserpage.IsTool(contract.ToolName) && (!c.PageToolsReady || !browserpage.ValidContract(contract)) {
 			continue
 		}
 		if workspaceexec.Protected(contract.GetToolName()) && (a.TaskID == "" || !a.WorkspaceReady || !workspaceexec.ExactContract(contract)) {

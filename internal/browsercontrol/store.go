@@ -10,6 +10,7 @@ import (
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -117,6 +118,9 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	if result.GetRunId() != call.GetRunId() || result.GetToolCallId() != call.GetToolCallId() || result.GetToolName() != call.GetToolName() {
 		return ErrDenied
 	}
+	if browserpage.IsTool(call.ToolName) {
+		return s.recordPageExecution(ctx, call, grant.Binding, result)
+	}
 	if err := s.checkReadRelease(ctx, grant.Binding, result); err != nil {
 		return err
 	}
@@ -179,7 +183,7 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 // Wait happens before Verify/Claim and budget spend. Expiry or cancellation
 // cannot turn an unacknowledged owner release into permission to execute.
 func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (context.Context, error) {
-	if !strings.HasPrefix(call.GetToolName(), "browser.") || call.GetToolName() == "browser.open" || call.GetToolName() == "browser.read" {
+	if !strings.HasPrefix(call.GetToolName(), "browser.") || call.GetToolName() == "browser.open" || call.GetToolName() == "browser.read" || call.GetToolName() == browserpage.Open {
 		return ctx, nil
 	}
 	var args struct {
@@ -199,6 +203,16 @@ func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (contex
 			return ctx, ErrDenied
 		}
 		if mode == "agent" {
+			if browserpage.IsTool(call.ToolName) {
+				return s.beforePage(ctx, call, epoch)
+			}
+			var managed bool
+			if s.Pool.QueryRow(ctx, `SELECT page_mode FROM server_browser_sessions WHERE browser_session_id=$1`, args.ID).Scan(&managed) != nil {
+				return ctx, ErrDenied
+			}
+			if managed && call.ToolName != "browser.close" {
+				return ctx, ErrDenied
+			}
 			if fresh && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.freeze_snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.close" {
 				return ctx, ErrDenied
 			}

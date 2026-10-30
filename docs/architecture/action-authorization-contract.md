@@ -360,3 +360,12 @@ belongs to the durable lifecycle suite.
 `scripts/dev/lab-browser.sh` runs browser/runtime/Broker/approval e2e in existing
 Playwright and disposable Go containers under an isolated agent root. It does
 not change running Compose services or production database tables.
+
+## Managed page bindings
+
+Revision1 managed page contracts require the browser-control resolver. The
+ordinary action hash pins the exact durable page/document/version, safe URL,
+context epoch and distinct private executor counter; current Task/constraints,
+mandate, lease, approval and final release checks still apply. Discovery or owner
+page selection grants no authority. Mutations retain unsafe/none and mandatory
+approval. See [the implemented page contract](browser-pages-execution.md).

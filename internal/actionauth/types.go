@@ -4,6 +4,7 @@
 package actionauth
 
 import (
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/delegation"
 	"time"
 )
@@ -34,42 +35,43 @@ type DataRef struct {
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
-	BrowserScopeURL               string          `json:"browser_scope_url,omitempty"`
-	BrowserScopeEpoch             int64           `json:"browser_scope_epoch,omitempty"`
-	OwnerCommunication            bool            `json:"owner_communication,omitempty"`
-	CommunicationDestinationsHash string          `json:"communication_destinations_hash,omitempty"`
-	ActionID                      string          `json:"action_id"`
-	ActionHash                    string          `json:"action_hash"`
-	RunID                         string          `json:"run_id"`
-	ToolCallID                    string          `json:"tool_call_id"`
-	ToolName                      string          `json:"tool_name"`
-	ContractHash                  string          `json:"contract_hash"`
-	ContractRevision              string          `json:"contract_revision,omitempty"`
-	ArgsHash                      string          `json:"args_hash"`
-	Resource                      string          `json:"resource"`
-	CredentialRefs                []CredentialRef `json:"credential_refs"`
-	CredentialMetadataHash        string          `json:"credential_metadata_hash"`
-	TaskID                        string          `json:"task_id"`
-	TaskRevision                  int64           `json:"task_revision"`
-	ConstraintsRevision           int64           `json:"constraints_revision"`
-	OwnerID                       string          `json:"owner_id"`
-	Effect                        Effect          `json:"effect"`
-	GoalID                        string          `json:"goal_id,omitempty"`
-	GoalRevision                  int64           `json:"goal_revision,omitempty"`
-	MandateID                     string          `json:"owner_mandate_id,omitempty"`
-	MandateRevision               int64           `json:"owner_mandate_revision,omitempty"`
-	Purpose                       string          `json:"purpose,omitempty"`
-	OwnerPolicyRevision           int64           `json:"owner_policy_revision,omitempty"`
-	ExtensionID                   string          `json:"extension_id,omitempty"`
-	ExtensionManifestHash         string          `json:"extension_manifest_hash,omitempty"`
-	ExtensionGeneration           int64           `json:"extension_generation,omitempty"`
-	ExtensionAccessRevision       int64           `json:"extension_access_revision,omitempty"`
-	ExtensionAccessExpiresAt      *time.Time      `json:"extension_access_expires_at,omitempty"`
-	ConverterID                   string          `json:"converter_id,omitempty"`
-	ConverterPackageHash          string          `json:"converter_package_hash,omitempty"`
-	ConverterNeedHash             string          `json:"converter_need_hash,omitempty"`
-	ConverterGeneration           int64           `json:"converter_generation,omitempty"`
-	DataSources                   []DataRef       `json:"data_sources,omitempty"`
+	BrowserPage                   *browserpage.Binding `json:"browser_page,omitempty"`
+	BrowserScopeURL               string               `json:"browser_scope_url,omitempty"`
+	BrowserScopeEpoch             int64                `json:"browser_scope_epoch,omitempty"`
+	OwnerCommunication            bool                 `json:"owner_communication,omitempty"`
+	CommunicationDestinationsHash string               `json:"communication_destinations_hash,omitempty"`
+	ActionID                      string               `json:"action_id"`
+	ActionHash                    string               `json:"action_hash"`
+	RunID                         string               `json:"run_id"`
+	ToolCallID                    string               `json:"tool_call_id"`
+	ToolName                      string               `json:"tool_name"`
+	ContractHash                  string               `json:"contract_hash"`
+	ContractRevision              string               `json:"contract_revision,omitempty"`
+	ArgsHash                      string               `json:"args_hash"`
+	Resource                      string               `json:"resource"`
+	CredentialRefs                []CredentialRef      `json:"credential_refs"`
+	CredentialMetadataHash        string               `json:"credential_metadata_hash"`
+	TaskID                        string               `json:"task_id"`
+	TaskRevision                  int64                `json:"task_revision"`
+	ConstraintsRevision           int64                `json:"constraints_revision"`
+	OwnerID                       string               `json:"owner_id"`
+	Effect                        Effect               `json:"effect"`
+	GoalID                        string               `json:"goal_id,omitempty"`
+	GoalRevision                  int64                `json:"goal_revision,omitempty"`
+	MandateID                     string               `json:"owner_mandate_id,omitempty"`
+	MandateRevision               int64                `json:"owner_mandate_revision,omitempty"`
+	Purpose                       string               `json:"purpose,omitempty"`
+	OwnerPolicyRevision           int64                `json:"owner_policy_revision,omitempty"`
+	ExtensionID                   string               `json:"extension_id,omitempty"`
+	ExtensionManifestHash         string               `json:"extension_manifest_hash,omitempty"`
+	ExtensionGeneration           int64                `json:"extension_generation,omitempty"`
+	ExtensionAccessRevision       int64                `json:"extension_access_revision,omitempty"`
+	ExtensionAccessExpiresAt      *time.Time           `json:"extension_access_expires_at,omitempty"`
+	ConverterID                   string               `json:"converter_id,omitempty"`
+	ConverterPackageHash          string               `json:"converter_package_hash,omitempty"`
+	ConverterNeedHash             string               `json:"converter_need_hash,omitempty"`
+	ConverterGeneration           int64                `json:"converter_generation,omitempty"`
+	DataSources                   []DataRef            `json:"data_sources,omitempty"`
 }
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.
