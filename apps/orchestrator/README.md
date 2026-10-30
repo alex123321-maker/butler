@@ -4,6 +4,11 @@ access verification. A verified account observation can support the final answer
 without another click approval, factual outcome report or redundant HTTP refetch.
 Ambiguous effects retain the existing stop/intervention contract.
 
+Ordinary token-only converter-composed source observations on the reserved pool
+release their current proofs through rollback, avoiding an observer COMMIT/WAL
+flush. All source/lifecycle checks and deadlines remain; converter/owner compound
+transactions and actual dispatch/publication keep their existing commits.
+
 Core records one bounded post-effect observation after a correlated UNKNOWN
 click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
 grant under current authority and a clipped five-second deadline. It contains

@@ -21,14 +21,15 @@ type converterSources struct {
 
 func (converterSources) MemorySourceCheckTimeout() time.Duration { return 2 * time.Second }
 
-// This is only a capacity classification, never an authority or source proof.
+// This classifies capacity and read-only observation finalization, never
+// authority or source proof. Returned Inputs and pinned usages stay compound.
 // Both routes execute all the same current guards below. A stale classification
 // can fail closed; it cannot authorize a cached source or completed worker.
 func converterRunParticipates(ctx context.Context, db interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }, id string) (bool, error) {
 	var related bool
-	err := db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM converter_developer_snapshots a WHERE a.task_id=r.task_id OR a.parent_task_id=r.task_id) OR EXISTS(SELECT 1 FROM memory_run_sources p JOIN converter_versions v ON v.source_ref_json->>'source_id'=p.source_id JOIN runs created ON created.run_id=v.created_by_run JOIN converter_developer_snapshots a ON a.task_id=created.task_id WHERE p.run_id=r.run_id) FROM runs r WHERE r.run_id=$1`, id).Scan(&related)
+	err := db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs i WHERE i.run_id=r.run_id AND i.source='converter-return') OR EXISTS(SELECT 1 FROM converter_usages u WHERE u.run_id=r.run_id) OR EXISTS(SELECT 1 FROM converter_developer_snapshots a WHERE a.task_id=r.task_id OR a.parent_task_id=r.task_id) OR EXISTS(SELECT 1 FROM memory_run_sources p JOIN converter_versions v ON v.source_ref_json->>'source_id'=p.source_id JOIN runs created ON created.run_id=v.created_by_run JOIN converter_developer_snapshots a ON a.task_id=created.task_id WHERE p.run_id=r.run_id) FROM runs r WHERE r.run_id=$1`, id).Scan(&related)
 	return related, err
 }
 
@@ -38,6 +39,7 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 		return generatedtools.ErrAccess
 	}
 	pool := s.pool
+	observerOnly := false
 	observations := s.Store.RunObservationPool(ctx)
 	if observations != s.pool {
 		// Classify using business capacity when it is available. A saturated
@@ -53,6 +55,7 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 		}
 		if !related {
 			pool = observations
+			observerOnly = true
 		}
 	}
 	tx, e := pool.Begin(ctx)
@@ -76,6 +79,7 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 			return err
 		}
 		if related {
+			observerOnly = false
 			if e = tx.Rollback(ctx); e != nil {
 				return e
 			}
@@ -102,6 +106,13 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 	}
 	if e = generatedtools.CheckPinnedLifecycleTx(ctx, tx, id); e != nil {
 		return fmt.Errorf("converter catalog lifecycle: %w", e)
+	}
+	// Unrelated token-only observations select no new roots and all lifecycle
+	// guards above are reads. Keep every current proof and row lock, but release
+	// them without adding a COMMIT/WAL-sync dependency to each 250ms observation.
+	// Compound converter/owner/checker contexts retain their owning commit.
+	if observerOnly {
+		return tx.Rollback(ctx)
 	}
 	return tx.Commit(ctx)
 }

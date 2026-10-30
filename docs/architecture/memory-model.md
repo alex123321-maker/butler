@@ -1132,6 +1132,13 @@ mandatory. Trusted compound owner/auxiliary-checker contexts
 retain their existing commit semantics. Optional fixed phase/pool diagnostics
 must omit source text, SQL parameters, raw errors and credential material.
 
+The converter-composed foreground checker uses the same rollback for unrelated
+token-only runs on the separate observation pool, after repeating its capacity
+classification under current authority locks and executing all lifecycle guards.
+Converter-related and owner/auxiliary compound contexts retain COMMIT. This avoids
+an unnecessary observer WAL flush under storage pressure; it does not change
+durable dispatch/publication commits, fsync settings or verification deadlines.
+
 These foreground observations use Core's separate source-read connection when
 the configured total PostgreSQL cap is at least4. They cannot occupy the shorter
 lease/Task authority reserve. With the minimum total cap3, use business capacity
