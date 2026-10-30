@@ -1709,4 +1709,3 @@ selects Gemini Flash High, Terra 6.1 none or Luna 6 max explicitly. Test-only
 monotonic provider/tool spans distinguish API wait, Butler execution, fixture
 preparation and observer work. See the
 [protocol](../../docs/testing/issue115-skill-workflow-2026-10-30.md).
-

@@ -5,7 +5,7 @@ package app
 // subset of Butler time; overlapping subspans must never be added twice.
 import (
 	"context"
-	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"sync"
 	"time"
@@ -36,12 +36,18 @@ func (t *utilityTimings) snapshot() []utilityTimingSpan {
 }
 
 type utilityTimedTools struct {
-	flow.ToolExecutor
+	*tools.BrokerClient
 	timing *utilityTimings
 }
 
 func (b utilityTimedTools) ExecuteToolCall(ctx context.Context, c *toolbrokerv1.ToolCall) (*toolbrokerv1.ToolResult, error) {
 	start := time.Now()
 	defer func() { b.timing.add("tool_rpc", c.GetToolName(), time.Since(start)) }()
-	return b.ToolExecutor.ExecuteToolCall(ctx, c)
+	return b.BrokerClient.ExecuteToolCall(ctx, c)
+}
+
+func (b utilityTimedTools) ExecuteAuthorizedToolCall(ctx context.Context, c *toolbrokerv1.ToolCall, grant string) (*toolbrokerv1.ToolResult, error) {
+	start := time.Now()
+	defer func() { b.timing.add("tool_rpc", c.GetToolName(), time.Since(start)) }()
+	return b.BrokerClient.ExecuteAuthorizedToolCall(ctx, c, grant)
 }

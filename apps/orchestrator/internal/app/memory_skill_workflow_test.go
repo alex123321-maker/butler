@@ -266,6 +266,16 @@ func (p *utilityWorkflowProvider) SubmitToolResult(ctx context.Context, q transp
 }
 
 func TestSkillWorkflowContract(t *testing.T) {
+	before := "title\n[deployment]\nschema=1\ntimeout_ms=3000\nretries=2\nregion=region-test\nready=pending\n[/deployment]\ntimeout_ms=unaltered\n"
+	want := "title\n[deployment]\nschema=2\ntimeout_s=3\nattempts=3\nendpoint=https://region-test.example.invalid/v2\nready=verified\n[/deployment]\ntimeout_ms=unaltered\n"
+	if got, e := utilityMigrateDeployment(before, "verified"); e != nil || got != want {
+		t.Fatal("independent migration example", e)
+	}
+	for _, bad := range []string{strings.Replace(before, "3000", "3500", 1), strings.Replace(before, "retries=2", "retries=2\nretries=3", 1), strings.Replace(before, "[/deployment]", "", 1)} {
+		if _, e := utilityMigrateDeployment(bad, "verified"); e == nil {
+			t.Fatal("ambiguous/inexact migration accepted")
+		}
+	}
 	s, e := utilityWorkflowSuite()
 	if e != nil || len(s.Cases) != 12 {
 		t.Fatal(e)

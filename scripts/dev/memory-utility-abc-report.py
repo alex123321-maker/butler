@@ -13,7 +13,7 @@ def unique_object(pairs):
 def main():
     p=argparse.ArgumentParser();p.add_argument('root',type=pathlib.Path);p.add_argument('output',type=pathlib.Path);a=p.parse_args()
     r=a.root;plan=read(r/'out/plan/plan.json');suite=read(r/'out/plan/suite.private.json');actual=r/'out/actual'
-    schedule=plan['Slots'];assert len(schedule)==72 and len(suite['cases'])==24
+    schedule=plan['Slots'];count=12 if plan.get('Protocol')=='skill-workflow-v1' else 24;assert len(schedule)==count*3 and len(suite['cases'])==count
     final={x['Sequence']:x for x in read(actual/'slots-final.json')}
     journal=read(r/'out/journal-complete.private.json');assert [v['seq'] for v in journal]==list(range(1,len(journal)+1))
     seen={};rows=[];totals={arm:collections.Counter() for arm in 'ABC'}
@@ -70,7 +70,7 @@ def main():
         for reason,count in row['limited_read_results'].items():c['limited:'+reason]+=count
         c['slots_with_limited_reads']+=bool(row['limited_read_results'])
         for reason,count in row['input_error_codes'].items():c['input_error:'+reason]+=count
-    assert len({(x['Case'],x['Arm']) for x in schedule})==72
+    assert len({(x['Case'],x['Arm']) for x in schedule})==count*3
     for entry in journal:
         raw=seen.get(entry['seq']);assert entry['body']==raw,('raw/PG journal mismatch',entry['seq'])
         assert entry['dispatched']==raw['dispatched'] and entry['slot']==raw['slot']
@@ -81,9 +81,9 @@ def main():
         historical[name]={'sha256':want,'as_reported':{k:v[k] for k in ('inclusive_usage','new_usage','known_full_tokens','native_dispatched','native_methods_dispatched','native_admissions','scored_slots','scheduled','unknown_usage','invoice_cost','calls','tokens') if k in v}}
         if isinstance(v.get('arms'),dict):
             historical[name]['as_reported']['arms']=v['arms']
-    report={'root':str(r),'source':plan['Source'],'model':plan['Model'],'evaluation_version':suite['version'],'scheduled':72,'arms':{k:dict(v) for k,v in totals.items()},
+    report={'root':str(r),'source':plan['Source'],'model':plan['Model'],'evaluation_version':suite['version'],'scheduled':count*3,'arms':{k:dict(v) for k,v in totals.items()},
        'difference_B_minus_A_success':totals['B']['task_success']-totals['A']['task_success'], 'difference_C_minus_B_success':totals['C']['task_success']-totals['B']['task_success'],
-       'all_slots_reached':all(x['slot_status'] in ('completed','failed') for x in rows),'all_slots_observed':all(x['observed_slots']==24 for x in totals.values()),
+       'all_slots_reached':all(x['slot_status'] in ('completed','failed') for x in rows),'all_slots_observed':all(x['observed_slots']==count for x in totals.values()),
        'native_admissions':len(journal),'native_methods_dispatched':sum(v['dispatched'] for v in journal),
        'historical_receipts_verified':historical,'historical_totals_not_added_due_to_shared_allocations':True,
        'plan_sha256':digest(r/'out/plan/plan.json'),'suite_sha256_bytes':digest(r/'out/plan/suite.private.json'),

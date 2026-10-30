@@ -775,7 +775,7 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
 	if r.utilityTiming != nil {
-		fc.Tools = utilityTimedTools{ToolExecutor: r.broker, timing: r.utilityTiming}
+		fc.Tools = utilityTimedTools{BrokerClient: r.broker, timing: r.utilityTiming}
 	}
 	fc.MemoryEvidence = memoryEvidencePolicy(r.evidenceReads)
 	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: fc.ModelName}, r.budgets, r.foreground)
