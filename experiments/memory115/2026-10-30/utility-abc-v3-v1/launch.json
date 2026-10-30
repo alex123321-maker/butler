@@ -1,0 +1,27 @@
+{
+  "source": "97f03037c9c86d638863fed2e39417ca6500a26d",
+  "evaluation_version": "butler-memory-utility-v3",
+  "scheduled": 72,
+  "model": "gemini-3.8-flash-high",
+  "maximum_methods": 936,
+  "deadline_utc": "2026-10-30T07:07:52.877871213Z",
+  "binary_sha256": "1d28c713277f3f4554ca8d49136ffbee873da03376f0fdd52404cd97f78d3734",
+  "plan_sha256": "febb8c6cc45ca889e97adc8f9f1c9be1fa04d571f8f49c953e4bcd895acf6d69",
+  "historical_receipts": {
+    "abc.json": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad",
+    "context.json": "457ece9931bb89793e61b17d3bb0f4177c2d7dd4aebdd70feec2c7f19030df8b",
+    "controlled-repair.json": "03c2912daff95ef3a60d9b237e830ee92f53259b078925497ed36ebf3bab485c",
+    "force.json": "22702b0cd4fe7ecf30eac26a4f16e190b921c8ba4e80bcc223f724e537936a8d",
+    "predecessor-completed.json": "c808b5cf3f34cb8959ba5d85b3a91feb7a0f126997a55ef438983e9c4431ec8b",
+    "predecessor-interrupted.json": "907d647c4eb98c871ab1119a250086526e34b86c0fbf4ae0751e362da217737d",
+    "prompt.json": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c",
+    "skill-broker.json": "217779fda01dd10c50c281735c8261e62709ae795c268391510e3ca461b43cee"
+  },
+  "actual_kernel_values": {
+    "cpu.max": "100000 100000",
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "pids.max": "256"
+  },
+  "host_launcher_sha256": "bacfedb9cdc0182b651bd3394cd6b191781e680950ff56c96dbf722497e64819"
+}

@@ -1,0 +1,1988 @@
+{
+  "posthoc_diagnosis_only": true,
+  "no_new_native_requests": true,
+  "primary_scores_unchanged": true,
+  "rows": [
+    {
+      "sequence": 17,
+      "arm": "A",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": false,
+          "outcome_matches_expected": false,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/alpha",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 19,
+      "arm": "A",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/Delta",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/delta",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha/README.md",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 24,
+      "arm": "A",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 26,
+      "arm": "A",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": false,
+          "outcome_matches_expected": false,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/Delta",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 33,
+      "arm": "A",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": false,
+          "outcome_matches_expected": false,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/alpha",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 35,
+      "arm": "A",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 37,
+      "arm": "A",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 42,
+      "arm": "A",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "unknown",
+          "value_matches_expected": false,
+          "outcome_matches_expected": false,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha/plan",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 50,
+      "arm": "C",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {
+        "memory_evidence_search_exhausted": 1
+      },
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 3
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "limit_reason": "memory_evidence_search_exhausted",
+          "broker_status": "completed",
+          "result_status": "limited"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 53,
+      "arm": "A",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "task/run revisions changed",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "blocked",
+          "error_code": "execution_stopped",
+          "checkpoint": "model_budget_reserved",
+          "checkpoint_data_keys": [
+            "deadline",
+            "deadline_origin",
+            "operation_id",
+            "reservation_id"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 57,
+      "arm": "C",
+      "condition": "distractor",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {
+        "memory_evidence_search_exhausted": 1
+      },
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "not_checked",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 3
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "limit_reason": "memory_evidence_search_exhausted",
+          "broker_status": "completed",
+          "result_status": "limited"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 61,
+      "arm": "C",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "citation_not_read_or_duplicate"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "observation_completed": true,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "failed",
+          "expected_check": "failed",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 1
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 62,
+      "arm": "A",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "blocked input lacks unresolved effect evidence",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/test/checks",
+          "query_keys": [],
+          "broker_status": "effect_unknown"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "checkpoint": "tool_result_recorded",
+          "checkpoint_data_keys": [
+            "action_id",
+            "effect_id",
+            "effect_state",
+            "evidence_refs",
+            "status",
+            "tool_call_id"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 63,
+      "arm": "B",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "foreign HTTP observation",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "none",
+          "expected_effect": "none",
+          "check": "failed",
+          "expected_check": "failed",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/alpha",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/effects/",
+          "query_keys": [],
+          "status_code": 404,
+          "body_metadata": {},
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 64,
+      "arm": "A",
+      "condition": "unknown_effect",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "run_incomplete"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "verify_unknown"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_unknown_verification_v1",
+            "effect": "unknown",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "http.request",
+          "method": "GET",
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "verify_unknown"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_unknown_verification_v1",
+            "effect": "unknown",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/checks",
+          "query_keys": [],
+          "broker_status": "effect_unknown"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "checkpoint": "tool_result_recorded",
+          "checkpoint_data_keys": [
+            "action_id",
+            "effect_id",
+            "effect_state",
+            "evidence_refs",
+            "status",
+            "tool_call_id"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 65,
+      "arm": "B",
+      "condition": "unknown_effect",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "run_incomplete"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "verify_unknown"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_unknown_verification_v1",
+            "effect": "unknown",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/butler_35c0004d8580ce52bcb4cbd8684dee670d8ece1788e4d2c7de69a673f344d15c/checks",
+          "query_keys": [],
+          "broker_status": "effect_unknown"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "blocked",
+          "error_code": "effect_unknown",
+          "checkpoint": "tool_result_recorded",
+          "checkpoint_data_keys": [
+            "action_id",
+            "effect_id",
+            "effect_state",
+            "evidence_refs",
+            "status",
+            "tool_call_id"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 66,
+      "arm": "C",
+      "condition": "unknown_effect",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "final identity/content mismatch",
+      "observation_completed": false,
+      "limited_read_results": {
+        "memory_evidence_search_exhausted": 1
+      },
+      "finals": [
+        {
+          "answer_state": "partial",
+          "json_object": false
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "verify_unknown"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_unknown_verification_v1",
+            "effect": "unknown",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "limit_reason": "memory_evidence_search_exhausted",
+          "broker_status": "completed",
+          "result_status": "limited"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 67,
+      "arm": "B",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "absent",
+          "expected_effect": "absent",
+          "check": "failed",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "validate_ready"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_validation_v1",
+            "effect_absent": true,
+            "checks_passed": false,
+            "rejection_code": "unsupported_ready_value"
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 68,
+      "arm": "C",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": true,
+          "outcome_matches_expected": true,
+          "effect": "absent",
+          "expected_effect": "absent",
+          "check": "failed",
+          "expected_check": "not_checked",
+          "artifact_present": false,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "validate_ready"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_validation_v1",
+            "effect_absent": true,
+            "checks_passed": false,
+            "rejection_code": "unsupported_ready_value"
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 69,
+      "arm": "A",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "final identity/content mismatch",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "partial",
+          "json_object": false
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [
+            "validate_ready"
+          ],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_validation_v1",
+            "effect_absent": true,
+            "checks_passed": false,
+            "rejection_code": "unsupported_ready_value"
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 70,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {
+        "memory_evidence_search_exhausted": 1
+      },
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": false,
+          "outcome_matches_expected": true,
+          "effect": "confirmed",
+          "expected_effect": "confirmed",
+          "check": "passed",
+          "expected_check": "passed",
+          "artifact_present": true,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "skills.load",
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "limit_reason": "memory_evidence_search_exhausted",
+          "broker_status": "completed",
+          "result_status": "limited"
+        },
+        {
+          "tool": "extension.project.prepare-patch",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches",
+          "query_keys": [],
+          "status_code": 201,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/97416e911fd2c090e86bfad040fc98d6caf5afd0666a1c0887287a6825b0fd0b/checks",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": true
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/97416e911fd2c090e86bfad040fc98d6caf5afd0666a1c0887287a6825b0fd0b/checks",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": true
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 71,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "<nil>",
+      "observation_completed": true,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "final",
+          "json_object": true,
+          "fields": [
+            "artifact",
+            "check",
+            "effect",
+            "outcome",
+            "sources",
+            "value"
+          ],
+          "outcome": "answered",
+          "value_matches_expected": false,
+          "outcome_matches_expected": true,
+          "effect": "absent",
+          "expected_effect": "confirmed",
+          "check": "passed",
+          "expected_check": "passed",
+          "artifact_present": true,
+          "artifact_matches_observer_receipt": true,
+          "source_count": 0
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.prepare-patch",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches",
+          "query_keys": [],
+          "status_code": 201,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/c32cd0f9760a9d5961899b73076ab7c453995e61d12f0b44d0ac9fd1b4e14d1d/checks",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": true
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/c32cd0f9760a9d5961899b73076ab7c453995e61d12f0b44d0ac9fd1b4e14d1d/checks",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": true
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    },
+    {
+      "sequence": 72,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "missing_or_failed_observer_gate"
+      ],
+      "projection_error": "final identity/content mismatch",
+      "observation_completed": false,
+      "limited_read_results": {},
+      "finals": [
+        {
+          "answer_state": "partial",
+          "json_object": false
+        }
+      ],
+      "calls": [
+        {
+          "tool": "extension.project.inspect",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": false
+          },
+          "broker_status": "completed"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "memory.search",
+          "broker_status": "completed",
+          "result_status": "empty"
+        },
+        {
+          "tool": "extension.project.prepare-patch",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches",
+          "query_keys": [],
+          "status_code": 201,
+          "body_metadata": {},
+          "broker_status": "completed"
+        },
+        {
+          "tool": "extension.project.check",
+          "method": null,
+          "url_host": "external.test",
+          "url_path": "/project/alpha/patches/4e61e4709dfe9e7e7c832d488c9e9f5ffa85a0d494c11811b7baea10c9e2eb5b/checks",
+          "query_keys": [],
+          "status_code": 200,
+          "body_metadata": {
+            "observation_format": "project_check_v1",
+            "checks_passed": true
+          },
+          "broker_status": "completed"
+        }
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "error_code": "",
+          "checkpoint": "finalizing",
+          "checkpoint_data_keys": [
+            "answer_state",
+            "final_message",
+            "terminal_observed"
+          ],
+          "stop_reason": {}
+        }
+      ]
+    }
+  ]
+}

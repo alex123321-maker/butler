@@ -1,0 +1,106 @@
+{
+  "posthoc_only": true,
+  "no_new_native_requests": true,
+  "final_format_details": [
+    {
+      "sequence": 61,
+      "final_format": [
+        {
+          "types": {
+            "outcome": "str",
+            "value": "str",
+            "sources": "list",
+            "effect": "str",
+            "artifact": "str",
+            "check": "str"
+          },
+          "value_empty_string": false,
+          "value_is_ready_string": false,
+          "source_count": 1
+        }
+      ]
+    },
+    {
+      "sequence": 67,
+      "final_format": [
+        {
+          "types": {
+            "outcome": "str",
+            "value": "str",
+            "sources": "list",
+            "effect": "str",
+            "artifact": "str",
+            "check": "str"
+          },
+          "value_empty_string": false,
+          "value_is_ready_string": false,
+          "source_count": 0
+        }
+      ]
+    },
+    {
+      "sequence": 68,
+      "final_format": [
+        {
+          "types": {
+            "outcome": "str",
+            "value": "str",
+            "sources": "list",
+            "effect": "str",
+            "artifact": "str",
+            "check": "str"
+          },
+          "value_empty_string": false,
+          "value_is_ready_string": false,
+          "source_count": 0
+        }
+      ]
+    },
+    {
+      "sequence": 70,
+      "final_format": [
+        {
+          "types": {
+            "outcome": "str",
+            "value": "str",
+            "sources": "list",
+            "effect": "str",
+            "artifact": "str",
+            "check": "str"
+          },
+          "value_empty_string": true,
+          "value_is_ready_string": false,
+          "source_count": 0
+        }
+      ]
+    },
+    {
+      "sequence": 71,
+      "final_format": [
+        {
+          "types": {
+            "outcome": "str",
+            "value": "str",
+            "sources": "list",
+            "effect": "str",
+            "artifact": "str",
+            "check": "str"
+          },
+          "value_empty_string": true,
+          "value_is_ready_string": false,
+          "source_count": 0
+        }
+      ]
+    },
+    {
+      "sequence": 72,
+      "final_format": [
+        {
+          "json_object": false,
+          "answer_state": "partial"
+        }
+      ]
+    }
+  ],
+  "fixed_budget_stop_logs": []
+}

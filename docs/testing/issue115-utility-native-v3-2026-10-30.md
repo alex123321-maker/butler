@@ -58,3 +58,17 @@ unchanged. A before/after table must label the different scorer and new random
 case values; it is descriptive, not a paired causal estimate. Do not silently
 re-score an old cohort with V3, drop failed slots, or add overlapping historical
 allocations. Native quality, issue closure and production deployment remain separate.
+
+## Completed window
+
+All72 positions were observed: V3 primary A=7/24,B=20/24,C=20/24; factual families
+A=7/20,B=20/20,C=20/20 and action regression0/4 in every arm. Native usage is281
+methods/2466920 full measured tokens, zero unknown usage and no transport errors.
+The real read limiter returned four no-DATA refusals; C50/C57 then succeeded,
+C66 ended partial and C70 physically prepared/checked its artifact but failed
+the final format. All three arms physically prepared/checked their current
+artifact with original files unchanged; none passed the complete reporting gate.
+Producer exit1 and all failed scores remain. The added skill was loaded17 times
+and gave no extra primary success at51.0% more tokens than B. See the
+[retained report](../../experiments/memory115/2026-10-30/utility-abc-v3-v1/README.md)
+for action/protocol ambiguities, exact costs, preserved history and cleanup.

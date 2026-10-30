@@ -1,0 +1,28 @@
+{
+  "posthoc_effect_diagnostic_only": true,
+  "no_new_native_requests": true,
+  "not_task_success_or_owner_acceptance": true,
+  "rows": [
+    {
+      "sequence": 70,
+      "exactly_one_current_preparation": true,
+      "checks_confirmed_current_artifact": 2,
+      "original_files_unchanged": true,
+      "primary_score_unchanged": true
+    },
+    {
+      "sequence": 71,
+      "exactly_one_current_preparation": true,
+      "checks_confirmed_current_artifact": 2,
+      "original_files_unchanged": true,
+      "primary_score_unchanged": true
+    },
+    {
+      "sequence": 72,
+      "exactly_one_current_preparation": true,
+      "checks_confirmed_current_artifact": 1,
+      "original_files_unchanged": true,
+      "primary_score_unchanged": true
+    }
+  ]
+}

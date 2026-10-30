@@ -1,0 +1,26 @@
+{
+  "native_exit": {
+    "exit_code": 1,
+    "native_window": "utility-abc-20261030-v1",
+    "previous_results_preserved": true
+  },
+  "containers": {
+    "issue115-utility-native-20261030-v3-r1-pg": {
+      "running": false,
+      "oom_killed": false,
+      "exit_code": 0
+    },
+    "issue115-native-pg-20261028-v1": {
+      "running": false,
+      "oom_killed": false,
+      "exit_code": 0
+    }
+  },
+  "helper_removed": true,
+  "cgroup_removed": true,
+  "network_removed": true,
+  "joined_children_before_remove": true,
+  "source_clients_at_stop": 0,
+  "all_historical_receipt_hashes_unchanged": true,
+  "original_completed_predecessor_hash_unchanged": true
+}
