@@ -1,5 +1,9 @@
 # Explicit browser execution sessions
 
+Multi-page and federated sign-in remain a
+[target proposal](browser-pages-proposal.md), not enabled production behavior.
+The isolated two-origin SSO recipient does not change this implemented contract.
+
 The distinct revision1 [browser login protocol](browser-login-protocol.md) accepts
 only a scoped one-use login consent. Chromium submits the native form at most
 once; the Go runtime independently verifies authenticated versus anonymous access

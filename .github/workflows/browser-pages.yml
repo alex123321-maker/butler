@@ -1,0 +1,35 @@
+name: Browser SSO fixture
+on:
+  pull_request:
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'scripts/dev/browser-pages-fixture-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'scripts/dev/browser-pages-fixture-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+permissions:
+  contents: read
+jobs:
+  recipient-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --prefix apps/tool-browser --no-audit --no-fund
+      - run: cd apps/tool-browser && npx playwright install --with-deps chromium
+      - run: bash scripts/dev/browser-pages-fixture-tests.sh
+      - name: Preserve required fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-sso-fixture-evidence
+          path: .cache/browser-pages-ci/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error
