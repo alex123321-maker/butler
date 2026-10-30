@@ -1,0 +1,7 @@
+"tool","status","calls","measured_calls","sum_s","median_s","min_s","max_s"
+"browser.open","completed","3","3","27,414","9,156","5,318","12,94"
+"browser.snapshot","completed","2","2","20,137","10,068","7,219","12,918"
+"credentials.search","completed","6","6","69,308","10,516","5,838","22,6"
+"tools.load","completed","4","4","47,98","11,046","8,535","17,352"
+"tools.search","completed","15","15","176,635","6,342","4,165","26,151"
+"tools.search","execution_stopped","1","1","4,623","4,623","4,623","4,623"

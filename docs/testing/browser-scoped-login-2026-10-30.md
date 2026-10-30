@@ -1,8 +1,10 @@
 # Scoped one-consent login — 2026-10-30
 
-Implements the ordinary-login follow-up to #163, stacked after PR177. General
-browser acceptance remains NO_GO. Native model/provider/delivery qualification
-of this new protocol is pending; earlier native trials and timings are retained.
+Implements the ordinary-login follow-up to #163 in draft PR178, stacked after
+PR177. The bounded ordinary-login native scenario passed with one consent and
+real Web/Telegram delivery. General browser acceptance remains NO_GO; unsupported
+forms/SSO/OTP and lost outcomes do not borrow that success. Eight earlier attempts,
+all spending and their original transcripts remain in the record.
 
 ## Implemented boundary
 
@@ -27,10 +29,12 @@ Generic click and POST policy is unchanged. Owner token/PIN were not weakened.
 
 ## Completed checks
 
-- Real Chromium plus guarded Go egress: nine cases PASS. Verified login makes
+- Real Chromium plus guarded Go egress: eleven cases PASS. Verified login makes
   one POST and two authenticated account reads (browser + independent probe).
   Public landing, mutated formdata/CSRF, wrong password, foreign target, extra
-  password/control, hidden business fields and stale observation cannot confirm authentication. No
+  password/control, hidden business fields, ambiguous forms and stale observation
+  cannot confirm authentication. Indexed observed selectors select the intended
+  second form without releasing the first form's trap. No
   background trap traffic or credential/cookie canary reaches public output.
 - Actual Broker + encrypted PG vault + Chromium: PASS. One distinct vault
   consent, zero duplicate action approvals/factual reports, one POST, verified
@@ -66,7 +70,7 @@ with zero model calls. It is **not** the native agent's end-to-end login time.
 
 The operator implementation/validation window began **2026-10-30 03:31:44 UTC**.
 Its elapsed wall time includes Codex deliberation, coding, build/debugging and
-test waits. A new native Input must separately count model deliberation/context,
+test waits. Native timing separately includes model deliberation/context,
 tool discovery, owner consent, verification and actual Web/Telegram delivery.
 No old scenario was replayed to reconstruct previous metrics.
 
@@ -84,7 +88,7 @@ Four lab services were updated at 05:14:50 UTC through a finite reviewed
 composition: a narrow compatible Core backport, Broker, browser runtime and Web.
 Environments, owner authentication and PostgreSQL/Redis services were preserved;
 additive migration106 and all history remain on rollback. This is not a full-main
-deployment. No new native login has been qualified yet.
+deployment. The later qualified trial and restoration are recorded below.
 
 The following new Inputs remain in the denominator. Elapsed times are existing
 Input record intervals, including model deliberation, tool discovery and gaps;
@@ -97,6 +101,10 @@ they exclude earlier implementation/setup work and are not isolated browser time
 | 03 | Operator account-title typo; create request canceled without consent | unknown terminal duration | 11 |
 | 04 | `memory_source_check_timeout` after login page snapshot | 90.909s | 8 |
 | 05 | Task authority deadline while preparing tools.load | 61.724s | 4 |
+| 06 | Approved consent; waiting/active recovery race, later terminalized | 705.413s | 9 |
+| 07 | Claimed login, unsupported observed selector; original UNKNOWN retained | 227.230s | 9 |
+| 08 | Retained trial07 uncertainty stopped the next request before dispatch | 153.291s | 7 |
+| 09 | Verified single login and real delivery | 245.569s | 10 |
 
 All five had zero login POSTs and no vault approval. Trial03 performed one
 browser.open read; the coarse `zero_browser_effects` cleanup label on trials03/04
@@ -175,3 +183,97 @@ report. Real PG/race tests cover twelve positive/negative cases and unchanged
 generic owner-outcome boundaries; Windows targeted PG tests also pass. Such a
 historical report remains owner-assisted maintenance and cannot qualify native
 login, renew a grant or resume the old Input.
+
+## Qualified native result
+
+Trial09 used ordinary protected Web ingress, a finite owner-goal/mandate and the
+configured native provider. Input `input-2d149d6a3204893e67868935e418e0a2` and run
+`run-1793342400409497517-8ed43b1ca3944768` completed. Joined evidence proves:
+
+- One explicit vault login consent, one claimed call and one confirmed login
+  dispatch; zero generic clicks, extra action approvals or factual reports in
+  this Input, and zero rejected answer drafts.
+- The sealed recipient journal has exactly one accepted login and two
+  authenticated account reads. The runtime independently observed the anonymous
+  challenge and PG confirmed the pinned authentication proof.
+- The fresh private delivery reference was observed through browser.login and
+  matched the protected published answer, with no web.fetch fallback.
+- One result publication became ready in Web and received a Telegram API ACK.
+  This proves channel delivery/availability, not a human-read receipt.
+- Username/password canaries were absent from eight tool-call args/results,
+  three transcript messages and the protected final answer. Provider wire and
+  system logs were not exhaustively scanned; no broader secrecy claim is made.
+
+The [joined qualification](browser-scoped-login/evidence/native-scoped-login-09-qualification.json),
+[durable authority audit](browser-scoped-login/evidence/native-scoped-login-09-authority-final.json),
+[recipient/publication comparison](browser-scoped-login/evidence/native-scoped-login-09-login-final-verification.json),
+[canary audit](browser-scoped-login/evidence/native-scoped-login-09-transcript-canary.json)
+and [sealed recipient counts](browser-scoped-login/evidence/native-scoped-login-09-recipient-sealed.json)
+are content-free evidence. Formal Task-criteria verification/goal completion was
+not claimed. The test Task was stopped and its goal/mandate revoked after the
+completed Input and real delivery were independently checked.
+
+Historical maintenance for trial07 used one separate authenticated factual
+operator report against the retired empty recipient journal. Its journal outcome
+is now absent, while its original UNKNOWN tool transcript and failed Input remain.
+The ordinary stopped-attempt sweeper then classified trials07/08 as known without
+deleting history. That report is outside trial09 and is not machine login proof.
+Across this qualification phase, the owner approved trials06,07,09; only the last
+one qualified. Do not present the successful trial's single consent as the total
+human assistance spent on all failed qualification attempts.
+
+## Inclusive timings and teardown
+
+Trial09 took **245.569s** from Input acceptance to terminal completion. Web result
+availability was **227.810s**, Telegram ACK **232.459s**. The vault decision wait
+was **50.178s**; approval-to-Telegram ACK was **98.794s**. The browser.login Core
+tool span was **1.265s**, and browser.open **0.481s**. Tool spans are diagnostics,
+not the primary end-to-end agent metric.
+
+| Sequential phase | Elapsed, seconds |
+| --- | ---: |
+| Acceptance, discovery, account search, page open and consent request | 83.487 |
+| Wait for explicit owner decision | 50.178 |
+| Recovery, model deliberation and verified login after approval | 70.307 |
+| Answer preparation/publication and Telegram ACK | 28.487 |
+| Remaining finalization after Telegram ACK | 13.110 |
+| Complete Input | 245.569 |
+
+All gaps include model deliberation, context, orchestration and scheduling; they
+are not pure model-only measurements. There were ten model reservations,101661
+known input tokens and1260 output tokens, with zero unknown usage pairs. No money
+price is inferred. [Per-action CSV](browser-scoped-login/summary-final/actions.csv),
+[all nine trial intervals](browser-scoped-login/summary-final/trials.csv),
+[model accounting spans](browser-scoped-login/summary-final/model-accounting-spans.csv)
+and [partition notes](browser-scoped-login/summary-final/README.md) retain all54
+recorded tool spans, failures, terminalization tails and unknown values. Trial06's
+705.413s includes waiting and delayed failure finalization; it is not eleven
+minutes of browser execution. Trial03's terminal duration remains unknown.
+
+The four original lab services were restored and independently verified at
+**06:50:49 UTC**: binary/catalog/mount fingerprints and environments match the
+initial snapshot; PostgreSQL/Redis were not restarted. The initial mount check
+failed only because Docker changed array order; a normalized read-only comparison
+passed without a second rollout. Migration106, evidence and spending were retained.
+The qualified recipient journal was sealed, a fresh idle fixture installed, and
+the isolated test PostgreSQL stopped at06:52:14 UTC. See the
+[restoration receipt](browser-scoped-login/evidence/baseline-restored-final.json).
+Nothing was merged into main or deployed as a full-main release.
+
+## Final CI qualification
+
+Implementation revision `aa4d4549ead45056e927ad7efa153143949e3920` passed **11/11
+jobs across all five workflows**: [discovery](https://github.com/alex123321-maker/butler/actions/runs/41015122399),
+[Web](https://github.com/alex123321-maker/butler/actions/runs/41015122456),
+[Android Go/build and four emulator versions](https://github.com/alex123321-maker/butler/actions/runs/41015122712),
+[real PG/browser vault](https://github.com/alex123321-maker/butler/actions/runs/41015122470),
+and [communication plus converter matrices](https://github.com/alex123321-maker/butler/actions/runs/41015122411).
+The communication matrix includes the previously failing three-phase recovery
+cancellation test. Earlier failed runs remain linked to their original commits.
+The remaining evidence-only commit changes no implementation or runtime bytes.
+
+Before publication,33 public report/CSV/JSON files (157256 bytes at that audit
+snapshot) were privately scanned for the actual username, password and fresh
+private reference; none was present. See the
+[artifact audit](browser-scoped-login/evidence/public-evidence-canary-audit.json).
+This is a fixed-needle check, not a universal secret detector.

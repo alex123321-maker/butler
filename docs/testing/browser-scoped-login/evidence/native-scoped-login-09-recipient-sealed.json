@@ -1,0 +1,10 @@
+{
+  "scope": "sealed_qualified_login_recipient",
+  "at": "2026-10-30T06:51:40Z",
+  "journal_sha256": "217e0ac21fb069b09f31f374952066e446fa31cfbe77aa8734a071c797743bf7",
+  "events": 3,
+  "accepted_logins": 1,
+  "authenticated_account_reads": 2,
+  "unit_stopped": true,
+  "new_requests": 0
+}
