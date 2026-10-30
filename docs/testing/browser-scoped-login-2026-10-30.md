@@ -127,3 +127,21 @@ The Windows attempt
 failed in the existing fixture's directory sync with `Access is denied`, before
 the new assertions; it is retained as failed qualification. No Windows pass is
 claimed for these integration cases.
+
+Trial06 reached a correct pending `login` request after the source-observation
+fix and received the owner's explicit approval. Recovery then hit a second
+ordering defect: the active-only Task supervisor ran while the canonical
+interaction transaction still had the Task in `waiting_for_user`. The Input
+was blocked at `interaction_ready`, with zero login dispatches and an unclaimed
+grant. It was stopped and its authority revoked through owner APIs; the consent,
+failure, original expiry and all spending remain in history.
+
+The recovery follow-up resolves the canonical interaction before starting the
+active-only supervisor, with resolution bounded by the newly acquired lease's
+expiry and its existing claim/version/evidence checks. A400ms delayed real-PG
+resolver reproduces the old failure; the changed code passes all seven cases,
+including unknown, expiry, cancellation, changed constraints and source denial.
+No provider request is admitted on the negative cases. The compatible Core's
+previous binary was reproduced byte-for-byte before applying only this change;
+its delayed PG/race, credential wait and watchdog tests and build pass. Initial
+backport compile/reproduction failures remain in the build timing ledger.

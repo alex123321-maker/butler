@@ -128,8 +128,17 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	ctx = adaptiveContext(ctx, checkpoint.Prepared)
 	runLog := logger.WithRunID(s.log, runID)
 	retryParent := ctx
-	ctx, stop, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
-	defer stop()
+	var renewErrs <-chan error
+	stop := func() {}
+	startSupervisor := func() { ctx, stop, renewErrs = s.startLeaseRenewer(ctx, lease, runLog) }
+	// The canonical interaction resolver owns the waiting->active transition.
+	// An active-only Task observer must not race that transaction. No provider,
+	// tool or source-body release occurs before resolution; the resolver still
+	// checks current ownership/claim/versions and is bounded by this lease.
+	if !interactionWait {
+		startSupervisor()
+	}
+	defer func() { stop() }()
 	defer func() {
 		failure := preserveOwnedCancellation(ctx, returnedErr)
 		stop()
@@ -204,9 +213,10 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 		var answer string
 		var resumeErr error
+		interactionCtx, finishInteraction := context.WithDeadline(ctx, lease.ExpiresAt)
 		if effectWait {
 			var resolution actionauth.OwnerOutcomeResolution
-			resolution, resumeErr = s.config.EffectReviews.ResumeOutcome(ctx, runID, checkpoint.Interaction.ID)
+			resolution, resumeErr = s.config.EffectReviews.ResumeOutcome(interactionCtx, runID, checkpoint.Interaction.ID)
 			if resumeErr == nil {
 				var marker browserOutcomeCheckpoint
 				if json.Unmarshal(checkpoint.Data.UncertainBrowser, &marker) != nil || marker.ToolCallID != resolution.ToolCallID || marker.EffectID != resolution.EffectID || resolution.ReviewID != checkpoint.Interaction.ID || resolution.ToolCallID == "" || resolution.EffectID == "" || (resolution.State != actionauth.StateConfirmed && resolution.State != actionauth.StateAbsent) || len(resolution.EvidenceRefs) == 0 {
@@ -218,10 +228,11 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 				}
 			}
 		} else if credentialWait {
-			answer, resumeErr = s.config.Credentials.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+			answer, resumeErr = s.config.Credentials.ResumeInteraction(interactionCtx, runID, checkpoint.Interaction.ID)
 		} else {
-			answer, resumeErr = s.config.Communication.ResumeInteraction(ctx, runID, checkpoint.Interaction.ID)
+			answer, resumeErr = s.config.Communication.ResumeInteraction(interactionCtx, runID, checkpoint.Interaction.ID)
 		}
+		finishInteraction()
 		if resumeErr != nil {
 			if errors.Is(resumeErr, context.Canceled) || errors.Is(resumeErr, context.DeadlineExceeded) {
 				return nil, resumeErr
@@ -239,6 +250,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			}
 			return blockedApprovalResult(current, code), nil
 		}
+		startSupervisor()
 		// Resolve the canonical interaction first: its owning kernel validates
 		// evidence/versions/claim and atomically resumes the Task's exact wait.
 		// Active-only source readers then recheck current data before inference.

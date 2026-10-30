@@ -1530,6 +1530,9 @@ Interaction recovery first resolves the canonical owning wait under the current
 claim, evidence and authority. It then rehydrates active-only source/delegation
 preparation before any fresh provider or action. A current source denial still
 stops execution; a report never revives a terminal Input or replays a POST.
+The active-only supervisor starts after that canonical waiting-to-active
+transaction. Until then resolution is bounded by the acquired lease expiry and
+all resolver fences; no provider or tool dispatch is permitted.
 
 The protected Web message route also accepts an explicit `task_id` for an active
 Task in its current owner/session. It uses ordinary Input and communication
