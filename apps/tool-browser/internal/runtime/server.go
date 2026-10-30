@@ -97,6 +97,8 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
+	PreparationRejection string                `json:"preparation_rejection,omitempty"`
+	InputDispatched      *bool                 `json:"input_dispatched,omitempty"`
 	ReadRejection        string                `json:"read_rejection,omitempty"`
 	NavigationDispatched *bool                 `json:"navigation_dispatched,omitempty"`
 	Forms                []FormDescription     `json:"forms,omitempty"`
@@ -127,8 +129,25 @@ type FormDescription struct {
 	Fields   []FormFieldDescription `json:"fields"`
 }
 type FormFieldDescription struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name        string                `json:"name"`
+	Type        string                `json:"type"`
+	Constraints *FormFieldConstraints `json:"constraints,omitempty"`
+	Validation  *FormFieldValidation  `json:"validation,omitempty"`
+}
+
+// Observation metadata only: no values, patterns or native validation messages.
+type FormFieldConstraints struct {
+	Required  bool   `json:"required"`
+	Min       string `json:"min,omitempty"`
+	Max       string `json:"max,omitempty"`
+	Step      string `json:"step,omitempty"`
+	MinLength *int   `json:"min_length,omitempty"`
+	MaxLength *int   `json:"max_length,omitempty"`
+}
+
+type FormFieldValidation struct {
+	Valid  bool     `json:"valid"`
+	Issues []string `json:"issues"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
@@ -148,6 +167,12 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		details := mustJSON(map[string]string{"error_type": code})
 		if guardedGETTool(req.GetToolCall().GetToolName()) && preNavigationReason(code) {
 			details = preNavigationDetails(code)
+		}
+		if navigationProofContract(req.GetContract()) && (code == "page_changed" || code == "stale_observation" || code == "invalid_args") {
+			details = preNavigationDetails(code)
+		}
+		if preparationProofContract(req.GetToolCall().GetToolName(), req.GetContract()) && preparationPrecondition(code) {
+			details = preparationRejectionDetails(code)
 		}
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, class, message, details)}, nil
 	}
@@ -171,10 +196,10 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if args.ToolName == "browser.freeze_snapshot" && (contract.GetContractRevision() != "1" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "read_result" || contract.GetSupportsCredentialRefs()) {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "invalid_contract", "frozen observation requires its exact read contract")
 	}
-	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" {
+	if (args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate") && contract.GetContractRevision() != "3" && !(args.ToolName == "browser.navigate" && navigationProofContract(contract)) {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "public-origin navigation requires revision 3")
 	}
-	if (args.ToolName == "browser.prepare_fill" || args.ToolName == "browser.prepare_type") && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "unsafe" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1") {
+	if (args.ToolName == "browser.prepare_fill" || args.ToolName == "browser.prepare_type") && ((contract.GetContractRevision() != "2" && contract.GetContractRevision() != "3" && contract.GetContractRevision() != "4") || contract.GetEffectContract().GetRetrySafety() != "unsafe" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1") {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "local preparation requires its pinned revision 2 contract")
 	}
 	if err := validateSelectorRequired(args); err != nil {
@@ -216,6 +241,15 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 		var code string
 		session, code = s.sessions.acquire(args.SessionID, call.GetRunId())
 		if code != "" {
+			if code == "session_lost" && navigationProofContract(contract) {
+				return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "Browser context unavailable before navigation", preNavigationDetails(code))}, nil
+			}
+			// Only this Go guard, before any runner call, may prove loss of this
+			// context prevented a NEW local preparation. In-flight helper errors
+			// below never receive this marker, even when named session_lost.
+			if code == "session_lost" && preparationProofContract(args.ToolName, contract) && contract.GetContractRevision() == "4" {
+				return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "Browser context unavailable before local input", preparationRejectionDetails(code))}, nil
+			}
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, code, "browser session is unavailable: "+code)
 		}
 		defer session.mu.Unlock()
@@ -229,6 +263,12 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 			}
 		}
 		if session.closed {
+			if navigationProofContract(contract) {
+				return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "Browser context unavailable before navigation", preNavigationDetails("session_lost"))}, nil
+			}
+			if preparationProofContract(args.ToolName, contract) && contract.GetContractRevision() == "4" {
+				return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "Browser context unavailable before local input", preparationRejectionDetails("session_lost"))}, nil
+			}
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_lost", "browser session was closed or lost")
 		}
 		if !time.Now().Before(session.expires) {
@@ -241,6 +281,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "current domain is not allowed by tool contract")
 		}
 		if isGuardedAction(args.ToolName) {
+			if navigationProofContract(contract) && session.networkFrozen {
+				return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "Frozen context refused navigation before dispatch", preNavigationDetails("network_frozen"))}, nil
+			}
 			if args.ObservationVersion == 0 || args.ObservationVersion != session.version {
 				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "stale_observation", "observe the current page before acting")
 			}
@@ -258,12 +301,21 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	runCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
 	defer cancel()
+	privateForms := len(req.GetResolvedCredentials()) != 0
+	if session != nil {
+		session.privateFormMetadata = session.privateFormMetadata || privateForms
+		privateForms = session.privateFormMetadata
+	}
 	result, err := s.runner.Run(runCtx, args)
 	if err != nil {
 		s.sessions.invalidateAll()
 		return fail(commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "session_lost", "browser process failed; prior sessions are invalid and any in-flight effect is unknown")
 	}
+	sanitizeFormMetadata(&result, privateForms)
 	if session != nil {
+		if result.Error == nil && result.NetworkState == "frozen" {
+			session.networkFrozen = true
+		}
 		if result.Error != nil && (result.Error.ErrorType == "session_lost" || result.Error.ErrorType == "session_expired") {
 			session.closed = true
 			if result.Error.ErrorType == "session_lost" {
@@ -288,13 +340,36 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	result.Text = truncate(result.Text, maxSnapshotTextLen)
 	if result.Error != nil {
+		if preparationProofContract(args.ToolName, contract) && result.PreparationRejection == "pre_input_v1" && result.InputDispatched != nil && !*result.InputDispatched && preparationPrecondition(result.Error.ErrorType) {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "Local preparation precondition failed", preparationRejectionDetails(result.Error.ErrorType))}, nil
+		}
+		result.PreparationRejection, result.InputDispatched = "", nil
 		if guardedGETTool(args.ToolName) && result.ReadRejection == "pre_navigation_v1" && result.NavigationDispatched != nil && !*result.NavigationDispatched && preNavigationReason(result.Error.ErrorType) {
 			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "GET navigation precondition failed", preNavigationDetails(result.Error.ErrorType))}, nil
 		}
+		result.ReadRejection, result.NavigationDispatched = "", nil
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, result.Error.Message, buildResultJSON(args.ToolName, result))}, nil
 	}
 	s.log.Info("browser request executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("tool_name", call.GetToolName()))
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: buildResultJSON(args.ToolName, result), FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
+}
+
+func preparationProofContract(tool string, c *toolbrokerv1.ToolContract) bool {
+	return (tool == "browser.prepare_fill" || tool == "browser.prepare_type") && c.GetToolName() == tool && (c.GetContractRevision() == "3" || c.GetContractRevision() == "4") && c.GetEffectContract().GetRetrySafety() == "unsafe" && c.GetEffectContract().GetVerificationMethod() == "local_browser_preparation_v1"
+}
+
+func navigationProofContract(c *toolbrokerv1.ToolContract) bool {
+	return c.GetToolName() == "browser.navigate" && c.GetContractRevision() == "4" && !c.GetSupportsCredentialRefs() && c.GetEffectContract().GetRetrySafety() == "read_only" && c.GetEffectContract().GetVerificationMethod() == "guarded_browser_get_v1"
+}
+func preparationPrecondition(reason string) bool {
+	switch reason {
+	case "page_changed", "stale_observation", "invalid_args", "invalid_selector":
+		return true
+	}
+	return false
+}
+func preparationRejectionDetails(reason string) string {
+	return mustJSON(map[string]any{"preparation_rejection": "pre_input_v1", "input_dispatched": false, "reason": reason})
 }
 
 func guardedGETTool(tool string) bool {

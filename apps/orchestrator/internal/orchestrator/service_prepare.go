@@ -343,18 +343,20 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	if prepared == nil || s.transcript == nil {
 		return nil
 	}
-	// Mobile batches share delivery/session identity, but each task owns a finite
-	// processing context. Ordinary conversations retain complete session replay.
-	if prepared.Task != nil && prepared.Task.Source["type"] == "initiative" && prepared.Task.Source["mobile_batch_id"] != nil {
+	// Explicit owner-goal tasks and mobile batches retain their own complete
+	// primary history, rather than replaying unrelated work in a shared channel.
+	// Other typed tasks keep their existing session history policy.
+	scopedOwnerTask := prepared.Task != nil && prepared.Task.Source["type"] == "owner_goal_task"
+	if prepared.Task != nil && (scopedOwnerTask || prepared.Task.Source["type"] == "initiative" && prepared.Task.Source["mobile_batch_id"] != nil) {
 		reader, ok := s.transcript.(interface {
 			GetTaskTranscript(context.Context, string, string) (transcript.Transcript, error)
 		})
 		if !ok {
-			return fmt.Errorf("mobile task transcript reader unavailable")
+			return fmt.Errorf("scoped task transcript reader unavailable")
 		}
 		full, err := reader.GetTaskTranscript(ctx, sessionKey, prepared.Task.TaskID)
 		if err != nil {
-			return fmt.Errorf("load mobile task transcript: %w", err)
+			return fmt.Errorf("load scoped task transcript: %w", err)
 		}
 		if s.config.MemorySources != nil {
 			if err = s.config.MemorySources.PinTranscript(ctx, sessionKey, full.SourceRevision); err != nil {
@@ -368,7 +370,7 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 		}
 		messages := full.Messages[:0]
 		for _, m := range full.Messages {
-			if prepared.CurrentRunID != "" && m.RunID == prepared.CurrentRunID && m.Role == "user" {
+			if prepared.CurrentRunID != "" && m.RunID == prepared.CurrentRunID && m.Role == "user" && (!scopedOwnerTask || transcript.MessageKind(m.MetadataJSON) != "interaction_response") {
 				prepared.InputAlreadyRecorded = true
 				continue
 			}
@@ -376,7 +378,11 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 		}
 		items := transcriptInputItems(messages)
 		prepared.InputItems = append(items, prepared.InputItems...)
-		prepared.observabilityHistory = map[string]any{"replayed_message_count": len(items), "coverage_mode": "mobile_task_history", "source_revision": full.SourceRevision}
+		mode := "mobile_task_history"
+		if scopedOwnerTask {
+			mode = "owner_goal_task_history"
+		}
+		prepared.observabilityHistory = map[string]any{"replayed_message_count": len(items), "coverage_mode": mode, "source_revision": full.SourceRevision}
 		return nil
 	}
 	full, err := s.transcript.GetTranscript(ctx, sessionKey)

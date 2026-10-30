@@ -53,6 +53,59 @@ func validID(value string) bool {
 	return len(value) == 32 && err == nil
 }
 
+// BrowserReadScope supplies broker-owned metadata for no-navigation context
+// reads. A browser ID from another run, owner or Task is never a capability.
+func (s *Store) BrowserReadScope(ctx context.Context, b actionauth.ActionBinding) (string, int64, error) {
+	if s == nil || s.Pool == nil || !actionauth.BrowserContextRead(b) {
+		return "", 0, ErrDenied
+	}
+	id := strings.TrimSuffix(strings.TrimPrefix(b.Resource, "browser:"), ":")
+	if !validID(id) {
+		return "", 0, ErrDenied
+	}
+	var resource string
+	var epoch int64
+	err := s.Pool.QueryRow(ctx, `SELECT observed_url,epoch FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND owner_id=$3 AND task_id=$4 AND mode='agent' AND expires_at>clock_timestamp()`, id, b.RunID, b.OwnerID, b.TaskID).Scan(&resource, &epoch)
+	if err != nil || resource == "" {
+		return "", 0, ErrDenied
+	}
+	return resource, epoch, nil
+}
+
+func (s *Store) checkReadRelease(ctx context.Context, b actionauth.ActionBinding, result *toolbrokerv1.ToolResult) error {
+	if b.BrowserScopeURL == "" || b.ToolName == "browser.close" {
+		return nil
+	}
+	var observed struct {
+		URL string `json:"final_url"`
+	}
+	deny := func() error { result.ResultJson = "{}"; return ErrDenied }
+	if !actionauth.BrowserContextRead(b) || json.Unmarshal([]byte(result.GetResultJson()), &observed) != nil || observed.URL == "" {
+		return deny()
+	}
+	// The actual observed URL, rather than the previous URL or page text, must
+	// satisfy current assignment and all goal deny scopes before any byte release.
+	b.BrowserScopeURL = observed.URL
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return deny()
+	}
+	defer tx.Rollback(ctx)
+	var at time.Time
+	if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at) != nil || actionauth.CheckTaskActionTx(ctx, tx, b, at) != nil {
+		return deny()
+	}
+	id := strings.TrimSuffix(strings.TrimPrefix(b.Resource, "browser:"), ":")
+	var current bool
+	if tx.QueryRow(ctx, `SELECT TRUE FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND owner_id=$3 AND task_id=$4 AND epoch=$5 AND mode='agent' AND expires_at>clock_timestamp() FOR SHARE`, id, b.RunID, b.OwnerID, b.TaskID, b.BrowserScopeEpoch).Scan(&current) != nil || !current {
+		return deny()
+	}
+	if tx.Commit(ctx) != nil {
+		return deny()
+	}
+	return nil
+}
+
 func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant actionauth.Grant, result *toolbrokerv1.ToolResult) error {
 	if call == nil || !strings.HasPrefix(call.GetToolName(), "browser.") {
 		return nil
@@ -62,6 +115,9 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	}
 	if result.GetRunId() != call.GetRunId() || result.GetToolCallId() != call.GetToolCallId() || result.GetToolName() != call.GetToolName() {
 		return ErrDenied
+	}
+	if err := s.checkReadRelease(ctx, grant.Binding, result); err != nil {
+		return err
 	}
 	if call.GetToolName() == "browser.open" {
 		var output struct {

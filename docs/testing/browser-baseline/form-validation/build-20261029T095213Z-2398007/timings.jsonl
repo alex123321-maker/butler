@@ -1,0 +1,5 @@
+{"phase":"narrow_browser_compile","duration_ms":4370,"exit_code":0}
+{"phase":"broker_compile","duration_ms":5890,"exit_code":0}
+{"phase":"metadata_units","duration_ms":2750,"exit_code":0}
+{"phase":"vet","duration_ms":4010,"exit_code":0}
+{"phase":"build_browser","duration_ms":1100,"exit_code":0}

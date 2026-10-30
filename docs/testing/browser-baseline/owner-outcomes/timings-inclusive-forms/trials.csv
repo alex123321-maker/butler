@@ -1,0 +1,4 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-matrix-20261028-form-01","failed","effect_unknown","155,236",,"150,166","147,766","2,4","5,07","True","0","7","7","0"
+"browser-baseline-matrix-20261028-form-02","failed","external_effect_unknown","120,259",,"114,322","112,376","1,946","5,938","True","-1,4551915228366852E-11","7","7","0"
+"browser-baseline-matrix-20261028-form-03","completed",,"501,85","498,618","496,975","493,917","3,058","4,875","True","5,820766091346741E-11","16","16","0"

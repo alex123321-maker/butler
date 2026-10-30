@@ -1,0 +1,13 @@
+{
+  "core_base": "/srv/storage/butler/agents/browser-authority-isolation-20261028/build-cc4d7701-59569a98/src",
+  "browser_base": "/srv/storage/butler/agents/server-browser-get-form-20261028/snapshots/20261028-204708-452",
+  "core_patch_sha256": "4a80a3a97c0410b9ffc75c0495a82b1f2deb67608f25e78b05c525ebb056ea4f",
+  "browser_patch_sha256": "083be689ef882339cd3f70c45f8c5d85af84c2ead1071d3cb69fadb9ffe1b0d7",
+  "source": "/tmp/butler-owner-build-4a80a3a97c04",
+  "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+  "new_migrations": [
+    105
+  ],
+  "native_calls": 0,
+  "live_changes": 0
+}

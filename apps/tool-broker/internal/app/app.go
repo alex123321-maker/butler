@@ -182,6 +182,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 	var converterHandler http.Handler
 	var guardedResourceHandler http.Handler
 	var browserControlHandler http.Handler
+	var browserScopeReader *browsercontrol.Store
 	var converterConn *grpc.ClientConn
 	ready := false
 	defer func() {
@@ -226,6 +227,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 				return nil, err
 			}
 			control := &browsercontrol.Store{Pool: postgres.Pool(), Contexts: reader, Runtime: client}
+			browserScopeReader = control
 			server.SetBrowserControl(control)
 			browserControlHandler = browsercontrol.Handler(token, control)
 		}
@@ -296,6 +298,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		server.SetBudgets(budgetController)
 		server.SetBudgetTimeout(time.Duration(budgetPolicy.ToolMillis) * time.Millisecond)
 		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
+		if browserScopeReader != nil {
+			authorizer.SetBrowserScopes(browserScopeReader)
+		}
 		authorizer.SetPublicWebReads(cfg.PublicWebReadsEnabled)
 		authorizer.SetCapabilities(extensionStore)
 		server.SetActionAuthorizer(authorizer)

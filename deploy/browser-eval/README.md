@@ -40,8 +40,19 @@ the recipient does not cancel Butler's Input or reconcile unknown effects;
 check the previous Input separately first. Native observation timeout alone is
 not sufficient permission to reset a still-running scenario.
 
+Do not restore availability by restarting a historical instance. Its exclusive
+journal must remain unchanged, so that process will exit rather than append to
+it. A transient `systemctl is-active` after `start` is insufficient evidence of
+readiness. When returning the host to idle, prepare a fresh idle instance with a
+new label and journal; do not reuse an old native attempt.
+
 `prepare-attempt.sh NEW_ID PREVIOUS_ID` refuses existing attempt directories,
-retains their journals, records the binary hash and waits for HTTP readiness.
+retains their journals, records the binary hash and checks HTTP readiness plus
+the named active unit twice with the same live PID. Its `/login` readiness GETs
+must leave the fresh journal empty. Labels accept bounded lowercase letters,
+digits and hyphens, without path separators; they are operator-only labels and
+grant no Butler authority. Stop/cancellation checks for the previous Input are
+still required before invoking the script.
 The initial systemd-active/HTTP-ready race was observed and fixed before sending
 the second native Input. The matrix driver has an explicit guarded recovery for
 that one unused prepared instance, not a generic replay switch.

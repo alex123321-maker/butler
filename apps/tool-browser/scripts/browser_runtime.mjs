@@ -9,6 +9,7 @@ let browser
 
 const errorResult = (error_type, message) => ({ ok: false, error: { error_type, message, retryable: false } })
 const rejectedRead = reason => ({ ...errorResult(reason, 'GET navigation precondition failed'), read_rejection: 'pre_navigation_v1', navigation_dispatched: false })
+const rejectedPreparation = reason => ({ ...errorResult(reason, 'Local preparation precondition failed'), preparation_rejection: 'pre_input_v1', input_dispatched: false })
 const origin = value => { try { return new URL(value).origin } catch { return '' } }
 const safeError = err => {
   const message = String(err?.message || '')
@@ -121,18 +122,41 @@ async function observe(session, selector = 'body') {
   // storage, screenshot pixels or full DOM into a normal tool artifact.
   // Capture text, URL and DOM revision in one JavaScript turn. A mutation
   // between separate reads must not validate an older text snapshot.
-  const captured = await session.page.evaluate(selector => {
+  const captured = await session.page.evaluate(({ selector, publicMetadata, frozen }) => {
     const element = document.querySelector(selector)
     if (!element) throw new Error('requested selector is not present')
     const links = selector === 'body' ? Array.from(document.querySelectorAll('a[href]')).slice(0, 30)
       .map(a => ({ text: (a.innerText || '').slice(0, 120), href: a.href })).filter(a => a.text && /^https?:/.test(a.href)) : []
-    const forms = selector === 'body' ? Array.from(document.forms).slice(0, 10).map((form, index) => ({
-      selector: `form >> nth=${index}`, method: form.method.toUpperCase(), action: form.action.slice(0, 2048),
-      fields: Array.from(form.elements).filter(e => e.name).slice(0, 32).map(e => ({ name: e.name.slice(0, 128), type: String(e.type || e.tagName).slice(0, 32) }))
-    })) : []
+    const ordinaryTypes = new Set(['text', 'search', 'number', 'email', 'url', 'tel', 'textarea', 'select-one', 'select-multiple', 'checkbox', 'radio', 'submit', 'button', 'reset'])
+    const issueNames = { valueMissing: 'value_missing', typeMismatch: 'type_mismatch', rangeUnderflow: 'range_underflow', rangeOverflow: 'range_overflow', stepMismatch: 'step_mismatch', tooShort: 'too_short', tooLong: 'too_long', badInput: 'bad_input', patternMismatch: 'pattern_mismatch', customError: 'custom_error' }
+    const forms = selector === 'body' ? Array.from(document.forms).slice(0, 10).map((form, index) => {
+      const controls = Array.from(form.elements).slice(0, 129)
+      // A password/hidden/file/unknown control suppresses metadata for the
+      // entire form, including username fields. Never read a field's value.
+      const ordinary = publicMetadata && controls.length <= 128 && controls.every(e => ordinaryTypes.has(String(e.type || '').toLowerCase()))
+      return { selector: `form >> nth=${index}`, method: form.method.toUpperCase(), action: form.action.slice(0, 2048),
+        fields: controls.filter(e => e.name).slice(0, 32).map(e => {
+          const field = { name: e.name.slice(0, 128), type: String(e.type || e.tagName).slice(0, 32) }
+          if (!ordinary || ['submit', 'button', 'reset'].includes(field.type)) return field
+          field.constraints = { required: e.required === true }
+          if (field.type === 'number') for (const key of ['min', 'max', 'step']) {
+            const value = e.getAttribute(key)
+            if (value && value.length <= 64) field.constraints[key] = value
+          }
+          for (const [property, key] of [['minLength', 'min_length'], ['maxLength', 'max_length']]) {
+            if (Number.isInteger(e[property]) && e[property] >= 0 && e[property] <= 1000000) field.constraints[key] = e[property]
+          }
+          // Reading ValidityState does not invoke checkValidity/reportValidity
+          // (which dispatch invalid events). Observe flags only with all routes
+          // frozen; the flags prove no external submission or outcome.
+          if (frozen && e.validity) field.validation = { valid: e.validity.valid === true,
+            issues: Object.entries(issueNames).filter(([property]) => e.validity[property] === true).map(([, name]) => name) }
+          return field
+        }) }
+    }) : []
     return { text: element.innerText || '', links, forms, title: document.title, url: location.href,
       revision: window.__butlerRevision, documentID: window.__butlerDocumentID }
-  }, selector)
+  }, { selector, publicMetadata: session.secrets.size === 0, frozen: session.networkFrozen })
   await collectSecretState(session)
   const { text, links, title } = captured
   const final_url = redact(session, captured.url)
@@ -143,7 +167,16 @@ async function observe(session, selector = 'body') {
   const cleanText = Array.from(redact(session, text)).slice(0, 12000).join('')
   const page_status = /captcha|verify you are human|access denied|checking your browser|403 forbidden/i.test(cleanText + title) ? 'blocked' : 'ok'
   return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status, network_state: session.networkFrozen ? 'frozen' : 'read_only',
-    forms: captured.forms.map(form => ({ ...form, action: redact(session, form.action), fields: form.fields.map(field => ({ name: redact(session, field.name), type: field.type })) })),
+    forms: captured.forms.map(form => ({ ...form, action: redact(session, form.action), fields: form.fields.map(field => {
+      const safe = { name: redact(session, field.name), type: field.type }
+      // State may have gained a secret during capture. Suppress rather than
+      // expose validity/length feedback or secret-derived constraint strings.
+      if (!session.secrets.size) {
+        if (field.constraints) safe.constraints = field.constraints
+        if (field.validation) safe.validation = field.validation
+      }
+      return safe
+    }) })),
     links: links.map(link => ({ text: redact(session, link.text), href: redact(session, link.href) })) }
 }
 
@@ -189,8 +222,8 @@ async function execute(request) {
   // checks trusted ownership, exclusive control, and the last observed state.
   await collectSecretState(session)
   const live = await session.page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
-  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
-  if (request.expected_url !== redact(session, session.page.url())) return getForm ? rejectedRead('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : localPreparation ? rejectedPreparation('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
+  if (request.expected_url !== redact(session, session.page.url())) return getForm ? rejectedRead('page_changed') : localPreparation ? rejectedPreparation('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   if (getForm) return await submitGetForm(session, request, live)
   // An ordinary local draft is private too, even without credential_ref.
   // A later read tool must never thaw input callbacks or release that draft.

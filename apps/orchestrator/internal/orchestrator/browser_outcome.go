@@ -74,6 +74,7 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	if err := s.checkpoint(ctx, current.GetRunId(), "browser_outcome_observing", data); err != nil {
 		return err
 	}
+	parentCtx := ctx
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	call := &toolbrokerv1.ToolCall{RunId: current.GetRunId(), ToolCallId: marker.ReadCallID, ToolName: frozenBrowserObservation, ArgsJson: mustMarshalJSON(map[string]string{"browser_session_id": args.SessionID}), Status: "requested", AutonomyMode: current.GetAutonomyMode()}
@@ -113,6 +114,11 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	if observed.GetRunId() != call.RunId || observed.GetToolCallId() != call.ToolCallId || observed.GetToolName() != call.ToolName || observed.GetActionId() != prepared.EffectID {
 		return fmt.Errorf("frozen observation response identity mismatch")
 	}
+	// Stop the dispatch clock before bookkeeping. This context can only persist
+	// the correlated response; it cannot call a runtime or extend live authority.
+	cancel()
+	ctx, persistCancel := context.WithTimeout(parentCtx, 3*time.Second)
+	defer persistCancel()
 	read := &transport.ToolCallRequest{ToolCallRef: call.ToolCallId, ToolName: call.ToolName, ArgsJSON: call.ArgsJson}
 	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(call.ToolCallId, call.RunId, read, call, observed, started, finished)); err != nil {
 		return err

@@ -1,0 +1,10 @@
+{"phase":"tests-authority-race","duration_ms":4350,"exit_code":0}
+{"phase":"tests-ingress-race","duration_ms":48580,"exit_code":0}
+{"phase":"core-authority-race","duration_ms":4320,"exit_code":0}
+{"phase":"core-ingress-race","duration_ms":51960,"exit_code":0}
+{"phase":"broker-authority-race","duration_ms":4740,"exit_code":0}
+{"phase":"vet","duration_ms":16500,"exit_code":0}
+{"phase":"core-build","duration_ms":13320,"exit_code":0}
+{"phase":"broker-build","duration_ms":5220,"exit_code":0}
+{"phase":"broker-test-build","duration_ms":3970,"exit_code":0}
+{"phase":"mandate-chromium","duration_ms":45960,"exit_code":0}

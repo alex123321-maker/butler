@@ -1,0 +1,15 @@
+{
+  "tool_name": "communication.message",
+  "description": "Publish a concise owner answer. For researched facts include direct source links and evidence entries: actual page URL, exact short quote, primary/secondary attribution. First-party status requires checking publisher and current version, not a page saying official. For a checked monitor include observation status and stable event_key; the kernel suppresses unchanged/pending observations. accepted means saved, not delivered or task completion. Widgets suspend execution until one validated owner response.",
+  "tool_class": "communication_control",
+  "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"evidence\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"quote\":{\"type\":\"string\"},\"role\":{\"enum\":[\"primary\",\"secondary\"],\"type\":\"string\"},\"url\":{\"type\":\"string\"}},\"required\":[\"url\",\"quote\",\"role\"],\"type\":\"object\"},\"type\":\"array\"},\"observation\":{\"additionalProperties\":false,\"properties\":{\"event_key\":{\"type\":\"string\"},\"expected_at\":{\"type\":\"string\"},\"status\":{\"enum\":[\"confirmed\",\"postponed\",\"pending\",\"unknown\"],\"type\":\"string\"}},\"required\":[\"status\",\"event_key\"],\"type\":\"object\"},\"purpose\":{\"enum\":[\"progress\",\"result\",\"blocked\"],\"type\":\"string\"},\"reply_to_publication_ref\":{\"description\":\"Optional publication_ref returned by a communication receipt. Never use interaction_ref or a Catalog source_ref here.\",\"type\":\"string\"},\"schema_version\":{\"enum\":[1],\"type\":\"integer\"},\"source_refs\":{\"description\":\"Optional canonical Catalog source_ref values for evidence already read in this run, including message:response:interaction:... for an owner answer. Never use interaction_ref or publication_ref here.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"text\":{\"type\":\"string\"}},\"required\":[\"schema_version\",\"purpose\",\"text\"],\"type\":\"object\"}",
+  "output_schema_json": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\"},\"publication_ref\":{\"type\":\"string\"},\"interaction_ref\":{\"type\":\"string\"},\"delivery\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}}},\"required\":[\"status\",\"publication_ref\",\"delivery\"],\"additionalProperties\":false}",
+  "runtime_target": "broker://communication-v1",
+  "risk_level": "medium",
+  "status": "active",
+  "contract_revision": "2",
+  "effect_contract": {
+    "retry_safety": "unsafe",
+    "verification_method": "local_runtime_ack"
+  }
+}

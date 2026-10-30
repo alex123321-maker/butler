@@ -1,0 +1,2 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-form-validation-20261029-01","completed",,"368,632","360,216","358,801","355,867","2,934","9,831","True","5,820766091346741E-11","19","19","0"

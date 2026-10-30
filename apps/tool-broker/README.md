@@ -1,5 +1,18 @@
 # Tool Broker
 
+Revision4 local preparation accepts `session_lost` only in a correlated closed
+pre-input proof under the pinned policy. It records that new preparation absent,
+retains the consumed grant/spending, and tells the model to open and reassess a
+fresh context. Revision2/3 and prior unknown writes retain their old semantics.
+
+Revision3 `browser.prepare_fill/prepare_type` accepts a correlated closed
+`preparation_rejection=pre_input_v1,input_dispatched=false` runtime proof with a
+fixed precondition reason. PostgreSQL repeats the exact contract/policy/digest
+checks before recording only that preparation absent. The grant stays consumed;
+Broker returns a fixed observe/reassess diagnostic without helper text. Old
+revision2, live gestures, missing/foreign proof, timeout and lost ACK stay unknown.
+This is local non-dispatch, never a recipient receipt or task completion.
+
 `browser.freeze_snapshot` is a fixed revision1 credential-free read, with its
 own ordinary action/grant/budget and current session/control-epoch checks. It
 cannot reconcile an old write, borrow its grant or bypass resource quarantine.
@@ -444,3 +457,51 @@ Communication and schedule fixed contracts are revision 2 for research evidence
 and checked monitoring. Their exact hashes, current Input/claim/lease/source
 authority, destination snapshots and owner approval rules remain authoritative.
 A proposed follow-up or saved observation grants no future tool capabilities.
+
+`browser_safety_integration_test.go` runs the real Broker in a separate OS
+process against isolated PostgreSQL and the actual Chromium runtime. A positive
+POST control precedes task cancellation, durable mandate revocation and changed
+origin/argument cases. Process-kill tests retain one effect and its spending,
+including a crash after receiver acceptance but before an ACK. They use fixture
+authority wiring and do not invoke a model or the production owner UI. The
+credential-vault CI script requires all ten cases without skips, including actual
+browser process loss before dispatch, after receiver acceptance and a fresh
+context after loss. The separate `browser_owner_ui_integration_test.go` joins
+actual Web Stop task / Revoke mandate decisions through real owner services and
+PG to already authorized browser grants. Both denials require zero POSTs and an
+unchanged positive control must submit exactly once. Test-only service/context
+composition grants no production authority; no model is used. See
+`docs/testing/browser-safety-2026-10-29.md` for native restart evidence and limits.
+The newer UI/runtime proof is in `docs/testing/browser-owner-runtime-2026-10-29.md`.
+
+Navigation revision4 independently accepts a closed pre-navigation rejection for
+Go-observed lost/frozen contexts under `guarded_browser_get_v1`. PG retains the
+consumed dispatch and records only this new read ABSENT. Old revision3 UNKNOWN
+reads require separate terminal owning review; no previous effect is promoted.
+
+
+The required form-validation Chromium/PG case observes an out-of-range public
+input locally, corrects it with zero POSTs, and submits once through an ordinary
+spent grant. Form validity DATA never confirms a remote effect: the final opaque
+click still records UNKNOWN and replay is denied. Credential/privacy cases run
+against the actual browser runtime and the same observation path.
+## Owner mandate browser acceptance
+
+ID-only context reads resolve their URL/control epoch from the owned live server
+browser row, bind that metadata privately and recheck the actual result URL
+before releasing page bytes. Foreign/expired/changed contexts and URL deny scopes
+fail closed. This projection cannot authorize input, navigation or credentials.
+
+Owner-goal mandates may explicitly name fixed communication methods with the
+prepare effect. Their exact credential-free kernel contract and pinned
+destination digest identify a local owner reply resource; URL scopes for all
+browser/HTTP actions, mandatory click approval, denials and budgets remain intact.
+
+The opt-in `TestBrowserOwnerMandateApprovalReductionChromiumIntegration` joins
+authenticated owner goal/mandate/Task/control APIs, a claimed canonical Input,
+real durable approval, Broker/PG/resource guards and actual Chromium. It proves
+zero approvals for local preparation and one exact submit approval only when
+the operator-owned click contract requires it. The ordinary unknown-capable
+mandate is an intentionally unsafe comparison, not a deployment recommendation.
+All configuration is isolated; no native model or delivery is exercised.
+`scripts/dev/credential-vault-tests.sh` requires all cases without skips.

@@ -1,0 +1,14 @@
+{
+  "scope": "actual_native_browser_runtime_SIGKILL_before_first_preparation",
+  "event": "browser-baseline-runtime-recover-20261029-05",
+  "began_at": "2026-10-29T08:25:37.898017421Z",
+  "verified_at": "2026-10-29T08:25:46.857920694Z",
+  "process_killed_and_restarted": true,
+  "same_binary": true,
+  "same_input_and_run": true,
+  "tools_and_complete_usage_unchanged": true,
+  "pending_approval_retained": true,
+  "core_broker_postgres_redis_web_unchanged": true,
+  "private_environment_unchanged": true,
+  "no_grant_replayed": true
+}

@@ -49,11 +49,18 @@ type CredentialInspector interface {
 type CapabilityGuard interface {
 	BindAction(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract, ActionBinding, ContextSnapshot) (ActionBinding, error)
 }
+
+// BrowserScopeReader resolves only broker-owned live context metadata. It grants
+// no navigation or input capability and never accepts a model-selected URL.
+type BrowserScopeReader interface {
+	BrowserReadScope(context.Context, ActionBinding) (string, int64, error)
+}
 type Service struct {
 	store          Store
 	contexts       ContextReader
 	credentials    CredentialInspector
 	capabilities   CapabilityGuard
+	browserScopes  BrowserScopeReader
 	publicWebReads bool
 	now            func() time.Time
 }
@@ -62,6 +69,8 @@ func NewService(store Store, contexts ContextReader, credentials CredentialInspe
 	return &Service{store: store, contexts: contexts, credentials: credentials, now: func() time.Time { return time.Now().UTC() }}
 }
 func (s *Service) SetCapabilities(guard CapabilityGuard) { s.capabilities = guard }
+
+func (s *Service) SetBrowserScopes(reader BrowserScopeReader) { s.browserScopes = reader }
 
 // SetPublicWebReads is trusted startup policy, never a model-selected argument.
 func (s *Service) SetPublicWebReads(enabled bool) { s.publicWebReads = enabled }
@@ -97,6 +106,20 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	b, _, err := BuildBinding(StableActionID(call.GetRunId(), call.GetToolCallId()), call, contract, c)
 	if err != nil {
 		return b, false, err
+	}
+	if c.Authority != nil && BrowserContextRead(b) {
+		policy, e := ResolveEffectPolicy(b, contract, call)
+		if e != nil || policy.RetrySafety != "read_only" || policy.VerificationMethod != "read_result" || contract.GetSupportsCredentialRefs() || s.browserScopes == nil {
+			return b, false, ErrOwnerAuthority
+		}
+		resource, epoch, e := s.browserScopes.BrowserReadScope(ctx, b)
+		if e != nil {
+			return b, false, ErrOwnerAuthority
+		}
+		b, e = bindBrowserReadScope(b, resource, epoch)
+		if e != nil {
+			return b, false, e
+		}
 	}
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err

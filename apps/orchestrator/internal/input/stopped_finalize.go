@@ -39,7 +39,8 @@ func (s *Store) SweepStopped(ctx context.Context) error {
  AND (i.status<>'blocked' OR NOT (
  EXISTS(SELECT 1 FROM approvals WHERE run_id=i.run_id AND status='pending' AND expires_at>clock_timestamp())
  OR EXISTS(SELECT 1 FROM communication_interactions WHERE run_id=i.run_id AND state='open' AND (expires_at IS NULL OR expires_at>clock_timestamp()))
- OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=i.run_id AND state IN ('pending','approved') AND expires_at>clock_timestamp())))
+ OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=i.run_id AND state IN ('pending','approved') AND expires_at>clock_timestamp())
+ OR EXISTS(SELECT 1 FROM browser_owner_outcome_reviews o WHERE o.run_id=i.run_id AND o.source_kind='live_frozen' AND o.state='pending' AND o.expires_at>clock_timestamp() AND i.checkpoint='awaiting_interaction' AND i.checkpoint_json->'interaction'->>'kind'='effect_review' AND i.checkpoint_json->'interaction'->>'interaction_id'=o.review_id)))
  AND (i.status='blocked' OR (i.status='failed' AND (f.input_id IS NULL OR f.classification='uncertain')))
  AND COALESCE(f.checked_at,i.updated_at)<clock_timestamp()-interval '5 seconds'
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())
@@ -121,7 +122,8 @@ func (s *Store) finalizeStoppedMode(ctx context.Context, id string, apply bool, 
 	var waiting bool
 	err = tx.QueryRow(ctx, `SELECT (SELECT status='blocked' FROM accepted_inputs WHERE input_id=$2) AND (EXISTS(SELECT 1 FROM approvals WHERE run_id=$1 AND status='pending' AND expires_at>clock_timestamp())
  OR EXISTS(SELECT 1 FROM communication_interactions WHERE run_id=$1 AND state='open' AND (expires_at IS NULL OR expires_at>clock_timestamp()))
- OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=$1 AND state IN ('pending','approved') AND expires_at>clock_timestamp()))`, stop.RunID, id).Scan(&waiting)
+ OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=$1 AND state IN ('pending','approved') AND expires_at>clock_timestamp())
+ OR EXISTS(SELECT 1 FROM browser_owner_outcome_reviews o JOIN accepted_inputs i ON i.input_id=$2 WHERE o.run_id=$1 AND o.source_kind='live_frozen' AND o.state='pending' AND o.expires_at>clock_timestamp() AND i.checkpoint='awaiting_interaction' AND i.checkpoint_json->'interaction'->>'kind'='effect_review' AND i.checkpoint_json->'interaction'->>'interaction_id'=o.review_id))`, stop.RunID, id).Scan(&waiting)
 	if err != nil || waiting {
 		return err
 	}

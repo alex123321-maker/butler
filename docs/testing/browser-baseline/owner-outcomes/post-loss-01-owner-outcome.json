@@ -1,0 +1,11 @@
+{
+  "scope": "live-owner-assisted-factual-outcome",
+  "review": "review_81e5e049c48205f5a817b7d9c9604ed4",
+  "effect": "action_31b26820c20267707b34985afb236bb0ce7e6943f5c2fd3189e4776428bc1845",
+  "state": "effect_confirmed",
+  "owner_assistance": 1,
+  "machine_receipt": false,
+  "external_post_count": 1,
+  "accepted_quantity": 3,
+  "input_replayed": false
+}

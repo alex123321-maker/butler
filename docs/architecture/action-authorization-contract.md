@@ -6,7 +6,11 @@ browser session ID, checks current owner/task/constraints, and never borrows the
 preceding interaction's approval or marks it confirmed. A new approval
 requirement prevents this automatic probe; resource quarantine still denies it.
 The fixed revision1 credential-free read contract is checked in policy and
-runtime. This grants observation only, with no model continuation or write replay.
+runtime. This grants observation only. A separate authenticated owner factual
+review may resolve the journal under migration105; its answer creates no grant,
+new approval, budget refund or automatic replay. Same-Input continuation requires
+canonical known evidence and current execution authority; a DOM or model verdict
+is insufficient. Owner-assisted results remain distinct from machine receipts.
 
 Migration102 [isolates stopped attempts](stopped-input-finalization.md) without
 reconciling effects or acknowledging them for the owner. Both Core and Broker
@@ -216,6 +220,30 @@ used by the agent. An approval authorizes the exact alias/field/resource/action
 combination and never changes the alias's global policy.
 
 ## Bounded mandates
+
+For owner-goal `browser.snapshot/freeze_snapshot/extract_text/close`, public
+arguments identify a context rather than a URL. Broker resolves its current
+observed URL and control epoch from the live broker-owned session row, matching
+the exact run/owner/Task. This metadata is included in the action hash; it never
+comes from model args. URL allow/deny scopes and the explicit tool/read effect
+still apply. Foreign, expired, closed and changed-epoch contexts fail closed.
+Before page bytes are released, the actual result URL is checked against current
+Task/goal/mandate and goal-wide denials, with the current browser epoch retained.
+An out-of-scope result is scrubbed and the spent read remains conservatively
+uncertain. Close returns no page bytes. No navigation/input/credential action
+can use this resource projection, and click approval remains independent.
+
+An owner-goal mandate covering `unknown` browser.click can authorize it without
+an individual approval when the loaded contract does not require approval.
+Task prose is not an additional machine-enforced confirmation flag. A mandate
+limited to read/prepare instead denies click entirely, including preparation of
+an approval for an out-of-scope effect. To permit scoped submission while still
+requiring an exact decision, the authoritative operator registry must set
+click `requires_approval=true`; this contract rule has priority over mandates.
+Its changed full contract hash fences old intents/grants. This is an existing
+configuration mechanism, not a new permission or a default registry change.
+The isolated owner-mandate Chromium acceptance qualifies this stricter variant
+only; deployment and native/delivery qualification remain separate.
 
 Mandates bind an owner/task/task version/constraints version to exact tool
 names, exact HTTP(S) origins or non-URL tool resources, explicit effect classes

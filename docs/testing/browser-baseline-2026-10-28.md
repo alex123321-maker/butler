@@ -245,6 +245,15 @@ an existing output file. Go race/vet, direct Chromium smoke and oracle-negative
 tests passed after these changes. Forms, login, OTP, full privacy scan, complete
 cost/latency breakdown and the remaining matrix slots remain unfinished.
 
+## Later retained qualification window
+
+The original matrix subsequently attempted all15 slots, retaining three read
+completions, one operator-assisted form completion and11 failed complete-task
+slots. A real login/private-data read succeeded but its final publication failed.
+These later observations do not rewrite the historical snapshots above. See
+[owner-outcome qualification](browser-owner-outcomes-2026-10-29.md) for exact native
+receipts, protected consent boundaries, inclusive wall times and the separate
+lost-response fault injection. General browser acceptance remains NO_GO.
 ## Reproduce
 
 The next #163 slice formally recovered four historical stops and ran nav-02.

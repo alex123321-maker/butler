@@ -123,7 +123,7 @@ func (c *telegramCommunication) webConversationKey() string {
 	return "web-explicit:" + c.web.binding.ID
 }
 
-func (c *telegramCommunication) webConversation(ctx context.Context, text string) (durableinput.Record, error) {
+func (c *telegramCommunication) webConversation(ctx context.Context, text, taskID string) (durableinput.Record, error) {
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok || c.web == nil || a.OwnerID != c.binding.OwnerID || a.Channel != "web" || a.SessionKey != c.web.binding.Recipient {
 		return durableinput.Record{}, communication.ErrDenied
@@ -140,8 +140,14 @@ func (c *telegramCommunication) webConversation(ctx context.Context, text string
 	if err = c.checkWebBinding(ctx, tx); err != nil {
 		return durableinput.Record{}, err
 	}
-	data, _ := json.Marshal(map[string]any{"text": text, "user_id": a.OwnerID, "intent": "conversation", "origin_binding_ref": c.web.binding.ID})
-	r, _, err := c.store.Inputs.AcceptTx(ctx, tx, ingress.InputEvent{SessionKey: s.SessionKey, Source: "web", EventID: a.DeliveryID, IdempotencyKey: a.DeliveryID, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(data), CreatedAt: time.Now().UTC()}, a.OwnerID, "")
+	payload := map[string]any{"text": text, "user_id": a.OwnerID, "intent": "conversation", "origin_binding_ref": c.web.binding.ID}
+	if taskID != "" {
+		payload["task_id"] = taskID
+	}
+	data, _ := json.Marshal(payload)
+	// AcceptTx validates the exact active owner Task in this pinned session.
+	// The payload cannot select authority, purpose, a channel or a recipient.
+	r, _, err := c.store.Inputs.AcceptTx(ctx, tx, ingress.InputEvent{SessionKey: s.SessionKey, Source: "web", EventID: a.DeliveryID, IdempotencyKey: a.DeliveryID, EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(data), CreatedAt: time.Now().UTC()}, a.OwnerID, taskID)
 	if err != nil {
 		return durableinput.Record{}, err
 	}

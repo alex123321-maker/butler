@@ -34,6 +34,8 @@ type DataRef struct {
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
+	BrowserScopeURL               string          `json:"browser_scope_url,omitempty"`
+	BrowserScopeEpoch             int64           `json:"browser_scope_epoch,omitempty"`
 	OwnerCommunication            bool            `json:"owner_communication,omitempty"`
 	CommunicationDestinationsHash string          `json:"communication_destinations_hash,omitempty"`
 	ActionID                      string          `json:"action_id"`

@@ -22,6 +22,13 @@ read's result remains UNKNOWN; its no-write proof may release write isolation.
 Unknown contracts, arbitrary writes, active claims/leases, foreign/malformed
 receipts or missing dispatch evidence remain blocked.
 
+The additional pinned browser preparation/GET and credential-request protocols
+are described in [stopped finalization](../../../../docs/architecture/stopped-input-finalization.md).
+Credential review proves exact atomic request creation or terminal fenced
+absence only, never consent, secret release, notice delivery or login. Expired
+requests and old failed runs remain closed. Failures export only a fixed message
+and an optional five-character PostgreSQL SQLSTATE, never raw storage errors.
+
 Old authorization/dispatch ACK uncertainty, tool errors, failed Input/run,
 model charges and original evidence remain. No old attempt or grant is revived.
 Review one exact scope, inspect the dry-run report, then apply only if appropriate.

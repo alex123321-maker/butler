@@ -1,0 +1,56 @@
+=== RUN   TestResourceBrokerActualChromiumPageCASIntegration
+2026/10/29 06:14:22 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:40193
+2026/10/29 06:14:23 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:40193
+2026/10/29 06:14:23 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=stale runtime_target=127.0.0.1:40193
+--- PASS: TestResourceBrokerActualChromiumPageCASIntegration (1.11s)
+=== RUN   TestResourceBrokerFrozenObservationAfterOpaqueClickChromiumIntegration
+2026/10/29 06:14:24 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:37869
+2026/10/29 06:14:24 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:37869
+2026/10/29 06:14:24 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=click runtime_target=127.0.0.1:37869
+2026/10/29 06:14:24 INFO tool execution routed component=tool-broker tool_name=browser.freeze_snapshot tool_call_id=observe runtime_target=127.0.0.1:37869
+--- PASS: TestResourceBrokerFrozenObservationAfterOpaqueClickChromiumIntegration (0.80s)
+=== RUN   TestResourceBrokerRuntimeAtomicClaimAndPrivateOneUseIntegration
+2026/10/29 06:14:24 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:40695
+2026/10/29 06:14:24 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=first runtime_target=127.0.0.1:40695
+--- PASS: TestResourceBrokerRuntimeAtomicClaimAndPrivateOneUseIntegration (0.15s)
+=== RUN   TestResourceClaimWithoutActualBudgetReservationCannotDispatchIntegration
+--- PASS: TestResourceClaimWithoutActualBudgetReservationCannotDispatchIntegration (0.09s)
+=== RUN   TestResourceMigrationEmptyRollbackAndBrowserOnlyHistoryGuardIntegration
+--- PASS: TestResourceMigrationEmptyRollbackAndBrowserOnlyHistoryGuardIntegration (0.08s)
+=== RUN   TestResourceBrokerConflictRollsBackBudgetAndSecondDispatchIntegration
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:35435
+2026/10/29 06:14:25 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=first runtime_target=127.0.0.1:35435
+--- PASS: TestResourceBrokerConflictRollsBackBudgetAndSecondDispatchIntegration (0.17s)
+=== RUN   TestResourceBrokerLostReceiptBlocksSuccessorAndReplayIntegration
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:40253
+2026/10/29 06:14:25 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=first runtime_target=127.0.0.1:40253
+--- PASS: TestResourceBrokerLostReceiptBlocksSuccessorAndReplayIntegration (0.17s)
+=== RUN   TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration
+=== RUN   TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration/other_run
+=== RUN   TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration/invented_session
+--- PASS: TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration (0.18s)
+    --- PASS: TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration/other_run (0.09s)
+    --- PASS: TestResourceForeignOrInventedBrowserSessionCannotClaimOrSpendIntegration/invented_session (0.09s)
+=== RUN   TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration
+=== RUN   TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/cancel
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:32961
+2026/10/29 06:14:25 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=paused runtime_target=127.0.0.1:32961
+=== RUN   TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/source
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:33565
+2026/10/29 06:14:25 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=paused runtime_target=127.0.0.1:33565
+=== RUN   TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/expired_resource
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:35257
+2026/10/29 06:14:25 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=paused runtime_target=127.0.0.1:35257
+=== RUN   TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/recorded_unknown
+2026/10/29 06:14:25 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:42615
+2026/10/29 06:14:26 ERROR action dispatch outcome recording failed component=tool-broker authorization_id=03ebebdd326e8f5f0920def56256891d
+--- PASS: TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration (0.51s)
+    --- PASS: TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/cancel (0.13s)
+    --- PASS: TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/source (0.12s)
+    --- PASS: TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/expired_resource (0.14s)
+    --- PASS: TestResourceRuntimeRechecksCancellationSourceAndExpiryAfterClaimIntegration/recorded_unknown (0.12s)
+=== RUN   TestResourceClaimDeadlineAfterResourceWaitRollsBackWholeAdmissionIntegration
+2026/10/29 06:14:26 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:33053
+2026/10/29 06:14:26 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=initial runtime_target=127.0.0.1:33053
+--- PASS: TestResourceClaimDeadlineAfterResourceWaitRollsBackWholeAdmissionIntegration (0.54s)
+PASS

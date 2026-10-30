@@ -36,7 +36,9 @@ jobs:
         with: {go-version: '1.27.2', cache: false}
       - run: |
           go mod verify
-          go test -race ./internal/mobile ./internal/memory/catalog ./internal/memory/readcontrol ./internal/actionauth ./apps/orchestrator/internal/initiative -count=1
+          # These packages migrate separate schemas in the same disposable DB.
+          # Serialize package execution to avoid exhausting its shared lock table.
+          go test -p 1 -race ./internal/mobile ./internal/memory/catalog ./internal/memory/readcontrol ./internal/actionauth ./apps/orchestrator/internal/initiative -count=1
           go test ./apps/orchestrator/internal/api -run '^TestMobile' -count=1
           go build -o .cache/mobile-broker ./apps/tool-broker
           go test -race ./apps/orchestrator/internal/app -run '^TestMobileAgentBroker' -count=1 -v

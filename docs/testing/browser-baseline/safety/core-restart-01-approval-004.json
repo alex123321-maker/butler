@@ -1,0 +1,9 @@
+{
+  "scope": "exact-additional-core-restart-approval",
+  "approval": "approval-1793251774121976587-224f0cfd05cc",
+  "tool": "browser.click",
+  "changed": true,
+  "status": "approved",
+  "owner_assistance": 1,
+  "policy_changed": false
+}

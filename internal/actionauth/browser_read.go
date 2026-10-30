@@ -9,6 +9,21 @@ import (
 
 const BrowserGETVerification = "guarded_browser_get_v1"
 
+func browserReadContract(b ActionBinding) bool {
+	return b.ContractRevision == "2" && (b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link") || b.ContractRevision == "4" && b.ToolName == "browser.navigate"
+}
+func browserReadReason(b ActionBinding, reason string) bool {
+	switch reason {
+	case "page_changed", "stale_observation", "invalid_args":
+		return true
+	case "get_form_denied", "invalid_selector":
+		return b.ContractRevision == "2"
+	case "session_lost", "network_frozen":
+		return b.ToolName == "browser.navigate" && b.ContractRevision == "4"
+	}
+	return false
+}
+
 func browserReadRejectionDigest(reason string) string {
 	proof, _ := json.Marshal(map[string]any{"read_rejection": "pre_navigation_v1", "navigation_dispatched": false, "reason": reason})
 	return digest(string(proof))
@@ -17,11 +32,14 @@ func browserReadRejectionDigest(reason string) string {
 // PG accepts absence only for the owning read contract and a normalized digest
 // of one of the closed pre-navigation proofs accepted by the service.
 func browserReadAbsenceEvidence(b ActionBinding, p EffectPolicy, outcome string, e EffectEvidence) bool {
-	if b.Effect != EffectRead || b.ContractRevision != "2" || (b.ToolName != "browser.submit_get_form" && b.ToolName != "browser.follow_link") || len(b.CredentialRefs) != 0 || p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || outcome != "dispatch_completed" || e.ArtifactDigest != "" {
+	if b.Effect != EffectRead || !browserReadContract(b) || len(b.CredentialRefs) != 0 || p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || outcome != "dispatch_completed" || e.ArtifactDigest != "" {
 		return false
 	}
-	for _, reason := range []string{"page_changed", "stale_observation", "get_form_denied", "invalid_args", "invalid_selector"} {
-		if e.ResultDigest == browserReadRejectionDigest(reason) {
+	if b.ToolName == "browser.navigate" && (p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "") {
+		return false
+	}
+	for _, reason := range []string{"page_changed", "stale_observation", "get_form_denied", "invalid_args", "invalid_selector", "session_lost", "network_frozen"} {
+		if browserReadReason(b, reason) && e.ResultDigest == browserReadRejectionDigest(reason) {
 			return true
 		}
 	}
@@ -32,7 +50,7 @@ func browserReadAbsenceEvidence(b ActionBinding, p EffectPolicy, outcome string,
 // navigation. It is not an external recipient receipt or reusable permission.
 // Revision1/opaque calls and a generic policy error cannot borrow this proof.
 func BrowserReadRejection(b ActionBinding, result *toolbrokerv1.ToolResult) string {
-	if b.Effect != EffectRead || b.ContractRevision != "2" || (b.ToolName != "browser.submit_get_form" && b.ToolName != "browser.follow_link") || len(b.CredentialRefs) != 0 || result == nil || result.GetStatus() != "failed" || result.GetRunId() != b.RunID || result.GetToolCallId() != b.ToolCallID || result.GetToolName() != b.ToolName || (result.GetResultJson() != "" && result.GetResultJson() != "{}") {
+	if b.Effect != EffectRead || !browserReadContract(b) || len(b.CredentialRefs) != 0 || result == nil || result.GetStatus() != "failed" || result.GetRunId() != b.RunID || result.GetToolCallId() != b.ToolCallID || result.GetToolName() != b.ToolName || (result.GetResultJson() != "" && result.GetResultJson() != "{}") {
 		return ""
 	}
 	failure := result.GetError()
@@ -57,8 +75,7 @@ func BrowserReadRejection(b ActionBinding, result *toolbrokerv1.ToolResult) stri
 			return ""
 		}
 	}
-	switch proof.Reason {
-	case "page_changed", "stale_observation", "get_form_denied", "invalid_args", "invalid_selector":
+	if browserReadReason(b, proof.Reason) {
 		return proof.Reason
 	}
 	return ""

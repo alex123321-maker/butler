@@ -2,10 +2,16 @@ Core records one bounded post-effect observation after a correlated UNKNOWN
 click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
 grant under current authority and a clipped five-second deadline. It contains
 only the original browser session ID. Durable observer markers prevent replay
-or model resumption, including a crash at the read dispatch checkpoint. The
-original effect stays unknown and the run remains blocked; the observation is
-not a submission receipt. Missing permission/approval, lost ACK or quarantined
-resources remain unavailable. See the browser/session and run lifecycle specs.
+or unsupported model resumption, including a crash at the read dispatch
+checkpoint. The observation is not a submission receipt. Migration105 installs
+a protected factual owner review at `/api/v4/action-outcomes`: exact frozen live
+actions can wait in the same Input; expired historical contexts can receive
+retrospective evidence without reopening their failed attempt. Known reports
+append `owner_outcome_attestation_v1` evidence and permit only currently valid
+same-Input continuation. UNKNOWN/expiry/cancellation stay restrictive. Original
+transcripts, consumed grants and spending remain. Missing permission/approval,
+lost ACK or quarantined resources remain unavailable. See the browser/session,
+external-effect and run lifecycle specs.
 
 Core's configured PostgreSQL connection cap now separates lease/Task authority
 from longer source observations: with a cap of at least4, reserve one for each
@@ -1471,9 +1477,59 @@ activation retain their existing evidence requirements. See
 
 ## Terminal persistence
 
+Failed native tool proposals retain an allowlisted `diagnostic_reason` in the
+run-error event/log. Coarse Input/run error codes remain unchanged; rejected
+arguments and provider bodies stay excluded. Broker preparation/authorization
+errors distinguish fixed gRPC status classes (permission, authentication,
+arguments, precondition, deadline, unavailability, cancellation) without copying
+RPC messages. These observations authorize no retry, grant or dispatch.
+
 The operator-only `cmd/stopped-review` reviews exact failed Input references
 through Input/Communication/Action journal fences. Default mode rolls back;
 `-apply` commits only supported owning evidence. It does not dispatch models,
 tools or deliveries. See its README and the stopped-input-finalization spec.
 
 Core joins the owning lease/authority supervisor before terminal task mutation and atomic completion. In-flight failures remain authoritative; writes retain their original context and database fences. Failed outcome, task-block and run-transition writes return safe stage labels with inspectable underlying causes. See the run lifecycle specification.
+
+The opt-in `TestBrowserSafetyOwnerAPIHarness` is compiled only into the API test
+binary. It composes actual owner task/goal services on disposable full-migration
+PG for the browser Stop task / Revoke mandate acceptance test. Its loopback
+fixture context projection cannot manufacture approvals. It is not a production
+server option or native model run. See `scripts/dev/browser-owner-safety-tests.sh`.
+
+Frozen browser observation keeps a five-second dispatch bound. Its correlated
+response is persisted under a separate three-second child of the original live
+run context, after cancelling the dispatch context. This persistence phase cannot
+execute another tool, widen authority or survive parent cancellation; failure
+retains UNKNOWN and never retries a POST. Revision4 pre-dispatch ABSENT results
+continue through ordinary model proposals for a separately authorized fresh open.
+
+Research citation repair tells the model to reuse sufficient fresh current-run
+browser/HTTP observations, retain supported evidence and correct/remove unsupported
+claims/links. A redundant HTTP fetch is not prescribed by a rejected citation.
+Eligibility, exact quote checks, four-correction bound and kernel gates remain.
+## Owner-goal browser test composition
+
+Owner-goal Tasks replay their own complete primary task transcript through the
+existing task reader. Unrelated work in the shared delivery session stays out of
+that context. Earlier task attempts/owner responses, privacy fences, constraints,
+UNKNOWN effects and the original context allowance are retained.
+
+Interaction recovery first resolves the canonical owning wait under the current
+claim, evidence and authority. It then rehydrates active-only source/delegation
+preparation before any fresh provider or action. A current source denial still
+stops execution; a report never revives a terminal Input or replays a POST.
+
+The protected Web message route also accepts an explicit `task_id` for an active
+Task in its current owner/session. It uses ordinary Input and communication
+admission, retaining target identity on deduplication; no worker projection or
+manual channel-proof write is needed for native execution. Caller-selected
+purpose, mandate, channel and recipients remain unsupported.
+
+`TestBrowserMandateOwnerAPIHarness` exists only in the API test binary. It serves
+real authenticated goal/mandate/Task/control/approval handlers on isolated PG.
+A mechanical worker projection claims the controller-created Input and creates
+its run/lease; it cannot manufacture approved decisions. This is API/dispatch
+evidence, not a native model, task completion or delivery qualification. Public
+owner Tasks keep `result_delivery=attempt`; no public delivery-mode override is
+introduced.

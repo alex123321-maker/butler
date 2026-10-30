@@ -1,5 +1,26 @@
 # Butler — Tooling and Execution Specification
 
+Local preparation revision4 preserves revision2/3 compatibility and adds only a
+Go-guarded lost-context rejection before the runner starts. Its fixed proof
+does not reconcile prior writes or grant retries. A fresh context/input is a new
+ordinary proposal with current authority and accounting. The optional resource
+wrapper retains the proof only after durable lane completion; lost Finish stays
+unknown. See the browser session and external-effect contracts.
+
+Communication `source_refs` are optional exact references returned by selected
+Catalog observations in the current run. Event/turn IDs are not automatically
+Catalog source refs; browser/tool-call IDs and page URLs do not belong there.
+Browser-only replies can leave the array empty and put the URL in text. The tool
+schema now explains this existing boundary; Catalog selection, export policy,
+authority and publication validation remain unchanged.
+
+Local browser preparation revision3 adds a narrow pre-input rejection protocol.
+Only Go/helper guards before any input dispatch can produce its closed fixed
+proof. Broker and PostgreSQL bind it to the original action and pinned local
+preparation policy before recording local absence. Revision2 and ambiguous or
+post-input failures retain uncertainty. No runtime orchestration, new permission
+or retry is introduced; current page reassessment is a new ordinary proposal.
+
 `browser.freeze_snapshot` revision1 observes an existing document only after
 freezing proxy connections and helper routes. Broker/Go require the exact
 credential-free `read_only/read_result` contract; only the browser session ID
@@ -1124,3 +1145,15 @@ observation timestamp. Links are untrusted discovery DATA and still require a
 separate ordinary Broker read. They are not primary-source certification, an
 event confirmation or permission to navigate. See
 [research and follow-ups](research-followups.md).
+
+Navigation revision4 uses a Go-only lost/frozen-context pre-navigation proof.
+The resource wrapper may forward a correlated verified rejection only after
+current authority and durable lane Finish; it omits the success ACK and session
+mapping. Finish completion describes the lane, not external success. Legacy
+navigation and in-flight errors keep conservative UNKNOWN semantics.
+
+
+Browser observations can include bounded public-form constraints and frozen local
+validity flags, without values/messages. This optional observation DATA changes
+no input schema, contract revision/hash, permission or effect verifier. Secret
+contexts/forms suppress feedback; see the browser and credential contracts.

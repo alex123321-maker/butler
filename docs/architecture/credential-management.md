@@ -1,5 +1,11 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Local credential preparation supports revisions2/3/4 under the same owner
+request, Input claim, metadata hash and current-field release guards. Revision4
+adds only proof that a NEW preparation could not start on an already lost
+context. It neither restores browser auth nor reuses an expired/revoked request;
+a new context must obtain ordinary Broker-mediated preparation and submission.
+
 The isolated [issue97 operator research command](../../cmd/effort-eval/README.md)
 accepts private file references or a local-only state/S256-PKCE browser callback
 for a new provider login. It imports through the existing strict Manager into
@@ -62,6 +68,15 @@ action, privacy, budget and unknown-effect guards. Runtime `credential_verified`
 confirms equality at the moment of private field comparison, exposing no value,
 hash or length. It proves neither remote acceptance nor successful login.
 Reflected values remain masked in observations.
+
+Browser preparation revisions2 and3 retain the same deferred approved-request
+boundary. Revision3's pre-input rejection adds no release permission; current
+record/origin/run/claim checks, revocation and ordinary submission approval stay
+mandatory. Historical stopped access-request creation can be reviewed only by
+the kernel's pinned metadata protocol described in
+[stopped finalization](stopped-input-finalization.md). Its creation receipt never
+grants use or revives expired consent; no secret values or encryption keys are
+read for that review.
 
 Manual OTP uses the protected form, two-minute encrypted transient material in
 PostgreSQL and reservation to one exact tool call. Reservation permits live
@@ -831,3 +846,9 @@ Multi-origin navigation preserves native cookies
 and SOP. A broker-resolved cookie/storage injection remains scoped to the actual
 current page host/origin with its exact approved `expected_url`, never all origins
 visited by the context. See the browser-session contract.
+
+
+Form validity/constraint feedback is omitted for password/hidden/file forms and
+contexts with known credential/cookie/storage material. Broker-resolved secret
+use pins this suppression in the Go browser context, including later snapshots.
+No password validity, field length, pattern or validation-message oracle is added.

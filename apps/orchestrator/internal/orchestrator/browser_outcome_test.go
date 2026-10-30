@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -17,12 +18,84 @@ import (
 )
 
 type browserOutcomeFixture struct {
-	stage, raw, fail string
-	calls            []*toolbrokerv1.ToolCall
-	readDeadline     time.Time
+	stage, raw, fail     string
+	calls                []*toolbrokerv1.ToolCall
+	readDeadline         time.Time
+	readContext          context.Context
+	persistDeadline      time.Time
+	persistReadCancelled bool
 }
 
-func (f *browserOutcomeFixture) SaveCheckpoint(_ context.Context, _ string, stage, raw string) error {
+type ownerReviewFlowFixture struct {
+	*browserOutcomeFixture
+	runs    *memoryRunManager
+	mode    string
+	reviews int
+}
+
+func (f *ownerReviewFlowFixture) SuspendUnknown(_ context.Context, run, effect, read string) (string, error) {
+	f.reviews++
+	if effect != "effect-click" || read == "" {
+		return "", errors.New("wrong effect observation")
+	}
+	if f.mode == "denied" {
+		return "", actionauth.ErrOwnerOutcome
+	}
+	f.stage = "awaiting_interaction"
+	f.runs.records[run].CurrentState = commonv1.RunState_RUN_STATE_AWAITING_APPROVAL
+	if f.mode == "lost_ack" {
+		return "", actionauth.ErrOwnerOutcomePending
+	}
+	return "review-one", nil
+}
+func (*ownerReviewFlowFixture) ResumeOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error) {
+	panic("no owner response yet")
+}
+func (*ownerReviewFlowFixture) ReadResolvedOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error) {
+	panic("no owner response yet")
+}
+
+func TestUnknownBrowserOwnerWaitNeverResumesOnItsOwn(t *testing.T) {
+	for _, mode := range []string{"wait", "lost_ack", "denied"} {
+		t.Run(mode, func(t *testing.T) {
+			runs := newMemoryRunManager()
+			f := &ownerReviewFlowFixture{browserOutcomeFixture: &browserOutcomeFixture{}, runs: runs, mode: mode}
+			p := &communicationWaitProvider{mockProvider: mockProvider{startEvents: []transport.TransportEvent{transport.NewToolCallRequestedEvent("", "test", transport.ToolCallRequest{ToolCallRef: "click", ToolName: "browser.click", ArgsJSON: `{"browser_session_id":"` + strings.Repeat("a", 32) + `","selector":"#submit","expected_url":"https://example.com/form","observation_version":1}`})}}}
+			history := &memoryTranscriptStore{}
+			s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, history, p, Config{ProviderName: "test", ModelName: "test", Tools: f, ActionAuthorizer: f, Checkpoints: f, EffectReviews: f}, nil)
+			r, err := s.Execute(context.Background(), ingress.InputEvent{EventID: "event", IdempotencyKey: "event", SessionKey: "session", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"submit once"}`, CreatedAt: time.Now()})
+			switch mode {
+			case "wait":
+				if err != nil || r == nil || r.ReceiptStatus != "waiting_for_user" {
+					t.Fatal("owner review did not suspend", r, err)
+				}
+			case "lost_ack":
+				if !errors.Is(err, ErrCommunicationStatePending) {
+					t.Fatal("ambiguous wait commit was failed/replayed", r, err)
+				}
+			case "denied":
+				if err != nil || r == nil || r.ErrorCode != "effect_unknown" {
+					t.Fatal("unproved wait escaped uncertainty", r, err)
+				}
+			}
+			if f.reviews != 1 || len(f.calls) != 2 || len(p.submittedResults) != 0 || len(history.toolCalls) != 2 || history.toolCalls[0].Status != "effect_unknown" {
+				t.Fatal("owner wait replayed action, inferred, or rewrote original history")
+			}
+			if mode != "denied" && !p.cancelled {
+				t.Fatal("old provider context retained while awaiting owner")
+			}
+		})
+	}
+}
+
+func (f *browserOutcomeFixture) SaveCheckpoint(ctx context.Context, _ string, stage, raw string) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if stage == "browser_outcome_observed" {
+		f.persistDeadline, _ = ctx.Deadline()
+		f.persistReadCancelled = f.readContext != nil && errors.Is(f.readContext.Err(), context.Canceled)
+	}
 	if f.fail == stage {
 		return errors.New("unavailable")
 	}
@@ -37,6 +110,7 @@ func (f *browserOutcomeFixture) PrepareAction(ctx context.Context, call *toolbro
 	p := actionauth.PreparedAction{Binding: actionauth.ActionBinding{OwnerID: "owner", ActionID: "action-" + call.ToolCallId, ActionHash: "hash", RunID: call.RunId, ToolCallID: call.ToolCallId, ToolName: call.ToolName, Effect: actionauth.EffectUnknown, ArgsHash: h}, EffectID: "effect-" + call.ToolCallId}
 	if call.ToolName == frozenBrowserObservation {
 		f.readDeadline, _ = ctx.Deadline()
+		f.readContext = ctx
 		p.Binding.Effect, p.Binding.ContractRevision, p.Binding.ContractHash = actionauth.EffectRead, "1", strings.Repeat("a", 64)
 		p.Binding.Resource = "browser:" + strings.Repeat("a", 32) + ":"
 		switch f.fail {
@@ -141,6 +215,43 @@ func TestUnknownBrowserObservationCannotRetryOrExtendDeadline(t *testing.T) {
 	}
 	if !f.readDeadline.Equal(deadline) {
 		t.Fatal("child extended parent deadline")
+	}
+	if strings.Contains(f.calls[0].ArgsJson, "private") {
+		t.Fatal("credential ref copied to observation")
+	}
+	var checkpoint struct {
+		Data struct {
+			Original browserOutcomeCheckpoint `json:"uncertain_browser"`
+		} `json:"checkpoint_data"`
+	}
+	if json.Unmarshal([]byte(f.raw), &checkpoint) != nil || checkpoint.Data.Original.EffectID != "original" {
+		t.Fatal("lost original uncertainty marker")
+	}
+}
+
+func TestUnknownBrowserObservationPersistsAfterDispatchClockStops(t *testing.T) {
+	f := &browserOutcomeFixture{}
+	history := &memoryTranscriptStore{}
+	s := &Service{config: Config{Tools: f, ActionAuthorizer: f, Checkpoints: f}, transcript: history}
+	current := &sessionv1.RunRecord{RunId: "run"}
+	call := &transport.ToolCallRequest{ToolCallRef: "fill", ToolName: "browser.fill", ArgsJSON: `{"browser_session_id":"` + strings.Repeat("a", 32) + `","value":{"type":"credential_ref","alias":"private","field":"password"}}`}
+	original := actionauth.PreparedAction{EffectID: "original", Binding: actionauth.ActionBinding{OwnerID: "owner", Effect: actionauth.EffectUnknown}}
+	result := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "fill", ToolName: call.ToolName, ActionId: "original", Status: "effect_unknown"}
+	f.SaveCheckpoint(context.Background(), "run", "tool_result_recorded", `{"tool_call_id":"fill","effect_id":"original","status":"effect_unknown"}`)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	deadline, _ := ctx.Deadline()
+	if err := s.observeUnknownBrowser(ctx, current, call, original, result); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.observeUnknownBrowser(ctx, current, call, original, result); err != nil || len(f.calls) != 1 {
+		t.Fatal("same unknown scheduled another read", err)
+	}
+	if f.readDeadline.After(deadline) || time.Until(f.readDeadline) > 5*time.Second {
+		t.Fatal("child extended parent deadline")
+	}
+	if !f.persistReadCancelled || f.persistDeadline.IsZero() || time.Until(f.persistDeadline) > 3*time.Second {
+		t.Fatal("persistence reused dispatch context or widened its own bound")
 	}
 	if strings.Contains(f.calls[0].ArgsJson, "private") {
 		t.Fatal("credential ref copied to observation")

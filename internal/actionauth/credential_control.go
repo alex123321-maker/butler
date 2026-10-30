@@ -28,7 +28,7 @@ func standardCredentialControl(b ActionBinding) bool {
 // locator scope; tools, resources, effects and denials still apply. Broker must
 // independently check the live owner request before resolving any value.
 func vaultRequestBinding(b ActionBinding) bool {
-	if b.Effect != EffectPrepare || (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.ContractRevision != "2" || len(b.CredentialMetadataHash) != 64 || len(b.CredentialRefs) == 0 {
+	if b.Effect != EffectPrepare || (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || (b.ContractRevision != "2" && b.ContractRevision != "3" && b.ContractRevision != "4") || len(b.CredentialMetadataHash) != 64 || len(b.CredentialRefs) == 0 {
 		return false
 	}
 	for _, ref := range b.CredentialRefs {
@@ -43,7 +43,7 @@ func vaultRequestBinding(b ActionBinding) bool {
 }
 
 func (s *Service) approvedCredentialPreparation(ctx context.Context, call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract) bool {
-	if contract == nil || (contract.ToolName != "browser.prepare_fill" && contract.ToolName != "browser.prepare_type") || contract.ContractRevision != "2" || !contract.SupportsCredentialRefs || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" {
+	if contract == nil || (contract.ToolName != "browser.prepare_fill" && contract.ToolName != "browser.prepare_type") || (contract.ContractRevision != "2" && contract.ContractRevision != "3" && contract.ContractRevision != "4") || !contract.SupportsCredentialRefs || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" {
 		return false
 	}
 	checker, ok := s.credentials.(interface {

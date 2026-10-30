@@ -3,6 +3,7 @@ package credentials
 import (
 	"context"
 	"encoding/json"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"os"
 	"path/filepath"
 	"strings"
@@ -254,6 +255,48 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 	if v.Remove(ctx, "owner", second.ID, second.Revision, true) != nil {
 		t.Fatal("delete")
 	}
+	t.Run("stopped_expired_access_receipt_grants_no_secret", func(t *testing.T) {
+		if _, e := pool.Exec(ctx, `ALTER TABLE server_browser_sessions ADD COLUMN owner_id TEXT,ADD COLUMN run_id TEXT,ADD COLUMN mode TEXT,ADD COLUMN expires_at timestamptz;
+ INSERT INTO runs VALUES('stopped-access','session',NULL,'tool_running');
+ INSERT INTO server_browser_sessions(browser_session_id,observed_url,owner_id,run_id,mode,expires_at) VALUES('stopped-browser','https://different.example/login','owner','stopped-access','agent',now()-interval '1 hour')`); e != nil {
+			t.Fatal("receipt fixture", e)
+		}
+		entry, e := v.Save(ctx, "owner", EntryInput{Alias: "stopped-receipt", Title: "Receipt", Username: "synthetic-user", Password: "synthetic-secret"})
+		if e != nil {
+			t.Fatal("save receipt fixture")
+		}
+		r, e := v.CreateRequest(ctx, Principal{OwnerID: "owner", SessionKey: "session", RunID: "stopped-access"}, "lost-ack", "access", entry.ID, "https://different.example/login", "stopped-browser", "Sign in", []string{"username", "password"})
+		if e != nil {
+			t.Fatal("create real owning request")
+		}
+		if _, e = pool.Exec(ctx, `UPDATE credential_vault_requests SET state='expired',expires_at=now()-interval '1 hour' WHERE id=$1;`, r.ID); e != nil {
+			t.Fatal("expire request")
+		}
+		if _, e = pool.Exec(ctx, `UPDATE runs SET current_state='failed' WHERE run_id='stopped-access'`); e != nil {
+			t.Fatal("stop run")
+		}
+		tx, e := pool.Begin(ctx)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer tx.Rollback(ctx)
+		if _, e = tx.Exec(ctx, `SELECT 1 FROM runs WHERE run_id='stopped-access' FOR UPDATE;SELECT 1 FROM sessions WHERE session_key='session' FOR UPDATE`); e != nil {
+			t.Fatal("fence")
+		}
+		args, receipt, e := credentialcontrol.StoppedAccessReceiptTx(ctx, tx, credentialcontrol.StoppedAccessIdentity{OwnerID: "owner", SessionKey: "session", RunID: "stopped-access"}, "lost-ack")
+		if e != nil || len(receipt) != 64 || strings.Contains(args, "synthetic-secret") || !strings.Contains(args, entry.ID) {
+			t.Fatal("owning creation receipt", e)
+		}
+		if e = tx.Commit(ctx); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = v.GetByAlias(ctx, r.ID); e == nil {
+			t.Fatal("receipt authorized credential metadata")
+		}
+		if e = v.Respond(ctx, "owner", r.ID, entry.ID, true, ""); e == nil {
+			t.Fatal("receipt reopened expired consent")
+		}
+	})
 	if v.Lock(ctx, "owner", token) != nil || v.CheckUnlock(ctx, "owner", token) == nil {
 		t.Fatal("lock")
 	}

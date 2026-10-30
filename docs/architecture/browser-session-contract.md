@@ -1,5 +1,22 @@
 # Explicit browser execution sessions
 
+Owner-goal context reads privately bind Broker's observed session URL/control
+epoch for URL-scope authorization. The exact run/owner/Task, live mode and expiry
+must match. Actual returned page URLs are rechecked under current authority
+before release; denied page bytes are scrubbed. The original ID-only tool schema
+and no-navigation semantics remain unchanged. This grants no click, credential
+release or retry; mandatory POST approval and UNKNOWN handling remain separate.
+
+Revision4 `browser.prepare_fill/prepare_type` adds a narrow lost-context
+pre-input rejection. Only the Go session guard, before calling the runner, may
+emit the closed `pre_input_v1,input_dispatched=false,reason=session_lost` proof
+for a missing/generation-lost or closed context. Broker and PG require revision4
+and the original pinned preparation policy. Revision2/3 cannot use this reason.
+Helper errors, process/transport loss during execution, expired/foreign contexts
+and opaque gestures cannot borrow the proof. The old grant stays consumed and
+charged; the model may propose a separately authorized fresh open and reassess
+from its observation. No old DOM, credentials or previous effect is restored.
+
 Credential-aware fill/type now return optional `credential_verified`: a private
 runtime equality check against the exact value resolved by Broker for that
 operation. No value, hash, length or character feedback is returned. A failed
@@ -131,7 +148,8 @@ boundary as HTTP reads, not a claim that an arbitrary application cannot mutate
 state on GET. Broker rejects older navigation contracts instead of granting
 them the new guarantee. Privacy, resource and approval checks still apply.
 
-The new preparation tools use revision 2 `prepare` contracts and
+The preparation tools use revision3 `prepare` contracts (revision2 remains a
+compatibility success verifier) and
 `local_browser_preparation_v1`. Their response contains `local_preparation:true`,
 `network_state:"frozen"`, session ID, exact observed URL and a newer observation
 version. Private journal policy pins the original session/URL/version; missing,
@@ -141,6 +159,19 @@ has no automatic retry/crash-recovery guarantee. Existing live fill/type and
 click stay opaque: a DOM acknowledgement without an independent recipient
 receipt becomes `effect_unknown`, and the durable unknown-effect guard blocks
 later effects. Approval is execution authority, not retrospective evidence.
+
+Revision3 additionally accepts a correlated closed runtime rejection with
+`preparation_rejection=pre_input_v1`, `input_dispatched=false` and one fixed
+reason: page_changed, stale_observation, invalid_args or invalid_selector.
+Go emits it only from guards before calling the input runner; the helper emits
+it only from live page/DOM guards before reaching any input operation. A generic
+failure, missing marker, timeout, lost response or error after input begins does
+not qualify. Broker/PG bind policy, action identity and proof digest, record only
+that local preparation absent and retain its grant/spending. The model can
+observe current state and propose another ordinarily authorized action. An old
+revision2 call or opaque fill/click cannot borrow the new proof. Explicit
+resource-runtime wrappers that cannot retain this failure proof remain
+conservatively unknown/quarantined; no wrapper authority is weakened.
 
 All page requests, redirects and HTTP(S) frame/resource requests pass the private
 multi-origin proxy and the initial contract's domain caps. Checked DNS is pinned
@@ -169,12 +200,26 @@ not dispatched. A missing response, unrelated result or malformed context does
 not trigger it. The five-second child deadline never extends the run deadline.
 
 Core durably checkpoints the observation attempt before dispatch and records
-its normal tool transcript, without resuming the model. Both in-progress and
-finished observation checkpoints recover by blocking on the original UNKNOWN;
-neither replay an action nor retry the read. The owner receives the existing
-uncertainty notice. This is an observation foundation for #163, not general
-interactive continuation or a recipient receipt. Old failed runs are not
-automatically resumed; native POST/login acceptance remains outstanding.
+its normal tool transcript, without resuming the model. An in-progress read or
+unproven result blocks on the original UNKNOWN and never retries either call.
+Migration105 permits a separate factual owner review only after the exact read
+has confirmed, digest-correlated journal evidence and an unexpired frozen
+context. The kernel joins the same Input/Task/run wait atomically. The protected
+owner must independently check the recipient and settled processing; known
+reports require a receipt reference, of which only a digest is retained.
+`owner_outcome_attestation_v1` is explicitly owner-assisted, never a machine
+receipt. A known canonical result permits fresh model context in the same run
+under current claim, source/task versions, deadlines and budgets. It does not
+replay the old operation, restore its grant or complete the task. UNKNOWN,
+expiry, cancellation and changed constraints cannot resume inference.
+
+An authenticated owner may request retrospective review of a correlated locally
+acknowledged click/fill/type after the original run terminated and its recorded
+finite context expired. This updates journal evidence only: the failed Input/run,
+original UNKNOWN transcript and charges remain. A test-recipient journal can
+inform an explicitly counted test operator's factual report through that same
+protected API; it is never an automatic production verifier or hidden oracle.
+Native POST/login acceptance is measured separately from these safeguards.
 
 ## Private credential state
 
@@ -357,3 +402,50 @@ Compose the owner channel explicitly with `deploy/docker-compose.server-browser.
 a dedicated browser-control token file, existing owner authentication and migration086.
 No browser HTTP/CDP/VNC ports are published. The shared lab stack is not switched
 by the validation script; see `scripts/dev/server-browser-lab.sh`.
+
+## Authority and Broker crash qualification
+
+The isolated `TestBrowserSafety*ChromiumIntegration` matrix uses actual
+PostgreSQL mandate/grant/effect/resource/budget stores and Chromium, with a
+separate authenticated Broker process. Cancellation, mandate revocation and
+changed origin/args deny an already authorized POST before dispatch. Positive
+controls demonstrate that the same fixture can submit normally. Killing and
+reconstructing the Broker after an opaque response or during a held response
+must retain UNKNOWN, one receiver effect and original spending, and block replay
+and a successor write. A frozen observation does not resolve the original effect.
+This matrix supplies fixture policy/context wiring; owner-UI control and native
+Core continuation remain distinct checks. See the
+[qualification report](../testing/browser-safety-2026-10-29.md).
+
+Revision4 `browser.navigate` adds the closed `pre_navigation_v1` proof for a
+Go-observed missing/closed context or an already observed frozen network before
+runner dispatch. A successful runner observation reporting `network_state=frozen`
+pins that state in the Go session. Only the new guarded read contract can prove
+ABSENT for `session_lost` or `network_frozen`; helper claims and transport loss
+cannot. The model may propose a new open for the requested URL under normal
+policy. Revision3 navigation UNKNOWN is retained and cannot inherit this proof.
+
+Frozen-observation dispatch retains its existing five-second child deadline.
+After a correlated response returns, that child is cancelled before transcript
+and checkpoint persistence. Persistence alone uses a separate three-second child
+of the original run context: it cannot execute tools, widen the run/claim/lease
+or survive parent cancellation. A persistence failure still blocks; there is no
+read or POST retry and no fabricated receipt. This keeps a completed read from
+losing its checkpoint merely because its dispatch clock expires during storage.
+
+## Public form constraints and local validity observations
+
+Ordinary form fields may include bounded `constraints` metadata: required,
+numeric min/max/step and text length bounds. When the network is frozen, optional
+`validation` contains only `valid` and a closed list of native validity flags.
+The observer reads ValidityState properties; it never calls checkValidity,
+reportValidity or submit and never returns values, patterns or validation text.
+These are page DATA for deciding the next proposal, not external effect evidence.
+A successful local correction does not confirm a later POST.
+
+Password, hidden, file/unknown controls suppress this metadata for the entire
+form. Known cookie/storage/credential state suppresses it for the context; a
+Broker-resolved credential makes Go's suppression sticky for that context.
+Secret state is collected before/after capture to suppress late discoveries.
+Go independently bounds forms/fields/constraints and rejects unknown or
+contradictory validity flags. Normal action, approval and uncertainty policy stays.

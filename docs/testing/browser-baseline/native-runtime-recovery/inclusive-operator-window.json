@@ -1,0 +1,19 @@
+{
+  "scope": "inclusive_operator_work_through_native_qualification",
+  "started_at": "2026-10-29T06:41:58Z",
+  "qualification_verified_at": "2026-10-29T09:08:08Z",
+  "wall_seconds": 8770,
+  "includes": [
+    "Codex_deliberation",
+    "inspection",
+    "implementation",
+    "failed_setup_and_native_attempts",
+    "builds",
+    "deployment",
+    "operator_and_model_waits",
+    "verification"
+  ],
+  "native_input_latency_separate": true,
+  "documentation_and_remaining_CI_after_boundary": "recorded_separately_at_final_completion",
+  "unmeasured_before_first_timestamp": true
+}

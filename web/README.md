@@ -1,5 +1,12 @@
 # Butler Web
 
+Authenticated owners see pending factual action-outcome reviews separately from
+action approvals and credential requests. A known result requires an explicit
+selection, checked recipient, settled processing and a receipt reference; the
+server stores only digests. Choosing unknown keeps execution stopped. Drafts
+remain in page memory and clear on owner/review changes. Polling and submissions
+use the existing protected owner endpoint; the UI never replays the action.
+
 The credential vault bookmark is fixed at the right-center edge after owner
 connection. It opens a six-cell PIN setup/unlock and a sidebar for account CRUD,
 access/create requests, protected manual OTP and per-account SMS routing.
@@ -154,3 +161,10 @@ reload the winner. Terminal questions disable controls, with server enforcement
 independent of disabled HTML. Unicode text limits count characters. Existing
 private verified media rendering supplies optional option images. Targeted UI
 checks: `npm run test:e2e -- communication-widget.spec.ts`.
+
+`tests/e2e/browser-owner-real.spec.ts` is required by the isolated credential
+acceptance workflow through `scripts/dev/browser-owner-safety-tests.sh`. It joins
+real owner HTTP decisions to PG, Broker and server Chromium: Stop task and Revoke
+mandate fence already issued grants; an unchanged control submits once. Only
+unrelated app navigation uses the shared bootstrap fixture. Owner endpoints and
+their responses are real; the synthetic owner token stays out of browser storage.

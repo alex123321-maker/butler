@@ -45,6 +45,12 @@ The original logical ToolDefinition, canonical Broker schema and action contract
 hash remain unchanged; Tool Broker and owning typed argument decoders enforce
 the bounds before execution. Original array cardinalities are additionally
 enforced by the native argument decoder before emitting any action proposal.
+The exact omitted limits are appended to the same node's provider-facing
+description (for example `minItems=1; maxItems=8`), preserving existing text and
+nested/union/property-name structure. Otherwise the model cannot see limits it
+must obey. These hints are schema DATA; they do not authorize splitting, retries
+or adapter-generated calls. Original logical definitions and response schemas
+are unchanged.
 Negative/noninteger array bounds, inverted intervals and non-array shapes fail
 closed before authentication/HTTP. Native argument shape/type/required/unknown-field
 checks remain in place, and unknown schema keywords fail closed. This narrow
@@ -110,6 +116,15 @@ declared transport codes, including `memory_source_stale` and
 are discarded before execution logging, run persistence and input-worker return.
 An owning source-check timeout is distinct from a provider timeout; both deny
 release. These diagnostics do not grant a retry or relax any source deadline.
+
+Invalid native function proposals additionally carry a fixed reason distinguishing
+malformed envelopes, unselected functions, missing/unknown fields, wrong types,
+union/enum mismatch, array cardinality and otherwise invalid arguments. No
+function name, field path, argument, signature or rejected bytes are copied.
+Core retains this allowlisted reason in its run-error event/log while preserving
+the existing coarse durable failure code. Invalid proposals remain terminal and
+cannot dispatch or automatically retry. Historical failures without this reason
+remain unclassified.
 
 Antigravity HTTP rejection errors retain only the numeric HTTP status as typed
 metadata. `DiagnosticHTTPStatus` exports the finite300–599 range, otherwise0;

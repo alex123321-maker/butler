@@ -1,0 +1,10 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-credential-revision3-20261029-65b3d7230556-v6",
+  "healthy": true,
+  "environment_unchanged": true,
+  "browser_postgres_redis_web_unchanged": true,
+  "migrations": 0,
+  "old_failed_runs_unchanged": true,
+  "expired_request_creation_reviewed": true,
+  "permission_or_budget_reset": false
+}

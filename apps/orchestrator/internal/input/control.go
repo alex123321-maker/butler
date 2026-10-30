@@ -10,7 +10,7 @@ import (
 
 func (s *Store) InvalidateForControlTx(ctx context.Context, tx pgx.Tx, taskIDs []string, controlID string) (bool, error) {
 	var uncertain bool
-	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=ANY($1) AND checkpoint IN ('tool_dispatching','tool_result_recorded','browser_outcome_observing','browser_outcome_observed'))`, taskIDs).Scan(&uncertain)
+	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM accepted_inputs WHERE task_id=ANY($1) AND (checkpoint IN ('tool_dispatching','tool_result_recorded','browser_outcome_observing','browser_outcome_observed') OR (checkpoint IN ('awaiting_interaction','interaction_ready') AND checkpoint_json->'interaction'->>'kind'='effect_review')))`, taskIDs).Scan(&uncertain)
 	if err != nil {
 		return false, err
 	}

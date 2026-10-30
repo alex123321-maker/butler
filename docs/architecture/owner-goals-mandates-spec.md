@@ -58,6 +58,21 @@ to fit the context budget.
 
 ## Broad mandate and exact actions
 
+The protected Web message endpoint accepts an optional exact `task_id`. It
+admits only an active Task belonging to the authenticated owner and the current
+operator-pinned Web conversation session. The ordinary Input admission preserves
+that ID in its immutable payload and channel proof. It cannot select a mandate,
+purpose, another session or recipient, and does not create or amend a Task.
+Absent IDs preserve conversation admission and existing delivery hashes.
+
+A mandate may explicitly list `communication.message`, `communication.photo`,
+`communication.report` or `communication.widget` with the prepare effect. Only
+their exact credential-free kernel contracts and pinned destination digest use
+the fixed local `tool:communication.*` resource; no arbitrary non-URL resource
+scope is introduced. Current communication admission, owner/channel binding,
+export/source checks, effects, denials, revisions and budgets remain mandatory.
+This permission cannot authorize a browser/HTTP POST or choose a new recipient.
+
 The Android `mobile_inbox` source is a standing owner-authorized DATA consumer.
 It can read permitted phone messages and prepare source-backed notes/noise rules
 through exact named Broker tools without per-message review. Current goal,

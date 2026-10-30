@@ -1,0 +1,9 @@
+{
+  "scope": "exact-synthetic-login-submit-approval",
+  "approval": "approval-1793249715426204100-bb9697a48864",
+  "tool": "browser.click",
+  "changed": true,
+  "status": "approved",
+  "owner_assistance": 1,
+  "policy_changed": false
+}

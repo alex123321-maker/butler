@@ -11,6 +11,12 @@ go run ./cmd/browser-eval -init -config .cache/browser-eval-private.json
 go run ./cmd/browser-eval -config .cache/browser-eval-private.json -journal .cache/browser-eval-attempt-01.jsonl
 ```
 
+The journal is exclusively created. Restarting a process with a historical
+journal fails, preserving its evidence; it cannot restore that attempt or its
+in-memory cookies. A systemd-active result immediately after start is not an HTTP
+readiness check. Use a fresh idle instance when ending a deployment window; see
+the deployment helper's named-unit/PID and HTTP checks below.
+
 Configuration contains synthetic username/password and expected answers. Enter
 credentials through the protected owner vault outside model/chat context. Never
 use real account data here. Restrict the directory ACL on Windows; Go file mode
@@ -46,6 +52,12 @@ The catalog has pagination. The form includes delayed help and server validation
 `POST /lost-response` applies a valid form and drops its HTTP/1 connection; every
 replay counts again. It deliberately has no idempotency feature that could hide
 an agent retry. Do not use it as an ordinary success route.
+`GET /lost-response` exposes the same validated HTML form, posting to its own
+path, so a real browser can exercise this fault without injected scripts or an
+HTTP substitute. Opening it applies no effect. The HTTP unit deliberately sends
+two POSTs to prove that duplicates stay visible; that is not a native no-retry
+acceptance result. Record any extra fault-injection trial outside the original
+3×5 matrix rather than replacing an earlier failed slot.
 
 ## Independent evidence and limits
 
@@ -82,6 +94,11 @@ explicitly labelled `native_agent: UNEXECUTED`. On failure errors are suppressed
 because browser exceptions can reflect secret field values.
 
 ## Native ingress observation
+
+`-task-id task_<32hex>` optionally targets an already created active owner Task in
+the operator-pinned Web conversation through the same protected message endpoint.
+The server validates its owner/session and retains the ordinary channel proof.
+This selector does not create a mandate, approve POST or choose delivery targets.
 
 `browser-eval native` submits exactly one ordinary owner message and observes its
 Input receipt. Supply `-endpoint`, `-owner-token-file`, `-prompt-file`, a unique

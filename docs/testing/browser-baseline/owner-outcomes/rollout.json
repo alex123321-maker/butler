@@ -1,0 +1,9 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-owner-outcomes-20261029-4a80a3a97c04",
+  "healthy": true,
+  "environment_unchanged": true,
+  "postgres_redis_web_unchanged": true,
+  "migration": 105,
+  "unknowns_resolved_by_deployment": 0,
+  "native_acceptance": "PENDING"
+}

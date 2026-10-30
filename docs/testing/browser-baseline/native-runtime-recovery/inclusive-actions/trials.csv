@@ -1,0 +1,8 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-runtime-recover-20261029-01","failed","memory_source_check_timeout","131,11",,"103,346","92,009","11,337","27,764","True","0","5","6","1"
+"browser-baseline-runtime-recover-20261029-02","failed","effect_unknown","472,841",,"466,912","438,396","28,516","5,929","True","0","14","13","0"
+"browser-baseline-runtime-recover-20261029-03","failed","stopped_attempt_uncertain","595,992",,"587,866","579,108","8,758","8,126","True","0","6","6","0"
+"browser-baseline-runtime-recover-20261029-04","failed","effect_unknown","341,436",,"335,241","317,981","17,26","6,195","True","0","14","13","0"
+"browser-baseline-runtime-recover-20261029-05","failed","execution_stopped","596,785","546,051","526,17","490,76","35,41","70,615","True","-1,1641532182693481E-10","24","24","1"
+"browser-baseline-runtime-recover-20261029-06","failed","effect_unknown","408,214",,"383,921","327,147","56,774","24,293","True","-5,820766091346741E-11","3","3","1"
+"browser-baseline-runtime-recover-20261029-07","completed",,"360,37","354,35","353,111","346,234","6,877","7,259","True","0","22","22","0"

@@ -1,0 +1,2 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-evidence-reuse-20261029-01","completed",,"323,591","314,259","312,973","310,855","2,117","10,618","True","0","17","17","0"

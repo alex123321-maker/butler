@@ -8,13 +8,33 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/communicationcontrol"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/jackc/pgx/v5"
 )
 
 // These hashes were reproduced from commit 4dff78b5. This is a recovery
 // compatibility boundary, NOT authorization to execute an obsolete contract.
 const stoppedMessageContract = "f86dbe12464322551ff3d386412b54644fd32227fe0011f1bbac13b7db27b6fc"
+
+// Reproduced from 00cbdf04; its publisher retains the same atomic, fenced
+// publication/outbox protocol. This pin is only for terminal owning review.
+const stoppedMessage00cbContract = "ecc90b761ddf163c0e14c0f75f99fa00e7a4893e0b9f4ded61613a86f8604a2b"
+
+// Pinned revision1 Broker-owned catalog search in 1ea37b7b: discovery only.
+const stoppedSearchContract = "eb76afa96498ff15140b9e5205304f89114c9c348fd76b23f9acef15b4e37c35"
 const stoppedFetchContract = "18a7d901908ac523b3ab1539d3368a9ea9a4b33ce8190d4d37aa58a4a11ff3d2"
+
+// Reproduced from the revision1 public GET compiler in 1e24a910. This
+// compatibility proof qualifies only absence of write uncertainty; it never
+// upgrades the failed read, imports revision2 absence semantics or replays it.
+const stoppedGETFormContract = "504555e5109e2f7478d87fc21a5598c28f1f27b3aaa58830851675cab9bff90f"
+
+// Reproduced from browser.navigate revision3 in 49ada352; read result stays UNKNOWN.
+const stoppedNavigateContract = "bf151ae84aaff52f3c3c22c0634e9bc7f48b49c551a4b6777d52d5fdf1c429f2"
+const stoppedLocalFillContract = "4b4d58b1ddfadd6a2c56e5b2596fe85d2f4edad96105f52304e9c6fa3546aff3"
+
+// Reproduced from the revision1 Broker-owned credential contract in 00cbdf04.
+const stoppedAccessRequestContract = "35ee548617ec6944e5bfc3fe85c9d4962d1551f5b8393decfa2b97ff0f45c9df"
 
 // ReviewStoppedLocalTx uses only kernel-owned durable evidence. It can resolve
 // the reviewed atomic publication protocol after its executor is fenced out.
@@ -100,11 +120,47 @@ func ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, input string) (map[str
 		verdict := StateUnknown
 		proof := ""
 		switch {
-		case b.ToolName == "web.fetch" && b.ContractRevision == "1" && b.ContractHash == stoppedFetchContract && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+		case b.ToolName == "credentials.request_access" && b.ContractRevision == "1" && b.ContractHash == stoppedAccessRequestContract && b.Effect == EffectPrepare && b.Resource == "tool:credentials.request_access" && e.Policy.RetrySafety == "unsafe" && e.Policy.VerificationMethod == "local_runtime_ack" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+			var consumed bool
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM action_effect_dispatches d JOIN action_authorizations g ON g.authorization_id=d.authorization_id
+ WHERE d.action_id=$1 AND d.execution_action_id=$1 AND d.authorization_id=$2 AND d.outcome='unknown' AND d.finished_at IS NOT NULL
+ AND g.state='unknown' AND g.action_id=$1 AND g.action_hash=$3 AND g.grant_data->'binding'=$4::jsonb
+ AND NOT EXISTS(SELECT 1 FROM action_effect_dispatches other WHERE other.action_id=$1 AND other.outcome='executing'))`, id, e.AuthorizationID, b.ActionHash, string(y)).Scan(&consumed); err != nil {
+				return nil, err
+			}
+			if !consumed {
+				continue
+			}
+			absent, absenceErr := credentialcontrol.StoppedAccessAbsentTx(ctx, tx, b.ToolCallID)
+			if absenceErr != nil {
+				return nil, absenceErr
+			}
+			if absent {
+				method, source, proof, verdict = "stopped_access_request_absence_v1", "owning_credential_request_store", digest(id+"\x00"+b.ContractHash+"\x00terminal_access_request_absence"), StateAbsent
+				break
+			}
+			args, receipt, e := credentialcontrol.StoppedAccessReceiptTx(ctx, tx, credentialcontrol.StoppedAccessIdentity{OwnerID: owner, SessionKey: session, RunID: run, TaskRevision: b.TaskRevision, ConstraintsRevision: b.ConstraintsRevision}, b.ToolCallID)
+			if e != nil {
+				return nil, e
+			}
+			hash, e := ArgumentsHash(args)
+			if receipt == "" || e != nil || hash != b.ArgsHash {
+				continue
+			}
+			method, source, proof, verdict = "stopped_expired_access_request_v1", "owning_credential_request_store", receipt, StateConfirmed
+		case b.ToolName == "browser.prepare_fill" && b.ContractRevision == "2" && b.ContractHash == stoppedLocalFillContract && b.Effect == EffectPrepare && e.Policy.RetrySafety == "unsafe" && e.Policy.VerificationMethod == "local_browser_preparation_v1" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation != nil && e.Policy.LocalPreparation.SessionID != "" && e.Policy.LocalPreparation.ObservationVersion > 0 && b.Resource == "browser:"+e.Policy.LocalPreparation.SessionID+":"+e.Policy.LocalPreparation.ExpectedURL:
+			// This exact old contract freezes every network route before any
+			// input. Unknown local field state remains unknown; no remote write
+			// is inferred even for a lost acknowledgement. No secret-backed or
+			// live interaction can enter through the enclosing binding checks.
+			method, source = "pinned_preparation_no_write_v1", "owning_local_preparation_contract"
+			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_local_result_unknown")
+			reads[id] = true
+		case (((b.ToolName == "web.fetch" && b.ContractHash == stoppedFetchContract) || (b.ToolName == "tools.search" && b.ContractHash == stoppedSearchContract && b.Resource == "tool:tools.search") || (b.ToolName == "browser.submit_get_form" && b.ContractHash == stoppedGETFormContract)) && b.ContractRevision == "1" || b.ToolName == "browser.navigate" && b.ContractHash == stoppedNavigateContract && b.ContractRevision == "3") && b.Effect == EffectRead && e.Policy.RetrySafety == "read_only" && e.Policy.VerificationMethod == "read_result" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
 			method, source = "pinned_read_no_write_v1", "owning_read_contract"
 			proof = digest(id + "\x00" + b.ContractHash + "\x00no_write_result_unknown")
 			reads[id] = true
-		case b.ToolName == "communication.message" && b.ContractRevision == "1" && b.ContractHash == stoppedMessageContract && b.Effect == EffectPrepare && b.Resource == "tool:communication.message" && len(b.CommunicationDestinationsHash) == 64 && e.Policy.RetrySafety == "unsafe" && e.Policy.VerificationMethod == "local_runtime_ack" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
+		case b.ToolName == "communication.message" && ((b.ContractRevision == "1" && b.ContractHash == stoppedMessageContract) || (b.ContractRevision == "2" && b.ContractHash == stoppedMessage00cbContract)) && b.Effect == EffectPrepare && b.Resource == "tool:communication.message" && len(b.CommunicationDestinationsHash) == 64 && e.Policy.RetrySafety == "unsafe" && e.Policy.VerificationMethod == "local_runtime_ack" && e.Policy.IdempotencyHeader == "" && e.Policy.ScopeOrigin == "" && e.Policy.VerificationURL == "" && e.Policy.LocalPreparation == nil:
 			// Require a permanently consumed dispatch, not an unclaimed proposal.
 			var dispatched bool
 			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM action_effect_dispatches d JOIN action_authorizations g ON g.authorization_id=d.authorization_id

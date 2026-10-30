@@ -1,5 +1,12 @@
 # Guarded controlled-browser resource dispatch
 
+The runtime wrapper can finish a lane for an exact correlated local-preparation
+pre-input rejection, preserving its closed proof for independent Broker/PG
+verification. It issues no success ACK or new session mapping. Current authority
+and durable Finish remain mandatory; malformed proof or lost Finish stays unknown.
+Revision4 alone allows the Go pre-run `session_lost` rejection. Earlier unknown
+effects are never reconciled by this response.
+
 The canonical guarded single-tab contracts and authenticated gRPC readiness
 probe are shared by optional Broker bootstrap and the installed native host.
 They pin the actual loopback listener, host and complete contract, without
@@ -105,3 +112,8 @@ workspace/shared-worker callbacks, independent reconciliation and combined
 task-tree/memory-conflict scenarios also remain pending for issue17. No model
 call, production deployment or claim of complete issue17 acceptance is made by
 this module.
+
+The same durable rejection path covers credential-free guarded browser reads,
+including navigation revision4. A closed correlated proof must survive current
+authority and durable Finish; lost Finish, arbitrary helper errors and in-flight
+loss remain UNKNOWN. Rejection receives no success ACK or new session mapping.

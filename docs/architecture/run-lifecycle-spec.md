@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+Interaction recovery resolves the canonical owning interaction before active-only
+source readers run. The owning kernel checks claim/lease, exact versions,
+evidence and current authority and resumes the Task's exact wait. Source/delegation
+observations are then rehydrated and validated before refreshed tools, model
+admission or any new action. An ordinary waiting Task is not a stale delegated
+parent. Unknown/expired/cancelled/changed reports still cannot resume inference;
+current source denial after a valid report also stops before the provider. This
+ordering never reopens a terminal Input/run or replays the consumed action.
+
 ## One post-effect browser observation
 
 After a durably recorded, correlated UNKNOWN click/fill/type response, Core can
@@ -10,9 +19,20 @@ checkpoints; a separate deterministic read-call ID receives its own permanent
 slot, grant, budget accounting and tool transcript. No input/credential values
 are copied. The read stays under current authority and a clipped five-second
 deadline; approval requirements or unavailable permission prevent dispatch.
-No provider continuation, final success or additional action follows. Recovery
-from either checkpoint blocks on `effect_unknown`, even if the read succeeded;
-it never retries the read or the original interaction. See the browser contract.
+Without a canonical owner outcome review, recovery from either checkpoint blocks
+on `effect_unknown`, even if the read succeeded; it never retries either call.
+Migration105 adds a distinct `effect_review` interaction: the kernel atomically
+joins an independently journaled frozen read, Task wait, exact Input checkpoint
+and coarse run wait. It releases the executor before accepting a factual owner
+report. This report is not an action approval or independent machine receipt.
+Only confirmed/absent canonical journal evidence can make that same Input ready.
+Recovery rechecks its claim, lease, task/source versions and all other unknown
+effects, reconstructs fresh provider context with owner-report DATA, and retains
+the original UNKNOWN tool transcript. No consumed grant or action is replayed.
+An unknown report, expiry, cancellation or changed constraints cannot resume
+inference. Cleanup may queue a bounded no-inference close after an expired wait;
+it never renews execution authority. Historical reports change only journal
+evidence; an old failed Input/run stays failed. See the external-effect contract.
 
 ## Joining supervision before terminal task mutation
 
@@ -1336,3 +1356,18 @@ no Broker action is prepared or dispatched. Recovery replays that known DATA.
 At most four corrections are allowed, with ordinary model budgets retained.
 Such a known non-dispatch is not an equivalent committed write during model
 retry recovery. See [research and checked monitors](research-followups.md).
+
+A failed revision4 browser preparation/navigation with a verified pre-dispatch
+ABSENT proof follows ordinary tool-result model continuation. Broker suggests a
+fresh open and reassessment. This is a new model proposal with separate current
+authorization, not a kernel retry, grant replay, restored DOM or confirmation of
+an earlier UNKNOWN action. A frozen context is not implicitly thawed. Unresolved
+write effects and stopped-attempt isolation retain their existing gates.
+
+Frozen-observation dispatch retains its existing five-second child deadline.
+After a correlated response returns, that child is cancelled before transcript
+and checkpoint persistence. Persistence alone uses a separate three-second child
+of the original run context: it cannot execute tools, widen the run/claim/lease
+or survive parent cancellation. A persistence failure still blocks; there is no
+read or POST retry and no fabricated receipt. This keeps a completed read from
+losing its checkpoint merely because its dispatch clock expires during storage.

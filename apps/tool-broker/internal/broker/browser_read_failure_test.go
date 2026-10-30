@@ -30,6 +30,24 @@ func (e browserReadRejectExecutor) Execute(_ context.Context, c *toolbrokerv1.To
 	return &toolbrokerv1.ToolResult{RunId: c.RunId, ToolCallId: id, ToolName: c.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, Message: "PRIVATE_RUNTIME_MESSAGE", DetailsJson: details, Retryable: true}}, nil
 }
 
+type preparationRejectExecutor struct{}
+
+func (preparationRejectExecutor) Execute(_ context.Context, c *toolbrokerv1.ToolCall, _ *toolbrokerv1.ToolContract, _ []credentials.ResolvedSecret) (*toolbrokerv1.ToolResult, error) {
+	return &toolbrokerv1.ToolResult{RunId: c.RunId, ToolCallId: c.ToolCallId, ToolName: c.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, Message: "PRIVATE_RUNTIME_MESSAGE", DetailsJson: `{"preparation_rejection":"pre_input_v1","input_dispatched":false,"reason":"stale_observation"}`, Retryable: true}}, nil
+}
+func TestOwnerOutcomePreparationBrokerPreservesFixedNoInputDiagnostic(t *testing.T) {
+	reg, err := registry.Load(filepath.Join("..", "..", "..", "..", "configs", "tools.json"), "local")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewServer(reg, preparationRejectExecutor{}, nil, nil)
+	f := setTestAuthority(s, nil)
+	result := dispatchForTest(t, s, f, &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "call", ToolName: "browser.prepare_fill", ArgsJson: `{"browser_session_id":"context","selector":"input","value":"ordinary","observation_version":1,"expected_url":"https://example.com/form"}`}, true)
+	if result.GetStatus() != "failed" || result.GetEffectState() != "effect_absent" || result.GetError().GetRetryable() || strings.Contains(result.GetError().GetMessage(), "PRIVATE_") || !strings.Contains(result.GetError().GetMessage(), "stale_observation") {
+		t.Fatal("Broker lost or widened pre-input evidence", result.GetStatus(), result.GetEffectState())
+	}
+}
+
 func TestGuardedBrowserReadFailurePreservesUnknownUnlessProvedNotDispatched(t *testing.T) {
 	for _, mode := range []string{"proved", "missing_proof", "foreign_call", "lost_ack", "opaque_click"} {
 		t.Run(mode, func(t *testing.T) {

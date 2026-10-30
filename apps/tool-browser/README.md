@@ -1,5 +1,19 @@
 # Tool Browser
 
+Local preparation revision4 can reject a missing or closed context before any
+runner call with a closed `session_lost` pre-input proof. No helper/in-flight
+error can emit this Go-only proof. The model must open a new context; this never
+restores DOM or decides the outcome of an earlier action. Revisions2/3 retain
+their old semantics and never gain the new reason.
+
+Local `prepare_fill/prepare_type` revision3 adds a closed `pre_input_v1`
+rejection only when Go/helper guards prove input dispatch never began. Stale
+page/URL and validated pre-input argument failures return fixed diagnostics;
+timeouts, generic failures and errors after input remain uncertain. Revision2
+keeps its old outcome semantics. Success still proves frozen local preparation
+only. Broker may record this exact new preparation as absent, retain its consumed
+grant and let the model observe/reassess through a fresh authorized proposal.
+
 `browser.freeze_snapshot` revision1 closes all proxy connections and freezes
 helper routes before a non-navigating observation of the same document. It
 retains redaction and permanently excludes GET form/link thawing of that
@@ -79,3 +93,25 @@ dispatch epoch; delayed calls cannot cross a takeover/release cycle. Manual
 frame guards include cross-origin child documents, not just the main page.
 Masking merges secret spans in the original text, including successive typed
 password prefixes; shorter values cannot expose a longer value's suffix.
+
+Navigation revision4 can reject a Go-observed lost/closed context or a previously
+observed frozen network before invoking the runner. Only that pre-dispatch guard
+emits the new `session_lost`/`network_frozen` absence proof. In-flight/helper errors
+and old navigation contracts retain uncertainty; recovery requires a fresh open.
+
+## Public form constraints and local validity observations
+
+Ordinary form fields may include bounded `constraints` metadata: required,
+numeric min/max/step and text length bounds. When the network is frozen, optional
+`validation` contains only `valid` and a closed list of native validity flags.
+The observer reads ValidityState properties; it never calls checkValidity,
+reportValidity or submit and never returns values, patterns or validation text.
+These are page DATA for deciding the next proposal, not external effect evidence.
+A successful local correction does not confirm a later POST.
+
+Password, hidden, file/unknown controls suppress this metadata for the entire
+form. Known cookie/storage/credential state suppresses it for the context; a
+Broker-resolved credential makes Go's suppression sticky for that context.
+Secret state is collected before/after capture to suppress late discoveries.
+Go independently bounds forms/fields/constraints and rejects unknown or
+contradictory validity flags. Normal action, approval and uncertainty policy stays.

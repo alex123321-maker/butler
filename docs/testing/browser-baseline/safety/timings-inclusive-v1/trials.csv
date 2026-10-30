@@ -1,0 +1,2 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-core-restart-20261029-01","completed",,"456,194","447,802","443,647","426,208","17,439","12,548","True","-5,820766091346741E-11","14","14","0"

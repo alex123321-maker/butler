@@ -1,0 +1,52 @@
+=== RUN   TestFormMetadataPrivacyAndBounds
+=== RUN   TestFormMetadataPrivacyAndBounds/public
+=== RUN   TestFormMetadataPrivacyAndBounds/unfrozen
+=== RUN   TestFormMetadataPrivacyAndBounds/private
+=== RUN   TestFormMetadataPrivacyAndBounds/password
+=== RUN   TestFormMetadataPrivacyAndBounds/hidden
+=== RUN   TestFormMetadataPrivacyAndBounds/unknown_issue
+=== RUN   TestFormMetadataPrivacyAndBounds/contradiction
+=== RUN   TestFormMetadataPrivacyAndBounds/duplicate
+=== RUN   TestFormMetadataPrivacyAndBounds/oversized
+--- PASS: TestFormMetadataPrivacyAndBounds (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/public (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/unfrozen (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/private (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/password (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/hidden (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/unknown_issue (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/contradiction (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/duplicate (0.00s)
+    --- PASS: TestFormMetadataPrivacyAndBounds/oversized (0.00s)
+=== RUN   TestBrowserPublicFormValidationChromium
+2026/10/29 10:00:30 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:30 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+2026/10/29 10:00:30 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//password
+2026/10/29 10:00:30 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:30 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//hidden
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//cookie
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//storage
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium//late-cookie
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+=== RUN   TestBrowserPublicFormValidationChromium/credential_then_plaintext
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.open
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+2026/10/29 10:00:31 INFO browser request executed component=tool-browser-runtime tool_call_id=call-1 tool_name=browser.prepare_fill
+--- PASS: TestBrowserPublicFormValidationChromium (1.03s)
+    --- PASS: TestBrowserPublicFormValidationChromium//password (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium//hidden (0.09s)
+    --- PASS: TestBrowserPublicFormValidationChromium//cookie (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium//storage (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium//late-cookie (0.08s)
+    --- PASS: TestBrowserPublicFormValidationChromium/credential_then_plaintext (0.11s)
+PASS

@@ -1,0 +1,12 @@
+{
+  "scope": "historical-owner-assisted-factual-outcome",
+  "review": "review_f46db57500e9b09cf44ccab606188a16",
+  "effect": "action_cb838fc841a81b171d51bbef51b9bd53872190a3116c9cfc78d9873b74e7d021",
+  "state": "effect_confirmed",
+  "owner_assistance": 1,
+  "machine_receipt": false,
+  "external_post_count": 1,
+  "accepted_quantity": 3,
+  "input_replayed": false,
+  "old_input_resumed": false
+}

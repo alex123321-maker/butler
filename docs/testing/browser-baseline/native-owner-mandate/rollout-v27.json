@@ -1,0 +1,10 @@
+{
+  "scope": "owner_goal_primary_task_history",
+  "verified_at": "2026-10-29T18:05:42Z",
+  "core_healthy": true,
+  "environment_unchanged": true,
+  "broker_unchanged": true,
+  "history_deleted": false,
+  "budgets_changed": false,
+  "prior_input_replayed": false
+}
