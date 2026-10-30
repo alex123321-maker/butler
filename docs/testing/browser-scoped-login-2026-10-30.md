@@ -145,3 +145,13 @@ No provider request is admitted on the negative cases. The compatible Core's
 previous binary was reproduced byte-for-byte before applying only this change;
 its delayed PG/race, credential wait and watchdog tests and build pass. Initial
 backport compile/reproduction failures remain in the build timing ledger.
+
+Trial07 resumed the approved interaction correctly and released both fields to
+one claimed login call. It then failed with UNKNOWN and zero recipient POSTs:
+the observed `form >> nth=0` selector was incompatible with the helper's native
+CSS query. No call or grant was replayed. Selector compatibility now accepts the
+bounded indexed form produced by observations and requires unique unindexed CSS.
+Eleven real Chromium cases pass, including a positive selection of the second
+form and a negative ambiguous-form case; the original exact-body/no-extra-traffic
+and independent access-probe checks remain. The initial container test harness
+could not execute its RAM-mounted binary; its failure is retained separately.

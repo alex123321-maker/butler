@@ -390,9 +390,17 @@ async function submitLogin(session, request, live) {
       session.loginPlan = undefined
       // No page handler runs while compiling the permitted body.
       const entries = await session.page.evaluate(({ scope, username, password }) => {
-        const form = document.querySelector(scope.form_selector)
-        const user = document.querySelector(scope.username_selector)
-        const pass = document.querySelector(scope.password_selector)
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
         if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post' || form.enctype !== 'application/x-www-form-urlencoded' || !['', '_self'].includes(form.target) || form.action !== scope.target_url) return null
         if (!(user instanceof HTMLInputElement) || !(pass instanceof HTMLInputElement) || user.form !== form || pass.form !== form || !['text','email'].includes(user.type) || pass.type !== 'password' || !user.name || !pass.name || user.disabled || pass.disabled || user === pass) return null
         const controls = Array.from(form.elements)
@@ -425,9 +433,17 @@ async function submitLogin(session, request, live) {
     await Promise.all([
       session.page.waitForURL(url => url.href !== scope.expected_url, { waitUntil: 'domcontentloaded', timeout: 12000 }),
       session.page.evaluate(({ scope, username, password }) => {
-        const form = document.querySelector(scope.form_selector)
-        const user = document.querySelector(scope.username_selector)
-        const pass = document.querySelector(scope.password_selector)
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
         if (!(form instanceof HTMLFormElement) || user?.form !== form || pass?.form !== form || form.action !== scope.target_url) throw new Error('login changed')
         const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
         set.call(user, username); set.call(pass, password)

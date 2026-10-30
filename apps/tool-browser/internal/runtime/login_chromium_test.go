@@ -21,7 +21,7 @@ func TestBrowserLoginChromium(t *testing.T) {
 	if os.Getenv("BUTLER_BROWSER_E2E") != "1" {
 		t.Skip("requires isolated Chromium")
 	}
-	for _, mode := range []string{"verified", "public_landing", "formdata_mutation", "wrong_password", "foreign_target", "second_password", "extra_control", "business_hidden", "stale"} {
+	for _, mode := range []string{"verified", "snapshot_selectors", "ambiguous_form", "public_landing", "formdata_mutation", "wrong_password", "foreign_target", "second_password", "extra_control", "business_hidden", "stale"} {
 		t.Run(mode, func(t *testing.T) {
 			began := time.Now()
 			defer func() {
@@ -53,6 +53,9 @@ func TestBrowserLoginChromium(t *testing.T) {
 					w.WriteHeader(204)
 				default:
 					form := `<form method="post" action="/session"><input id="u" name="user"><input id="p" name="password" type="password"><input type="hidden" name="csrf" value="private-csrf-canary"><button>Login</button></form>`
+					if mode == "snapshot_selectors" || mode == "ambiguous_form" {
+						form = `<form method="post" action="/trap"><button>Other action</button></form>` + form
+					}
 					if mode == "foreign_target" {
 						form = strings.ReplaceAll(form, `action="/session"`, `action="http://foreign.test/session"`)
 					}
@@ -96,6 +99,9 @@ func TestBrowserLoginChromium(t *testing.T) {
 			a := loginTestArgs()
 			a.Browser = obs.SessionID
 			a.Version = obs.ObservationVersion
+			if mode == "snapshot_selectors" {
+				a.Form, a.Username, a.Password = "form >> nth=1", "#u >> nth=0", "#p >> nth=0"
+			}
 			if mode == "stale" {
 				a.Version++
 			}
@@ -124,16 +130,16 @@ func TestBrowserLoginChromium(t *testing.T) {
 				t.Fatal(err)
 			}
 			verified := response.Result.Status == "completed" && obs.Authentication != nil && obs.Authentication.AuthenticatedRead && obs.Authentication.AnonymousChallenge
-			if verified != (mode == "verified") {
+			if verified != (mode == "verified" || mode == "snapshot_selectors") {
 				t.Fatalf("authentication classification: verified=%v status=%s error=%v", verified, response.Result.Status, response.Result.GetError())
 			}
 			if traps.Load() != 0 || posts.Load() > 1 {
 				t.Fatal("login released extra traffic")
 			}
-			if mode == "verified" && (posts.Load() != 1 || accounts.Load() != 2 || !strings.Contains(obs.Text, "B-432") || obs.NetworkState != "frozen") {
+			if (mode == "verified" || mode == "snapshot_selectors") && (posts.Load() != 1 || accounts.Load() != 2 || !strings.Contains(obs.Text, "B-432") || obs.NetworkState != "frozen") {
 				t.Fatal("missing single POST, browser/probe reads or final observation", posts.Load(), accounts.Load())
 			}
-			if mode == "foreign_target" || mode == "formdata_mutation" || mode == "second_password" || mode == "extra_control" || mode == "business_hidden" || mode == "stale" {
+			if mode == "ambiguous_form" || mode == "foreign_target" || mode == "formdata_mutation" || mode == "second_password" || mode == "extra_control" || mode == "business_hidden" || mode == "stale" {
 				if posts.Load() != 0 {
 					t.Fatal("unsupported form dispatched")
 				}

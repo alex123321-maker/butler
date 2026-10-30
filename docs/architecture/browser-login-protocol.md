@@ -24,6 +24,10 @@ The reviewed browser helper freezes network before inspecting the form. It
 supports a top-level ordinary same-origin URL-encoded POST form with one bound
 username and password input and bounded, allowlisted hidden CSRF fields. Other
 hidden business/action fields are unsupported and cannot borrow login consent.
+Selectors support unique native CSS and the bounded `CSS >> nth=N` form emitted
+by browser observations. Unindexed ambiguous matches fail closed. The same
+selection is rechecked in planning and submission; other selector engines are
+unsupported and cannot widen the frozen consent scope.
 It fills privately and
 uses native form submission, not click/submit handlers. Routing permits at most
 one matching top-level POST with the exact compiled fields and bounded same-origin
