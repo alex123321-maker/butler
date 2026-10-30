@@ -92,8 +92,22 @@ async function newSession(request) {
   // Native same-origin and cookie rules remain enabled. The private proxy
   // checks public DNS on every connection; this route retains contract caps.
   await context.route('**/*', async route => {
-    const url = new URL(route.request().url())
+    const request = route.request()
+    const url = new URL(request.url())
     const allowed = ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && (!session.allowedDomains.length || session.allowedDomains.some(domain => domain === '*' || url.hostname === domain || url.hostname.endsWith('.' + domain)))
+    if (session.loginGate) {
+      const gate = session.loginGate
+      let pass = false
+      if (!session.networkFrozen && allowed && url.origin === gate.origin && request.isNavigationRequest() && request.frame() === session.page.mainFrame()) {
+        if (request.method() === 'POST' && gate.posts === 0 && request.url() === gate.target && !request.redirectedFrom() && request.headers()['content-type']?.split(';')[0] === 'application/x-www-form-urlencoded' && request.postData() === gate.body) {
+          gate.posts++; gate.chain.add(request); pass = true
+        } else if (request.method() === 'GET' && gate.posts === 1 && gate.hops < 5 && gate.chain.has(request.redirectedFrom())) {
+          gate.hops++; gate.chain.add(request); pass = true
+        }
+      }
+      if (pass) await route.continue(); else await route.abort('blockedbyclient')
+      return
+    }
     if (session.networkFrozen || !allowed || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
     else await route.continue()
   })
@@ -213,7 +227,8 @@ async function execute(request) {
   const getForm = tool === 'browser.submit_get_form' || tool === 'browser.follow_link'
   // Freeze before reading the live guards or injecting any new value. A stale
   // preparation can fail safely without resuming background page requests.
-  if (localPreparation || getForm) session.networkFrozen = true
+  const login = tool === 'browser.login'
+  if (localPreparation || getForm || login) session.networkFrozen = true
   if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool)) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
   session.scope = origin(session.page.url())
   if (tool === 'browser.snapshot') return await observe(session)
@@ -225,6 +240,7 @@ async function execute(request) {
   if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : localPreparation ? rejectedPreparation('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
   if (request.expected_url !== redact(session, session.page.url())) return getForm ? rejectedRead('page_changed') : localPreparation ? rejectedPreparation('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   if (getForm) return await submitGetForm(session, request, live)
+  if (login) return await submitLogin(session, request, live)
   // An ordinary local draft is private too, even without credential_ref.
   // A later read tool must never thaw input callbacks or release that draft.
   if (['browser.fill','browser.type','browser.prepare_fill','browser.prepare_type'].includes(tool)) session.preparedDraft = true
@@ -357,6 +373,93 @@ async function submitGetForm(session, request, live) {
   } finally {
     session.allowWriteRequests = false
     session.networkFrozen = true
+  }
+}
+
+// Scoped login is distinct from click. The gate inspects the actual native
+// POST (including formdata-handler changes), and admits only its GET redirects.
+// Values, hidden fields, cookies and nonce stay on the private helper pipe.
+async function submitLogin(session, request, live) {
+  const denied = () => errorResult('login_denied', 'login precondition failed; no automatic retry')
+  const scope = request.login?.scope
+  if (!scope || scope.expected_url !== request.expected_url || scope.browser_session_id !== request.browser_session_id || origin(scope.target_url) !== origin(request.expected_url)) return denied()
+  for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
+  session.preparedDraft = true
+  try {
+    if (request.login_phase === 'plan') {
+      session.loginPlan = undefined
+      // No page handler runs while compiling the permitted body.
+      const entries = await session.page.evaluate(({ scope, username, password }) => {
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
+        if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post' || form.enctype !== 'application/x-www-form-urlencoded' || !['', '_self'].includes(form.target) || form.action !== scope.target_url) return null
+        if (!(user instanceof HTMLInputElement) || !(pass instanceof HTMLInputElement) || user.form !== form || pass.form !== form || !['text','email'].includes(user.type) || pass.type !== 'password' || !user.name || !pass.name || user.disabled || pass.disabled || user === pass) return null
+        const controls = Array.from(form.elements)
+        if (controls.length > 32 || controls.filter(e => e.type === 'password').length !== 1) return null
+        const entries = [], names = new Set()
+        for (const e of controls) {
+          if (e.disabled || !e.name || ['submit','button','reset'].includes(e.type)) continue
+          if (!(e instanceof HTMLInputElement) || (e !== user && e !== pass && e.type !== 'hidden') || names.has(e.name) || e.name.length > 128) return null
+          if (e !== user && e !== pass && !/^(?:_?csrf(?:_token)?|csrfmiddlewaretoken|_?xsrf(?:_token)?|authenticity_token|__requestverificationtoken)$/i.test(e.name)) return null
+          const value = e === user ? username : e === pass ? password : e.value
+          if (typeof value !== 'string' || value.length > 4096) return null
+          names.add(e.name); entries.push([e.name, value])
+        }
+        return entries
+      }, request.login)
+      if (!entries || entries.length < 2) return denied()
+      for (const [, value] of entries) if (value) session.secrets.add(value)
+      const nonce = randomUUID()
+      session.loginPlan = { nonce, entries, version: session.version, documentID: live.documentID, revision: live.revision, scope: JSON.stringify(scope) }
+      return { ok: true, login_nonce: nonce }
+    }
+    const plan = session.loginPlan
+    session.loginPlan = undefined
+    if (request.login_phase !== 'submit' || !plan || plan.nonce !== request.login_nonce || plan.version !== request.observation_version || plan.documentID !== live.documentID || plan.revision !== live.revision || plan.scope !== JSON.stringify(scope)) return denied()
+    const gate = { origin: origin(scope.target_url), target: scope.target_url, body: new URLSearchParams(plan.entries).toString(), posts: 0, hops: 0, chain: new Set() }
+    session.loginGate = gate
+    // Fill and invoke native submission in one document turn. Background input,
+    // XHR, fetch, iframe, popup, websocket and additional POST traffic stay blocked.
+    session.networkFrozen = false
+    await Promise.all([
+      session.page.waitForURL(url => url.href !== scope.expected_url, { waitUntil: 'domcontentloaded', timeout: 12000 }),
+      session.page.evaluate(({ scope, username, password }) => {
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
+        if (!(form instanceof HTMLFormElement) || user?.form !== form || pass?.form !== form || form.action !== scope.target_url) throw new Error('login changed')
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+        set.call(user, username); set.call(pass, password)
+        HTMLFormElement.prototype.submit.call(form)
+      }, request.login)
+    ])
+    session.networkFrozen = true
+    const observed = await observe(session)
+    return { ...observed, login_posts: gate.posts, login_url: session.page.url(), login_cookies: await session.context.cookies() }
+  } catch {
+    session.version++; session.dirty = true
+    return errorResult('login_unknown', 'login was not verified; observe before any further action and never repeat the POST automatically')
+  } finally {
+    session.loginGate = undefined
+    session.networkFrozen = true
+    session.allowWriteRequests = false
   }
 }
 

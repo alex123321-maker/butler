@@ -1,5 +1,13 @@
 # Exact action authorization
 
+A new explicit one-use login vault consent can waive a duplicate action approval
+only for the exact `browser.login` revision1 protocol and two matching deferred
+request references. Input claim, current task/mandate tools/resources/commit
+effect, denials, account revision, expiry and final dispatch checks still apply.
+Legacy preparation consent cannot authorize it; generic click/POST approval is
+unchanged. The durable dispatch transaction also pins the owning login Input.
+See [bounded login](browser-login-protocol.md).
+
 The kernel's optional post-effect `browser.freeze_snapshot` probe receives its
 own ordinary read intent/grant and budget charge. It carries only the original
 browser session ID, checks current owner/task/constraints, and never borrows the

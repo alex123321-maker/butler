@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/budget"
 
 	"github.com/butler/butler/internal/owneridentity"
@@ -67,17 +68,21 @@ type OwnerOutcomes struct {
 // Neither source is accepted from tool args or an arbitrary caller-selected URL.
 func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, observationCall string, historical bool) (OwnerOutcomeReview, error) {
 	e, err := effectIn(ctx, tx, effectID, false)
-	if err != nil || e.State != StateUnknown || e.DispatchOutcome != "dispatch_completed" {
+	if err != nil || e.State != StateUnknown || (e.DispatchOutcome != "dispatch_completed" && !(historical && e.Binding.ToolName == browserauth.Tool && e.DispatchOutcome == "unknown")) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
 	var b ActionBinding
 	var raw string
-	err = tx.QueryRow(ctx, `SELECT a.binding::text FROM action_effect_dispatches d JOIN action_intents a ON a.action_id=d.execution_action_id WHERE d.action_id=$1 AND d.authorization_id=$2 AND d.outcome='dispatch_completed' AND d.finished_at IS NOT NULL`, effectID, e.AuthorizationID).Scan(&raw)
+	err = tx.QueryRow(ctx, `SELECT a.binding::text FROM action_effect_dispatches d JOIN action_intents a ON a.action_id=d.execution_action_id WHERE d.action_id=$1 AND d.authorization_id=$2 AND d.outcome=$3 AND d.finished_at IS NOT NULL`, effectID, e.AuthorizationID, e.DispatchOutcome).Scan(&raw)
 	if err != nil || json.Unmarshal([]byte(raw), &b) != nil || b.OwnerID == "" {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
 	switch b.ToolName {
 	case "browser.click", "browser.fill", "browser.type":
+	case browserauth.Tool:
+		if !historical || b.ContractRevision != browserauth.Revision || b.Effect != EffectCommit || e.Policy.VerificationMethod != browserauth.Verification || e.Policy.Login == nil {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
 	default:
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
@@ -92,7 +97,8 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		ID      string `json:"browser_session_id"`
 		Version uint64 `json:"observation_version"`
 	}
-	if err != nil || json.Unmarshal([]byte(argsRaw), &args) != nil || json.Unmarshal([]byte(resultRaw), &observed) != nil || !observed.OK || observed.ID != args.ID || observed.Version == 0 {
+	historicalLogin := historical && b.ToolName == browserauth.Tool
+	if err != nil || json.Unmarshal([]byte(argsRaw), &args) != nil || (!historicalLogin && (json.Unmarshal([]byte(resultRaw), &observed) != nil || !observed.OK || observed.ID != args.ID || observed.Version == 0)) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
 	id, err := hex.DecodeString(args.ID)
@@ -102,6 +108,13 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 	argsHash, err := ArgumentsHash(argsRaw)
 	if err != nil || argsHash != b.ArgsHash {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
+	}
+	if historicalLogin {
+		pinnedHash, pinErr := ArgumentsHash(mustOwnerJSON(e.Policy.Login))
+		parsed, parseErr := browserauth.Parse(argsRaw)
+		if pinErr != nil || parseErr != nil || pinnedHash != argsHash || b.Resource != "browser:"+parsed.Browser+":"+parsed.TargetURL {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
 	}
 	var lease, leaseRun string
 	var epoch int64
@@ -128,10 +141,11 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 				return OwnerOutcomeReview{}, ErrOwnerOutcome
 			}
 			var birth struct {
+				OK      bool      `json:"ok"`
 				ID      string    `json:"browser_session_id"`
 				Expires time.Time `json:"expires_at"`
 			}
-			if json.Unmarshal([]byte(body), &birth) == nil && birth.ID == args.ID && !birth.Expires.IsZero() && !birth.Expires.After(now) {
+			if json.Unmarshal([]byte(body), &birth) == nil && birth.ID == args.ID && !birth.Expires.IsZero() && !birth.Expires.After(now) && (!historicalLogin || (birth.OK && !birth.Expires.Add(35*time.Second).After(now))) {
 				found = true
 			}
 		}

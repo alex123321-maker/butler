@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -118,6 +119,11 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	}
 	if err := s.checkReadRelease(ctx, grant.Binding, result); err != nil {
 		return err
+	}
+	if call.GetToolName() == browserauth.Tool {
+		if err := s.checkLoginRelease(ctx, call, grant.Binding, result); err != nil {
+			return err
+		}
 	}
 	if call.GetToolName() == "browser.open" {
 		var output struct {

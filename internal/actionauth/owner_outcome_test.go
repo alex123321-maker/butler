@@ -3,6 +3,7 @@ package actionauth
 import (
 	"context"
 	"encoding/json"
+	"github.com/butler/butler/internal/browserauth"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +32,7 @@ func newOwnerOutcomeFixture(t *testing.T) *ownerOutcomeFixture {
 	return newOwnerOutcomeFixtureMode(t, false)
 }
 
-func newOwnerOutcomeFixtureMode(t *testing.T, historical bool) *ownerOutcomeFixture {
+func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool) *ownerOutcomeFixture {
 	t.Helper()
 	s, store, reader, call, contract, _, _ := receiptFixture(t)
 	ctx := context.Background()
@@ -50,12 +51,41 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool) *ownerOutcomeFixt
 	contract.SupportsCredentialRefs = false
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "none"}
 	call.ArgsJson = `{"browser_session_id":"` + strings.Repeat("a", 32) + `","expected_url":"https://example.com/form","observation_version":1,"selector":"input","value":"ordinary"}`
-	g := logicalGrant(t, s, reader, call, contract, "owner-outcome-original")
+	login := len(loginMode) == 1 && loginMode[0]
+	var g Grant
+	if login {
+		s, _, reader, _, call, contract = loginAuthorityFixture(t)
+		s.store = store
+		reader.current.Authority = nil
+		reader.current.InputClaimHash = InputClaimHash("login-input", "claim")
+		if _, err = store.pool.Exec(ctx, `CREATE TABLE accepted_inputs(input_id TEXT,claim_id TEXT,run_id TEXT,session_key TEXT,owner_id TEXT,task_id TEXT,status TEXT,claim_expires_at timestamptz,expires_at timestamptz);INSERT INTO accepted_inputs VALUES('login-input','claim','run','web:owner','owner','task','running',now()+interval '1 hour',now()+interval '1 hour')`); err != nil {
+			t.Fatal(err)
+		}
+		var args browserauth.Args
+		if json.Unmarshal([]byte(call.ArgsJson), &args) != nil {
+			t.Fatal("login args")
+		}
+		args.Browser = strings.Repeat("a", 32)
+		call.ArgsJson = mustOwnerJSON(args)
+		p, e := s.Prepare(ctx, call, contract)
+		if e != nil {
+			t.Fatal(e)
+		}
+		g, err = s.Authorize(ctx, call, contract, p.Binding.ActionID, "", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		g = logicalGrant(t, s, reader, call, contract, "owner-outcome-original")
+	}
 	if err = store.ClaimGrant(ctx, g.ID); err != nil {
 		t.Fatal(err)
 	}
 	result := &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "completed", ResultJson: `{"ok":true,"browser_session_id":"` + strings.Repeat("a", 32) + `","observation_version":2}`}
-	effect, err := s.Outcome(ctx, g, result, false)
+	if login {
+		result.Status, result.ResultJson = "failed", "{}"
+	}
+	effect, err := s.Outcome(ctx, g, result, login)
 	if err != nil || effect.State != StateUnknown {
 		t.Fatal("opaque effect fixture", err)
 	}
@@ -315,6 +345,84 @@ func TestOwnerOutcomeHistoricalRequiresExpiredContextAndKeepsTerminalHistoryInte
 			var state, status string
 			if f.pool.QueryRow(context.Background(), `SELECT current_state,status FROM runs WHERE run_id='run'`).Scan(&state, &status) != nil || state != "failed" || status != "failed" {
 				t.Fatal("historical decision reopened a failed run")
+			}
+		})
+	}
+}
+
+func TestOwnerOutcomeHistoricalLostLoginRequiresSettledExpiredContextIntegration(t *testing.T) {
+	for _, mode := range []string{"absent", "unknown", "live_context", "settling_context", "missing_context", "live_lease", "nonterminal", "foreign", "missing_dispatch_finish", "changed_args", "changed_policy", "unchecked"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newOwnerOutcomeFixtureMode(t, true, true)
+			ctx := outcomeActor("owner", "historical-login")
+			sql := ""
+			switch mode {
+			case "live_context":
+				sql = `UPDATE tool_calls SET result=jsonb_set(result,'{expires_at}',to_jsonb(clock_timestamp()+interval '1 hour')) WHERE tool_call_id='open'`
+			case "settling_context":
+				sql = `UPDATE tool_calls SET result=jsonb_set(result,'{expires_at}',to_jsonb(clock_timestamp()-interval '1 second')) WHERE tool_call_id='open'`
+			case "missing_context":
+				sql = `DELETE FROM tool_calls WHERE tool_call_id='open'`
+			case "live_lease":
+				sql = `UPDATE session_ownership SET lease_id='live',expires_at=clock_timestamp()+interval '1 hour'`
+			case "nonterminal":
+				sql = `UPDATE runs SET current_state='tool_running',status='running'`
+			case "foreign":
+				ctx = outcomeActor("other", "historical-login")
+			case "missing_dispatch_finish":
+				sql = `UPDATE action_effect_dispatches SET finished_at=NULL`
+			case "changed_args":
+				sql = `UPDATE tool_calls SET args=jsonb_set(args,'{target_url}','"https://example.com/other"') WHERE tool_name='browser.login'`
+			case "changed_policy":
+				sql = `UPDATE action_effects SET policy=jsonb_set(policy,'{verification_method}','"none"')`
+			}
+			if sql != "" {
+				if _, err := f.pool.Exec(context.Background(), sql); err != nil {
+					t.Fatal(err)
+				}
+			}
+			r, err := f.reviews.Historical(ctx, f.effect.ActionID, f.effect.Fingerprint)
+			if mode != "absent" && mode != "unknown" && mode != "unchecked" {
+				if err == nil {
+					t.Fatal("unsettled or foreign lost login accepted")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			q := outcomeDecision(r)
+			q.Outcome = "effect_absent"
+			if mode == "unknown" {
+				q.Outcome = "unknown"
+			}
+			if mode == "unchecked" {
+				q.RecipientChecked = false
+			}
+			_, err = f.reviews.Decide(outcomeActor("owner", "historical-login-report"), q)
+			if mode == "unchecked" {
+				if err == nil {
+					t.Fatal("unverified absence accepted")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			persisted, err := f.store.GetEffect(context.Background(), f.effect.ActionID)
+			want := StateAbsent
+			if mode == "unknown" {
+				want = StateUnknown
+			}
+			if err != nil || persisted.State != want {
+				t.Fatal("wrong reconciliation verdict", err, persisted.State)
+			}
+			if f.store.ClaimGrant(context.Background(), f.grant.ID) == nil {
+				t.Fatal("historical report renewed consumed POST grant")
+			}
+			var terminal bool
+			if f.pool.QueryRow(context.Background(), `SELECT current_state='failed' AND status='failed' FROM runs WHERE run_id='run'`).Scan(&terminal) != nil || !terminal {
+				t.Fatal("historical report reopened failed run")
 			}
 		})
 	}

@@ -10,6 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browsercontrol"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
@@ -21,7 +22,8 @@ import (
 const maxSnapshotTextLen = 12000
 
 var supportedTools = map[string]bool{
-	"browser.read": true, "browser.open": true, "browser.close": true,
+	"browser.login": true,
+	"browser.read":  true, "browser.open": true, "browser.close": true,
 	"browser.navigate": true, "browser.snapshot": true, "browser.freeze_snapshot": true, "browser.click": true,
 	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
 	"browser.prepare_fill": true, "browser.prepare_type": true,
@@ -46,6 +48,9 @@ type Server struct {
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
+	Login              *loginRequest           `json:"login,omitempty"`
+	LoginPhase         string                  `json:"login_phase,omitempty"`
+	LoginNonce         string                  `json:"login_nonce,omitempty"`
 	ToolName           string                  `json:"tool_name"`
 	SessionID          string                  `json:"browser_session_id,omitempty"`
 	URL                string                  `json:"url,omitempty"`
@@ -97,6 +102,11 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
+	Authentication       *browserauth.Proof    `json:"authentication,omitempty"`
+	LoginNonce           string                `json:"login_nonce,omitempty"` // private helper protocol only
+	LoginCookies         []Cookie              `json:"login_cookies,omitempty"`
+	LoginURL             string                `json:"login_url,omitempty"`
+	LoginPosts           int                   `json:"login_posts,omitempty"`
 	PreparationRejection string                `json:"preparation_rejection,omitempty"`
 	InputDispatched      *bool                 `json:"input_dispatched,omitempty"`
 	ReadRejection        string                `json:"read_rejection,omitempty"`
@@ -189,6 +199,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
+	}
+	if args.ToolName == browserauth.Tool && !browserauth.ValidContract(contract) {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "login requires its exact scoped protocol")
 	}
 	if guardedGETTool(args.ToolName) && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "read_only" || contract.GetEffectContract().GetVerificationMethod() != "guarded_browser_get_v1" || contract.GetSupportsCredentialRefs()) {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "GET navigation requires its guarded revision 2 contract")
@@ -419,6 +432,7 @@ func validateSelectorRequired(args Request) error {
 	return nil
 }
 func buildResultJSON(_ string, result Result) string {
+	result.LoginNonce, result.LoginURL, result.LoginCookies, result.LoginPosts = "", "", nil, 0
 	result.OwnerFrame = nil
 	result.GetFormTarget, result.GetFormNonce = "", ""
 	return mustJSON(result)

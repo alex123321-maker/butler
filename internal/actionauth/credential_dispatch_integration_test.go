@@ -31,7 +31,7 @@ func (g *credentialExpiryGuard) ClaimActionTx(ctx context.Context, tx pgx.Tx, _ 
 // Exercise canonical Service grants through the actual PostgreSQL claim and
 // budget transaction. Replacement after the last RPC Verify must still deny.
 func TestCredentialRequestDispatchPinsInputClaimIntegration(t *testing.T) {
-	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login"} {
 		for _, scenario := range []string{"current", "replaced_after_verify", "expired_after_admission"} {
 			t.Run(tool+"/"+scenario, func(t *testing.T) {
 				pool := actionDatabase(t)
@@ -73,6 +73,9 @@ INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) V
 				}
 				if tool == "credentials.request_otp" {
 					call.ArgsJson = `{"browser_session_id":"browser","expected_url":"https://example.com/login","purpose":"Finish sign in"}`
+				}
+				if tool == "credentials.request_login" {
+					call.ArgsJson = `{"record_id":"record","purpose":"Sign in","login_scope":{"browser_session_id":"browser","expected_url":"https://example.com/login","target_url":"https://example.com/session","form_selector":"form","username_selector":"#u","password_selector":"#p"}}`
 				}
 				contract := credentialcontrol.Contract(tool)
 				p, err := s.Prepare(ctx, call, contract)

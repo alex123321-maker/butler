@@ -1,5 +1,14 @@
 # Tool Browser
 
+Revision1 `browser.login` privately fills two Broker-resolved fields and submits
+one exact ordinary URL-encoded same-origin form. The helper gates the actual body,
+blocks extra requests and freezes after bounded GET redirects. Go compares a
+cookie-backed GET with an anonymous challenge before returning authentication
+proof. Nonce/cookies never reach tool output. OTP/JS-only/popup flows, rotating
+probe cookies and ambiguous results retain UNKNOWN; there is no automatic replay.
+Login accepts unique native CSS and the observation's bounded `CSS >> nth=N`
+selectors; ambiguous unindexed selectors are rejected before submission.
+
 Local preparation revision4 can reject a missing or closed context before any
 runner call with a closed `session_lost` pre-input proof. No helper/in-flight
 error can emit this Go-only proof. The model must open a new context; this never

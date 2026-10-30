@@ -1,5 +1,14 @@
 # External effect journal
 
+`browser_login_v1` is a closed verifier for the separate unsafe `browser.login`
+commit contract. It pins exact approved form args and requires a correlated newer
+frozen observation plus Go-derived single-submit/authenticated-read/anonymous-
+challenge proof. PostgreSQL rechecks normalized scope, browser, version and proof
+before confirmation; no password, cookie or raw page enters journal evidence.
+This verifies the bounded authentication procedure, not arbitrary business writes.
+Missing proof, lost runtime/ACK and unsupported forms remain UNKNOWN. No grant,
+one-use consent or dispatch is replayed. See [protocol](browser-login-protocol.md).
+
 Revision4 local preparation can additionally prove that a new input was not
 dispatched because its context was already lost. Only the Go pre-run guard emits
 this fixed `session_lost` reason; Broker and PG recheck the correlated failed
@@ -188,6 +197,18 @@ unknown. A known report appends evidence without renewing the consumed grant,
 refunding spending, rewriting the old transcript or completing a task/run.
 An exact live review wait can become ready under its unchanged source/task
 versions; historical reconciliation never reopens a failed Input.
+
+A separate historical-only path covers `browser.login` revision1 when its finite
+context has expired by at least35s (the browser runtime's maximum call window),
+the exact dispatch has a terminal finished record and the run is terminal with
+no live lease. A lost login response may have an empty observation and `unknown`
+dispatch outcome. The kernel still requires its pinned `browser_login_v1` policy,
+typed login args/hash/resource, original successful browser.open identity/expiry,
+and a fresh authenticated factual recipient/settled report. Other tools retain
+the acknowledged-observation requirement. An unknown or unchecked report cannot
+establish absence. No report changes resource quarantine, consumed grants,
+original expiry, spending or terminal Input/run state. This is owner-assisted
+historical maintenance, not native login proof or permission to repeat a POST.
 
 Protected `/api/v4/action-outcomes` uses existing owner-control authentication.
 GET lists safe pending review metadata. POST `review_historical` accepts only

@@ -24,7 +24,9 @@
           ? 'Нужно создать учётные данные'
           : requests[0]?.kind === 'otp'
             ? 'Нужен одноразовый код'
-            : 'Запрос доступа к учётным данным'
+            : requests[0]?.kind === 'login'
+              ? 'Запрос разрешения на один вход'
+              : 'Запрос доступа к учётным данным'
       }}</strong>
       <p>{{ requests[0]?.target_origin }}</p>
       <p v-if="requests[0]?.record_label">{{ requests[0]?.record_label }}</p>
@@ -137,12 +139,17 @@
               ? 'Создать учётные данные'
               : request.kind === 'otp'
                 ? 'Нужен одноразовый код'
-                : 'Разрешить доступ'
+                : request.kind === 'login' ? 'Разрешить вход' : 'Разрешить доступ'
           }}</strong>
           <p>{{ request.target_origin }}</p>
           <p v-if="request.record_label">{{ request.record_label }}</p>
           <p>{{ request.purpose }}</p>
           <p class="vault-muted">Поля: {{ request.fields.join(', ') }}</p>
+          <p v-if="request.kind === 'login'" class="vault-muted">
+            Один вход: подставить учётные данные, отправить форму на
+            {{ request.login_scope?.target_url }} и проверить доступ.
+            Другие отправки не разрешены.
+          </p>
           <template v-if="request.kind === 'otp'"
             ><input
               v-model="otp[request.id]"
@@ -156,6 +163,7 @@
           <template v-else
             ><select
               v-model="selectedRecords[request.id]"
+              :disabled="request.kind === 'login'"
               :aria-label="`Запись для ${request.target_origin}`"
             >
               <option value="">Выберите запись</option>
@@ -171,8 +179,8 @@
               :disabled="!selectedRecords[request.id]"
               @click="respond(request, true)"
             >
-              Разрешить</button
-            ><button type="button" @click="newEntry(request)">
+              {{ request.kind === 'login' ? 'Разрешить один вход' : 'Разрешить' }}</button
+            ><button v-if="request.kind !== 'login'" type="button" @click="newEntry(request)">
               Создать запись
             </button></template
           >
@@ -335,6 +343,7 @@ interface Draft {
   password: string
 }
 interface Request {
+  login_scope?: { target_url: string }
   id: string
   kind: string
   target_origin: string
@@ -649,6 +658,7 @@ async function respond(r: Request, allow: boolean) {
       id: r.id,
       record_id: r.kind === 'otp' ? '' : selectedRecords.value[r.id] || '',
       allow,
+      login_authorization: allow && r.kind === 'login' ? 'browser_login_once_v1' : undefined,
       otp: value,
     })
     await refresh()

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-30T06:50:49Z",
+  "four_services_healthy": true,
+  "baseline_binary_registry_mount_hashes_match": true,
+  "environments_unchanged": true,
+  "postgres_redis_unchanged": true,
+  "migration106_and_history_retained": true,
+  "old_inputs_replayed": false,
+  "spending_reset": false,
+  "test_authority_revoked": true,
+  "mount_order_normalized_for_comparison": true,
+  "verification_only_no_second_rollout": true
+}

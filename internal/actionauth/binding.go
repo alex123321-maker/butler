@@ -346,6 +346,9 @@ func actionResource(tool string, args map[string]any) (string, error) {
 		if observed, _ := args["expected_url"].(string); observed != "" {
 			raw = observed
 		}
+		if tool == "browser.login" {
+			raw, _ = args["target_url"].(string)
+		}
 	}
 	if raw != "" {
 		u, err := url.Parse(raw)
@@ -367,11 +370,13 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
+	case "browser.login":
+		return EffectCommit
 	case "tools.search", "tools.load", "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox", "browser.submit_get_form", "browser.follow_link":
 		return EffectRead
 	case "schedule.list", "schedule.get", "credentials.search", "credentials.request_status":
 		return EffectRead
-	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp":
+	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login":
 		return EffectPrepare
 	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare

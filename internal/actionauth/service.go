@@ -225,7 +225,7 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 	if standardOwnerReply(b, c) {
 		requires = false
 	}
-	if s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil {
+	if (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && c.Delegation == nil {
 		requires = false
 	}
 	if standardCredentialControl(b) && c.Delegation == nil && CheckDenyOverrides(b, c.DenyTools, c.DenyResources) == nil {
@@ -295,7 +295,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if ownerReply {
 		requiresApproval = false
 	}
-	ownerCredentialPreparation := s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil
+	ownerCredentialPreparation := (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && c.Delegation == nil
 	if ownerCredentialPreparation && len(c.InputClaimHash) != 64 {
 		return Grant{}, fmt.Errorf("current owning Input is required for credential preparation")
 	}
@@ -396,7 +396,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if (communicationcontrol.IsTool(call.GetToolName()) || credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original owning input claim is no longer current")
 	}
-	if s.approvedCredentialPreparation(ctx, call, contract) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("credential preparation Input claim changed")
 	}
 	if g.ApprovalID != "" {
@@ -408,7 +408,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil {
 		return Grant{}, err
 	}
-	if release && g.ApprovalID == "" && g.MandateID == "" && !s.approvedCredentialPreparation(ctx, call, contract) {
+	if release && g.ApprovalID == "" && g.MandateID == "" && !s.approvedCredentialPreparation(ctx, call, contract) && !s.approvedCredentialLogin(ctx, call, contract) {
 		return Grant{}, fmt.Errorf("current data-release authorization is required")
 	}
 	if g.MandateID != "" {

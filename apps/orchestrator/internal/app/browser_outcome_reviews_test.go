@@ -59,6 +59,22 @@ func (f *ownerOutcomeContextFixture) VerifyActionApproval(context.Context, actio
 // is what makes the same run eligible for its next model turn.
 type ownerOutcomeProviderFixture struct{ calls []transport.StartRunRequest }
 
+// Cross the active-only watchdog interval before the canonical resolver changes
+// waiting->active. A storage delay is not revoked Task authority; invalid
+// evidence still cannot resume.
+type delayedOutcomeKernel struct{ *browserOutcomeKernel }
+
+func (k *delayedOutcomeKernel) ResumeOutcome(ctx context.Context, runID, id string) (actionauth.OwnerOutcomeResolution, error) {
+	timer := time.NewTimer(400 * time.Millisecond)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return actionauth.OwnerOutcomeResolution{}, ctx.Err()
+	case <-timer.C:
+		return k.browserOutcomeKernel.ResumeOutcome(ctx, runID, id)
+	}
+}
+
 func (*ownerOutcomeProviderFixture) Name() string { return "fixture" }
 func (*ownerOutcomeProviderFixture) Capabilities(context.Context, transport.TransportRunContext) (transport.CapabilitySnapshot, error) {
 	return transport.CapabilitySnapshot{}, nil
@@ -227,7 +243,7 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 			// have resolved before reading active source state. No manager method is
 			// invoked for an empty child selection.
 			attempts := &ownerOutcomeAttemptGuard{reader: failedDelegationAttemptReader{pool: pool, manager: &task.DelegationManager{}}, deny: outcome == "source_denied"}
-			core := flow.NewService(sessions, leases, runs, history, provider, flow.Config{EffectReviews: kernel, Checkpoints: inputs, Tasks: tasks, FailedDelegationAttempts: attempts, ProviderName: "fixture", ModelName: "fixture"}, nil)
+			core := flow.NewService(sessions, leases, runs, history, provider, flow.Config{EffectReviews: &delayedOutcomeKernel{kernel}, Checkpoints: inputs, Tasks: tasks, FailedDelegationAttempts: attempts, ProviderName: "fixture", ModelName: "fixture"}, nil)
 			resumed := durableinput.WithClaim(ctx, durableinput.Record{InputID: "input", ClaimID: "resumed", RunID: r.RunId})
 			result, resumeErr := core.Resume(resumed, r.RunId, ingress.InputEvent{EventID: "event", IdempotencyKey: "event", SessionKey: r.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"Submit once"}`})
 			known := outcome == "effect_confirmed" || outcome == "effect_absent"

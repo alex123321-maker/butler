@@ -1,5 +1,11 @@
 # Tool Broker
 
+`credentials.request_login` creates an explicit, exact-form one-use consent.
+Only its approved `browser.login` call can waive the duplicate submit approval.
+Migration106 reserves the consent to one tool call; PG pins the owning Input at
+dispatch and validates typed `browser_login_v1` evidence at completion. Ordinary
+task/mandate/record/expiry guards and all generic POST protections stay active.
+
 Revision4 local preparation accepts `session_lost` only in a correlated closed
 pre-input proof under the pinned policy. It records that new preparation absent,
 retains the consumed grant/spending, and tells the model to open and reassess a

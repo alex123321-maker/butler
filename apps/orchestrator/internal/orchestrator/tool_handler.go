@@ -349,7 +349,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
-	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp"
+	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp" || requested.ToolName == "credentials.request_login"
 	if credentialRequest && (err != nil || result == nil || result.GetStatus() == "completed" || result.GetStatus() == "effect_unknown") {
 		if s.config.Credentials == nil {
 			return nil, current, ErrActionOutcomeUnknown

@@ -227,6 +227,9 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 		req.GetFormPhase, req.GetFormNonce = "navigate", plan.GetFormNonce
 		return r.exchange(ctx, req)
 	}
+	if req.ToolName == "browser.login" {
+		return r.login(ctx, req)
+	}
 	return r.exchange(ctx, req)
 }
 

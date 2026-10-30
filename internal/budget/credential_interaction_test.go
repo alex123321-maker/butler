@@ -23,7 +23,7 @@ INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) V
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login"} {
 		for _, scenario := range []string{"allowed", "flag_only", "missing_flag", "wrong_args", "wrong_contract", "foreign_owner", "expired_claim", "expired_input", "missing_audit", "unclosed_input", "same_input", "executing", "external_unknown", "other_local_prepare", "secret_refs", "browser_prepare", "finite_budget"} {
 			t.Run(tool+"/"+scenario, func(t *testing.T) {
 				tx, e := pool.Begin(ctx)

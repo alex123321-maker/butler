@@ -26,7 +26,7 @@ func (f *credentialStoppedFlow) SuspendRequest(context.Context, string, string) 
 	return "", errors.New("no request was dispatched")
 }
 func TestCredentialRequestBudgetStopKeepsItsReason(t *testing.T) {
-	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login"} {
 		t.Run(tool, func(t *testing.T) {
 			runs := newMemoryRunManager()
 			f := &credentialStoppedFlow{credentialWaitFlow: credentialWaitFlow{communicationWaitFlow{runs: runs}}}
@@ -63,7 +63,7 @@ func (*credentialWaitFlow) ResumeInteraction(context.Context, string, string) (s
 }
 
 func TestCredentialRequestsPreservePrivateWaitAcrossLostAcknowledgement(t *testing.T) {
-	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+	for _, tool := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login"} {
 		for _, scenario := range []string{"ack", "lost_ack", "unknown_ack", "read_failure", "missing_checkpoint"} {
 			t.Run(tool+"/"+scenario, func(t *testing.T) {
 				runs := newMemoryRunManager()

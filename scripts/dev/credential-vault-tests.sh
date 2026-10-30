@@ -52,6 +52,9 @@ required browser-session-recovery ./apps/tool-broker/internal/broker -run '^Test
 required browser-frozen-navigation ./apps/tool-broker/internal/broker -run '^TestBrowserFrozenNavigationRecoveryChromiumIntegration$'
 required browser-form-validation ./apps/tool-broker/internal/broker -run '^TestBrowserFormValidationChromiumIntegration$'
 required runtime-form-validation ./apps/tool-browser/internal/runtime -run '^TestBrowserPublicFormValidationChromium$'
+required scoped-login-pg ./internal/actionauth -run '^TestCredentialLoginPostgresEvidenceAndNoReplayIntegration$'
+required scoped-login-runtime ./apps/tool-browser/internal/runtime -run '^TestBrowserLoginChromium$'
+required scoped-login-contract ./internal/browserauth ./internal/actionauth ./internal/research -run '^TestLogin|^TestCredentialLogin|^TestResearchVerifiedLogin'
 go test -c -race -o .cache/credential-vault-ci/owner-api.test ./apps/orchestrator/internal/api
 export BUTLER_BROWSER_OWNER_API_BINARY="$PWD/.cache/credential-vault-ci/owner-api.test"
 export BUTLER_TEST_MEMORY_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"

@@ -1,3 +1,14 @@
+For supported ordinary login forms Core prefers `credentials.request_login`
+then `browser.login`. Its one protected owner decision includes one submit and
+access verification. A verified account observation can support the final answer
+without another click approval, factual outcome report or redundant HTTP refetch.
+Ambiguous effects retain the existing stop/intervention contract.
+
+Ordinary token-only converter-composed source observations on the reserved pool
+release their current proofs through rollback, avoiding an observer COMMIT/WAL
+flush. All source/lifecycle checks and deadlines remain; converter/owner compound
+transactions and actual dispatch/publication keep their existing commits.
+
 Core records one bounded post-effect observation after a correlated UNKNOWN
 click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
 grant under current authority and a clipped five-second deadline. It contains
@@ -1519,6 +1530,14 @@ Interaction recovery first resolves the canonical owning wait under the current
 claim, evidence and authority. It then rehydrates active-only source/delegation
 preparation before any fresh provider or action. A current source denial still
 stops execution; a report never revives a terminal Input or replays a POST.
+The active-only supervisor starts after that canonical waiting-to-active
+transaction. Until then resolution is bounded by the acquired lease expiry and
+all resolver fences; no provider or tool dispatch is permitted.
+Lease supervision and cancellation continue during resolution; only active-only
+Task observation waits for its successful transition.
+Historical login outcomes with lost responses can be factually reconciled only
+after the original context and maximum runtime window expire. Such maintenance
+does not reopen the old Input, retry its POST or qualify native success.
 
 The protected Web message route also accepts an explicit `task_id` for an active
 Task in its current owner/session. It uses ordinary Input and communication

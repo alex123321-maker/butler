@@ -1,5 +1,12 @@
 # Explicit browser execution sessions
 
+The distinct revision1 [browser login protocol](browser-login-protocol.md) accepts
+only a scoped one-use login consent. Chromium submits the native form at most
+once; the Go runtime independently verifies authenticated versus anonymous access
+before emitting typed proof. Successful verified login needs no factual owner
+report. Lost/ambiguous/unsupported login retains UNKNOWN with no POST replay.
+Generic clicks retain their existing approval and uncertainty handling.
+
 Owner-goal context reads privately bind Broker's observed session URL/control
 epoch for URL-scope authorization. The exact run/owner/Task, live mode and expiry
 must match. Actual returned page URLs are rechecked under current authority

@@ -13,12 +13,14 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/credentials"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -55,7 +57,33 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	}
 	addr := listener.Addr().String()
 	_ = listener.Close()
+	var loginPosts, accountReads atomic.Int32
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/login" {
+			fmt.Fprint(w, `<html><body><form method="post" action="/session"><input name="username" id="u"><input name="password" id="p" type="password"><input name="csrf" type="hidden" value="private-csrf"><button>Login</button></form></body></html>`)
+			return
+		}
+		if r.URL.Path == "/session" {
+			loginPosts.Add(1)
+			_ = r.ParseForm()
+			if r.Method != "POST" || r.PostForm.Get("username") != "private-login-user" || r.PostForm.Get("password") != "private-login-password" || r.PostForm.Get("csrf") != "private-csrf" {
+				w.WriteHeader(401)
+				return
+			}
+			http.SetCookie(w, &http.Cookie{Name: "auth", Value: "private-cookie", Path: "/", HttpOnly: true})
+			http.Redirect(w, r, "/account", 303)
+			return
+		}
+		if r.URL.Path == "/account" {
+			c, e := r.Cookie("auth")
+			if e != nil || c.Value != "private-cookie" {
+				http.Redirect(w, r, "/login", 302)
+				return
+			}
+			accountReads.Add(1)
+			fmt.Fprint(w, `<body>Account reference B-432. private-cookie private-login-password</body>`)
+			return
+		}
 		if r.URL.Path == "/changing-form" {
 			_, _ = fmt.Fprint(w, `<body><input id="a"><span id="help">Loading</span><script>setTimeout(()=>document.getElementById('help').textContent='Ready',700)</script></body>`)
 			return
@@ -221,6 +249,41 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 			t.Fatal("revoked credential remained usable")
 		}
 		fixture.ownerMandate = nil
+		// New consent is a distinct one-use protocol; the legacy preparation
+		// request above cannot authorize it. No exact action approval/report.
+		accept(invoke("browser.close", map[string]any{"browser_session_id": observation["browser_session_id"]}))
+		accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/login"}))
+		loginEntry, e := vault.Save(context.Background(), "owner", credentials.EntryInput{Alias: "single-login", Title: "Single login", Username: "private-login-user", Password: "private-login-password"})
+		if e != nil {
+			t.Fatal(e)
+		}
+		scope := browserauth.Scope{Browser: observation["browser_session_id"].(string), ExpectedURL: observation["final_url"].(string), TargetURL: egresstest.Origin + "/session", Form: "form", Username: "#u", Password: "#p"}
+		consent, e := vault.CreateLoginRequest(context.Background(), credentials.Principal{OwnerID: "owner", SessionKey: "web:owner", RunID: "broker-run", TaskID: "task", TaskRevision: 1, ConstraintsRevision: 1}, "single-login-request", loginEntry.ID, "One verified login", scope)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if e = vault.Respond(context.Background(), "owner", consent.ID, loginEntry.ID, true, "", browserauth.Consent); e != nil {
+			t.Fatal(e)
+		}
+		fixture.ownerMandate = &actionauth.Mandate{ID: "login-mandate", ScopeKind: "owner_goal", OwnerID: "owner", GoalID: "login-goal", GoalRevision: 1, Revision: 1, Status: "active", Purpose: "single-login", Tools: []string{browserauth.Tool}, ResourceScopes: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/"}}, Effects: []actionauth.Effect{actionauth.EffectCommit}, ExpiresAt: time.Now().Add(time.Hour)}
+		loginArgs := map[string]any{"browser_session_id": scope.Browser, "expected_url": scope.ExpectedURL, "target_url": scope.TargetURL, "form_selector": scope.Form, "username_selector": scope.Username, "password_selector": scope.Password, "observation_version": observation["observation_version"], "username": map[string]string{"type": "credential_ref", "alias": consent.ID, "field": "username"}, "password": map[string]string{"type": "credential_ref", "alias": consent.ID, "field": "password"}}
+		refs := []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: consent.ID, Field: "username"}, {Type: "credential_ref", Alias: consent.ID, Field: "password"}}
+		logged := invoke(browserauth.Tool, loginArgs, refs...)
+		if logged.GetStatus() != "completed" || logged.GetEffectState() != string(actionauth.StateConfirmed) {
+			t.Fatal("single-consent login not confirmed", logged.GetError())
+		}
+		accept(logged)
+		if !strings.Contains(observation["text"].(string), "B-432") || strings.Contains(logged.ResultJson, "private-") || loginPosts.Load() != 1 || accountReads.Load() != 2 {
+			t.Fatal("single login, verification, masking or account observation failed")
+		}
+		replayed := invoke(browserauth.Tool, loginArgs, refs...)
+		if replayed.GetStatus() == "completed" || loginPosts.Load() != 1 {
+			t.Fatal("spent login consent replayed POST")
+		}
+		fixture.ownerMandate = nil
+		accept(invoke("browser.close", map[string]any{"browser_session_id": observation["browser_session_id"]}))
+		accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
+		t.Log("scoped login: one vault consent, zero extra action approvals or factual reports, one POST, two authenticated reads, no credential/cookie leak, replay denied")
 		t.Log("encrypted PostgreSQL vault: pending denial, owner consent under bounded goal mandate, Chromium equality, reflection masking and revocation verified")
 	}
 	for _, field := range []string{"a", "b"} {
@@ -269,6 +332,14 @@ func browserVaultFixture(t *testing.T, dsn, repoRoot string) *credentials.Vault 
 	}
 	if _, err = pool.Exec(ctx, string(migration)); err != nil {
 		t.Fatal("fixture migration SQL")
+	}
+
+	loginMigration, loginErr := os.ReadFile(filepath.Join(repoRoot, "migrations", "106_browser_login_consent.up.sql"))
+	if loginErr != nil {
+		t.Fatal(loginErr)
+	}
+	if _, loginErr = pool.Exec(ctx, string(loginMigration)); loginErr != nil {
+		t.Fatal(loginErr)
 	}
 	vault, err := credentials.NewVault(pool, strings.Repeat("synthetic-vault-key-", 3))
 	if err != nil {
