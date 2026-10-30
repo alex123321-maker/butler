@@ -29,13 +29,15 @@ docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limi
  -e GOTOOLCHAIN=local -e GOMAXPROCS=1 -e GOFLAGS='-p=1 -buildvcs=false -mod=readonly' -w /source "$image" sh -eu -c '
  go version
  go test -race -count=1 -run "^(TestMemoryUtility|TestLimitedRead|TestExperienceReadPolicy|TestMemoryEvidence)" ./internal/acceptance ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator
+ go test -race -count=1 ./internal/memory/readcontrol ./cmd/memory-utility-eval ./apps/orchestrator/internal/orchestrator
  go vet ./internal/acceptance/utilitytrace ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app
  go build -o /reports/broker ./apps/tool-broker
+ go test -c -o /reports/broker.test ./apps/tool-broker/internal/broker
  go test -c -o /reports/extension.test ./apps/tool-extension/internal/runtime
  go test -c -o /reports/http.test ./apps/tool-http/internal/runtime
  go test -race -c -o /reports/app.test ./apps/orchestrator/internal/app
  go build -o /reports/test2json cmd/test2json
- sha256sum /reports/broker /reports/extension.test /reports/http.test /reports/app.test
+ sha256sum /reports/broker /reports/broker.test /reports/extension.test /reports/http.test /reports/app.test
  ' > "$r/reports/build.log" 2>&1
 if [ -n "${UTILITY_TRACE_SUBNET:-}" ]; then
  docker network create --internal --subnet "$UTILITY_TRACE_SUBNET" "$net" > "$r/reports/network.id"
@@ -58,6 +60,7 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  -e BUTLER_TEST_ACTIONAUTH_POSTGRES_URL='postgres://utility_fixture:utility_fixture_only@127.0.0.1:5432/utility_trace_test?sslmode=disable' -e BUTLER_EXTENSION_E2E=1 \
  -e BUTLER_BROKER_E2E_BINARY=/reports/broker -e BUTLER_EXTENSION_E2E_BINARY=/reports/extension.test \
  -e BUTLER_EXPERIENCE_HTTP_BINARY=/reports/http.test -e BUTLER_UTILITY_TRACE_OFFLINE=1 \
+ -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/reports/broker.test \
  -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e BUTLER_UTILITY_WHOLE_OFFLINE=1 -e BUTLER_UTILITY_WHOLE_OUTPUT=/reports/whole -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
  "$image" sh -eu -c '
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^(TestMemoryUtilityActualCoreBrokerTraceIntegration|TestMemoryUtilityInstructionsAreScopedToCurrentGoal|TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration)$"
