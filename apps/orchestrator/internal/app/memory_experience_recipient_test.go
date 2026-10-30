@@ -21,12 +21,13 @@ import (
 // It never applies a patch or resolves a request field as a filesystem path.
 // No lesson/control oracle is accepted here: only current files and fixed faults.
 type experienceRecipientConfig struct {
-	Version    string                         `json:"version"`
-	Ready      string                         `json:"accepted_ready_value"`
-	Files      map[string]string              `json:"initial_files"`
-	Outage     bool                           `json:"receipt_outage"`
-	UnknownKey string                         `json:"unknown_key,omitempty"`
-	Documents  []utilitytrace.CurrentDocument `json:"current_documents,omitempty"`
+	Version        string                         `json:"version"`
+	Ready          string                         `json:"accepted_ready_value"`
+	Files          map[string]string              `json:"initial_files"`
+	Outage         bool                           `json:"receipt_outage"`
+	UnknownKey     string                         `json:"unknown_key,omitempty"`
+	Documents      []utilitytrace.CurrentDocument `json:"current_documents,omitempty"`
+	WorkflowTarget string                         `json:"workflow_target,omitempty"` // private recipient oracle, never an HTTP observation
 }
 
 type experienceRecipientEntry struct {
@@ -165,6 +166,9 @@ func (r *experienceRecipient) validProposal(resource string, p projectfixture.Pr
 	original := r.state.Config.Files[resource]
 	if original == "" || p.ProjectRevision != r.revision(resource) || len(p.Changes) != 1 || p.Changes[0].Path != "README.md" || p.Changes[0].Before != original {
 		return false
+	}
+	if r.state.Config.WorkflowTarget != "" {
+		return p.Changes[0].After == r.state.Config.WorkflowTarget
 	}
 	ready := strings.ReplaceAll(original, "ready=false\n", "ready="+r.state.Config.Ready+"\n")
 	ready = strings.ReplaceAll(ready, "ready=pending\n", "ready="+r.state.Config.Ready+"\n")

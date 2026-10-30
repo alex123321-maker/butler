@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -45,6 +46,7 @@ func utilityWholeInstructions(c acceptance.UtilityCase) string {
 }
 
 type utilityNativePlan struct {
+	Protocol                                        string `json:",omitempty"`
 	SuiteSHA256                                     string
 	Slots                                           []utilityWholeSlot
 	Deadline                                        time.Time
@@ -69,6 +71,10 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		t.Fatal(e)
 	}
 	provider, model, effort := "antigravity", antigravity.FlashHighModel, ""
+	protocol := os.Getenv("BUTLER_UTILITY_COHORT")
+	if protocol != "" && protocol != utilityWorkflowProtocol {
+		t.Fatal("unknown cohort")
+	}
 	reference := ""
 	if selected := os.Getenv("BUTLER_UTILITY_OPENAI"); selected != "" {
 		if _, _, err := utilityOpenAIProfile(selected); err != nil {
@@ -82,6 +88,23 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 		s = prior
 		reference = experienceDigest(string(raw))
+	}
+	if protocol == utilityWorkflowProtocol {
+		raw, err := os.ReadFile("/reference/suite.private.json")
+		if err != nil || json.Unmarshal(raw, &s) != nil || s.Validate() != nil || len(s.Cases) != 12 {
+			t.Fatal("frozen workflow corpus required")
+		}
+		for _, c := range s.Cases {
+			if !utilityIsWorkflow(c) {
+				t.Fatal("mixed workflow corpus")
+			}
+		}
+		reference = experienceDigest(string(raw))
+		if model == "gpt-6.1-terra" {
+			effort = "none"
+		} else if model == "gpt-6-luna" {
+			effort = "max"
+		}
 	}
 	slots := []utilityWholeSlot{}
 	for i := range s.Cases {
@@ -114,7 +137,7 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 		history[name] = experienceDigest(string(b))
 	}
-	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: 936, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Provider: provider, Model: model, ReasoningEffort: effort, ReferenceSuiteSHA256: reference, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "72 fixed slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
+	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{Protocol: protocol, SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: len(slots) * 13, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Provider: provider, Model: model, ReasoningEffort: effort, ReferenceSuiteSHA256: reference, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "All frozen slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
 }
 
 type utilityWholeNative struct {
@@ -139,7 +162,7 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	}
 	raw, e := os.ReadFile("/plan/plan.json")
 	var plan utilityNativePlan
-	if e != nil || json.Unmarshal(raw, &plan) != nil || len(plan.Slots) != 72 || plan.Source != os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE") || !plan.Deadline.After(time.Now()) {
+	if e != nil || json.Unmarshal(raw, &plan) != nil || (plan.Protocol == "" && len(plan.Slots) != 72) || (plan.Protocol != "" && (plan.Protocol != utilityWorkflowProtocol || len(plan.Slots) != 36)) || plan.Source != os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE") || !plan.Deadline.After(time.Now()) {
 		t.Fatal("frozen plan mismatch")
 	}
 	bytes, e := os.ReadFile("/plan/suite.private.json")
@@ -180,7 +203,8 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	var apiKey string
 	if plan.Provider == "openai" {
 		_, _, profileErr := utilityOpenAIProfile(plan.Model)
-		if profileErr != nil || plan.ReasoningEffort != "high" || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
+		effortOK := plan.ReasoningEffort == "high" && plan.Protocol == "" || plan.Protocol == utilityWorkflowProtocol && (plan.Model == "gpt-6-luna" && plan.ReasoningEffort == "max" || plan.Model == "gpt-6.1-terra" && plan.ReasoningEffort == "none")
+		if profileErr != nil || !effortOK || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
 			t.Fatal("exact paired OpenAI profile required")
 		}
 		control, e = pgx.Connect(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -262,9 +286,10 @@ type utilityNativeProvider struct {
 	root       string
 	failed     bool
 	casePool   *pgxpool.Pool
+	timing     *utilityTimings
 }
 
-func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, casePool *pgxpool.Pool) transport.ModelProvider {
+func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, casePool *pgxpool.Pool, timing ...*utilityTimings) transport.ModelProvider {
 	var p transport.ModelProvider
 	var e error
 	if s.plan.Provider == "openai" {
@@ -279,7 +304,11 @@ func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, caseP
 	if e != nil {
 		t.Fatal(e)
 	}
-	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root, casePool: casePool}
+	var clock *utilityTimings
+	if len(timing) > 0 {
+		clock = timing[0]
+	}
+	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root, casePool: casePool, timing: clock}
 }
 func (p *utilityNativeProvider) NativeModel() string             { return p.state.plan.Model }
 func (p *utilityNativeProvider) InferenceLimits() (int64, int64) { return 65536, 8192 }
@@ -327,7 +356,10 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 		return nil, fmt.Errorf("native journal admission failed")
 	}
 	original := ctx
+	var admissionNanos atomic.Int64
 	guard := transport.WithInferenceAuthority(ctx, func(c context.Context) error {
+		start := time.Now()
+		defer func() { admissionNanos.Add(time.Since(start).Nanoseconds()) }()
 		if e := transport.CheckInferenceAuthority(original); e != nil {
 			s.stopped = true
 			return e
@@ -338,6 +370,8 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 		return nil
 	})
 	guard = transport.WithInferenceDispatch(guard, func(c context.Context) error {
+		start := time.Now()
+		defer func() { admissionNanos.Add(time.Since(start).Nanoseconds()) }()
 		if e := transport.CheckInferenceDispatch(original); e != nil {
 			s.stopped = true
 			return e
@@ -350,6 +384,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 		entry["dispatched"] = true
 		return nil
 	})
+	providerStarted := time.Now()
 	stream, err := call(guard)
 	events := []transport.TransportEvent{}
 	if err != nil {
@@ -377,6 +412,11 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 		}
 	}
 	entry["events"] = events
+	providerDuration := time.Since(providerStarted)
+	entry["provider_boundary_ns"] = providerDuration.Nanoseconds()
+	entry["butler_admission_callback_ns"] = admissionNanos.Load()
+	entry["provider_wait_ns"] = providerDuration.Nanoseconds() - admissionNanos.Load()
+	p.timing.add("provider_wait", kind, providerDuration-time.Duration(admissionNanos.Load()))
 	entry["elapsed_ms"] = time.Since(started).Milliseconds()
 	raw, e := json.Marshal(entry)
 	if e != nil {

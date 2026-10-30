@@ -1,5 +1,11 @@
 # Butler — Memory Model Specification
 
+The separate [skill workflow cohort](../testing/issue115-skill-workflow-2026-10-30.md)
+tests an actual multi-step reviewed migration procedure on new bounded recipient
+instances, with equal current documentation across arms and explicit irrelevant
+task controls. It retains the V3 scorer and all old receipts. This test-only
+composition changes neither production memory policy nor skill authority.
+
 The separate [prospective #115 utility evaluator](../testing/issue115-memory-utility-v1.md)
 checks typed claims against observer-owned source/read/effect evidence offline.
 Its 24 development cases distinguish historical recall, preferences, continuation

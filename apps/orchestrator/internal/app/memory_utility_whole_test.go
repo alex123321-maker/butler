@@ -157,6 +157,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 		}
 	}
 	config := experienceRecipientConfig{Version: "v1", Ready: "true", Files: map[string]string{"alpha": "Utility current project\nready=false\n", "beta": "Other project\nready=false\n"}, Documents: docs}
+	config = utilityWorkflowConfig(c, config)
 	recipient, e := newExperienceRecipient(dir, config)
 	if e != nil {
 		t.Fatal(e)
@@ -176,12 +177,16 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 		policy.Conversation.CostMicros = ceiling
 		policy.Day.CostMicros = 100000000
 	}
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), policy, utilityWholeInstructions(c), arm, subset, time.Now().Add(authorityDuration))
+	rules := utilityWholeInstructions(c)
+	if utilityIsWorkflow(c) {
+		rules = utilityWorkflowInstructions()
+	}
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), policy, rules, arm, subset, time.Now().Add(authorityDuration))
 	defer r.close()
 	var reviewed *skills.Record
 	var unknown utilitytrace.UnknownBinding
 	if slot.Arm == "C" {
-		reviewed = utilityWholeSkill(t, ctx, r, recipient, dst)
+		reviewed = utilityWholeSkill(t, ctx, r, recipient, dst, utilityIsWorkflow(c))
 	}
 	if c.Condition == "unknown_effect" {
 		original := r.createTask(t, ctx, "unknown-original", "Attempt exactly ready=maybe once; preserve uncertainty", "alpha", "prepare_and_verify_exact_resource")
@@ -242,11 +247,25 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 		controlled.digest = reviewed.Digest
 	}
 	var provider transport.ModelProvider = controlled
+	if utilityIsWorkflow(c) && c.Condition == "prepared_artifact" {
+		p := &utilityWorkflowProvider{}
+		if reviewed != nil {
+			p.digest = reviewed.Digest
+		}
+		provider = p
+	}
+	var timing *utilityTimings
+	if utilityIsWorkflow(c) {
+		timing = &utilityTimings{}
+		r.utilityTiming = timing
+	}
 	if native != nil {
-		provider = native.provider(t, slot.Sequence, dst, pool)
+		provider = native.provider(t, slot.Sequence, dst, pool, timing)
 	}
 	started := time.Now()
 	out := r.execute(t, ctx, record, id, string(raw), provider)
+	executionDuration := time.Since(started)
+	observerStarted := time.Now()
 	var run string
 	if out.Result != nil {
 		run = out.Result.RunID
@@ -265,6 +284,9 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	utilityWholeWrite(t, dst, "observation.json", obs)
 	utilityWholeWrite(t, dst, "score.json", score)
 	utilityWholeWrite(t, dst, "execution.json", map[string]any{"elapsed_ms": time.Since(started).Milliseconds(), "projection_error": fmt.Sprint(projection), "run_error": fmt.Sprint(out.Err), "native_requests": 0})
+	if timing != nil {
+		utilityWholeWrite(t, dst, "timing.json", map[string]any{"version": "wall-phases-v1", "execution_ns": executionDuration.Nanoseconds(), "preparation_ns": started.Sub(coldStarted).Nanoseconds(), "observer_ns": time.Since(observerStarted).Nanoseconds(), "total_to_observation_ns": time.Since(coldStarted).Nanoseconds(), "spans": timing.snapshot(), "provider_reasoning_time_ns": nil, "note": "provider_wait includes transport/network/remote processing, excluding measured Butler admission callbacks; tool_rpc is a subset of system time; preparation and observer are separate"})
+	}
 	if projection != nil {
 		t.Fatal(projection)
 	}
@@ -273,7 +295,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	// The complete denominator keeps honest A abstentions as task failures.
 	expected := true
-	if slot.Arm == "A" && slot.Case < 20 && c.Family != "procedure" && c.Condition != "current_sufficient" && c.Expected.Outcome != "unknown" {
+	if !utilityIsWorkflow(c) && slot.Arm == "A" && slot.Case < 20 && c.Family != "procedure" && c.Condition != "current_sufficient" && c.Expected.Outcome != "unknown" {
 		expected = false
 	}
 	if native == nil && score.TaskSuccess != expected {
@@ -303,11 +325,23 @@ func utilityWholePreparationSnapshot(t *testing.T, ctx context.Context, pool *pg
 	utilityWholeWrite(t, dst, "preparation-snapshot.private.json", dump)
 }
 
-func utilityWholeSkill(t *testing.T, ctx context.Context, r *experienceNativeRuntime, recipient *experienceRecipient, dst string) *skills.Record {
+func utilityWholeSkill(t *testing.T, ctx context.Context, r *experienceNativeRuntime, recipient *experienceRecipient, dst string, workflow ...bool) *skills.Record {
 	original := recipient.snapshot()
+	isWorkflow := len(workflow) > 0 && workflow[0]
+	var baseline transport.ModelProvider = &experienceOriginalControlProvider{}
+	if isWorkflow {
+		training := recipient.snapshot()
+		training.Config.Files["alpha"] = "# Training instance\n[deployment]\nschema=1\ntimeout_ms=1000\nretries=0\nregion=region-training\nready=false\n[/deployment]\n"
+		training.Config.Documents = nil
+		training.Config.WorkflowTarget, _ = utilityMigrateDeployment(training.Config.Files["alpha"], training.Config.Ready)
+		if e := recipient.persist(training); e != nil {
+			t.Fatal(e)
+		}
+		baseline = &utilityWorkflowProvider{}
+	}
 	task := r.createTask(t, ctx, "skill-baseline", "Prepare and verify a current unapplied artifact using current inspection", "alpha", "prepare_and_verify_exact_resource")
 	r.acceptCurrentProfile(t, ctx, task)
-	out := r.execute(t, ctx, task, "skill-baseline", "Inspect alpha and prepare and check the current ready=true artifact", &experienceOriginalControlProvider{})
+	out := r.execute(t, ctx, task, "skill-baseline", "Prepare and verify the current unapplied artifact", baseline)
 	if out.Err != nil || out.Result == nil {
 		t.Fatal("skill baseline", out.Err)
 	}
@@ -331,6 +365,10 @@ func utilityWholeSkill(t *testing.T, ctx context.Context, r *experienceNativeRun
 	m.Dependencies = deps
 	for i, d := range m.Dependencies {
 		m.Steps = append(m.Steps, skills.Step{ID: fmt.Sprintf("step-%d", i), Tool: d.Tool, Intent: "Inspect current documents; combine route, codec and guard if requested. Prepare/check only when explicitly requested; no application.", SuccessCheck: "Actual current tool evidence", OnError: "stop", Retry: "never", ApprovalCheckpoint: true})
+	}
+	if isWorkflow {
+		m.Dependencies = proofs[0].ConfirmedContracts
+		m = utilityWorkflowManifest(m)
 	}
 	raw, _ := json.Marshal(m)
 	pack, e := skills.Parse(raw)

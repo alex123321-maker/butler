@@ -285,6 +285,7 @@ type experienceNativeRuntime struct {
 	reconcile     func(context.Context, string, string, string) (actionauth.RunEffect, error)
 	foreground    *experienceNativeForeground
 	evidenceReads *MemoryReads
+	utilityTiming *utilityTimings // optional research-only, no production hooks
 }
 
 // Explicit test-only composition. Nil retains the frozen90 foreground defaults;
@@ -773,6 +774,9 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 		fc.ModelName = selected.NativeModel()
 	}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
+	if r.utilityTiming != nil {
+		fc.Tools = utilityTimedTools{ToolExecutor: r.broker, timing: r.utilityTiming}
+	}
 	fc.MemoryEvidence = memoryEvidencePolicy(r.evidenceReads)
 	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: fc.ModelName}, r.budgets, r.foreground)
 	fc.MemoryScopeResolver = func(c context.Context) ([]memoryservice.Scope, error) {

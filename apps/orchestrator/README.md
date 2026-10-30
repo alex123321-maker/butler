@@ -1701,3 +1701,12 @@ with scripted transport and the [read-only utility observer](../../internal/acce
 Run through `scripts/dev/memory-utility-trace-lab.sh` in a fresh isolated lab root.
 This adds no production composition or native model calls; blocked UNKNOWN remains
 incomplete. See [the prospective protocol](../../docs/testing/issue115-memory-utility-v1.md).
+# Skill workflow research timing
+
+`TestSkillWorkflowControlledABCIntegration` exercises twelve new multi-step and
+negative-control cases through the actual Core/Broker path. Its native companion
+selects Gemini Flash High, Terra 6.1 none or Luna 6 max explicitly. Test-only
+monotonic provider/tool spans distinguish API wait, Butler execution, fixture
+preparation and observer work. See the
+[protocol](../../docs/testing/issue115-skill-workflow-2026-10-30.md).
+
