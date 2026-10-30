@@ -51,7 +51,7 @@ docker run -d --name "$pg" --network "$net" --cpus 1 --memory 768m --memory-swap
  sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d > "$r/reports/pg.id"
 made_pg=1
 ready=0
-for n in $(seq 1 40); do if docker exec "$pg" pg_isready -U utility_fixture -d utility_trace_test >/dev/null 2>&1; then ready=1; break; fi; sleep 1; done
+for n in $(seq 1 40); do if docker exec "$pg" pg_isready -h 127.0.0.1 -U utility_fixture -d utility_trace_test >/dev/null 2>&1; then ready=1; break; fi; sleep 1; done
 test "$ready" = 1
 docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g --pids-limit 256 \
  --read-only --cap-drop ALL --security-opt no-new-privileges --log-driver none --user 1000:1000 \

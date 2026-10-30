@@ -66,11 +66,11 @@ docker run -d --name "$pg" --network "$net" --cpus 1 --memory 768m --memory-swap
  -e POSTGRES_USER=utility_fixture -e POSTGRES_PASSWORD=utility_fixture_only -e POSTGRES_DB=utility_native_test \
  -v "$r/pgdata:/var/lib/postgresql/data" sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d > "$r/pg.id"
 made_pg=1
-for n in $(seq 1 40); do if docker exec "$pg" pg_isready -U utility_fixture -d utility_native_test >/dev/null 2>&1; then break;fi;sleep 1;done
+for n in $(seq 1 40); do if docker exec "$pg" pg_isready -h 127.0.0.1 -U utility_fixture -d utility_native_test >/dev/null 2>&1; then break;fi;sleep 1;done
 if [ "$model" = gemini-3.8-flash-high ]; then
  test "$(docker inspect -f '{{.Id}}' "$sourcepg")" = "$(cat "$old/native-pg-container.txt")"
  if [ "$(docker inspect -f '{{.State.Running}}' "$sourcepg")" = false ]; then docker start "$sourcepg" > "$r/source-start.txt"; started_source=1; fi
- for n in $(seq 1 40); do if docker exec "$sourcepg" pg_isready -U postgres -p 55451 >/dev/null 2>&1; then break; fi; sleep 1; done
+ for n in $(seq 1 40); do if docker exec "$sourcepg" pg_isready -h 127.0.0.1 -U postgres -p 55451 >/dev/null 2>&1; then break; fi; sleep 1; done
  auth_mount="-v $old/auth-source/settings.key:/private/settings.key:ro"
 fi
 cid=$(docker create --name "$helper" --network host --cpus 1 --memory 3g --memory-swap 3g --pids-limit 256 --read-only --cap-drop ALL --security-opt no-new-privileges --user 1000:1000 --log-driver none --tmpfs /tmp:rw,nosuid,nodev,size=512m \
