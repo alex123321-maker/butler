@@ -20,7 +20,9 @@ cancel endpoint is not used for foreground requests.
 
 `Usage.OutputReasoningTokens` is an optional subset of OpenAI OutputTokens;
 `Usage.CachedInputTokens` is an optional subset of InputTokens. Validation enforces
-those bounds. Neither is added to TotalTokens. This additive logical Go metadata
+those bounds. Optional `CacheWriteInputTokens` and 30m/12h components preserve
+separately priced, nonoverlapping input subsets. `ProviderServiceTier` observes
+a recognized serving tier. None are added to TotalTokens. This additive Go metadata
 does not extend protobuf boundaries or change other adapters' accounting.
 
 The explicit Luna research profile uses `gpt-6-luna`, reasoning High, standard

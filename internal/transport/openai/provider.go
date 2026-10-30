@@ -394,6 +394,12 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if model := stringValue(response["model"]); model != "" {
 			event.ProviderModelVersion = &model
 		}
+		if tier, ok := response["service_tier"].(string); ok {
+			switch tier {
+			case "default", "priority", "flex", "scale", "ultrafast":
+				event.ProviderServiceTier = &tier
+			}
+		}
 		done := transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, providerName)
 		done.ProviderSessionRef = ref
 		return []transport.TransportEvent{event, done}, true, nil
@@ -707,6 +713,25 @@ func parseUsage(payload map[string]any) (*transport.Usage, error) {
 			value := int(n)
 			*spec.dst = &value
 		}
+	}
+	details := mapValue(payload["input_tokens_details"])
+	writes := mapValue(details["cache_write_tokens_details"])
+	for _, spec := range []struct {
+		value any
+		dst   **int
+	}{{details["cache_write_tokens"], &usage.CacheWriteInputTokens}, {writes["ttl_30m_tokens"], &usage.CacheWrite30mTokens}, {writes["ttl_12h_tokens"], &usage.CacheWrite12hTokens}} {
+		if spec.value == nil {
+			continue
+		}
+		n, ok := spec.value.(float64)
+		if !ok || n < 0 || n > float64(in) || math.Trunc(n) != n {
+			return nil, transport.ProviderProtocolError(providerName)
+		}
+		value := int(n)
+		*spec.dst = &value
+	}
+	if usage.Validate() != nil {
+		return nil, transport.ProviderProtocolError(providerName)
 	}
 	return usage, nil
 }

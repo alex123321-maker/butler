@@ -47,9 +47,12 @@ them or replace model/input/instructions/tools/lineage. Timeout uses
 `BUTLER_OPENAI_TIMEOUT_SECONDS`. No model or account fallback is performed.
 
 `Usage.OutputTokens` includes OpenAI reasoning. Optional `OutputReasoningTokens`
-and `CachedInputTokens` are subsets, never added again to `TotalTokens`. Missing
-usage is unavailable. Provider usage is not an invoice; cache-write and account
-adjustments may require separate billing evidence.
+and `CachedInputTokens` are subsets, never added again to `TotalTokens`.
+`CacheWriteInputTokens` and its `CacheWrite30mTokens`/`CacheWrite12hTokens` split
+retain separately priced input subsets; reads and writes cannot overlap.
+`ProviderServiceTier` records a recognized observed serving tier. Missing counts
+or tier remain unavailable. Provider usage is not an invoice; account adjustments
+still require billing evidence.
 
 Offline tests use local fake Responses HTTP/WebSocket endpoints:
 `go test -race ./internal/transport/openai ./internal/transport ./internal/config ./internal/providerfactory`.

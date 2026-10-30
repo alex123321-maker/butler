@@ -39,6 +39,9 @@ type Usage struct {
 	// OpenAI reasoning is already included in OutputTokens; cached input in InputTokens.
 	OutputReasoningTokens *int `json:",omitempty"`
 	CachedInputTokens     *int `json:",omitempty"`
+	CacheWriteInputTokens *int `json:",omitempty"`
+	CacheWrite30mTokens   *int `json:",omitempty"`
+	CacheWrite12hTokens   *int `json:",omitempty"`
 }
 
 // Validate accepts nonnegative observed counts without overflowing a sum. A
@@ -61,6 +64,21 @@ func (u Usage) Validate() error {
 	}
 	if u.CachedInputTokens != nil && (*u.CachedInputTokens < 0 || *u.CachedInputTokens > u.InputTokens) {
 		return fmt.Errorf("invalid observed cached input usage")
+	}
+	cached := 0
+	if u.CachedInputTokens != nil {
+		cached = *u.CachedInputTokens
+	}
+	if u.CacheWriteInputTokens != nil && (*u.CacheWriteInputTokens < 0 || *u.CacheWriteInputTokens > u.InputTokens-cached) {
+		return fmt.Errorf("invalid observed cache write usage")
+	}
+	for _, count := range []*int{u.CacheWrite30mTokens, u.CacheWrite12hTokens} {
+		if count != nil && (*count < 0 || u.CacheWriteInputTokens == nil || *count > *u.CacheWriteInputTokens) {
+			return fmt.Errorf("invalid observed cache lifetime usage")
+		}
+	}
+	if u.CacheWrite30mTokens != nil && u.CacheWrite12hTokens != nil && *u.CacheWrite30mTokens != *u.CacheWriteInputTokens-*u.CacheWrite12hTokens {
+		return fmt.Errorf("invalid observed cache lifetime total")
 	}
 	return nil
 }
@@ -105,6 +123,8 @@ type TransportEvent struct {
 	// ProviderModelVersion is optional observed version metadata, not a claim
 	// about proprietary weight bytes or authority to change the selected model.
 	ProviderModelVersion *string
+	// Optional observed serving tier, separate from requested operator pricing.
+	ProviderServiceTier *string
 }
 
 func NewEvent(runID string, eventType EventType, providerName string) TransportEvent {

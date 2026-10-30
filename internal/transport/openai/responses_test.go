@@ -300,3 +300,23 @@ func TestResponsesBoundsWholePrefixAndPreservesHistoricalAliases(t *testing.T) {
 		}
 	}
 }
+
+func TestResponsesCacheWriteAccounting(t *testing.T) {
+	for _, raw := range []string{
+		`{"input_tokens":12000,"output_tokens":200,"total_tokens":12200,"input_tokens_details":{"cached_tokens":4000,"cache_write_tokens":7000,"cache_write_tokens_details":{"ttl_30m_tokens":3000,"ttl_12h_tokens":4000}}}`,
+		`{"input_tokens":12,"output_tokens":2,"total_tokens":14,"input_tokens_details":{"cached_tokens":4,"cache_write_tokens":9}}`,
+		`{"input_tokens":12,"output_tokens":2,"total_tokens":14,"input_tokens_details":{"cache_write_tokens":7,"cache_write_tokens_details":{"ttl_30m_tokens":3,"ttl_12h_tokens":3}}}`,
+		`{"input_tokens":12,"output_tokens":2,"total_tokens":14,"input_tokens_details":{"cache_write_tokens_details":{"ttl_30m_tokens":3}}}`,
+	} {
+		var payload map[string]any
+		_ = json.Unmarshal([]byte(raw), &payload)
+		u, err := parseUsage(payload)
+		if strings.Contains(raw, "12000") {
+			if err != nil || u.TotalTokens != 12200 || *u.CacheWriteInputTokens != 7000 || *u.CacheWrite30mTokens != 3000 || *u.CacheWrite12hTokens != 4000 {
+				t.Fatal("cache write dimensions lost", err)
+			}
+		} else if err == nil {
+			t.Fatal("ambiguous/overlapping writes accepted")
+		}
+	}
+}
