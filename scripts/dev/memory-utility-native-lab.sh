@@ -4,23 +4,49 @@ set -eu
 umask 077
 r=${1:?fresh native root}; tested=${2:?successful controlled root}; source=${3:?tested full commit}
 predecessor=${4:-}
+completed_predecessor=${5:-}
 case "$r" in /srv/gitea/butler-acceptance/issue115-utility-native-*) ;; *) exit 2;; esac
-case "$tested" in /srv/gitea/butler-acceptance/issue115-utility-trace-whole-*) ;; *) exit 2;; esac
+case "$tested" in /srv/gitea/butler-acceptance/issue115-utility-trace-whole-*|/srv/gitea/butler-acceptance/issue115-utility-trace-repair-*) ;; *) exit 2;; esac
 test ${#source} = 40
 grep -q '"exit_code":0' "$tested/reports/exit.json"
+if [ -f "$tested/reports/repair-summary.json" ]; then
+ python3 - "$tested" "$source" <<'PY'
+import hashlib,json,pathlib,sys
+r=pathlib.Path(sys.argv[1]);g=json.loads((r/'reports/repair-summary.json').read_text())
+assert g['source']==sys.argv[2] and g['controlled_slots']==72 and g['test_failures']==0 and g['test_skips']==0 and g['native_requests']==0
+assert hashlib.sha256((r/'reports/tests.jsonl').read_bytes()).hexdigest()==g['tests_sha256']
+assert hashlib.sha256((r/'reports/build.log').read_bytes()).hexdigest()==g['unit_and_race_build_log_sha256']
+PY
+ test -n "$completed_predecessor"
+fi
 mkdir "$r" "$r/out" "$r/bin" "$r/previous" "$r/pgdata"
-cp -al "$tested/source" "$r/source"
+cp -a --reflink=auto "$tested/source" "$r/source"
 for file in app.test broker extension.test http.test test2json; do cp -p "$tested/reports/$file" "$r/bin/$file"; done
 old=/srv/gitea/butler-acceptance/issue115-native-20261028-v1
 prior=$old/skill-broker-20261029-v1
 for file in abc.json force.json prompt.json context.json; do cp -p "$prior/previous/$file" "$r/previous/$file"; done
 cp -p "$prior/out/result.json" "$r/previous/skill-broker.json"
+if [ -f "$tested/reports/repair-summary.json" ]; then
+ cp -p "$tested/reports/repair-summary.json" "$r/previous/controlled-repair.json"
+fi
 if [ -n "$predecessor" ]; then
  case "$predecessor" in /srv/gitea/butler-acceptance/issue115-utility-native-*/recovery-report.json) ;; *) exit 2;; esac
  cp -p "$predecessor" "$r/previous/predecessor-interrupted.json"
 fi
+if [ -n "$completed_predecessor" ]; then
+ case "$completed_predecessor" in /srv/gitea/butler-acceptance/issue115-utility-native-*/public-report.json) ;; *) exit 2;; esac
+ cp -p "$completed_predecessor" "$r/previous/predecessor-completed.json"
+fi
 image=sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61
 docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limit 256 --read-only --cap-drop ALL --security-opt no-new-privileges --user 1000:1000 --log-driver none --tmpfs /tmp:rw,nosuid,nodev,size=128m -v "$r/source:/source:ro" -v "$r/bin:/binproof:ro" -v "$r/out:/out" -v "$r/previous:/previous:ro" -e BUTLER_UTILITY_NATIVE_FREEZE=/out/plan -e BUTLER_UTILITY_NATIVE_SOURCE="$source" -w /source/apps/orchestrator/internal/app "$image" /binproof/app.test -test.v -test.run '^TestMemoryUtilityFreezeNativeABC$' > "$r/freeze.log" 2>&1
+if [ -f "$tested/reports/repair-summary.json" ]; then
+ python3 - "$r" <<'PY'
+import json,pathlib,sys
+r=pathlib.Path(sys.argv[1]);suite=json.loads((r/'out/plan/suite.private.json').read_text());plan=json.loads((r/'out/plan/plan.json').read_text())
+assert suite['version']=='butler-memory-utility-v3' and len(suite['cases'])==24 and len(plan['Slots'])==72
+assert {'controlled-repair.json','predecessor-completed.json','predecessor-interrupted.json'} <= set(plan['HistoricalReceipts'])
+PY
+fi
 net=$(basename "$r")-net
 pg=$(basename "$r")-pg
 helper=$(basename "$r")-runner

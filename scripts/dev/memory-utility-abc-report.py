@@ -48,6 +48,8 @@ def main():
              'projection_error':execution.get('projection_error'),'answer_value_match_diagnostic_only':value_match,
              'elapsed_ms':execution.get('elapsed_ms'),'cold_setup_ms':prep.get('elapsed_ms'),'source_writes':prep.get('source_writes'),
              'tool_calls':dict(collections.Counter(x['tool_name'] for x in tables.get('calls',[]))),
+             'limited_read_results':dict(collections.Counter(x['result'].get('limit_reason','missing_reason') for x in tables.get('calls',[]) if x['tool_name'] in ('memory.search','memory.open','memory.neighbors') and x['status']=='completed' and isinstance(x.get('result'),dict) and x['result'].get('status')=='limited')),
+             'input_error_codes':dict(collections.Counter(x['error_code'] for x in tables.get('inputs',[]) if x.get('error_code'))),
              'native_methods_dispatched':sum(x['dispatched'] for x in native),'unknown_usage':sum(x['dispatched'] and x['usage'] is None for x in native),
              'known_total_tokens':sum(x['usage']['TotalTokens'] for x in native if x['dispatched'] and x['usage'] is not None),
              'known_input_tokens':sum(x['usage']['InputTokens'] for x in native if x['dispatched'] and x['usage'] is not None),
@@ -65,6 +67,9 @@ def main():
         c['execution_time_unknown_slots']+=row['elapsed_ms'] is None;c['cold_time_unknown_slots']+=row['cold_setup_ms'] is None
         for key in ('native_methods_dispatched','unknown_usage','known_total_tokens','known_input_tokens','known_output_tokens','known_thinking_tokens','native_failures','source_writes','elapsed_ms','cold_setup_ms','scripted_preparation_model_attempts','scripted_preparation_tool_calls','core_missing_attempts','core_token_mismatches'):c[key]+=row.get(key) or 0
         for tool,count in row['tool_calls'].items():c['tool:'+tool]+=count
+        for reason,count in row['limited_read_results'].items():c['limited:'+reason]+=count
+        c['slots_with_limited_reads']+=bool(row['limited_read_results'])
+        for reason,count in row['input_error_codes'].items():c['input_error:'+reason]+=count
     assert len({(x['Case'],x['Arm']) for x in schedule})==72
     for entry in journal:
         raw=seen.get(entry['seq']);assert entry['body']==raw,('raw/PG journal mismatch',entry['seq'])
@@ -74,7 +79,9 @@ def main():
     for name,want in plan['HistoricalReceipts'].items():
         path=r/'previous'/name;assert digest(path)==want;v=read(path)
         historical[name]={'sha256':want,'as_reported':{k:v[k] for k in ('inclusive_usage','new_usage','known_full_tokens','native_dispatched','native_methods_dispatched','native_admissions','scored_slots','scheduled','unknown_usage','invoice_cost','calls','tokens') if k in v}}
-    report={'root':str(r),'source':plan['Source'],'model':plan['Model'],'scheduled':72,'arms':{k:dict(v) for k,v in totals.items()},
+        if isinstance(v.get('arms'),dict):
+            historical[name]['as_reported']['arms']=v['arms']
+    report={'root':str(r),'source':plan['Source'],'model':plan['Model'],'evaluation_version':suite['version'],'scheduled':72,'arms':{k:dict(v) for k,v in totals.items()},
        'difference_B_minus_A_success':totals['B']['task_success']-totals['A']['task_success'], 'difference_C_minus_B_success':totals['C']['task_success']-totals['B']['task_success'],
        'all_slots_reached':all(x['slot_status'] in ('completed','failed') for x in rows),'all_slots_observed':all(x['observed_slots']==24 for x in totals.values()),
        'native_admissions':len(journal),'native_methods_dispatched':sum(v['dispatched'] for v in journal),
