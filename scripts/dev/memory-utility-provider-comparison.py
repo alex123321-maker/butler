@@ -20,9 +20,12 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def cost(usage):
+def cost(usage, model='gpt-6-luna'):
     """USD at published Standard short-context rates; unknown subsets stay bounded."""
     D = decimal.Decimal
+    rates={'gpt-6-luna':('.10','.01','.50'),'gpt-6.1-terra':('1.00','.05','5.00')}
+    input_rate,cache_rate,output_rate=map(D,rates[model])
+    short_rate,long_rate=input_rate*D('1.25'),input_rate*D('2.5')
     if usage is None:
         return None
     i, o = usage['InputTokens'], usage['OutputTokens']
@@ -32,18 +35,18 @@ def cost(usage):
     short = usage.get('CacheWrite30mTokens')
     long = usage.get('CacheWrite12hTokens')
     if cached is None:
-        return [D(i)*D('.01')+D(o)*D('.50'), D(i)*D('.25')+D(o)*D('.50')]
+        return [D(i)*cache_rate+D(o)*output_rate, D(i)*long_rate+D(o)*output_rate]
     assert 0 <= cached <= i
-    base = D(cached)*D('.01') + D(o)*D('.50')
+    base = D(cached)*cache_rate + D(o)*output_rate
     if writes is None:
-        return [base+D(i-cached)*D('.10'), base+D(i-cached)*D('.25')]
+        return [base+D(i-cached)*input_rate, base+D(i-cached)*long_rate]
     assert 0 <= writes <= i-cached
-    base += D(i-cached-writes)*D('.10')
+    base += D(i-cached-writes)*input_rate
     if short is not None and long is not None:
         assert short+long == writes
-        exact = base+D(short)*D('.125')+D(long)*D('.25')
+        exact = base+D(short)*short_rate+D(long)*long_rate
         return [exact, exact]
-    return [base+D(writes)*D('.125'), base+D(writes)*D('.25')]
+    return [base+D(writes)*short_rate, base+D(writes)*long_rate]
 
 
 def main():
@@ -53,7 +56,11 @@ def main():
     p.add_argument('output',type=pathlib.Path)
     args=p.parse_args()
     new,old=(read(x/'public-report.json') for x in (args.luna,args.gemini))
-    assert new['model']=='gpt-6-luna'
+    assert new['model'] in ('gpt-6-luna','gpt-6.1-terra')
+    assert old['model'] in ('gemini-3.8-flash-high','gpt-6-luna')
+    candidate='luna' if new['model']=='gpt-6-luna' else 'terra'
+    baseline='luna' if old['model']=='gpt-6-luna' else 'gemini'
+    assert candidate!=baseline
     assert new['suite_sha256_bytes']==old['suite_sha256_bytes']
     assert new['scheduled']==old['scheduled']==72
     assert new['all_slots_observed'] and old['all_slots_observed']
@@ -100,7 +107,7 @@ def main():
                 if not item['dispatched']:
                     continue
                 usage=item['usage']
-                estimate=cost(usage)
+                estimate=cost(usage,new['model'])
                 if estimate is None:
                     totals['unknown_usage_requests']+=1
                     continue
@@ -135,8 +142,17 @@ def main():
         'limitations':['one public development corpus, not an independent holdout','both providers preserve original V3 scores; projection rejections remain failures',
         'Standard API estimates exclude account adjustments and unknown usage; missing cache lifetimes retain a range','Gemini subscription cost is not converted to an API token price',
         'provider-specific native schema/name encoding and implicit caching differ; reasoning High is not equal compute across providers']}
+    # Preserve the legacy Luna/Gemini schema for old invocations; use truthful
+    # labels for Terra/Gemini or Terra/Luna without changing any sealed receipt.
+    if candidate!='luna' or baseline!='gemini':
+        def rename(value):
+            if isinstance(value,dict):return {k.replace('luna',candidate).replace('gemini',baseline):rename(v) for k,v in value.items()}
+            if isinstance(value,list):return [rename(x) for x in value]
+            return value
+        report=rename(report)
+    report['candidate_model']=new['model'];report['baseline_model']=old['model']
     with args.output.open('x') as f:json.dump(report,f,indent=2)
-    print(json.dumps({'same_suite_bytes':True,'arms':{k:{'luna_success':v['luna']['task_success'],'gemini_success':v['gemini']['task_success'],'luna_standard_tariff_known_usage_usd':v['luna_standard_tariff_known_usage_usd']} for k,v in arms.items()}}))
+    print(json.dumps({'same_suite_bytes':True,'candidate_model':new['model'],'baseline_model':old['model'],'arms':{k:{'candidate_success':v['luna']['task_success'],'baseline_success':v['gemini']['task_success'],'candidate_standard_tariff_known_usage_usd':v['luna_standard_tariff_known_usage_usd']} for k,v in arms.items()}}))
 
 
 if __name__=='__main__':

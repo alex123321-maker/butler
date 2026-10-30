@@ -1,0 +1,16 @@
+{
+  "exit": {
+    "exit_code": 0,
+    "provider": "openai",
+    "model": "gpt-6.1-terra",
+    "previous_results_preserved": true,
+    "persistent_api_key_copies": 0
+  },
+  "runner_oom_killed": false,
+  "pg_running": false,
+  "pg_exit": 0,
+  "helper_removed": true,
+  "network_removed": true,
+  "private_pgdata_retained": true,
+  "persistent_api_key_copies": 0
+}

@@ -1,0 +1,29 @@
+{
+  "no_new_native_requests": true,
+  "source": "e4835ce1cfced57454f064b67992ef25f5effcc9",
+  "all_72_rows_validated": true,
+  "raw_pg_core_methods_correlated": 221,
+  "totals_and_price_arithmetic_verified": true,
+  "model_price_cases_verified": [
+    "gpt-6-luna exact cache lifetimes",
+    "gpt-6.1-terra exact cache lifetimes",
+    "gpt-6.1-terra unknown cache lifetimes bounded",
+    "absent usage remains unknown"
+  ],
+  "same_suite_bytes_all_three": true,
+  "legacy_luna_gemini_report_reproduced_exactly_except_two_new_descriptive_model_labels": true,
+  "historical_receipts_reverified": 11,
+  "json_and_relative_links_validated": true,
+  "primary_scores_unchanged": true,
+  "artifact_sha256": {
+    "action-diagnostics.json": "625ff78d7c685af622052220c0f01f4c7ffb7effe555544dac9ac0d215548f77",
+    "classification.json": "e696f3a1b5779310d76a017022f7f2e12d6063216b8ec0737949e7e66c2165c3",
+    "cleanup.json": "09fe32069524866498d4a8ea3ed96913bda6a62152b62a74d68ff56030a76eae",
+    "comparison.json": "6bddf4de4156aed6ba21409db85455b834008b09e0d0971f9bcb184398ee7848",
+    "diagnostics.json": "45c63f66ad78b35537a5f69ca36bd2b8a90994d871bb5e049c317da42474b2a9",
+    "gate.json": "4aac523fdfea3b11832f8a368afa0ba53d5b7aba5d84328ae02db5d82cda009b",
+    "launch.json": "ad62c50026b44c1e3b2391e976a8776ceb64c773392bd58f30e45844af134e98",
+    "versus-gemini.json": "0910f51fbdd081e755e92074a81b6f62682ba6293db9814ba4e4b65609a4c819",
+    "versus-luna.json": "10c27ffaac9d5111a5235bd3259ff9d5aaa53b57f158ad40b86f05ad02e1140b"
+  }
+}

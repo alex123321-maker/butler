@@ -1,0 +1,48 @@
+{
+  "no_new_native_requests": true,
+  "primary_scores_unchanged": true,
+  "rows": [
+    {
+      "sequence": 70,
+      "arm": "C",
+      "prepare_completed": true,
+      "check_completed": true,
+      "actual_checks_passed": true,
+      "unapplied": true,
+      "check_matches_actual_artifact": true,
+      "final_artifact_matches_actual": true,
+      "original_files_unchanged": true,
+      "final_outcome": "answered",
+      "empty_value": false,
+      "frozen_primary_success": false
+    },
+    {
+      "sequence": 71,
+      "arm": "A",
+      "prepare_completed": true,
+      "check_completed": true,
+      "actual_checks_passed": true,
+      "unapplied": true,
+      "check_matches_actual_artifact": true,
+      "final_artifact_matches_actual": true,
+      "original_files_unchanged": true,
+      "final_outcome": "answered",
+      "empty_value": false,
+      "frozen_primary_success": false
+    },
+    {
+      "sequence": 72,
+      "arm": "B",
+      "prepare_completed": true,
+      "check_completed": true,
+      "actual_checks_passed": true,
+      "unapplied": true,
+      "check_matches_actual_artifact": true,
+      "final_artifact_matches_actual": true,
+      "original_files_unchanged": true,
+      "final_outcome": "answered",
+      "empty_value": false,
+      "frozen_primary_success": false
+    }
+  ]
+}

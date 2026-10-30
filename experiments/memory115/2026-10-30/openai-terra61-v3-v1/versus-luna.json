@@ -1,0 +1,451 @@
+{
+  "same_suite_bytes": true,
+  "scheduled_per_provider": 72,
+  "arms": {
+    "A": {
+      "luna": {
+        "scheduled": 24,
+        "task_success": 7,
+        "abstained": 7,
+        "format_valid": 18,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 10,
+        "thinking_count_unreported_methods": 47,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 47,
+        "unknown_usage": 0,
+        "known_total_tokens": 203631,
+        "known_input_tokens": 185143,
+        "known_output_tokens": 18488,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 0,
+        "elapsed_ms": 318283,
+        "cold_setup_ms": 55406,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "terra": {
+        "scheduled": 24,
+        "task_success": 16,
+        "abstained": 13,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 14,
+        "thinking_count_unreported_methods": 47,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 47,
+        "unknown_usage": 0,
+        "known_total_tokens": 190664,
+        "known_input_tokens": 184718,
+        "known_output_tokens": 5946,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 0,
+        "elapsed_ms": 199060,
+        "cold_setup_ms": 46358,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "terra_only_success": 9,
+        "luna_only_success": 0,
+        "both_success": 7,
+        "both_failure": 8
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 0
+        }
+      },
+      "terra_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 2
+        }
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 10,
+        "effect_mismatch": 0,
+        "check_mismatch": 9,
+        "correct_value_but_effect_or_check_mismatch": 2
+      },
+      "terra_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 14,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0
+      },
+      "terra_accounting_dimensions": {
+        "known_requests": 47,
+        "CachedInputTokens": 87406,
+        "CacheWriteInputTokens": 97171,
+        "CacheWrite30mTokens:unreported_requests": 47,
+        "CacheWrite12hTokens:unreported_requests": 47,
+        "OutputReasoningTokens": 3126
+      },
+      "observed_terra_tiers": {
+        "default": 47
+      },
+      "terra_standard_tariff_known_usage_usd": {
+        "minimum": "0.15570505",
+        "maximum": "0.2771688"
+      },
+      "terra_unknown_usage_not_priced": 0
+    },
+    "B": {
+      "luna": {
+        "scheduled": 24,
+        "task_success": 8,
+        "abstained": 12,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 11,
+        "thinking_count_unreported_methods": 67,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 67,
+        "unknown_usage": 0,
+        "known_total_tokens": 349418,
+        "known_input_tokens": 332488,
+        "known_output_tokens": 16930,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 330188,
+        "cold_setup_ms": 41384,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "tool:memory.search": 19,
+        "slots_with_limited_reads": 0,
+        "tool:memory.open": 1,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "terra": {
+        "scheduled": 24,
+        "task_success": 22,
+        "abstained": 7,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 20,
+        "thinking_count_unreported_methods": 78,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 78,
+        "unknown_usage": 0,
+        "known_total_tokens": 400990,
+        "known_input_tokens": 392389,
+        "known_output_tokens": 8601,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 296410,
+        "cold_setup_ms": 42006,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "tool:memory.search": 25,
+        "tool:memory.open": 6,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "terra_only_success": 14,
+        "luna_only_success": 0,
+        "both_success": 8,
+        "both_failure": 2
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 4
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 1
+        }
+      },
+      "terra_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 2
+        }
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 11,
+        "effect_mismatch": 0,
+        "check_mismatch": 10,
+        "correct_value_but_effect_or_check_mismatch": 4
+      },
+      "terra_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 20,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0
+      },
+      "terra_accounting_dimensions": {
+        "known_requests": 78,
+        "CachedInputTokens": 265179,
+        "CacheWriteInputTokens": 126976,
+        "CacheWrite30mTokens:unreported_requests": 78,
+        "CacheWrite12hTokens:unreported_requests": 78,
+        "OutputReasoningTokens": 3228
+      },
+      "observed_terra_tiers": {
+        "default": 78
+      },
+      "terra_standard_tariff_known_usage_usd": {
+        "minimum": "0.21521795",
+        "maximum": "0.37393795"
+      },
+      "terra_unknown_usage_not_priced": 0
+    },
+    "C": {
+      "luna": {
+        "scheduled": 24,
+        "task_success": 5,
+        "abstained": 14,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 10,
+        "thinking_count_unreported_methods": 89,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 89,
+        "unknown_usage": 0,
+        "known_total_tokens": 540715,
+        "known_input_tokens": 515564,
+        "known_output_tokens": 25151,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 656510,
+        "cold_setup_ms": 80802,
+        "scripted_preparation_model_attempts": 98,
+        "scripted_preparation_tool_calls": 74,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:skills.load": 21,
+        "tool:memory.search": 19,
+        "tool:extension.project.inspect": 23,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "terra": {
+        "scheduled": 24,
+        "task_success": 21,
+        "abstained": 7,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 20,
+        "thinking_count_unreported_methods": 96,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 96,
+        "unknown_usage": 0,
+        "known_total_tokens": 576227,
+        "known_input_tokens": 565929,
+        "known_output_tokens": 10298,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 634031,
+        "cold_setup_ms": 85240,
+        "scripted_preparation_model_attempts": 98,
+        "scripted_preparation_tool_calls": 74,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:skills.load": 21,
+        "tool:extension.project.inspect": 21,
+        "tool:memory.search": 22,
+        "tool:memory.open": 6,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "terra_only_success": 16,
+        "luna_only_success": 0,
+        "both_success": 5,
+        "both_failure": 3
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 1
+        }
+      },
+      "terra_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 1
+        }
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 10,
+        "effect_mismatch": 0,
+        "check_mismatch": 15,
+        "correct_value_but_effect_or_check_mismatch": 6
+      },
+      "terra_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 20,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0
+      },
+      "terra_accounting_dimensions": {
+        "known_requests": 96,
+        "CachedInputTokens": 414794,
+        "CacheWriteInputTokens": 150847,
+        "CacheWrite30mTokens:unreported_requests": 96,
+        "CacheWrite12hTokens:unreported_requests": 96,
+        "OutputReasoningTokens": 3667
+      },
+      "observed_terra_tiers": {
+        "default": 96
+      },
+      "terra_standard_tariff_known_usage_usd": {
+        "minimum": "0.26107645",
+        "maximum": "0.4496352"
+      },
+      "terra_unknown_usage_not_priced": 0
+    }
+  },
+  "luna_receipt_sha256": "06fc14ccb1bbdf2a63d8acf7b814bf030743046599ffe3bda082ac58db23903e",
+  "terra_receipt_sha256": "6bddf4de4156aed6ba21409db85455b834008b09e0d0971f9bcb184398ee7848",
+  "pricing_source": "https://developers.openai.com/api/docs/pricing",
+  "cache_accounting_source": "https://developers.openai.com/api/docs/guides/prompt-caching",
+  "pricing_checked_utc_date": "2026-10-30",
+  "invoice_cost": "unavailable",
+  "preparation": "scripted sources/notes and verified Broker skill; zero creation inference, authoring labor and production learning costs unmeasured",
+  "limitations": [
+    "one public development corpus, not an independent holdout",
+    "both providers preserve original V3 scores; projection rejections remain failures",
+    "Standard API estimates exclude account adjustments and unknown usage; missing cache lifetimes retain a range",
+    "Gemini subscription cost is not converted to an API token price",
+    "provider-specific native schema/name encoding and implicit caching differ; reasoning High is not equal compute across providers"
+  ],
+  "candidate_model": "gpt-6.1-terra",
+  "baseline_model": "gpt-6-luna"
+}

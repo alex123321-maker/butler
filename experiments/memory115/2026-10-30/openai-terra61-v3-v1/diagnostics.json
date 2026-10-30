@@ -1,0 +1,197 @@
+{
+  "no_new_native_requests": true,
+  "primary_scores_unchanged": true,
+  "tool_outcomes": [
+    {
+      "arm": "B",
+      "tool": "memory.open",
+      "execution_status": "completed",
+      "typed_result_status": "ok",
+      "count": 6
+    },
+    {
+      "arm": "B",
+      "tool": "memory.search",
+      "execution_status": "completed",
+      "typed_result_status": "empty",
+      "count": 19
+    },
+    {
+      "arm": "B",
+      "tool": "memory.search",
+      "execution_status": "completed",
+      "typed_result_status": "ok",
+      "count": 6
+    },
+    {
+      "arm": "C",
+      "tool": "memory.open",
+      "execution_status": "completed",
+      "typed_result_status": "ok",
+      "count": 6
+    },
+    {
+      "arm": "C",
+      "tool": "memory.search",
+      "execution_status": "completed",
+      "typed_result_status": "empty",
+      "count": 16
+    },
+    {
+      "arm": "C",
+      "tool": "memory.search",
+      "execution_status": "completed",
+      "typed_result_status": "ok",
+      "count": 6
+    },
+    {
+      "arm": "C",
+      "tool": "skills.load",
+      "execution_status": "completed",
+      "typed_result_status": "unreported",
+      "count": 21
+    }
+  ],
+  "failed_action_fields": [
+    {
+      "sequence": 61,
+      "arm": "C",
+      "condition": "inspect_only",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "status=failed; ready=false",
+        "effect": "none",
+        "check": "failed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "failed",
+        "effect": "none",
+        "check": "failed"
+      }
+    },
+    {
+      "sequence": 67,
+      "arm": "B",
+      "condition": "verified_negative",
+      "reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "failed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "not_checked"
+      }
+    },
+    {
+      "sequence": 68,
+      "arm": "C",
+      "condition": "verified_negative",
+      "reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "failed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "not_checked"
+      }
+    },
+    {
+      "sequence": 69,
+      "arm": "A",
+      "condition": "verified_negative",
+      "reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "failed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "unsupported_ready_value",
+        "effect": "absent",
+        "check": "not_checked"
+      }
+    },
+    {
+      "sequence": 70,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "ready=true",
+        "effect": "confirmed",
+        "check": "passed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "ready",
+        "effect": "confirmed",
+        "check": "passed"
+      }
+    },
+    {
+      "sequence": 71,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "ready=true",
+        "effect": "confirmed",
+        "check": "passed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "ready",
+        "effect": "confirmed",
+        "check": "passed"
+      }
+    },
+    {
+      "sequence": 72,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "actual": {
+        "outcome": "answered",
+        "value": "ready=true",
+        "effect": "confirmed",
+        "check": "passed"
+      },
+      "expected": {
+        "outcome": "answered",
+        "value": "ready",
+        "effect": "confirmed",
+        "check": "passed"
+      }
+    }
+  ]
+}
