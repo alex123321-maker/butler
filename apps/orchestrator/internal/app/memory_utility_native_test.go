@@ -70,8 +70,11 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 	}
 	provider, model, effort := "antigravity", antigravity.FlashHighModel, ""
 	reference := ""
-	if os.Getenv("BUTLER_UTILITY_OPENAI") == "gpt-6-luna" {
-		provider, model, effort = "openai", "gpt-6-luna", "high"
+	if selected := os.Getenv("BUTLER_UTILITY_OPENAI"); selected != "" {
+		if _, _, err := utilityOpenAIProfile(selected); err != nil {
+			t.Fatal(err)
+		}
+		provider, model, effort = "openai", selected, "high"
 		raw, err := os.ReadFile("/reference/suite.private.json")
 		var prior acceptance.UtilitySuite
 		if err != nil || json.Unmarshal(raw, &prior) != nil || prior.Validate() != nil || prior.Version != acceptance.MemoryUtilityVersion {
@@ -176,8 +179,9 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	var manager *providerauth.Manager
 	var apiKey string
 	if plan.Provider == "openai" {
-		if plan.Model != "gpt-6-luna" || plan.ReasoningEffort != "high" || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
-			t.Fatal("exact Luna paired profile required")
+		_, _, profileErr := utilityOpenAIProfile(plan.Model)
+		if profileErr != nil || plan.ReasoningEffort != "high" || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
+			t.Fatal("exact paired OpenAI profile required")
 		}
 		control, e = pgx.Connect(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 		if e != nil {

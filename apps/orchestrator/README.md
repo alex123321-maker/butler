@@ -1,3 +1,7 @@
+The isolated utility comparison also admits the exact GPT-6.1 Terra High research
+profile, retaining the same V3 inputs/limits and the earlier Gemini/Luna receipts.
+Its higher conservative admission price does not add turns, tokens or authority.
+
 The API-key OpenAI provider uses Responses WebSocket/SSE with explicit model,
 reasoning and input/output limits, through the ordinary provider factory and Core
 budget/Tool Broker flow. See [OpenAI setup](../../internal/transport/openai/README.md).

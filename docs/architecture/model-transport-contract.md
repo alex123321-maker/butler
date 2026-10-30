@@ -31,6 +31,14 @@ reuses the exact earlier V3 suite and pins previous receipts; no old run is resu
 or regraded. Model selection and billing evidence remain separate from product
 acceptance, autonomous learning or deployment.
 
+The separately frozen GPT-6.1 Terra study selects `gpt-6.1-terra`, High, with
+the same V3 corpus/order, instructions, read policy and 65536/8192/90s bounds.
+Only the trusted research model and conservative monetary price/ceiling differ:
+3/5 USD micros per input/output token and five USD per isolated task scope.
+Published cache-aware tariff estimates remain separate from these rounded
+admission quotes. Luna and Gemini receipts are both pinned unchanged; no model
+fallback, prompt tuning, production selection or old-score revision follows.
+
 The Antigravity adapter's content-free `http_do_failed_without_response`
 diagnostic means its single HTTP Do call returned an error without a response
 object while the owning context was live and a fixed socket/EOF cause matched.

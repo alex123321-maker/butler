@@ -166,10 +166,14 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	policy := experienceNativeSourcePolicy()
 	if native != nil && native.plan.Provider == "openai" {
 		// Conservative whole-micro ceilings, not an invoice or inferred free subscription.
-		policy.Models["openai:gpt-6-luna"] = budget.ModelPrice{Basis: "operator_rate", InputMicrosPerToken: 1, OutputMicrosPerToken: 1}
-		policy.Task.CostMicros = 2000000
-		policy.Mandate.CostMicros = 2000000
-		policy.Conversation.CostMicros = 2000000
+		price, ceiling, err := utilityOpenAIProfile(native.plan.Model)
+		if err != nil {
+			t.Fatal(err)
+		}
+		policy.Models["openai:"+native.plan.Model] = price
+		policy.Task.CostMicros = ceiling
+		policy.Mandate.CostMicros = ceiling
+		policy.Conversation.CostMicros = ceiling
 		policy.Day.CostMicros = 100000000
 	}
 	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), policy, utilityWholeInstructions(c), arm, subset, time.Now().Add(authorityDuration))

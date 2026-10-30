@@ -3,6 +3,8 @@
 set -eu
 umask 077
 r=${1:?fresh native root}; tested=${2:?controlled gate}; source=${3:?full commit}
+model=${4:-gpt-6-luna}
+case "$model" in gpt-6-luna|gpt-6.1-terra) ;; *) exit 2;; esac
 reference=/srv/gitea/butler-acceptance/issue115-utility-native-20261030-v3-r1
 case "$r" in /srv/gitea/butler-acceptance/issue115-utility-native-openai-*) ;; *) exit 2;; esac
 case "$tested" in /srv/gitea/butler-acceptance/issue115-utility-trace-openai-*) ;; *) exit 2;; esac
@@ -20,16 +22,19 @@ cp -a --reflink=auto "$tested/source" "$r/source"
 for file in app.test broker extension.test http.test test2json; do cp -p "$tested/reports/$file" "$r/bin/$file"; done
 cp -a "$reference/previous/." "$r/previous/"
 cp -p "$reference/public-report.json" "$r/previous/gemini-v3-completed.json"
+if [ "$model" = gpt-6.1-terra ]; then
+ cp -p /srv/gitea/butler-acceptance/issue115-utility-native-openai-20261030-r1/public-report.json "$r/previous/luna-v3-completed.json"
+fi
 cp -p "$tested/reports/repair-summary.json" "$r/previous/openai-controlled.json"
 image=sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61
 docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limit 256 --read-only --cap-drop ALL --security-opt no-new-privileges --user 1000:1000 --log-driver none --tmpfs /tmp:rw,size=128m \
  -v "$r/source:/source:ro" -v "$r/bin:/binproof:ro" -v "$r/out:/out" -v "$r/previous:/previous:ro" -v "$reference/out/plan:/reference:ro" \
- -e BUTLER_UTILITY_OPENAI=gpt-6-luna -e BUTLER_UTILITY_NATIVE_FREEZE=/out/plan -e BUTLER_UTILITY_NATIVE_SOURCE="$source" -w /source/apps/orchestrator/internal/app \
+ -e BUTLER_UTILITY_OPENAI="$model" -e BUTLER_UTILITY_NATIVE_FREEZE=/out/plan -e BUTLER_UTILITY_NATIVE_SOURCE="$source" -w /source/apps/orchestrator/internal/app \
  "$image" /binproof/app.test -test.v -test.run '^TestMemoryUtilityFreezeNativeABC$' > "$r/freeze.log" 2>&1
-python3 - "$r" "$reference" <<'PY'
+python3 - "$r" "$reference" "$model" <<'PY'
 import json,pathlib,sys,hashlib
-r,old=map(pathlib.Path,sys.argv[1:]);plan=json.loads((r/'out/plan/plan.json').read_text());prior=json.loads((old/'out/plan/plan.json').read_text())
-assert plan['Provider']=='openai' and plan['Model']=='gpt-6-luna' and plan['ReasoningEffort']=='high'
+r,old=map(pathlib.Path,sys.argv[1:3]);plan=json.loads((r/'out/plan/plan.json').read_text());prior=json.loads((old/'out/plan/plan.json').read_text())
+assert plan['Provider']=='openai' and plan['Model']==sys.argv[3] and plan['ReasoningEffort']=='high'
 assert plan['Slots']==prior['Slots'] and len(plan['Slots'])==72 and plan['SuiteSHA256']==prior['SuiteSHA256']
 assert (r/'out/plan/suite.private.json').read_bytes()==(old/'out/plan/suite.private.json').read_bytes()
 assert plan['ReferenceSuiteSHA256']==hashlib.sha256((old/'out/plan/suite.private.json').read_bytes()).hexdigest()
@@ -45,7 +50,7 @@ cleanup(){
  if [ -n "$cid" ]; then docker inspect "$cid" > "$r/final-container.json" 2>/dev/null || true;docker rm -f "$cid" >/dev/null;fi
  if [ "$made_pg" = 1 ]; then docker stop -t 15 "$pg" > "$r/pg-stop.txt";fi
  if [ "$made_net" = 1 ]; then docker network disconnect "$net" "$pg";docker network rm "$net" > "$r/network-removed.txt";fi
- printf '{"exit_code":%s,"provider":"openai","model":"gpt-6-luna","previous_results_preserved":true,"persistent_api_key_copies":0}\n' "$status" > "$r/exit.json"
+ printf '{"exit_code":%s,"provider":"openai","model":"%s","previous_results_preserved":true,"persistent_api_key_copies":0}\n' "$status" "$model" > "$r/exit.json"
  exit "$status"
 }
 trap cleanup EXIT
