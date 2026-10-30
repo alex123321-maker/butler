@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/(app/memory_evidence_policy|app/memory_read[.]go$|orchestrator/memory_evidence)|internal/memory/(experience/read_policy|readcontrol/limits|readcontrol/control[.]go$))" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/testing/issue115-utility-repair-2026-10-30.md")
+      [void]$tests.Add("SSH laba: fresh isolated memory-utility-trace-lab.sh root, targeted read-policy/typed-limit/Core recovery race checks, actual Broker limit-then-current-action/verified-artifact continuations and all72 controlled slots. No auth mounts or native calls; preserve old costs/results and failed roots. Production deployment remains separate.")
+      continue
+    }
     "^(internal/acceptance/utilitytrace/|apps/orchestrator/internal/app/(memory_utility_(trace|whole|native)_test|skills_e2e_test)[.]go$|scripts/dev/memory-utility-(trace|native)-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

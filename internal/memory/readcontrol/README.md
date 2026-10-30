@@ -1,5 +1,14 @@
 # Broker memory reads
 
+Revision3 of search/open/neighbors adds `status=limited` with exactly one fixed
+`limit_reason` (read_bound, search_exhausted, or range_already_read using the
+`memory_evidence_` prefix) and no items. The owning reader derives the refusal
+after current exact dispatch/task/lease/input/source checks, before new DATA or
+semantic work. This is not an empty lookup or negative fact. Its actual Broker
+receipt permits ordinary continuation of other authorized work under unchanged
+shared budgets. Every repeated refusal spends normal tool/model allowances;
+fatal authority/source/storage errors stay errors. Message/fact contracts differ.
+
 For an authorized typed experience source, the existing discovery item's locator
 may contain `experience_evidence_v1`: historical verification/owner verdict and
 up to6 exact Unicode offset/max_chars/total_chars field pointers. Open uses the

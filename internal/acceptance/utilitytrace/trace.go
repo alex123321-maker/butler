@@ -386,7 +386,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 			if err != nil {
 				return deny("invalid actual memory result")
 			}
-			if data.Status != "ok" && data.Status != "empty" {
+			if data.Status != "ok" && data.Status != "empty" && !(suite.Version == acceptance.MemoryUtilityVersion && data.Status == "limited") {
 				return deny("memory did not produce usable evidence")
 			}
 			for _, item := range data.Items {
@@ -431,16 +431,37 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 				}
 				o.Reads = append(o.Reads, acceptance.UtilityRead{Ref: src.Ref(), Stage: stage})
 			}
-		case "extension.project.inspect", "extension.project.prepare-patch", "extension.project.check":
+		case "extension.project.inspect", "extension.project.prepare-patch", "extension.project.check", "http.request":
+			observedTool := call.Name
+			if call.Name == "http.request" {
+				// V3 supports only the same bounded synthetic current-project GET.
+				// It does not qualify arbitrary HTTP methods, destinations or output.
+				var args struct {
+					Method string `json:"method"`
+					URL    string `json:"url"`
+				}
+				if suite.Version != acceptance.MemoryUtilityVersion || acceptance.DecodeStrict(call.Args, &args, "method", "url") != nil || args.Method != "GET" {
+					return deny("unqualified HTTP observation")
+				}
+				u, err := url.Parse(args.URL)
+				if err != nil || u.Scheme != "http" || u.Host != "external.test" || u.User != nil || u.Fragment != "" || u.RawPath != "" || u.Path != "/project/"+c.Resource {
+					return deny("foreign HTTP observation")
+				}
+				if u.RawQuery != "" && !(c.Condition == "unknown_effect" && u.RawQuery == "verify_unknown=current" || c.Condition == "verified_negative" && u.RawQuery == "validate_ready=maybe") {
+					return deny("unrequested HTTP verification")
+				}
+				observedTool = "extension.project.inspect"
+			}
 			var env struct {
-				Status int    `json:"status_code"`
-				Body   string `json:"body"`
+				Status    int    `json:"status_code"`
+				Body      string `json:"body"`
+				Truncated bool   `json:"truncated"`
 			}
 			wantStatus := 200
 			if call.Name == "extension.project.prepare-patch" {
 				wantStatus = 201
 			}
-			if json.Unmarshal(call.Result, &env) != nil || env.Status != wantStatus {
+			if json.Unmarshal(call.Result, &env) != nil || env.Status != wantStatus || suite.Version == acceptance.MemoryUtilityVersion && env.Truncated {
 				return deny("recipient response invalid")
 			}
 			var body struct {
@@ -462,7 +483,7 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 			if body.Applied {
 				return deny("unexpected application")
 			}
-			switch call.Name {
+			switch observedTool {
 			case "extension.project.inspect":
 				if body.Passed == nil || *body.Passed || body.Project != c.Resource {
 					return deny("current inspect missing")

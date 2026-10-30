@@ -5,7 +5,13 @@ checks typed claims against observer-owned source/read/effect evidence offline.
 Its 24 development cases distinguish historical recall, preferences, continuation
 and procedural reuse from safety regression. It does not write product memory,
 execute tools, qualify native performance or replace the frozen historical scores.
-Current memory consumers, Broker authority and read limits remain unchanged.
+The utility scorer is separately versioned; V1/V2 retain exact citation-set
+semantics. New V3 requires a complete support alternative and permits additional
+exact, allowed, opened citations. Merely finding a source still proves no read.
+The optional experience reader now reports a typed `limited` refusal through
+actual Broker dispatch rather than stopping the whole task. Read allowances,
+source/currentness checks, Broker authority and shared budgets stay in force;
+neither a limited read nor an empty lookup establishes an external outcome.
 
 The research-only `internal/acceptance/utilitytrace` observer connects this scorer
 to closed Core runs and permanent Broker evidence in a repeatable-read snapshot.

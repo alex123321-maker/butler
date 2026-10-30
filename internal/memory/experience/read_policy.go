@@ -17,6 +17,20 @@ var ErrReadBound = errors.New("experience read allowance exhausted")
 var ErrSearchBound = errors.New("experience discovery exhausted")
 var ErrRepeatedRead = errors.New("experience range already read")
 
+// Only exact optional-read limits are recoverable. A wrapped/joined storage or
+// authority failure must never be downgraded into an allowance result.
+func ReadLimitReason(err error) string {
+	switch err {
+	case ErrReadBound:
+		return "memory_evidence_read_bound"
+	case ErrSearchBound:
+		return "memory_evidence_search_exhausted"
+	case ErrRepeatedRead:
+		return "memory_evidence_range_already_read"
+	}
+	return ""
+}
+
 type ReadObservation struct {
 	Tool, ArgsJSON, ResultJSON, Status string
 	Confirmed                          bool

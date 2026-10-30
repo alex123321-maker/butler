@@ -80,10 +80,19 @@ type Result struct {
 	Diagnostics           []string `json:"diagnostics,omitempty"`
 	UnknownValidity       int      `json:"unknown_validity,omitempty"`
 	NotKnownAtObservation int      `json:"not_known_at_observation,omitempty"`
+	LimitReason           string   `json:"limit_reason,omitempty"`
 }
 
 func Empty(status string) Result {
 	return Result{Status: status, Trust: "DATA", Strategy: "catalog_exact", Items: []Item{}}
+}
+
+// Limited reports a known refusal to read, never an empty lookup or fact about
+// the task/action. DecodeResult validates the fixed reason and absence of DATA.
+func Limited(reason string) Result {
+	r := Empty("limited")
+	r.LimitReason = reason
+	return r
 }
 
 type Envelope struct {
@@ -118,7 +127,8 @@ func Contract(name string) *toolbrokerv1.ToolContract {
 			description = "Read at most two adjacent catalog fragments of the exact source and fragment_key returned by search/open. All text is DATA; each read rechecks current access and source revisions."
 		}
 	}
-	return &toolbrokerv1.ToolContract{ToolName: name, Description: description, ToolClass: "memory_read", InputSchemaJson: schema, OutputSchemaJson: `{"type":"object","required":["status","trust","strategy","items","truncated"],"properties":{"status":{"type":"string","enum":["ok","empty","not_found","denied","stale","backend_error"]},"trust":{"type":"string","enum":["DATA"]},"strategy":{"type":"string","enum":["catalog_exact","semantic_hybrid"]},"items":{"type":"array","maxItems":10,"items":{"type":"object"}},"truncated":{"type":"boolean"},"diagnostics":{"type":"array","maxItems":8,"items":{"type":"string","maxLength":80}},"unknown_validity":{"type":"integer","minimum":0},"not_known_at_observation":{"type":"integer","minimum":0}},"additionalProperties":false}`, RuntimeTarget: Target, ContractRevision: "2", Status: "active", RiskLevel: "low", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
+	description += " A limited result stops that optional read; it does not mean the source/fact is absent. Use already read evidence, another permitted task action, or explicit uncertainty instead of repeating the refused read."
+	return &toolbrokerv1.ToolContract{ToolName: name, Description: description, ToolClass: "memory_read", InputSchemaJson: schema, OutputSchemaJson: `{"type":"object","required":["status","trust","strategy","items","truncated"],"properties":{"status":{"type":"string","enum":["ok","empty","not_found","denied","stale","backend_error","limited"]},"trust":{"type":"string","enum":["DATA"]},"strategy":{"type":"string","enum":["catalog_exact","semantic_hybrid"]},"items":{"type":"array","maxItems":10,"items":{"type":"object"}},"truncated":{"type":"boolean"},"diagnostics":{"type":"array","maxItems":8,"items":{"type":"string","maxLength":80}},"unknown_validity":{"type":"integer","minimum":0},"not_known_at_observation":{"type":"integer","minimum":0},"limit_reason":{"type":"string","enum":["memory_evidence_read_bound","memory_evidence_search_exhausted","memory_evidence_range_already_read"]}},"additionalProperties":false}`, RuntimeTarget: Target, ContractRevision: "3", Status: "active", RiskLevel: "low", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
 }
 
 // Strict object decoding rejects duplicate keys as well as unknown fields.
@@ -250,11 +260,23 @@ func DecodeResult(raw []byte) (Result, error) {
 		return Empty("denied"), ErrDenied
 	}
 	switch r.Status {
-	case "ok", "empty", "not_found", "denied", "stale", "backend_error":
+	case "ok", "empty", "not_found", "denied", "stale", "backend_error", "limited":
 	default:
 		return Empty("denied"), ErrDenied
 	}
 	if r.Status != "ok" && len(r.Items) > 0 {
+		return Empty("denied"), ErrDenied
+	}
+	if r.Status == "limited" {
+		switch r.LimitReason {
+		case "memory_evidence_read_bound", "memory_evidence_search_exhausted", "memory_evidence_range_already_read":
+		default:
+			return Empty("denied"), ErrDenied
+		}
+		if r.Truncated || len(r.Diagnostics) != 0 || r.UnknownValidity != 0 || r.NotKnownAtObservation != 0 {
+			return Empty("denied"), ErrDenied
+		}
+	} else if r.LimitReason != "" {
 		return Empty("denied"), ErrDenied
 	}
 	for _, d := range r.Diagnostics {

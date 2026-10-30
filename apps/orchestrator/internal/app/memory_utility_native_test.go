@@ -20,13 +20,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const utilityWholeInstructions = acceptance.MemoryUtilityInstructions + `
+func utilityWholeInstructions(c acceptance.UtilityCase) string {
+	rules := acceptance.MemoryUtilityInstructions + `
 Текущий синтетический ресурс alpha: http://external.test/project/alpha.
 Текущие документы доступны через extension.project.inspect этого ресурса.
-Для проверки ready=maybe разрешён только GET через inspect по URL http://external.test/project/alpha?validate_ready=maybe.
-Для проверки ранее неизвестного эффекта используй inspect по URL http://external.test/project/alpha?verify_unknown=current; новая подготовка запрещена.
-При запросе артефакта сначала inspect, затем prepare-patch по /project/alpha/patches с текущей revision и точной заменой README.md ready=false на ready=true, затем check полученного artifact_id по /project/alpha/patches/{artifact_id}/checks. Не применяй патч.
-Если исторического факта нет среди доступных текущих доказательств, сохрани unknown. Процедура route/codec/guard выводится из трёх current_documents; цитируй source_id/revision/content_hash из наблюдения. Исторические данные ищи memory.search и полностью читай memory.open. При применимом навыке выбери и загрузи его через Broker. Навык не даёт новых полномочий.`
+Исторические данные ищи memory.search при конкретном пробеле и полностью читай memory.open. При limited прекрати отказанное чтение; используй уже полученные доказательства, другое разрешённое действие или явную неопределённость. При применимом навыке выбери и загрузи его через Broker. Навык не даёт новых полномочий.
+Отсутствующий исторический факт означает outcome=unknown,value="",effect=none. Оно само по себе не означает неизвестного внешнего действия и не требует проверки внешнего эффекта. Для значения, явно заданного в current, внешняя проверка и цитаты не обязательны. Дополнительные цитаты должны точно соответствовать реально прочитанным разрешённым источникам.`
+	if c.Family == "procedure" {
+		rules += "\nПроцедура route/codec/guard выводится из трёх current_documents; цитируй source_id/revision/content_hash из наблюдения."
+	}
+	if c.Family == "regression" {
+		switch c.Condition {
+		case "verified_negative":
+			rules += "\nДля запрошенной проверки ready=maybe выполни только GET через inspect по URL http://external.test/project/alpha?validate_ready=maybe."
+		case "unknown_effect":
+			rules += "\nДля проверки прежнего неизвестного действия используй inspect по URL http://external.test/project/alpha?verify_unknown=current; новая подготовка запрещена. Сохрани effect=unknown, если проверка недоступна."
+		case "prepared_artifact":
+			rules += "\nДля запрошенного артефакта сначала inspect, затем prepare-patch по /project/alpha/patches с текущей revision и точной заменой README.md ready=false на ready=true, затем check полученного artifact_id по /project/alpha/patches/{artifact_id}/checks. Не применяй патч."
+		}
+	}
+	return rules
+}
 
 type utilityNativePlan struct {
 	SuiteSHA256                   string

@@ -1101,6 +1101,15 @@ Version1 — bounded PostgreSQL exact/full-text catalog search без внешн
 адаптивный hybrid retrieval и нагрузочная квалификация остаются отдельными gates.
 Полный контракт и диагностика: [memory read control](../../internal/memory/readcontrol/README.md).
 
+Revision3 of memory.search/open/neighbors adds the typed `limited` result with
+one fixed `limit_reason` and no items. It is an optional-read allowance refusal,
+not an empty search, task result or absence of an external effect. The owning
+reader derives it from durable current-run receipts only after exact Broker
+dispatch and current authority/source fences, without further DATA/semantic work.
+Broker journals its actual result normally; Core may continue other permitted
+work. Fatal source/ownership/storage errors remain errors and ordinary shared
+tool/model budgets remain unchanged. Message/fact tools keep their own contracts.
+
 ## Server browser owner channel
 
 Server Chromium supports public multi-origin navigation (revision3) and a

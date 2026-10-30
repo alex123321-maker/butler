@@ -91,4 +91,7 @@ func TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration(t *te
 	if err = newReads().CheckProposal(f.owned, "another-run", readcontrol.Search, `{"query":"fixture"}`); err == nil {
 		t.Fatal("foreign run reused current read history")
 	}
+	if result, err := newReads().ReadDispatched(f.owned, readcontrol.Envelope{RunID: f.call.RunId, Tool: readcontrol.Search, ArgsJSON: `{"query":"retry"}`}); err == nil || result.Status == "limited" {
+		t.Fatal("exhaustion bypassed exact owning dispatch/authority", result, err)
+	}
 }

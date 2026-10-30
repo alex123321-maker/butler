@@ -1,5 +1,10 @@
 # Prospective memory utility evaluation
 
+New suites use V3 sufficient-support scoring: additional exact, opened, currently
+allowed citations no longer invalidate a complete support alternative. V1/V2 keep
+the old exact-set metric; V2 current-artifact semantics remain unchanged. See the
+[model-free repair protocol](../../docs/testing/issue115-utility-repair-2026-10-30.md).
+
 For the separate actual Core/Broker72-slot development collector, preparation
 evidence and frozen native journal, see the [2026-10-30 protocol](../../docs/testing/issue115-utility-native-2026-10-30.md).
 This command remains an offline scorer; the integration harness owns inference.

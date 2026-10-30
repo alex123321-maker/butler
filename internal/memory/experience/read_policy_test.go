@@ -66,4 +66,12 @@ func TestExperienceReadPolicyNoveltyRangesAndFailures(t *testing.T) {
 	if err := CheckReadProposal([]ReadObservation{search(), search(readcontrol.Item{Source: changed})}, readcontrol.Search, `{"query":"next"}`); err != nil {
 		t.Fatal("new source version did not count as discovery", err)
 	}
+	limited := search()
+	limited.ResultJSON = encode(readcontrol.Limited("memory_evidence_search_exhausted"))
+	if !errors.Is(CheckReadProposal([]ReadObservation{search(), search(), limited, limited}, readcontrol.Search, `{"query":"restart"}`), ErrSearchBound) {
+		t.Fatal("limited receipt reset discovery allowance")
+	}
+	if ReadLimitReason(errors.Join(ErrSearchBound, ErrEvidence)) != "" {
+		t.Fatal("mixed fatal failure was reclassified as an optional limit")
+	}
 }

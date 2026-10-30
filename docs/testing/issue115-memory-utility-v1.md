@@ -112,6 +112,12 @@ not evidence that memory improves the agent or that #115 is ready to close.
 
 ## Prospective v2: actual Core/Broker observer
 
+Newly generated suites now use [prospective V3 repairs](issue115-utility-repair-2026-10-30.md):
+complete support alternatives allow extra valid opened citations; V1/V2 keep
+their exact-set scores. V3 additionally observes typed no-DATA read limits and
+the same bounded synthetic current-project GET through actual http.request.
+No archived suite, input, trace, result or expense is rewritten.
+
 `internal/acceptance/utilitytrace` captures the exact owning input, task/run,
 tool calls, action bindings, effect/dispatch/evidence records, pinned memory
 sources and current heads, model attempts and final from one repeatable-read

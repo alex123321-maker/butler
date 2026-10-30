@@ -34,15 +34,20 @@ closed native result. The prospective experiment requires new final gates.
 ## Research protocol boundaries
 
 The configured experience evidence policy checks optional memory proposals before
-action authorization/dispatch. The fixed loop reasons are
+action authorization/dispatch. Exact optional-read limits
 `memory_evidence_read_bound`, `memory_evidence_search_exhausted` and
-`memory_evidence_range_already_read`. They use the existing stopBudget path and
-retain the preceding checkpoint, transcript, actual model usage and action
-effects; no completion coordinator success or synthetic tool result is emitted.
-This narrows optional reads only. Other currently permitted actions can proceed
-until a violating proposal stops the run. Recovery retains current-run receipt
-history and rebuilds the fixed kernel guidance. Source/authority failure remains
-independent and cannot be converted into a no-progress allowance or refund.
+`memory_evidence_range_already_read` no longer call stopBudget. Core passes only
+those exact allowance results to the ordinary Broker path. After exact owning
+authorization/dispatch and current task/lease/input/source/pinned-state checks,
+the memory reader rechecks durable run history and returns `status=limited`, an
+explicit fixed `limit_reason`, and no DATA. It does not execute another lookup,
+reserve semantic work, infer absence or change any external action outcome.
+The real Broker result, dispatch/effect evidence and transcript/checkpoint are
+retained before ordinary model continuation. Other permitted task actions and
+an honest final may proceed under the same unchanged shared budgets and guards.
+Repeated refusals spend normal tool/model allowances and never reset discovery.
+Recovery uses current-run durable receipts and rebuilt kernel guidance. Wrapped,
+joined or other state/source/authority/storage errors remain fatal, not limited.
 
 Corrected issue76 v10-r3 research observation persists its existing bounded
 metadata chunks in the measured private local Linux spool. Windows artifact

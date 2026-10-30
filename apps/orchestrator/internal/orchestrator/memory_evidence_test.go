@@ -4,12 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/butler/butler/internal/budget"
-	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
-	"io"
-	"log/slog"
 	"testing"
 )
 
@@ -19,20 +16,25 @@ func (p evidencePolicyFixture) CheckProposal(context.Context, string, string, st
 	return p.err
 }
 
-func TestMemoryEvidenceStopBeforeAuthorizationAndRecoveryGuidance(t *testing.T) {
+func TestMemoryEvidenceLimitsDeferToOwningReaderAndRecoveryGuidance(t *testing.T) {
 	s := &Service{config: Config{MemoryEvidence: evidencePolicyFixture{experience.ErrSearchBound}}}
-	_, _, err := s.handleActionToolCall(context.Background(), slog.New(slog.NewTextHandler(io.Discard, nil)), &sessionv1.RunRecord{RunId: "run"}, "lease", &transport.ToolCallRequest{ToolName: "memory.search", ArgsJSON: `{"query":"again"}`}, "")
+	var err error
 	var stopped *budget.LoopError
-	if !errors.As(err, &stopped) || stopped.Reason != "memory_evidence_search_exhausted" {
-		t.Fatal("proposal reached nil executor/authorizer", err)
+	for _, limit := range []error{experience.ErrSearchBound, experience.ErrReadBound, experience.ErrRepeatedRead} {
+		s.config.MemoryEvidence = evidencePolicyFixture{limit}
+		if err = s.guardMemoryEvidenceProposal(context.Background(), "run", "memory.search", `{"query":"again"}`); err != nil {
+			t.Fatal("optional limit stopped task before owning Broker result", err)
+		}
 	}
 	if err = s.guardMemoryEvidenceProposal(context.Background(), "run", "extension.project.inspect", `{}`); err != nil {
 		t.Fatal("optional read stop blocked independent task action", err)
 	}
 	private := errors.New("private storage diagnostic")
-	s.config.MemoryEvidence = evidencePolicyFixture{private}
-	if err = s.guardMemoryEvidenceProposal(context.Background(), "run", "memory.search", `{"query":"x"}`); err.Error() != "memory_evidence_state_unavailable" || !errors.Is(err, private) || errors.As(err, &stopped) {
-		t.Fatal("storage/authority error exposed or reclassified", err)
+	for _, failure := range []error{private, errors.Join(private, experience.ErrSearchBound)} {
+		s.config.MemoryEvidence = evidencePolicyFixture{failure}
+		if err = s.guardMemoryEvidenceProposal(context.Background(), "run", "memory.search", `{"query":"x"}`); err == nil || err.Error() != "memory_evidence_state_unavailable" || !errors.Is(err, private) || errors.As(err, &stopped) {
+			t.Fatal("storage/authority error exposed or reclassified", err)
+		}
 	}
 	s.config.MemoryEvidence = evidencePolicyFixture{experience.ErrSearchBound}
 	owner := content.CurrentOwnerMessage("Use only currently permitted independent proof", "input:owner")

@@ -173,6 +173,33 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	var candidates []reader.SemanticCandidate
 	var diagnostics []string
 	var lessonEnvironment experience.Prepared
+	if err = s.CheckProposal(owned, e.RunID, e.Tool, e.ArgsJSON); err != nil {
+		reason := experience.ReadLimitReason(err)
+		if reason == "" {
+			return readcontrol.Empty("denied"), err
+		}
+		// Return a real, permanently journaled Broker observation without
+		// reading more DATA or reserving semantic work. An optional allowance
+		// does not certify absence, task completion or an external action effect.
+		tx, err := s.pool.Begin(owned)
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		defer tx.Rollback(owned)
+		if err = check(tx); err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+		if err = s.experience.CheckPinnedTx(owned, tx, e.RunID); err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+		if err = check(tx); err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+		if err = tx.Commit(owned); err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		return readcontrol.Limited(reason), nil
+	}
 	if s.experience != nil {
 		lessonEnvironment, err = s.experience.Prepare(owned, e.RunID)
 		if err != nil {

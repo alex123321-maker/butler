@@ -1,5 +1,13 @@
 # Typed task experience inside Episodic Memory
 
+Optional evidence reading still allows8 calls/3 searches and stops discovery
+after2 consecutive searches without new source versions. The owning reader now
+returns a fixed typed `limited` result through normal Broker dispatch rather
+than blocking the entire current task. No additional lookup/semantic reservation
+occurs, no absence or action outcome is inferred, and confirmed refusals cannot
+reset the durable allowance. Current authority/source/pinned-state failures and
+ordinary shared run budgets retain priority. This does not qualify native utility.
+
 `EvidenceLocatorTx` exposes content-free pointers into a fully authorized typed
 lesson's exact source ranges. The historical verification/verdict stays distinct
 from the current task; unknowns/actions/failures can be opened directly rather

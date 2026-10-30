@@ -15,7 +15,8 @@ func memoryEvidencePolicy(s *MemoryReads) flow.MemoryEvidencePolicy {
 }
 
 // CheckProposal is an optional-read optimization, not tool authorization. Flow
-// remains responsible for stopping; permitted calls still use the actual Broker.
+// checks fatal state before dispatch; the owning reader also checks inside the
+// actual Broker dispatch and returns typed limits without reading further DATA.
 // No process-local counters or historical run/session result can reset its state.
 func (s *MemoryReads) CheckProposal(ctx context.Context, run, tool, raw string) error {
 	if s == nil || s.experience == nil || tool != readcontrol.Search && tool != readcontrol.Open && tool != readcontrol.Neighbors {

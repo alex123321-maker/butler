@@ -163,7 +163,7 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	defer recipient.close()
 	arm := experienceNativeArms[strings.Index("ABC", slot.Arm)]
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions, arm, subset, time.Now().Add(authorityDuration))
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions(c), arm, subset, time.Now().Add(authorityDuration))
 	defer r.close()
 	var reviewed *skills.Record
 	var unknown utilitytrace.UnknownBinding

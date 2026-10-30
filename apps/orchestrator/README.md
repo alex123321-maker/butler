@@ -1332,8 +1332,12 @@ historical verdicts, unknowns and actual actions. Core's fixed evidence guidance
 survives recovery and its optional-read guard reconstructs current-run confirmed
 Broker receipts from PostgreSQL: at most8 attempts/3 searches, stopping discovery
 after2 consecutive searches without new sources and denying fully covered opens.
-Failures retain their spend; other task actions remain eligible. A violating
-proposal uses the existing incomplete-run/checkpoint stop, never fake completion.
+Failures retain their spend; other task actions remain eligible. An exhausted
+optional read now returns a real Broker-journaled `limited` result with a fixed
+reason and no DATA, after exact current dispatch/authority/source checks. Core
+can continue current work instead of stopping the whole task. It is neither an
+empty lookup nor evidence of task success or absent external effects. Ordinary
+shared budgets still bound repeated refused proposals; fatal state errors stop.
 No migration, provider request, general adaptive activation or qualification is
 implied. See [model-free evidence selection and stopping checks](../../experiments/memory115/2026-10-29/evidence-policy-v1/README.md).
 

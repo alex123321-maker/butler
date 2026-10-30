@@ -28,6 +28,50 @@ type utilityTraceProvider struct {
 	pin   readcontrol.SourceRef
 }
 
+// Reproduce C70's ordering without a native model: finish the current action,
+// exhaust optional discovery, observe two real Broker refusals, then perform
+// another permitted current inspection and publish the independently checked result.
+type utilityLimitedProvider struct {
+	utilityTraceProvider
+	step      int
+	completed transport.SubmitToolResultRequest
+}
+
+func (p *utilityLimitedProvider) SubmitToolResult(ctx context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	if transport.CheckInferenceAuthority(ctx) != nil || transport.CheckInferenceDispatch(ctx) != nil {
+		return nil, fmt.Errorf("controlled continuation authority unavailable")
+	}
+	if p.step == 0 {
+		if p.mode == "prepared" && p.phase < 3 {
+			return p.utilityTraceProvider.SubmitToolResult(ctx, q)
+		}
+		p.completed = q
+		p.step = 1
+		p.phase++
+		return p.emit(readcontrol.Search, map[string]string{"query": "zzzz-nonexistent-evidence-lookup"}), nil
+	}
+	if p.step <= 4 {
+		var env struct {
+			Status string          `json:"status"`
+			Result json.RawMessage `json:"result"`
+		}
+		if json.Unmarshal([]byte(q.ToolResultJSON), &env) != nil || env.Status != "completed" {
+			return nil, fmt.Errorf("limited read did not return through actual Broker")
+		}
+		r, err := readcontrol.DecodeResult(env.Result)
+		if err != nil || len(r.Items) != 0 || p.step <= 2 && r.Status != "empty" || p.step > 2 && (r.Status != "limited" || r.LimitReason != "memory_evidence_search_exhausted") {
+			return nil, fmt.Errorf("discovery/limited result mismatch at step %d", p.step)
+		}
+		p.step++
+		p.phase++
+		if p.step <= 4 {
+			return p.emit(readcontrol.Search, map[string]string{"query": "zzzz-nonexistent-evidence-lookup"}), nil
+		}
+		return p.emit("extension.project.inspect", map[string]string{"url": egresstest.Origin + "/project/alpha"}), nil
+	}
+	return p.utilityTraceProvider.SubmitToolResult(ctx, p.completed)
+}
+
 func (p *utilityTraceProvider) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
 	if p.mode == "prepared" || p.mode == "rejected" {
 		if p.mode == "rejected" {
@@ -42,6 +86,9 @@ func (p *utilityTraceProvider) StartRun(ctx context.Context, q transport.StartRu
 	p.phase = 1
 	if p.mode == "memory" {
 		return p.emit(readcontrol.Search, map[string]any{"query": "идентификатор комплекта", "limit": 1}), nil
+	}
+	if p.mode == "http" {
+		return p.emit("http.request", map[string]string{"method": "GET", "url": egresstest.Origin + "/project/alpha"}), nil
 	}
 	if p.mode == "negative" {
 		return p.emit("extension.project.inspect", map[string]string{"url": egresstest.Origin + "/project/alpha?validate_ready=maybe"}), nil
@@ -139,6 +186,9 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 	}{
 		{"memory_read", "memory", 0, false, true}, {"memory_wrong_answer", "memory", 0, true, false},
 		{"inspect", "inspect", 20, false, true}, {"inspect_wrong_answer", "inspect", 20, true, false},
+		{"http_inspect", "http", 20, false, true},
+		{"limited_then_inspect", "limited_inspect", 20, false, true},
+		{"prepared_then_limited_then_inspect", "limited_prepared", 23, false, true},
 		{"prepared", "prepared", 23, false, true}, {"prepared_wrong_answer", "prepared", 23, true, false},
 		{"generic_rejection_remains_unknown", "rejected", 22, false, false},
 		{"typed_negative", "negative", 22, false, true}, {"typed_negative_wrong_answer", "negative", 22, true, false},
@@ -176,6 +226,9 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 				mappings = []utilitytrace.SourceBinding{{UtilityID: source.Source.ID, Pin: pin}}
 				cat = catalog.New(pool, catalog.NewFileManifest(anchor)) // new reader, durable source
 			}
+			if strings.HasPrefix(tc.mode, "limited_") {
+				arm, runtimeArm = "B", experienceNativeArms[1]
+			}
 			recipient, err := newExperienceRecipient(dir, experienceRecipientConfig{Version: "v1", Ready: "true", Files: map[string]string{"alpha": "Utility current project\nready=false\n", "beta": "Other project\nready=false\n"}})
 			if err != nil {
 				t.Fatal(err)
@@ -186,7 +239,7 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 			defer r.close()
 			id := experienceDigest(t.Name())
 			permissions := "inspect_and_check_only"
-			if tc.mode == "prepared" || tc.mode == "rejected" {
+			if tc.mode == "prepared" || tc.mode == "rejected" || tc.mode == "limited_prepared" {
 				permissions = "prepare_and_verify_exact_resource"
 			}
 			record := r.createTask(t, ctx, id, c.Question, "alpha", permissions)
@@ -198,7 +251,11 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 			}
 			binding := utilitytrace.Binding{SuiteSHA256: acceptance.MemoryDigest(suite), CaseID: c.ID, Arm: arm, TaskID: record.TaskID, SessionKey: record.SessionKey, OwnerID: record.OwnerID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, OriginalFilesSHA256: before, Sources: mappings}
 			raw, _ := json.Marshal(c.Input())
-			out := r.execute(t, ctx, record, id, string(raw), &utilityTraceProvider{mode: tc.mode, wrong: tc.wrong})
+			var provider transport.ModelProvider = &utilityTraceProvider{mode: tc.mode, wrong: tc.wrong}
+			if strings.HasPrefix(tc.mode, "limited_") {
+				provider = &utilityLimitedProvider{utilityTraceProvider: utilityTraceProvider{mode: strings.TrimPrefix(tc.mode, "limited_")}}
+			}
+			out := r.execute(t, ctx, record, id, string(raw), provider)
 			var run string
 			if out.Result != nil {
 				run = out.Result.RunID
@@ -238,6 +295,12 @@ func TestMemoryUtilityActualCoreBrokerTraceIntegration(t *testing.T) {
 			}
 			if tc.success && out.Err != nil {
 				t.Fatal(out.Err)
+			}
+			if strings.HasPrefix(tc.mode, "limited_") {
+				var limited, confirmed int
+				if err = pool.QueryRow(ctx, `SELECT count(*),count(*) FILTER(WHERE EXISTS(SELECT 1 FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_dispatches d ON d.execution_action_id=i.action_id WHERE i.run_id=c.run_id AND i.tool_call_id=c.tool_call_id AND e.state='effect_confirmed' AND d.outcome='dispatch_completed')) FROM tool_calls c WHERE c.run_id=$1 AND c.tool_name='memory.search' AND c.status='completed' AND c.result->>'status'='limited' AND c.result->>'limit_reason'='memory_evidence_search_exhausted' AND c.result->'items'='[]'::jsonb`, run).Scan(&limited, &confirmed); err != nil || limited != 2 || confirmed != 2 {
+					t.Fatal("typed limited receipts were not permanent Broker observations", limited, confirmed, err)
+				}
 			}
 			if tc.mode == "rejected" {
 				if out.Err != nil || out.Result == nil || out.Result.ReceiptStatus != "blocked" || out.Result.ErrorCode != "effect_unknown" || observation.Completed || observation.Receipt.Effect != "unknown" {
