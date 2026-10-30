@@ -1,10 +1,47 @@
 # Browser pages and federated sign-in: proposed next contract
 
-Status: **target design for #164, not implemented production behavior**. The
-current helper still closes extra pages and Broker stores one observed URL per
-context. This change adds only the isolated
-[SSO recipient and Chromium probe](../../cmd/browser-sso-eval/README.md).
+Status: **production page tools remain a target design for #164**. The helper
+still closes extra pages and the active Broker path uses one observed URL per
+context. The isolated [SSO recipient and Chromium probe](../../cmd/browser-sso-eval/README.md)
+and migration107's private page ledger are implemented prerequisites. The ledger
+is not yet connected to tool dispatch, runtime, owner UI or credential release.
 Existing browser-session, credential and scoped-login contracts remain active.
+
+## Implemented private metadata ledger (migration107)
+
+`internal/browsercontrol/pages.go` provides Store operations `RegisterPage`,
+`ObservePage`, `ResolvePage` and `RetirePage`. Every operation locks the owning
+`server_browser_sessions` row and matches session/Run/owner/Task, current control
+epoch, agent mode and database-clock expiry. All pages share that row/fence;
+there is no active-page fallback or new resource identity.
+
+The first pending page has no opener; later popup registrations require an exact
+fresh opener reference. Admission is capped at four pending/ready pages and 32
+page identities over the context lifetime, including terminal records. Pending
+pages cannot resolve. A fresh executor observation binds an opaque document ID,
+increments the observation version through compare-and-swap and records the
+current context epoch. Old documents/versions cannot resolve. After owner return,
+each page needs its own fresh observation; refreshing the opener cannot revive
+its popup. Ledger methods do not clear the legacy context freshness flag.
+
+Query/fragment are removed before a URL is persisted; userinfo and malformed or
+oversize URLs are denied with fixed errors. Secret path segments must already
+be masked by the trusted executor. This structural URL filter is not DNS/egress
+validation and is not permission to release a URL or other page bytes.
+
+Closed/lost identities and their latest metadata are retained. SQL triggers deny
+DELETE/TRUNCATE, identity/opener rewrites, nonmonotonic versions and updates to
+terminal rows; down migration refuses nonempty page state. Recreating a Store
+does not restore an executor or make a pending/lost page ready.
+
+**Resolving metadata is not action authorization.** These private library APIs
+are not RPC/model tools and do not inspect current task/mandate revisions, claim
+an Input/grant, release credentials, admit network requests, acknowledge a tool,
+reconcile effects or change budgets/resources. The future dispatch composition
+must check all of those boundaries and bind the resolved page/document into the
+exact action before use. Root identity/epoch checks alone do not authorize a
+cancelled or revised Task. Production popup execution remains disabled until
+that composition is verified.
 
 ## Identity and authority
 
@@ -75,8 +112,10 @@ closing, message arriving, provider cookie or successful IdP POST is insufficien
 
 ## Acceptance sequence still outstanding
 
-1. Implement page/document contracts, Broker storage/policy and context fencing;
-   include negative policy/storage tests before enabling popups.
+1. Connect the implemented private page ledger to page/document action bindings,
+   current task/mandate policy and final dispatch fences; include negative policy
+   tests before enabling popups. Storage/fence component evidence alone is not
+   production admission.
 2. Wire helper, discovery and owner UI. Verify initial request admission, equal
    titles, early/late/closed pages, stale preparations, owner switching,
    storm caps, redirect/private-address and foreign-Run denial in Chromium.

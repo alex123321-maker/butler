@@ -1,5 +1,12 @@
 # Tool Broker
 
+Migration107 adds the private `browsercontrol` page ledger with exact
+page/document/version references, context-wide owner epochs, bounded identities
+and retained closed/lost records. It is not wired to model tools, dispatch or
+credentials yet. Metadata resolution grants no action authority; the active
+helper still closes extra pages. See the
+[status and remaining composition](../../docs/architecture/browser-pages-proposal.md).
+
 `credentials.request_login` creates an explicit, exact-form one-use consent.
 Only its approved `browser.login` call can waive the duplicate submit approval.
 Migration106 reserves the consent to one tool call; PG pins the owning Input at

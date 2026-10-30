@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/browsercontrol/pages|migrations/107_browser_pages[.]|scripts/dev/browser-page-bindings-tests[.]sh$|docs/testing/browser-page-bindings-)" {
+      [void]$specs.Add("docs/architecture/browser-pages-proposal.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("bash scripts/dev/browser-page-bindings-tests.sh with isolated *_test PG: mandatory lifecycle, context fences, concurrent cap/CAS, actual owner row-lock race and retention/down-up tests, zero skips; full ordered migrations in CI. Page ledger is metadata-only; runtime/Broker dispatch, native and external Google acceptance remain pending.")
+      continue
+    }
     "^(cmd/browser-sso-eval/|scripts/dev/browser-pages-fixture-tests[.]sh$|[.]github/workflows/browser-pages[.]yml$|docs/architecture/browser-pages-proposal[.]md$|docs/testing/browser-pages-fixture-)" {
       [void]$specs.Add("docs/architecture/browser-pages-proposal.md")
       [void]$specs.Add("docs/architecture/browser-session-contract.md")

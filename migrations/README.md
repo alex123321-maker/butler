@@ -1,5 +1,11 @@
 # Migrations
 
+`107_browser_pages` adds bounded-page metadata storage under the existing
+server-browser context ownership/fence. The private Store applies limits/CAS;
+SQL retains identities and terminal rows and rejects nonmonotonic updates.
+Down refuses nonempty page state. Apply before any future page-ledger consumer;
+this migration alone enables no browser tools, popups, credentials or network.
+
 `104_temporal_currentness_plans` retains query plans for temporal run/source/pin
 proofs. Current-statement empty metadata avoids unnecessary full joins; all
 nonempty predicates are unchanged. Down restores the original functions without
