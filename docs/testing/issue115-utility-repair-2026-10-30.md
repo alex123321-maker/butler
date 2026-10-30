@@ -41,3 +41,13 @@ corruption controls, scoped instruction unit and reviewed-skill E2E. Build under
 network none; the fixture's internal network has no provider or auth mounts.
 Save failed roots too. Require zero required skips. Full native ABC and #115
 closure remain separate; never replace an old result with a prospective score.
+
+## Verified mechanism result
+
+The final isolated r4 gate at source97f03037 completed all72 positions, with zero
+required failures/skips, actual Core/Broker limit-then-current-action and current
+artifact continuations, scoped instructions and reviewed-skill approval/loading.
+Unit/race, affected vet and72 exact legacy-V2 score replications passed. Native
+requests are zero; old native reports/journals/unknown expenses remain unchanged.
+See [the retained report](../../experiments/memory115/2026-10-30/utility-repair-v1/README.md)
+for exact source/artifact hashes, precursor failures/skips and cleanup evidence.

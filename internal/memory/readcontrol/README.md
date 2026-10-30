@@ -8,6 +8,8 @@ semantic work. This is not an empty lookup or negative fact. Its actual Broker
 receipt permits ordinary continuation of other authorized work under unchanged
 shared budgets. Every repeated refusal spends normal tool/model allowances;
 fatal authority/source/storage errors stay errors. Message/fact contracts differ.
+Broker and Orchestrator must use matching revision3 contracts; existing exact
+contract bindings are never silently rebased to a new revision.
 
 For an authorized typed experience source, the existing discovery item's locator
 may contain `experience_evidence_v1`: historical verification/owner verdict and

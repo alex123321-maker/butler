@@ -1,0 +1,63 @@
+[
+  {
+    "root": "issue115-utility-trace-repair-20261030-r1",
+    "native_requests": 0,
+    "exit": null,
+    "failed_tests": [],
+    "skipped_tests": [],
+    "artifacts_retained": true,
+    "qualified_mechanism_gate": false,
+    "setup_failure": {
+      "phase": "source_patch_preflight",
+      "patch_applied": false,
+      "native_requests": 0,
+      "reason": "inherited frozen root has older documentation/report helpers; reconstruct all mismatching tracked blobs from current commit",
+      "mismatching_blobs": 53
+    }
+  },
+  {
+    "root": "issue115-utility-trace-repair-20261030-r2",
+    "native_requests": 0,
+    "exit": {
+      "exit_code": 1,
+      "native_requests": 0,
+      "controlled_transport": true
+    },
+    "failed_tests": [
+      "TestMemoryUtilityInstructionsAreScopedToCurrentGoal"
+    ],
+    "skipped_tests": [
+      "TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration"
+    ],
+    "artifacts_retained": true,
+    "qualified_mechanism_gate": false
+  },
+  {
+    "root": "issue115-utility-trace-repair-20261030-r3",
+    "native_requests": 0,
+    "exit": {
+      "exit_code": 0,
+      "native_requests": 0,
+      "controlled_transport": true
+    },
+    "failed_tests": [],
+    "skipped_tests": [
+      "TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration"
+    ],
+    "artifacts_retained": true,
+    "qualified_mechanism_gate": false
+  },
+  {
+    "root": "issue115-utility-trace-repair-20261030-r4",
+    "native_requests": 0,
+    "exit": {
+      "exit_code": 0,
+      "native_requests": 0,
+      "controlled_transport": true
+    },
+    "failed_tests": [],
+    "skipped_tests": [],
+    "artifacts_retained": true,
+    "qualified_mechanism_gate": true
+  }
+]

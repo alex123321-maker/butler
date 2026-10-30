@@ -1,0 +1,67 @@
+{
+  "source": "97f03037c9c86d638863fed2e39417ca6500a26d",
+  "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-repair-20261030-r4",
+  "verified_tracked_blobs": 6762,
+  "native_requests": 0,
+  "controlled_transport": true,
+  "controlled_slots": 72,
+  "controlled_successes": {
+    "A": 18,
+    "B": 24,
+    "C": 24
+  },
+  "required_top_level_tests_passed": [
+    "TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration",
+    "TestMemoryUtilityActualCoreBrokerTraceIntegration",
+    "TestMemoryUtilityInstructionsAreScopedToCurrentGoal",
+    "TestMemoryUtilityWholeControlledABCIntegration",
+    "TestReviewedSkillRealBrokerDurableApprovalE2E"
+  ],
+  "test_failures": 0,
+  "test_skips": 0,
+  "unit_and_race_build_log_sha256": "cc3c84f8516a72c176e441643f9ec985dd6cb5beaffc7a9538e06f5be4fa836d",
+  "tests_sha256": "f3ba05d7b3bc2ee6ce690772e2ef9e606d624c6f5780d85b7f122eac6e758126",
+  "regressions": {
+    "limited_then_inspect": {
+      "task_success": true,
+      "completed": true,
+      "original_unchanged": true,
+      "limited_receipts": 2,
+      "mutation_controls_rejected": 12,
+      "snapshot_sha256": "2e8694904f3d6956c3e3dce57608f6d4b581c09963d169fff2f709b46f0f50f1"
+    },
+    "prepared_then_limited_then_inspect": {
+      "task_success": true,
+      "completed": true,
+      "original_unchanged": true,
+      "limited_receipts": 2,
+      "mutation_controls_rejected": 12,
+      "snapshot_sha256": "a4a33e10a4ac8272eb3ed5bbf42b6c9ef0d3671cc0b358456dc3ebe78a9e0db5"
+    },
+    "http_inspect": {
+      "task_success": true,
+      "completed": true,
+      "original_unchanged": true,
+      "limited_receipts": 0,
+      "mutation_controls_rejected": 12,
+      "snapshot_sha256": "d2186b76ca28b27a163f62bf7f7811257869e9fe87731b4343f8eb43ec27f560"
+    }
+  },
+  "legacy_v2_all72_scores_exactly_equal": true,
+  "legacy_go_inputs_identical": true,
+  "legacy_compatibility_sha256": "fe3ed7774528064391a30b732f80c7d02872824b62a3f2b67d648dafccbd343d",
+  "historical_hashes_unchanged": {
+    "issue115-utility-native-20261030-r3/public-report.json": "c808b5cf3f34cb8959ba5d85b3a91feb7a0f126997a55ef438983e9c4431ec8b",
+    "issue115-utility-native-20261030-r3/out/journal-complete.private.json": "94e0e91db9ac08a94de6a58383b66823a94d95158894199a5eb250585a9b105a",
+    "issue115-utility-native-20261030-r2/recovery-report.json": "907d647c4eb98c871ab1119a250086526e34b86c0fbf4ae0751e362da217737d",
+    "issue115-utility-trace-whole-20261030-r6/reports/tests.jsonl": "6c2e2e34f57dc57d0f18cfb68c7e68df9a072b830ced174d297723acb368e7f3"
+  },
+  "cleanup": {
+    "own_pg_stopped": true,
+    "own_pg_oom_killed": false,
+    "own_network_removed": true,
+    "no_live_source_mount_consumer": true
+  },
+  "issue115_qualified": false,
+  "old_results_regraded": false
+}

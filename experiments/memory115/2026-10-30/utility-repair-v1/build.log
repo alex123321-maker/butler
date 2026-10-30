@@ -1,0 +1,13 @@
+go version go1.27.2 linux/amd64
+ok  	github.com/butler/butler/internal/acceptance	1.304s
+ok  	github.com/butler/butler/internal/memory/readcontrol	1.017s
+ok  	github.com/butler/butler/internal/memory/experience	1.026s
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	1.036s
+ok  	github.com/butler/butler/internal/memory/readcontrol	1.024s
+ok  	github.com/butler/butler/cmd/memory-utility-eval	10.696s
+ok  	github.com/butler/butler/apps/orchestrator/internal/orchestrator	14.232s
+01ce45cbd5043041f0b4bae946d0c3a793291cef85304d7bd50b0740decf25f3  /reports/broker
+c100b92f12d91e27402861ff441ce68485e55829a8e9b8e36dad8d578992ec4a  /reports/broker.test
+40c25e3fa429763f713580eff0b967719b72e66d23eb77a39b4ef81dea4b473b  /reports/extension.test
+c421446575db51e377546ed5f6c43330982c398496ae71c350bae4075b58ceca  /reports/http.test
+1d28c713277f3f4554ca8d49136ffbee873da03376f0fdd52404cd97f78d3734  /reports/app.test
