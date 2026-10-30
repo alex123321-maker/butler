@@ -1,0 +1,11 @@
+{
+  "source": "c50091537b1469f9d6f53f4779e1c5a2104b3a1f",
+  "native_comparison_source": "157673530f7666ee51079663dee13ade60a0e310",
+  "scope": "post-window storage-override denial; ordinary profile unchanged",
+  "race_and_vet_exit": 0,
+  "passed_tests": 92,
+  "required_skips": 0,
+  "network": "none",
+  "new_model_requests": 0,
+  "tests_sha256": "9039acc8783e4451cbdd3d23f23f482bbfc9aa2e9753767625e8dbbe0c59f097"
+}

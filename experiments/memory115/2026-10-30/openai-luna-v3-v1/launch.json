@@ -1,0 +1,43 @@
+{
+  "root": "/srv/gitea/butler-acceptance/issue115-utility-native-openai-20261030-r1",
+  "source": "157673530f7666ee51079663dee13ade60a0e310",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "high",
+  "transport": "Responses ws-first; only unsupported pre-dispatch handshake may use SSE",
+  "requested_service_tier": "default",
+  "evaluation_version": "butler-memory-utility-v3",
+  "scheduled": 72,
+  "maximum_methods": 936,
+  "input_tokens": 65536,
+  "output_tokens": 8192,
+  "method_timeout_seconds": 90,
+  "case_seconds": 480,
+  "authority_seconds": 420,
+  "deadline_utc": "2026-10-30T09:56:56.89360588Z",
+  "suite_sha256_bytes": "8fef1a32d521882cc751c595261dc9dc6ae1ff75e48ef239c77bb86ad4036919",
+  "same_gemini_v3_suite": true,
+  "binary_sha256": "14f36ff5fea00d795d3052abe8f9db1ec66edc4884d8303703ba5addaa7b6dc3",
+  "plan_sha256": "45b292595f973b9d41e5a18aff69c44f921cde9dbc76d570ab77c0a441bf4a8e",
+  "historical_receipts": {
+    "abc.json": "8207969442551ef647bfa9a14919d7f325ebfd30f583db7f699e15a5d33160ad",
+    "context.json": "457ece9931bb89793e61b17d3bb0f4177c2d7dd4aebdd70feec2c7f19030df8b",
+    "controlled-repair.json": "03c2912daff95ef3a60d9b237e830ee92f53259b078925497ed36ebf3bab485c",
+    "force.json": "22702b0cd4fe7ecf30eac26a4f16e190b921c8ba4e80bcc223f724e537936a8d",
+    "gemini-v3-completed.json": "4a78e841506234d81e9400c85f1a4486c0293bb25176960bcaf3979e1a786c60",
+    "openai-controlled.json": "527798a5210162eddaa9ad6a6e780a1beae81ed4c135ff56aa9609e9d8f884ad",
+    "predecessor-completed.json": "c808b5cf3f34cb8959ba5d85b3a91feb7a0f126997a55ef438983e9c4431ec8b",
+    "predecessor-interrupted.json": "907d647c4eb98c871ab1119a250086526e34b86c0fbf4ae0751e362da217737d",
+    "prompt.json": "1929bff06e9ce83d5820ae6511424bdb1dc1c9bb5aff928006e97a99e20d0f5c",
+    "skill-broker.json": "217779fda01dd10c50c281735c8261e62709ae795c268391510e3ca461b43cee"
+  },
+  "actual_kernel_values": {
+    "cpu.max": "100000 100000",
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "pids.max": "256"
+  },
+  "key_stdin_only": true,
+  "persistent_api_key_copies": 0,
+  "host_launcher_sha256": "1e6bfd8bdc1ebcab28c5d72bd14586d62530b1da271f9dd768a36035decbc3b1"
+}

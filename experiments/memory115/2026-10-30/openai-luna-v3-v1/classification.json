@@ -1,0 +1,2786 @@
+{
+  "report_sha256": "06fc14ccb1bbdf2a63d8acf7b814bf030743046599ffe3bda082ac58db23903e",
+  "source": "157673530f7666ee51079663dee13ade60a0e310",
+  "no_new_native_requests": true,
+  "primary_scores_unchanged": true,
+  "projection_errors": {
+    "<nil>": 63,
+    "final cites an unmapped actual source": 9
+  },
+  "input_error_codes": {},
+  "final_check_failures": {},
+  "family_slices": {
+    "preference_exception": {
+      "A": {
+        "scheduled": 5,
+        "success": 2
+      },
+      "B": {
+        "scheduled": 5,
+        "success": 2
+      },
+      "C": {
+        "scheduled": 5,
+        "success": 1
+      }
+    },
+    "procedure": {
+      "A": {
+        "scheduled": 5,
+        "success": 0
+      },
+      "B": {
+        "scheduled": 5,
+        "success": 0
+      },
+      "C": {
+        "scheduled": 5,
+        "success": 0
+      }
+    },
+    "recall": {
+      "A": {
+        "scheduled": 5,
+        "success": 3
+      },
+      "B": {
+        "scheduled": 5,
+        "success": 4
+      },
+      "C": {
+        "scheduled": 5,
+        "success": 2
+      }
+    },
+    "regression": {
+      "A": {
+        "scheduled": 4,
+        "success": 0
+      },
+      "B": {
+        "scheduled": 4,
+        "success": 1
+      },
+      "C": {
+        "scheduled": 4,
+        "success": 1
+      }
+    },
+    "task_resume": {
+      "A": {
+        "scheduled": 5,
+        "success": 2
+      },
+      "B": {
+        "scheduled": 5,
+        "success": 1
+      },
+      "C": {
+        "scheduled": 5,
+        "success": 1
+      }
+    }
+  },
+  "provider_final_finish_reasons": {
+    "completed": 72
+  },
+  "unsupported_answer_slots": [],
+  "rows": [
+    {
+      "sequence": 1,
+      "arm": "A",
+      "family": "recall",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 2,
+      "arm": "B",
+      "family": "recall",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 3,
+      "arm": "C",
+      "family": "recall",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 4,
+      "arm": "B",
+      "family": "recall",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 5,
+      "arm": "C",
+      "family": "recall",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 6,
+      "arm": "A",
+      "family": "recall",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 7,
+      "arm": "C",
+      "family": "recall",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 8,
+      "arm": "A",
+      "family": "recall",
+      "condition": "revoked",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 9,
+      "arm": "B",
+      "family": "recall",
+      "condition": "revoked",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 10,
+      "arm": "A",
+      "family": "recall",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 11,
+      "arm": "B",
+      "family": "recall",
+      "condition": "distractor",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 12,
+      "arm": "C",
+      "family": "recall",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 13,
+      "arm": "B",
+      "family": "recall",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 14,
+      "arm": "C",
+      "family": "recall",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 15,
+      "arm": "A",
+      "family": "recall",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 16,
+      "arm": "C",
+      "family": "preference_exception",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 17,
+      "arm": "A",
+      "family": "preference_exception",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 18,
+      "arm": "B",
+      "family": "preference_exception",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 19,
+      "arm": "A",
+      "family": "preference_exception",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 20,
+      "arm": "B",
+      "family": "preference_exception",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 21,
+      "arm": "C",
+      "family": "preference_exception",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 22,
+      "arm": "B",
+      "family": "preference_exception",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 23,
+      "arm": "C",
+      "family": "preference_exception",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 24,
+      "arm": "A",
+      "family": "preference_exception",
+      "condition": "revoked",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 25,
+      "arm": "C",
+      "family": "preference_exception",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 26,
+      "arm": "A",
+      "family": "preference_exception",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 27,
+      "arm": "B",
+      "family": "preference_exception",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 28,
+      "arm": "A",
+      "family": "preference_exception",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 29,
+      "arm": "B",
+      "family": "preference_exception",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 30,
+      "arm": "C",
+      "family": "preference_exception",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 31,
+      "arm": "B",
+      "family": "task_resume",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 32,
+      "arm": "C",
+      "family": "task_resume",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 33,
+      "arm": "A",
+      "family": "task_resume",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 34,
+      "arm": "C",
+      "family": "task_resume",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 35,
+      "arm": "A",
+      "family": "task_resume",
+      "condition": "stale",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 36,
+      "arm": "B",
+      "family": "task_resume",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 37,
+      "arm": "A",
+      "family": "task_resume",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "invalid_final"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 38,
+      "arm": "B",
+      "family": "task_resume",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 39,
+      "arm": "C",
+      "family": "task_resume",
+      "condition": "revoked",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 40,
+      "arm": "B",
+      "family": "task_resume",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 41,
+      "arm": "C",
+      "family": "task_resume",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 42,
+      "arm": "A",
+      "family": "task_resume",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 43,
+      "arm": "C",
+      "family": "task_resume",
+      "condition": "current_sufficient",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 44,
+      "arm": "A",
+      "family": "task_resume",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 45,
+      "arm": "B",
+      "family": "task_resume",
+      "condition": "current_sufficient",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 46,
+      "arm": "A",
+      "family": "procedure",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 47,
+      "arm": "B",
+      "family": "procedure",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 48,
+      "arm": "C",
+      "family": "procedure",
+      "condition": "useful",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 49,
+      "arm": "B",
+      "family": "procedure",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 50,
+      "arm": "C",
+      "family": "procedure",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 51,
+      "arm": "A",
+      "family": "procedure",
+      "condition": "stale",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 52,
+      "arm": "C",
+      "family": "procedure",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 53,
+      "arm": "A",
+      "family": "procedure",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 54,
+      "arm": "B",
+      "family": "procedure",
+      "condition": "revoked",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 55,
+      "arm": "A",
+      "family": "procedure",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 56,
+      "arm": "B",
+      "family": "procedure",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 57,
+      "arm": "C",
+      "family": "procedure",
+      "condition": "distractor",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 58,
+      "arm": "B",
+      "family": "procedure",
+      "condition": "current_sufficient",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 59,
+      "arm": "C",
+      "family": "procedure",
+      "condition": "current_sufficient",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 60,
+      "arm": "A",
+      "family": "procedure",
+      "condition": "current_sufficient",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 3
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 61,
+      "arm": "C",
+      "family": "regression",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 62,
+      "arm": "A",
+      "family": "regression",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 63,
+      "arm": "B",
+      "family": "regression",
+      "condition": "inspect_only",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 1
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 64,
+      "arm": "A",
+      "family": "regression",
+      "condition": "unknown_effect",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 65,
+      "arm": "B",
+      "family": "regression",
+      "condition": "unknown_effect",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 66,
+      "arm": "C",
+      "family": "regression",
+      "condition": "unknown_effect",
+      "frozen_success": true,
+      "frozen_reasons": [],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 67,
+      "arm": "B",
+      "family": "regression",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 68,
+      "arm": "C",
+      "family": "regression",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 69,
+      "arm": "A",
+      "family": "regression",
+      "condition": "verified_negative",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "effect_or_check_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 70,
+      "arm": "C",
+      "family": "regression",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 71,
+      "arm": "A",
+      "family": "regression",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "final cites an unmapped actual source",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 2
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    },
+    {
+      "sequence": 72,
+      "arm": "B",
+      "family": "regression",
+      "condition": "prepared_artifact",
+      "frozen_success": false,
+      "frozen_reasons": [
+        "answer_mismatch"
+      ],
+      "projection_error": "<nil>",
+      "finals": [
+        {
+          "checks": {
+            "run": true,
+            "task": true,
+            "session": true,
+            "task_revision": true,
+            "constraints": true,
+            "content_hash": true,
+            "answer_state": true
+          },
+          "answer_state": "final",
+          "json_object": true,
+          "cited_sources": 0
+        }
+      ],
+      "provider_final_finish_reasons": [
+        "completed"
+      ],
+      "inputs": [
+        {
+          "status": "completed",
+          "checkpoint": "finalizing",
+          "error_code": ""
+        }
+      ],
+      "failed_tools": []
+    }
+  ]
+}

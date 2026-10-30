@@ -11,6 +11,16 @@ Never put the key into prompts, tool arguments, checked-in env files or logs.
 Luna supports `BUTLER_OPENAI_REASONING_EFFORT=high`; empty retains the model default.
 The application does not import Codex/ChatGPT authentication for API billing.
 
+Inference additionally needs the existing execution-budget policy to declare an
+`openai:gpt-6-luna` `operator_rate` and finite nonzero monetary scopes, with current
+task privacy permitting cloud release. An API key does not grant admission.
+Rates use integer USD micros per token: the research profile conservatively rounds
+Standard short-context input/output up to one micro each, while reporting actual
+tariff estimates separately. Production operators must choose their own scopes
+and a conservative basis for the selected model/tier; do not label API billing as
+`local_no_billing` or `subscription_no_overage`. See the
+[budget contract](../../../docs/architecture/execution-budget-contract.md).
+
 `BUTLER_OPENAI_TRANSPORT_MODE=ws-first` sends `response.create` to
 `wss://api.openai.com/v1/responses`. `sse-only` uses POST `/v1/responses`.
 `BUTLER_OPENAI_RESPONSES_WS_URL` optionally overrides the URL derived from

@@ -1,0 +1,18 @@
+{
+  "expected_value": "ready",
+  "rows": [
+    {
+      "sequence": 70,
+      "value": "3f27020153bc040e457baf66065e39060143eb4b24d63d03076b47b44ef437dd"
+    },
+    {
+      "sequence": 71,
+      "value": "true"
+    },
+    {
+      "sequence": 72,
+      "value": "ready=true"
+    }
+  ],
+  "primary_scores_unchanged": true
+}

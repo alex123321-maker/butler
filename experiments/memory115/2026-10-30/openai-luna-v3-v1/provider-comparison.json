@@ -1,0 +1,458 @@
+{
+  "same_suite_bytes": true,
+  "scheduled_per_provider": 72,
+  "arms": {
+    "A": {
+      "gemini": {
+        "scheduled": 24,
+        "task_success": 7,
+        "abstained": 4,
+        "format_valid": 9,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 11,
+        "thinking_count_unreported_methods": 0,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 73,
+        "unknown_usage": 0,
+        "known_total_tokens": 576542,
+        "known_input_tokens": 415643,
+        "known_output_tokens": 3639,
+        "known_thinking_tokens": 157260,
+        "native_failures": 0,
+        "source_writes": 0,
+        "elapsed_ms": 1313626,
+        "cold_setup_ms": 42162,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 23,
+        "slots_with_limited_reads": 0,
+        "tool:http.request": 22,
+        "tool:extension.project.check": 6,
+        "input_error:effect_unknown": 3,
+        "input_error:execution_stopped": 1,
+        "tool:extension.project.prepare-patch": 1
+      },
+      "luna": {
+        "scheduled": 24,
+        "task_success": 7,
+        "abstained": 7,
+        "format_valid": 18,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 10,
+        "thinking_count_unreported_methods": 47,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 47,
+        "unknown_usage": 0,
+        "known_total_tokens": 203631,
+        "known_input_tokens": 185143,
+        "known_output_tokens": 18488,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 0,
+        "elapsed_ms": 318283,
+        "cold_setup_ms": 55406,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "luna_only_success": 2,
+        "gemini_only_success": 2,
+        "both_success": 5,
+        "both_failure": 15
+      },
+      "gemini_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 0
+        }
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 3
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 0
+        }
+      },
+      "gemini_factual_diagnostic_only": {
+        "parsed_factual_finals": 17,
+        "exact_outcome_value_match": 11,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0,
+        "missing_single_final": 2,
+        "unparsed_final": 1
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 10,
+        "effect_mismatch": 0,
+        "check_mismatch": 9,
+        "correct_value_but_effect_or_check_mismatch": 2
+      },
+      "luna_accounting_dimensions": {
+        "known_requests": 47,
+        "CachedInputTokens": 87508,
+        "CacheWriteInputTokens": 97494,
+        "CacheWrite30mTokens:unreported_requests": 47,
+        "CacheWrite12hTokens:unreported_requests": 47,
+        "OutputReasoningTokens": 15165
+      },
+      "observed_luna_tiers": {
+        "default": 47
+      },
+      "luna_standard_tariff_known_usage_usd": {
+        "minimum": "0.02231993",
+        "maximum": "0.03450668"
+      },
+      "luna_unknown_usage_not_priced": 0
+    },
+    "B": {
+      "gemini": {
+        "scheduled": 24,
+        "task_success": 20,
+        "abstained": 6,
+        "format_valid": 21,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 20,
+        "thinking_count_unreported_methods": 0,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 91,
+        "unknown_usage": 0,
+        "known_total_tokens": 753170,
+        "known_input_tokens": 621233,
+        "known_output_tokens": 6336,
+        "known_thinking_tokens": 125601,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 1134390,
+        "cold_setup_ms": 40564,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 23,
+        "tool:memory.search": 32,
+        "tool:memory.open": 8,
+        "slots_with_limited_reads": 0,
+        "tool:http.request": 2,
+        "tool:extension.project.check": 2,
+        "input_error:effect_unknown": 1,
+        "tool:extension.project.prepare-patch": 1
+      },
+      "luna": {
+        "scheduled": 24,
+        "task_success": 8,
+        "abstained": 12,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 11,
+        "thinking_count_unreported_methods": 67,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 67,
+        "unknown_usage": 0,
+        "known_total_tokens": 349418,
+        "known_input_tokens": 332488,
+        "known_output_tokens": 16930,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 330188,
+        "cold_setup_ms": 41384,
+        "scripted_preparation_model_attempts": 2,
+        "scripted_preparation_tool_calls": 2,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:extension.project.inspect": 21,
+        "tool:memory.search": 19,
+        "slots_with_limited_reads": 0,
+        "tool:memory.open": 1,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "luna_only_success": 1,
+        "gemini_only_success": 13,
+        "both_success": 7,
+        "both_failure": 3
+      },
+      "gemini_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 0
+        }
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 4
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 1
+        }
+      },
+      "gemini_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 20,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 11,
+        "effect_mismatch": 0,
+        "check_mismatch": 10,
+        "correct_value_but_effect_or_check_mismatch": 4
+      },
+      "luna_accounting_dimensions": {
+        "known_requests": 67,
+        "CachedInputTokens": 208818,
+        "CacheWriteInputTokens": 123469,
+        "CacheWrite30mTokens:unreported_requests": 67,
+        "CacheWrite12hTokens:unreported_requests": 67,
+        "OutputReasoningTokens": 12877
+      },
+      "observed_luna_tiers": {
+        "default": 67
+      },
+      "luna_standard_tariff_known_usage_usd": {
+        "minimum": "0.026006905",
+        "maximum": "0.04144053"
+      },
+      "luna_unknown_usage_not_priced": 0
+    },
+    "C": {
+      "gemini": {
+        "scheduled": 24,
+        "task_success": 20,
+        "abstained": 6,
+        "format_valid": 22,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 20,
+        "thinking_count_unreported_methods": 0,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 117,
+        "unknown_usage": 0,
+        "known_total_tokens": 1137208,
+        "known_input_tokens": 973593,
+        "known_output_tokens": 7896,
+        "known_thinking_tokens": 155719,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 1475149,
+        "cold_setup_ms": 73913,
+        "scripted_preparation_model_attempts": 98,
+        "scripted_preparation_tool_calls": 74,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:memory.search": 42,
+        "tool:memory.open": 7,
+        "tool:extension.project.inspect": 23,
+        "tool:skills.search": 1,
+        "slots_with_limited_reads": 4,
+        "tool:skills.load": 17,
+        "limited:memory_evidence_search_exhausted": 4,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 2
+      },
+      "luna": {
+        "scheduled": 24,
+        "task_success": 5,
+        "abstained": 14,
+        "format_valid": 24,
+        "observed_slots": 24,
+        "answer_value_match_diagnostic_only": 10,
+        "thinking_count_unreported_methods": 89,
+        "execution_time_unknown_slots": 0,
+        "cold_time_unknown_slots": 0,
+        "native_methods_dispatched": 89,
+        "unknown_usage": 0,
+        "known_total_tokens": 540715,
+        "known_input_tokens": 515564,
+        "known_output_tokens": 25151,
+        "known_thinking_tokens": 0,
+        "native_failures": 0,
+        "source_writes": 36,
+        "elapsed_ms": 656510,
+        "cold_setup_ms": 80802,
+        "scripted_preparation_model_attempts": 98,
+        "scripted_preparation_tool_calls": 74,
+        "core_missing_attempts": 0,
+        "core_token_mismatches": 0,
+        "tool:skills.load": 21,
+        "tool:memory.search": 19,
+        "tool:extension.project.inspect": 23,
+        "slots_with_limited_reads": 0,
+        "tool:extension.project.prepare-patch": 1,
+        "tool:extension.project.check": 1
+      },
+      "paired_outcomes": {
+        "luna_only_success": 1,
+        "gemini_only_success": 16,
+        "both_success": 4,
+        "both_failure": 3
+      },
+      "gemini_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 5
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 0
+        }
+      },
+      "luna_by_family": {
+        "recall": {
+          "scheduled": 5,
+          "task_success": 2
+        },
+        "preference_exception": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "task_resume": {
+          "scheduled": 5,
+          "task_success": 1
+        },
+        "procedure": {
+          "scheduled": 5,
+          "task_success": 0
+        },
+        "regression": {
+          "scheduled": 4,
+          "task_success": 1
+        }
+      },
+      "gemini_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 20,
+        "effect_mismatch": 0,
+        "check_mismatch": 0,
+        "correct_value_but_effect_or_check_mismatch": 0
+      },
+      "luna_factual_diagnostic_only": {
+        "parsed_factual_finals": 20,
+        "exact_outcome_value_match": 10,
+        "effect_mismatch": 0,
+        "check_mismatch": 15,
+        "correct_value_but_effect_or_check_mismatch": 6
+      },
+      "luna_accounting_dimensions": {
+        "known_requests": 89,
+        "CachedInputTokens": 366680,
+        "CacheWriteInputTokens": 148617,
+        "CacheWrite30mTokens:unreported_requests": 89,
+        "CacheWrite12hTokens:unreported_requests": 89,
+        "OutputReasoningTokens": 19802
+      },
+      "observed_luna_tiers": {
+        "default": 89
+      },
+      "luna_standard_tariff_known_usage_usd": {
+        "minimum": "0.034846125",
+        "maximum": "0.05342325"
+      },
+      "luna_unknown_usage_not_priced": 0
+    }
+  },
+  "gemini_receipt_sha256": "4a78e841506234d81e9400c85f1a4486c0293bb25176960bcaf3979e1a786c60",
+  "luna_receipt_sha256": "06fc14ccb1bbdf2a63d8acf7b814bf030743046599ffe3bda082ac58db23903e",
+  "pricing_source": "https://developers.openai.com/api/docs/pricing",
+  "cache_accounting_source": "https://developers.openai.com/api/docs/guides/prompt-caching",
+  "pricing_checked_utc_date": "2026-10-30",
+  "invoice_cost": "unavailable",
+  "preparation": "scripted sources/notes and verified Broker skill; zero creation inference, authoring labor and production learning costs unmeasured",
+  "limitations": [
+    "one public development corpus, not an independent holdout",
+    "both providers preserve original V3 scores; projection rejections remain failures",
+    "Standard API estimates exclude account adjustments and unknown usage; missing cache lifetimes retain a range",
+    "Gemini subscription cost is not converted to an API token price",
+    "provider-specific native schema/name encoding and implicit caching differ; reasoning High is not equal compute across providers"
+  ]
+}
