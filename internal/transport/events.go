@@ -44,6 +44,24 @@ type Usage struct {
 	CacheWrite12hTokens   *int `json:",omitempty"`
 }
 
+// Equal compares observed values, including unavailable versus explicit zero.
+// Independently decoded identical counters must not conflict by pointer identity.
+func (u Usage) Equal(other Usage) bool {
+	if u.InputTokens != other.InputTokens || u.OutputTokens != other.OutputTokens || u.TotalTokens != other.TotalTokens {
+		return false
+	}
+	pairs := [][2]*int{{u.ThinkingTokens, other.ThinkingTokens}, {u.OutputReasoningTokens, other.OutputReasoningTokens}, {u.CachedInputTokens, other.CachedInputTokens}, {u.CacheWriteInputTokens, other.CacheWriteInputTokens}, {u.CacheWrite30mTokens, other.CacheWrite30mTokens}, {u.CacheWrite12hTokens, other.CacheWrite12hTokens}}
+	for _, pair := range pairs {
+		if (pair[0] == nil) != (pair[1] == nil) {
+			return false
+		}
+		if pair[0] != nil && *pair[0] != *pair[1] {
+			return false
+		}
+	}
+	return true
+}
+
 // Validate accepts nonnegative observed counts without overflowing a sum. A
 // reported nonzero total may include provider reasoning/cached dimensions, but
 // cannot be less than the separately reported input/output subtotal. Zero total

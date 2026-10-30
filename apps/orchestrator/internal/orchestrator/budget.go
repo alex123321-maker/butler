@@ -126,7 +126,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				}
 				usage, usageErr := modelTurnUsage(event)
 				stopTurn := false
-				if usageErr == nil && observed != nil && usage != nil && *usage != *observed {
+				if usageErr == nil && observed != nil && usage != nil && !usage.Equal(*observed) {
 					usageErr = fmt.Errorf("conflicting observations for one model turn")
 				}
 				if usageErr != nil {
@@ -183,7 +183,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 func modelTurnUsage(event transport.TransportEvent) (*transport.Usage, error) {
 	usage := event.Usage
 	if final := event.AssistantFinal; final != nil && final.Usage != nil {
-		if usage != nil && *usage != *final.Usage {
+		if usage != nil && !usage.Equal(*final.Usage) {
 			return nil, fmt.Errorf("ambiguous observed model usage")
 		}
 		if usage == nil {
