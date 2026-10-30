@@ -1,6 +1,7 @@
 package actionauth
 
 import (
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/toolcatalog"
@@ -8,6 +9,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/delegation"
 	"strings"
@@ -54,6 +56,10 @@ type CapabilityGuard interface {
 // no navigation or input capability and never accepts a model-selected URL.
 type BrowserScopeReader interface {
 	BrowserReadScope(context.Context, ActionBinding) (string, int64, error)
+}
+
+type BrowserPageReader interface {
+	BrowserPageScope(context.Context, ActionBinding, browserpage.Args) (*browserpage.Binding, error)
 }
 type Service struct {
 	store          Store
@@ -106,6 +112,24 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	b, _, err := BuildBinding(StableActionID(call.GetRunId(), call.GetToolCallId()), call, contract, c)
 	if err != nil {
 		return b, false, err
+	}
+	if browserpage.IsTool(b.ToolName) {
+		a, e := browserpage.Parse(b.ToolName, call.ArgsJson)
+		reader, ok := s.browserScopes.(BrowserPageReader)
+		if e != nil || !ok || !browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0 {
+			return b, false, browserpage.ErrDenied
+		}
+		if b.ToolName != browserpage.Open {
+			bound, e := reader.BrowserPageScope(ctx, b, a)
+			if e != nil || bound == nil || !bound.Valid(browserpage.Bound(b.ToolName)) || a.Page != nil && bound.Ref != *a.Page {
+				return b, false, browserpage.ErrDenied
+			}
+			copyBound := *bound
+			b.BrowserPage = &copyBound
+			b.ActionHash = ""
+			raw, _ := json.Marshal(b)
+			b.ActionHash = digest(string(raw))
+		}
 	}
 	if c.Authority != nil && BrowserContextRead(b) {
 		policy, e := ResolveEffectPolicy(b, contract, call)
@@ -258,7 +282,14 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 		return PreparedAction{}, fmt.Errorf("persisted action intent is unavailable")
 	}
 	expires = stored.ExpiresAt
-	return PreparedAction{Binding: b, EffectID: stored.EffectID, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, safeResource(b.Resource)), ExpiresAt: expires}, nil
+	target := safeResource(b.Resource)
+	if b.BrowserPage != nil {
+		target += " " + b.BrowserPage.URL
+		if b.BrowserPage.ID != "" {
+			target += " page=" + b.BrowserPage.ID
+		}
+	}
+	return PreparedAction{Binding: b, EffectID: stored.EffectID, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, target), ExpiresAt: expires}, nil
 }
 func safeResource(resource string) string {
 	if i := strings.IndexByte(resource, '?'); i >= 0 {

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/browsercontrol"
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/security/egress"
 )
 
@@ -39,6 +40,9 @@ func (s *Server) Control(ctx context.Context, command browsercontrol.Command) (b
 	switch command.Operation {
 	case "frame", "take", "release":
 	case "click", "double_click", "wheel", "key", "text", "navigate":
+		if session.managedPages && (!browserpage.ID(command.PageID) || !browserpage.ID(command.DocumentID)) {
+			return reply, browsercontrol.ErrDenied
+		}
 		if len(command.FrameID) > 64 || command.FrameID == "" || len(command.Text) > 4096 || len(command.Key) > 64 || math.IsNaN(command.X) || math.IsNaN(command.Y) || command.X < 0 || command.X >= 1280 || command.Y < 0 || command.Y >= 720 || math.Abs(command.DeltaX) > 2000 || math.Abs(command.DeltaY) > 2000 {
 			return reply, browsercontrol.ErrDenied
 		}
@@ -46,6 +50,9 @@ func (s *Server) Control(ctx context.Context, command browsercontrol.Command) (b
 			return reply, browsercontrol.ErrDenied
 		}
 		if command.Operation == "navigate" {
+			if session.managedPages && originOf(command.URL) != session.origin {
+				return reply, browsercontrol.ErrDenied
+			}
 			u, err := parseWebURL(command.URL)
 			if err != nil || !domainAllowed(u.Hostname(), session.allowedDomains) || len(command.URL) > 8192 {
 				return reply, browsercontrol.ErrDenied
@@ -88,5 +95,5 @@ func (s *Server) Control(ctx context.Context, command browsercontrol.Command) (b
 			result.OwnerFrame.Mode = "owner"
 		}
 	}
-	return browsercontrol.Reply{OK: true, Frame: result.OwnerFrame}, nil
+	return browsercontrol.Reply{OK: true, Frame: result.OwnerFrame, Pages: result.OwnerPages, ManagedPages: session.managedPages}, nil
 }

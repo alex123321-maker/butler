@@ -1,13 +1,51 @@
 name: Browser SSO fixture
 on:
   pull_request:
-    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'migrations/107_*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'internal/browserpage/**', 'internal/actionauth/**', 'internal/resourceexec/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'apps/orchestrator/internal/prompt/**', 'apps/orchestrator/internal/api/server_browser*', 'web/**', 'configs/tools.json', 'migrations/107_*', 'migrations/108_*', 'scripts/dev/browser-page-execution*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
   push:
     branches: [main]
-    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'migrations/107_*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'internal/browserpage/**', 'internal/actionauth/**', 'internal/resourceexec/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'apps/orchestrator/internal/prompt/**', 'apps/orchestrator/internal/api/server_browser*', 'web/**', 'configs/tools.json', 'migrations/107_*', 'migrations/108_*', 'scripts/dev/browser-page-execution*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
 permissions:
   contents: read
 jobs:
+  page-execution-owner-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_HOST_AUTH_METHOD: trust, POSTGRES_DB: browser_execution_ci_test}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+      BUTLER_TEST_ACTIONAUTH_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/browser_execution_ci_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --prefix apps/tool-browser --no-audit --no-fund
+      - run: cd apps/tool-browser && npx playwright install --with-deps chromium
+      - run: npm ci --prefix web --no-audit --no-fund
+      - run: cd web && npx playwright install --with-deps chromium
+      - run: bash scripts/dev/browser-page-execution-tests.sh
+      - name: Preserve actual owner UI and kernel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-page-execution-evidence
+          path: |
+            .cache/browser-page-execution-ci/**
+            !.cache/browser-page-execution-ci/**/*.test
+          include-hidden-files: true
+          if-no-files-found: error
   page-bindings-postgres:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

@@ -40,7 +40,7 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 			return false, err
 		}
 		resources = append(resources, resource)
-	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.navigate":
+	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.open_pages", "browser.navigate":
 		if resource, ok := args["url"].(string); ok && resource != "" {
 			resources = append(resources, resource)
 		}

@@ -22,6 +22,8 @@ const Path = "/internal/server-browser"
 var ErrDenied = errors.New("browser control unavailable; reload the session")
 
 type Command struct {
+	PageID     string  `json:"page_id,omitempty"`
+	DocumentID string  `json:"document_id,omitempty"`
 	Operation  string  `json:"operation"`
 	SessionID  string  `json:"browser_session_id,omitempty"`
 	RunID      string  `json:"run_id,omitempty"`
@@ -39,13 +41,15 @@ type Command struct {
 	URL        string  `json:"url,omitempty"`
 }
 type Frame struct {
-	URL    string `json:"url,omitempty"`
-	JPEG   string `json:"jpeg,omitempty"`
-	ID     string `json:"frame_id,omitempty"`
-	Width  int    `json:"width,omitempty"`
-	Height int    `json:"height,omitempty"`
-	Epoch  int64  `json:"epoch"`
-	Mode   string `json:"mode"`
+	PageID     string `json:"page_id,omitempty"`
+	DocumentID string `json:"document_id,omitempty"`
+	URL        string `json:"url,omitempty"`
+	JPEG       string `json:"jpeg,omitempty"`
+	ID         string `json:"frame_id,omitempty"`
+	Width      int    `json:"width,omitempty"`
+	Height     int    `json:"height,omitempty"`
+	Epoch      int64  `json:"epoch"`
+	Mode       string `json:"mode"`
 }
 type Session struct {
 	ID      string    `json:"browser_session_id"`
@@ -56,9 +60,18 @@ type Session struct {
 	Epoch   int64     `json:"epoch"`
 }
 type Reply struct {
-	Sessions []Session `json:"sessions,omitempty"`
-	Frame    *Frame    `json:"frame,omitempty"`
-	OK       bool      `json:"ok"`
+	ManagedPages bool        `json:"managed_pages,omitempty"`
+	Pages        []OwnerPage `json:"pages,omitempty"`
+	Sessions     []Session   `json:"sessions,omitempty"`
+	Frame        *Frame      `json:"frame,omitempty"`
+	OK           bool        `json:"ok"`
+}
+
+type OwnerPage struct {
+	ID         string `json:"page_id"`
+	DocumentID string `json:"document_id"`
+	URL        string `json:"url"`
+	State      string `json:"state"`
 }
 type Controller interface {
 	Control(context.Context, Command) (Reply, error)

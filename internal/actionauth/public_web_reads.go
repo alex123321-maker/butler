@@ -2,6 +2,7 @@ package actionauth
 
 import (
 	"encoding/json"
+	"github.com/butler/butler/internal/browserpage"
 	"strings"
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -27,6 +28,10 @@ func (s *Service) networkReleaseRequired(call *toolbrokerv1.ToolCall, contract *
 		}
 	}
 	switch call.GetToolName() {
+	case browserpage.Open:
+		if browserpage.ValidContract(contract) {
+			return false, nil
+		}
 	case "browser.navigate":
 		if contract.GetContractRevision() == "4" && !contract.GetSupportsCredentialRefs() && contract.GetEffectContract().GetRetrySafety() == "read_only" && contract.GetEffectContract().GetVerificationMethod() == BrowserGETVerification {
 			return false, nil

@@ -762,6 +762,146 @@
       "status": "active",
       "allowed_domains": [],
       "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.open_pages",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Open a separate run-owned managed browser context with up to four same-origin pages and 32 lifetime page IDs. Returns pages and exact page references. Foreign-origin popup navigation is denied before its first request. Use browser.pages then browser.page_*; legacy input tools cannot target this context. Credentials and cross-origin SSO are unsupported here; use legacy scoped login in a separate context when appropriate.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"url\":{\"type\":\"string\"}},\"required\":[\"url\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.pages",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Privately observe each live page in a managed context and return only safe URL, page/document IDs and current observation versions. Every returned URL is checked under current Task/mandate authority. Use after owner return, navigation, lost/stale references or popup creation. Does not navigate or thaw a frozen context. No title-based or active-tab selection.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_snapshot",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Read the exact page/document/version in a managed context without navigation. Returns a new page reference and visible text, links and value-free form structure. A stale document is denied; refresh with browser.pages. No credentials or raw callback query/fragment are released.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"}},\"required\":[\"browser_session_id\",\"page\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_click",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Click an exact page/document/version and selector in a managed same-origin context. Requires ordinary explicit action approval. Can cause POST or autosave: outcome remains unsafe/UNKNOWN without independent evidence; never repeat automatically. Only the selected page can send writes. Same-origin popups have a bounded admission window and finite cap. Credentials are unsupported.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_fill",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Fill an ordinary non-password field on an exact page/document/version. Literal text only; no credential_ref. Requires ordinary action approval and can cause POST/autosave, retaining unsafe/UNKNOWN semantics. Never use it for passwords or to bypass the credential vault.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\",\"value\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_type",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Type ordinary text on an exact page/document/version. Literal text only; passwords and credential_ref are unsupported. Requires ordinary action approval; autosave/POST is unsafe and must not be replayed automatically.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"},\"text\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\",\"text\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_close",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Close one exact page/document/version, retaining its ID and history. Requires ordinary action approval. Does not close the context or reconcile a previous UNKNOWN effect; all pages share the existing context resource lane.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"}},\"required\":[\"browser_session_id\",\"page\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
     }
   ]
 }

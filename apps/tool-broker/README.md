@@ -518,3 +518,14 @@ the operator-owned click contract requires it. The ordinary unknown-capable
 mandate is an intentionally unsafe comparison, not a deployment recommendation.
 All configuration is isolated; no native model or delivery is exercised.
 `scripts/dev/credential-vault-tests.sh` requires all cases without skips.
+
+## Managed page contracts
+
+Browser-control composition enables seven strict revision1 same-origin page
+contracts from configs/tools.json. Action Service hashes the PG-resolved exact
+page and runtime counter, Broker injects private dispatch metadata and rechecks
+current authority before releasing scrubbed reports. Public versions are owned
+by PostgreSQL; runtime counters are private. Managed contexts cannot use legacy
+credential requests. Page mutations retain mandatory approval and unsafe/none;
+UNKNOWN blocks writes across every page. See
+[the bounded contract](../../docs/architecture/browser-pages-execution.md).

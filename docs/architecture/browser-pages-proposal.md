@@ -1,11 +1,11 @@
 # Browser pages and federated sign-in: proposed next contract
 
-Status: **production page tools remain a target design for #164**. The helper
-still closes extra pages and the active Broker path uses one observed URL per
-context. The isolated [SSO recipient and Chromium probe](../../cmd/browser-sso-eval/README.md)
-and migration107's private page ledger are implemented prerequisites. The ledger
-is not yet connected to tool dispatch, runtime, owner UI or credential release.
-Existing browser-session, credential and scoped-login contracts remain active.
+Status: migration107's private ledger is now connected to a bounded same-origin,
+credential-free Action Service/Broker/runtime/owner UI path. See the implemented
+[browser pages execution contract](browser-pages-execution.md). Cross-origin
+federation, page-aware credentials/effect review, native delivery and external
+Google remain target design for #164. Existing legacy single-page and scoped
+login contracts remain active in their separate mode.
 
 ## Implemented private metadata ledger (migration107)
 
@@ -37,11 +37,10 @@ does not restore an executor or make a pending/lost page ready.
 **Resolving metadata is not action authorization.** These private library APIs
 are not RPC/model tools and do not inspect current task/mandate revisions, claim
 an Input/grant, release credentials, admit network requests, acknowledge a tool,
-reconcile effects or change budgets/resources. The future dispatch composition
-must check all of those boundaries and bind the resolved page/document into the
-exact action before use. Root identity/epoch checks alone do not authorize a
-cancelled or revised Task. Production popup execution remains disabled until
-that composition is verified.
+reconcile effects or change budgets/resources. The implemented dispatch
+composition now adds current Task/mandate checks,
+exact action hashing, final release checks and private executor bindings; see
+its separate contract above. The library alone still grants no authority.
 
 ## Identity and authority
 
@@ -64,7 +63,7 @@ Any required exact callback comparison stays in the private executor.
 New tools need full schema/discovery/prompt/Broker/runtime/owner-UI wiring.
 Do not partially extend the private helper and advertise support. Legacy
 single-page semantics remain unchanged until the complete guarded path exists.
-No public tool names or schema are registered by this proposal.
+The bounded same-origin tool names and schemas are registered by the execution contract; cross-origin federation is not enabled.
 
 ## One context remains one control lane
 
@@ -110,13 +109,13 @@ simulate successful login. Completion requires authenticated RP evidence and
 an anonymous challenge control, independently receipted by the RP. A popup
 closing, message arriving, provider cookie or successful IdP POST is insufficient.
 
-## Acceptance sequence still outstanding
+## Acceptance sequence
 
-1. Connect the implemented private page ledger to page/document action bindings,
+1. Implemented for the bounded credential-free same-origin stage: connect the private page ledger to page/document action bindings,
    current task/mandate policy and final dispatch fences; include negative policy
    tests before enabling popups. Storage/fence component evidence alone is not
    production admission.
-2. Wire helper, discovery and owner UI. Verify initial request admission, equal
+2. Implemented for the bounded stage: helper, discovery and owner UI. Verify initial request admission, equal
    titles, early/late/closed pages, stale preparations, owner switching,
    storm caps, redirect/private-address and foreign-Run denial in Chromium.
 3. Deploy an isolated HTTPS RP/IdP pair through ordinary production egress.

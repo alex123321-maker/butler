@@ -170,7 +170,7 @@ func (s *Store) Finish(ctx context.Context, r Receipt) error {
 		if _, e = s.resources.CompleteTx(ctx, tx, d.binding, d.proof, "lane_"+r.Digest); e != nil {
 			return e
 		}
-		if d.tool == "browser.open" {
+		if d.tool == "browser.open" || d.tool == "browser.open_pages" {
 			var at time.Time
 			if e = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); e != nil {
 				return e

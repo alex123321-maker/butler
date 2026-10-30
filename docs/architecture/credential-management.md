@@ -860,3 +860,12 @@ Form validity/constraint feedback is omitted for password/hidden/file forms and
 contexts with known credential/cookie/storage material. Broker-resolved secret
 use pins this suppression in the Go browser context, including later snapshots.
 No password validity, field length, pattern or validation-message oracle is added.
+
+## Managed pages credential boundary
+
+The new credential-free `browser.open_pages` mode does not accept credential refs
+or the legacy vault request path. Broker denies those requests when page_mode is
+set. Ordinary page fill/type cannot populate password fields with literals.
+Existing legacy single-page login remains separate. Page-aware RP/IdP consent
+and external Google acceptance remain unimplemented; see
+[browser pages execution](browser-pages-execution.md).

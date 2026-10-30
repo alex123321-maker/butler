@@ -79,12 +79,12 @@ func browserSelection(p Profile, call *toolbrokerv1.ToolCall, contract *toolbrok
 	}
 	identity := args.SessionID
 	switch call.GetToolName() {
-	case "browser.open", "browser.read":
+	case "browser.open", "browser.read", "browser.open_pages":
 		if identity != "" {
 			return selection{}, ErrDenied
 		}
 		identity = "new:" + g.Binding.ActionID
-	case "browser.freeze_snapshot", "browser.close", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state":
+	case "browser.pages", "browser.page_snapshot", "browser.page_click", "browser.page_fill", "browser.page_type", "browser.page_close", "browser.freeze_snapshot", "browser.close", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state":
 		if len(identity) != 32 || !isHex(identity) {
 			return selection{}, ErrDenied
 		}

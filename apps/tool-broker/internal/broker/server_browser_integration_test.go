@@ -93,6 +93,15 @@ func TestServerBrowserBrokerIntegration(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(raw)); err != nil {
 		t.Fatal(err)
 	}
+	for _, name := range []string{"107_browser_pages.up.sql", "108_browser_page_execution.up.sql"} {
+		sql, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(sql)); e != nil {
+			t.Fatal(e)
+		}
+	}
 	// Record now pins observed_url (migration096). Use the actual owning schema,
 	// otherwise even a successful browser.open fails in its owner-map write.
 	raw, err = os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "096_credential_vault.up.sql"))

@@ -62,7 +62,7 @@ func (e *CredentialExecutor) Execute(ctx context.Context, call *toolbrokerv1.Too
 	} else {
 		// Browser state is attested by the Broker's session store, not model URL prose.
 		var expected string
-		if e.Vault.Pool.QueryRow(ctx, `SELECT observed_url FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND owner_id=$3 AND mode='agent' AND expires_at>now() AND NOT fresh_needed`, a.BrowserSessionID, c.RunID, c.OwnerID).Scan(&expected) != nil || expected != a.ExpectedURL {
+		if e.Vault.Pool.QueryRow(ctx, `SELECT observed_url FROM server_browser_sessions WHERE browser_session_id=$1 AND run_id=$2 AND owner_id=$3 AND mode='agent' AND expires_at>now() AND NOT fresh_needed AND NOT page_mode`, a.BrowserSessionID, c.RunID, c.OwnerID).Scan(&expected) != nil || expected != a.ExpectedURL {
 			return nil, credentials.ErrVault
 		}
 		kind := strings.TrimPrefix(call.ToolName, "credentials.request_")

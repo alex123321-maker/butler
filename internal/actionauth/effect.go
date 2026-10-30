@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
 	"net/url"
 	"strings"
 	"time"
@@ -114,6 +115,9 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 }
 
 func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, calls ...*toolbrokerv1.ToolCall) (EffectPolicy, error) {
+	if browserpage.IsTool(b.ToolName) && (!browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0) {
+		return EffectPolicy{}, browserpage.ErrDenied
+	}
 	p := EffectPolicy{RetrySafety: "unsafe", VerificationMethod: "none"}
 	if c := contract.GetEffectContract(); c != nil {
 		p = EffectPolicy{RetrySafety: c.GetRetrySafety(), VerificationMethod: c.GetVerificationMethod(), IdempotencyHeader: c.GetIdempotencyHeader(), ScopeOrigin: c.GetScopeOrigin(), VerificationURL: c.GetVerificationUrl()}

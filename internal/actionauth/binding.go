@@ -370,6 +370,8 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
+	case "browser.open_pages", "browser.pages", "browser.page_snapshot":
+		return EffectRead
 	case "browser.login":
 		return EffectCommit
 	case "tools.search", "tools.load", "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox", "browser.submit_get_form", "browser.follow_link":

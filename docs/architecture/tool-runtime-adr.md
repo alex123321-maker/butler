@@ -1164,3 +1164,13 @@ Browser observations can include bounded public-form constraints and frozen loca
 validity flags, without values/messages. This optional observation DATA changes
 no input schema, contract revision/hash, permission or effect verifier. Secret
 contexts/forms suppress feedback; see the browser and credential contracts.
+
+## Managed browser executor boundary
+
+The managed-page contract uses private page/document/epoch metadata and a runtime
+counter distinct from PostgreSQL's public observation version. Go and Chromium
+both validate exact targeting; there is no active-page fallback. See
+[browser pages execution](browser-pages-execution.md). The embedded reviewed
+Playwright helper now enters Node through a short bootstrap and length-bounded
+private stdin, avoiding Windows command-line limits. Existing external-source
+hash/containment checks remain; no mutable helper file or new dependency is used.

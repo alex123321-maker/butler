@@ -124,3 +124,15 @@ Broker-resolved credential makes Go's suppression sticky for that context.
 Secret state is collected before/after capture to suppress late discoveries.
 Go independently bounds forms/fields/constraints and rejects unknown or
 contradictory validity flags. Normal action, approval and uncertainty policy stays.
+
+## Managed page execution
+
+`browser.open_pages` creates a separate same-origin, credential-free context;
+page tools require exact page/document/version refs plus Broker's private
+binding. All pages share owner control, expiry and write/UNKNOWN boundaries.
+The helper guards first popup requests before page events and caps live/lifetime
+identities. Owner frames and inputs bind the selected page/document; selection
+alone grants no agent authority. Legacy single-page mode remains separate.
+See [the execution contract](../../docs/architecture/browser-pages-execution.md)
+and required `scripts/dev/browser-page-execution-tests.sh`. This stage does not
+qualify federated login or autonomous recovery from a managed-page UNKNOWN.
