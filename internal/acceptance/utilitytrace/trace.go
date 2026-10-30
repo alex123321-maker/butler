@@ -205,7 +205,19 @@ func sha(v string) string { h := sha256.Sum256([]byte(v)); return hex.EncodeToSt
 // Project verifies a sealed original snapshot before deriving scorer fields.
 // The seal must come from the collector's original artifact, not an answer.
 func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) (acceptance.UtilityObservation, error) {
+	return project(suite, b, s, seal, false)
+}
+
+// ProjectPagedReads verifies the same sealed trace while allowing a complete
+// source to be read in corroborated Unicode pages. It never changes legacy
+// Project results, final answers, authority checks or Broker evidence.
+func ProjectPagedReads(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) (acceptance.UtilityObservation, error) {
+	return project(suite, b, s, seal, true)
+}
+
+func project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string, paged bool) (acceptance.UtilityObservation, error) {
 	o := acceptance.UtilityObservation{CaseID: b.CaseID, Arm: b.Arm, SuiteSHA256: b.SuiteSHA256, Reads: []acceptance.UtilityRead{}, Final: json.RawMessage(`null`), Receipt: acceptance.UtilityReceipt{Effect: "none", Check: "not_checked"}}
+	pages := map[string]*sourcePages{}
 	deny := func(v string) (acceptance.UtilityObservation, error) { return o, errors.New(v) }
 	if suite.Validate() != nil || acceptance.MemoryDigest(suite) != b.SuiteSHA256 || acceptance.MemoryDigest(s) != seal {
 		return deny("suite or original trace seal mismatch")
@@ -424,10 +436,29 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 					for _, p := range pins {
 						pinOK = pinOK || (p.ID == item.Source.ID && p.Revision == sb.Pin.Revision && p.Access == sb.Pin.AccessRevision && p.Hash == sb.Pin.Hash)
 					}
-					if !pinOK || item.Truncated || item.Redacted || item.Text != src.Source.Body {
+					if !pinOK {
 						return deny("partial or unpinned source read")
 					}
-					stage = "opened"
+					if paged {
+						args, err := readcontrol.DecodeArgs(call.Name, string(call.Args))
+						if err != nil {
+							return deny("invalid paged read arguments")
+						}
+						p := pages[item.Source.ID]
+						if p == nil {
+							p = &sourcePages{body: []rune(src.Source.Body), ref: src.Ref()}
+							pages[item.Source.ID] = p
+						}
+						if err := p.add(args, item); err != nil {
+							return deny(err.Error())
+						}
+						continue // Credit one opened source only after complete coverage.
+					} else {
+						if item.Truncated || item.Redacted || item.Text != src.Source.Body {
+							return deny("partial or unpinned source read")
+						}
+						stage = "opened"
+					}
 				}
 				o.Reads = append(o.Reads, acceptance.UtilityRead{Ref: src.Ref(), Stage: stage})
 			}
@@ -560,6 +591,12 @@ func Project(suite acceptance.UtilitySuite, b Binding, s Snapshot, seal string) 
 		default:
 			return deny("unqualified tool in run")
 		}
+	}
+	for _, p := range orderedPages(pages) {
+		if !p.complete() {
+			return deny("incomplete paged source read")
+		}
+		o.Reads = append(o.Reads, acceptance.UtilityRead{Ref: p.ref, Stage: "opened"})
 	}
 	if prepared != "" {
 		if prepared != checked || !inspectSeen {

@@ -73,3 +73,20 @@ collector/denominator, original ledger correlation and independent review.
 The seal establishes correspondence to trusted collected files, not a cryptographic
 signature against an attacker who controls both files and their expected seal.
 Do not accept observation/authority booleans or recomputed seals from model output.
+
+`ProjectPagedReads` is an explicit additive projection policy
+(`utility-trace-paged-reads-v1`), leaving `Project` and all recorded V3 scores
+unchanged. It accepts a full source read across multiple `memory.open` calls.
+Every page must retain the same current source/access/hash binding, owning
+Broker evidence, exact Unicode offset/text/next offset, truncation flag and
+request size. The union must cover the whole source without gaps. Identical
+overlap is allowed; missing, redacted, conflicting or substituted text is not.
+Fragment-relative reads remain unsupported rather than being mistaken for
+whole-source offsets. Denied reads and all other legacy gates remain strict.
+
+`memory-utility-eval -trace-root ROOT -manifest-sha256 SHA -out NEW_FILE` replays
+the closed 36-slot workflow cohort offline. The caller pins the original public
+manifest; original suite, binding, snapshot, execution and score hashes are
+verified before projection. Legacy scores/errors must reproduce exactly before
+the separate paged result is emitted. It opens no provider, database or tool
+connection, and never overwrites native results or expense records.

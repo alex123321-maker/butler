@@ -1,0 +1,16 @@
+{
+  "exit": {
+    "exit_code": 1,
+    "provider_selected_by_model": true,
+    "model": "gpt-6-luna",
+    "previous_results_preserved": true,
+    "persistent_api_key_copies": 0
+  },
+  "runner_oom_killed": false,
+  "pg_running": false,
+  "pg_exit": 0,
+  "helper_removed": true,
+  "network_removed": true,
+  "private_pgdata_retained": true,
+  "historical_receipts_reverified": 13
+}

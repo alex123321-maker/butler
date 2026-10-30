@@ -26,11 +26,22 @@ func run(args []string) error {
 	suitePath := f.String("suite", "", "verifier-only suite.json")
 	observationPath := f.String("observation", "", "observer-owned observation JSON")
 	out := f.String("out", "", "new report file; never overwrite")
+	traceRoot := f.String("trace-root", "", "closed workflow root for additive paged-read projection")
+	manifestSHA := f.String("manifest-sha256", "", "trusted original public-report.json byte digest")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
 	if f.NArg() != 0 {
 		return errors.New("unexpected arguments")
+	}
+	if *traceRoot != "" {
+		if *initDir != "" || *suitePath != "" || *observationPath != "" || *out == "" || *manifestSHA == "" {
+			return errors.New("trace replay requires only -trace-root -manifest-sha256 -out")
+		}
+		return replayTraceRoot(*traceRoot, *manifestSHA, *out)
+	}
+	if *manifestSHA != "" {
+		return errors.New("manifest digest requires trace replay")
 	}
 	if *initDir != "" {
 		if *suitePath != "" || *observationPath != "" || *out != "" {

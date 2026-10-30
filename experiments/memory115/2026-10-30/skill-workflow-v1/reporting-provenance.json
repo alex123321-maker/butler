@@ -1,0 +1,16 @@
+{
+  "native_source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+  "postprocessing_files_sha256": {
+    "scripts/dev/memory-utility-abc-report.py": "529c3dc8deade0fa03ffbd0fd98e4eaea8d720acb1d71be0770e22e805484c99",
+    "scripts/dev/skill-workflow-report.py": "f8a850887d1d061ea71a887cda1cb0a86008641087e065b57c884bb9f54c624c",
+    "scripts/dev/skill-workflow-comparison.py": "3ffe841def044d3962c41f7485b53b43c616acee575cc7d8a4c458a33e4bb908",
+    "internal/acceptance/utilitytrace/trace.go": "26309f86dbc7a8bb6067a4da697c7e6d100e248e996272779dc5b04687194fe1",
+    "internal/acceptance/utilitytrace/pages.go": "2f739220354c615ea60ea32e60c5657c49ba74f5c81ee225c50f4b39a89210ea",
+    "internal/acceptance/utilitytrace/pages_test.go": "766afb57436f6f2ac0895bed1f9191ba39f5c05242fee4a494a52268924cfb6f",
+    "cmd/memory-utility-eval/main.go": "d3b8d844272760f03198b40fcc565c89077090289459a475ecb287c7e10f189f",
+    "cmd/memory-utility-eval/replay.go": "f9a314795d2be88497bf7baf86ea3f3e932c9ab55c3bff67833d246eff32c71f",
+    "cmd/memory-utility-eval/replay_test.go": "17d63aa8a7687c5dbf9c5dbf41892ee3ec44e5619133ddc7ea46c6f32f02a15d"
+  },
+  "native_requests_for_replay": 0,
+  "local_toolchain_attempt": "Go 1.26 was too old; successful race tests and vet executed on laba with pinned Go image"
+}

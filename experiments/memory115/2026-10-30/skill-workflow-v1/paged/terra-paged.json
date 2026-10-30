@@ -1,0 +1,1031 @@
+{
+  "evaluator_binary_sha256": "0a7ae0f45931a7bba742c4e6fc321941b0791b46dc2453e6f24464be9de3de7d",
+  "legacy_reproduced_exactly": true,
+  "legacy_success": {
+    "A": 12,
+    "B": 12,
+    "C": 12
+  },
+  "model": "gpt-6.1-terra",
+  "native_requests": 0,
+  "native_source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+  "original_manifest_sha256": "0e880523d1c214cb2ff8d43544db855cdd411f7bb24e69520a5585ab5176f7f2",
+  "paged_success": {
+    "A": 12,
+    "B": 12,
+    "C": 12
+  },
+  "policy": "utility-trace-paged-reads-v1",
+  "rows": [
+    {
+      "arm": "A",
+      "case_id": "wf1-0c6863927b849e73",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 1
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-0c6863927b849e73",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 2
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-0c6863927b849e73",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 3
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-64f7af5d80364a77",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 4
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-64f7af5d80364a77",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 5
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-64f7af5d80364a77",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 6
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-9501b97161cd87a9",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 7
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-9501b97161cd87a9",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 8
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-9501b97161cd87a9",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 9
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-95cb92018813f445",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 10
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-95cb92018813f445",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 11
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-95cb92018813f445",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 12
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 13
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 14
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 15
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-4c6851cccb75c911",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 16
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-4c6851cccb75c911",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 17
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-4c6851cccb75c911",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 18
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 19
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 20
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 21
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 22
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 23
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 24
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 25
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 26
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 27
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-u6095d249d01d1da5",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 28
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-u6095d249d01d1da5",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 29
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-u6095d249d01d1da5",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": true,
+        "evidence_available": false,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 30
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 31
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 32
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 33
+    },
+    {
+      "arm": "C",
+      "case_id": "wf1-u55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 34
+    },
+    {
+      "arm": "A",
+      "case_id": "wf1-u55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 35
+    },
+    {
+      "arm": "B",
+      "case_id": "wf1-u55634bd462660d38",
+      "changed": false,
+      "legacy": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "legacy_projection_error": "\u003cnil\u003e",
+      "paged": {
+        "task_success": true,
+        "format_valid": true,
+        "abstained": false,
+        "evidence_available": true,
+        "relevant_candidate": false,
+        "relevant_opened": false,
+        "reasons": [],
+        "native_quality_qualified": false
+      },
+      "paged_projection_error": "\u003cnil\u003e",
+      "sequence": 36
+    }
+  ],
+  "scheduled": 36,
+  "suite_sha256_bytes": "8df9b914108c690c5a083648aa28cbb9bbad2b38abb205dbceb797c0e80f350a"
+}

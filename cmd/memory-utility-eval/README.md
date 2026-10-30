@@ -80,3 +80,12 @@ connects actual persisted traces to these observations. Its isolated controlled
 integration is `scripts/dev/memory-utility-trace-lab.sh FRESH_ROOT`; it does not
 call a native model. Newly generated v2 suites use a current verified-receipt
 marker for dynamic artifact IDs; existing v1 suites retain fixed-ID semantics.
+
+## Additive closed-trace page replay
+
+`-trace-root ROOT -manifest-sha256 SHA -out NEW_FILE` verifies the original
+collector manifest and all 36 workflow slots, reproduces their old V3 scores,
+then separately evaluates complete pinned source reads across Unicode pages.
+The caller supplies the trusted manifest byte hash. No answer is rewritten,
+and no provider, database, Broker or credential connection is opened. Output
+is exclusive and records the evaluator binary hash and old/new scores together.

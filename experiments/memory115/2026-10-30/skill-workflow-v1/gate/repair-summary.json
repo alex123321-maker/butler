@@ -1,0 +1,62 @@
+{
+  "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+  "controlled_slots": 72,
+  "workflow_controlled_slots": 36,
+  "test_failures": 0,
+  "test_skips": 0,
+  "native_requests": 0,
+  "tests_sha256": "12948b8070a9983bde4b2e285bd20769289a0d3b059e735c2db7652edcf3ec56",
+  "unit_and_race_build_log_sha256": "4909b34e341d6cb00d37aaae4fc786cf452e763dcbe1c99178b14bbf23cdbe2e",
+  "source_git_blobs_verified": 6814,
+  "source_tree_manifest_sha256": "7f63932d2b84f67373a6c54d6bb511d1ba2116b5a4e757e6b2b5d4af3f2fcf27",
+  "git_declared_windows_eol_exports": [
+    "mobile/android/gradlew.bat",
+    "scripts/dev/antigravity-desktop/launch-fixture.ps1",
+    "scripts/dev/antigravity-desktop/stop-local.ps1",
+    "scripts/dev/behavior-local-acceptance.ps1",
+    "scripts/dev/bootstrap.ps1",
+    "scripts/dev/common.ps1",
+    "scripts/dev/converter-local-acceptance.ps1",
+    "scripts/dev/credential-vault-lab.ps1",
+    "scripts/dev/doctor.ps1",
+    "scripts/dev/down-agent-stack.ps1",
+    "scripts/dev/effort-research.ps1",
+    "scripts/dev/fault-lab.ps1",
+    "scripts/dev/install-browser-bridge-host.ps1",
+    "scripts/dev/issue147-check.ps1",
+    "scripts/dev/issue17-local.ps1",
+    "scripts/dev/lab.ps1",
+    "scripts/dev/mobile-attention-local.ps1",
+    "scripts/dev/mobile-backup-acceptance.ps1",
+    "scripts/dev/mobile-build.ps1",
+    "scripts/dev/mobile-release-local.ps1",
+    "scripts/dev/mobile-relocate-owner.ps1",
+    "scripts/dev/run-orchestrator.ps1",
+    "scripts/dev/scenario-release-chain-v17-evidence-check.ps1",
+    "scripts/dev/schedules-local.ps1",
+    "scripts/dev/test-go.ps1",
+    "scripts/dev/tool-discovery-local.ps1",
+    "scripts/dev/up-agent-stack.ps1",
+    "scripts/dev/verify-changed.ps1"
+  ],
+  "required_tests": [
+    "TestMemoryUtilityWholeControlledABCIntegration",
+    "TestReviewedSkillRealBrokerDurableApprovalE2E",
+    "TestSkillWorkflowContract",
+    "TestSkillWorkflowControlledABCIntegration"
+  ],
+  "unchanged_provider_validation_source": "c50091537b1469f9d6f53f4779e1c5a2104b3a1f",
+  "unchanged_provider_scope": "Production OpenAI provider/config unchanged; earlier 92 race checks and vet retained. New research composition validated here.",
+  "preserved_failed_control_roots": [
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-workflow-20261030-r1",
+      "reason": "timing wrapper omitted authorized executor method"
+    },
+    {
+      "root": "/srv/gitea/butler-acceptance/issue115-utility-trace-workflow-20261030-r2",
+      "reason": "PostgreSQL temporary bootstrap socket readiness preceded TCP readiness"
+    }
+  ],
+  "failed_control_native_calls": 0,
+  "new_suite_sha256": "8df9b914108c690c5a083648aa28cbb9bbad2b38abb205dbceb797c0e80f350a"
+}

@@ -1,0 +1,44 @@
+{
+  "native_requests": 0,
+  "overlay_sha256": "1dfb77f7de4ea05f714a86b441910db843d98d2b6efe3e5b2650b9ade2534c1b",
+  "binary_sha256": "0a7ae0f45931a7bba742c4e6fc321941b0791b46dc2453e6f24464be9de3de7d",
+  "build_log_sha256": "f38b33c3982495c67497a170460292732e95f9e0f659b3b1dacdb0e0508a0260",
+  "models": {
+    "gemini": {
+      "legacy": {
+        "A": 8,
+        "B": 8,
+        "C": 10
+      },
+      "paged": {
+        "A": 8,
+        "B": 9,
+        "C": 10
+      }
+    },
+    "terra": {
+      "legacy": {
+        "A": 12,
+        "B": 12,
+        "C": 12
+      },
+      "paged": {
+        "A": 12,
+        "B": 12,
+        "C": 12
+      }
+    },
+    "luna": {
+      "legacy": {
+        "A": 9,
+        "B": 10,
+        "C": 10
+      },
+      "paged": {
+        "A": 9,
+        "B": 10,
+        "C": 10
+      }
+    }
+  }
+}

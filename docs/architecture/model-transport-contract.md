@@ -39,6 +39,16 @@ Published cache-aware tariff estimates remain separate from these rounded
 admission quotes. Luna and Gemini receipts are both pinned unchanged; no model
 fallback, prompt tuning, production selection or old-score revision follows.
 
+The separate `skill-workflow-v1` development cohort explicitly selects
+`gpt-6.1-terra` with `reasoning.effort=none`, `gpt-6-luna` with
+`reasoning.effort=max`, and Gemini Flash High with its existing provider default.
+It preserves the same 65536/8192/90s per-method bounds and all earlier receipts.
+Research timing measures provider boundary elapsed time minus Butler admission
+callbacks; network and adapter work remain inside that boundary. This is not a
+measurement of hidden reasoning time. Execution minus provider wait measures
+Butler elapsed time, including tool RPC as a subset. See the
+[workflow protocol](../testing/issue115-skill-workflow-2026-10-30.md).
+
 The Antigravity adapter's content-free `http_do_failed_without_response`
 diagnostic means its single HTTP Do call returned an error without a response
 object while the owning context was live and a fixed socket/EOF cause matched.

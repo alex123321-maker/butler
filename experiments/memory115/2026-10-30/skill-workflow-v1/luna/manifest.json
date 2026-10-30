@@ -1,0 +1,10 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-luna-20261030-r1",
+  "files": {
+    "public-report.json": "ca1a489138caa812aa7cddae34476af36d83801c74dffb4942309020b1631325",
+    "workflow-report.json": "2acb5a7335858ba36a7d1b92eb80f9bf4eb0aea0313d1ea8b8bafff18cfba62d",
+    "workflow-report.calls.csv": "473539da4542288b8056d37673789140fafbfa9a01c16e21ff2624964aeb0b94",
+    "public-cleanup.json": "f3340f547e641996897ab3f8782cf0686dec9a9cf0873e5fef6874be62d5075d",
+    "exit.json": "0fd49dce75cd0ce3411a62a1750df20c1b03b3d68d6ae309c5ae39efbb41f245"
+  }
+}

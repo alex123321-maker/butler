@@ -6,6 +6,7 @@ All times are wall durations, not CPU or inferred hidden reasoning durations.
 """
 import argparse
 import collections
+import csv
 import decimal
 import hashlib
 import json
@@ -61,6 +62,7 @@ def main():
     assert basic['scheduled'] == 36
     pricing = runpy.run_path(str(pathlib.Path(__file__).with_name('memory-utility-provider-comparison.py')))['cost']
     rows = []
+    method_rows = []
     for row, scheduled in zip(basic['rows'], plan['Slots']):
         assert row['sequence'] == scheduled['Sequence']
         slot = root/'out/actual'/('slot-%03d' % row['sequence'])
@@ -69,6 +71,17 @@ def main():
         snapshot = read(slot/'snapshot.private.json') if (slot/'snapshot.private.json').exists() else None
         native = [read(p) for p in sorted(slot.glob('native-*.private.json'))]
         calls = len(native)
+        for n in native:
+            method_rows.append({'model': plan['Model'], 'reasoning_effort': plan['ReasoningEffort'] or 'provider_default_high',
+                'sequence': n['sequence'], 'slot': row['sequence'], 'case_id': case['id'], 'arm': row['arm'],
+                'turn': n['turn'], 'method': n['kind'], 'dispatched': n['dispatched'],
+                'provider_boundary_seconds': n['provider_boundary_ns']/1e9,
+                'butler_admission_callback_seconds': n['butler_admission_callback_ns']/1e9,
+                'provider_wait_seconds': n['provider_wait_ns']/1e9,
+                'known_full_tokens': n['usage']['TotalTokens'] if n['usage'] is not None else None,
+                'unknown_usage': n['dispatched'] and n['usage'] is None,
+                'error_code': n.get('error_code'),
+                'finish_reasons': json.dumps([e['AssistantFinal']['FinishReason'] for e in n['events'] if e.get('AssistantFinal')])})
         low = high = decimal.Decimal(0)
         for n in native:
             if plan['Provider'] == 'openai' and n['dispatched'] and n['usage'] is not None:
@@ -77,6 +90,20 @@ def main():
                 high += bounds[1]/1000000
         out = {k: row[k] for k in ('sequence', 'arm', 'condition', 'task_success', 'reasons',
             'native_methods_dispatched', 'unknown_usage', 'known_total_tokens', 'native_failures', 'tool_calls')}
+        out['case_id'] = case['id']
+        out['projection_error'] = row['projection_error']
+        out['answer_states'] = [x['answer_state'] for x in snapshot['Tables'].get('finals', [])] if snapshot else []
+        out['finish_reasons'] = dict(collections.Counter(e['AssistantFinal']['FinishReason']
+            for n in native for e in n['events'] if e.get('AssistantFinal')))
+        calls_observed = snapshot['Tables'].get('calls', []) if snapshot else []
+        out['completed_skill_loads'] = sum(x['tool_name'] == 'skills.load' and x['status'] == 'completed'
+            and isinstance(x.get('result'), dict) and bool(x['result'].get('digest')) for x in calls_observed)
+        out['memory_tool_results'] = dict(collections.Counter(x['tool_name'] + ':' + x['status'] + ':'
+            + (str(x['result'].get('status', 'unreported')) if isinstance(x.get('result'), dict) else 'unreported')
+            for x in calls_observed if x['tool_name'].startswith('memory.')))
+        out['opened_memory_results'] = sum(x['tool_name'] == 'memory.open' and x['status'] == 'completed'
+            and isinstance(x.get('result'), dict) and x['result'].get('status') == 'ok'
+            and bool(x['result'].get('items')) for x in calls_observed)
         out['native_method_attempts'] = calls
         out['physical_artifact_success'] = physical_artifact(slot, snapshot, case) if snapshot is not None else None
         out['known_usage_tariff_usd'] = {'minimum': str(low), 'maximum': str(high)} if plan['Provider'] == 'openai' else None
@@ -126,6 +153,14 @@ def main():
         total['migration_strict_success'] = sum(x['task_success'] for x in items if x['condition']=='prepared_artifact')
         total['migration_scheduled'] = sum(x['condition']=='prepared_artifact' for x in items)
         total['physical_artifact_success'] = sum(x['physical_artifact_success'] is True for x in items)
+        total['cases_with_completed_skill_load'] = sum(x['completed_skill_loads'] > 0 for x in items)
+        total['completed_skill_loads'] = sum(x['completed_skill_loads'] for x in items)
+        total['cases_with_opened_memory'] = sum(x['opened_memory_results'] > 0 for x in items)
+        memory_results = collections.Counter()
+        for x in items:
+            memory_results.update(x['memory_tool_results'])
+        total['memory_tool_results'] = dict(memory_results)
+        total['max_tokens_finals'] = sum(x['finish_reasons'].get('MAX_TOKENS', 0) + x['finish_reasons'].get('max_output_tokens', 0) for x in items)
         total['native_methods_dispatched'] = sum(x['native_methods_dispatched'] for x in items)
         total['unknown_usage'] = sum(x['unknown_usage'] for x in items)
         total['known_full_tokens'] = sum(x['known_total_tokens'] for x in items)
@@ -146,6 +181,22 @@ def main():
             'Full phases include fixture/skill preparation, execution and observation; later teardown/reporting and authoring labor excluded.',
             'Unknown usage and missing timing remain unknown, including failed calls; totals state their measured denominator.',
             'One public development cohort; physical artifact checks and strict answer scores are distinct. No old result is regraded.']}
+    # Go's terminal test duration covers fixture teardown and gaps as well as
+    # measured task phases. Do not substitute test2json's postprocessing clock.
+    events = [json.loads(x) for x in (root/'native.jsonl').read_text().splitlines()]
+    ends = [x for x in events if x.get('Test') == 'TestMemoryUtilityWholeNativeABC'
+        and x.get('Action') in ('pass', 'fail') and 'Elapsed' in x]
+    result['native_window_wall_seconds'] = ends[0]['Elapsed'] if len(ends) == 1 else None
+    result['window_seconds_outside_measured_phases'] = (result['native_window_wall_seconds']
+        - result['total']['full_phases_seconds']) if result['native_window_wall_seconds'] is not None else None
+    result['reporter_sha256'] = hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()
+    assert len({x['sequence'] for x in method_rows}) == len(method_rows)
+    if method_rows:
+        method_rows.sort(key=lambda x: x['sequence'])
+        with args.output.with_suffix('.calls.csv').open('x', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=list(method_rows[0]))
+            writer.writeheader()
+            writer.writerows(method_rows)
     with args.output.open('x') as f:
         json.dump(result, f, indent=2)
     print(json.dumps({k: v for k, v in result.items() if k not in ('rows','notes')}))
