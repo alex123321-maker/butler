@@ -1,13 +1,48 @@
 name: Browser SSO fixture
 on:
   pull_request:
-    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'scripts/dev/browser-pages-fixture-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'migrations/107_*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
   push:
     branches: [main]
-    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'scripts/dev/browser-pages-fixture-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
+    paths: ['.github/workflows/browser-pages.yml', 'cmd/browser-sso-eval/**', 'internal/browsercontrol/**', 'migrations/107_*', 'scripts/dev/browser-pages-fixture-tests.sh', 'scripts/dev/browser-page-bindings-tests.sh', 'docs/architecture/browser-pages-proposal.md', 'go.mod', 'go.sum', 'apps/tool-browser/package*.json']
 permissions:
   contents: read
 jobs:
+  page-bindings-postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_HOST_AUTH_METHOD: trust, POSTGRES_DB: browser_pages_ci_test}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      BUTLER_TEST_BROWSER_PAGES_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/browser_pages_ci_test?sslmode=disable
+      BUTLER_TEST_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/browser_pages_ci_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - name: Apply all ordered production migrations
+        run: |
+          mkdir -p .cache/browser-page-bindings-ci
+          go test -race -count=1 -json ./internal/credentials -run '^TestStoreIntegrationCRUD$' > .cache/browser-page-bindings-ci/migrations.jsonl
+          if grep -q '"Action":"skip"' .cache/browser-page-bindings-ci/migrations.jsonl; then exit 1; fi
+          grep -F '"Action":"pass"' .cache/browser-page-bindings-ci/migrations.jsonl | grep -Fq '"Test":"TestStoreIntegrationCRUD"'
+      - run: bash scripts/dev/browser-page-bindings-tests.sh
+      - name: Preserve required page binding evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-page-bindings-evidence
+          path: .cache/browser-page-bindings-ci/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error
   recipient-chromium:
     runs-on: ubuntu-24.04
     timeout-minutes: 10

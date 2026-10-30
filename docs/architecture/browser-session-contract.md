@@ -2,7 +2,9 @@
 
 Multi-page and federated sign-in remain a
 [target proposal](browser-pages-proposal.md), not enabled production behavior.
-The isolated two-origin SSO recipient does not change this implemented contract.
+Migration107 and `browsercontrol` implement a private page metadata ledger only;
+it grants no dispatch, network or credential authority. The ledger and isolated
+SSO recipient do not change the active single-page tool contract below.
 
 The distinct revision1 [browser login protocol](browser-login-protocol.md) accepts
 only a scoped one-use login consent. Chromium submits the native form at most
