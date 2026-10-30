@@ -133,7 +133,9 @@ func (p *Provider) executeResponsesWS(ctx context.Context, runID string, body []
 				if status == 404 || status == 405 || status == 426 || status == 501 {
 					return nil, true, transport.ProviderProtocolError(providerName)
 				}
-				return nil, false, transport.NormalizeError(transport.ProviderHTTPError(resp), providerName)
+				failure := transport.NormalizeError(transport.ProviderHTTPError(resp), providerName)
+				failure.HTTPStatus = status
+				return nil, false, failure
 			}
 			return nil, false, transport.NormalizeError(dialErr, providerName)
 		}

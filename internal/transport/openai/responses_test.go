@@ -171,6 +171,8 @@ func TestResponsesFallbackOnlyBeforeGeneration(t *testing.T) {
 				}
 			} else if err == nil || posts.Load() != 0 || marks.Load() != 0 {
 				t.Fatal("denied handshake caused generation")
+			} else if transport.DiagnosticHTTPStatus(err) != status {
+				t.Fatal("handshake status lost")
 			}
 		})
 	}

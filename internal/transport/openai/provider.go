@@ -227,7 +227,9 @@ func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, u
 	if err := decodeAPIError(resp); err != nil {
 		resp.Body.Close()
 		p.log.Error("openai stream request rejected", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-		return nil, transport.NormalizeError(err, providerName)
+		failure := transport.NormalizeError(err, providerName)
+		failure.HTTPStatus = resp.StatusCode
+		return nil, failure
 	}
 	p.log.Info("openai stream opened", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode))
 
@@ -647,7 +649,12 @@ func decodeAPIError(resp *http.Response) error {
 	return transport.ProviderHTTPError(resp)
 }
 
-func errorFromPayload(_ map[string]any) error {
+func errorFromPayload(payload map[string]any) error {
+	if status, ok := payload["status"].(float64); ok && status >= 300 && status <= 599 && math.Trunc(status) == status {
+		failure := transport.NormalizeError(&transport.HTTPStatusError{StatusCode: int(status)}, providerName)
+		failure.HTTPStatus = int(status)
+		return failure
+	}
 	return transport.ProviderProtocolError(providerName)
 }
 

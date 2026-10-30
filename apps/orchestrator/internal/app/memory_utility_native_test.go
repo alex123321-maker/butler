@@ -351,7 +351,9 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	if err != nil {
 		entry["error_code"] = transport.DiagnosticCode(err)
 		p.failed = true
-		if code := transport.DiagnosticHTTPStatus(err); s.plan.Provider == "openai" && (code == 401 || code == 403 || code == 429) { s.stopped = true }
+		if code := transport.DiagnosticHTTPStatus(err); s.plan.Provider == "openai" && (code == 401 || code == 403 || code == 429) {
+			s.stopped = true
+		}
 	} else {
 		for event := range stream {
 			events = append(events, event)
@@ -364,6 +366,9 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 			if event.TransportError != nil {
 				entry["error_code"] = string(event.TransportError.Type)
 				p.failed = true
+				if code := transport.DiagnosticHTTPStatus(event.TransportError); s.plan.Provider == "openai" && (code == 401 || code == 403 || code == 429) {
+					s.stopped = true
+				}
 			}
 		}
 	}
