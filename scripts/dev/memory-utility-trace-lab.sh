@@ -61,6 +61,7 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  -e BUTLER_BROKER_E2E_BINARY=/reports/broker -e BUTLER_EXTENSION_E2E_BINARY=/reports/extension.test \
  -e BUTLER_EXPERIENCE_HTTP_BINARY=/reports/http.test -e BUTLER_UTILITY_TRACE_OFFLINE=1 \
  -e BUTLER_GUARDED_REQUEST_BROKER_BINARY=/reports/broker.test \
+ -e BUTLER_MEMORY_READ_APP_BINARY=/reports/broker \
  -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e BUTLER_UTILITY_WHOLE_OFFLINE=1 -e BUTLER_UTILITY_WHOLE_OUTPUT=/reports/whole -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
  "$image" sh -eu -c '
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^(TestMemoryUtilityActualCoreBrokerTraceIntegration|TestMemoryUtilityInstructionsAreScopedToCurrentGoal|TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration)$"
@@ -69,4 +70,12 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^TestReviewedSkillRealBrokerDurableApprovalE2E$"
  ' \
  > "$r/reports/tests.jsonl" 2>&1
+python3 - "$r/reports/tests.jsonl" <<'PY'
+# Stdlib host evidence check: a skipped mandatory fixture is not a passing gate.
+import json, pathlib, sys
+events = [json.loads(line) for line in pathlib.Path(sys.argv[1]).read_text().splitlines()]
+assert not any(e['Action'] in ('fail', 'skip') for e in events), 'required test failed or skipped'
+required = {'TestMemoryUtilityActualCoreBrokerTraceIntegration', 'TestMemoryUtilityInstructionsAreScopedToCurrentGoal', 'TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration', 'TestMemoryUtilityWholeControlledABCIntegration', 'TestReviewedSkillRealBrokerDurableApprovalE2E'}
+assert required <= {e.get('Test') for e in events if e['Action'] == 'pass'}, 'required test not observed'
+PY
 sha256sum "$r/reports/tests.jsonl" > "$r/reports/tests.sha256"
