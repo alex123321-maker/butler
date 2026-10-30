@@ -24,7 +24,7 @@ func loginAuthorityFixture(t *testing.T) (*Service, *memoryStore, *contexts, *lo
 	s.credentials = checker
 	reader.current.InputClaimHash = strings.Repeat("a", 64)
 	alias := "creq_" + strings.Repeat("b", 64)
-	a := browserauth.Args{Scope: browserauth.Scope{Browser: "context", ExpectedURL: "https://example.com/login", TargetURL: "https://example.com/session", Form: "form", Username: "#u", Password: "#p"}, Version: 7, UsernameRef: browserauth.Ref{"credential_ref", alias, "username"}, PasswordRef: browserauth.Ref{"credential_ref", alias, "password"}}
+	a := browserauth.Args{Scope: browserauth.Scope{Browser: "context", ExpectedURL: "https://example.com/login", TargetURL: "https://example.com/session", Form: "form", Username: "#u", Password: "#p"}, Version: 7, UsernameRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "username"}, PasswordRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "password"}}
 	raw, _ := json.Marshal(a)
 	call.ToolName = browserauth.Tool
 	call.ArgsJson = string(raw)
