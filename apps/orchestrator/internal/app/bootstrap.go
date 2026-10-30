@@ -157,12 +157,13 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 
 	providerBuilder := providerfactory.New(authManager, log)
 	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
-		ActiveProvider:                 cfg.ModelProvider,
-		OpenAIAPIKey:                   cfg.OpenAIAPIKey,
-		OpenAIModel:                    cfg.OpenAIModel,
-		OpenAIBaseURL:                  cfg.OpenAIBaseURL,
-		OpenAIRealtimeURL:              cfg.OpenAIRealtimeURL,
-		OpenAITransportMode:            cfg.OpenAITransportMode,
+		ActiveProvider:       cfg.ModelProvider,
+		OpenAIAPIKey:         cfg.OpenAIAPIKey,
+		OpenAIModel:          cfg.OpenAIModel,
+		OpenAIBaseURL:        cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:    cfg.OpenAIRealtimeURL,
+		OpenAITransportMode:  cfg.OpenAITransportMode,
+		OpenAIResponsesWSURL: cfg.OpenAIResponsesWSURL, OpenAIReasoningEffort: cfg.OpenAIReasoningEffort, OpenAIMaximumInputTokens: cfg.OpenAIMaximumInputTokens, OpenAIMaximumOutputTokens: cfg.OpenAIMaximumOutputTokens,
 		OpenAICodexModel:               cfg.OpenAICodexModel,
 		OpenAICodexBaseURL:             cfg.OpenAICodexBaseURL,
 		GitHubCopilotModel:             cfg.GitHubCopilotModel,

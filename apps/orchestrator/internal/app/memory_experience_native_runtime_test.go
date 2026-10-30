@@ -657,7 +657,7 @@ func (r *experienceNativeRuntime) createTask(t *testing.T, ctx context.Context, 
 	for _, name := range []string{readcontrol.Search, readcontrol.Open, readcontrol.Neighbors, "skills.search", "skills.load"} {
 		resourceScopes = append(resourceScopes, actionauth.ResourceScope{Origin: "tool:" + name})
 	}
-	m, err := r.goals.PutMandate(experienceNativeActor(ctx, id+":mandate"), goal.MandateRequest{Mandate: actionauth.Mandate{GoalID: g.SubjectID, GoalRevision: g.Revision, Status: "active", Purpose: "experience_current_task", Tools: allowed, Extensions: []actionauth.ExtensionPermission{{Source: r.pack.Manifest.Source.URI, ExtensionID: r.pack.Manifest.ID, ManifestHash: r.pack.Digest, Tools: names}}, ResourceScopes: resourceScopes, Effects: effects, Privacy: "cloud_allowed", Budget: actionauth.MandateBudget{ModelTurns: u.ModelTurns, Tokens: u.Tokens, ActiveMillis: u.ActiveMillis, ExternalCalls: u.ExternalCalls, EgressBytes: u.EgressBytes, ProviderInputBytes: u.ProviderInputBytes}, ExpiresAt: r.expires, Reporting: "exceptions", Intervention: []string{"effect_unknown", "budget_exhausted"}}})
+	m, err := r.goals.PutMandate(experienceNativeActor(ctx, id+":mandate"), goal.MandateRequest{Mandate: actionauth.Mandate{GoalID: g.SubjectID, GoalRevision: g.Revision, Status: "active", Purpose: "experience_current_task", Tools: allowed, Extensions: []actionauth.ExtensionPermission{{Source: r.pack.Manifest.Source.URI, ExtensionID: r.pack.Manifest.ID, ManifestHash: r.pack.Digest, Tools: names}}, ResourceScopes: resourceScopes, Effects: effects, Privacy: "cloud_allowed", Budget: actionauth.MandateBudget{ModelTurns: u.ModelTurns, Tokens: u.Tokens, CostMicros: u.CostMicros, ActiveMillis: u.ActiveMillis, ExternalCalls: u.ExternalCalls, EgressBytes: u.EgressBytes, ProviderInputBytes: u.ProviderInputBytes}, ExpiresAt: r.expires, Reporting: "exceptions", Intervention: []string{"effect_unknown", "budget_exhausted"}}})
 	if err != nil {
 		t.Fatal("current finite mandate admission", err)
 	}
@@ -768,9 +768,13 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	}
 	currentSources := experienceTimedRunSources{experienceRunSources: experienceRunSources{sources: experienceTimedCatalog{Store: r.cat, timing: r.timing}, catalog: r.cat, store: r.lessons}, timing: r.timing}
 	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "experience-native-worker", LeaseTTL: 120, Tasks: r.tasks, Budgets: r.budgets, MemorySources: currentSources, Completion: r.results, Checkpoints: r.inputs, PromptManager: r.pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tools: r.broker, ToolCatalog: r.broker, ActionAuthorizer: r.broker, OwnerGoals: r.goals, ActionMandateID: a.MandateID, ApprovalService: r.decisions}
+	if selected, ok := provider.(interface{ NativeModel() string }); ok {
+		fc.ProviderName = provider.Name()
+		fc.ModelName = selected.NativeModel()
+	}
 	fc.ProfileStore = profileStoreAdapter{store: profile.NewStore(r.pool), sources: r.cat}
 	fc.MemoryEvidence = memoryEvidencePolicy(r.evidenceReads)
-	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: "gemini-3.8-flash-high"}, r.budgets, r.foreground)
+	fc = experienceNativeForegroundConfig(fc, providerfactory.Result{Provider: provider, ModelName: fc.ModelName}, r.budgets, r.foreground)
 	fc.MemoryScopeResolver = func(c context.Context) ([]memoryservice.Scope, error) {
 		extra, err := r.cat.ExtraScopes(c, "memory_read")
 		out := []memoryservice.Scope{}

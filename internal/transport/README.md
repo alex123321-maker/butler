@@ -1,5 +1,11 @@
 # Logical model transport
 
+The API-key [OpenAI provider](openai/README.md) uses the Responses API in both
+WebSocket and SSE modes, with run-local explicit lineage and no replay after
+dispatch. Its optional `OutputReasoningTokens` and `CachedInputTokens` metadata
+are subsets of the existing output/input counts. They do not increase total usage
+or change the separate Antigravity ThinkingTokens dimension.
+
 Optional logical `Usage.ThinkingTokens` is a separately observed subset of total
 usage, not an additional charge or allowance. Missing stays unavailable; explicit
 counts must fit the observed total after input/output. The issue97 native

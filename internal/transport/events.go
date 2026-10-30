@@ -36,6 +36,9 @@ type Usage struct {
 	TotalTokens  int
 	// Optional separately observed reasoning count. Nil is unavailable, not zero.
 	ThinkingTokens *int `json:",omitempty"`
+	// OpenAI reasoning is already included in OutputTokens; cached input in InputTokens.
+	OutputReasoningTokens *int `json:",omitempty"`
+	CachedInputTokens     *int `json:",omitempty"`
 }
 
 // Validate accepts nonnegative observed counts without overflowing a sum. A
@@ -52,6 +55,12 @@ func (u Usage) Validate() error {
 	}
 	if u.ThinkingTokens != nil && (*u.ThinkingTokens < 0 || *u.ThinkingTokens > u.TotalTokens-u.InputTokens-u.OutputTokens) {
 		return fmt.Errorf("invalid observed thinking usage")
+	}
+	if u.OutputReasoningTokens != nil && (*u.OutputReasoningTokens < 0 || *u.OutputReasoningTokens > u.OutputTokens) {
+		return fmt.Errorf("invalid observed output reasoning usage")
+	}
+	if u.CachedInputTokens != nil && (*u.CachedInputTokens < 0 || *u.CachedInputTokens > u.InputTokens) {
+		return fmt.Errorf("invalid observed cached input usage")
 	}
 	return nil
 }

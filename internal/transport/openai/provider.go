@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"strings"
 	"sync"
@@ -35,13 +36,17 @@ func init() {
 }
 
 type Config struct {
-	APIKey        string
-	Model         string
-	BaseURL       string
-	RealtimeURL   string
-	TransportMode string
-	Timeout       time.Duration
-	Logger        *slog.Logger
+	APIKey              string
+	Model               string
+	BaseURL             string
+	ResponsesWSURL      string
+	RealtimeURL         string // Deprecated name; this is a Responses WebSocket URL.
+	ReasoningEffort     string
+	MaximumInputTokens  int
+	MaximumOutputTokens int
+	TransportMode       string
+	Timeout             time.Duration
+	Logger              *slog.Logger
 }
 
 type Provider struct {
@@ -51,9 +56,12 @@ type Provider struct {
 	capabilities transport.CapabilitySnapshot
 	log          *slog.Logger
 	mu           sync.Mutex
-	activeWS     map[string]*realtimeSession // runID → active session
-	sessions     map[string]*realtimeSession // sessionKey → persistent session
-	instructions map[string]string           // runID -> instruction continuity within this run
+	sessions     map[string]*responsesSession // runID -> Responses socket
+	cancels      map[string]context.CancelFunc
+	aliases      map[string]map[string]string
+	prefixTokens map[string]map[string]int64
+	expiry       map[string]*time.Timer
+	instructions map[string]string // runID -> instruction continuity within this run
 }
 
 func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
@@ -63,11 +71,37 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		cfg.BaseURL = "https://api.openai.com/v1"
 	}
+	if cfg.ResponsesWSURL != "" {
+		cfg.RealtimeURL = cfg.ResponsesWSURL
+	}
 	if strings.TrimSpace(cfg.RealtimeURL) == "" {
-		cfg.RealtimeURL = deriveRealtimeURL(cfg.BaseURL)
+		cfg.RealtimeURL = deriveResponsesURL(cfg.BaseURL)
 	}
 	if strings.TrimSpace(cfg.TransportMode) == "" {
 		cfg.TransportMode = TransportModeWSFirst
+	}
+	if cfg.RealtimeURL == "wss://api.openai.com/v1/realtime" {
+		cfg.RealtimeURL = deriveResponsesURL(cfg.BaseURL)
+	}
+	if strings.Contains(cfg.RealtimeURL, "/realtime") {
+		return nil, fmt.Errorf("openai: Realtime endpoint cannot serve Responses models")
+	}
+	if cfg.TransportMode != TransportModeWSFirst && cfg.TransportMode != TransportModeSSEOnly {
+		return nil, fmt.Errorf("openai: unsupported transport mode")
+	}
+	switch cfg.ReasoningEffort {
+	case "", "none", "low", "medium", "high", "xhigh", "max":
+	default:
+		return nil, fmt.Errorf("openai: invalid reasoning effort")
+	}
+	if cfg.MaximumInputTokens == 0 {
+		cfg.MaximumInputTokens = 65536
+	}
+	if cfg.MaximumOutputTokens == 0 {
+		cfg.MaximumOutputTokens = 8192
+	}
+	if cfg.MaximumInputTokens < 1 || cfg.MaximumOutputTokens < 1 {
+		return nil, fmt.Errorf("openai: invalid inference limits")
 	}
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 60 * time.Second
@@ -86,13 +120,13 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 		config:       cfg,
 		httpClient:   client,
 		log:          logger.WithComponent(log, "transport-openai"),
-		activeWS:     make(map[string]*realtimeSession),
-		sessions:     make(map[string]*realtimeSession),
+		sessions:     make(map[string]*responsesSession),
 		instructions: make(map[string]string),
+		cancels:      make(map[string]context.CancelFunc), aliases: make(map[string]map[string]string), expiry: make(map[string]*time.Timer), prefixTokens: make(map[string]map[string]int64),
 		capabilities: transport.CapabilitySnapshot{
 			SupportsStreaming:        true,
 			SupportsToolCalls:        true,
-			SupportsBatchToolCalls:   true,
+			SupportsBatchToolCalls:   false,
 			SupportsStatefulSessions: true,
 			SupportsCancel:           true,
 			SupportsUsageMetadata:    true,
@@ -112,6 +146,9 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	if req.Context.ModelName != p.config.Model {
+		return nil, fmt.Errorf("openai: request model differs from configured model")
+	}
 	p.log.Info("starting openai run",
 		slog.String("run_id", req.Context.RunID),
 		slog.String("model", req.Context.ModelName),
@@ -121,9 +158,7 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err != nil {
 		return nil, err
 	}
-	return p.executeRunRequest(ctx, req.Context.RunID, req.Context.ModelName, body, func(context.Context) ([]map[string]any, error) {
-		return p.startRunRealtimeMessages(req)
-	})
+	return p.executeRunRequest(ctx, req.Context.RunID, body)
 }
 
 func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunRequest) (transport.EventStream, error) {
@@ -135,10 +170,7 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err != nil {
 		return nil, err
 	}
-	modelName := p.config.Model
-	return p.executeRunRequest(ctx, req.RunID, modelName, body, func(context.Context) ([]map[string]any, error) {
-		return p.continueRunRealtimeMessages(req)
-	})
+	return p.executeRunRequest(ctx, req.RunID, body)
 }
 
 func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToolResultRequest) (transport.EventStream, error) {
@@ -153,53 +185,17 @@ func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToo
 	if err != nil {
 		return nil, err
 	}
-	modelName := p.config.Model
-	return p.executeRunRequest(ctx, req.RunID, modelName, body, func(context.Context) ([]map[string]any, error) {
-		return p.submitToolResultRealtimeMessages(req)
-	})
+	return p.executeRunRequest(ctx, req.RunID, body)
 }
 
 func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest) (*transport.TransportEvent, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	defer p.clearInstructions(req.RunID)
-	p.log.Info("cancelling openai run", slog.String("run_id", req.RunID))
-	if active := p.activeRealtimeSession(req.RunID); active != nil {
-		if err := active.sendJSON(map[string]any{"type": "response.cancel"}); err != nil {
-			p.log.Warn("openai realtime cancel message failed", slog.String("run_id", req.RunID), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-		}
-		active.closeConn()
-		event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
-		return &event, nil
-	}
-	responseRef := ""
-	if req.ProviderSessionRef != nil {
-		responseRef = strings.TrimSpace(req.ProviderSessionRef.ResponseRef)
-	}
-	if responseRef == "" {
-		event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
-		return &event, nil
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint("/responses/"+responseRef+"/cancel"), nil)
-	if err != nil {
-		return nil, transport.NormalizeError(err, providerName)
-	}
-	p.applyHeaders(httpReq)
-
-	resp, err := p.httpClient.Do(httpReq)
-	if err != nil {
-		p.log.Error("openai cancel request failed", slog.String("run_id", req.RunID), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-		return nil, transport.NormalizeError(err, providerName)
-	}
-	defer resp.Body.Close()
-	if err := decodeAPIError(resp); err != nil {
-		p.log.Error("openai cancel request rejected", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-		return nil, transport.NormalizeError(err, providerName)
-	}
+	p.cancelRequest(req.RunID)
+	p.CloseRun(req.RunID)
+	p.clearInstructions(req.RunID)
 	event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
-	p.log.Info("openai run cancelled", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode))
 	return &event, nil
 }
 
@@ -213,8 +209,14 @@ func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, u
 		p.log.Error("failed to create openai request", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
+	if err := transport.CheckInferenceAuthority(ctx); err != nil {
+		return nil, err
+	}
 	p.applyHeaders(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
+	if err := transport.CheckInferenceDispatch(ctx); err != nil {
+		return nil, err
+	}
 
 	p.log.Info("opening openai stream", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path))
 	resp, err := p.httpClient.Do(httpReq)
@@ -244,19 +246,25 @@ func (p *Provider) streamResponse(ctx context.Context, runID, path string, body 
 	for {
 		message, err := decoder.Next(ctx)
 		if err != nil {
-			if err == io.EOF || ctx.Err() != nil {
+			if ctx.Err() != nil {
 				p.log.Info("openai stream closed", slog.String("run_id", runID), slog.String("path", path), slog.Int("events_emitted", eventsEmitted))
 				return
 			}
 			p.log.Error("openai stream decode failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
+			select {
+			case stream <- transport.NewTransportErrorEvent(runID, providerName, err):
+			case <-ctx.Done():
+			}
 			return
 		}
 
 		events, stop, err := p.normalizeMessage(runID, message, &state)
 		if err != nil {
 			p.log.Error("openai event normalization failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
-			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
+			select {
+			case stream <- transport.NewTransportErrorEvent(runID, providerName, err):
+			case <-ctx.Done():
+			}
 			return
 		}
 		for _, event := range events {
@@ -295,135 +303,106 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 
 func (p *Provider) normalizePayload(runID, eventType string, payload map[string]any, state *streamState) ([]transport.TransportEvent, bool, error) {
 	switch eventType {
-	case "session.created", "session.updated":
-		ref := providerSessionFromPayload(payload)
-		if ref == nil {
+	case "response.created", "response.in_progress":
+		if state.started {
 			return nil, false, nil
 		}
-		state.providerSession = ref
-		return []transport.TransportEvent{transport.NewProviderSessionBoundEvent(runID, providerName, *ref)}, false, nil
-	case "response.created", "response.in_progress":
-		ref := providerSessionFromPayload(payload)
-		state.providerSession = ref
-		events := []transport.TransportEvent{transport.NewRunStartedEvent(runID, providerName, p.capabilities, ref)}
-		if ref != nil {
-			events = append(events, transport.NewProviderSessionBoundEvent(runID, providerName, *ref))
+		state.started = true
+		state.providerSession = providerSessionFromPayload(payload)
+		events := []transport.TransportEvent{transport.NewRunStartedEvent(runID, providerName, p.capabilities, state.providerSession)}
+		if state.providerSession != nil {
+			events = append(events, transport.NewProviderSessionBoundEvent(runID, providerName, *state.providerSession))
 		}
 		return events, false, nil
 	case "response.output_text.delta":
 		delta := stringValue(payload["delta"])
 		state.finalText.WriteString(delta)
-		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{
-			DeltaType:  "text",
-			Content:    delta,
-			SequenceNo: intValue(payload["sequence_number"]),
-		})}, false, nil
-	case "response.text.delta":
-		delta := stringValue(payload["delta"])
-		state.finalText.WriteString(delta)
-		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{
-			DeltaType:  "text",
-			Content:    delta,
-			SequenceNo: intValue(payload["sequence_number"]),
-		})}, false, nil
+		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{DeltaType: "text", Content: delta, SequenceNo: intValue(payload["sequence_number"])})}, false, nil
 	case "response.output_item.done":
-		item, _ := payload["item"].(map[string]any)
-		if stringValue(item["type"]) != "function_call" {
-			return nil, false, nil
+		item := mapValue(payload["item"])
+		if stringValue(item["type"]) == "function_call" {
+			state.calls = append(state.calls, item)
 		}
-		state.toolRequested = true
-		callID := stringValue(item["call_id"])
-		if callID == "" {
-			callID = stringValue(item["id"])
+		return nil, false, nil
+	case "response.completed", "response.incomplete", "response.failed":
+		response := mapValue(payload["response"])
+		usage, err := parseUsage(mapValue(response["usage"]))
+		if err != nil {
+			return nil, false, err
 		}
-		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{
-			ToolCallRef: callID,
-			ToolName:    stringValue(item["name"]),
-			ArgsJSON:    coalesceJSONString(item["arguments"], "{}"),
-			SequenceNo:  intValue(payload["sequence_number"]),
-		})}, false, nil
-	case "response.function_call_arguments.done":
-		state.toolRequested = true
-		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{
-			ToolCallRef: stringValue(payload["call_id"]),
-			ToolName:    stringValue(payload["name"]),
-			ArgsJSON:    coalesceJSONString(payload["arguments"], "{}"),
-			SequenceNo:  intValue(payload["sequence_number"]),
-		})}, false, nil
-	case "response.completed":
-		response, _ := payload["response"].(map[string]any)
-		if ref := providerSessionFromPayload(payload); ref != nil {
-			state.providerSession = ref
+		ref := providerSessionFromPayload(payload)
+		if ref == nil {
+			ref = state.providerSession
 		}
-		finalText := strings.TrimSpace(extractOutputText(response))
-		if finalText == "" {
-			finalText = strings.TrimSpace(state.finalText.String())
-		}
-		finalEvent := transport.NewAssistantFinalEvent(runID, providerName, transport.AssistantFinal{
-			Content:      finalText,
-			FinishReason: stringValue(response["status"]),
-			Usage:        usageFromMap(mapValue(response["usage"])),
-		})
-		if state.providerSession != nil {
-			finalEvent.ProviderSessionRef = state.providerSession
-		}
-		completed := transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, providerName)
-		if state.providerSession != nil {
-			completed.ProviderSessionRef = state.providerSession
-		}
-		if !state.toolRequested {
-			p.clearInstructions(runID)
-		}
-		return []transport.TransportEvent{finalEvent, completed}, true, nil
-	case "response.done":
-		response, _ := payload["response"].(map[string]any)
-		status := stringValue(response["status"])
-		if status == "failed" {
-			providerErr := errorFromPayload(map[string]any{"error": response["error"]})
-			errorEvent := transport.NewTransportErrorEvent(runID, providerName, providerErr)
-			if state.providerSession != nil {
-				errorEvent.ProviderSessionRef = state.providerSession
+		if usage != nil && ref != nil && ref.ResponseRef != "" {
+			p.mu.Lock()
+			if p.prefixTokens[runID] == nil {
+				p.prefixTokens[runID] = map[string]int64{}
 			}
+			p.prefixTokens[runID][ref.ResponseRef] = int64(usage.InputTokens) + int64(usage.OutputTokens)
+			p.mu.Unlock()
+		}
+		if eventType != "response.completed" || stringValue(response["status"]) != "completed" {
+			event := transport.NewTransportErrorEvent(runID, providerName, transport.ProviderProtocolError(providerName))
+			event.Usage = usage
+			event.ProviderSessionRef = ref
 			p.clearInstructions(runID)
-			return []transport.TransportEvent{errorEvent}, true, nil
+			return []transport.TransportEvent{event}, true, nil
 		}
-		if ref := providerSessionFromPayload(payload); ref != nil {
-			state.providerSession = ref
+		calls := state.calls
+		if output, ok := response["output"].([]any); ok {
+			calls = nil
+			for _, raw := range output {
+				item := mapValue(raw)
+				if stringValue(item["type"]) == "function_call" {
+					calls = append(calls, item)
+				}
+			}
 		}
-		finalText := strings.TrimSpace(extractOutputText(response))
-		if finalText == "" {
-			finalText = strings.TrimSpace(state.finalText.String())
+		var proposed []transport.ToolCallRequest
+		seen := map[string]bool{}
+		for _, item := range calls {
+			id, name, args := stringValue(item["call_id"]), stringValue(item["name"]), stringValue(item["arguments"])
+			if id == "" || name == "" || seen[id] || !json.Valid([]byte(args)) {
+				event := transport.NewTransportErrorEvent(runID, providerName, transport.ProviderProtocolError(providerName))
+				event.Usage = usage
+				return []transport.TransportEvent{event}, true, nil
+			}
+			seen[id] = true
+			proposed = append(proposed, transport.ToolCallRequest{ToolCallRef: id, ToolName: p.resolveToolName(runID, name), ArgsJSON: args})
 		}
-		finalEvent := transport.NewAssistantFinalEvent(runID, providerName, transport.AssistantFinal{
-			Content:      finalText,
-			FinishReason: status,
-			Usage:        usageFromMap(mapValue(response["usage"])),
-		})
-		if state.providerSession != nil {
-			finalEvent.ProviderSessionRef = state.providerSession
+		var event transport.TransportEvent
+		switch len(proposed) {
+		case 0:
+			text := extractOutputText(response)
+			if text == "" {
+				text = state.finalText.String()
+			}
+			if strings.TrimSpace(text) == "" {
+				event = transport.NewTransportErrorEvent(runID, providerName, transport.ProviderProtocolError(providerName))
+			} else {
+				event = transport.NewAssistantFinalEvent(runID, providerName, transport.AssistantFinal{Content: text, FinishReason: "completed", Usage: usage})
+			}
+			p.expireInstructions(runID)
+		case 1:
+			event = transport.NewToolCallRequestedEvent(runID, providerName, proposed[0])
+		default:
+			event = transport.NewTransportErrorEvent(runID, providerName, &transport.Error{Type: transport.ErrorTypeCapabilityMismatch, ProviderName: providerName, Message: "openai returned unsupported parallel tools", SafeReason: "batch_tool_calls_unsupported"})
 		}
-		completed := transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, providerName)
-		if state.providerSession != nil {
-			completed.ProviderSessionRef = state.providerSession
+		event.Usage = usage
+		event.ProviderSessionRef = ref
+		if model := stringValue(response["model"]); model != "" {
+			event.ProviderModelVersion = &model
 		}
-		if !state.toolRequested {
-			p.clearInstructions(runID)
-		}
-		return []transport.TransportEvent{finalEvent, completed}, true, nil
-	case "response.failed", "error":
-		providerErr := errorFromPayload(payload)
-		errorEvent := transport.NewTransportErrorEvent(runID, providerName, providerErr)
-		if state.providerSession != nil {
-			errorEvent.ProviderSessionRef = state.providerSession
-		}
+		done := transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, providerName)
+		done.ProviderSessionRef = ref
+		return []transport.TransportEvent{event, done}, true, nil
+	case "error":
 		p.clearInstructions(runID)
-		return []transport.TransportEvent{errorEvent}, true, nil
+		return []transport.TransportEvent{transport.NewTransportErrorEvent(runID, providerName, errorFromPayload(payload))}, true, nil
 	default:
-		warning := transport.NewTransportWarningEvent(runID, providerName, "unhandled openai stream event", map[string]any{"event_type": eventType})
-		if state.providerSession != nil {
-			warning.ProviderSessionRef = state.providerSession
-		}
-		return []transport.TransportEvent{warning}, false, nil
+		// Reasoning, annotations and argument fragments are not executable proposals.
+		return nil, false, nil
 	}
 }
 
@@ -452,7 +431,7 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.encodeRequest(payload)
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
@@ -484,7 +463,7 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.encodeRequest(payload)
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
@@ -494,7 +473,7 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 	input := []map[string]any{{
 		"type":    "function_call_output",
 		"call_id": req.ToolCallRef,
-		"output":  json.RawMessage(req.ToolResultJSON),
+		"output":  req.ToolResultJSON,
 	}}
 	payload := map[string]any{
 		"model":  p.config.Model,
@@ -515,7 +494,7 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.encodeRequest(payload)
 }
 
 func (p *Provider) applyHeaders(req *http.Request) {
@@ -583,7 +562,8 @@ func (d *sseDecoder) Next(ctx context.Context) (sseMessage, error) {
 }
 
 type streamState struct {
-	toolRequested   bool
+	started         bool
+	calls           []map[string]any
 	providerSession *transport.ProviderSessionRef
 	finalText       strings.Builder
 }
@@ -642,8 +622,9 @@ func encodeTools(tools []transport.ToolDefinition) []map[string]any {
 	for _, tool := range tools {
 		entry := map[string]any{
 			"type":        "function",
-			"name":        tool.Name,
-			"description": tool.Description,
+			"name":        toolAlias(tool.Name),
+			"strict":      false,
+			"description": "Butler tool " + tool.Name + ". " + tool.Description,
 		}
 		if strings.TrimSpace(tool.SchemaJSON) != "" {
 			var schema any
@@ -686,15 +667,48 @@ func extractOutputText(response map[string]any) string {
 	return builder.String()
 }
 
-func usageFromMap(payload map[string]any) *transport.Usage {
+func parseUsage(payload map[string]any) (*transport.Usage, error) {
 	if len(payload) == 0 {
-		return nil
+		return nil, nil
 	}
-	return &transport.Usage{
-		InputTokens:  intValue(payload["input_tokens"]),
-		OutputTokens: intValue(payload["output_tokens"]),
-		TotalTokens:  intValue(payload["total_tokens"]),
+	count := func(key string) (int, error) {
+		n, ok := payload[key].(float64)
+		if !ok || math.IsNaN(n) || n < 0 || n >= float64(int(^uint(0)>>1)) || math.Trunc(n) != n {
+			return 0, transport.ProviderProtocolError(providerName)
+		}
+		return int(n), nil
 	}
+	in, err := count("input_tokens")
+	if err != nil {
+		return nil, err
+	}
+	out, err := count("output_tokens")
+	if err != nil {
+		return nil, err
+	}
+	total, err := count("total_tokens")
+	if err != nil {
+		return nil, err
+	}
+	usage := &transport.Usage{InputTokens: in, OutputTokens: out, TotalTokens: total}
+	if usage.Validate() != nil || total-in != out {
+		return nil, transport.ProviderProtocolError(providerName)
+	}
+	for _, spec := range []struct {
+		parent, key string
+		dst         **int
+		max         int
+	}{{"input_tokens_details", "cached_tokens", &usage.CachedInputTokens, in}, {"output_tokens_details", "reasoning_tokens", &usage.OutputReasoningTokens, out}} {
+		if v, ok := mapValue(payload[spec.parent])[spec.key]; ok {
+			n, ok := v.(float64)
+			if !ok || n < 0 || n > float64(spec.max) || math.Trunc(n) != n {
+				return nil, transport.ProviderProtocolError(providerName)
+			}
+			value := int(n)
+			*spec.dst = &value
+		}
+	}
+	return usage, nil
 }
 
 func mergeOptions(raw string, options map[string]any) map[string]any {
@@ -704,6 +718,13 @@ func mergeOptions(raw string, options map[string]any) map[string]any {
 	}
 	for key, value := range options {
 		merged[key] = value
+	}
+	for key := range merged {
+		switch key {
+		case "reasoning", "text", "tool_choice", "parallel_tool_calls", "max_output_tokens", "service_tier":
+		default:
+			delete(merged, key)
+		}
 	}
 	return merged
 }
@@ -797,4 +818,10 @@ func (p *Provider) clearInstructions(runID string) {
 	defer p.mu.Unlock()
 	delete(p.toolSets, runID)
 	delete(p.instructions, runID)
+	delete(p.aliases, runID)
+	delete(p.prefixTokens, runID)
+	if timer := p.expiry[runID]; timer != nil {
+		timer.Stop()
+		delete(p.expiry, runID)
+	}
 }

@@ -25,7 +25,7 @@ func TestInstructionsSurviveToolCompletionAndEndWithRun(t *testing.T) {
 		t.Fatal("start instruction normalization failed")
 	}
 	state := &streamState{}
-	_, _, _ = p.normalizePayload("run", "response.function_call_arguments.done", map[string]any{"name": "single_tab.status", "call_id": "call", "arguments": "{}"}, state)
+	_, _, _ = p.normalizePayload("run", "response.output_item.done", map[string]any{"item": map[string]any{"type": "function_call", "name": "single_tab.status", "call_id": "call", "arguments": "{}"}}, state)
 	_, _, _ = p.normalizePayload("run", "response.completed", map[string]any{"response": map[string]any{"status": "completed"}}, state)
 	resume, err := p.submitToolResultBody(transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: "call", ToolResultJSON: `{}`})
 	if err != nil {
@@ -41,8 +41,8 @@ func TestInstructionsSurviveToolCompletionAndEndWithRun(t *testing.T) {
 		t.Fatal("instructions leaked across runs")
 	}
 	_, _, _ = p.normalizePayload("run", "response.completed", map[string]any{"response": map[string]any{"status": "completed"}}, &streamState{})
-	if p.instructionsFor("run") != "" {
-		t.Fatal("final retained instructions")
+	if p.instructionsFor("run") == "" {
+		t.Fatal("final lost bounded correction context")
 	}
 	p.setInstructions("run", "old")
 	if _, err := p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "run"}); err != nil {
@@ -50,28 +50,5 @@ func TestInstructionsSurviveToolCompletionAndEndWithRun(t *testing.T) {
 	}
 	if p.instructionsFor("run") != "" {
 		t.Fatal("cancel retained instructions")
-	}
-}
-
-func TestRealtimeInstructionContinuityClearsPreviousSessionPolicy(t *testing.T) {
-	p, _ := NewProvider(Config{Model: "fixture"}, nil)
-	start, err := p.startRunRealtimeMessages(transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run"}, InputItems: []transport.InputItem{{Role: "system", Content: "current policy"}, {Role: "user", Content: "status"}}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if start[0]["session"].(map[string]any)["instructions"] != "current policy" {
-		t.Fatal("initial policy missing")
-	}
-	resume, _ := p.submitToolResultRealtimeMessages(transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: "call", ToolResultJSON: `{}`})
-	if resume[0]["session"].(map[string]any)["instructions"] != "current policy" {
-		t.Fatal("resume policy missing")
-	}
-	continued, _ := p.continueRunRealtimeMessages(transport.ContinueRunRequest{RunID: "run", InputItems: []transport.InputItem{{Role: "system", Content: "new policy"}}})
-	if continued[0]["session"].(map[string]any)["instructions"] != "new policy" {
-		t.Fatal("updated policy missing")
-	}
-	next, _ := p.startRunRealtimeMessages(transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "next"}, InputItems: []transport.InputItem{{Role: "user", Content: "hello"}}})
-	if next[0]["session"].(map[string]any)["instructions"] != "" {
-		t.Fatal("new run inherited old policy")
 	}
 }

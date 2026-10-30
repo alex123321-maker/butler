@@ -1,5 +1,34 @@
 # Butler — Model Transport Contract
 
+## OpenAI Responses implementation (2026-10-30)
+
+The API-key `openai` provider now uses Responses for both WebSocket and HTTP SSE;
+it does not use audio Realtime or the separate ChatGPT OAuth adapter. See the
+[provider contract/configuration](../../internal/transport/openai/README.md).
+Run-local sockets carry explicit response lineage, repeated kernel instructions
+and exact selected tools. A lost/unmeasured prefix requires caller-owned recovery;
+provider history never establishes Butler authority or durable memory.
+
+Trusted input/output/time ceilings and inference-authority/dispatch callbacks
+apply before generation. Only an explicit unsupported WebSocket handshake may
+fall back before dispatch; frame-write/stream errors never replay. Function calls
+are buffered until terminal completion/usage and stable native aliases restore
+the canonical Broker names. Optional schema properties are not made required.
+Incomplete/failed responses retain valid measured expense and emit no partial
+action. Cancellation aborts the local request/socket; the background-response
+cancel endpoint is not used for foreground requests.
+
+`Usage.OutputReasoningTokens` is an optional subset of OpenAI OutputTokens;
+`Usage.CachedInputTokens` is an optional subset of InputTokens. Validation enforces
+those bounds. Neither is added to TotalTokens. This additive logical Go metadata
+does not extend protobuf boundaries or change other adapters' accounting.
+
+The explicit Luna research profile uses `gpt-6-luna`, reasoning High, standard
+service tier, 65536 input/8192 output and 90s per request. Its fresh A/B/C window
+reuses the exact earlier V3 suite and pins previous receipts; no old run is resumed
+or regraded. Model selection and billing evidence remain separate from product
+acceptance, autonomous learning or deployment.
+
 The Antigravity adapter's content-free `http_do_failed_without_response`
 diagnostic means its single HTTP Do call returned an error without a response
 object while the owning context was live and a fixed socket/EOF cause matched.

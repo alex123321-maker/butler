@@ -8,6 +8,12 @@ func (p *Provider) rememberTools(runID string, defs []transport.ToolDefinition) 
 	if p.toolSets == nil {
 		p.toolSets = map[string][]transport.ToolDefinition{}
 	}
+	if p.aliases[runID] == nil {
+		p.aliases[runID] = map[string]string{}
+	}
+	for _, def := range defs {
+		p.aliases[runID][toolAlias(def.Name)] = def.Name
+	}
 	p.toolSets[runID] = append([]transport.ToolDefinition{}, defs...)
 }
 func (p *Provider) currentTools(runID string) ([]transport.ToolDefinition, bool) {

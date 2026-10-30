@@ -10,7 +10,7 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
-func TestHTTPAndRealtimeSequencesStopBeforeSendingExceededInput(t *testing.T) {
+func TestHTTPAndResponsesStopBeforeSendingExceededInput(t *testing.T) {
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1) }))
 	defer server.Close()
@@ -19,7 +19,7 @@ func TestHTTPAndRealtimeSequencesStopBeforeSendingExceededInput(t *testing.T) {
 	if _, err := provider.executeStreamingRequest(ctx, "run", "POST", server.URL, []byte("123456789")); err == nil {
 		t.Fatal("oversized HTTP request accepted")
 	}
-	if _, err := provider.executeRealtimeRequest(ctx, "run", "gpt-test", []map[string]any{{"a": "12345"}, {"b": "6789"}}); err == nil {
+	if _, _, err := provider.executeResponsesWS(ctx, "run", []byte(`{"input":"123456789"}`)); err == nil {
 		t.Fatal("oversized realtime sequence accepted")
 	}
 	if calls.Load() != 0 {

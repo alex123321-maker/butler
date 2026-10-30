@@ -7,7 +7,7 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
-func TestToolSetReplacementInResponsesAndRealtime(t *testing.T) {
+func TestToolSetReplacementInResponses(t *testing.T) {
 	p, err := NewProvider(Config{Model: "fixture"}, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -35,13 +35,8 @@ func TestToolSetReplacementInResponsesAndRealtime(t *testing.T) {
 		t.Fatal("nil snapshot lost loaded tools")
 	}
 	req.ToolSet = transport.NewToolSetSnapshot(nil)
-	events, err := p.submitToolResultRealtimeMessages(req)
-	if err != nil {
+	if _, err = p.submitToolResultBody(req); err != nil {
 		t.Fatal(err)
-	}
-	update := events[0]["session"].(map[string]any)
-	if len(update["tools"].([]map[string]any)) != 0 {
-		t.Fatal("explicit empty snapshot did not clear Realtime tools")
 	}
 	body, _ = p.continueRunBody(transport.ContinueRunRequest{RunID: "run"})
 	_ = json.Unmarshal(body, &payload)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/providerauth"
+	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
 	"github.com/jackc/pgx/v5"
@@ -43,14 +45,15 @@ func utilityWholeInstructions(c acceptance.UtilityCase) string {
 }
 
 type utilityNativePlan struct {
-	SuiteSHA256                   string
-	Slots                         []utilityWholeSlot
-	Deadline                      time.Time
-	MaximumMethods                int
-	Source                        string
-	HistoricalReceipts            map[string]string
-	Model, Rules, Preparation     string
-	CaseSeconds, AuthoritySeconds int
+	SuiteSHA256                                     string
+	Slots                                           []utilityWholeSlot
+	Deadline                                        time.Time
+	MaximumMethods                                  int
+	Source                                          string
+	HistoricalReceipts                              map[string]string
+	Provider, ReasoningEffort, ReferenceSuiteSHA256 string
+	Model, Rules, Preparation                       string
+	CaseSeconds, AuthoritySeconds                   int
 }
 
 func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
@@ -64,6 +67,18 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 	s, e := acceptance.NewMemoryUtilitySuite()
 	if e != nil {
 		t.Fatal(e)
+	}
+	provider, model, effort := "antigravity", antigravity.FlashHighModel, ""
+	reference := ""
+	if os.Getenv("BUTLER_UTILITY_OPENAI") == "gpt-6-luna" {
+		provider, model, effort = "openai", "gpt-6-luna", "high"
+		raw, err := os.ReadFile("/reference/suite.private.json")
+		var prior acceptance.UtilitySuite
+		if err != nil || json.Unmarshal(raw, &prior) != nil || prior.Validate() != nil || prior.Version != acceptance.MemoryUtilityVersion {
+			t.Fatal("exact V3 reference suite required")
+		}
+		s = prior
+		reference = experienceDigest(string(raw))
 	}
 	slots := []utilityWholeSlot{}
 	for i := range s.Cases {
@@ -96,13 +111,14 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 		history[name] = experienceDigest(string(b))
 	}
-	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: 936, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Model: antigravity.FlashHighModel, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "72 fixed slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
+	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: 936, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Provider: provider, Model: model, ReasoningEffort: effort, ReferenceSuiteSHA256: reference, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "72 fixed slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
 }
 
 type utilityWholeNative struct {
 	control *pgx.Conn
 	pool    *pgxpool.Pool
 	manager *providerauth.Manager
+	apiKey  string
 	plan    utilityNativePlan
 	root    string
 	seq     int
@@ -155,39 +171,67 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	if e != nil || database != "utility_native_test" {
 		t.Fatal("private target identity mismatch before auth")
 	}
-	control, e := pgx.Connect(ctx, "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable")
-	if e != nil {
-		t.Fatal("experimental authority store unavailable")
-	}
-	defer control.Close(context.Background())
-	var locked bool
-	if control.QueryRow(ctx, `SELECT pg_try_advisory_lock(hashtextextended('issue115-laba-auth-owner-v1',0))`).Scan(&locked) != nil || !locked {
-		t.Fatal("experimental credential owner busy")
-	}
-	var others int
-	if control.QueryRow(ctx, `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()`).Scan(&others) != nil || others != 0 {
-		t.Fatal("experimental source has other clients")
+	var control *pgx.Conn
+	var pool *pgxpool.Pool
+	var manager *providerauth.Manager
+	var apiKey string
+	if plan.Provider == "openai" {
+		if plan.Model != "gpt-6-luna" || plan.ReasoningEffort != "high" || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
+			t.Fatal("exact Luna paired profile required")
+		}
+		control, e = pgx.Connect(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+		if e != nil {
+			t.Fatal("private journal unavailable")
+		}
+		defer control.Close(context.Background())
+		// One private stdin envelope, never env, args, source, journal, or child process.
+		raw, err := io.ReadAll(io.LimitReader(os.Stdin, 4097))
+		if err != nil || len(raw) > 4096 {
+			t.Fatal("private operator input unavailable")
+		}
+		apiKey = strings.TrimSpace(string(raw))
+		clear(raw)
+		if len(apiKey) < 20 {
+			t.Fatal("private API key required")
+		}
+	} else {
+		control, e = pgx.Connect(ctx, "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable")
+		if e != nil {
+			t.Fatal("experimental authority store unavailable")
+		}
+		defer control.Close(context.Background())
+		var locked bool
+		if control.QueryRow(ctx, `SELECT pg_try_advisory_lock(hashtextextended('issue115-laba-auth-owner-v1',0))`).Scan(&locked) != nil || !locked {
+			t.Fatal("experimental credential owner busy")
+		}
+		var others int
+		if control.QueryRow(ctx, `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()`).Scan(&others) != nil || others != 0 {
+			t.Fatal("experimental source has other clients")
+		}
+		info, e := os.Lstat("/private/settings.key")
+		if e != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 {
+			t.Fatal("private reference required")
+		}
+		key, e := os.ReadFile("/private/settings.key")
+		if e != nil {
+			t.Fatal("private reference unavailable")
+		}
+		defer clear(key)
+		pool, e = pgxpool.New(ctx, "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable")
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer pool.Close()
+
+		manager = providerauth.NewManager(config.NewPostgresSettingsStore(pool, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))})))
 	}
 	schema := pgx.Identifier{"utility_abc_" + plan.SuiteSHA256[:16]}.Sanitize()
 	entries := schema + ".entries"
 	if _, e = control.Exec(ctx, `CREATE SCHEMA `+schema+`;CREATE TABLE `+entries+`(seq integer PRIMARY KEY,slot integer,dispatched boolean NOT NULL DEFAULT false,body jsonb)`); e != nil {
 		t.Fatal("one-use native journal already consumed")
 	}
-	info, e := os.Lstat("/private/settings.key")
-	if e != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 {
-		t.Fatal("private reference required")
-	}
-	key, e := os.ReadFile("/private/settings.key")
-	if e != nil {
-		t.Fatal("private reference unavailable")
-	}
-	defer clear(key)
-	pool, e := pgxpool.New(ctx, "postgres://postgres@127.0.0.1:55455/behavior76_test?sslmode=disable")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer pool.Close()
-	state := &utilityWholeNative{control: control, pool: pool, manager: providerauth.NewManager(config.NewPostgresSettingsStore(pool, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))}))), plan: plan, root: root, entries: entries}
+	state := &utilityWholeNative{control: control, pool: pool, manager: manager, apiKey: apiKey, plan: plan, root: root, entries: entries}
+	defer func() { state.apiKey = "" }()
 	defer func() {
 		utilityWholeWrite(t, root, "slots-final.json", plan.Slots)
 		utilityWholeWrite(t, root, "journal-summary.json", map[string]any{"admitted_methods": state.seq, "global_stop": state.stopped, "invoice_cost": "unknown", "historical_receipts": plan.HistoricalReceipts, "native_quality_qualified": false})
@@ -217,12 +261,23 @@ type utilityNativeProvider struct {
 }
 
 func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, casePool *pgxpool.Pool) transport.ModelProvider {
-	p, e := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 90 * time.Second, MaximumOutputTokens: 8192, AuthSource: s.manager})
+	var p transport.ModelProvider
+	var e error
+	if s.plan.Provider == "openai" {
+		built, err := providerfactory.New(nil, nil).Build(context.Background(), providerfactory.BuildConfig{ActiveProvider: "openai", OpenAIAPIKey: s.apiKey, OpenAIModel: s.plan.Model, OpenAIReasoningEffort: s.plan.ReasoningEffort, OpenAIMaximumInputTokens: 65536, OpenAIMaximumOutputTokens: 8192, Timeout: 90 * time.Second})
+		p, e = built.Provider, err
+		if closeable, ok := p.(interface{ CloseAllSessions() }); ok {
+			t.Cleanup(closeable.CloseAllSessions)
+		}
+	} else {
+		p, e = antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 90 * time.Second, MaximumOutputTokens: 8192, AuthSource: s.manager})
+	}
 	if e != nil {
 		t.Fatal(e)
 	}
 	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root, casePool: casePool}
 }
+func (p *utilityNativeProvider) NativeModel() string             { return p.state.plan.Model }
 func (p *utilityNativeProvider) InferenceLimits() (int64, int64) { return 65536, 8192 }
 func (p *utilityNativeProvider) InferenceTimeout() time.Duration { return 90 * time.Second }
 func (p *utilityNativeProvider) StartRun(c context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
@@ -241,7 +296,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	}
 	op, admitted := budget.ModelOperationFromContext(ctx)
 	var run, reservation string
-	if !admitted || p.casePool.QueryRow(ctx, `SELECT a.run_id,a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high' AND r.owner_id=$2`, op, experienceNativeOwner).Scan(&run, &reservation) != nil {
+	if !admitted || p.casePool.QueryRow(ctx, `SELECT a.run_id,a.reservation_id FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.provider=$3 AND a.model=$4 AND r.owner_id=$2`, op, experienceNativeOwner, p.Name(), s.plan.Model).Scan(&run, &reservation) != nil {
 		s.stopped = true
 		return nil, fmt.Errorf("owning native reservation not corroborated")
 	}
@@ -296,6 +351,7 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	if err != nil {
 		entry["error_code"] = transport.DiagnosticCode(err)
 		p.failed = true
+		if code := transport.DiagnosticHTTPStatus(err); s.plan.Provider == "openai" && (code == 401 || code == 403 || code == 429) { s.stopped = true }
 	} else {
 		for event := range stream {
 			events = append(events, event)

@@ -1,3 +1,11 @@
+The API-key OpenAI provider uses Responses WebSocket/SSE with explicit model,
+reasoning and input/output limits, through the ordinary provider factory and Core
+budget/Tool Broker flow. See [OpenAI setup](../../internal/transport/openai/README.md).
+The isolated Luna comparison reuses the exact V3 case suite with fresh task/session
+and journal state; a private stdin supplies its operator key without persistence,
+child-process propagation, model context or environment logging. Old Gemini runs
+and expenses remain separate. This does not deploy a provider/profile to production.
+
 Corrected issue76 v10-r3 preparation keeps research metadata chunk Sync on the
 private local Linux filesystem and copies verified chunks to Windows evidence
 only outside owning callbacks. Qualified headers follow actual quiescence and

@@ -3,127 +3,218 @@ package openai
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log/slog"
-	"net/http"
-	"net/url"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/butler/butler/internal/transport"
 	"github.com/gorilla/websocket"
+	"net/http"
+	"strings"
+	"sync"
 )
 
-// realtimeSession represents a persistent WebSocket connection to the
-// OpenAI Realtime API. Sessions are keyed by session key (e.g.
-// "telegram:chat:123") and can be reused across multiple runs.
-type realtimeSession struct {
+// A socket is a run-local optimization, never Butler session history.
+type responsesSession struct {
 	conn       *websocket.Conn
-	sessionKey string
-	sessionRef string // provider-side session ID (from session.created)
 	mu         sync.Mutex
-	createdAt  time.Time
-	lastUsedAt time.Time
+	busy       bool
 	closed     bool
+	sessionKey string
 }
 
-func deriveRealtimeURL(baseURL string) string {
-	trimmed := strings.TrimRight(strings.TrimSpace(baseURL), "/")
-	if trimmed == "" {
-		return "wss://api.openai.com/v1/realtime"
+func deriveResponsesURL(base string) string {
+	base = strings.TrimRight(base, "/")
+	base = strings.Replace(strings.Replace(base, "https://", "wss://", 1), "http://", "ws://", 1)
+	if !strings.HasSuffix(base, "/responses") {
+		base += "/responses"
 	}
-	if strings.HasPrefix(trimmed, "wss://") || strings.HasPrefix(trimmed, "ws://") {
-		if strings.HasSuffix(trimmed, "/realtime") {
-			return trimmed
+	return base
+}
+
+func (p *Provider) executeRunRequest(parent context.Context, runID string, body []byte) (transport.EventStream, error) {
+	if err := transport.CheckSerializedInput(parent, len(body)); err != nil {
+		return nil, err
+	}
+	if err := transport.CheckInferenceAuthority(parent); err != nil {
+		return nil, err
+	}
+	if err := p.checkContextAllowance(runID, body); err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(parent, p.config.Timeout)
+	p.mu.Lock()
+	if _, active := p.cancels[runID]; active {
+		p.mu.Unlock()
+		cancel()
+		return nil, transport.ProviderProtocolError(providerName)
+	}
+	if timer := p.expiry[runID]; timer != nil {
+		timer.Stop()
+		delete(p.expiry, runID)
+	}
+	p.cancels[runID] = cancel
+	p.mu.Unlock()
+	var stream transport.EventStream
+	var err error
+	if p.config.TransportMode == TransportModeSSEOnly {
+		stream, err = p.executeStreamingRequest(ctx, runID, http.MethodPost, p.endpoint("/responses"), body)
+	} else {
+		var fallback bool
+		stream, fallback, err = p.executeResponsesWS(ctx, runID, body)
+		if fallback && ctx.Err() == nil {
+			stream, err = p.executeStreamingRequest(ctx, runID, http.MethodPost, p.endpoint("/responses"), body)
+			if err == nil {
+				stream = prependEventStream(ctx, transport.NewTransportWarningEvent(runID, providerName, "Responses WebSocket unsupported; using HTTP SSE", nil), stream)
+			}
 		}
-		return trimmed + "/realtime"
 	}
-	if strings.HasPrefix(trimmed, "https://") {
-		trimmed = "wss://" + strings.TrimPrefix(trimmed, "https://")
-	} else if strings.HasPrefix(trimmed, "http://") {
-		trimmed = "ws://" + strings.TrimPrefix(trimmed, "http://")
+	if err != nil {
+		cancel()
+		p.finishRequest(runID)
+		return nil, err
 	}
-	if strings.HasSuffix(trimmed, "/v1") {
-		return trimmed + "/realtime"
-	}
-	if strings.HasSuffix(trimmed, "/realtime") {
-		return trimmed
-	}
-	return trimmed + "/realtime"
-}
-
-// pingInterval controls the WebSocket keepalive ping frequency.
-const pingInterval = 30 * time.Second
-
-// pongDeadline is the time allowed for a pong response before the
-// connection is considered dead.
-const pongDeadline = 10 * time.Second
-
-func (p *Provider) executeRunRequest(ctx context.Context, runID, modelName string, sseBody []byte, realtimeMessages func(context.Context) ([]map[string]any, error)) (result transport.EventStream, resultErr error) {
-	defer func() {
-		if resultErr != nil {
-			p.clearInstructions(runID)
+	result := make(chan transport.TransportEvent, 32)
+	go func() {
+		defer close(result)
+		defer cancel()
+		defer p.finishRequest(runID)
+		for event := range stream {
+			select {
+			case result <- event:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}()
-	if !p.prefersWebSocket() {
-		return p.executeStreamingRequest(ctx, runID, http.MethodPost, p.endpoint("/responses"), sseBody)
-	}
-
-	messages, err := realtimeMessages(ctx)
-	if err != nil {
-		return nil, err
-	}
-	wsStream, err := p.executeRealtimeRequest(ctx, runID, modelName, messages)
-	if err != nil {
-		return p.fallbackToSSE(ctx, runID, sseBody, err)
-	}
-	return p.wrapRealtimeFallback(ctx, runID, wsStream, sseBody), nil
+	return result, nil
 }
 
-func (p *Provider) fallbackToSSE(ctx context.Context, runID string, sseBody []byte, cause error) (transport.EventStream, error) {
-	p.log.Warn("openai websocket unavailable, falling back to sse",
-		slog.String("run_id", runID),
-		slog.String("error", cause.Error()),
-	)
-	stream, err := p.executeStreamingRequest(ctx, runID, http.MethodPost, p.endpoint("/responses"), sseBody)
-	if err != nil {
-		return nil, err
+func (p *Provider) finishRequest(runID string) { p.mu.Lock(); delete(p.cancels, runID); p.mu.Unlock() }
+func (p *Provider) cancelRequest(runID string) {
+	p.mu.Lock()
+	cancel := p.cancels[runID]
+	p.mu.Unlock()
+	if cancel != nil {
+		cancel()
 	}
-	warning := transport.NewTransportWarningEvent(runID, providerName, "openai websocket unavailable; falling back to http sse", map[string]any{"cause": cause.Error()})
-	return prependEventStream(ctx, warning, stream), nil
 }
 
-func (p *Provider) wrapRealtimeFallback(ctx context.Context, runID string, wsStream transport.EventStream, sseBody []byte) transport.EventStream {
+func (p *Provider) executeResponsesWS(ctx context.Context, runID string, body []byte) (transport.EventStream, bool, error) {
+	var request map[string]any
+	if json.Unmarshal(body, &request) != nil {
+		return nil, false, transport.ProviderProtocolError(providerName)
+	}
+	delete(request, "stream")
+	delete(request, "background")
+	request["type"] = "response.create"
+	encoded, err := json.Marshal(request)
+	if err != nil {
+		return nil, false, err
+	}
+	if err = transport.CheckSerializedInput(ctx, len(encoded)); err != nil {
+		return nil, false, err
+	}
+	p.mu.Lock()
+	session := p.sessions[runID]
+	p.mu.Unlock()
+	if session == nil {
+		headers := http.Header{}
+		if p.config.APIKey != "" {
+			headers.Set("Authorization", "Bearer "+p.config.APIKey)
+		}
+		dialer := websocket.Dialer{Proxy: http.ProxyFromEnvironment, HandshakeTimeout: p.config.Timeout}
+		if base, ok := p.httpClient.Transport.(*http.Transport); ok {
+			dialer.TLSClientConfig = base.TLSClientConfig
+			dialer.NetDialContext = base.DialContext
+			dialer.Proxy = base.Proxy
+		}
+		conn, resp, dialErr := dialer.DialContext(ctx, p.config.RealtimeURL, headers)
+		if dialErr != nil {
+			if resp != nil {
+				defer resp.Body.Close()
+				status := resp.StatusCode
+				if status == 404 || status == 405 || status == 426 || status == 501 {
+					return nil, true, transport.ProviderProtocolError(providerName)
+				}
+				return nil, false, transport.NormalizeError(transport.ProviderHTTPError(resp), providerName)
+			}
+			return nil, false, transport.NormalizeError(dialErr, providerName)
+		}
+		conn.SetReadLimit(8 * 1024 * 1024)
+		key, _ := transport.SessionKeyFromContext(ctx)
+		session = &responsesSession{conn: conn, sessionKey: key}
+		p.mu.Lock()
+		p.sessions[runID] = session
+		p.mu.Unlock()
+	}
+	session.mu.Lock()
+	if session.closed || session.busy {
+		session.mu.Unlock()
+		return nil, false, transport.ProviderProtocolError(providerName)
+	}
+	session.busy = true
+	session.mu.Unlock()
+	if err = transport.CheckInferenceAuthority(ctx); err == nil {
+		err = transport.CheckInferenceDispatch(ctx)
+	}
+	if err != nil {
+		p.CloseRun(runID)
+		return nil, false, err
+	}
+	if deadline, ok := ctx.Deadline(); ok {
+		_ = session.conn.SetWriteDeadline(deadline)
+		_ = session.conn.SetReadDeadline(deadline)
+	}
+	// Never replay after a frame write: generation and spending may have occurred.
+	if err = session.conn.WriteMessage(websocket.TextMessage, encoded); err != nil {
+		p.CloseRun(runID)
+		return nil, false, transport.NormalizeError(err, providerName)
+	}
 	stream := make(chan transport.TransportEvent, 32)
 	go func() {
 		defer close(stream)
-		meaningfulEvents := 0
-		for event := range wsStream {
-			if event.EventType != transport.EventTypeTransportWarning && event.EventType != transport.EventTypeProviderSessionBound && event.EventType != transport.EventTypeRunStarted {
-				meaningfulEvents++
+		defer func() { session.mu.Lock(); session.busy = false; session.mu.Unlock() }()
+		stop := context.AfterFunc(ctx, func() { session.closeConn() })
+		defer stop()
+		state := streamState{}
+		for frames := 0; frames < 100000; frames++ {
+			var payload map[string]any
+			if err := session.conn.ReadJSON(&payload); err != nil {
+				p.CloseRun(runID)
+				select {
+				case stream <- transport.NewTransportErrorEvent(runID, providerName, err):
+				case <-ctx.Done():
+				}
+				return
 			}
-			if event.EventType == transport.EventTypeTransportError && meaningfulEvents == 0 {
-				fallback, err := p.fallbackToSSE(ctx, runID, sseBody, event.TransportError)
-				if err == nil {
-					for fallbackEvent := range fallback {
-						select {
-						case <-ctx.Done():
-							return
-						case stream <- fallbackEvent:
-						}
-					}
+			events, done, err := p.normalizePayload(runID, stringValue(payload["type"]), payload, &state)
+			if err != nil {
+				p.CloseRun(runID)
+				events = []transport.TransportEvent{transport.NewTransportErrorEvent(runID, providerName, err)}
+				done = true
+			}
+			if done {
+				stop()
+				session.mu.Lock()
+				session.busy = false
+				session.mu.Unlock()
+			}
+			for _, event := range events {
+				select {
+				case stream <- event:
+				case <-ctx.Done():
+					p.CloseRun(runID)
 					return
 				}
 			}
-			select {
-			case <-ctx.Done():
+			if done {
 				return
-			case stream <- event:
 			}
 		}
+		p.CloseRun(runID)
+		select {
+		case stream <- transport.NewTransportErrorEvent(runID, providerName, transport.ProviderProtocolError(providerName)):
+		case <-ctx.Done():
+		}
 	}()
-	return stream
+	return stream, false, nil
 }
 
 func prependEventStream(ctx context.Context, first transport.TransportEvent, remainder transport.EventStream) transport.EventStream {
@@ -131,595 +222,85 @@ func prependEventStream(ctx context.Context, first transport.TransportEvent, rem
 	go func() {
 		defer close(stream)
 		select {
+		case stream <- first:
 		case <-ctx.Done():
 			return
-		case stream <- first:
 		}
 		for event := range remainder {
 			select {
+			case stream <- event:
 			case <-ctx.Done():
 				return
-			case stream <- event:
 			}
 		}
 	}()
 	return stream
 }
 
-func (p *Provider) executeRealtimeRequest(ctx context.Context, runID, modelName string, messages []map[string]any) (transport.EventStream, error) {
-	// Check the complete sequence before any frame or connection is sent.
-	totalBytes := 0
-	for _, message := range messages {
-		encoded, err := json.Marshal(message)
-		if err != nil {
-			return nil, err
-		}
-		totalBytes += len(encoded)
-		if err := transport.CheckSerializedInput(ctx, totalBytes); err != nil {
-			return nil, err
-		}
-	}
-	sessionKey := p.sessionKeyForRun(ctx, runID)
-
-	// Try to reuse an existing session for this session key.
-	session := p.getSessionByKey(sessionKey)
-	if session != nil {
-		p.log.Info("reusing existing openai realtime session",
-			slog.String("run_id", runID),
-			slog.String("session_key", sessionKey),
-			slog.String("session_ref", session.sessionRef),
-			slog.String("session_age", time.Since(session.createdAt).Round(time.Second).String()),
-		)
-		if err := p.sendMessagesToSession(session, messages); err != nil {
-			// Connection is dead — remove and fall through to create a new one.
-			p.log.Warn("openai realtime session send failed, creating new session",
-				slog.String("run_id", runID),
-				slog.String("session_key", sessionKey),
-				slog.String("error", transport.NormalizeError(err, providerName).Error()),
-			)
-			p.removeSession(sessionKey, session)
-			session.closeConn()
-		} else {
-			// Successfully sent messages on existing connection.
-			session.mu.Lock()
-			session.lastUsedAt = time.Now().UTC()
-			session.mu.Unlock()
-
-			p.registerRunSession(runID, session)
-			stream := make(chan transport.TransportEvent, 32)
-			go p.streamRealtime(ctx, runID, sessionKey, session, stream)
-			return stream, nil
-		}
-	}
-
-	// Establish a new connection.
-	conn, path, err := p.dialRealtime(runID, modelName)
-	if err != nil {
-		return nil, err
-	}
-
-	now := time.Now().UTC()
-	session = &realtimeSession{
-		conn:       conn,
-		sessionKey: sessionKey,
-		createdAt:  now,
-		lastUsedAt: now,
-	}
-
-	// Start ping/pong health monitor.
-	p.setupPingPong(session)
-
-	p.storeSession(sessionKey, session)
-	p.registerRunSession(runID, session)
-
-	p.log.Info("created new openai realtime session",
-		slog.String("run_id", runID),
-		slog.String("session_key", sessionKey),
-		slog.String("path", path),
-	)
-
-	if err := p.sendMessagesToSession(session, messages); err != nil {
-		p.removeSession(sessionKey, session)
-		p.unregisterRunSession(runID, session)
-		session.closeConn()
-		return nil, transport.NormalizeError(err, providerName)
-	}
-
-	stream := make(chan transport.TransportEvent, 32)
-	go p.streamRealtime(ctx, runID, sessionKey, session, stream)
-	return stream, nil
-}
-
-func (p *Provider) sendMessagesToSession(session *realtimeSession, messages []map[string]any) error {
-	for _, message := range messages {
-		if err := session.sendJSON(message); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (p *Provider) dialRealtime(runID, modelName string) (*websocket.Conn, string, error) {
-	realtimeURL := p.realtimeEndpoint(modelName)
-	parsed, err := url.Parse(realtimeURL)
-	if err != nil {
-		return nil, "", transport.NormalizeError(err, providerName)
-	}
-
-	headers := http.Header{}
-	if strings.TrimSpace(p.config.APIKey) != "" {
-		headers.Set("Authorization", "Bearer "+p.config.APIKey)
-	}
-	headers.Set("OpenAI-Beta", "realtime=v1")
-	headers.Set("User-Agent", "butler-openai-transport")
-
-	p.log.Info("opening openai realtime websocket",
-		slog.String("run_id", runID),
-		slog.String("path", parsed.Path),
-	)
-
-	dialer := websocket.Dialer{
-		// Use the provider's HTTP client TLS config when available.
-		TLSClientConfig: nil,
-	}
-	conn, _, err := dialer.Dial(realtimeURL, headers)
-	if err != nil {
-		p.log.Warn("openai realtime websocket dial failed",
-			slog.String("run_id", runID),
-			slog.String("path", parsed.Path),
-			slog.String("error", transport.NormalizeError(err, providerName).Error()),
-		)
-		return nil, parsed.Path, transport.NormalizeError(err, providerName)
-	}
-	return conn, parsed.Path, nil
-}
-
-// setupPingPong configures the WebSocket connection for keepalive
-// ping/pong monitoring. A background goroutine sends pings at
-// regular intervals; the pong handler updates the read deadline.
-func (p *Provider) setupPingPong(session *realtimeSession) {
-	session.mu.Lock()
-	conn := session.conn
-	session.mu.Unlock()
-	if conn == nil {
-		return
-	}
-
-	conn.SetPongHandler(func(string) error {
-		session.mu.Lock()
-		c := session.conn
-		session.mu.Unlock()
-		if c != nil {
-			return c.SetReadDeadline(time.Now().Add(pingInterval + pongDeadline))
-		}
-		return nil
-	})
-
-	go func() {
-		ticker := time.NewTicker(pingInterval)
-		defer ticker.Stop()
-		for range ticker.C {
-			session.mu.Lock()
-			c := session.conn
-			closed := session.closed
-			session.mu.Unlock()
-			if c == nil || closed {
-				return
-			}
-			if err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(pongDeadline)); err != nil {
-				p.log.Debug("openai realtime ping failed",
-					slog.String("session_key", session.sessionKey),
-					slog.String("error", transport.NormalizeError(err, providerName).Error()),
-				)
-				return
-			}
-		}
-	}()
-}
-
-func (p *Provider) streamRealtime(ctx context.Context, runID, sessionKey string, session *realtimeSession, stream chan<- transport.TransportEvent) {
-	defer close(stream)
-	defer p.unregisterRunSession(runID, session)
-	// NOTE: we do NOT close the session connection here — the session may
-	// be reused by subsequent runs. The session is only closed when the
-	// session key entry is removed or the provider detects connection loss.
-
-	go func() {
-		<-ctx.Done()
-		// When the run context is cancelled, we must unblock ReadJSON.
-		// Set a short read deadline so the read goroutine exits promptly.
-		session.mu.Lock()
-		c := session.conn
-		session.mu.Unlock()
-		if c != nil {
-			_ = c.SetReadDeadline(time.Now().Add(100 * time.Millisecond))
-		}
-	}()
-
-	state := streamState{}
-	for {
-		message, err := session.receiveJSON()
-		if err != nil {
-			if ctx.Err() != nil {
-				return
-			}
-			// Connection lost — remove session so it's not reused.
-			p.log.Warn("openai realtime connection lost",
-				slog.String("run_id", runID),
-				slog.String("session_key", sessionKey),
-				slog.String("error", transport.NormalizeError(err, providerName).Error()),
-			)
-			p.removeSession(sessionKey, session)
-			session.closeConn()
-			stream <- transport.NewTransportErrorEvent(runID, providerName, &transport.Error{
-				Type:         transport.ErrorTypeStatefulSessionLost,
-				Message:      "openai realtime session lost",
-				Retryable:    true,
-				ProviderName: providerName,
-			})
-			return
-		}
-		eventType := stringValue(message["type"])
-
-		// Capture provider session ref from session.created events.
-		if eventType == "session.created" || eventType == "session.updated" {
-			if sessionObj, ok := message["session"].(map[string]any); ok {
-				if id := stringValue(sessionObj["id"]); id != "" {
-					session.mu.Lock()
-					session.sessionRef = id
-					session.mu.Unlock()
-					p.log.Info("openai realtime session bound",
-						slog.String("run_id", runID),
-						slog.String("session_key", sessionKey),
-						slog.String("session_ref", id),
-					)
-				}
-			}
-		}
-
-		events, stop, normalizeErr := p.normalizePayload(runID, eventType, message, &state)
-		if normalizeErr != nil {
-			stream <- transport.NewTransportErrorEvent(runID, providerName, normalizeErr)
-			return
-		}
-		for _, event := range events {
-			select {
-			case <-ctx.Done():
-				return
-			case stream <- event:
-			}
-		}
-		if stop {
-			p.log.Info("openai realtime run completed",
-				slog.String("run_id", runID),
-				slog.String("session_key", sessionKey),
-			)
-			return
-		}
+func (s *responsesSession) closeConn() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.closed {
+		s.closed = true
+		_ = s.conn.Close()
 	}
 }
-
-// --- Session pool management ---
-
-// sessionKeyForRun returns the session key associated with a run.
-// It looks at the run context set by the current request. If not
-// available, falls back to runID as a one-off session key.
-func (p *Provider) sessionKeyForRun(ctx context.Context, runID string) string {
-	if key, ok := transport.SessionKeyFromContext(ctx); ok && key != "" {
-		return key
-	}
-	return runID
-}
-
-// storeSession saves a session into the pool, keyed by session key.
-// If an existing session is already present, the old one is closed.
-func (p *Provider) storeSession(sessionKey string, session *realtimeSession) {
+func (p *Provider) CloseRun(runID string) {
 	p.mu.Lock()
-	defer p.mu.Unlock()
-	if old, exists := p.sessions[sessionKey]; exists && old != session {
-		go old.closeConn()
+	s := p.sessions[runID]
+	delete(p.sessions, runID)
+	p.mu.Unlock()
+	if s != nil {
+		s.closeConn()
 	}
-	p.sessions[sessionKey] = session
 }
-
-// getSessionByKey retrieves a live session from the pool.
-func (p *Provider) getSessionByKey(sessionKey string) *realtimeSession {
+func (p *Provider) CloseSession(key string) {
 	p.mu.Lock()
-	defer p.mu.Unlock()
-	session := p.sessions[sessionKey]
-	if session == nil {
-		return nil
-	}
-	session.mu.Lock()
-	closed := session.closed
-	session.mu.Unlock()
-	if closed {
-		delete(p.sessions, sessionKey)
-		return nil
-	}
-	return session
-}
-
-// removeSession removes a session from the pool if it matches the
-// provided session pointer (avoids removing a replacement session).
-func (p *Provider) removeSession(sessionKey string, session *realtimeSession) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	if current, exists := p.sessions[sessionKey]; exists && current == session {
-		delete(p.sessions, sessionKey)
-	}
-}
-
-// registerRunSession associates a runID with a session so that
-// CancelRun can find the active connection.
-func (p *Provider) registerRunSession(runID string, session *realtimeSession) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.activeWS[runID] = session
-}
-
-// unregisterRunSession removes the runID→session mapping if it still
-// points to the provided session.
-func (p *Provider) unregisterRunSession(runID string, session *realtimeSession) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	if current := p.activeWS[runID]; current == session {
-		delete(p.activeWS, runID)
-	}
-}
-
-// activeRealtimeSession returns the session currently associated with
-// a runID, or nil if none.
-func (p *Provider) activeRealtimeSession(runID string) *realtimeSession {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	return p.activeWS[runID]
-}
-
-func (p *Provider) prefersWebSocket() bool {
-	return strings.TrimSpace(strings.ToLower(p.config.TransportMode)) != TransportModeSSEOnly
-}
-
-func (p *Provider) realtimeEndpoint(modelName string) string {
-	endpoint := strings.TrimRight(p.config.RealtimeURL, "/")
-	if endpoint == "" {
-		endpoint = "wss://api.openai.com/v1/realtime"
-	}
-	parsed, err := url.Parse(endpoint)
-	if err != nil {
-		return endpoint
-	}
-	query := parsed.Query()
-	if strings.TrimSpace(modelName) != "" {
-		query.Set("model", modelName)
-	}
-	parsed.RawQuery = query.Encode()
-	return parsed.String()
-}
-
-// CloseSession explicitly closes and removes the persistent session
-// for a given session key. This is intended for graceful shutdown
-// or when a Butler session ends.
-func (p *Provider) CloseSession(sessionKey string) {
-	p.mu.Lock()
-	session, exists := p.sessions[sessionKey]
-	if exists {
-		delete(p.sessions, sessionKey)
+	var ids []string
+	for id, s := range p.sessions {
+		if s.sessionKey == key {
+			ids = append(ids, id)
+		}
 	}
 	p.mu.Unlock()
-	if session != nil {
-		p.log.Info("closing openai realtime session",
-			slog.String("session_key", sessionKey),
-			slog.String("session_ref", session.sessionRef),
-		)
-		session.closeConn()
+	for _, id := range ids {
+		p.cancelRequest(id)
+		p.CloseRun(id)
+		p.clearInstructions(id)
 	}
 }
-
-// CloseAllSessions closes all persistent WebSocket sessions.
-// Intended for provider shutdown.
 func (p *Provider) CloseAllSessions() {
 	p.mu.Lock()
+	var ids []string
+	for id := range p.sessions {
+		ids = append(ids, id)
+	}
+	for _, cancel := range p.cancels {
+		cancel()
+	}
+	for _, timer := range p.expiry {
+		timer.Stop()
+	}
+	clear(p.expiry)
 	clear(p.instructions)
-	sessions := make([]*realtimeSession, 0, len(p.sessions))
-	for key, session := range p.sessions {
-		sessions = append(sessions, session)
-		delete(p.sessions, key)
-	}
+	clear(p.toolSets)
+	clear(p.aliases)
+	clear(p.prefixTokens)
 	p.mu.Unlock()
-	for _, session := range sessions {
-		session.closeConn()
+	for _, id := range ids {
+		p.CloseRun(id)
 	}
-	p.log.Info("closed all openai realtime sessions",
-		slog.Int("count", len(sessions)),
-	)
-}
-
-// startRunRealtimeMessages converts a StartRunRequest into the sequence of
-// OpenAI Realtime API client events required to initiate a response:
-//
-//  1. session.update  — configure the session (model, tools, instructions from
-//     the first system message if present)
-//  2. conversation.item.create — one event per user/assistant input item
-//  3. response.create — trigger response generation
-//
-// The HTTP Responses API body shape is NOT forwarded here; Realtime uses its
-// own event-driven protocol.
-func (p *Provider) startRunRealtimeMessages(req transport.StartRunRequest) ([]map[string]any, error) {
-	var events []map[string]any
-	instructions, inputItems := splitInstructionItems(req.InputItems)
-	if instructions != "" {
-		p.setInstructions(req.Context.RunID, instructions)
-	} else {
-		p.clearInstructions(req.Context.RunID)
-	}
-
-	// 1. session.update — configure model and tools.
-	sessionConfig := map[string]any{
-		"modalities":   []string{"text"},
-		"instructions": instructions,
-	}
-	if len(req.ToolDefinitions) > 0 {
-		sessionConfig["tools"] = encodeRealtimeTools(req.ToolDefinitions)
-		sessionConfig["tool_choice"] = "auto"
-	}
-	events = append(events, map[string]any{
-		"type":    "session.update",
-		"session": sessionConfig,
-	})
-
-	// 2. conversation.item.create — one per input item (skipping system messages
-	// which are folded into session.update as instructions if present).
-	for _, item := range inputItems {
-		events = append(events, map[string]any{
-			"type": "conversation.item.create",
-			"item": map[string]any{
-				"type": "message",
-				"role": item.Role,
-				"content": []map[string]any{{
-					"type": contentTypeForRole(item.Role),
-					"text": item.Content,
-				}},
-			},
-		})
-	}
-
-	// 3. response.create — trigger the model response.
-	events = append(events, map[string]any{"type": "response.create"})
-	return events, nil
-}
-
-// continueRunRealtimeMessages converts a ContinueRunRequest into Realtime
-// events: inject input items then request a new response.
-func (p *Provider) continueRunRealtimeMessages(req transport.ContinueRunRequest) ([]map[string]any, error) {
-	var events []map[string]any
-	instructions, inputItems := splitInstructionItems(req.InputItems)
-	if instructions == "" {
-		instructions = p.instructionsFor(req.RunID)
-	} else {
-		p.setInstructions(req.RunID, instructions)
-	}
-	if req.ToolSet != nil {
-		p.rememberTools(req.RunID, req.ToolSet.Definitions)
-	}
-	sessionUpdate := map[string]any{"instructions": instructions}
-	if defs, ok := p.currentTools(req.RunID); ok {
-		sessionUpdate["tools"] = encodeRealtimeTools(defs)
-	}
-	events = append(events, map[string]any{"type": "session.update", "session": sessionUpdate})
-
-	for _, item := range inputItems {
-		events = append(events, map[string]any{
-			"type": "conversation.item.create",
-			"item": map[string]any{
-				"type": "message",
-				"role": item.Role,
-				"content": []map[string]any{{
-					"type": contentTypeForRole(item.Role),
-					"text": item.Content,
-				}},
-			},
-		})
-	}
-	events = append(events, map[string]any{"type": "response.create"})
-	return events, nil
-}
-
-// submitToolResultRealtimeMessages converts a SubmitToolResultRequest into
-// Realtime events: inject the function_call_output item then request a
-// new response.
-func (p *Provider) submitToolResultRealtimeMessages(req transport.SubmitToolResultRequest) ([]map[string]any, error) {
-	if req.ToolSet != nil {
-		p.rememberTools(req.RunID, req.ToolSet.Definitions)
-	}
-	sessionUpdate := map[string]any{"instructions": p.instructionsFor(req.RunID)}
-	if defs, ok := p.currentTools(req.RunID); ok {
-		sessionUpdate["tools"] = encodeRealtimeTools(defs)
-	}
-	item := map[string]any{
-		"type":    "function_call_output",
-		"call_id": req.ToolCallRef,
-		"output":  req.ToolResultJSON,
-	}
-	return []map[string]any{
-		{"type": "session.update", "session": sessionUpdate},
-		{"type": "conversation.item.create", "item": item},
-		{"type": "response.create"},
-	}, nil
 }
 
 func splitInstructionItems(items []transport.InputItem) (string, []transport.InputItem) {
 	var instructions []string
 	var input []transport.InputItem
 	for _, item := range items {
-		if strings.EqualFold(strings.TrimSpace(item.Role), "system") {
-			if value := strings.TrimSpace(item.Content); value != "" {
-				instructions = append(instructions, value)
-			}
+		if item.Role == "system" || item.Role == "developer" {
+			instructions = append(instructions, item.Content)
 		} else {
 			input = append(input, item)
 		}
 	}
 	return strings.Join(instructions, "\n\n"), input
-}
-
-// encodeRealtimeTools converts ToolDefinitions to the Realtime API tool format.
-// The Realtime API uses the same function-call schema as the Chat Completions API.
-func encodeRealtimeTools(tools []transport.ToolDefinition) []map[string]any {
-	encoded := make([]map[string]any, 0, len(tools))
-	for _, tool := range tools {
-		entry := map[string]any{
-			"type":        "function",
-			"name":        tool.Name,
-			"description": tool.Description,
-		}
-		if strings.TrimSpace(tool.SchemaJSON) != "" {
-			var schema any
-			if err := json.Unmarshal([]byte(tool.SchemaJSON), &schema); err == nil {
-				entry["parameters"] = schema
-			}
-		}
-		encoded = append(encoded, entry)
-	}
-	return encoded
-}
-
-func (s *realtimeSession) sendJSON(value any) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.conn == nil || s.closed {
-		return fmt.Errorf("websocket connection is closed")
-	}
-	return s.conn.WriteJSON(value)
-}
-
-func (s *realtimeSession) receiveJSON() (map[string]any, error) {
-	// ReadJSON does not need the send lock — gorilla/websocket supports
-	// one concurrent reader and one concurrent writer.
-	s.mu.Lock()
-	conn := s.conn
-	closed := s.closed
-	s.mu.Unlock()
-	if conn == nil || closed {
-		return nil, fmt.Errorf("websocket connection is closed")
-	}
-	var payload map[string]any
-	if err := conn.ReadJSON(&payload); err != nil {
-		return nil, err
-	}
-	return payload, nil
-}
-
-func (s *realtimeSession) closeConn() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.conn != nil && !s.closed {
-		s.closed = true
-		_ = s.conn.WriteMessage(
-			websocket.CloseMessage,
-			websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
-		)
-		_ = s.conn.Close()
-		s.conn = nil
-	}
 }

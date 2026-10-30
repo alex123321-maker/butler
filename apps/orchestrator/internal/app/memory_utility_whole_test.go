@@ -163,7 +163,16 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	}
 	defer recipient.close()
 	arm := experienceNativeArms[strings.Index("ABC", slot.Arm)]
-	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), experienceNativeSourcePolicy(), utilityWholeInstructions(c), arm, subset, time.Now().Add(authorityDuration))
+	policy := experienceNativeSourcePolicy()
+	if native != nil && native.plan.Provider == "openai" {
+		// Conservative whole-micro ceilings, not an invoice or inferred free subscription.
+		policy.Models["openai:gpt-6-luna"] = budget.ModelPrice{Basis: "operator_rate", InputMicrosPerToken: 1, OutputMicrosPerToken: 1}
+		policy.Task.CostMicros = 2000000
+		policy.Mandate.CostMicros = 2000000
+		policy.Conversation.CostMicros = 2000000
+		policy.Day.CostMicros = 100000000
+	}
+	r := newExperienceNativeRuntime(t, pool, catalog.New(pool, catalog.NewFileManifest(anchor)), anchor, dir, recipient, newExperienceNativeAddresses(t), policy, utilityWholeInstructions(c), arm, subset, time.Now().Add(authorityDuration))
 	defer r.close()
 	var reviewed *skills.Record
 	var unknown utilitytrace.UnknownBinding
