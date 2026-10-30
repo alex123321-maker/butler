@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(cmd/browser-sso-eval/|scripts/dev/browser-pages-fixture-tests[.]sh$|[.]github/workflows/browser-pages[.]yml$|docs/architecture/browser-pages-proposal[.]md$|docs/testing/browser-pages-fixture-)" {
+      [void]$specs.Add("docs/architecture/browser-pages-proposal.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("bash scripts/dev/browser-pages-fixture-tests.sh: mandatory unit/race/vet + five actual Chromium cases with zero skips. Fixture only, zero model calls; production Broker/page authority, public cross-site HTTPS, native delivery and external Google SSO remain separate acceptance.")
+      continue
+    }
     "browser_login|browserauth/|credentials/login[.]go|106_browser_login|browser-login-protocol" {
       [void]$specs.Add("docs/architecture/browser-login-protocol.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
