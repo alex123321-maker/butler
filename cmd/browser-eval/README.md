@@ -11,6 +11,12 @@ go run ./cmd/browser-eval -init -config .cache/browser-eval-private.json
 go run ./cmd/browser-eval -config .cache/browser-eval-private.json -journal .cache/browser-eval-attempt-01.jsonl
 ```
 
+The journal is exclusively created. Restarting a process with a historical
+journal fails, preserving its evidence; it cannot restore that attempt or its
+in-memory cookies. A systemd-active result immediately after start is not an HTTP
+readiness check. Use a fresh idle instance when ending a deployment window; see
+the deployment helper's named-unit/PID and HTTP checks below.
+
 Configuration contains synthetic username/password and expected answers. Enter
 credentials through the protected owner vault outside model/chat context. Never
 use real account data here. Restrict the directory ACL on Windows; Go file mode

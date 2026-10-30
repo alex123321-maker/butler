@@ -1,0 +1,2 @@
+"event","status","error_code","input_duration_s","telegram_sent_s","steps_total_s","decision_context_wait_s","tool_spans_s","tail_or_no_tool_s","partition_complete","partition_error_ms","tool_calls","model_attempts","unknown_usage_pairs"
+"browser-baseline-native-login-mandate-20261030-01","completed",,"775.374","757.831","768.7","764.492","4.208","6.674","True","1.1641532182693481E-10","17","18","0"

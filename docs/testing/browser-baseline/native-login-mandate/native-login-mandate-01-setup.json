@@ -1,0 +1,11 @@
+{
+  "scope": "native_bounded_owner_admission",
+  "task": "task_71f13e51693884fbe8c8f81c3a93c341",
+  "goal": "goal_9f431a0ba3c74464385abcd4d1b4d3c4",
+  "mandate": "mandate_877249f2fdd3072307b1ee986a75a4da",
+  "expires_at": "2026-10-30T03:07:02Z",
+  "setup_owner_mutations": 3,
+  "action_approvals": 0,
+  "credential_permissions": 0,
+  "initiative": false
+}

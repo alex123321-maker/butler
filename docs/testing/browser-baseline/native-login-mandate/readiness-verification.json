@@ -1,0 +1,13 @@
+{
+  "scope": "fixture_readiness_and_safe_idle_restore",
+  "observed_at": "2026-10-30T02:44:51Z",
+  "existing_attempt_rejected_before_effect": true,
+  "path_traversal_rejected": true,
+  "old_native_journal_unchanged": true,
+  "fresh_idle_named_unit_and_stable_pid_verified": true,
+  "loopback_http_ready": true,
+  "public_https_ready": true,
+  "idle_journal_empty": true,
+  "native_inputs": 0,
+  "model_calls": 0
+}

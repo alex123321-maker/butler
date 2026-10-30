@@ -170,7 +170,11 @@ or history were deleted. [Restoration](browser-baseline/native-owner-mandate/bas
 verified healthy Core/Broker, original mounts/environments, running binary hashes
 and complete original registry hash. Core v32 and strict Broker v30 qualified the
 scenario; the lab now runs its pre-test Core v17/Broker v13 baseline. The separate
-HTTPS service returned to `evidence-reuse-01`; the new recipient journal is retained.
+HTTPS service was told to restart `evidence-reuse-01`; its immediate systemd-active
+result was recorded, but the later login window found that process exited because
+the historical journal already existed. This did not invalidate the Core/Broker
+restore audit or native result. The [login follow-up](browser-native-login-mandate-2026-10-30.md)
+corrects fixture readiness/restoration; all historical recipient journals remain.
 No merge or general production rollout is claimed.
 
 This proves one synthetic public-form scenario on Antigravity
