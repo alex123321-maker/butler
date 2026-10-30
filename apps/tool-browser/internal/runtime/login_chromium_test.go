@@ -21,7 +21,7 @@ func TestBrowserLoginChromium(t *testing.T) {
 	if os.Getenv("BUTLER_BROWSER_E2E") != "1" {
 		t.Skip("requires isolated Chromium")
 	}
-	for _, mode := range []string{"verified", "public_landing", "formdata_mutation", "wrong_password", "foreign_target", "second_password", "extra_control", "stale"} {
+	for _, mode := range []string{"verified", "public_landing", "formdata_mutation", "wrong_password", "foreign_target", "second_password", "extra_control", "business_hidden", "stale"} {
 		t.Run(mode, func(t *testing.T) {
 			began := time.Now()
 			defer func() {
@@ -61,6 +61,9 @@ func TestBrowserLoginChromium(t *testing.T) {
 					}
 					if mode == "extra_control" {
 						form = strings.ReplaceAll(form, `<button>`, `<input name="extra"><button>`)
+					}
+					if mode == "business_hidden" {
+						form = strings.ReplaceAll(form, `<button>`, `<input type="hidden" name="amount" value="99"><button>`)
 					}
 					if mode == "formdata_mutation" {
 						form += `<script>document.forms[0].addEventListener('formdata',e=>e.formData.set('csrf','mutated'))</script>`
@@ -130,7 +133,7 @@ func TestBrowserLoginChromium(t *testing.T) {
 			if mode == "verified" && (posts.Load() != 1 || accounts.Load() != 2 || !strings.Contains(obs.Text, "B-432") || obs.NetworkState != "frozen") {
 				t.Fatal("missing single POST, browser/probe reads or final observation", posts.Load(), accounts.Load())
 			}
-			if mode == "foreign_target" || mode == "formdata_mutation" || mode == "second_password" || mode == "extra_control" || mode == "stale" {
+			if mode == "foreign_target" || mode == "formdata_mutation" || mode == "second_password" || mode == "extra_control" || mode == "business_hidden" || mode == "stale" {
 				if posts.Load() != 0 {
 					t.Fatal("unsupported form dispatched")
 				}

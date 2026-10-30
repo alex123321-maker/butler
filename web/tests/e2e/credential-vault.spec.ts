@@ -18,6 +18,7 @@ test('one login consent pins the account and includes submit plus access verific
       expect(body.id).toBe('creq_login')
       expect(body.record_id).toBe('cred_fixture')
       expect(body.allow).toBe(true)
+      expect(body.login_authorization).toBe('browser_login_once_v1')
       expect(route.request().headers()['x-butler-vault']).toBe('a'.repeat(64))
       approved=true
     }

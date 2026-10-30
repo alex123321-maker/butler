@@ -401,6 +401,7 @@ async function submitLogin(session, request, live) {
         for (const e of controls) {
           if (e.disabled || !e.name || ['submit','button','reset'].includes(e.type)) continue
           if (!(e instanceof HTMLInputElement) || (e !== user && e !== pass && e.type !== 'hidden') || names.has(e.name) || e.name.length > 128) return null
+          if (e !== user && e !== pass && !/^(?:_?csrf(?:_token)?|csrfmiddlewaretoken|_?xsrf(?:_token)?|authenticity_token|__requestverificationtoken)$/i.test(e.name)) return null
           const value = e === user ? username : e === pass ? password : e.value
           if (typeof value !== 'string' || value.length > 4096) return null
           names.add(e.name); entries.push([e.name, value])

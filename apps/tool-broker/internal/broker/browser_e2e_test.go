@@ -262,7 +262,7 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		if e = vault.Respond(context.Background(), "owner", consent.ID, loginEntry.ID, true, ""); e != nil {
+		if e = vault.Respond(context.Background(), "owner", consent.ID, loginEntry.ID, true, "", browserauth.Consent); e != nil {
 			t.Fatal(e)
 		}
 		fixture.ownerMandate = &actionauth.Mandate{ID: "login-mandate", ScopeKind: "owner_goal", OwnerID: "owner", GoalID: "login-goal", GoalRevision: 1, Revision: 1, Status: "active", Purpose: "single-login", Tools: []string{browserauth.Tool}, ResourceScopes: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/"}}, Effects: []actionauth.Effect{actionauth.EffectCommit}, ExpiresAt: time.Now().Add(time.Hour)}

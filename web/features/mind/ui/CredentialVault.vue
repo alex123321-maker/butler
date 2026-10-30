@@ -658,6 +658,7 @@ async function respond(r: Request, allow: boolean) {
       id: r.id,
       record_id: r.kind === 'otp' ? '' : selectedRecords.value[r.id] || '',
       allow,
+      login_authorization: allow && r.kind === 'login' ? 'browser_login_once_v1' : undefined,
       otp: value,
     })
     await refresh()

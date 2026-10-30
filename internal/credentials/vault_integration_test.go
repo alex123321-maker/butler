@@ -322,10 +322,16 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 		if _, e = v.GetByAlias(ctx, r.ID); e == nil {
 			t.Fatal("pending login grants fields")
 		}
-		if v.Respond(ctx, "owner", r.ID, first.ID, true, "") == nil {
+		if v.Respond(ctx, "owner", r.ID, entry.ID, true, "") == nil {
+			t.Fatal("old UI upgraded access-only answer to form submission")
+		}
+		if v.Respond(ctx, "owner", r.ID, entry.ID, true, "", "access") == nil {
+			t.Fatal("unrecognized login intent accepted")
+		}
+		if v.Respond(ctx, "owner", r.ID, first.ID, true, "", browserauth.Consent) == nil {
 			t.Fatal("owner changed pinned account")
 		}
-		if e = v.Respond(ctx, "owner", r.ID, entry.ID, true, ""); e != nil {
+		if e = v.Respond(ctx, "owner", r.ID, entry.ID, true, "", browserauth.Consent); e != nil {
 			t.Fatal(e)
 		}
 		metadata, e := v.GetByAlias(ctx, r.ID)
@@ -384,6 +390,40 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 		}
 		if v.CheckGrantedCall(ctx, changed) {
 			t.Fatal("legacy consent upgraded to POST")
+		}
+		parallel, e := v.CreateLoginRequest(ctx, p, "parallel-login", entry.ID, "One concurrent dispatch", scope)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if e = v.Respond(ctx, "owner", parallel.ID, entry.ID, true, "", browserauth.Consent); e != nil {
+			t.Fatal(e)
+		}
+		parallelMetadata, e := v.GetByAlias(ctx, parallel.ID)
+		if e != nil {
+			t.Fatal(e)
+		}
+		a.UsernameRef.Alias = parallel.ID
+		a.PasswordRef.Alias = parallel.ID
+		parallelArgs, _ := json.Marshal(a)
+		winners := make(chan string, 2)
+		for _, callID := range []string{"parallel-one", "parallel-two"} {
+			competing := proto.Clone(c).(*toolbrokerv1.ToolCall)
+			competing.ToolCallId = callID
+			competing.ArgsJson = string(parallelArgs)
+			for _, ref := range competing.CredentialRefs {
+				ref.Alias = parallel.ID
+			}
+			go func() {
+				if _, e := v.ResolveField(ctx, competing, parallelMetadata, "username"); e == nil {
+					winners <- competing.ToolCallId
+				} else {
+					winners <- ""
+				}
+			}()
+		}
+		one, two := <-winners, <-winners
+		if (one == "") == (two == "") {
+			t.Fatal("concurrent calls did not reserve exactly one login")
 		}
 		if _, e = pool.Exec(ctx, `UPDATE credential_vault_requests SET expires_at=now()-interval '1 second' WHERE id=$1`, r.ID); e != nil {
 			t.Fatal(e)

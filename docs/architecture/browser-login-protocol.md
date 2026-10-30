@@ -15,10 +15,16 @@ apply. The approved request may authorize this exact login protocol without a
 second action approval; it cannot authorize click, another form, payment, storage
 import or another site's credentials. A durable call claim prevents another
 proposal from spending the same login permission. No ambiguous dispatch retries.
+The protected response must explicitly carry `login_authorization=browser_login_once_v1`.
+Old open clients that render unfamiliar kinds as access-only cannot approve a
+login request. Denial remains available without this marker; PIN and owner auth
+remain mandatory. The marker is an explicit consent version, never a credential.
 
 The reviewed browser helper freezes network before inspecting the form. It
 supports a top-level ordinary same-origin URL-encoded POST form with one bound
-username and password input and bounded hidden fields. It fills privately and
+username and password input and bounded, allowlisted hidden CSRF fields. Other
+hidden business/action fields are unsupported and cannot borrow login consent.
+It fills privately and
 uses native form submission, not click/submit handlers. Routing permits at most
 one matching top-level POST with the exact compiled fields and bounded same-origin
 GET redirects; other requests stay blocked. Unsupported or stale forms fail

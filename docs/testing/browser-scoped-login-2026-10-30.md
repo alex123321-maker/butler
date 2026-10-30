@@ -27,10 +27,10 @@ Generic click and POST policy is unchanged. Owner token/PIN were not weakened.
 
 ## Completed checks
 
-- Real Chromium plus guarded Go egress: eight cases PASS. Verified login makes
+- Real Chromium plus guarded Go egress: nine cases PASS. Verified login makes
   one POST and two authenticated account reads (browser + independent probe).
   Public landing, mutated formdata/CSRF, wrong password, foreign target, extra
-  password/control and stale observation cannot confirm authentication. No
+  password/control, hidden business fields and stale observation cannot confirm authentication. No
   background trap traffic or credential/cookie canary reaches public output.
 - Actual Broker + encrypted PG vault + Chromium: PASS. One distinct vault
   consent, zero duplicate action approvals/factual reports, one POST, verified
@@ -41,11 +41,13 @@ Generic click and POST policy is unchanged. Owner token/PIN were not weakened.
   UNKNOWN across store restart; a consumed grant cannot replay. PG rejects
   missing typed evidence and a changed Input claim before dispatch.
 - Real PG vault: exact scope/account, both fields for one call, changed-target
-  denial, replay/expiry denial and separation from legacy preparation consent
+  denial, replay/expiry denial, concurrent one-call reservation and separation from legacy preparation consent
   pass. Migration rollback refuses to delete login-consent history.
 - Owner Web: typecheck/lint PASS; four Chromium vault tests PASS, including the
   explicit one-login card, disabled account substitution, protected approval and
   unchanged PIN/create/OTP tests. No secret-entry screenshots/traces/video.
+  The API also requires the explicit `browser_login_once_v1` consent version;
+  an already-open old client cannot grant submission through its generic card.
 - Targeted Go runtime/prompt/research/authorization checks PASS. Verified login
   page data supports the final answer without a redundant public refetch.
 

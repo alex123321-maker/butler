@@ -13,6 +13,7 @@ import (
 const Tool = "browser.login"
 const Revision = "1"
 const Verification = "browser_login_v1"
+const Consent = "browser_login_once_v1"
 
 type Ref struct {
 	Type  string `json:"type"`

@@ -147,7 +147,7 @@ func (v *Vault) Requests(ctx context.Context, owner string) ([]AccessRequest, er
 	}
 	return out, nil
 }
-func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow bool, otp string) error {
+func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow bool, otp string, consent ...string) error {
 	tx, err := v.Pool.Begin(ctx)
 	if err != nil {
 		return ErrVault
@@ -158,6 +158,14 @@ func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow b
 	var expiry time.Time
 	var rev int64
 	if tx.QueryRow(ctx, `SELECT owner_id,session_key,run_id,task_id,task_revision,constraints_revision,kind,state,record_id,record_revision,expires_at FROM credential_vault_requests WHERE id=$1 AND owner_id=$2 FOR UPDATE`, id, owner).Scan(&p.OwnerID, &p.SessionKey, &p.RunID, &p.TaskID, &p.TaskRevision, &p.ConstraintsRevision, &kind, &state, &currentRecord, &rev, &expiry) != nil || !expiry.After(time.Now()) || currentTx(ctx, tx, p) != nil {
+		return ErrVault
+	}
+	// Old open tabs render unfamiliar request kinds as preparation-only access.
+	// Such a generic answer must never upgrade into authority to submit a form.
+	if kind == "login" && allow && (len(consent) != 1 || consent[0] != browserauth.Consent) {
+		return ErrVault
+	}
+	if len(consent) > 1 || (kind != "login" && len(consent) == 1 && consent[0] != "") {
 		return ErrVault
 	}
 	// A lost HTTP response or a second channel may repeat the same answer.
