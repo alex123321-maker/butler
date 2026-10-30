@@ -69,6 +69,15 @@ corrected run passed actual UI and backend; abort signaling now cleans up failed
 UI attempts. Prompt regression caught outdated required wording/section budget;
 the complete compact browser strategy now passes assembly checks.
 
+Initial committed-source Linux CI passed all three page jobs (ordered PG
+migrations/ledger, recipient fixture, actual page execution/owner UI), Web and
+discovery. The neighbouring vault profile caught a legacy fixture's positional
+INSERT after adding page_mode: its URL landed in a boolean column. The fixture
+now names columns explicitly and also proves managed contexts cannot create a
+legacy vault request. The targeted real PG/race case passed in 0.44s. This was a
+fixture correction, not a credential policy bypass; final-head CI is checked
+separately in the PR/issue report.
+
 ## Remaining #164 gates
 
 Managed-page UNKNOWN stays blocking; this stage does not silently apply legacy
