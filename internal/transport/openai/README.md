@@ -28,8 +28,11 @@ disabled; errors expose fixed diagnostics rather than provider bodies.
 Sockets are scoped to runs, with no implicit cross-run conversation. Continuations
 send the actual `previous_response_id`, current instructions, the selected tool
 snapshot and string-encoded `function_call_output`. Responses retain the API's
-default storage behavior. Butler PostgreSQL remains authoritative. A missing
-locally measured prefix returns `stateful_session_lost`; recovery must rebuild
+default storage behavior. Butler PostgreSQL remains authoritative.
+Per-request `store` overrides are rejected before dispatch, including `false`;
+they are never silently ignored. ZDR/stateless HTTP recovery is not qualified.
+This provider retains the existing API default rather than claiming ZDR support.
+An unavailable locally measured prefix returns `stateful_session_lost`; recovery must rebuild
 context through Core. A final retains run-local continuation state for one minute
 for the kernel's bounded correction; cancellation/shutdown removes it sooner.
 

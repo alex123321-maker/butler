@@ -322,3 +322,24 @@ func TestResponsesCacheWriteAccounting(t *testing.T) {
 		}
 	}
 }
+
+func TestResponsesStorageChoiceCannotBeSilentlyIgnored(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { calls.Add(1) }))
+	defer server.Close()
+	p, _ := NewProvider(Config{Model: "gpt-6-luna", BaseURL: server.URL}, server.Client())
+	defer p.CloseAllSessions()
+	for _, q := range []transport.StartRunRequest{lunaRequest("map"), lunaRequest("json")} {
+		if q.Context.RunID == "map" {
+			q.TransportOptions = map[string]any{"store": false}
+		} else {
+			q.TransportOptionsJSON = `{"store":false}`
+		}
+		if _, err := p.StartRun(context.Background(), q); transport.DiagnosticCode(err) != string(transport.ErrorTypeCapabilityMismatch) {
+			t.Fatal("storage choice silently ignored")
+		}
+	}
+	if calls.Load() != 0 {
+		t.Fatal("unsupported privacy choice reached provider")
+	}
+}

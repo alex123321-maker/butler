@@ -41,6 +41,11 @@ func (p *Provider) checkContextAllowance(runID string, body []byte) error {
 }
 
 func (p *Provider) encodeRequest(payload map[string]any) ([]byte, error) {
+	// A requested privacy setting must never be silently dropped. Stateless
+	// recovery is not implemented by this provider's measured-prefix contract.
+	if _, present := payload["store"]; present {
+		return nil, &transport.Error{Type: transport.ErrorTypeCapabilityMismatch, ProviderName: providerName, Message: "openai per-request storage override is unsupported"}
+	}
 	output := p.config.MaximumOutputTokens
 	if v, ok := payload["max_output_tokens"]; ok {
 		raw, err := json.Marshal(v)

@@ -753,7 +753,7 @@ func mergeOptions(raw string, options map[string]any) map[string]any {
 	}
 	for key := range merged {
 		switch key {
-		case "reasoning", "text", "tool_choice", "parallel_tool_calls", "max_output_tokens", "service_tier":
+		case "reasoning", "text", "tool_choice", "parallel_tool_calls", "max_output_tokens", "service_tier", "store":
 		default:
 			delete(merged, key)
 		}
