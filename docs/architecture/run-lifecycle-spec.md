@@ -39,6 +39,8 @@ the kernel resolves the exact waiting->active transaction before starting the
 active-only Task supervisor. Resolution is bounded by the newly acquired lease's
 absolute expiry and still checks current lease, Input claim, Task versions and
 evidence. No provider, tool or source-body release occurs during that phase.
+Lease observation, renewal and cancellation continue throughout resolution;
+only the active-only Task check waits for the successful transition.
 Successful resolution starts the ordinary supervisor before fresh source/tool
 context and model admission. Stop, changed authority, invalid/expired decisions
 and unresolved outcomes remain fail-closed; execution authority is not extended.

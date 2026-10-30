@@ -155,3 +155,23 @@ Eleven real Chromium cases pass, including a positive selection of the second
 form and a negative ambiguous-form case; the original exact-body/no-extra-traffic
 and independent access-probe checks remain. The initial container test harness
 could not execute its RAM-mounted binary; its failure is retained separately.
+
+CI on469fe55f exposed a real cancellation regression in the first recovery-order
+patch: delaying the whole supervisor also delayed lease-failure cancellation
+during answer recovery. The correction keeps lease observation/renewal active
+throughout and gates only active-only Task checks until canonical resolution.
+The existing three-phase communication cancellation regression and all seven
+delayed interaction cases pass together on Linux PG/race. The earlier failed CI
+remains evidence, not a flaky result or a pass.
+
+Trial08 was blocked at credentials.request_login by the retained trial07 UNKNOWN;
+no new vault request or POST occurred. The session-wide stop fence was preserved.
+The old recipient was stopped at06:35:38 UTC, with zero journal events and the
+SHA256 of an empty file; its original browser context expired at06:25:14.657 UTC.
+A historical-only lost-login report path now requires that original expiry plus
+the35s maximum runtime window, a terminal dispatch/run and no live lease, exact
+typed login policy/args provenance and a factual authenticated recipient/settled
+report. Real PG/race tests cover twelve positive/negative cases and unchanged
+generic owner-outcome boundaries; Windows targeted PG tests also pass. Such a
+historical report remains owner-assisted maintenance and cannot qualify native
+login, renew a grant or resume the old Input.

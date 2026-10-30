@@ -1533,6 +1533,11 @@ stops execution; a report never revives a terminal Input or replays a POST.
 The active-only supervisor starts after that canonical waiting-to-active
 transaction. Until then resolution is bounded by the acquired lease expiry and
 all resolver fences; no provider or tool dispatch is permitted.
+Lease supervision and cancellation continue during resolution; only active-only
+Task observation waits for its successful transition.
+Historical login outcomes with lost responses can be factually reconciled only
+after the original context and maximum runtime window expire. Such maintenance
+does not reopen the old Input, retry its POST or qualify native success.
 
 The protected Web message route also accepts an explicit `task_id` for an active
 Task in its current owner/session. It uses ordinary Input and communication

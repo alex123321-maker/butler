@@ -128,17 +128,16 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	ctx = adaptiveContext(ctx, checkpoint.Prepared)
 	runLog := logger.WithRunID(s.log, runID)
 	retryParent := ctx
-	var renewErrs <-chan error
-	stop := func() {}
-	startSupervisor := func() { ctx, stop, renewErrs = s.startLeaseRenewer(ctx, lease, runLog) }
 	// The canonical interaction resolver owns the waiting->active transition.
 	// An active-only Task observer must not race that transaction. No provider,
 	// tool or source-body release occurs before resolution; the resolver still
 	// checks current ownership/claim/versions and is bounded by this lease.
-	if !interactionWait {
-		startSupervisor()
+	var taskReady chan struct{}
+	if interactionWait {
+		taskReady = make(chan struct{})
 	}
-	defer func() { stop() }()
+	ctx, stop, renewErrs := s.startLeaseRenewerWithTaskGate(ctx, lease, runLog, taskReady)
+	defer stop()
 	defer func() {
 		failure := preserveOwnedCancellation(ctx, returnedErr)
 		stop()
@@ -250,7 +249,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 			}
 			return blockedApprovalResult(current, code), nil
 		}
-		startSupervisor()
+		close(taskReady)
 		// Resolve the canonical interaction first: its owning kernel validates
 		// evidence/versions/claim and atomically resumes the Task's exact wait.
 		// Active-only source readers then recheck current data before inference.

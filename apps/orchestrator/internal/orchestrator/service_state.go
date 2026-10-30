@@ -60,6 +60,13 @@ func quiesceLeaseRenewer(ctx context.Context) {
 }
 
 func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseRecord, runLog *slog.Logger) (context.Context, context.CancelFunc, <-chan error) {
+	return s.startLeaseRenewerWithTaskGate(parent, lease, runLog, nil)
+}
+
+// Only canonical interaction recovery supplies taskReady. Lease observation,
+// renewal and cancellation remain active while its waiting->active transaction
+// runs; only the active-only Task check waits for the resolver's success.
+func (s *Service) startLeaseRenewerWithTaskGate(parent context.Context, lease session.LeaseRecord, runLog *slog.Logger, taskReady <-chan struct{}) (context.Context, context.CancelFunc, <-chan error) {
 	runCtx, cancelCause := context.WithCancelCause(parent)
 	control := &leaseRenewerControl{requested: make(chan struct{}), done: make(chan struct{})}
 	runCtx = context.WithValue(runCtx, leaseRenewerKey{}, control)
@@ -103,7 +110,15 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 					} else {
 						checkErr = ownership.ErrStale
 					}
-					if checkErr == nil {
+					checkTask := true
+					if taskReady != nil {
+						select {
+						case <-taskReady:
+						default:
+							checkTask = false
+						}
+					}
+					if checkErr == nil && checkTask {
 						if guard, ok := s.config.Tasks.(interface {
 							ValidateRunAuthority(context.Context, string) error
 						}); ok {

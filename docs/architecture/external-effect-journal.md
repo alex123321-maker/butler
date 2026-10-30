@@ -198,6 +198,18 @@ refunding spending, rewriting the old transcript or completing a task/run.
 An exact live review wait can become ready under its unchanged source/task
 versions; historical reconciliation never reopens a failed Input.
 
+A separate historical-only path covers `browser.login` revision1 when its finite
+context has expired by at least35s (the browser runtime's maximum call window),
+the exact dispatch has a terminal finished record and the run is terminal with
+no live lease. A lost login response may have an empty observation and `unknown`
+dispatch outcome. The kernel still requires its pinned `browser_login_v1` policy,
+typed login args/hash/resource, original successful browser.open identity/expiry,
+and a fresh authenticated factual recipient/settled report. Other tools retain
+the acknowledged-observation requirement. An unknown or unchecked report cannot
+establish absence. No report changes resource quarantine, consumed grants,
+original expiry, spending or terminal Input/run state. This is owner-assisted
+historical maintenance, not native login proof or permission to repeat a POST.
+
 Protected `/api/v4/action-outcomes` uses existing owner-control authentication.
 GET lists safe pending review metadata. POST `review_historical` accepts only
 the exact effect ID/fingerprint; POST `report` accepts the nested review ID,

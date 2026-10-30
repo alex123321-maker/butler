@@ -53,6 +53,11 @@ authority retain UNKNOWN and the existing no-replay protection. OTP, JavaScript-
 only forms and popup SSO are outside this first protocol and do not borrow its
 automatic confirmation. General clicks and POSTs retain their approval policy.
 
+A terminal lost-response login can use the existing protected factual report
+only after its original browser context and runtime call window have settled,
+with all historical identity/policy guards in the external-effect journal
+contract. This never resumes that Input or reissues its consumed login grant.
+
 Acceptance requires real Broker/PG/Chromium tests for one consent/one POST,
 private canaries, authenticated versus anonymous access, existing-grant denial,
 replay/concurrency, stale/foreign/expired/revoked scope and unsupported forms.
