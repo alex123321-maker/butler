@@ -1,5 +1,11 @@
 # Credential vault
 
+Migration106 adds distinct one-use login consent, with exact browser/form/POST
+scope and account revision. `browser.login` resolves both fields under a durable
+same-call claim; another proposal cannot spend that consent. Legacy requests
+remain preparation-only. Owner UI explicitly displays submit plus verification;
+PIN/owner authentication and ordinary Broker/task policy remain unchanged.
+
 The current production path is `Vault`, an encrypted PostgreSQL store with
 independent username/password fields, owner-scoped aliases and keyed exact login
 search. Site hints are organizational metadata, never permanent allowlists.

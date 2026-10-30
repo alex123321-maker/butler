@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+`browser.login` revision1 is a distinct unsafe commit tool, never an alias for
+click. Its private two-phase helper admits one exact native form POST and bounded
+same-origin GET redirects. Go performs independent, public-egress-guarded access
+verification and removes all private nonce/cookie fields from tool output. Only
+the reviewed binary/helper pair may produce `browser_login_v1` proof. See the
+[login protocol](browser-login-protocol.md) for supported forms and failure rules.
+
 Local preparation revision4 preserves revision2/3 compatibility and adds only a
 Go-guarded lost-context rejection before the runner starts. Its fixed proof
 does not reconcile prior writes or grant retries. A fresh context/input is a new

@@ -12,7 +12,7 @@ import (
 )
 
 func TestCredentialInteractionBudgetIdentityRequiresCanonicalGrant(t *testing.T) {
-	for _, name := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp"} {
+	for _, name := range []string{"credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login"} {
 		c := credentialcontrol.Contract(name)
 		hash, err := ContractHash(c)
 		if err != nil {

@@ -1,6 +1,23 @@
 {
   "tools": [
     {
+      "tool_name": "browser.login",
+      "description": "Fill and submit one ordinary same-origin login form and verify authenticated access. First inspect forms and obtain credentials.request_login consent for this exact scope. Use that approved request reference for both username/password. Submits at most once, with no automatic retry. Unsupported/ambiguous login remains unknown. Generic click/POST approval is unchanged.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"expected_url\",\"target_url\",\"observation_version\",\"form_selector\",\"username_selector\",\"password_selector\",\"username\",\"password\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"expected_url\":{\"type\":\"string\"},\"target_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\",\"minimum\":1},\"form_selector\":{\"type\":\"string\"},\"username_selector\":{\"type\":\"string\"},\"password_selector\":{\"type\":\"string\"},\"username\":{\"type\":\"object\",\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"alias\":{\"type\":\"string\"},\"field\":{\"type\":\"string\",\"enum\":[\"username\",\"password\"]}},\"additionalProperties\":false},\"password\":{\"type\":\"object\",\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"alias\":{\"type\":\"string\"},\"field\":{\"type\":\"string\",\"enum\":[\"username\",\"password\"]}},\"additionalProperties\":false}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"network_state\":{\"type\":\"string\"},\"authentication\":{\"type\":\"object\",\"properties\":{\"protocol\":{\"type\":\"string\"},\"submitted_once\":{\"type\":\"boolean\"},\"authenticated_read\":{\"type\":\"boolean\"},\"anonymous_challenge\":{\"type\":\"boolean\"}}}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": true,
+      "requires_approval": true,
+      "status": "active",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "browser_login_v1"
+      }
+    },
+    {
       "tool_name": "browser.read",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },

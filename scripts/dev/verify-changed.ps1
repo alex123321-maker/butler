@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "browser_login|browserauth/|credentials/login[.]go|106_browser_login|browser-login-protocol" {
+      [void]$specs.Add("docs/architecture/browser-login-protocol.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/external-effect-journal.md")
+      [void]$tests.Add("Scoped login: browserauth/actionauth/runtime/research unit checks; real PG one-use consent, Input dispatch fence and typed evidence/no-replay; real Broker+PG+Chromium; protected owner UI consent. credential-vault-tests.sh requires the new cases without skips. Native one-consent model/provider/delivery acceptance is separate; include model deliberation in wall time.")
+      continue
+    }
     "browser_safety_integration|browser_owner_ui_integration|browser_safety_fixture|browser-owner-real|browser-owner-safety-tests|browser-owner-runtime-2026|browser-safety-2026" {
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/external-effect-journal.md")

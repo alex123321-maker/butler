@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -41,6 +42,12 @@ func normalized(s string) string { return strings.Join(strings.Fields(s), " ") }
 func IsReadAttempt(c transcript.ToolCall) bool {
 	var a struct{ URL, Text, HTML, Method string }
 	switch c.ToolName {
+	case browserauth.Tool:
+		if c.FinishedAt == nil || c.Status != "completed" {
+			return false
+		}
+		_, ok := alternativePage(c)
+		return ok
 	case "web.search", "web.fetch", "web.fetch_batch":
 		return true
 	case "web.extract":
@@ -128,6 +135,14 @@ func alternativePage(c transcript.ToolCall) (Page, bool) {
 		return Page{}, false
 	}
 	switch c.ToolName {
+	case browserauth.Tool:
+		var login struct {
+			Auth *browserauth.Proof `json:"authentication"`
+		}
+		if json.Unmarshal([]byte(c.ResultJSON), &login) != nil || login.Auth == nil || login.Auth.Protocol != browserauth.Verification || !login.Auth.SubmittedOnce || !login.Auth.AuthenticatedRead || !login.Auth.AnonymousChallenge || !out.OK || out.Local || out.Network != "frozen" || (len(out.Error) > 0 && string(out.Error) != "null") {
+			return Page{}, false
+		}
+		out.Text = out.BrowserText
 	case "web.extract":
 		if args.URL == "" || args.Text != "" || args.HTML != "" || out.Status < 200 || out.Status >= 300 {
 			return Page{}, false

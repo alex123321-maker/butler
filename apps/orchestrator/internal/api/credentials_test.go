@@ -51,6 +51,13 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(migration)); err != nil {
 		t.Fatal("migrate")
 	}
+	loginMigration, err := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "106_browser_login_consent.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(loginMigration)); err != nil {
+		t.Fatal(err)
+	}
 	vault, err := credentials.NewVault(pool, strings.Repeat("synthetic-key-", 4))
 	if err != nil {
 		t.Fatal("vault")

@@ -3,6 +3,7 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
 	"net/url"
 	"strings"
 
@@ -10,6 +11,9 @@ import (
 )
 
 func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredential) (Request, error) {
+	if tool == browserauth.Tool {
+		return decodeLogin(payload, resolved)
+	}
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal([]byte(payload), &raw); err != nil || raw == nil {
 		return Request{}, fmt.Errorf("browser args must be a JSON object")

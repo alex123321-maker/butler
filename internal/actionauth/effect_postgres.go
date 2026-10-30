@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -141,6 +142,9 @@ func (s *PostgresStore) RecordDispatchOutcome(ctx context.Context, id, outcome s
 	}
 	if e.Verdict == StateConfirmed && (outcome != "dispatch_completed" || e.ResultDigest == "" || (r.Policy.VerificationMethod == "none") || (r.Policy.VerificationMethod == "external_receipt_v1" && e.ArtifactDigest == "")) {
 		return r, fmt.Errorf("confirmed effect requires supported evidence")
+	}
+	if e.Verdict == StateConfirmed && r.Policy.VerificationMethod == browserauth.Verification && !validLoginEvidence(r.Policy, g.Binding, e.Login) {
+		return r, fmt.Errorf("login evidence does not match the scoped protocol")
 	}
 	if err = insertEvidence(ctx, tx, e); err != nil {
 		return r, err

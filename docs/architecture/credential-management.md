@@ -1,5 +1,13 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Migration106 adds the distinct, explicit `credentials.request_login` consent
+for [bounded browser login](browser-login-protocol.md). It pins the saved account,
+current authority and exact form/POST scope, with one durable call reservation.
+Only `browser.login` may consume it. It covers one submission and access
+verification without a second action approval; ordinary mandate/effect/deny,
+expiry, owner, Input and record guards remain required. Legacy access/create/OTP
+consent keeps its preparation-only meaning. No generic click or POST is upgraded.
+
 Local credential preparation supports revisions2/3/4 under the same owner
 request, Input claim, metadata hash and current-field release guards. Revision4
 adds only proof that a NEW preparation could not start on an already lost

@@ -3,6 +3,7 @@ package credentials
 import (
 	"context"
 	"encoding/json"
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"os"
 	"path/filepath"
@@ -54,6 +55,14 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 	}
 	if _, err = pool.Exec(ctx, string(migration)); err != nil {
 		t.Fatalf("migration: %v", err)
+	}
+
+	loginMigration, loginErr := os.ReadFile(filepath.Join("..", "..", "migrations", "106_browser_login_consent.up.sql"))
+	if loginErr != nil {
+		t.Fatal(loginErr)
+	}
+	if _, loginErr = pool.Exec(ctx, string(loginMigration)); loginErr != nil {
+		t.Fatal(loginErr)
 	}
 	v, err := NewVault(pool, strings.Repeat("synthetic-key-", 4))
 	if err != nil {
@@ -295,6 +304,103 @@ func TestVaultLocalPostgresIntegration(t *testing.T) {
 		}
 		if e = v.Respond(ctx, "owner", r.ID, entry.ID, true, ""); e == nil {
 			t.Fatal("receipt reopened expired consent")
+		}
+	})
+	t.Run("scoped_login_one_call_and_legacy_isolation", func(t *testing.T) {
+		if _, e := pool.Exec(ctx, `UPDATE runs SET current_state='tool_running' WHERE run_id='run';UPDATE tasks SET status='active' WHERE task_id='task'`); e != nil {
+			t.Fatal(e)
+		}
+		entry, e := v.Save(ctx, "owner", EntryInput{Alias: "login-consent", Title: "Login", Username: "synthetic-user", Password: "synthetic-password"})
+		if e != nil {
+			t.Fatal(e)
+		}
+		scope := browserauth.Scope{Browser: "browser", ExpectedURL: "https://different.example/login", TargetURL: "https://different.example/session", Form: "form", Username: "#u", Password: "#p"}
+		r, e := v.CreateLoginRequest(ctx, p, "login-consent", entry.ID, "Sign in once", scope)
+		if e != nil {
+			t.Fatal("create login request", e)
+		}
+		if _, e = v.GetByAlias(ctx, r.ID); e == nil {
+			t.Fatal("pending login grants fields")
+		}
+		if v.Respond(ctx, "owner", r.ID, first.ID, true, "") == nil {
+			t.Fatal("owner changed pinned account")
+		}
+		if e = v.Respond(ctx, "owner", r.ID, entry.ID, true, ""); e != nil {
+			t.Fatal(e)
+		}
+		metadata, e := v.GetByAlias(ctx, r.ID)
+		if e != nil || len(metadata.AllowedTools) != 1 || metadata.AllowedTools[0] != browserauth.Tool {
+			t.Fatal("login metadata", e)
+		}
+		a := browserauth.Args{Scope: scope, Version: 1, UsernameRef: browserauth.Ref{Type: "credential_ref", Alias: r.ID, Field: "username"}, PasswordRef: browserauth.Ref{Type: "credential_ref", Alias: r.ID, Field: "password"}}
+		payload, _ := json.Marshal(a)
+		c := &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "single-login", ToolName: browserauth.Tool, ArgsJson: string(payload), CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: r.ID, Field: "username"}, {Type: "credential_ref", Alias: r.ID, Field: "password"}}}
+		if !v.CheckGrantedCall(ctx, c) {
+			t.Fatal("current approved login denied")
+		}
+		changed := proto.Clone(c).(*toolbrokerv1.ToolCall)
+		changed.ArgsJson = strings.Replace(c.ArgsJson, "/session", "/different", 1)
+		if v.CheckGrantedCall(ctx, changed) {
+			t.Fatal("changed POST target accepted")
+		}
+		if _, e = v.ResolveField(ctx, changed, metadata, "password"); e == nil {
+			t.Fatal("changed scope released password")
+		}
+		for _, field := range []string{"username", "password"} {
+			if _, e = v.ResolveField(ctx, c, metadata, field); e != nil {
+				t.Fatal("owning field resolution", e)
+			}
+		}
+		changed = proto.Clone(c).(*toolbrokerv1.ToolCall)
+		changed.ToolCallId = "replayed-login"
+		if v.CheckGrantedCall(ctx, changed) {
+			t.Fatal("second login call accepted")
+		}
+		if _, e = v.ResolveField(ctx, changed, metadata, "password"); e == nil {
+			t.Fatal("second login released fields")
+		}
+		prep := proto.Clone(c).(*toolbrokerv1.ToolCall)
+		prep.ToolName = "browser.prepare_fill"
+		if v.CheckGrantedCall(ctx, prep) {
+			t.Fatal("login request waived preparation approval")
+		}
+		if _, e = v.ResolveField(ctx, prep, metadata, "password"); e == nil {
+			t.Fatal("login request lent prep permission")
+		}
+		legacy, e := v.CreateRequest(ctx, p, "legacy-login", "access", entry.ID, scope.ExpectedURL, scope.Browser, "Local only", []string{"username", "password"})
+		if e != nil {
+			t.Fatal(e)
+		}
+		if e = v.Respond(ctx, "owner", legacy.ID, entry.ID, true, ""); e != nil {
+			t.Fatal(e)
+		}
+		a.UsernameRef.Alias = legacy.ID
+		a.PasswordRef.Alias = legacy.ID
+		payload, _ = json.Marshal(a)
+		changed = proto.Clone(c).(*toolbrokerv1.ToolCall)
+		changed.ArgsJson = string(payload)
+		for _, ref := range changed.CredentialRefs {
+			ref.Alias = legacy.ID
+		}
+		if v.CheckGrantedCall(ctx, changed) {
+			t.Fatal("legacy consent upgraded to POST")
+		}
+		if _, e = pool.Exec(ctx, `UPDATE credential_vault_requests SET expires_at=now()-interval '1 second' WHERE id=$1`, r.ID); e != nil {
+			t.Fatal(e)
+		}
+		if v.CheckGrantedCall(ctx, c) {
+			t.Fatal("expired login consent accepted")
+		}
+		down, e := os.ReadFile(filepath.Join("..", "..", "migrations", "106_browser_login_consent.down.sql"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(down)); e == nil {
+			t.Fatal("rollback deleted login consent history")
+		}
+		var kept bool
+		if pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM credential_vault_requests WHERE id=$1 AND login_claimed_call='single-login')`, r.ID).Scan(&kept) != nil || !kept {
+			t.Fatal("refused rollback changed one-use history")
 		}
 	})
 	if v.Lock(ctx, "owner", token) != nil || v.CheckUnlock(ctx, "owner", token) == nil {

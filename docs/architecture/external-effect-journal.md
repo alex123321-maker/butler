@@ -1,5 +1,14 @@
 # External effect journal
 
+`browser_login_v1` is a closed verifier for the separate unsafe `browser.login`
+commit contract. It pins exact approved form args and requires a correlated newer
+frozen observation plus Go-derived single-submit/authenticated-read/anonymous-
+challenge proof. PostgreSQL rechecks normalized scope, browser, version and proof
+before confirmation; no password, cookie or raw page enters journal evidence.
+This verifies the bounded authentication procedure, not arbitrary business writes.
+Missing proof, lost runtime/ACK and unsupported forms remain UNKNOWN. No grant,
+one-use consent or dispatch is replayed. See [protocol](browser-login-protocol.md).
+
 Revision4 local preparation can additionally prove that a new input was not
 dispatched because its context was already lost. Only the Go pre-run guard emits
 this fixed `session_lost` reason; Broker and PG recheck the correlated failed

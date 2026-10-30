@@ -1,3 +1,9 @@
+For supported ordinary login forms Core prefers `credentials.request_login`
+then `browser.login`. Its one protected owner decision includes one submit and
+access verification. A verified account observation can support the final answer
+without another click approval, factual outcome report or redundant HTTP refetch.
+Ambiguous effects retain the existing stop/intervention contract.
+
 Core records one bounded post-effect observation after a correlated UNKNOWN
 click/fill/type response: `browser.freeze_snapshot` gets its own exact Broker
 grant under current authority and a clipped five-second deadline. It contains

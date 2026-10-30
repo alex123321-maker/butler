@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/owneridentity"
@@ -194,7 +195,7 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 	}
 	// Retain the Input row lock acquired by guardDispatch and recheck time after
 	// budget contention. A fresh claim cannot borrow an unused old permission.
-	if credentialcontrol.IsTool(g.Binding.ToolName) {
+	if credentialcontrol.IsTool(g.Binding.ToolName) || g.Binding.ToolName == browserauth.Tool {
 		if err = checkCredentialInputTx(ctx, tx, g); err != nil {
 			return err
 		}
@@ -285,7 +286,7 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 			return err
 		}
 	}
-	if credentialcontrol.IsTool(g.Binding.ToolName) {
+	if credentialcontrol.IsTool(g.Binding.ToolName) || g.Binding.ToolName == browserauth.Tool {
 		return checkCredentialInputTx(ctx, tx, g)
 	}
 	return nil

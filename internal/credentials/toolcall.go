@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
 	"sort"
 	"strings"
 
@@ -29,7 +30,17 @@ func NewToolCallBroker(authorizer *Broker, resolver SecretResolver) *ToolCallBro
 // ApprovedLocalUse checks an owner-issued vault grant without resolving a value.
 // It can authorize local preparation only; submission retains ordinary authority.
 func (b *ToolCallBroker) ApprovedLocalUse(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
-	if b == nil || call == nil || len(call.GetCredentialRefs()) == 0 {
+	if b == nil || call == nil || (call.ToolName != "browser.prepare_fill" && call.ToolName != "browser.prepare_type") || len(call.GetCredentialRefs()) == 0 {
+		return false
+	}
+	checker, ok := b.resolver.(interface {
+		CheckGrantedCall(context.Context, *toolbrokerv1.ToolCall) bool
+	})
+	return ok && checker.CheckGrantedCall(ctx, call)
+}
+
+func (b *ToolCallBroker) ApprovedLoginUse(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
+	if b == nil || call == nil || call.ToolName != browserauth.Tool {
 		return false
 	}
 	checker, ok := b.resolver.(interface {
@@ -126,7 +137,7 @@ func (b *ToolCallBroker) resolve(ctx context.Context, call *toolbrokerv1.ToolCal
 		if err != nil {
 			return nil, err
 		}
-		if decision.RequiresApproval && (proof == nil || !proof.Approved) && !(proof != nil && b.ApprovedLocalUse(ctx, call)) {
+		if decision.RequiresApproval && (proof == nil || !proof.Approved) && !(proof != nil && (b.ApprovedLocalUse(ctx, call) || b.ApprovedLoginUse(ctx, call))) {
 			return nil, fmt.Errorf("credential alias %q requires approval: %s", decision.Record.Alias, decision.ApprovalReason)
 		}
 		if proof != nil {

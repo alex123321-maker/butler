@@ -70,7 +70,12 @@ func (e *CredentialExecutor) Execute(ctx context.Context, call *toolbrokerv1.Too
 		if kind == "otp" {
 			fields = []string{"otp"}
 		}
-		r, err := e.Vault.CreateRequest(ctx, p, call.ToolCallId, kind, a.RecordID, a.ExpectedURL, a.BrowserSessionID, a.Purpose, fields, a.AccessRequestID)
+		var r credentials.AccessRequest
+		if kind == "login" {
+			r, err = e.Vault.CreateLoginRequest(ctx, p, call.ToolCallId, a.RecordID, a.Purpose, *a.LoginScope)
+		} else {
+			r, err = e.Vault.CreateRequest(ctx, p, call.ToolCallId, kind, a.RecordID, a.ExpectedURL, a.BrowserSessionID, a.Purpose, fields, a.AccessRequestID)
+		}
 		if err != nil {
 			return nil, err
 		}

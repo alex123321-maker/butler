@@ -4,6 +4,38 @@ import { connect, fixture, ownerToken } from './mind-fixture'
 // Synthetic input only. Secret-entry tests must not retain page/trace captures.
 test.use({ screenshot: 'off', trace: 'off', video: 'off' })
 
+test('one login consent pins the account and includes submit plus access verification', async ({page}) => {
+  await fixture(page, {tasks: false})
+  let approved = false
+  const request = {id:'creq_login',kind:'login',record_id:'cred_fixture',record_label:'Личный магазин',target_origin:'https://shop.example',purpose:'Войти и прочитать заказ',fields:['username','password'],state:'pending',login_scope:{target_url:'https://shop.example/session'}}
+  await page.route('**/api/v4/credentials', async route => {
+    if(route.request().method()==='GET') return route.fulfill({json:{configured:true,requests:approved?[]:[request],entries:[{id:'cred_fixture',title:'Личный магазин',alias:'shop.personal',revision:1,status:'active'}]}})
+    const body=route.request().postDataJSON()
+    if(body.action==='unlock') return route.fulfill({json:{unlock_token:'a'.repeat(64)}})
+    if(body.action==='list') return route.fulfill({json:{entries:[{id:'cred_fixture',title:'Личный магазин',alias:'shop.personal',revision:1,status:'active'}]}})
+    if(body.action==='requests') return route.fulfill({json:{requests:approved?[]:[request]}})
+    if(body.action==='respond') {
+      expect(body.id).toBe('creq_login')
+      expect(body.record_id).toBe('cred_fixture')
+      expect(body.allow).toBe(true)
+      expect(route.request().headers()['x-butler-vault']).toBe('a'.repeat(64))
+      approved=true
+    }
+    return route.fulfill({json:{ok:true}})
+  })
+  await connect(page)
+  await expect(page.getByText('Запрос разрешения на один вход',{exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'Открыть запрос',exact:true}).click()
+  for(let i=0;i<6;i++) await page.getByLabel(`Цифра ${i+1}`,{exact:true}).fill('654321'[i]!)
+  await page.getByRole('button',{name:'Открыть',exact:true}).click()
+  const card=page.locator('.vault-request')
+  await expect(card.getByRole('combobox')).toBeDisabled()
+  await expect(card).toContainText('отправить форму на https://shop.example/session и проверить доступ')
+  await expect(card.getByRole('button',{name:'Создать запись',exact:true})).toHaveCount(0)
+  await card.getByRole('button',{name:'Разрешить один вход',exact:true}).click()
+  await expect.poll(()=>approved).toBe(true)
+})
+
 test('bookmark creates a six-cell PIN, saves separate account fields and clears on lock', async ({
   page,
 }) => {
