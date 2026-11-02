@@ -109,6 +109,17 @@ private runtime counters and final page reports pass the normal managed ledger.
 
 ## Validation boundary
 
+Required runtime fault cases kill the actual helper before SSO or after the
+independent synthetic recipient has synced an accepted IdP login while delaying
+its callback. Neither case can emit authentication proof. The old context must
+reject another SSO invocation; a fresh read must have a different identity and
+no restored authentication. The accepted-login journal cannot change from that
+stale invocation or fresh read. The recipient's bounded operator-only delay
+does not exist in the production runtime. Delayed-popup success and popup-storm
+denial are separate controls. All these checks are mechanical (`model_calls=0`),
+not a native Core/Broker recovery qualification or permission to reconcile an
+unknown action automatically.
+
 `scripts/dev/browser-sso-execution-tests.sh` requires ordered PostgreSQL
 migrations, consent/one-call/current-authority tests, same-Input wake/resume, and
 real Chromium against the actual two-origin HTTPS recipient. Its private test

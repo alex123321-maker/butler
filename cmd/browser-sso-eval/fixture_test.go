@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -136,6 +137,38 @@ func TestSSOFixtureLoginCallbackAndPrivateAccount(t *testing.T) {
 			t.Fatal("recipient journal exposed private material")
 		}
 	}
+}
+
+func TestSSOFixtureCancelledAcceptedLoginRetainsReceiptWithoutCallback(t *testing.T) {
+	s := site(t)
+	_, csrf := s.begin(t)
+	s.f.loginResponseDelay = 5 * time.Second
+	fields := url.Values{"username": {s.f.cfg.Username}, "password": {s.f.cfg.Password}, "csrf": {csrf}}
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	r := httptest.NewRequest(http.MethodPost, s.idp.URL+"/login", strings.NewReader(fields.Encode())).WithContext(ctx)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Set("Origin", s.idp.URL)
+	u, _ := url.Parse(s.idp.URL)
+	for _, cookie := range s.c.Jar.Cookies(u) {
+		r.AddCookie(cookie)
+	}
+	w := httptest.NewRecorder()
+	s.f.handler(true).ServeHTTP(w, r)
+	if w.Header().Get("Location") != "" || len(s.f.codes) != 0 || len(s.f.forms) != 0 {
+		t.Fatal("cancelled response emitted a code or restored the consumed form")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 1)
+	assertCount(t, s.journal.String(), "callback_accepted", 0)
+	response, _ := request(t, s.c, http.MethodGet, s.rp.URL+"/account", nil, "")
+	if response.StatusCode != http.StatusUnauthorized {
+		t.Fatal("accepted IdP login alone authenticated RP")
+	}
+	response, _ = s.login(t, csrf, s.f.cfg.Password)
+	if response.StatusCode != http.StatusForbidden {
+		t.Fatal("cancelled login restored a replayable form")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 1)
 }
 
 func TestSSOFixtureRPBindingSurvivesProtectedConsentWait(t *testing.T) {

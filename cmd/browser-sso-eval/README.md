@@ -64,6 +64,13 @@ recipient unavailable; it cannot grant access without a receipt.
 
 ## Verification and limits
 
+The operator-only `--login-response-delay` flag defaults to zero and accepts at
+most five seconds. After a valid login receipt is synced, it delays releasing
+the callback code. This lets tests kill the real browser helper after the IdP
+accepted a login but before an RP session exists. Request cancellation retains
+the accepted receipt and consumed form; it emits no callback and permits no
+form replay. There is no HTTP fault-control endpoint or production runtime flag.
+
 `bash scripts/dev/browser-pages-fixture-tests.sh` requires Go, Node and the
 existing pinned tool-browser Playwright/Chromium installation. It runs race
 tests, vet and all five actual Chromium cases, rejecting any skipped case.

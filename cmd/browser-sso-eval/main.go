@@ -70,7 +70,8 @@ func run(args []string) error {
 	idpOrigin := fs.String("idp-origin", "", "externally visible provider origin")
 	tlsCert := fs.String("tls-cert", "", "operator-provided TLS certificate file")
 	tlsKey := fs.String("tls-key", "", "operator-provided TLS key file")
-	if fs.Parse(args) != nil || fs.NArg() != 0 || *configPath == "" {
+	loginDelay := fs.Duration("login-response-delay", 0, "test-only accepted-login response delay, at most 5s")
+	if fs.Parse(args) != nil || fs.NArg() != 0 || *configPath == "" || *loginDelay < 0 || *loginDelay > 5*time.Second {
 		return errors.New("invalid fixture arguments")
 	}
 	if *init {
@@ -103,6 +104,7 @@ func run(args []string) error {
 	}
 	defer journal.Close()
 	f := newFixture(cfg, *rpOrigin, *idpOrigin, journal)
+	f.loginResponseDelay = *loginDelay
 	server := func(handler http.Handler) *http.Server {
 		return &http.Server{Handler: handler, ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 8 * time.Second, WriteTimeout: 8 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 8192, ErrorLog: log.New(io.Discard, "", 0)}
 	}

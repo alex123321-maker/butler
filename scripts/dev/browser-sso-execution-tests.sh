@@ -23,12 +23,13 @@ required consent-use ./internal/credentials ./apps/orchestrator/internal/api -ru
 export BUTLER_TEST_BROWSER_PAGES_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
 required dispatch-fence ./internal/browsercontrol -run '^TestSSOPreDispatchPageFenceIntegration$'
 required same-input ./apps/orchestrator/internal/app -run '^TestCredentialVaultLocalWaitResumeAndExpiry$'
+required recipient-fault-controls ./cmd/browser-sso-eval -run '^TestSSOFixtureCancelledAcceptedLoginRetainsReceiptWithoutCallback$'
 go build -o "$report/recipient" ./cmd/browser-sso-eval
 export BUTLER_SSO_EVAL_BINARY="$PWD/$report/recipient"
 export BUTLER_BROWSER_E2E_SCRIPT="$PWD/apps/tool-browser/scripts/browser_runtime.mjs"
 export BUTLER_BROWSER_SSO_E2E=1
 required https-runtime ./apps/tool-browser/internal/runtime -run '^TestBrowserSSOChromiumHTTPS$'
-for mode in verified wrong_password denied_idp_post two_popups stale_page; do
+for mode in verified late_popup wrong_password denied_idp_post two_popups popup_storm stale_page helper_lost_before_sso helper_lost_after_idp_login; do
  grep -F '"Action":"pass"' "$report/https-runtime.jsonl" | grep -Fq "\"Test\":\"TestBrowserSSOChromiumHTTPS/$mode\""
 done
 # These are mechanical checks with no Butler model invocation. Their durations

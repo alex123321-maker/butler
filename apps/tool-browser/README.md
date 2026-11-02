@@ -1,5 +1,14 @@
 # Tool Browser
 
+The separate revision1 `browser.sso_login` protocol handles one native-form
+RP/IdP popup flow under exact protected consent and Broker dispatch caps. It
+requires independent Go authenticated/anonymous RP verification. The required
+HTTPS Chromium profile includes delayed popups, popup storms and actual helper
+loss before SSO and after an accepted IdP POST. Lost contexts cannot be reused;
+a fresh read obtains a different unauthenticated context. These runtime tests
+do not establish native model recovery, Google compatibility or automatic
+reconciliation of a lost login. See the [SSO protocol](../../docs/architecture/browser-sso-protocol.md).
+
 Revision1 `browser.login` privately fills two Broker-resolved fields and submits
 one exact ordinary URL-encoded same-origin form. The helper gates the actual body,
 blocks extra requests and freezes after bounded GET redirects. Go compares a
@@ -58,7 +67,7 @@ Current state:
 - Docker Compose deployment must attach the runtime to an egress-capable network in addition to the internal tool network so outbound site navigation can resolve public DNS
 - HTTP health endpoint and unit tests are in place
 - real Chromium e2e checks form continuation, auth persistence/masking, stale observations, expiry and process loss via `scripts/dev/lab-browser.sh`; use only the isolated lab workflow
-- public redirects and CDN resources work within contract/operator caps; native SOP, public DNS/IP checks and credential scope stay enforced; popup-only SSO remains unsupported
+- public redirects and CDN resources work within contract/operator caps; native SOP, public DNS/IP checks and credential scope stay enforced; popup SSO uses only the separate bounded protocol
 
 Local run:
 - `go run ./apps/tool-browser`

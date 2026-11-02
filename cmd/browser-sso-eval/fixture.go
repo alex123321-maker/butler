@@ -56,19 +56,20 @@ type receipt struct {
 }
 
 type fixture struct {
-	mu          sync.Mutex
-	cfg         config
-	rp, idp     string
-	journal     io.Writer
-	now         func() time.Time
-	sequence    int
-	failed      bool
-	browsers    map[string]time.Time
-	idpBrowsers map[string]time.Time
-	pending     map[string]pending
-	forms       map[string]authorization
-	codes       map[string]code
-	accounts    map[string]account
+	mu                 sync.Mutex
+	cfg                config
+	rp, idp            string
+	journal            io.Writer
+	now                func() time.Time
+	sequence           int
+	failed             bool
+	browsers           map[string]time.Time
+	idpBrowsers        map[string]time.Time
+	pending            map[string]pending
+	forms              map[string]authorization
+	codes              map[string]code
+	accounts           map[string]account
+	loginResponseDelay time.Duration
 }
 
 func opaque() string {
@@ -348,6 +349,17 @@ func (f *fixture) provider(w http.ResponseWriter, r *http.Request) {
 		if !valid {
 			http.Error(w, "Sign-in failed", 401)
 			return
+		}
+		// Operator-only fault injection: the accepted login is durable, but its
+		// callback has not been released. Cancellation cannot replay the form.
+		if f.loginResponseDelay > 0 {
+			timer := time.NewTimer(f.loginResponseDelay)
+			defer timer.Stop()
+			select {
+			case <-timer.C:
+			case <-r.Context().Done():
+				return
+			}
 		}
 		value := opaque()
 		f.codes[value] = code{a.state, a.challenge, f.now().Add(flowTTL)}

@@ -94,7 +94,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 	}
 	dir := t.TempDir()
 	cert, key := ssoTLS(t, dir)
-	for _, mode := range []string{"verified", "wrong_password", "denied_idp_post", "two_popups", "stale_page"} {
+	for _, mode := range []string{"verified", "late_popup", "wrong_password", "denied_idp_post", "two_popups", "popup_storm", "stale_page", "helper_lost_before_sso", "helper_lost_after_idp_login"} {
 		t.Run(mode, func(t *testing.T) {
 			began := time.Now()
 			defer func() {
@@ -125,6 +125,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			}
 			rpAddress, idpAddress := address(), address()
 			cmd := exec.Command(binary, "--config", config, "--journal", journal, "--rp-listen", rpAddress, "--idp-listen", idpAddress, "--rp-origin", "https://rp.sso.test", "--idp-origin", "https://idp.sso.test", "--tls-cert", cert, "--tls-key", key)
+			if mode == "helper_lost_after_idp_login" {
+				cmd.Args = append(cmd.Args, "--login-response-delay", "5s")
+			}
 			if cmd.Start() != nil {
 				t.Fatal("HTTPS fixture startup")
 			}
@@ -182,6 +185,12 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			if mode == "two_popups" {
 				scope.Trigger = "#twins"
 			}
+			if mode == "late_popup" {
+				scope.Trigger = "#late"
+			}
+			if mode == "popup_storm" {
+				scope.Trigger = "#storm"
+			}
 			if mode == "stale_page" {
 				scope.RPPage.DocumentID = strings.Repeat("f", 32)
 			}
@@ -200,7 +209,45 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				password += "wrong"
 			}
 			req := &runtimev1.ExecuteRequest{ToolCall: &toolbrokerv1.ToolCall{RunId: "sso-run", ToolCallId: "sso", ToolName: browsersso.Tool, ArgsJson: string(payload), CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: alias, Field: "username"}, {Type: "credential_ref", Alias: alias, Field: "password"}}}, Contract: browsersso.Contract(), Context: &runtimev1.ExecutionContext{RunId: "sso-run"}, ResolvedCredentials: []*runtimev1.ResolvedCredential{{Alias: alias, Field: "username", Value: private.Username}, {Alias: alias, Field: "password", Value: password}}}
-			response, e := server.Execute(ctx, req)
+			helper := runner.cmd.Process // Capture before concurrent execution; no racy runner-state reads.
+			if mode == "helper_lost_before_sso" {
+				if helper.Kill() != nil {
+					t.Fatal("actual helper kill failed")
+				}
+			}
+			executionCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+			defer cancel()
+			type answer struct {
+				response *runtimev1.ExecuteResponse
+				err      error
+			}
+			completed := make(chan answer, 1)
+			go func() { response, err := server.Execute(executionCtx, req); completed <- answer{response, err} }()
+			if mode == "helper_lost_after_idp_login" {
+				// Synchronize against the independent durable recipient receipt,
+				// not a timing guess or a helper-supplied success marker.
+				deadline := time.Now().Add(8 * time.Second)
+				for {
+					journalData, err := os.ReadFile(journal)
+					if err == nil && strings.Contains(string(journalData), `"kind":"idp_login","accepted":true`) {
+						break
+					}
+					if time.Now().After(deadline) {
+						t.Fatal("accepted login never reached delayed recipient")
+					}
+					time.Sleep(5 * time.Millisecond)
+				}
+				if helper.Kill() != nil {
+					t.Fatal("actual in-flight helper kill failed")
+				}
+			}
+			var response *runtimev1.ExecuteResponse
+			select {
+			case done := <-completed:
+				response, e = done.response, done.err
+			case <-executionCtx.Done():
+				t.Fatal("lost helper did not settle the original call")
+			}
 			if e != nil {
 				t.Fatal("SSO runtime transport failed")
 			}
@@ -212,7 +259,8 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			var out Result
 			_ = json.Unmarshal([]byte(response.Result.ResultJson), &out)
 			verified := response.Result.Status == "completed" && out.Authentication != nil && out.Authentication.Protocol == browsersso.Verification && out.Authentication.AuthenticatedRead && out.Authentication.AnonymousChallenge && out.Authentication.SubmittedOnce
-			if verified != (mode == "verified") {
+			wantVerified := mode == "verified" || mode == "late_popup"
+			if verified != wantVerified {
 				t.Fatalf("SSO proof mismatch: mode=%s status=%s ok=%v proof=%v error=%v", mode, response.Result.Status, out.OK, out.Authentication != nil, response.Result.GetError())
 			}
 			data, e = os.ReadFile(journal)
@@ -243,13 +291,37 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			if posts > 1 {
 				t.Fatal("SSO POST replay")
 			}
-			if mode == "verified" && (posts != 1 || callbacks != 1 || reads != 2 || !strings.Contains(out.Text, private.Fact) || out.NetworkState != "frozen") {
+			if wantVerified && (posts != 1 || callbacks != 1 || reads != 2 || !strings.Contains(out.Text, private.Fact) || out.NetworkState != "frozen") {
 				t.Fatal("missing recipient/probe evidence", posts, callbacks, reads)
 			}
-			if mode == "denied_idp_post" || mode == "stale_page" || mode == "two_popups" {
+			if mode == "denied_idp_post" || mode == "stale_page" || mode == "two_popups" || mode == "popup_storm" {
 				if posts != 0 {
 					t.Fatal("stale or denied authority sent credentials")
 				}
+			}
+			if strings.HasPrefix(mode, "helper_lost_") {
+				wantPosts := 0
+				if mode == "helper_lost_after_idp_login" {
+					wantPosts = 1
+				}
+				if response.Result.Status == "completed" || out.Authentication != nil || posts != wantPosts || callbacks != 0 || reads != 0 {
+					t.Fatal("lost runtime upgraded or replayed an incomplete SSO", posts, callbacks, reads)
+				}
+				stale, err := server.Execute(ctx, req)
+				if err != nil || stale.GetResult().GetStatus() == "completed" {
+					t.Fatal("lost context reused after helper restart")
+				}
+				open.ToolCall.ToolCallId = "fresh-open-after-loss"
+				fresh, err := server.Execute(metadata.NewIncomingContext(t.Context(), metadata.Pairs("butler-browser-epoch", "0")), open)
+				var next Result
+				if err != nil || fresh.GetResult().GetStatus() != "completed" || json.Unmarshal([]byte(fresh.Result.ResultJson), &next) != nil || next.SessionID == "" || next.SessionID == observation.SessionID || strings.Contains(next.Text, private.Fact) {
+					t.Fatal("fresh read reused old runtime identity or authentication")
+				}
+				again, err := os.ReadFile(journal)
+				if err != nil || string(again) != string(data) {
+					t.Fatal("stale SSO or fresh read changed the recipient journal")
+				}
+				t.Logf("actual_helper_killed=true fresh_context_distinct=true stale_sso_rejected=true accepted_idp_logins=%d callbacks=0 account_reads=0 no_success_proof=true", posts)
 			}
 			for _, p := range out.PrivatePages {
 				if p.OpenerID != "" && p.State == "ready" {
