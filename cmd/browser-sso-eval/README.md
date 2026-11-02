@@ -23,9 +23,17 @@ go run ./cmd/browser-sso-eval -config .cache/sso-private.json -journal .cache/ss
 ```
 
 Defaults: `-rp-listen 127.0.0.1:18098`, `-idp-listen 127.0.0.1:18099`.
+For direct HTTPS testing, supply both `-tls-cert <private-file>` and
+`-tls-key <private-file>`; both configured public origins must then use HTTPS.
+The same certificate must cover both names. Without these flags, keep TLS at
+the operator's reverse proxy. The required runtime CI uses a disposable test
+CA and fresh Linux NSS database; it never disables certificate verification.
 Configuration and journal are exclusively created; existing files are never
 overwritten. Restart with a new journal, retaining the old attempt. All live
-bindings expire after three minutes and are not restored after restart.
+RP browser bindings expire after fifteen minutes to accommodate the protected
+ten-minute owner-consent window. IdP bindings, OAuth flows, forms, codes and
+authenticated accounts still expire after three minutes. Nothing is restored
+after restart.
 
 Keep these files out of model context, chat, logs, source control and artifacts.
 Do not use real credentials. Go's file mode 0600 does not establish Windows
@@ -56,6 +64,13 @@ recipient unavailable; it cannot grant access without a receipt.
 
 ## Verification and limits
 
+The operator-only `--login-response-delay` flag defaults to zero and accepts at
+most five seconds. After a valid login receipt is synced, it delays releasing
+the callback code. This lets tests kill the real browser helper after the IdP
+accepted a login but before an RP session exists. Request cancellation retains
+the accepted receipt and consumed form; it emits no callback and permits no
+form replay. There is no HTTP fault-control endpoint or production runtime flag.
+
 `bash scripts/dev/browser-pages-fixture-tests.sh` requires Go, Node and the
 existing pinned tool-browser Playwright/Chromium installation. It runs race
 tests, vet and all five actual Chromium cases, rejecting any skipped case.
@@ -80,3 +95,16 @@ calls. Native Input timing must separately include model deliberation, owner
 waits and final delivery. Never replay previous attempts to backfill metrics.
 See the [page-addressing proposal](../../docs/architecture/browser-pages-proposal.md)
 for production work still required before native and external Google acceptance.
+
+For independent form discovery, initialize with `--fresh-form-paths`: the
+private config retains a random public route variant, field names, button ID
+and button order. The RP exposes a genuine protected-account navigation link.
+Tests must discover this link, the visible login button and native form through
+observations rather than copying config values into the model prompt.
+`--auto-authorize-return` and `--reflect-form-token` are isolated recipient
+fault controls: respectively a GET-only provider callback and a form action
+reflecting hidden CSRF material. The inspection runtime must reject both before
+consent without exporting private paths. They are not production tool flags.
+`--denied-callback-path` checks the post-consent boundary: the IdP accepts one
+POST but redirects toward a denied RP path. That path must receive no request,
+and no authentication proof or second submission may result.

@@ -1,3 +1,25 @@
+Core also offers the separately configured, default-off
+[external Google diagnostic RP](../../docs/architecture/browser-google-auth.md).
+Only Core loads the private web-client file. A protected owner decision permits
+one normal-browser handoff; a retained callback claim, finite budget and exact
+RP authenticated/anonymous differential precede same-Input readiness. Approval
+alone never resumes the model. Cancellation, restart and UNKNOWN retain spent
+authority. This does not import Chrome sessions into server Chromium or automate
+Google password/MFA entry. Owner APIs must never be exposed by the RP relay.
+
+External verification resumes with its retained reference and exact checked RP
+URL, while explicitly marking that Chrome/server sessions are separate. A
+publication draft with unselected Catalog source refs gets bounded, correlated
+non-dispatch feedback before Broker preparation; the actual publisher retains
+all source/export/current-grant checks. See
+[communication](../../docs/architecture/user-communication-spec.md).
+
+The terminal stopped reviewer can prove absence of the exact pinned external
+request-creation metadata operation. It checks distinct permanent effect and
+execution identities and preserves spent grants and failed work; an existing
+request or provider exchange cannot qualify. See
+[stopped finalization](../../docs/architecture/stopped-input-finalization.md).
+
 For supported ordinary login forms Core prefers `credentials.request_login`
 then `browser.login`. Its one protected owner decision includes one submit and
 access verification. A verified account observation can support the final answer
@@ -5,10 +27,18 @@ without another click approval, factual outcome report or redundant HTTP refetch
 Ambiguous effects retain the existing stop/intervention contract.
 
 The protected vault UI also presents migration109's conditional RP/IdP SSO
-consent, with a distinct marker and immutable scope digest. It does not register
-an SSO tool, release fields or grant POST authority through the ordinary login
-path. See `docs/architecture/browser-sso-protocol.md` for the remaining executor
-and two-origin acceptance gates.
+consent, with a distinct marker and immutable scope digest. The separate
+`credentials.request_sso_login` wait resumes the same Input with its exact scope
+and digest; `browser.sso_login` covers one native POST and RP verification under
+current authority. Notice sends/edits retain ambiguity instead of replaying.
+See `docs/architecture/browser-sso-protocol.md` for remaining composed/native
+and external Google acceptance gates.
+
+Historical SSO UNKNOWN review uses the same protected factual owner endpoint,
+with the exact pinned SSO policy, expired managed RP context, settled dispatch,
+terminal source Run and inactive lease. A new Task cannot evade an earlier
+uncertain effect. Review retains the failed Input and consumed grant; it grants
+no new login or credential use. See the SSO protocol for operator evidence limits.
 
 Ordinary token-only converter-composed source observations on the reserved pool
 release their current proofs through rollback, avoiding an observer COMMIT/WAL
@@ -1565,3 +1595,9 @@ result and calls `browser.page_freeze_snapshot` through ordinary Broker
 permission/accounting. Known canonical owner evidence can resume the same
 Input only after current source/Task/mandate/lease checks. The original UNKNOWN
 transcript and spending remain; no input or probe is automatically replayed.
+
+The compact browser strategy directs managed native-form SSO through bounded
+`browser.sso_inspect` discovery before protected consent. Actual RP controls
+and returned candidate scopes replace guessed form selectors/paths. The whole
+strategy fits the normal assembled-section limit; the mandatory SSO CI profile
+checks its retained context, owner-control and continuity instructions.

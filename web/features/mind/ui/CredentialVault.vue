@@ -24,6 +24,8 @@
           ? 'Нужно создать учётные данные'
           : requests[0]?.kind === 'otp'
             ? 'Нужен одноразовый код'
+            : requests[0]?.kind === 'external_login'
+              ? 'Запрос разрешения на вход через Google'
             : requests[0]?.kind === 'sso_login'
               ? 'Запрос разрешения на один SSO-вход'
               : requests[0]?.kind === 'login'
@@ -141,13 +143,22 @@
               ? 'Создать учётные данные'
               : request.kind === 'otp'
                 ? 'Нужен одноразовый код'
+                : request.kind === 'external_login' ? 'Вход через Google'
                 : request.kind === 'sso_login' ? 'Разрешить SSO-вход'
                   : request.kind === 'login' ? 'Разрешить вход' : 'Разрешить доступ'
           }}</strong>
           <p>{{ request.target_origin }}</p>
           <p v-if="request.record_label">{{ request.record_label }}</p>
           <p>{{ request.purpose }}</p>
-          <p class="vault-muted">Поля: {{ request.fields.join(', ') }}</p>
+          <p v-if="request.kind !== 'external_login'" class="vault-muted">Поля: {{ request.fields.join(', ') }}</p>
+          <template v-if="request.kind === 'external_login' && request.external_scope">
+            <p>Сайт: {{ request.external_scope.rp_url }}</p>
+            <p class="vault-muted">Один вход выбранным аккаунтом в обычном браузере. Google передаст подтверждение аккаунта и email. Затем Butler проверит доступ и продолжит это поручение.</p>
+            <p v-if="request.state === 'approved'" class="vault-muted">Разрешение получено.</p>
+            <p v-if="request.state === 'launched' || request.state === 'exchanging'" class="vault-muted">Ожидается завершение входа в Google.</p>
+            <a v-if="externalLinks[request.id] && request.state === 'approved'" :href="externalLinks[request.id]" target="_blank" rel="noopener noreferrer">Открыть Google в браузере</a>
+            <button v-else-if="request.state === 'approved'" type="button" @click="recoverExternalLaunch(request)">Открыть Google в браузере</button>
+          </template>
           <p v-if="request.kind === 'login'" class="vault-muted">
             Один вход: подставить учётные данные, отправить форму на
             {{ request.login_scope?.target_url }} и проверить доступ.
@@ -182,7 +193,7 @@
           <template v-else
             ><select
               v-model="selectedRecords[request.id]"
-              :disabled="request.kind === 'login' || request.kind === 'sso_login'"
+              :disabled="request.kind === 'login' || request.kind === 'sso_login' || request.kind === 'external_login'"
               :aria-label="`Запись для ${request.target_origin}`"
             >
               <option value="">Выберите запись</option>
@@ -195,17 +206,18 @@
               </option></select
             ><button
               type="button"
-              :disabled="!selectedRecords[request.id] || (request.kind === 'sso_login' && (!request.sso_scope || !request.scope_digest))"
+              :disabled="!selectedRecords[request.id] || (request.kind === 'sso_login' && (!request.sso_scope || !request.scope_digest)) || (request.kind === 'external_login' && (request.state !== 'pending' || !request.external_scope || !request.scope_digest))"
               @click="respond(request, true)"
             >
-              {{ request.kind === 'sso_login' ? 'Разрешить один SSO-вход' : request.kind === 'login' ? 'Разрешить один вход' : 'Разрешить' }}</button
-            ><button v-if="request.kind !== 'login' && request.kind !== 'sso_login'" type="button" @click="newEntry(request)">
+              {{ request.kind === 'external_login' ? 'Разрешить один вход через Google' : request.kind === 'sso_login' ? 'Разрешить один SSO-вход' : request.kind === 'login' ? 'Разрешить один вход' : 'Разрешить' }}</button
+            ><button v-if="request.kind !== 'login' && request.kind !== 'sso_login' && request.kind !== 'external_login'" type="button" @click="newEntry(request)">
               Создать запись
             </button></template
           >
-          <button type="button" @click="respond(request, false)">
+          <button v-if="request.kind !== 'external_login' || request.state === 'pending'" type="button" @click="respond(request, false)">
             Отказать
           </button>
+          <button v-if="request.kind === 'external_login' && request.state !== 'pending'" type="button" @click="cancelExternal(request)">Отменить вход</button>
         </section>
         <div class="vault-search">
           <input
@@ -362,6 +374,8 @@ interface Draft {
   password: string
 }
 interface Request {
+  external_scope?: { rp_url: string; provider: 'google'; verify_url: string }
+  state?: string
   login_scope?: { target_url: string }
   sso_scope?: {
     rp_url: string
@@ -387,6 +401,7 @@ interface SMSRoute {
   enabled: boolean
 }
 const props = defineProps<{ ownerToken: string }>()
+const externalLinks = ref<Record<string, string>>({})
 const base = String(useRuntimeConfig().public.apiBase || '').replace(/\/$/, '')
 const panelOpen = ref(false),
   pinOpen = ref(false),
@@ -414,7 +429,7 @@ let vaultEpoch = 0
 let requestedID =
   typeof window === 'undefined'
     ? ''
-    : /^#credential=(creq_[a-f0-9]{64})$/.exec(window.location.hash)?.[1] || ''
+    : /^#credential=((?:creq_|ssoq_)[a-f0-9]{64})$/.exec(window.location.hash)?.[1] || ''
 const cells: HTMLInputElement[] = []
 function setCell(el: Element | ComponentPublicInstance | null, index: number) {
   if (el instanceof HTMLInputElement) cells[index] = el
@@ -464,6 +479,7 @@ function clearEditor() {
   creatingFor.value = ''
 }
 function clearSecrets() {
+  externalLinks.value = {}
   vaultEpoch++
   clearTimeout(timer)
   clearTimeout(searchTimer)
@@ -677,22 +693,54 @@ async function remove(e: Entry, erase: boolean) {
   }
 }
 async function respond(r: Request, allow: boolean) {
+  const popup = allow && r.kind === 'external_login' ? window.open('about:blank', '_blank') : null
+  if (popup) popup.opener = null
   try {
     const value = allow && r.kind === 'otp' ? otp.value[r.id] || '' : ''
     delete otp.value[r.id]
-    await request({
+    const answer = await request<{ launch_url?: string }>({
       action: 'respond',
       id: r.id,
       record_id: r.kind === 'otp' ? '' : selectedRecords.value[r.id] || '',
       allow,
-      login_authorization: allow ? r.kind === 'sso_login' ? 'browser_sso_login_once_v1' : r.kind === 'login' ? 'browser_login_once_v1' : undefined : undefined,
-      scope_digest: allow && r.kind === 'sso_login' ? r.scope_digest : undefined,
+      login_authorization: allow ? r.kind === 'external_login' ? 'browser_external_google_login_once_v1' : r.kind === 'sso_login' ? 'browser_sso_login_once_v1' : r.kind === 'login' ? 'browser_login_once_v1' : undefined : undefined,
+      scope_digest: allow && (r.kind === 'sso_login' || r.kind === 'external_login') ? r.scope_digest : undefined,
       otp: value,
     })
+    if (allow && r.kind === 'external_login') {
+      const destination = externalDestination(r, answer.launch_url)
+      externalLinks.value[r.id] = destination
+      if (popup) popup.location.replace(destination)
+    }
     await refresh()
   } catch (e) {
+    popup?.close()
     error.value = (e as Error).message
   }
+}
+function externalDestination(r: Request, raw?: string): string {
+  if (!raw || !r.external_scope) throw new Error('Ссылка для входа недоступна. Обновите запрос.')
+  const destination = new URL(raw)
+  const rp = new URL(r.external_scope.rp_url)
+  if (destination.protocol !== 'https:' || destination.origin !== rp.origin || destination.pathname !== '/auth/google/start' || destination.username || destination.password || destination.hash || [...destination.searchParams.keys()].length !== 1 || !/^[A-Za-z0-9_-]{43}$/.test(destination.searchParams.get('ticket') || '')) throw new Error('Ссылка для входа недоступна. Обновите запрос.')
+  return destination.href
+}
+async function recoverExternalLaunch(r: Request) {
+  const popup = window.open('about:blank', '_blank')
+  if (popup) popup.opener = null
+  try {
+    const answer = await request<{ launch_url: string }>({ action: 'external_launch', id: r.id, scope_digest: r.scope_digest })
+    const destination = externalDestination(r, answer.launch_url)
+    externalLinks.value[r.id] = destination
+    if (popup) popup.location.replace(destination)
+  } catch (e) { popup?.close(); error.value = (e as Error).message }
+}
+async function cancelExternal(r: Request) {
+  try {
+    await request({ action: 'external_cancel', id: r.id, scope_digest: r.scope_digest })
+    delete externalLinks.value[r.id]
+    await refresh()
+  } catch (e) { error.value = (e as Error).message }
 }
 async function openSMS(entry: Entry) {
   try {
@@ -730,6 +778,8 @@ async function poll() {
     if (token === props.ownerToken) {
       configured.value = data.configured === true
       requests.value = Array.isArray(data.requests) ? data.requests : []
+      for (const r of requests.value)
+        if (!selectedRecords.value[r.id]) selectedRecords.value[r.id] = r.record_id
       if (requestedID && requests.value.some((r) => r.id === requestedID)) {
         requestedID = ''
         window.history.replaceState(

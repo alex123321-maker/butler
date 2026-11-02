@@ -71,7 +71,7 @@ func (r *PlaywrightRunner) start(ctx context.Context) error {
 	bootstrap := fmt.Sprintf(`import {readSync} from 'node:fs'; const source=Buffer.alloc(%d); let offset=0; while(offset<source.length){const n=readSync(0,source,offset,source.length-offset,null);if(!n)process.exit(1);offset+=n} const code=source.toString('utf8').replace("from 'playwright'",'from '+JSON.stringify(import.meta.resolve('playwright'))); await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'))`, len([]byte(browserscripts.Runtime)))
 	cmd := exec.Command(r.nodeBinary, "--input-type=module", "--eval", bootstrap)
 	cmd.Dir = filepath.Dir(path)
-	for _, name := range []string{"PATH", "HOME", "PLAYWRIGHT_BROWSERS_PATH", "NODE_ENV", "SYSTEMROOT", "WINDIR", "TMPDIR", "TMP", "TEMP"} {
+	for _, name := range []string{"PATH", "HOME", "PLAYWRIGHT_BROWSERS_PATH", "NODE_ENV", "NODE_EXTRA_CA_CERTS", "SYSTEMROOT", "WINDIR", "TMPDIR", "TMP", "TEMP"} {
 		if value, ok := os.LookupEnv(name); ok {
 			cmd.Env = append(cmd.Env, name+"="+value)
 		}
@@ -245,6 +245,12 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	}
 	if req.ToolName == "browser.login" {
 		return r.login(ctx, req)
+	}
+	if req.ToolName == "browser.sso_login" {
+		return r.sso(ctx, req)
+	}
+	if req.ToolName == "browser.sso_inspect" {
+		return r.inspectSSO(ctx, req)
 	}
 	return r.exchange(ctx, req)
 }

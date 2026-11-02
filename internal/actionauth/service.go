@@ -2,8 +2,10 @@ package actionauth
 
 import (
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentialcontrol"
+	"github.com/butler/butler/internal/externalauth"
 	"github.com/butler/butler/internal/toolcatalog"
 
 	"context"
@@ -112,6 +114,33 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	b, _, err := BuildBinding(StableActionID(call.GetRunId(), call.GetToolCallId()), call, contract, c)
 	if err != nil {
 		return b, false, err
+	}
+	if call.ToolName == browsersso.Tool || call.ToolName == browsersso.RequestTool {
+		if c.Delegation != nil {
+			return b, false, browsersso.ErrScope
+		}
+		b, err = s.bindSSO(ctx, b, call, contract)
+		if err != nil {
+			return b, false, err
+		}
+	}
+	if call.ToolName == browsersso.InspectTool {
+		if c.Delegation != nil {
+			return b, false, browsersso.ErrScope
+		}
+		b, err = s.bindSSOInspection(ctx, b, call, contract)
+		if err != nil {
+			return b, false, err
+		}
+	}
+	if call.ToolName == externalauth.RequestTool {
+		if c.Delegation != nil {
+			return b, false, externalauth.ErrProvider
+		}
+		b, err = s.bindExternalAuth(ctx, b, call, contract)
+		if err != nil {
+			return b, false, err
+		}
 	}
 	if browserpage.IsTool(b.ToolName) {
 		a, e := browserpage.Parse(b.ToolName, call.ArgsJson)

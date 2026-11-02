@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/browsersso"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress"
 	"github.com/butler/butler/internal/websearch"
@@ -27,6 +28,18 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
+	case browsersso.InspectTool:
+		a, e := browsersso.ParseInspection(call.ArgsJson)
+		if e != nil {
+			return false, e
+		}
+		resources = append(resources, a.Targets()...)
+	case browsersso.Tool:
+		a, e := browsersso.Parse(call.ArgsJson)
+		if e != nil {
+			return false, e
+		}
+		resources = append(resources, a.Scope.Targets()...)
 	case "browser.submit_get_form", "browser.follow_link":
 		resource, ok := args["expected_url"].(string)
 		if !ok || resource == "" {

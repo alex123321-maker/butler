@@ -11,6 +11,7 @@ import (
 
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/budget"
 
 	"github.com/butler/butler/internal/owneridentity"
@@ -69,8 +70,14 @@ type OwnerOutcomes struct {
 // Neither source is accepted from tool args or an arbitrary caller-selected URL.
 func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, observationCall string, historical bool) (OwnerOutcomeReview, error) {
 	e, err := effectIn(ctx, tx, effectID, false)
-	if err != nil || e.State != StateUnknown || (e.DispatchOutcome != "dispatch_completed" && !(historical && e.Binding.ToolName == browserauth.Tool && e.DispatchOutcome == "unknown")) {
+	if err != nil || e.State != StateUnknown || (e.DispatchOutcome != "dispatch_completed" && !(historical && (e.Binding.ToolName == browserauth.Tool || e.Binding.ToolName == browsersso.Tool || e.Policy.VerificationMethod == ExternalAuthVerification) && e.DispatchOutcome == "unknown")) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
+	}
+	if e.Policy.VerificationMethod == ExternalAuthVerification {
+		if !historical {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
+		return s.externalAuthReviewTx(ctx, tx, e)
 	}
 	var b ActionBinding
 	var raw string
@@ -88,6 +95,10 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		if !historical || b.ContractRevision != browserauth.Revision || b.Effect != EffectCommit || e.Policy.VerificationMethod != browserauth.Verification || e.Policy.Login == nil {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
+	case browsersso.Tool:
+		if !historical || b.ContractRevision != browsersso.Revision || b.Effect != EffectCommit || e.Policy.VerificationMethod != browsersso.Verification || e.Policy.SSO == nil || !validSSOScope(b) {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
 	default:
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
@@ -102,7 +113,7 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		ID      string `json:"browser_session_id"`
 		Version uint64 `json:"observation_version"`
 	}
-	historicalLogin := historical && b.ToolName == browserauth.Tool
+	historicalLogin := historical && (b.ToolName == browserauth.Tool || b.ToolName == browsersso.Tool)
 	pageOutcome := browserpage.OutcomeGesture(b.ToolName)
 	if err != nil || json.Unmarshal([]byte(argsRaw), &args) != nil || (!historicalLogin && !pageOutcome && (json.Unmarshal([]byte(resultRaw), &observed) != nil || !observed.OK || observed.ID != args.ID || observed.Version == 0)) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
@@ -115,12 +126,15 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 	if err != nil || argsHash != b.ArgsHash {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
-	if historicalLogin {
+	if historicalLogin && b.ToolName == browserauth.Tool {
 		pinnedHash, pinErr := ArgumentsHash(mustOwnerJSON(e.Policy.Login))
 		parsed, parseErr := browserauth.Parse(argsRaw)
 		if pinErr != nil || parseErr != nil || pinnedHash != argsHash || b.Resource != "browser:"+parsed.Browser+":"+parsed.TargetURL {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
+	}
+	if b.ToolName == browsersso.Tool && !historicalSSOSource(e, b, argsRaw) {
+		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
 	var lease, leaseRun string
 	var epoch int64
@@ -136,7 +150,15 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		if !ok || actor.OwnerID != b.OwnerID || (lease != "" && leaseExpires.After(now)) || (runState != "failed" && runState != "cancelled" && runState != "timed_out") {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
-		rows, err := tx.Query(ctx, `SELECT result::text FROM tool_calls WHERE run_id=$1 AND tool_name='browser.open' AND status='completed' AND finished_at IS NOT NULL`, b.RunID)
+		birthTool := "browser.open"
+		if b.ToolName == browsersso.Tool {
+			birthTool = browserpage.Open
+			var mapped bool
+			if tx.QueryRow(ctx, `SELECT TRUE FROM server_browser_sessions s JOIN server_browser_pages p USING(browser_session_id) WHERE s.browser_session_id=$1 AND s.run_id=$2 AND s.owner_id=$3 AND s.task_id=$4 AND s.page_mode AND s.page_origin=$5 AND s.expires_at<=clock_timestamp() AND p.page_id=$6 FOR SHARE OF s,p`, args.ID, b.RunID, b.OwnerID, b.TaskID, browsersso.Origin(b.BrowserSSO.RPURL), b.BrowserPage.ID).Scan(&mapped) != nil || !mapped {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+		}
+		rows, err := tx.Query(ctx, `SELECT result::text FROM tool_calls WHERE run_id=$1 AND tool_name=$2 AND status='completed' AND finished_at IS NOT NULL`, b.RunID, birthTool)
 		if err != nil {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
@@ -206,6 +228,9 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 	}
 	if pageOutcome {
 		hint = pageHint
+	}
+	if b.ToolName == browsersso.Tool {
+		hint = b.BrowserSSO.RPURL + " -> " + b.BrowserSSO.IdPURL + " [SSO; page " + b.BrowserPage.ID + "; document " + b.BrowserPage.DocumentID + "]"
 	}
 	r := OwnerOutcomeReview{OwnerID: b.OwnerID, SessionKey: sessionKey, TaskID: b.TaskID, TaskRevision: b.TaskRevision, ConstraintsRevision: b.ConstraintsRevision, ID: "review_" + randomID(), EffectID: e.ActionID, Fingerprint: e.Fingerprint, RunID: b.RunID, ToolCallID: b.ToolCallID, SourceKind: kind, State: "pending", Revision: 1, ResourceHint: hint, ExpiresAt: expires}
 	locked, err := effectIn(ctx, tx, effectID, true)

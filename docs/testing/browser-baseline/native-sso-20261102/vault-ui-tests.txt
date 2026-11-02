@@ -1,0 +1,8 @@
+  ok 1 [chromium] › tests\e2e\credential-vault.spec.ts:8:1 › SSO consent shows both parties and binds the protected answer to the exact card: before unlock (1.9s)
+  ok 2 [chromium] › tests\e2e\credential-vault.spec.ts:8:1 › SSO consent shows both parties and binds the protected answer to the exact card: after unlock (11.5s)
+  ok 3 [chromium] › tests\e2e\credential-vault.spec.ts:67:1 › SSO card without its exact scope cannot offer approval (1.3s)
+  ok 4 [chromium] › tests\e2e\credential-vault.spec.ts:84:1 › one login consent pins the account and includes submit plus access verification (1.4s)
+  ok 5 [chromium] › tests\e2e\credential-vault.spec.ts:117:1 › bookmark creates a six-cell PIN, saves separate account fields and clears on lock (1.7s)
+  ok 6 [chromium] › tests\e2e\credential-vault.spec.ts:205:1 › credential access and creation are distinct cards without secret text answers (1.7s)
+  ok 7 [chromium] › tests\e2e\credential-vault.spec.ts:240:1 › OTP input belongs to its request and SMS routing requires explicit owner configuration (1.6s)
+  7 passed (55.3s)

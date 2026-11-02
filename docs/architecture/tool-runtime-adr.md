@@ -1,5 +1,20 @@
 # Butler — Tooling and Execution Specification
 
+`credentials.request_external_login` is a default-disabled prepare-only Broker
+capability. It binds the exact managed RP document/version/epoch and all fixed
+provider resources to current owner-goal authority. It releases no fields to a
+runtime. Core owns the private normal-browser OAuth handoff, durable claim,
+budgeted effect and independent diagnostic-RP verification described in
+[the external protocol](browser-google-auth.md). Existing generic POST,
+single-tab and native-form SSO contracts do not consume this authority.
+
+`browser.sso_login` revision1 is a distinct unsafe commit protocol with
+Broker-mediated deferred fields, private RP/IdP dispatch caps, one fresh child,
+one native form POST and Go-derived `browser_sso_login_v1` RP access proof.
+Consent cannot bypass current authority, resource leases or UNKNOWN history.
+See [the bounded SSO protocol](browser-sso-protocol.md) for its supported scope
+and remaining composed/native/external acceptance.
+
 `browser.login` revision1 is a distinct unsafe commit tool, never an alias for
 click. Its private two-phase helper admits one exact native form POST and bounded
 same-origin GET redirects. Go performs independent, public-egress-guarded access
@@ -1180,3 +1195,11 @@ counter to the existing context-wide proxy/route freeze, then observes that
 page. Go and Broker reject a success without frozen network state. This read
 produces local observation only, never a recipient verdict. It enables the
 bounded live owner factual review in [the page contract](browser-pages-execution.md).
+
+Native-form SSO discovery uses the owned `browser.sso_inspect` read contract.
+Broker injects only private current page/epoch/path/expiry caps; runtime opens
+one GET-only child, returns value-free candidate form scopes, closes the child
+and freezes. Broker translates fresh page observations and checks discovered
+paths against current authority before export. The later SSO commit retains
+one-use protected consent and independent Go RP verification. Every SSO redirect
+is separately mediated before contact; no automatic POST replay is allowed.

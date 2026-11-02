@@ -1,5 +1,17 @@
 # Exact action authorization
 
+The separate `browser.sso_login` revision1 can waive duplicate submit approval
+only through its exact protected RP/IdP consent and two matching `ssoq_`
+references. Its action hash includes the trusted RP page binding and complete
+SSO scope. RP, IdP, native POST and protected RP read destinations are all-of
+current owner-goal resource requirements, including path caps and deny overrides.
+The private runtime dispatch is derived from that persisted intent before field
+resolution; migration110 later claims one call during private secret resolution.
+Neither a use claim nor popup closure confirms an effect. Only typed Go-derived
+RP access proof plus the exact current post-login PG page can confirm it.
+Legacy login, generic page tools and delegated calls cannot borrow SSO authority.
+See [the protocol](browser-sso-protocol.md).
+
 A new explicit one-use login vault consent can waive a duplicate action approval
 only for the exact `browser.login` revision1 protocol and two matching deferred
 request references. Input claim, current task/mandate tools/resources/commit

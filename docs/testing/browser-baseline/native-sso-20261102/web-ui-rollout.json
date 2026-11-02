@@ -1,0 +1,9 @@
+{
+  "scope": "lab_web_only_pinned_account_poll_fix",
+  "at": "2026-11-02T09:50:13Z",
+  "healthy": true,
+  "environment_unchanged": true,
+  "other_main_services_unchanged": true,
+  "source": "5e7cd6b6951501ccd5f27cbf43c47f64ca136428",
+  "archive_sha256": "a56cf2a968a3242f87a6da12e80a4db268f2521723dd2f63f3aa7302ec072369"
+}

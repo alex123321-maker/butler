@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/credentialcontrol"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"google.golang.org/protobuf/proto"
 	"strings"
 )
 
@@ -29,14 +31,18 @@ func standardCredentialControl(b ActionBinding) bool {
 // locator scope; tools, resources, effects and denials still apply. Broker must
 // independently check the live owner request before resolving any value.
 func vaultRequestBinding(b ActionBinding) bool {
-	if b.ToolName == browserauth.Tool {
-		if b.Effect != EffectCommit || b.ContractRevision != browserauth.Revision || len(b.CredentialMetadataHash) != 64 || len(b.CredentialRefs) != 2 {
+	if b.ToolName == browserauth.Tool || b.ToolName == browsersso.Tool {
+		if b.Effect != EffectCommit || b.ContractRevision != browserauth.Revision || len(b.CredentialMetadataHash) != 64 || len(b.CredentialRefs) != 2 || b.ToolName == browsersso.Tool && !validSSOScope(b) {
 			return false
 		}
 		fields := map[string]bool{}
+		prefix := "creq_"
+		if b.ToolName == browsersso.Tool {
+			prefix = "ssoq_"
+		}
 		alias := ""
 		for _, r := range b.CredentialRefs {
-			if len(r.Alias) != 69 || !strings.HasPrefix(r.Alias, "creq_") || (r.Field != "username" && r.Field != "password") || fields[r.Field] || (alias != "" && alias != r.Alias) {
+			if len(r.Alias) != 69 || !strings.HasPrefix(r.Alias, prefix) || (r.Field != "username" && r.Field != "password") || fields[r.Field] || (alias != "" && alias != r.Alias) {
 				return false
 			}
 			if _, e := hex.DecodeString(r.Alias[5:]); e != nil {
@@ -62,11 +68,23 @@ func vaultRequestBinding(b ActionBinding) bool {
 }
 
 func (s *Service) approvedCredentialLogin(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract) bool {
-	if c == nil || c.ToolName != browserauth.Tool || c.ContractRevision != browserauth.Revision || !c.SupportsCredentialRefs || c.GetEffectContract().GetRetrySafety() != "unsafe" || c.GetEffectContract().GetVerificationMethod() != browserauth.Verification {
+	if c == nil || call == nil {
 		return false
 	}
-	if _, e := browserauth.Parse(call.GetArgsJson()); e != nil {
-		return false
+	if c.ToolName == browsersso.Tool {
+		if !proto.Equal(c, browsersso.Contract()) {
+			return false
+		}
+		if _, e := browsersso.Parse(call.ArgsJson); e != nil {
+			return false
+		}
+	} else {
+		if c.ToolName != browserauth.Tool || !browserauth.ValidContract(c) {
+			return false
+		}
+		if _, e := browserauth.Parse(call.ArgsJson); e != nil {
+			return false
+		}
 	}
 	checker, ok := s.credentials.(interface {
 		ApprovedLoginUse(context.Context, *toolbrokerv1.ToolCall) bool

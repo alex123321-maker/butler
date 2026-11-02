@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -98,6 +99,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			continue
 		}
 		if browserpage.IsTool(contract.ToolName) && (!c.PageToolsReady || !browserpage.ValidContract(contract)) {
+			continue
+		}
+		if contract.ToolName == browsersso.InspectTool && !c.PageToolsReady {
 			continue
 		}
 		if workspaceexec.Protected(contract.GetToolName()) && (a.TaskID == "" || !a.WorkspaceReady || !workspaceexec.ExactContract(contract)) {

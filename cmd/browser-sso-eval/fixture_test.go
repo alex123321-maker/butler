@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -30,7 +31,7 @@ func client() *http.Client {
 func site(t *testing.T) *testSite {
 	t.Helper()
 	s := &testSite{c: client(), journal: &bytes.Buffer{}}
-	s.f = newFixture(config{"sso-user-canary", "sso-password-canary", "PRIVATE-SSO-REFERENCE"}, "", "", s.journal)
+	s.f = newFixture(config{Username: "sso-user-canary", Password: "sso-password-canary", PrivateFact: "PRIVATE-SSO-REFERENCE"}, "", "", s.journal)
 	s.f.now = func() time.Time { return time.Now().Add(time.Duration(s.offset.Load())) }
 	s.rp = httptest.NewServer(s.f.handler(false))
 	s.idp = httptest.NewServer(s.f.handler(true))
@@ -136,6 +137,77 @@ func TestSSOFixtureLoginCallbackAndPrivateAccount(t *testing.T) {
 			t.Fatal("recipient journal exposed private material")
 		}
 	}
+}
+
+func TestSSOFixtureCancelledAcceptedLoginRetainsReceiptWithoutCallback(t *testing.T) {
+	s := site(t)
+	_, csrf := s.begin(t)
+	s.f.loginResponseDelay = 5 * time.Second
+	fields := url.Values{"username": {s.f.cfg.Username}, "password": {s.f.cfg.Password}, "csrf": {csrf}}
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	r := httptest.NewRequest(http.MethodPost, s.idp.URL+"/login", strings.NewReader(fields.Encode())).WithContext(ctx)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Set("Origin", s.idp.URL)
+	u, _ := url.Parse(s.idp.URL)
+	for _, cookie := range s.c.Jar.Cookies(u) {
+		r.AddCookie(cookie)
+	}
+	w := httptest.NewRecorder()
+	s.f.handler(true).ServeHTTP(w, r)
+	if w.Header().Get("Location") != "" || len(s.f.codes) != 0 || len(s.f.forms) != 0 {
+		t.Fatal("cancelled response emitted a code or restored the consumed form")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 1)
+	assertCount(t, s.journal.String(), "callback_accepted", 0)
+	response, _ := request(t, s.c, http.MethodGet, s.rp.URL+"/account", nil, "")
+	if response.StatusCode != http.StatusUnauthorized {
+		t.Fatal("accepted IdP login alone authenticated RP")
+	}
+	response, _ = s.login(t, csrf, s.f.cfg.Password)
+	if response.StatusCode != http.StatusForbidden {
+		t.Fatal("cancelled login restored a replayable form")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 1)
+}
+
+func TestSSOFixtureRPBindingSurvivesProtectedConsentWait(t *testing.T) {
+	s := site(t)
+	r, _ := request(t, s.c, "GET", s.rp.URL+"/", nil, "")
+	if r.StatusCode != 200 {
+		t.Fatal("RP unavailable")
+	}
+	var bindingCookie *http.Cookie
+	for _, c := range r.Cookies() {
+		if c.Name == "sso_rp_binding" {
+			bindingCookie = c
+		}
+	}
+	if bindingCookie == nil || bindingCookie.MaxAge != int(rpBindingTTL/time.Second) {
+		t.Fatal("RP cookie expires before consent window")
+	}
+	s.offset.Store(int64(10 * time.Minute))
+	r, _ = request(t, s.c, "GET", s.rp.URL+"/start", nil, "")
+	if r.StatusCode != 302 {
+		t.Fatal("protected consent wait expired RP browser")
+	}
+	r, body := request(t, s.c, "GET", r.Header.Get("Location"), nil, "")
+	match := regexp.MustCompile(`name=csrf value="([a-f0-9]{64})"`).FindStringSubmatch(body)
+	if r.StatusCode != 200 || len(match) != 2 {
+		t.Fatal("fresh OAuth form unavailable after consent")
+	}
+	// Code/form expiry is independent of the longer pre-consent RP binding.
+	s.offset.Store(int64(10*time.Minute + flowTTL + time.Second))
+	r, _ = s.login(t, match[1], s.f.cfg.Password)
+	if r.StatusCode < 400 {
+		t.Fatal("RP binding extended OAuth form authority")
+	}
+	s.offset.Store(int64(rpBindingTTL + time.Second))
+	r, _ = request(t, s.c, "GET", s.rp.URL+"/start", nil, "")
+	if r.StatusCode != 403 {
+		t.Fatal("expired RP binding still starts a flow")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 0)
 }
 func TestSSOFixtureRejectsForeignExpiredReplayedAndSwappedFlows(t *testing.T) {
 	for _, mode := range []string{"wrong_password", "csrf_replay", "foreign_idp_browser", "foreign_rp_browser", "state_swap", "pkce_mismatch", "expiry", "callback_replay", "wrong_redirect", "duplicate_query", "missing_origin", "query_credentials"} {

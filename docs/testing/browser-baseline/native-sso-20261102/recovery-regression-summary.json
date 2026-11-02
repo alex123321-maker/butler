@@ -1,0 +1,8 @@
+{
+  "scope": "targeted_postgres_race_regressions",
+  "source": "fd1c99c37daeccc3f20aece4094ae7e281520d4f",
+  "test_and_subtest_passes": 193,
+  "failures": 0,
+  "skips": 0,
+  "package_passes": 1
+}

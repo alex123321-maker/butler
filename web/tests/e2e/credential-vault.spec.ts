@@ -4,9 +4,11 @@ import { connect, fixture, ownerToken } from './mind-fixture'
 // Synthetic input only. Secret-entry tests must not retain page/trace captures.
 test.use({ screenshot: 'off', trace: 'off', video: 'off' })
 
-test('SSO consent shows both parties and binds the protected answer to the exact card', async ({ page }) => {
+for (const arrival of ['before unlock', 'after unlock']) {
+test(`SSO consent shows both parties and binds the protected answer to the exact card: ${arrival}`, async ({ page }) => {
   await fixture(page, { tasks: false })
   let approved = 0
+  let ready = arrival === 'before unlock'
   const request = {
     id: 'ssoq_fixture', kind: 'sso_login', record_id: 'cred_fixture',
     record_label: 'Выделенный тестовый IdP', target_origin: 'https://rp.example',
@@ -19,7 +21,7 @@ test('SSO consent shows both parties and binds the protected answer to the exact
     },
   }
   await page.route('**/api/v4/credentials', async route => {
-    const pending = approved ? [] : [request]
+    const pending = approved || !ready ? [] : [request]
     if (route.request().method() === 'GET')
       return route.fulfill({ json: { configured: true, requests: pending } })
     const body = route.request().postDataJSON()
@@ -36,22 +38,31 @@ test('SSO consent shows both parties and binds the protected answer to the exact
     return route.fulfill({ json: { ok: true } })
   })
   await connect(page)
-  await expect(page.getByText('Запрос разрешения на один SSO-вход', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Открыть запрос', exact: true }).click()
+  if (ready) {
+    await expect(page.getByText('Запрос разрешения на один SSO-вход', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть запрос', exact: true }).click()
+  } else {
+    await page.getByRole('button', { name: 'Учётные данные', exact: true }).click()
+  }
   for (let i = 0; i < 6; i++) await page.getByLabel(`Цифра ${i + 1}`, { exact: true }).fill('654321'[i]!)
   await page.getByRole('button', { name: 'Открыть', exact: true }).click()
+  await expect(page.locator('.vault-panel')).toBeVisible()
+  ready = true
   const card = page.locator('.vault-request')
-  await expect(card).toContainText('Сайт (RP): https://rp.example/')
+  await expect(card).toContainText('Сайт (RP): https://rp.example/', { timeout: 15000 })
   await expect(card).toContainText('Провайдер входа (IdP): https://idp.example/authorize')
   await expect(card).toContainText('https://idp.example/login')
   await expect(card).toContainText('https://rp.example/account')
   await expect(card).toContainText('наблюдение 7')
   await expect(card.getByRole('combobox')).toBeDisabled()
+  await expect(card.getByRole('combobox')).toHaveValue(request.record_id)
+  expect(approved).toBe(0)
   await expect(card.getByRole('button', { name: 'Создать запись', exact: true })).toHaveCount(0)
   await card.getByRole('button', { name: 'Разрешить один SSO-вход', exact: true }).click()
   await expect(card).toHaveCount(0)
   expect(approved).toBe(1)
 })
+}
 
 test('SSO card without its exact scope cannot offer approval', async ({ page }) => {
   await fixture(page, { tasks: false })

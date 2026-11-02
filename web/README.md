@@ -1,11 +1,24 @@
 # Butler Web
 
+The optional external Google card pins its RP, account and scope digest. One
+PIN-protected decision opens a private one-use link in a separate normal-browser
+window; a blocked popup has a private-link fallback. Reload recovers only the
+same unspent link. Approval does not mean authentication succeeded, and the
+owner can cancel the attempt. Private launch URLs stay in ephemeral owner UI
+state and clear on lock. `credential-external.spec.ts` checks approval, reload,
+foreign-link rejection, incomplete scopes and cancellation with synthetic data.
+
 Authenticated owners see pending factual action-outcome reviews separately from
 action approvals and credential requests. A known result requires an explicit
 selection, checked recipient, settled processing and a receipt reference; the
 server stores only digests. Choosing unknown keeps execution stopped. Drafts
 remain in page memory and clear on owner/review changes. Polling and submissions
 use the existing protected owner endpoint; the UI never replays the action.
+
+Requests arriving while the credential panel is unlocked initialize their pinned
+account without reopening the panel. SSO still needs the complete displayed
+scope and an explicit protected approval; polling grants no access. The vault
+Chromium tests cover both initial and later-arriving SSO cards.
 
 The credential vault bookmark is fixed at the right-center edge after owner
 connection. It opens a six-cell PIN setup/unlock and a sidebar for account CRUD,

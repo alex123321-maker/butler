@@ -1,5 +1,14 @@
 # Execution budget contract
 
+The optional external Google kernel reserves a distinct permanent operation
+for its single private exchange before dispatch. Its child is not a public
+commit-capable tool grant. Execution uses the remaining PostgreSQL-owned budget
+deadline converted conservatively to a local monotonic bound, as well as the
+provider/probe cap. Cancellation, UNKNOWN, restart and factual review never
+refund that reservation. Unresolved external-auth children restrict writes in
+the same conversation even when a new Input creates a different Task; only
+independent reads and the existing exact owner-report contract remain allowed.
+
 The old ordinary-text revision2 `browser.prepare_fill` contract can prove no
 external write while its field state remains UNKNOWN. After the owning journal's
 exact terminal stopped review, Core and receiving Broker accept only its

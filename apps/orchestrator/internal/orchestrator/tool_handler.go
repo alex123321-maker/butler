@@ -92,6 +92,13 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("tool executor is not configured")
 	}
 	if approvalID == "" && !operatorDoctor(ctx) {
+		sourceFeedback, err := s.communicationSourceFeedback(ctx, current, requested)
+		if err != nil {
+			return nil, current, err
+		}
+		if sourceFeedback != "" {
+			return s.rejectDraft(ctx, current, leaseID, requested, "communication_sources_unselected", sourceFeedback)
+		}
 		feedback, err := s.researchFeedback(ctx, current, requested)
 		if err != nil {
 			return nil, current, err
@@ -349,13 +356,13 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
-	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp" || requested.ToolName == "credentials.request_login"
+	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp" || requested.ToolName == "credentials.request_login" || requested.ToolName == "credentials.request_sso_login" || requested.ToolName == "credentials.request_external_login"
 	if credentialRequest && (err != nil || result == nil || result.GetStatus() == "completed" || result.GetStatus() == "effect_unknown") {
 		if s.config.Credentials == nil {
 			return nil, current, ErrActionOutcomeUnknown
 		}
 		_ = s.discardProviderContext(ctx, current.GetRunId())
-		_, suspendErr := s.config.Credentials.SuspendRequest(ctx, current.GetRunId(), toolCallID)
+		_, suspendErr := s.config.Credentials.SuspendRequest(ctx, current.GetRunId(), toolCallID, requested.ToolName)
 		if suspendErr != nil {
 			// A lost local checkpoint ACK must not poison an already durable wait.
 			return nil, current, ErrCommunicationStatePending

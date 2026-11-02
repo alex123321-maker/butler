@@ -1,5 +1,14 @@
 # Tool Browser
 
+The separate revision1 `browser.sso_login` protocol handles one native-form
+RP/IdP popup flow under exact protected consent and Broker dispatch caps. It
+requires independent Go authenticated/anonymous RP verification. The required
+HTTPS Chromium profile includes delayed popups, popup storms and actual helper
+loss before SSO and after an accepted IdP POST. Lost contexts cannot be reused;
+a fresh read obtains a different unauthenticated context. These runtime tests
+do not establish native model recovery, Google compatibility or automatic
+reconciliation of a lost login. See the [SSO protocol](../../docs/architecture/browser-sso-protocol.md).
+
 Revision1 `browser.login` privately fills two Broker-resolved fields and submits
 one exact ordinary URL-encoded same-origin form. The helper gates the actual body,
 blocks extra requests and freezes after bounded GET redirects. Go compares a
@@ -58,7 +67,7 @@ Current state:
 - Docker Compose deployment must attach the runtime to an egress-capable network in addition to the internal tool network so outbound site navigation can resolve public DNS
 - HTTP health endpoint and unit tests are in place
 - real Chromium e2e checks form continuation, auth persistence/masking, stale observations, expiry and process loss via `scripts/dev/lab-browser.sh`; use only the isolated lab workflow
-- public redirects and CDN resources work within contract/operator caps; native SOP, public DNS/IP checks and credential scope stay enforced; popup-only SSO remains unsupported
+- public redirects and CDN resources work within contract/operator caps; native SOP, public DNS/IP checks and credential scope stay enforced; popup SSO uses only the separate bounded protocol
 
 Local run:
 - `go run ./apps/tool-browser`
@@ -135,7 +144,28 @@ identities. Owner frames and inputs bind the selected page/document; selection
 alone grants no agent authority. Legacy single-page mode remains separate.
 See [the execution contract](../../docs/architecture/browser-pages-execution.md)
 and required `scripts/dev/browser-page-execution-tests.sh`. This stage does not
-qualify federated login or autonomous recovery from a managed-page UNKNOWN.
+qualify native/external federated login or autonomous recovery from a managed-page UNKNOWN.
+
+The separate `browser.sso_login` revision1 requires Broker-approved references
+and private RP identity, current RP/IdP path caps and expiry. Its finite private
+plan/submit protocol allows one fresh child and one compiled native IdP POST,
+then freezes/closes the child and independently probes the protected RP with
+authenticated and anonymous GETs. Only Go emits `browser_sso_login_v1` proof.
+Required HTTPS checks: `scripts/dev/browser-sso-execution-tests.sh`; composed
+kernel, native delivery and Google acceptance remain separate evidence gates.
+
+`browser.sso_inspect` revision1 precedes consent with one GET-only popup.
+Broker pins the observed RP page, intended IdP origin and protected RP link;
+the runtime returns only canonical form paths and positional selectors, closes
+the child and freezes the network. Provider-to-RP redirects, POSTs, secret path
+reflection, stale pages and additional popups are denied. Current authority
+and actual discovered paths are checked again by Broker before export. This
+does not authorize credential access, form submission or general IdP DOM access.
+The private SSO route fetches one response with redirects/retries disabled,
+then checks each redirect before a fresh browser navigation. This also fences
+post-consent callback paths. Cookies stay in the native context; TLS and the
+checked proxy remain mandatory. Optional operator `NODE_EXTRA_CA_CERTS` is
+inherited for context-request TLS; the test supplies an isolated CA only.
 
 `browser.page_freeze_snapshot` revision1 freezes the whole managed context and
 returns a fresh observation of only its exact page/document. It retains normal

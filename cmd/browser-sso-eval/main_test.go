@@ -24,12 +24,13 @@ func TestSSOPrivateConfigInitializationAndValidation(t *testing.T) {
 	if _, err = load(path); err != nil {
 		t.Fatal("initialized fixture is invalid")
 	}
-	valid, _ := json.Marshal(config{"user-canary", "password-canary", "reference-canary"})
+	valid, _ := json.Marshal(config{Username: "user-canary", Password: "password-canary", PrivateFact: "reference-canary"})
 	for name, data := range map[string]string{
-		"unknown":   `{"username":"a","password":"b","private_fact":"c","extra":true}`,
-		"missing":   `{"username":"a","password":"b"}`,
-		"trailing":  string(valid) + `{}`,
-		"oversized": string(valid) + strings.Repeat(" ", 16385),
+		"public_variant_injection": `{"username":"a","password":"b","private_fact":"c","public_variant":"x\" onclick=oops"}`,
+		"unknown":                  `{"username":"a","password":"b","private_fact":"c","extra":true}`,
+		"missing":                  `{"username":"a","password":"b"}`,
+		"trailing":                 string(valid) + `{}`,
+		"oversized":                string(valid) + strings.Repeat(" ", 16385),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if os.WriteFile(path, []byte(data), 0600) != nil {

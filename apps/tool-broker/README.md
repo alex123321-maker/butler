@@ -1,5 +1,26 @@
 # Tool Broker
 
+External-login mediation passes the trusted permanent effect ID/fingerprint
+separately from the execution's Run/call identity. A composed Broker/PG logical
+slot test checks this distinction, the metadata acknowledgement and the absence
+of consent/provider use before Core suspends the canonical Input.
+
+`BUTLER_BROWSER_EXTERNAL_AUTH_ENABLED=true` advertises the distinct
+`credentials.request_external_login` prepare capability only when Core's active
+operator profile exists. Broker receives no Google client secret. It pins the
+exact RP source page and all RP/provider paths to current owner-goal authority;
+the protected decision and one exchange belong to Core's separate
+[external diagnostic RP protocol](../../docs/architecture/browser-google-auth.md).
+Native SSO grants, credential aliases and generic POST policy are unchanged.
+
+With the vault configured, `credentials.request_sso_login` and `browser.sso_login`
+provide a separate RP/IdP path. All destinations require current authority; the
+private dispatch pins exact RP identity, path caps and expiry. Migration110
+reserves one consent to one call. The approved call covers one POST and
+Go-verified RP access, without a second generic submit approval. Generic page
+tools cannot use SSO references. See
+[the SSO contract](../../docs/architecture/browser-sso-protocol.md).
+
 Migration107 adds the private `browsercontrol` page ledger with exact
 page/document/version references, context-wide owner epochs, bounded identities
 and retained closed/lost records. It is not wired to model tools, dispatch or
@@ -535,3 +556,9 @@ ordinary read for exact live outcome review. PG correlates captured source/read
 digests, post-effect document and current page/context/authority. Protected owner
 attestation can resolve the journal without renewing a grant or replaying POST.
 Unacknowledged, closed-page and historical managed outcomes remain restrictive.
+
+Vault-enabled page composition also registers `browser.sso_inspect` revision1.
+It requires current owner-goal read authority over the RP, intended IdP and RP
+verification link, and exact PG page identity. Broker exports only validated
+candidate scopes with a fresh RP ref after current-authority/path release
+checks. Inspection accepts no credentials and grants no POST or SSO approval.

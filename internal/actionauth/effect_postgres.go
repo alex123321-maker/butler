@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browsersso"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -145,6 +146,15 @@ func (s *PostgresStore) RecordDispatchOutcome(ctx context.Context, id, outcome s
 	}
 	if e.Verdict == StateConfirmed && r.Policy.VerificationMethod == browserauth.Verification && !validLoginEvidence(r.Policy, g.Binding, e.Login) {
 		return r, fmt.Errorf("login evidence does not match the scoped protocol")
+	}
+	if e.Verdict == StateConfirmed && r.Policy.VerificationMethod == browsersso.Verification {
+		if !validSSOEvidence(r.Policy, g.Binding, e.SSO) {
+			return r, fmt.Errorf("SSO evidence does not match the scoped protocol")
+		}
+		var current bool
+		if tx.QueryRow(ctx, `SELECT TRUE FROM server_browser_sessions s JOIN server_browser_pages p USING(browser_session_id) WHERE s.browser_session_id=$1 AND s.run_id=$2 AND s.owner_id=$3 AND s.task_id=$4 AND s.page_mode AND s.mode='agent' AND s.epoch=$5 AND s.expires_at>clock_timestamp() AND p.page_id=$6 AND p.document_id=$7 AND p.observation_version=$8 AND p.observed_epoch=s.epoch AND p.state='ready' AND p.observed_url=$9 FOR SHARE OF s,p`, e.SSO.Browser, g.Binding.RunID, g.Binding.OwnerID, g.Binding.TaskID, g.Binding.BrowserPage.Epoch, e.SSO.Page.ID, e.SSO.Page.DocumentID, e.SSO.Page.Version, r.Policy.SSO.VerifyURL).Scan(&current) != nil || !current {
+			return r, fmt.Errorf("SSO result page is no longer current")
+		}
 	}
 	if err = insertEvidence(ctx, tx, e); err != nil {
 		return r, err

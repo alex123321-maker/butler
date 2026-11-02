@@ -1,0 +1,47 @@
+name: Browser SSO execution
+on:
+  pull_request:
+    paths: ['.github/workflows/browser-sso.yml', 'scripts/dev/browser-sso-execution-tests.sh', 'cmd/browser-sso-eval/**', 'internal/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'apps/orchestrator/**', 'migrations/**', 'go.mod', 'go.sum']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/browser-sso.yml', 'scripts/dev/browser-sso-execution-tests.sh', 'cmd/browser-sso-eval/**', 'internal/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'apps/orchestrator/**', 'migrations/**', 'go.mod', 'go.sum']
+permissions:
+  contents: read
+jobs:
+  https-execution:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_HOST_AUTH_METHOD: trust, POSTGRES_DB: sso_execution_test}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+      BUTLER_TEST_VAULT_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/sso_execution_test?sslmode=disable
+      BUTLER_TEST_ACTIONAUTH_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/sso_execution_test?sslmode=disable
+      BUTLER_TEST_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/sso_execution_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libnss3-tools
+      - run: npm ci --prefix apps/tool-browser --no-audit --no-fund
+      - run: cd apps/tool-browser && npx playwright install --with-deps chromium
+      - run: bash scripts/dev/browser-sso-execution-tests.sh
+      - name: Preserve value-free SSO evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-sso-execution-evidence
+          path: .cache/browser-sso-execution-ci/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error

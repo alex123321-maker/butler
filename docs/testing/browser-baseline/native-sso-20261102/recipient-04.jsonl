@@ -1,0 +1,4 @@
+{"sequence":1,"at":"2026-11-02T09:44:27.838536511Z","kind":"idp_login","accepted":true}
+{"sequence":2,"at":"2026-11-02T09:44:28.013300149Z","kind":"callback_accepted","accepted":true}
+{"sequence":3,"at":"2026-11-02T09:44:28.093232852Z","kind":"account_read","accepted":true}
+{"sequence":4,"at":"2026-11-02T09:44:28.517958082Z","kind":"account_read","accepted":true}

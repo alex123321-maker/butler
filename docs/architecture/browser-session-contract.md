@@ -233,6 +233,14 @@ inform an explicitly counted test operator's factual report through that same
 protected API; it is never an automatic production verifier or hidden oracle.
 Native POST/login acceptance is measured separately from these safeguards.
 
+The distinct bounded SSO protocol also permits historical factual review after
+its exact managed RP context has expired and its dispatch settling bound passed.
+It additionally checks the closed SSO policy/arguments, exact RP binding and
+retained owner/Run/Task page mapping, and accepts only `browser.open_pages`
+birth evidence. Generic managed-page historical review remains disabled.
+This does not resume a terminal Input or authorize any new POST/secret release;
+see [SSO recovery](browser-sso-protocol.md).
+
 ## Private credential state
 
 Live and local-preparation fill/type accept ordinary text or `{type:"credential_ref",alias,field}`.
@@ -470,3 +478,11 @@ It does not change legacy single-page or scoped-login semantics. See
 [browser pages execution](browser-pages-execution.md) for exact refs, context-wide
 fences, GET-only first-request reservation, no credential support and remaining
 UNKNOWN review/native/federation gates.
+
+The separate native-form SSO protocol binds one fresh provider child to the
+exact RP page and one protected consent. Before consent, `browser.sso_inspect`
+can return value-free native-form candidate scopes under current owner-goal
+read authority. It closes the child and freezes the context; it cannot submit,
+follow a provider callback or grant credentials. Ordinary page targeting and
+owner fencing remain unchanged. See [the SSO protocol](browser-sso-protocol.md)
+for per-hop routing, secret boundaries and independent RP verification.

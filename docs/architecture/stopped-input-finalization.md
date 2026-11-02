@@ -128,6 +128,31 @@ classification separately from the durable one. `-apply` commits verified
 evidence. Explicit review skips only the maintenance cooldown. No public/model
 endpoint, new approval, synthetic oracle, replay or refund is introduced.
 
+The separately pinned revision1 `credentials.request_external_login` contract
+from6bee49c3 also permits a Task-bound **request-creation absence** review.
+Under terminal original owner/session/run/Input locks, exact contract/hash,
+source RP document, binding fingerprint and expired consumed grant must match.
+Permanent effect ID and execution intent ID are validated separately. The
+owning request store must contain no request for that call, even in another
+run; retained FK children cannot exist without that request. The creator takes
+the same session/run locks and rejects a terminal run, fencing late creation.
+Only this metadata effect becomes ABSENT with digest-only
+`stopped_external_login_request_absence_v1` evidence. Original UNKNOWN grant/
+dispatch, spending and failed Input/run remain. An existing request, live
+execution, provider exchange/commit or unsupported contract cannot qualify.
+
+The same terminal Task fences separately qualify absence of an atomic
+`communication.message` revision2 publication pinned at6bee49c3
+(`2bcb3ec0772e14cc5600d63ac1bd06d5786c4dffe5319c74d5b373c2b48a9539`).
+Exact destination hash, original binding, distinct IDs/fingerprint and expired
+consumed UNKNOWN dispatch are required. No publication may exist for that
+permanent effect, including a foreign/malformed row. The pinned publisher
+shares the original session/run/Input locks and live-claim fence; its receipt,
+publication and outbox commit atomically. Digest-only
+`stopped_task_publication_absence_v1` proves just this creation ABSENT. Existing
+publications stay unresolved by this adapter; channel outcome, original failed
+Input/run, grant/dispatch uncertainty and spending are not rewritten or replayed.
+
 Input records `input_stopped_attempts` and marks the attempt failed. The owning
 Communication collaborator verifies that proof, joins Run's failed transition,
 closes an open publication obligation with failure and saves a kernel audit in

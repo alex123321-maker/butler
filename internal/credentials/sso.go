@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// SSORequest is an owner-facing conditional consent, never a credential alias.
-// No executor/release path is installed by this preparatory protocol stage.
+// SSORequest is an owner-facing conditional consent. Only the separately
+// approved SSO executor can use its deferred references under a one-call claim.
 type SSORequest struct {
 	ID           string           `json:"id"`
 	Kind         string           `json:"kind"`
@@ -91,14 +91,20 @@ func (v *Vault) CreateSSORequest(ctx context.Context, p Principal, callID, recor
 		}
 		return r, nil
 	}
-	if e != nil || v.audit(ctx, tx, p.OwnerID, recordID, r.ID, "sso_requested") != nil || tx.Commit(ctx) != nil {
+	if e != nil {
+		return SSORequest{}, ErrVault
+	}
+	if _, e = tx.Exec(ctx, `INSERT INTO credential_sso_notices(request_id) VALUES($1)`, r.ID); e != nil {
+		return SSORequest{}, ErrVault
+	}
+	if v.audit(ctx, tx, p.OwnerID, recordID, r.ID, "sso_requested") != nil || tx.Commit(ctx) != nil {
 		return SSORequest{}, ErrVault
 	}
 	return r, nil
 }
 
 func (v *Vault) SSORequests(ctx context.Context, owner string) ([]SSORequest, error) {
-	rows, e := v.Pool.Query(ctx, `SELECT q.id,q.record_id,c.title||' · '||c.alias,q.purpose,q.scope::text,q.scope_digest,q.context_epoch,q.state,q.expires_at FROM credential_sso_requests q JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.owner_id=$1 AND q.state='pending' AND q.expires_at>clock_timestamp() ORDER BY q.created_at LIMIT 50`, owner)
+	rows, e := v.Pool.Query(ctx, `SELECT q.id,q.record_id,c.title||' · '||c.alias,q.purpose,q.scope::text,q.scope_digest,q.context_epoch,q.live_state,q.expires_at FROM credential_sso_state q JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.owner_id=$1 AND q.live_state='pending' ORDER BY q.created_at LIMIT 50`, owner)
 	if e != nil {
 		return nil, ErrVault
 	}
@@ -134,6 +140,11 @@ func (v *Vault) OwnerRequests(ctx context.Context, owner string) ([]AccessReques
 		scope := r.Scope
 		out = append(out, AccessRequest{ID: r.ID, Kind: r.Kind, RecordID: r.RecordID, RecordLabel: r.RecordLabel, Purpose: r.Purpose, SSOScope: &scope, ScopeDigest: r.ScopeDigest, ContextEpoch: r.ContextEpoch, TargetOrigin: browsersso.Origin(scope.RPURL), BrowserSessionID: scope.Browser, Fields: []string{"username", "password"}, State: r.State, ExpiresAt: r.ExpiresAt})
 	}
+	external, e := v.ExternalRequests(ctx, owner)
+	if e != nil {
+		return nil, e
+	}
+	out = append(out, external...)
 	return out, nil
 }
 

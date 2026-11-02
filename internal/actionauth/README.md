@@ -1,5 +1,18 @@
 # Exact action authority
 
+Terminal external-login request absence has a separately pinned metadata-only
+review. It checks both permanent effect and execution intent IDs, exact
+historical contract, source RP document, expired consumed grant and inactive
+owner/session/run/Input fences. An existing request or provider commit remains
+unresolved. Digest evidence can mark only metadata creation ABSENT; failed
+work, UNKNOWN dispatch/grant and spending remain. See
+[stopped finalization](../../docs/architecture/stopped-input-finalization.md).
+
+The Task-aware reviewer separately pins6bee49c3 revision2 message publication
+absence with exact destination/binding/expired grant and owning terminal fences.
+Any existing publication prevents inference. Its append-only proof preserves
+the old UNKNOWN dispatch/grant and cannot assert channel delivery or replay it.
+
 Trusted Broker startup can opt into standing public URL/query release consent
 using `SetPublicWebReads` (`BUTLER_PUBLIC_WEB_READS_ENABLED`, default false).
 Prepare, authorize and verify apply it only to the fixed public page-reading

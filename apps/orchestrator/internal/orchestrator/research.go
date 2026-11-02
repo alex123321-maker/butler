@@ -32,19 +32,7 @@ func (s *Service) researchFeedback(ctx context.Context, current *sessionv1.RunRe
 	if decodeErr == nil && (a.Purpose != "result" || a.Observation != nil && a.Observation.Status == "unknown") {
 		return "", nil
 	}
-	historyStore := s.transcript
-	if fenced, ok := historyStore.(fencedTranscript); ok {
-		historyStore = fenced.TranscriptStore
-	}
-	var h transcript.Transcript
-	var err error
-	if reader, ok := historyStore.(interface {
-		GetRunTranscript(context.Context, string) (transcript.Transcript, error)
-	}); ok {
-		h, err = reader.GetRunTranscript(ctx, current.GetRunId())
-	} else {
-		h, err = historyStore.GetTranscript(ctx, current.GetSessionKey())
-	}
+	h, err := s.draftTranscript(ctx, current)
 	if err != nil {
 		return "", err
 	}
@@ -79,6 +67,23 @@ func (s *Service) researchFeedback(ctx context.Context, current *sessionv1.RunRe
 // Validation is a known non-dispatch, not an external failed/unknown effect.
 // Record correlated feedback before resuming; ordinary model budgets still apply.
 func (s *Service) rejectResearchDraft(ctx context.Context, current *sessionv1.RunRecord, lease string, r *transport.ToolCallRequest, reason string) (transport.EventStream, *sessionv1.RunRecord, error) {
+	return s.rejectDraft(ctx, current, lease, r, "research_draft_rejected", reason)
+}
+
+func (s *Service) rejectDraft(ctx context.Context, current *sessionv1.RunRecord, lease string, r *transport.ToolCallRequest, code, reason string) (transport.EventStream, *sessionv1.RunRecord, error) {
+	h, err := s.draftTranscript(ctx, current)
+	if err != nil {
+		return nil, current, err
+	}
+	rejected := 0
+	for _, c := range h.ToolCalls {
+		if c.RunID == current.GetRunId() && c.Status == "validation_rejected" {
+			rejected++
+		}
+	}
+	if rejected >= 4 {
+		return nil, current, &budget.LoopError{Reason: "draft_corrections_exhausted"}
+	}
 	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, lease, "", "")
 	if err != nil {
 		return nil, current, err
@@ -94,7 +99,7 @@ func (s *Service) rejectResearchDraft(ctx context.Context, current *sessionv1.Ru
 	if r.ToolCallRef == "" {
 		r.ToolCallRef = fallbackToolCallID(current.GetRunId(), time.Now().UTC())
 	}
-	payload, _ := json.Marshal(map[string]any{"dispatched": false, "code": "research_draft_rejected", "correction": reason})
+	payload, _ := json.Marshal(map[string]any{"dispatched": false, "code": code, "correction": reason})
 	result := &toolbrokerv1.ToolResult{ToolCallId: r.ToolCallRef, RunId: current.GetRunId(), ToolName: r.ToolName, Status: "validation_rejected", ResultJson: string(payload)}
 	call := &toolbrokerv1.ToolCall{ToolCallId: r.ToolCallRef, RunId: current.GetRunId(), ToolName: r.ToolName, ArgsJson: r.ArgsJSON}
 	now := time.Now().UTC()
@@ -115,4 +120,17 @@ func (s *Service) rejectResearchDraft(ctx context.Context, current *sessionv1.Ru
 	}
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease, "", "")
 	return stream, next, err
+}
+
+func (s *Service) draftTranscript(ctx context.Context, current *sessionv1.RunRecord) (transcript.Transcript, error) {
+	history := s.transcript
+	if fenced, ok := history.(fencedTranscript); ok {
+		history = fenced.TranscriptStore
+	}
+	if reader, ok := history.(interface {
+		GetRunTranscript(context.Context, string) (transcript.Transcript, error)
+	}); ok {
+		return reader.GetRunTranscript(ctx, current.GetRunId())
+	}
+	return history.GetTranscript(ctx, current.GetSessionKey())
 }

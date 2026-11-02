@@ -222,7 +222,11 @@ func TestChildAndToolReservationsShareAtomicParentLimitsIntegration(t *testing.T
 		t.Fatal("effect replay charged again", scope, err)
 	}
 	deadline, err := c.ToolDeadline(ctx, "owner", i.EffectID)
-	if err != nil || !deadline.After(time.Now()) || deadline.After(time.Now().Add(time.Duration(p.ToolMillis)*time.Millisecond)) {
+	// Budget reservations and their absolute deadlines use database time; a
+	// remote disposable PG host need not share this test process's wall clock.
+	var databaseNow time.Time
+	clockErr := pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&databaseNow)
+	if err != nil || clockErr != nil || !deadline.After(databaseNow) || deadline.After(databaseNow.Add(time.Duration(p.ToolMillis)*time.Millisecond)) {
 		t.Fatal("reserved runtime deadline not bounded", deadline, err)
 	}
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browsercontrol"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/config"
@@ -112,6 +113,10 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		}
 		credentialVault, _ = credentials.VaultFromEnvironment(postgres.Pool())
 		if credentialVault != nil {
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{browsersso.Contract(), browsersso.InspectContract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
 			credentialResolver = credentials.NewToolCallBroker(credentials.NewBroker(credentialVault, credentials.NewAuditStore(postgres.Pool())), credentialVault)
 		}
 	}
@@ -468,12 +473,20 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 			server.SetCatalogExecutor(executor)
 		}
 		if credentialVault != nil {
-			if err = registryStore.RegisterOwned(credentialcontrol.Contracts()); err != nil {
+			if cfg.ExternalAuthEnabled && !credentialVault.ExternalProfileConfigured(ctx) {
+				postgres.Close()
+				return nil, fmt.Errorf("external browser authentication requires an active Core-owned profile")
+			}
+			if err = registryStore.RegisterOwned(credentialcontrol.Contracts(cfg.ExternalAuthEnabled)); err != nil {
 				postgres.Close()
 				return nil, err
 			}
 			executor = &broker.CredentialExecutor{Vault: credentialVault, Contexts: reader, Next: executor}
 			server.SetCatalogExecutor(executor)
+		}
+		if cfg.ExternalAuthEnabled && credentialVault == nil {
+			postgres.Close()
+			return nil, fmt.Errorf("external browser authentication requires the protected credential vault")
 		}
 		if communicationEndpoint != "" {
 			client, clientErr := communicationcontrol.NewClient(communicationEndpoint, token)

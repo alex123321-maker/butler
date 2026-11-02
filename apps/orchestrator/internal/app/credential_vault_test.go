@@ -9,6 +9,8 @@ import (
 	"time"
 
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
+	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,7 +42,7 @@ func TestCredentialVaultLocalWaitResumeAndExpiry(t *testing.T) {
 		t.Fatal("pool")
 	}
 	defer pool.Close()
-	base := `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);CREATE TABLE runs(run_id TEXT PRIMARY KEY,session_key TEXT,task_id TEXT,current_state TEXT,status TEXT,lease_id TEXT,updated_at TIMESTAMPTZ);CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);CREATE TABLE server_browser_sessions(browser_session_id TEXT);CREATE TABLE session_ownership(session_key TEXT,run_id TEXT,lease_id TEXT,fence_epoch BIGINT,expires_at TIMESTAMPTZ);CREATE TABLE accepted_inputs(input_id TEXT PRIMARY KEY,claim_id TEXT,run_id TEXT,status TEXT,checkpoint TEXT,checkpoint_json JSONB,claim_expires_at TIMESTAMPTZ,expires_at TIMESTAMPTZ,not_before TIMESTAMPTZ,updated_at TIMESTAMPTZ);CREATE TABLE run_state_transitions(run_id TEXT,from_state TEXT,to_state TEXT,triggered_by TEXT,metadata_json JSONB,transitioned_at TIMESTAMPTZ);INSERT INTO sessions VALUES('session','owner');INSERT INTO runs VALUES('run','session',NULL,'tool_running','tool_running','lease',now());INSERT INTO session_ownership VALUES('session','run','lease',1,now()+interval '1 hour');INSERT INTO accepted_inputs VALUES('input','claim','run','running','tool_dispatching','{}',now()+interval '1 hour',now()+interval '1 hour',now(),now());`
+	base := `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);CREATE TABLE runs(run_id TEXT PRIMARY KEY,session_key TEXT,task_id TEXT,current_state TEXT,status TEXT,lease_id TEXT,updated_at TIMESTAMPTZ);CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);CREATE TABLE server_browser_sessions(browser_session_id TEXT PRIMARY KEY,run_id TEXT,owner_id TEXT,task_id TEXT,mode TEXT,epoch BIGINT NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ);CREATE TABLE session_ownership(session_key TEXT,run_id TEXT,lease_id TEXT,fence_epoch BIGINT,expires_at TIMESTAMPTZ);CREATE TABLE accepted_inputs(input_id TEXT PRIMARY KEY,claim_id TEXT,run_id TEXT,status TEXT,checkpoint TEXT,checkpoint_json JSONB,claim_expires_at TIMESTAMPTZ,expires_at TIMESTAMPTZ,not_before TIMESTAMPTZ,updated_at TIMESTAMPTZ);CREATE TABLE run_state_transitions(run_id TEXT,from_state TEXT,to_state TEXT,triggered_by TEXT,metadata_json JSONB,transitioned_at TIMESTAMPTZ);INSERT INTO sessions VALUES('session','owner');INSERT INTO runs VALUES('run','session',NULL,'tool_running','tool_running','lease',now());INSERT INTO session_ownership VALUES('session','run','lease',1,now()+interval '1 hour');INSERT INTO accepted_inputs VALUES('input','claim','run','running','tool_dispatching','{}',now()+interval '1 hour',now()+interval '1 hour',now(),now());`
 	if _, err = pool.Exec(ctx, base); err != nil {
 		t.Fatal("fixture")
 	}
@@ -57,6 +59,15 @@ func TestCredentialVaultLocalWaitResumeAndExpiry(t *testing.T) {
 	}
 	if _, err = pool.Exec(ctx, string(loginMigration)); err != nil {
 		t.Fatal(err)
+	}
+	for _, name := range []string{"107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent", "110_browser_sso_use"} {
+		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name+".up.sql"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(raw)); e != nil {
+			t.Fatal(e)
+		}
 	}
 	vault, err := credentials.NewVault(pool, strings.Repeat("synthetic-key-", 4))
 	if err != nil {
@@ -152,6 +163,70 @@ func TestCredentialVaultLocalWaitResumeAndExpiry(t *testing.T) {
 	if kernel.Sweep(ctx) != nil || kernel.Sweep(ctx) != nil || closed != 1 {
 		t.Fatal("closed card was lost or replayed")
 	}
+	t.Run("SSO_same_Input_decision_and_lost_context", func(t *testing.T) {
+		reset()
+		kernel.Notify = nil
+		scope := browsersso.Scope{Browser: strings.Repeat("a", 32), RPPage: browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 1}, RPURL: "https://rp.example/", IdPURL: "https://idp.example/authorize", TargetURL: "https://idp.example/login", VerifyURL: "https://rp.example/account", Trigger: "#sso", Form: "form", Username: "input[name=username]", Password: "input[type=password]"}
+		if _, e := pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,mode,expires_at,page_mode,page_origin) VALUES($1,'run','owner','','agent',now()+interval '10 minutes',true,'https://rp.example')`, scope.Browser); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := pool.Exec(ctx, `INSERT INTO server_browser_pages(browser_session_id,page_id,document_id,observation_version,observed_epoch,observed_url,state,runtime_version) VALUES($1,$2,$3,1,0,'https://rp.example/','ready',1)`, scope.Browser, scope.RPPage.ID, scope.RPPage.DocumentID); e != nil {
+			t.Fatal(e)
+		}
+		r, e := vault.CreateSSORequest(ctx, p, "sso-request", entry.ID, "One SSO", scope)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if id, e := kernel.SuspendRequest(owned, "run", "sso-request", browsersso.RequestTool); e != nil || id != r.ID {
+			t.Fatal("SSO suspend", e)
+		}
+		if _, e := kernel.ResumeInteraction(owned, "run", r.ID); e == nil {
+			t.Fatal("pending request resumed")
+		}
+		notices := 0
+		kernel.Notify = func(_ context.Context, got credentials.AccessRequest, ack string) (string, error) {
+			if got.ID != r.ID || got.SSOScope == nil || got.SSOScope.IdPURL != scope.IdPURL {
+				t.Fatal("incorrect SSO notice")
+			}
+			notices++
+			if notices > 1 && ack != "sso-ack" {
+				t.Fatal("notice lost original ack")
+			}
+			return "sso-ack", nil
+		}
+		if kernel.Sweep(ctx) != nil || notices != 1 {
+			t.Fatal("pending SSO notice")
+		}
+		if vault.RespondSSO(ctx, p.OwnerID, r.ID, entry.ID, true, browsersso.Consent, r.ScopeDigest) != nil {
+			t.Fatal("SSO owner decision")
+		}
+		result, e := kernel.ResumeInteraction(owned, "run", r.ID)
+		if e != nil || !strings.Contains(result, `"state":"approved"`) || !strings.Contains(result, r.ScopeDigest) {
+			t.Fatal("same-Input SSO resume", e)
+		}
+		if kernel.Sweep(ctx) != nil || kernel.Sweep(ctx) != nil || notices != 2 {
+			t.Fatal("SSO decision notice repeated")
+		}
+		kernel.Notify = nil
+		reset()
+		lost, e := vault.CreateSSORequest(ctx, p, "lost-sso", entry.ID, "Lost context", scope)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = kernel.SuspendRequest(owned, "run", "lost-sso", browsersso.RequestTool); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, `UPDATE server_browser_sessions SET epoch=epoch+1 WHERE browser_session_id=$1`, scope.Browser); e != nil {
+			t.Fatal(e)
+		}
+		if kernel.Sweep(ctx) != nil {
+			t.Fatal("SSO expiry wake")
+		}
+		result, e = kernel.ResumeInteraction(owned, "run", lost.ID)
+		if e != nil || !strings.Contains(result, `"state":"expired"`) {
+			t.Fatal("lost SSO context stayed pending", e)
+		}
+	})
 	if _, err = pool.Exec(ctx, `UPDATE session_ownership SET expires_at=now()-interval '1 second'`); err != nil {
 		t.Fatal("expire lease")
 	}

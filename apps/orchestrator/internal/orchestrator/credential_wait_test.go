@@ -21,7 +21,7 @@ func (f *credentialStoppedFlow) ExecuteAuthorizedToolCall(_ context.Context, c *
 	f.dispatches++
 	return &toolbrokerv1.ToolResult{ToolName: c.ToolName, ToolCallId: c.ToolCallId, RunId: c.RunId, Status: "execution_stopped", Error: &toolbrokerv1.ToolError{DetailsJson: `{"reason":"external_effect_unknown"}`}}, nil
 }
-func (f *credentialStoppedFlow) SuspendRequest(context.Context, string, string) (string, error) {
+func (f *credentialStoppedFlow) SuspendRequest(context.Context, string, string, ...string) (string, error) {
 	f.suspends++
 	return "", errors.New("no request was dispatched")
 }
@@ -51,7 +51,7 @@ func (f *credentialWaitFlow) ExecuteAuthorizedToolCall(ctx context.Context, c *t
 	return r, err
 }
 
-func (f *credentialWaitFlow) SuspendRequest(context.Context, string, string) (string, error) {
+func (f *credentialWaitFlow) SuspendRequest(context.Context, string, string, ...string) (string, error) {
 	if f.scenario == "read_failure" || f.scenario == "missing_checkpoint" {
 		return "", errors.New("fixture checkpoint unavailable")
 	}

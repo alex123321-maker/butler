@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"net/url"
 	"strings"
 	"time"
@@ -29,6 +30,7 @@ const (
 // EffectPolicy is pinned with the exact contract, not inferred from model text
 // or a caller-supplied HTTP header. ExternalReceipt is a recipient protocol.
 type EffectPolicy struct {
+	SSO                *browsersso.Args         `json:"browser_sso,omitempty"`
 	Login              *browserauth.Args        `json:"browser_login,omitempty"`
 	RetrySafety        string                   `json:"retry_safety"`
 	VerificationMethod string                   `json:"verification_method"`
@@ -64,6 +66,7 @@ type EffectRecord struct {
 // Evidence contains provenance and digests only. Raw output, credential values,
 // receipt IDs, cookies and URL queries are not copied into the journal.
 type EffectEvidence struct {
+	SSO                    *SSOEvidence   `json:"browser_sso,omitempty"`
 	Login                  *LoginEvidence `json:"browser_login,omitempty"`
 	EvidenceID             string         `json:"evidence_id"`
 	ActionID               string         `json:"action_id"`
@@ -115,6 +118,9 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 }
 
 func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, calls ...*toolbrokerv1.ToolCall) (EffectPolicy, error) {
+	if b.ToolName == browsersso.InspectTool && (!proto.Equal(contract, browsersso.InspectContract()) || !validSSOInspection(b) || len(b.CredentialRefs) != 0) {
+		return EffectPolicy{}, browsersso.ErrScope
+	}
 	if browserpage.IsTool(b.ToolName) && (!browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0) {
 		return EffectPolicy{}, browserpage.ErrDenied
 	}
@@ -127,6 +133,18 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 	}
 	if p.VerificationMethod == "" {
 		p.VerificationMethod = "none"
+	}
+	if b.ToolName == browsersso.Tool || p.VerificationMethod == browsersso.Verification {
+		if !proto.Equal(contract, browsersso.Contract()) || b.Effect != EffectCommit || !vaultRequestBinding(b) || len(calls) != 1 || calls[0] == nil || calls[0].ToolName != b.ToolName {
+			return p, fmt.Errorf("SSO requires its exact approved protocol")
+		}
+		a, e := browsersso.Parse(calls[0].ArgsJson)
+		h, e2 := ArgumentsHash(calls[0].ArgsJson)
+		if e != nil || e2 != nil || h != b.ArgsHash || b.BrowserSSO == nil || *b.BrowserSSO != a.Scope || b.BrowserPage == nil || b.BrowserPage.Ref != a.RPPage || b.Resource != "browser:"+a.Browser+":"+a.TargetURL {
+			return p, fmt.Errorf("invalid SSO binding")
+		}
+		p.SSO = &a
+		return p, nil
 	}
 	if b.ToolName == browserauth.Tool || p.VerificationMethod == browserauth.Verification {
 		if !browserauth.ValidContract(contract) || b.Effect != EffectCommit || !vaultRequestBinding(b) || len(calls) != 1 || calls[0] == nil || calls[0].ToolName != b.ToolName {
@@ -292,6 +310,11 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 		outcome = "dispatch_completed"
 		e.ResultDigest = digest(result.GetResultJson())
 		switch record.Policy.VerificationMethod {
+		case browsersso.Verification:
+			e.SSO = ssoEvidence(record.Policy, result.GetResultJson())
+			if validSSOEvidence(record.Policy, g.Binding, e.SSO) {
+				e.Verdict = StateConfirmed
+			}
 		case browserauth.Verification:
 			e.Verdict = loginVerdict(record.Policy, g.Binding, result.GetResultJson())
 			if e.Verdict == StateConfirmed {

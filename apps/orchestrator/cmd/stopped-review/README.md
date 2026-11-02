@@ -29,6 +29,13 @@ absence only, never consent, secret release, notice delivery or login. Expired
 requests and old failed runs remain closed. Failures export only a fixed message
 and an optional five-character PostgreSQL SQLSTATE, never raw storage errors.
 
+The revision1 external-login request from6bee49c3 has a separate Task-aware
+absence proof (at most eight matching effects). Exact source document,
+fingerprint, permanent effect/execution IDs, expired consumed grant and terminal
+owner/session/run/Input fences are required. Any retained request for that call
+prevents resolution, including another run. This proves no metadata creation;
+provider exchange, consent, login and delivery gain no inferred success/absence.
+
 Old authorization/dispatch ACK uncertainty, tool errors, failed Input/run,
 model charges and original evidence remain. No old attempt or grant is revived.
 Review one exact scope, inspect the dry-run report, then apply only if appropriate.

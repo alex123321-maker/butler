@@ -308,6 +308,15 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 }
 
 func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
+	if b.BrowserSSOInspection != nil && !validSSOInspection(b) {
+		return false
+	}
+	if b.ExternalAuth != nil && !validExternalScope(b) {
+		return false
+	}
+	if b.BrowserSSO != nil && !validSSOScope(b) {
+		return false
+	}
 	if b.BrowserScopeURL != "" && !BrowserContextRead(b) {
 		return false
 	}
@@ -325,6 +334,15 @@ func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
 		if scopedResourceWithin(s, b) {
 			resourceOK = true
 		}
+	}
+	if b.BrowserSSO != nil {
+		resourceOK = ssoOwnerResources(m, b)
+	}
+	if b.ExternalAuth != nil {
+		resourceOK = externalOwnerResources(m, b)
+	}
+	if b.BrowserSSOInspection != nil {
+		resourceOK = inspectionOwnerResources(m, b)
 	}
 	effectOK := false
 	for _, e := range m.Effects {
@@ -380,6 +398,15 @@ func ReadGoalDenialsTx(ctx context.Context, tx pgx.Tx, goalID, ownerID string, a
 }
 
 func CheckDenyOverrides(b ActionBinding, tools []string, resources []ResourceScope) error {
+	if b.BrowserSSOInspection != nil && !validSSOInspection(b) {
+		return ErrOwnerAuthority
+	}
+	if b.ExternalAuth != nil && !validExternalScope(b) {
+		return ErrOwnerAuthority
+	}
+	if b.BrowserSSO != nil && !validSSOScope(b) {
+		return ErrOwnerAuthority
+	}
 	if contains(tools, b.ToolName) {
 		return ErrOwnerAuthority
 	}

@@ -1,0 +1,15 @@
+{
+  "tool_name": "credentials.request_external_login",
+  "description": "Request one protected external Google sign-in in the owner's normal browser for this exact RP page, saved account and current task. The kernel waits for the same browser-bound callback and independently verified RP access, then resumes this Input. No password, token, private link or credential reference is returned. No polling, generic POST or user-tab credential injection.",
+  "tool_class": "credential_control",
+  "input_schema_json": "{\"type\":\"object\",\"required\":[\"record_id\",\"purpose\",\"external_scope\"],\"properties\":{\"record_id\":{\"type\":\"string\"},\"purpose\":{\"type\":\"string\"},\"external_scope\":{\"type\":\"object\",\"required\":[\"browser_session_id\",\"rp_page\",\"rp_url\",\"provider\",\"verify_url\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"rp_page\":{\"type\":\"object\",\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"properties\":{\"page_id\":{\"type\":\"string\"},\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\",\"minimum\":1}},\"additionalProperties\":false},\"rp_url\":{\"type\":\"string\"},\"provider\":{\"type\":\"string\",\"enum\":[\"google\"]},\"verify_url\":{\"type\":\"string\"}},\"additionalProperties\":false}},\"additionalProperties\":false}",
+  "output_schema_json": "{\"type\":\"object\",\"properties\":{\"entries\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"request\":{\"type\":\"object\"}},\"additionalProperties\":false}",
+  "runtime_target": "broker://credential-vault-v1",
+  "risk_level": "medium",
+  "status": "active",
+  "contract_revision": "1",
+  "effect_contract": {
+    "retry_safety": "unsafe",
+    "verification_method": "local_runtime_ack"
+  }
+}

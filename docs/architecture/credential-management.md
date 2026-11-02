@@ -1,5 +1,14 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Migration111's [external Google diagnostic RP](browser-google-auth.md) is a
+separate default-off protocol. `credentials.request_external_login` selects a
+pinned record and exact source page under current owner-goal authority, but
+never resolves fields or returns a credential alias. Only Core receives the
+operator OAuth client. One protected scoped decision permits one code exchange
+and independently checked RP access. State/PKCE/cookies remain private; a
+durable budgeted journal child prevents replay and preserves UNKNOWN. This is
+not a generic single-tab credential or arbitrary-site Chrome-session bridge.
+
 Migration106 adds the distinct, explicit `credentials.request_login` consent
 for [bounded browser login](browser-login-protocol.md). It pins the saved account,
 current authority and exact form/POST scope, with one durable call reservation.
@@ -868,7 +877,17 @@ or the legacy vault request path. Broker denies those requests when page_mode is
 set. Ordinary page fill/type cannot populate password fields with literals.
 Existing legacy single-page login remains separate. Migration109 implements
 page-aware conditional RP/IdP consent in a separate immutable ledger and the
-protected owner UI. Its IDs cannot resolve secrets; SSO execution, resource
-authorization and external Google acceptance remain pending. See the
+protected owner UI. Migration110 permits only its approved `browser.sso_login`
+to resolve fields under one immutable Run/call/arguments claim, with live
+principal/account/page/epoch checks. Both RP and IdP require current resource
+authority. Composed native execution/delivery and external Google acceptance
+remain separate gates. See the
 [SSO protocol](browser-sso-protocol.md) and
 [browser pages execution](browser-pages-execution.md).
+
+`browser.sso_inspect` is a credential-free pre-consent discovery read. It exports
+only canonical native-form paths and positional selectors, with a fresh exact
+RP page ref, after current RP/IdP mandate and discovered-path release checks.
+No credential reference, field value, provider body, CSRF/cookie or OAuth query
+is permitted. A selected candidate still requires the protected single SSO
+decision; discovery grants no submission or authentication evidence.

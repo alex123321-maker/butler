@@ -62,6 +62,7 @@ import (
 )
 
 type httpServerDeps struct {
+	credentialKernel           *CredentialInteractions
 	budgetPolicy               budget.Policy
 	experiencePolicies         experience.PolicyCreator
 	experienceStore            *experience.Store
@@ -249,10 +250,16 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	ownerOutcomes := newBrowserOutcomeKernel(deps.postgres.Pool(), deps.inputStore)
 	mux.Handle("/api/v4/action-outcomes", apiservice.OwnerOutcomes(deps.ownerAuth, ownerOutcomes.Outcomes))
 	var credentialVault *credentials.Vault
-	if interactions := credentialInteractions(deps.postgres.Pool()); interactions != nil {
+	interactions := deps.credentialKernel
+	if interactions == nil {
+		interactions = credentialInteractions(deps.postgres.Pool())
+	}
+	if interactions != nil {
 		credentialVault = interactions.Vault
 	}
 	mux.Handle("/api/v4/credentials", apiservice.CredentialVault(deps.ownerAuth, credentialVault))
+	externalRP := apiservice.BrowserExternalRP(credentialVault)
+	mux.Handle("/auth/google/", externalRP)
 	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth, !deps.budgetPolicy.DisableOwnerDay, !deps.budgetPolicy.DisableConversationModelTurns))
 	var extensionClient *extensions.ControlClient
@@ -478,6 +485,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v1/doctor/check", doctorServer.HandleRunCheck())
 	mux.Handle("/api/v1/doctor/reports", doctorServer.HandleListReports())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if credentialVault != nil && credentialVault.ExternalRPHost(r.Host) {
+			externalRP.ServeHTTP(w, r)
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]string{
 			"service": deps.cfg.Shared.ServiceName,
 			"status":  "starting",

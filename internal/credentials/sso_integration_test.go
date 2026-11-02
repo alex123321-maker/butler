@@ -46,7 +46,7 @@ func ssoFixture(t *testing.T) (*Vault, Principal, Entry, browsersso.Scope) {
 	if _, e = pool.Exec(ctx, base); e != nil {
 		t.Fatal(e)
 	}
-	for _, name := range []string{"096_credential_vault", "106_browser_login_consent", "107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent"} {
+	for _, name := range []string{"096_credential_vault", "106_browser_login_consent", "107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent", "110_browser_sso_use"} {
 		raw, e := os.ReadFile(filepath.Join("..", "..", "migrations", name+".up.sql"))
 		if e != nil {
 			t.Fatal(e)
@@ -140,8 +140,8 @@ func TestVaultSSOPostgresIntegration(t *testing.T) {
 		if v.Pool.QueryRow(ctx, `SELECT count(*) FROM credential_vault_audit WHERE request_id=$1 AND operation='sso_approved'`, r.ID).Scan(&count) != nil || count != 1 {
 			t.Fatal("decision repeated")
 		}
-		if _, e = v.GetByAlias(ctx, r.ID); e == nil {
-			t.Fatal("SSO consent became legacy alias")
+		if metadata, e := v.GetByAlias(ctx, r.ID); e != nil || len(metadata.AllowedTools) != 1 || metadata.AllowedTools[0] != browsersso.Tool {
+			t.Fatal("SSO metadata escaped its closed tool")
 		}
 		for _, tool := range []string{"browser.prepare_fill", "browser.login", "browser.sso_login"} {
 			call := &toolbrokerv1.ToolCall{RunId: p.RunID, ToolCallId: "attempt", ToolName: tool, ArgsJson: `{"browser_session_id":"` + s.Browser + `","expected_url":"https://idp.example/authorize"}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: r.ID, Field: "password"}}}

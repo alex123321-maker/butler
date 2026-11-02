@@ -21,6 +21,7 @@ var ErrVault = errors.New("credential operation unavailable or stale")
 // Vault never returns plaintext through its owner or model metadata projections.
 // Its encryption key is an operator-mounted file, independent of the UI PIN.
 type Vault struct {
+	external      *ExternalAuth
 	Pool          *pgxpool.Pool
 	key           string
 	AfterResponse func(context.Context, pgx.Tx, string, string) error

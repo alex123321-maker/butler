@@ -1,0 +1,113 @@
+{
+  "commit": "4774f34c752f3e9eea42b5c9df08b3292ab62525",
+  "run": "https://github.com/alex123321-maker/butler/actions/runs/41491592049",
+  "race_enabled": true,
+  "status": "success",
+  "required_skips": 0,
+  "model_calls": 0,
+  "test_passes": 289,
+  "stages": [
+    {
+      "stage": "authority",
+      "pass": 31,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "browser-prompt",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "consent-use",
+      "pass": 20,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "dispatch-fence",
+      "pass": 9,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "external-authority",
+      "pass": 70,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "external-broker",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "external-http",
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "external-ledger",
+      "pass": 31,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "external-same-input",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "google-provider-protocol",
+      "pass": 50,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "historical-recovery",
+      "pass": 30,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "https-runtime",
+      "pass": 22,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "migrations",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "publication-model-draft",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "publication-source-draft",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "recipient-fault-controls",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "stage": "same-input",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    }
+  ]
+}
