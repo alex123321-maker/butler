@@ -82,6 +82,8 @@ func run(args []string) error {
 	autoReturn := fs.Bool("auto-authorize-return", false, "test-only authenticated IdP redirect without a form")
 	reflectToken := fs.Bool("reflect-form-token", false, "test-only hidden token reflected in a form action path")
 	deniedCallback := fs.Bool("denied-callback-path", false, "test-only post-login redirect to a denied RP path")
+	strictCookies := fs.Bool("strict-cookie-boundary", false, "test-only reject a Strict cookie on cross-site callback")
+	strictOnly := fs.Bool("strict-only-callback", false, "test-only all RP cookies use Strict and must be withheld on callback")
 	if fs.Parse(args) != nil || fs.NArg() != 0 || *configPath == "" || *loginDelay < 0 || *loginDelay > 5*time.Second {
 		return errors.New("invalid fixture arguments")
 	}
@@ -126,6 +128,8 @@ func run(args []string) error {
 	f.autoAuthorizeReturn = *autoReturn
 	f.reflectFormToken = *reflectToken
 	f.deniedCallbackPath = *deniedCallback
+	f.strictCookieBoundary = *strictCookies
+	f.strictOnlyCallback = *strictOnly
 	server := func(handler http.Handler) *http.Server {
 		return &http.Server{Handler: handler, ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 8 * time.Second, WriteTimeout: 8 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 8192, ErrorLog: log.New(io.Discard, "", 0)}
 	}

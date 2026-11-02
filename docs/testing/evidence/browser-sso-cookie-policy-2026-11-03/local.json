@@ -1,0 +1,163 @@
+{
+  "profile": "isolated Linux actual HTTPS Chromium",
+  "race_enabled": false,
+  "model_calls": 0,
+  "case_count": 25,
+  "status": "passed",
+  "required_skips": 0,
+  "prior_implementation_empty_cookie_failures": 2,
+  "actual_distinct_registrable_sites": true,
+  "cases": [
+    {
+      "case": "verified",
+      "wall_ms": 1298.604,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "strict_cookie_boundary",
+      "wall_ms": 1380.53,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_strict_cookie_boundary",
+      "wall_ms": 1491.467,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "strict_only_callback_denied",
+      "wall_ms": 2654.488,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_strict_only_callback_denied",
+      "wall_ms": 3004.655,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "late_popup",
+      "wall_ms": 1352.816,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "wrong_password",
+      "wall_ms": 1192.401,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "denied_idp_post",
+      "wall_ms": 797.224,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "denied_callback_redirect",
+      "wall_ms": 2725.191,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "two_popups",
+      "wall_ms": 7059.997,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "popup_storm",
+      "wall_ms": 7812.183,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "stale_page",
+      "wall_ms": 769.84,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "helper_lost_before_sso",
+      "wall_ms": 1428.168,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "helper_lost_after_idp_login",
+      "wall_ms": 1795.246,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_verified",
+      "wall_ms": 1601.268,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_fresh_paths",
+      "wall_ms": 1608.587,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_late",
+      "wall_ms": 1766.446,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_twins",
+      "wall_ms": 7023.044,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_storm",
+      "wall_ms": 7889.502,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_stale",
+      "wall_ms": 809.424,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_denied_form",
+      "wall_ms": 1027.465,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_idp_denied",
+      "wall_ms": 765.772,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_callback_denied",
+      "wall_ms": 988.314,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_reflected_secret",
+      "wall_ms": 1034.405,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_helper_lost",
+      "wall_ms": 785.062,
+      "model_calls": 0,
+      "passed": true
+    }
+  ],
+  "native_attempts_replayed": 0
+}

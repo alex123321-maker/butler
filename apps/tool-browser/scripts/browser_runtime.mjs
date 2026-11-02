@@ -1,4 +1,4 @@
-import { chromium } from 'playwright'
+import { chromium, request as playwrightRequest } from 'playwright'
 import { createInterface } from 'node:readline'
 import { randomUUID } from 'node:crypto'
 
@@ -168,7 +168,7 @@ async function newSession(request) {
   const browser = await ensureBrowser()
   if (!request.proxy_url) throw new Error('private egress proxy missing')
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: 'block', acceptDownloads: false, proxy: { server: request.proxy_url, bypass: '' } })
-  const session = { context, page: undefined, scope: request.scope_origin || origin(request.url),
+  const session = { context, proxyURL: request.proxy_url, page: undefined, scope: request.scope_origin || origin(request.url),
     version: 0, dirty: true, secrets: new Set(), frames: new Map(), allowedDomains: request.allowed_domains || [], expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false,
     managed: request.managed_pages === true, initialOrigin: origin(request.url), pages: new Map(), pageIndex: new WeakMap(), initialRequests: new WeakMap() }
   // Native same-origin and cookie rules remain enabled. The private proxy
@@ -673,16 +673,25 @@ async function routeSSO(root, route, operatorAllowed) {
 
 // Playwright routes do not intercept every redirect in a browser navigation.
 // SSO therefore fetches exactly one authorized response through the same
-// context's TLS-verified proxy/cookie jar, with retries/redirects disabled.
+// context's TLS-verified proxy and browser-selected cookies, without retries
+// or automatic redirects.
 // An allowed redirect becomes a fresh browser navigation, so the next URL is
 // checked BEFORE it reaches the recipient. Never fulfill a provider body under
 // the RP origin, and never follow a provider-to-RP redirect before consent.
 async function continueSSONavigation(root, route, gate) {
-  let response
+  let response, transport
   try {
     const timeout = Math.min(6000, Date.parse(gate.dispatch.expires_at) - Date.now())
     if (timeout <= 0 || root.networkFrozen || root.ssoGate !== gate) return route.abort('blockedbyclient')
-    response = await route.fetch({ maxRedirects: 0, maxRetries: 0, timeout })
+    // Preserve Chromium's actual cookie selection, including absence. A fresh
+    // empty one-response jar cannot fill a header withheld by SameSite/CHIPS.
+    const headers = await route.request().allHeaders()
+    // Never share APIRequestContext's cookie store with Chromium: its response
+    // parsing/addCookies path is not the browser's Set-Cookie policy. Only the
+    // browser processes response cookies when the route is fulfilled below.
+    transport = await playwrightRequest.newContext({ proxy: { server: root.proxyURL, bypass: '' }, ignoreHTTPSErrors: false, storageState: { cookies: [], origins: [] } })
+    response = await transport.fetch(route.request(), { headers, maxRedirects: 0, maxRetries: 0, timeout })
+    for (const cookie of (await transport.storageState()).cookies) if (cookie.value) root.secrets.add(cookie.value)
     if (root.networkFrozen || root.ssoGate !== gate || Date.now() >= Date.parse(gate.dispatch.expires_at)) return route.abort('blockedbyclient')
     if (response.status() >= 300 && response.status() < 400) {
       const location = response.headers().location
@@ -694,7 +703,10 @@ async function continueSSONavigation(root, route, gate) {
       }
       if (gate.phase === 'submit') gate.redirectNext = next.href
       const target = next.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-      return await route.fulfill({ status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
+      const redirectHeaders = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }
+      const setCookie = response.headers()['set-cookie']
+      if (setCookie) redirectHeaders['set-cookie'] = setCookie
+      return await route.fulfill({ status: 200, headers: redirectHeaders,
         body: `<!doctype html><meta http-equiv="refresh" content="0;url=${target}">` })
     }
     return await route.fulfill({ response })
@@ -703,7 +715,7 @@ async function continueSSONavigation(root, route, gate) {
     root.ssoFailure = /certificate|SSL|TLS/i.test(message) ? 'sso_tls_rejected' : /proxy|ECONN|ENOTFOUND/i.test(message) ? 'sso_connection_rejected' : /timeout/i.test(message) ? 'sso_network_timeout' : 'sso_navigation_rejected'
     return route.abort('blockedbyclient').catch(() => {})
   }
-  finally { await response?.dispose().catch(() => {}) }
+  finally { await response?.dispose().catch(() => {}); await transport?.dispose().catch(() => {}) }
 }
 
 async function inspectSSO(root, request) {

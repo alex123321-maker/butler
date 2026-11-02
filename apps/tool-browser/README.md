@@ -166,6 +166,12 @@ then checks each redirect before a fresh browser navigation. This also fences
 post-consent callback paths. Cookies stay in the native context; TLS and the
 checked proxy remain mandatory. Optional operator `NODE_EXTRA_CA_CERTS` is
 inherited for context-request TLS; the test supplies an isolated CA only.
+Each SSO HTTP request has a fresh empty one-response cookie store and sends
+Chromium's selected Cookie header, including its absence.
+It forwards response Set-Cookie to the browser, which retains SameSite and
+partition decisions; it never copies the transport jar into browser storage.
+The isolated context is disposed after its response and its private values
+remain subject to redaction. Cross-site Strict-cookie controls run in CI.
 
 `browser.page_freeze_snapshot` revision1 freezes the whole managed context and
 returns a fresh observation of only its exact page/document. It retains normal

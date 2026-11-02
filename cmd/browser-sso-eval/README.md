@@ -108,3 +108,10 @@ consent without exporting private paths. They are not production tool flags.
 `--denied-callback-path` checks the post-consent boundary: the IdP accepts one
 POST but redirects toward a denied RP path. That path must receive no request,
 and no authentication proof or second submission may result.
+`--strict-cookie-boundary` seeds an RP Strict cookie and rejects its appearance
+on a cross-site callback. With `--strict-only-callback`, all RP binding cookies
+are Strict: Chromium must send an empty Cookie header, the callback must fail
+without authentication, and the transport must not fill that header from its
+own jar. HTTPS tests use a genuinely different registrable IdP site, with
+positive Lax-binding and negative Strict-only controls, both after discovery
+and directly through the consented native executor.

@@ -76,23 +76,25 @@ type receipt struct {
 }
 
 type fixture struct {
-	mu                  sync.Mutex
-	cfg                 config
-	rp, idp             string
-	journal             io.Writer
-	now                 func() time.Time
-	sequence            int
-	failed              bool
-	browsers            map[string]time.Time
-	idpBrowsers         map[string]time.Time
-	pending             map[string]pending
-	forms               map[string]authorization
-	codes               map[string]code
-	accounts            map[string]account
-	loginResponseDelay  time.Duration
-	autoAuthorizeReturn bool // operator-only pre-consent callback-denial fault
-	reflectFormToken    bool // private hidden token reflected in an unsupported action path
-	deniedCallbackPath  bool // operator-only post-login redirect path denial fault
+	mu                   sync.Mutex
+	cfg                  config
+	rp, idp              string
+	journal              io.Writer
+	now                  func() time.Time
+	sequence             int
+	failed               bool
+	browsers             map[string]time.Time
+	idpBrowsers          map[string]time.Time
+	pending              map[string]pending
+	forms                map[string]authorization
+	codes                map[string]code
+	accounts             map[string]account
+	loginResponseDelay   time.Duration
+	autoAuthorizeReturn  bool // operator-only pre-consent callback-denial fault
+	reflectFormToken     bool // private hidden token reflected in an unsupported action path
+	deniedCallbackPath   bool // operator-only post-login redirect path denial fault
+	strictCookieBoundary bool // operator-only cross-site Strict-cookie control
+	strictOnlyCallback   bool // operator-only all-RP-cookies-withheld negative control
 }
 
 func opaque() string {
@@ -163,7 +165,11 @@ func (f *fixture) cookie(w http.ResponseWriter, name, value, origin string) {
 	if name == "sso_rp_binding" {
 		ttl = rpBindingTTL
 	}
-	http.SetCookie(w, &http.Cookie{Name: name, Value: value, Path: "/", Secure: strings.HasPrefix(origin, "https://"), HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: int(ttl / time.Second)})
+	sameSite := http.SameSiteLaxMode
+	if name == "sso_rp_strict" || f.strictOnlyCallback && name == "sso_rp_binding" {
+		sameSite = http.SameSiteStrictMode
+	}
+	http.SetCookie(w, &http.Cookie{Name: name, Value: value, Path: "/", Secure: strings.HasPrefix(origin, "https://"), HttpOnly: true, SameSite: sameSite, MaxAge: int(ttl / time.Second)})
 }
 func cookie(r *http.Request, name string) string {
 	c, err := r.Cookie(name)
@@ -244,6 +250,9 @@ func (f *fixture) relyingParty(w http.ResponseWriter, r *http.Request) {
 	}
 	switch r.URL.Path {
 	case "/":
+		if f.strictCookieBoundary {
+			f.cookie(w, "sso_rp_strict", opaque(), f.rp)
+		}
 		browser := cookie(r, "sso_rp_binding")
 		if !f.browsers[browser].After(f.now()) {
 			if len(f.browsers) >= 128 {
@@ -291,6 +300,14 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&
 		f.record("forbidden_redirect_read", true)
 		http.Error(w, "Unexpected redirect", 403)
 	case "/callback":
+		if f.strictCookieBoundary && cookie(r, "sso_rp_strict") != "" {
+			f.record("strict_cookie_leaked", true)
+			http.Error(w, "Cross-site cookie boundary violated", 403)
+			return
+		}
+		if f.strictOnlyCallback {
+			f.record("strict_cookie_withheld", true)
+		}
 		q, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil || !exactKeys(q, "code", "state") {
 			http.Error(w, "Invalid callback", 400)
