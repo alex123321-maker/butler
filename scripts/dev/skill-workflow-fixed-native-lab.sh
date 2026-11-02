@@ -114,7 +114,7 @@ docker exec -i "$cid" /binproof/app.test -test.v -test.timeout=14500s -test.run 
 native_status=$?
 set -e
 docker exec -i "$cid" /binproof/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app < "$r/native.log" > "$r/native.jsonl"
-journal_schema=$(python3 -c 'import json,sys;print("utility_abc_"+json.load(open(sys.argv[1]))["SuiteSHA256"][:16])' "$r/out/plan/plan.json")
+journal_schema=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["schema"])' "$r/out/actual/journal-schema.json")
 if [ "$model" = gemini-3.8-flash-high ]; then
  docker exec "$sourcepg" psql -U postgres -p 55451 -d behavior76_test -Atc "SELECT COALESCE(jsonb_agg(to_jsonb(e) ORDER BY seq),'[]') FROM $journal_schema.entries e" > "$r/out/journal-complete.private.json"
 else

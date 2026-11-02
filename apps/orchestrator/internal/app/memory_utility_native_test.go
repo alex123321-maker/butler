@@ -257,7 +257,9 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 
 		manager = providerauth.NewManager(config.NewPostgresSettingsStore(pool, config.WithSettingsCodec(config.StaticSecretValueCodec{Key: strings.TrimSpace(string(key))})))
 	}
-	schema := pgx.Identifier{"utility_abc_" + plan.SuiteSHA256[:16]}.Sanitize()
+	journalName := utilityNativeJournalName(plan)
+	utilityWholeWrite(t, root, "journal-schema.json", map[string]string{"schema": journalName, "plan_digest": acceptance.MemoryDigest(plan)})
+	schema := pgx.Identifier{journalName}.Sanitize()
 	entries := schema + ".entries"
 	if _, e = control.Exec(ctx, `CREATE SCHEMA `+schema+`;CREATE TABLE `+entries+`(seq integer PRIMARY KEY,slot integer,dispatched boolean NOT NULL DEFAULT false,body jsonb)`); e != nil {
 		t.Fatal("one-use native journal already consumed")
