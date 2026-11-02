@@ -611,7 +611,7 @@ function ssoURLAllowed(gate, raw) {
 async function routeSSO(root, route, operatorAllowed) {
   const request = route.request(), gate = root.ssoGate
   const reject = () => route.abort('blockedbyclient')
-  const proceed = () => gate.inspection ? continueInspection(root, route, gate) : route.continue()
+  const proceed = () => continueSSONavigation(root, route, gate)
   if (!operatorAllowed || root.networkFrozen || !ssoURLAllowed(gate, request.url()) || !request.isNavigationRequest()) return reject()
   if (gate.inspection) {
     // Apply before frame lookup: the first popup redirect chain can precede
@@ -653,19 +653,19 @@ async function routeSSO(root, route, operatorAllowed) {
   }
   if (gate.phase !== 'submit') return reject()
   if (request.method() === 'POST' && gate.posts === 0 && !request.redirectedFrom() && request.url() === gate.scope.target_url && request.headers()['content-type']?.split(';')[0] === 'application/x-www-form-urlencoded' && request.postData() === gate.body) {
-    gate.posts++; gate.chain.add(request); return route.continue()
+    gate.posts++; return proceed()
   }
-  if (request.method() === 'GET' && gate.posts === 1 && gate.hops++ < 5 && gate.chain.has(request.redirectedFrom())) { gate.chain.add(request); return route.continue() }
+  if (request.method() === 'GET' && gate.posts === 1 && gate.hops++ < 5 && gate.redirectNext === request.url()) { gate.redirectNext = ''; return proceed() }
   return reject()
 }
 
 // Playwright routes do not intercept every redirect in a browser navigation.
-// Discovery therefore fetches exactly one GET/HEAD response through the same
+// SSO therefore fetches exactly one authorized response through the same
 // context's TLS-verified proxy/cookie jar, with retries/redirects disabled.
 // An allowed redirect becomes a fresh browser navigation, so the next URL is
 // checked BEFORE it reaches the recipient. Never fulfill a provider body under
 // the RP origin, and never follow a provider-to-RP redirect before consent.
-async function continueInspection(root, route, gate) {
+async function continueSSONavigation(root, route, gate) {
   let response
   try {
     const timeout = Math.min(6000, Date.parse(gate.dispatch.expires_at) - Date.now())
@@ -676,9 +676,11 @@ async function continueInspection(root, route, gate) {
       const location = response.headers().location
       if (!location) return route.abort('blockedbyclient')
       const next = new URL(location, route.request().url())
-      if (!ssoURLAllowed(gate, next.href) || gate.seenProvider && next.origin !== gate.scope.idp_origin) {
+      const provider = gate.scope.idp_origin || origin(gate.scope.idp_url)
+      if (!ssoURLAllowed(gate, next.href) || gate.phase === 'plan' && (gate.seenProvider || origin(route.request().url()) === provider) && next.origin !== provider || !['GET', 'HEAD'].includes(route.request().method()) && ![301, 302, 303].includes(response.status())) {
         gate.violated = true; return route.abort('blockedbyclient')
       }
+      if (gate.phase === 'submit') gate.redirectNext = next.href
       const target = next.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
       return await route.fulfill({ status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
         body: `<!doctype html><meta http-equiv="refresh" content="0;url=${target}">` })

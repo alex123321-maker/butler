@@ -92,6 +92,7 @@ type fixture struct {
 	loginResponseDelay  time.Duration
 	autoAuthorizeReturn bool // operator-only pre-consent callback-denial fault
 	reflectFormToken    bool // private hidden token reflected in an unsupported action path
+	deniedCallbackPath  bool // operator-only post-login redirect path denial fault
 }
 
 func opaque() string {
@@ -286,6 +287,9 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&
 		u, _ := url.Parse(f.idp + f.publicPath("/authorize"))
 		u.RawQuery = url.Values{"client_id": {"fixture-rp"}, "redirect_uri": {f.rp + "/callback"}, "response_type": {"code"}, "state": {state}, "code_challenge": {challenge(verifier)}, "code_challenge_method": {"S256"}}.Encode()
 		http.Redirect(w, r, u.String(), 302)
+	case "/denied/callback":
+		f.record("forbidden_redirect_read", true)
+		http.Error(w, "Unexpected redirect", 403)
 	case "/callback":
 		q, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil || !exactKeys(q, "code", "state") {
@@ -416,6 +420,9 @@ func (f *fixture) provider(w http.ResponseWriter, r *http.Request) {
 		f.codes[value] = code{a.state, a.challenge, f.now().Add(flowTTL)}
 		u, _ := url.Parse(f.rp + "/callback")
 		u.RawQuery = url.Values{"code": {value}, "state": {a.state}}.Encode()
+		if f.deniedCallbackPath {
+			u.Path = "/denied/callback"
+		}
 		http.Redirect(w, r, u.String(), 303)
 	default:
 		http.NotFound(w, r)

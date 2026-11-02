@@ -42,7 +42,7 @@ export BUTLER_SSO_EVAL_BINARY="$PWD/$report/recipient"
 export BUTLER_BROWSER_E2E_SCRIPT="$PWD/apps/tool-browser/scripts/browser_runtime.mjs"
 export BUTLER_BROWSER_SSO_E2E=1
 required https-runtime ./apps/tool-browser/internal/runtime -run '^TestBrowserSSOChromiumHTTPS$'
-for mode in verified late_popup wrong_password denied_idp_post two_popups popup_storm stale_page helper_lost_before_sso helper_lost_after_idp_login inspect_verified inspect_fresh_paths inspect_late inspect_twins inspect_storm inspect_stale inspect_denied_form inspect_idp_denied inspect_callback_denied inspect_reflected_secret inspect_helper_lost; do
+for mode in verified late_popup wrong_password denied_idp_post denied_callback_redirect two_popups popup_storm stale_page helper_lost_before_sso helper_lost_after_idp_login inspect_verified inspect_fresh_paths inspect_late inspect_twins inspect_storm inspect_stale inspect_denied_form inspect_idp_denied inspect_callback_denied inspect_reflected_secret inspect_helper_lost; do
  grep -F '"Action":"pass"' "$report/https-runtime.jsonl" | grep -Fq "\"Test\":\"TestBrowserSSOChromiumHTTPS/$mode\""
 done
 # These are mechanical checks with no Butler model invocation. Their durations

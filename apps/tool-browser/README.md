@@ -161,6 +161,11 @@ the child and freezes the network. Provider-to-RP redirects, POSTs, secret path
 reflection, stale pages and additional popups are denied. Current authority
 and actual discovered paths are checked again by Broker before export. This
 does not authorize credential access, form submission or general IdP DOM access.
+The private SSO route fetches one response with redirects/retries disabled,
+then checks each redirect before a fresh browser navigation. This also fences
+post-consent callback paths. Cookies stay in the native context; TLS and the
+checked proxy remain mandatory. Optional operator `NODE_EXTRA_CA_CERTS` is
+inherited for context-request TLS; the test supplies an isolated CA only.
 
 `browser.page_freeze_snapshot` revision1 freezes the whole managed context and
 returns a fresh observation of only its exact page/document. It retains normal

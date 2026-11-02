@@ -105,3 +105,6 @@ observations rather than copying config values into the model prompt.
 fault controls: respectively a GET-only provider callback and a form action
 reflecting hidden CSRF material. The inspection runtime must reject both before
 consent without exporting private paths. They are not production tool flags.
+`--denied-callback-path` checks the post-consent boundary: the IdP accepts one
+POST but redirects toward a denied RP path. That path must receive no request,
+and no authentication proof or second submission may result.

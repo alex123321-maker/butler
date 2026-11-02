@@ -96,7 +96,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 	}
 	dir := t.TempDir()
 	cert, key := ssoTLS(t, dir)
-	for _, mode := range []string{"verified", "late_popup", "wrong_password", "denied_idp_post", "two_popups", "popup_storm", "stale_page", "helper_lost_before_sso", "helper_lost_after_idp_login", "inspect_verified", "inspect_fresh_paths", "inspect_late", "inspect_twins", "inspect_storm", "inspect_stale", "inspect_denied_form", "inspect_idp_denied", "inspect_callback_denied", "inspect_reflected_secret", "inspect_helper_lost"} {
+	for _, mode := range []string{"verified", "late_popup", "wrong_password", "denied_idp_post", "denied_callback_redirect", "two_popups", "popup_storm", "stale_page", "helper_lost_before_sso", "helper_lost_after_idp_login", "inspect_verified", "inspect_fresh_paths", "inspect_late", "inspect_twins", "inspect_storm", "inspect_stale", "inspect_denied_form", "inspect_idp_denied", "inspect_callback_denied", "inspect_reflected_secret", "inspect_helper_lost"} {
 		t.Run(mode, func(t *testing.T) {
 			began := time.Now()
 			defer func() {
@@ -133,6 +133,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			cmd := exec.Command(binary, "--config", config, "--journal", journal, "--rp-listen", rpAddress, "--idp-listen", idpAddress, "--rp-origin", "https://rp.sso.test", "--idp-origin", "https://idp.sso.test", "--tls-cert", cert, "--tls-key", key)
 			if mode == "inspect_callback_denied" {
 				cmd.Args = append(cmd.Args, "--auto-authorize-return")
+			}
+			if mode == "denied_callback_redirect" {
+				cmd.Args = append(cmd.Args, "--denied-callback-path")
 			}
 			if mode == "inspect_reflected_secret" {
 				cmd.Args = append(cmd.Args, "--reflect-form-token")
@@ -305,6 +308,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			if mode == "denied_idp_post" {
 				dispatch.Denied = []browsersso.NetworkScope{{Origin: "https://idp.sso.test", PathPrefix: "/login"}}
 			}
+			if mode == "denied_callback_redirect" {
+				dispatch.Denied = []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/denied"}}
+			}
 			payload, _ := json.Marshal(args)
 			privateDispatch, _ := json.Marshal(dispatch)
 			ctx = metadata.NewIncomingContext(t.Context(), metadata.Pairs("butler-browser-epoch", "0", "butler-browser-sso", string(privateDispatch)))
@@ -371,6 +377,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			if e != nil {
 				t.Fatal("recipient journal missing")
 			}
+			if strings.Contains(string(data), `"kind":"forbidden_redirect_read"`) {
+				t.Fatal("post-consent redirect bypassed the current path denial")
+			}
 			posts, callbacks, reads := 0, 0, 0
 			for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
 				if line == "" {
@@ -394,6 +403,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			}
 			if posts > 1 {
 				t.Fatal("SSO POST replay")
+			}
+			if mode == "denied_callback_redirect" && (posts != 1 || callbacks != 0 || reads != 0 || out.Authentication != nil) {
+				t.Fatal("denied redirect lost its single POST boundary", posts, callbacks, reads)
 			}
 			if wantVerified && (posts != 1 || callbacks != 1 || reads != 2 || !strings.Contains(out.Text, private.Fact) || out.NetworkState != "frozen") {
 				t.Fatal("missing recipient/probe evidence", posts, callbacks, reads)
