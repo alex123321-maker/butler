@@ -730,6 +730,8 @@ async function poll() {
     if (token === props.ownerToken) {
       configured.value = data.configured === true
       requests.value = Array.isArray(data.requests) ? data.requests : []
+      for (const r of requests.value)
+        if (!selectedRecords.value[r.id]) selectedRecords.value[r.id] = r.record_id
       if (requestedID && requests.value.some((r) => r.id === requestedID)) {
         requestedID = ''
         window.history.replaceState(

@@ -43,6 +43,11 @@ or owner-goal mandate checks. RP, IdP, POST target and verification URL are an
 all-of resource requirement, including path prefixes; legacy origin mandates
 and delegated execution cannot authorize this initial SSO protocol.
 
+The owner UI initializes the pinned account for requests arriving during an
+already unlocked panel as well as at initial opening. The account selector
+remains disabled; a complete scope and explicit owner click remain required.
+Polling initializes card state only and never issues approval.
+
 ## Bounded executor
 
 The Broker protocol checks RP **and** IdP resource authority before

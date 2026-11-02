@@ -7,6 +7,11 @@ server stores only digests. Choosing unknown keeps execution stopped. Drafts
 remain in page memory and clear on owner/review changes. Polling and submissions
 use the existing protected owner endpoint; the UI never replays the action.
 
+Requests arriving while the credential panel is unlocked initialize their pinned
+account without reopening the panel. SSO still needs the complete displayed
+scope and an explicit protected approval; polling grants no access. The vault
+Chromium tests cover both initial and later-arriving SSO cards.
+
 The credential vault bookmark is fixed at the right-center edge after owner
 connection. It opens a six-cell PIN setup/unlock and a sidebar for account CRUD,
 access/create requests, protected manual OTP and per-account SMS routing.
