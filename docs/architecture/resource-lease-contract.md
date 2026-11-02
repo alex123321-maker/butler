@@ -155,3 +155,9 @@ its exact bound page. An UNKNOWN resource marker still denies this read; a
 completed local lane with an external UNKNOWN may admit the separate ordinary
 read. Owner page factual review does not clear resource quarantine, reset
 spending or authorize a retry. See [managed-page review](browser-pages-execution.md).
+
+The pre-consent `browser.sso_inspect` contract claims the same managed context
+resource as all its pages and the later SSO commit. It cannot bypass a resource
+UNKNOWN/quarantine, owner takeover or epoch change. Its short private dispatch
+and final path/data-release checks add no credential/POST authority and do not
+create a new resource identity for its ephemeral child.

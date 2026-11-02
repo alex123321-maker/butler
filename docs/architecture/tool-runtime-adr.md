@@ -1195,3 +1195,11 @@ counter to the existing context-wide proxy/route freeze, then observes that
 page. Go and Broker reject a success without frozen network state. This read
 produces local observation only, never a recipient verdict. It enables the
 bounded live owner factual review in [the page contract](browser-pages-execution.md).
+
+Native-form SSO discovery uses the owned `browser.sso_inspect` read contract.
+Broker injects only private current page/epoch/path/expiry caps; runtime opens
+one GET-only child, returns value-free candidate form scopes, closes the child
+and freezes. Broker translates fresh page observations and checks discovered
+paths against current authority before export. The later SSO commit retains
+one-use protected consent and independent Go RP verification. Every SSO redirect
+is separately mediated before contact; no automatic POST replay is allowed.

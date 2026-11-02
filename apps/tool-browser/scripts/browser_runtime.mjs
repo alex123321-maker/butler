@@ -827,6 +827,10 @@ async function executeSSO(root, request) {
     if (!await settled || root.ssoAttempt?.violated || gate.posts !== 1) return denied()
     gate.phase = 'verify'
     if (!child.page.isClosed()) await child.page.close()
+    // The RP's postMessage navigation can race the child's close/callback
+    // event. Let that exact bounded GET settle before starting our explicit
+    // verification read; never retry or repeat the credential POST.
+    await source.page.waitForURL(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 1500 }).catch(() => {})
     if (source.page.url() !== scope.verify_url) await source.page.goto(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 8000 })
     root.networkFrozen = true
     const observed = await observe(source)

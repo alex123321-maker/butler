@@ -1595,3 +1595,9 @@ result and calls `browser.page_freeze_snapshot` through ordinary Broker
 permission/accounting. Known canonical owner evidence can resume the same
 Input only after current source/Task/mandate/lease checks. The original UNKNOWN
 transcript and spending remain; no input or probe is automatically replayed.
+
+The compact browser strategy directs managed native-form SSO through bounded
+`browser.sso_inspect` discovery before protected consent. Actual RP controls
+and returned candidate scopes replace guessed form selectors/paths. The whole
+strategy fits the normal assembled-section limit; the mandatory SSO CI profile
+checks its retained context, owner-control and continuity instructions.

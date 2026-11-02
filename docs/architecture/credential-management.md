@@ -884,3 +884,10 @@ authority. Composed native execution/delivery and external Google acceptance
 remain separate gates. See the
 [SSO protocol](browser-sso-protocol.md) and
 [browser pages execution](browser-pages-execution.md).
+
+`browser.sso_inspect` is a credential-free pre-consent discovery read. It exports
+only canonical native-form paths and positional selectors, with a fresh exact
+RP page ref, after current RP/IdP mandate and discovered-path release checks.
+No credential reference, field value, provider body, CSRF/cookie or OAuth query
+is permitted. A selected candidate still requires the protected single SSO
+decision; discovery grants no submission or authentication evidence.

@@ -478,3 +478,11 @@ It does not change legacy single-page or scoped-login semantics. See
 [browser pages execution](browser-pages-execution.md) for exact refs, context-wide
 fences, GET-only first-request reservation, no credential support and remaining
 UNKNOWN review/native/federation gates.
+
+The separate native-form SSO protocol binds one fresh provider child to the
+exact RP page and one protected consent. Before consent, `browser.sso_inspect`
+can return value-free native-form candidate scopes under current owner-goal
+read authority. It closes the child and freezes the context; it cannot submit,
+follow a provider callback or grant credentials. Ordinary page targeting and
+owner fencing remain unchanged. See [the SSO protocol](browser-sso-protocol.md)
+for per-hop routing, secret boundaries and independent RP verification.
