@@ -611,6 +611,7 @@ function ssoURLAllowed(gate, raw) {
 async function routeSSO(root, route, operatorAllowed) {
   const request = route.request(), gate = root.ssoGate
   const reject = () => route.abort('blockedbyclient')
+  const proceed = () => gate.inspection ? continueInspection(root, route, gate) : route.continue()
   if (!operatorAllowed || root.networkFrozen || !ssoURLAllowed(gate, request.url()) || !request.isNavigationRequest()) return reject()
   if (gate.inspection) {
     // Apply before frame lookup: the first popup redirect chain can precede
@@ -620,7 +621,7 @@ async function routeSSO(root, route, operatorAllowed) {
   }
   let page, frame
   try { frame = request.frame(); page = frame.page() } catch {
-    if (gate.phase === 'plan' && reserveInitialPopupRequest(root, request, new URL(request.url()))) return route.continue()
+    if (gate.phase === 'plan' && reserveInitialPopupRequest(root, request, new URL(request.url()))) return proceed()
     return reject()
   }
   const view = root.pageIndex.get(page) || (gate.phase === 'plan' ? await admitPopup(root, page) : undefined)
@@ -630,7 +631,7 @@ async function routeSSO(root, route, operatorAllowed) {
     if (gate.inspection && request.url() !== gate.scope.rp_url) return reject()
     const allowed = gate.phase === 'plan' ? origin(request.url()) === origin(gate.scope.rp_url) : request.url() === gate.scope.verify_url && gate.posts === 1
     if (!read || !allowed || gate.rootReads++ >= 6) return reject()
-    return route.continue()
+    return proceed()
   }
   if (view.pageID !== gate.child || view.openerID !== gate.source) return reject()
   if (gate.phase === 'plan') {
@@ -648,7 +649,7 @@ async function routeSSO(root, route, operatorAllowed) {
       if (!reservation) popup.remaining--
       view.initialRequestAdmitted = true
     }
-    return route.continue()
+    return proceed()
   }
   if (gate.phase !== 'submit') return reject()
   if (request.method() === 'POST' && gate.posts === 0 && !request.redirectedFrom() && request.url() === gate.scope.target_url && request.headers()['content-type']?.split(';')[0] === 'application/x-www-form-urlencoded' && request.postData() === gate.body) {
@@ -656,6 +657,35 @@ async function routeSSO(root, route, operatorAllowed) {
   }
   if (request.method() === 'GET' && gate.posts === 1 && gate.hops++ < 5 && gate.chain.has(request.redirectedFrom())) { gate.chain.add(request); return route.continue() }
   return reject()
+}
+
+// Playwright routes do not intercept every redirect in a browser navigation.
+// Discovery therefore fetches exactly one GET/HEAD response through the same
+// context's TLS-verified proxy/cookie jar, with retries/redirects disabled.
+// An allowed redirect becomes a fresh browser navigation, so the next URL is
+// checked BEFORE it reaches the recipient. Never fulfill a provider body under
+// the RP origin, and never follow a provider-to-RP redirect before consent.
+async function continueInspection(root, route, gate) {
+  let response
+  try {
+    const timeout = Math.min(6000, Date.parse(gate.dispatch.expires_at) - Date.now())
+    if (timeout <= 0 || root.networkFrozen || root.ssoGate !== gate) return route.abort('blockedbyclient')
+    response = await route.fetch({ maxRedirects: 0, maxRetries: 0, timeout })
+    if (root.networkFrozen || root.ssoGate !== gate || Date.now() >= Date.parse(gate.dispatch.expires_at)) return route.abort('blockedbyclient')
+    if (response.status() >= 300 && response.status() < 400) {
+      const location = response.headers().location
+      if (!location) return route.abort('blockedbyclient')
+      const next = new URL(location, route.request().url())
+      if (!ssoURLAllowed(gate, next.href) || gate.seenProvider && next.origin !== gate.scope.idp_origin) {
+        gate.violated = true; return route.abort('blockedbyclient')
+      }
+      const target = next.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      return await route.fulfill({ status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
+        body: `<!doctype html><meta http-equiv="refresh" content="0;url=${target}">` })
+    }
+    return await route.fulfill({ response })
+  } catch { return route.abort('blockedbyclient').catch(() => {}) }
+  finally { await response?.dispose().catch(() => {}) }
 }
 
 async function inspectSSO(root, request) {

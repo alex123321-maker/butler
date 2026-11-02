@@ -67,6 +67,16 @@ and denies provider-to-RP return even when it is an immediate redirect before
 the popup page event. Inspection cannot fill or POST. It closes the popup and
 freezes the context before returning.
 
+Inspection fetches one response at a time through the browser context's
+TLS-verified proxy and private cookie jar with automatic redirects/retries
+disabled. An allowed redirect becomes a minimal private refresh document,
+forcing a new browser navigation through the guard before contacting its next
+destination. Provider response bodies are never rendered under the RP origin.
+This is necessary because normal Playwright routes do not intercept every
+redirect. A provider-to-RP redirect is denied before any callback request.
+The helper inherits the operator's optional `NODE_EXTRA_CA_CERTS`; the HTTPS
+test uses only its isolated CA, without disabling certificate verification.
+
 Only canonical query-free IdP/form paths and bounded positional form/input
 selectors are exported as candidate `sso_scopes`, together with a fresh
 PostgreSQL-owned RP observation. No IdP body, field names/values, hidden CSRF,

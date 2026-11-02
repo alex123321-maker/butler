@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/butler/butler/internal/browserauth"
@@ -24,7 +25,9 @@ type ssoRequest struct {
 }
 
 func (s *Server) executeSSO(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
+	stage := "contract"
 	fail := func() (*runtimev1.ExecuteResponse, error) {
+		s.log.Info("bounded SSO rejected", slog.String("stage", stage))
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "SSO unavailable or unverified; never repeat the POST automatically", `{}`)}, nil
 	}
 	call := req.GetToolCall()
@@ -46,6 +49,7 @@ func (s *Server) executeSSO(ctx context.Context, req *runtimev1.ExecuteRequest) 
 		}
 		fields[value.Field] = value.Value
 	}
+	stage = "dispatch"
 	d, ok := browsercontrol.IncomingSSODispatch(ctx, a.Scope)
 	if !ok || d.Digest != a.Digest || !d.ExpiresAt.After(time.Now()) {
 		return fail()
@@ -55,6 +59,7 @@ func (s *Server) executeSSO(ctx context.Context, req *runtimev1.ExecuteRequest) 
 			return fail()
 		}
 	}
+	stage = "session"
 	session, code := s.sessions.acquire(a.Browser, call.RunId)
 	if code != "" {
 		return fail()
@@ -75,14 +80,17 @@ func (s *Server) executeSSO(ctx context.Context, req *runtimev1.ExecuteRequest) 
 	runCtx, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 	r := Request{ToolName: browsersso.Tool, SessionID: session.id, ManagedPages: true, PageID: page.ID, DocumentID: page.DocumentID, ObservationVersion: uint64(page.RuntimeVersion), ExpectedURL: page.URL, ScopeOrigin: session.origin, ExpiresAt: session.expires.UTC().Format(time.RFC3339Nano), AllowedDomains: session.allowedDomains, SSO: &ssoRequest{Scope: a.Scope, Dispatch: d, Username: fields["username"], Password: fields["password"]}, SecretValues: []string{fields["username"], fields["password"]}}
+	stage = "runner"
 	result, e := s.runner.Run(runCtx, r)
 	if e != nil {
 		s.sessions.invalidateAll()
 		return fail()
 	}
+	stage = "runner_result"
 	if !result.OK || result.Error != nil || result.NetworkState != "frozen" || result.SelectedPageID != page.ID || result.FinalURL != a.VerifyURL || len(result.PrivatePages) == 0 || len(result.PrivatePages) > browsercontrol.MaxLifetimePages {
 		return fail()
 	}
+	stage = "page_report"
 	pages := map[string]browserpage.Report{}
 	for _, p := range result.PrivatePages {
 		if !browserpage.ID(p.ID) || pages[p.ID].ID != "" || p.OpenerID != "" && !browserpage.ID(p.OpenerID) || p.State != "ready" && p.State != "pending" && p.State != "closed" && p.State != "lost" {

@@ -74,6 +74,7 @@ func ssoTLS(t *testing.T, dir string) (string, string) {
 	}
 	t.Setenv("HOME", home)
 	t.Setenv("SSL_CERT_FILE", caFile)
+	t.Setenv("NODE_EXTRA_CA_CERTS", caFile) // Same isolated CA for context.request's verified TLS.
 	for _, args := range [][]string{{"-N", "-d", "sql:" + db, "--empty-password"}, {"-A", "-d", "sql:" + db, "-n", "butler-sso-test", "-t", "C,,", "-i", caFile}} {
 		if exec.Command("certutil", args...).Run() != nil {
 			t.Fatal("isolated NSS trust setup (libnss3-tools required)")

@@ -26,6 +26,7 @@ required external-same-input ./apps/orchestrator/internal/app -run '^TestCredent
 export BUTLER_TEST_COMMUNICATION_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
 required publication-source-draft ./apps/orchestrator/internal/communication -run '^TestCommunicationSourceDraft'
 required publication-model-draft ./apps/orchestrator/internal/orchestrator -run '^TestCommunicationSourceDraft|^TestResearchCorrection'
+required browser-prompt ./apps/orchestrator/internal/prompt -run '^TestAssemblerIncludesBrowserStrategySection$'
 required external-broker ./apps/tool-broker/internal/broker -run '^TestExternalCredentialBroker'
 go vet ./internal/externalauth
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
