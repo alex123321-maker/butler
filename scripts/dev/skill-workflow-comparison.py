@@ -12,6 +12,7 @@ def main():
     p.add_argument('reports', type=pathlib.Path, nargs=3)
     p.add_argument('--output-dir', type=pathlib.Path, required=True)
     p.add_argument('--paged-reports', type=pathlib.Path, nargs=3, required=True)
+    p.add_argument('--terra-effort', choices=('none', 'medium'), default='none')
     args = p.parse_args()
     reports = [json.loads(x.read_text()) for x in args.reports]
     paged = {r['model']: r for r in (json.loads(x.read_text()) for x in args.paged_reports)}
@@ -23,7 +24,7 @@ def main():
         assert all(fixed['legacy_success'].get(a, 0) == r['arms'][a]['task_success'] for a in 'ABC')
     assert {r['model']: r['reasoning_effort'] for r in reports} == {
         'gemini-3.8-flash-high': 'provider_default_high',
-        'gpt-6.1-terra': 'none', 'gpt-6-luna': 'max'}
+        'gpt-6.1-terra': args.terra_effort, 'gpt-6-luna': 'max'}
     assert len({r['suite_sha256_bytes'] for r in reports}) == 1
     assert len({r['source'] for r in reports}) == 1
     schedule = [[(x['sequence'], x['case_id'], x['arm']) for x in r['rows']] for r in reports]

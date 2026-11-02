@@ -28,6 +28,7 @@ docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limi
  -e GOCACHE=/cache -e GOTMPDIR=/build-tmp -e GOMODCACHE=/modules -e GOPROXY=off -e GOSUMDB=off \
  -e GOTOOLCHAIN=local -e GOMAXPROCS=1 -e GOFLAGS='-p=1 -buildvcs=false -mod=readonly' -w /source "$image" sh -eu -c '
  go version
+ go test -race -count=1 -run "^(TestSkill|TestRecoveredSkills)" ./apps/orchestrator/internal/orchestrator
  go test -race -count=1 -run "^(TestMemoryUtility|TestLimitedRead|TestExperienceReadPolicy|TestMemoryEvidence)" ./internal/acceptance ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator
  go test -race -count=1 ./internal/memory/readcontrol ./cmd/memory-utility-eval ./apps/orchestrator/internal/orchestrator
  go vet ./internal/acceptance/utilitytrace ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app
@@ -36,6 +37,7 @@ docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limi
  go test -c -o /reports/extension.test ./apps/tool-extension/internal/runtime
  go test -c -o /reports/http.test ./apps/tool-http/internal/runtime
  go test -race -c -o /reports/app.test ./apps/orchestrator/internal/app
+ go build -o /reports/utility-eval ./cmd/memory-utility-eval
  go build -o /reports/test2json cmd/test2json
  sha256sum /reports/broker /reports/broker.test /reports/extension.test /reports/http.test /reports/app.test
  ' > "$r/reports/build.log" 2>&1
@@ -64,7 +66,7 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  -e BUTLER_MEMORY_READ_APP_BINARY=/reports/broker \
  -e BUTLER_SKILL_WORKFLOW_OFFLINE=1 -e BUTLER_SKILL_WORKFLOW_OUTPUT=/reports/workflow -e BUTLER_UTILITY_TRACE_OUTPUT=/reports/cases -e BUTLER_UTILITY_WHOLE_OFFLINE=1 -e BUTLER_UTILITY_WHOLE_OUTPUT=/reports/whole -e GOMAXPROCS=1 -w /source/apps/orchestrator/internal/app \
  "$image" sh -eu -c '
- /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^(TestSkillWorkflowContract|TestMemoryUtilityOpenAIProfilesAreExplicitAndConservative|TestMemoryUtilityActualCoreBrokerTraceIntegration|TestMemoryUtilityInstructionsAreScopedToCurrentGoal|TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration)$"
+ /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^(TestMemoryUtilityWorkflowReasoningProfiles|TestSkillWorkflowContract|TestMemoryUtilityOpenAIProfilesAreExplicitAndConservative|TestMemoryUtilityActualCoreBrokerTraceIntegration|TestMemoryUtilityInstructionsAreScopedToCurrentGoal|TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration)$"
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestMemoryUtilityWholeControlledABCIntegration$"
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestSkillWorkflowControlledABCIntegration$"
  cd /source
@@ -76,7 +78,7 @@ python3 - "$r/reports/tests.jsonl" <<'PY'
 import json, pathlib, sys
 events = [json.loads(line) for line in pathlib.Path(sys.argv[1]).read_text().splitlines()]
 assert not any(e['Action'] in ('fail', 'skip') for e in events), 'required test failed or skipped'
-required = {'TestSkillWorkflowContract', 'TestSkillWorkflowControlledABCIntegration', 'TestMemoryUtilityOpenAIProfilesAreExplicitAndConservative', 'TestMemoryUtilityActualCoreBrokerTraceIntegration', 'TestMemoryUtilityInstructionsAreScopedToCurrentGoal', 'TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration', 'TestMemoryUtilityWholeControlledABCIntegration', 'TestReviewedSkillRealBrokerDurableApprovalE2E'}
+required = {'TestMemoryUtilityWorkflowReasoningProfiles', 'TestSkillWorkflowContract', 'TestSkillWorkflowControlledABCIntegration', 'TestMemoryUtilityOpenAIProfilesAreExplicitAndConservative', 'TestMemoryUtilityActualCoreBrokerTraceIntegration', 'TestMemoryUtilityInstructionsAreScopedToCurrentGoal', 'TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration', 'TestMemoryUtilityWholeControlledABCIntegration', 'TestReviewedSkillRealBrokerDurableApprovalE2E'}
 assert required <= {e.get('Test') for e in events if e['Action'] == 'pass'}, 'required test not observed'
 PY
 sha256sum "$r/reports/tests.jsonl" > "$r/reports/tests.sha256"

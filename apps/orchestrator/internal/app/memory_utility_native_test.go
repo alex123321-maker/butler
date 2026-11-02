@@ -101,7 +101,10 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 		reference = experienceDigest(string(raw))
 		if model == "gpt-6.1-terra" {
-			effort = "none"
+			effort, e = utilityWorkflowTerraEffort(os.Getenv("BUTLER_UTILITY_TERRA_EFFORT"))
+			if e != nil {
+				t.Fatal(e)
+			}
 		} else if model == "gpt-6-luna" {
 			effort = "max"
 		}
@@ -203,7 +206,8 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 	var apiKey string
 	if plan.Provider == "openai" {
 		_, _, profileErr := utilityOpenAIProfile(plan.Model)
-		effortOK := plan.ReasoningEffort == "high" && plan.Protocol == "" || plan.Protocol == utilityWorkflowProtocol && (plan.Model == "gpt-6-luna" && plan.ReasoningEffort == "max" || plan.Model == "gpt-6.1-terra" && plan.ReasoningEffort == "none")
+		terraEffort, terraErr := utilityWorkflowTerraEffort(os.Getenv("BUTLER_UTILITY_TERRA_EFFORT"))
+		effortOK := plan.ReasoningEffort == "high" && plan.Protocol == "" || plan.Protocol == utilityWorkflowProtocol && (plan.Model == "gpt-6-luna" && plan.ReasoningEffort == "max" || plan.Model == "gpt-6.1-terra" && terraErr == nil && plan.ReasoningEffort == terraEffort)
 		if profileErr != nil || !effortOK || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
 			t.Fatal("exact paired OpenAI profile required")
 		}

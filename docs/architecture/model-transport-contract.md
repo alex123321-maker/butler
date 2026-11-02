@@ -49,6 +49,13 @@ measurement of hidden reasoning time. Execution minus provider wait measures
 Butler elapsed time, including tool RPC as a subset. See the
 [workflow protocol](../testing/issue115-skill-workflow-2026-10-30.md).
 
+The post-fix repeat uses the same frozen workflow suite and requested Gemini
+High / Luna max profiles, with an explicit operator-only
+`BUTLER_UTILITY_TERRA_EFFORT=medium` in both freeze and native runner. Empty keeps
+the earlier none research selection; unknown spellings fail closed. This does
+not change product provider defaults. Both the skill-stream fix and the Terra
+effort change are recorded, so the Terra comparison does not isolate the fix.
+
 The Antigravity adapter's content-free `http_do_failed_without_response`
 diagnostic means its single HTTP Do call returned an error without a response
 object while the owning context was live and a fixed socket/EOF cause matched.
