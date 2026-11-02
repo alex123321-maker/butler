@@ -120,9 +120,11 @@ closed post-effect documents, page-close outcomes and historical managed-page
 review. Those remain restrictive; they cannot borrow legacy login historical
 maintenance or invent absence from runtime loss.
 
-Credential requests against managed contexts are denied; password fields cannot
-accept ordinary literals. RP/IdP authorization, protected page-aware consent,
-cross-origin transitions, authenticated RP evidence, anonymous negative control,
+Legacy credential requests against managed contexts are denied; password fields
+cannot accept ordinary literals. Migration109 adds a separate protected
+[RP/IdP consent foundation](browser-sso-protocol.md), with no model-facing SSO
+tool or secret-release path yet. RP/IdP action authorization, cross-origin
+transitions, authenticated RP evidence, anonymous negative control,
 native model execution/delivery and the owner's dedicated Google account are
 remaining acceptance. Do not reuse provider control-plane tokens for Google.
 

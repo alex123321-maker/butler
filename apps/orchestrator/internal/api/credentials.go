@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentials"
@@ -34,7 +35,7 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 				writeJSON(w, 503, map[string]string{"error": "vault_unavailable"})
 				return
 			}
-			pending, err := vault.Requests(r.Context(), actor.OwnerID)
+			pending, err := vault.OwnerRequests(r.Context(), actor.OwnerID)
 			if err != nil {
 				writeJSON(w, 503, map[string]string{"error": "vault_unavailable"})
 				return
@@ -58,6 +59,7 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 			RecordID           string                  `json:"record_id"`
 			OTP                string                  `json:"otp"`
 			LoginAuthorization string                  `json:"login_authorization"`
+			ScopeDigest        string                  `json:"scope_digest"`
 			SMSRoute           *credentials.SMSRoute   `json:"sms_route"`
 		}
 		raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 32*1024))
@@ -135,7 +137,7 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 				return
 			}
 		case "requests":
-			requests, e := vault.Requests(r.Context(), actor.OwnerID)
+			requests, e := vault.OwnerRequests(r.Context(), actor.OwnerID)
 			if e != nil {
 				deny()
 				return
@@ -143,7 +145,15 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 			writeJSON(w, 200, map[string]any{"requests": requests})
 			return
 		case "respond":
-			if vault.Respond(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.OTP, q.LoginAuthorization) != nil {
+			var err error
+			if strings.HasPrefix(q.ID, "ssoq_") && q.OTP == "" {
+				err = vault.RespondSSO(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.LoginAuthorization, q.ScopeDigest)
+			} else if q.ScopeDigest == "" {
+				err = vault.Respond(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.OTP, q.LoginAuthorization)
+			} else {
+				err = credentials.ErrVault
+			}
+			if err != nil {
 				deny()
 				return
 			}

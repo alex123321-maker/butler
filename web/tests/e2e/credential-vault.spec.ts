@@ -4,6 +4,72 @@ import { connect, fixture, ownerToken } from './mind-fixture'
 // Synthetic input only. Secret-entry tests must not retain page/trace captures.
 test.use({ screenshot: 'off', trace: 'off', video: 'off' })
 
+test('SSO consent shows both parties and binds the protected answer to the exact card', async ({ page }) => {
+  await fixture(page, { tasks: false })
+  let approved = 0
+  const request = {
+    id: 'ssoq_fixture', kind: 'sso_login', record_id: 'cred_fixture',
+    record_label: 'Выделенный тестовый IdP', target_origin: 'https://rp.example',
+    purpose: 'Войти на RP через тестовый IdP', fields: ['username', 'password'],
+    scope_digest: 'd'.repeat(64),
+    sso_scope: {
+      rp_url: 'https://rp.example/', idp_url: 'https://idp.example/authorize',
+      target_url: 'https://idp.example/login', verify_url: 'https://rp.example/account',
+      rp_page: { page_id: 'a'.repeat(32), document_id: 'b'.repeat(32), observation_version: 7 },
+    },
+  }
+  await page.route('**/api/v4/credentials', async route => {
+    const pending = approved ? [] : [request]
+    if (route.request().method() === 'GET')
+      return route.fulfill({ json: { configured: true, requests: pending } })
+    const body = route.request().postDataJSON()
+    if (body.action === 'unlock') return route.fulfill({ json: { unlock_token: 'a'.repeat(64) } })
+    if (body.action === 'list') return route.fulfill({ json: { entries: [{ id: 'cred_fixture', alias: 'test.idp', title: 'Выделенный тестовый IdP', revision: 1, status: 'active' }] } })
+    if (body.action === 'requests') return route.fulfill({ json: { requests: pending } })
+    if (body.action === 'respond') {
+      expect(body).toMatchObject({ id: request.id, record_id: request.record_id, allow: true, login_authorization: 'browser_sso_login_once_v1', scope_digest: request.scope_digest, otp: '' })
+      expect(body.password).toBeUndefined()
+      expect(body.username).toBeUndefined()
+      expect(route.request().headers()['x-butler-vault']).toBe('a'.repeat(64))
+      approved++
+    }
+    return route.fulfill({ json: { ok: true } })
+  })
+  await connect(page)
+  await expect(page.getByText('Запрос разрешения на один SSO-вход', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Открыть запрос', exact: true }).click()
+  for (let i = 0; i < 6; i++) await page.getByLabel(`Цифра ${i + 1}`, { exact: true }).fill('654321'[i]!)
+  await page.getByRole('button', { name: 'Открыть', exact: true }).click()
+  const card = page.locator('.vault-request')
+  await expect(card).toContainText('Сайт (RP): https://rp.example/')
+  await expect(card).toContainText('Провайдер входа (IdP): https://idp.example/authorize')
+  await expect(card).toContainText('https://idp.example/login')
+  await expect(card).toContainText('https://rp.example/account')
+  await expect(card).toContainText('наблюдение 7')
+  await expect(card.getByRole('combobox')).toBeDisabled()
+  await expect(card.getByRole('button', { name: 'Создать запись', exact: true })).toHaveCount(0)
+  await card.getByRole('button', { name: 'Разрешить один SSO-вход', exact: true }).click()
+  await expect(card).toHaveCount(0)
+  expect(approved).toBe(1)
+})
+
+test('SSO card without its exact scope cannot offer approval', async ({ page }) => {
+  await fixture(page, { tasks: false })
+  const request = { id: 'ssoq_incomplete', kind: 'sso_login', record_id: 'cred_fixture', target_origin: 'https://rp.example', purpose: 'Incomplete SSO card', fields: ['username', 'password'] }
+  await page.route('**/api/v4/credentials', async route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { configured: true, requests: [request] } })
+    const body = route.request().postDataJSON()
+    if (body.action === 'unlock') return route.fulfill({ json: { unlock_token: 'a'.repeat(64) } })
+    return route.fulfill({ json: { entries: [{ id: 'cred_fixture', alias: 'test.idp', title: 'Test IdP' }], requests: [request] } })
+  })
+  await connect(page)
+  await page.getByRole('button', { name: 'Открыть запрос', exact: true }).click()
+  for (let i = 0; i < 6; i++) await page.getByLabel(`Цифра ${i + 1}`, { exact: true }).fill('654321'[i]!)
+  await page.getByRole('button', { name: 'Открыть', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Разрешить один SSO-вход', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Отказать', exact: true })).toBeEnabled()
+})
+
 test('one login consent pins the account and includes submit plus access verification', async ({page}) => {
   await fixture(page, {tasks: false})
   let approved = false

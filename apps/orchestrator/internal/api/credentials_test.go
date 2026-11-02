@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -42,7 +44,10 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 		t.Fatal("pool")
 	}
 	defer pool.Close()
-	if _, err = pool.Exec(ctx, `CREATE TABLE server_browser_sessions(browser_session_id TEXT)`); err != nil {
+	if _, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);CREATE TABLE runs(run_id TEXT PRIMARY KEY,session_key TEXT,task_id TEXT,current_state TEXT);CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);INSERT INTO sessions VALUES('session','owner');INSERT INTO runs VALUES('run','session',NULL,'tool_running')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `CREATE TABLE server_browser_sessions(browser_session_id TEXT PRIMARY KEY,run_id TEXT,owner_id TEXT,task_id TEXT,mode TEXT,epoch BIGINT NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ)`); err != nil {
 		t.Fatal("base")
 	}
 	migration, err := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "096_credential_vault.up.sql"))
@@ -58,6 +63,15 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 	}
 	if _, err = pool.Exec(ctx, string(loginMigration)); err != nil {
 		t.Fatal(err)
+	}
+	for _, name := range []string{"107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent"} {
+		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name+".up.sql"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(raw)); e != nil {
+			t.Fatal(e)
+		}
 	}
 	vault, err := credentials.NewVault(pool, strings.Repeat("synthetic-key-", 4))
 	if err != nil {
@@ -108,9 +122,6 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 		t.Fatal("strict request or error privacy")
 	}
 	t.Run("old_client_cannot_approve_login_submission", func(t *testing.T) {
-		if _, e := pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);CREATE TABLE runs(run_id TEXT PRIMARY KEY,session_key TEXT,task_id TEXT,current_state TEXT);CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT,revision BIGINT,constraints_revision BIGINT,status TEXT);INSERT INTO sessions VALUES('session','owner');INSERT INTO runs VALUES('run','session',NULL,'tool_running')`); e != nil {
-			t.Fatal(e)
-		}
 		var receipt struct {
 			Entry struct {
 				ID string `json:"id"`
@@ -144,6 +155,56 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 		raw, _ = json.Marshal(body)
 		if invoke("POST", string(raw), token.Value, true).Code != 200 {
 			t.Fatal("legacy client preparation consent changed")
+		}
+	})
+	t.Run("sso_requires_owner_unlock_exact_card_and_distinct_consent", func(t *testing.T) {
+		var receipt struct {
+			Entry struct {
+				ID string `json:"id"`
+			} `json:"entry"`
+		}
+		if json.Unmarshal(saved.Body.Bytes(), &receipt) != nil {
+			t.Fatal("entry")
+		}
+		s := browsersso.Scope{Browser: strings.Repeat("c", 32), RPPage: browserpage.Ref{ID: strings.Repeat("a", 32), DocumentID: strings.Repeat("b", 32), Version: 1}, RPURL: "https://rp.example/", Trigger: "#sso", IdPURL: "https://idp.example/authorize", TargetURL: "https://idp.example/login", Form: "form", Username: "#u", Password: "#p", VerifyURL: "https://rp.example/account"}
+		if _, e := pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,mode,expires_at,page_mode,page_origin) VALUES($1,'run','owner','','agent',now()+interval '10 minutes',true,'https://rp.example')`, s.Browser); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := pool.Exec(ctx, `INSERT INTO server_browser_pages(browser_session_id,page_id,document_id,observation_version,observed_epoch,observed_url,state,runtime_version) VALUES($1,$2,$3,1,0,'https://rp.example/','ready',1)`, s.Browser, s.RPPage.ID, s.RPPage.DocumentID); e != nil {
+			t.Fatal(e)
+		}
+		r, e := vault.CreateSSORequest(ctx, credentials.Principal{OwnerID: "owner", SessionKey: "session", RunID: "run"}, "sso-consent", receipt.Entry.ID, "Test SSO", s)
+		if e != nil {
+			t.Fatal(e)
+		}
+		listed := invoke("GET", "", "", true)
+		if listed.Code != 200 || !strings.Contains(listed.Body.String(), `"sso_scope"`) || strings.Contains(listed.Body.String(), "synthetic-private-password") {
+			t.Fatal("safe owner SSO metadata unavailable")
+		}
+		body := map[string]any{"action": "respond", "id": r.ID, "record_id": receipt.Entry.ID, "allow": true}
+		answer := func(unlock string, auth bool) int {
+			raw, _ := json.Marshal(body)
+			return invoke("POST", string(raw), unlock, auth).Code
+		}
+		if answer(token.Value, false) != 401 || answer("", true) != 423 || answer(token.Value, true) != 409 {
+			t.Fatal("unprotected/old client SSO answer accepted")
+		}
+		body["login_authorization"] = browserauth.Consent
+		body["scope_digest"] = r.ScopeDigest
+		if answer(token.Value, true) != 409 {
+			t.Fatal("ordinary login approval upgraded")
+		}
+		body["login_authorization"] = browsersso.Consent
+		body["scope_digest"] = strings.Repeat("0", 64)
+		if answer(token.Value, true) != 409 {
+			t.Fatal("wrong card accepted")
+		}
+		body["scope_digest"] = r.ScopeDigest
+		if answer(token.Value, true) != 200 {
+			t.Fatal("protected exact SSO answer rejected")
+		}
+		if _, e = vault.GetByAlias(ctx, r.ID); e == nil {
+			t.Fatal("SSO record became credential alias")
 		}
 	})
 	if invoke("POST", `{"action":"change_pin","pin":"123456","confirm":"123456"}`, token.Value, true).Code != 200 {
