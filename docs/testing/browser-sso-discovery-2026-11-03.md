@@ -128,3 +128,8 @@ External Google04 is separately qualified in
 normal Chrome and the already signed-in dedicated account, not native-form
 password/MFA automation or session import. The synthetic result does not replace
 that external evidence, and neither result claims universal SSO compatibility.
+
+The subsequent [cookie-policy correction](browser-sso-cookie-policy-2026-11-03.md)
+adds actual cross-site Strict-cookie controls and native response-cookie
+processing. The original native/CI timings above remain historical evidence
+for their stated source; they were not replayed or relabeled as a new run.

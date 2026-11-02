@@ -72,6 +72,13 @@ TLS-verified proxy and private cookie jar with automatic redirects/retries
 disabled. An allowed redirect becomes a minimal private refresh document,
 forcing a new browser navigation through the guard before contacting its next
 destination. Provider response bodies are never rendered under the RP origin.
+Each private HTTP request has a fresh, initially empty, one-response cookie
+store and copies Chromium's actual headers, including absence of Cookie.
+The transport cannot add origin-only cookies withheld by browser SameSite or
+partition policy. Response Set-Cookie headers, including on the redirect bridge,
+are processed by Chromium itself rather than copied through addCookies. The
+transport's private response values are included in secret redaction and its
+context is disposed after that response. No API jar is reused or imported.
 This is necessary because normal Playwright routes do not intercept every
 redirect. A provider-to-RP redirect is denied before any callback request.
 After the sole authorized POST, only its bounded returned GET redirect chain

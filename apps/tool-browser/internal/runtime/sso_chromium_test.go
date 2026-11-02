@@ -32,7 +32,7 @@ type ssoResolver struct{}
 
 func (ssoResolver) LookupIPAddr(_ context.Context, host string) ([]net.IPAddr, error) {
 	ip := "93.184.216.34"
-	if host == "idp.sso.test" {
+	if host == "idp.sso.test" || host == "idp.provider.test" {
 		ip = "93.184.216.35"
 	} else if host != "rp.sso.test" {
 		return nil, egress.ErrDenied
@@ -58,7 +58,7 @@ func ssoTLS(t *testing.T, dir string) (string, string) {
 	if os.WriteFile(caFile, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}), 0600) != nil {
 		t.Fatal("test CA file")
 	}
-	leaf := &x509.Certificate{SerialNumber: big.NewInt(2), DNSNames: []string{"rp.sso.test", "idp.sso.test"}, NotBefore: ca.NotBefore, NotAfter: ca.NotAfter, KeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}
+	leaf := &x509.Certificate{SerialNumber: big.NewInt(2), DNSNames: []string{"rp.sso.test", "idp.sso.test", "idp.provider.test"}, NotBefore: ca.NotBefore, NotAfter: ca.NotAfter, KeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}
 	der, e = x509.CreateCertificate(rand.Reader, leaf, ca, &key.PublicKey, key)
 	if e != nil {
 		t.Fatal("test leaf generation")
@@ -96,13 +96,19 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 	}
 	dir := t.TempDir()
 	cert, key := ssoTLS(t, dir)
-	for _, mode := range []string{"verified", "late_popup", "wrong_password", "denied_idp_post", "denied_callback_redirect", "two_popups", "popup_storm", "stale_page", "helper_lost_before_sso", "helper_lost_after_idp_login", "inspect_verified", "inspect_fresh_paths", "inspect_late", "inspect_twins", "inspect_storm", "inspect_stale", "inspect_denied_form", "inspect_idp_denied", "inspect_callback_denied", "inspect_reflected_secret", "inspect_helper_lost"} {
+	for _, mode := range []string{"verified", "strict_cookie_boundary", "inspect_strict_cookie_boundary", "strict_only_callback_denied", "inspect_strict_only_callback_denied", "late_popup", "wrong_password", "denied_idp_post", "denied_callback_redirect", "two_popups", "popup_storm", "stale_page", "helper_lost_before_sso", "helper_lost_after_idp_login", "inspect_verified", "inspect_fresh_paths", "inspect_late", "inspect_twins", "inspect_storm", "inspect_stale", "inspect_denied_form", "inspect_idp_denied", "inspect_callback_denied", "inspect_reflected_secret", "inspect_helper_lost"} {
 		t.Run(mode, func(t *testing.T) {
 			began := time.Now()
 			defer func() {
 				t.Logf("scope=mechanical_sso_https case=%s wall_ms=%.3f model_calls=0 owner_wait_ms=0", mode, float64(time.Since(began).Microseconds())/1000)
 			}()
 			caseDir := t.TempDir()
+			idpOrigin := "https://idp.sso.test"
+			strictOnly := mode == "strict_only_callback_denied" || mode == "inspect_strict_only_callback_denied"
+			strictCookies := strictOnly || mode == "strict_cookie_boundary" || mode == "inspect_strict_cookie_boundary"
+			if strictCookies {
+				idpOrigin = "https://idp.provider.test"
+			}
 			config, journal := filepath.Join(caseDir, "private.json"), filepath.Join(caseDir, "journal.jsonl")
 			initArgs := []string{"--init", "--config", config}
 			if mode == "inspect_fresh_paths" {
@@ -130,7 +136,13 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				return a
 			}
 			rpAddress, idpAddress := address(), address()
-			cmd := exec.Command(binary, "--config", config, "--journal", journal, "--rp-listen", rpAddress, "--idp-listen", idpAddress, "--rp-origin", "https://rp.sso.test", "--idp-origin", "https://idp.sso.test", "--tls-cert", cert, "--tls-key", key)
+			cmd := exec.Command(binary, "--config", config, "--journal", journal, "--rp-listen", rpAddress, "--idp-listen", idpAddress, "--rp-origin", "https://rp.sso.test", "--idp-origin", idpOrigin, "--tls-cert", cert, "--tls-key", key)
+			if strictCookies {
+				cmd.Args = append(cmd.Args, "--strict-cookie-boundary")
+			}
+			if strictOnly {
+				cmd.Args = append(cmd.Args, "--strict-only-callback")
+			}
 			if mode == "inspect_callback_denied" {
 				cmd.Args = append(cmd.Args, "--auto-authorize-return")
 			}
@@ -196,7 +208,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			}
 			page := observation.PrivatePages[0]
 			ref := browserpage.Ref{ID: page.ID, DocumentID: page.DocumentID, Version: 7}
-			scope := browsersso.Scope{Browser: observation.SessionID, RPPage: ref, RPURL: "https://rp.sso.test/", Trigger: "#login", IdPURL: "https://idp.sso.test/authorize", TargetURL: "https://idp.sso.test/login", VerifyURL: "https://rp.sso.test/account", Form: "form", Username: "input[name=username]", Password: "input[name=password]"}
+			scope := browsersso.Scope{Browser: observation.SessionID, RPPage: ref, RPURL: "https://rp.sso.test/", Trigger: "#login", IdPURL: idpOrigin + "/authorize", TargetURL: idpOrigin + "/login", VerifyURL: "https://rp.sso.test/account", Form: "form", Username: "input[name=username]", Password: "input[name=password]"}
 			if mode == "two_popups" {
 				scope.Trigger = "#twins"
 			}
@@ -233,16 +245,16 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				if trigger == "" || verify == "" {
 					t.Fatal("RP lacks actual actionable button or account navigation")
 				}
-				a := browsersso.Inspection{Browser: observation.SessionID, RPPage: ref, RPURL: scope.RPURL, Trigger: trigger, IdPOrigin: "https://idp.sso.test", VerifyURL: verify}
+				a := browsersso.Inspection{Browser: observation.SessionID, RPPage: ref, RPURL: scope.RPURL, Trigger: trigger, IdPOrigin: idpOrigin, VerifyURL: verify}
 				if mode == "inspect_stale" {
 					a.RPPage.DocumentID = strings.Repeat("f", 32)
 				}
-				d := browsersso.Dispatch{Page: browserpage.Binding{Ref: a.RPPage, URL: a.RPURL, RuntimeVersion: page.RuntimeVersion}, Digest: a.Digest(), ExpiresAt: time.Now().Add(time.Minute), Allowed: []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/"}, {Origin: "https://idp.sso.test", PathPrefix: "/"}}}
+				d := browsersso.Dispatch{Page: browserpage.Binding{Ref: a.RPPage, URL: a.RPURL, RuntimeVersion: page.RuntimeVersion}, Digest: a.Digest(), ExpiresAt: time.Now().Add(time.Minute), Allowed: []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/"}, {Origin: idpOrigin, PathPrefix: "/"}}}
 				if mode == "inspect_idp_denied" {
-					d.Denied = []browsersso.NetworkScope{{Origin: "https://idp.sso.test", PathPrefix: "/"}}
+					d.Denied = []browsersso.NetworkScope{{Origin: idpOrigin, PathPrefix: "/"}}
 				}
 				if mode == "inspect_denied_form" {
-					d.Denied = []browsersso.NetworkScope{{Origin: "https://idp.sso.test", PathPrefix: "/login"}}
+					d.Denied = []browsersso.NetworkScope{{Origin: idpOrigin, PathPrefix: "/login"}}
 				}
 				outgoing := browsercontrol.WithPageDispatch(browsercontrol.WithDispatchEpoch(t.Context(), 0), d.Page)
 				md, _ := metadata.FromOutgoingContext(outgoing)
@@ -274,7 +286,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				if strings.Contains(string(before), `"kind":"idp_login"`) || strings.Contains(string(before), `"kind":"callback_accepted"`) {
 					t.Fatal("inspection submitted credentials or completed pre-consent SSO")
 				}
-				want := mode == "inspect_verified" || mode == "inspect_fresh_paths" || mode == "inspect_late"
+				want := mode == "inspect_strict_only_callback_denied" || mode == "inspect_strict_cookie_boundary" || mode == "inspect_verified" || mode == "inspect_fresh_paths" || mode == "inspect_late"
 				if (inspected.Result.Status == "completed") != want {
 					t.Fatalf("inspection mismatch: mode=%s status=%s error=%v", mode, inspected.Result.Status, inspected.Result.Error)
 				}
@@ -284,7 +296,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				if len(found.InspectionForms) != 1 || found.NetworkState != "frozen" {
 					t.Fatal("inspection missing bounded frozen metadata")
 				}
-				if mode == "inspect_fresh_paths" && (found.InspectionForms[0].TargetURL == "https://idp.sso.test/login" || verify == "https://rp.sso.test/account") {
+				if mode == "inspect_fresh_paths" && (found.InspectionForms[0].TargetURL == idpOrigin+"/login" || verify == "https://rp.sso.test/account") {
 					t.Fatal("fresh paths were not exercised")
 				}
 				for _, p := range found.PrivatePages {
@@ -304,9 +316,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			digest, _ := scope.Digest(0, 1)
 			alias := "ssoq_" + strings.Repeat("a", 64)
 			args := browsersso.Args{Scope: scope, Digest: digest, UsernameRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "username"}, PasswordRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "password"}}
-			dispatch := browsersso.Dispatch{Page: browserpage.Binding{Ref: ref, URL: scope.RPURL, Epoch: 0, RuntimeVersion: page.RuntimeVersion}, Digest: digest, ExpiresAt: time.Now().Add(time.Minute), Allowed: []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/"}, {Origin: "https://idp.sso.test", PathPrefix: "/"}}}
+			dispatch := browsersso.Dispatch{Page: browserpage.Binding{Ref: ref, URL: scope.RPURL, Epoch: 0, RuntimeVersion: page.RuntimeVersion}, Digest: digest, ExpiresAt: time.Now().Add(time.Minute), Allowed: []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/"}, {Origin: idpOrigin, PathPrefix: "/"}}}
 			if mode == "denied_idp_post" {
-				dispatch.Denied = []browsersso.NetworkScope{{Origin: "https://idp.sso.test", PathPrefix: "/login"}}
+				dispatch.Denied = []browsersso.NetworkScope{{Origin: idpOrigin, PathPrefix: "/login"}}
 			}
 			if mode == "denied_callback_redirect" {
 				dispatch.Denied = []browsersso.NetworkScope{{Origin: "https://rp.sso.test", PathPrefix: "/denied"}}
@@ -369,13 +381,16 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			var out Result
 			_ = json.Unmarshal([]byte(response.Result.ResultJson), &out)
 			verified := response.Result.Status == "completed" && out.Authentication != nil && out.Authentication.Protocol == browsersso.Verification && out.Authentication.AuthenticatedRead && out.Authentication.AnonymousChallenge && out.Authentication.SubmittedOnce
-			wantVerified := mode == "verified" || mode == "late_popup" || mode == "inspect_verified" || mode == "inspect_fresh_paths" || mode == "inspect_late"
+			wantVerified := strictCookies && !strictOnly || mode == "verified" || mode == "late_popup" || mode == "inspect_verified" || mode == "inspect_fresh_paths" || mode == "inspect_late"
 			if verified != wantVerified {
 				t.Fatalf("SSO proof mismatch: mode=%s status=%s ok=%v proof=%v error=%v", mode, response.Result.Status, out.OK, out.Authentication != nil, response.Result.GetError())
 			}
 			data, e = os.ReadFile(journal)
 			if e != nil {
 				t.Fatal("recipient journal missing")
+			}
+			if strings.Contains(string(data), `"kind":"strict_cookie_leaked"`) {
+				t.Fatal("API request added a cookie withheld by Chromium SameSite policy")
 			}
 			if strings.Contains(string(data), `"kind":"forbidden_redirect_read"`) {
 				t.Fatal("post-consent redirect bypassed the current path denial")
@@ -400,6 +415,9 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 				case "account_read":
 					reads++
 				}
+			}
+			if strictOnly && (posts != 1 || callbacks != 0 || reads != 0 || !strings.Contains(string(data), `"kind":"strict_cookie_withheld"`)) {
+				t.Fatal("cross-site empty Cookie boundary was not exercised", posts, callbacks, reads)
 			}
 			if posts > 1 {
 				t.Fatal("SSO POST replay")
