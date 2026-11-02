@@ -1,6 +1,9 @@
 # Native bounded SSO with response delivery
 
-Issue #164 remains open. This qualifies a synthetic native-form popup SSO flow,
+Historical qualification before the remaining #164 gates were completed; see
+[native06 discovery/delivery](browser-sso-discovery-2026-11-03.md) and
+[external Google04](browser-native-google-2026-11-02.md) for later evidence.
+This qualifies a synthetic native-form popup SSO flow,
 not arbitrary sites, JS-only forms, OTP or Google. The natural-language goal
 included public fixture selectors and URLs. The model independently discovered
 tools, selected the saved account, obtained one protected consent, invoked SSO
@@ -133,8 +136,8 @@ historical recovery and Web-only polling fix passed health, unchanged environmen
 and unchanged peer-container checks. Web polling fix uses `5e7cd6b6`.
 No merge/main deployment follows from this qualification.
 
-Remaining #164 acceptance includes broader hostile/runtime-loss composition,
+At this historical stage, remaining checks included broader hostile/runtime-loss composition,
 independent model page selection beyond supplied fixture parameters, external
-Google smoke and verified durable Task completion. Fixture success does not
+Google smoke and separate durable Task completion. Fixture success does not
 establish those capabilities. Engineering, cleanup and CI wall time is separate
 from the measured native login slot.

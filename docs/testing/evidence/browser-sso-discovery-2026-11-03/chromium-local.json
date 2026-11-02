@@ -1,0 +1,138 @@
+{
+  "profile": "isolated Linux actual HTTPS Chromium",
+  "race_enabled": false,
+  "model_calls": 0,
+  "case_count": 21,
+  "required_skips": 0,
+  "status": "passed",
+  "cases": [
+    {
+      "case": "verified",
+      "wall_ms": 1346.149,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "late_popup",
+      "wall_ms": 1311.902,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "wrong_password",
+      "wall_ms": 1083.268,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "denied_idp_post",
+      "wall_ms": 730.197,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "denied_callback_redirect",
+      "wall_ms": 2814.553,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "two_popups",
+      "wall_ms": 1161.604,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "popup_storm",
+      "wall_ms": 7810.118,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "stale_page",
+      "wall_ms": 769.618,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "helper_lost_before_sso",
+      "wall_ms": 1433.444,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "helper_lost_after_idp_login",
+      "wall_ms": 1901.922,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_verified",
+      "wall_ms": 1491.433,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_fresh_paths",
+      "wall_ms": 1423.328,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_late",
+      "wall_ms": 1767.183,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_twins",
+      "wall_ms": 1195.342,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_storm",
+      "wall_ms": 7805.634,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_stale",
+      "wall_ms": 717.165,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_denied_form",
+      "wall_ms": 1117.321,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_idp_denied",
+      "wall_ms": 792.034,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_callback_denied",
+      "wall_ms": 1063.836,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_reflected_secret",
+      "wall_ms": 1018.336,
+      "model_calls": 0,
+      "passed": true
+    },
+    {
+      "case": "inspect_helper_lost",
+      "wall_ms": 722.648,
+      "model_calls": 0,
+      "passed": true
+    }
+  ],
+  "native_latency_qualification": false,
+  "production_mutated": false
+}

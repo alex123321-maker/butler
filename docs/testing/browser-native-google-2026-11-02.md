@@ -2,7 +2,8 @@
 
 **Latest result: Google04 PASS at57719e6a** for the bounded external diagnostic
 flow, including completed same Input and actual Web/Telegram result delivery.
-The native-form independent-page-selection criterion remains separate.
+Native-form independent page selection is separately qualified by
+[native06](browser-sso-discovery-2026-11-03.md); this Google flow is not its substitute.
 
 Google04 used one protected owner decision, one launch, one exchange and no
 generic POST approval. The RP authenticated/anonymous differential and its child
@@ -55,7 +56,9 @@ account. The exact RP authenticated read and anonymous negative control both
 passed; its child effect is CONFIRMED. No generic POST approval was created.
 The failed message proposal contained the correct retained RP reference but an
 unselected `message:` source reference; there was no publication or delivery.
-Its dispatched metadata outcome remains UNKNOWN pending separate owning review.
+Its dispatched metadata outcome initially remained UNKNOWN pending owning
+review. The exact absent publication was subsequently reconciled at `57719e6a`;
+the original failed Input, UNKNOWN dispatch/grant and spending remain retained.
 
 | Inclusive native phase | Seconds |
 | --- | ---: |
@@ -99,4 +102,5 @@ The follow-up fix adds a read-only current-source draft preflight before Broker
 preparation, bounded correlated non-dispatch feedback, and a verified projection
 with the exact check URL and explicit Chrome/server-session separation. Pinned
 terminal Task-publication absence review preserves the failed Input, consumed
-UNKNOWN grant/dispatch and spending. New native acceptance remains required.
+UNKNOWN grant/dispatch and spending. New native acceptance was required after
+that failed attempt; Google04 above provides the separate successful result.
