@@ -79,3 +79,24 @@ replayed for metrics.
 
 Later CI/review/merge waiting is recorded in the #164 progress comment with its
 end timestamp. No mechanical test duration is substituted for inclusive time.
+
+## Post-merge component frame setup failure
+
+After #183 merged as `57db6b33`, its push browser workflow
+[41391464184](https://github.com/alex123321-maker/butler/actions/runs/41391464184)
+failed in component setup at `server-browser.spec.ts:65`: Chromium could not
+capture a JPEG of the initial unpainted `about:blank` target. All nine retained
+Go JSONL profiles ended PASS without skips, and the actual owner UI/Core/Broker/
+PG/resource/Chromium test passed. The component assertions in the failed case
+had not started. The failure remains retained, not relabelled as success.
+
+The three component cases now construct a valid opaque 1280x720 JPEG using
+Chromium's canvas encoder, with no compositor screenshot dependency, navigation,
+sleep or retry. This is synthetic mock frame data only. Real runtime frame
+capture, production code, identity fences and existing assertions are unchanged.
+The failed artifact remains at `.cache/main-browser-41391464184/`.
+
+Local validation: all three affected cases repeated five times, **15/15 PASS**
+with retries disabled (1.8m including startup/build); Vue typecheck and diff
+checks passed. Report `.cache/browser-frame-fixture.log`. These repetitions
+verify the setup fix; they are not replays of old native latency slots.
