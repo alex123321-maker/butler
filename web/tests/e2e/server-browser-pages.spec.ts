@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { fixture, connect } from './mind-fixture'
+import { browserFrameJPEG } from './browser-frame-fixture'
 
 test('owner page selection pins input and drops queued keys when the document changes', async ({ page }) => {
   await fixture(page)
@@ -7,7 +8,7 @@ test('owner page selection pins input and drops queued keys when the document ch
   let childDoc='d'.repeat(32),epoch=0,mode='agent',sequence=0
   let releaseInput: (()=>void)|undefined
   const inputs:Record<string,unknown>[]=[]
-  const jpeg=(await page.screenshot({type:'jpeg'})).toString('base64')
+  const jpeg=await browserFrameJPEG(page)
   await page.route('**/api/v4/server-browser',async route=>{
     const body=route.request().postDataJSON()
     if(body.operation==='list')return route.fulfill({json:{ok:true,sessions:[{browser_session_id:'session',run_id:'run',task_id:'task',mode,epoch}]}})

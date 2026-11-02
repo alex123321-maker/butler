@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { fixture, connect, ownerToken } from './mind-fixture'
+import { browserFrameJPEG } from './browser-frame-fixture'
 
 test('server browser supports viewing, exclusive control, input and explicit return without storing secrets', async ({ page }) => {
   const token = ownerToken
   await fixture(page)
   const id = '0123456789abcdef0123456789abcdef'
-  const jpeg = (await page.screenshot({ type: 'jpeg' })).toString('base64')
+  const jpeg = await browserFrameJPEG(page)
   let mode = 'agent', epoch = 0, sequence = 0, rejectText = false
   let releaseRejectedText: (() => void) | undefined
   const inputs: Record<string, unknown>[] = []
@@ -62,7 +63,7 @@ test('server browser supports viewing, exclusive control, input and explicit ret
 test('closing a manually controlled browser keeps the agent fence and clears the frame',async({page})=>{
  await fixture(page)
  let mode='agent',epoch=0,releases=0
- const jpeg=(await page.screenshot({type:'jpeg'})).toString('base64')
+ const jpeg=await browserFrameJPEG(page)
  await page.route('**/api/v4/server-browser',r=>{
   const body=r.request().postDataJSON()
   if(body.operation==='list')return r.fulfill({json:{ok:true,sessions:[{browser_session_id:'session',task_id:'task-browser',run_id:'run-browser',mode,epoch}]}})
