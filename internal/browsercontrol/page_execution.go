@@ -259,7 +259,7 @@ func (s *Store) recordPageExecution(ctx context.Context, call *toolbrokerv1.Tool
 		return deny()
 	}
 	if call.ToolName == browserpage.List || call.ToolName == browserpage.Close {
-		for _, key := range []string{"text", "title", "links", "forms"} {
+		for _, key := range []string{"text", "title", "links", "forms", "buttons"} {
 			if _, ok := raw[key]; ok {
 				return deny()
 			}

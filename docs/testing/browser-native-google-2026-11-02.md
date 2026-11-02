@@ -1,5 +1,49 @@
 # External Google native test, 2026-11-02
 
+**Latest result: Google04 PASS at57719e6a** for the bounded external diagnostic
+flow, including completed same Input and actual Web/Telegram result delivery.
+The native-form independent-page-selection criterion remains separate.
+
+Google04 used one protected owner decision, one launch, one exchange and no
+generic POST approval. The RP authenticated/anonymous differential and its child
+effect were verified; one result publication belongs to the original Input and
+contains the retained correct reference. Web `result_ready` occurred
+16:24:03.850685 UTC (**288.145166 s** from ingress), Telegram `sent`
+16:24:05.154572 (**289.449053 s**). Input finalized16:24:21.958676
+(306.253157 s). Its10 model attempts consumed90233 input /1019 output tokens.
+
+| Google04 inclusive phase | Seconds |
+| --- | ---: |
+| Ingress → protected request | 125.227206 |
+| Request → operator consent | 60.789626 |
+| Consent → browser handoff | 0.839528 |
+| Handoff → exchange claim | 51.639187 |
+| Provider exchange + RP probes | 2.029941 |
+| Verified fact → Web result ready | 47.619678 |
+| Web ready → Telegram accepted | 1.303887 |
+| **Ingress → Telegram accepted** | **289.449053** |
+
+All model deliberation, scheduling, native actions and operator waits are inside
+these phase intervals. Only the two-second provider/probe phase is mechanical;
+it is not the agent's login speed. Google04's pre-opened window worked directly,
+with no ACL repair or tab relocation during that attempt. The counted operator
+unlocked the test vault, approved one request and selected the dedicated
+already-signed-in Google account. No new Google consent screen, password or MFA
+was required. It does not prove password/MFA automation or Chrome-session import.
+
+The owner Web UI subsequently rendered exactly one result card with the exact
+check URL and privately matched RP reference. Its history was manually expanded
+to include the fresh publication; rendering was checked16:29:15.805 UTC, not
+measured as first-paint latency. Server `result_ready` and visible UI verification
+are distinct observations. Actual Telegram acknowledgement is the native timing
+endpoint above. The private OAuth client secret and dedicated email were absent
+from the scanned native payloads; provider wire/all system logs remain outside
+that scan. Safe machine evidence is
+[native04-proof.json](evidence/browser-native-google-2026-11-02/native04-proof.json)
+and [native04-ui-proof.json](evidence/browser-native-google-2026-11-02/native04-ui-proof.json).
+
+## Retained earlier failure
+
 At d50001f5 on laba, native Google03 completed real Google authentication and
 the independent RP access check. **Same-Input result delivery failed**, so this
 attempt is not complete #164 acceptance or successful ingress-to-delivery timing.

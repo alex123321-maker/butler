@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -56,12 +57,19 @@ func load(path string) (config, error) {
 	if d.Decode(&cfg) != nil || d.Decode(new(any)) != io.EOF || cfg.Username == "" || len(cfg.Username) > 128 || cfg.Password == "" || len(cfg.Password) > 4096 || cfg.PrivateFact == "" || len(cfg.PrivateFact) > 256 {
 		return config{}, errors.New("invalid private fixture")
 	}
+	if cfg.PublicVariant != "" {
+		raw, e := hex.DecodeString(cfg.PublicVariant)
+		if e != nil || len(raw) != 8 || hex.EncodeToString(raw) != cfg.PublicVariant {
+			return config{}, errors.New("invalid public fixture variant")
+		}
+	}
 	return cfg, nil
 }
 func run(args []string) error {
 	fs := flag.NewFlagSet("browser-sso-eval", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	init := fs.Bool("init", false, "create a new private synthetic configuration")
+	freshPaths := fs.Bool("fresh-form-paths", false, "initialize fresh public routes, form names and button order for native discovery")
 	configPath := fs.String("config", "", "private configuration file")
 	journalPath := fs.String("journal", "", "new private recipient journal")
 	rpListen := fs.String("rp-listen", "127.0.0.1:18098", "loopback RP listener")
@@ -71,12 +79,21 @@ func run(args []string) error {
 	tlsCert := fs.String("tls-cert", "", "operator-provided TLS certificate file")
 	tlsKey := fs.String("tls-key", "", "operator-provided TLS key file")
 	loginDelay := fs.Duration("login-response-delay", 0, "test-only accepted-login response delay, at most 5s")
+	autoReturn := fs.Bool("auto-authorize-return", false, "test-only authenticated IdP redirect without a form")
+	reflectToken := fs.Bool("reflect-form-token", false, "test-only hidden token reflected in a form action path")
 	if fs.Parse(args) != nil || fs.NArg() != 0 || *configPath == "" || *loginDelay < 0 || *loginDelay > 5*time.Second {
 		return errors.New("invalid fixture arguments")
 	}
 	if *init {
-		data, _ := json.Marshal(config{Username: "sso-user-" + opaque(), Password: opaque(), PrivateFact: "SSO-" + opaque()})
+		cfg := config{Username: "sso-user-" + opaque(), Password: opaque(), PrivateFact: "SSO-" + opaque()}
+		if *freshPaths {
+			cfg.PublicVariant = opaque()[:16]
+		}
+		data, _ := json.Marshal(cfg)
 		return exclusive(*configPath, append(data, '\n'))
+	}
+	if *freshPaths {
+		return errors.New("fresh paths are set only at fixture initialization")
 	}
 	if !loopback(*rpListen) || !loopback(*idpListen) || *rpListen == *idpListen || !validOrigin(*rpOrigin) || !validOrigin(*idpOrigin) || strings.EqualFold(*rpOrigin, *idpOrigin) || *journalPath == "" {
 		return errors.New("invalid fixture topology")
@@ -105,6 +122,8 @@ func run(args []string) error {
 	defer journal.Close()
 	f := newFixture(cfg, *rpOrigin, *idpOrigin, journal)
 	f.loginResponseDelay = *loginDelay
+	f.autoAuthorizeReturn = *autoReturn
+	f.reflectFormToken = *reflectToken
 	server := func(handler http.Handler) *http.Server {
 		return &http.Server{Handler: handler, ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 8 * time.Second, WriteTimeout: 8 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 8192, ErrorLog: log.New(io.Discard, "", 0)}
 	}

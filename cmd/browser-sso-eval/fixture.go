@@ -27,9 +27,29 @@ const flowTTL = 3 * time.Minute
 const rpBindingTTL = 15 * time.Minute
 
 type config struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	PrivateFact string `json:"private_fact"`
+	PublicVariant string `json:"public_variant,omitempty"`
+	Username      string `json:"username"`
+	Password      string `json:"password"`
+	PrivateFact   string `json:"private_fact"`
+}
+
+func (f *fixture) publicPath(base string) string {
+	if f.cfg.PublicVariant != "" {
+		return base + "-" + f.cfg.PublicVariant
+	}
+	return base
+}
+func (f *fixture) userField() string {
+	if f.cfg.PublicVariant != "" {
+		return "account-" + f.cfg.PublicVariant
+	}
+	return "username"
+}
+func (f *fixture) passwordField() string {
+	if f.cfg.PublicVariant != "" {
+		return "secret-" + f.cfg.PublicVariant
+	}
+	return "password"
 }
 
 type pending struct {
@@ -56,20 +76,22 @@ type receipt struct {
 }
 
 type fixture struct {
-	mu                 sync.Mutex
-	cfg                config
-	rp, idp            string
-	journal            io.Writer
-	now                func() time.Time
-	sequence           int
-	failed             bool
-	browsers           map[string]time.Time
-	idpBrowsers        map[string]time.Time
-	pending            map[string]pending
-	forms              map[string]authorization
-	codes              map[string]code
-	accounts           map[string]account
-	loginResponseDelay time.Duration
+	mu                  sync.Mutex
+	cfg                 config
+	rp, idp             string
+	journal             io.Writer
+	now                 func() time.Time
+	sequence            int
+	failed              bool
+	browsers            map[string]time.Time
+	idpBrowsers         map[string]time.Time
+	pending             map[string]pending
+	forms               map[string]authorization
+	codes               map[string]code
+	accounts            map[string]account
+	loginResponseDelay  time.Duration
+	autoAuthorizeReturn bool // operator-only pre-consent callback-denial fault
+	reflectFormToken    bool // private hidden token reflected in an unsupported action path
 }
 
 func opaque() string {
@@ -189,12 +211,12 @@ func (f *fixture) handler(idp bool) http.Handler {
 			return
 		}
 		if r.Method == http.MethodPost {
-			if !idp || r.URL.Path != "/login" || r.URL.RawQuery != "" || r.Header.Get("Origin") != f.idp {
+			if !idp || r.URL.Path != f.publicPath("/login") || r.URL.RawQuery != "" || r.Header.Get("Origin") != f.idp {
 				http.Error(w, "Rejected request", 400)
 				return
 			}
 			r.Body = http.MaxBytesReader(w, r.Body, 8192)
-			if r.ParseForm() != nil || !exactKeys(r.PostForm, "username", "password", "csrf") {
+			if r.ParseForm() != nil || !exactKeys(r.PostForm, f.userField(), f.passwordField(), "csrf") {
 				http.Error(w, "Rejected form", 400)
 				return
 			}
@@ -231,14 +253,23 @@ func (f *fixture) relyingParty(w http.ResponseWriter, r *http.Request) {
 			f.browsers[browser] = f.now().Add(rpBindingTTL)
 			f.cookie(w, "sso_rp_binding", browser, f.rp)
 		}
-		page(w, "SSO fixture", `<button id="login">Sign in with test provider</button><button id="late">Delayed popup</button><button id="twins">Two identical titles</button><button id="storm">Popup storm</button><p id="status">Signed out</p><script>
+		loginID := "login"
+		if f.cfg.PublicVariant != "" {
+			loginID = "signin-" + f.cfg.PublicVariant
+		}
+		buttons := []string{`<button id="` + html.EscapeString(loginID) + `">Sign in with test provider</button>`, `<button id="late">Delayed popup</button>`, `<button id="twins">Two identical titles</button>`, `<button id="storm">Popup storm</button>`}
+		if f.cfg.PublicVariant != "" {
+			rotation := int(f.cfg.PublicVariant[0]) % 4
+			buttons = append(buttons[rotation:], buttons[:rotation]...)
+		}
+		page(w, "SSO fixture", strings.Join(buttons, "")+`<a href="`+html.EscapeString(f.publicPath("/account"))+`">Protected account</a><p id="status">Signed out</p><script>
 let active;
 function openLogin(){active=window.open('/start','_blank','width=600,height=700')}
-document.querySelector('#login').onclick=openLogin;
+document.querySelector('#`+loginID+`').onclick=openLogin;
 document.querySelector('#late').onclick=()=>setTimeout(openLogin,150);
 document.querySelector('#twins').onclick=()=>{window.open('/start','_blank');openLogin()};
 document.querySelector('#storm').onclick=()=>{for(let i=0;i<12;i++)window.open('/blank','_blank')};
-addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&&e.data?.kind==='sso_complete')location.assign('/account')});
+addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&&e.data?.kind==='sso_complete')location.assign('`+f.publicPath("/account")+`')});
 </script>`)
 	case "/start":
 		browser := cookie(r, "sso_rp_binding")
@@ -252,7 +283,7 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&
 		}
 		state, verifier := opaque(), opaque()
 		f.pending[state] = pending{browser, verifier, f.now().Add(flowTTL)}
-		u, _ := url.Parse(f.idp + "/authorize")
+		u, _ := url.Parse(f.idp + f.publicPath("/authorize"))
 		u.RawQuery = url.Values{"client_id": {"fixture-rp"}, "redirect_uri": {f.rp + "/callback"}, "response_type": {"code"}, "state": {state}, "code_challenge": {challenge(verifier)}, "code_challenge_method": {"S256"}}.Encode()
 		http.Redirect(w, r, u.String(), 302)
 	case "/callback":
@@ -281,7 +312,7 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&
 		f.accounts[session] = account{p.browser, f.now().Add(flowTTL)}
 		f.cookie(w, "sso_rp_auth", session, f.rp)
 		page(w, "Sign-in complete", `<p>Return to the original window.</p><script>if(opener){opener.postMessage({kind:'sso_complete'},location.origin);window.close()}</script>`)
-	case "/account":
+	case f.publicPath("/account"):
 		a, ok := f.accounts[cookie(r, "sso_rp_auth")]
 		if !ok || !a.expires.After(f.now()) || !f.browsers[a.browser].After(f.now()) || a.browser != cookie(r, "sso_rp_binding") {
 			http.Error(w, "Sign in required", 401)
@@ -301,7 +332,7 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.source===active&
 
 func (f *fixture) provider(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
-	case "/authorize":
+	case f.publicPath("/authorize"):
 		q, err := url.ParseQuery(r.URL.RawQuery)
 		if r.Method != http.MethodGet || err != nil || !exactKeys(q, "client_id", "redirect_uri", "response_type", "state", "code_challenge", "code_challenge_method") || q.Get("client_id") != "fixture-rp" || q.Get("redirect_uri") != f.rp+"/callback" || q.Get("response_type") != "code" || q.Get("code_challenge_method") != "S256" {
 			http.Error(w, "Invalid authorization", 400)
@@ -324,9 +355,29 @@ func (f *fixture) provider(w http.ResponseWriter, r *http.Request) {
 			f.cookie(w, "sso_idp_binding", browser, f.idp)
 		}
 		csrf := opaque()
+		if f.autoAuthorizeReturn {
+			value := opaque()
+			f.codes[value] = code{q.Get("state"), q.Get("code_challenge"), f.now().Add(flowTTL)}
+			u, _ := url.Parse(f.rp + "/callback")
+			u.RawQuery = url.Values{"code": {value}, "state": {q.Get("state")}}.Encode()
+			if !f.record("automatic_authorization", true) {
+				http.Error(w, "Recipient unavailable", 503)
+				return
+			}
+			http.Redirect(w, r, u.String(), 302)
+			return
+		}
 		f.forms[csrf] = authorization{browser, q.Get("state"), q.Get("code_challenge"), f.now().Add(flowTTL)}
-		page(w, "Test provider", `<form method=post action=/login><label>Username<input name=username autocomplete=off></label><label>Password<input type=password name=password autocomplete=off></label><input type=hidden name=csrf value="`+csrf+`"><button>Sign in</button></form>`)
-	case "/login":
+		prefix := ""
+		if f.cfg.PublicVariant != "" {
+			prefix = `<form method=get action=/help><label>Help topic<input name=topic></label><button>Help</button></form>`
+		}
+		target := f.publicPath("/login")
+		if f.reflectFormToken {
+			target += "/" + csrf
+		}
+		page(w, "Test provider", prefix+`<form method=post action="`+html.EscapeString(target)+`"><label>Username<input name="`+html.EscapeString(f.userField())+`" autocomplete=off></label><label>Password<input type=password name="`+html.EscapeString(f.passwordField())+`" autocomplete=off></label><input type=hidden name=csrf value="`+csrf+`"><button>Sign in</button></form>`)
+	case f.publicPath("/login"):
 		if r.Method != http.MethodPost {
 			w.WriteHeader(405)
 			return
@@ -337,7 +388,7 @@ func (f *fixture) provider(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		delete(f.forms, r.PostForm.Get("csrf"))
-		valid := subtle.ConstantTimeCompare([]byte(r.PostForm.Get("username")), []byte(f.cfg.Username)) == 1 && subtle.ConstantTimeCompare([]byte(r.PostForm.Get("password")), []byte(f.cfg.Password)) == 1
+		valid := subtle.ConstantTimeCompare([]byte(r.PostForm.Get(f.userField())), []byte(f.cfg.Username)) == 1 && subtle.ConstantTimeCompare([]byte(r.PostForm.Get(f.passwordField())), []byte(f.cfg.Password)) == 1
 		if valid && len(f.codes) >= 128 {
 			http.Error(w, "Code limit", 429)
 			return

@@ -154,6 +154,14 @@ authenticated and anonymous GETs. Only Go emits `browser_sso_login_v1` proof.
 Required HTTPS checks: `scripts/dev/browser-sso-execution-tests.sh`; composed
 kernel, native delivery and Google acceptance remain separate evidence gates.
 
+`browser.sso_inspect` revision1 precedes consent with one GET-only popup.
+Broker pins the observed RP page, intended IdP origin and protected RP link;
+the runtime returns only canonical form paths and positional selectors, closes
+the child and freezes the network. Provider-to-RP redirects, POSTs, secret path
+reflection, stale pages and additional popups are denied. Current authority
+and actual discovered paths are checked again by Broker before export. This
+does not authorize credential access, form submission or general IdP DOM access.
+
 `browser.page_freeze_snapshot` revision1 freezes the whole managed context and
 returns a fresh observation of only its exact page/document. It retains normal
 private binding, control epoch, TTL and resource guards. Go/Broker require

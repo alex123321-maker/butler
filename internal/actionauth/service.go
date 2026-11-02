@@ -124,6 +124,15 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 			return b, false, err
 		}
 	}
+	if call.ToolName == browsersso.InspectTool {
+		if c.Delegation != nil {
+			return b, false, browsersso.ErrScope
+		}
+		b, err = s.bindSSOInspection(ctx, b, call, contract)
+		if err != nil {
+			return b, false, err
+		}
+	}
 	if call.ToolName == externalauth.RequestTool {
 		if c.Delegation != nil {
 			return b, false, externalauth.ErrProvider

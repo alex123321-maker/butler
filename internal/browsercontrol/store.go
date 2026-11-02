@@ -122,6 +122,9 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	if call.ToolName == browsersso.Tool {
 		return s.recordSSO(ctx, call, grant.Binding, result)
 	}
+	if call.ToolName == browsersso.InspectTool {
+		return s.recordSSOInspection(ctx, call, grant.Binding, result)
+	}
 	if browserpage.IsTool(call.ToolName) {
 		return s.recordPageExecution(ctx, call, grant.Binding, result)
 	}
@@ -207,6 +210,9 @@ func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (contex
 			return ctx, ErrDenied
 		}
 		if mode == "agent" {
+			if call.ToolName == browsersso.InspectTool {
+				return s.beforeSSOInspection(ctx, call, epoch)
+			}
 			if call.ToolName == browsersso.Tool {
 				return s.beforeSSO(ctx, call, epoch)
 			}

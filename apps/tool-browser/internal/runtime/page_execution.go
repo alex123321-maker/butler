@@ -7,10 +7,12 @@ import (
 
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress"
+	"google.golang.org/protobuf/proto"
 )
 
 func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
@@ -20,8 +22,19 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, browserpage.ErrDenied.Error(), `{}`)}, nil
 	}
 	call := req.GetToolCall()
+	inspecting := call.ToolName == browsersso.InspectTool
 	a, e := browserpage.Parse(call.ToolName, call.ArgsJson)
-	if e != nil || !browserpage.ValidContract(req.Contract) || len(req.ResolvedCredentials) != 0 || len(call.CredentialRefs) != 0 || req.GetContext().GetRunId() != call.RunId || call.RunId == "" {
+	var inspection *inspectionRequest
+	validContract := browserpage.ValidContract(req.Contract)
+	if inspecting {
+		scope, parseErr := browsersso.ParseInspection(call.ArgsJson)
+		d, ok := browsercontrol.IncomingSSOInspection(ctx, scope)
+		e = parseErr
+		validContract = proto.Equal(req.Contract, browsersso.InspectContract()) && ok && d.ExpiresAt.After(time.Now())
+		a = browserpage.Args{SessionID: scope.Browser, Page: &scope.RPPage}
+		inspection = &inspectionRequest{Scope: scope, Dispatch: d}
+	}
+	if e != nil || !validContract || len(req.ResolvedCredentials) != 0 || len(call.CredentialRefs) != 0 || req.GetContext().GetRunId() != call.RunId || call.RunId == "" {
 		return fail()
 	}
 	var session *browserSession
@@ -61,7 +74,8 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		}
 	}
 	request := Request{ToolName: browserpage.Legacy(call.ToolName), SessionID: session.id, ManagedPages: true, URL: a.URL, Selector: a.Selector, Value: a.Value, Text: a.Text, ScopeOrigin: session.origin, ExpiresAt: session.expires.UTC().Format(time.RFC3339Nano), AllowedDomains: session.allowedDomains}
-	if browserpage.Bound(call.ToolName) {
+	request.SSOInspection = inspection
+	if browserpage.Bound(call.ToolName) || inspecting {
 		stage = "page_binding"
 		bound, ok := browsercontrol.IncomingPageDispatch(ctx)
 		page, known := session.pages[a.Page.ID]
@@ -69,6 +83,9 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 			return fail()
 		}
 		request.PageID, request.DocumentID, request.ObservationVersion, request.ExpectedURL = page.ID, page.DocumentID, uint64(page.RuntimeVersion), page.URL
+		if inspecting && (inspection.Dispatch.Page != bound || inspection.Scope.RPURL != page.URL) {
+			return fail()
+		}
 	}
 	runCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
 	defer cancel()
@@ -100,6 +117,18 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		stage = "freeze_report"
 		return fail()
 	}
+	if inspecting {
+		stage = "inspection_result"
+		if result.NetworkState != "frozen" || result.FinalURL != inspection.Scope.RPURL || len(result.InspectionForms) < 1 || len(result.InspectionForms) > 4 {
+			return fail()
+		}
+		for _, f := range result.InspectionForms {
+			scope, err := f.Scope(inspection.Scope)
+			if err != nil || !inspection.Dispatch.Allows(scope.IdPURL) || !inspection.Dispatch.Allows(scope.TargetURL) {
+				return fail()
+			}
+		}
+	}
 	pages := map[string]browserpage.Report{}
 	stage = "page_report"
 	for _, page := range result.PrivatePages {
@@ -125,7 +154,7 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		}
 		pages[page.ID] = page
 	}
-	if browserpage.Bound(call.ToolName) && call.ToolName != browserpage.Close && result.SelectedPageID != a.Page.ID {
+	if (browserpage.Bound(call.ToolName) || inspecting) && call.ToolName != browserpage.Close && result.SelectedPageID != a.Page.ID {
 		return fail()
 	}
 	session.pages = pages

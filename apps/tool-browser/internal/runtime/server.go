@@ -50,6 +50,7 @@ type Server struct {
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
+	SSOInspection      *inspectionRequest      `json:"sso_inspection,omitempty"`
 	SSO                *ssoRequest             `json:"sso,omitempty"`
 	SSOPhase           string                  `json:"sso_phase,omitempty"`
 	ManagedPages       bool                    `json:"managed_pages,omitempty"`
@@ -103,12 +104,18 @@ type ResultLink struct {
 	Text string `json:"text"`
 	Href string `json:"href"`
 }
+type ResultButton struct {
+	Selector string `json:"selector"`
+	Text     string `json:"text"`
+}
 type ResultError struct {
 	ErrorType string `json:"error_type"`
 	Message   string `json:"message"`
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
+	Buttons              []ResultButton             `json:"buttons,omitempty"`
+	InspectionForms      []browsersso.InspectedForm `json:"inspection_forms,omitempty"`
 	OwnerPages           []browsercontrol.OwnerPage `json:"owner_pages,omitempty"`
 	PrivatePages         []browserpage.Report       `json:"private_pages,omitempty"`
 	SelectedPageID       string                     `json:"selected_page_id,omitempty"`
@@ -200,7 +207,7 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if call == nil || contract == nil || s.runner == nil {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_request", "tool call, contract and browser runner are required")
 	}
-	if browserpage.IsTool(call.ToolName) {
+	if browserpage.IsTool(call.ToolName) || call.ToolName == browsersso.InspectTool {
 		return s.executePage(ctx, req)
 	}
 	if call.ToolName == browsersso.Tool {
@@ -454,9 +461,12 @@ func buildResultJSON(tool string, result Result) string {
 	result.LoginNonce, result.LoginURL, result.LoginCookies, result.LoginPosts = "", "", nil, 0
 	result.OwnerFrame = nil
 	result.OwnerPages = nil
-	if !browserpage.IsTool(tool) && tool != browsersso.Tool {
+	if !browserpage.IsTool(tool) && tool != browsersso.Tool && tool != browsersso.InspectTool {
 		result.PrivatePages = nil
 		result.SelectedPageID = ""
+	}
+	if tool != browsersso.InspectTool {
+		result.InspectionForms = nil
 	}
 	result.GetFormTarget, result.GetFormNonce = "", ""
 	return mustJSON(result)

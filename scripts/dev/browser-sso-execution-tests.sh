@@ -33,7 +33,7 @@ required authority ./internal/browsersso ./internal/actionauth -run '^TestSSO'
 required historical-recovery ./internal/actionauth -run '^TestOwnerOutcomeHistoricalLost(SSO|Login)'
 required consent-use ./internal/credentials ./apps/orchestrator/internal/api -run '^TestVaultSSO|^TestCredentialVaultOwnerAPIPrivacyLocal$'
 export BUTLER_TEST_BROWSER_PAGES_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
-required dispatch-fence ./internal/browsercontrol -run '^TestSSOPreDispatchPageFenceIntegration$'
+required dispatch-fence ./internal/browsercontrol -run '^TestSSOPreDispatchPageFenceIntegration$|^TestSSOInspectionPageDispatchAndReleaseIntegration$'
 required same-input ./apps/orchestrator/internal/app -run '^TestCredentialVaultLocalWaitResumeAndExpiry$'
 required recipient-fault-controls ./cmd/browser-sso-eval -run '^TestSSOFixtureCancelledAcceptedLoginRetainsReceiptWithoutCallback$'
 go build -o "$report/recipient" ./cmd/browser-sso-eval
@@ -41,7 +41,7 @@ export BUTLER_SSO_EVAL_BINARY="$PWD/$report/recipient"
 export BUTLER_BROWSER_E2E_SCRIPT="$PWD/apps/tool-browser/scripts/browser_runtime.mjs"
 export BUTLER_BROWSER_SSO_E2E=1
 required https-runtime ./apps/tool-browser/internal/runtime -run '^TestBrowserSSOChromiumHTTPS$'
-for mode in verified late_popup wrong_password denied_idp_post two_popups popup_storm stale_page helper_lost_before_sso helper_lost_after_idp_login; do
+for mode in verified late_popup wrong_password denied_idp_post two_popups popup_storm stale_page helper_lost_before_sso helper_lost_after_idp_login inspect_verified inspect_fresh_paths inspect_late inspect_twins inspect_storm inspect_stale inspect_denied_form inspect_idp_denied inspect_callback_denied inspect_reflected_secret inspect_helper_lost; do
  grep -F '"Action":"pass"' "$report/https-runtime.jsonl" | grep -Fq "\"Test\":\"TestBrowserSSOChromiumHTTPS/$mode\""
 done
 # These are mechanical checks with no Butler model invocation. Their durations

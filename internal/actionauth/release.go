@@ -28,6 +28,12 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
+	case browsersso.InspectTool:
+		a, e := browsersso.ParseInspection(call.ArgsJson)
+		if e != nil {
+			return false, e
+		}
+		resources = append(resources, a.Targets()...)
 	case browsersso.Tool:
 		a, e := browsersso.Parse(call.ArgsJson)
 		if e != nil {

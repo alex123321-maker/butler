@@ -1,0 +1,148 @@
+{
+  "run": "run-1793636355973661370-9fb0ba8409f79b11",
+  "uses": 1,
+  "event": "browser-baseline-google-native-20261102-04",
+  "input": "input-e0d9a5764857f07415316ede0490e8bb",
+  "status": "completed",
+  "launches": 1,
+  "requests": 1,
+  "exchanges": 1,
+  "deliveries": [
+    {
+      "at": "2026-11-02T16:24:03.850685+00:00",
+      "state": "result_ready",
+      "channel": "web",
+      "elapsed_since_ingress_ms": 288145.166000
+    },
+    {
+      "at": "2026-11-02T16:24:05.154572+00:00",
+      "state": "sent",
+      "channel": "telegram",
+      "elapsed_since_ingress_ms": 289449.053000
+    }
+  ],
+  "milestones": [
+    {
+      "at": "2026-11-02T16:19:45.766432+00:00",
+      "action": "tools.search",
+      "tool_runtime_ms": 262.609000,
+      "elapsed_since_previous_ms": 30060.913000
+    },
+    {
+      "at": "2026-11-02T16:19:53.471019+00:00",
+      "action": "tools.search",
+      "tool_runtime_ms": 449.719000,
+      "elapsed_since_previous_ms": 7704.587000
+    },
+    {
+      "at": "2026-11-02T16:20:09.002481+00:00",
+      "action": "tools.load",
+      "tool_runtime_ms": 4545.008000,
+      "elapsed_since_previous_ms": 15531.462000
+    },
+    {
+      "at": "2026-11-02T16:20:26.625409+00:00",
+      "action": "tools.search",
+      "tool_runtime_ms": 4581.320000,
+      "elapsed_since_previous_ms": 17622.928000
+    },
+    {
+      "at": "2026-11-02T16:20:40.338811+00:00",
+      "action": "tools.load",
+      "tool_runtime_ms": 886.610000,
+      "elapsed_since_previous_ms": 13713.402000
+    },
+    {
+      "at": "2026-11-02T16:20:45.971097+00:00",
+      "action": "credentials.search",
+      "tool_runtime_ms": 398.967000,
+      "elapsed_since_previous_ms": 5632.286000
+    },
+    {
+      "at": "2026-11-02T16:20:58.096968+00:00",
+      "action": "browser.open_pages",
+      "tool_runtime_ms": 1165.215000,
+      "elapsed_since_previous_ms": 12125.871000
+    },
+    {
+      "at": "2026-11-02T16:21:20.932725+00:00",
+      "action": "external_request_created",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 22835.757000
+    },
+    {
+      "at": "2026-11-02T16:22:21.722351+00:00",
+      "action": "protected_consent",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 60789.626000
+    },
+    {
+      "at": "2026-11-02T16:22:22.561879+00:00",
+      "action": "browser_handoff_started",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 839.528000
+    },
+    {
+      "at": "2026-11-02T16:23:14.201066+00:00",
+      "action": "provider_exchange_claimed",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 51639.187000
+    },
+    {
+      "at": "2026-11-02T16:23:16.231007+00:00",
+      "action": "rp_access_verified",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 2029.941000
+    },
+    {
+      "at": "2026-11-02T16:24:03.96664+00:00",
+      "action": "communication.message",
+      "tool_runtime_ms": 181.588000,
+      "elapsed_since_previous_ms": 47735.633000
+    },
+    {
+      "at": "2026-11-02T16:24:21.958676+00:00",
+      "action": "input_terminal",
+      "tool_runtime_ms": null,
+      "elapsed_since_previous_ms": 17992.036000
+    }
+  ],
+  "accepted_at": "2026-11-02T16:19:15.705519+00:00",
+  "terminal_at": "2026-11-02T16:24:21.958676+00:00",
+  "input_tokens": 90233,
+  "publications": [
+    {
+      "purpose": "result",
+      "input_matches": true,
+      "reference_matches": true
+    }
+  ],
+  "output_tokens": 1019,
+  "authentication": [
+    {
+      "effect": "effect_confirmed",
+      "outcome": "verified",
+      "claim_at": "2026-11-02T16:23:14.201066+00:00",
+      "dispatch": "dispatch_completed",
+      "verified_at": "2026-11-02T16:23:16.231007+00:00",
+      "authenticated_read": true,
+      "anonymous_challenge": true,
+      "exchange_and_probe_ms": 2029.941000
+    }
+  ],
+  "model_attempts": 10,
+  "owner_decisions": 1,
+  "generic_approvals": 0,
+  "elapsed_to_terminal_ms": 306253.157000,
+  "observed_input_attempts": 10,
+  "unselected_message_source_ref": false,
+  "verified_reference_matches_message_proposal": true,
+  "timing_includes_model_deliberation": true,
+  "milestone_intervals_include_all_intervening_activity": true,
+  "provider_wire_and_all_system_logs_checked": false,
+  "raw_text_exported": false,
+  "client_secret_in_native_payload": false,
+  "dedicated_google_email_in_native_payload": false,
+  "password_or_mfa_automation_proven": false,
+  "server_chromium_session_imported": false
+}

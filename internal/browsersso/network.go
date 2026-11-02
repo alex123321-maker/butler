@@ -51,7 +51,11 @@ func (d Dispatch) Allows(raw string) bool {
 	return false
 }
 func (d Dispatch) Valid(s Scope) bool {
-	if s.Validate() != nil || !d.Page.Valid(true) || d.Page.Ref != s.RPPage || d.Page.URL != s.RPURL || !digest(d.Digest) || len(d.Allowed) == 0 || len(d.Allowed) > 64 || len(d.Denied) > 64 || d.ExpiresAt.IsZero() {
+	return s.Validate() == nil && d.validTargets(s.RPPage, s.RPURL, s.Targets())
+}
+
+func (d Dispatch) validTargets(ref browserpage.Ref, rp string, targets []string) bool {
+	if !d.Page.Valid(true) || d.Page.Ref != ref || d.Page.URL != rp || !digest(d.Digest) || len(d.Allowed) == 0 || len(d.Allowed) > 64 || len(d.Denied) > 64 || d.ExpiresAt.IsZero() {
 		return false
 	}
 	for _, scope := range append(append([]NetworkScope{}, d.Allowed...), d.Denied...) {
@@ -61,7 +65,7 @@ func (d Dispatch) Valid(s Scope) bool {
 			return false
 		}
 	}
-	for _, raw := range s.Targets() {
+	for _, raw := range targets {
 		if !d.Allows(raw) {
 			return false
 		}

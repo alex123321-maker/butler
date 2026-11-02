@@ -95,3 +95,13 @@ calls. Native Input timing must separately include model deliberation, owner
 waits and final delivery. Never replay previous attempts to backfill metrics.
 See the [page-addressing proposal](../../docs/architecture/browser-pages-proposal.md)
 for production work still required before native and external Google acceptance.
+
+For independent form discovery, initialize with `--fresh-form-paths`: the
+private config retains a random public route variant, field names, button ID
+and button order. The RP exposes a genuine protected-account navigation link.
+Tests must discover this link, the visible login button and native form through
+observations rather than copying config values into the model prompt.
+`--auto-authorize-return` and `--reflect-form-token` are isolated recipient
+fault controls: respectively a GET-only provider callback and a form action
+reflecting hidden CSRF material. The inspection runtime must reject both before
+consent without exporting private paths. They are not production tool flags.

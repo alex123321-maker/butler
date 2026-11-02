@@ -31,7 +31,7 @@ func client() *http.Client {
 func site(t *testing.T) *testSite {
 	t.Helper()
 	s := &testSite{c: client(), journal: &bytes.Buffer{}}
-	s.f = newFixture(config{"sso-user-canary", "sso-password-canary", "PRIVATE-SSO-REFERENCE"}, "", "", s.journal)
+	s.f = newFixture(config{Username: "sso-user-canary", Password: "sso-password-canary", PrivateFact: "PRIVATE-SSO-REFERENCE"}, "", "", s.journal)
 	s.f.now = func() time.Time { return time.Now().Add(time.Duration(s.offset.Load())) }
 	s.rp = httptest.NewServer(s.f.handler(false))
 	s.idp = httptest.NewServer(s.f.handler(true))

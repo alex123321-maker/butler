@@ -556,3 +556,9 @@ ordinary read for exact live outcome review. PG correlates captured source/read
 digests, post-effect document and current page/context/authority. Protected owner
 attestation can resolve the journal without renewing a grant or replaying POST.
 Unacknowledged, closed-page and historical managed outcomes remain restrictive.
+
+Vault-enabled page composition also registers `browser.sso_inspect` revision1.
+It requires current owner-goal read authority over the RP, intended IdP and RP
+verification link, and exact PG page identity. Broker exports only validated
+candidate scopes with a fresh RP ref after current-authority/path release
+checks. Inspection accepts no credentials and grants no POST or SSO approval.

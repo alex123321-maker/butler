@@ -37,6 +37,13 @@ func bindBrowserReadScope(b ActionBinding, resource string, epoch int64) (Action
 }
 
 func scopedResourceWithin(s ResourceScope, b ActionBinding) bool {
+	if validSSOInspection(b) {
+		for _, target := range b.BrowserSSOInspection.Targets() {
+			if resourceWithin(s, target) {
+				return true
+			}
+		}
+	}
 	if validExternalScope(b) {
 		for _, target := range b.ExternalAuth.Targets() {
 			if resourceWithin(s, target) {

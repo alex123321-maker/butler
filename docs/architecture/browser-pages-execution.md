@@ -130,6 +130,14 @@ retain the credential-free same-origin boundary. Composed kernel execution,
 native model delivery and the owner's dedicated Google account remain required
 acceptance. Do not reuse provider control-plane tokens for Google.
 
+The separate pre-consent `browser.sso_inspect` read discovers native IdP form
+paths and positional selectors under current RP/IdP owner-goal authority. It
+uses a fresh bounded GET-only child, closes it, freezes the context and returns
+fresh PG-owned RP refs. Ordinary observations expose bounded visible button
+labels/positional selectors under existing secret redaction. Inspection does
+not extend generic page access to the IdP or permit any callback/POST; see
+[the SSO contract](browser-sso-protocol.md).
+
 ## Verification
 
 `scripts/dev/browser-page-execution-tests.sh` requires isolated PostgreSQL and

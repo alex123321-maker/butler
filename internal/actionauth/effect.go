@@ -118,6 +118,9 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 }
 
 func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, calls ...*toolbrokerv1.ToolCall) (EffectPolicy, error) {
+	if b.ToolName == browsersso.InspectTool && (!proto.Equal(contract, browsersso.InspectContract()) || !validSSOInspection(b) || len(b.CredentialRefs) != 0) {
+		return EffectPolicy{}, browsersso.ErrScope
+	}
 	if browserpage.IsTool(b.ToolName) && (!browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0) {
 		return EffectPolicy{}, browserpage.ErrDenied
 	}

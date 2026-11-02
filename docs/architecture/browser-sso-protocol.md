@@ -2,8 +2,8 @@
 
 External Google authorization uses a separate
 [provider protocol and integration plan](browser-google-auth.md). Its private
-provider library is implemented; production callback, owner/authority binding
-and same-Input continuation are not yet wired. Native-form SSO consent below
+provider library, Core callback, owner/authority binding and same-Input
+continuation are implemented. Native-form SSO consent below
 does not authorize external Chrome OAuth or generic user-tab credential access.
 
 ## Consent and execution contract
@@ -55,6 +55,32 @@ remains disabled; a complete scope and explicit owner click remain required.
 Polling initializes card state only and never issues approval.
 
 ## Bounded executor
+
+Before consent, `browser.sso_inspect` revision1 permits a separate bounded
+GET/HEAD-only inspection. The model selects an exact observed RP page and
+button, the intended distinct IdP origin and a public protected RP link. The
+Broker requires current owner-goal read authority for all three targets, no
+delegation or credential references, and the current page/document/epoch.
+Private dispatch pins these values, path allow/deny caps and a short expiry.
+The runtime opens at most one fresh popup, admits the expected provider GETs,
+and denies provider-to-RP return even when it is an immediate redirect before
+the popup page event. Inspection cannot fill or POST. It closes the popup and
+freezes the context before returning.
+
+Only canonical query-free IdP/form paths and bounded positional form/input
+selectors are exported as candidate `sso_scopes`, together with a fresh
+PostgreSQL-owned RP observation. No IdP body, field names/values, hidden CSRF,
+cookies or OAuth query is returned. Secret-reflecting paths, unsupported forms,
+multiple popups, stale pages and helper loss fail closed. Broker rechecks
+current authority and each discovered path before release. This is discovery,
+not consent or authentication evidence; the model must choose a returned scope
+and obtain the existing single protected SSO decision before submission.
+Ordinary page observations expose bounded button labels/positional selectors
+already visible in the page, under the same secret redaction rules.
+
+This protocol covers native forms with publicly discoverable protected RP
+navigation. It does not discover arbitrary private verification endpoints or
+automate JavaScript-only providers, MFA or Google account entry.
 
 The Broker protocol checks RP **and** IdP resource authority before
 opening the fresh child of the consented exact RP document. The owner consents

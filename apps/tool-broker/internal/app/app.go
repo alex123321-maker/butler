@@ -113,7 +113,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		}
 		credentialVault, _ = credentials.VaultFromEnvironment(postgres.Pool())
 		if credentialVault != nil {
-			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{browsersso.Contract()}); err != nil {
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{browsersso.Contract(), browsersso.InspectContract()}); err != nil {
 				postgres.Close()
 				return nil, err
 			}
