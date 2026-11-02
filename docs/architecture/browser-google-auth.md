@@ -70,10 +70,12 @@ Google exempts identity-only scopes from parts of its test-user restrictions,
 so a test-user list is not a Butler access-control boundary. Do not activate
 billing or publish the app as part of this test.
 
-At the current implementation boundary the project exists and the Google app
-wizard is prepared; acceptance of Google's User Data Policy and OAuth client
-creation are awaiting the owner's action-time confirmation. No client secret
-has been created, downloaded or deployed by this change.
+The owner approved Google's User Data Policy and creation on 2026-11-02.
+`Butler Browser SSO Test Web` is created, the app remains in Testing, one
+dedicated test user is listed, and only `openid`/`userinfo.email` are configured.
+The client secret is retained in a restricted, git-ignored local operator file;
+the provider configuration parser accepted that file. It is not deployed or
+enabled in Butler. See [the setup evidence](../testing/browser-google-client-2026-11-02.md).
 
 ## Acceptance
 
