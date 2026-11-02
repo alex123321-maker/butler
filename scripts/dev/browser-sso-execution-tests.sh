@@ -16,6 +16,8 @@ required() {
  grep -F '"Action":"pass"' "$report/$name.jsonl" | grep -Fq '"Test":'
  printf 'stage=%s finished_at=%s\n' "$name" "$(date -u +%FT%TZ)"
 }
+required google-provider-protocol ./internal/externalauth
+go vet ./internal/externalauth
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
 required authority ./internal/browsersso ./internal/actionauth -run '^TestSSO'
 required historical-recovery ./internal/actionauth -run '^TestOwnerOutcomeHistoricalLost(SSO|Login)'

@@ -1,5 +1,11 @@
 # Protected RP/IdP consent
 
+External Google authorization uses a separate
+[provider protocol and integration plan](browser-google-auth.md). Its private
+provider library is implemented; production callback, owner/authority binding
+and same-Input continuation are not yet wired. Native-form SSO consent below
+does not authorize external Chrome OAuth or generic user-tab credential access.
+
 ## Consent and execution contract
 
 `browsersso.Scope` describes one conditional SSO attempt: an exact ready RP

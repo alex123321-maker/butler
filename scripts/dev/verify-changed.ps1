@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/externalauth/|docs/architecture/browser-google-auth[.]md$)" {
+      [void]$specs.Add("docs/architecture/browser-google-auth.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("go test -race ./internal/externalauth -count=1; go vet ./internal/externalauth. Provider-only synthetic tests do not prove owner consent, durable callback claims, current authority, same-Input recovery, RP access or Google/native delivery.")
+      continue
+    }
     "^(internal/browsersso/|internal/credentials/sso|internal/(actionauth|browsercontrol)/sso|apps/tool-browser/internal/runtime/sso|apps/orchestrator/internal/app/credential_sso|migrations/1(09_browser_sso_consent|10_browser_sso_use)[.]|scripts/dev/browser-sso-execution-tests[.]sh|[.]github/workflows/browser-sso[.]yml|docs/architecture/browser-sso-protocol[.]md$)" {
       [void]$specs.Add("docs/architecture/browser-sso-protocol.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
