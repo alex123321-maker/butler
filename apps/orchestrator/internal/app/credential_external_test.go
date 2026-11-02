@@ -24,6 +24,14 @@ import (
 // Core Input suspension/resumption. No model, provider or channel is simulated
 // as successful authentication: the terminal control here is cancellation.
 func TestCredentialExternalSameInputWaitAndCancel(t *testing.T) {
+	testCredentialExternalProjection(t, false)
+}
+
+func TestCredentialExternalVerifiedFactProjection(t *testing.T) {
+	testCredentialExternalProjection(t, true)
+}
+
+func testCredentialExternalProjection(t *testing.T, verified bool) {
 	dsn := os.Getenv("BUTLER_TEST_VAULT_POSTGRES_URL")
 	if dsn == "" {
 		t.Skip("requires disposable *_test PostgreSQL")
@@ -152,7 +160,27 @@ func TestCredentialExternalSameInputWaitAndCancel(t *testing.T) {
 	if _, e = k.ResumeInteraction(owned, "run", r.ID); e == nil {
 		t.Fatal("approval mistaken for authentication")
 	}
-	if v.CancelExternal(ctx, p.OwnerID, r.ID, r.ScopeDigest) != nil {
+	if verified {
+		// Seed a terminal owning ledger fact to test only Core projection. This
+		// is not provider/Chromium/login acceptance; those have separate tests.
+		if _, e = pool.Exec(ctx, `INSERT INTO browser_external_auth_launches(request_id) VALUES($1)`, r.ID); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, `INSERT INTO browser_external_auth_exchanges(request_id,effect_id) VALUES($1,$2)`, r.ID, dispatch.ActionID); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, `INSERT INTO browser_external_auth_results(request_id,outcome,rp_authenticated_read,rp_anonymous_challenge,rp_reference) VALUES($1,'verified',true,true,'mechanical-rp-reference')`, r.ID); e != nil {
+			t.Fatal(e)
+		}
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+		if k.readyTx(ctx, tx, "run", r.ID) != nil || tx.Commit(ctx) != nil {
+			t.Fatal("terminal callback readiness")
+		}
+	} else if v.CancelExternal(ctx, p.OwnerID, r.ID, r.ScopeDigest) != nil {
 		t.Fatal("cancel")
 	}
 	// Simulate the existing dispatcher reclaim, not a new Input or Task.
@@ -160,7 +188,14 @@ func TestCredentialExternalSameInputWaitAndCancel(t *testing.T) {
 		t.Fatal(e)
 	}
 	result, e := k.ResumeInteraction(owned, "run", r.ID)
-	if e != nil || !strings.Contains(result, `"state":"cancelled"`) || strings.Contains(result, "credential_alias") || strings.Contains(result, "synthetic-password-canary") {
+	want := `"state":"cancelled"`
+	if verified {
+		want = `"state":"verified"`
+	}
+	if e != nil || !strings.Contains(result, want) || strings.Contains(result, "credential_alias") || strings.Contains(result, "synthetic-password-canary") {
 		t.Fatal("terminal same Input projection", e)
+	}
+	if verified && (!strings.Contains(result, `"reference":"mechanical-rp-reference"`) || !strings.Contains(result, `"verify_url":"https://rp.example/auth/google/account"`) || !strings.Contains(result, `"browser_session_shared":false`) || !strings.Contains(result, `"rp_access_verified":true`)) {
+		t.Fatal("verified fact needs unnecessary server-browser checks")
 	}
 }

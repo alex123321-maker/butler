@@ -154,6 +154,14 @@ including model deliberation and failed actions. Owner/Google challenge wait is
 reported as a component of that inclusive total. Engineering/CI time is separate;
 do not replay older attempts to reconstruct timings.
 
+A verified same-Input projection includes the retained RP `reference`, exact
+`verify_url`, `rp_access_verified=true` and `browser_session_shared=false`.
+It is a verified historical fact for the current Task, not an imported Chrome
+cookie jar. The model can report that fact directly; another server-page
+snapshot does not check the external Chrome session. Unverified/unknown states
+never gain these fields. Publication source references remain exact selected
+Catalog identities; a request/Input/tool/browser ID is not such a source.
+
 If the pinned request-creation operation loses its acknowledgement before any
 request exists, the terminal kernel can prove metadata creation ABSENT using
 the [stopped review](stopped-input-finalization.md). This checks both permanent

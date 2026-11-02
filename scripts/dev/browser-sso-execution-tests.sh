@@ -23,6 +23,9 @@ required external-authority ./internal/actionauth ./internal/budget ./internal/c
 required external-ledger ./internal/credentials -run '^TestVaultExternalAuth'
 required external-http ./apps/orchestrator/internal/api -run '^TestExternalRP'
 required external-same-input ./apps/orchestrator/internal/app -run '^TestCredentialExternal'
+export BUTLER_TEST_COMMUNICATION_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
+required publication-source-draft ./apps/orchestrator/internal/communication -run '^TestCommunicationSourceDraft'
+required publication-model-draft ./apps/orchestrator/internal/orchestrator -run '^TestCommunicationSourceDraft|^TestResearchCorrection'
 required external-broker ./apps/tool-broker/internal/broker -run '^TestExternalCredentialBroker'
 go vet ./internal/externalauth
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'

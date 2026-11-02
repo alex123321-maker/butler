@@ -15,18 +15,12 @@ import (
 // Reproduced from 6bee49c3. This pin permits only terminal creation-absence
 // review, not execution of an old contract or any provider/POST inference.
 const stoppedExternalLoginContract = "34c3f3c573afdd8d3ecc99480972c87afa0df01b9d79be9269865cadc6ca47ab"
+const stoppedTaskMessageContract = "2bcb3ec0772e14cc5600d63ac1bd06d5786c4dffe5319c74d5b373c2b48a9539"
 
-// ReviewStoppedExternalRequestTx resolves only the pinned Broker metadata
-// operation, including a logical Task slot with separate effect/intent IDs.
-// A provider child is a commit with another policy and can never qualify.
-func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string) error {
-	var exists bool
-	if tx.QueryRow(ctx, `SELECT to_regclass('browser_external_auth_requests') IS NOT NULL`).Scan(&exists) != nil {
-		return ErrOwnerAuthority
-	}
-	if !exists {
-		return nil
-	}
+// ReviewStoppedTaskMetadataTx proves only absence of pinned atomic request /
+// publication creation with distinct Task effect/intent IDs. It cannot infer a
+// provider outcome, channel delivery or absence of an arbitrary write.
+func ReviewStoppedTaskMetadataTx(ctx context.Context, tx pgx.Tx, input string) error {
 	var owner, run string
 	err := tx.QueryRow(ctx, `SELECT i.owner_id,i.run_id FROM accepted_inputs i JOIN input_stopped_attempts f USING(input_id)
  JOIN sessions s ON s.session_key=i.session_key AND s.user_id=i.owner_id
@@ -42,7 +36,7 @@ func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string
 	if err != nil {
 		return err
 	}
-	rows, err := tx.Query(ctx, `SELECT DISTINCT e.action_id FROM action_effects e JOIN action_intents a ON a.effect_id=e.action_id WHERE a.run_id=$1 AND e.initial_binding->>'run_id'=$1 AND e.state='effect_unknown' AND e.initial_binding->>'tool_name'=$2 ORDER BY e.action_id LIMIT 9`, run, externalauth.RequestTool)
+	rows, err := tx.Query(ctx, `SELECT DISTINCT e.action_id FROM action_effects e JOIN action_intents a ON a.effect_id=e.action_id WHERE a.run_id=$1 AND e.initial_binding->>'run_id'=$1 AND e.state='effect_unknown' AND e.initial_binding->>'tool_name' IN ($2,'communication.message') ORDER BY e.action_id LIMIT 9`, run, externalauth.RequestTool)
 	if err != nil {
 		return err
 	}
@@ -60,7 +54,7 @@ func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string
 		return rows.Err()
 	}
 	if len(ids) > 8 {
-		return fmt.Errorf("external metadata review exceeds bounded batch")
+		return fmt.Errorf("task metadata review exceeds bounded batch")
 	}
 	for _, id := range ids {
 		e, err := effectIn(ctx, tx, id, true)
@@ -68,7 +62,12 @@ func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string
 			return err
 		}
 		b := e.Binding
-		if e.State != StateUnknown || b.OwnerID != owner || b.RunID != run || b.TaskID == "" || b.ToolCallID == "" || b.ActionID != StableActionID(run, b.ToolCallID) || b.ContractRevision != "1" || b.ContractHash != stoppedExternalLoginContract || b.Effect != EffectPrepare || b.Resource != "tool:"+externalauth.RequestTool || !validExternalScope(b) || b.BrowserPage == nil || !b.BrowserPage.Valid(true) || b.BrowserPage.Ref != b.ExternalAuth.RPPage || b.BrowserPage.URL != b.ExternalAuth.RPURL || len(b.CredentialRefs) != 0 || b.ExtensionID != "" || b.ConverterID != "" || len(b.DataSources) != 0 || b.BrowserSSO != nil || e.Policy.RetrySafety != "unsafe" || e.Policy.VerificationMethod != "local_runtime_ack" || e.Policy.IdempotencyHeader != "" || e.Policy.ScopeOrigin != "" || e.Policy.VerificationURL != "" || e.Policy.LocalPreparation != nil || e.Policy.Login != nil || e.Policy.SSO != nil {
+		if e.State != StateUnknown || b.OwnerID != owner || b.RunID != run || b.TaskID == "" || b.ToolCallID == "" || b.ActionID != StableActionID(run, b.ToolCallID) || b.Effect != EffectPrepare || b.Resource != "tool:"+b.ToolName || len(b.CredentialRefs) != 0 || b.ExtensionID != "" || b.ConverterID != "" || len(b.DataSources) != 0 || b.BrowserSSO != nil || e.Policy.RetrySafety != "unsafe" || e.Policy.VerificationMethod != "local_runtime_ack" || e.Policy.IdempotencyHeader != "" || e.Policy.ScopeOrigin != "" || e.Policy.VerificationURL != "" || e.Policy.LocalPreparation != nil || e.Policy.Login != nil || e.Policy.SSO != nil {
+			continue
+		}
+		external := b.ToolName == externalauth.RequestTool && b.ContractRevision == "1" && b.ContractHash == stoppedExternalLoginContract && validExternalScope(b) && b.BrowserPage != nil && b.BrowserPage.Valid(true) && b.BrowserPage.Ref == b.ExternalAuth.RPPage && b.BrowserPage.URL == b.ExternalAuth.RPURL
+		message := b.ToolName == "communication.message" && b.ContractRevision == "2" && b.ContractHash == stoppedTaskMessageContract && len(b.CommunicationDestinationsHash) == 64 && b.ExternalAuth == nil && b.BrowserPage == nil && b.BrowserScopeURL == ""
+		if !external && !message {
 			continue
 		}
 		var raw, fp, hash string
@@ -97,7 +96,16 @@ func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string
  AND NOT EXISTS(SELECT 1 FROM action_effect_dispatches other WHERE other.action_id=$1 AND other.outcome='executing'))`, id, b.ActionID, e.AuthorizationID, run, input, b.ActionHash, string(y), b.TaskID, b.TaskRevision).Scan(&settled) != nil || !settled {
 			continue
 		}
-		absent, err := credentialcontrol.StoppedExternalLoginAbsentTx(ctx, tx, b.ToolCallID)
+		var absent bool
+		method, source := "stopped_external_login_request_absence_v1", "owning_external_request_store"
+		if external {
+			absent, err = credentialcontrol.StoppedExternalLoginAbsentTx(ctx, tx, b.ToolCallID)
+		} else {
+			// The pinned publisher holds the same original session/run/Input
+			// locks and checks a live claim before its atomic outbox commit.
+			err = tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM communication_publications WHERE effect_id=$1)`, id).Scan(&absent)
+			method, source = "stopped_task_publication_absence_v1", "owning_publication_store"
+		}
 		if err != nil {
 			return err
 		}
@@ -108,8 +116,12 @@ func ReviewStoppedExternalRequestTx(ctx context.Context, tx pgx.Tx, input string
 		if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil {
 			return ErrOwnerAuthority
 		}
-		proof := digest(id + "\x00" + b.ActionID + "\x00" + b.ContractHash + "\x00terminal_external_request_absence")
-		observed := EffectEvidence{EvidenceID: "evidence_" + digest(id+"\x00stopped_external_login_request_absence_v1"), ActionID: id, SourceActionID: b.ActionID, SourceRunID: run, SourceToolCallID: b.ToolCallID, Source: "owning_external_request_store", Method: "stopped_external_login_request_absence_v1", Verdict: StateAbsent, ResultDigest: proof, ObservedAt: now, RecordedAt: now}
+		proofKind := method
+		if external {
+			proofKind = "terminal_external_request_absence"
+		}
+		proof := digest(id + "\x00" + b.ActionID + "\x00" + b.ContractHash + "\x00" + proofKind)
+		observed := EffectEvidence{EvidenceID: "evidence_" + digest(id+"\x00"+method), ActionID: id, SourceActionID: b.ActionID, SourceRunID: run, SourceToolCallID: b.ToolCallID, Source: source, Method: method, Verdict: StateAbsent, ResultDigest: proof, ObservedAt: now, RecordedAt: now}
 		if insertEvidence(ctx, tx, observed) != nil {
 			return ErrOwnerAuthority
 		}

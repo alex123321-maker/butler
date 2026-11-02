@@ -259,13 +259,14 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 			return "", credentials.ErrVault
 		}
 	}
-	var externalReference string
+	var externalReference, externalVerifyURL string
 	if strings.HasPrefix(id, "extq_") {
 		r, reference, e := c.Vault.ExternalStateTx(ctx, tx, credentials.Principal{OwnerID: owner, SessionKey: token.SessionKey, RunID: runID, TaskID: taskID, TaskRevision: rev, ConstraintsRevision: cr}, id)
-		if e != nil || r.State != state {
+		if e != nil || r.State != state || r.ExternalScope == nil {
 			return "", credentials.ErrVault
 		}
 		externalReference = reference
+		externalVerifyURL = r.ExternalScope.VerifyURL
 	}
 	if tx.Commit(ctx) != nil {
 		return "", credentials.ErrVault
@@ -278,6 +279,8 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 		if state == "verified" {
 			response["rp_access_verified"] = true
 			response["reference"] = externalReference
+			response["verify_url"] = externalVerifyURL
+			response["browser_session_shared"] = false
 		}
 	}
 	if scopeDigest != "" {

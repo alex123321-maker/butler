@@ -1,5 +1,12 @@
 # Communication kernel (dormant)
 
+The composed kernel has a read-only publication source preflight. It checks
+current ownership/Input/Task and selected Catalog metadata, exporting no body
+and creating no publication/grant. Unselected refs are repairable before
+dispatch; the publisher repeats its existing checks transactionally. After a
+lost dispatched ACK, only separately pinned terminal owning absence evidence
+can mark a Task publication ABSENT; it cannot replay delivery or revive work.
+
 Diagnostics checks migration readiness in the connection's current schema;
 same-named tables later in the search path cannot satisfy missing migrations.
 

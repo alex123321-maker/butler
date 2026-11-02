@@ -1,5 +1,17 @@
 # Butler — общение агента с пользователем
 
+Before consuming a publication grant, Core can reject unselected
+`communication.*.source_refs` as a known draft error. The owning communication
+store checks the live owner/session/run/Input/Task and exact current-run Catalog
+selection without exporting a source or creating a publication. Fixed feedback
+is durably correlated as `validation_rejected`, `dispatched=false`; at most four
+draft repairs use ordinary model budgets. The model must select a real Catalog
+source or correct its declarations/unsupported claims; browser and protected
+login facts need no invented Catalog reference. The dispatched publisher still
+repeats exact selection, source/export, destination, grant and claim checks in
+its atomic publication transaction. A preflight result grants no permission
+and cannot resolve an already-dispatched UNKNOWN publication.
+
 Protected `POST /api/v3/communications/messages` accepts optional `task_id` for
 an existing active owner Task in the pinned Web conversation. Ordinary Input
 admission validates owner/session/status and binds the target into the immutable

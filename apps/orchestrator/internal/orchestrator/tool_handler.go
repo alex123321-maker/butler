@@ -92,6 +92,13 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("tool executor is not configured")
 	}
 	if approvalID == "" && !operatorDoctor(ctx) {
+		sourceFeedback, err := s.communicationSourceFeedback(ctx, current, requested)
+		if err != nil {
+			return nil, current, err
+		}
+		if sourceFeedback != "" {
+			return s.rejectDraft(ctx, current, leaseID, requested, "communication_sources_unselected", sourceFeedback)
+		}
 		feedback, err := s.researchFeedback(ctx, current, requested)
 		if err != nil {
 			return nil, current, err

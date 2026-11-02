@@ -28,6 +28,26 @@ func TestExternalStoppedMetadataContractPin(t *testing.T) {
 }
 
 func TestExternalStoppedMetadataAbsenceIntegration(t *testing.T) {
+	testStoppedTaskMetadataAbsence(t, false)
+}
+
+func TestExternalStoppedTaskPublicationAbsenceIntegration(t *testing.T) {
+	raw, err := os.ReadFile("testdata/stopped_task_message_6bee.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var c toolbrokerv1.ToolContract
+	if json.Unmarshal(raw, &c) != nil {
+		t.Fatal("publication contract fixture")
+	}
+	hash, err := ContractHash(&c)
+	if err != nil || hash != stoppedTaskMessageContract || c.SupportsCredentialRefs {
+		t.Fatal("publication contract pin drift", hash, err)
+	}
+	testStoppedTaskMetadataAbsence(t, true)
+}
+
+func testStoppedTaskMetadataAbsence(t *testing.T, publication bool) {
 	for _, mode := range []string{"absent", "rollback", "existing_request", "foreign_request", "live_lease", "live_claim", "claim_expiry", "live_run", "wrong_event", "wrong_owner", "wrong_task", "wrong_revision", "contract", "credential", "wrong_page", "commit", "provider_policy", "unfinished_dispatch", "live_dispatch", "live_grant", "wrong_grant", "wrong_fingerprint", "wrong_hash", "wrong_intent"} {
 		t.Run(mode, func(t *testing.T) {
 			pool, b := stoppedLocalFixture(t, false, func(b *ActionBinding) {
@@ -39,13 +59,19 @@ func TestExternalStoppedMetadataAbsenceIntegration(t *testing.T) {
 				ref := browserpage.Ref{ID: strings.Repeat("a", 32), DocumentID: strings.Repeat("b", 32), Version: 1}
 				b.BrowserPage = &browserpage.Binding{Ref: ref, URL: "https://rp.example/", Epoch: 1, RuntimeVersion: 1}
 				b.ExternalAuth = &externalauth.Scope{Browser: strings.Repeat("c", 32), RPPage: ref, RPURL: "https://rp.example/", VerifyURL: "https://rp.example/auth/google/account", Provider: "google"}
+				if publication {
+					b.ToolName, b.ContractRevision, b.ContractHash = "communication.message", "2", stoppedTaskMessageContract
+					b.Resource = "tool:communication.message"
+					b.CommunicationDestinationsHash = strings.Repeat("b", 64)
+					b.ExternalAuth, b.BrowserPage = nil, nil
+				}
 				switch mode {
 				case "contract":
 					b.ContractHash = strings.Repeat("d", 64)
 				case "credential":
 					b.CredentialRefs = []CredentialRef{{Alias: "private", Field: "password"}}
 				case "wrong_page":
-					b.BrowserPage.URL = "https://other.example/"
+					b.BrowserPage = &browserpage.Binding{Ref: ref, URL: "https://other.example/", RuntimeVersion: 1}
 				case "commit":
 					b.Effect = EffectCommit
 				}
@@ -63,6 +89,15 @@ func TestExternalStoppedMetadataAbsenceIntegration(t *testing.T) {
     UPDATE action_authorizations SET grant_data=jsonb_build_object('binding',$3::jsonb)`, pgx.QueryExecModeSimpleProtocol, b.ActionID, effect, mustJSONExternalStopped(t, b))
 			if err != nil {
 				t.Fatal(err)
+			}
+			if publication && (mode == "existing_request" || mode == "foreign_request") {
+				run := "run"
+				if mode == "foreign_request" {
+					run = "foreign"
+				}
+				if _, err = pool.Exec(ctx, `INSERT INTO communication_publications(effect_id,run_id) VALUES($1,$2)`, effect, run); err != nil {
+					t.Fatal(err)
+				}
 			}
 			changes := map[string]string{
 				"existing_request":    `INSERT INTO browser_external_auth_requests VALUES('old-call','run')`,
@@ -84,7 +119,7 @@ func TestExternalStoppedMetadataAbsenceIntegration(t *testing.T) {
 				"wrong_hash":          `UPDATE action_intents SET action_hash='other'`,
 				"wrong_intent":        `UPDATE action_intents SET tool_call_id='other'`,
 			}
-			if change := changes[mode]; change != "" {
+			if change := changes[mode]; change != "" && !(publication && (mode == "existing_request" || mode == "foreign_request")) {
 				if _, err = pool.Exec(ctx, change); err != nil {
 					t.Fatal(err)
 				}
@@ -94,7 +129,7 @@ func TestExternalStoppedMetadataAbsenceIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer tx.Rollback(ctx)
-			if err = ReviewStoppedExternalRequestTx(ctx, tx, "input"); err != nil {
+			if err = ReviewStoppedTaskMetadataTx(ctx, tx, "input"); err != nil {
 				t.Fatal(err)
 			}
 			var state string

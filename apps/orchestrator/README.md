@@ -7,6 +7,13 @@ alone never resumes the model. Cancellation, restart and UNKNOWN retain spent
 authority. This does not import Chrome sessions into server Chromium or automate
 Google password/MFA entry. Owner APIs must never be exposed by the RP relay.
 
+External verification resumes with its retained reference and exact checked RP
+URL, while explicitly marking that Chrome/server sessions are separate. A
+publication draft with unselected Catalog source refs gets bounded, correlated
+non-dispatch feedback before Broker preparation; the actual publisher retains
+all source/export/current-grant checks. See
+[communication](../../docs/architecture/user-communication-spec.md).
+
 The terminal stopped reviewer can prove absence of the exact pinned external
 request-creation metadata operation. It checks distinct permanent effect and
 execution identities and preserves spent grants and failed work; an existing
