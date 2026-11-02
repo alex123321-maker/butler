@@ -734,6 +734,10 @@ relays owner decisions to the fixed private `BUTLER_SKILL_CONTROL_URL` endpoint.
 Source access/deletion guards run before skill lifecycle and dependency guards
 through inference, dispatch and final-result admission. See the
 [actual acceptance and limits](../../docs/architecture/reviewed-skills-acceptance.md).
+Text deltas use a skill proof no older than 250ms instead of a catalog RPC per
+fragment. Idle and busy streams both refresh it; non-delta events, including
+actions and final answers, still require a fresh proof. Catalog errors and
+cancellation stop release under the existing bounded verification contract.
 
 Tool execution prepares the exact action through Broker, records required
 owner approval, then obtains a private dispatch grant tied to current task and

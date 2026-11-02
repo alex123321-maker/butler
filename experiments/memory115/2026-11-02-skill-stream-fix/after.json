@@ -1,0 +1,84 @@
+{
+  "variant": "after",
+  "rows": [
+    {
+      "arm": "B",
+      "delta_fragments": 0,
+      "native_requests": 0,
+      "pinned_rpc_calls": 0,
+      "pinned_rpc_seconds": 0,
+      "execution_seconds": 0.924128677,
+      "scripted_provider_methods": 4,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 0,
+      "native_requests": 0,
+      "pinned_rpc_calls": 9,
+      "pinned_rpc_seconds": 0.333349564,
+      "execution_seconds": 1.382807763,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "B",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 0,
+      "pinned_rpc_seconds": 0,
+      "execution_seconds": 1.023986306,
+      "scripted_provider_methods": 4,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 9,
+      "pinned_rpc_seconds": 0.337798045,
+      "execution_seconds": 1.472618413,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 360,
+      "native_requests": 0,
+      "pinned_rpc_calls": 9,
+      "pinned_rpc_seconds": 0.336715086,
+      "execution_seconds": 1.57554383,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 9,
+      "pinned_rpc_seconds": 0.344288207,
+      "execution_seconds": 1.484424071,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    }
+  ],
+  "native_requests": 0,
+  "journal": {
+    "bytes": 4461216,
+    "db_seconds": 0.429890481,
+    "file_write_fsync_seconds": 0.16306537,
+    "marshal_seconds": 0.270780874,
+    "methods": 128,
+    "native_requests": 0
+  },
+  "sha256": {
+    "source/apps/orchestrator/internal/orchestrator/skill_provider.go": "4a91602c298e7db64e80d0576f1b99e888c680918969da37460eedfecc71520a",
+    "reports/app.test": "56c33d83f0ca3221f40b5783fb8585efa9b05491ec384faff9423ccdce69634b",
+    "reports/build.log": "f3556082f2100bbfac25d1d80d3169f13b3d250e81a2f90816be2501ac14c029",
+    "reports/tests.log": "a5ce86d1a7eccfdf1f77a907e544b0df24516f695fa465a6cc80da89343488c4",
+    "reports/skills-tests.log": "8661227609e703e536aabf18baf1232693a9e6897adaf2f12f273d3faf818249",
+    "reports/reviewed-tests.log": "ca656eb3c4de8b8b1a88ca2910843e580f28f06c185121279d2bf2351a630cda"
+  },
+  "mandatory_checks_passed": true,
+  "no_skips": true
+}

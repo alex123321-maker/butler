@@ -1,0 +1,168 @@
+{
+  "native_requests": 0,
+  "variants": {
+    "before": {
+      "root": "/srv/gitea/butler-acceptance/issue115-skill-stream-fix-20261102-before-r4",
+      "exit": {
+        "exit_code": 0,
+        "native_requests": 0,
+        "private_pg_stopped": true,
+        "private_data_retained": true,
+        "internal_network_removed": true,
+        "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+        "overlay_sha256": "ed2c593c397de3198416129ad127f9f323e9f3b7506a6264feea4dd01e34b8d6"
+      },
+      "pg_stopped": true,
+      "pg_exit": 0,
+      "network_removed": true,
+      "passed_test_names": {
+        "build.log": [],
+        "tests.log": [
+          "TestSkillLatencyDiagnostic",
+          "TestSkillLatencyDiagnostic/B_0_0",
+          "TestSkillLatencyDiagnostic/C_0_1",
+          "TestSkillLatencyDiagnostic/B_180_2",
+          "TestSkillLatencyDiagnostic/C_180_3",
+          "TestSkillLatencyDiagnostic/C_360_4",
+          "TestSkillLatencyDiagnostic/C_180_5",
+          "TestSkillLatencyJournalReplay",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/memory_read",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/memory_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/inspect_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/http_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/limited_then_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared_then_limited_then_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/generic_rejection_remains_unknown",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/typed_negative",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/typed_negative_wrong_answer"
+        ],
+        "skills-tests.log": [
+          "TestExactDescriptiveCorrectionGrantIntegration",
+          "TestSkillLessonVerificationCannotDowngradeOrInventParents",
+          "TestStrictManifestAndIndependentEvidence",
+          "TestCorrectionCannotChangeProcedureOrReplaySafety",
+          "TestSkillDerivedTextDeleteRestoreAndContentFreeHistoryIntegration",
+          "TestSkillProposalRequiresActualSourceReadAuthorityIntegration",
+          "TestReferencedAgentProposalRetainsOriginalDeletionParentIntegration",
+          "TestSkillLifecycleIntegration",
+          "TestSkillPinsConcurrentIntegration",
+          "TestActivationRechecksOwnedCurrentContractIntegration",
+          "TestSkillLeaseAndTaskRevocationIntegration"
+        ],
+        "reviewed-tests.log": [
+          "TestReviewedSkillRealBrokerDurableApprovalE2E"
+        ]
+      },
+      "guard_unit_test_sha256": null
+    },
+    "after": {
+      "root": "/srv/gitea/butler-acceptance/issue115-skill-stream-fix-20261102-after-r4",
+      "exit": {
+        "exit_code": 0,
+        "native_requests": 0,
+        "private_pg_stopped": true,
+        "private_data_retained": true,
+        "internal_network_removed": true,
+        "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+        "overlay_sha256": "ed2c593c397de3198416129ad127f9f323e9f3b7506a6264feea4dd01e34b8d6"
+      },
+      "pg_stopped": true,
+      "pg_exit": 0,
+      "network_removed": true,
+      "passed_test_names": {
+        "build.log": [],
+        "tests.log": [
+          "TestSkillLatencyDiagnostic",
+          "TestSkillLatencyDiagnostic/B_0_0",
+          "TestSkillLatencyDiagnostic/C_0_1",
+          "TestSkillLatencyDiagnostic/B_180_2",
+          "TestSkillLatencyDiagnostic/C_180_3",
+          "TestSkillLatencyDiagnostic/C_360_4",
+          "TestSkillLatencyDiagnostic/C_180_5",
+          "TestSkillLatencyJournalReplay",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/memory_read",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/memory_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/inspect_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/http_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/limited_then_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared_then_limited_then_inspect",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/prepared_wrong_answer",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/generic_rejection_remains_unknown",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/typed_negative",
+          "TestMemoryUtilityActualCoreBrokerTraceIntegration/typed_negative_wrong_answer"
+        ],
+        "skills-tests.log": [
+          "TestExactDescriptiveCorrectionGrantIntegration",
+          "TestSkillLessonVerificationCannotDowngradeOrInventParents",
+          "TestStrictManifestAndIndependentEvidence",
+          "TestCorrectionCannotChangeProcedureOrReplaySafety",
+          "TestSkillDerivedTextDeleteRestoreAndContentFreeHistoryIntegration",
+          "TestSkillProposalRequiresActualSourceReadAuthorityIntegration",
+          "TestReferencedAgentProposalRetainsOriginalDeletionParentIntegration",
+          "TestSkillLifecycleIntegration",
+          "TestSkillPinsConcurrentIntegration",
+          "TestActivationRechecksOwnedCurrentContractIntegration",
+          "TestSkillLeaseAndTaskRevocationIntegration"
+        ],
+        "reviewed-tests.log": [
+          "TestReviewedSkillRealBrokerDurableApprovalE2E"
+        ]
+      },
+      "guard_unit_test_sha256": "7c56e082402981d47b1f4efba2d3502e80e4b62cb63c51a784ff684c56fe2e46"
+    }
+  },
+  "preserved_failed_roots": {
+    "before-r1": {
+      "root": "/srv/gitea/butler-acceptance/issue115-skill-stream-fix-20261102-before-r1",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "private_pg_stopped": true,
+        "private_data_retained": true,
+        "internal_network_removed": true,
+        "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+        "overlay_sha256": "ed2c593c397de3198416129ad127f9f323e9f3b7506a6264feea4dd01e34b8d6"
+      },
+      "pg_stopped": true,
+      "pg_exit": 0,
+      "network_removed": true
+    },
+    "before-r2": {
+      "root": "/srv/gitea/butler-acceptance/issue115-skill-stream-fix-20261102-before-r2",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "private_pg_stopped": true,
+        "private_data_retained": true,
+        "internal_network_removed": true,
+        "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+        "overlay_sha256": "ed2c593c397de3198416129ad127f9f323e9f3b7506a6264feea4dd01e34b8d6"
+      },
+      "pg_stopped": true,
+      "pg_exit": 0,
+      "network_removed": true
+    },
+    "before-r3": {
+      "root": "/srv/gitea/butler-acceptance/issue115-skill-stream-fix-20261102-before-r3",
+      "exit": {
+        "exit_code": 1,
+        "native_requests": 0,
+        "private_pg_stopped": true,
+        "private_data_retained": true,
+        "internal_network_removed": true,
+        "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+        "overlay_sha256": "ed2c593c397de3198416129ad127f9f323e9f3b7506a6264feea4dd01e34b8d6"
+      },
+      "pg_stopped": true,
+      "pg_exit": 0,
+      "network_removed": true
+    }
+  }
+}

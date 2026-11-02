@@ -23,6 +23,16 @@ PostgreSQL is authoritative. Skills cannot set system instructions, select an
 owner/mandate or create credential/egress authority. All actual tools retain the
 same Broker, task, approval, budget and effect checks.
 
+Live skill guarding checks the current catalog before each provider request and
+before release of every non-delta event, including tool calls, tool-call batches
+and final answers. Plain assistant deltas reuse only a proof younger than 250ms;
+an idle-stream ticker and an elapsed-time check on ready deltas both refresh it.
+Thus a busy stream cannot starve revocation checks, while text fragmentation does
+not cause a full catalog reload per fragment. Each proof keeps its 2s bound and
+inherits cancellation; catalog errors stop release. Source, Broker-dispatch and
+atomic final-result fences remain independently mandatory. The interval is not
+permission to release an action or final answer under a cached proof.
+
 Kernel catalog tools may use an exact local resource scope `tool:skills.load`
 with an empty path prefix. Mandate tool name and effect must also match.
 Wildcards, prefixes, queries and URL/path substitutions are rejected. This scope

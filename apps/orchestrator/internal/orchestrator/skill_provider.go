@@ -3,12 +3,14 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/transport"
-	"time"
 )
 
 const skillInvalidReason = "skill_revoked_or_incompatible"
+const skillCheckInterval = 250 * time.Millisecond
 
 // The live catalog check precedes budget admission and provider release. It
 // uses a bounded private RPC outside ownership/source PostgreSQL transactions.
@@ -36,6 +38,7 @@ func (p *skillProtectedProvider) guard(ctx context.Context, run string, call fun
 		return len(pins) > 0, err
 	}
 	loaded, err := check()
+	verifiedAt := time.Now()
 	if err != nil {
 		return nil, &budget.LoopError{Reason: skillInvalidReason}
 	}
@@ -77,7 +80,7 @@ func (p *skillProtectedProvider) guard(ctx context.Context, run string, call fun
 	go func() {
 		defer close(out)
 		defer cancel()
-		ticker := time.NewTicker(250 * time.Millisecond)
+		ticker := time.NewTicker(skillCheckInterval)
 		defer ticker.Stop()
 		deny := func() {
 			cancel()
@@ -97,13 +100,25 @@ func (p *skillProtectedProvider) guard(ctx context.Context, run string, call fun
 					deny()
 					return
 				}
+				verifiedAt = time.Now()
 			case event, ok := <-stream:
 				if !ok {
 					return
 				}
-				if _, err := check(); err != nil {
-					deny()
-					return
+				// Text fragments do not authorize actions or complete the run.
+				// Keep periodic revocation checks without reloading the catalog
+				// for each fragment. Check elapsed time here too, so a ready
+				// stream cannot postpone verification by winning ticker selects.
+				// All other events retain their fresh pre-release proof.
+				textDelta := event.EventType == transport.EventTypeAssistantDelta &&
+					event.AssistantDelta != nil && event.AssistantDelta.DeltaType == "text" &&
+					event.AssistantFinal == nil && event.ToolCall == nil && event.ToolCallBatch == nil
+				if !textDelta || time.Since(verifiedAt) >= skillCheckInterval {
+					if _, err := check(); err != nil {
+						deny()
+						return
+					}
+					verifiedAt = time.Now()
 				}
 				select {
 				case out <- event:

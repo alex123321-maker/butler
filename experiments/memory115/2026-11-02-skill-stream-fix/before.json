@@ -1,0 +1,84 @@
+{
+  "variant": "before",
+  "rows": [
+    {
+      "arm": "B",
+      "delta_fragments": 0,
+      "native_requests": 0,
+      "pinned_rpc_calls": 0,
+      "pinned_rpc_seconds": 0,
+      "execution_seconds": 0.904589399,
+      "scripted_provider_methods": 4,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 0,
+      "native_requests": 0,
+      "pinned_rpc_calls": 9,
+      "pinned_rpc_seconds": 0.338154171,
+      "execution_seconds": 1.435889677,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "B",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 0,
+      "pinned_rpc_seconds": 0,
+      "execution_seconds": 1.02399776,
+      "scripted_provider_methods": 4,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 223,
+      "pinned_rpc_seconds": 9.305498206,
+      "execution_seconds": 10.35999393,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 360,
+      "native_requests": 0,
+      "pinned_rpc_calls": 439,
+      "pinned_rpc_seconds": 18.579134146,
+      "execution_seconds": 19.637539609,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    },
+    {
+      "arm": "C",
+      "delta_fragments": 180,
+      "native_requests": 0,
+      "pinned_rpc_calls": 224,
+      "pinned_rpc_seconds": 9.331791153,
+      "execution_seconds": 10.365273179,
+      "scripted_provider_methods": 5,
+      "task_success": true
+    }
+  ],
+  "native_requests": 0,
+  "journal": {
+    "bytes": 4461216,
+    "db_seconds": 0.4157633,
+    "file_write_fsync_seconds": 0.165505074,
+    "marshal_seconds": 0.263501072,
+    "methods": 128,
+    "native_requests": 0
+  },
+  "sha256": {
+    "source/apps/orchestrator/internal/orchestrator/skill_provider.go": "cb6409c75467303df9a58b55b088a7629eeddd70ac2aa82173d93468820568ae",
+    "reports/app.test": "a37693e235f059c1dda611c524f9c7d5717d81bfe0e274cd2b549776a6509484",
+    "reports/build.log": "1d4150b0d02a1fd0491d5e60868b877eeed4dd29e7f093f65d5d91dc4c106d46",
+    "reports/tests.log": "4d86db16df0550ffd8b92ebb63df478d47f6e27351b2844b10777a9c478dd1f5",
+    "reports/skills-tests.log": "0ef7239b0b27c3f9438f55f445a44166d909a7094a6d9dc8e7d848d947cbb3b2",
+    "reports/reviewed-tests.log": "377f09fd294cf7f830b8b695fe6b07f2dff1f3b5fcfd58b46d0c1b996f7d5b30"
+  },
+  "mandatory_checks_passed": true,
+  "no_skips": true
+}
