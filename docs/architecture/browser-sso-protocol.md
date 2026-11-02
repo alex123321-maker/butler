@@ -81,6 +81,22 @@ DOM text, postMessage or IdP HTTP 200 cannot prove RP login. Ambiguous/lost ACK
 must retain UNKNOWN and consumed authority; no replay or automatic refund.
 The ordinary `browser_login_v1` proof does not cover federation.
 
+An UNKNOWN SSO attempt also blocks later Inputs in the same conversation; a
+new Task is not reconciliation. Historical owner review is permitted only for
+the exact revision1 SSO policy/arguments, trusted RP page binding and retained
+owner/Run/Task managed-context mapping. The recorded `browser.open_pages`
+context must have expired, including the 35-second dispatch settling bound;
+the source Run must be terminal and the conversation lease inactive. Missing
+dispatch completion, altered scope, foreign owner/mapping, live context or
+legacy context birth are rejected. Live generic page review cannot be borrowed.
+The existing protected factual owner API requires independent recipient and
+settled-processing checks plus a receipt reference. A counted test operator may
+use a sealed synthetic-recipient journal through this path; that is explicitly
+owner-assisted evidence, never an automatic production verifier. Review does
+not resume the failed Input/Run, replay/refund its consumed grant or rewrite
+the original UNKNOWN tool transcript. Any new login needs new current authority
+and a new protected credential decision.
+
 Only Go's independent GET differential can produce `browser_sso_login_v1`.
 Broker binds effect evidence to the exact post-login RP page/document/public
 observation, digest and current epoch in PostgreSQL before confirmation. The

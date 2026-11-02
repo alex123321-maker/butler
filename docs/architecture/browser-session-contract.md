@@ -233,6 +233,14 @@ inform an explicitly counted test operator's factual report through that same
 protected API; it is never an automatic production verifier or hidden oracle.
 Native POST/login acceptance is measured separately from these safeguards.
 
+The distinct bounded SSO protocol also permits historical factual review after
+its exact managed RP context has expired and its dispatch settling bound passed.
+It additionally checks the closed SSO policy/arguments, exact RP binding and
+retained owner/Run/Task page mapping, and accepts only `browser.open_pages`
+birth evidence. Generic managed-page historical review remains disabled.
+This does not resume a terminal Input or authorize any new POST/secret release;
+see [SSO recovery](browser-sso-protocol.md).
+
 ## Private credential state
 
 Live and local-preparation fill/type accept ordinary text or `{type:"credential_ref",alias,field}`.

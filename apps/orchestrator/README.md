@@ -12,6 +12,12 @@ current authority. Notice sends/edits retain ambiguity instead of replaying.
 See `docs/architecture/browser-sso-protocol.md` for remaining composed/native
 and external Google acceptance gates.
 
+Historical SSO UNKNOWN review uses the same protected factual owner endpoint,
+with the exact pinned SSO policy, expired managed RP context, settled dispatch,
+terminal source Run and inactive lease. A new Task cannot evade an earlier
+uncertain effect. Review retains the failed Input and consumed grant; it grants
+no new login or credential use. See the SSO protocol for operator evidence limits.
+
 Ordinary token-only converter-composed source observations on the reserved pool
 release their current proofs through rollback, avoiding an observer COMMIT/WAL
 flush. All source/lifecycle checks and deadlines remain; converter/owner compound

@@ -18,6 +18,7 @@ required() {
 }
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
 required authority ./internal/browsersso ./internal/actionauth -run '^TestSSO'
+required historical-recovery ./internal/actionauth -run '^TestOwnerOutcomeHistoricalLost(SSO|Login)'
 required consent-use ./internal/credentials ./apps/orchestrator/internal/api -run '^TestVaultSSO|^TestCredentialVaultOwnerAPIPrivacyLocal$'
 export BUTLER_TEST_BROWSER_PAGES_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
 required dispatch-fence ./internal/browsercontrol -run '^TestSSOPreDispatchPageFenceIntegration$'

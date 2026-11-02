@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,8 +53,9 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 	contract.SupportsCredentialRefs = false
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "none"}
 	call.ArgsJson = `{"browser_session_id":"` + strings.Repeat("a", 32) + `","expected_url":"https://example.com/form","observation_version":1,"selector":"input","value":"ordinary"}`
-	login := len(loginMode) == 1 && loginMode[0]
+	login := len(loginMode) > 0 && loginMode[0]
 	pageMode := len(loginMode) > 1 && loginMode[1]
+	sso := len(loginMode) > 3 && loginMode[3]
 	pageRef := browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 1}
 	pageReader := &pageScopeFixture{bound: browserpage.Binding{Ref: pageRef, URL: "https://example.com/form", RuntimeVersion: 1}}
 	if pageMode {
@@ -77,6 +79,19 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 		}
 		args.Browser = strings.Repeat("a", 32)
 		call.ArgsJson = mustOwnerJSON(args)
+		if sso {
+			scope := browsersso.Scope{Browser: args.Browser, RPPage: pageRef, RPURL: "https://example.com/form", Trigger: "#sso", IdPURL: "https://idp.example/authorize", TargetURL: "https://idp.example/login", VerifyURL: "https://example.com/account", Form: "form", Username: "#u", Password: "#p"}
+			digest, _ := scope.Digest(0, 1)
+			alias := strings.Replace(args.UsernameRef.Alias, "creq_", "ssoq_", 1)
+			call.ToolName = browsersso.Tool
+			contract = browsersso.Contract()
+			call.ArgsJson = mustOwnerJSON(browsersso.Args{Scope: scope, Digest: digest, UsernameRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "username"}, PasswordRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "password"}})
+			for _, r := range call.CredentialRefs {
+				r.Alias = alias
+			}
+			s.credentials = &ssoInspector{s.credentials.(*loginInspector).inspector, true}
+			s.SetBrowserScopes(pageReader)
+		}
 		p, e := s.Prepare(ctx, call, contract)
 		if e != nil {
 			t.Fatal(e)
@@ -111,7 +126,26 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 	}
 	if historical {
 		birth, _ := json.Marshal(map[string]any{"ok": true, "browser_session_id": strings.Repeat("a", 32), "expires_at": time.Now().Add(-30 * time.Minute)})
-		if _, err = store.pool.Exec(ctx, `INSERT INTO tool_calls VALUES('open','run','browser.open','{}',$1,'completed',clock_timestamp()-interval '1 hour')`, string(birth)); err != nil {
+		birthTool := "browser.open"
+		if sso {
+			birthTool = browserpage.Open
+			for _, name := range []string{"086_server_browser_control.up.sql", "107_browser_pages.up.sql", "108_browser_page_execution.up.sql"} {
+				raw, e := os.ReadFile(filepath.Join("..", "..", "migrations", name))
+				if e != nil {
+					t.Fatal(e)
+				}
+				if _, e = store.pool.Exec(ctx, string(raw)); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if _, err = store.pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,expires_at,page_mode,page_origin) VALUES($1,'run','owner','task',clock_timestamp()-interval '30 minutes',true,'https://example.com');`, strings.Repeat("a", 32)); err != nil {
+				t.Fatal(err)
+			}
+			if _, err = store.pool.Exec(ctx, `INSERT INTO server_browser_pages(browser_session_id,page_id,document_id,observation_version,observed_epoch,observed_url,state,runtime_version) VALUES($1,$2,$3,1,0,'https://example.com/form','ready',1)`, strings.Repeat("a", 32), pageRef.ID, pageRef.DocumentID); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err = store.pool.Exec(ctx, `INSERT INTO tool_calls VALUES('open','run',$2,'{}',$1,'completed',clock_timestamp()-interval '1 hour')`, string(birth), birthTool); err != nil {
 			t.Fatal(err)
 		}
 		if _, err = store.pool.Exec(ctx, `UPDATE tool_calls SET finished_at=clock_timestamp()-interval '1 hour' WHERE tool_call_id='fill';UPDATE runs SET current_state='failed',status='failed';UPDATE session_ownership SET lease_id='',expires_at=clock_timestamp()-interval '1 second'`); err != nil {
