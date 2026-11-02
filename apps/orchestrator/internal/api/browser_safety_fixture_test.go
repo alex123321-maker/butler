@@ -155,4 +155,11 @@ func TestBrowserSafetyOwnerAPIHarness(t *testing.T) {
 	case <-time.After(5 * time.Minute):
 		t.Fatal("owner UI harness timed out")
 	}
+	// The done signal can arrive before its HTTP response is flushed. Drain the
+	// handler before the deferred Close so the caller receives the final receipt.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		t.Fatal("owner UI harness shutdown", err)
+	}
 }
