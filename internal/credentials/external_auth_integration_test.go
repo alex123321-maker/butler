@@ -77,13 +77,14 @@ INSERT INTO accepted_inputs VALUES('input','run','session','owner','task','runni
 	b.ArgsHash, _ = actionauth.ArgumentsHash(string(args))
 	b.ContractHash, _ = actionauth.ContractHash(credentialcontrol.Contract(b.ToolName))
 	br, _ := json.Marshal(b)
-	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,authorization_id,dispatch_outcome) VALUES($1,'fixture',$2,'{}','executing','grant','executing');`, b.ActionID, br); e != nil {
+	effectID := "effect_" + strings.Repeat("f", 64)
+	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,authorization_id,dispatch_outcome) VALUES($1,'fixture',$2,'{}','executing','grant','executing');`, effectID, br); e != nil {
 		t.Fatal("effect fixture", e)
 	}
-	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy) VALUES($1,$2,$3,'fixture',$4,false,clock_timestamp()+interval '1 hour',$1,'fixture','{}')`, b.ActionID, p.RunID, b.ToolCallID, br); e != nil {
+	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy) VALUES($1,$2,$3,'fixture',$4,false,clock_timestamp()+interval '1 hour',$5,'fixture','{}')`, b.ActionID, p.RunID, b.ToolCallID, br, effectID); e != nil {
 		t.Fatal("source fixture", e)
 	}
-	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_effect_dispatches(authorization_id,action_id,execution_action_id,outcome) VALUES('grant',$1,$1,'executing')`, b.ActionID); e != nil {
+	if _, e := v.Pool.Exec(ctx, `INSERT INTO action_effect_dispatches(authorization_id,action_id,execution_action_id,outcome) VALUES('grant',$1,$2,'executing')`, effectID, b.ActionID); e != nil {
 		t.Fatal("dispatch fixture", e)
 	}
 	return v, p, entry, s, m, string(args)
@@ -91,7 +92,7 @@ INSERT INTO accepted_inputs VALUES('input','run','session','owner','task','runni
 
 func createExternalFixtureRequest(t *testing.T, v *Vault, p Principal, args string) AccessRequest {
 	t.Helper()
-	q, e := v.CreateExternalRequest(t.Context(), p, "external-once", actionauth.StableActionID(p.RunID, "external-once"), args)
+	q, e := v.CreateExternalRequest(t.Context(), p, "external-once", actionauth.DispatchIdentity{ActionID: "effect_" + strings.Repeat("f", 64), Fingerprint: "fixture"}, args)
 	if e != nil {
 		t.Fatal("external request creation", e)
 	}
@@ -161,11 +162,21 @@ func TestVaultExternalAuthDoesNotAskOwnerForMissingCommitAuthority(t *testing.T)
 	if _, e := v.Pool.Exec(t.Context(), `UPDATE action_mandates SET mandate_data=jsonb_set(mandate_data,'{effects}','["prepare"]')`); e != nil {
 		t.Fatal(e)
 	}
-	if _, e := v.CreateExternalRequest(t.Context(), p, "external-once", actionauth.StableActionID(p.RunID, "external-once"), args); e == nil {
+	if _, e := v.CreateExternalRequest(t.Context(), p, "external-once", actionauth.DispatchIdentity{ActionID: "effect_" + strings.Repeat("f", 64), Fingerprint: "fixture"}, args); e == nil {
 		t.Fatal("unusable owner request created")
 	}
 	var n int
 	if v.Pool.QueryRow(t.Context(), `SELECT count(*) FROM browser_external_auth_requests`).Scan(&n) != nil || n != 0 {
 		t.Fatal("failed authority created a consent")
 	}
+}
+
+func TestVaultExternalAuthDispatchIdentityCannotBeSubstituted(t *testing.T) {
+	v, p, _, _, _, args := externalFixture(t)
+	for _, dispatch := range []actionauth.DispatchIdentity{{}, {ActionID: actionauth.StableActionID(p.RunID, "external-once"), Fingerprint: "fixture"}, {ActionID: "effect_" + strings.Repeat("e", 64), Fingerprint: "fixture"}, {ActionID: "effect_" + strings.Repeat("f", 64), Fingerprint: "other"}} {
+		if _, e := v.CreateExternalRequest(t.Context(), p, "external-once", dispatch, args); e == nil {
+			t.Fatal("foreign or execution-only identity admitted")
+		}
+	}
+	createExternalFixtureRequest(t, v, p, args)
 }

@@ -7,6 +7,12 @@ alone never resumes the model. Cancellation, restart and UNKNOWN retain spent
 authority. This does not import Chrome sessions into server Chromium or automate
 Google password/MFA entry. Owner APIs must never be exposed by the RP relay.
 
+The terminal stopped reviewer can prove absence of the exact pinned external
+request-creation metadata operation. It checks distinct permanent effect and
+execution identities and preserves spent grants and failed work; an existing
+request or provider exchange cannot qualify. See
+[stopped finalization](../../docs/architecture/stopped-input-finalization.md).
+
 For supported ordinary login forms Core prefers `credentials.request_login`
 then `browser.login`. Its one protected owner decision includes one submit and
 access verification. A verified account observation can support the final answer

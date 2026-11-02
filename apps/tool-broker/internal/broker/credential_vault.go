@@ -62,7 +62,7 @@ func (e *CredentialExecutor) Execute(ctx context.Context, call *toolbrokerv1.Too
 		}
 		payload = map[string]any{"request": r}
 	} else if call.ToolName == externalauth.RequestTool {
-		r, err := e.Vault.CreateExternalRequest(ctx, p, call.ToolCallId, identity.ActionID, call.ArgsJson)
+		r, err := e.Vault.CreateExternalRequest(ctx, p, call.ToolCallId, identity, call.ArgsJson)
 		if err != nil {
 			return nil, err
 		}

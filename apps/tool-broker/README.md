@@ -1,5 +1,10 @@
 # Tool Broker
 
+External-login mediation passes the trusted permanent effect ID/fingerprint
+separately from the execution's Run/call identity. A composed Broker/PG logical
+slot test checks this distinction, the metadata acknowledgement and the absence
+of consent/provider use before Core suspends the canonical Input.
+
 `BUTLER_BROWSER_EXTERNAL_AUTH_ENABLED=true` advertises the distinct
 `credentials.request_external_login` prepare capability only when Core's active
 operator profile exists. Broker receives no Google client secret. It pins the

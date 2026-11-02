@@ -83,11 +83,14 @@ func externalDigest(q externalRequest) string {
 
 // CreateExternalRequest is only invoked by the already-dispatched Broker
 // capability. Exact retained arguments/source and live Input are mandatory.
-func (v *Vault) CreateExternalRequest(ctx context.Context, p Principal, callID, actionID, args string) (AccessRequest, error) {
+func (v *Vault) CreateExternalRequest(ctx context.Context, p Principal, callID string, dispatch actionauth.DispatchIdentity, args string) (AccessRequest, error) {
 	a, e := externalauth.ParseRequest(args)
-	if e != nil || p.TaskID == "" || callID == "" || actionID != actionauth.StableActionID(p.RunID, callID) {
+	if e != nil || p.TaskID == "" || callID == "" || dispatch.ActionID == "" || dispatch.Fingerprint == "" {
 		return AccessRequest{}, ErrVault
 	}
+	// DispatchIdentity.ActionID is the permanent effect, not this execution's
+	// intent ID. Bind both identities and the trusted fingerprint explicitly.
+	actionID := actionauth.StableActionID(p.RunID, callID)
 	tx, e := v.Pool.Begin(ctx)
 	if e != nil {
 		return AccessRequest{}, ErrVault
@@ -104,7 +107,7 @@ func (v *Vault) CreateExternalRequest(ctx context.Context, p Principal, callID, 
 	q.profile = profile.ClientFingerprint
 	var binding string
 	var b actionauth.ActionBinding
-	if tx.QueryRow(ctx, `SELECT i.binding::text FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_dispatches d ON d.execution_action_id=i.action_id AND d.authorization_id=e.authorization_id WHERE i.action_id=$1 AND i.run_id=$2 AND i.tool_call_id=$3 AND e.state='executing' AND d.outcome='executing' FOR SHARE OF i,e,d`, actionID, p.RunID, callID).Scan(&binding) != nil || jsonstrict.Decode([]byte(binding), &b) != nil {
+	if tx.QueryRow(ctx, `SELECT i.binding::text FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_dispatches d ON d.execution_action_id=i.action_id AND d.authorization_id=e.authorization_id WHERE i.action_id=$1 AND i.run_id=$2 AND i.tool_call_id=$3 AND e.action_id=$4 AND e.fingerprint=$5 AND d.action_id=e.action_id AND e.state='executing' AND d.outcome='executing' FOR SHARE OF i,e,d`, actionID, p.RunID, callID, dispatch.ActionID, dispatch.Fingerprint).Scan(&binding) != nil || jsonstrict.Decode([]byte(binding), &b) != nil {
 		return AccessRequest{}, ErrVault
 	}
 	h, e := actionauth.ArgumentsHash(args)

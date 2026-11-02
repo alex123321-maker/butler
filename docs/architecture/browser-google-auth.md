@@ -67,6 +67,13 @@ record revision. It grants no generic HTTP POST, native form grant, credential
 alias, password resolution or arbitrary provider URL. Broker has only the
 non-secret profile; only Core receives the private client file.
 
+The trusted Broker dispatch identity names the **permanent effect**, which may
+differ from the current execution intent under a logical Task slot. Request
+creation derives the execution ID from Run/call and validates its intent against
+that separate effect ID, fingerprint and exact dispatch record. Neither ID can
+stand in for the other. The composed Broker/PG test must use a logical slot so
+this distinction is exercised rather than collapsed by a fixture.
+
 Before the single provider exchange, Core reserves a separate finite execution
 budget and commits an ActionEffect child with `external_google_rp_v1` policy.
 The child cannot be dispatched through the prepare-only public tool contract.
@@ -146,6 +153,13 @@ The native timing window begins at ingress and ends at delivered response,
 including model deliberation and failed actions. Owner/Google challenge wait is
 reported as a component of that inclusive total. Engineering/CI time is separate;
 do not replay older attempts to reconstruct timings.
+
+If the pinned request-creation operation loses its acknowledgement before any
+request exists, the terminal kernel can prove metadata creation ABSENT using
+the [stopped review](stopped-input-finalization.md). This checks both permanent
+effect and execution IDs, exact historical contract and original terminal
+fences. It never infers absence of a provider exchange, reuses consent, replays
+the failed Input or refunds spending. A fresh attempt needs fresh authority.
 
 Primary provider contracts:
 [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect),

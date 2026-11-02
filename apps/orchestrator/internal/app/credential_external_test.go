@@ -106,16 +106,17 @@ func TestCredentialExternalSameInputWaitAndCancel(t *testing.T) {
 	b.ArgsHash, _ = actionauth.ArgumentsHash(string(args))
 	b.ContractHash, _ = actionauth.ContractHash(credentialcontrol.Contract(b.ToolName))
 	br, _ := json.Marshal(b)
-	if _, e = pool.Exec(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,authorization_id,dispatch_outcome) VALUES($1,'fixture',$2,'{}','executing','grant','executing')`, b.ActionID, br); e != nil {
+	dispatch := actionauth.DispatchIdentity{ActionID: "effect_" + strings.Repeat("f", 64), Fingerprint: "fixture"}
+	if _, e = pool.Exec(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,authorization_id,dispatch_outcome) VALUES($1,'fixture',$2,'{}','executing','grant','executing')`, dispatch.ActionID, br); e != nil {
 		t.Fatal(e)
 	}
-	if _, e = pool.Exec(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy) VALUES($1,'run','external','fixture',$2,false,now()+interval '1 hour',$1,'fixture','{}')`, b.ActionID, br); e != nil {
+	if _, e = pool.Exec(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy) VALUES($1,'run','external','fixture',$2,false,now()+interval '1 hour',$3,'fixture','{}')`, b.ActionID, br, dispatch.ActionID); e != nil {
 		t.Fatal(e)
 	}
-	if _, e = pool.Exec(ctx, `INSERT INTO action_effect_dispatches(authorization_id,action_id,execution_action_id,outcome) VALUES('grant',$1,$1,'executing')`, b.ActionID); e != nil {
+	if _, e = pool.Exec(ctx, `INSERT INTO action_effect_dispatches(authorization_id,action_id,execution_action_id,outcome) VALUES('grant',$1,$2,'executing')`, dispatch.ActionID, b.ActionID); e != nil {
 		t.Fatal(e)
 	}
-	r, e := v.CreateExternalRequest(ctx, p, b.ToolCallID, b.ActionID, string(args))
+	r, e := v.CreateExternalRequest(ctx, p, b.ToolCallID, dispatch, string(args))
 	if e != nil {
 		t.Fatal("real external request", e)
 	}

@@ -128,6 +128,19 @@ classification separately from the durable one. `-apply` commits verified
 evidence. Explicit review skips only the maintenance cooldown. No public/model
 endpoint, new approval, synthetic oracle, replay or refund is introduced.
 
+The separately pinned revision1 `credentials.request_external_login` contract
+from6bee49c3 also permits a Task-bound **request-creation absence** review.
+Under terminal original owner/session/run/Input locks, exact contract/hash,
+source RP document, binding fingerprint and expired consumed grant must match.
+Permanent effect ID and execution intent ID are validated separately. The
+owning request store must contain no request for that call, even in another
+run; retained FK children cannot exist without that request. The creator takes
+the same session/run locks and rejects a terminal run, fencing late creation.
+Only this metadata effect becomes ABSENT with digest-only
+`stopped_external_login_request_absence_v1` evidence. Original UNKNOWN grant/
+dispatch, spending and failed Input/run remain. An existing request, live
+execution, provider exchange/commit or unsupported contract cannot qualify.
+
 Input records `input_stopped_attempts` and marks the attempt failed. The owning
 Communication collaborator verifies that proof, joins Run's failed transition,
 closes an open publication obligation with failure and saves a kernel audit in

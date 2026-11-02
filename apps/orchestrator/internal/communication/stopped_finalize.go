@@ -10,6 +10,9 @@ import (
 )
 
 func (s *Store) ReviewStoppedLocalTx(ctx context.Context, tx pgx.Tx, stop input.StoppedAttempt) (map[string]bool, error) {
+	if err := actionauth.ReviewStoppedExternalRequestTx(ctx, tx, stop.InputID); err != nil {
+		return nil, err
+	}
 	return actionauth.ReviewStoppedLocalTx(ctx, tx, stop.InputID)
 }
 

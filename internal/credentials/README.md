@@ -1,5 +1,9 @@
 # Credential vault
 
+External request creation validates the trusted permanent dispatch effect and
+fingerprint against the separate current execution intent. Logical Task slots
+can make these IDs different; substituting either ID or fingerprint is denied.
+
 Migration111 implements a separate external Google diagnostic-RP ledger:
 immutable scoped requests, one-use encrypted handoffs, durable exchange claims,
 case-sensitive provider-subject HMAC bindings and retained RP results. Only
