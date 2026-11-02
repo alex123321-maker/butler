@@ -30,7 +30,10 @@ the operator's reverse proxy. The required runtime CI uses a disposable test
 CA and fresh Linux NSS database; it never disables certificate verification.
 Configuration and journal are exclusively created; existing files are never
 overwritten. Restart with a new journal, retaining the old attempt. All live
-bindings expire after three minutes and are not restored after restart.
+RP browser bindings expire after fifteen minutes to accommodate the protected
+ten-minute owner-consent window. IdP bindings, OAuth flows, forms, codes and
+authenticated accounts still expire after three minutes. Nothing is restored
+after restart.
 
 Keep these files out of model context, chat, logs, source control and artifacts.
 Do not use real credentials. Go's file mode 0600 does not establish Windows

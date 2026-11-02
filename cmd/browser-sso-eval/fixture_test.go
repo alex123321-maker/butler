@@ -137,6 +137,45 @@ func TestSSOFixtureLoginCallbackAndPrivateAccount(t *testing.T) {
 		}
 	}
 }
+
+func TestSSOFixtureRPBindingSurvivesProtectedConsentWait(t *testing.T) {
+	s := site(t)
+	r, _ := request(t, s.c, "GET", s.rp.URL+"/", nil, "")
+	if r.StatusCode != 200 {
+		t.Fatal("RP unavailable")
+	}
+	var bindingCookie *http.Cookie
+	for _, c := range r.Cookies() {
+		if c.Name == "sso_rp_binding" {
+			bindingCookie = c
+		}
+	}
+	if bindingCookie == nil || bindingCookie.MaxAge != int(rpBindingTTL/time.Second) {
+		t.Fatal("RP cookie expires before consent window")
+	}
+	s.offset.Store(int64(10 * time.Minute))
+	r, _ = request(t, s.c, "GET", s.rp.URL+"/start", nil, "")
+	if r.StatusCode != 302 {
+		t.Fatal("protected consent wait expired RP browser")
+	}
+	r, body := request(t, s.c, "GET", r.Header.Get("Location"), nil, "")
+	match := regexp.MustCompile(`name=csrf value="([a-f0-9]{64})"`).FindStringSubmatch(body)
+	if r.StatusCode != 200 || len(match) != 2 {
+		t.Fatal("fresh OAuth form unavailable after consent")
+	}
+	// Code/form expiry is independent of the longer pre-consent RP binding.
+	s.offset.Store(int64(10*time.Minute + flowTTL + time.Second))
+	r, _ = s.login(t, match[1], s.f.cfg.Password)
+	if r.StatusCode < 400 {
+		t.Fatal("RP binding extended OAuth form authority")
+	}
+	s.offset.Store(int64(rpBindingTTL + time.Second))
+	r, _ = request(t, s.c, "GET", s.rp.URL+"/start", nil, "")
+	if r.StatusCode != 403 {
+		t.Fatal("expired RP binding still starts a flow")
+	}
+	assertCount(t, s.journal.String(), "idp_login", 0)
+}
 func TestSSOFixtureRejectsForeignExpiredReplayedAndSwappedFlows(t *testing.T) {
 	for _, mode := range []string{"wrong_password", "csrf_replay", "foreign_idp_browser", "foreign_rp_browser", "state_swap", "pkce_mismatch", "expiry", "callback_replay", "wrong_redirect", "duplicate_query", "missing_origin", "query_credentials"} {
 		t.Run(mode, func(t *testing.T) {

@@ -21,6 +21,11 @@ import (
 
 const flowTTL = 3 * time.Minute
 
+// The RP is observed before the protected owner decision (up to ten minutes).
+// Keep only that browser binding alive across consent; OAuth flows and codes
+// are still created after approval and expire after three minutes.
+const rpBindingTTL = 15 * time.Minute
+
 type config struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`
@@ -130,7 +135,11 @@ func (f *fixture) prune() {
 	}
 }
 func (f *fixture) cookie(w http.ResponseWriter, name, value, origin string) {
-	http.SetCookie(w, &http.Cookie{Name: name, Value: value, Path: "/", Secure: strings.HasPrefix(origin, "https://"), HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: 180})
+	ttl := flowTTL
+	if name == "sso_rp_binding" {
+		ttl = rpBindingTTL
+	}
+	http.SetCookie(w, &http.Cookie{Name: name, Value: value, Path: "/", Secure: strings.HasPrefix(origin, "https://"), HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: int(ttl / time.Second)})
 }
 func cookie(r *http.Request, name string) string {
 	c, err := r.Cookie(name)
@@ -218,7 +227,7 @@ func (f *fixture) relyingParty(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			browser = opaque()
-			f.browsers[browser] = f.now().Add(flowTTL)
+			f.browsers[browser] = f.now().Add(rpBindingTTL)
 			f.cookie(w, "sso_rp_binding", browser, f.rp)
 		}
 		page(w, "SSO fixture", `<button id="login">Sign in with test provider</button><button id="late">Delayed popup</button><button id="twins">Two identical titles</button><button id="storm">Popup storm</button><p id="status">Signed out</p><script>
