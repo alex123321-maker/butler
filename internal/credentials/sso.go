@@ -140,6 +140,11 @@ func (v *Vault) OwnerRequests(ctx context.Context, owner string) ([]AccessReques
 		scope := r.Scope
 		out = append(out, AccessRequest{ID: r.ID, Kind: r.Kind, RecordID: r.RecordID, RecordLabel: r.RecordLabel, Purpose: r.Purpose, SSOScope: &scope, ScopeDigest: r.ScopeDigest, ContextEpoch: r.ContextEpoch, TargetOrigin: browsersso.Origin(scope.RPURL), BrowserSessionID: scope.Browser, Fields: []string{"username", "password"}, State: r.State, ExpiresAt: r.ExpiresAt})
 	}
+	external, e := v.ExternalRequests(ctx, owner)
+	if e != nil {
+		return nil, e
+	}
+	out = append(out, external...)
 	return out, nil
 }
 

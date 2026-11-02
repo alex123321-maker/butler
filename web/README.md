@@ -1,5 +1,13 @@
 # Butler Web
 
+The optional external Google card pins its RP, account and scope digest. One
+PIN-protected decision opens a private one-use link in a separate normal-browser
+window; a blocked popup has a private-link fallback. Reload recovers only the
+same unspent link. Approval does not mean authentication succeeded, and the
+owner can cancel the attempt. Private launch URLs stay in ephemeral owner UI
+state and clear on lock. `credential-external.spec.ts` checks approval, reload,
+foreign-link rejection, incomplete scopes and cancellation with synthetic data.
+
 Authenticated owners see pending factual action-outcome reviews separately from
 action approvals and credential requests. A known result requires an explicit
 selection, checked recipient, settled processing and a receipt reference; the

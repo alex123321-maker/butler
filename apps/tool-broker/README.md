@@ -1,5 +1,13 @@
 # Tool Broker
 
+`BUTLER_BROWSER_EXTERNAL_AUTH_ENABLED=true` advertises the distinct
+`credentials.request_external_login` prepare capability only when Core's active
+operator profile exists. Broker receives no Google client secret. It pins the
+exact RP source page and all RP/provider paths to current owner-goal authority;
+the protected decision and one exchange belong to Core's separate
+[external diagnostic RP protocol](../../docs/architecture/browser-google-auth.md).
+Native SSO grants, credential aliases and generic POST policy are unchanged.
+
 With the vault configured, `credentials.request_sso_login` and `browser.sso_login`
 provide a separate RP/IdP path. All destinations require current authority; the
 private dispatch pins exact RP identity, path caps and expiry. Migration110

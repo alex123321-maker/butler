@@ -90,13 +90,21 @@ func TestGoogleLaunchPinsMinimalIdentityAndPKCE(t *testing.T) {
 
 func TestGoogleExchangeAndStrictSignedIdentity(t *testing.T) {
 	g, c, key, base := googleFixture(t)
-	for _, mode := range []string{"valid", "wrong_audience", "wrong_issuer", "wrong_nonce", "unverified_email", "expired", "future_issue", "old_issue", "long_lived", "wrong_azp", "array_audience", "duplicate_claim", "bad_signature", "unknown_key", "duplicate_key", "bad_alg", "redirect", "missing_id_token", "large_body", "network_lost"} {
+	for _, mode := range []string{"valid", "gmail", "hosted_domain", "malformed_domain", "empty_domain", "wrong_audience", "wrong_issuer", "wrong_nonce", "unverified_email", "expired", "future_issue", "old_issue", "long_lived", "wrong_azp", "array_audience", "duplicate_claim", "bad_signature", "unknown_key", "duplicate_key", "bad_alg", "redirect", "missing_id_token", "large_body", "network_lost"} {
 		t.Run(mode, func(t *testing.T) {
 			claims := map[string]any{}
 			for k, v := range base {
 				claims[k] = v
 			}
 			switch mode {
+			case "gmail":
+				claims["email"] = "synthetic@gmail.com"
+			case "hosted_domain":
+				claims["hd"] = "example.invalid"
+			case "malformed_domain":
+				claims["hd"] = "example.invalid/path"
+			case "empty_domain":
+				claims["hd"] = ""
 			case "wrong_audience":
 				claims["aud"] = "other-client"
 			case "wrong_issuer":
@@ -188,11 +196,15 @@ func TestGoogleExchangeAndStrictSignedIdentity(t *testing.T) {
 				return &http.Response{StatusCode: status, Header: http.Header{"Location": []string{"https://foreign.example/collect"}}, Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 			}), CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 			identity, e := g.Exchange(context.Background(), "synthetic-code-canary", c, g.now().Add(-time.Second))
-			if (e == nil) != (mode == "valid") || posts != 1 || gets > 1 {
+			valid := mode == "valid" || mode == "gmail" || mode == "hosted_domain"
+			if (e == nil) != valid || posts != 1 || gets > 1 {
 				t.Fatal("wrong provider verdict or replay")
 			}
 			if mode == "valid" && (identity.Subject != "private-subject-canary" || identity.Email != "synthetic@example.invalid") {
 				t.Fatal("verified identity unavailable")
+			}
+			if valid && identity.AuthoritativeEmail != (mode == "gmail" || mode == "hosted_domain") {
+				t.Fatal("third-party email ownership inferred without Google authority")
 			}
 			if e != nil && e.Error() != ErrProvider.Error() {
 				t.Fatal("private provider diagnostic leaked")

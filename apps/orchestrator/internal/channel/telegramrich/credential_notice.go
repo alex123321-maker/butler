@@ -14,7 +14,7 @@ import (
 // owner Web form; no callback or chat reply can provide or authorize a secret.
 func (c *Client) CredentialNotice(ctx context.Context, b OwnerBinding, r credentials.AccessRequest, webURL, ack string) (string, error) {
 	u, err := url.Parse(webURL)
-	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || b.ChatID <= 0 || b.UserID != b.ChatID || (!strings.HasPrefix(r.ID, "creq_") && !(r.Kind == "sso_login" && strings.HasPrefix(r.ID, "ssoq_"))) {
+	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || b.ChatID <= 0 || b.UserID != b.ChatID || (!strings.HasPrefix(r.ID, "creq_") && !(r.Kind == "sso_login" && strings.HasPrefix(r.ID, "ssoq_")) && !(r.Kind == "external_login" && strings.HasPrefix(r.ID, "extq_"))) {
 		return "", ErrUnavailable
 	}
 	me, err := c.GetMe(ctx)
@@ -30,6 +30,12 @@ func (c *Client) CredentialNotice(ctx context.Context, b OwnerBinding, r credent
 	}
 	if r.Kind == "login" {
 		title = "Разрешить один вход с проверкой доступа?"
+	}
+	if r.Kind == "external_login" {
+		if r.ExternalScope == nil || r.ExternalScope.Validate() != nil {
+			return "", ErrUnavailable
+		}
+		title = "Разрешить один вход через Google с проверкой доступа?"
 	}
 	if r.Kind == "sso_login" {
 		if r.SSOScope == nil || r.SSOScope.Validate() != nil {
@@ -54,7 +60,7 @@ func (c *Client) CredentialNotice(ctx context.Context, b OwnerBinding, r credent
 		fields["message_id"] = message
 		method = "editMessageText"
 	}
-	if r.State == "pending" {
+	if r.State == "pending" || r.Kind == "external_login" && (r.State == "approved" || r.State == "launched" || r.State == "exchanging") {
 		fields["reply_markup"] = map[string]any{"inline_keyboard": [][]map[string]string{{{"text": "Открыть защищённую форму", "url": strings.TrimRight(webURL, "/") + "/#credential=" + r.ID}}}}
 	} else {
 		fields["text"] = "Запрос учётных данных закрыт: " + r.State

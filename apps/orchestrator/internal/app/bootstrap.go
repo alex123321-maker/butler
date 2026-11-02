@@ -555,6 +555,11 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		}
 	}
 	credentialKernel := credentialInteractions(postgres.Pool())
+	if err = configureExternalCredentials(ctx, cfg, credentialKernel, budgetController); err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	outcomeKernel := newBrowserOutcomeKernel(postgres.Pool(), inputStore)
 	credentialKernel.configureTelegram(telegramFlow)
 	if telegramFlow == nil {
@@ -834,6 +839,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		delegationDecisions = childLifecycle
 	}
 	httpServer := newHTTPServer(httpServerDeps{
+		credentialKernel:           credentialKernel,
 		budgetPolicy:               budgetPolicy,
 		experiencePolicies:         configureExperiencePolicies(experienceMemory, memoryModelStore, taskStore, transcriptStore, finalResults, sourceCatalog),
 		experienceStore:            experienceMemory,

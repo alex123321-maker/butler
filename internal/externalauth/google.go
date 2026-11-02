@@ -84,9 +84,10 @@ func (PrivateLaunch) GoString() string { return "ExternalAuthLaunch([redacted])"
 // VerifiedIdentity is private protocol data, not an ActionEffect or permission
 // to resume a Run. The owning kernel must match account and current authority.
 type VerifiedIdentity struct {
-	Subject   string    `json:"-"`
-	Email     string    `json:"-"`
-	ExpiresAt time.Time `json:"-"`
+	AuthoritativeEmail bool      `json:"-"`
+	Subject            string    `json:"-"`
+	Email              string    `json:"-"`
+	ExpiresAt          time.Time `json:"-"`
 }
 
 func (VerifiedIdentity) String() string   { return "VerifiedExternalIdentity([redacted])" }
@@ -269,5 +270,12 @@ func (g *Google) verify(ctx context.Context, token, nonce string, created time.T
 	if e != nil || key == nil || base64.RawURLEncoding.EncodeToString(signature) != parts[2] || rsa.VerifyPKCS1v15(key, crypto.SHA256, h[:], signature) != nil {
 		return VerifiedIdentity{}, ErrProvider
 	}
-	return VerifiedIdentity{Subject: sub, Email: email, ExpiresAt: time.Unix(exp, 0).UTC()}, nil
+	var hosted string
+	if b, ok := claims["hd"]; ok {
+		if json.Unmarshal(b, &hosted) != nil || hosted == "" || len(hosted) > 253 || strings.ContainsAny(hosted, " @/?#\\\r\n") {
+			return VerifiedIdentity{}, ErrProvider
+		}
+	}
+	authoritative := strings.HasSuffix(strings.ToLower(email), "@gmail.com") || hosted != ""
+	return VerifiedIdentity{Subject: sub, Email: email, AuthoritativeEmail: authoritative, ExpiresAt: time.Unix(exp, 0).UTC()}, nil
 }

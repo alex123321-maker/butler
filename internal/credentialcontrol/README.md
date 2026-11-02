@@ -1,5 +1,12 @@
 # Credential controls
 
+`Contracts()` keeps external Google handoff disabled. The operator-enabled
+`Contracts(true)` additionally advertises the distinct prepare-only
+`credentials.request_external_login`; it pins a saved record and exact managed
+RP page without exposing fields or producing a credential alias. Its protected
+decision, budgeted one-use provider exchange and diagnostic RP result belong to
+Core, under [the external protocol](../../docs/architecture/browser-google-auth.md).
+
 Fixed Broker-owned `credentials.search`, `request_access`, `request_create`,
 `request_otp`, and `request_status` contracts. Search returns safe entry metadata;
 request operations create protected owner interactions, not authorization to

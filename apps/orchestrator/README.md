@@ -1,3 +1,12 @@
+Core also offers the separately configured, default-off
+[external Google diagnostic RP](../../docs/architecture/browser-google-auth.md).
+Only Core loads the private web-client file. A protected owner decision permits
+one normal-browser handoff; a retained callback claim, finite budget and exact
+RP authenticated/anonymous differential precede same-Input readiness. Approval
+alone never resumes the model. Cancellation, restart and UNKNOWN retain spent
+authority. This does not import Chrome sessions into server Chromium or automate
+Google password/MFA entry. Owner APIs must never be exposed by the RP relay.
+
 For supported ordinary login forms Core prefers `credentials.request_login`
 then `browser.login`. Its one protected owner decision includes one submit and
 access verification. A verified account observation can support the final answer

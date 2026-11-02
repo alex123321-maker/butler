@@ -1,5 +1,16 @@
 # Credential vault
 
+Migration111 implements a separate external Google diagnostic-RP ledger:
+immutable scoped requests, one-use encrypted handoffs, durable exchange claims,
+case-sensitive provider-subject HMAC bindings and retained RP results. Only
+Core's operator composition holds the client secret; Broker creates metadata
+requests without resolving the selected account's password. Callback exchange
+reserves a finite budget and a journal child before network dispatch. One
+protected owner decision includes verification, while same-Input readiness
+waits for terminal authentication. Cancellation after dispatch and lost replies
+remain UNKNOWN; historical factual review never replays or refunds the attempt.
+See [the exact boundary](../../docs/architecture/browser-google-auth.md).
+
 Migration109 adds a separate retained SSO consent ledger and protected RP/IdP
 owner card. Creation and approval pin the exact RP page, context epoch, account
 and current Run/Task revisions. `ssoq_` IDs cannot resolve fields through legacy

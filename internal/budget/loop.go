@@ -40,6 +40,9 @@ func (c *Controller) CheckToolTx(ctx context.Context, tx pgx.Tx, i ToolIdentity)
 	if err != nil {
 		return err
 	}
+	if err = externalAuthUnknownGuardTx(ctx, tx, i, owner, root); err != nil {
+		return err
+	}
 	if err = stoppedAttemptGuardTx(ctx, tx, i, owner, root); err != nil {
 		return err
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentials"
+	"github.com/butler/butler/internal/externalauth"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,6 +43,8 @@ func (c *CredentialInteractions) configureTelegram(channel *telegramCommunicatio
 		query := `SELECT owner_id,run_id FROM credential_vault_requests WHERE id=$1`
 		if strings.HasPrefix(r.ID, "ssoq_") {
 			query = `SELECT owner_id,run_id FROM credential_sso_requests WHERE id=$1`
+		} else if strings.HasPrefix(r.ID, "extq_") {
+			query = `SELECT owner_id,run_id FROM browser_external_auth_requests WHERE id=$1`
 		}
 		if tx.QueryRow(ctx, query, r.ID).Scan(&owner, &runID) != nil || owner != channel.binding.OwnerID {
 			return "", credentials.ErrVault
@@ -66,6 +69,8 @@ func (c *CredentialInteractions) configureLegacyTelegram(channel *telegram.Adapt
 		query := `SELECT q.session_key FROM credential_vault_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`
 		if strings.HasPrefix(r.ID, "ssoq_") {
 			query = `SELECT q.session_key FROM credential_sso_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`
+		} else if strings.HasPrefix(r.ID, "extq_") {
+			query = `SELECT q.session_key FROM browser_external_auth_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`
 		}
 		if c.Vault.Pool.QueryRow(ctx, query, r.ID).Scan(&session) != nil {
 			return "", credentials.ErrVault
@@ -79,6 +84,12 @@ func (c *CredentialInteractions) configureLegacyTelegram(channel *telegram.Adapt
 func (c *CredentialInteractions) Sweep(ctx context.Context) error {
 	if c == nil {
 		return nil
+	}
+	if e := c.Vault.SweepExternal(ctx); e != nil {
+		return e
+	}
+	if e := c.notifyExternal(ctx); e != nil {
+		return e
 	}
 	if e := c.sweepSSO(ctx); e != nil {
 		return e
@@ -194,13 +205,16 @@ func (c *CredentialInteractions) SuspendRequest(ctx context.Context, runID, call
 	if len(tools) == 1 && tools[0] == browsersso.RequestTool {
 		query = `SELECT q.id,q.task_id,q.task_revision,q.constraints_revision,v.live_state FROM credential_sso_requests q JOIN credential_sso_state v USING(id) WHERE q.run_id=$1 AND q.tool_call_id=$2 AND q.session_key=$3 FOR SHARE OF q`
 	}
+	if len(tools) == 1 && tools[0] == externalauth.RequestTool {
+		query = `SELECT q.id,q.task_id,q.task_revision,q.constraints_revision,v.live_state FROM browser_external_auth_requests q JOIN browser_external_auth_state v USING(id) WHERE q.run_id=$1 AND q.tool_call_id=$2 AND q.session_key=$3 FOR SHARE OF q`
+	}
 	if tx.QueryRow(ctx, query, runID, callID, token.SessionKey).Scan(&id, &taskID, &rev, &cr, &state) != nil {
 		return "", credentials.ErrVault
 	}
 	if task.WaitInteractionTx(ctx, tx, taskID, rev, cr) != nil || c.Inputs.SuspendPrivateInteractionTx(ctx, tx, runID, id, "credential_interaction") != nil || runstore.SuspendInteractionTx(ctx, tx, runID) != nil {
 		return "", credentials.ErrVault
 	}
-	if state != "pending" && c.readyTx(ctx, tx, runID, id) != nil {
+	if state != "pending" && !(strings.HasPrefix(id, "extq_") && credentials.ExternalPending(state)) && c.readyTx(ctx, tx, runID, id) != nil {
 		return "", credentials.ErrVault
 	}
 	if tx.Commit(ctx) != nil {
@@ -231,7 +245,10 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 	if strings.HasPrefix(id, "ssoq_") {
 		query = `SELECT q.owner_id,q.task_id,q.task_revision,q.constraints_revision,v.live_state,'["username","password"]'::text,q.scope_digest FROM credential_sso_requests q JOIN credential_sso_state v USING(id) WHERE q.id=$1 AND q.run_id=$2 AND q.session_key=$3 FOR SHARE OF q`
 	}
-	if tx.QueryRow(ctx, query, id, runID, token.SessionKey).Scan(&owner, &taskID, &rev, &cr, &state, &fields, &scopeDigest) != nil || state == "pending" {
+	if strings.HasPrefix(id, "extq_") {
+		query = `SELECT q.owner_id,q.task_id,q.task_revision,q.constraints_revision,v.live_state,'[]'::text,q.scope_digest FROM browser_external_auth_requests q JOIN browser_external_auth_state v USING(id) WHERE q.id=$1 AND q.run_id=$2 AND q.session_key=$3 FOR SHARE OF q`
+	}
+	if tx.QueryRow(ctx, query, id, runID, token.SessionKey).Scan(&owner, &taskID, &rev, &cr, &state, &fields, &scopeDigest) != nil || state == "pending" || strings.HasPrefix(id, "extq_") && credentials.ExternalPending(state) {
 		return "", credentials.ErrVault
 	}
 	if task.ResumeInteractionTx(ctx, tx, taskID, rev, cr) != nil || c.Inputs.CheckInteractionClaimTx(ctx, tx, runID, id) != nil {
@@ -242,10 +259,27 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 			return "", credentials.ErrVault
 		}
 	}
+	var externalReference string
+	if strings.HasPrefix(id, "extq_") {
+		r, reference, e := c.Vault.ExternalStateTx(ctx, tx, credentials.Principal{OwnerID: owner, SessionKey: token.SessionKey, RunID: runID, TaskID: taskID, TaskRevision: rev, ConstraintsRevision: cr}, id)
+		if e != nil || r.State != state {
+			return "", credentials.ErrVault
+		}
+		externalReference = reference
+	}
 	if tx.Commit(ctx) != nil {
 		return "", credentials.ErrVault
 	}
 	response := map[string]any{"request_id": id, "state": state, "credential_alias": id, "fields": json.RawMessage(fields)}
+	if strings.HasPrefix(id, "extq_") {
+		delete(response, "credential_alias")
+		delete(response, "fields")
+		response["kind"] = "external_login"
+		if state == "verified" {
+			response["rp_access_verified"] = true
+			response["reference"] = externalReference
+		}
+	}
 	if scopeDigest != "" {
 		response["scope_digest"] = scopeDigest
 	}

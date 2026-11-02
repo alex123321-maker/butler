@@ -17,6 +17,11 @@ required() {
  printf 'stage=%s finished_at=%s\n' "$name" "$(date -u +%FT%TZ)"
 }
 required google-provider-protocol ./internal/externalauth
+export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"
+required external-authority ./internal/actionauth ./internal/budget ./internal/config -run '^TestExternal'
+required external-ledger ./internal/credentials -run '^TestVaultExternalAuth'
+required external-http ./apps/orchestrator/internal/api -run '^TestExternalRP'
+required external-same-input ./apps/orchestrator/internal/app -run '^TestCredentialExternal'
 go vet ./internal/externalauth
 required migrations ./internal/credentials -run '^TestStoreIntegrationCRUD$'
 required authority ./internal/browsersso ./internal/actionauth -run '^TestSSO'

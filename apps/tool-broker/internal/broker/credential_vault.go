@@ -9,6 +9,7 @@ import (
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/credentials"
+	"github.com/butler/butler/internal/externalauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"google.golang.org/protobuf/proto"
 )
@@ -56,6 +57,12 @@ func (e *CredentialExecutor) Execute(ctx context.Context, call *toolbrokerv1.Too
 		payload = map[string]any{"entries": entries}
 	} else if call.ToolName == "credentials.request_status" {
 		r, err := e.Vault.RequestStatus(ctx, p, a.RequestID)
+		if err != nil {
+			return nil, err
+		}
+		payload = map[string]any{"request": r}
+	} else if call.ToolName == externalauth.RequestTool {
+		r, err := e.Vault.CreateExternalRequest(ctx, p, call.ToolCallId, identity.ActionID, call.ArgsJson)
 		if err != nil {
 			return nil, err
 		}

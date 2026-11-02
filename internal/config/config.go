@@ -55,7 +55,10 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
-	BrowserControlURL string
+	ExternalAuthEnabled    bool
+	ExternalAuthClientFile string
+	ExternalAuthRPURL      string
+	BrowserControlURL      string
 
 	ToolDiscoveryEnabled              bool
 	ExecutionBudgetPolicyJSON         string
@@ -127,6 +130,7 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
+	ExternalAuthEnabled      bool
 	BrowserControlRuntimeURL string
 	BrowserControlTokenFile  string
 
@@ -378,6 +382,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
+	specs = append(specs, externalAuthOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
 	specs = append(specs, toolDiscoverySpec("orchestrator", &cfg.ToolDiscoveryEnabled))
 	specs = append(specs, schedulesOrchestratorSpecs(&cfg)...)
@@ -429,6 +434,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
 	specs = append(specs, publicWebReadsBrokerSpec(&cfg))
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
+	specs = append(specs, externalAuthBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	specs = append(specs, toolDiscoverySpec("tool-broker", &cfg.ToolDiscoveryEnabled))
 	specs = append(specs, schedulesBrokerSpecs(&cfg)...)
@@ -810,6 +816,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if err := validateExternalAuthConfig(cfg); err != nil {
+		return err
+	}
 	if cfg.BrowserControlURL != "" && cfg.ActionAuthorityTokenFile == "" {
 		return fmt.Errorf("server browser control requires private Broker authentication")
 	}

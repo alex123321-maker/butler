@@ -83,6 +83,11 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 		}
 		deny := func() { writeJSON(w, 409, map[string]string{"error": "credential_operation_unavailable"}) }
 		switch q.Action {
+		case "external_cancel":
+			if vault.CancelExternal(r.Context(), actor.OwnerID, q.ID, q.ScopeDigest) != nil {
+				deny()
+				return
+			}
 		case "sms_routes":
 			routes, err := vault.SMSRoutes(r.Context(), actor.OwnerID)
 			if err != nil {
@@ -144,9 +149,25 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 			}
 			writeJSON(w, 200, map[string]any{"requests": requests})
 			return
+		case "external_launch":
+			launch, e := vault.ExternalLaunch(r.Context(), actor.OwnerID, q.ID, q.ScopeDigest)
+			if e != nil {
+				deny()
+				return
+			}
+			writeJSON(w, 200, map[string]string{"launch_url": launch.URL})
+			return
 		case "respond":
 			var err error
-			if strings.HasPrefix(q.ID, "ssoq_") && q.OTP == "" {
+			if strings.HasPrefix(q.ID, "extq_") && q.OTP == "" {
+				launch, e := vault.RespondExternal(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.LoginAuthorization, q.ScopeDigest)
+				if e != nil {
+					deny()
+					return
+				}
+				writeJSON(w, 200, map[string]any{"ok": true, "launch_url": launch.URL})
+				return
+			} else if strings.HasPrefix(q.ID, "ssoq_") && q.OTP == "" {
 				err = vault.RespondSSO(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.LoginAuthorization, q.ScopeDigest)
 			} else if q.ScopeDigest == "" {
 				err = vault.Respond(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.OTP, q.LoginAuthorization)

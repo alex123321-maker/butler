@@ -1,4 +1,4 @@
-# External Google sign-in: implementation boundary and next integration
+# External Google sign-in: bounded diagnostic RP contract
 
 ## Implemented
 
@@ -10,15 +10,17 @@ Provider identity data, authorization URLs/codes, client secrets and tokens are
 not model observations, tool arguments or ActionEffect evidence. Provider errors
 return one fixed public error with no body, URL or partial identity.
 
-There are currently **no production callers**, no public callback route, no
-owner launch button and no external-auth durable ledger. A passing package test,
-created Google Cloud client or an already signed-in Chrome account does not
-prove a Butler login, same-Input continuation or channel delivery. Existing
-bounded synthetic SSO remains governed by
+Core, Broker and owner UI implement a separate, **default-disabled** external
+handoff for an operator-configured diagnostic RP. Migration 111 retains its
+immutable request, encrypted challenge, one-use launch, exchange claim, result,
+stable identity binding and independent notification state. A passing package
+test, created Google Cloud client or an already signed-in Chrome account does
+not prove deployment, native login or channel delivery. Existing bounded
+synthetic SSO remains governed by
 [its separate contract](browser-sso-protocol.md). Its native-form approval and
 server-browser context cannot be reused for external Chrome OAuth.
 
-## Required kernel integration (not implemented)
+## Kernel and owner decision
 
 1. Broker validates a distinct external-auth proposal against current owner,
    Session, Run, Task/constraint versions, selected record revision and exact
@@ -36,14 +38,20 @@ server-browser context cannot be reused for external Chrome OAuth.
    denial), cookie, expiry, pinned client and original attempt. Recheck current
    owner/Task/mandate/account/canonical Input authority transactionally. Waiting
    Inputs do not have an active worker lease; callback authorization must be
-   explicitly implemented rather than borrowing a live-worker check.
+   checked through its canonical suspended Input rather than borrowing an
+   active worker lease. Callback replay is serialized before Task/Input locks
+   so a losing callback cannot deadlock the winning budget reservation.
 5. Atomically consume the callback before the single token exchange. A lost
    response or process restart retains consumed authority and UNKNOWN; no
    exchange replay, grant refund or old Input recreation. After independently
    verified provider identity, match the pinned account through the vault's
    owner-keyed login index without decrypting its password. Email is an initial
    account match, not a stable identity key: persist the verified provider
-   subject binding and reject later subject changes.
+   subject binding and reject later subject changes, including case changes.
+   An initial email match additionally requires Google-authoritative ownership:
+   Gmail, or a verified email with a signed hosted-domain claim. A third-party
+   address with `email_verified` alone cannot establish this binding. See
+   [Google's identity-verification contract](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).
 6. Identity verification alone is not RP session proof. Bind the RP session and
    its independently checked access evidence, record the result, and atomically
    ready only the same canonical Input. Normal lease reacquisition and action
@@ -51,7 +59,54 @@ server-browser context cannot be reused for external Chrome OAuth.
    distinct. OTP or provider challenges remain protected owner handoff until
    a separate Broker-mediated multistep credential protocol is implemented.
 
-The public RP must expose only exact start/callback paths through a private
+`credentials.request_external_login` is prepare-only. It requires an explicit
+current owner goal/mandate covering both prepare and commit for the exact RP,
+verification path and Google's fixed authorization/token/JWKS destinations.
+One PIN-protected owner answer binds the immutable scope digest and selected
+record revision. It grants no generic HTTP POST, native form grant, credential
+alias, password resolution or arbitrary provider URL. Broker has only the
+non-secret profile; only Core receives the private client file.
+
+Before the single provider exchange, Core reserves a separate finite execution
+budget and commits an ActionEffect child with `external_google_rp_v1` policy.
+The child cannot be dispatched through the prepare-only public tool contract.
+Google identity is matched privately, then the exact RP account endpoint is
+read with the per-attempt cookie (200) and without it (401). Only this
+differential can produce `verified` and the independently generated RP
+reference. Provider identity/token bodies are never persisted. Task and account
+authority, source document/version/epoch and canonical Input are checked again
+after network waiting; Task locks are not held across provider requests.
+
+Approval alone does not ready the Input. A terminal verified/unverified result,
+denial, expiry, stale source or cancellation wakes only that same Input. An
+already-issued private link can be recovered after an owner-page reload only
+while its original ticket is unspent. No second approval or new ticket is
+created. The owner can cancel before or during exchange. A pre-dispatch budget
+rejection closes the attempt without contacting Google. Cancellation after
+dispatch, lost token/probe acknowledgement or abandoned exchange becomes
+retained UNKNOWN, never an inferred failure or refundable grant. A settled
+exchange is swept after the bounded execution window, including across restart.
+Unresolved private-auth effects block later writes in the conversation, even
+under a new Input/Task; independent reads and the existing exact owner-report
+publication contract remain available. Historical owner factual review uses
+the existing protected outcome UI only after the worker, Input, Run and source
+context are settled. It may change the journal assessment, but cannot rewrite
+the original callback result, resume old work, replay state or refund spending.
+
+The owner UI opens normal Chrome using a private one-use URL returned only by
+the protected owner API. Popup blocking has an explicit private-link fallback;
+the opener is removed and navigation is restricted to the pinned HTTPS RP
+start route. The RP sets no-store/no-referrer/CSP headers and exposes only
+root/start/callback/account. Callback query values and errors are not reflected.
+Owner notification claims are durable and an ambiguous send is not resent.
+
+This RP is deliberately a diagnostic application on an owned host. A normal
+Chrome session is **not copied into server Chromium**, and this flow does not
+provide general authenticated DOM continuation on arbitrary third-party sites.
+An existing Google Chrome session proves neither vault password injection nor
+MFA automation. These limits must be present in external acceptance evidence.
+
+The public RP must expose only exact root/start/callback/account paths through a private
 relay. Do not expose owner APIs, relax TLS/network guards, or send a Google
 password to the synthetic IdP. Private downloaded client configuration belongs
 in a restricted operator secret mount, never git, fixture configuration or logs.
@@ -74,8 +129,9 @@ The owner approved Google's User Data Policy and creation on 2026-11-02.
 `Butler Browser SSO Test Web` is created, the app remains in Testing, one
 dedicated test user is listed, and only `openid`/`userinfo.email` are configured.
 The client secret is retained in a restricted, git-ignored local operator file;
-the provider configuration parser accepted that file. It is not deployed or
-enabled in Butler. See [the setup evidence](../testing/browser-google-client-2026-11-02.md).
+the provider configuration parser accepted that file. Setup evidence is
+[recorded separately](../testing/browser-google-client-2026-11-02.md); client
+creation alone is not deployment or external smoke acceptance.
 
 ## Acceptance
 

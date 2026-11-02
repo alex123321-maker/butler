@@ -2,7 +2,12 @@
 
 This package implements the provider-side authorization-code exchange only.
 It is not a tool, callback server, owner-consent store, credential resolver or
-permission to resume an Input. It currently has no production callers.
+permission to resume an Input. Its caller is Core's optional protected
+credential kernel; see [the separate integration contract](../../docs/architecture/browser-google-auth.md).
+`Scope` and the non-secret operator `Profile` pin all RP/provider destinations.
+Signed Gmail/hosted-domain ownership is distinguished from a third-party
+`email_verified` claim; subjects remain case-sensitive. This package does not
+own current authority, budgets, one-use claims, RP sessions or channel delivery.
 
 `ReadGoogleWebConfig` reads a privately downloaded **web** client file with one
 independently pinned HTTPS callback and no JavaScript origins. `NewGoogle`

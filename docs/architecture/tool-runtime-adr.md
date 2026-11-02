@@ -1,5 +1,13 @@
 # Butler — Tooling and Execution Specification
 
+`credentials.request_external_login` is a default-disabled prepare-only Broker
+capability. It binds the exact managed RP document/version/epoch and all fixed
+provider resources to current owner-goal authority. It releases no fields to a
+runtime. Core owns the private normal-browser OAuth handoff, durable claim,
+budgeted effect and independent diagnostic-RP verification described in
+[the external protocol](browser-google-auth.md). Existing generic POST,
+single-tab and native-form SSO contracts do not consume this authority.
+
 `browser.sso_login` revision1 is a distinct unsafe commit protocol with
 Broker-mediated deferred fields, private RP/IdP dispatch caps, one fresh child,
 one native form POST and Go-derived `browser_sso_login_v1` RP access proof.

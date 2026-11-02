@@ -1,5 +1,15 @@
 # Butler — Run Lifecycle Specification
 
+The optional `credentials.request_external_login` uses the canonical credential
+wait but approval alone does **not** ready it. The external kernel atomically
+readies the same Input only on terminal authentication, cancellation, denial,
+expiry or stale source. Resume rechecks the ordinary claim, lease and Task
+authority. Its private provider exchange has a separate finite-budget
+ActionEffect child. Lost exchange/probe acknowledgements stay UNKNOWN and block
+later writes across Inputs in the conversation. Historical factual review never
+resumes the old Input or rewrites its delivered result. See
+[the bounded external protocol](browser-google-auth.md).
+
 `credentials.request_sso_login` follows the same canonical owner-credential
 wait as ordinary login: suspend the exact Input/Task versions, notify once,
 resume after protected decision or live-scope expiry, and recheck authority

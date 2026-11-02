@@ -70,8 +70,14 @@ type OwnerOutcomes struct {
 // Neither source is accepted from tool args or an arbitrary caller-selected URL.
 func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, observationCall string, historical bool) (OwnerOutcomeReview, error) {
 	e, err := effectIn(ctx, tx, effectID, false)
-	if err != nil || e.State != StateUnknown || (e.DispatchOutcome != "dispatch_completed" && !(historical && (e.Binding.ToolName == browserauth.Tool || e.Binding.ToolName == browsersso.Tool) && e.DispatchOutcome == "unknown")) {
+	if err != nil || e.State != StateUnknown || (e.DispatchOutcome != "dispatch_completed" && !(historical && (e.Binding.ToolName == browserauth.Tool || e.Binding.ToolName == browsersso.Tool || e.Policy.VerificationMethod == ExternalAuthVerification) && e.DispatchOutcome == "unknown")) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
+	}
+	if e.Policy.VerificationMethod == ExternalAuthVerification {
+		if !historical {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
+		return s.externalAuthReviewTx(ctx, tx, e)
 	}
 	var b ActionBinding
 	var raw string

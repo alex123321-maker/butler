@@ -1,5 +1,14 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Migration111's [external Google diagnostic RP](browser-google-auth.md) is a
+separate default-off protocol. `credentials.request_external_login` selects a
+pinned record and exact source page under current owner-goal authority, but
+never resolves fields or returns a credential alias. Only Core receives the
+operator OAuth client. One protected scoped decision permits one code exchange
+and independently checked RP access. State/PKCE/cookies remain private; a
+durable budgeted journal child prevents replay and preserves UNKNOWN. This is
+not a generic single-tab credential or arbitrary-site Chrome-session bridge.
+
 Migration106 adds the distinct, explicit `credentials.request_login` consent
 for [bounded browser login](browser-login-protocol.md). It pins the saved account,
 current authority and exact form/POST scope, with one durable call reservation.

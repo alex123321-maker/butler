@@ -51,6 +51,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if guardedErr != nil {
 		return cfg, snapshot, guardedErr
 	}
+	externalSnapshot, externalErr := loadSpecs(get, externalAuthOrchestratorSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, externalSnapshot.keys...)
+	if externalErr != nil {
+		return cfg, snapshot, externalErr
+	}
 	candidateSnapshot, candidateErr := loadSpecs(get, append(memoryCandidateOrchestratorSpecs(&cfg), schedulesOrchestratorSpecs(&cfg)...))
 	snapshot.keys = append(snapshot.keys, candidateSnapshot.keys...)
 	if candidateErr != nil {

@@ -26,10 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/externalauth/|docs/architecture/browser-google-auth[.]md$)" {
+    "^(internal/externalauth/|internal/(credentials|actionauth|budget|config)/external_auth|apps/orchestrator/internal/(app/credential_external|api/browser_external_auth)|migrations/111_browser_external_auth|web/tests/e2e/credential-external|docs/architecture/browser-google-auth[.]md$)" {
       [void]$specs.Add("docs/architecture/browser-google-auth.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
-      [void]$tests.Add("go test -race ./internal/externalauth -count=1; go vet ./internal/externalauth. Provider-only synthetic tests do not prove owner consent, durable callback claims, current authority, same-Input recovery, RP access or Google/native delivery.")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("browser-sso-execution-tests.sh: mandatory isolated PG/race external authority, budget, retained ledger/UNKNOWN/no-replay, HTTP privacy, actual Core same-Input control and ordered migrations; zero skips. Web: credential-external.spec.ts, typecheck/lint. Default-off diagnostic RP only; synthetic/provider checks never prove real Google, password/MFA injection or native delivery. Native timing includes model deliberation and owner wait.")
       continue
     }
     "^(internal/browsersso/|internal/credentials/sso|internal/(actionauth|browsercontrol)/sso|apps/tool-browser/internal/runtime/sso|apps/orchestrator/internal/app/credential_sso|migrations/1(09_browser_sso_consent|10_browser_sso_use)[.]|scripts/dev/browser-sso-execution-tests[.]sh|[.]github/workflows/browser-sso[.]yml|docs/architecture/browser-sso-protocol[.]md$)" {

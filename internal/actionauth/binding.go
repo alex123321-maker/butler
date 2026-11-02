@@ -378,7 +378,7 @@ func classifyEffect(tool string, args map[string]any) Effect {
 		return EffectRead
 	case "schedule.list", "schedule.get", "credentials.search", "credentials.request_status":
 		return EffectRead
-	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login", "credentials.request_sso_login":
+	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login", "credentials.request_sso_login", "credentials.request_external_login":
 		return EffectPrepare
 	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare

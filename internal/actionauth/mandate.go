@@ -56,7 +56,7 @@ func ValidateMandate(m Mandate, now time.Time) error {
 func mandateAllows(m Mandate, b ActionBinding, now time.Time) bool {
 	// Federation requires the purpose-bound owner-goal contract, not an old
 	// origin-only mandate that has no all-of RP/IdP or deny-override semantics.
-	if b.BrowserSSO != nil && m.ScopeKind != "owner_goal" {
+	if (b.BrowserSSO != nil || b.ExternalAuth != nil) && m.ScopeKind != "owner_goal" {
 		return false
 	}
 	if m.ScopeKind == "owner_goal" {

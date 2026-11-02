@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browsersso"
+	"github.com/butler/butler/internal/externalauth"
 	"net/url"
 	"strings"
 	"time"
@@ -19,20 +20,21 @@ type Principal struct {
 	TaskRevision, ConstraintsRevision  int64
 }
 type AccessRequest struct {
-	SSOScope         *browsersso.Scope  `json:"sso_scope,omitempty"`
-	ScopeDigest      string             `json:"scope_digest,omitempty"`
-	ContextEpoch     int64              `json:"context_epoch,omitempty"`
-	LoginScope       *browserauth.Scope `json:"login_scope,omitempty"`
-	ID               string             `json:"id"`
-	Kind             string             `json:"kind"`
-	RecordID         string             `json:"record_id"`
-	RecordLabel      string             `json:"record_label,omitempty"`
-	TargetOrigin     string             `json:"target_origin"`
-	BrowserSessionID string             `json:"browser_session_id"`
-	Purpose          string             `json:"purpose"`
-	Fields           []string           `json:"fields"`
-	State            string             `json:"state"`
-	ExpiresAt        time.Time          `json:"expires_at"`
+	ExternalScope    *externalauth.Scope `json:"external_scope,omitempty"`
+	SSOScope         *browsersso.Scope   `json:"sso_scope,omitempty"`
+	ScopeDigest      string              `json:"scope_digest,omitempty"`
+	ContextEpoch     int64               `json:"context_epoch,omitempty"`
+	LoginScope       *browserauth.Scope  `json:"login_scope,omitempty"`
+	ID               string              `json:"id"`
+	Kind             string              `json:"kind"`
+	RecordID         string              `json:"record_id"`
+	RecordLabel      string              `json:"record_label,omitempty"`
+	TargetOrigin     string              `json:"target_origin"`
+	BrowserSessionID string              `json:"browser_session_id"`
+	Purpose          string              `json:"purpose"`
+	Fields           []string            `json:"fields"`
+	State            string              `json:"state"`
+	ExpiresAt        time.Time           `json:"expires_at"`
 }
 
 // currentTx pins owner/session/task versions; caller identity is never model input.
@@ -278,6 +280,9 @@ func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
 }
 func mustJSONBytes(v any) []byte { b, _ := json.Marshal(v); return b }
 func (v *Vault) RequestStatus(ctx context.Context, p Principal, id string) (AccessRequest, error) {
+	if validExternalID(id) {
+		return v.externalStatus(ctx, p, id)
+	}
 	if isSSOAlias(id) {
 		return v.ssoStatus(ctx, p, id)
 	}
