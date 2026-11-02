@@ -27,7 +27,7 @@ func TestSSOExecutionStrictReferencesAndNetworkCaps(t *testing.T) {
 	if !d.Valid(s) {
 		t.Fatal("complete private dispatch rejected")
 	}
-	for _, bad := range []NetworkScope{{Origin: "https://rp.test/path", PathPrefix: "/"}, {Origin: "https://rp.test", PathPrefix: "/a/../"}, {Origin: "https://rp.test", PathPrefix: "/?query=bad"}} {
+	for _, bad := range []NetworkScope{{Origin: "", PathPrefix: "/"}, {Origin: "https://rp.test/path", PathPrefix: "/"}, {Origin: "https://rp.test", PathPrefix: "/a/../"}, {Origin: "https://rp.test", PathPrefix: "/?query=bad"}} {
 		invalid := d
 		invalid.Allowed = append(append([]NetworkScope{}, d.Allowed...), bad)
 		if invalid.Valid(s) {

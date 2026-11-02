@@ -56,7 +56,8 @@ func (d Dispatch) Valid(s Scope) bool {
 	}
 	for _, scope := range append(append([]NetworkScope{}, d.Allowed...), d.Denied...) {
 		prefix, err := url.Parse(scope.PathPrefix)
-		if Origin(scope.Origin+"/") != scope.Origin || scope.PathPrefix == "" || !strings.HasPrefix(scope.PathPrefix, "/") || len(scope.PathPrefix) > 2048 || err != nil || prefix.Host != "" || prefix.Scheme != "" || prefix.RawQuery != "" || prefix.ForceQuery || prefix.Fragment != "" || prefix.RawPath != "" || strings.Contains(scope.PathPrefix, "\\") || path.Clean(scope.PathPrefix) != strings.TrimSuffix(scope.PathPrefix, "/") && scope.PathPrefix != "/" {
+		canonicalOrigin := Origin(scope.Origin + "/")
+		if canonicalOrigin == "" || canonicalOrigin != scope.Origin || scope.PathPrefix == "" || !strings.HasPrefix(scope.PathPrefix, "/") || len(scope.PathPrefix) > 2048 || err != nil || prefix.Host != "" || prefix.Scheme != "" || prefix.RawQuery != "" || prefix.ForceQuery || prefix.Fragment != "" || prefix.RawPath != "" || strings.Contains(scope.PathPrefix, "\\") || path.Clean(scope.PathPrefix) != strings.TrimSuffix(scope.PathPrefix, "/") && scope.PathPrefix != "/" {
 			return false
 		}
 	}
