@@ -246,6 +246,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		browserController = browserClient
 	}
 	mux.Handle("/api/v4/server-browser", apiservice.ServerBrowser(deps.ownerAuth, browserController))
+	ownerOutcomes := newBrowserOutcomeKernel(deps.postgres.Pool(), deps.inputStore)
+	mux.Handle("/api/v4/action-outcomes", apiservice.OwnerOutcomes(deps.ownerAuth, ownerOutcomes.Outcomes))
 	var credentialVault *credentials.Vault
 	if interactions := credentialInteractions(deps.postgres.Pool()); interactions != nil {
 		credentialVault = interactions.Vault

@@ -1,0 +1,10 @@
+{
+  "command": "pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/browser-eval -Count1",
+  "host": "Windows",
+  "package": "github.com/butler/butler/cmd/browser-eval",
+  "result": "PASS",
+  "provenance": "operator transcription of the observed command output",
+  "package_elapsed_s": 3.595,
+  "go_recipient_code_changed": false,
+  "native_acceptance_counted_separately": true
+}

@@ -1,5 +1,13 @@
 # Durable input
 
+Migration105 adds kernel-owned `effect_review` waits after a correlated opaque
+browser action and independently confirmed frozen read. Suspension and exact
+review identity join the Task/run transaction. A canonical known owner report
+makes only that same unexpired Input ready without extending its execution TTL;
+unknown/expired/invalidated waits close without inference. The stopped-attempt
+sweeper preserves exact live pending reviews. Historical reconciliation never
+requeues a failed Input, clears its transcript or refunds spent allowances.
+
 The explicit epoch1 composition installs migration102's kernel-only stopped
 attempt finalizer. A bounded background sweep locks inactive ownership and the
 matching Input/run, preserves legitimate owner waits, then atomically ends a
@@ -127,3 +135,10 @@ read/final/ABSENT reconciliation. No execution or input-control permission is
 returned and the stale observation body is never read. Migration081's separate
 input-link/event heads capture the exact control relationship without changing
 the ordinary080 projection or treating arbitrary diagnostic text as its body.
+
+`ReviewStoppedInput` is operator/kernel-only. It uses the existing transaction
+and optional owning Communication local-review collaborator, returning the
+predicted classification before an optional rollback. Maintenance retains its
+cooldown; explicit review bypasses only that cooldown. Neither path revives an
+old Input, grants execution, changes task completion or refunds usage. See
+`docs/architecture/stopped-input-finalization.md`.

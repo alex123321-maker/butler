@@ -1,0 +1,7 @@
+=== RUN   TestBrowserSafetyOwnerUIChromiumIntegration
+    browser_owner_ui_integration_test.go:176: owner_ui=stop real_owner_receipts=1 recipient_posts=0 original_grant=authorized original_dispatches=0
+    browser_owner_ui_integration_test.go:176: owner_ui=revoke real_owner_receipts=1 recipient_posts=0 original_grant=authorized original_dispatches=0
+    browser_owner_ui_integration_test.go:145: owner_ui=unchanged_control recipient_posts=1 opaque_effect=effect_unknown
+PASS
+--- PASS: TestBrowserSafetyOwnerUIChromiumIntegration (8.92s)
+PASS

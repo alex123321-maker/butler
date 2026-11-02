@@ -1,0 +1,21 @@
+{
+  "scope": "recipient_metadata_only",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-10-29T03:48:06.533455487Z",
+      "kind": "login",
+      "accepted": true,
+      "quantity": null
+    },
+    {
+      "sequence": 2,
+      "at": "2026-10-29T03:48:06.597470377Z",
+      "kind": "account_read",
+      "accepted": true,
+      "quantity": null
+    }
+  ],
+  "accepted_login_events": 1,
+  "authenticated_reads": 1
+}

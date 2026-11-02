@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/butler/butler/internal/browserpage"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -13,12 +14,16 @@ const sessionTTL = 15 * time.Minute
 const maxBrowserSessions = 32
 
 type browserSession struct {
+	managedPages                  bool
+	pages                         map[string]browserpage.Report
 	mu                            sync.Mutex
 	id, owner, origin, currentURL string
 	expires                       time.Time
 	version                       uint64
 	generation                    uint64
 	closed                        bool
+	networkFrozen                 bool
+	privateFormMetadata           bool
 	controlEpoch                  int64
 	controller                    string
 	allowedDomains                []string

@@ -1,0 +1,13 @@
+{
+  "scope": "historical-owner-assisted-external-outcome",
+  "review": "review_d2ea2c978ef8dbfa86dd50c16bc68aee",
+  "effect": "action_a5a4ccfdf9ca923265f223eb001d0aa7510d011837cad9f8a05deb2bc972b2a7",
+  "state": "effect_absent",
+  "source_kind": "historical_expired",
+  "owner_assistance": 1,
+  "autonomous_machine_receipt": false,
+  "input_replayed": false,
+  "local_fill_acknowledgement_retained": true,
+  "recipient_mutations": 0,
+  "recipient_processing_stopped": true
+}

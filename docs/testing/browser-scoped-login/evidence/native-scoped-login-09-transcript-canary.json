@@ -1,0 +1,12 @@
+{
+  "scope": "exact_run_private_transcript_canary_check",
+  "event": "browser-baseline-native-scoped-login-20261030-09",
+  "run": "run-1793342400409497517-8ed43b1ca3944768",
+  "tool_calls_checked": 8,
+  "messages_checked": 3,
+  "credential_canary_in_tool_args_or_results": false,
+  "credential_canary_in_messages": false,
+  "provider_wire_or_system_logs_checked": false,
+  "raw_text_exported": false,
+  "read_only": true
+}

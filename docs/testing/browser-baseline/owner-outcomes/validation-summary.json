@@ -1,0 +1,7 @@
+{
+  "passed_test_events": 124,
+  "failed_test_events": 0,
+  "skipped_test_events": 0,
+  "scope": "full_source_owner_plus_stopped_regressions",
+  "native_calls": 0
+}

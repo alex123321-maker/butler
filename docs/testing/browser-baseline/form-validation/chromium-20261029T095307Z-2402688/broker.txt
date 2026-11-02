@@ -1,0 +1,33 @@
+=== RUN   TestBrokerBrowserSequenceE2E
+2026/10/29 09:53:13 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:42815
+2026/10/29 09:53:14 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=broker-call-1 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=broker-call-2 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=broker-call-3 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=broker-call-4 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.close tool_call_id=broker-call-5 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=broker-call-6 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=broker-call-8 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=broker-call-9 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=broker-call-10 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=broker-call-11 runtime_target=127.0.0.1:42815
+2026/10/29 09:53:15 INFO tool execution routed component=tool-broker tool_name=browser.close tool_call_id=broker-call-12 runtime_target=127.0.0.1:42815
+--- PASS: TestBrokerBrowserSequenceE2E (2.65s)
+=== RUN   TestBrowserFormValidationChromiumIntegration
+2026/10/29 09:53:16 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:35731
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:35731
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=validation-0 runtime_target=127.0.0.1:35731
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=validation-1 runtime_target=127.0.0.1:35731
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=validation-submit runtime_target=127.0.0.1:35731
+    browser_form_validation_integration_test.go:71: invalid_public_value_observed=true invalid_posts=0 corrected_quantity=3 accepted_posts=1 post_state=effect_unknown no_replay=true
+--- PASS: TestBrowserFormValidationChromiumIntegration (0.87s)
+=== RUN   TestBrowserSessionRecoveryAfterRuntimeLossChromiumIntegration
+2026/10/29 09:53:17 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:40079
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:40079
+2026/10/29 09:53:17 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:40079
+2026/10/29 09:53:17 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=before-loss runtime_target=127.0.0.1:40079
+2026/10/29 09:53:18 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=recovery-open runtime_target=127.0.0.1:40079
+2026/10/29 09:53:18 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=recovery-prepare runtime_target=127.0.0.1:40079
+2026/10/29 09:53:18 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=recovery-click runtime_target=127.0.0.1:40079
+    browser_session_recovery_integration_test.go:93: actual_runtime_restart=true old_preparation=effect_absent old_dispatches=1 retained_costs=true distinct_fresh_context=true fresh_preparation=effect_confirmed recipient_posts=1 post_effect=effect_unknown successor_blocked=true
+--- PASS: TestBrowserSessionRecoveryAfterRuntimeLossChromiumIntegration (1.33s)
+PASS

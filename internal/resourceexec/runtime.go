@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/butler/butler/internal/actionauth"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -83,11 +84,15 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	response, runErr := r.backend.Execute(runCtx, req)
 	result := response.GetResult()
 	completed := runErr == nil && result != nil && result.GetStatus() == "completed" && result.GetError() == nil && result.GetRunId() == request.RunID && result.GetToolCallId() == request.ToolCallID && result.GetToolName() == request.ToolName && runCtx.Err() == nil
+	// A correlated closed pre-input rejection completes the lane, not an
+	// external effect. Preserve its proof for Broker/PG's independent verifier.
+	// Lost transport/finish, changed authority and in-flight errors stay unknown.
+	rejected := runErr == nil && runCtx.Err() == nil && (localPreparationRejected(req, result) || navigationRejected(req, result))
 	// Hash the actual local response; never send its content or resolved secrets
 	// back to the resource service. "completed" means the guarded lane finished,
 	// not verified external success or permission to replay an effect.
 	encoded, _ := json.Marshal(response)
-	receipt := Receipt{RuntimeRequest: request, Completed: completed, Digest: hash(string(encoded))}
+	receipt := Receipt{RuntimeRequest: request, Completed: completed || rejected, Digest: hash(string(encoded))}
 	if completed {
 		var observation struct {
 			SessionID string    `json:"browser_session_id"`
@@ -100,15 +105,32 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	}
 	finishCtx, cancelFinish := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancelFinish()
-	if e = r.authority.Finish(finishCtx, receipt); e != nil || !completed {
+	if e = r.authority.Finish(finishCtx, receipt); e != nil || !(completed || rejected) {
 		return fail()
 	}
 	if confirmed, ok := r.backend.(interface {
 		ConfirmRuntime(context.Context, RuntimeSpec) error
-	}); ok {
+	}); ok && !rejected {
 		if e = confirmed.ConfirmRuntime(finishCtx, admitted); e != nil {
 			return fail()
 		}
 	}
 	return response, nil
+}
+
+func localPreparationRejected(req *runtimev1.ExecuteRequest, result *toolbrokerv1.ToolResult) bool {
+	c, call := req.GetContract(), req.GetToolCall()
+	if c.GetToolName() != call.GetToolName() || c.GetEffectContract().GetRetrySafety() != "unsafe" || c.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" {
+		return false
+	}
+	b := actionauth.ActionBinding{RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractRevision: c.GetContractRevision(), Effect: actionauth.EffectPrepare}
+	return actionauth.BrowserPreparationRejection(b, result) != ""
+}
+
+func navigationRejected(req *runtimev1.ExecuteRequest, result *toolbrokerv1.ToolResult) bool {
+	c, call := req.GetContract(), req.GetToolCall()
+	if c.GetToolName() != call.GetToolName() || c.GetEffectContract().GetRetrySafety() != "read_only" || c.GetEffectContract().GetVerificationMethod() != actionauth.BrowserGETVerification || c.GetSupportsCredentialRefs() || len(call.GetCredentialRefs()) != 0 {
+		return false
+	}
+	return actionauth.BrowserReadRejection(actionauth.ActionBinding{RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractRevision: c.GetContractRevision(), Effect: actionauth.EffectRead}, result) != ""
 }

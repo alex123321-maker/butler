@@ -1,5 +1,18 @@
 # Execution budget contract
 
+The old ordinary-text revision2 `browser.prepare_fill` contract can prove no
+external write while its field state remains UNKNOWN. After the owning journal's
+exact terminal stopped review, Core and receiving Broker accept only its
+immutable `pinned_preparation_no_write_v1` evidence, with the reproduced contract
+hash pinned in both readers. Every scoped non-read uncertainty must independently
+qualify: original taskless failed Input/run/event/owner/session, canonical matching
+intent/fingerprint/grant binding, consumed finished dispatch, exact frozen-local
+policy/context/URL, known stopped classification and complete source/digest proof.
+Same-run replay, live old claims/leases, credential references, malformed/foreign
+proof, executing records and any other unknown write remain restrictive. This
+allows ordinary current policy evaluation, never action authorization or replay.
+UNKNOWN local results, spending, scopes and observation history are unchanged.
+
 Migration098 pins context epoch1 on new Inputs; existing rows remain epoch0.
 For verified explicit taskless communication at epoch1, conversation allowance
 is keyed by immutable accepted Input ID and expires at acceptance+24h. Separate

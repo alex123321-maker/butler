@@ -1,5 +1,6 @@
 import { chromium } from 'playwright'
 import { createInterface } from 'node:readline'
+import { randomUUID } from 'node:crypto'
 
 // Private JSON-lines protocol. Never print page diagnostics, request bodies,
 // cookies, storage state, passwords or Playwright exceptions.
@@ -7,6 +8,8 @@ const sessions = new Map()
 let browser
 
 const errorResult = (error_type, message) => ({ ok: false, error: { error_type, message, retryable: false } })
+const rejectedRead = reason => ({ ...errorResult(reason, 'GET navigation precondition failed'), read_rejection: 'pre_navigation_v1', navigation_dispatched: false })
+const rejectedPreparation = reason => ({ ...errorResult(reason, 'Local preparation precondition failed'), preparation_rejection: 'pre_input_v1', input_dispatched: false })
 const origin = value => { try { return new URL(value).origin } catch { return '' } }
 const safeError = err => {
   const message = String(err?.message || '')
@@ -68,16 +71,88 @@ async function collectSecretState(session) {
   // Values stay exclusively in process memory. Page-derived output is masked
   // against auth data even when a page reflects a cookie or local storage value.
   for (const cookie of await session.context.cookies()) if (cookie.value) session.secrets.add(cookie.value)
-  for (const frame of session.page.frames()) {
-  const values = await frame.evaluate(() => {
+  const root = session.root || session
+  const pages = root.managed ? [...root.pages.values()].filter(view => !view.page.isClosed()).map(view => view.page) : [session.page]
+  for (const page of pages) for (const frame of page.frames()) {
+  const values = await frame.evaluate(({ managed }) => {
     const values = []
-    for (const input of document.querySelectorAll('input[type=password]')) if (input.value) values.push(input.value)
+    for (const input of document.querySelectorAll(managed ? 'input[type=password],input[type=hidden]' : 'input[type=password]')) if (input.value) values.push(input.value)
     try { for (let i = 0; i < localStorage.length; i++) values.push(localStorage.getItem(localStorage.key(i))) } catch {}
     try { for (let i = 0; i < sessionStorage.length; i++) values.push(sessionStorage.getItem(sessionStorage.key(i))) } catch {}
     return values
-  }).catch(() => [])
+  }, { managed: root.managed }).catch(() => [])
   for (const value of values) if (value) session.secrets.add(value)
   }
+}
+
+function rememberPageURL(session, raw) {
+  if (!session.managed) return
+  try { const url = new URL(raw); for (const value of url.searchParams.values()) if (value) session.secrets.add(value); if (url.hash) session.secrets.add(url.hash.slice(1)) } catch {}
+}
+function visibleURL(session, raw) {
+  if (!(session.root || session).managed) return redact(session, raw)
+  try { const url = new URL(raw); url.search = ''; url.hash = ''; return redact(session, url.href) } catch { return '' }
+}
+function attachPage(root, page, openerID = '') {
+  const view = root.page ? Object.create(root) : root
+  if (view !== root) {
+    view.root = root
+    for (const key of ['networkFrozen', 'allowWriteRequests', 'preparedDraft', 'loginGate']) Object.defineProperty(view, key, { get: () => root[key], set: value => { root[key] = value } })
+  }
+  view.page = page; view.pageID = randomUUID().replaceAll('-', ''); view.openerID = openerID
+  view.documentID = randomUUID().replaceAll('-', ''); view.version = 0; view.dirty = true; view.state = 'pending'
+  view.observedPageDocumentID = ''; view.observedPageURL = ''; view.observedDocumentID = undefined; view.observedRevision = undefined
+  root.pages.set(view.pageID, view); root.pageIndex.set(page, view)
+  page.on('framenavigated', frame => {
+    view.dirty = true
+    if (frame === page.mainFrame()) {
+      view.documentID = randomUUID().replaceAll('-', ''); rememberPageURL(root, frame.url())
+      if (root.managed && frame.url() !== 'about:blank' && origin(frame.url()) !== root.initialOrigin) void page.close().catch(() => {})
+    }
+  })
+  page.on('close', () => { view.state = 'closed'; view.dirty = true; root.frames.clear() })
+  return view
+}
+function newPopupGate(root, view, duration) {
+  return { opener: view.pageID, document: view.documentID, until: Date.now() + duration,
+    remaining: Math.max(0, Math.min(4 - [...root.pages.values()].filter(page => !page.page.isClosed()).length, 32 - root.pages.size)) }
+}
+async function admitPopup(root, page, reservation) {
+  if (root.pageIndex.has(page)) return root.pageIndex.get(page)
+  const gate = reservation || root.popupGate
+  const parent = await page.opener().catch(() => null)
+  const opener = root.pageIndex.get(parent)
+  if (!root.managed || !gate || Date.now() > gate.until || !opener || opener.pageID !== gate.opener || opener.documentID !== gate.document || opener.page.isClosed() || root.pages.size >= 32 || [...root.pages.values()].filter(view => !view.page.isClosed()).length >= 4) {
+    void page.close().catch(() => {}); return undefined
+  }
+  // The event and first-request route may race through opener(). Recheck the
+  // map and cap after the await, before minting exactly one identity.
+  if (root.pageIndex.has(page)) return root.pageIndex.get(page)
+  if (root.pages.size >= 32 || [...root.pages.values()].filter(view => !view.page.isClosed()).length >= 4) { void page.close().catch(() => {}); return undefined }
+  const view = attachPage(root, page, opener.pageID)
+  if (reservation) view.initialRequestAdmitted = true
+  return view
+}
+function reserveInitialPopupRequest(root, request, url) {
+  // Chromium may issue the initial popup navigation before Playwright exposes
+  // Request.frame(). Reserve a finite GET under the exact source gesture BEFORE
+  // continuing it. Bind by this Request's eventual Frame/Page, never URL/title.
+  const previous = root.initialRequests.get(request.redirectedFrom())
+  const gate = previous || root.popupGate
+  const opener = gate && root.pages.get(gate.opener)
+  if (!root.managed || !gate || Date.now() > gate.until || !opener || opener.documentID !== gate.document || opener.page.isClosed() || !request.isNavigationRequest() || request.method() !== 'GET' || url.origin !== root.initialOrigin) return false
+  if (previous) { if (previous.hops >= 5) return false }
+  else { if (gate.remaining <= 0) return false; gate.remaining-- }
+  const reservation = { opener: gate.opener, document: gate.document, until: Math.min(gate.until, Date.now() + 2000), hops: (previous?.hops || 0) + 1 }
+  root.initialRequests.set(request, reservation)
+  void request.response().then(async () => {
+    try {
+      const page = request.frame().page()
+      const view = root.pageIndex.get(page) || await admitPopup(root, page, reservation)
+      if (view) view.initialRequestAdmitted = true
+    } catch { /* Missing identity grants no subsequent input or credentials. */ }
+  }).catch(() => {})
+  return true
 }
 
 async function newSession(request) {
@@ -85,13 +160,52 @@ async function newSession(request) {
   if (!request.proxy_url) throw new Error('private egress proxy missing')
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: 'block', acceptDownloads: false, proxy: { server: request.proxy_url, bypass: '' } })
   const session = { context, page: undefined, scope: request.scope_origin || origin(request.url),
-    version: 0, dirty: true, secrets: new Set(), frames: new Map(), allowedDomains: request.allowed_domains || [], expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false }
+    version: 0, dirty: true, secrets: new Set(), frames: new Map(), allowedDomains: request.allowed_domains || [], expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false,
+    managed: request.managed_pages === true, initialOrigin: origin(request.url), pages: new Map(), pageIndex: new WeakMap(), initialRequests: new WeakMap() }
   // Native same-origin and cookie rules remain enabled. The private proxy
   // checks public DNS on every connection; this route retains contract caps.
   await context.route('**/*', async route => {
-    const url = new URL(route.request().url())
+    const request = route.request()
+    const url = new URL(request.url())
     const allowed = ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && (!session.allowedDomains.length || session.allowedDomains.some(domain => domain === '*' || url.hostname === domain || url.hostname.endsWith('.' + domain)))
-    if (session.networkFrozen || !allowed || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
+    let popupRead = false
+    if (session.managed) {
+      rememberPageURL(session, request.url())
+      let page
+      try { page = request.frame().page() } catch {
+        if (allowed && reserveInitialPopupRequest(session, request, url)) await route.continue()
+        else await route.abort('blockedbyclient')
+        return
+      }
+      const view = session.pageIndex.get(page) || await admitPopup(session, page)
+      if (!view || request.isNavigationRequest() && request.frame() === page.mainFrame() && url.origin !== session.initialOrigin || !['GET','HEAD'].includes(request.method()) && (session.writePage !== page || url.origin !== session.initialOrigin)) {
+        await route.abort('blockedbyclient')
+        if (view && view !== session && request.isNavigationRequest() && url.origin !== session.initialOrigin) void page.close().catch(() => {})
+        return
+      }
+      if (view !== session && !view.initialRequestAdmitted && request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+        const prior = session.initialRequests.get(request.redirectedFrom())
+        const gate = prior || session.popupGate
+        if (!gate || Date.now() > gate.until || gate.opener !== view.openerID || !prior && gate.remaining <= 0) { await route.abort('blockedbyclient'); return }
+        if (!prior) gate.remaining--
+        view.initialRequestAdmitted = true
+      }
+      popupRead = view !== session && session.popupGate && Date.now() <= session.popupGate.until && view.openerID === session.popupGate.opener && ['GET','HEAD'].includes(request.method()) && url.origin === session.initialOrigin
+    }
+    if (session.loginGate) {
+      const gate = session.loginGate
+      let pass = false
+      if (!session.networkFrozen && allowed && url.origin === gate.origin && request.isNavigationRequest() && request.frame() === session.page.mainFrame()) {
+        if (request.method() === 'POST' && gate.posts === 0 && request.url() === gate.target && !request.redirectedFrom() && request.headers()['content-type']?.split(';')[0] === 'application/x-www-form-urlencoded' && request.postData() === gate.body) {
+          gate.posts++; gate.chain.add(request); pass = true
+        } else if (request.method() === 'GET' && gate.posts === 1 && gate.hops < 5 && gate.chain.has(request.redirectedFrom())) {
+          gate.hops++; gate.chain.add(request); pass = true
+        }
+      }
+      if (pass) await route.continue(); else await route.abort('blockedbyclient')
+      return
+    }
+    if (session.networkFrozen && !popupRead || !allowed || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
     else await route.continue()
   })
   await context.routeWebSocket('**/*', socket => socket.close())
@@ -106,30 +220,65 @@ async function newSession(request) {
     window.addEventListener('hashchange', changed)
     window.addEventListener('scroll', changed, true)
   })
+  context.on('page', page => {
+    if (!session.page) attachPage(session, page)
+    else if (session.managed) void admitPopup(session, page)
+    else if (page !== session.page) void page.close().catch(() => {})
+  })
   const page = await context.newPage()
-  session.page = page
-  page.on('framenavigated', () => { session.dirty = true })
-  context.on('page', other => { if (other !== page) void other.close() })
+  if (!session.pageIndex.has(page)) attachPage(session, page)
   return session
 }
 
 async function observe(session, selector = 'body') {
+  const externalDocument = session.documentID
   await collectSecretState(session)
-  // Read visible text only. Never serialize inputs, HTML attributes, cookies,
+  // Read visible text and bounded form structure, never input values, cookies,
   // storage, screenshot pixels or full DOM into a normal tool artifact.
   // Capture text, URL and DOM revision in one JavaScript turn. A mutation
   // between separate reads must not validate an older text snapshot.
-  const captured = await session.page.evaluate(selector => {
+  const captured = await session.page.evaluate(({ selector, publicMetadata, frozen }) => {
     const element = document.querySelector(selector)
     if (!element) throw new Error('requested selector is not present')
     const links = selector === 'body' ? Array.from(document.querySelectorAll('a[href]')).slice(0, 30)
       .map(a => ({ text: (a.innerText || '').slice(0, 120), href: a.href })).filter(a => a.text && /^https?:/.test(a.href)) : []
-    return { text: element.innerText || '', links, title: document.title, url: location.href,
+    const ordinaryTypes = new Set(['text', 'search', 'number', 'email', 'url', 'tel', 'textarea', 'select-one', 'select-multiple', 'checkbox', 'radio', 'submit', 'button', 'reset'])
+    const issueNames = { valueMissing: 'value_missing', typeMismatch: 'type_mismatch', rangeUnderflow: 'range_underflow', rangeOverflow: 'range_overflow', stepMismatch: 'step_mismatch', tooShort: 'too_short', tooLong: 'too_long', badInput: 'bad_input', patternMismatch: 'pattern_mismatch', customError: 'custom_error' }
+    const forms = selector === 'body' ? Array.from(document.forms).slice(0, 10).map((form, index) => {
+      const controls = Array.from(form.elements).slice(0, 129)
+      // A password/hidden/file/unknown control suppresses metadata for the
+      // entire form, including username fields. Never read a field's value.
+      const ordinary = publicMetadata && controls.length <= 128 && controls.every(e => ordinaryTypes.has(String(e.type || '').toLowerCase()))
+      return { selector: `form >> nth=${index}`, method: form.method.toUpperCase(), action: form.action.slice(0, 2048),
+        fields: controls.filter(e => e.name).slice(0, 32).map(e => {
+          const field = { name: e.name.slice(0, 128), type: String(e.type || e.tagName).slice(0, 32) }
+          if (!ordinary || ['submit', 'button', 'reset'].includes(field.type)) return field
+          field.constraints = { required: e.required === true }
+          if (field.type === 'number') for (const key of ['min', 'max', 'step']) {
+            const value = e.getAttribute(key)
+            if (value && value.length <= 64) field.constraints[key] = value
+          }
+          for (const [property, key] of [['minLength', 'min_length'], ['maxLength', 'max_length']]) {
+            if (Number.isInteger(e[property]) && e[property] >= 0 && e[property] <= 1000000) field.constraints[key] = e[property]
+          }
+          // Reading ValidityState does not invoke checkValidity/reportValidity
+          // (which dispatch invalid events). Observe flags only with all routes
+          // frozen; the flags prove no external submission or outcome.
+          if (frozen && e.validity) field.validation = { valid: e.validity.valid === true,
+            issues: Object.entries(issueNames).filter(([property]) => e.validity[property] === true).map(([, name]) => name) }
+          return field
+        }) }
+    }) : []
+    return { text: element.innerText || '', links, forms, title: document.title, url: location.href,
       revision: window.__butlerRevision, documentID: window.__butlerDocumentID }
-  }, selector)
+  }, { selector, publicMetadata: session.secrets.size === 0, frozen: session.networkFrozen })
   await collectSecretState(session)
   const { text, links, title } = captured
-  const final_url = redact(session, captured.url)
+  if (session.managed && externalDocument !== session.documentID) throw new Error('document changed during observation')
+  const final_url = visibleURL(session, captured.url)
+  session.observedPageDocumentID = externalDocument
+  session.observedPageURL = final_url
+  session.state = 'ready'
   session.observedRevision = captured.revision
   session.observedDocumentID = captured.documentID
   session.version++
@@ -137,10 +286,20 @@ async function observe(session, selector = 'body') {
   const cleanText = Array.from(redact(session, text)).slice(0, 12000).join('')
   const page_status = /captcha|verify you are human|access denied|checking your browser|403 forbidden/i.test(cleanText + title) ? 'blocked' : 'ok'
   return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status, network_state: session.networkFrozen ? 'frozen' : 'read_only',
-    links: links.map(link => ({ text: redact(session, link.text), href: redact(session, link.href) })) }
+    forms: captured.forms.map(form => ({ ...form, action: visibleURL(session, form.action), fields: form.fields.map(field => {
+      const safe = { name: redact(session, field.name), type: field.type }
+      // State may have gained a secret during capture. Suppress rather than
+      // expose validity/length feedback or secret-derived constraint strings.
+      if (!session.secrets.size) {
+        if (field.constraints) safe.constraints = field.constraints
+        if (field.validation) safe.validation = field.validation
+      }
+      return safe
+    }) })),
+    links: links.map(link => ({ text: redact(session, link.text), href: visibleURL(session, link.href) })) }
 }
 
-async function execute(request) {
+async function executeSingle(request) {
   const tool = request.tool_name
   if (tool === 'browser.read') {
     const session = await newSession(request)
@@ -158,16 +317,28 @@ async function execute(request) {
       return await observe(session)
     } catch (err) { await closeSession(request.browser_session_id); return safeError(err) }
   }
-  const session = sessions.get(request.browser_session_id)
-  if (!session) return errorResult('session_lost', 'browser session was closed, expired, or lost; explicitly open a new session')
-  if (Date.now() >= session.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
-  if (tool === 'owner.control') return await ownerControl(session, request.owner_command)
+  const root = sessions.get(request.browser_session_id)
+  if (!root) return errorResult('session_lost', 'browser session was closed, expired, or lost; explicitly open a new session')
+  if (Date.now() >= root.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
+  if (tool === 'owner.control') return await ownerControl(root, request.owner_command)
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
+  if (root.managed && tool === 'browser.pages') return { ok: true }
+  const session = root.managed ? root.pages.get(request.page_id) : root
+  if (!session || session.page.isClosed()) return errorResult('page_lost', 'exact page is unavailable; refresh pages')
+  if (root.managed && (request.document_id !== session.documentID || request.document_id !== session.observedPageDocumentID || request.observation_version !== session.version || request.expected_url !== visibleURL(session, session.page.url()))) return errorResult('stale_page', 'page document changed; refresh pages')
+  if (tool === 'browser.freeze_snapshot') {
+    session.networkFrozen = true
+    // A later public GET reader must not release this observed private state.
+    session.preparedDraft = true
+    return await observe(session)
+  }
   const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
+  const getForm = tool === 'browser.submit_get_form' || tool === 'browser.follow_link'
   // Freeze before reading the live guards or injecting any new value. A stale
   // preparation can fail safely without resuming background page requests.
-  if (localPreparation) session.networkFrozen = true
-  if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool)) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
+  const login = tool === 'browser.login'
+  if (localPreparation || getForm || login) session.networkFrozen = true
+  if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool) && !root.managed) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
   session.scope = origin(session.page.url())
   if (tool === 'browser.snapshot') return await observe(session)
   if (tool === 'browser.extract_text') return await observe(session, request.selector)
@@ -175,15 +346,25 @@ async function execute(request) {
   // checks trusted ownership, exclusive control, and the last observed state.
   await collectSecretState(session)
   const live = await session.page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
-  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return errorResult('stale_observation', 'page changed since observation; take a new snapshot')
-  if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return getForm ? rejectedRead('stale_observation') : localPreparation ? rejectedPreparation('stale_observation') : errorResult('stale_observation', 'page changed since observation; take a new snapshot')
+  if (request.expected_url !== visibleURL(session, session.page.url())) return getForm ? rejectedRead('page_changed') : localPreparation ? rejectedPreparation('page_changed') : errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  if (tool === 'browser.page_close') { await session.page.close(); return { ok: true } }
+  if (getForm) return await submitGetForm(session, request, live)
+  if (login) return await submitLogin(session, request, live)
+  // An ordinary local draft is private too, even without credential_ref.
+  // A later read tool must never thaw input callbacks or release that draft.
+  if (['browser.fill','browser.type','browser.prepare_fill','browser.prepare_type'].includes(tool)) session.preparedDraft = true
   for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
   let credentialVerified
+  if (root.managed && ['browser.click','browser.fill','browser.type'].includes(tool)) {
+    root.popupGate = newPopupGate(root, session, 6000)
+    root.writePage = session.page
+  }
   session.allowWriteRequests = ['browser.click', 'browser.fill', 'browser.type'].includes(tool)
   // The Go proxy opens a bounded click window, but page traffic remains frozen
   // until the exact live observation and URL guards above succeed.
-  if (tool === 'browser.click') session.networkFrozen = false
+  if (tool === 'browser.click' || root.managed && ['browser.fill','browser.type'].includes(tool)) session.networkFrozen = false
   try {
     switch (tool) {
       case 'browser.navigate':
@@ -235,7 +416,7 @@ async function execute(request) {
     }
     // A new observation is returned after effects, so fill A -> fill B -> click
     // can use each returned version without silently reloading the page.
-    if (tool === 'browser.click') session.networkFrozen = true
+    if (tool === 'browser.click' || root.managed && ['browser.fill','browser.type'].includes(tool)) session.networkFrozen = true
     return { ...await observe(session), ...(localPreparation ? { local_preparation: true } : {}), ...(credentialVerified === undefined ? {} : { credential_verified: credentialVerified }) }
   } catch (err) {
     session.version++
@@ -247,8 +428,224 @@ async function execute(request) {
   }
 }
 
-async function ownerControl(session, command) {
+// Two private phases. No click, submit, input, formdata or page handler runs.
+// This supports public GET search/navigation, never authentication or POST.
+async function submitGetForm(session, request, live) {
+  const denied = () => rejectedRead('get_form_denied')
+  try {
+    if (session.secrets.size || session.preparedDraft) return denied()
+    if (request.get_form_phase === 'plan') {
+      session.getFormPlan = undefined
+      const compiled = request.tool_name === 'browser.follow_link' ? await session.page.locator(request.selector).evaluate(link => {
+        if (!(link instanceof HTMLAnchorElement) || !['','_self'].includes(link.target) || link.hasAttribute('download')) return null
+        const target = new URL(link.href)
+        if (target.origin !== location.origin || target.username || target.password || !['http:','https:'].includes(target.protocol) || target.href.length > 16384) return null
+        return target.href
+      }) : await session.page.locator(request.selector).evaluate((form, fields) => {
+        if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'get' || !['', '_self'].includes(form.target)) return null
+        const action = new URL(form.action)
+        if (action.origin !== location.origin || action.username || action.password || !['http:', 'https:'].includes(action.protocol)) return null
+        const controls = Array.from(form.elements)
+        if (controls.length > 32) return null
+        const names = new Set(), entries = []
+        for (const element of controls) {
+          const type = String(element.type || '').toLowerCase()
+          if (['password', 'file', 'hidden'].includes(type)) return null
+          if (element.disabled || !element.name || ['submit', 'button', 'reset'].includes(type)) continue
+          const name = element.name
+          if (name.length > 128 || /password|passwd|pwd|token|secret|credential|cookie|session|csrf|xsrf|otp|api.?key|auth/i.test(name)) return null
+          if (!['text', 'search', 'number', 'email', 'tel', 'url', 'checkbox', 'radio', 'textarea', 'select-one', 'select-multiple', 'range', 'date'].includes(type)) return null
+          names.add(name)
+          if (Object.hasOwn(fields, name)) { entries.push([name, fields[name]]); continue }
+          if (['checkbox', 'radio'].includes(type) && !element.checked) continue
+          if (type.startsWith('select-')) {
+            for (const option of element.selectedOptions) entries.push([name, option.value])
+          } else entries.push([name, element.value])
+        }
+        if (Object.keys(fields).some(name => !names.has(name)) || entries.some(([name, value]) => typeof value !== 'string' || value.length > 4096)) return null
+        action.search = new URLSearchParams(entries).toString()
+        action.hash = ''
+        return action.href.length <= 16384 ? action.href : null
+      }, request.fields)
+      if (!compiled) return denied()
+      const nonce = randomUUID()
+      session.getFormPlan = { target: compiled, nonce, version: session.version, documentID: live.documentID, revision: live.revision }
+      return { ok: true, get_form_target: compiled, get_form_nonce: nonce }
+    }
+    const plan = session.getFormPlan
+    session.getFormPlan = undefined // one-use even if navigation fails
+    if (request.get_form_phase !== 'navigate' || !plan || plan.nonce !== request.get_form_nonce || plan.version !== request.observation_version || plan.documentID !== live.documentID || plan.revision !== live.revision) return denied()
+    session.allowWriteRequests = false
+    session.networkFrozen = false
+    await session.page.goto(plan.target, { waitUntil: 'domcontentloaded', timeout: request.timeout || 15000 })
+    session.networkFrozen = true
+    return await observe(session)
+  } catch (err) {
+    session.version++
+    session.dirty = true
+    return { ...safeError(err), observation_version: session.version, final_url: redact(session, session.page.url()) }
+  } finally {
+    session.allowWriteRequests = false
+    session.networkFrozen = true
+  }
+}
+
+// Scoped login is distinct from click. The gate inspects the actual native
+// POST (including formdata-handler changes), and admits only its GET redirects.
+// Values, hidden fields, cookies and nonce stay on the private helper pipe.
+async function submitLogin(session, request, live) {
+  const denied = () => errorResult('login_denied', 'login precondition failed; no automatic retry')
+  const scope = request.login?.scope
+  if (!scope || scope.expected_url !== request.expected_url || scope.browser_session_id !== request.browser_session_id || origin(scope.target_url) !== origin(request.expected_url)) return denied()
+  for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
+  session.preparedDraft = true
+  try {
+    if (request.login_phase === 'plan') {
+      session.loginPlan = undefined
+      // No page handler runs while compiling the permitted body.
+      const entries = await session.page.evaluate(({ scope, username, password }) => {
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
+        if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post' || form.enctype !== 'application/x-www-form-urlencoded' || !['', '_self'].includes(form.target) || form.action !== scope.target_url) return null
+        if (!(user instanceof HTMLInputElement) || !(pass instanceof HTMLInputElement) || user.form !== form || pass.form !== form || !['text','email'].includes(user.type) || pass.type !== 'password' || !user.name || !pass.name || user.disabled || pass.disabled || user === pass) return null
+        const controls = Array.from(form.elements)
+        if (controls.length > 32 || controls.filter(e => e.type === 'password').length !== 1) return null
+        const entries = [], names = new Set()
+        for (const e of controls) {
+          if (e.disabled || !e.name || ['submit','button','reset'].includes(e.type)) continue
+          if (!(e instanceof HTMLInputElement) || (e !== user && e !== pass && e.type !== 'hidden') || names.has(e.name) || e.name.length > 128) return null
+          if (e !== user && e !== pass && !/^(?:_?csrf(?:_token)?|csrfmiddlewaretoken|_?xsrf(?:_token)?|authenticity_token|__requestverificationtoken)$/i.test(e.name)) return null
+          const value = e === user ? username : e === pass ? password : e.value
+          if (typeof value !== 'string' || value.length > 4096) return null
+          names.add(e.name); entries.push([e.name, value])
+        }
+        return entries
+      }, request.login)
+      if (!entries || entries.length < 2) return denied()
+      for (const [, value] of entries) if (value) session.secrets.add(value)
+      const nonce = randomUUID()
+      session.loginPlan = { nonce, entries, version: session.version, documentID: live.documentID, revision: live.revision, scope: JSON.stringify(scope) }
+      return { ok: true, login_nonce: nonce }
+    }
+    const plan = session.loginPlan
+    session.loginPlan = undefined
+    if (request.login_phase !== 'submit' || !plan || plan.nonce !== request.login_nonce || plan.version !== request.observation_version || plan.documentID !== live.documentID || plan.revision !== live.revision || plan.scope !== JSON.stringify(scope)) return denied()
+    const gate = { origin: origin(scope.target_url), target: scope.target_url, body: new URLSearchParams(plan.entries).toString(), posts: 0, hops: 0, chain: new Set() }
+    session.loginGate = gate
+    // Fill and invoke native submission in one document turn. Background input,
+    // XHR, fetch, iframe, popup, websocket and additional POST traffic stay blocked.
+    session.networkFrozen = false
+    await Promise.all([
+      session.page.waitForURL(url => url.href !== scope.expected_url, { waitUntil: 'domcontentloaded', timeout: 12000 }),
+      session.page.evaluate(({ scope, username, password }) => {
+        const select = selector => {
+          const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector)
+          const css = indexed ? indexed[1] : selector
+          if (css.includes('>>')) return null
+          const matches = document.querySelectorAll(css)
+          if (!indexed && matches.length !== 1) return null
+          return matches[indexed ? Number(indexed[2]) : 0] || null
+        }
+        const form = select(scope.form_selector)
+        const user = select(scope.username_selector)
+        const pass = select(scope.password_selector)
+        if (!(form instanceof HTMLFormElement) || user?.form !== form || pass?.form !== form || form.action !== scope.target_url) throw new Error('login changed')
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+        set.call(user, username); set.call(pass, password)
+        HTMLFormElement.prototype.submit.call(form)
+      }, request.login)
+    ])
+    session.networkFrozen = true
+    const observed = await observe(session)
+    return { ...observed, login_posts: gate.posts, login_url: session.page.url(), login_cookies: await session.context.cookies() }
+  } catch {
+    session.version++; session.dirty = true
+    return errorResult('login_unknown', 'login was not verified; observe before any further action and never repeat the POST automatically')
+  } finally {
+    session.loginGate = undefined
+    session.networkFrozen = true
+    session.allowWriteRequests = false
+  }
+}
+
+async function pageReports(root, refreshAll = false) {
+  const reports = []
+  for (const view of root.pages.values()) {
+    if (!view.page.isClosed() && (refreshAll || view.version === 0)) {
+      if (origin(view.page.url()) === root.initialOrigin) {
+        try { await observe(view) } catch {
+          // Never stamp an earlier document as fresh after owner return or a
+          // failed refresh. Retain the identity, but retire its live executor.
+          await view.page.close().catch(() => {})
+        }
+      }
+    }
+    reports.push({ page_id: view.pageID, document_id: view.observedPageDocumentID || '', runtime_version: view.version,
+      opener_page_id: view.openerID, url: view.observedPageURL || '', state: view.page.isClosed() ? 'closed' : view.observedPageDocumentID && view.version > 0 ? 'ready' : 'pending' })
+  }
+  return reports
+}
+
+async function execute(request) {
+  const root = sessions.get(request.browser_session_id)
+  const view = root?.managed ? root.pages.get(request.page_id) : undefined
+  const gesture = root?.managed && ['browser.click', 'browser.fill', 'browser.type'].includes(request.tool_name)
+  let result
+  try {
+    result = await executeSingle(request)
+    // Admission remains inside the same finite approved gesture. Delayed
+    // popups outside this window are closed before any initial request.
+    if (gesture && result.ok) {
+      root.networkFrozen = false
+      await new Promise(resolve => setTimeout(resolve, 250))
+      root.popupGate = undefined
+      await Promise.all([...root.pages.values()].filter(page => page !== view && !page.page.isClosed()).map(page => page.page.waitForLoadState('domcontentloaded', { timeout: 1500 }).catch(() => {})))
+    }
+  } finally {
+    if (gesture) { root.popupGate = undefined; root.writePage = undefined; root.allowWriteRequests = false; root.networkFrozen = true }
+  }
+  const current = sessions.get(request.browser_session_id)
+  if (current?.managed && result.ok && request.tool_name !== 'owner.control') {
+    result.private_pages = await pageReports(current, request.tool_name === 'browser.pages')
+    result.selected_page_id = request.tool_name === 'browser.open' ? current.pageID : request.page_id || ''
+  }
+  return result
+}
+
+async function ownerControl(root, command) {
+  let session = root
+  if (root.managed) {
+    if (command.operation === 'release') {
+      root.ownerMode = false; root.popupGate = undefined; root.writePage = undefined
+      root.networkFrozen = true; root.allowWriteRequests = false; root.frames.clear()
+      for (const view of root.pages.values()) { view.dirty = true; if (view.observedPageDocumentID) view.version++ }
+      await collectSecretState(root)
+      return { ok: true }
+    }
+    session = command.page_id ? root.pages.get(command.page_id) : [...root.pages.values()].find(view => !view.page.isClosed())
+    if (!session || session.page.isClosed()) {
+      if (command.operation === 'frame') return { ok: true, owner_pages: [...root.pages.values()].filter(view => !view.page.isClosed()).map(view => ({ page_id: view.pageID, document_id: view.documentID, url: visibleURL(view, view.page.url()), state: view.state })) }
+      return errorResult('page_lost', 'selected owner page is unavailable')
+    }
+    if (root.ownerPageID !== session.pageID) { root.frames.clear(); root.ownerPageID = session.pageID }
+    if (command.operation === 'take') root.ownerMode = true
+    if (root.ownerMode) {
+      root.writePage = session.page
+      root.popupGate = newPopupGate(root, session, 30000)
+    }
+    if (!['frame', 'take'].includes(command.operation) && command.document_id !== session.documentID) return errorResult('stale_frame', 'selected document changed')
+  }
   const page = session.page
+  if (command.operation === 'take') session.preparedDraft = true
   if (command.operation === 'release') {
     session.networkFrozen = false
     session.allowWriteRequests = false
@@ -299,7 +696,9 @@ async function ownerControl(session, command) {
   if (before === after) session.frames.set(id, after)
   while (session.frames.size > 4) session.frames.delete(session.frames.keys().next().value)
   if (jpeg.length > 1024 * 1024) return errorResult('frame_limit', 'browser frame exceeded limit')
-  return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720, url: page.url() } }
+  return { ok: true, owner_frame: { jpeg: jpeg.toString('base64'), frame_id: id, width: 1280, height: 720, url: visibleURL(session, page.url()),
+    ...(root.managed ? { page_id: session.pageID, document_id: session.documentID } : {}) },
+    ...(root.managed ? { owner_pages: [...root.pages.values()].filter(view => !view.page.isClosed()).map(view => ({ page_id: view.pageID, document_id: view.documentID, url: visibleURL(view, view.page.url()), state: view.state })) } : {}) }
 }
 
 // Coordinates can hit cross-origin child frames. Guard every document in the

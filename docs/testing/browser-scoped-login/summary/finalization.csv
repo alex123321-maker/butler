@@ -1,0 +1,7 @@
+"event","phase","duration_s","started_at","partition_complete"
+"browser-baseline-native-scoped-login-20261030-01","entire_input_without_tool","27,378","2026-10-30T05:18:43.1459350+00:00","True"
+"browser-baseline-native-scoped-login-20261030-02","after_last_tool","5,623","2026-10-30T05:23:19.8819630+00:00","True"
+"browser-baseline-native-scoped-login-20261030-03","after_last_tool",,"2026-10-30T05:27:05.0147540+00:00","False"
+"browser-baseline-native-scoped-login-20261030-04","after_last_tool","21,627","2026-10-30T05:32:20.8827520+00:00","True"
+"browser-baseline-native-scoped-login-20261030-05","after_last_tool","27,071","2026-10-30T05:43:10.4262230+00:00","True"
+"browser-baseline-native-scoped-login-20261030-06","after_last_tool","615,217","2026-10-30T05:55:11.6184900+00:00","True"

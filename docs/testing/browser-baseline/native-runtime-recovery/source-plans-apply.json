@@ -1,0 +1,16 @@
+{
+  "scope": "existing_source_query_plan_migrations",
+  "began_at": "2026-10-29T08:53:51.488941883Z",
+  "verified_at": "2026-10-29T08:53:51.713934833Z",
+  "migrations": [
+    103,
+    104
+  ],
+  "all_services_unchanged": true,
+  "predicates_preserved": true,
+  "current_statement_snapshot": true,
+  "accepted_fact_or_authority_cache": false,
+  "guard_deadlines_changed": false,
+  "history_or_credential_reset": false,
+  "rollback_function_definitions_retained": true
+}

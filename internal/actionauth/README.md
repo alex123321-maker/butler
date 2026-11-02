@@ -71,6 +71,17 @@ denies claim without spending the grant or writing a dispatch record.
 
 ## Delegated permissions
 
+Revision1 `browser.submit_get_form` and `browser.follow_link` are pinned GET observations, with no
+credential references or opaque/write policy. Its confirmed read does not
+reconcile an earlier unknown mutation or revive a spent grant. Real PG/budget
+tests cover independent read admission plus subsequent mutation denial.
+
+`ReviewStoppedLocalTx` is an internal bounded recovery adapter for pinned
+historical publication/read contracts, composed by the Input/Communication
+kernel. It appends owning digest evidence under terminal executor locks; it
+never grants/replays an action or treats an unknown read as successful. See
+[stopped finalization](../../docs/architecture/stopped-input-finalization.md).
+
 Delegated tasks also require exact contract hashes, resources, effects and typed
 credential references from their current bounded contract, before credential
 inspection and again at dispatch. Parent versions/deadlines remain authoritative.

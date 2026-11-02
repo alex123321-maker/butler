@@ -1,0 +1,12 @@
+{
+  "scope": "pre_native_test_baseline_restored",
+  "observed_at": "2026-10-29T19:22:13Z",
+  "core_broker_healthy": true,
+  "original_mounts_and_environments_verified": true,
+  "original_binary_hashes_verified": true,
+  "original_registry_hash_verified": true,
+  "test_authority_revoked_before_registry_restore": true,
+  "migrations": 0,
+  "old_inputs_replayed": false,
+  "budget_rows_deleted": false
+}

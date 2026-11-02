@@ -1,0 +1,3 @@
+{"phase":"reproduce-installed","duration_ms":62180,"exit_code":0}
+{"phase":"full-wait-race","duration_ms":32240,"exit_code":0}
+{"phase":"core-wait-race","duration_ms":25900,"exit_code":1}

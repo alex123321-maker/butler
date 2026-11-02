@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"github.com/butler/butler/internal/browserauth"
 	"net/url"
 	"strings"
 	"time"
@@ -17,16 +18,17 @@ type Principal struct {
 	TaskRevision, ConstraintsRevision  int64
 }
 type AccessRequest struct {
-	ID               string    `json:"id"`
-	Kind             string    `json:"kind"`
-	RecordID         string    `json:"record_id"`
-	RecordLabel      string    `json:"record_label,omitempty"`
-	TargetOrigin     string    `json:"target_origin"`
-	BrowserSessionID string    `json:"browser_session_id"`
-	Purpose          string    `json:"purpose"`
-	Fields           []string  `json:"fields"`
-	State            string    `json:"state"`
-	ExpiresAt        time.Time `json:"expires_at"`
+	LoginScope       *browserauth.Scope `json:"login_scope,omitempty"`
+	ID               string             `json:"id"`
+	Kind             string             `json:"kind"`
+	RecordID         string             `json:"record_id"`
+	RecordLabel      string             `json:"record_label,omitempty"`
+	TargetOrigin     string             `json:"target_origin"`
+	BrowserSessionID string             `json:"browser_session_id"`
+	Purpose          string             `json:"purpose"`
+	Fields           []string           `json:"fields"`
+	State            string             `json:"state"`
+	ExpiresAt        time.Time          `json:"expires_at"`
 }
 
 // currentTx pins owner/session/task versions; caller identity is never model input.
@@ -44,11 +46,22 @@ func currentTx(ctx context.Context, tx pgx.Tx, p Principal) error {
 	return nil
 }
 func (v *Vault) CreateRequest(ctx context.Context, p Principal, callID, kind, recordID, target, browser, purpose string, fields []string, parents ...string) (AccessRequest, error) {
+	return v.createRequest(ctx, p, callID, kind, recordID, target, browser, purpose, fields, parents, nil)
+}
+
+func (v *Vault) CreateLoginRequest(ctx context.Context, p Principal, callID, recordID, purpose string, scope browserauth.Scope) (AccessRequest, error) {
+	if scope.Validate() != nil {
+		return AccessRequest{}, ErrVault
+	}
+	return v.createRequest(ctx, p, callID, "login", recordID, scope.ExpectedURL, scope.Browser, purpose, []string{"username", "password"}, nil, &scope)
+}
+
+func (v *Vault) createRequest(ctx context.Context, p Principal, callID, kind, recordID, target, browser, purpose string, fields []string, parents []string, loginScope *browserauth.Scope) (AccessRequest, error) {
 	origin, err := Origin(target)
 	if err != nil || browser == "" || len(browser) > 256 || strings.TrimSpace(purpose) == "" || len(purpose) > 500 || len(fields) == 0 || len(fields) > 2 {
 		return AccessRequest{}, ErrVault
 	}
-	if kind != "access" && kind != "create" && kind != "otp" {
+	if kind != "access" && kind != "create" && kind != "otp" && kind != "login" || (kind == "login") != (loginScope != nil) {
 		return AccessRequest{}, ErrVault
 	}
 	seen := map[string]bool{}
@@ -74,7 +87,7 @@ func (v *Vault) CreateRequest(ctx context.Context, p Principal, callID, kind, re
 	if len(parents) == 1 {
 		parentID = parents[0]
 	}
-	if kind == "access" {
+	if kind == "access" || kind == "login" {
 		if tx.QueryRow(ctx, `SELECT revision FROM credential_vault WHERE id=$1 AND owner_id=$2 AND status='active' FOR SHARE`, recordID, p.OwnerID).Scan(&rev) != nil {
 			return AccessRequest{}, ErrVault
 		}
@@ -87,12 +100,17 @@ func (v *Vault) CreateRequest(ctx context.Context, p Principal, callID, kind, re
 		}
 	}
 	raw, _ := json.Marshal(fields)
+	scopeJSON := []byte(`{}`)
+	if loginScope != nil {
+		scopeJSON, _ = json.Marshal(loginScope)
+	}
 	var r AccessRequest
 	var encoded string
-	err = tx.QueryRow(ctx, `INSERT INTO credential_vault_requests(id,owner_id,session_key,run_id,task_id,task_revision,constraints_revision,tool_call_id,kind,record_id,record_revision,target_origin,browser_session_id,purpose,fields,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,now()+interval '10 minutes') ON CONFLICT(run_id,tool_call_id) DO UPDATE SET tool_call_id=EXCLUDED.tool_call_id WHERE credential_vault_requests.kind=EXCLUDED.kind AND credential_vault_requests.record_id=EXCLUDED.record_id AND credential_vault_requests.target_origin=EXCLUDED.target_origin AND credential_vault_requests.browser_session_id=EXCLUDED.browser_session_id AND credential_vault_requests.fields=EXCLUDED.fields AND credential_vault_requests.purpose=EXCLUDED.purpose RETURNING id,kind,record_id,target_origin,browser_session_id,purpose,fields::text,state,expires_at`, randomID("creq_"), p.OwnerID, p.SessionKey, p.RunID, p.TaskID, p.TaskRevision, p.ConstraintsRevision, callID, kind, recordID, rev, origin, browser, purpose, string(raw)).Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &encoded, &r.State, &r.ExpiresAt)
+	err = tx.QueryRow(ctx, `INSERT INTO credential_vault_requests(id,owner_id,session_key,run_id,task_id,task_revision,constraints_revision,tool_call_id,kind,record_id,record_revision,target_origin,browser_session_id,purpose,fields,expires_at,login_scope) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,now()+interval '10 minutes',$16::jsonb) ON CONFLICT(run_id,tool_call_id) DO UPDATE SET tool_call_id=EXCLUDED.tool_call_id WHERE credential_vault_requests.kind=EXCLUDED.kind AND credential_vault_requests.record_id=EXCLUDED.record_id AND credential_vault_requests.target_origin=EXCLUDED.target_origin AND credential_vault_requests.browser_session_id=EXCLUDED.browser_session_id AND credential_vault_requests.fields=EXCLUDED.fields AND credential_vault_requests.purpose=EXCLUDED.purpose AND credential_vault_requests.login_scope=EXCLUDED.login_scope RETURNING id,kind,record_id,target_origin,browser_session_id,purpose,fields::text,state,expires_at`, randomID("creq_"), p.OwnerID, p.SessionKey, p.RunID, p.TaskID, p.TaskRevision, p.ConstraintsRevision, callID, kind, recordID, rev, origin, browser, purpose, string(raw), string(scopeJSON)).Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &encoded, &r.State, &r.ExpiresAt)
 	if err != nil || json.Unmarshal([]byte(encoded), &r.Fields) != nil {
 		return AccessRequest{}, ErrVault
 	}
+	r.LoginScope = loginScope
 	if parentID != "" {
 		if err = tx.QueryRow(ctx, `UPDATE credential_vault_requests q SET parent_request_id=$2,expires_at=LEAST(q.expires_at,p.expires_at) FROM credential_vault_requests p WHERE q.id=$1 AND p.id=$2 AND (q.parent_request_id='' OR q.parent_request_id=$2) RETURNING q.expires_at`, r.ID, parentID).Scan(&r.ExpiresAt); err != nil {
 			return AccessRequest{}, ErrVault
@@ -104,7 +122,7 @@ func (v *Vault) CreateRequest(ctx context.Context, p Principal, callID, kind, re
 	return r, nil
 }
 func (v *Vault) Requests(ctx context.Context, owner string) ([]AccessRequest, error) {
-	rows, err := v.Pool.Query(ctx, `SELECT q.id,q.kind,q.record_id,q.target_origin,q.browser_session_id,q.purpose,q.fields::text,q.state,q.expires_at,COALESCE(c.title||' · '||c.alias,'') FROM credential_vault_requests q LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.owner_id=$1 AND q.state='pending' AND q.expires_at>now() ORDER BY q.created_at LIMIT 50`, owner)
+	rows, err := v.Pool.Query(ctx, `SELECT q.id,q.kind,q.record_id,q.target_origin,q.browser_session_id,q.purpose,q.fields::text,q.state,q.expires_at,COALESCE(c.title||' · '||c.alias,''),q.login_scope::text FROM credential_vault_requests q LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.owner_id=$1 AND q.state='pending' AND q.expires_at>now() ORDER BY q.created_at LIMIT 50`, owner)
 	if err != nil {
 		return nil, ErrVault
 	}
@@ -112,9 +130,15 @@ func (v *Vault) Requests(ctx context.Context, owner string) ([]AccessRequest, er
 	out := []AccessRequest{}
 	for rows.Next() {
 		var r AccessRequest
-		var raw string
-		if rows.Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &raw, &r.State, &r.ExpiresAt, &r.RecordLabel) != nil || json.Unmarshal([]byte(raw), &r.Fields) != nil {
+		var raw, scope string
+		if rows.Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &raw, &r.State, &r.ExpiresAt, &r.RecordLabel, &scope) != nil || json.Unmarshal([]byte(raw), &r.Fields) != nil {
 			return nil, ErrVault
+		}
+		if r.Kind == "login" {
+			r.LoginScope = &browserauth.Scope{}
+			if json.Unmarshal([]byte(scope), r.LoginScope) != nil || r.LoginScope.Validate() != nil {
+				return nil, ErrVault
+			}
 		}
 		out = append(out, r)
 	}
@@ -123,7 +147,7 @@ func (v *Vault) Requests(ctx context.Context, owner string) ([]AccessRequest, er
 	}
 	return out, nil
 }
-func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow bool, otp string) error {
+func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow bool, otp string, consent ...string) error {
 	tx, err := v.Pool.Begin(ctx)
 	if err != nil {
 		return ErrVault
@@ -134,6 +158,14 @@ func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow b
 	var expiry time.Time
 	var rev int64
 	if tx.QueryRow(ctx, `SELECT owner_id,session_key,run_id,task_id,task_revision,constraints_revision,kind,state,record_id,record_revision,expires_at FROM credential_vault_requests WHERE id=$1 AND owner_id=$2 FOR UPDATE`, id, owner).Scan(&p.OwnerID, &p.SessionKey, &p.RunID, &p.TaskID, &p.TaskRevision, &p.ConstraintsRevision, &kind, &state, &currentRecord, &rev, &expiry) != nil || !expiry.After(time.Now()) || currentTx(ctx, tx, p) != nil {
+		return ErrVault
+	}
+	// Old open tabs render unfamiliar request kinds as preparation-only access.
+	// Such a generic answer must never upgrade into authority to submit a form.
+	if kind == "login" && allow && (len(consent) != 1 || consent[0] != browserauth.Consent) {
+		return ErrVault
+	}
+	if len(consent) > 1 || (kind != "login" && len(consent) == 1 && consent[0] != "") {
 		return ErrVault
 	}
 	// A lost HTTP response or a second channel may repeat the same answer.
@@ -178,6 +210,9 @@ func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow b
 			if tx.QueryRow(ctx, `SELECT revision FROM credential_vault WHERE id=$1 AND owner_id=$2 AND status='active' FOR SHARE`, recordID, owner).Scan(&selectedRev) != nil {
 				return ErrVault
 			}
+			if kind == "login" && (recordID != currentRecord || selectedRev != rev) {
+				return ErrVault
+			}
 			if kind == "access" && recordID == currentRecord && selectedRev != rev {
 				return ErrVault
 			}
@@ -200,9 +235,9 @@ func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow b
 // Metadata identifies an approved request, never a reusable account capability.
 func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
 	var r Record
-	var target, kind string
+	var target, kind, scope string
 	var rev int64
-	if v.Pool.QueryRow(ctx, `SELECT q.id,q.target_origin,q.kind,q.record_revision FROM credential_vault_requests q LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.id=$1 AND q.state='approved' AND q.expires_at>now() AND (q.kind='otp' OR (c.status='active' AND c.revision=q.record_revision))`, alias).Scan(&r.Alias, &target, &kind, &rev) != nil {
+	if v.Pool.QueryRow(ctx, `SELECT q.id,q.target_origin,q.kind,q.record_revision,q.login_scope::text FROM credential_vault_requests q LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.id=$1 AND q.state='approved' AND q.expires_at>now() AND (q.kind='otp' OR (c.status='active' AND c.revision=q.record_revision))`, alias).Scan(&r.Alias, &target, &kind, &rev, &scope) != nil {
 		return Record{}, ErrVault
 	}
 	// Metadata is re-read immediately before dispatch, after private resolution.
@@ -224,6 +259,14 @@ func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
 	r.AllowedDomains = []string{parsedHost}
 	r.AllowedTools = []string{"browser.prepare_fill", "browser.prepare_type"}
 	r.MetadataJSON = string(mustJSONBytes(map[string]any{"revision": rev, "kind": kind}))
+	if kind == "login" {
+		var binding browserauth.Scope
+		if json.Unmarshal([]byte(scope), &binding) != nil || binding.Validate() != nil {
+			return Record{}, ErrVault
+		}
+		r.AllowedTools = []string{browserauth.Tool}
+		r.MetadataJSON = string(mustJSONBytes(map[string]any{"revision": rev, "kind": kind, "login_scope": binding}))
+	}
 	return r, nil
 }
 func mustJSONBytes(v any) []byte { b, _ := json.Marshal(v); return b }
@@ -237,9 +280,15 @@ func (v *Vault) RequestStatus(ctx context.Context, p Principal, id string) (Acce
 		return AccessRequest{}, ErrVault
 	}
 	var r AccessRequest
-	var raw string
-	if tx.QueryRow(ctx, `SELECT id,kind,record_id,target_origin,browser_session_id,purpose,fields::text,CASE WHEN expires_at<=now() THEN 'expired' ELSE state END,expires_at FROM credential_vault_requests WHERE id=$1 AND owner_id=$2 AND run_id=$3 AND task_revision=$4 AND constraints_revision=$5`, id, p.OwnerID, p.RunID, p.TaskRevision, p.ConstraintsRevision).Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &raw, &r.State, &r.ExpiresAt) != nil || json.Unmarshal([]byte(raw), &r.Fields) != nil {
+	var raw, scope string
+	if tx.QueryRow(ctx, `SELECT id,kind,record_id,target_origin,browser_session_id,purpose,fields::text,CASE WHEN expires_at<=now() THEN 'expired' ELSE state END,expires_at,login_scope::text FROM credential_vault_requests WHERE id=$1 AND owner_id=$2 AND run_id=$3 AND task_revision=$4 AND constraints_revision=$5`, id, p.OwnerID, p.RunID, p.TaskRevision, p.ConstraintsRevision).Scan(&r.ID, &r.Kind, &r.RecordID, &r.TargetOrigin, &r.BrowserSessionID, &r.Purpose, &raw, &r.State, &r.ExpiresAt, &scope) != nil || json.Unmarshal([]byte(raw), &r.Fields) != nil {
 		return r, ErrVault
+	}
+	if r.Kind == "login" {
+		r.LoginScope = &browserauth.Scope{}
+		if json.Unmarshal([]byte(scope), r.LoginScope) != nil || r.LoginScope.Validate() != nil {
+			return AccessRequest{}, ErrVault
+		}
 	}
 	return r, nil
 }
@@ -248,7 +297,10 @@ func (v *Vault) RequestStatus(ctx context.Context, p Principal, id string) (Acce
 func (v *Vault) ResolveSecretRef(context.Context, string) (string, error) { return "", ErrVault }
 
 func (v *Vault) CheckGrantedCall(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
-	if call == nil || (call.ToolName != "browser.prepare_fill" && call.ToolName != "browser.prepare_type") || len(call.CredentialRefs) == 0 {
+	if call == nil || (call.ToolName != "browser.prepare_fill" && call.ToolName != "browser.prepare_type" && call.ToolName != browserauth.Tool) || len(call.CredentialRefs) == 0 {
+		return false
+	}
+	if call.ToolName == browserauth.Tool && !v.loginCallCurrent(ctx, call) {
 		return false
 	}
 	var a struct {
@@ -264,7 +316,7 @@ func (v *Vault) CheckGrantedCall(ctx context.Context, call *toolbrokerv1.ToolCal
 	}
 	for _, ref := range call.CredentialRefs {
 		var valid bool
-		err = v.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM credential_vault_requests q JOIN runs r ON r.run_id=q.run_id JOIN sessions s ON s.session_key=r.session_key LEFT JOIN tasks t ON t.task_id=q.task_id LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.id=$1 AND q.run_id=$2 AND q.fields ? $3 AND q.browser_session_id=$4 AND q.target_origin=$5 AND q.state='approved' AND q.expires_at>now() AND s.user_id=q.owner_id AND r.current_state IN ('tool_pending','awaiting_approval','tool_running') AND (q.task_id='' OR (t.owner_id=q.owner_id AND t.revision=q.task_revision AND t.constraints_revision=q.constraints_revision AND t.status='active')) AND ((q.kind='otp' AND EXISTS(SELECT 1 FROM credential_vault_otps o WHERE o.request_id=q.id AND o.expires_at>now() AND (o.claimed_call='' OR o.claimed_call=$6))) OR (q.kind<>'otp' AND c.status='active' AND c.revision=q.record_revision)))`, ref.GetAlias(), call.RunId, ref.GetField(), a.Browser, origin, call.ToolCallId).Scan(&valid)
+		err = v.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM credential_vault_requests q JOIN runs r ON r.run_id=q.run_id JOIN sessions s ON s.session_key=r.session_key LEFT JOIN tasks t ON t.task_id=q.task_id LEFT JOIN credential_vault c ON c.id=q.record_id AND c.owner_id=q.owner_id WHERE q.id=$1 AND q.run_id=$2 AND q.fields ? $3 AND q.browser_session_id=$4 AND q.target_origin=$5 AND q.state='approved' AND q.expires_at>now() AND s.user_id=q.owner_id AND r.current_state IN ('tool_pending','awaiting_approval','tool_running') AND ((q.kind='login')=$7) AND (q.task_id='' OR (t.owner_id=q.owner_id AND t.revision=q.task_revision AND t.constraints_revision=q.constraints_revision AND t.status='active')) AND ((q.kind='otp' AND EXISTS(SELECT 1 FROM credential_vault_otps o WHERE o.request_id=q.id AND o.expires_at>now() AND (o.claimed_call='' OR o.claimed_call=$6))) OR (q.kind<>'otp' AND c.status='active' AND c.revision=q.record_revision)))`, ref.GetAlias(), call.RunId, ref.GetField(), a.Browser, origin, call.ToolCallId, call.ToolName == browserauth.Tool).Scan(&valid)
 		if err != nil || !valid {
 			return false
 		}
@@ -279,7 +331,7 @@ func (v *Vault) ResolveField(ctx context.Context, call *toolbrokerv1.ToolCall, r
 		SessionID   string `json:"browser_session_id"`
 		ExpectedURL string `json:"expected_url"`
 	}
-	if call == nil || json.Unmarshal([]byte(call.GetArgsJson()), &args) != nil || (call.GetToolName() != "browser.prepare_fill" && call.GetToolName() != "browser.prepare_type") {
+	if call == nil || json.Unmarshal([]byte(call.GetArgsJson()), &args) != nil || (call.GetToolName() != "browser.prepare_fill" && call.GetToolName() != "browser.prepare_type" && call.GetToolName() != browserauth.Tool) {
 		return "", ErrVault
 	}
 	origin, err := Origin(args.ExpectedURL)
@@ -291,11 +343,25 @@ func (v *Vault) ResolveField(ctx context.Context, call *toolbrokerv1.ToolCall, r
 		return "", ErrVault
 	}
 	defer tx.Rollback(ctx)
+	if call.GetToolName() == browserauth.Tool {
+		a, ok := loginArgs(call)
+		if !ok {
+			return "", ErrVault
+		}
+		raw, _ := json.Marshal(a.Scope)
+		var id string
+		if tx.QueryRow(ctx, `UPDATE credential_vault_requests SET login_claimed_call=$2 WHERE id=$1 AND kind='login' AND state='approved' AND expires_at>now() AND login_scope=$3::jsonb AND (login_claimed_call='' OR login_claimed_call=$2) RETURNING id`, record.Alias, call.ToolCallId, string(raw)).Scan(&id) != nil {
+			return "", ErrVault
+		}
+	}
 	var p Principal
 	var id, kind, state, raw string
 	var revision int64
 	var expires time.Time
 	if tx.QueryRow(ctx, `SELECT owner_id,session_key,run_id,task_id,task_revision,constraints_revision,record_id,record_revision,kind,state,fields::text,expires_at FROM credential_vault_requests WHERE id=$1 AND target_origin=$2 AND browser_session_id=$3 FOR UPDATE`, record.Alias, origin, args.SessionID).Scan(&p.OwnerID, &p.SessionKey, &p.RunID, &p.TaskID, &p.TaskRevision, &p.ConstraintsRevision, &id, &revision, &kind, &state, &raw, &expires) != nil || state != "approved" || p.RunID != call.GetRunId() || !expires.After(time.Now()) || currentTx(ctx, tx, p) != nil {
+		return "", ErrVault
+	}
+	if (kind == "login") != (call.ToolName == browserauth.Tool) {
 		return "", ErrVault
 	}
 	var fields []string

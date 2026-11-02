@@ -1,5 +1,14 @@
 # Durable execution budgets
 
+A failed taskless ordinary-text revision2 local preparation may have UNKNOWN
+field state while its pinned frozen-network contract proves no external write.
+Core and Broker recognize only the owning journal's immutable
+`pinned_preparation_no_write_v1` proof after exact terminal stopped review. The
+budget guard repeats owner/Input/run/intent/fingerprint/policy/consumed-dispatch
+and digest checks for every scoped uncertainty; missing/foreign evidence,
+credentials, a live old executor or another unknown write still block. This
+changes no journal state, grant, scope or charge and grants no new permission.
+
 Migration102 retains stopped-attempt uncertainty after queue release. The same
 session/task-tree guard denies arbitrary new writes even under a different Task.
 Reads retain their normal authority. Fresh canonical owner text replies need

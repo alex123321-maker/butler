@@ -1,0 +1,16 @@
+{
+  "scope": "narrow_native_owner_task_ingress_and_reply",
+  "verified_at": "2026-10-29T17:57:00Z",
+  "core_broker_healthy": true,
+  "environments_unchanged": true,
+  "click_requires_approval": true,
+  "other_registry_fields_unchanged": true,
+  "migrations": 0,
+  "native_inputs": 0,
+  "mandates_created": 0,
+  "budget_or_credential_reset": false,
+  "initial_rollout_failed": true,
+  "initial_rollback_failed": true,
+  "cause": "broker_entrypoint_basename_and_incomplete_base_file_composition",
+  "explicit_original_mount_revert_saved": true
+}

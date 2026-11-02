@@ -1,0 +1,49 @@
+{
+  "scope": "three_precommitted_navigation_controls",
+  "original_matrix_slots_replaced": 0,
+  "source": "1b6067bf",
+  "samples": [
+    {
+      "trial": "control06",
+      "source": "1b6067bf",
+      "status": "completed",
+      "telegram_seconds": 124.516,
+      "input_seconds": 132.011,
+      "browser_tool_seconds_sum": 2.246,
+      "model_attempts": 19,
+      "input_tokens": 216243,
+      "output_tokens": 1510,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null,
+      "owner_interventions": 0
+    },
+    {
+      "trial": "control07",
+      "source": "1b6067bf",
+      "status": "completed",
+      "telegram_seconds": 139.791,
+      "input_seconds": 143.392,
+      "browser_tool_seconds_sum": 2.78,
+      "model_attempts": 17,
+      "input_tokens": 194795,
+      "output_tokens": 1501,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null,
+      "owner_interventions": 0
+    },
+    {
+      "trial": "control08",
+      "source": "1b6067bf",
+      "status": "completed",
+      "telegram_seconds": 99.437,
+      "input_seconds": 101.663,
+      "browser_tool_seconds_sum": 1.892,
+      "model_attempts": 14,
+      "input_tokens": 151894,
+      "output_tokens": 1202,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null,
+      "owner_interventions": 0
+    }
+  ]
+}

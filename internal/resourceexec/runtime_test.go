@@ -10,16 +10,18 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"google.golang.org/grpc/metadata"
 )
 
 type fixtureAuthority struct {
-	calls     atomic.Int32
-	finishErr bool
-	fence     int64
-	deadline  time.Time
+	calls       atomic.Int32
+	finishErr   bool
+	fence       int64
+	deadline    time.Time
+	lastReceipt Receipt
 }
 
 func (a *fixtureAuthority) Inspect(context.Context, RuntimeRequest) (RuntimeSpec, error) {
@@ -29,11 +31,64 @@ func (a *fixtureAuthority) Begin(context.Context, RuntimeRequest) (RuntimeSpec, 
 	a.calls.Add(1)
 	return RuntimeSpec{Lane: "browser-tab:fixture", Fence: a.fence, Deadline: a.deadline}, nil
 }
-func (a *fixtureAuthority) Finish(context.Context, Receipt) error {
+func (a *fixtureAuthority) Finish(_ context.Context, receipt Receipt) error {
+	a.lastReceipt = receipt
 	if a.finishErr {
 		return ErrDenied
 	}
 	return nil
+}
+
+type rejectedPreparationBackend struct {
+	result *toolbrokerv1.ToolResult
+	acks   int
+}
+
+func (b *rejectedPreparationBackend) Execute(context.Context, *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
+	return &runtimev1.ExecuteResponse{Result: b.result}, nil
+}
+func (b *rejectedPreparationBackend) ConfirmRuntime(context.Context, RuntimeSpec) error {
+	b.acks++
+	return nil
+}
+
+func TestBrowserSessionLossProofSurvivesOnlyDurableGuardedFinish(t *testing.T) {
+	for _, mode := range []string{"valid", "revision3", "started", "foreign", "lost_finish", "wrong_contract"} {
+		t.Run(mode, func(t *testing.T) {
+			token := strings.Repeat("fixture", 8)
+			a := &fixtureAuthority{fence: 2, deadline: time.Now().Add(time.Second), finishErr: mode == "lost_finish"}
+			req := fixtureRequest()
+			req.ToolCall.ToolName = "browser.prepare_fill"
+			req.Contract.ToolName = req.ToolCall.ToolName
+			req.Contract.ContractRevision = "4"
+			req.Context.ToolName = req.ToolCall.ToolName
+			req.Contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
+			result := &toolbrokerv1.ToolResult{RunId: "run", ToolCallId: "call", ToolName: req.ToolCall.ToolName, Status: "failed", Error: &toolbrokerv1.ToolError{DetailsJson: `{"preparation_rejection":"pre_input_v1","input_dispatched":false,"reason":"session_lost"}`, ErrorClass: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED}}
+			switch mode {
+			case "revision3":
+				req.Contract.ContractRevision = "3"
+			case "started":
+				result.Error.DetailsJson = `{"preparation_rejection":"pre_input_v1","input_dispatched":true,"reason":"session_lost"}`
+			case "foreign":
+				result.ToolCallId = "other"
+			case "wrong_contract":
+				req.Contract.EffectContract.VerificationMethod = "none"
+			}
+			backend := &rejectedPreparationBackend{result: result}
+			runtime, err := NewRuntime(backend, a, token)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer "+token, ticketHeader, strings.Repeat("a", 48)))
+			r, err := runtime.Execute(ctx, req)
+			if err != nil || (r.GetResult().GetStatus() == "failed") != (mode == "valid") || backend.acks != 0 {
+				t.Fatal("guarded rejection lost or widened its proof", mode)
+			}
+			if a.lastReceipt.Completed != (mode == "valid" || mode == "lost_finish") {
+				t.Fatal("malformed rejection completed lane")
+			}
+		})
+	}
 }
 
 type fixtureBackend struct {

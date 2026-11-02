@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "captured_at": "2026-10-28T12:55:16Z",
+  "scope": "deployment_inventory_only",
+  "native_attempts": 0,
+  "containers": [
+    {
+      "name": "/butler-main-orchestrator-1",
+      "image_id": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+      "image_reference": "butler-lab-orchestrator",
+      "started_at": "2026-10-28T08:40:23.764884662Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": [
+        "BUTLER_TOOL_DISCOVERY_ENABLED=true"
+      ]
+    },
+    {
+      "name": "/butler-main-tool-broker-1",
+      "image_id": "sha256:7dd645ebc24707867e410481fc82b98f499f7519f7b5b8a5655151f1d7dcb715",
+      "image_reference": "butler-lab-tool-broker",
+      "started_at": "2026-10-28T12:44:39.548724418Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": [
+        "BUTLER_TOOL_DISCOVERY_ENABLED=true",
+        "BUTLER_PUBLIC_WEB_READS_ENABLED=true"
+      ]
+    },
+    {
+      "name": "/butler-main-tool-browser-1",
+      "image_id": "sha256:3a2e719f086e2d2a110a79f817f235518350aaf87ea47cb51a9a75158e32d9c6",
+      "image_reference": "butler-lab-tool-browser",
+      "started_at": "2026-10-28T12:44:39.550200798Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": []
+    },
+    {
+      "name": "/butler-main-web-1",
+      "image_id": "sha256:c800aa6c88aa88a97433ff260ab4de659b490e4367f345f88628f1b9d1a423f5",
+      "image_reference": "butler-lab-web",
+      "started_at": "2026-10-28T08:40:16.241335051Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": []
+    }
+  ]
+}

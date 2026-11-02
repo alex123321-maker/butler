@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -136,11 +137,14 @@ func (s *PostgresStore) RecordDispatchOutcome(ctx context.Context, id, outcome s
 	if g.State != "inflight" || r.State != StateExecuting || r.AuthorizationID != id || e.ActionID != r.ActionID || e.SourceActionID != g.Binding.ActionID || e.SourceRunID != g.Binding.RunID || e.SourceToolCallID != g.Binding.ToolCallID || e.Source != "runtime_response" || e.Method != r.Policy.VerificationMethod {
 		return r, fmt.Errorf("dispatch evidence does not match the executing intent")
 	}
-	if e.Verdict != StateUnknown && e.Verdict != StateConfirmed {
-		return r, fmt.Errorf("dispatch cannot prove absence")
+	if e.Verdict != StateUnknown && e.Verdict != StateConfirmed && (e.Verdict != StateAbsent || (!browserReadAbsenceEvidence(g.Binding, r.Policy, outcome, e) && !preparationAbsenceEvidence(g.Binding, r.Policy, outcome, e))) {
+		return r, fmt.Errorf("dispatch cannot prove absence without owning pre-navigation read evidence")
 	}
 	if e.Verdict == StateConfirmed && (outcome != "dispatch_completed" || e.ResultDigest == "" || (r.Policy.VerificationMethod == "none") || (r.Policy.VerificationMethod == "external_receipt_v1" && e.ArtifactDigest == "")) {
 		return r, fmt.Errorf("confirmed effect requires supported evidence")
+	}
+	if e.Verdict == StateConfirmed && r.Policy.VerificationMethod == browserauth.Verification && !validLoginEvidence(r.Policy, g.Binding, e.Login) {
+		return r, fmt.Errorf("login evidence does not match the scoped protocol")
 	}
 	if err = insertEvidence(ctx, tx, e); err != nil {
 		return r, err

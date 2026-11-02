@@ -516,7 +516,7 @@ func TestCatalogSchemasAreSupported(t *testing.T) {
 		t.Fatal("invalid catalog fixture")
 	}
 	for _, tool := range catalog.Tools {
-		if err := validateSchema(tool.Schema); err != nil {
+		if _, err := nativeToolSchema(tool.Schema); err != nil {
 			t.Fatalf("unsupported current schema %s: %v", tool.Name, err)
 		}
 	}

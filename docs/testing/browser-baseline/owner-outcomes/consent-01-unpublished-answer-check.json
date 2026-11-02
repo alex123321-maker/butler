@@ -1,0 +1,10 @@
+{
+  "scope": "private-unpublished-draft-check-only",
+  "expected_reference_present": true,
+  "credential_canary_present": false,
+  "source_ref_count": 1,
+  "schema_version": 1,
+  "purpose": "result",
+  "publication_exists": false,
+  "delivery_verified": false
+}

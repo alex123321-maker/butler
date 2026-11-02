@@ -1,0 +1,15 @@
+{
+  "tool_name": "credentials.request_access",
+  "description": "Ask the owner to use an existing credential for the shown browser site and purpose. No secret values are accepted. Use only the approved request ID as credential_ref.alias after owner response.",
+  "tool_class": "credential_control",
+  "input_schema_json": "{\"type\":\"object\",\"required\":[\"record_id\",\"browser_session_id\",\"expected_url\",\"purpose\",\"fields\"],\"properties\":{\"query\":{\"type\":\"string\"},\"record_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"access_request_id\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"expected_url\":{\"type\":\"string\"},\"purpose\":{\"type\":\"string\"},\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"enum\":[\"username\",\"password\"]}}},\"additionalProperties\":false}",
+  "output_schema_json": "{\"type\":\"object\",\"properties\":{\"entries\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"request\":{\"type\":\"object\"}},\"additionalProperties\":false}",
+  "runtime_target": "broker://credential-vault-v1",
+  "risk_level": "medium",
+  "status": "active",
+  "contract_revision": "1",
+  "effect_contract": {
+    "retry_safety": "unsafe",
+    "verification_method": "local_runtime_ack"
+  }
+}

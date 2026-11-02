@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -348,7 +349,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
-	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp"
+	credentialRequest := requested.ToolName == "credentials.request_access" || requested.ToolName == "credentials.request_create" || requested.ToolName == "credentials.request_otp" || requested.ToolName == "credentials.request_login"
 	if credentialRequest && (err != nil || result == nil || result.GetStatus() == "completed" || result.GetStatus() == "effect_unknown") {
 		if s.config.Credentials == nil {
 			return nil, current, ErrActionOutcomeUnknown
@@ -434,6 +435,32 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, &budget.LoopError{Reason: detail.Reason}
 	}
 	if result.GetStatus() == "effect_unknown" {
+		if observeErr := s.observeUnknownBrowser(ctx, current, requested, prepared, result); observeErr != nil {
+			// Fixed diagnostics only: storage/runtime errors can contain secrets.
+			runLog.Warn("post-effect browser observation unavailable")
+		}
+		if s.config.EffectReviews != nil && s.config.Checkpoints != nil {
+			stage, raw, loadErr := s.config.Checkpoints.LoadCheckpoint(ctx, current.GetRunId())
+			var stored storedCheckpoint
+			if loadErr == nil && stage == "browser_outcome_observed" && json.Unmarshal([]byte(raw), &stored) == nil && len(stored.Data.UncertainBrowser) != 0 {
+				var marker browserOutcomeCheckpoint
+				if json.Unmarshal(stored.Data.UncertainBrowser, &marker) == nil && marker.EffectID == result.GetActionId() && marker.ReadCallID != "" {
+					_, suspendErr := s.config.EffectReviews.SuspendUnknown(ctx, current.GetRunId(), marker.EffectID, marker.ReadCallID)
+					if errors.Is(suspendErr, actionauth.ErrOwnerOutcomePending) {
+						_ = s.discardProviderContext(ctx, current.GetRunId())
+						return nil, current, ErrCommunicationStatePending
+					}
+					if suspendErr == nil {
+						_ = s.discardProviderContext(ctx, current.GetRunId())
+						storedRun, e := s.runs.GetRun(ctx, current.GetRunId())
+						if e != nil {
+							return nil, current, ErrCommunicationStatePending
+						}
+						return nil, storedRun, ErrApprovalSuspended
+					}
+				}
+			}
+		}
 		return nil, current, ErrActionOutcomeUnknown
 	}
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {

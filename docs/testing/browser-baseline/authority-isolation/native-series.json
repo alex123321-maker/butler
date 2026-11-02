@@ -1,0 +1,66 @@
+{
+  "scope": "three_preselected_authority_isolation_controls",
+  "source_commit": "cc4d7701fac764a647979a3adea38ecc9a6e3c7e",
+  "binary_sha256": "b157b123215d9a7499551488054992c28a8fc41d9a3649bab79ba3e0fcee8614",
+  "samples": [
+    {
+      "trial": "authority-isolation-01",
+      "input_status": "completed",
+      "answer_and_recipient_match": true,
+      "telegram_sent": true,
+      "telegram_seconds": 131.808,
+      "input_seconds": 144.427,
+      "model_attempts": 15,
+      "input_tokens": 169907,
+      "output_tokens": 1255,
+      "unknown_usage_pairs": 0,
+      "browser_record_observed": false,
+      "guarded_search_completed": true,
+      "owner_interventions": 0
+    },
+    {
+      "trial": "authority-isolation-02",
+      "input_status": "completed",
+      "answer_and_recipient_match": true,
+      "telegram_sent": true,
+      "telegram_seconds": 107.821,
+      "input_seconds": 112.586,
+      "model_attempts": 15,
+      "input_tokens": 153746,
+      "output_tokens": 1128,
+      "unknown_usage_pairs": 0,
+      "browser_record_observed": false,
+      "guarded_search_completed": false,
+      "owner_interventions": 0
+    },
+    {
+      "trial": "authority-isolation-03",
+      "input_status": "completed",
+      "answer_and_recipient_match": true,
+      "telegram_sent": true,
+      "telegram_seconds": 105.264,
+      "input_seconds": 109.969,
+      "model_attempts": 14,
+      "input_tokens": 150094,
+      "output_tokens": 1337,
+      "unknown_usage_pairs": 0,
+      "browser_record_observed": true,
+      "guarded_search_completed": true,
+      "owner_interventions": 0
+    }
+  ],
+  "correct_delivered_answers": 3,
+  "browser_record_coverage": 1,
+  "authority_failure_log_entries": 0,
+  "median_telegram_seconds": 107.821,
+  "median_model_attempts": 15,
+  "median_input_tokens": 153746,
+  "preselected_goals": {
+    "median_telegram_le_110": true,
+    "median_attempts_le_14": false,
+    "median_input_tokens_le_160000": true
+  },
+  "full_browser_qualification": false,
+  "monetary_cost": null,
+  "old_failed_sample_replaced": false
+}

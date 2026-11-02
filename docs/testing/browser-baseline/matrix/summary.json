@@ -1,0 +1,74 @@
+{
+  "scope": "current-deployed-composition-limited-baseline",
+  "overall": "NO_GO",
+  "origin": "https://butler-eval.report-template.ru",
+  "planned_matrix_attempts": 15,
+  "observed_matrix_attempts": 4,
+  "narrow_read_passes": 3,
+  "stopped_navigation_attempts": 1,
+  "unexecuted_matrix_attempts": 11,
+  "stop_reason": "stopped_attempt_uncertain",
+  "read_telegram_sent_ms": {
+    "min": 52651.0,
+    "median": 68505.0,
+    "max": 72351.0,
+    "samples": 3,
+    "p95": null
+  },
+  "reads": [
+    {
+      "attempt": "read-01",
+      "input_status": "completed",
+      "narrow_read_pass": true,
+      "publication_ms": 66791.0,
+      "telegram_sent_ms": 68505.0,
+      "tool_calls": 7,
+      "browser_calls": 1,
+      "tool_duration_sum_ms": 1731.0,
+      "model_attempts": 8,
+      "input_tokens": 60699,
+      "output_tokens": 660,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null
+    },
+    {
+      "attempt": "read-02",
+      "input_status": "completed",
+      "narrow_read_pass": true,
+      "publication_ms": 70403.0,
+      "telegram_sent_ms": 72351.0,
+      "tool_calls": 5,
+      "browser_calls": 1,
+      "tool_duration_sum_ms": 1316.0,
+      "model_attempts": 6,
+      "input_tokens": 47695,
+      "output_tokens": 512,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null
+    },
+    {
+      "attempt": "read-03",
+      "input_status": "completed",
+      "narrow_read_pass": true,
+      "publication_ms": 51570.0,
+      "telegram_sent_ms": 52651.0,
+      "tool_calls": 5,
+      "browser_calls": 1,
+      "tool_duration_sum_ms": 1299.0,
+      "model_attempts": 6,
+      "input_tokens": 41266,
+      "output_tokens": 506,
+      "unknown_usage_pairs": 0,
+      "monetary_cost": null
+    }
+  ],
+  "navigation": {
+    "input_status": "failed",
+    "model_attempts": 13,
+    "input_tokens": 103947,
+    "output_tokens": 819,
+    "operator_exact_approvals": 1,
+    "monetary_cost": null
+  },
+  "note": "No reset or bypass of old uncertain effects. Recipient counts alone do not attribute every request to the model. No account/form acceptance claimed."
+}

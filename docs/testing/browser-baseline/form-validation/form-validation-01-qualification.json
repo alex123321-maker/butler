@@ -1,0 +1,32 @@
+{
+  "scope": "joined_native_form_validation_qualification",
+  "trial": "form-validation-01",
+  "outcome": "assisted_complete",
+  "checks": {
+    "input_completed": true,
+    "run_completed": true,
+    "initial_invalid_8_frozen": true,
+    "corrected_3_frozen": true,
+    "validation_before_only_post": true,
+    "one_valid_post_no_invalid": true,
+    "form_recipient_answer_match": true,
+    "reference_in_answer": true,
+    "validation_in_answer": true,
+    "no_credential_canary": true,
+    "browser_reference_observed": true,
+    "original_unknown_preserved": true,
+    "factual_owner_report": true,
+    "each_effect_dispatched_once": true,
+    "web_result_ready": true,
+    "telegram_sent": true
+  },
+  "public_action_approvals": 5,
+  "factual_owner_reports": 1,
+  "http_reads": 1,
+  "fault_injections": 0,
+  "autonomous_reconciliation": false,
+  "native_input_seconds": 368.632,
+  "thinking_context_queue_and_owner_waits_included": true,
+  "input_replayed": false,
+  "raw_answer_or_secrets_exported": false
+}

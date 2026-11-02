@@ -346,6 +346,9 @@ func actionResource(tool string, args map[string]any) (string, error) {
 		if observed, _ := args["expected_url"].(string); observed != "" {
 			raw = observed
 		}
+		if tool == "browser.login" {
+			raw, _ = args["target_url"].(string)
+		}
 	}
 	if raw != "" {
 		u, err := url.Parse(raw)
@@ -367,11 +370,15 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
-	case "tools.search", "tools.load", "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox":
+	case "browser.open_pages", "browser.pages", "browser.page_snapshot", "browser.page_freeze_snapshot":
+		return EffectRead
+	case "browser.login":
+		return EffectCommit
+	case "tools.search", "tools.load", "workspace.read", "memory.search", "memory.open", "memory.neighbors", "memory.facts", "messages.search", "messages.inbox", "browser.submit_get_form", "browser.follow_link":
 		return EffectRead
 	case "schedule.list", "schedule.get", "credentials.search", "credentials.request_status":
 		return EffectRead
-	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp":
+	case "communication.message", "communication.photo", "communication.report", "communication.widget", "schedule.create", "schedule.update", "schedule.cancel", "credentials.request_access", "credentials.request_create", "credentials.request_otp", "credentials.request_login":
 		return EffectPrepare
 	case "workspace.create", "workspace.write", "messages.process":
 		return EffectPrepare
@@ -385,7 +392,7 @@ func classifyEffect(tool string, args map[string]any) Effect {
 			return EffectCommit
 		}
 		return EffectUnknown
-	case "converters.discover", "converters.collect", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
+	case "browser.freeze_snapshot", "converters.discover", "converters.collect", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.search", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return EffectRead
 	case "memory.propose_candidate", "single_tab.bind.guarded", "task.delegate", "task.delegate_converter", "converters.develop", "converters.test", "converters.trial", "converters.activate", "converters.rollback", "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
 		return EffectPrepare

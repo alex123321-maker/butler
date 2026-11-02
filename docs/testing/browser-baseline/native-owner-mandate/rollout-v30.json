@@ -1,0 +1,11 @@
+{
+  "verified_at": "2026-10-29T18:31:26Z",
+  "scope": "narrow_owned_browser_read_url_epoch_projection",
+  "core_broker_healthy": true,
+  "environment_unchanged": true,
+  "browser_postgres_redis_web_unchanged": true,
+  "strict_click_preserved": true,
+  "migrations": 0,
+  "prior_inputs_replayed": false,
+  "old_budgets_reset": false
+}

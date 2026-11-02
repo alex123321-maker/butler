@@ -1,0 +1,21 @@
+{
+  "scope": "native_bounded_owner_admission",
+  "task": "task_861ff25cd505056a69b77e993936b6de",
+  "goal": "goal_ada9e2e5767f849b48f3751178058b5d",
+  "mandate": "mandate_c141355dc4c5fa6d912d022746cb682f",
+  "expires_at": "2026-10-29T18:42:41Z",
+  "budget": {
+    "model_turns": 24,
+    "tokens": 25952256,
+    "external_calls": 40,
+    "children": 1,
+    "active_millis": 12000000,
+    "provider_input_bytes": 201326592,
+    "egress_bytes": 167772160
+  },
+  "new_separately_bounded_mandate": true,
+  "prior_mandates_revoked": true,
+  "prior_budgets_and_failed_inputs_retained": true,
+  "live_deadline_extended": false,
+  "existing_operator_limits_changed": false
+}

@@ -40,7 +40,7 @@ func TestCommunicationDrainRetainsAcceptedIngressAndRejectsNewInputsIntegration(
 	}
 	webActor := owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", SessionKey: c.web.binding.Recipient, DeliveryID: "web-first"}
 	web := owneridentity.WithActor(f.ctx, webActor)
-	first, err := c.webConversation(web, "Retained Web request")
+	first, err := c.webConversation(web, "Retained Web request", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestCommunicationDrainRetainsAcceptedIngressAndRejectsNewInputsIntegration(
 	if err = c.conversation(tg, update); err != nil {
 		t.Fatal("lost cursor ACK replay was blocked by drain", err)
 	}
-	again, err := c.webConversation(web, "Retained Web request")
+	again, err := c.webConversation(web, "Retained Web request", "")
 	if err != nil || again.InputID != first.InputID {
 		t.Fatal("lost Web ACK replay changed identity", err)
 	}
@@ -57,7 +57,7 @@ func TestCommunicationDrainRetainsAcceptedIngressAndRejectsNewInputsIntegration(
 		t.Fatal("new Telegram request accepted during drain", err)
 	}
 	webActor.DeliveryID = "web-second"
-	if _, err = c.webConversation(owneridentity.WithActor(f.ctx, webActor), "New Web request"); !errors.Is(err, communication.ErrDraining) {
+	if _, err = c.webConversation(owneridentity.WithActor(f.ctx, webActor), "New Web request", ""); !errors.Is(err, communication.ErrDraining) {
 		t.Fatal("new Web request accepted during drain", err)
 	}
 	var count int

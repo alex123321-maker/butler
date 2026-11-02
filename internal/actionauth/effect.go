@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
 	"net/url"
 	"strings"
 	"time"
@@ -27,6 +29,7 @@ const (
 // EffectPolicy is pinned with the exact contract, not inferred from model text
 // or a caller-supplied HTTP header. ExternalReceipt is a recipient protocol.
 type EffectPolicy struct {
+	Login              *browserauth.Args        `json:"browser_login,omitempty"`
 	RetrySafety        string                   `json:"retry_safety"`
 	VerificationMethod string                   `json:"verification_method"`
 	IdempotencyHeader  string                   `json:"idempotency_header,omitempty"`
@@ -61,20 +64,21 @@ type EffectRecord struct {
 // Evidence contains provenance and digests only. Raw output, credential values,
 // receipt IDs, cookies and URL queries are not copied into the journal.
 type EffectEvidence struct {
-	EvidenceID             string      `json:"evidence_id"`
-	ActionID               string      `json:"action_id"`
-	SourceActionID         string      `json:"source_action_id"`
-	SourceToolCallID       string      `json:"source_tool_call_id"`
-	SourceRunID            string      `json:"source_run_id"`
-	Source                 string      `json:"source"`
-	Method                 string      `json:"method"`
-	Verdict                EffectState `json:"verdict"`
-	ResultDigest           string      `json:"result_digest"`
-	ArtifactDigest         string      `json:"artifact_digest,omitempty"`
-	NormalizedResultDigest string      `json:"normalized_result_digest,omitempty"`
-	ErrorCategory          string      `json:"error_category,omitempty"`
-	ObservedAt             time.Time   `json:"observed_at"`
-	RecordedAt             time.Time   `json:"recorded_at"`
+	Login                  *LoginEvidence `json:"browser_login,omitempty"`
+	EvidenceID             string         `json:"evidence_id"`
+	ActionID               string         `json:"action_id"`
+	SourceActionID         string         `json:"source_action_id"`
+	SourceToolCallID       string         `json:"source_tool_call_id"`
+	SourceRunID            string         `json:"source_run_id"`
+	Source                 string         `json:"source"`
+	Method                 string         `json:"method"`
+	Verdict                EffectState    `json:"verdict"`
+	ResultDigest           string         `json:"result_digest"`
+	ArtifactDigest         string         `json:"artifact_digest,omitempty"`
+	NormalizedResultDigest string         `json:"normalized_result_digest,omitempty"`
+	ErrorCategory          string         `json:"error_category,omitempty"`
+	ObservedAt             time.Time      `json:"observed_at"`
+	RecordedAt             time.Time      `json:"recorded_at"`
 }
 
 type EffectStore interface {
@@ -111,6 +115,9 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 }
 
 func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, calls ...*toolbrokerv1.ToolCall) (EffectPolicy, error) {
+	if browserpage.IsTool(b.ToolName) && (!browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0) {
+		return EffectPolicy{}, browserpage.ErrDenied
+	}
 	p := EffectPolicy{RetrySafety: "unsafe", VerificationMethod: "none"}
 	if c := contract.GetEffectContract(); c != nil {
 		p = EffectPolicy{RetrySafety: c.GetRetrySafety(), VerificationMethod: c.GetVerificationMethod(), IdempotencyHeader: c.GetIdempotencyHeader(), ScopeOrigin: c.GetScopeOrigin(), VerificationURL: c.GetVerificationUrl()}
@@ -121,7 +128,34 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 	if p.VerificationMethod == "" {
 		p.VerificationMethod = "none"
 	}
+	if b.ToolName == browserauth.Tool || p.VerificationMethod == browserauth.Verification {
+		if !browserauth.ValidContract(contract) || b.Effect != EffectCommit || !vaultRequestBinding(b) || len(calls) != 1 || calls[0] == nil || calls[0].ToolName != b.ToolName {
+			return p, fmt.Errorf("login requires its exact approved protocol")
+		}
+		a, e := browserauth.Parse(calls[0].ArgsJson)
+		h, e2 := ArgumentsHash(calls[0].ArgsJson)
+		if e != nil || e2 != nil || h != b.ArgsHash || b.Resource != "browser:"+a.Browser+":"+a.TargetURL {
+			return p, fmt.Errorf("invalid login binding")
+		}
+		p.Login = &a
+		return p, nil
+	}
 	if b.Effect == EffectRead {
+		if b.ToolName == "browser.navigate" && b.ContractRevision == "4" {
+			if p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" {
+				return p, fmt.Errorf("navigation requires its exact credential-free revision4 contract")
+			}
+			return p, nil
+		}
+		if b.ToolName == "browser.freeze_snapshot" && (b.ContractRevision != "1" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result" || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs()) {
+			return p, fmt.Errorf("frozen observation requires its exact credential-free read contract")
+		}
+		if b.ToolName == "browser.submit_get_form" || b.ToolName == "browser.follow_link" {
+			if b.ContractRevision != "2" || p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() {
+				return p, fmt.Errorf("GET navigation requires its exact guarded revision 2 contract")
+			}
+			return p, nil
+		}
 		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "3" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {
 			return p, fmt.Errorf("browser navigation requires the enforced public-origin revision 3 contract")
 		}
@@ -132,7 +166,7 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		return p, nil
 	}
 	if p.VerificationMethod == "local_browser_preparation_v1" {
-		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || b.ContractRevision != "2" || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
+		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || (b.ContractRevision != "2" && b.ContractRevision != "3" && b.ContractRevision != "4") || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
 			return p, fmt.Errorf("local preparation requires its exact browser contract and call")
 		}
 		call := calls[0]
@@ -244,11 +278,26 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 		}
 	}
 	outcome := "unknown"
+	if reason := BrowserReadRejection(g.Binding, result); !runtimeError && record.Policy.VerificationMethod == BrowserGETVerification && record.Policy.RetrySafety == "read_only" && reason != "" {
+		outcome = "dispatch_completed"
+		e.Verdict = StateAbsent
+		e.ResultDigest = browserReadRejectionDigest(reason)
+	}
+	if reason := BrowserPreparationRejection(g.Binding, result); !runtimeError && record.Policy.VerificationMethod == "local_browser_preparation_v1" && record.Policy.LocalPreparation != nil && reason != "" {
+		outcome = "dispatch_completed"
+		e.Verdict = StateAbsent
+		e.ResultDigest = preparationRejectionDigest(reason)
+	}
 	if !runtimeError && result != nil && result.GetRunId() == g.Binding.RunID && result.GetToolCallId() == g.Binding.ToolCallID && result.GetToolName() == g.Binding.ToolName && result.GetStatus() == "completed" {
 		outcome = "dispatch_completed"
 		e.ResultDigest = digest(result.GetResultJson())
 		switch record.Policy.VerificationMethod {
-		case "read_result":
+		case browserauth.Verification:
+			e.Verdict = loginVerdict(record.Policy, g.Binding, result.GetResultJson())
+			if e.Verdict == StateConfirmed {
+				e.Login = loginEvidence(record.Policy, result.GetResultJson())
+			}
+		case "read_result", BrowserGETVerification:
 			if g.Binding.Effect == EffectRead {
 				e.Verdict = StateConfirmed
 			}
@@ -267,7 +316,7 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 
 func localPreparationVerdict(policy EffectPolicy, binding ActionBinding, raw string) EffectState {
 	pinned := policy.LocalPreparation
-	if pinned == nil || binding.Effect != EffectPrepare || binding.ContractRevision != "2" || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
+	if pinned == nil || binding.Effect != EffectPrepare || (binding.ContractRevision != "2" && binding.ContractRevision != "3" && binding.ContractRevision != "4") || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
 		return StateUnknown
 	}
 	if _, err := canonicalJSON(raw); err != nil {

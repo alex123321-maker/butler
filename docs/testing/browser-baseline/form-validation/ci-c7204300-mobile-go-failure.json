@@ -1,0 +1,15 @@
+{
+  "scope": "preserved_ci_mobile_database_capacity_failure",
+  "sha": "c72043004029b67d565a1a1020529f9c7074289d",
+  "job": "go",
+  "job_id": 123390647320,
+  "conclusion": "failure",
+  "url": "https://github.com/alex123321-maker/butler/actions/runs/40857085444/job/123390647320",
+  "failed_test": "TestBrokerProjectObserverRejectsStaleUnknownAndChangedConditionsIntegration",
+  "failed_subcases": ["unconfirmed", "binding_hash"],
+  "sqlstate": "53200",
+  "error": "out of shared memory",
+  "phase": "schema_migrations",
+  "production_database_settings_changed": false,
+  "native_input_replayed": false
+}

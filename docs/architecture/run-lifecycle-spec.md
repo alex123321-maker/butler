@@ -1,5 +1,50 @@
 # Butler — Run Lifecycle Specification
 
+Interaction recovery resolves the canonical owning interaction before active-only
+source readers run. The owning kernel checks claim/lease, exact versions,
+evidence and current authority and resumes the Task's exact wait. Source/delegation
+observations are then rehydrated and validated before refreshed tools, model
+admission or any new action. An ordinary waiting Task is not a stale delegated
+parent. Unknown/expired/cancelled/changed reports still cannot resume inference;
+current source denial after a valid report also stops before the provider. This
+ordering never reopens a terminal Input/run or replays the consumed action.
+
+## One post-effect browser observation
+
+After a durably recorded, correlated UNKNOWN click/fill/type response, Core can
+make one Broker-mediated `browser.freeze_snapshot` read before its normal block.
+This is kernel-owned observation, not a model proposal or a wider mandate.
+The original action ID remains in `browser_outcome_observing/observed`
+checkpoints; a separate deterministic read-call ID receives its own permanent
+slot, grant, budget accounting and tool transcript. No input/credential values
+are copied. The read stays under current authority and a clipped five-second
+deadline; approval requirements or unavailable permission prevent dispatch.
+Without a canonical owner outcome review, recovery from either checkpoint blocks
+on `effect_unknown`, even if the read succeeded; it never retries either call.
+Migration105 adds a distinct `effect_review` interaction: the kernel atomically
+joins an independently journaled frozen read, Task wait, exact Input checkpoint
+and coarse run wait. It releases the executor before accepting a factual owner
+report. This report is not an action approval or independent machine receipt.
+Only confirmed/absent canonical journal evidence can make that same Input ready.
+Recovery rechecks its claim, lease, task/source versions and all other unknown
+effects, reconstructs fresh provider context with owner-report DATA, and retains
+the original UNKNOWN tool transcript. No consumed grant or action is replayed.
+An unknown report, expiry, cancellation or changed constraints cannot resume
+inference. Cleanup may queue a bounded no-inference close after an expired wait;
+it never renews execution authority. Historical reports change only journal
+evidence; an old failed Input/run stays failed. See the external-effect contract.
+
+While recovering a canonical credential, communication or effect interaction,
+the kernel resolves the exact waiting->active transaction before starting the
+active-only Task supervisor. Resolution is bounded by the newly acquired lease's
+absolute expiry and still checks current lease, Input claim, Task versions and
+evidence. No provider, tool or source-body release occurs during that phase.
+Lease observation, renewal and cancellation continue throughout resolution;
+only the active-only Task check waits for the successful transition.
+Successful resolution starts the ordinary supervisor before fresh source/tool
+context and model admission. Stop, changed authority, invalid/expired decisions
+and unresolved outcomes remain fail-closed; execution authority is not extended.
+
 ## Joining supervision before terminal task mutation
 
 Once no model/tool work remains, Core joins the current run's lease/authority
@@ -91,24 +136,32 @@ durable request commit. The exact run/call's stored request remains the proof;
 an ambiguous receipt alone cannot create a wait or authorize replay.
 
 Core startup reserves one connection from `BUTLER_POSTGRES_MAX_CONNS` for live
-lease, Task authority and token-only source-currentness observations. The remaining business pool has at least
-two connections: Core therefore requires a total maximum of at least three.
+lease/Task authority and the existing bounded local-model watchdog. When the
+total cap is at least four, a separate single connection serves longer token-only
+source-currentness observations. Business capacity retains at least two slots;
+the sum of configured maxima/minima does not increase, including DSN-only limits.
+The supported minimum remains three: source observations then use business
+capacity, never the authority reserve. This fallback may fail a source proof
+under business saturation; it does not authorize stale data or extend deadlines.
 Converter-participating source proofs use business capacity: returned-package
 access can bind selected source pins and repeat continuation/lifecycle guards.
-Unrelated token-only proofs retain the reserved reader under business saturation.
+Unrelated token-only proofs use the separate source reader under business
+saturation when that capacity exists.
 A current PG classification selects capacity only and is repeated after access
 locks; both routes execute all authority/source guards with unchanged deadlines.
 The total maximum and execution budgets do not increase. Channel polls, Web
-feeds and business writes cannot acquire the reserved connection. Both readers
+feeds and business writes cannot acquire either reserved connection. The readers
 still use current PostgreSQL state and their existing authority checks; an
 unavailable observer fails closed. The foreground local-model admission watchdog
-uses this same reserve, with its unchanged250ms interval and200ms proof deadline.
+uses the authority reserve, with its unchanged250ms interval and200ms proof deadline.
 It rolls back source observations; admission, allowance reservation and returned
 result acceptance remain business transactions with their existing commit/pin
 semantics. Local-model cancellation retains only a fixed phase/class diagnostic,
 and independent parent cancellation/deadlines remain authoritative.
-Observer cancellation logs only fixed phase
-and classification plus elapsed time, never raw storage/source errors.
+Observer cancellation logs only fixed phase and classification plus elapsed
+time. A failed lease read additionally distinguishes pool acquisition from SQL
+execution and records acquired/idle/total counts, retaining errors.Is/As causes.
+No query, parameters, DSN, lease identifier or raw storage error is logged.
 
 Single-transaction owning writers (interaction recovery, preparation checkpoint,
 run lease refresh, private communication publication and final persistence) lock the live fencing row inside the
@@ -1301,6 +1354,12 @@ than the actual finite context expiry grants a resumed browser. See the
 
 ## Research draft validation
 
+An already failed, isolated historical attempt can receive owning local journal
+review under the same terminal locks. It remains failed with its original error,
+checkpoint and spending; a proven publication outcome or pinned read no-write
+proof can change isolation classification only. No old claim, grant, model or
+delivery is replayed. See [stopped finalization](stopped-input-finalization.md).
+
 A rejected research draft follows the existing tool_pending → tool_running →
 awaiting_model_resume → model_running lifecycle as local validation. It records
 a correlated `validation_rejected` observation and known tool-result checkpoint;
@@ -1308,3 +1367,28 @@ no Broker action is prepared or dispatched. Recovery replays that known DATA.
 At most four corrections are allowed, with ordinary model budgets retained.
 Such a known non-dispatch is not an equivalent committed write during model
 retry recovery. See [research and checked monitors](research-followups.md).
+
+A failed revision4 browser preparation/navigation with a verified pre-dispatch
+ABSENT proof follows ordinary tool-result model continuation. Broker suggests a
+fresh open and reassessment. This is a new model proposal with separate current
+authorization, not a kernel retry, grant replay, restored DOM or confirmation of
+an earlier UNKNOWN action. A frozen context is not implicitly thawed. Unresolved
+write effects and stopped-attempt isolation retain their existing gates.
+
+Frozen-observation dispatch retains its existing five-second child deadline.
+After a correlated response returns, that child is cancelled before transcript
+and checkpoint persistence. Persistence alone uses a separate three-second child
+of the original run context: it cannot execute tools, widen the run/claim/lease
+or survive parent cancellation. A persistence failure still blocks; there is no
+read or POST retry and no fabricated receipt. This keeps a completed read from
+losing its checkpoint merely because its dispatch clock expires during storage.
+
+## Managed-page post-effect observation
+
+The existing one-probe/checkpoint/effect_review recovery kernel also supports
+acknowledged page click/fill/type. The kernel derives an exact page ref from the
+saved mediated result and uses the fixed revision1 page freeze read through
+ordinary Broker authority/accounting. A wrong document/page, missing ACK or
+approval requirement leaves the original UNKNOWN restrictive. Canonical owner
+attestation can resume only the same Input under fresh authority; no old action
+or probe is replayed. See [the bounded page review](browser-pages-execution.md).

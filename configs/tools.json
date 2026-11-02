@@ -1,6 +1,23 @@
 {
   "tools": [
     {
+      "tool_name": "browser.login",
+      "description": "Fill and submit one ordinary same-origin login form and verify authenticated access. First inspect forms and obtain credentials.request_login consent for this exact scope. Use that approved request reference for both username/password. Submits at most once, with no automatic retry. Unsupported/ambiguous login remains unknown. Generic click/POST approval is unchanged.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"expected_url\",\"target_url\",\"observation_version\",\"form_selector\",\"username_selector\",\"password_selector\",\"username\",\"password\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"expected_url\":{\"type\":\"string\"},\"target_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\",\"minimum\":1},\"form_selector\":{\"type\":\"string\"},\"username_selector\":{\"type\":\"string\"},\"password_selector\":{\"type\":\"string\"},\"username\":{\"type\":\"object\",\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"alias\":{\"type\":\"string\"},\"field\":{\"type\":\"string\",\"enum\":[\"username\",\"password\"]}},\"additionalProperties\":false},\"password\":{\"type\":\"object\",\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"alias\":{\"type\":\"string\"},\"field\":{\"type\":\"string\",\"enum\":[\"username\",\"password\"]}},\"additionalProperties\":false}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"network_state\":{\"type\":\"string\"},\"authentication\":{\"type\":\"object\",\"properties\":{\"protocol\":{\"type\":\"string\"},\"submitted_once\":{\"type\":\"boolean\"},\"authenticated_read\":{\"type\":\"boolean\"},\"anonymous_challenge\":{\"type\":\"boolean\"}}}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": true,
+      "requires_approval": true,
+      "status": "active",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "browser_login_v1"
+      }
+    },
+    {
       "tool_name": "browser.read",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
@@ -21,7 +38,7 @@
       "tool_name": "browser.open",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
-      "description": "Open a run-owned server browser across public HTTP(S) origins for 15 minutes; its page can be viewed and controlled by the owner in Web. Returns session ID, expiry, current page and observation version. Never transfers a user tab.",
+      "description": "Open a run-owned server browser across public HTTP(S) origins for 15 minutes; its page can be viewed and controlled by the owner in Web. Returns session ID, expiry, observation version and value-free forms metadata. For public GET search forms prefer browser.submit_get_form; follow pagination/result anchors with browser.follow_link. Opaque fill/click may write. Never transfers a user tab.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
@@ -53,8 +70,8 @@
     },
     {
       "tool_name": "browser.navigate",
-      "contract_revision": "3",
-      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
+      "contract_revision": "4",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "guarded_browser_get_v1" },
       "description": "Navigate the existing session across permitted public HTTP(S) origins. Requires latest observation_version and expected_url; returns a fresh observation.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"browser_session_id\",\"url\",\"observation_version\",\"expected_url\"],\"properties\":{\"url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"expected_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"}},\"type\":\"object\",\"additionalProperties\":false}",
@@ -69,12 +86,69 @@
       "allowed_tools": []
     },
     {
+      "tool_name": "browser.freeze_snapshot",
+      "contract_revision": "1",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
+      "description": "Freeze all network traffic, then observe the existing document without navigation or input. Keeps the context frozen. Current visible state is not proof of a previous external effect.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"required\":[\"ok\",\"browser_session_id\",\"observation_version\",\"network_state\"],\"properties\":{\"ok\":{\"type\":\"boolean\",\"enum\":[true]},\"browser_session_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"network_state\":{\"type\":\"string\",\"enum\":[\"frozen\"]}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
       "tool_name": "browser.snapshot",
       "contract_revision": "3",
       "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
       "description": "Observe the current page in an existing session without navigation. Returns current URL, text, links and a fresh observation version.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"browser_session_id\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.follow_link",
+      "contract_revision": "2",
+      "effect_contract": {
+        "verification_method": "guarded_browser_get_v1",
+        "retry_safety": "read_only"
+      },
+      "description": "Follow an ordinary same-origin hyperlink with GET, without click or page handlers. Use this for pagination and result links, including a frozen public GET search page. Requires selector, latest observation_version and expected_url. Refuses downloads, foreign origins, credential state and any prior input/private draft. Returns a fresh frozen observation. Opaque browser.click may write and cannot replace this read operation.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"selector\",\"observation_version\",\"expected_url\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"selector\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"expected_url\":{\"type\":\"string\"},\"timeout\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":30000}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.submit_get_form",
+      "contract_revision": "2",
+      "effect_contract": {
+        "verification_method": "guarded_browser_get_v1",
+        "retry_safety": "read_only"
+      },
+      "description": "Search or navigate a public same-origin GET form with named ordinary text fields. Use forms metadata from the current observation to choose selector and field names. Compiles a GET URL without click, input, submit or page handlers; POST forms, hidden/password/file fields, credential state and any prior input/private draft are refused. Requires current session, observation_version and exact expected_url. Network freezes again after navigation. This proves a GET observation only, never a remote write.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"browser_session_id\",\"selector\",\"fields\",\"observation_version\",\"expected_url\"],\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"selector\":{\"type\":\"string\"},\"fields\":{\"type\":\"array\",\"maxItems\":32,\"items\":{\"required\":[\"name\",\"value\"],\"properties\":{\"value\":{\"type\":\"string\",\"maxLength\":4096},\"name\":{\"minLength\":1,\"maxLength\":128,\"type\":\"string\"}},\"additionalProperties\":false,\"type\":\"object\"}},\"observation_version\":{\"type\":\"integer\"},\"expected_url\":{\"type\":\"string\"},\"timeout\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":30000}},\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
       "runtime_target": "tool-browser:9090",
       "risk_level": "low",
@@ -121,7 +195,7 @@
     },
     {
       "tool_name": "browser.prepare_fill",
-      "contract_revision": "2",
+      "contract_revision": "4",
       "effect_contract": {
         "retry_safety": "unsafe",
         "verification_method": "local_browser_preparation_v1"
@@ -158,7 +232,7 @@
     },
     {
       "tool_name": "browser.prepare_type",
-      "contract_revision": "2",
+      "contract_revision": "4",
       "effect_contract": {
         "retry_safety": "unsafe",
         "verification_method": "local_browser_preparation_v1"
@@ -682,6 +756,166 @@
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"url\":{\"type\":\"string\"},\"content_text\":{\"type\":\"string\"},\"content_html\":{\"type\":\"string\"},\"status_code\":{\"type\":\"integer\"},\"final_url\":{\"type\":\"string\"},\"mime_type\":{\"type\":\"string\"},\"provider\":{\"type\":\"string\"},\"metadata\":{\"type\":\"object\"}}}",
       "runtime_target": "tool-webfetch:9090",
       "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.open_pages",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Open a separate run-owned managed browser context with up to four same-origin pages and 32 lifetime page IDs. Returns pages and exact page references. Foreign-origin popup navigation is denied before its first request. Use browser.pages then browser.page_*; legacy input tools cannot target this context. Credentials and cross-origin SSO are unsupported here; use legacy scoped login in a separate context when appropriate.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"url\":{\"type\":\"string\"}},\"required\":[\"url\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.pages",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Privately observe each live page in a managed context and return only safe URL, page/document IDs and current observation versions. Every returned URL is checked under current Task/mandate authority. Use after owner return, navigation, lost/stale references or popup creation. Does not navigate or thaw a frozen context. No title-based or active-tab selection.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_snapshot",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Read the exact page/document/version in a managed context without navigation. Returns a new page reference and visible text, links and value-free form structure. A stale document is denied; refresh with browser.pages. No credentials or raw callback query/fragment are released.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"}},\"required\":[\"browser_session_id\",\"page\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_click",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Click an exact page/document/version and selector in a managed same-origin context. Requires ordinary explicit action approval. Can cause POST or autosave: outcome remains unsafe/UNKNOWN without independent evidence; never repeat automatically. Only the selected page can send writes. Same-origin popups have a bounded admission window and finite cap. Credentials are unsupported.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_fill",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Fill an ordinary non-password field on an exact page/document/version. Literal text only; no credential_ref. Requires ordinary action approval and can cause POST/autosave, retaining unsafe/UNKNOWN semantics. Never use it for passwords or to bypass the credential vault.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\",\"value\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_type",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Type ordinary text on an exact page/document/version. Literal text only; passwords and credential_ref are unsupported. Requires ordinary action approval; autosave/POST is unsafe and must not be replayed automatically.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"},\"selector\":{\"type\":\"string\"},\"text\":{\"type\":\"string\"}},\"required\":[\"browser_session_id\",\"page\",\"selector\",\"text\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_close",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "none"
+      },
+      "description": "Close one exact page/document/version, retaining its ID and history. Requires ordinary action approval. Does not close the context or reconcile a previous UNKNOWN effect; all pages share the existing context resource lane.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"}},\"required\":[\"browser_session_id\",\"page\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "high",
+      "supports_credential_refs": false,
+      "requires_approval": true,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.page_freeze_snapshot",
+      "contract_revision": "1",
+      "effect_contract": {
+        "retry_safety": "read_only",
+        "verification_method": "read_result"
+      },
+      "description": "Freeze all proxy connections and routes in this managed context, then observe the exact page/document/version without navigation. Separate credential-free read authorization and accounting are required. This is local state only, never a recipient receipt, absence proof, write approval or permission to replay. A stale or foreign page is denied. Used for the bounded post-effect owner factual review.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"additionalProperties\":false,\"properties\":{\"browser_session_id\":{\"type\":\"string\"},\"page\":{\"additionalProperties\":false,\"properties\":{\"document_id\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"page_id\":{\"type\":\"string\"}},\"required\":[\"page_id\",\"document_id\",\"observation_version\"],\"type\":\"object\"}},\"required\":[\"browser_session_id\",\"page\"],\"type\":\"object\"}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"browser_session_id\":{\"type\":\"string\"},\"pages\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"page\":{\"type\":\"object\"},\"text\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
       "supports_credential_refs": false,
       "requires_approval": false,
       "supports_streaming": false,

@@ -26,6 +26,85 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/browserpage/|internal/(actionauth/page_(binding|outcome)|browsercontrol/page_execution)|apps/orchestrator/internal/orchestrator/page_outcome|apps/tool-browser/internal/runtime/page_execution|apps/tool-broker/internal/broker/page_execution|migrations/108_|scripts/dev/browser-page-execution-|web/tests/e2e/server-browser-pages|docs/testing/browser-page-(execution|outcome)-)" {
+      [void]$specs.Add("docs/architecture/browser-pages-execution.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("Managed pages: browser-page-execution-tests.sh (isolated *_test PostgreSQL, ordered migrations, race/vet, eight actual Chromium cases, actual owner UI/Broker/resource and page UNKNOWN review, Core same-Input recovery; zero required skips). Windows owner UI equivalent: browser-page-execution-local.ps1. No native model/provider calls; cross-origin federation/credentials/Google and historical managed-page review remain pending.")
+      continue
+    }
+    "^(internal/browsercontrol/pages|migrations/107_browser_pages[.]|scripts/dev/browser-page-bindings-tests[.]sh$|docs/testing/browser-page-bindings-)" {
+      [void]$specs.Add("docs/architecture/browser-pages-proposal.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("bash scripts/dev/browser-page-bindings-tests.sh with isolated *_test PG: mandatory lifecycle, context fences, concurrent cap/CAS, actual owner row-lock race and retention/down-up tests, zero skips; full ordered migrations in CI. Page ledger is metadata-only; runtime/Broker dispatch, native and external Google acceptance remain pending.")
+      continue
+    }
+    "^(cmd/browser-sso-eval/|scripts/dev/browser-pages-fixture-tests[.]sh$|[.]github/workflows/browser-pages[.]yml$|docs/architecture/browser-pages-proposal[.]md$|docs/testing/browser-pages-fixture-)" {
+      [void]$specs.Add("docs/architecture/browser-pages-proposal.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("bash scripts/dev/browser-pages-fixture-tests.sh: mandatory unit/race/vet + five actual Chromium cases with zero skips. Fixture only, zero model calls; production Broker/page authority, public cross-site HTTPS, native delivery and external Google SSO remain separate acceptance.")
+      continue
+    }
+    "browser_login|browserauth/|credentials/login[.]go|106_browser_login|browser-login-protocol" {
+      [void]$specs.Add("docs/architecture/browser-login-protocol.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/external-effect-journal.md")
+      [void]$tests.Add("Scoped login: browserauth/actionauth/runtime/research unit checks; real PG one-use consent, Input dispatch fence and typed evidence/no-replay; real Broker+PG+Chromium; protected owner UI consent. credential-vault-tests.sh requires the new cases without skips. Native one-consent model/provider/delivery acceptance is separate; include model deliberation in wall time.")
+      continue
+    }
+    "browser_safety_integration|browser_owner_ui_integration|browser_safety_fixture|browser-owner-real|browser-owner-safety-tests|browser-owner-runtime-2026|browser-safety-2026" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/external-effect-journal.md")
+      [void]$tests.Add("scripts/dev/credential-vault-tests.sh on isolated *_test PG with real Chromium: three TestBrowserSafety*ChromiumIntegration parents and all ten positive/negative subcases must pass without skips. Then scripts/dev/browser-owner-safety-tests.sh must prove real owner UI stop/revoke -> PG -> old grant denial with zero POSTs, plus one unchanged positive control. Native Input wall time and the inclusive operator work window remain separate; do not replay old slots.")
+      continue
+    }
+    "owner_outcome|browser_outcome_reviews|browser-owner-outcomes|browser-pre-input|browser-reviewed-preparation|browser_preparation_rejection|reviewed_preparation|ActionOutcomeReviews|action-outcomes[.]spec|105_browser_owner_outcomes" {
+      [void]$specs.Add("docs/architecture/external-effect-journal.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("Isolated PostgreSQL/race and vet: scripts/dev/browser-owner-outcomes-tests.sh. Web typecheck/lint and Chromium: browser-owner-outcomes-web.sh. Known same-Input recovery, unknown/expiry/cancel/version/foreign denial, immutable grants/history and authenticated factual reporting are mandatory. Native POST/login uses ordinary ingress and counts owner assistance separately.")
+      continue
+    }
+    "browser_(outcome|observation_recovery)|frozen_observation|browser-outcome-tests[.]sh$" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$tests.Add("scripts/dev/browser-outcome-tests.sh OWNED_ROOT: mandatory PG/race UNKNOWN/read spending + observer checkpoint recovery; actual Chromium background freeze, Broker/resource one POST + frozen read + no replay/quarantine bypass. No native scenario replay to backfill timings.")
+      continue
+    }
+    "^scripts/dev/browser-(native-timings[.]sh|timings-summary(-tests)?[.]ps1|observation-audit[.]sh)$" {
+      [void]$specs.Add("docs/testing/browser-action-timings-2026-10-28.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/browser-timings-summary-tests.ps1; derive only from existing records/configs: inclusive step + tail partition, READ ONLY export, safe-field/NULL checks, CSV row counts and private-comparison booleans. No replay or new inference to backfill metrics; failed/unknown statuses separate from completed operations.")
+      continue
+    }
+    "^(internal/storage/postgres/(authority|postgres)|apps/orchestrator/internal/session/lease_(postgres|observation)|apps/orchestrator/internal/app/communication_authority_capacity)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$tests.Add("Isolated PG/race: TestCommunicationAuthority* capacity/source starvation/revocation and DSN/minimum-cap cases; session lease acquisition-vs-query diagnostics; watchdog cancellation/retry tests. No live authority cache or deadline extension. Deploy Core separately; preserve native FAIL/NULL usage.")
+      continue
+    }
+    "^(apps/tool-browser/internal/runtime/get_form_test[.]go|internal/actionauth/(get_form_test|browser_read(_test)?)[.]go|apps/tool-broker/internal/broker/browser_read_failure_test[.]go)$" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/external-effect-journal.md")
+      [void]$tests.Add("Targeted runtime/actionauth/registry units and vet; isolated PostgreSQL/race TestBrowserGetFormReadKeepsUnknownWriteBlockedIntegration; scripts/dev/server-browser-lab.sh OWNED_ROOT browser (mandatory Chromium GET form + existing session/control regressions). Native result/delivery verified separately.")
+      continue
+    }
+    "^(internal/actionauth/stopped_local|apps/orchestrator/(cmd/stopped-review/|internal/(input/stopped_finalize|communication/stopped_(finalize|local)))|scripts/dev/(stopped-(local-(tests[.]ps1|review[.]sh)|continuation-tests[.]sh)|browser-stops-inventory[.]sh))" {
+      [void]$specs.Add("docs/architecture/stopped-input-finalization.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("Narrow local PG/race: scripts/dev/stopped-local-tests.ps1. Full isolated Linux pgvector/Go race, no skipped required cases, vet/operator build: scripts/dev/stopped-continuation-tests.sh OWNED_ROOT. Native continuation separately, preserving prior failure/spend and no duplicate effects.")
+      continue
+    }
+    "^(cmd/browser-eval/|deploy/browser-eval/|scripts/dev/browser-(baseline-manifest|native-(control|snapshot|verify|attempt)|fixture-verify)[.]sh$|scripts/dev/browser-(public-matrix|baseline-summary)[.]ps1$)" {
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/testing/browser-baseline-2026-10-28.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/browser-eval -Count1; direct Chromium recipient smoke per cmd/browser-eval/README.md. Native agent acceptance is separate.")
+      continue
+    }
     "^(migrations/104_temporal_currentness_plans[.]|internal/memory/catalog/temporal_plan_integration_test[.]go$)" {
       [void]$specs.Add("docs/architecture/memory-temporal.md")
       [void]$tests.Add("This PC: isolated PostgreSQL/race catalog TestTemporal.*Integration, including original-predicate equivalence after empty/nonempty state, metadata change and down/up; then converter-local-acceptance.ps1 -Action Streaming with actual Broker/runtime. No inference; no accepted fact, source or authority cache.")

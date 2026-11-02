@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-10-30T02:19:43Z",
+  "core_broker_healthy": true,
+  "strict_click_requires_approval": true,
+  "previously_qualified_binaries_reused": true,
+  "environments_unchanged": true,
+  "other_services_unchanged": true,
+  "migrations": 0,
+  "old_inputs_replayed": false,
+  "old_budget_reset": false
+}

@@ -1,0 +1,10 @@
+{
+  "scope": "canonical_interaction_before_active_source_recheck",
+  "verified_at": "2026-10-29T19:16:16Z",
+  "core_healthy": true,
+  "environment_unchanged": true,
+  "broker_unchanged": true,
+  "history_deleted": false,
+  "budgets_changed": false,
+  "prior_input_replayed": false
+}

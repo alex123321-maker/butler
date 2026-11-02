@@ -1,0 +1,5 @@
+--- a/internal/communicationcontrol/contracts.go
++++ b/internal/communicationcontrol/contracts.go
+@@ -118 +118 @@
+-		"source_refs":              map[string]any{"type": "array", "description": "Optional canonical Catalog source_ref values for evidence already read in this run, including message:response:interaction:... for an owner answer. Never use interaction_ref or publication_ref here.", "items": map[string]string{"type": "string"}},
++		"source_refs":              map[string]any{"type": "array", "description": "Optional exact source_ref values returned by selected Catalog observations in this run, including message:response:interaction:... for an owner answer. Never invent message references from event or turn IDs, or put browser/tool-call IDs, URLs, interaction_ref or publication_ref here. For browser-only observations leave this array empty; include the page URL in the answer text when useful.", "items": map[string]string{"type": "string"}},

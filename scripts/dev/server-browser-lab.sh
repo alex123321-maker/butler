@@ -35,7 +35,7 @@ case "$mode" in
   docker run "${go_args[@]}" --network none -e CGO_ENABLED=0 "$go_image" go test -c -o /cache/browser.test ./apps/tool-browser/internal/runtime
   if [[ "$mode" == browser ]]; then
    docker run "${browser_args[@]}" --network none -w /src/apps/tool-browser/internal/runtime -e BUTLER_BROWSER_E2E=1 \
-    --entrypoint /cache/browser.test "$browser_image" -test.v -test.timeout=180s -test.run '^TestServerBrowserChromium$|^TestBrowserSessionE2E$'
+    --entrypoint /cache/browser.test "$browser_image" -test.v -test.timeout=180s -test.run '^TestServerBrowserChromium$|^TestBrowserSessionE2E$|^TestBrowserGetFormChromium$'
   else
    docker run "${go_args[@]}" --network none -e CGO_ENABLED=0 "$go_image" go test -c -o /cache/broker.test ./apps/tool-broker/internal/broker
    pg_image=$(docker image inspect --format '{{.Id}}' pgvector/pgvector:pg17)

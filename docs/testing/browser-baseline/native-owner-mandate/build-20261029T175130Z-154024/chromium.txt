@@ -1,0 +1,285 @@
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/prepare_only
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=5.252 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.623 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=9.541 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=31.106 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=21.475 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=20.612 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.741 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=1562.399 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=10.037 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=10.091 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=196.010 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.103 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.355 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=136.330 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=9.177 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.501 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=140.039 model_calls=0
+    browser_mandate_integration_test.go:297: case=prepare_only setup_owner_mutations=4 preparation_approvals=0 submit_denied=true recipient_posts=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/unsafe_unknown
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.851 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.035 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=7.760 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=18.291 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=12.219 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=18.378 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.709 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=625.001 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.697 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.828 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=176.159 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.160 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.113 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=131.887 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=7.973 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.110 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=131.463 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.638 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=7.587 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=157.655 model_calls=0
+    browser_mandate_integration_test.go:310: case=unsafe_unknown setup_owner_mutations=4 preparation_approvals=0 submit_approvals=0 recipient_posts=1 unsafe_configuration=true
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/strict
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.831 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.283 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=7.555 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=18.009 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=11.832 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=18.924 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=11.304 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=552.819 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.374 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.994 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=176.417 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=9.303 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=10.792 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=140.184 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.003 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.358 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=131.249 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.678 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=7.921 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=15.118 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=11.280 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=11.541 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=153.980 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=7.682 model_calls=0
+    browser_mandate_integration_test.go:384: case=strict setup_owner_mutations=4 preparation_approvals=0 submit_approvals=1 recipient_posts=1 effect_unknown=true replay_posts=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/changed_args
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.452 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.140 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=7.761 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=16.368 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=9.995 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=21.325 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=13.338 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=543.430 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.414 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.893 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=180.588 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.883 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.608 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=143.953 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.394 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.176 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=136.103 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.126 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.878 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.676 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=8.056 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=10.368 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=6.490 model_calls=0
+    browser_mandate_integration_test.go:391: case=changed_args preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/revoke
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.876 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.276 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=7.325 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=16.837 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=10.634 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=20.724 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=11.804 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=573.397 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.307 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.259 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=171.782 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.397 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.195 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=138.747 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.548 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.536 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=136.315 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=8.998 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.533 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.353 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=7.031 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=9.305 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.566 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=3.334 model_calls=0
+    browser_mandate_integration_test.go:391: case=revoke preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/cancel
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.138 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=2.396 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=7.050 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=16.390 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=9.738 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=23.371 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.218 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=561.175 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.473 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.313 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=175.281 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.148 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.272 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=143.126 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.551 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.211 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=134.250 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=6.987 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.416 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.206 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=6.808 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=9.212 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=13.916 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=5.423 model_calls=0
+    browser_mandate_integration_test.go:391: case=cancel preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/expiry
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.197 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=2.839 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=6.538 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=15.032 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=9.038 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=18.714 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=11.108 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=545.629 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.115 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.881 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=193.561 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.160 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.908 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=143.672 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.367 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.550 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=140.815 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=8.157 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.703 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.398 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=8.339 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=10.004 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=3.983 model_calls=0
+    browser_mandate_integration_test.go:391: case=expiry preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/foreign_origin
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.436 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=3.369 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=6.689 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=15.017 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=9.794 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=19.413 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.329 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=525.788 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=9.292 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.082 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=189.027 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.282 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.350 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=140.071 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.288 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.882 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=135.774 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.487 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.690 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.515 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=6.718 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=9.356 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=5.700 model_calls=0
+    browser_mandate_integration_test.go:391: case=foreign_origin preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/stale_contract
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.257 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=2.816 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=6.641 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=14.303 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=8.827 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=18.027 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.205 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=554.763 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=9.802 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.589 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=173.963 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.391 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.951 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=164.870 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=12.256 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.863 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=133.878 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.462 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.546 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=6.730 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=6.177 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=9.068 model_calls=0
+    browser_mandate_integration_test.go:362: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=13.756 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=8.007 model_calls=0
+    browser_mandate_integration_test.go:391: case=stale_contract preparation_approvals=0 submit_approvals=1 recipient_posts=0 original_dispatches=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/restart
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.182 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=2.619 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=6.185 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=13.204 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=9.108 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=21.830 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.401 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=533.216 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=10.396 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.968 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=170.630 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=9.426 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.401 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=136.805 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.227 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.321 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=134.236 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.click duration_ms=7.077 model_calls=0
+    browser_mandate_integration_test.go:301: authorization_denied=PermissionDenied
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=5.578 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/propose_approval duration_ms=5.628 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/approve_submit duration_ms=6.830 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.click duration_ms=9.361 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=155.787 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.click duration_ms=18.384 model_calls=0
+    browser_mandate_integration_test.go:384: case=restart setup_owner_mutations=4 preparation_approvals=0 submit_approvals=1 recipient_posts=1 effect_unknown=true replay_posts=0
+=== RUN   TestBrowserOwnerMandateApprovalReductionChromiumIntegration/budget
+    browser_mandate_integration_test.go:92: operation=owner/create_goal duration_ms=2.441 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/mandate duration_ms=2.892 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/create_task duration_ms=6.310 model_calls=0
+    browser_mandate_integration_test.go:92: operation=owner/task_control duration_ms=14.818 model_calls=0
+    browser_mandate_integration_test.go:92: operation=worker/claim_input duration_ms=10.520 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.open duration_ms=17.976 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.open duration_ms=10.025 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.open duration_ms=543.299 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.589 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=9.054 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=184.910 model_calls=0
+    browser_mandate_integration_test.go:187: operation=prepare/browser.prepare_fill duration_ms=8.500 model_calls=0
+    browser_mandate_integration_test.go:205: operation=authorize/browser.prepare_fill duration_ms=8.696 model_calls=0
+    browser_mandate_integration_test.go:221: operation=execute/browser.prepare_fill duration_ms=33.372 model_calls=0
+    browser_mandate_integration_test.go:273: case=budget preparation_approvals=0 recipient_posts=0 mandate_budget_enforced=true
+--- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration (44.54s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/prepare_only (2.30s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/unsafe_unknown (1.46s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/strict (1.44s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/changed_args (1.27s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/revoke (1.28s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/cancel (1.28s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/expiry (30.09s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/foreign_origin (1.24s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/stale_contract (1.35s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/restart (1.45s)
+    --- PASS: TestBrowserOwnerMandateApprovalReductionChromiumIntegration/budget (0.96s)
+PASS

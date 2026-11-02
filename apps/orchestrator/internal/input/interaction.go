@@ -14,7 +14,7 @@ func (s *Store) SuspendInteractionTx(ctx context.Context, tx pgx.Tx, runID, id s
 }
 
 func (s *Store) SuspendPrivateInteractionTx(ctx context.Context, tx pgx.Tx, runID, id, kind string) error {
-	if kind != "communication_interaction" && kind != "credential_interaction" {
+	if kind != "communication_interaction" && kind != "credential_interaction" && kind != "effect_review" {
 		return ErrClaimLost
 	}
 	r, ok := ctx.Value(claimKey{}).(Record)
@@ -23,7 +23,7 @@ func (s *Store) SuspendPrivateInteractionTx(ctx context.Context, tx pgx.Tx, runI
 		return ErrClaimLost
 	}
 	marker, _ := json.Marshal(map[string]any{"version": 1, "kind": kind, "interaction_id": id})
-	tag, e := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint='awaiting_interaction',checkpoint_json=checkpoint_json||jsonb_build_object('interaction',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND status='running' AND checkpoint='tool_dispatching' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, marker)
+	tag, e := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint='awaiting_interaction',checkpoint_json=checkpoint_json||jsonb_build_object('interaction',$4::jsonb),updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND run_id=$3 AND status='running' AND ((checkpoint='tool_dispatching' AND $5<>'effect_review') OR (checkpoint='browser_outcome_observed' AND $5='effect_review')) AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, marker, kind)
 	if e == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost
 	}

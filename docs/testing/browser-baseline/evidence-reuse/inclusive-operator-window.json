@@ -1,0 +1,10 @@
+{
+  "scope": "operator_work_window_through_joined_native_verification",
+  "started_at": "2026-10-29T11:08:33Z",
+  "verified_at": "2026-10-29T11:24:27Z",
+  "elapsed_seconds": 954,
+  "reasoning_implementation_failures_builds_rollout_and_waits_included": true,
+  "native_input_seconds_separate": 323.591,
+  "pre_first_timestamp_seconds": null,
+  "subsequent_documentation_and_ci_not_in_this_window": true
+}

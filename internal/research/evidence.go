@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -41,13 +42,19 @@ func normalized(s string) string { return strings.Join(strings.Fields(s), " ") }
 func IsReadAttempt(c transcript.ToolCall) bool {
 	var a struct{ URL, Text, HTML, Method string }
 	switch c.ToolName {
+	case browserauth.Tool:
+		if c.FinishedAt == nil || c.Status != "completed" {
+			return false
+		}
+		_, ok := alternativePage(c)
+		return ok
 	case "web.search", "web.fetch", "web.fetch_batch":
 		return true
 	case "web.extract":
 		return json.Unmarshal([]byte(c.ArgsJSON), &a) == nil && a.URL != "" && a.Text == "" && a.HTML == ""
 	case "http.request":
 		return json.Unmarshal([]byte(c.ArgsJSON), &a) == nil && (a.Method == "" || strings.EqualFold(a.Method, "GET") || strings.EqualFold(a.Method, "HEAD"))
-	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text":
+	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.submit_get_form", "browser.follow_link":
 		return true
 	}
 	return false
@@ -128,6 +135,14 @@ func alternativePage(c transcript.ToolCall) (Page, bool) {
 		return Page{}, false
 	}
 	switch c.ToolName {
+	case browserauth.Tool:
+		var login struct {
+			Auth *browserauth.Proof `json:"authentication"`
+		}
+		if json.Unmarshal([]byte(c.ResultJSON), &login) != nil || login.Auth == nil || login.Auth.Protocol != browserauth.Verification || !login.Auth.SubmittedOnce || !login.Auth.AuthenticatedRead || !login.Auth.AnonymousChallenge || !out.OK || out.Local || out.Network != "frozen" || (len(out.Error) > 0 && string(out.Error) != "null") {
+			return Page{}, false
+		}
+		out.Text = out.BrowserText
 	case "web.extract":
 		if args.URL == "" || args.Text != "" || args.HTML != "" || out.Status < 200 || out.Status >= 300 {
 			return Page{}, false
@@ -138,6 +153,14 @@ func alternativePage(c transcript.ToolCall) (Page, bool) {
 		}
 		out.URL = args.URL
 		out.Text = readable(out.Body)
+	case "browser.submit_get_form", "browser.follow_link":
+		// These distinct read contracts freeze AFTER a guarded public GET. A
+		// completed observation can support a quote without thawing a draft or
+		// treating an arbitrary frozen snapshot as fresh external evidence.
+		if !out.OK || out.Local || out.Network != "frozen" || len(out.Error) > 0 && string(out.Error) != "null" {
+			return Page{}, false
+		}
+		out.Text = out.BrowserText
 	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text":
 		if !out.OK || out.Local || out.Network == "frozen" || len(out.Error) > 0 && string(out.Error) != "null" {
 			return Page{}, false
@@ -214,7 +237,7 @@ func Check(text string, evidence []Evidence, pages []Page, now time.Time, detail
 	primary := false
 	for _, e := range evidence {
 		if (e.Role != "primary" && e.Role != "secondary") || !Supports(e, pages, now) {
-			return "An evidence entry is not supported by a successful fresh page read in this run. Open the cited page with web.fetch and use an exact short quote from its content_text; do not invent a quote or use a search snippet."
+			return "An evidence entry is not supported by a successful fresh page read in this run. Reuse supported current-run reads, including live browser reads and guarded public GET observations. Correct or remove unsupported evidence entries and their unsupported claims/links while retaining supported evidence. Generic frozen snapshots and local preparation are not fresh external evidence or write receipts. Read again only if a needed fact is missing, stale or insufficiently observed; an HTTP refetch is not required merely to change tools. Use exact short quotes from the qualifying read, never invented quotes or search snippets. Removing a citation cannot make an unsupported claim confirmed; if required evidence is unavailable, report what remains unverified."
 		}
 		primary = primary || e.Role == "primary"
 	}

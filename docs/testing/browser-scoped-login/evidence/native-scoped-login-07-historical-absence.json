@@ -1,0 +1,12 @@
+{
+  "scope": "historical_owner_assisted_absence",
+  "review": "review_054e0e4b8c26642dbe7a968e8e354b81",
+  "effect": "effect_0144eea25adf93863658d6bbe4cc9cc2c31c1b1e87047b2e43d6cd043bda1ca1",
+  "state": "effect_absent",
+  "owner_assistance": 1,
+  "machine_login_proof": false,
+  "external_posts": 0,
+  "original_input_resumed": false,
+  "consumed_grant_reused": false,
+  "old_failure_and_spending_retained": true
+}

@@ -28,6 +28,9 @@ func (c *Client) CredentialNotice(ctx context.Context, b OwnerBinding, r credent
 	if r.Kind == "otp" {
 		title = "Нужен одноразовый код для входа"
 	}
+	if r.Kind == "login" {
+		title = "Разрешить один вход с проверкой доступа?"
+	}
 	text := title + "\nСайт: " + r.TargetOrigin + "\nЦель: " + r.Purpose + "\nПоля: " + strings.Join(r.Fields, ", ") + "\nВводите данные только в защищённой форме Butler."
 	if r.RecordLabel != "" {
 		text += "\nЗапись: " + r.RecordLabel

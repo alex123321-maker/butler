@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "captured_at": "2026-10-28T13:48:36Z",
+  "scope": "deployment_inventory_only",
+  "native_attempts": 0,
+  "containers": [
+    {
+      "name": "/butler-main-orchestrator-1",
+      "image_id": "sha256:ae02012c2637a92cc2a4f6c51e52f431eeccdc69d0c208cc28e8f23ef701960a",
+      "image_reference": "butler-lab-orchestrator",
+      "executable_sha256": "10aecd518d3ca819c737ccfb154138cd0817a8174274bfde31ca08b144f8316e",
+      "started_at": "2026-10-28T08:40:23.764884662Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": [
+        "BUTLER_TOOL_DISCOVERY_ENABLED=true"
+      ]
+    },
+    {
+      "name": "/butler-main-tool-broker-1",
+      "image_id": "sha256:7dd645ebc24707867e410481fc82b98f499f7519f7b5b8a5655151f1d7dcb715",
+      "image_reference": "butler-lab-tool-broker",
+      "executable_sha256": "6407f3470786f11b0012c18054ceca5a071315d85bf02a277eccac0b19f1a592",
+      "started_at": "2026-10-28T13:48:04.374538177Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": [
+        "BUTLER_PUBLIC_WEB_READS_ENABLED=true",
+        "BUTLER_TOOL_DISCOVERY_ENABLED=true"
+      ]
+    },
+    {
+      "name": "/butler-main-tool-browser-1",
+      "image_id": "sha256:3a2e719f086e2d2a110a79f817f235518350aaf87ea47cb51a9a75158e32d9c6",
+      "image_reference": "butler-lab-tool-browser",
+      "executable_sha256": "639ccf440bf95cd40e21dab7fe687f1b1d4c0f7ee94b9d724da253f67bef0142",
+      "started_at": "2026-10-28T13:48:04.373249462Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": []
+    },
+    {
+      "name": "/butler-main-web-1",
+      "image_id": "sha256:c800aa6c88aa88a97433ff260ab4de659b490e4367f345f88628f1b9d1a423f5",
+      "image_reference": "butler-lab-web",
+      "executable_sha256": "e966ce74dfd24e5cc2067ea0a19817e3ebfdcea2d33b41b959302d069464fa73",
+      "started_at": "2026-10-28T08:40:16.241335051Z",
+      "running": true,
+      "health": "healthy",
+      "source_revision": null,
+      "flags": []
+    }
+  ]
+}

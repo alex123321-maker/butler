@@ -634,18 +634,43 @@ func validateFunctionCalls(parts []json.RawMessage, definitions map[string]trans
 		decoder.DisallowUnknownFields()
 		var proposed functionCall
 		if decoder.Decode(&proposed) != nil {
-			return nil, providerError(transport.ErrorTypeInvalidToolRequest, "invalid native function proposal")
+			return nil, invalidFunctionProposal("native_function_malformed")
 		}
 		definition, ok := definitions[proposed.Name]
 		if !ok {
-			return nil, providerError(transport.ErrorTypeInvalidToolRequest, "model proposed a function outside the Butler catalog")
+			return nil, invalidFunctionProposal("native_function_not_selected")
 		}
 		if err := validateArguments(definition.SchemaJSON, proposed.Args); err != nil {
-			return nil, providerError(transport.ErrorTypeInvalidToolRequest, "model function arguments violate the supplied schema")
+			return nil, invalidFunctionProposal(argumentFailureReason(err))
 		}
 		call = &proposed
 	}
 	return call, nil
+}
+
+func invalidFunctionProposal(reason string) error {
+	return &transport.Error{Type: transport.ErrorTypeInvalidToolRequest, ProviderName: Name, Message: "invalid native function proposal", SafeReason: reason}
+}
+
+// Schema validation errors never contribute a field name, argument value or
+// rejected provider bytes to diagnostics. Unrecognized errors stay generic.
+func argumentFailureReason(err error) string {
+	switch err.Error() {
+	case "missing field":
+		return "native_arguments_missing_field"
+	case "unknown field":
+		return "native_arguments_unknown_field"
+	case "expected object", "expected string", "expected boolean", "expected number", "expected integer", "expected array", "expected null", "function arguments must be an object":
+		return "native_arguments_wrong_type"
+	case "invalid union value":
+		return "native_arguments_union_mismatch"
+	case "invalid enum value":
+		return "native_arguments_enum_mismatch"
+	case "array length outside supplied schema":
+		return "native_arguments_array_bounds"
+	default:
+		return "native_arguments_invalid"
+	}
 }
 
 func convertInputs(inputs []transport.InputItem) (*content, []content, error) {

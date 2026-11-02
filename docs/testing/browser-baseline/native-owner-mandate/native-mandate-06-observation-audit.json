@@ -1,0 +1,9 @@
+{
+  "scope": "existing_observation_private_comparison",
+  "trial": "native-mandate-06",
+  "browser_fact_observed": true,
+  "http_fact_observed": false,
+  "raw_text_exported": false,
+  "new_requests": 0,
+  "new_model_calls": 0
+}

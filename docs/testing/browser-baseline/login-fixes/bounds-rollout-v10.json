@@ -1,0 +1,9 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-login-bounds-20261029-v10",
+  "healthy": true,
+  "environment_unchanged": true,
+  "broker_browser_postgres_redis_web_unchanged": true,
+  "migrations": 0,
+  "permission_or_budget_reset": false,
+  "raw_provider_or_rpc_text_logged": false
+}

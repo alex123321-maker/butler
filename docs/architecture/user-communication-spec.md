@@ -1,5 +1,14 @@
 # Butler — общение агента с пользователем
 
+Protected `POST /api/v3/communications/messages` accepts optional `task_id` for
+an existing active owner Task in the pinned Web conversation. Ordinary Input
+admission validates owner/session/status and binds the target into the immutable
+payload and channel proof; omission preserves existing conversation receipts.
+This does not create/amend tasks or let callers choose authority or recipients.
+Owner-goal mandates can explicitly list the fixed communication method and
+prepare effect; the exact kernel contract and pinned destination hash identify
+its local resource. Channel/source/export/authority/budget checks remain active.
+
 Текущий owner request и исторический ответ имеют разные model-visible refs.
 Новая явная просьба задать вопрос не считается выполненной по ответу из другого
 run, даже при одинаковом тексте. Только канонический ответ, проверенный обычным

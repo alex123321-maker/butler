@@ -1,0 +1,9 @@
+{
+  "scope": "operator_transcription_of_observed_fixed_log_projection",
+  "event": "browser-baseline-login-fix-20261029-01",
+  "run": "run-1793249265187038851-104c46abf5fe9ba1",
+  "diagnostic_reason": "native_arguments_array_bounds",
+  "source": "Exact-run Docker JSON log projection observed before the v10 Core rollout; original container log is not retained by this artifact.",
+  "raw_provider_bytes_exported": false,
+  "prior_matrix_results_rewritten": false
+}

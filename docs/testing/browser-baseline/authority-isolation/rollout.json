@@ -1,0 +1,11 @@
+{
+  "scope": "core-only-rollout",
+  "release": "/srv/storage/butler/main/releases/browser-authority-20261028-cc4d7701",
+  "executable_sha256": "b157b123215d9a7499551488054992c28a8fc41d9a3649bab79ba3e0fcee8614",
+  "healthy": true,
+  "environment_unchanged": true,
+  "broker_browser_postgres_unchanged": true,
+  "provider_configuration_changed": false,
+  "unknown_effects_reconciled": 0,
+  "native_qualification": "PENDING"
+}

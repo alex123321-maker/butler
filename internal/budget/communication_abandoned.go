@@ -18,7 +18,7 @@ import (
 // checks remain mandatory at their ordinary authorization/publication boundaries.
 func independentOwnerInteractionTx(ctx context.Context, tx pgx.Tx, i ToolIdentity, owner, session, event string) (bool, error) {
 	var allowed bool
-	credentialRequest := i.OwnerCredentialInteraction && (i.ToolName == "credentials.request_access" || i.ToolName == "credentials.request_create" || i.ToolName == "credentials.request_otp")
+	credentialRequest := i.OwnerCredentialInteraction && (i.ToolName == "credentials.request_access" || i.ToolName == "credentials.request_create" || i.ToolName == "credentials.request_otp" || i.ToolName == "credentials.request_login")
 	err := tx.QueryRow(ctx, `
 WITH RECURSIVE tree AS (
  SELECT task_id FROM tasks WHERE task_id=$7

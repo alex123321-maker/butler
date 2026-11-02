@@ -1,0 +1,69 @@
+=== RUN   TestBrowserFormValidationChromiumIntegration
+2026/10/29 13:03:36 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:43031
+2026/10/29 13:03:37 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:43031
+2026/10/29 13:03:37 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=validation-0 runtime_target=127.0.0.1:43031
+2026/10/29 13:03:37 INFO tool execution routed component=tool-broker tool_name=browser.prepare_fill tool_call_id=validation-1 runtime_target=127.0.0.1:43031
+2026/10/29 13:03:37 INFO tool execution routed component=tool-broker tool_name=browser.click tool_call_id=validation-submit runtime_target=127.0.0.1:43031
+    browser_form_validation_integration_test.go:71: invalid_public_value_observed=true invalid_posts=0 corrected_quantity=3 accepted_posts=1 post_state=effect_unknown no_replay=true
+--- PASS: TestBrowserFormValidationChromiumIntegration (0.96s)
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/unchanged_control
+2026/10/29 13:03:37 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:37369
+2026/10/29 13:03:38 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:37369
+    browser_safety_integration_test.go:316: unchanged positive control: actual Broker/PG/Chromium recipient_posts=1
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/task_cancel
+2026/10/29 13:03:38 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:42055
+2026/10/29 13:03:39 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:42055
+    browser_safety_integration_test.go:333: case=task_cancel recipient_posts=0 original_grant=authorized dispatches=0 retained_open_reservations=1
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/mandate_revoke
+2026/10/29 13:03:39 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:33699
+2026/10/29 13:03:39 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:33699
+    browser_safety_integration_test.go:333: case=mandate_revoke recipient_posts=0 original_grant=authorized dispatches=0 retained_open_reservations=1
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_origin
+2026/10/29 13:03:39 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:39451
+2026/10/29 13:03:40 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:39451
+    browser_safety_integration_test.go:333: case=changed_origin recipient_posts=0 original_grant=authorized dispatches=0 retained_open_reservations=1
+=== RUN   TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_args
+2026/10/29 13:03:40 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:41203
+2026/10/29 13:03:41 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:41203
+    browser_safety_integration_test.go:333: case=changed_args recipient_posts=0 original_grant=authorized dispatches=0 retained_open_reservations=1
+--- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration (3.40s)
+    --- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/unchanged_control (0.81s)
+    --- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/task_cancel (0.67s)
+    --- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/mandate_revoke (0.63s)
+    --- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_origin (0.66s)
+    --- PASS: TestBrowserSafetyCurrentAuthorityAndBindingChromiumIntegration/changed_args (0.64s)
+=== RUN   TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration
+=== RUN   TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/after_opaque_ack
+2026/10/29 13:03:41 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:42187
+2026/10/29 13:03:41 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:42187
+2026/10/29 13:03:41 INFO tool execution routed component=tool-broker tool_name=browser.freeze_snapshot tool_call_id=independent-read runtime_target=127.0.0.1:42187
+    browser_safety_integration_test.go:453: case=after_opaque_ack recipient_posts=1 original_effect=effect_unknown original_dispatches=1 retained_reservations=3 broker_process_restarted=true
+=== RUN   TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/during_lost_ack
+2026/10/29 13:03:42 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:38061
+2026/10/29 13:03:42 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:38061
+    browser_safety_integration_test.go:453: case=during_lost_ack recipient_posts=1 original_effect=effect_unknown original_dispatches=1 retained_reservations=2 broker_process_restarted=true
+--- PASS: TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration (1.82s)
+    --- PASS: TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/after_opaque_ack (0.98s)
+    --- PASS: TestBrowserSafetyBrokerProcessRestartKeepsUnknownChromiumIntegration/during_lost_ack (0.84s)
+=== RUN   TestBrowserSafetyRuntimeLossChromiumIntegration
+=== RUN   TestBrowserSafetyRuntimeLossChromiumIntegration/fresh_context_required
+2026/10/29 13:03:43 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:36575
+2026/10/29 13:03:43 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:36575
+2026/10/29 13:03:43 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:36575
+2026/10/29 13:03:43 INFO tool execution routed component=tool-broker tool_name=browser.snapshot tool_call_id=stale-context-read runtime_target=127.0.0.1:36575
+2026/10/29 13:03:44 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=fresh-context-open runtime_target=127.0.0.1:36575
+    browser_safety_integration_test.go:499: runtime_process_killed=true restarted=true stale_context_not_completed=true fresh_context_distinct=true recipient_posts=0
+=== RUN   TestBrowserSafetyRuntimeLossChromiumIntegration/before_dispatch
+2026/10/29 13:03:44 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:43833
+2026/10/29 13:03:44 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:43833
+    browser_safety_integration_test.go:588: case=before_dispatch runtime_process_killed=true restarted=true recipient_posts=0 original_effect=effect_unknown retained_reservations=2 original_dispatches=1
+=== RUN   TestBrowserSafetyRuntimeLossChromiumIntegration/after_recipient_post
+2026/10/29 13:03:45 INFO runtime target connected component=runtime-router runtime_target=127.0.0.1:36103
+2026/10/29 13:03:45 INFO tool execution routed component=tool-broker tool_name=browser.open tool_call_id=open runtime_target=127.0.0.1:36103
+    browser_safety_integration_test.go:588: case=after_recipient_post runtime_process_killed=true restarted=true recipient_posts=1 original_effect=effect_unknown retained_reservations=2 original_dispatches=1
+--- PASS: TestBrowserSafetyRuntimeLossChromiumIntegration (2.82s)
+    --- PASS: TestBrowserSafetyRuntimeLossChromiumIntegration/fresh_context_required (1.11s)
+    --- PASS: TestBrowserSafetyRuntimeLossChromiumIntegration/before_dispatch (0.81s)
+    --- PASS: TestBrowserSafetyRuntimeLossChromiumIntegration/after_recipient_post (0.90s)
+PASS

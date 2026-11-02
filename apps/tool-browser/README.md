@@ -1,5 +1,34 @@
 # Tool Browser
 
+Revision1 `browser.login` privately fills two Broker-resolved fields and submits
+one exact ordinary URL-encoded same-origin form. The helper gates the actual body,
+blocks extra requests and freezes after bounded GET redirects. Go compares a
+cookie-backed GET with an anonymous challenge before returning authentication
+proof. Nonce/cookies never reach tool output. OTP/JS-only/popup flows, rotating
+probe cookies and ambiguous results retain UNKNOWN; there is no automatic replay.
+Login accepts unique native CSS and the observation's bounded `CSS >> nth=N`
+selectors; ambiguous unindexed selectors are rejected before submission.
+
+Local preparation revision4 can reject a missing or closed context before any
+runner call with a closed `session_lost` pre-input proof. No helper/in-flight
+error can emit this Go-only proof. The model must open a new context; this never
+restores DOM or decides the outcome of an earlier action. Revisions2/3 retain
+their old semantics and never gain the new reason.
+
+Local `prepare_fill/prepare_type` revision3 adds a closed `pre_input_v1`
+rejection only when Go/helper guards prove input dispatch never began. Stale
+page/URL and validated pre-input argument failures return fixed diagnostics;
+timeouts, generic failures and errors after input remain uncertain. Revision2
+keeps its old outcome semantics. Success still proves frozen local preparation
+only. Broker may record this exact new preparation as absent, retain its consumed
+grant and let the model observe/reassess through a fresh authorized proposal.
+
+`browser.freeze_snapshot` revision1 closes all proxy connections and freezes
+helper routes before a non-navigating observation of the same document. It
+retains redaction and permanently excludes GET form/link thawing of that
+context. It accepts only its existing session ID and no credentials. This
+observation never proves a previous submission/login or effect reconciliation.
+
 Secret fill/type additionally return `credential_verified` after comparing the
 actual field with the private Broker-resolved value. Mismatch fails without
 exporting input values, lengths or hashes. Preparation retains its frozen-network
@@ -9,6 +38,10 @@ also admits normalized slash paths on Windows for the same checked helper bytes.
 Browser runtime service for Butler browser automation tools.
 
 Current state:
+- `browser.submit_get_form` supports public same-origin GET search forms without click/input/submit handlers; two private phases freeze planning, independently check the public target, recheck live state and permit GET/HEAD navigation only, then freeze again
+- `browser.follow_link` uses the same GET path for public pagination/result anchors without click handlers; neither read tool can thaw a context containing any prior input draft or owner takeover, even without credential references
+- both GET tools require revision2 / `guarded_browser_get_v1`; fixed precondition failures before navigation emit a bounded non-dispatch proof, while timeout/lost response/started navigation never claim absence. Broker verifies the proof and preserves spent grants.
+- observations include bounded form selectors/methods/actions/field names/types, with no input values; GET-form navigation refuses credentials, password/hidden/file controls, sensitive/extra field names and POST forms
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
 - `browser.read` independently reads and destroys a temporary context; `browser.open` creates an explicit run-owned session for sequences, and `browser.close` destroys it
 - navigate/click/fill/type/wait/auth actions require the returned session ID, latest observation version and expected current URL; snapshot/extract never navigate
@@ -69,3 +102,42 @@ dispatch epoch; delayed calls cannot cross a takeover/release cycle. Manual
 frame guards include cross-origin child documents, not just the main page.
 Masking merges secret spans in the original text, including successive typed
 password prefixes; shorter values cannot expose a longer value's suffix.
+
+Navigation revision4 can reject a Go-observed lost/closed context or a previously
+observed frozen network before invoking the runner. Only that pre-dispatch guard
+emits the new `session_lost`/`network_frozen` absence proof. In-flight/helper errors
+and old navigation contracts retain uncertainty; recovery requires a fresh open.
+
+## Public form constraints and local validity observations
+
+Ordinary form fields may include bounded `constraints` metadata: required,
+numeric min/max/step and text length bounds. When the network is frozen, optional
+`validation` contains only `valid` and a closed list of native validity flags.
+The observer reads ValidityState properties; it never calls checkValidity,
+reportValidity or submit and never returns values, patterns or validation text.
+These are page DATA for deciding the next proposal, not external effect evidence.
+A successful local correction does not confirm a later POST.
+
+Password, hidden, file/unknown controls suppress this metadata for the entire
+form. Known cookie/storage/credential state suppresses it for the context; a
+Broker-resolved credential makes Go's suppression sticky for that context.
+Secret state is collected before/after capture to suppress late discoveries.
+Go independently bounds forms/fields/constraints and rejects unknown or
+contradictory validity flags. Normal action, approval and uncertainty policy stays.
+
+## Managed page execution
+
+`browser.open_pages` creates a separate same-origin, credential-free context;
+page tools require exact page/document/version refs plus Broker's private
+binding. All pages share owner control, expiry and write/UNKNOWN boundaries.
+The helper guards first popup requests before page events and caps live/lifetime
+identities. Owner frames and inputs bind the selected page/document; selection
+alone grants no agent authority. Legacy single-page mode remains separate.
+See [the execution contract](../../docs/architecture/browser-pages-execution.md)
+and required `scripts/dev/browser-page-execution-tests.sh`. This stage does not
+qualify federated login or autonomous recovery from a managed-page UNKNOWN.
+
+`browser.page_freeze_snapshot` revision1 freezes the whole managed context and
+returns a fresh observation of only its exact page/document. It retains normal
+private binding, control epoch, TTL and resource guards. Go/Broker require
+frozen state; another page's snapshot cannot satisfy the owner outcome protocol.

@@ -152,6 +152,11 @@ type CommunicationKernel interface {
 }
 
 type Config struct {
+	EffectReviews interface {
+		SuspendUnknown(context.Context, string, string, string) (string, error)
+		ResumeOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error)
+		ReadResolvedOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error)
+	}
 	Credentials interface {
 		SuspendRequest(context.Context, string, string) (string, error)
 		ResumeInteraction(context.Context, string, string) (string, error)

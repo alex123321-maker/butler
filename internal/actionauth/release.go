@@ -27,6 +27,12 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
+	case "browser.submit_get_form", "browser.follow_link":
+		resource, ok := args["expected_url"].(string)
+		if !ok || resource == "" {
+			return false, fmt.Errorf("GET form requires an observed public resource")
+		}
+		resources = append(resources, resource)
 	case "web.search":
 		query, _ := args["query"].(string)
 		resource, err := websearch.URL(query)
@@ -34,7 +40,7 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 			return false, err
 		}
 		resources = append(resources, resource)
-	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.navigate":
+	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.open_pages", "browser.navigate":
 		if resource, ok := args["url"].(string); ok && resource != "" {
 			resources = append(resources, resource)
 		}

@@ -10,7 +10,9 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 )
 
 type BrokerClient struct {
@@ -29,6 +31,27 @@ func (e *ActionError) Error() string          { return "tool broker action unava
 func (e *ActionError) Unwrap() error          { return e.Cause }
 func (e *ActionError) DiagnosticCode() string { return e.Code }
 
+func brokerActionError(err error) *ActionError {
+	code := "broker_transport"
+	switch status.Code(err) {
+	case codes.PermissionDenied:
+		code = "broker_permission_denied"
+	case codes.Unauthenticated:
+		code = "broker_unauthenticated"
+	case codes.InvalidArgument:
+		code = "broker_invalid_argument"
+	case codes.FailedPrecondition:
+		code = "broker_failed_precondition"
+	case codes.DeadlineExceeded:
+		code = "broker_deadline_exceeded"
+	case codes.Unavailable:
+		code = "broker_unavailable"
+	case codes.Canceled:
+		code = "broker_cancelled"
+	}
+	return &ActionError{Code: code, Cause: err}
+}
+
 func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*toolbrokerv1.ToolContract, error) {
 	if strings.TrimSpace(runID) == "" {
 		return c.ListTools(ctx)
@@ -43,7 +66,7 @@ func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*to
 func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
 	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call, LogicalActionRef: actionauth.LogicalReference(ctx)})
 	if err != nil {
-		return actionauth.PreparedAction{}, &ActionError{Code: "broker_transport", Cause: err}
+		return actionauth.PreparedAction{}, brokerActionError(err)
 	}
 	if response.GetError() != nil {
 		return actionauth.PreparedAction{}, &ActionError{Code: "preparation_denied"}
@@ -68,7 +91,7 @@ func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.Too
 func (c *BrokerClient) AuthorizeAction(ctx context.Context, call *toolbrokerv1.ToolCall, actionID, approvalID, mandateID string) (string, error) {
 	response, err := c.client.AuthorizeToolCall(ctx, &toolbrokerv1.AuthorizeToolCallRequest{ToolCall: call, ActionId: actionID, ApprovalId: approvalID, MandateId: mandateID})
 	if err != nil {
-		return "", &ActionError{Code: "broker_transport", Cause: err}
+		return "", brokerActionError(err)
 	}
 	if response.GetError() != nil {
 		return "", &ActionError{Code: "authorization_denied"}

@@ -1,0 +1,9 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-reviewed-budget-20261029-08cec4c76bfc",
+  "healthy": true,
+  "environment_unchanged": true,
+  "browser_postgres_redis_web_unchanged": true,
+  "migrations": 0,
+  "old_unknown_states_unchanged": true,
+  "permission_or_budget_reset": false
+}

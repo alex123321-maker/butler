@@ -1,0 +1,14 @@
+{
+  "scope": "targeted_stopped_recovery_integration",
+  "go": "1.27.2",
+  "postgres": "pgvector17_disposable",
+  "race": true,
+  "passed_tests_and_subtests": 83,
+  "failed": 0,
+  "skipped": 0,
+  "vet": "passed",
+  "operator_build": "passed",
+  "test_postgres_oom": false,
+  "remote_report": "/tmp/butler-browser-continuation-20261028/reports/stopped-20261028T113414Z-742448.jsonl",
+  "native_acceptance": "separate_incomplete"
+}

@@ -53,7 +53,7 @@ func NewPlaywrightRunnerWithPolicy(nodeBinary, scriptPath string, policy egress.
 	runner.policy = policy
 	return runner
 }
-func (r *PlaywrightRunner) start() error {
+func (r *PlaywrightRunner) start(ctx context.Context) error {
 	root := r.workspaceRoot
 	if root == "" {
 		var err error
@@ -66,9 +66,12 @@ func (r *PlaywrightRunner) start() error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(r.nodeBinary, "--input-type=module", "--eval", browserscripts.Runtime)
+	// Load the reviewed bytes through private stdin, keeping the command line
+	// below Windows' size limit. No writable helper file or code race is added.
+	bootstrap := fmt.Sprintf(`import {readSync} from 'node:fs'; const source=Buffer.alloc(%d); let offset=0; while(offset<source.length){const n=readSync(0,source,offset,source.length-offset,null);if(!n)process.exit(1);offset+=n} const code=source.toString('utf8').replace("from 'playwright'",'from '+JSON.stringify(import.meta.resolve('playwright'))); await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'))`, len([]byte(browserscripts.Runtime)))
+	cmd := exec.Command(r.nodeBinary, "--input-type=module", "--eval", bootstrap)
 	cmd.Dir = filepath.Dir(path)
-	for _, name := range []string{"PATH", "HOME", "PLAYWRIGHT_BROWSERS_PATH", "NODE_ENV"} {
+	for _, name := range []string{"PATH", "HOME", "PLAYWRIGHT_BROWSERS_PATH", "NODE_ENV", "SYSTEMROOT", "WINDIR", "TMPDIR", "TMP", "TEMP"} {
 		if value, ok := os.LookupEnv(name); ok {
 			cmd.Env = append(cmd.Env, name+"="+value)
 		}
@@ -87,6 +90,19 @@ func (r *PlaywrightRunner) start() error {
 	if err = cmd.Start(); err != nil {
 		_ = stdin.Close()
 		return fmt.Errorf("start browser helper: %w", err)
+	}
+	loaded := make(chan error, 1)
+	go func() { _, writeErr := io.WriteString(stdin, browserscripts.Runtime); loaded <- writeErr }()
+	select {
+	case err = <-loaded:
+	case <-ctx.Done():
+		err = ctx.Err()
+	}
+	if err != nil {
+		_ = stdin.Close()
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		return fmt.Errorf("load reviewed browser helper")
 	}
 	responses := make(chan helperResponse, 1)
 	r.cmd, r.stdin, r.responses = cmd, stdin, responses
@@ -161,12 +177,12 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			}
 		}()
 	}
-	if req.ToolName == "browser.prepare_fill" || req.ToolName == "browser.prepare_type" {
+	if req.ToolName == "browser.prepare_fill" || req.ToolName == "browser.prepare_type" || req.ToolName == "browser.freeze_snapshot" {
 		if proxy := r.proxies[req.SessionID]; proxy != nil {
 			proxy.Freeze()
 		}
 	}
-	if req.ToolName == "browser.click" {
+	if req.ToolName == "browser.click" || req.ManagedPages && (req.ToolName == "browser.fill" || req.ToolName == "browser.type") {
 		if proxy := r.proxies[req.SessionID]; proxy != nil {
 			deadline := time.Now().Add(35 * time.Second)
 			if owned, ok := ctx.Deadline(); ok && owned.Before(deadline) {
@@ -194,10 +210,48 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 		if req.ToolName != "browser.open" && req.ToolName != "browser.read" {
 			return Result{Error: &ResultError{ErrorType: "session_lost", Message: "browser process lost; explicitly open a new session"}}, nil
 		}
-		if err := r.start(); err != nil {
+		if err := r.start(ctx); err != nil {
 			return Result{}, err
 		}
 	}
+	if req.ToolName == "browser.submit_get_form" || req.ToolName == "browser.follow_link" {
+		proxy := r.proxies[req.SessionID]
+		if proxy == nil {
+			return Result{}, egress.ErrDenied
+		}
+		// Compile the form while every connection is closed. The model cannot
+		// supply either private phase or the one-use helper nonce.
+		proxy.Freeze()
+		defer proxy.Freeze()
+		req.GetFormPhase = "plan"
+		plan, err := r.exchange(ctx, req)
+		if err != nil || !plan.OK {
+			return plan, err
+		}
+		target, err := r.policy.ValidateURL(plan.GetFormTarget)
+		if err != nil || target.User != nil || originOf(plan.GetFormTarget) != originOf(req.ExpectedURL) || len(plan.GetFormNonce) != 36 {
+			notDispatched := false
+			return Result{ReadRejection: "pre_navigation_v1", NavigationDispatched: &notDispatched, Error: &ResultError{ErrorType: "get_form_denied", Message: "GET form target is outside the permitted public origin"}}, nil
+		}
+		deadline := time.Now().Add(35 * time.Second)
+		if owned, ok := ctx.Deadline(); ok && owned.Before(deadline) {
+			deadline = owned
+		}
+		if err := proxy.AllowUntil(deadline); err != nil {
+			return Result{}, err
+		}
+		req.GetFormPhase, req.GetFormNonce = "navigate", plan.GetFormNonce
+		return r.exchange(ctx, req)
+	}
+	if req.ToolName == "browser.login" {
+		return r.login(ctx, req)
+	}
+	return r.exchange(ctx, req)
+}
+
+// exchange is called only with the runner mutex held. Errors invalidate the
+// helper generation; no phase or gesture is automatically re-dispatched.
+func (r *PlaywrightRunner) exchange(ctx context.Context, req Request) (Result, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return Result{}, fmt.Errorf("encode browser request")

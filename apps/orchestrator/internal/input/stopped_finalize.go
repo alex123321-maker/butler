@@ -16,6 +16,10 @@ type StoppedFinalizer interface {
 	FinalizeStoppedTx(context.Context, pgx.Tx, StoppedAttempt) error
 }
 
+type stoppedLocalReviewer interface {
+	ReviewStoppedLocalTx(context.Context, pgx.Tx, StoppedAttempt) (map[string]bool, error)
+}
+
 type StoppedAttempt struct {
 	InputID, RunID, OwnerID, SessionKey, Classification, Reason string
 }
@@ -35,7 +39,8 @@ func (s *Store) SweepStopped(ctx context.Context) error {
  AND (i.status<>'blocked' OR NOT (
  EXISTS(SELECT 1 FROM approvals WHERE run_id=i.run_id AND status='pending' AND expires_at>clock_timestamp())
  OR EXISTS(SELECT 1 FROM communication_interactions WHERE run_id=i.run_id AND state='open' AND (expires_at IS NULL OR expires_at>clock_timestamp()))
- OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=i.run_id AND state IN ('pending','approved') AND expires_at>clock_timestamp())))
+ OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=i.run_id AND state IN ('pending','approved') AND expires_at>clock_timestamp())
+ OR EXISTS(SELECT 1 FROM browser_owner_outcome_reviews o WHERE o.run_id=i.run_id AND o.source_kind='live_frozen' AND o.state='pending' AND o.expires_at>clock_timestamp() AND i.checkpoint='awaiting_interaction' AND i.checkpoint_json->'interaction'->>'kind'='effect_review' AND i.checkpoint_json->'interaction'->>'interaction_id'=o.review_id)))
  AND (i.status='blocked' OR (i.status='failed' AND (f.input_id IS NULL OR f.classification='uncertain')))
  AND COALESCE(f.checked_at,i.updated_at)<clock_timestamp()-interval '5 seconds'
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())
@@ -76,6 +81,21 @@ func (s *Store) SweepStopped(ctx context.Context) error {
 }
 
 func (s *Store) finalizeStopped(ctx context.Context, id string) error {
+	return s.finalizeStoppedMode(ctx, id, true, false, nil)
+}
+
+// ReviewStoppedInput is an operator/kernel entry point, not an owner/model API.
+// Dry run takes the same locks and validates proofs but rolls all writes back.
+func (s *Store) ReviewStoppedInput(ctx context.Context, id string, apply bool) (StoppedAttempt, error) {
+	var result StoppedAttempt
+	if s.StoppedFinalizer == nil || s.CommunicationEpoch != 1 {
+		return result, ErrControlConflict
+	}
+	err := s.finalizeStoppedMode(ctx, id, apply, true, &result)
+	return result, err
+}
+
+func (s *Store) finalizeStoppedMode(ctx context.Context, id string, apply bool, reviewNow bool, result *StoppedAttempt) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -92,19 +112,27 @@ func (s *Store) finalizeStopped(ctx context.Context, id string) error {
  LEFT JOIN input_stopped_attempts f ON f.input_id=i.input_id
  WHERE i.input_id=$1 AND (i.communication_ingress_epoch=1 OR EXISTS(SELECT 1 FROM communication_admissions c WHERE c.input_id=i.input_id AND c.owner_id=i.owner_id AND c.session_key=i.session_key AND c.schema_epoch=1)) AND i.error_code<>''
  AND (i.status='blocked' OR (i.status='failed' AND (f.input_id IS NULL OR f.classification='uncertain')))
- AND COALESCE(f.checked_at,i.updated_at)<clock_timestamp()-interval '5 seconds'
+ AND ($2 OR COALESCE(f.checked_at,i.updated_at)<clock_timestamp()-interval '5 seconds')
  AND (i.claim_expires_at IS NULL OR i.claim_expires_at<=clock_timestamp())
  AND (l.lease_id='' OR l.expires_at<=clock_timestamp()) AND r.current_state<>'completed'
- FOR UPDATE OF l,ss,r,i NOWAIT`, id).Scan(&stop.InputID, &stop.RunID, &stop.OwnerID, &stop.SessionKey, &payload)
+ FOR UPDATE OF l,ss,r,i NOWAIT`, id, reviewNow).Scan(&stop.InputID, &stop.RunID, &stop.OwnerID, &stop.SessionKey, &payload)
 	if err != nil {
 		return err
 	}
 	var waiting bool
 	err = tx.QueryRow(ctx, `SELECT (SELECT status='blocked' FROM accepted_inputs WHERE input_id=$2) AND (EXISTS(SELECT 1 FROM approvals WHERE run_id=$1 AND status='pending' AND expires_at>clock_timestamp())
  OR EXISTS(SELECT 1 FROM communication_interactions WHERE run_id=$1 AND state='open' AND (expires_at IS NULL OR expires_at>clock_timestamp()))
- OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=$1 AND state IN ('pending','approved') AND expires_at>clock_timestamp()))`, stop.RunID, id).Scan(&waiting)
+ OR EXISTS(SELECT 1 FROM credential_vault_requests WHERE run_id=$1 AND state IN ('pending','approved') AND expires_at>clock_timestamp())
+ OR EXISTS(SELECT 1 FROM browser_owner_outcome_reviews o JOIN accepted_inputs i ON i.input_id=$2 WHERE o.run_id=$1 AND o.source_kind='live_frozen' AND o.state='pending' AND o.expires_at>clock_timestamp() AND i.checkpoint='awaiting_interaction' AND i.checkpoint_json->'interaction'->>'kind'='effect_review' AND i.checkpoint_json->'interaction'->>'interaction_id'=o.review_id))`, stop.RunID, id).Scan(&waiting)
 	if err != nil || waiting {
 		return err
+	}
+	verifiedReads := map[string]bool{}
+	if reviewer, ok := s.StoppedFinalizer.(stoppedLocalReviewer); ok {
+		verifiedReads, err = reviewer.ReviewStoppedLocalTx(ctx, tx, stop)
+		if err != nil {
+			return err
+		}
 	}
 	stop.Classification, stop.Reason = "known", "no_uncertainty"
 	knownCalls, knownEffects := map[string]bool{}, map[string]bool{}
@@ -120,7 +148,7 @@ func (s *Store) finalizeStopped(ctx context.Context, id string) error {
 		if err = rows.Scan(&effect, &state, &owner, &call); err != nil {
 			break
 		}
-		known := owner == stop.OwnerID && (state == "prepared" || state == "allowed" || state == "effect_confirmed" || state == "effect_absent")
+		known := owner == stop.OwnerID && (state == "prepared" || state == "allowed" || state == "effect_confirmed" || state == "effect_absent" || verifiedReads[effect])
 		knownEffects[effect] = known
 		if known && call != "" {
 			knownCalls[call] = true
@@ -182,6 +210,12 @@ func (s *Store) finalizeStopped(ctx context.Context, id string) error {
 	}
 	if err = s.StoppedFinalizer.FinalizeStoppedTx(ctx, tx, stop); err != nil {
 		return err
+	}
+	if result != nil {
+		*result = stop
+	}
+	if !apply {
+		return nil
 	}
 	return tx.Commit(ctx)
 }

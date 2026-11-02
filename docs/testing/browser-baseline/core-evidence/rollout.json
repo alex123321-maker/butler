@@ -1,0 +1,11 @@
+{
+  "scope": "core-only-rollout",
+  "release": "/srv/storage/butler/main/releases/browser-core-evidence-20261028-6cb3cff0",
+  "executable_sha256": "0d0c38632dd351455c6989deeb465e1becdb095c31e040f7b468a9cc705a13f0",
+  "healthy": true,
+  "environment_unchanged": true,
+  "broker_browser_postgres_unchanged": true,
+  "provider_configuration_changed": false,
+  "unknown_effects_reconciled": 0,
+  "native_qualification": "PENDING"
+}

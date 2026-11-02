@@ -1,0 +1,10 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-source-hint-20261029-v8",
+  "healthy": true,
+  "environment_unchanged": true,
+  "browser_postgres_redis_web_unchanged": true,
+  "migrations": 0,
+  "old_failed_runs_unchanged": true,
+  "terminal_publication_reviewed": true,
+  "permission_or_budget_reset": false
+}

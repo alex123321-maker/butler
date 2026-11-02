@@ -49,6 +49,21 @@ func TestResearchPublicationPreflightIsBoundedAndRunScoped(t *testing.T) {
 	}
 }
 
+func TestResearchGuardedGETPublicationUsesCurrentObservation(t *testing.T) {
+	now := time.Now().UTC()
+	for _, tool := range []string{"browser.submit_get_form", "browser.follow_link"} {
+		h := &memoryTranscriptStore{toolCalls: []transcript.ToolCall{{RunID: "r", ToolName: tool, ArgsJSON: `{"browser_session_id":"context"}`, Status: "completed", FinishedAt: &now, ResultJSON: `{"ok":true,"network_state":"frozen","final_url":"https://issuer.example/record","text":"The record reference is a fresh public observation."}`}}}
+		s := newFixtureService(nil, nil, nil, h, &mockProvider{}, Config{}, nil)
+		r := &transport.ToolCallRequest{ToolName: "communication.message", ArgsJSON: `{"schema_version":1,"purpose":"result","text":"The record reference is a fresh public observation. https://issuer.example/record","evidence":[{"url":"https://issuer.example/record","quote":"The record reference is a fresh public observation.","role":"primary"}]}`}
+		if feedback, err := s.researchFeedback(context.Background(), &sessionv1.RunRecord{RunId: "r", SessionKey: "chat"}, r); err != nil || feedback != "" {
+			t.Fatal("valid GET quote required refetch", tool, feedback, err)
+		}
+		if feedback, err := s.researchFeedback(context.Background(), &sessionv1.RunRecord{RunId: "other", SessionKey: "chat"}, r); err != nil || feedback == "" {
+			t.Fatal("previous-run GET quote accepted", tool, feedback, err)
+		}
+	}
+}
+
 func TestResearchCorrectionIsCorrelatedDurableNonDispatch(t *testing.T) {
 	store := &memoryTranscriptStore{}
 	provider := &mockProvider{}

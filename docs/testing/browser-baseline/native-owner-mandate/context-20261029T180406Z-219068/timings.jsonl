@@ -1,0 +1,4 @@
+{"phase":"tests-context-race","duration_ms":8690,"exit_code":0}
+{"phase":"core-context-race","duration_ms":8110,"exit_code":0}
+{"phase":"vet","duration_ms":680,"exit_code":0}
+{"phase":"core-build","duration_ms":7390,"exit_code":0}

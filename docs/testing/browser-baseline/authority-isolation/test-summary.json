@@ -1,0 +1,7 @@
+{
+  "scope": "isolated_pg_race_tests",
+  "passed_tests": 59,
+  "failed_tests": 0,
+  "skipped_tests": 0,
+  "real_provider_calls": 0
+}

@@ -1,0 +1,52 @@
+{
+  "window": "current operator work through final test acceptance",
+  "started_at": "2026-10-29T12:44:51+07:00",
+  "finished_at": "2026-10-29T06:11:28.1969713+00:00",
+  "inclusive_wall_seconds": 1597.196971,
+  "includes": [
+    "model deliberation",
+    "inspection",
+    "code changes",
+    "failed setup/build attempts",
+    "waits",
+    "fault injections",
+    "test execution"
+  ],
+  "native_model_calls": 0,
+  "baseline_replays": 0,
+  "stages": [
+    {
+      "phase": "runtime_initial_qualification",
+      "started_at": "2026-10-29T12:44:51+07:00",
+      "finished_at": "2026-10-29T12:52:56.2105169+07:00",
+      "inclusive_wall_seconds": 485.210517
+    },
+    {
+      "phase": "owner_ui_initial_qualification",
+      "started_at": "2026-10-29T12:52:56.2105169+07:00",
+      "finished_at": "2026-10-29T13:00:29.0762791+07:00",
+      "inclusive_wall_seconds": 452.865762
+    },
+    {
+      "phase": "positive_control_and_context_refinement",
+      "started_at": "2026-10-29T13:00:29.0762791+07:00",
+      "finished_at": "2026-10-29T13:03:38.8474077+07:00",
+      "inclusive_wall_seconds": 189.771129
+    },
+    {
+      "phase": "ci_documentation_setup_and_unexpired_grant_qualification",
+      "started_at": "2026-10-29T06:03:38.8474077+00:00",
+      "finished_at": "2026-10-29T06:11:28.1969713+00:00",
+      "inclusive_wall_seconds": 469.349564
+    }
+  ],
+  "owner_ui_automation_seconds": {
+    "stop": 2.609,
+    "revoke": 2.612
+  },
+  "test_container_seconds": {
+    "owner_ui": 9.2,
+    "broker_matrix": 10.19
+  },
+  "note": "Operator model deliberation is included in the work window; no native Butler model ran. Automated durations overlap and must not be added to the inclusive window. Post-acceptance documentation and CI are recorded separately."
+}

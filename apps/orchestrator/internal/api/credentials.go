@@ -47,17 +47,18 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 			return
 		}
 		var q struct {
-			Action   string                  `json:"action"`
-			PIN      string                  `json:"pin"`
-			Confirm  string                  `json:"confirm"`
-			Query    string                  `json:"query"`
-			Entry    *credentials.EntryInput `json:"entry"`
-			ID       string                  `json:"id"`
-			Revision int64                   `json:"revision"`
-			Allow    bool                    `json:"allow"`
-			RecordID string                  `json:"record_id"`
-			OTP      string                  `json:"otp"`
-			SMSRoute *credentials.SMSRoute   `json:"sms_route"`
+			Action             string                  `json:"action"`
+			PIN                string                  `json:"pin"`
+			Confirm            string                  `json:"confirm"`
+			Query              string                  `json:"query"`
+			Entry              *credentials.EntryInput `json:"entry"`
+			ID                 string                  `json:"id"`
+			Revision           int64                   `json:"revision"`
+			Allow              bool                    `json:"allow"`
+			RecordID           string                  `json:"record_id"`
+			OTP                string                  `json:"otp"`
+			LoginAuthorization string                  `json:"login_authorization"`
+			SMSRoute           *credentials.SMSRoute   `json:"sms_route"`
 		}
 		raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 32*1024))
 		if err != nil || communicationcontrol.StrictJSON(raw, &q) != nil {
@@ -142,7 +143,7 @@ func CredentialVault(auth *OwnerControlAuth, vault *credentials.Vault) http.Hand
 			writeJSON(w, 200, map[string]any{"requests": requests})
 			return
 		case "respond":
-			if vault.Respond(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.OTP) != nil {
+			if vault.Respond(r.Context(), actor.OwnerID, q.ID, q.RecordID, q.Allow, q.OTP, q.LoginAuthorization) != nil {
 				deny()
 				return
 			}

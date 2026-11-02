@@ -23,7 +23,7 @@ import (
 
 // CommunicationWeb is installed only by the isolated owning composition. Bearer
 // proof stays in the Authorization header, including streaming and media reads.
-func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, controls *task.Controller, conversation func(context.Context, string) (input.Record, error), draining ...bool) http.Handler {
+func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, controls *task.Controller, conversation func(context.Context, string, string) (input.Record, error), draining ...bool) http.Handler {
 	var store *communication.Store
 	if reader != nil {
 		store = reader.Core
@@ -58,7 +58,8 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 				return
 			}
 			var q struct {
-				Text string `json:"text"`
+				Text   string `json:"text"`
+				TaskID string `json:"task_id,omitempty"`
 			}
 			raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 32*1024))
 			if err != nil || communicationcontrol.StrictJSON(raw, &q) != nil || !utf8.ValidString(q.Text) || strings.TrimSpace(q.Text) == "" || utf8.RuneCountInString(q.Text) > 4000 {
@@ -69,7 +70,11 @@ func CommunicationWeb(auth *OwnerControlAuth, reader *communication.WebReader, c
 				writeJSON(w, 409, map[string]string{"error": "explicit_target_required"})
 				return
 			}
-			v, err := conversation(ctx, q.Text)
+			if len(q.TaskID) > 128 {
+				w.WriteHeader(400)
+				return
+			}
+			v, err := conversation(ctx, q.Text, q.TaskID)
 			if err != nil {
 				if errors.Is(err, communication.ErrDraining) {
 					writeJSON(w, 409, map[string]string{"error": "communication_draining"})

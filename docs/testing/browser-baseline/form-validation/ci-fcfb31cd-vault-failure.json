@@ -1,0 +1,13 @@
+{
+  "scope": "preserved_first_ci_failure",
+  "sha": "fcfb31cd07880268971d9f8965f06912bbd1dd04",
+  "job": "vault-postgres-browser",
+  "job_id": 123385514924,
+  "conclusion": "failure",
+  "url": "https://github.com/alex123321-maker/butler/actions/runs/40855561345/job/123385514924",
+  "failed_test": "TestBrowserPublicFormValidationChromium/credential_then_plaintext",
+  "local_reproduction_error": "stale_observation",
+  "production_guard_weakened": false,
+  "native_input_replayed": false,
+  "whole_ci_final_status": null
+}

@@ -1,0 +1,9 @@
+{
+  "scope": "exact-additional-runtime-recovery-approval",
+  "approval": "approval-1793261246095927726-3fefc50bef02",
+  "tool": "browser.prepare_fill",
+  "changed": true,
+  "status": "approved",
+  "owner_assistance": 1,
+  "policy_changed": false
+}

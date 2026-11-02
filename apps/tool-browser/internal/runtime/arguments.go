@@ -3,6 +3,7 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/browserauth"
 	"net/url"
 	"strings"
 
@@ -10,9 +11,15 @@ import (
 )
 
 func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredential) (Request, error) {
+	if tool == browserauth.Tool {
+		return decodeLogin(payload, resolved)
+	}
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal([]byte(payload), &raw); err != nil || raw == nil {
 		return Request{}, fmt.Errorf("browser args must be a JSON object")
+	}
+	if tool == "browser.freeze_snapshot" && (len(raw) != 1 || raw["browser_session_id"] == nil || len(resolved) != 0) {
+		return Request{}, fmt.Errorf("frozen observation accepts only an existing browser session")
 	}
 	var req Request
 	safe := make(map[string]json.RawMessage)
@@ -26,6 +33,26 @@ func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredentia
 		return Request{}, fmt.Errorf("invalid browser argument types")
 	}
 	req.ToolName = tool
+	if tool == "browser.submit_get_form" {
+		var fields []struct {
+			Name  *string `json:"name"`
+			Value *string `json:"value"`
+		}
+		if len(resolved) != 0 || json.Unmarshal(raw["fields"], &fields) != nil || fields == nil || len(fields) > 32 {
+			return req, fmt.Errorf("GET form requires at most 32 ordinary text fields and no credentials")
+		}
+		req.Fields = make(map[string]string, len(fields))
+		for _, field := range fields {
+			if field.Name == nil || field.Value == nil {
+				return req, fmt.Errorf("GET form requires a name and text value")
+			}
+			name, value := *field.Name, *field.Value
+			if _, duplicate := req.Fields[name]; duplicate || len(name) == 0 || len(name) > 128 || len(value) > 4096 {
+				return req, fmt.Errorf("GET form fields exceed their bounds")
+			}
+			req.Fields[name] = value
+		}
+	}
 	field := ""
 	switch tool {
 	case "browser.fill", "browser.prepare_fill":

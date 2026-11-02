@@ -26,7 +26,7 @@ func TestCredentialControlBrokerLocalPostgres(t *testing.T) {
 	if err != nil {
 		t.Fatal("save fixture")
 	}
-	if _, err = vault.Pool.Exec(ctx, `INSERT INTO server_browser_sessions VALUES('browser','broker-run','owner','agent',now()+interval '10 minutes',false,'https://example.com/login')`); err != nil {
+	if _, err = vault.Pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,mode,expires_at,fresh_needed,observed_url) VALUES('browser','broker-run','owner','agent',now()+interval '10 minutes',false,'https://example.com/login')`); err != nil {
 		t.Fatal("browser fixture")
 	}
 	reg := loadTestRegistry(t)
@@ -80,6 +80,19 @@ func TestCredentialControlBrokerLocalPostgres(t *testing.T) {
 	args["access_request_id"] = body.Request.ID
 	if result = invoke("otp", "credentials.request_otp", args); result.Status != "completed" || !strings.Contains(result.ResultJson, `"kind":"otp"`) {
 		t.Fatal("OTP widget request")
+	}
+	if _, err = vault.Pool.Exec(ctx, `UPDATE server_browser_sessions SET page_mode=true WHERE browser_session_id='browser'`); err != nil {
+		t.Fatal("managed context fixture")
+	}
+	var before, after int
+	if vault.Pool.QueryRow(ctx, `SELECT count(*) FROM credential_vault_requests`).Scan(&before) != nil {
+		t.Fatal("request count")
+	}
+	if result = invoke("managed-denied", "credentials.request_access", map[string]any{"record_id": entry.ID, "browser_session_id": "browser", "expected_url": "https://example.com/login", "purpose": "Sign in", "fields": []string{"username", "password"}}); result.Status == "completed" {
+		t.Fatal("legacy credential consent accepted managed context")
+	}
+	if vault.Pool.QueryRow(ctx, `SELECT count(*) FROM credential_vault_requests`).Scan(&after) != nil || after != before {
+		t.Fatal("managed denial created a vault request")
 	}
 	if _, err = executor.Execute(ctx, &toolbrokerv1.ToolCall{ToolName: "credentials.search", RunId: "broker-run", ArgsJson: `{}`}, credentialcontrol.Contract("credentials.search"), nil); err == nil {
 		t.Fatal("direct executor bypassed dispatch authority")

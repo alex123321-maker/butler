@@ -1,0 +1,4 @@
+{"phase":"owner-api-build","duration_ms":1460,"exit_code":0}
+{"phase":"broker-build","duration_ms":3090,"exit_code":0}
+{"phase":"vet","duration_ms":670,"exit_code":0}
+{"phase":"owner-mandate-chromium","duration_ms":44190,"exit_code":0}

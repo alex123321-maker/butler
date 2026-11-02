@@ -1,5 +1,22 @@
 # Resource arbitration foundation
 
+A correlated, closed local-preparation pre-input rejection can finish its
+exclusive lane without claiming a successful tool or external effect. The
+runtime wrapper forwards it only after the ordinary authenticated one-use
+admission and durable Finish with current authority. It issues no browser
+success ACK and publishes no new context mapping. Broker/PG independently verify
+the exact preparation proof; revision4 alone permits `session_lost`. Malformed,
+foreign, in-flight or lost-finish responses remain UNKNOWN/quarantined. Existing
+unknown effects and resource markers still block successor writes.
+
+The controlled-browser profile can pin `browser.freeze_snapshot` as another
+ordinary exclusive-lane operation. Its frozen read never bypasses a retained
+inflight resource marker. A locally completed interaction can leave only its
+external journal result UNKNOWN while its resource lane is complete; observation
+then uses a new normal finite lease/grant. Failed/lost local acknowledgement
+keeps quarantine and denies the observation too. Neither case reconciles the
+original effect or authorizes another mutation.
+
 Workspace owner reconciliation now has one concrete discard-only composition:
 [explicit owner discard](isolated-code-workspaces.md#explicit-owner-discard).
 An immutable authenticated owner decision, matching actual old executor inode,
@@ -131,3 +148,10 @@ The [combined audit](../ai/workspace-resource-acceptance.md) proves actual resou
 lease and file metadata behavior on PG/pool2; production Broker/runtime callbacks
 and full issue17 scenarios were pending in that historical snapshot. The current
 local receipt above exercises the implemented production composition.
+
+Managed `browser.page_freeze_snapshot` shares the context resource mapping with
+all its pages. It freezes all physical connections/routes and observes only
+its exact bound page. An UNKNOWN resource marker still denies this read; a
+completed local lane with an external UNKNOWN may admit the separate ordinary
+read. Owner page factual review does not clear resource quarantine, reset
+spending or authorize a retry. See [managed-page review](browser-pages-execution.md).

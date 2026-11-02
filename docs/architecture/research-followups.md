@@ -27,6 +27,22 @@ failed reads, old runs and reads older than 24 hours cannot qualify. Observation
 time does not establish the age of the announcement or the occurrence of an event.
 Semantic correctness and source choice still require evaluation across subjects.
 
+Repair feedback reuses sufficient fresh current-run observations, including live
+browser and guarded public GET reads. It does not prescribe a new HTTP request
+merely because one citation is unsupported. The model retains supported entries,
+corrects/removes unsupported citations and their unsupported claims/links, and
+reads again only when a needed fact is missing, stale or insufficiently observed.
+Dropping a citation cannot establish its claim. Eligibility, quote/URL/role and
+freshness checks, correction limits, authority and budget rules are unchanged.
+
+Completed `browser.submit_get_form` and `browser.follow_link` observations can
+also supply current-run quoted page evidence. Their exact public GET contracts
+freeze the network after navigation, so `network_state=frozen` is required for
+these two readers rather than disqualifying the observation. A generic frozen
+snapshot/local preparation, failed precondition (even proved non-dispatched),
+old-run result, error or model-supplied content still cannot qualify. This is
+text provenance only, not a remote write receipt or task-completion proof.
+
 The default researched message is at most four nonempty lines and 1800 characters. Explicit requests
 for detailed work can be longer. Default answers lead with the requested fact,
 include direct links and material uncertainty, and omit unrelated history and

@@ -144,8 +144,22 @@ func nativeToolSchema(text string) (json.RawMessage, error) {
 }
 
 func lowerToolBounds(schema map[string]any) {
+	var bounds []string
 	for _, key := range []string{"minLength", "maxLength", "minimum", "maximum", "minItems", "maxItems"} {
+		if value, ok := schema[key]; ok {
+			bounds = append(bounds, key+"="+value.(json.Number).String())
+		}
 		delete(schema, key)
+	}
+	// The native dialect omits these keywords, but the model must still see
+	// their exact limits. Keep them as description DATA at the same schema node;
+	// the original logical schema and all local/Broker validation stay intact.
+	if len(bounds) != 0 {
+		description, _ := schema["description"].(string)
+		if description != "" {
+			description += "\n"
+		}
+		schema["description"] = description + "Butler argument limits: " + strings.Join(bounds, "; ") + "."
 	}
 	if properties, ok := schema["properties"].(map[string]any); ok {
 		// Property names may themselves be "minimum" or "maxLength". Recurse

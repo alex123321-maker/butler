@@ -206,7 +206,7 @@ func (s *Store) sessionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, r
 	if singleTabTool(tool) {
 		return s.singleSessionTx(ctx, tx, b, resource)
 	}
-	if tool == "browser.open" || tool == "browser.read" {
+	if tool == "browser.open" || tool == "browser.read" || tool == "browser.open_pages" {
 		return time.Time{}, nil
 	}
 	var expiry time.Time

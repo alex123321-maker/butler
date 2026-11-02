@@ -308,18 +308,21 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 }
 
 func ownerMandateAllows(m Mandate, b ActionBinding, at time.Time) bool {
+	if b.BrowserScopeURL != "" && !BrowserContextRead(b) {
+		return false
+	}
 	standard := standardScheduleAction(b) || standardCatalogAction(b) || standardCredentialControl(b)
 	if m.ScopeKind != "owner_goal" || m.Status != "active" || m.RevokedAt != nil || !m.ExpiresAt.After(at) || !WithinActiveHours(m.Hours, at) || m.OwnerID != b.OwnerID || m.GoalID != b.GoalID || m.GoalRevision != b.GoalRevision || m.ID != b.MandateID || m.Revision != b.MandateRevision || m.Purpose != b.Purpose || contains(m.DenyTools, b.ToolName) || (!contains(m.Tools, b.ToolName) && !standard) {
 		return false
 	}
 	for _, s := range m.DenyResources {
-		if resourceWithin(s, b.Resource) {
+		if scopedResourceWithin(s, b) {
 			return false
 		}
 	}
-	resourceOK := standard
+	resourceOK := standard || ownerReplyResource(b)
 	for _, s := range m.ResourceScopes {
-		if resourceWithin(s, b.Resource) {
+		if scopedResourceWithin(s, b) {
 			resourceOK = true
 		}
 	}
@@ -381,7 +384,7 @@ func CheckDenyOverrides(b ActionBinding, tools []string, resources []ResourceSco
 		return ErrOwnerAuthority
 	}
 	for _, scope := range resources {
-		if resourceWithin(scope, b.Resource) {
+		if scopedResourceWithin(scope, b) {
 			return ErrOwnerAuthority
 		}
 	}

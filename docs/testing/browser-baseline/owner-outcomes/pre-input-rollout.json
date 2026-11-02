@@ -1,0 +1,9 @@
+{
+  "release": "/srv/storage/butler/main/releases/browser-pre-input-20261029-dc6dab73fe5f",
+  "healthy": true,
+  "environment_unchanged": true,
+  "core_postgres_redis_web_unchanged": true,
+  "local_preparation_revision": 3,
+  "migrations": 0,
+  "unknowns_resolved_by_deployment": 0
+}

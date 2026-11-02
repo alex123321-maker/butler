@@ -1,0 +1,7 @@
+{"phase":"browser_compile","duration_ms":3490,"exit_code":0}
+{"phase":"broker_compile","duration_ms":6230,"exit_code":0}
+{"phase":"targeted_units","duration_ms":5440,"exit_code":0}
+{"phase":"registry","duration_ms":3120,"exit_code":0}
+{"phase":"vet","duration_ms":4170,"exit_code":0}
+{"phase":"build_broker","duration_ms":5160,"exit_code":0}
+{"phase":"build_browser","duration_ms":3160,"exit_code":0}

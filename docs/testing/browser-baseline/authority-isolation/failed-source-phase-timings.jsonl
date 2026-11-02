@@ -1,0 +1,2 @@
+{"phase":"source_verification","started_at":"2026-10-28T14:42:55.635905589Z","finished_at":"2026-10-28T14:42:55.684840890Z","duration_ms":30,"exit_code":0,"duration_clock":"Linux monotonic uptime (10ms resolution)"}
+{"phase":"source_reconstruction","started_at":"2026-10-28T14:42:55.690781051Z","finished_at":"2026-10-28T14:42:55.908672284Z","duration_ms":210,"exit_code":1,"duration_clock":"Linux monotonic uptime (10ms resolution)"}

@@ -1,0 +1,5 @@
+{"phase":"core-wait-race","duration_ms":152420,"exit_code":0}
+{"phase":"recovery-race","duration_ms":15850,"exit_code":0}
+{"phase":"vet","duration_ms":70620,"exit_code":0}
+{"phase":"operator-build","duration_ms":4560,"exit_code":0}
+{"phase":"core-build","duration_ms":34940,"exit_code":0}

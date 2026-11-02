@@ -30,6 +30,9 @@ func (a *Adapter) CredentialNotice(ctx context.Context, session string, r creden
 	if r.Kind == "otp" {
 		title = "Нужен одноразовый код для входа"
 	}
+	if r.Kind == "login" {
+		title = "Разрешить один вход с проверкой доступа?"
+	}
 	text := title + "\nСайт: " + r.TargetOrigin + "\nЦель: " + r.Purpose + "\nПоля: " + strings.Join(r.Fields, ", ") + "\nВведите данные в защищённой форме Butler."
 	if r.RecordLabel != "" {
 		text += "\nЗапись: " + r.RecordLabel

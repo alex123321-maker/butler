@@ -1,6 +1,7 @@
 package actionauth
 
 import (
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/toolcatalog"
@@ -8,6 +9,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/delegation"
 	"strings"
@@ -49,11 +51,22 @@ type CredentialInspector interface {
 type CapabilityGuard interface {
 	BindAction(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract, ActionBinding, ContextSnapshot) (ActionBinding, error)
 }
+
+// BrowserScopeReader resolves only broker-owned live context metadata. It grants
+// no navigation or input capability and never accepts a model-selected URL.
+type BrowserScopeReader interface {
+	BrowserReadScope(context.Context, ActionBinding) (string, int64, error)
+}
+
+type BrowserPageReader interface {
+	BrowserPageScope(context.Context, ActionBinding, browserpage.Args) (*browserpage.Binding, error)
+}
 type Service struct {
 	store          Store
 	contexts       ContextReader
 	credentials    CredentialInspector
 	capabilities   CapabilityGuard
+	browserScopes  BrowserScopeReader
 	publicWebReads bool
 	now            func() time.Time
 }
@@ -62,6 +75,8 @@ func NewService(store Store, contexts ContextReader, credentials CredentialInspe
 	return &Service{store: store, contexts: contexts, credentials: credentials, now: func() time.Time { return time.Now().UTC() }}
 }
 func (s *Service) SetCapabilities(guard CapabilityGuard) { s.capabilities = guard }
+
+func (s *Service) SetBrowserScopes(reader BrowserScopeReader) { s.browserScopes = reader }
 
 // SetPublicWebReads is trusted startup policy, never a model-selected argument.
 func (s *Service) SetPublicWebReads(enabled bool) { s.publicWebReads = enabled }
@@ -97,6 +112,38 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	b, _, err := BuildBinding(StableActionID(call.GetRunId(), call.GetToolCallId()), call, contract, c)
 	if err != nil {
 		return b, false, err
+	}
+	if browserpage.IsTool(b.ToolName) {
+		a, e := browserpage.Parse(b.ToolName, call.ArgsJson)
+		reader, ok := s.browserScopes.(BrowserPageReader)
+		if e != nil || !ok || !browserpage.ValidContract(contract) || len(b.CredentialRefs) != 0 {
+			return b, false, browserpage.ErrDenied
+		}
+		if b.ToolName != browserpage.Open {
+			bound, e := reader.BrowserPageScope(ctx, b, a)
+			if e != nil || bound == nil || !bound.Valid(browserpage.Bound(b.ToolName)) || a.Page != nil && bound.Ref != *a.Page {
+				return b, false, browserpage.ErrDenied
+			}
+			copyBound := *bound
+			b.BrowserPage = &copyBound
+			b.ActionHash = ""
+			raw, _ := json.Marshal(b)
+			b.ActionHash = digest(string(raw))
+		}
+	}
+	if c.Authority != nil && BrowserContextRead(b) {
+		policy, e := ResolveEffectPolicy(b, contract, call)
+		if e != nil || policy.RetrySafety != "read_only" || policy.VerificationMethod != "read_result" || contract.GetSupportsCredentialRefs() || s.browserScopes == nil {
+			return b, false, ErrOwnerAuthority
+		}
+		resource, epoch, e := s.browserScopes.BrowserReadScope(ctx, b)
+		if e != nil {
+			return b, false, ErrOwnerAuthority
+		}
+		b, e = bindBrowserReadScope(b, resource, epoch)
+		if e != nil {
+			return b, false, e
+		}
 	}
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
@@ -202,7 +249,7 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 	if standardOwnerReply(b, c) {
 		requires = false
 	}
-	if s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil {
+	if (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && c.Delegation == nil {
 		requires = false
 	}
 	if standardCredentialControl(b) && c.Delegation == nil && CheckDenyOverrides(b, c.DenyTools, c.DenyResources) == nil {
@@ -235,7 +282,14 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 		return PreparedAction{}, fmt.Errorf("persisted action intent is unavailable")
 	}
 	expires = stored.ExpiresAt
-	return PreparedAction{Binding: b, EffectID: stored.EffectID, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, safeResource(b.Resource)), ExpiresAt: expires}, nil
+	target := safeResource(b.Resource)
+	if b.BrowserPage != nil {
+		target += " " + b.BrowserPage.URL
+		if b.BrowserPage.ID != "" {
+			target += " page=" + b.BrowserPage.ID
+		}
+	}
+	return PreparedAction{Binding: b, EffectID: stored.EffectID, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, target), ExpiresAt: expires}, nil
 }
 func safeResource(resource string) string {
 	if i := strings.IndexByte(resource, '?'); i >= 0 {
@@ -272,7 +326,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if ownerReply {
 		requiresApproval = false
 	}
-	ownerCredentialPreparation := s.approvedCredentialPreparation(ctx, call, contract) && c.Delegation == nil
+	ownerCredentialPreparation := (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && c.Delegation == nil
 	if ownerCredentialPreparation && len(c.InputClaimHash) != 64 {
 		return Grant{}, fmt.Errorf("current owning Input is required for credential preparation")
 	}
@@ -373,7 +427,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if (communicationcontrol.IsTool(call.GetToolName()) || credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original owning input claim is no longer current")
 	}
-	if s.approvedCredentialPreparation(ctx, call, contract) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("credential preparation Input claim changed")
 	}
 	if g.ApprovalID != "" {
@@ -385,7 +439,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil {
 		return Grant{}, err
 	}
-	if release && g.ApprovalID == "" && g.MandateID == "" && !s.approvedCredentialPreparation(ctx, call, contract) {
+	if release && g.ApprovalID == "" && g.MandateID == "" && !s.approvedCredentialPreparation(ctx, call, contract) && !s.approvedCredentialLogin(ctx, call, contract) {
 		return Grant{}, fmt.Errorf("current data-release authorization is required")
 	}
 	if g.MandateID != "" {
