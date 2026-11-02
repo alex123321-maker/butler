@@ -1,0 +1,915 @@
+{
+  "native_requests": 0,
+  "profiles": {
+    "gemini-medium": {
+      "native_race_warnings": 0,
+      "failed_cases": [
+        {
+          "sequence": 25,
+          "arm": "C",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1,
+            "memory.search": 3,
+            "skills.search": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1,
+            "memory.search:completed": 3,
+            "skills.search:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 26,
+          "arm": "A",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "task/run revisions changed",
+          "engine_error_present": true,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1,
+            "http.request": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": []
+        },
+        {
+          "sequence": 27,
+          "arm": "B",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1,
+            "memory.search": 2
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1,
+            "memory.search:completed": 2
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 28,
+          "arm": "A",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "current check failed",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 2,
+            "extension.project.check": 1,
+            "extension.project.inspect": 2
+          },
+          "recorded_tools": {
+            "http.request:completed": 2,
+            "extension.project.check:completed": 1,
+            "extension.project.inspect:completed": 2
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "unknown",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 33,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1,
+            "extension.project.inspect": 2
+          },
+          "recorded_tools": {
+            "http.request:completed": 1,
+            "extension.project.inspect:completed": 2
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "absent",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        }
+      ],
+      "max_generated_tokens": 6101,
+      "calls_above_old_8192_output_budget": [],
+      "observed_service_tiers_by_call": {},
+      "observed_models_by_call": {
+        "gemini-3.8-flash-n": 149
+      }
+    },
+    "gemini-low": {
+      "native_race_warnings": 0,
+      "failed_cases": [
+        {
+          "sequence": 25,
+          "arm": "C",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 26,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 27,
+          "arm": "B",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 28,
+          "arm": "A",
+          "reasons": [
+            "invalid_final"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1
+          },
+          "recorded_tools": {
+            "http.request:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "unknown",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 31,
+          "arm": "B",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "http.request:completed": 1,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "absent",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 32,
+          "arm": "C",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1
+          },
+          "recorded_tools": {
+            "http.request:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "absent",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 33,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "http.request:completed": 1,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "absent",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        }
+      ],
+      "max_generated_tokens": 1620,
+      "calls_above_old_8192_output_budget": [],
+      "observed_service_tiers_by_call": {},
+      "observed_models_by_call": {
+        "gemini-3.8-flash-n": 122
+      }
+    },
+    "luna-max": {
+      "native_race_warnings": 0,
+      "failed_cases": [
+        {
+          "sequence": 21,
+          "arm": "C",
+          "reasons": [
+            "run_incomplete"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [
+            false
+          ],
+          "proposed_tools": {
+            "skills.search": 1,
+            "skills.load": 1,
+            "extension.project.inspect": 1,
+            "extension.project.prepare-patch": 1
+          },
+          "recorded_tools": {
+            "skills.load:completed": 2,
+            "skills.search:completed": 1,
+            "extension.project.inspect:completed": 1,
+            "extension.project.prepare-patch:effect_unknown": 1
+          },
+          "native_errors": {},
+          "finals": []
+        },
+        {
+          "sequence": 25,
+          "arm": "C",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "skills.search": 1,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "skills.search:completed": 1,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 26,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 27,
+          "arm": "B",
+          "reasons": [
+            "invalid_final"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 33,
+          "arm": "A",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "task/run revisions changed",
+          "engine_error_present": true,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1,
+            "http.request": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1,
+            "http.request:completed": 1
+          },
+          "native_errors": {
+            "provider_timeout": 1
+          },
+          "finals": []
+        },
+        {
+          "sequence": 34,
+          "arm": "C",
+          "reasons": [
+            "answer_mismatch"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "skills.search": 1,
+            "memory.search": 2,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "skills.search:completed": 1,
+            "memory.search:completed": 2,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "none",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 35,
+          "arm": "A",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "task/run revisions changed",
+          "engine_error_present": true,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {
+            "provider_timeout": 1
+          },
+          "finals": []
+        },
+        {
+          "sequence": 36,
+          "arm": "B",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "task/run revisions changed",
+          "engine_error_present": true,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "memory.search": 2,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "memory.search:completed": 2,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {
+            "transport_connection_error": 1
+          },
+          "finals": []
+        }
+      ],
+      "max_generated_tokens": 7520,
+      "calls_above_old_8192_output_budget": [],
+      "observed_service_tiers_by_call": {
+        "default": 133
+      },
+      "observed_models_by_call": {
+        "gpt-6-luna": 133
+      }
+    },
+    "luna-high": {
+      "native_race_warnings": 0,
+      "failed_cases": [
+        {
+          "sequence": 26,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 33,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "http.request": 1,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "http.request:completed": 1,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "absent",
+              "check": "not_checked",
+              "source_count": 1,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 34,
+          "arm": "C",
+          "reasons": [
+            "answer_mismatch"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "skills.search": 1,
+            "memory.search": 2,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "skills.search:completed": 1,
+            "memory.search:completed": 2,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "none",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 36,
+          "arm": "B",
+          "reasons": [
+            "answer_mismatch"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "memory.search": 1,
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "memory.search:completed": 1,
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "none",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        }
+      ],
+      "max_generated_tokens": 1957,
+      "calls_above_old_8192_output_budget": [],
+      "observed_service_tiers_by_call": {
+        "default": 138
+      },
+      "observed_models_by_call": {
+        "gpt-6-luna": 138
+      }
+    },
+    "luna-low": {
+      "native_race_warnings": 0,
+      "failed_cases": [
+        {
+          "sequence": 12,
+          "arm": "C",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [
+            true
+          ],
+          "proposed_tools": {
+            "skills.search": 1,
+            "skills.load": 1,
+            "extension.project.inspect": 1,
+            "extension.project.prepare-patch": 1,
+            "extension.project.check": 1
+          },
+          "recorded_tools": {
+            "skills.load:completed": 2,
+            "skills.search:completed": 1,
+            "extension.project.inspect:completed": 1,
+            "extension.project.prepare-patch:completed": 1,
+            "extension.project.check:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "confirmed",
+              "check": "passed",
+              "source_count": 1,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 19,
+          "arm": "A",
+          "reasons": [
+            "run_incomplete"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [
+            false
+          ],
+          "proposed_tools": {
+            "extension.project.inspect": 1,
+            "extension.project.prepare-patch": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1,
+            "extension.project.prepare-patch:effect_unknown": 1
+          },
+          "native_errors": {},
+          "finals": []
+        },
+        {
+          "sequence": 21,
+          "arm": "C",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "prepare/check correlation missing",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [
+            true
+          ],
+          "proposed_tools": {
+            "skills.load": 1,
+            "extension.project.inspect": 1,
+            "extension.project.prepare-patch": 1,
+            "extension.project.check": 1
+          },
+          "recorded_tools": {
+            "skills.load:completed": 2,
+            "extension.project.inspect:completed": 1,
+            "extension.project.prepare-patch:completed": 1,
+            "extension.project.check:effect_unknown": 1
+          },
+          "native_errors": {},
+          "finals": []
+        },
+        {
+          "sequence": 26,
+          "arm": "A",
+          "reasons": [
+            "citation_not_read_or_duplicate"
+          ],
+          "projection_error": "final cites an unmapped actual source",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "failed",
+              "source_count": 1,
+              "url_citations": 1
+            }
+          ]
+        },
+        {
+          "sequence": 28,
+          "arm": "A",
+          "reasons": [
+            "missing_or_failed_observer_gate"
+          ],
+          "projection_error": "current check failed",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.check": 1
+          },
+          "recorded_tools": {
+            "extension.project.check:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "unknown",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 34,
+          "arm": "C",
+          "reasons": [
+            "answer_mismatch"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "skills.search": 1,
+            "memory.search": 1
+          },
+          "recorded_tools": {
+            "skills.search:completed": 1,
+            "memory.search:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "unknown",
+              "effect": "none",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        },
+        {
+          "sequence": 35,
+          "arm": "A",
+          "reasons": [
+            "answer_mismatch"
+          ],
+          "projection_error": "<nil>",
+          "engine_error_present": false,
+          "patch_before_matches_current_file": [],
+          "proposed_tools": {
+            "extension.project.inspect": 1
+          },
+          "recorded_tools": {
+            "extension.project.inspect:completed": 1
+          },
+          "native_errors": {},
+          "finals": [
+            {
+              "valid_json": true,
+              "outcome": "answered",
+              "effect": "none",
+              "check": "not_checked",
+              "source_count": 0,
+              "url_citations": 0
+            }
+          ]
+        }
+      ],
+      "max_generated_tokens": 319,
+      "calls_above_old_8192_output_budget": [],
+      "observed_service_tiers_by_call": {
+        "default": 130
+      },
+      "observed_models_by_call": {
+        "gpt-6-luna": 130
+      }
+    }
+  },
+  "historical_results_modified": false,
+  "analyzer_sha256": "86d78f6102b007d998b27bc72658dc1471f22a0da0e17b5b1eaa3bc3ac358718"
+}

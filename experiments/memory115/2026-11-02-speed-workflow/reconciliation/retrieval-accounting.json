@@ -1,0 +1,52 @@
+{
+  "native_generation_requests": 0,
+  "api_read_requests": 3,
+  "original_unknown_and_scores_unchanged": true,
+  "retrieved_at": "2026-11-02T07:33:16.945885+00:00",
+  "rows": [
+    {
+      "slot": 33,
+      "turn": 3,
+      "operation_id": "operation_69279cd1db79eef97484dc8534a6bedefa881211d2fbab8f",
+      "raw_sha256": "79dbaf797ac5d955553431eae0b14eedcaa9f6b19c3c7107589ec317a951e574",
+      "response_id_sha256": "c4d4fb1fe2742bd820f09e6457b33efe09e7e4429b863dee1d38c9ab91e9502d",
+      "usage": null,
+      "http_status": 404,
+      "read_failure": "http_rejection"
+    },
+    {
+      "slot": 35,
+      "turn": 2,
+      "operation_id": "operation_aa9dd17cbae828b01955bf62e88421fce689c7721218ec11",
+      "raw_sha256": "d32c0972d0b4f723ffcfac4bf050ed95920cde12a4b5e7b45a2ffc09ea490692",
+      "response_id_sha256": "27a8dcfde09882a615c197cd18b1ae22da998246675cfca21d422879a919c42b",
+      "usage": null,
+      "http_status": 404,
+      "read_failure": "http_rejection"
+    },
+    {
+      "slot": 36,
+      "turn": 4,
+      "operation_id": "operation_5cef53ea1967158c411275b6f1aa772b7fd535d940989554",
+      "raw_sha256": "5a19fa4c12b19f7cefeafa659082666a9b86b1e56a5cfa78bbeb7fdcb4e4efaa",
+      "response_id_sha256": "b87c24c7c9c1dc05e8719114d529cb55f12a3baf6a0bca89c328cead3645352e",
+      "usage": {
+        "input_tokens": 7792,
+        "output_tokens": 10384,
+        "total_tokens": 18176,
+        "input_tokens_details": {
+          "cache_write_tokens": 1988,
+          "cached_tokens": 5801
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 10356
+        }
+      },
+      "http_status": 200,
+      "response_body_sha256": "876b0d629d2c38d15fdd28e78a9c697751302fd785d6d2afbe73e201e969b751",
+      "status": "completed",
+      "model": "gpt-6-luna",
+      "service_tier": "default"
+    }
+  ]
+}

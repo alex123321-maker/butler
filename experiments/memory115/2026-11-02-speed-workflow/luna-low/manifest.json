@@ -1,0 +1,12 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-luna-low-speed-20261102-r1",
+  "files": {
+    "public-report.json": "f603ef5731b2b16d17bea3316a8329906f5f641207578e4822ff00a73ff8f778",
+    "workflow-report.json": "09dd151436f3c64a199df3acbe9bef65726967bbca5f94d41228292e7359f179",
+    "workflow-report.calls.csv": "ea472a742fe670c42bcaf508cc449e3c7d8aa47c36cbb7bbdf020ddaa5746865",
+    "public-cleanup.json": "a5d8a3e662288a4f1966bf214e6e4bac178a279928184fb3fc146483d6bd039c",
+    "exit.json": "0fd49dce75cd0ce3411a62a1750df20c1b03b3d68d6ae309c5ae39efbb41f245",
+    "derived/paged-report.json": "6e88d5da1589969550ac9a7a7733460c71966cb75213a82cd44339a6c45a8269",
+    "speed-diagnostics.json": "23ddfa98d4770d24e219c55fefde2138c9bf5509c066c4b83bfde826373004d1"
+  }
+}

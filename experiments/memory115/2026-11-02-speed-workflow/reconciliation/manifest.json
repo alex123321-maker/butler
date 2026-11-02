@@ -1,0 +1,7 @@
+{
+  "receipt_sha256": "a38cb427daef751ee2ed4ba3b7183507c0764c1183521f4e9dd4768c0afbddc2",
+  "reader_sha256": "01f6099a996a6e3959ea7b246817e52c0ca68c120d2a1d706b257176dcc0d318",
+  "native_generation_requests": 0,
+  "api_read_requests": 3,
+  "original_native_ledgers_unchanged": true
+}

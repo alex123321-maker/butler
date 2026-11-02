@@ -1,0 +1,12 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-luna-max-speed-20261102-r1",
+  "files": {
+    "public-report.json": "b42568d1a54e2bf5feb4ba53be5e621b9d36c0a4427776719eea0707f0219af6",
+    "workflow-report.json": "24479d527739bb416b85e50fd97220fc16246c00c1c3633623d264929dfc62f4",
+    "workflow-report.calls.csv": "085eb00fbcc19d2f97a65237d3196ae46aa8189f71c8b8fc5b2012f89beb9e83",
+    "public-cleanup.json": "a5d8a3e662288a4f1966bf214e6e4bac178a279928184fb3fc146483d6bd039c",
+    "exit.json": "0fd49dce75cd0ce3411a62a1750df20c1b03b3d68d6ae309c5ae39efbb41f245",
+    "derived/paged-report.json": "f5e62d46216607212394f6cf6ff21cc456b19f5f994e6daa28fc492a99f068a9",
+    "speed-diagnostics.json": "7ee992c83656631383383d53c08c478204dbdf8c12fd41439622828b1da8f9ab"
+  }
+}

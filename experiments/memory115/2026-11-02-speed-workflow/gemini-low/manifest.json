@@ -1,0 +1,12 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-gemini-low-speed-20261102-r1",
+  "files": {
+    "public-report.json": "b7fe6e9c32204c67310c6ee9624f742c42e30d6045c154d3c97096e1d0a71064",
+    "workflow-report.json": "5bfb307bd2d94acc67ba3342d6ecf6b291e0ac769b1bd435b0a57929e61fd713",
+    "workflow-report.calls.csv": "7912d6ecd254aad6bec2c31206bc38c8afbfcf1e7cb29cdeec09bd45e861d77f",
+    "public-cleanup.json": "53911c9537f642455546cced4b6a7ae8d9a854798a21726207be7988b0b936df",
+    "exit.json": "7acf0bf384d05c91dcd9b918cf4107c612d9b19eb6f44322de235c493b48747b",
+    "derived/paged-report.json": "4fd12a4aed605b669d3286b9cceaad07395a2b3e06dbdc33a3e07c9f03f6b687",
+    "speed-diagnostics.json": "bca5e8173ff305f27b3cfeb2c3f0cee3b2126186cb7cb760091e8053d2397492"
+  }
+}

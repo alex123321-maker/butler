@@ -1,0 +1,12 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-luna-high-speed-20261102-r1",
+  "files": {
+    "public-report.json": "b58083934aecd6af7ab6f4178fbe1f8e3ae7475ff10faf89c35efa1f4ef723bf",
+    "workflow-report.json": "e740d528379b15d814e89934fef377e6b7de85a84514eec844f76cbe77716225",
+    "workflow-report.calls.csv": "fe25af3342f710535902731d22378d3cdb80cf6872c8130f3701610052ad2157",
+    "public-cleanup.json": "a5d8a3e662288a4f1966bf214e6e4bac178a279928184fb3fc146483d6bd039c",
+    "exit.json": "0fd49dce75cd0ce3411a62a1750df20c1b03b3d68d6ae309c5ae39efbb41f245",
+    "derived/paged-report.json": "3f167da7e947d0826768d534c03de7559ca685142b3e1977d3bf36c842700ba8",
+    "speed-diagnostics.json": "a03049e27da3c5cb2a22a06e7630f8bf4676166824899edf9c9de14f1a06597a"
+  }
+}

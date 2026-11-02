@@ -1,0 +1,12 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-gemini-medium-speed-20261102-r1",
+  "files": {
+    "public-report.json": "d43c5b1a319c30bae412b2338a3bfb19a463a959b048ef846bcbb6e1302b981e",
+    "workflow-report.json": "6223145cf74dbbce14ff3834d6222499c3ed1fa5c4ccbdc00efe189cf0dfb998",
+    "workflow-report.calls.csv": "d0bee6f95597df76b3a1699f06278138eeca3975cd9e8983ea41150a1bdc387d",
+    "public-cleanup.json": "137e57b9558a5a4875e1cbf6353e23400ce6b16f87fcaaeb8dc2adb4ec63c874",
+    "exit.json": "deaf8b6a74cb18139cac3447955231343475a7245fc9eba3ad7456364ada2873",
+    "derived/paged-report.json": "29996179e2118eb6b7794d0524553744d34847c55370e4898f033e3e359904a5",
+    "speed-diagnostics.json": "be750f0fe28beb96770352c6a90e8a392ac8b38f9af97fa290272440a87c6a3f"
+  }
+}

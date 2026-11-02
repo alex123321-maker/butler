@@ -1,0 +1,28 @@
+{
+  "native_source": "dcee8f83391dbe3029bb0502d4f6b72283573bc1",
+  "profiles": [
+    "gemini-medium",
+    "gemini-low",
+    "luna-max",
+    "luna-high",
+    "luna-low"
+  ],
+  "observed_tasks": 180,
+  "native_methods": 675,
+  "strict_success": 149,
+  "physical_artifacts_correct_of_120": 117,
+  "original_known_tokens": 4632294,
+  "original_unknown_calls": 3,
+  "additional_reconciled_tokens": 18176,
+  "combined_known_tokens": 4650470,
+  "remaining_unknown_calls": 2,
+  "read_only_accounting_requests": 3,
+  "legacy_scores_reproduced": 180,
+  "mandatory_control_tasks_passed": 144,
+  "initial_broker_loads_verified": 40,
+  "all_profile_manifests_verified": true,
+  "all_owned_runners_and_networks_removed": true,
+  "all_private_databases_stopped_and_retained": true,
+  "native_race_warnings": 0,
+  "private_credential_matches_in_public_artifacts": 0
+}
