@@ -1,6 +1,7 @@
 package actionauth
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
 	"strings"
@@ -10,7 +11,91 @@ import (
 	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/credentialcontrol"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
+
+type ssoInspector struct {
+	*inspector
+	approved bool
+}
+
+func (i *ssoInspector) ApprovedLoginUse(_ context.Context, c *toolbrokerv1.ToolCall) bool {
+	return i.approved && c.ToolName == browsersso.Tool
+}
+
+func TestSSOConsentDoesNotReplaceLiveActionAuthority(t *testing.T) {
+	for _, mode := range []string{"allowed", "no_consent", "RP_only", "IdP_only", "deny_IdP", "revoke", "replace_Input", "change_RP_epoch"} {
+		t.Run(mode, func(t *testing.T) {
+			s, store, reader, inspect, call, _ := fixture(t)
+			inspect.hash = strings.Repeat("c", 64)
+			s.credentials = &ssoInspector{inspect, mode != "no_consent"}
+			reader.current.InputClaimHash = strings.Repeat("a", 64)
+			scope := ssoTestScope()
+			hash, _ := scope.Digest(2, 1)
+			alias := "ssoq_" + strings.Repeat("e", 64)
+			a := browsersso.Args{Scope: scope, Digest: hash, UsernameRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "username"}, PasswordRef: browserauth.Ref{Type: "credential_ref", Alias: alias, Field: "password"}}
+			raw, _ := json.Marshal(a)
+			call.ToolName = browsersso.Tool
+			call.ArgsJson = string(raw)
+			call.CredentialRefs = []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: alias, Field: "username"}, {Type: "credential_ref", Alias: alias, Field: "password"}}
+			page := &pageScopeFixture{bound: browserpage.Binding{Ref: scope.RPPage, URL: scope.RPURL, Epoch: 2, RuntimeVersion: 5}}
+			s.SetBrowserScopes(page)
+			m := testOwnerMandate(s.now())
+			m.OwnerID = reader.current.OwnerID
+			m.Tools = []string{browsersso.Tool}
+			m.Effects = []Effect{EffectCommit}
+			m.ResourceScopes = []ResourceScope{{Origin: "https://rp.example", PathPrefix: "/"}, {Origin: "https://idp.example", PathPrefix: "/"}}
+			m.CredentialRefs = nil
+			if mode == "RP_only" {
+				m.ResourceScopes = m.ResourceScopes[:1]
+			}
+			if mode == "IdP_only" {
+				m.ResourceScopes = m.ResourceScopes[1:]
+			}
+			if mode == "deny_IdP" {
+				m.DenyResources = []ResourceScope{{Origin: "https://idp.example", PathPrefix: "/login"}}
+			}
+			store.mandates[m.ID] = m
+			reader.current.Authority = &Assignment{TaskID: reader.current.TaskID, OwnerID: m.OwnerID, GoalID: m.GoalID, GoalRevision: m.GoalRevision, MandateID: m.ID, MandateRevision: m.Revision, Purpose: m.Purpose}
+			p, e := s.Prepare(t.Context(), call, browsersso.Contract())
+			if mode == "RP_only" || mode == "IdP_only" || mode == "deny_IdP" {
+				if e == nil {
+					t.Fatal("owner consent replaced destination authority")
+				}
+				return
+			}
+			if e != nil {
+				t.Fatal("SSO prepare", e)
+			}
+			if mode == "no_consent" {
+				if !p.RequiresApproval {
+					t.Fatal("unapproved SSO waived action approval")
+				}
+				return
+			}
+			if p.RequiresApproval {
+				t.Fatal("second POST approval required")
+			}
+			g, e := s.Authorize(t.Context(), call, browsersso.Contract(), p.Binding.ActionID, "", "")
+			if e != nil || g.ApprovalID != "" {
+				t.Fatal("protected SSO action authorization", e)
+			}
+			switch mode {
+			case "revoke":
+				m.Status = "revoked"
+				store.mandates[m.ID] = m
+			case "replace_Input":
+				reader.current.InputClaimHash = strings.Repeat("f", 64)
+			case "change_RP_epoch":
+				page.bound.Epoch++
+			}
+			_, e = s.Verify(t.Context(), call, browsersso.Contract(), g.ID)
+			if (e == nil) != (mode == "allowed") {
+				t.Fatal("stale SSO action grant classification", e)
+			}
+		})
+	}
+}
 
 func TestSSOEffectRequiresExactRPAccessProof(t *testing.T) {
 	s := ssoTestScope()
