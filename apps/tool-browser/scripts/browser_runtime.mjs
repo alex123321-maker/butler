@@ -107,7 +107,10 @@ function attachPage(root, page, openerID = '') {
     view.dirty = true
     if (frame === page.mainFrame()) {
       view.documentID = randomUUID().replaceAll('-', ''); rememberPageURL(root, frame.url())
-      if (root.managed && frame.url() !== 'about:blank' && origin(frame.url()) !== root.initialOrigin && !(root.ssoGate?.child === view.pageID && ssoURLAllowed(root.ssoGate, frame.url()))) void page.close().catch(() => {})
+      if (root.managed && frame.url() !== 'about:blank' && origin(frame.url()) !== root.initialOrigin && !(root.ssoGate?.child === view.pageID && ssoURLAllowed(root.ssoGate, frame.url()))) {
+        if (root.ssoGate) root.ssoFailure = 'sso_page_origin_rejected'
+        void page.close().catch(() => {})
+      }
     }
   })
   page.on('close', () => { view.state = 'closed'; view.dirty = true; root.frames.clear() })
@@ -610,9 +613,9 @@ function ssoURLAllowed(gate, raw) {
 // never permission for an unrelated path, page, background request or POST.
 async function routeSSO(root, route, operatorAllowed) {
   const request = route.request(), gate = root.ssoGate
-  const reject = () => route.abort('blockedbyclient')
+  const reject = (reason = 'sso_route_rejected') => { root.ssoFailure = reason; return route.abort('blockedbyclient') }
   const proceed = () => continueSSONavigation(root, route, gate)
-  if (!operatorAllowed || root.networkFrozen || !ssoURLAllowed(gate, request.url()) || !request.isNavigationRequest()) return reject()
+  if (!operatorAllowed || root.networkFrozen || !ssoURLAllowed(gate, request.url()) || !request.isNavigationRequest()) return reject('sso_route_cap')
   if (gate.inspection) {
     // Apply before frame lookup: the first popup redirect chain can precede
     // the page event, including a cookie-backed callback with no IdP document.
@@ -621,11 +624,14 @@ async function routeSSO(root, route, operatorAllowed) {
   }
   let page, frame
   try { frame = request.frame(); page = frame.page() } catch {
-    if (gate.phase === 'plan' && reserveInitialPopupRequest(root, request, new URL(request.url()))) return proceed()
-    return reject()
+    if (gate.phase === 'plan' && reserveInitialPopupRequest(root, request, new URL(request.url()))) {
+      if (!gate.bootstrapRequest) gate.bootstrapRequest = request
+      return proceed()
+    }
+    return reject('sso_route_identity')
   }
   const view = root.pageIndex.get(page) || (gate.phase === 'plan' ? await admitPopup(root, page) : undefined)
-  if (!view || frame !== page.mainFrame()) return reject()
+  if (!view || frame !== page.mainFrame()) return reject('sso_route_identity')
   const read = ['GET', 'HEAD'].includes(request.method())
   if (view.pageID === gate.source) {
     if (gate.inspection && request.url() !== gate.scope.rp_url) return reject()
@@ -633,7 +639,7 @@ async function routeSSO(root, route, operatorAllowed) {
     if (!read || !allowed || gate.rootReads++ >= 6) return reject()
     return proceed()
   }
-  if (view.pageID !== gate.child || view.openerID !== gate.source) return reject()
+  if (view.pageID !== gate.child || view.openerID !== gate.source) return reject('sso_route_child')
   if (gate.phase === 'plan') {
     if (!read || gate.hops++ >= 8) return reject()
     if (gate.inspection) {
@@ -643,9 +649,15 @@ async function routeSSO(root, route, operatorAllowed) {
       else if (gate.seenProvider) return reject()
     }
     if (!view.initialRequestAdmitted) {
-      const reservation = root.initialRequests.get(request.redirectedFrom())
+      let reservation = root.initialRequests.get(request.redirectedFrom())
+      // Our redirect bridge is a fresh navigation, not redirectedFrom(). Bind
+      // the already-spent first-request reservation to its actual Page before
+      // accepting it; another popup may not borrow that reservation.
+      if (!reservation && gate.bootstrapRequest) {
+        try { if (gate.bootstrapRequest.frame().page() === page) reservation = root.initialRequests.get(gate.bootstrapRequest) } catch {}
+      }
       const popup = reservation || root.popupGate
-      if (!popup || Date.now() > popup.until || popup.opener !== gate.source || !reservation && popup.remaining <= 0) return reject()
+      if (!popup || Date.now() > popup.until || popup.opener !== gate.source || !reservation && popup.remaining <= 0) return reject('sso_route_window')
       if (!reservation) popup.remaining--
       view.initialRequestAdmitted = true
     }
@@ -686,12 +698,18 @@ async function continueSSONavigation(root, route, gate) {
         body: `<!doctype html><meta http-equiv="refresh" content="0;url=${target}">` })
     }
     return await route.fulfill({ response })
-  } catch { return route.abort('blockedbyclient').catch(() => {}) }
+  } catch (error) {
+    const message = String(error?.message || '')
+    root.ssoFailure = /certificate|SSL|TLS/i.test(message) ? 'sso_tls_rejected' : /proxy|ECONN|ENOTFOUND/i.test(message) ? 'sso_connection_rejected' : /timeout/i.test(message) ? 'sso_network_timeout' : 'sso_navigation_rejected'
+    return route.abort('blockedbyclient').catch(() => {})
+  }
   finally { await response?.dispose().catch(() => {}) }
 }
 
 async function inspectSSO(root, request) {
-  const denied = () => errorResult('sso_inspection_failed', 'SSO form inspection unavailable; no form was submitted')
+  let stage = 'source'
+  const denied = () => errorResult(root?.ssoFailure || `sso_inspection_${stage}`, 'SSO form inspection unavailable; no form was submitted')
+  if (root) root.ssoFailure = undefined
   const scope = request.sso_inspection?.scope, dispatch = request.sso_inspection?.dispatch
   const source = root?.pages.get(request.page_id)
   if (!root?.managed || !scope || !dispatch || !source || root.ssoPlan || source.page.isClosed() ||
@@ -703,6 +721,7 @@ async function inspectSSO(root, request) {
     const live = await source.page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
     if (source.dirty || source.observedDocumentID !== live.documentID || source.observedRevision !== live.revision || source.observedPrivateURL !== source.page.url()) return denied()
     root.ssoAttempt = gate; root.ssoGate = gate
+    stage = 'popup'
     root.popupGate = newPopupGate(root, source, 2000); root.popupGate.remaining = Math.min(1, root.popupGate.remaining)
     if (root.popupGate.remaining < 1) return denied()
     const popup = source.page.waitForEvent('popup', { timeout: 6000 }).catch(() => null)
@@ -712,10 +731,15 @@ async function inspectSSO(root, request) {
     if (!page) return denied()
     const child = root.pageIndex.get(page) || await admitPopup(root, page)
     if (!child || gate.child !== child.pageID || child.openerID !== source.pageID) return denied()
+    stage = 'provider'
     await page.waitForURL(u => u.origin === scope.idp_origin, { waitUntil: 'domcontentloaded', timeout: 6000 })
+    stage = 'provider_check'
     root.networkFrozen = true; root.popupGate = undefined
-    if (gate.violated || source.documentID !== request.document_id || source.page.url() !== scope.rp_url || page.isClosed() || !ssoURLAllowed(gate, page.url())) return denied()
+    if (gate.violated) { stage = 'popup_limit'; return denied() }
+    if (source.documentID !== request.document_id || source.page.url() !== scope.rp_url) { stage = 'source_changed'; return denied() }
+    if (page.isClosed() || !ssoURLAllowed(gate, page.url())) return denied()
     await collectSecretState(root)
+    stage = 'form'
     const forms = await page.evaluate(expectedOrigin => {
       const url = new URL(location.href)
       if (url.origin !== expectedOrigin) return null
@@ -736,6 +760,7 @@ async function inspectSSO(root, request) {
       return candidates.length > 0 && candidates.length <= 4 ? candidates : null
     }, scope.idp_origin)
     if (!forms || gate.violated || forms.some(form => Object.values(form).some(value => redact(root, value) !== value || redact(child, value) !== value))) return denied()
+    stage = 'cleanup'
     // Capture identity privately, never the IdP body's text or field values.
     const childLive = await page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
     child.observedPageDocumentID = child.documentID
@@ -744,7 +769,18 @@ async function inspectSSO(root, request) {
     await page.close()
     if (gate.violated || source.documentID !== request.document_id || source.page.url() !== scope.rp_url) return denied()
     return { ...await observe(source), inspection_forms: forms }
-  } catch { return denied() }
+  } catch (error) {
+    const message = String(error?.message || '')
+    if (root.ssoFailure) { /* Preserve the fixed private guard reason. */ }
+    else if (/closed|detached/i.test(message)) root.ssoFailure = 'sso_page_lost'
+    else if (/ERR_BLOCKED_BY_CLIENT/i.test(message)) root.ssoFailure = 'sso_route_rejected'
+    else if (/ERR_FAILED/i.test(message)) root.ssoFailure = 'sso_request_failed'
+    else if (/ERR_ABORTED|interrupted/i.test(message)) root.ssoFailure = 'sso_navigation_changed'
+    else if (/timeout/i.test(message)) root.ssoFailure = 'sso_network_timeout'
+    else if (error instanceof TypeError) root.ssoFailure = 'sso_type_rejected'
+    else root.ssoFailure = 'sso_observation_rejected'
+    return denied()
+  }
   finally {
     root.networkFrozen = true; root.allowWriteRequests = false; root.popupGate = undefined
     const child = root.pages.get(gate.child)
@@ -754,7 +790,8 @@ async function inspectSSO(root, request) {
 }
 
 async function executeSSO(root, request) {
-  const denied = () => errorResult('sso_unknown', 'SSO was not verified; never repeat the POST automatically')
+  const denied = () => errorResult(root?.ssoFailure || 'sso_unknown', 'SSO was not verified; never repeat the POST automatically')
+  if (root) root.ssoFailure = undefined
   const scope = request.sso?.scope, dispatch = request.sso?.dispatch
   const source = root?.pages.get(request.page_id)
   if (!root?.managed || !scope || !dispatch || !source || source.page.isClosed() || source.documentID !== request.document_id || scope.browser_session_id !== request.browser_session_id || source.version !== request.observation_version || source.observedPageURL !== scope.rp_url) {

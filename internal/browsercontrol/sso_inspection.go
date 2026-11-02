@@ -96,6 +96,9 @@ func (s *Store) beforeSSOInspection(ctx context.Context, call *toolbrokerv1.Tool
 
 func (s *Store) recordSSOInspection(ctx context.Context, call *toolbrokerv1.ToolCall, b actionauth.ActionBinding, result *toolbrokerv1.ToolResult) error {
 	deny := func() error { result.ResultJson = "{}"; return ErrDenied }
+	if s == nil || s.Pool == nil || s.Contexts == nil {
+		return deny()
+	}
 	a, err := browsersso.ParseInspection(call.ArgsJson)
 	var output struct {
 		Forms []browsersso.InspectedForm `json:"inspection_forms"`

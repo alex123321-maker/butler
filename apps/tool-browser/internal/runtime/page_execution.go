@@ -99,6 +99,14 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		stage = "helper"
 		if result.Error != nil {
 			switch result.Error.ErrorType {
+			case "sso_tls_rejected", "sso_connection_rejected", "sso_network_timeout", "sso_navigation_rejected", "sso_page_origin_rejected":
+				stage = "helper_" + result.Error.ErrorType
+			case "sso_page_lost", "sso_navigation_changed", "sso_type_rejected", "sso_observation_rejected", "sso_route_rejected", "sso_request_failed":
+				stage = "helper_" + result.Error.ErrorType
+			case "sso_route_cap", "sso_route_identity", "sso_route_child", "sso_route_window":
+				stage = "helper_" + result.Error.ErrorType
+			case "sso_inspection_source", "sso_inspection_popup", "sso_inspection_provider", "sso_inspection_provider_check", "sso_inspection_popup_limit", "sso_inspection_source_changed", "sso_inspection_form", "sso_inspection_cleanup":
+				stage = "helper_" + result.Error.ErrorType
 			case "stale_page", "page_lost", "session_lost", "timeout", "operation_failed":
 				stage = "helper_" + result.Error.ErrorType
 			}

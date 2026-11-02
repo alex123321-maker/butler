@@ -87,6 +87,12 @@ func (s *Server) executeSSO(ctx context.Context, req *runtimev1.ExecuteRequest) 
 		return fail()
 	}
 	stage = "runner_result"
+	if result.Error != nil {
+		switch result.Error.ErrorType {
+		case "sso_tls_rejected", "sso_connection_rejected", "sso_network_timeout", "sso_navigation_rejected", "sso_page_origin_rejected":
+			stage = "helper_" + result.Error.ErrorType
+		}
+	}
 	if !result.OK || result.Error != nil || result.NetworkState != "frozen" || result.SelectedPageID != page.ID || result.FinalURL != a.VerifyURL || len(result.PrivatePages) == 0 || len(result.PrivatePages) > browsercontrol.MaxLifetimePages {
 		return fail()
 	}
