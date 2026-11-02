@@ -256,36 +256,38 @@ func (c *experienceNativeToolCatalog) ListToolsForRun(ctx context.Context, run s
 }
 
 type experienceNativeRuntime struct {
-	pool          *pgxpool.Pool
-	reads         *pgxpool.Pool
-	directory     string
-	cat           *catalog.Store
-	lessons       *experience.Store
-	broker        *tools.BrokerClient
-	skillClient   *skills.Client
-	goals         *goal.Manager
-	tasks         *task.Store
-	sessions      *session.PostgresRepository
-	runs          *runservice.Service
-	history       *transcript.Store
-	inputs        *durableinput.Store
-	results       *completion.Coordinator
-	journal       *actionauth.PostgresStore
-	budgets       *budget.Controller
-	pm            *promptmgmt.Manager
-	decisions     *approvals.Service
-	extensions    *extensions.ControlClient
-	pack          extensions.Package
-	generation    int64
-	environment   string
-	expires       time.Time
-	addresses     experienceNativeAddresses
-	timing        *experienceSourceTimings
-	stops         []func()
-	reconcile     func(context.Context, string, string, string) (actionauth.RunEffect, error)
-	foreground    *experienceNativeForeground
-	evidenceReads *MemoryReads
-	utilityTiming *utilityTimings // optional research-only, no production hooks
+	pool                *pgxpool.Pool
+	reads               *pgxpool.Pool
+	directory           string
+	cat                 *catalog.Store
+	lessons             *experience.Store
+	broker              *tools.BrokerClient
+	skillClient         *skills.Client
+	goals               *goal.Manager
+	tasks               *task.Store
+	sessions            *session.PostgresRepository
+	runs                *runservice.Service
+	history             *transcript.Store
+	inputs              *durableinput.Store
+	results             *completion.Coordinator
+	journal             *actionauth.PostgresStore
+	budgets             *budget.Controller
+	pm                  *promptmgmt.Manager
+	decisions           *approvals.Service
+	extensions          *extensions.ControlClient
+	pack                extensions.Package
+	generation          int64
+	environment         string
+	expires             time.Time
+	addresses           experienceNativeAddresses
+	timing              *experienceSourceTimings
+	stops               []func()
+	reconcile           func(context.Context, string, string, string) (actionauth.RunEffect, error)
+	foreground          *experienceNativeForeground
+	evidenceReads       *MemoryReads
+	utilityTiming       *utilityTimings // optional research-only, no production hooks
+	utilitySpeed        bool
+	utilityInitialSkill string
 }
 
 // Explicit test-only composition. Nil retains the frozen90 foreground defaults;
@@ -789,6 +791,18 @@ func (r *experienceNativeRuntime) executeInput(t *testing.T, ctx context.Context
 	}
 	if r.skillClient != nil {
 		fc.Skills = r.skillClient
+	}
+	fc.CompactModelContext = r.utilitySpeed
+	if r.utilitySpeed && r.utilityTiming != nil {
+		fc.Delivery = utilityDeliveryTiming{timing: r.utilityTiming}
+	}
+	if r.utilityInitialSkill != "" {
+		fc.InitialSkillSelection = func(c context.Context, run, taskID string) ([]string, error) {
+			if taskID != record.TaskID || run == "" {
+				return nil, fmt.Errorf("initial skill task mismatch")
+			}
+			return []string{r.utilityInitialSkill}, nil
+		}
 	}
 	base := flow.NewService(r.sessions, session.NewPostgresLeaseManagerWithAuthorityReads(r.pool, r.reads), r.runs, r.history, provider, fc, log)
 	x := &adaptiveNativeExecutor{base: base, done: make(chan adaptiveNativeExecution, 1)}

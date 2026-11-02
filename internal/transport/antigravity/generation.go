@@ -11,7 +11,7 @@ import (
 // by the caller. Empty ThinkingLevel preserves the existing automatic contract.
 func validateGenerationConfig(cfg *Config) error {
 	cloudProfile := cfg.Model == FlashHighModel || cfg.Model == FlashLowModel
-	if cfg.ThinkingLevel != "" && !(cfg.Model == FlashLowModel && cfg.ThinkingLevel == "LOW" || cfg.Model == FlashHighModel && cfg.ThinkingLevel == "HIGH") {
+	if cfg.ThinkingLevel != "" && !(cfg.Model == FlashLowModel && cfg.ThinkingLevel == "LOW" || cfg.Model == FlashHighModel && (cfg.ThinkingLevel == "HIGH" || cfg.ThinkingLevel == "MEDIUM")) {
 		return protocolError("unsupported explicit thinking level")
 	}
 	if cfg.MaximumOutputTokens == 0 {
@@ -19,7 +19,7 @@ func validateGenerationConfig(cfg *Config) error {
 	}
 	structured := len(cfg.JSONResponseSchema) > 0 || len(cfg.GoogleResponseSchema) > 0
 	if cfg.MaximumOutputTokens < 1 || cfg.MaximumOutputTokens > 32768 ||
-		cfg.MaximumOutputTokens > maxOutputTokens && cfg.Model != FlashHighModel || structured && !cloudProfile {
+		cfg.MaximumOutputTokens > maxOutputTokens && cfg.Model != FlashHighModel && !(cfg.Model == FlashLowModel && cfg.ThinkingLevel == "LOW") || structured && !cloudProfile {
 		return protocolError("unsupported configured generation allowance")
 	}
 	if len(cfg.JSONResponseSchema) > 0 && len(cfg.GoogleResponseSchema) > 0 {

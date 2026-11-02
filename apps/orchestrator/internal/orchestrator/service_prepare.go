@@ -484,13 +484,17 @@ func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun
 		return fmt.Errorf("load prompt config: %w", err)
 	}
 	assemble := func() promptmgmt.Assembly {
+		toolSummary := stringFromAny(prepared.MemoryBundle["tool_summary"])
+		if s.config.CompactModelContext && !s.config.ToolDiscoveryEnabled && len(prepared.ToolDefs) > 0 {
+			toolSummary = ""
+		}
 		return s.config.PromptAssembler.Assemble(state, promptmgmt.Context{
 			SessionSummary:  stringFromAny(prepared.MemoryBundle["session_summary"]),
 			Working:         workingContextToPromptContext(prepared.MemoryBundle["working"]),
 			Profile:         sliceOfMaps(prepared.MemoryBundle["profile"]),
 			Episodes:        sliceOfMaps(prepared.MemoryBundle["episodes"]),
 			Chunks:          sliceOfMaps(prepared.MemoryBundle["chunks"]),
-			ToolSummary:     stringFromAny(prepared.MemoryBundle["tool_summary"]),
+			ToolSummary:     toolSummary,
 			BrowserStrategy: promptmgmt.BrowserStrategyContent,
 		})
 	}

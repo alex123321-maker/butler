@@ -28,7 +28,9 @@ docker run --rm --network none --cpus 1 --memory 3g --memory-swap 3g --pids-limi
  -e GOCACHE=/cache -e GOTMPDIR=/build-tmp -e GOMODCACHE=/modules -e GOPROXY=off -e GOSUMDB=off \
  -e GOTOOLCHAIN=local -e GOMAXPROCS=1 -e GOFLAGS='-p=1 -buildvcs=false -mod=readonly' -w /source "$image" sh -eu -c '
  go version
- go test -race -count=1 -run "^(TestSkill|TestRecoveredSkills)" ./apps/orchestrator/internal/orchestrator
+ go test -race -count=1 -run "^(TestSkill|TestInitialSkill|TestRecoveredSkills)" ./apps/orchestrator/internal/orchestrator
+ go test -race -count=1 ./internal/transport/antigravity
+ go test -race -count=1 -run "^(TestMemoryUtilitySpeed|TestMemoryUtilityLive)" ./apps/orchestrator/internal/app
  go test -race -count=1 -run "^(TestMemoryUtility|TestLimitedRead|TestExperienceReadPolicy|TestMemoryEvidence)" ./internal/acceptance ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator
  go test -race -count=1 ./internal/memory/readcontrol ./cmd/memory-utility-eval ./apps/orchestrator/internal/orchestrator
  go vet ./internal/acceptance/utilitytrace ./internal/memory/readcontrol ./internal/memory/experience ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app
@@ -69,6 +71,7 @@ docker run --rm --network "container:$pg" --cpus 1 --memory 3g --memory-swap 3g 
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^(TestMemoryUtilityWorkflowReasoningProfiles|TestSkillWorkflowContract|TestMemoryUtilityOpenAIProfilesAreExplicitAndConservative|TestMemoryUtilityActualCoreBrokerTraceIntegration|TestMemoryUtilityInstructionsAreScopedToCurrentGoal|TestExperienceEvidenceSelectionAndDurableStopThroughBrokerIntegration)$"
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestMemoryUtilityWholeControlledABCIntegration$"
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestSkillWorkflowControlledABCIntegration$"
+ /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=25m -test.run "^TestSkillWorkflowSpeedControlledABCIntegration$"
  cd /source
  /reports/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /reports/app.test -test.v -test.count=1 -test.timeout=12m -test.run "^TestReviewedSkillRealBrokerDurableApprovalE2E$"
  ' \

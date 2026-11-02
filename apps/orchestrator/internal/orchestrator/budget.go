@@ -151,7 +151,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 					// High's native total includes prompt, candidates and thinking;
 					// its generation ceiling bounds candidates+thinking together.
 					// Other adapters may include cached dimensions in their total.
-					if s.config.ProviderName == modelprovider.ProviderAntigravity && s.config.ModelName == "gemini-3.8-flash-high" && usage.TotalTokens > 0 {
+					if s.config.ProviderName == modelprovider.ProviderAntigravity && (s.config.ModelName == "gemini-3.8-flash-high" || s.config.ModelName == "gemini-3.8-flash-low") && usage.TotalTokens > 0 {
 						generated = max(generated, int64(usage.TotalTokens)-in)
 					}
 					if in > input || generated > a.OutputTokens {

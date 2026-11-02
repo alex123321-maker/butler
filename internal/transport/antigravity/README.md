@@ -248,3 +248,11 @@ serialized request, including private retained history, schemas and tool results
 before HTTP write; unset callers use a fixed 8MiB cap. Operator subscription cost
 basis is separately required by production execution budgets. Neither this quote
 nor model availability proves a successful authenticated request.
+# Explicit latency research profiles
+
+The existing Flash High Cloud Code route additionally accepts trusted
+`ThinkingLevel=MEDIUM`. Explicit Flash Low/LOW permits an output ceiling up to
+32768; automatic legacy Low remains capped at 8192. Construction-time settings
+cannot be overridden by model requests. This adds no route fallback or default
+change. Full accounting retains thinking tokens; the route/model-version label
+does not independently attest the effective thinking level.

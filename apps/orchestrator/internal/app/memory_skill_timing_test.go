@@ -5,6 +5,7 @@ package app
 // subset of Butler time; overlapping subspans must never be added twice.
 import (
 	"context"
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"sync"
@@ -17,8 +18,26 @@ type utilityTimingSpan struct {
 	Nanoseconds int64  `json:"nanoseconds"`
 }
 type utilityTimings struct {
-	mu    sync.Mutex
-	spans []utilityTimingSpan
+	mu        sync.Mutex
+	spans     []utilityTimingSpan
+	started   time.Time
+	firstText bool
+}
+
+type utilityDeliveryTiming struct {
+	flow.NopDeliverySink
+	timing *utilityTimings
+}
+
+func (d utilityDeliveryTiming) DeliverAssistantDelta(_ context.Context, e flow.DeliveryEvent) error {
+	t := d.timing
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if !t.firstText && e.Content != "" && !t.started.IsZero() {
+		t.firstText = true
+		t.spans = append(t.spans, utilityTimingSpan{"first_text_delivery", "core_delivery_sink", time.Since(t.started).Nanoseconds()})
+	}
+	return nil
 }
 
 func (t *utilityTimings) add(kind, name string, elapsed time.Duration) {

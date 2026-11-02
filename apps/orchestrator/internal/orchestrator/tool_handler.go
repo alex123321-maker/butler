@@ -150,6 +150,9 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("continuation external-effect identity changed")
 	}
 	{
+		if initialSkillSink(ctx) != nil && prepared.RequiresApproval {
+			return nil, current, fmt.Errorf("initial skill load requires an already permitted read")
+		}
 		if prepared.RequiresApproval && approvalID == "" {
 			if s.config.Checkpoints != nil {
 				suspended, suspendErr := s.suspendApproval(ctx, current, requested, prepared)
@@ -481,6 +484,15 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("mark run awaiting_model_resume: %w", err)
 	}
 	current = next
+
+	if sink := initialSkillSink(ctx); sink != nil {
+		if requested.ToolName != "skills.load" || result.GetStatus() != "completed" || result.GetError() != nil {
+			return nil, current, fmt.Errorf("initial skill load did not complete")
+		}
+		*sink = liveResultJSON
+		next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, leaseID, "", "")
+		return nil, next, err
+	}
 
 	stream, err := s.resumeProviderWithToolResult(ctx, current, toolCallID, liveResultJSON)
 	if err != nil {

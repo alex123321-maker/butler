@@ -216,6 +216,12 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	transportCtx = adaptiveContext(transportCtx, prepared)
 	transportCtx = converterContinuationProposalContext(transportCtx, prepared)
 	transportCtx = withAnswerState(transportCtx, "final")
+	if !operatorDoctor(ctx) {
+		current, err = s.loadInitialSkills(transportCtx, runLog, current, lease.LeaseID, &prepared)
+		if err != nil {
+			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+		}
+	}
 	var stream transport.EventStream
 	if operatorDoctor(ctx) {
 		stream = doctorCommandStream(current.GetRunId())

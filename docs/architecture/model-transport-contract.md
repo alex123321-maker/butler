@@ -2,6 +2,23 @@
 
 ## OpenAI Responses implementation (2026-10-30)
 
+The separate [latency workflow](../testing/issue115-speed-workflow-2026-11-02.md)
+uses explicitly frozen Gemini MEDIUM/LOW and Luna max/high/low profiles with
+65536 input/32768 output. MEDIUM selects the existing Flash High Cloud Code
+route with `thinkingLevel=MEDIUM`; LOW selects Flash Low with an explicit LOW.
+There is no invented medium route alias or fallback. Only explicit LOW permits
+the larger Low ceiling; legacy automatic Low keeps its existing 8192 bound.
+All paid Flash output admission includes candidate and thinking consumption.
+These trusted settings do not change provider defaults or closed plans.
+
+Optional `CompactModelContext` omits only the duplicate human-readable tool
+summary when exact native schemas are present and deferred discovery is off.
+It retains current owner input, evidence, source refs and tool schemas unchanged.
+The new research capture forwards only pure provisional text deltas before
+durable method retention. Tool/final/usage events and mixed payloads remain
+buffered until PostgreSQL/raw fsync, under ordinary outer source/skill guards.
+First text at the Core delivery sink is not final completion or channel ACK.
+
 The API-key `openai` provider now uses Responses for both WebSocket and HTTP SSE;
 it does not use audio Realtime or the separate ChatGPT OAuth adapter. See the
 [provider contract/configuration](../../internal/transport/openai/README.md).

@@ -165,6 +165,9 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	defer recipient.close()
 	arm := experienceNativeArms[strings.Index("ABC", slot.Arm)]
 	policy := experienceNativeSourcePolicy()
+	if native != nil && native.plan.Optimization == "latency-v1" && native.plan.Provider == "antigravity" {
+		policy.Models["antigravity:"+native.plan.Model] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	}
 	if native != nil && native.plan.Provider == "openai" {
 		// Conservative whole-micro ceilings, not an invoice or inferred free subscription.
 		price, ceiling, err := utilityOpenAIProfile(native.plan.Model)
@@ -262,7 +265,21 @@ func utilityWholeCase(t *testing.T, root string, suite acceptance.UtilitySuite, 
 	if native != nil {
 		provider = native.provider(t, slot.Sequence, dst, pool, timing)
 	}
+	if native != nil && native.plan.Optimization == "latency-v1" || native == nil && os.Getenv("BUTLER_UTILITY_SPEED_CONTROL") == "1" {
+		r.utilitySpeed = true
+		// Explicit collector-owned binding, not semantic inference from case
+		// answers: this workflow and current owner request authorize preparation.
+		if reviewed != nil && utilityIsWorkflow(c) && c.Condition == "prepared_artifact" {
+			r.utilityInitialSkill = reviewed.Digest
+			if p, ok := provider.(*utilityWorkflowProvider); ok {
+				p.loaded = true
+			}
+		}
+	}
 	started := time.Now()
+	if timing != nil {
+		timing.started = started
+	}
 	out := r.execute(t, ctx, record, id, string(raw), provider)
 	executionDuration := time.Since(started)
 	observerStarted := time.Now()

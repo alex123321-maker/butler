@@ -134,6 +134,7 @@ def main():
                 'observer_seconds': timing['observer_ns']/1e9,
                 'full_phases_seconds': summed/1e9,
                 'tool_rpc_seconds_by_name': dict(by_tool),
+                'first_text_delivery_seconds': next((x['nanoseconds']/1e9 for x in timing['spans'] if x['kind']=='first_text_delivery'), None),
             }
         rows.append(out)
 
@@ -147,6 +148,9 @@ def main():
         total['mean_provider_call_seconds'] = total['provider_wait_seconds']/calls if calls else None
         total['native_method_attempts_with_timing'] = calls
         total['timed_cases'] = len(timed)
+        first_text = [x['timing']['first_text_delivery_seconds'] for x in timed if x['timing']['first_text_delivery_seconds'] is not None]
+        total['cases_with_first_text_delivery'] = len(first_text)
+        total['mean_first_text_delivery_seconds'] = sum(first_text)/len(first_text) if first_text else None
         total['missing_timing_cases'] = len(items)-len(timed)
         total['scheduled'] = len(items)
         total['task_success'] = sum(x['task_success'] for x in items)
@@ -168,6 +172,8 @@ def main():
         return total
 
     result = {'protocol': plan['Protocol'], 'source': plan['Source'], 'model': plan['Model'],
+        'profile': plan.get('Profile'), 'optimization': plan.get('Optimization'),
+        'maximum_output_tokens': 32768 if plan.get('Optimization')=='latency-v1' else 8192,
         'reasoning_effort': plan['ReasoningEffort'] or 'provider_default_high',
         'suite_sha256_bytes': basic['suite_sha256_bytes'],
         'raw_pg_core_correlated_methods': basic['raw_pg_entries_correlated'],

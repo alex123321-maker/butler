@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/skills"
+	"github.com/butler/butler/internal/transport"
 	"slices"
+	"strings"
 )
 
 const skillSelectionInstructionRef = "kernel:skill-selection-v1"
@@ -22,6 +24,22 @@ func (s *Service) attachSkillContext(ctx context.Context, p *preparedRun, recove
 	if !recovered && p.Task == nil {
 		return nil
 	}
+	// Refresh the current catalog snapshot instead of accumulating identical
+	// descriptions/procedures on repeated preparation. Preserve all other DATA.
+	items := make([]transport.InputItem, 0, len(p.InputItems))
+	for _, item := range p.InputItems {
+		o := content.ItemOrigin(item)
+		owned := false
+		if !o.IsInstruction() {
+			for _, ref := range o.SourceRefs {
+				owned = owned || ref == "skill-index:"+p.CurrentRunID || recovered && strings.HasPrefix(ref, "skill:")
+			}
+		}
+		if !owned {
+			items = append(items, item)
+		}
+	}
+	p.InputItems = items
 	attached := false
 	for _, item := range p.InputItems {
 		origin := content.ItemOrigin(item)

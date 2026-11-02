@@ -206,7 +206,7 @@ func (p *utilityWorkflowProvider) StartRun(ctx context.Context, q transport.Star
 	}
 	p.run = q.Context.RunID
 	p.phase = 1
-	if p.digest != "" {
+	if p.digest != "" && !p.loaded {
 		return p.emit("skills.load", map[string]any{"digest": p.digest, "max_bytes": 16384}), nil
 	}
 	return p.emit("extension.project.inspect", map[string]string{"url": egresstest.Origin + "/project/alpha"}), nil
@@ -331,4 +331,10 @@ func TestSkillWorkflowControlledABCIntegration(t *testing.T) {
 			slot.Status = "failed"
 		}
 	}
+}
+
+func TestSkillWorkflowSpeedControlledABCIntegration(t *testing.T) {
+	t.Setenv("BUTLER_UTILITY_SPEED_CONTROL", "1")
+	t.Setenv("BUTLER_SKILL_WORKFLOW_OUTPUT", os.Getenv("BUTLER_SKILL_WORKFLOW_OUTPUT")+"-speed")
+	TestSkillWorkflowControlledABCIntegration(t)
 }

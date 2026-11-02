@@ -83,8 +83,8 @@ func TestExplicitThinkingLevelCannotBeOverriddenByRequest(t *testing.T) {
 			t.Fatal("mismatched thinking profile accepted")
 		}
 	}
-	for _, profile := range []struct{ model, level string }{{FlashLowModel, "LOW"}, {FlashHighModel, "HIGH"}} {
-		p, e := NewProvider(Config{Model: profile.model, ThinkingLevel: profile.level, AuthSource: cloudAuthSource{project: "research-project"}})
+	for _, profile := range []struct{ model, level string }{{FlashLowModel, "LOW"}, {FlashHighModel, "HIGH"}, {FlashHighModel, "MEDIUM"}} {
+		p, e := NewProvider(Config{Model: profile.model, ThinkingLevel: profile.level, MaximumOutputTokens: 32768, AuthSource: cloudAuthSource{project: "research-project"}})
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -92,7 +92,7 @@ func TestExplicitThinkingLevelCannotBeOverriddenByRequest(t *testing.T) {
 		p.client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
 			calls++
 			var wire cloudRequestEnvelope
-			if json.NewDecoder(r.Body).Decode(&wire) != nil || wire.Request.GenerationConfig.ThinkingConfig.ThinkingLevel != profile.level || wire.Request.GenerationConfig.ThinkingConfig.ThinkingBudget != 0 {
+			if json.NewDecoder(r.Body).Decode(&wire) != nil || wire.Request.GenerationConfig.ThinkingConfig.ThinkingLevel != profile.level || wire.Request.GenerationConfig.ThinkingConfig.ThinkingBudget != 0 || wire.Request.GenerationConfig.MaxOutputTokens != 32768 {
 				t.Fatal("explicit level wire mismatch")
 			}
 			return response(cloudFrame(`{"text":"ready"}`, "STOP")), nil

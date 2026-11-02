@@ -181,8 +181,16 @@ type Config struct {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error
 	}
-	Skills     SkillCatalog
-	OwnerGoals interface {
+	Skills SkillCatalog
+	// Optional trusted resolver of exact owner/task-selected digests. It must
+	// enforce current applicability and owner prohibitions; payload/model DATA
+	// must never select this hook. Each load still uses the ordinary action/Broker
+	// pipeline. Nil preserves model-selected discovery.
+	InitialSkillSelection func(context.Context, string, string) ([]string, error)
+	// Omit only the redundant flat tool summary when exact native schemas are
+	// present and tool discovery is disabled. No history/evidence is compressed.
+	CompactModelContext bool
+	OwnerGoals          interface {
 		ReadTaskAuthority(context.Context, string) (actionauth.Assignment, actionauth.Mandate, actionauth.GoalPolicy, error)
 	}
 	Budgets               *budget.Controller

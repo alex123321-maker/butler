@@ -56,6 +56,7 @@ type utilityNativePlan struct {
 	Provider, ReasoningEffort, ReferenceSuiteSHA256 string
 	Model, Rules, Preparation                       string
 	CaseSeconds, AuthoritySeconds                   int
+	Profile, Optimization                           string `json:",omitempty"`
 }
 
 func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
@@ -110,6 +111,18 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 	}
 	slots := []utilityWholeSlot{}
+	profile := os.Getenv("BUTLER_UTILITY_SPEED_PROFILE")
+	optimization := ""
+	if profile != "" {
+		if protocol != utilityWorkflowProtocol {
+			t.Fatal("speed profiles require the frozen workflow")
+		}
+		provider, model, effort, e = utilitySpeedProfile(profile)
+		if e != nil {
+			t.Fatal(e)
+		}
+		optimization = "latency-v1"
+	}
 	for i := range s.Cases {
 		for j := 0; j < 3; j++ {
 			slots = append(slots, utilityWholeSlot{len(slots) + 1, i, []string{"A", "B", "C"}[(i+j)%3], "planned"})
@@ -140,7 +153,7 @@ func TestMemoryUtilityFreezeNativeABC(t *testing.T) {
 		}
 		history[name] = experienceDigest(string(b))
 	}
-	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{Protocol: protocol, SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: len(slots) * 13, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Provider: provider, Model: model, ReasoningEffort: effort, ReferenceSuiteSHA256: reference, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "All frozen slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
+	utilityWholeWrite(t, root, "plan.json", utilityNativePlan{Profile: profile, Optimization: optimization, Protocol: protocol, SuiteSHA256: acceptance.MemoryDigest(s), Slots: slots, Deadline: time.Now().Add(4 * time.Hour), MaximumMethods: len(slots) * 13, Source: os.Getenv("BUTLER_UTILITY_NATIVE_SOURCE"), HistoricalReceipts: history, Provider: provider, Model: model, ReasoningEffort: effort, ReferenceSuiteSHA256: reference, CaseSeconds: 480, AuthoritySeconds: 420, Preparation: "scripted synthetic source/note and actual verified Broker skill preparation, zero native creation calls; retain separate measured costs, not production learning acceptance", Rules: "All frozen slots, no retry/resume/fallback. Provider/response/tool failure ends its slot; missing/unknown spend retained. Authority, source, journal or deadline failure stops admission globally. No invoice inference; historical receipts pinned and unchanged."})
 }
 
 type utilityWholeNative struct {
@@ -189,6 +202,12 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 		}
 	}
 	ctx, cancel := context.WithDeadline(context.Background(), plan.Deadline)
+	if plan.Optimization != "" {
+		p, m, effort, err := utilitySpeedProfile(os.Getenv("BUTLER_UTILITY_SPEED_PROFILE"))
+		if err != nil || plan.Optimization != "latency-v1" || plan.Profile != os.Getenv("BUTLER_UTILITY_SPEED_PROFILE") || p != plan.Provider || m != plan.Model || effort != plan.ReasoningEffort {
+			t.Fatal("prospective profile mismatch")
+		}
+	}
 	defer cancel()
 	probe, e := pgx.Connect(ctx, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 	if e != nil {
@@ -208,6 +227,10 @@ func TestMemoryUtilityWholeNativeABC(t *testing.T) {
 		_, _, profileErr := utilityOpenAIProfile(plan.Model)
 		terraEffort, terraErr := utilityWorkflowTerraEffort(os.Getenv("BUTLER_UTILITY_TERRA_EFFORT"))
 		effortOK := plan.ReasoningEffort == "high" && plan.Protocol == "" || plan.Protocol == utilityWorkflowProtocol && (plan.Model == "gpt-6-luna" && plan.ReasoningEffort == "max" || plan.Model == "gpt-6.1-terra" && terraErr == nil && plan.ReasoningEffort == terraEffort)
+		if plan.Optimization == "latency-v1" {
+			p, m, effort, err := utilitySpeedProfile(os.Getenv("BUTLER_UTILITY_SPEED_PROFILE"))
+			effortOK = err == nil && p == plan.Provider && m == plan.Model && effort == plan.ReasoningEffort && plan.Profile == os.Getenv("BUTLER_UTILITY_SPEED_PROFILE")
+		}
 		if profileErr != nil || !effortOK || plan.ReferenceSuiteSHA256 != experienceDigest(string(bytes)) {
 			t.Fatal("exact paired OpenAI profile required")
 		}
@@ -299,13 +322,17 @@ func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, caseP
 	var p transport.ModelProvider
 	var e error
 	if s.plan.Provider == "openai" {
-		built, err := providerfactory.New(nil, nil).Build(context.Background(), providerfactory.BuildConfig{ActiveProvider: "openai", OpenAIAPIKey: s.apiKey, OpenAIModel: s.plan.Model, OpenAIReasoningEffort: s.plan.ReasoningEffort, OpenAIMaximumInputTokens: 65536, OpenAIMaximumOutputTokens: 8192, Timeout: 90 * time.Second})
+		built, err := providerfactory.New(nil, nil).Build(context.Background(), providerfactory.BuildConfig{ActiveProvider: "openai", OpenAIAPIKey: s.apiKey, OpenAIModel: s.plan.Model, OpenAIReasoningEffort: s.plan.ReasoningEffort, OpenAIMaximumInputTokens: 65536, OpenAIMaximumOutputTokens: int(s.plan.outputLimit()), Timeout: 90 * time.Second})
 		p, e = built.Provider, err
 		if closeable, ok := p.(interface{ CloseAllSessions() }); ok {
 			t.Cleanup(closeable.CloseAllSessions)
 		}
 	} else {
-		p, e = antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 90 * time.Second, MaximumOutputTokens: 8192, AuthSource: s.manager})
+		level := ""
+		if s.plan.Optimization == "latency-v1" {
+			level = s.plan.ReasoningEffort
+		}
+		p, e = antigravity.NewProvider(antigravity.Config{Model: s.plan.Model, ThinkingLevel: level, Timeout: 90 * time.Second, MaximumOutputTokens: int(s.plan.outputLimit()), AuthSource: s.manager})
 	}
 	if e != nil {
 		t.Fatal(e)
@@ -316,8 +343,10 @@ func (s *utilityWholeNative) provider(t *testing.T, slot int, root string, caseP
 	}
 	return &utilityNativeProvider{ModelProvider: p, state: s, slot: slot, root: root, casePool: casePool, timing: clock}
 }
-func (p *utilityNativeProvider) NativeModel() string             { return p.state.plan.Model }
-func (p *utilityNativeProvider) InferenceLimits() (int64, int64) { return 65536, 8192 }
+func (p *utilityNativeProvider) NativeModel() string { return p.state.plan.Model }
+func (p *utilityNativeProvider) InferenceLimits() (int64, int64) {
+	return 65536, p.state.plan.outputLimit()
+}
 func (p *utilityNativeProvider) InferenceTimeout() time.Duration { return 90 * time.Second }
 func (p *utilityNativeProvider) StartRun(c context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
 	return p.capture(c, "start", q, func(x context.Context) (transport.EventStream, error) { return p.ModelProvider.StartRun(x, q) })
@@ -329,6 +358,24 @@ func (p *utilityNativeProvider) ContinueRun(c context.Context, q transport.Conti
 	return p.capture(c, "continue", q, func(x context.Context) (transport.EventStream, error) { return p.ModelProvider.ContinueRun(x, q) })
 }
 func (p *utilityNativeProvider) capture(ctx context.Context, kind string, request any, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
+	if p.state.plan.Optimization != "latency-v1" {
+		return p.captureRecorded(ctx, kind, request, call, nil)
+	}
+	run := ""
+	switch q := request.(type) {
+	case transport.StartRunRequest:
+		run = q.Context.RunID
+	case transport.SubmitToolResultRequest:
+		run = q.RunID
+	case transport.ContinueRunRequest:
+		run = q.RunID
+	}
+	return utilityLiveCapture(ctx, run, p.Name(), func(text func(transport.TransportEvent)) (transport.EventStream, error) {
+		return p.captureRecorded(ctx, kind, request, call, text)
+	}), nil
+}
+
+func (p *utilityNativeProvider) captureRecorded(ctx context.Context, kind string, request any, call func(context.Context) (transport.EventStream, error), text func(transport.TransportEvent)) (transport.EventStream, error) {
 	s := p.state
 	if s.stopped || p.failed || s.seq >= s.plan.MaximumMethods || p.turn >= 13 || !s.plan.Deadline.After(time.Now()) {
 		return nil, fmt.Errorf("native admission stopped")
@@ -402,6 +449,12 @@ func (p *utilityNativeProvider) capture(ctx context.Context, kind string, reques
 	} else {
 		for event := range stream {
 			events = append(events, event)
+			if text != nil && utilityPlainText(event) {
+				if entry["first_text_ns"] == nil {
+					entry["first_text_ns"] = time.Since(started).Nanoseconds()
+				}
+				text(event)
+			}
 			if event.Usage != nil {
 				entry["usage"] = event.Usage
 			}

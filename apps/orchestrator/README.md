@@ -1713,3 +1713,12 @@ selects Gemini Flash High, Terra 6.1 none or Luna 6 max explicitly. Test-only
 monotonic provider/tool spans distinguish API wait, Butler execution, fixture
 preparation and observer work. See the
 [protocol](../../docs/testing/issue115-skill-workflow-2026-10-30.md).
+# Optional latency composition
+
+Trusted in-process `InitialSkillSelection` can select exact current task-bound
+skill digests before first inference. Core still uses ordinary action/Broker
+loads and ref-only durable receipts; no resolver is installed by production
+startup. `CompactModelContext` can omit the redundant flat tool summary with
+complete native schemas and no deferred discovery. Neither option removes
+source/authority/skill/approval fences or changes tool parallelism. See
+[latency research protocol](../../docs/testing/issue115-speed-workflow-2026-11-02.md).

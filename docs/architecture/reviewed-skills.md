@@ -53,6 +53,23 @@ dispatch prerequisite, an automatic skill execution or a permission grant.
 
 ## Evidence and lifecycle
 
+Trusted in-process composition may supply `InitialSkillSelection(run, task)` for
+exact task/owner-selected digests. Nil retains model discovery; production
+startup provides no resolver. The resolver owns applicability and current owner
+prohibitions and must not read enabling choices from model/ingress DATA. Core
+validates the entire bounded distinct digest set before any load and performs
+each actual `skills.load` through the ordinary action/Broker pipeline before
+first inference. Approval-required reads fail closed rather than introducing
+an implicit decision. The load creates normal action/effect/source pins and a
+ref-only transcript, then current pinned procedural DATA enters initial context.
+No invented provider tool-call lineage or new authority is created. Existing
+live/final/recovery guards remain mandatory; interrupted model-start checkpoints
+retain the existing fail-closed recovery behavior and do not replay mutations.
+
+Repeated context assembly refreshes the current catalog descriptions and loaded
+procedures instead of appending duplicate DATA snapshots. This does not merge
+different source identities or compress task evidence.
+
 The fixed v1 validator requires owner-verified criteria/results and actual
 effect-confirmed actions using exact historical contracts. A model final or
 successful transport status is insufficient. Mutation procedures stop/reconcile;
