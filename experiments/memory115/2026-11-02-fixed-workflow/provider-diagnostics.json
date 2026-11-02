@@ -1,0 +1,114 @@
+{
+  "gemini": {
+    "-20261030-r1": {
+      "observed_model_versions": {
+        "gemini-3.8-flash-n": 190
+      },
+      "observed_service_tiers": {},
+      "errors": []
+    },
+    "-fixed-20261102-r1": {
+      "observed_model_versions": {
+        "gemini-3.8-flash-n": 189
+      },
+      "observed_service_tiers": {},
+      "errors": []
+    }
+  },
+  "terra": {
+    "-20261030-r1": {
+      "observed_model_versions": {
+        "gpt-6.1-terra": 128
+      },
+      "observed_service_tiers": {
+        "default": 128
+      },
+      "errors": []
+    },
+    "-fixed-20261102-r1": {
+      "observed_model_versions": {
+        "gpt-6.1-terra": 126
+      },
+      "observed_service_tiers": {
+        "default": 126
+      },
+      "errors": []
+    }
+  },
+  "luna": {
+    "-20261030-r1": {
+      "observed_model_versions": {
+        "gpt-6-luna": 134
+      },
+      "observed_service_tiers": {
+        "default": 134
+      },
+      "errors": [
+        {
+          "slot": 36,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        },
+        {
+          "slot": 34,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        },
+        {
+          "slot": 35,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        }
+      ]
+    },
+    "-fixed-20261102-r1": {
+      "observed_model_versions": {
+        "gpt-6-luna": 133
+      },
+      "observed_service_tiers": {
+        "default": 133
+      },
+      "errors": [
+        {
+          "slot": 34,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        },
+        {
+          "slot": 35,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        },
+        {
+          "slot": 33,
+          "code": "provider_protocol_error",
+          "output_tokens": 8192,
+          "reasoning_tokens": 8192,
+          "messages": [
+            "provider rejected the operation"
+          ]
+        }
+      ]
+    }
+  }
+}

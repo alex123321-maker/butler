@@ -1,0 +1,1873 @@
+{
+  "protocol": "skill-workflow-v1",
+  "source": "d1f21ac9ad9d8ba9477616ee9f2e5c19dfff9c72",
+  "model": "gpt-6.1-terra",
+  "reasoning_effort": "medium",
+  "suite_sha256_bytes": "8df9b914108c690c5a083648aa28cbb9bbad2b38abb205dbceb797c0e80f350a",
+  "raw_pg_core_correlated_methods": 126,
+  "core_missing_attempts": 0,
+  "core_token_mismatches": 0,
+  "all_slots_observed": true,
+  "total": {
+    "execution_seconds": 475.556458583,
+    "provider_wait_seconds": 425.544543787,
+    "butler_total_seconds": 50.011914796,
+    "tool_rpc_seconds_within_butler": 6.244943946,
+    "butler_other_seconds": 43.76697085,
+    "preparation_seconds": 71.074568889,
+    "observer_seconds": 2.257933492,
+    "full_phases_seconds": 548.888960964,
+    "mean_provider_call_seconds": 3.3773376491031746,
+    "native_method_attempts_with_timing": 126,
+    "timed_cases": 36,
+    "missing_timing_cases": 0,
+    "scheduled": 36,
+    "task_success": 35,
+    "migration_strict_success": 23,
+    "migration_scheduled": 24,
+    "physical_artifact_success": 23,
+    "cases_with_completed_skill_load": 8,
+    "completed_skill_loads": 8,
+    "cases_with_opened_memory": 0,
+    "memory_tool_results": {},
+    "max_tokens_finals": 0,
+    "native_methods_dispatched": 126,
+    "unknown_usage": 0,
+    "known_full_tokens": 759092,
+    "known_usage_tariff_usd": {
+      "minimum": "0.38649295",
+      "maximum": "0.66344670"
+    }
+  },
+  "arms": {
+    "A": {
+      "execution_seconds": 146.313186791,
+      "provider_wait_seconds": 132.945870345,
+      "butler_total_seconds": 13.367316446,
+      "tool_rpc_seconds_within_butler": 1.814031168,
+      "butler_other_seconds": 11.553285278,
+      "preparation_seconds": 17.958044489,
+      "observer_seconds": 0.708641121,
+      "full_phases_seconds": 164.979872401,
+      "mean_provider_call_seconds": 3.4088684703846153,
+      "native_method_attempts_with_timing": 39,
+      "timed_cases": 12,
+      "missing_timing_cases": 0,
+      "scheduled": 12,
+      "task_success": 12,
+      "migration_strict_success": 8,
+      "migration_scheduled": 8,
+      "physical_artifact_success": 8,
+      "cases_with_completed_skill_load": 0,
+      "completed_skill_loads": 0,
+      "cases_with_opened_memory": 0,
+      "memory_tool_results": {},
+      "max_tokens_finals": 0,
+      "native_methods_dispatched": 39,
+      "unknown_usage": 0,
+      "known_full_tokens": 194908,
+      "known_usage_tariff_usd": {
+        "minimum": "0.11090240",
+        "maximum": "0.18819615"
+      }
+    },
+    "B": {
+      "execution_seconds": 141.369029248,
+      "provider_wait_seconds": 128.46605475,
+      "butler_total_seconds": 12.902974497999999,
+      "tool_rpc_seconds_within_butler": 1.714711424,
+      "butler_other_seconds": 11.188263074,
+      "preparation_seconds": 18.271073082,
+      "observer_seconds": 0.725517669,
+      "full_phases_seconds": 160.365619999,
+      "mean_provider_call_seconds": 3.472055533783784,
+      "native_method_attempts_with_timing": 37,
+      "timed_cases": 12,
+      "missing_timing_cases": 0,
+      "scheduled": 12,
+      "task_success": 11,
+      "migration_strict_success": 7,
+      "migration_scheduled": 8,
+      "physical_artifact_success": 7,
+      "cases_with_completed_skill_load": 0,
+      "completed_skill_loads": 0,
+      "cases_with_opened_memory": 0,
+      "memory_tool_results": {},
+      "max_tokens_finals": 0,
+      "native_methods_dispatched": 37,
+      "unknown_usage": 0,
+      "known_full_tokens": 217509,
+      "known_usage_tariff_usd": {
+        "minimum": "0.12275205",
+        "maximum": "0.21291955"
+      }
+    },
+    "C": {
+      "execution_seconds": 187.874242544,
+      "provider_wait_seconds": 164.132618692,
+      "butler_total_seconds": 23.741623852,
+      "tool_rpc_seconds_within_butler": 2.716201354,
+      "butler_other_seconds": 21.025422498,
+      "preparation_seconds": 34.845451318,
+      "observer_seconds": 0.823774702,
+      "full_phases_seconds": 223.543468564,
+      "mean_provider_call_seconds": 3.28265237384,
+      "native_method_attempts_with_timing": 50,
+      "timed_cases": 12,
+      "missing_timing_cases": 0,
+      "scheduled": 12,
+      "task_success": 12,
+      "migration_strict_success": 8,
+      "migration_scheduled": 8,
+      "physical_artifact_success": 8,
+      "cases_with_completed_skill_load": 8,
+      "completed_skill_loads": 8,
+      "cases_with_opened_memory": 0,
+      "memory_tool_results": {},
+      "max_tokens_finals": 0,
+      "native_methods_dispatched": 50,
+      "unknown_usage": 0,
+      "known_full_tokens": 346675,
+      "known_usage_tariff_usd": {
+        "minimum": "0.15283850",
+        "maximum": "0.26233100"
+      }
+    }
+  },
+  "rows": [
+    {
+      "sequence": 1,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20894,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-0c6863927b849e73",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01088875",
+        "maximum": "0.01808375"
+      },
+      "timing": {
+        "execution_seconds": 17.534760258,
+        "provider_wait_seconds": 16.186455906,
+        "mean_provider_call_seconds": 4.0466139765,
+        "butler_total_seconds": 1.348304352,
+        "tool_rpc_seconds_within_butler": 0.200803785,
+        "butler_other_seconds": 1.147500567,
+        "preparation_seconds": 1.465817101,
+        "observer_seconds": 0.056276337,
+        "full_phases_seconds": 19.056853696,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.075282868,
+          "extension.project.prepare-patch": 0.063268172,
+          "extension.project.check": 0.062252745
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24608,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-0c6863927b849e73",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01225000",
+        "maximum": "0.02060250"
+      },
+      "timing": {
+        "execution_seconds": 15.222588029,
+        "provider_wait_seconds": 13.866549496,
+        "mean_provider_call_seconds": 3.466637374,
+        "butler_total_seconds": 1.356038533,
+        "tool_rpc_seconds_within_butler": 0.195280018,
+        "butler_other_seconds": 1.160758515,
+        "preparation_seconds": 1.448023229,
+        "observer_seconds": 0.060242358,
+        "full_phases_seconds": 16.730853616,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.07726483,
+          "extension.project.prepare-patch": 0.060449088,
+          "extension.project.check": 0.0575661
+        }
+      }
+    },
+    {
+      "sequence": 3,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36659,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-0c6863927b849e73",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01505080",
+        "maximum": "0.02538080"
+      },
+      "timing": {
+        "execution_seconds": 27.714540496,
+        "provider_wait_seconds": 25.160532244,
+        "mean_provider_call_seconds": 5.0321064488,
+        "butler_total_seconds": 2.554008252,
+        "tool_rpc_seconds_within_butler": 0.281669085,
+        "butler_other_seconds": 2.272339167,
+        "preparation_seconds": 2.840743363,
+        "observer_seconds": 0.0746691,
+        "full_phases_seconds": 30.629952959,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.100923784,
+          "extension.project.inspect": 0.058746073,
+          "extension.project.prepare-patch": 0.066292728,
+          "extension.project.check": 0.0557065
+        }
+      }
+    },
+    {
+      "sequence": 4,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24662,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-64f7af5d80364a77",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01224460",
+        "maximum": "0.02061960"
+      },
+      "timing": {
+        "execution_seconds": 14.617721394,
+        "provider_wait_seconds": 13.291164296,
+        "mean_provider_call_seconds": 3.322791074,
+        "butler_total_seconds": 1.326557098,
+        "tool_rpc_seconds_within_butler": 0.189986801,
+        "butler_other_seconds": 1.136570297,
+        "preparation_seconds": 1.484787035,
+        "observer_seconds": 0.064566456,
+        "full_phases_seconds": 16.167074885,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.076304579,
+          "extension.project.prepare-patch": 0.058087328,
+          "extension.project.check": 0.055594894
+        }
+      }
+    },
+    {
+      "sequence": 5,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36715,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-64f7af5d80364a77",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01521335",
+        "maximum": "0.02558085"
+      },
+      "timing": {
+        "execution_seconds": 18.901874892,
+        "provider_wait_seconds": 16.398109099,
+        "mean_provider_call_seconds": 3.2796218198,
+        "butler_total_seconds": 2.503765793,
+        "tool_rpc_seconds_within_butler": 0.278720757,
+        "butler_other_seconds": 2.225045036,
+        "preparation_seconds": 2.825311811,
+        "observer_seconds": 0.077059326,
+        "full_phases_seconds": 21.804246029,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.10201394,
+          "extension.project.inspect": 0.060071596,
+          "extension.project.prepare-patch": 0.059356209,
+          "extension.project.check": 0.057279012
+        }
+      }
+    },
+    {
+      "sequence": 6,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20862,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-64f7af5d80364a77",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01089000",
+        "maximum": "0.01807250"
+      },
+      "timing": {
+        "execution_seconds": 14.089807452,
+        "provider_wait_seconds": 12.757931659,
+        "mean_provider_call_seconds": 3.18948291475,
+        "butler_total_seconds": 1.331875793,
+        "tool_rpc_seconds_within_butler": 0.192723221,
+        "butler_other_seconds": 1.139152572,
+        "preparation_seconds": 1.423718409,
+        "observer_seconds": 0.062646963,
+        "full_phases_seconds": 15.576172824,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.075893601,
+          "extension.project.prepare-patch": 0.060571762,
+          "extension.project.check": 0.056257858
+        }
+      }
+    },
+    {
+      "sequence": 7,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36807,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-9501b97161cd87a9",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01520715",
+        "maximum": "0.02560465"
+      },
+      "timing": {
+        "execution_seconds": 18.026840419,
+        "provider_wait_seconds": 15.501716071,
+        "mean_provider_call_seconds": 3.1003432142,
+        "butler_total_seconds": 2.525124348,
+        "tool_rpc_seconds_within_butler": 0.275597834,
+        "butler_other_seconds": 2.249526514,
+        "preparation_seconds": 2.837809719,
+        "observer_seconds": 0.06973644,
+        "full_phases_seconds": 20.934386578,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.101201176,
+          "extension.project.inspect": 0.05872557,
+          "extension.project.prepare-patch": 0.059740647,
+          "extension.project.check": 0.055930441
+        }
+      }
+    },
+    {
+      "sequence": 8,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20915,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-9501b97161cd87a9",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01110340",
+        "maximum": "0.01831465"
+      },
+      "timing": {
+        "execution_seconds": 15.300490063,
+        "provider_wait_seconds": 13.976194947,
+        "mean_provider_call_seconds": 3.49404873675,
+        "butler_total_seconds": 1.324295116,
+        "tool_rpc_seconds_within_butler": 0.196316428,
+        "butler_other_seconds": 1.127978688,
+        "preparation_seconds": 1.433877631,
+        "observer_seconds": 0.062226936,
+        "full_phases_seconds": 16.79659463,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.077375708,
+          "extension.project.prepare-patch": 0.060694124,
+          "extension.project.check": 0.058246596
+        }
+      }
+    },
+    {
+      "sequence": 9,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24643,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-9501b97161cd87a9",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01247585",
+        "maximum": "0.02086585"
+      },
+      "timing": {
+        "execution_seconds": 15.314099877,
+        "provider_wait_seconds": 13.911912361,
+        "mean_provider_call_seconds": 3.47797809025,
+        "butler_total_seconds": 1.402187516,
+        "tool_rpc_seconds_within_butler": 0.223367317,
+        "butler_other_seconds": 1.178820199,
+        "preparation_seconds": 1.422913694,
+        "observer_seconds": 0.0554683,
+        "full_phases_seconds": 16.792481871,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.101815292,
+          "extension.project.prepare-patch": 0.063015796,
+          "extension.project.check": 0.058536229
+        }
+      }
+    },
+    {
+      "sequence": 10,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20804,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-95cb92018813f445",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0108133",
+        "maximum": "0.0179808"
+      },
+      "timing": {
+        "execution_seconds": 13.843082465,
+        "provider_wait_seconds": 12.505016547,
+        "mean_provider_call_seconds": 3.12625413675,
+        "butler_total_seconds": 1.338065918,
+        "tool_rpc_seconds_within_butler": 0.201215464,
+        "butler_other_seconds": 1.136850454,
+        "preparation_seconds": 1.43114103,
+        "observer_seconds": 0.064261211,
+        "full_phases_seconds": 15.338484706,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.078907124,
+          "extension.project.prepare-patch": 0.062968584,
+          "extension.project.check": 0.059339756
+        }
+      }
+    },
+    {
+      "sequence": 11,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24421,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-95cb92018813f445",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01206545",
+        "maximum": "0.0203592"
+      },
+      "timing": {
+        "execution_seconds": 14.280938075,
+        "provider_wait_seconds": 12.940686465,
+        "mean_provider_call_seconds": 3.23517161625,
+        "butler_total_seconds": 1.34025161,
+        "tool_rpc_seconds_within_butler": 0.194044972,
+        "butler_other_seconds": 1.146206638,
+        "preparation_seconds": 1.443295205,
+        "observer_seconds": 0.065527089,
+        "full_phases_seconds": 15.789760369,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.075383269,
+          "extension.project.prepare-patch": 0.059421471,
+          "extension.project.check": 0.059240232
+        }
+      }
+    },
+    {
+      "sequence": 12,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36615,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-95cb92018813f445",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01493025",
+        "maximum": "0.02524525"
+      },
+      "timing": {
+        "execution_seconds": 19.767600917,
+        "provider_wait_seconds": 17.250268023,
+        "mean_provider_call_seconds": 3.4500536046,
+        "butler_total_seconds": 2.517332894,
+        "tool_rpc_seconds_within_butler": 0.27635666,
+        "butler_other_seconds": 2.240976234,
+        "preparation_seconds": 2.894729185,
+        "observer_seconds": 0.077306007,
+        "full_phases_seconds": 22.739636109,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.100580493,
+          "extension.project.inspect": 0.058888649,
+          "extension.project.prepare-patch": 0.059511706,
+          "extension.project.check": 0.057375812
+        }
+      }
+    },
+    {
+      "sequence": 13,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24402,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01203435",
+        "maximum": "0.02030185"
+      },
+      "timing": {
+        "execution_seconds": 14.304103958,
+        "provider_wait_seconds": 12.950618073,
+        "mean_provider_call_seconds": 3.23765451825,
+        "butler_total_seconds": 1.353485885,
+        "tool_rpc_seconds_within_butler": 0.192890002,
+        "butler_other_seconds": 1.160595883,
+        "preparation_seconds": 1.490567668,
+        "observer_seconds": 0.06309807,
+        "full_phases_seconds": 15.857769696,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.077135034,
+          "extension.project.prepare-patch": 0.059974197,
+          "extension.project.check": 0.055780771
+        }
+      }
+    },
+    {
+      "sequence": 14,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36416,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01487980",
+        "maximum": "0.02514230"
+      },
+      "timing": {
+        "execution_seconds": 19.690676036,
+        "provider_wait_seconds": 17.132711284,
+        "mean_provider_call_seconds": 3.4265422568,
+        "butler_total_seconds": 2.557964752,
+        "tool_rpc_seconds_within_butler": 0.285792673,
+        "butler_other_seconds": 2.272172079,
+        "preparation_seconds": 2.856776798,
+        "observer_seconds": 0.073907307,
+        "full_phases_seconds": 22.621360141,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.106103563,
+          "extension.project.inspect": 0.063853266,
+          "extension.project.prepare-patch": 0.059832907,
+          "extension.project.check": 0.056002937
+        }
+      }
+    },
+    {
+      "sequence": 15,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20771,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01073695",
+        "maximum": "0.01787820"
+      },
+      "timing": {
+        "execution_seconds": 14.308882098,
+        "provider_wait_seconds": 12.982504514,
+        "mean_provider_call_seconds": 3.2456261285,
+        "butler_total_seconds": 1.326377584,
+        "tool_rpc_seconds_within_butler": 0.1995994,
+        "butler_other_seconds": 1.126778184,
+        "preparation_seconds": 1.418550903,
+        "observer_seconds": 0.061690693,
+        "full_phases_seconds": 15.789123694,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.078415998,
+          "extension.project.prepare-patch": 0.063358858,
+          "extension.project.check": 0.057824544
+        }
+      }
+    },
+    {
+      "sequence": 16,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36949,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-4c6851cccb75c911",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01517765",
+        "maximum": "0.02559890"
+      },
+      "timing": {
+        "execution_seconds": 18.522816561,
+        "provider_wait_seconds": 15.950890972,
+        "mean_provider_call_seconds": 3.1901781944,
+        "butler_total_seconds": 2.571925589,
+        "tool_rpc_seconds_within_butler": 0.290508097,
+        "butler_other_seconds": 2.281417492,
+        "preparation_seconds": 2.826936786,
+        "observer_seconds": 0.069297625,
+        "full_phases_seconds": 21.419050972,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.109524892,
+          "extension.project.inspect": 0.062316403,
+          "extension.project.prepare-patch": 0.060555698,
+          "extension.project.check": 0.058111104
+        }
+      }
+    },
+    {
+      "sequence": 17,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20949,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-4c6851cccb75c911",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01105140",
+        "maximum": "0.01827890"
+      },
+      "timing": {
+        "execution_seconds": 16.135185365,
+        "provider_wait_seconds": 14.782471299,
+        "mean_provider_call_seconds": 3.69561782475,
+        "butler_total_seconds": 1.352714066,
+        "tool_rpc_seconds_within_butler": 0.192615384,
+        "butler_other_seconds": 1.160098682,
+        "preparation_seconds": 1.439381983,
+        "observer_seconds": 0.06228253,
+        "full_phases_seconds": 17.636849878,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.075674088,
+          "extension.project.prepare-patch": 0.06024602,
+          "extension.project.check": 0.056695276
+        }
+      }
+    },
+    {
+      "sequence": 18,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24563,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-4c6851cccb75c911",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01218775",
+        "maximum": "0.02051900"
+      },
+      "timing": {
+        "execution_seconds": 15.221828362,
+        "provider_wait_seconds": 13.87044408,
+        "mean_provider_call_seconds": 3.46761102,
+        "butler_total_seconds": 1.351384282,
+        "tool_rpc_seconds_within_butler": 0.19994721,
+        "butler_other_seconds": 1.151437072,
+        "preparation_seconds": 1.460041882,
+        "observer_seconds": 0.062018878,
+        "full_phases_seconds": 16.743889122,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.077293993,
+          "extension.project.prepare-patch": 0.064731594,
+          "extension.project.check": 0.057921623
+        }
+      }
+    },
+    {
+      "sequence": 19,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 20942,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01100575",
+        "maximum": "0.0182170"
+      },
+      "timing": {
+        "execution_seconds": 14.989851048,
+        "provider_wait_seconds": 13.629554496,
+        "mean_provider_call_seconds": 3.407388624,
+        "butler_total_seconds": 1.360296552,
+        "tool_rpc_seconds_within_butler": 0.193571934,
+        "butler_other_seconds": 1.166724618,
+        "preparation_seconds": 1.419989708,
+        "observer_seconds": 0.057527927,
+        "full_phases_seconds": 16.467368683,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.075732546,
+          "extension.project.prepare-patch": 0.060026787,
+          "extension.project.check": 0.057812601
+        }
+      }
+    },
+    {
+      "sequence": 20,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": false,
+      "reasons": [
+        "run_incomplete"
+      ],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 11292,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1
+      },
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "projection_error": "<nil>",
+      "answer_states": [],
+      "finish_reasons": {},
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": false,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0092229",
+        "maximum": "0.0165654"
+      },
+      "timing": {
+        "execution_seconds": 8.259091929,
+        "provider_wait_seconds": 7.42585031,
+        "mean_provider_call_seconds": 3.712925155,
+        "butler_total_seconds": 0.833241619,
+        "tool_rpc_seconds_within_butler": 0.137570464,
+        "butler_other_seconds": 0.695671155,
+        "preparation_seconds": 1.48523373,
+        "observer_seconds": 0.064618729,
+        "full_phases_seconds": 9.808944388,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.076465393,
+          "extension.project.prepare-patch": 0.061105071
+        }
+      }
+    },
+    {
+      "sequence": 21,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36703,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-fafbc3a8c7f99f53",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01504235",
+        "maximum": "0.02539735"
+      },
+      "timing": {
+        "execution_seconds": 17.860445089,
+        "provider_wait_seconds": 15.266800244,
+        "mean_provider_call_seconds": 3.0533600488,
+        "butler_total_seconds": 2.593644845,
+        "tool_rpc_seconds_within_butler": 0.290022277,
+        "butler_other_seconds": 2.303622568,
+        "preparation_seconds": 2.824824848,
+        "observer_seconds": 0.073236829,
+        "full_phases_seconds": 20.758506766,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.108365801,
+          "extension.project.inspect": 0.059066536,
+          "extension.project.prepare-patch": 0.065672708,
+          "extension.project.check": 0.056917232
+        }
+      }
+    },
+    {
+      "sequence": 22,
+      "arm": "B",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 24687,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01238595",
+        "maximum": "0.02079345"
+      },
+      "timing": {
+        "execution_seconds": 16.774952969,
+        "provider_wait_seconds": 15.431925507,
+        "mean_provider_call_seconds": 3.85798137675,
+        "butler_total_seconds": 1.343027462,
+        "tool_rpc_seconds_within_butler": 0.192801093,
+        "butler_other_seconds": 1.150226369,
+        "preparation_seconds": 1.454952947,
+        "observer_seconds": 0.067277528,
+        "full_phases_seconds": 18.297183444,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.074707691,
+          "extension.project.prepare-patch": 0.058806516,
+          "extension.project.check": 0.059286886
+        }
+      }
+    },
+    {
+      "sequence": 23,
+      "arm": "C",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 5,
+      "unknown_usage": 0,
+      "known_total_tokens": 36762,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.load": 1,
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 1,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 5,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01508295",
+        "maximum": "0.02546170"
+      },
+      "timing": {
+        "execution_seconds": 18.185548499,
+        "provider_wait_seconds": 15.647897723,
+        "mean_provider_call_seconds": 3.1295795446,
+        "butler_total_seconds": 2.537650776,
+        "tool_rpc_seconds_within_butler": 0.274173624,
+        "butler_other_seconds": 2.263477152,
+        "preparation_seconds": 2.8753154,
+        "observer_seconds": 0.081594068,
+        "full_phases_seconds": 21.142457967,
+        "tool_rpc_seconds_by_name": {
+          "skills.load": 0.101119252,
+          "extension.project.inspect": 0.056991613,
+          "extension.project.prepare-patch": 0.060351691,
+          "extension.project.check": 0.055711068
+        }
+      }
+    },
+    {
+      "sequence": 24,
+      "arm": "A",
+      "condition": "prepared_artifact",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 4,
+      "unknown_usage": 0,
+      "known_total_tokens": 21009,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1,
+        "extension.project.prepare-patch": 1,
+        "extension.project.check": 1
+      },
+      "case_id": "wf1-bc87e8ade1d0f92a",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 4,
+      "physical_artifact_success": true,
+      "known_usage_tariff_usd": {
+        "minimum": "0.01099335",
+        "maximum": "0.0182346"
+      },
+      "timing": {
+        "execution_seconds": 15.370533456,
+        "provider_wait_seconds": 14.005807551,
+        "mean_provider_call_seconds": 3.50145188775,
+        "butler_total_seconds": 1.364725905,
+        "tool_rpc_seconds_within_butler": 0.233995387,
+        "butler_other_seconds": 1.130730518,
+        "preparation_seconds": 1.389170238,
+        "observer_seconds": 0.064471085,
+        "full_phases_seconds": 16.824174779,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.117556601,
+          "extension.project.prepare-patch": 0.059468055,
+          "extension.project.check": 0.056970731
+        }
+      }
+    },
+    {
+      "sequence": 25,
+      "arm": "C",
+      "condition": "inspect_only",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 3,
+      "unknown_usage": 0,
+      "known_total_tokens": 15727,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.search": 1,
+        "extension.project.inspect": 1
+      },
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 3,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00828935",
+        "maximum": "0.01500810"
+      },
+      "timing": {
+        "execution_seconds": 8.115911233,
+        "provider_wait_seconds": 7.100812553,
+        "mean_provider_call_seconds": 2.3669375176666665,
+        "butler_total_seconds": 1.01509868,
+        "tool_rpc_seconds_within_butler": 0.167481855,
+        "butler_other_seconds": 0.847616825,
+        "preparation_seconds": 2.854063454,
+        "observer_seconds": 0.058948015,
+        "full_phases_seconds": 11.028922702,
+        "tool_rpc_seconds_by_name": {
+          "skills.search": 0.094144525,
+          "extension.project.inspect": 0.07333733
+        }
+      }
+    },
+    {
+      "sequence": 26,
+      "arm": "A",
+      "condition": "inspect_only",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 7910,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0064552",
+        "maximum": "0.0114002"
+      },
+      "timing": {
+        "execution_seconds": 7.521556841,
+        "provider_wait_seconds": 6.754908443,
+        "mean_provider_call_seconds": 3.3774542215,
+        "butler_total_seconds": 0.766648398,
+        "tool_rpc_seconds_within_butler": 0.079556301,
+        "butler_other_seconds": 0.687092097,
+        "preparation_seconds": 1.440416476,
+        "observer_seconds": 0.051616468,
+        "full_phases_seconds": 9.013589785,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.079556301
+        }
+      }
+    },
+    {
+      "sequence": 27,
+      "arm": "B",
+      "condition": "inspect_only",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 9690,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "case_id": "wf1-u28e3e5899dd209cf",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0071349",
+        "maximum": "0.0132624"
+      },
+      "timing": {
+        "execution_seconds": 6.71165494,
+        "provider_wait_seconds": 5.974622362,
+        "mean_provider_call_seconds": 2.987311181,
+        "butler_total_seconds": 0.737032578,
+        "tool_rpc_seconds_within_butler": 0.074744148,
+        "butler_other_seconds": 0.66228843,
+        "preparation_seconds": 1.404656625,
+        "observer_seconds": 0.058701195,
+        "full_phases_seconds": 8.17501276,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.074744148
+        }
+      }
+    },
+    {
+      "sequence": 28,
+      "arm": "A",
+      "condition": "unknown_effect",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 7908,
+      "native_failures": 0,
+      "tool_calls": {
+        "extension.project.inspect": 1
+      },
+      "case_id": "wf1-u6095d249d01d1da5",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00582555",
+        "maximum": "0.01080055"
+      },
+      "timing": {
+        "execution_seconds": 6.542687485,
+        "provider_wait_seconds": 5.923310542,
+        "mean_provider_call_seconds": 2.961655271,
+        "butler_total_seconds": 0.619376943,
+        "tool_rpc_seconds_within_butler": 0.060734423,
+        "butler_other_seconds": 0.55864252,
+        "preparation_seconds": 2.28228702,
+        "observer_seconds": 0.053080766,
+        "full_phases_seconds": 8.878055271,
+        "tool_rpc_seconds_by_name": {
+          "extension.project.inspect": 0.060734423
+        }
+      }
+    },
+    {
+      "sequence": 29,
+      "arm": "B",
+      "condition": "unknown_effect",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 9885,
+      "native_failures": 0,
+      "tool_calls": {
+        "http.request": 1
+      },
+      "case_id": "wf1-u6095d249d01d1da5",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00748425",
+        "maximum": "0.01367675"
+      },
+      "timing": {
+        "execution_seconds": 7.764461913,
+        "provider_wait_seconds": 7.156239993,
+        "mean_provider_call_seconds": 3.5781199965,
+        "butler_total_seconds": 0.60822192,
+        "tool_rpc_seconds_within_butler": 0.047435613,
+        "butler_other_seconds": 0.560786307,
+        "preparation_seconds": 2.247399838,
+        "observer_seconds": 0.052597951,
+        "full_phases_seconds": 10.064459702,
+        "tool_rpc_seconds_by_name": {
+          "http.request": 0.047435613
+        }
+      }
+    },
+    {
+      "sequence": 30,
+      "arm": "C",
+      "condition": "unknown_effect",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 3,
+      "unknown_usage": 0,
+      "known_total_tokens": 15849,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.search": 1,
+        "extension.project.inspect": 1
+      },
+      "case_id": "wf1-u6095d249d01d1da5",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 3,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00820320",
+        "maximum": "0.01490320"
+      },
+      "timing": {
+        "execution_seconds": 7.698567947,
+        "provider_wait_seconds": 6.738773436,
+        "mean_provider_call_seconds": 2.246257812,
+        "butler_total_seconds": 0.959794511,
+        "tool_rpc_seconds_within_butler": 0.152958863,
+        "butler_other_seconds": 0.806835648,
+        "preparation_seconds": 3.520920918,
+        "observer_seconds": 0.059936832,
+        "full_phases_seconds": 11.279425697,
+        "tool_rpc_seconds_by_name": {
+          "skills.search": 0.093589773,
+          "extension.project.inspect": 0.05936909
+        }
+      }
+    },
+    {
+      "sequence": 31,
+      "arm": "B",
+      "condition": "verified_negative",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 9884,
+      "native_failures": 0,
+      "tool_calls": {
+        "http.request": 1
+      },
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00703930",
+        "maximum": "0.01325305"
+      },
+      "timing": {
+        "execution_seconds": 7.749752724,
+        "provider_wait_seconds": 7.018334498,
+        "mean_provider_call_seconds": 3.509167249,
+        "butler_total_seconds": 0.731418226,
+        "tool_rpc_seconds_within_butler": 0.066643786,
+        "butler_other_seconds": 0.66477444,
+        "preparation_seconds": 1.422810608,
+        "observer_seconds": 0.059800291,
+        "full_phases_seconds": 9.232363623,
+        "tool_rpc_seconds_by_name": {
+          "http.request": 0.066643786
+        }
+      }
+    },
+    {
+      "sequence": 32,
+      "arm": "C",
+      "condition": "verified_negative",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 3,
+      "unknown_usage": 0,
+      "known_total_tokens": 16104,
+      "native_failures": 0,
+      "tool_calls": {
+        "skills.search": 1,
+        "http.request": 1
+      },
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 3,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0081924",
+        "maximum": "0.0150174"
+      },
+      "timing": {
+        "execution_seconds": 8.260865067,
+        "provider_wait_seconds": 7.327528702,
+        "mean_provider_call_seconds": 2.4425095673333335,
+        "butler_total_seconds": 0.933336365,
+        "tool_rpc_seconds_within_butler": 0.142919629,
+        "butler_other_seconds": 0.790416736,
+        "preparation_seconds": 2.842334473,
+        "observer_seconds": 0.05123255,
+        "full_phases_seconds": 11.15443209,
+        "tool_rpc_seconds_by_name": {
+          "skills.search": 0.096605392,
+          "http.request": 0.046314237
+        }
+      }
+    },
+    {
+      "sequence": 33,
+      "arm": "A",
+      "condition": "verified_negative",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 2,
+      "unknown_usage": 0,
+      "known_total_tokens": 8083,
+      "native_failures": 0,
+      "tool_calls": {
+        "http.request": 1
+      },
+      "case_id": "wf1-uba6a7feee444c2a4",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 2,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.0060320",
+        "maximum": "0.0110995"
+      },
+      "timing": {
+        "execution_seconds": 6.752726591,
+        "provider_wait_seconds": 6.028613442,
+        "mean_provider_call_seconds": 3.014306721,
+        "butler_total_seconds": 0.724113149,
+        "tool_rpc_seconds_within_butler": 0.062899441,
+        "butler_other_seconds": 0.661213708,
+        "preparation_seconds": 1.408277839,
+        "observer_seconds": 0.05618201,
+        "full_phases_seconds": 8.21718644,
+        "tool_rpc_seconds_by_name": {
+          "http.request": 0.062899441
+        }
+      }
+    },
+    {
+      "sequence": 34,
+      "arm": "C",
+      "condition": "current_sufficient",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 1,
+      "unknown_usage": 0,
+      "known_total_tokens": 5369,
+      "native_failures": 0,
+      "tool_calls": {},
+      "case_id": "wf1-u55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 1,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00756925",
+        "maximum": "0.0139905"
+      },
+      "timing": {
+        "execution_seconds": 5.128555388,
+        "provider_wait_seconds": 4.656578341,
+        "mean_provider_call_seconds": 4.656578341,
+        "butler_total_seconds": 0.471977047,
+        "tool_rpc_seconds_within_butler": 0.0,
+        "butler_other_seconds": 0.471977047,
+        "preparation_seconds": 2.845684563,
+        "observer_seconds": 0.056850603,
+        "full_phases_seconds": 8.031090554,
+        "tool_rpc_seconds_by_name": {}
+      }
+    },
+    {
+      "sequence": 35,
+      "arm": "A",
+      "condition": "current_sufficient",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 1,
+      "unknown_usage": 0,
+      "known_total_tokens": 3861,
+      "native_failures": 0,
+      "tool_calls": {},
+      "case_id": "wf1-u55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 1,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00510675",
+        "maximum": "0.0098355"
+      },
+      "timing": {
+        "execution_seconds": 3.923623669,
+        "provider_wait_seconds": 3.413100999,
+        "mean_provider_call_seconds": 3.413100999,
+        "butler_total_seconds": 0.51052267,
+        "tool_rpc_seconds_within_butler": 0.0,
+        "butler_other_seconds": 0.51052267,
+        "preparation_seconds": 1.405416151,
+        "observer_seconds": 0.056378195,
+        "full_phases_seconds": 5.385418015,
+        "tool_rpc_seconds_by_name": {}
+      }
+    },
+    {
+      "sequence": 36,
+      "arm": "B",
+      "condition": "current_sufficient",
+      "task_success": true,
+      "reasons": [],
+      "native_methods_dispatched": 1,
+      "unknown_usage": 0,
+      "known_total_tokens": 4772,
+      "native_failures": 0,
+      "tool_calls": {},
+      "case_id": "wf1-u55634bd462660d38",
+      "projection_error": "<nil>",
+      "answer_states": [
+        "final"
+      ],
+      "finish_reasons": {
+        "completed": 1
+      },
+      "completed_skill_loads": 0,
+      "memory_tool_results": {},
+      "opened_memory_results": 0,
+      "native_method_attempts": 1,
+      "physical_artifact_success": null,
+      "known_usage_tariff_usd": {
+        "minimum": "0.00622675",
+        "maximum": "0.0121005"
+      },
+      "timing": {
+        "execution_seconds": 5.147835078,
+        "provider_wait_seconds": 4.627707309,
+        "mean_provider_call_seconds": 4.627707309,
+        "butler_total_seconds": 0.520127769,
+        "tool_rpc_seconds_within_butler": 0.0,
+        "butler_other_seconds": 0.520127769,
+        "preparation_seconds": 1.506390621,
+        "observer_seconds": 0.051600824,
+        "full_phases_seconds": 6.705826523,
+        "tool_rpc_seconds_by_name": {}
+      }
+    }
+  ],
+  "pure_model_reasoning_seconds": null,
+  "invoice_cost": null,
+  "notes": [
+    "Provider wait includes network, transport adapter and remote processing; measured Butler admission callbacks are excluded.",
+    "Butler total includes tool RPC; adding them would double count. This is wall elapsed time, not CPU usage.",
+    "Full phases include fixture/skill preparation, execution and observation; later teardown/reporting and authoring labor excluded.",
+    "Unknown usage and missing timing remain unknown, including failed calls; totals state their measured denominator.",
+    "One public development cohort; physical artifact checks and strict answer scores are distinct. No old result is regraded."
+  ],
+  "native_window_wall_seconds": 557.6,
+  "window_seconds_outside_measured_phases": 8.711039035999988,
+  "reporter_sha256": "f8a850887d1d061ea71a887cda1cb0a86008641087e065b57c884bb9f54c624c"
+}

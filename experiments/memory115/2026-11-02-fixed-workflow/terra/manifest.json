@@ -1,0 +1,11 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-terra-fixed-20261102-r1",
+  "files": {
+    "public-report.json": "edbb23bc4761044bb62be93cbf82f06da9acf0db995576512ae2e00dfc79675c",
+    "workflow-report.json": "08c06ea61a02d5e1522d1bc8e27d2b79cef312eb7705c2da1f28aa0bbe914dc2",
+    "workflow-report.calls.csv": "0e155d8fbdab77aeb98fd585882147318ec7d63139e8050b33876db2559a025c",
+    "public-cleanup.json": "9ba580c25de404ebd1318b1fda930587109436ad3bd5d605d8a9f2c97b0d8084",
+    "exit.json": "9615f087920441c04b2ab4bfebd8d9f5592127983ecb53be799997ea056a6b61",
+    "derived/paged-report.json": "2cd880a0b305e6080986603272c4f792f7ce50e4fa7223519d89209c9dbebcb0"
+  }
+}

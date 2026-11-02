@@ -1,0 +1,11 @@
+{
+  "remote_root": "/srv/gitea/butler-acceptance/issue115-utility-native-workflow-gemini-fixed-20261102-r1",
+  "files": {
+    "public-report.json": "89502495f7bdface0f4cfc23b8852ab73311b8467dc18761e9772e5bb927f856",
+    "workflow-report.json": "7911f372d3714db6ad020bcf6d35bc84a96fe9c2625a10f41e0466c4144436a8",
+    "workflow-report.calls.csv": "8fd9102a504305c0c4ae2c80e3e09d3914dfa2e79275c0a232bafc56cfd3de0d",
+    "public-cleanup.json": "874a07ba96cc6171b03f3cac5002e2f53511b0794ec058700903d95938f3eb71",
+    "exit.json": "deaf8b6a74cb18139cac3447955231343475a7245fc9eba3ad7456364ada2873",
+    "derived/paged-report.json": "75679a42f5f44822521fb788e45fe49c62210c2d77490c17b8dc03b8b725b267"
+  }
+}

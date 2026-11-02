@@ -1,0 +1,15 @@
+{
+  "native_source": "d1f21ac9ad9d8ba9477616ee9f2e5c19dfff9c72",
+  "guard_fix": "e1fa749488835112fa0df4477ce534733db16a6e",
+  "native_methods": 451,
+  "paired_cases": 108,
+  "unknown_usage": 0,
+  "source_reporters_sha256": {
+    "scripts/dev/skill-workflow-repeat-report.py": "2099bdf3e60f33874fdf8afa66e0fec9fcae9b663235b6d9334067fe37d72c07",
+    "scripts/dev/skill-workflow-comparison.py": "749b5cd2fab4634b6fdf7bff346cfb91c56c0c07b2be1b2aabb5180e07493e32",
+    "scripts/dev/skill-workflow-report.py": "f8a850887d1d061ea71a887cda1cb0a86008641087e065b57c884bb9f54c624c",
+    "scripts/dev/memory-utility-abc-report.py": "529c3dc8deade0fa03ffbd0fd98e4eaea8d720acb1d71be0770e22e805484c99"
+  },
+  "reporter_identity_regression": "identical archived windows produce zero deltas for all 108 pairs",
+  "reporting_native_requests": 0
+}
