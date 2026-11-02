@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,6 +53,15 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "none"}
 	call.ArgsJson = `{"browser_session_id":"` + strings.Repeat("a", 32) + `","expected_url":"https://example.com/form","observation_version":1,"selector":"input","value":"ordinary"}`
 	login := len(loginMode) == 1 && loginMode[0]
+	pageMode := len(loginMode) > 1 && loginMode[1]
+	pageRef := browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 1}
+	pageReader := &pageScopeFixture{bound: browserpage.Binding{Ref: pageRef, URL: "https://example.com/form", RuntimeVersion: 1}}
+	if pageMode {
+		contract = pageTestContract(browserpage.Fill)
+		call.ToolName = browserpage.Fill
+		call.ArgsJson = mustOwnerJSON(browserpage.Args{SessionID: strings.Repeat("a", 32), Page: &pageRef, Selector: "input", Value: "ordinary"})
+		s.SetBrowserScopes(pageReader)
+	}
 	var g Grant
 	if login {
 		s, _, reader, _, call, contract = loginAuthorityFixture(t)
@@ -82,6 +92,13 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 		t.Fatal(err)
 	}
 	result := &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "completed", ResultJson: `{"ok":true,"browser_session_id":"` + strings.Repeat("a", 32) + `","observation_version":2}`}
+	if pageMode {
+		pageRef.Version = 2
+		if len(loginMode) > 2 && loginMode[2] {
+			pageRef.DocumentID = strings.Repeat("d", 32)
+		}
+		result.ResultJson = mustOwnerJSON(browserpage.Observation{OK: true, SessionID: strings.Repeat("a", 32), Page: &pageRef, URL: "https://example.com/form", Expires: time.Now().Add(10 * time.Minute)})
+	}
 	if login {
 		result.Status, result.ResultJson = "failed", "{}"
 	}
@@ -105,11 +122,38 @@ func newOwnerOutcomeFixtureMode(t *testing.T, historical bool, loginMode ...bool
 	call = &toolbrokerv1.ToolCall{RunId: call.RunId, ToolCallId: "snapshot", ToolName: "browser.freeze_snapshot", AutonomyMode: 3, ArgsJson: `{"browser_session_id":"` + strings.Repeat("a", 32) + `"}`}
 	contract.ToolName, contract.ContractRevision = call.ToolName, "1"
 	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+	if pageMode {
+		call.ToolName = browserpage.Freeze
+		call.ArgsJson = mustOwnerJSON(browserpage.Args{SessionID: strings.Repeat("a", 32), Page: &pageRef})
+		contract = pageTestContract(browserpage.Freeze)
+		pageReader.bound.Ref = pageRef
+		pageReader.bound.RuntimeVersion = 2
+	}
 	read := logicalGrant(t, s, reader, call, contract, "owner-outcome-read")
 	if err = store.ClaimGrant(ctx, read.ID); err != nil {
 		t.Fatal(err)
 	}
 	body := mustOwnerJSON(map[string]any{"ok": true, "browser_session_id": strings.Repeat("a", 32), "observation_version": 3, "network_state": "frozen", "expires_at": time.Now().Add(10 * time.Minute)})
+	if pageMode {
+		pageRef.Version = 3
+		expires := time.Now().Add(10 * time.Minute)
+		body = mustOwnerJSON(browserpage.Observation{OK: true, SessionID: strings.Repeat("a", 32), Page: &pageRef, URL: "https://example.com/form", Network: "frozen", Expires: expires})
+		for _, name := range []string{"086_server_browser_control.up.sql", "107_browser_pages.up.sql", "108_browser_page_execution.up.sql"} {
+			raw, e := os.ReadFile(filepath.Join("..", "..", "migrations", name))
+			if e != nil {
+				t.Fatal(e)
+			}
+			if _, e = store.pool.Exec(ctx, string(raw)); e != nil {
+				t.Fatal(e)
+			}
+		}
+		if _, e := store.pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,expires_at,page_mode,page_origin) VALUES($1,'run','owner','task',$2,true,'https://example.com')`, strings.Repeat("a", 32), expires); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := store.pool.Exec(ctx, `INSERT INTO server_browser_pages(browser_session_id,page_id,document_id,observation_version,observed_epoch,observed_url,state,runtime_version) VALUES($1,$2,$3,3,0,'https://example.com/form','ready',3)`, strings.Repeat("a", 32), pageRef.ID, pageRef.DocumentID); e != nil {
+			t.Fatal(e)
+		}
+	}
 	result = &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, Status: "completed", ResultJson: body}
 	if _, err = s.Outcome(ctx, read, result, false); err != nil {
 		t.Fatal(err)

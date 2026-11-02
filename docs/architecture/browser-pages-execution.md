@@ -10,7 +10,7 @@ before advertising the new contracts. No deployment is implied by this document.
 
 `browser.open_pages` creates a managed context. `browser.pages` refreshes its
 page references without exporting page bodies. `browser.page_snapshot`,
-`browser.page_click`, `browser.page_fill`, `browser.page_type` and
+`browser.page_freeze_snapshot`, `browser.page_click`, `browser.page_fill`, `browser.page_type` and
 `browser.page_close` require an exact `{page_id, document_id,
 observation_version}`. Contracts have revision1, strict schemas and no credential
 refs. Catalog exposure requires the Broker browser-control composition. Legacy
@@ -82,10 +82,43 @@ and observations cannot resume input. Owner input remains private.
 All page mutations require ordinary approval and use the existing unsafe/none
 effect policy. A helper success is not recipient confirmation. A completed
 opaque mutation can remain UNKNOWN and block every page's next write. This
-stage does not extend legacy frozen-snapshot owner factual review to managed
-pages; it does not invent absence, replay input, clear history or refund budget.
-Page-specific effect verification/review is a remaining contract before a
-general autonomous multi-step managed-page workflow can be qualified.
+stage now supports the bounded live factual review below; it does not invent
+absence, replay input, clear history or refund budget. Autonomous recipient
+verification remains separate from an authenticated owner's factual report.
+
+### Exact live owner factual review
+
+For an acknowledged page click/fill/type, Core can make one ordinary journaled
+`browser.page_freeze_snapshot` revision1 read. Its ref is taken only from the
+mediated, durably recorded post-effect result, not an active tab, original stale
+selector or model-selected URL. It has its own finite slot/grant/budget and a
+clipped five-second deadline. An approval requirement, changed authority,
+missing result/ref or resource quarantine prevents the probe. Its durable
+checkpoint prevents a second probe even after crash/error. It freezes the
+whole context's connections/routes before observing the exact page.
+
+Migration105's existing review/interaction kernel joins the source and frozen
+read's immutable runtime-response digests, owner/Run/Task/authority versions,
+page ID, post-effect document, PG versions and context epoch. A navigation
+caused by the acknowledged action may produce a new document on that same page;
+the frozen read must bind that returned document exactly. A genuine frozen
+read of another page, ordinary snapshot, fabricated body or stale epoch cannot
+satisfy the join. The owning context/page/current policy is checked at request
+and report time. The owner card identifies safe URL plus page/document IDs.
+
+The existing protected owner report requires recipient-checked and settled
+assertions plus a receipt reference for confirmed/absent. Only digests persist.
+Unknown stays UNKNOWN; known evidence is labelled authenticated owner
+attestation, never a machine receipt. Canonical same-Input recovery rechecks its
+claim/lease, source/current Task/mandate and all other uncertainty before model
+admission. Original UNKNOWN transcript, consumed grant, budgets and resource
+history remain. Reporting does not itself finish a task, deliver a response or
+retry POST. No new migration, secret reference or broader approval is introduced.
+
+This stage excludes unacknowledged/inflight page mutations, unavailable or
+closed post-effect documents, page-close outcomes and historical managed-page
+review. Those remain restrictive; they cannot borrow legacy login historical
+maintenance or invent absence from runtime loss.
 
 Credential requests against managed contexts are denied; password fields cannot
 accept ordinary literals. RP/IdP authorization, protected page-aware consent,

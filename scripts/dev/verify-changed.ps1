@@ -26,11 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/browserpage/|internal/(actionauth/page_binding|browsercontrol/page_execution)|apps/tool-browser/internal/runtime/page_execution|apps/tool-broker/internal/broker/page_execution|migrations/108_|scripts/dev/browser-page-execution-|web/tests/e2e/server-browser-pages|docs/testing/browser-page-execution-)" {
+    "^(internal/browserpage/|internal/(actionauth/page_(binding|outcome)|browsercontrol/page_execution)|apps/orchestrator/internal/orchestrator/page_outcome|apps/tool-browser/internal/runtime/page_execution|apps/tool-broker/internal/broker/page_execution|migrations/108_|scripts/dev/browser-page-execution-|web/tests/e2e/server-browser-pages|docs/testing/browser-page-(execution|outcome)-)" {
       [void]$specs.Add("docs/architecture/browser-pages-execution.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
-      [void]$tests.Add("Managed pages: browser-page-execution-tests.sh (isolated *_test PostgreSQL, ordered migrations, race/vet, seven actual Chromium cases, real owner UI/Core/Broker/resource boundary; zero required skips). Windows owner UI equivalent: browser-page-execution-local.ps1. No model/provider calls; native/cross-origin federation/Google and page-aware UNKNOWN review remain pending.")
+      [void]$tests.Add("Managed pages: browser-page-execution-tests.sh (isolated *_test PostgreSQL, ordered migrations, race/vet, eight actual Chromium cases, actual owner UI/Broker/resource and page UNKNOWN review, Core same-Input recovery; zero required skips). Windows owner UI equivalent: browser-page-execution-local.ps1. No native model/provider calls; cross-origin federation/credentials/Google and historical managed-page review remain pending.")
       continue
     }
     "^(internal/browsercontrol/pages|migrations/107_browser_pages[.]|scripts/dev/browser-page-bindings-tests[.]sh$|docs/testing/browser-page-bindings-)" {

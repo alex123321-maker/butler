@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/budget"
 
 	"github.com/butler/butler/internal/owneridentity"
@@ -79,6 +80,10 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 	}
 	switch b.ToolName {
 	case "browser.click", "browser.fill", "browser.type":
+	case browserpage.Click, browserpage.Fill, browserpage.Type:
+		if historical || e.Policy.RetrySafety != "unsafe" || e.Policy.VerificationMethod != "none" {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
 	case browserauth.Tool:
 		if !historical || b.ContractRevision != browserauth.Revision || b.Effect != EffectCommit || e.Policy.VerificationMethod != browserauth.Verification || e.Policy.Login == nil {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
@@ -98,7 +103,8 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		Version uint64 `json:"observation_version"`
 	}
 	historicalLogin := historical && b.ToolName == browserauth.Tool
-	if err != nil || json.Unmarshal([]byte(argsRaw), &args) != nil || (!historicalLogin && (json.Unmarshal([]byte(resultRaw), &observed) != nil || !observed.OK || observed.ID != args.ID || observed.Version == 0)) {
+	pageOutcome := browserpage.OutcomeGesture(b.ToolName)
+	if err != nil || json.Unmarshal([]byte(argsRaw), &args) != nil || (!historicalLogin && !pageOutcome && (json.Unmarshal([]byte(resultRaw), &observed) != nil || !observed.OK || observed.ID != args.ID || observed.Version == 0)) {
 		return OwnerOutcomeReview{}, ErrOwnerOutcome
 	}
 	id, err := hex.DecodeString(args.ID)
@@ -124,6 +130,7 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 	}
 	kind := "live_frozen"
 	var expires time.Time
+	pageHint := ""
 	if historical {
 		actor, ok := owneridentity.FromContext(ctx)
 		if !ok || actor.OwnerID != b.OwnerID || (lease != "" && leaseExpires.After(now)) || (runState != "failed" && runState != "cancelled" && runState != "timed_out") {
@@ -161,34 +168,44 @@ func (s *OwnerOutcomes) RequestTx(ctx context.Context, tx pgx.Tx, effectID, obse
 		if !ok || token.RunID != b.RunID || token.SessionKey != sessionKey || token.LeaseID != lease || token.FenceEpoch != epoch || leaseRun != b.RunID || !leaseExpires.After(now) || runState != "tool_running" || observationCall == "" {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
-		var proof, readEffect, readAction string
-		err = tx.QueryRow(ctx, `SELECT c.result::text,e.action_id,a.action_id FROM tool_calls c JOIN action_intents a ON a.run_id=c.run_id AND a.tool_call_id=c.tool_call_id JOIN action_effects e ON e.action_id=a.effect_id WHERE c.run_id=$1 AND c.tool_call_id=$2 AND c.tool_name='browser.freeze_snapshot' AND c.status='completed' AND c.finished_at>=$3 AND e.state='effect_confirmed' AND a.binding->>'effect'='read' AND a.binding->>'contract_revision'='1' AND a.binding->>'owner_id'=$4 AND a.binding->>'task_id'=$5 AND a.binding->>'resource'=$6 AND a.binding->'credential_refs'='[]'::jsonb AND e.policy->>'retry_safety'='read_only' AND e.policy->>'verification_method'='read_result'`, b.RunID, observationCall, finished, b.OwnerID, b.TaskID, "browser:"+args.ID+":").Scan(&proof, &readEffect, &readAction)
-		if err != nil {
-			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		if pageOutcome {
+			expires, pageHint, err = pageOutcomeReadTx(ctx, tx, effectID, b, argsRaw, resultRaw, observationCall, now)
+			if err != nil {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+		} else {
+			var proof, readEffect, readAction string
+			err = tx.QueryRow(ctx, `SELECT c.result::text,e.action_id,a.action_id FROM tool_calls c JOIN action_intents a ON a.run_id=c.run_id AND a.tool_call_id=c.tool_call_id JOIN action_effects e ON e.action_id=a.effect_id WHERE c.run_id=$1 AND c.tool_call_id=$2 AND c.tool_name='browser.freeze_snapshot' AND c.status='completed' AND c.finished_at>=$3 AND e.state='effect_confirmed' AND a.binding->>'effect'='read' AND a.binding->>'contract_revision'='1' AND a.binding->>'owner_id'=$4 AND a.binding->>'task_id'=$5 AND a.binding->>'resource'=$6 AND a.binding->'credential_refs'='[]'::jsonb AND e.policy->>'retry_safety'='read_only' AND e.policy->>'verification_method'='read_result'`, b.RunID, observationCall, finished, b.OwnerID, b.TaskID, "browser:"+args.ID+":").Scan(&proof, &readEffect, &readAction)
+			if err != nil {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+			var captured bool
+			normalized, normalizeErr := budget.NormalizeResult(proof)
+			if normalizeErr != nil || normalized == "" {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+			if tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM action_effect_evidence WHERE action_id=$1 AND source_action_id=$2 AND evidence->>'source'='runtime_response' AND evidence->>'verdict'='effect_confirmed' AND evidence->>'source_run_id'=$3 AND evidence->>'source_tool_call_id'=$4 AND evidence->>'normalized_result_digest'=$5)`, readEffect, readAction, b.RunID, observationCall, normalized).Scan(&captured) != nil || !captured {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+			var view struct {
+				OK      bool      `json:"ok"`
+				ID      string    `json:"browser_session_id"`
+				Network string    `json:"network_state"`
+				Expires time.Time `json:"expires_at"`
+			}
+			if json.Unmarshal([]byte(proof), &view) != nil || !view.OK || view.ID != args.ID || view.Network != "frozen" || !view.Expires.After(now) {
+				return OwnerOutcomeReview{}, ErrOwnerOutcome
+			}
+			expires = view.Expires
 		}
-		var captured bool
-		normalized, normalizeErr := budget.NormalizeResult(proof)
-		if normalizeErr != nil || normalized == "" {
-			return OwnerOutcomeReview{}, ErrOwnerOutcome
-		}
-		if tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM action_effect_evidence WHERE action_id=$1 AND source_action_id=$2 AND evidence->>'source'='runtime_response' AND evidence->>'verdict'='effect_confirmed' AND evidence->>'source_run_id'=$3 AND evidence->>'source_tool_call_id'=$4 AND evidence->>'normalized_result_digest'=$5)`, readEffect, readAction, b.RunID, observationCall, normalized).Scan(&captured) != nil || !captured {
-			return OwnerOutcomeReview{}, ErrOwnerOutcome
-		}
-		var view struct {
-			OK      bool      `json:"ok"`
-			ID      string    `json:"browser_session_id"`
-			Network string    `json:"network_state"`
-			Expires time.Time `json:"expires_at"`
-		}
-		if json.Unmarshal([]byte(proof), &view) != nil || !view.OK || view.ID != args.ID || view.Network != "frozen" || !view.Expires.After(now) {
-			return OwnerOutcomeReview{}, ErrOwnerOutcome
-		}
-		expires = view.Expires
 	}
 	u, _ := url.Parse(strings.TrimPrefix(b.Resource, "browser:"+args.ID+":"))
 	hint := b.ToolName
 	if u != nil && u.Host != "" {
 		hint = u.Scheme + "://" + u.Host + u.EscapedPath()
+	}
+	if pageOutcome {
+		hint = pageHint
 	}
 	r := OwnerOutcomeReview{OwnerID: b.OwnerID, SessionKey: sessionKey, TaskID: b.TaskID, TaskRevision: b.TaskRevision, ConstraintsRevision: b.ConstraintsRevision, ID: "review_" + randomID(), EffectID: e.ActionID, Fingerprint: e.Fingerprint, RunID: b.RunID, ToolCallID: b.ToolCallID, SourceKind: kind, State: "pending", Revision: 1, ResourceHint: hint, ExpiresAt: expires}
 	locked, err := effectIn(ctx, tx, effectID, true)
@@ -318,6 +335,23 @@ func (s *OwnerOutcomes) Decide(ctx context.Context, q OwnerOutcomeDecision) (Own
 	if r.SourceKind == "live_frozen" && taskID != "" {
 		var valid bool
 		if tx.QueryRow(ctx, `SELECT owner_id=$2 AND revision=$3 AND constraints_revision=$4 AND status='waiting_for_user' FROM tasks WHERE task_id=$1 FOR SHARE`, taskID, a.OwnerID, rev, cr).Scan(&valid) != nil || !valid {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
+	}
+	// A page review is tied to the same frozen document and context epoch at
+	// reporting time too. Owner takeover, another observation or runtime loss
+	// cannot repurpose a pending card to describe another page.
+	var bindingRaw string
+	var binding ActionBinding
+	if tx.QueryRow(ctx, `SELECT binding::text FROM action_intents WHERE action_id=$1`, execution).Scan(&bindingRaw) != nil || json.Unmarshal([]byte(bindingRaw), &binding) != nil {
+		return OwnerOutcomeReview{}, ErrOwnerOutcome
+	}
+	if browserpage.IsTool(binding.ToolName) {
+		var argsRaw, resultRaw, readCall string
+		if r.SourceKind != "live_frozen" || e.Policy.RetrySafety != "unsafe" || e.Policy.VerificationMethod != "none" || tx.QueryRow(ctx, `SELECT c.args::text,c.result::text,o.observation_call_id FROM tool_calls c JOIN browser_owner_outcome_reviews o ON o.run_id=c.run_id AND o.tool_call_id=c.tool_call_id WHERE o.review_id=$1 AND o.execution_action_id=$2`, r.ID, execution).Scan(&argsRaw, &resultRaw, &readCall) != nil {
+			return OwnerOutcomeReview{}, ErrOwnerOutcome
+		}
+		if _, _, err = pageOutcomeReadTx(ctx, tx, r.EffectID, binding, argsRaw, resultRaw, readCall, time.Now().UTC()); err != nil {
 			return OwnerOutcomeReview{}, ErrOwnerOutcome
 		}
 	}

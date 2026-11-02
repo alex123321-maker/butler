@@ -105,6 +105,12 @@ func (s *Store) recordPageExecution(ctx context.Context, call *toolbrokerv1.Tool
 	if e != nil {
 		return deny()
 	}
+	if call.ToolName == browserpage.Freeze {
+		var network string
+		if json.Unmarshal(raw["network_state"], &network) != nil || network != "frozen" {
+			return deny()
+		}
+	}
 	p := PageContext{SessionID: report.ID, RunID: b.RunID, OwnerID: b.OwnerID, TaskID: b.TaskID}
 	tx, e := s.Pool.Begin(ctx)
 	if e != nil {

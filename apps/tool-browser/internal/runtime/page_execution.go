@@ -96,6 +96,10 @@ func (s *Server) executePage(ctx context.Context, req *runtimev1.ExecuteRequest)
 		stage = "page_report_count"
 		return fail()
 	}
+	if call.ToolName == browserpage.Freeze && result.NetworkState != "frozen" {
+		stage = "freeze_report"
+		return fail()
+	}
 	pages := map[string]browserpage.Report{}
 	stage = "page_report"
 	for _, page := range result.PrivatePages {

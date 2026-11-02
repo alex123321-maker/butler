@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserpage"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/transport"
@@ -30,7 +31,7 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 		return nil
 	}
 	switch requested.ToolName {
-	case "browser.click", "browser.fill", "browser.type":
+	case "browser.click", "browser.fill", "browser.type", browserpage.Click, browserpage.Fill, browserpage.Type:
 	default:
 		return nil
 	}
@@ -46,6 +47,17 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	id, err := hex.DecodeString(args.SessionID)
 	if err != nil || len(id) != 16 || hex.EncodeToString(id) != args.SessionID {
 		return nil
+	}
+	probeTool := frozenBrowserObservation
+	probeArgs := mustMarshalJSON(map[string]string{"browser_session_id": args.SessionID})
+	var post browserpage.Observation
+	if browserpage.OutcomeGesture(requested.ToolName) {
+		_, post, err = actionauth.PageOutcomeSource(original.Binding, requested.ArgsJSON, result.GetResultJson())
+		if err != nil {
+			return nil
+		}
+		probeTool = browserpage.Freeze
+		probeArgs = mustMarshalJSON(browserpage.Args{SessionID: args.SessionID, Page: post.Page})
 	}
 	executor, ok := s.config.Tools.(AuthorizedToolExecutor)
 	if !ok {
@@ -77,7 +89,7 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	parentCtx := ctx
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	call := &toolbrokerv1.ToolCall{RunId: current.GetRunId(), ToolCallId: marker.ReadCallID, ToolName: frozenBrowserObservation, ArgsJson: mustMarshalJSON(map[string]string{"browser_session_id": args.SessionID}), Status: "requested", AutonomyMode: current.GetAutonomyMode()}
+	call := &toolbrokerv1.ToolCall{RunId: current.GetRunId(), ToolCallId: marker.ReadCallID, ToolName: probeTool, ArgsJson: probeArgs, Status: "requested", AutonomyMode: current.GetAutonomyMode()}
 	ctx, err = s.prepareActionSlot(ctx, call)
 	if err != nil {
 		return err
@@ -90,6 +102,9 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	argsHash, err := actionauth.ArgumentsHash(call.ArgsJson)
 	if err != nil || prepared.RequiresApproval || prepared.EffectID == "" || prepared.EffectID == original.EffectID || b.ActionID == "" || b.ActionHash == "" || b.ContractHash == "" || b.ContractRevision != "1" || b.Effect != actionauth.EffectRead || b.RunID != call.RunId || b.ToolCallID != call.ToolCallId || b.ToolName != call.ToolName || b.ArgsHash != argsHash || b.Resource != "browser:"+args.SessionID+":" || len(b.CredentialRefs) != 0 || b.OwnerID != original.Binding.OwnerID || b.TaskID != original.Binding.TaskID || b.TaskRevision != original.Binding.TaskRevision || b.ConstraintsRevision != original.Binding.ConstraintsRevision {
 		return fmt.Errorf("frozen observation permission unavailable")
+	}
+	if probeTool == browserpage.Freeze && (b.BrowserPage == nil || !b.BrowserPage.Valid(true) || b.BrowserPage.Ref != *post.Page || b.BrowserPage.URL != post.URL || b.BrowserPage.Epoch != original.Binding.BrowserPage.Epoch) {
+		return fmt.Errorf("exact page observation permission unavailable")
 	}
 	mandateID := b.MandateID
 	if mandateID == "" {
@@ -134,6 +149,12 @@ func (s *Service) observeUnknownBrowser(ctx context.Context, current *sessionv1.
 	}
 	if observed.GetStatus() == "completed" && observed.GetError() == nil && observed.GetEffectState() == string(actionauth.StateConfirmed) && json.Unmarshal([]byte(observed.GetResultJson()), &view) == nil && view.OK && view.SessionID == args.SessionID && view.NetworkState == "frozen" && view.Version != 0 {
 		data["observation_status"] = "observed"
+	}
+	if probeTool == browserpage.Freeze && observed.GetStatus() == "completed" && observed.GetError() == nil && observed.GetEffectState() == string(actionauth.StateConfirmed) {
+		frozen, e := browserpage.ReadObservation(observed.GetResultJson())
+		if e == nil && frozen.SessionID == args.SessionID && frozen.Page.ID == post.Page.ID && frozen.Page.DocumentID == post.Page.DocumentID && frozen.Page.Version > post.Page.Version && frozen.URL == post.URL && frozen.Network == "frozen" {
+			data["observation_status"] = "observed"
+		}
 	}
 	return s.checkpoint(ctx, call.RunId, "browser_outcome_observed", data)
 }

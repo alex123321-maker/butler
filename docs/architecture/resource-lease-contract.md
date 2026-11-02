@@ -148,3 +148,10 @@ The [combined audit](../ai/workspace-resource-acceptance.md) proves actual resou
 lease and file metadata behavior on PG/pool2; production Broker/runtime callbacks
 and full issue17 scenarios were pending in that historical snapshot. The current
 local receipt above exercises the implemented production composition.
+
+Managed `browser.page_freeze_snapshot` shares the context resource mapping with
+all its pages. It freezes all physical connections/routes and observes only
+its exact bound page. An UNKNOWN resource marker still denies this read; a
+completed local lane with an external UNKNOWN may admit the separate ordinary
+read. Owner page factual review does not clear resource quarantine, reset
+spending or authorize a retry. See [managed-page review](browser-pages-execution.md).

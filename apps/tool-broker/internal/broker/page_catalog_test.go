@@ -29,7 +29,7 @@ func TestPageCatalogRequiresCompositionAndExactContracts(t *testing.T) {
 				}
 			}
 		}
-		if ready && found != 7 || !ready && found != 0 {
+		if ready && found != 8 || !ready && found != 0 {
 			t.Fatalf("unexpected page catalog size: ready=%v found=%d", ready, found)
 		}
 	}

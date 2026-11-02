@@ -17,6 +17,7 @@ import (
 const Open = "browser.open_pages"
 const List = "browser.pages"
 const Snapshot = "browser.page_snapshot"
+const Freeze = "browser.page_freeze_snapshot"
 const Click = "browser.page_click"
 const Fill = "browser.page_fill"
 const Type = "browser.page_type"
@@ -85,12 +86,14 @@ func ID(value string) bool {
 func (r Ref) Valid() bool { return ID(r.ID) && ID(r.DocumentID) && r.Version > 0 }
 func IsTool(tool string) bool {
 	switch tool {
-	case Open, List, Snapshot, Click, Fill, Type, Close:
+	case Open, List, Snapshot, Freeze, Click, Fill, Type, Close:
 		return true
 	}
 	return false
 }
-func Read(tool string) bool  { return tool == Open || tool == List || tool == Snapshot }
+func Read(tool string) bool {
+	return tool == Open || tool == List || tool == Snapshot || tool == Freeze
+}
 func Bound(tool string) bool { return IsTool(tool) && tool != Open && tool != List }
 func Legacy(tool string) string {
 	switch tool {
@@ -98,6 +101,8 @@ func Legacy(tool string) string {
 		return "browser.open"
 	case Snapshot:
 		return "browser.snapshot"
+	case Freeze:
+		return "browser.freeze_snapshot"
 	case Click:
 		return "browser.click"
 	case Fill:

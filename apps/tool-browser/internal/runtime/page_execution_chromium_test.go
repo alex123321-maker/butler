@@ -211,6 +211,21 @@ func TestManagedPagesChromium(t *testing.T) {
 		call(t, browserpage.List, browserpage.Args{SessionID: session}, true)
 		call(t, browserpage.Snapshot, args(child), true)
 	})
+	t.Run("exact_freeze_keeps_other_pages_frozen", func(t *testing.T) {
+		out := call(t, browserpage.Freeze, args(root), true)
+		if out.NetworkState != "frozen" || out.SelectedPageID != root {
+			t.Fatal("page freeze did not bind root")
+		}
+		for _, p := range out.PrivatePages {
+			if p.ID != root && p.State == "ready" {
+				other := call(t, browserpage.Snapshot, args(p.ID), true)
+				if other.NetworkState != "frozen" {
+					t.Fatal("another page thawed context")
+				}
+				break
+			}
+		}
+	})
 	t.Run("late_popup_and_live_cap", func(t *testing.T) {
 		rootClick(t, "#late")
 		rootClick(t, "#storm")
@@ -248,6 +263,7 @@ func TestManagedPagesChromium(t *testing.T) {
 			t.Fatal("runtime stop failed")
 		}
 		call(t, browserpage.Snapshot, args(root), false)
+		call(t, browserpage.Freeze, args(root), false)
 	})
 	if posts.Load() != 0 {
 		t.Fatal("unexpected recipient POST")

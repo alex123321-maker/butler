@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserpage"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -24,6 +25,7 @@ type browserOutcomeFixture struct {
 	readContext          context.Context
 	persistDeadline      time.Time
 	persistReadCancelled bool
+	managed              bool
 }
 
 type ownerReviewFlowFixture struct {
@@ -108,11 +110,17 @@ func (f *browserOutcomeFixture) LoadCheckpoint(context.Context, string) (string,
 func (f *browserOutcomeFixture) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
 	h, _ := actionauth.ArgumentsHash(call.ArgsJson)
 	p := actionauth.PreparedAction{Binding: actionauth.ActionBinding{OwnerID: "owner", ActionID: "action-" + call.ToolCallId, ActionHash: "hash", RunID: call.RunId, ToolCallID: call.ToolCallId, ToolName: call.ToolName, Effect: actionauth.EffectUnknown, ArgsHash: h}, EffectID: "effect-" + call.ToolCallId}
-	if call.ToolName == frozenBrowserObservation {
+	if call.ToolName == frozenBrowserObservation || call.ToolName == browserpage.Freeze {
 		f.readDeadline, _ = ctx.Deadline()
 		f.readContext = ctx
 		p.Binding.Effect, p.Binding.ContractRevision, p.Binding.ContractHash = actionauth.EffectRead, "1", strings.Repeat("a", 64)
 		p.Binding.Resource = "browser:" + strings.Repeat("a", 32) + ":"
+		if f.managed {
+			p.Binding.BrowserPage = &browserpage.Binding{Ref: browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 2}, URL: "https://example.com/form", RuntimeVersion: 2}
+			if f.fail == "wrong-page" {
+				p.Binding.BrowserPage.ID = strings.Repeat("d", 32)
+			}
+		}
 		switch f.fail {
 		case "permission":
 			p.RequiresApproval = true
@@ -127,7 +135,7 @@ func (f *browserOutcomeFixture) PrepareAction(ctx context.Context, call *toolbro
 	return p, nil
 }
 func (f *browserOutcomeFixture) AuthorizeAction(_ context.Context, call *toolbrokerv1.ToolCall, _ string, approval, _ string) (string, error) {
-	if call.ToolName == frozenBrowserObservation && (approval != "" || f.fail == "authorize") {
+	if (call.ToolName == frozenBrowserObservation || call.ToolName == browserpage.Freeze) && (approval != "" || f.fail == "authorize") {
 		return "", errors.New("denied")
 	}
 	return "grant-" + call.ToolCallId, nil
@@ -141,12 +149,19 @@ func (f *browserOutcomeFixture) ExecuteAuthorizedToolCall(_ context.Context, cal
 	}
 	f.calls = append(f.calls, call)
 	r := &toolbrokerv1.ToolResult{RunId: call.RunId, ToolCallId: call.ToolCallId, ToolName: call.ToolName, ActionId: "effect-" + call.ToolCallId, Status: "effect_unknown", EffectState: "effect_unknown", ResultJson: `{"ok":true}`}
-	if call.ToolName == frozenBrowserObservation {
+	if call.ToolName == frozenBrowserObservation || call.ToolName == browserpage.Freeze {
 		if f.fail == "read-ack" {
 			return nil, errors.New("lost ACK")
 		}
 		r.Status, r.EffectState = "completed", "effect_confirmed"
 		r.ResultJson = `{"ok":true,"browser_session_id":"` + strings.Repeat("a", 32) + `","network_state":"frozen","observation_version":3,"text":"Current visible state only"}`
+		if f.managed {
+			ref := browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 3}
+			if f.fail == "wrong-document" {
+				ref.DocumentID = strings.Repeat("d", 32)
+			}
+			r.ResultJson = mustMarshalJSON(browserpage.Observation{OK: true, SessionID: strings.Repeat("a", 32), Page: &ref, URL: "https://example.com/form", Network: "frozen", Expires: time.Now().Add(time.Minute)})
+		}
 		if f.fail == "read-identity" {
 			r.RunId = "foreign"
 		}

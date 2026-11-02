@@ -136,3 +136,8 @@ alone grants no agent authority. Legacy single-page mode remains separate.
 See [the execution contract](../../docs/architecture/browser-pages-execution.md)
 and required `scripts/dev/browser-page-execution-tests.sh`. This stage does not
 qualify federated login or autonomous recovery from a managed-page UNKNOWN.
+
+`browser.page_freeze_snapshot` revision1 freezes the whole managed context and
+returns a fresh observation of only its exact page/document. It retains normal
+private binding, control epoch, TTL and resource guards. Go/Broker require
+frozen state; another page's snapshot cannot satisfy the owner outcome protocol.

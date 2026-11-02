@@ -19,11 +19,13 @@ required page-authority ./internal/actionauth -run '^TestPage'
 required contracts ./internal/browserpage
 required catalog ./apps/tool-broker/internal/broker -run '^TestPageCatalog'
 required ledger ./internal/browsercontrol -run '^TestPage'
+required outcome-probe ./apps/orchestrator/internal/orchestrator -run '^TestPageUnknown|^TestUnknownBrowser'
+required outcome-recovery ./apps/orchestrator/internal/app -run '^TestBrowserPageOutcomeSameRunRecoveryIntegration$'
 go vet ./internal/browserpage ./internal/actionauth ./internal/browsercontrol ./internal/resourceexec ./apps/tool-browser/internal/runtime ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/prompt
 export BUTLER_BROWSER_PAGES_E2E=1
 export BUTLER_BROWSER_E2E_SCRIPT="$root/apps/tool-browser/scripts/browser_runtime.mjs"
 required runtime ./apps/tool-browser/internal/runtime -run '^TestManagedPagesChromium$'
-for case in same_title_exact_target foreign_first_request_denied outside_gesture_denied owner_selection_and_global_fence late_popup_and_live_cap close_exact_page_retains_identity runtime_loss_no_restore; do
+for case in same_title_exact_target foreign_first_request_denied outside_gesture_denied owner_selection_and_global_fence exact_freeze_keeps_other_pages_frozen late_popup_and_live_cap close_exact_page_retains_identity runtime_loss_no_restore; do
  grep -F '"Action":"pass"' "$report/runtime.jsonl" | grep -Fq "\"Test\":\"TestManagedPagesChromium/$case\""
 done
 go test -c -race -o "$report/browser.test" ./apps/tool-browser/internal/runtime

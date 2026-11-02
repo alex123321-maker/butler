@@ -283,3 +283,14 @@ pre-navigation rejection can record ABSENT for Go-observed `session_lost` or
 `network_frozen`. Common precondition failures retain the same bounded verifier.
 A helper claim, in-flight loss, wrong revision, credentials or lost durable
 finish cannot establish absence. This never upgrades historical revision3 reads.
+
+## Managed-page live review
+
+Acknowledged revision1 page click/fill/type can use the same owner factual
+attestation through a separately confirmed `browser.page_freeze_snapshot` read.
+Both runtime-response digests and exact post-effect page/document, versions,
+owner/Run/Task/current authority and context epoch must correlate. Another page's
+frozen state is insufficient. Source identity is rechecked at owner reporting.
+This is live owner-assisted evidence only; lost ACK, closed documents, page-close
+and historical managed-page outcomes remain UNKNOWN. No retry, refund, renewed
+grant or machine receipt is inferred. See [the page contract](browser-pages-execution.md).

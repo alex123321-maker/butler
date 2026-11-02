@@ -1174,3 +1174,9 @@ both validate exact targeting; there is no active-page fallback. See
 Playwright helper now enters Node through a short bootstrap and length-bounded
 private stdin, avoiding Windows command-line limits. Existing external-source
 hash/containment checks remain; no mutable helper file or new dependency is used.
+
+Managed page freeze revision1 maps its exact Broker page/document/private
+counter to the existing context-wide proxy/route freeze, then observes that
+page. Go and Broker reject a success without frozen network state. This read
+produces local observation only, never a recipient verdict. It enables the
+bounded live owner factual review in [the page contract](browser-pages-execution.md).

@@ -521,7 +521,7 @@ All configuration is isolated; no native model or delivery is exercised.
 
 ## Managed page contracts
 
-Browser-control composition enables seven strict revision1 same-origin page
+Browser-control composition enables eight strict revision1 same-origin page
 contracts from configs/tools.json. Action Service hashes the PG-resolved exact
 page and runtime counter, Broker injects private dispatch metadata and rechecks
 current authority before releasing scrubbed reports. Public versions are owned
@@ -529,3 +529,9 @@ by PostgreSQL; runtime counters are private. Managed contexts cannot use legacy
 credential requests. Page mutations retain mandatory approval and unsafe/none;
 UNKNOWN blocks writes across every page. See
 [the bounded contract](../../docs/architecture/browser-pages-execution.md).
+
+The eighth managed-page contract, `browser.page_freeze_snapshot`, is a separate
+ordinary read for exact live outcome review. PG correlates captured source/read
+digests, post-effect document and current page/context/authority. Protected owner
+attestation can resolve the journal without renewing a grant or replaying POST.
+Unacknowledged, closed-page and historical managed outcomes remain restrictive.

@@ -1382,3 +1382,13 @@ of the original run context: it cannot execute tools, widen the run/claim/lease
 or survive parent cancellation. A persistence failure still blocks; there is no
 read or POST retry and no fabricated receipt. This keeps a completed read from
 losing its checkpoint merely because its dispatch clock expires during storage.
+
+## Managed-page post-effect observation
+
+The existing one-probe/checkpoint/effect_review recovery kernel also supports
+acknowledged page click/fill/type. The kernel derives an exact page ref from the
+saved mediated result and uses the fixed revision1 page freeze read through
+ordinary Broker authority/accounting. A wrong document/page, missing ACK or
+approval requirement leaves the original UNKNOWN restrictive. Canonical owner
+attestation can resume only the same Input under fresh authority; no old action
+or probe is replayed. See [the bounded page review](browser-pages-execution.md).

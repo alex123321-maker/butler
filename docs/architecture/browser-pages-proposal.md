@@ -3,7 +3,7 @@
 Status: migration107's private ledger is now connected to a bounded same-origin,
 credential-free Action Service/Broker/runtime/owner UI path. See the implemented
 [browser pages execution contract](browser-pages-execution.md). Cross-origin
-federation, page-aware credentials/effect review, native delivery and external
+federation, page-aware credentials/autonomous effect verification, native delivery and external
 Google remain target design for #164. Existing legacy single-page and scoped
 login contracts remain active in their separate mode.
 

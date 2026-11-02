@@ -1552,3 +1552,10 @@ its run/lease; it cannot manufacture approved decisions. This is API/dispatch
 evidence, not a native model, task completion or delivery qualification. Public
 owner Tasks keep `result_delivery=attempt`; no public delivery-mode override is
 introduced.
+
+Managed page UNKNOWN handling uses the existing durable one-probe and
+`effect_review` kernel. The probe ref comes from the saved mediated post-effect
+result and calls `browser.page_freeze_snapshot` through ordinary Broker
+permission/accounting. Known canonical owner evidence can resume the same
+Input only after current source/Task/mandate/lease checks. The original UNKNOWN
+transcript and spending remain; no input or probe is automatically replayed.

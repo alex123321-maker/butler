@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserpage"
 	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
@@ -30,6 +31,18 @@ import (
 type ownerOutcomeContextFixture struct {
 	current  actionauth.ContextSnapshot
 	approval actionauth.ApprovalSnapshot
+	page     *browserpage.Binding
+}
+
+func (f *ownerOutcomeContextFixture) BrowserReadScope(context.Context, actionauth.ActionBinding) (string, int64, error) {
+	return "", 0, actionauth.ErrOwnerAuthority
+}
+func (f *ownerOutcomeContextFixture) BrowserPageScope(context.Context, actionauth.ActionBinding, browserpage.Args) (*browserpage.Binding, error) {
+	if f.page == nil {
+		return nil, actionauth.ErrOwnerAuthority
+	}
+	copy := *f.page
+	return &copy, nil
 }
 
 type ownerOutcomeAttemptGuard struct {
@@ -94,6 +107,14 @@ func (*ownerOutcomeProviderFixture) CancelRun(context.Context, transport.CancelR
 }
 
 func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
+	testBrowserOwnerOutcomeRecovery(t, false)
+}
+
+func TestBrowserPageOutcomeSameRunRecoveryIntegration(t *testing.T) {
+	testBrowserOwnerOutcomeRecovery(t, true)
+}
+
+func testBrowserOwnerOutcomeRecovery(t *testing.T, managed bool) {
 	if os.Getenv("BUTLER_TEST_ACTIONAUTH_POSTGRES_URL") == "" {
 		t.Skip("isolated PostgreSQL required")
 	}
@@ -138,6 +159,9 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 			contextReader := &ownerOutcomeContextFixture{current: actionauth.ContextSnapshot{RunID: r.RunId, RunState: "tool_running", SessionKey: r.SessionKey, OwnerID: "owner", AutonomyMode: 3, TaskID: tr.TaskID, PinnedTaskRevision: tr.Revision, TaskRevision: tr.Revision, ConstraintsRevision: tr.ConstraintsRevision, TaskStatus: "active", LeaseID: lease.LeaseID, LeaseEpoch: lease.FenceEpoch, LeaseExpiresAt: lease.ExpiresAt}}
 			journal := actionauth.NewPostgresStore(pool)
 			auth := actionauth.NewService(journal, contextReader, nil)
+			if managed {
+				auth.SetBrowserScopes(contextReader)
+			}
 			history := transcript.NewStore(pool)
 			sid := strings.Repeat("a", 32)
 			dispatch := func(name, call, args, body string, read bool) actionauth.EffectRecord {
@@ -147,6 +171,16 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 				if read {
 					contract.ContractRevision = "1"
 					contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
+				}
+				if managed {
+					var parsed browserpage.Args
+					if json.Unmarshal([]byte(args), &parsed) != nil || parsed.Page == nil {
+						t.Fatal("managed args")
+					}
+					contextReader.page = &browserpage.Binding{Ref: *parsed.Page, URL: "https://example.com/form", RuntimeVersion: parsed.Page.Version}
+					contract.ContractRevision = browserpage.Revision
+					contract.InputSchemaJson = browserpage.Schema(name)
+					contract.RequiresApproval = !read
 				}
 				intent, e := auth.Prepare(owned, c, contract)
 				if e != nil {
@@ -174,9 +208,28 @@ func TestBrowserOwnerOutcomeSameRunRecoveryIntegration(t *testing.T) {
 				}
 				return effect
 			}
-			original := dispatch("browser.click", "click", `{"browser_session_id":"`+sid+`","selector":"#submit","expected_url":"https://example.com/form","observation_version":1}`, `{"ok":true,"browser_session_id":"`+sid+`","observation_version":2}`, false)
-			body, _ := json.Marshal(map[string]any{"ok": true, "browser_session_id": sid, "network_state": "frozen", "observation_version": 3, "expires_at": time.Now().Add(4 * time.Minute)})
-			dispatch("browser.freeze_snapshot", "snapshot", `{"browser_session_id":"`+sid+`"}`, string(body), true)
+			var original actionauth.EffectRecord
+			if managed {
+				ref := browserpage.Ref{ID: strings.Repeat("b", 32), DocumentID: strings.Repeat("c", 32), Version: 1}
+				encode := func(v any) string { raw, _ := json.Marshal(v); return string(raw) }
+				args := encode(browserpage.Args{SessionID: sid, Page: &ref, Selector: "#submit"})
+				ref.Version = 2
+				expires := time.Now().Add(4 * time.Minute)
+				original = dispatch(browserpage.Click, "click", args, encode(browserpage.Observation{OK: true, SessionID: sid, Page: &ref, URL: "https://example.com/form", Expires: expires}), false)
+				args = encode(browserpage.Args{SessionID: sid, Page: &ref})
+				ref.Version = 3
+				dispatch(browserpage.Freeze, "snapshot", args, encode(browserpage.Observation{OK: true, SessionID: sid, Page: &ref, URL: "https://example.com/form", Network: "frozen", Expires: expires}), true)
+				if _, err = pool.Exec(ctx, `INSERT INTO server_browser_sessions(browser_session_id,run_id,owner_id,task_id,expires_at,page_mode,page_origin) VALUES($1,$2,'owner',$3,$4,true,'https://example.com')`, sid, r.RunId, tr.TaskID, expires); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = pool.Exec(ctx, `INSERT INTO server_browser_pages(browser_session_id,page_id,document_id,observation_version,observed_epoch,observed_url,state,runtime_version) VALUES($1,$2,$3,3,0,'https://example.com/form','ready',3)`, sid, ref.ID, ref.DocumentID); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				original = dispatch("browser.click", "click", `{"browser_session_id":"`+sid+`","selector":"#submit","expected_url":"https://example.com/form","observation_version":1}`, `{"ok":true,"browser_session_id":"`+sid+`","observation_version":2}`, false)
+				body, _ := json.Marshal(map[string]any{"ok": true, "browser_session_id": sid, "network_state": "frozen", "observation_version": 3, "expires_at": time.Now().Add(4 * time.Minute)})
+				dispatch("browser.freeze_snapshot", "snapshot", `{"browser_session_id":"`+sid+`"}`, string(body), true)
+			}
 			marker, _ := json.Marshal(map[string]any{"uncertain_browser": map[string]any{"version": 1, "tool_call_id": "click", "effect_id": original.ActionID, "read_call_id": "snapshot"}})
 			if _, err = pool.Exec(ctx, `UPDATE accepted_inputs SET checkpoint_json=checkpoint_json||jsonb_build_object('checkpoint_data',$1::jsonb)`, marker); err != nil {
 				t.Fatal(err)

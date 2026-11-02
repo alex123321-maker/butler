@@ -369,3 +369,11 @@ context epoch and distinct private executor counter; current Task/constraints,
 mandate, lease, approval and final release checks still apply. Discovery or owner
 page selection grants no authority. Mutations retain unsafe/none and mandatory
 approval. See [the implemented page contract](browser-pages-execution.md).
+
+Managed `browser.page_freeze_snapshot` revision1 is another strict
+credential-free read. Its action hash pins the exact page/document/public
+version, private counter, safe URL and context epoch. Core's post-effect probe
+uses only a recorded result ref and its own ordinary grant/finite budget.
+Owner outcome review correlates both captured runtime digests and current
+page/context/Task/mandate before accepting a factual report; it grants no POST.
+See [managed-page review](browser-pages-execution.md).

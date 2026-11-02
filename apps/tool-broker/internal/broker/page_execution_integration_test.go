@@ -20,6 +20,8 @@ import (
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/browserpage"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -88,7 +90,7 @@ func TestManagedPagesBrokerChromiumIntegration(t *testing.T) {
 	listener.Close()
 	t.Setenv("BUTLER_BROWSER_OWNER_HARNESS_ADDR", ownerAddress)
 	f := resourceBroker(t, nil, false)
-	for _, name := range []string{"086_server_browser_control.up.sql", "096_credential_vault.up.sql", "107_browser_pages.up.sql", "108_browser_page_execution.up.sql"} {
+	for _, name := range []string{"086_server_browser_control.up.sql", "096_credential_vault.up.sql", "105_browser_owner_outcomes.up.sql", "107_browser_pages.up.sql", "108_browser_page_execution.up.sql"} {
 		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name))
 		if e != nil {
 			t.Fatal(e)
@@ -96,6 +98,9 @@ func TestManagedPagesBrokerChromiumIntegration(t *testing.T) {
 		if _, e = f.pool.Exec(t.Context(), string(raw)); e != nil {
 			t.Fatal("page schema", name, e)
 		}
+	}
+	if _, e = f.pool.Exec(t.Context(), `CREATE TABLE tool_calls(tool_call_id TEXT PRIMARY KEY,run_id TEXT,tool_name TEXT,args JSONB,result JSONB,status TEXT,finished_at TIMESTAMPTZ)`); e != nil {
+		t.Fatal(e)
 	}
 	runtimeControl, e := browsercontrol.NewClient("http://"+ownerAddress+browsercontrol.Path, strings.Repeat("browser-fixture-", 3))
 	if e != nil {
@@ -279,9 +284,21 @@ func TestManagedPagesBrokerChromiumIntegration(t *testing.T) {
 	if e != nil || result.GetResult().GetStatus() != "effect_unknown" || result.GetResult().GetEffectState() != "effect_unknown" || posts.Load() != before+1 {
 		t.Fatal("approved page POST/journal result wrong", e, result.GetResult().GetEffectState())
 	}
-	// Another page in this context cannot mint a resource to escape UNKNOWN.
-	listed = invoke(browserpage.List, browserpage.Args{SessionID: id})
-	for _, page := range listed.Pages {
+	// Preserve genuine Core-style transcript entries alongside actual runtime
+	// effect evidence. The probe ref comes only from this recorded POST result.
+	record := func(request *toolbrokerv1.ExecuteToolCallRequest, response *toolbrokerv1.ExecuteToolCallResponse) {
+		t.Helper()
+		c, r := request.ToolCall, response.Result
+		if _, err := f.pool.Exec(t.Context(), `INSERT INTO tool_calls VALUES($1,$2,$3,$4,$5,$6,clock_timestamp())`, c.ToolCallId, c.RunId, c.ToolName, c.ArgsJson, r.ResultJson, r.Status); err != nil {
+			t.Fatal(err)
+		}
+	}
+	record(click, result)
+	var post pageOutput
+	if json.Unmarshal([]byte(result.Result.ResultJson), &post) != nil || post.Page == nil {
+		t.Fatal("missing canonical post-effect ref")
+	}
+	for _, page := range post.Pages {
 		if page.ID == firstChild.ID {
 			firstChild = page.Ref
 		}
@@ -293,10 +310,68 @@ func TestManagedPagesBrokerChromiumIntegration(t *testing.T) {
 	if otherPage.ID == webChild.ID {
 		otherPage = root
 	}
+	probe := func(target browserpage.Ref) *toolbrokerv1.ExecuteToolCallRequest {
+		t.Helper()
+		request := prepare(browserpage.Freeze, browserpage.Args{SessionID: id, Page: &target})
+		response, err := f.server.ExecuteToolCall(t.Context(), request)
+		if err != nil || response.GetResult().GetStatus() != "completed" {
+			t.Fatal("actual frozen probe unavailable", err)
+		}
+		record(request, response)
+		var body browserpage.Observation
+		if json.Unmarshal([]byte(response.Result.ResultJson), &body) != nil || body.Page == nil || body.Network != "frozen" {
+			t.Fatal("actual freeze proof missing")
+		}
+		if target.ID == otherPage.ID {
+			otherPage = *body.Page
+		}
+		return request
+	}
+	wrong := probe(otherPage)
+	current, err := f.reader.GetActionContext(t.Context(), "run")
+	if err != nil {
+		t.Fatal(err)
+	}
+	owned := ownership.WithToken(t.Context(), ownership.NewAuthority(f.pool), ownership.Token{SessionKey: current.SessionKey, RunID: "run", LeaseID: current.LeaseID, FenceEpoch: current.LeaseEpoch})
+	reviews := &actionauth.OwnerOutcomes{Pool: f.pool}
+	tx, err := f.pool.Begin(owned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = reviews.RequestTx(owned, tx, result.Result.ActionId, wrong.ToolCall.ToolCallId, false); err == nil {
+		tx.Rollback(owned)
+		t.Fatal("another genuine frozen page satisfied POST review")
+	}
+	tx.Rollback(owned)
+	right := probe(*post.Page)
+	tx, err = f.pool.Begin(owned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	review, err := reviews.RequestTx(owned, tx, result.Result.ActionId, right.ToolCall.ToolCallId, false)
+	if err != nil {
+		tx.Rollback(owned)
+		t.Fatal("exact actual page review denied", err)
+	}
+	if err = tx.Commit(owned); err != nil {
+		t.Fatal(err)
+	}
+	// Another page cannot escape UNKNOWN while owner review is pending.
 	other := prepare(browserpage.Click, browserpage.Args{SessionID: id, Page: &otherPage, Selector: "#post"})
 	blocked, e := f.server.ExecuteToolCall(t.Context(), other)
 	if e != nil || blocked.GetResult().GetStatus() != "execution_stopped" || posts.Load() != before+1 {
 		t.Fatal("another page bypassed retained UNKNOWN")
+	}
+	if _, err = f.pool.Exec(t.Context(), `UPDATE session_ownership SET lease_id='',expires_at=clock_timestamp()-interval '1 second' WHERE run_id='run';UPDATE tasks SET status='waiting_for_user' WHERE task_id='task';UPDATE runs SET current_state='awaiting_approval' WHERE run_id='run'`); err != nil {
+		t.Fatal(err)
+	}
+	actor := owneridentity.WithActor(t.Context(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "actual-page-report"})
+	if _, err = reviews.Decide(actor, actionauth.OwnerOutcomeDecision{ID: review.ID, Fingerprint: review.Fingerprint, Revision: 1, Outcome: "effect_confirmed", RecipientChecked: true, ProcessingSettled: true, ReceiptReference: "synthetic-recipient-count-checked"}); err != nil {
+		t.Fatal("canonical owner page report denied", err)
+	}
+	var effectState, originalStatus string
+	if f.pool.QueryRow(t.Context(), `SELECT e.state,c.status FROM action_effects e JOIN tool_calls c ON c.tool_call_id=$2 WHERE e.action_id=$1`, result.Result.ActionId, click.ToolCall.ToolCallId).Scan(&effectState, &originalStatus) != nil || effectState != "effect_confirmed" || originalStatus != "effect_unknown" || posts.Load() != before+1 {
+		t.Fatal("report replayed POST or rewrote history")
 	}
 	var resources int
 	if f.pool.QueryRow(t.Context(), `SELECT count(DISTINCT resource_id) FROM execution_browser_resources`).Scan(&resources) != nil || resources != 1 {
