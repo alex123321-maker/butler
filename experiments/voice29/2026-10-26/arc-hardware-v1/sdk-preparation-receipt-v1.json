@@ -1,0 +1,13 @@
+{
+  "version": "issue29-repo-local-sdk-preparation-v1",
+  "completed_utc": "2026-10-26T22:15:15.9462131+00:00",
+  "venv": "D:\\CodexData\\home\\worktrees\\issue29-arc-local\\butler\\.cache\\voice29-arc\\venv312-v1",
+  "SDK_report_SHA256": "3dfba96a07d8b46b78969a2ce3d57c3eb871f865ad5211ae6b41c41012861d26",
+  "torch_wheel_sha256": "3ad605be4728b6d3a28a44d07dd794b1a9e45551b0057815bf25eb2a6d6a56a7",
+  "resolved_packages": 30,
+  "global_environment_modified": false,
+  "tensor_probe_executed": false,
+  "models_downloaded": false,
+  "microphone_capture": false,
+  "core_backend_changed": false
+}
