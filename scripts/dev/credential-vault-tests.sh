@@ -55,6 +55,7 @@ required runtime-form-validation ./apps/tool-browser/internal/runtime -run '^Tes
 required scoped-login-pg ./internal/actionauth -run '^TestCredentialLoginPostgresEvidenceAndNoReplayIntegration$'
 required scoped-login-runtime ./apps/tool-browser/internal/runtime -run '^TestBrowserLoginChromium$'
 required scoped-login-contract ./internal/browserauth ./internal/actionauth ./internal/research -run '^TestLogin|^TestCredentialLogin|^TestResearchVerifiedLogin'
+required sso-consent-contract ./internal/browsersso -run '^TestSSOConsent'
 go test -c -race -o .cache/credential-vault-ci/owner-api.test ./apps/orchestrator/internal/api
 export BUTLER_BROWSER_OWNER_API_BINARY="$PWD/.cache/credential-vault-ci/owner-api.test"
 export BUTLER_TEST_MEMORY_POSTGRES_URL="$BUTLER_TEST_VAULT_POSTGRES_URL"

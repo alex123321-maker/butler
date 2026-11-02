@@ -866,6 +866,9 @@ No password validity, field length, pattern or validation-message oracle is adde
 The new credential-free `browser.open_pages` mode does not accept credential refs
 or the legacy vault request path. Broker denies those requests when page_mode is
 set. Ordinary page fill/type cannot populate password fields with literals.
-Existing legacy single-page login remains separate. Page-aware RP/IdP consent
-and external Google acceptance remain unimplemented; see
+Existing legacy single-page login remains separate. Migration109 implements
+page-aware conditional RP/IdP consent in a separate immutable ledger and the
+protected owner UI. Its IDs cannot resolve secrets; SSO execution, resource
+authorization and external Google acceptance remain pending. See the
+[SSO protocol](browser-sso-protocol.md) and
 [browser pages execution](browser-pages-execution.md).

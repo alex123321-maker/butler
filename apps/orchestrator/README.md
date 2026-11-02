@@ -4,6 +4,12 @@ access verification. A verified account observation can support the final answer
 without another click approval, factual outcome report or redundant HTTP refetch.
 Ambiguous effects retain the existing stop/intervention contract.
 
+The protected vault UI also presents migration109's conditional RP/IdP SSO
+consent, with a distinct marker and immutable scope digest. It does not register
+an SSO tool, release fields or grant POST authority through the ordinary login
+path. See `docs/architecture/browser-sso-protocol.md` for the remaining executor
+and two-origin acceptance gates.
+
 Ordinary token-only converter-composed source observations on the reserved pool
 release their current proofs through rollback, avoiding an observer COMMIT/WAL
 flush. All source/lifecycle checks and deadlines remain; converter/owner compound

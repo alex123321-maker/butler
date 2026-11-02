@@ -24,7 +24,9 @@
           ? 'Нужно создать учётные данные'
           : requests[0]?.kind === 'otp'
             ? 'Нужен одноразовый код'
-            : requests[0]?.kind === 'login'
+            : requests[0]?.kind === 'sso_login'
+              ? 'Запрос разрешения на один SSO-вход'
+              : requests[0]?.kind === 'login'
               ? 'Запрос разрешения на один вход'
               : 'Запрос доступа к учётным данным'
       }}</strong>
@@ -139,7 +141,8 @@
               ? 'Создать учётные данные'
               : request.kind === 'otp'
                 ? 'Нужен одноразовый код'
-                : request.kind === 'login' ? 'Разрешить вход' : 'Разрешить доступ'
+                : request.kind === 'sso_login' ? 'Разрешить SSO-вход'
+                  : request.kind === 'login' ? 'Разрешить вход' : 'Разрешить доступ'
           }}</strong>
           <p>{{ request.target_origin }}</p>
           <p v-if="request.record_label">{{ request.record_label }}</p>
@@ -150,6 +153,22 @@
             {{ request.login_scope?.target_url }} и проверить доступ.
             Другие отправки не разрешены.
           </p>
+          <template v-if="request.kind === 'sso_login' && request.sso_scope">
+            <p>Сайт (RP): {{ request.sso_scope.rp_url }}</p>
+            <p>Провайдер входа (IdP): {{ request.sso_scope.idp_url }}</p>
+            <p class="vault-muted">
+              Один вход через новое окно этого провайдера: подставить поля только
+              в согласованную форму и отправить её один раз на
+              {{ request.sso_scope.target_url }}. Проверить доступ к
+              {{ request.sso_scope.verify_url }} и закрыть окно провайдера.
+              Другие отправки и перенос разрешения на другую попытку не разрешены.
+            </p>
+            <p class="vault-muted">
+              Страница {{ request.sso_scope.rp_page.page_id }}, документ
+              {{ request.sso_scope.rp_page.document_id }}, наблюдение
+              {{ request.sso_scope.rp_page.observation_version }}.
+            </p>
+          </template>
           <template v-if="request.kind === 'otp'"
             ><input
               v-model="otp[request.id]"
@@ -163,7 +182,7 @@
           <template v-else
             ><select
               v-model="selectedRecords[request.id]"
-              :disabled="request.kind === 'login'"
+              :disabled="request.kind === 'login' || request.kind === 'sso_login'"
               :aria-label="`Запись для ${request.target_origin}`"
             >
               <option value="">Выберите запись</option>
@@ -176,11 +195,11 @@
               </option></select
             ><button
               type="button"
-              :disabled="!selectedRecords[request.id]"
+              :disabled="!selectedRecords[request.id] || (request.kind === 'sso_login' && (!request.sso_scope || !request.scope_digest))"
               @click="respond(request, true)"
             >
-              {{ request.kind === 'login' ? 'Разрешить один вход' : 'Разрешить' }}</button
-            ><button v-if="request.kind !== 'login'" type="button" @click="newEntry(request)">
+              {{ request.kind === 'sso_login' ? 'Разрешить один SSO-вход' : request.kind === 'login' ? 'Разрешить один вход' : 'Разрешить' }}</button
+            ><button v-if="request.kind !== 'login' && request.kind !== 'sso_login'" type="button" @click="newEntry(request)">
               Создать запись
             </button></template
           >
@@ -344,6 +363,14 @@ interface Draft {
 }
 interface Request {
   login_scope?: { target_url: string }
+  sso_scope?: {
+    rp_url: string
+    idp_url: string
+    target_url: string
+    verify_url: string
+    rp_page: { page_id: string; document_id: string; observation_version: number }
+  }
+  scope_digest?: string
   id: string
   kind: string
   target_origin: string
@@ -658,7 +685,8 @@ async function respond(r: Request, allow: boolean) {
       id: r.id,
       record_id: r.kind === 'otp' ? '' : selectedRecords.value[r.id] || '',
       allow,
-      login_authorization: allow && r.kind === 'login' ? 'browser_login_once_v1' : undefined,
+      login_authorization: allow ? r.kind === 'sso_login' ? 'browser_sso_login_once_v1' : r.kind === 'login' ? 'browser_login_once_v1' : undefined : undefined,
+      scope_digest: allow && r.kind === 'sso_login' ? r.scope_digest : undefined,
       otp: value,
     })
     await refresh()

@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browsersso"
 	"net/url"
 	"strings"
 	"time"
@@ -18,6 +19,9 @@ type Principal struct {
 	TaskRevision, ConstraintsRevision  int64
 }
 type AccessRequest struct {
+	SSOScope         *browsersso.Scope  `json:"sso_scope,omitempty"`
+	ScopeDigest      string             `json:"scope_digest,omitempty"`
+	ContextEpoch     int64              `json:"context_epoch,omitempty"`
 	LoginScope       *browserauth.Scope `json:"login_scope,omitempty"`
 	ID               string             `json:"id"`
 	Kind             string             `json:"kind"`

@@ -11,6 +11,7 @@ export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_
 export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 export BUTLER_TEST_COMPLETION_POSTGRES_URL="$BUTLER_TEST_COMMUNICATION_POSTGRES_URL"
 mkdir -p .cache/communication-core
+phase() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1"; }
 if [[ ${1:-} == --converter ]]; then
  # Separate runtime ContainerE2E requires its explicit topology. Every selected
  # pure converter and source/role/return/lease lifecycle case is mandatory.
@@ -26,13 +27,17 @@ if [[ ${1:-} == --converter ]]; then
  echo 'Converter lifecycle: required PostgreSQL/race checks passed without skips; vet passed. No inference or channel send.'
  exit 0
 fi
+phase 'broker race binary started'
 go test -c -race -o .cache/communication-core/broker.test ./apps/tool-broker/internal/broker
+phase 'broker race binary finished'
 export BUTLER_GUARDED_REQUEST_BROKER_BINARY="$PWD/.cache/communication-core/broker.test"
 export BUTLER_DELEGATION_BROKER_BINARY="$BUTLER_GUARDED_REQUEST_BROKER_BINARY"
+if [[ ${1:-} != --regression-only ]]; then
 report=.cache/communication-core/targeted.jsonl
 packages=(./internal/acceptance ./internal/communicationcontrol ./internal/actionauth ./internal/budget ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/communication ./apps/orchestrator/internal/artifacts ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/input ./apps/orchestrator/internal/api ./apps/orchestrator/internal/app ./internal/memory/compaction ./internal/memory/pipeline)
 packages+=(./internal/ownership ./internal/storage/postgres ./apps/orchestrator/internal/session)
 packages+=(./apps/orchestrator/internal/executionnotice)
+phase 'targeted PostgreSQL/race matrix started'
 if ! go test -p 1 -race -count=1 -json "${packages[@]}" -run '^Test(Communication|CurrentRequest|ExecutionNotice|ExecutionFailure|OwnerReply|StoppedAttempt|StoppedLocal|GetForm|BrowserGetForm|GuardedBrowser|AuthorityRetry)' >"$report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$report" || tail -40 "$report"
  exit 1
@@ -41,6 +46,7 @@ if grep -q '"Action":"skip"' "$report"; then
  grep '"Action":"skip"' "$report"
  exit 1
 fi
+phase 'targeted PostgreSQL/race matrix finished'
 local_report=.cache/communication-core/local-authority.jsonl
 if ! go test -p 1 -race -count=1 -json ./internal/budget ./internal/memory/semantic -run '^Test(LocalLiveAuthority|LocalCallError|CurrentLocalOnlyAuthorityAndImmediateRevocation|LocalOnlyBundle)' >"$local_report"; then
  grep -E '"Action":"fail"|"OutputType":"error"' "$local_report" || tail -40 "$local_report"
@@ -49,6 +55,7 @@ fi
 if grep -q '"Action":"skip"' "$local_report"; then
  grep '"Action":"skip"' "$local_report"; exit 1
 fi
+phase 'local authority finished; vet/build and catalog started'
 go vet "${packages[@]}" ./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./internal/memory/transcript ./internal/memory/semantic ./apps/orchestrator/cmd/stopped-review
 go build -o .cache/communication-core/stopped-review ./apps/orchestrator/cmd/stopped-review
 catalog_report=.cache/communication-core/catalog-source.jsonl
@@ -68,12 +75,16 @@ fi
 if grep -q '"Action":"skip"' "$budget_report"; then
  grep '"Action":"skip"' "$budget_report"; exit 1
 fi
-if [[ ${1:-} == --regression ]]; then
+phase 'catalog and budget policy finished'
+fi
+if [[ ${1:-} == --regression || ${1:-} == --regression-only ]]; then
+ phase 'general regression matrix started'
  regression=(./apps/orchestrator/internal/input ./apps/orchestrator/internal/completion ./apps/orchestrator/internal/task ./apps/orchestrator/internal/run ./apps/orchestrator/internal/deliveryoutbox ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/channel/telegram ./apps/orchestrator/internal/channel/telegramrich ./apps/orchestrator/internal/artifacts ./apps/tool-broker/internal/broker ./internal/actionauth ./internal/budget ./internal/memory/transcript ./internal/memory/compaction ./internal/memory/pipeline)
  if ! go test -p 1 -count=1 -json "${regression[@]}" -skip '(Native|Backup|ServerBrowser)' >.cache/communication-core/regression.jsonl; then
   grep -E '"Action":"fail"|"OutputType":"error"' .cache/communication-core/regression.jsonl || true
   exit 1
  fi
+ phase 'general regression finished; private-control regression started'
  # A separately selected shared private-control fixture changed in this slice.
  if ! go test -p 1 -race -count=1 -json ./apps/orchestrator/internal/app -run '^TestDelegationAdmission' >.cache/communication-core/control-regression.jsonl; then
   grep -E '"Action":"fail"|"OutputType":"error"' .cache/communication-core/control-regression.jsonl || true
@@ -82,10 +93,16 @@ if [[ ${1:-} == --regression ]]; then
  if grep -q '"Action":"skip"' .cache/communication-core/control-regression.jsonl; then
   grep '"Action":"skip"' .cache/communication-core/control-regression.jsonl; exit 1
  fi
+ phase 'private-control regression finished; operator/service builds started'
  go build -o .cache/communication-core/orchestrator ./apps/orchestrator
  go build -o .cache/communication-core/tool-broker ./apps/tool-broker
  go build -o .cache/communication-core/telegram-rich-lab ./apps/orchestrator/cmd/telegram-rich-lab
  go build -o .cache/communication-core/telegram-agent-lab ./apps/orchestrator/cmd/telegram-agent-lab
  go build -o .cache/communication-core/communication-broker-lab ./apps/tool-broker/cmd/communication-lab
+ phase 'operator/service builds finished'
 fi
-echo 'Communication kernel: targeted PostgreSQL/race checks passed without skips; vet passed. No model inference or channel send.'
+if [[ ${1:-} == --regression-only ]]; then
+ echo 'Communication regressions: full selected regression and private-control checks plus builds passed. No model inference or channel send.'
+else
+ echo 'Communication kernel: targeted PostgreSQL/race checks passed without skips; vet passed. No model inference or channel send.'
+fi
